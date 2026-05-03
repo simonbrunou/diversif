@@ -1,5 +1,6 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
+  import Badge from '$components/ui/Badge.svelte';
   import { formatRelative } from '$lib/utils/dates';
   import type { PageData } from './$types';
 
@@ -37,13 +38,9 @@
                 <div class="mt-0.5 text-xs text-muted-foreground">Pas encore introduit</div>
               {/if}
             </div>
-            <span
-              class={a.introduced
-                ? 'rounded-full bg-reaction-ras/15 px-2 py-0.5 text-[11px] font-medium text-reaction-ras'
-                : 'rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground'}
-            >
+            <Badge variant={a.introduced ? 'ras' : 'secondary'}>
               {a.introduced ? 'Introduit' : 'À tester'}
-            </span>
+            </Badge>
           </div>
         </Card>
       </a>

@@ -7,6 +7,7 @@
   import ReactionPicker from '$lib/components/ReactionPicker.svelte';
   import { formatDateInputValue } from '$lib/utils/dates';
   import { page } from '$app/stores';
+  import { enhance } from '$app/forms';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -16,6 +17,7 @@
 
   let givenAt = $state(formatDateInputValue());
   let reaction = $state<'ras' | 'inconfort' | 'reaction'>('ras');
+  let submitting = $state(false);
 
   const initialFoodId = (() => {
     const v = Number($page.url.searchParams.get('foodId'));
@@ -32,7 +34,17 @@
     <p class="text-sm text-muted-foreground">Pour {data.child.name}</p>
   </header>
 
-  <form method="POST" class="grid gap-5">
+  <form
+    method="POST"
+    class="grid gap-5"
+    use:enhance={() => {
+      submitting = true;
+      return async ({ update }) => {
+        await update();
+        submitting = false;
+      };
+    }}
+  >
     {#if form?.error}
       <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
         {form.error}
@@ -57,7 +69,9 @@
     </div>
 
     <div class="flex gap-2">
-      <Button type="submit" size="lg" class="flex-1">Enregistrer</Button>
+      <Button type="submit" size="lg" class="flex-1" loading={submitting}>
+        {submitting ? 'Enregistrement…' : 'Enregistrer'}
+      </Button>
       <Button href={`/child/${data.child.id}`} variant="outline" size="lg">Annuler</Button>
     </div>
   </form>

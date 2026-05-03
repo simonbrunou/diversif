@@ -3,6 +3,7 @@
   import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
   import Input from '$components/ui/Input.svelte';
+  import Select from '$components/ui/Select.svelte';
   import { cn } from '$lib/utils/cn';
 
   type FoodOption = {
@@ -68,7 +69,8 @@
       <button
         type="button"
         class={cn(
-          'rounded-full border px-2.5 py-1 text-xs',
+          'rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           activeCategory === '' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
         )}
         onclick={() => (activeCategory = '')}
@@ -79,7 +81,8 @@
         <button
           type="button"
           class={cn(
-            'rounded-full border px-2.5 py-1 text-xs',
+            'rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
             activeCategory === c.id ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
           )}
           onclick={() => (activeCategory = activeCategory === c.id ? '' : c.id)}
@@ -152,16 +155,15 @@
         </div>
         <div class="grid gap-1.5">
           <label for="custom-cat" class="text-sm font-medium">Catégorie</label>
-          <select
+          <Select
             id="custom-cat"
             name={`${customName}.category`}
             bind:value={customCategory}
-            class="h-10 rounded-md border bg-background px-3 text-sm"
           >
             {#each CATEGORIES as c (c.id)}
               <option value={c.id}>{c.label}</option>
             {/each}
-          </select>
+          </Select>
         </div>
         <p class="text-xs text-muted-foreground">
           Cet aliment ne sera visible que pour cet enfant.

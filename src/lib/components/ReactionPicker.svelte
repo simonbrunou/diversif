@@ -34,6 +34,7 @@
     <label
       class={cn(
         'flex cursor-pointer flex-col items-center gap-1 rounded-md border bg-background p-3 text-sm transition-colors hover:bg-accent',
+        'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
         active && [s.bg, s.ring, s.text, 'border-2 ring-2']
       )}
     >

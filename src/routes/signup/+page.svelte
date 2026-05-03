@@ -3,9 +3,11 @@
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
   import Card from '$components/ui/Card.svelte';
+  import { enhance } from '$app/forms';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+  let submitting = $state(false);
 </script>
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
@@ -17,7 +19,17 @@
   </div>
 
   <Card class="mt-8 p-6">
-    <form method="POST" class="grid gap-4">
+    <form
+      method="POST"
+      class="grid gap-4"
+      use:enhance={() => {
+        submitting = true;
+        return async ({ update }) => {
+          await update();
+          submitting = false;
+        };
+      }}
+    >
       {#if form?.error}
         <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {form.error}
@@ -65,7 +77,9 @@
         />
       </div>
 
-      <Button type="submit" size="lg">Créer mon compte</Button>
+      <Button type="submit" size="lg" loading={submitting}>
+        {submitting ? 'Création…' : 'Créer mon compte'}
+      </Button>
     </form>
   </Card>
 
