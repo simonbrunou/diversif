@@ -55,12 +55,16 @@ export type DiversityMetrics = {
 };
 
 export function loadDiversityMetrics(childId: number, totalCategories: number): DiversityMetrics {
+  // Exclude 'autre' so the numerator matches the denominator the dashboard
+  // passes (CATEGORIES.length - 1). Otherwise an `autre` log would push
+  // categoriesCovered above totalCategories.
   const distinctCategories =
     db.get<{ count: number }>(
       sql`SELECT COUNT(DISTINCT ${foods.category}) as count
           FROM ${foodEntries}
           INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
-          WHERE ${foodEntries.childId} = ${childId}`
+          WHERE ${foodEntries.childId} = ${childId}
+            AND ${foods.category} != 'autre'`
     )?.count ?? 0;
 
   const lastNewFood = db.get<{ given_at: number }>(

@@ -12,7 +12,7 @@ import {
   dismissReminder,
   type EnrichedEntry
 } from '$lib/server/guidance/queries';
-import { requireUser } from '$lib/server/guards';
+import { requireMembership, requireUser } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -153,8 +153,11 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     dismissals
   });
 
-  // Welcome dialog: show only if not dismissed and 0 entries
-  const showWelcomeDialog = !dismissals.has('welcome-dialog') && entriesNormalized.length === 0;
+  // Welcome dialog: show only if not dismissed and the child has no entries
+  // *all-time* — `entriesNormalized` only covers the last 90 days, so basing
+  // this on that set would re-trigger onboarding for older children that
+  // simply went silent for a quarter.
+  const showWelcomeDialog = !dismissals.has('welcome-dialog') && distinctFoods === 0;
 
   return {
     recent: recent.map((r) => ({
@@ -176,6 +179,7 @@ export const actions: Actions = {
   dismissReminder: async ({ request, params, locals }) => {
     const user = requireUser(locals);
     const childId = Number(params.id);
+    requireMembership(locals, childId);
     const data = await request.formData();
     const key = data.get('reminderKey');
     if (typeof key !== 'string' || key.length === 0 || key.length > 100) {
