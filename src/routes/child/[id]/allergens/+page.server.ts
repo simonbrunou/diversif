@@ -29,8 +29,10 @@ export const load: PageServerLoad = async ({ params }) => {
   const acc = new Map<string, { count: number; first: number; last: number }>();
   for (const r of rows) {
     const id = r.allergenType;
+    /* v8 ignore next — query already filters allergenType IS NOT NULL */
     if (!id) continue;
-    const ts = r.givenAt instanceof Date ? r.givenAt.getTime() : Number(r.givenAt);
+    const ts =
+      r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt);
     const cur = acc.get(id);
     if (!cur) {
       acc.set(id, { count: 1, first: ts, last: ts });

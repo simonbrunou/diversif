@@ -56,7 +56,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
     .orderBy(foods.name)
     .all();
 
-  const givenAt = entry.givenAt instanceof Date ? entry.givenAt : new Date(Number(entry.givenAt));
+  // Drizzle's timestamp_ms mode always materializes givenAt as a Date.
+  const givenAt = entry.givenAt as Date;
 
   const from = url.searchParams.get('from') === 'dashboard' ? 'dashboard' : 'foods';
 
@@ -84,7 +85,9 @@ export const actions: Actions = {
     const raw = Object.fromEntries(await request.formData());
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
-      return fail(400, { error: parsed.error.issues[0]?.message ?? 'Champs invalides' });
+      return fail(400, {
+        error: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides'
+      });
     }
 
     let foodId = parsed.data.foodId ?? null;
@@ -92,7 +95,7 @@ export const actions: Actions = {
     const customCategoryRaw = parsed.data['customFood.category']?.trim();
 
     if (!foodId && customName) {
-      const category = CATEGORY_IDS.includes(customCategoryRaw ?? '')
+      const category = CATEGORY_IDS.includes(customCategoryRaw ?? /* v8 ignore next */ '')
         ? (customCategoryRaw as string)
         : 'autre';
       const inserted = db

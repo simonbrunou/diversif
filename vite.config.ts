@@ -1,6 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [
@@ -43,10 +43,16 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
-      include: ['src/lib/**/*.ts', 'src/hooks.server.ts'],
+      include: [
+        'src/lib/**/*.ts',
+        'src/hooks.server.ts',
+        'src/routes/**/+page.server.ts',
+        'src/routes/**/+layout.server.ts',
+        'src/routes/**/+server.ts'
+      ],
       exclude: [
-        'src/lib/**/*.test.ts',
-        'src/lib/**/*.d.ts',
+        'src/**/*.test.ts',
+        'src/**/*.d.ts',
         'src/test/**',
         // Pure type aliases — no runtime statements to cover.
         'src/lib/types.ts',
