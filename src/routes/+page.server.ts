@@ -1,9 +1,11 @@
 import { redirect } from '@sveltejs/kit';
-import { requireUser } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, parent }) => {
-  requireUser(locals);
+  if (!locals.user) {
+    return { kind: 'landing' as const };
+  }
+
   const { children } = await parent();
 
   if (children.length === 0) {
@@ -12,5 +14,5 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
   if (children.length === 1) {
     throw redirect(303, `/child/${children[0].id}`);
   }
-  return { children };
+  return { kind: 'picker' as const, children };
 };
