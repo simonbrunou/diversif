@@ -233,6 +233,10 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       let dominant: { cat: CategoryId; ratio: number } | null = null;
       for (const [cat, n] of byCat) {
         const ratio = n / total;
+        // The second clause is defensive: at most one category can exceed 60 %
+        // of a single sample, but we keep the comparison so the loop is safe
+        // if the threshold is ever lowered.
+        /* v8 ignore next */
         if (ratio > 0.6 && (!dominant || ratio > dominant.ratio)) {
           dominant = { cat, ratio };
         }

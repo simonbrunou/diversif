@@ -22,7 +22,7 @@ export default ts.config(
     }
   },
   {
-    ignores: ['build/', '.svelte-kit/', 'dist/', 'drizzle/', 'data/', 'node_modules/']
+    ignores: ['build/', '.svelte-kit/', 'dist/', 'drizzle/', 'data/', 'node_modules/', 'coverage/']
   },
   {
     rules: {

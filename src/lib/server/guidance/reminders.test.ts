@@ -249,4 +249,53 @@ describe('computeReminders', () => {
       }
     });
   });
+
+  describe('default now', () => {
+    it('falls back to Date.now() when input.now is omitted', () => {
+      // Don't include `now` in the input — exercise the `?? Date.now()` branch.
+      const out = computeReminders({
+        childId: 1,
+        ageMonths: 8,
+        childCreatedAt: Date.now() - 30 * DAY,
+        entries: [],
+        introducedAllergens: ALL_ALLERGENS,
+        dismissals: new Set<string>()
+      });
+      expect(Array.isArray(out)).toBe(true);
+    });
+  });
+
+  describe('stale-diversity reduce', () => {
+    it('selects the most recent first-intro across multiple foods', () => {
+      // Two foods: the more recent first-intro is inserted *before* the older
+      // one so the reduce traverses both branches of `v > acc ? v : acc`.
+      const newerFood = entry({ id: 2, foodId: 2, givenAt: NOW - 20 * DAY });
+      const oldFood = entry({ id: 1, foodId: 1, givenAt: NOW - 200 * DAY });
+      const out = computeReminders(isolated({ entries: [newerFood, oldFood] }));
+      const stale = out.find((r) => r.key === 'stale-diversity');
+      expect(stale).toBeDefined();
+      // The window is anchored on the newer first-intro (~20 d).
+      expect(stale!.title).toMatch(/20 jours/);
+    });
+  });
+
+  describe('category-imbalance with custom category', () => {
+    it('falls back to the raw id when the category is not in the standard map', () => {
+      const entries: EnrichedEntry[] = [];
+      for (let i = 0; i < 5; i++) {
+        entries.push(
+          entry({
+            id: i,
+            foodId: 1,
+            category: 'mystery_group' as EnrichedEntry['category'],
+            givenAt: NOW - i * DAY
+          })
+        );
+      }
+      const out = computeReminders(isolated({ entries }));
+      const r = out.find((r) => r.key === 'category-imbalance:mystery_group');
+      expect(r).toBeDefined();
+      expect(r!.body).toContain('mystery_group');
+    });
+  });
 });

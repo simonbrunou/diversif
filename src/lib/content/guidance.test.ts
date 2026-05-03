@@ -119,6 +119,16 @@ describe('getTipsFor', () => {
     const containsPeanut = peanutTips.some((t) => t.allergens?.includes('arachide'));
     expect(containsPeanut).toBe(true);
   });
+
+  it('matches per-category tips', () => {
+    const fishTips = getTipsFor({ categoryId: 'poissons' });
+    const containsFish = fishTips.some((t) => t.categories?.includes('poissons'));
+    expect(containsFish).toBe(true);
+  });
+
+  it('uses the explicit stageId when provided', () => {
+    expect(getTipsFor({ stageId: '6-9' }).length).toBeGreaterThan(0);
+  });
 });
 
 describe('pickRotatingTip', () => {
