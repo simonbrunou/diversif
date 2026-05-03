@@ -7,13 +7,6 @@
 
   onMount(() => {
     theme = getStoredTheme();
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => {
-      if (theme === 'system') applyTheme('system');
-    };
-    media.addEventListener('change', handler);
-    return () => media.removeEventListener('change', handler);
   });
 
   function setTheme(next: Theme) {
@@ -28,12 +21,11 @@
   ];
 </script>
 
-<div role="radiogroup" aria-label="Thème" class="inline-flex rounded-md border border-input p-1">
+<div class="inline-flex rounded-md border border-input p-1">
   {#each options as opt (opt.value)}
     <button
       type="button"
-      role="radio"
-      aria-checked={theme === opt.value}
+      aria-pressed={theme === opt.value}
       onclick={() => setTheme(opt.value)}
       class={cn(
         'rounded px-3 py-1.5 text-sm font-medium transition-colors',
