@@ -1,0 +1,192 @@
+<script lang="ts">
+  import Button from '$components/ui/Button.svelte';
+  import Input from '$components/ui/Input.svelte';
+  import Label from '$components/ui/Label.svelte';
+  import Card from '$components/ui/Card.svelte';
+  import Dialog from '$components/ui/Dialog.svelte';
+  import { page } from '$app/stores';
+  import { toast } from 'svelte-sonner';
+  import { tick } from 'svelte';
+  import type { ActionData, PageData } from './$types';
+
+  let {
+    data,
+    form
+  }: { data: PageData; form: ActionData } = $props();
+
+  let deleteOpen = $state(false);
+  let leaveOpen = $state(false);
+  let confirmName = $state('');
+
+  $effect(() => {
+    if (form?.success) {
+      toast.success(form.success);
+    }
+    if (form?.error) {
+      toast.error(form.error);
+    }
+  });
+
+  async function copy(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success('Copié.');
+    } catch {
+      toast.error('Impossible de copier.');
+    }
+  }
+
+  function inviteUrl(code: string): string {
+    return `${$page.url.origin}/join/${code}`;
+  }
+
+  async function focusConfirm() {
+    await tick();
+    document.getElementById('confirmName')?.focus();
+  }
+</script>
+
+<div class="container max-w-2xl space-y-6 py-6">
+  <header>
+    <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
+      ← Tableau
+    </a>
+    <h1 class="mt-2 text-xl font-semibold">Paramètres</h1>
+    <p class="text-sm text-muted-foreground">{data.child.name}</p>
+  </header>
+
+  {#if data.role === 'owner'}
+    <Card class="p-4">
+      <h2 class="text-base font-semibold">Informations</h2>
+      <form method="POST" action="?/updateChild" class="mt-3 grid gap-3">
+        <div class="grid gap-1.5">
+          <Label for="name">Prénom</Label>
+          <Input id="name" name="name" required maxlength={80} value={data.child.name} />
+        </div>
+        <div class="grid gap-1.5">
+          <Label for="birthDate">Date de naissance</Label>
+          <Input id="birthDate" name="birthDate" type="date" required value={data.child.birthDate} />
+        </div>
+        <div>
+          <Button type="submit">Enregistrer</Button>
+        </div>
+      </form>
+    </Card>
+  {/if}
+
+  <Card class="p-4">
+    <h2 class="text-base font-semibold">Membres</h2>
+    <ul class="mt-3 divide-y">
+      {#each data.members as m (m.userId)}
+        <li class="flex items-center justify-between py-3">
+          <div>
+            <div class="font-medium">{m.displayName}</div>
+            <div class="text-xs text-muted-foreground">{m.email}</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs uppercase tracking-wider text-muted-foreground">
+              {m.role === 'owner' ? 'Créateur' : 'Membre'}
+            </span>
+            {#if data.role === 'owner' && m.role !== 'owner'}
+              <form method="POST" action="?/removeMember">
+                <input type="hidden" name="userId" value={m.userId} />
+                <Button type="submit" variant="ghost" size="sm">Retirer</Button>
+              </form>
+            {/if}
+          </div>
+        </li>
+      {/each}
+    </ul>
+  </Card>
+
+  {#if data.role === 'owner'}
+    <Card class="p-4">
+      <h2 class="text-base font-semibold">Inviter quelqu’un</h2>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Générez un code à partager. Il expire après 7 jours et ne peut être utilisé qu’une fois.
+      </p>
+
+      <form method="POST" action="?/createInvitation" class="mt-3">
+        <Button type="submit" variant="secondary">Générer un code</Button>
+      </form>
+
+      {#if data.invitations.length > 0}
+        <ul class="mt-4 grid gap-2">
+          {#each data.invitations as inv (inv.code)}
+            <li class="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3">
+              <div class="min-w-0">
+                <div class="font-mono text-sm font-medium">{inv.code}</div>
+                <div class="truncate text-xs text-muted-foreground">{inviteUrl(inv.code)}</div>
+              </div>
+              <div class="flex gap-2">
+                <Button type="button" size="sm" variant="outline" onclick={() => copy(inviteUrl(inv.code))}>
+                  Copier
+                </Button>
+                <form method="POST" action="?/revokeInvitation">
+                  <input type="hidden" name="code" value={inv.code} />
+                  <Button type="submit" size="sm" variant="ghost">Révoquer</Button>
+                </form>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+    </Card>
+  {/if}
+
+  <Card class="border-destructive/30 p-4">
+    <h2 class="text-base font-semibold text-destructive">Zone dangereuse</h2>
+    {#if data.role === 'owner'}
+      <p class="mt-1 text-sm text-muted-foreground">
+        Supprimer cet enfant retire toutes les données associées (logs, membres, invitations). Action irréversible.
+      </p>
+      <div class="mt-3">
+        <Button
+          type="button"
+          variant="destructive"
+          onclick={() => {
+            deleteOpen = true;
+            confirmName = '';
+            focusConfirm();
+          }}
+        >
+          Supprimer cet enfant
+        </Button>
+      </div>
+    {:else}
+      <p class="mt-1 text-sm text-muted-foreground">
+        Vous n’êtes pas le créateur. Vous pouvez quitter ce suivi à tout moment.
+      </p>
+      <div class="mt-3">
+        <Button type="button" variant="outline" onclick={() => (leaveOpen = true)}>
+          Quitter cet enfant
+        </Button>
+      </div>
+    {/if}
+  </Card>
+</div>
+
+<Dialog
+  bind:open={deleteOpen}
+  title="Supprimer {data.child.name} ?"
+  description="Saisissez exactement « {data.child.name} » pour confirmer."
+>
+  <form method="POST" action="?/deleteChild" class="grid gap-3">
+    <Input id="confirmName" name="confirmName" bind:value={confirmName} placeholder={data.child.name} autocomplete="off" />
+    <div class="mt-2 flex justify-end gap-2">
+      <Button type="button" variant="outline" onclick={() => (deleteOpen = false)}>Annuler</Button>
+      <Button type="submit" variant="destructive" disabled={confirmName !== data.child.name}>
+        Supprimer définitivement
+      </Button>
+    </div>
+  </form>
+</Dialog>
+
+<Dialog bind:open={leaveOpen} title="Quitter ce suivi ?" description="Vous perdrez l’accès aux logs.">
+  <form method="POST" action="?/leaveChild">
+    <div class="flex justify-end gap-2">
+      <Button type="button" variant="outline" onclick={() => (leaveOpen = false)}>Annuler</Button>
+      <Button type="submit" variant="destructive">Quitter</Button>
+    </div>
+  </form>
+</Dialog>
