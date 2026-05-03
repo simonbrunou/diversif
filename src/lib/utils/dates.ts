@@ -38,3 +38,15 @@ export function formatDateInputValue(date: Date = new Date()): string {
 export function parseDateTimeLocal(value: string): Date {
   return dayjs(value).toDate();
 }
+
+/**
+ * Returns true only for a real calendar date in YYYY-MM-DD form. Catches
+ * shape errors (`2026-99-99`) and impossible days (`2024-02-30`) by
+ * round-tripping through Date and re-encoding to ISO.
+ */
+export function isValidBirthDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const d = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return false;
+  return d.toISOString().slice(0, 10) === value;
+}

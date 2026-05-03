@@ -5,6 +5,7 @@ import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { generateInviteCodeRaw } from '$lib/server/auth';
 import { requireMembership, requireOwnership, requireUser } from '$lib/server/guards';
+import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
 
 const INVITE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
@@ -54,7 +55,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 const updateSchema = z.object({
   name: z.string().min(1).max(80),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+  birthDate: z.string().refine(isValidBirthDate, 'Date invalide')
 });
 
 export const actions: Actions = {

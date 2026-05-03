@@ -3,14 +3,12 @@ import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { children, memberships } from '$lib/server/db/schema';
 import { requireUser } from '$lib/server/guards';
+import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z.object({
   name: z.string().min(1, 'Prénom requis').max(80),
-  birthDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date invalide')
-    .refine((v) => !Number.isNaN(new Date(`${v}T00:00:00Z`).getTime()), 'Date invalide')
+  birthDate: z.string().refine(isValidBirthDate, 'Date invalide')
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
