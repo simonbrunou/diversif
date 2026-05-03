@@ -94,6 +94,16 @@ describe('computeReminders', () => {
       const out = computeReminders(isolated({ entries: [] }));
       expect(out.find((r) => r.key === 'stale-diversity')).toBeUndefined();
     });
+
+    it('uses earliest occurrence per food as the first-intro timestamp', () => {
+      // Same food (id=1) introduced 200 d ago, re-logged 2 d ago. The food is
+      // not new — stale-diversity must look at the earliest log per food, not
+      // the latest, so the newest *first* intro across all foods is 200 d.
+      const oldIntro = entry({ id: 1, foodId: 1, givenAt: NOW - 200 * DAY });
+      const recentLog = entry({ id: 2, foodId: 1, givenAt: NOW - 2 * DAY });
+      const out = computeReminders(isolated({ entries: [oldIntro, recentLog] }));
+      expect(out.find((r) => r.key === 'stale-diversity')).toBeDefined();
+    });
   });
 
   describe('pending-allergen', () => {

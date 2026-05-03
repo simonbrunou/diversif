@@ -1,7 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users, children as childrenTable } from '$lib/server/db/schema';
-import { desc, eq, sql, and, isNotNull, gte } from 'drizzle-orm';
+import { desc, eq, sql, and, isNotNull } from 'drizzle-orm';
 import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import { CATEGORIES } from '$lib/utils/categories';
 import { ageInMonths } from '$lib/utils/age';
@@ -16,7 +16,6 @@ import { requireMembership, requireUser } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
 export type AllergenSummary = {
   introduced: number;
@@ -31,7 +30,6 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   const childId = Number(params.id);
   const { child } = await parent();
   const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS);
-  const ninetyDaysAgo = new Date(Date.now() - NINETY_DAYS_MS);
 
   const recent = db
     .select({
@@ -97,7 +95,9 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   // Diversity metrics
   const diversity = loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
 
-  // Reminders: load 90 days of entries with category/allergen, then derive
+  // Reminders: full history is required so first-introduction and
+  // exposure-count rules (stale-diversity, repeat-exposure) are correct
+  // for active children with logs older than 90 days.
   const recentForReminders = db
     .select({
       id: foodEntries.id,
@@ -110,7 +110,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(and(eq(foodEntries.childId, childId), gte(foodEntries.givenAt, ninetyDaysAgo)))
+    .where(eq(foodEntries.childId, childId))
     .orderBy(desc(foodEntries.givenAt))
     .all();
 

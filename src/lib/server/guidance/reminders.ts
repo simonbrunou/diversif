@@ -24,7 +24,7 @@ export type ReminderInput = {
   childId: number;
   ageMonths: number;
   childCreatedAt: number;
-  entries: EnrichedEntry[]; // last 90 days, recent first
+  entries: EnrichedEntry[]; // full history, recent first — first-intro and exposure-count rules need it
   introducedAllergens: Set<AllergenId>;
   dismissals: Set<string>; // already-honored TTLs by caller
   now?: number;
