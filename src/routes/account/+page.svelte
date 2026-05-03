@@ -3,6 +3,7 @@
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
   import Card from '$components/ui/Card.svelte';
+  import ThemeToggle from '$components/ThemeToggle.svelte';
   import { toast } from 'svelte-sonner';
   import type { ActionData, PageData } from './$types';
 
@@ -53,6 +54,14 @@
         <Button type="submit">Modifier</Button>
       </div>
     </form>
+  </Card>
+
+  <Card class="p-4">
+    <h2 class="text-base font-semibold">Apparence</h2>
+    <p class="mt-1 text-sm text-muted-foreground">Choisissez le thème de l'interface.</p>
+    <div class="mt-3">
+      <ThemeToggle />
+    </div>
   </Card>
 
   <Card class="p-4">
