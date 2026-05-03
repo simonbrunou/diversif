@@ -18,9 +18,19 @@
     CalendarDays
   } from 'lucide-svelte';
   import dayjs from 'dayjs';
+  import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
+
+  // Day-grouping uses the user's local timezone, which differs from the
+  // server's. Defer to post-mount so SSR and initial hydration render the
+  // same skeleton — otherwise entries near midnight would land in different
+  // buckets on the server vs. the client and trigger a hydration mismatch.
+  let mounted = $state(false);
+  onMount(() => {
+    mounted = true;
+  });
 
   $effect(() => {
     if ($page.url.searchParams.get('logged') === '1') {
@@ -57,7 +67,7 @@
     return Array.from(groups.values());
   }
 
-  const days = $derived(groupByDay(data.recent));
+  const days = $derived(mounted ? groupByDay(data.recent) : []);
 </script>
 
 <div class="container max-w-3xl space-y-6 py-6 md:py-8">
@@ -145,6 +155,25 @@
           <Button href={`/child/${data.child.id}/log`}>Logguer le premier</Button>
         {/snippet}
       </EmptyState>
+    {:else if !mounted}
+      <Card>
+        <ul class="divide-y" aria-busy="true">
+          {#each data.recent as e (e.id)}
+            <li class="flex items-center justify-between gap-3 p-3 md:p-4">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="truncate font-medium">{e.foodName}</span>
+                  <ReactionBadge reaction={e.reaction} />
+                </div>
+                <div class="mt-0.5 text-xs text-muted-foreground">
+                  par {e.loggedByName}
+                  <span class="opacity-70">· {getCategoryLabel(e.category)}</span>
+                </div>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </Card>
     {:else}
       <div class="space-y-4">
         {#each days as day (day.key)}
