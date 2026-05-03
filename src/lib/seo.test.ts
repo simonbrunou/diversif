@@ -101,8 +101,16 @@ describe('JSON-LD generators', () => {
     ]);
     expect(ld['@type']).toBe('BreadcrumbList');
     expect(ld.itemListElement).toHaveLength(2);
-    expect(ld.itemListElement[0]).toMatchObject({ position: 1, name: 'Accueil', item: `${origin}/` });
-    expect(ld.itemListElement[1]).toMatchObject({ position: 2, name: 'Guide', item: `${origin}/guide` });
+    expect(ld.itemListElement[0]).toMatchObject({
+      position: 1,
+      name: 'Accueil',
+      item: `${origin}/`
+    });
+    expect(ld.itemListElement[1]).toMatchObject({
+      position: 2,
+      name: 'Guide',
+      item: `${origin}/guide`
+    });
   });
 
   it('builds an Organization JSON-LD with logo and sameAs', () => {
