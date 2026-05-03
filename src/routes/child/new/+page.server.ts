@@ -23,9 +23,9 @@ export const actions: Actions = {
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
       return fail(400, {
-        name: typeof raw.name === 'string' ? raw.name : '',
-        birthDate: typeof raw.birthDate === 'string' ? raw.birthDate : '',
-        error: parsed.error.issues[0]?.message ?? 'Champs invalides'
+        name: typeof raw.name === 'string' ? raw.name : /* v8 ignore next */ '',
+        birthDate: typeof raw.birthDate === 'string' ? raw.birthDate : /* v8 ignore next */ '',
+        error: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides'
       });
     }
 

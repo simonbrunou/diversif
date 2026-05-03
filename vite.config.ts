@@ -1,6 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [
@@ -37,8 +37,54 @@ export default defineConfig({
       devOptions: { enabled: false }
     })
   ],
+  resolve: {
+    // For component tests we want the browser/client export of Svelte. The
+    // sveltekit plugin sets server conditions for SSR builds; here we only
+    // need to ensure tests resolve the browser entry when happy-dom is in
+    // play. Test-time only — production builds set their own conditions.
+    conditions: process.env.VITEST ? ['browser'] : undefined
+  },
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
-    environment: 'node'
+    environment: 'node',
+    server: {
+      deps: {
+        // Inline svelte component packages so test-time module resolution
+        // sees the same browser entry as the page tests.
+        inline: ['svelte', '@testing-library/svelte']
+      }
+    },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      include: [
+        'src/lib/**/*.ts',
+        'src/hooks.server.ts',
+        'src/routes/**/+page.server.ts',
+        'src/routes/**/+layout.server.ts',
+        'src/routes/**/+server.ts'
+      ],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/**/*.d.ts',
+        'src/test/**',
+        // Pure type aliases — no runtime statements to cover.
+        'src/lib/types.ts',
+        // Bootstrap singleton — exercises real filesystem & better-sqlite3 binding;
+        // covered indirectly via the in-memory test harness that mirrors it.
+        'src/lib/server/db/index.ts',
+        // Schema declarations: the runtime arrow functions here are drizzle's
+        // foreign-key resolvers, evaluated lazily by the ORM. The declarations
+        // themselves are exercised in schema.test.ts and indirectly by every
+        // DB-backed test via INSERT/SELECT.
+        'src/lib/server/db/schema.ts'
+      ],
+      thresholds: {
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100
+      }
+    }
   }
 });

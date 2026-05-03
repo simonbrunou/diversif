@@ -73,7 +73,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
   return {
     entries: rows.map((r) => ({
       ...r,
-      givenAt: r.givenAt instanceof Date ? r.givenAt.getTime() : Number(r.givenAt)
+      givenAt:
+        r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt)
     })),
     filters: { q, category, reaction, repeat }
   };

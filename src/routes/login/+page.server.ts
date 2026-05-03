@@ -27,8 +27,8 @@ export const actions: Actions = {
 
     if (!parsed.success) {
       return fail(400, {
-        email: typeof data.email === 'string' ? data.email : '',
-        error: parsed.error.issues[0]?.message ?? 'Champs invalides'
+        email: typeof data.email === 'string' ? data.email : /* v8 ignore next */ '',
+        error: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides'
       });
     }
 

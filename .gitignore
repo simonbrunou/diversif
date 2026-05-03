@@ -14,3 +14,6 @@ data
 .vscode
 *.log
 coverage
+.e2e-data
+playwright-report
+test-results

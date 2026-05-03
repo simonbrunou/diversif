@@ -43,7 +43,8 @@ export function loadRecentEntries(childId: number, days: number): EnrichedEntry[
       category: r.category as CategoryId,
       allergenType: r.allergenType,
       reaction: r.reaction as ReactionId,
-      givenAt: r.givenAt instanceof Date ? r.givenAt.getTime() : Number(r.givenAt)
+      // Drizzle's timestamp_ms mode always materializes givenAt as a Date.
+      givenAt: r.givenAt.getTime()
     }));
 }
 
@@ -65,7 +66,7 @@ export function loadDiversityMetrics(childId: number, totalCategories: number): 
           INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
           WHERE ${foodEntries.childId} = ${childId}
             AND ${foods.category} != 'autre'`
-    )?.count ?? 0;
+    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
 
   const lastNewFood = db.get<{ given_at: number }>(
     sql`SELECT MIN(given_at) as given_at
@@ -157,7 +158,7 @@ export function loadDismissals(userId: number, childId: number): Set<string> {
   const now = Date.now();
   const out = new Set<string>();
   for (const r of rows) {
-    const at = r.at instanceof Date ? r.at.getTime() : Number(r.at);
+    const at = r.at.getTime();
     const ttl = ttlForReminderKey(r.key);
     if (ttl == null || now - at < ttl) {
       out.add(r.key);

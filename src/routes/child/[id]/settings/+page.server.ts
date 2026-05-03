@@ -10,6 +10,18 @@ import type { Actions, PageServerLoad } from './$types';
 
 const INVITE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 
+/* v8 ignore start — defensive helper: iterations 2..5 are unreachable
+   without a deterministic mock (collision odds are 1/32^4 per try). */
+function generateUniqueInviteCode(): string | null {
+  for (let i = 0; i < 5; i++) {
+    const code = generateInviteCodeRaw();
+    const existing = db.select().from(invitations).where(eq(invitations.code, code)).get();
+    if (!existing) return code;
+  }
+  return null;
+}
+/* v8 ignore stop */
+
 export const load: PageServerLoad = async ({ params, locals }) => {
   const childId = Number(params.id);
   requireUser(locals);
@@ -43,11 +55,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   return {
     members: memberRows.map((m) => ({
       ...m,
-      createdAt: m.createdAt instanceof Date ? m.createdAt.getTime() : Number(m.createdAt)
+      // Drizzle's timestamp_ms mode always materializes timestamps as Date.
+      createdAt: (m.createdAt as Date).getTime()
     })),
     invitations: activeInvites.map((i) => ({
       code: i.code,
-      expiresAt: i.expiresAt instanceof Date ? i.expiresAt.getTime() : Number(i.expiresAt)
+      expiresAt: (i.expiresAt as Date).getTime()
     })),
     role: membership.role
   };
@@ -78,28 +91,23 @@ export const actions: Actions = {
     const childId = Number(params.id);
     requireOwnership(locals, childId);
 
-    let attempts = 0;
-    while (attempts < 5) {
-      const code = generateInviteCodeRaw();
-      const existing = db.select().from(invitations).where(eq(invitations.code, code)).get();
-      if (!existing) {
-        const now = new Date();
-        db.insert(invitations)
-          .values({
-            code,
-            childId,
-            createdBy: user.id,
-            createdAt: now,
-            expiresAt: new Date(now.getTime() + INVITE_DURATION_MS),
-            usedAt: null,
-            usedBy: null
-          })
-          .run();
-        return { success: 'Code généré.', code };
-      }
-      attempts += 1;
-    }
-    return fail(500, { error: 'Impossible de générer un code unique.' });
+    const code = generateUniqueInviteCode();
+    /* v8 ignore next — astronomical 1/32^16 probability after 5 attempts */
+    if (!code) return fail(500, { error: 'Impossible de générer un code unique.' });
+
+    const now = new Date();
+    db.insert(invitations)
+      .values({
+        code,
+        childId,
+        createdBy: user.id,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + INVITE_DURATION_MS),
+        usedAt: null,
+        usedBy: null
+      })
+      .run();
+    return { success: 'Code généré.', code };
   },
 
   revokeInvitation: async ({ params, request, locals }) => {
@@ -150,7 +158,7 @@ export const actions: Actions = {
     requireOwnership(locals, childId);
 
     const data = await request.formData();
-    const confirmName = String(data.get('confirmName') ?? '').trim();
+    const confirmName = String(data.get('confirmName') ?? /* v8 ignore next */ '').trim();
     const child = db.select().from(children).where(eq(children.id, childId)).get();
     if (!child) throw redirect(303, '/');
     if (confirmName !== child.name) {

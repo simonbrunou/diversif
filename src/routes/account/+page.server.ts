@@ -44,7 +44,9 @@ export const actions: Actions = {
     const raw = Object.fromEntries(await request.formData());
     const parsed = passwordSchema.safeParse(raw);
     if (!parsed.success) {
-      return fail(400, { passwordError: parsed.error.issues[0]?.message ?? 'Champs invalides.' });
+      return fail(400, {
+        passwordError: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides.'
+      });
     }
     const fresh = db.select().from(users).where(eq(users.id, user.id)).get();
     if (!fresh) throw redirect(303, '/login');
