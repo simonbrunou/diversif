@@ -1,7 +1,7 @@
 {
-  "name": "Diversif",
+  "name": "Diversif — Diversification alimentaire bébé",
   "short_name": "Diversif",
-  "description": "Suivi de la diversification alimentaire de bébé",
+  "description": "Suivez la diversification alimentaire de votre bébé de 4 mois à 3 ans : étapes, allergènes, textures, à éviter. Guide sourcé HCSP, Santé publique France, ESPGHAN.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,6 +9,8 @@
   "background_color": "#fafaf7",
   "theme_color": "#6b8e6b",
   "lang": "fr",
+  "dir": "ltr",
+  "categories": ["health", "lifestyle", "parenting", "medical"],
   "icons": [
     {
       "src": "/icons/icon-192.png",

@@ -3,12 +3,15 @@
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
   import Card from '$components/ui/Card.svelte';
+  import Seo from '$lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let submitting = $state(false);
 </script>
+
+<Seo title="Créer un compte · Diversif" path="/signup" noindex />
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
   <div class="text-center">

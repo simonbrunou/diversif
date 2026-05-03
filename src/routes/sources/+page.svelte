@@ -1,24 +1,49 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
   import Card from '$components/ui/Card.svelte';
+  import Seo from '$lib/components/Seo.svelte';
+  import JsonLd from '$lib/components/JsonLd.svelte';
+  import { breadcrumbJsonLd, SITE } from '$lib/seo';
+  import { page } from '$app/stores';
   import { SOURCES, ALL_SOURCE_IDS } from '$lib/content/sources';
   import { Library, ExternalLink } from 'lucide-svelte';
+
+  const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
+
+  const sourcesItemList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Sources et références scientifiques sur la diversification alimentaire',
+    itemListElement: ALL_SOURCE_IDS.map((id, i) => {
+      const s = SOURCES[id];
+      return {
+        '@type': 'ListItem',
+        position: i + 1,
+        item: {
+          '@type': 'CreativeWork',
+          name: s.label,
+          author: { '@type': 'Organization', name: s.org },
+          datePublished: String(s.year),
+          url: s.url
+        }
+      };
+    })
+  };
 </script>
 
-<svelte:head>
-  <title>Sources et références · Diversif</title>
-  <meta
-    name="description"
-    content="Les 10 sources qui font autorité derrière Diversif : HCSP, Santé publique France, ANSES, ESPGHAN, OMS, SFP, études LEAP et EAT."
-  />
-  <link rel="canonical" href="/sources" />
-  <meta property="og:title" content="Sources et références · Diversif" />
-  <meta
-    property="og:description"
-    content="Les 10 sources qui font autorité derrière Diversif : HCSP, Santé publique France, ANSES, ESPGHAN, OMS, SFP, études LEAP et EAT."
-  />
-  <meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+  title="Sources et références — diversification alimentaire bébé · Diversif"
+  description="Les 10 sources qui font autorité derrière Diversif : HCSP, Santé publique France, ANSES, ESPGHAN, OMS, Société Française de Pédiatrie, études LEAP et EAT."
+  path="/sources"
+  ogType="article"
+/>
+<JsonLd data={sourcesItemList} />
+<JsonLd
+  data={breadcrumbJsonLd(siteUrl, [
+    { name: 'Accueil', path: '/' },
+    { name: 'Sources', path: '/sources' }
+  ])}
+/>
 
 <div class="container max-w-3xl space-y-8 py-6 md:py-8">
   <header class="space-y-2">
