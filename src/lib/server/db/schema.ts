@@ -94,6 +94,23 @@ export const foodEntries = sqliteTable(
   })
 );
 
+export const tipDismissals = sqliteTable(
+  'tip_dismissals',
+  {
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    childId: integer('child_id')
+      .notNull()
+      .references(() => children.id, { onDelete: 'cascade' }),
+    reminderKey: text('reminder_key').notNull(),
+    dismissedAt: integer('dismissed_at', { mode: 'timestamp_ms' }).notNull()
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.childId, t.reminderKey] })
+  })
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Child = typeof children.$inferSelect;
@@ -101,8 +118,10 @@ export type Membership = typeof memberships.$inferSelect;
 export type Invitation = typeof invitations.$inferSelect;
 export type Food = typeof foods.$inferSelect;
 export type FoodEntry = typeof foodEntries.$inferSelect;
+export type TipDismissal = typeof tipDismissals.$inferSelect;
 
 export type NewUser = typeof users.$inferInsert;
 export type NewChild = typeof children.$inferInsert;
 export type NewFood = typeof foods.$inferInsert;
 export type NewFoodEntry = typeof foodEntries.$inferInsert;
+export type NewTipDismissal = typeof tipDismissals.$inferInsert;

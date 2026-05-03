@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, url }) => {
@@ -9,11 +9,38 @@ export const load: PageServerLoad = async ({ params, url }) => {
   const q = url.searchParams.get('q')?.trim() ?? '';
   const category = url.searchParams.get('category') ?? '';
   const reaction = url.searchParams.get('reaction') ?? '';
+  const repeat = url.searchParams.get('repeat') === '1';
 
   const conditions = [eq(foodEntries.childId, childId)];
   if (category) conditions.push(eq(foods.category, category));
   if (reaction === 'ras' || reaction === 'inconfort' || reaction === 'reaction') {
     conditions.push(eq(foodEntries.reaction, reaction));
+  }
+
+  if (repeat) {
+    // Foods given <= 2 times whose worst reaction is RAS or Inconfort (worth re-exposing).
+    const repeatRows = db.all<{ food_id: number }>(
+      sql`SELECT food_id FROM (
+            SELECT ${foodEntries.foodId} AS food_id,
+                   COUNT(*) AS n,
+                   MAX(CASE ${foodEntries.reaction}
+                         WHEN 'reaction' THEN 2
+                         WHEN 'inconfort' THEN 1
+                         ELSE 0 END) AS worst
+            FROM ${foodEntries}
+            WHERE ${foodEntries.childId} = ${childId}
+            GROUP BY ${foodEntries.foodId}
+          )
+          WHERE n <= 2 AND worst <= 1`
+    );
+    const ids = repeatRows.map((r) => Number(r.food_id));
+    if (ids.length === 0) {
+      return {
+        entries: [],
+        filters: { q, category, reaction, repeat }
+      };
+    }
+    conditions.push(inArray(foodEntries.foodId, ids));
   }
 
   let rows = db
@@ -48,6 +75,6 @@ export const load: PageServerLoad = async ({ params, url }) => {
       ...r,
       givenAt: r.givenAt instanceof Date ? r.givenAt.getTime() : Number(r.givenAt)
     })),
-    filters: { q, category, reaction }
+    filters: { q, category, reaction, repeat }
   };
 };

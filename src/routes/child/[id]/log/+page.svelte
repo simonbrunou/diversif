@@ -5,9 +5,13 @@
   import Textarea from '$components/ui/Textarea.svelte';
   import FoodCombobox from '$lib/components/FoodCombobox.svelte';
   import ReactionPicker from '$lib/components/ReactionPicker.svelte';
+  import TipCard from '$lib/components/TipCard.svelte';
   import { formatDateInputValue } from '$lib/utils/dates';
+  import { ageInMonths } from '$lib/utils/age';
+  import { getTipsFor, pickRotatingTip } from '$lib/content/guidance';
   import { page } from '$app/stores';
   import { enhance } from '$app/forms';
+  import { Info } from 'lucide-svelte';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -23,6 +27,10 @@
     const v = Number($page.url.searchParams.get('foodId'));
     return Number.isInteger(v) && v > 0 ? v : null;
   })();
+
+  // Surface a stage-relevant tip below the form
+  const months = $derived(ageInMonths(data.child.birthDate));
+  const tip = $derived(pickRotatingTip(getTipsFor({ ageMonths: months }), data.child.id + 7));
 </script>
 
 <div class="container max-w-xl space-y-5 py-6">
@@ -61,6 +69,27 @@
     <div class="grid gap-1.5">
       <Label>Réaction</Label>
       <ReactionPicker name="reaction" bind:value={reaction} />
+      <details class="mt-1 rounded-md border bg-muted/40 p-2 text-xs">
+        <summary class="flex cursor-pointer items-center gap-1.5 font-medium text-foreground/80">
+          <Info size={12} aria-hidden="true" />
+          Que choisir ?
+        </summary>
+        <ul class="mt-2 space-y-1.5 pl-4 text-muted-foreground">
+          <li>
+            <strong class="text-reaction-ras">RAS</strong> — rien à signaler. Bébé tolère bien.
+          </li>
+          <li>
+            <strong class="text-reaction-inconfort">Inconfort</strong> — léger inconfort digestif
+            ou cutané (régurgitation, selles molles, rougeurs autour de la bouche). Reproposer
+            à distance, observer.
+          </li>
+          <li>
+            <strong class="text-reaction-reaction">Réaction</strong> — urticaire, œdème,
+            vomissements, gêne respiratoire. <strong>Arrêter immédiatement</strong> et consulter ;
+            en cas de signes respiratoires ou d'œdème de la gorge, appeler le 15.
+          </li>
+        </ul>
+      </details>
     </div>
 
     <div class="grid gap-1.5">
@@ -75,4 +104,13 @@
       <Button href={`/child/${data.child.id}`} variant="outline" size="lg">Annuler</Button>
     </div>
   </form>
+
+  {#if tip}
+    <TipCard
+      tone="info"
+      eyebrow="Astuce"
+      body={tip.body}
+      sources={tip.sources ? [...tip.sources] : undefined}
+    />
+  {/if}
 </div>
