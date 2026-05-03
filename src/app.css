@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 60 20% 98%;
+    --foreground: 150 12% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 12% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 12% 14%;
+
+    --primary: 150 20% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 12% 94%;
+    --secondary-foreground: 150 12% 18%;
+
+    --muted: 150 10% 94%;
+    --muted-foreground: 150 8% 42%;
+
+    --accent: 150 18% 92%;
+    --accent-foreground: 150 18% 22%;
+
+    --destructive: 0 55% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 10% 88%;
+    --input: 150 10% 88%;
+    --ring: 150 20% 40%;
+
+    --radius: 0.6rem;
+
+    --reaction-ras: 142 35% 42%;
+    --reaction-inconfort: 30 75% 50%;
+    --reaction-reaction: 0 55% 55%;
+  }
+
+  .dark {
+    --background: 150 12% 8%;
+    --foreground: 60 20% 96%;
+    --card: 150 12% 11%;
+    --card-foreground: 60 20% 96%;
+    --popover: 150 12% 11%;
+    --popover-foreground: 60 20% 96%;
+    --primary: 150 25% 60%;
+    --primary-foreground: 150 30% 10%;
+    --secondary: 150 10% 18%;
+    --secondary-foreground: 60 20% 96%;
+    --muted: 150 10% 18%;
+    --muted-foreground: 150 8% 65%;
+    --accent: 150 15% 22%;
+    --accent-foreground: 60 20% 96%;
+    --destructive: 0 55% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 150 10% 22%;
+    --input: 150 10% 22%;
+    --ring: 150 25% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+  button,
+  [role='button'] {
+    @apply select-none;
+  }
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}

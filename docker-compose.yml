@@ -1,0 +1,13 @@
+services:
+  diversif:
+    build: .
+    container_name: diversif
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./data:/app/data
+    environment:
+      - ORIGIN=https://diversif.sbrn.eu
+      - DATABASE_PATH=/app/data/diversif.db
+      - NODE_ENV=production
