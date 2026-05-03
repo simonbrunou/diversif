@@ -3,9 +3,11 @@
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
   import Card from '$components/ui/Card.svelte';
+  import { enhance } from '$app/forms';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();
+  let submitting = $state(false);
 </script>
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
@@ -15,7 +17,17 @@
   </div>
 
   <Card class="mt-8 p-6">
-    <form method="POST" class="grid gap-4">
+    <form
+      method="POST"
+      class="grid gap-4"
+      use:enhance={() => {
+        submitting = true;
+        return async ({ update }) => {
+          await update();
+          submitting = false;
+        };
+      }}
+    >
       {#if form?.error}
         <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {form.error}
@@ -39,7 +51,9 @@
         <Input id="password" name="password" type="password" autocomplete="current-password" required />
       </div>
 
-      <Button type="submit" size="lg">Se connecter</Button>
+      <Button type="submit" size="lg" loading={submitting}>
+        {submitting ? 'Connexion…' : 'Se connecter'}
+      </Button>
     </form>
   </Card>
 

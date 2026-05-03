@@ -1,5 +1,7 @@
 <script lang="ts">
   import Input from '$components/ui/Input.svelte';
+  import Select from '$components/ui/Select.svelte';
+  import Badge from '$components/ui/Badge.svelte';
   import Button from '$components/ui/Button.svelte';
   import Card from '$components/ui/Card.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
@@ -7,6 +9,7 @@
   import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
   import { formatRelative } from '$lib/utils/dates';
+  import { Apple } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -22,31 +25,24 @@
 
   <form method="GET" class="grid gap-2 sm:grid-cols-[1fr,auto,auto,auto]">
     <Input type="search" name="q" placeholder="Rechercher…" value={data.filters.q} />
-    <select
-      name="category"
-      class="h-10 rounded-md border bg-background px-3 text-sm"
-      value={data.filters.category}
-    >
+    <Select name="category" value={data.filters.category}>
       <option value="">Toutes catégories</option>
       {#each CATEGORIES as c (c.id)}
         <option value={c.id}>{c.label}</option>
       {/each}
-    </select>
-    <select
-      name="reaction"
-      class="h-10 rounded-md border bg-background px-3 text-sm"
-      value={data.filters.reaction}
-    >
+    </Select>
+    <Select name="reaction" value={data.filters.reaction}>
       <option value="">Toutes réactions</option>
       <option value="ras">RAS</option>
       <option value="inconfort">Inconfort</option>
       <option value="reaction">Réaction</option>
-    </select>
+    </Select>
     <Button type="submit" variant="secondary">Filtrer</Button>
   </form>
 
   {#if data.entries.length === 0}
     <EmptyState
+      icon={Apple}
       title="Aucun aliment"
       description="Affinez vos filtres ou commencez à logguer."
     >
@@ -63,7 +59,9 @@
               <div class="flex items-center gap-2">
                 <span class="truncate font-medium">{e.foodName}</span>
                 {#if e.isCustom}
-                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Hors catalogue</span>
+                  <Badge variant="outline" class="text-[10px] uppercase tracking-wider">
+                    Hors catalogue
+                  </Badge>
                 {/if}
               </div>
               <div class="mt-0.5 text-xs text-muted-foreground">

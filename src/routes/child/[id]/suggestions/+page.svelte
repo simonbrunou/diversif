@@ -1,8 +1,10 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
+  import Badge from '$components/ui/Badge.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
   import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
+  import { Sparkles } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -36,6 +38,7 @@
 
   {#if data.priorityAllergens.length === 0 && data.others.length === 0}
     <EmptyState
+      icon={Sparkles}
       title="Tout le catalogue a été introduit"
       description="Pensez à varier les préparations et à confirmer les introductions."
     />
@@ -51,9 +54,9 @@
               <Card class="p-3 transition-colors hover:bg-accent">
                 <div class="flex items-center justify-between gap-2">
                   <span class="truncate font-medium">{f.name}</span>
-                  <span class="shrink-0 rounded-full bg-reaction-inconfort/15 px-2 py-0.5 text-[11px] font-medium text-reaction-inconfort">
+                  <Badge variant="inconfort" class="shrink-0">
                     {getAllergenLabel(f.allergenType)}
-                  </span>
+                  </Badge>
                 </div>
                 <div class="text-xs text-muted-foreground">{getCategoryLabel(f.category)} · dès {f.suggestedAgeMonths} mois</div>
               </Card>
