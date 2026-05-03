@@ -2,9 +2,10 @@
   import Card from '$components/ui/Card.svelte';
   import Badge from '$components/ui/Badge.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
+  import TipCard from '$lib/components/TipCard.svelte';
   import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
-  import { Sparkles } from 'lucide-svelte';
+  import { Sparkles, Lightbulb } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -35,6 +36,14 @@
     <h1 class="mt-2 text-xl font-semibold">Suggestions</h1>
     <p class="text-sm text-muted-foreground">À introduire bientôt selon l’âge ({data.ageMonths} mois).</p>
   </header>
+
+  <TipCard
+    tone="info"
+    icon={Lightbulb}
+    eyebrow="Bon à savoir"
+    body="Ces suggestions excluent les aliments déjà loggués et privilégient en haut les allergènes pas encore introduits. Reproposez un nouvel aliment jusqu'à 10 fois pour qu'il soit accepté — l'acceptation gustative se construit avec la répétition."
+    sources={['spf-pnns-guide']}
+  />
 
   {#if data.priorityAllergens.length === 0 && data.others.length === 0}
     <EmptyState

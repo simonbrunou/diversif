@@ -18,7 +18,7 @@
     children: Snippet;
   } = $props();
 
-  const items = $derived(getChildNavItems(childId));
+  const items = $derived(getChildNavItems(childId, { includeGuide: true }));
   const pathname = $derived($page.url.pathname);
 </script>
 

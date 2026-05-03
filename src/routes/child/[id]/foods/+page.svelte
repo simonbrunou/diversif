@@ -9,10 +9,21 @@
   import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
   import { formatRelative } from '$lib/utils/dates';
-  import { Apple } from 'lucide-svelte';
+  import { Apple, RotateCcw } from 'lucide-svelte';
+  import { cn } from '$lib/utils/cn';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
+
+  const repeatHref = $derived.by(() => {
+    const params = new URLSearchParams();
+    if (data.filters.q) params.set('q', data.filters.q);
+    if (data.filters.category) params.set('category', data.filters.category);
+    if (data.filters.reaction) params.set('reaction', data.filters.reaction);
+    if (!data.filters.repeat) params.set('repeat', '1');
+    const qs = params.toString();
+    return qs ? `?${qs}` : '?';
+  });
 </script>
 
 <div class="container max-w-2xl space-y-5 py-6">
@@ -37,8 +48,32 @@
       <option value="inconfort">Inconfort</option>
       <option value="reaction">Réaction</option>
     </Select>
+    {#if data.filters.repeat}
+      <input type="hidden" name="repeat" value="1" />
+    {/if}
     <Button type="submit" variant="secondary">Filtrer</Button>
   </form>
+
+  <div class="flex flex-wrap items-center gap-2">
+    <a
+      href={repeatHref}
+      title="Aliments donnés moins de 3 fois et bien tolérés — à reproposer pour consolider l'acceptation gustative"
+      class={cn(
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        data.filters.repeat
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-input bg-background text-muted-foreground hover:bg-accent hover:text-foreground'
+      )}
+    >
+      <RotateCcw size={12} aria-hidden="true" />
+      À reproposer
+    </a>
+    {#if data.filters.repeat}
+      <span class="text-xs text-muted-foreground">
+        L'acceptation gustative se construit avec la répétition (jusqu'à 10 fois).
+      </span>
+    {/if}
+  </div>
 
   {#if data.entries.length === 0}
     <EmptyState

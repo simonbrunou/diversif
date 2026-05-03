@@ -4,8 +4,18 @@
   import EmptyState from '$lib/components/EmptyState.svelte';
   import ReactionBadge from '$lib/components/ReactionBadge.svelte';
   import AllergenProgress from '$lib/components/AllergenProgress.svelte';
-  import { formatAge } from '$lib/utils/age';
+  import ReminderBanner from '$lib/components/ReminderBanner.svelte';
+  import DiversityCard from '$lib/components/DiversityCard.svelte';
+  import TipCard from '$lib/components/TipCard.svelte';
+  import StageBadge from '$lib/components/StageBadge.svelte';
+  import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
+  import { formatAge, ageInMonths } from '$lib/utils/age';
   import { getCategoryLabel } from '$lib/utils/categories';
+  import {
+    getStageForAgeMonths,
+    getTipsFor,
+    pickRotatingTip
+  } from '$lib/content/guidance';
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
   import {
@@ -15,13 +25,26 @@
     Sparkles,
     ChevronRight,
     UtensilsCrossed,
-    CalendarDays
+    CalendarDays,
+    BookOpen,
+    Lightbulb
   } from 'lucide-svelte';
   import dayjs from 'dayjs';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
+
+  const stageMonths = $derived(ageInMonths(data.child.birthDate));
+  const stage = $derived(getStageForAgeMonths(stageMonths));
+  const rotatingTip = $derived(
+    pickRotatingTip(getTipsFor({ ageMonths: stageMonths }), data.child.id)
+  );
+
+  let welcomeOpen = $state(false);
+  $effect(() => {
+    welcomeOpen = data.showWelcomeDialog;
+  });
 
   // Day-grouping uses the user's local timezone, which differs from the
   // server's. Defer to post-mount so SSR and initial hydration render the
@@ -81,6 +104,9 @@
           {data.child.name}
         </h1>
         <p class="mt-1 text-sm text-muted-foreground">{formatAge(data.child.birthDate)}</p>
+        <div class="mt-2">
+          <StageBadge stage={stage} />
+        </div>
       </div>
       <a
         href="/account"
@@ -97,6 +123,14 @@
       </Button>
     </div>
   </section>
+
+  {#if data.reminders.length > 0}
+    <section class="space-y-3" aria-label="Rappels et conseils">
+      {#each data.reminders as r (r.key)}
+        <ReminderBanner reminder={r} formAction="?/dismissReminder" />
+      {/each}
+    </section>
+  {/if}
 
   <section class="grid grid-cols-2 gap-3 md:grid-cols-3">
     <Card class="p-4">
@@ -133,6 +167,18 @@
   <Card class="p-4 md:p-5">
     <AllergenProgress summary={data.stats.allergens} />
   </Card>
+
+  <DiversityCard metrics={data.diversity} />
+
+  {#if rotatingTip}
+    <TipCard
+      tone="info"
+      icon={Lightbulb}
+      eyebrow="Conseil du jour"
+      body={rotatingTip.body}
+      sources={rotatingTip.sources ? [...rotatingTip.sources] : undefined}
+    />
+  {/if}
 
   <section>
     <div class="mb-3 flex items-center justify-between">
@@ -210,7 +256,7 @@
     {/if}
   </section>
 
-  <section class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+  <section class="grid grid-cols-1 gap-3 sm:grid-cols-3">
     <a
       href={`/child/${data.child.id}/allergens`}
       class="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -245,6 +291,23 @@
         <ChevronRight size={18} class="text-muted-foreground" aria-hidden="true" />
       </Card>
     </a>
+    <a
+      href={`/child/${data.child.id}/guide`}
+      class="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <Card class="flex items-center justify-between p-4 transition-colors group-hover:bg-accent">
+        <div class="flex items-center gap-3">
+          <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <BookOpen size={18} aria-hidden="true" />
+          </div>
+          <div>
+            <div class="text-sm font-medium">Guide</div>
+            <div class="text-xs text-muted-foreground">Conseils, allergènes, sources</div>
+          </div>
+        </div>
+        <ChevronRight size={18} class="text-muted-foreground" aria-hidden="true" />
+      </Card>
+    </a>
   </section>
 
   <div class="text-center">
@@ -256,3 +319,9 @@
     </a>
   </div>
 </div>
+
+<WelcomeDialog
+  bind:open={welcomeOpen}
+  childId={data.child.id}
+  formAction="?/dismissReminder"
+/>
