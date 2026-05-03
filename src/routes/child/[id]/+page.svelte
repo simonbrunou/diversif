@@ -205,17 +205,22 @@
       <Card>
         <ul class="divide-y" aria-busy="true">
           {#each data.recent as e (e.id)}
-            <li class="flex items-center justify-between gap-3 p-3 md:p-4">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
-                  <span class="truncate font-medium">{e.foodName}</span>
-                  <ReactionBadge reaction={e.reaction} />
+            <li>
+              <a
+                href={`/child/${data.child.id}/log/${e.id}?from=dashboard`}
+                class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none md:p-4"
+              >
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="truncate font-medium">{e.foodName}</span>
+                    <ReactionBadge reaction={e.reaction} />
+                  </div>
+                  <div class="mt-0.5 text-xs text-muted-foreground">
+                    par {e.loggedByName}
+                    <span class="opacity-70">· {getCategoryLabel(e.category)}</span>
+                  </div>
                 </div>
-                <div class="mt-0.5 text-xs text-muted-foreground">
-                  par {e.loggedByName}
-                  <span class="opacity-70">· {getCategoryLabel(e.category)}</span>
-                </div>
-              </div>
+              </a>
             </li>
           {/each}
         </ul>
@@ -235,17 +240,22 @@
             <Card>
               <ul class="divide-y">
                 {#each day.entries as e (e.id)}
-                  <li class="flex items-center justify-between gap-3 p-3 md:p-4">
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-2">
-                        <span class="truncate font-medium">{e.foodName}</span>
-                        <ReactionBadge reaction={e.reaction} />
+                  <li>
+                    <a
+                      href={`/child/${data.child.id}/log/${e.id}?from=dashboard`}
+                      class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none md:p-4"
+                    >
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
+                          <span class="truncate font-medium">{e.foodName}</span>
+                          <ReactionBadge reaction={e.reaction} />
+                        </div>
+                        <div class="mt-0.5 text-xs text-muted-foreground">
+                          {dayjs(e.givenAt).format('HH:mm')} · par {e.loggedByName}
+                          <span class="opacity-70">· {getCategoryLabel(e.category)}</span>
+                        </div>
                       </div>
-                      <div class="mt-0.5 text-xs text-muted-foreground">
-                        {dayjs(e.givenAt).format('HH:mm')} · par {e.loggedByName}
-                        <span class="opacity-70">· {getCategoryLabel(e.category)}</span>
-                      </div>
-                    </div>
+                    </a>
                   </li>
                 {/each}
               </ul>
