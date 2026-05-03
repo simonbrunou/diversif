@@ -89,28 +89,33 @@
     <Card>
       <ul class="divide-y">
         {#each data.entries as e (e.id)}
-          <li class="flex items-start justify-between gap-3 p-4">
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2">
-                <span class="truncate font-medium">{e.foodName}</span>
-                {#if e.isCustom}
-                  <Badge variant="outline" class="text-[10px] uppercase tracking-wider">
-                    Hors catalogue
-                  </Badge>
+          <li>
+            <a
+              href={`/child/${data.child.id}/log/${e.id}?from=foods`}
+              class="flex items-start justify-between gap-3 p-4 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+            >
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="truncate font-medium">{e.foodName}</span>
+                  {#if e.isCustom}
+                    <Badge variant="outline" class="text-[10px] uppercase tracking-wider">
+                      Hors catalogue
+                    </Badge>
+                  {/if}
+                </div>
+                <div class="mt-0.5 text-xs text-muted-foreground">
+                  {formatRelative(e.givenAt)} · par {e.loggedByName}
+                  · {getCategoryLabel(e.category)}
+                  {#if e.allergenType}
+                    · <span class="text-reaction-inconfort">{getAllergenLabel(e.allergenType)}</span>
+                  {/if}
+                </div>
+                {#if e.notes}
+                  <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{e.notes}</p>
                 {/if}
               </div>
-              <div class="mt-0.5 text-xs text-muted-foreground">
-                {formatRelative(e.givenAt)} · par {e.loggedByName}
-                · {getCategoryLabel(e.category)}
-                {#if e.allergenType}
-                  · <span class="text-reaction-inconfort">{getAllergenLabel(e.allergenType)}</span>
-                {/if}
-              </div>
-              {#if e.notes}
-                <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{e.notes}</p>
-              {/if}
-            </div>
-            <ReactionBadge reaction={e.reaction} />
+              <ReactionBadge reaction={e.reaction} />
+            </a>
           </li>
         {/each}
       </ul>
