@@ -16,7 +16,7 @@
   });
 </script>
 
-<div class="flex min-h-dvh flex-col">
+<div class="safe-top flex min-h-dvh flex-col">
   {@render children()}
 </div>
 <Toaster richColors position="top-center" />
