@@ -37,9 +37,23 @@ export default defineConfig({
       devOptions: { enabled: false }
     })
   ],
+  resolve: {
+    // For component tests we want the browser/client export of Svelte. The
+    // sveltekit plugin sets server conditions for SSR builds; here we only
+    // need to ensure tests resolve the browser entry when happy-dom is in
+    // play. Test-time only — production builds set their own conditions.
+    conditions: process.env.VITEST ? ['browser'] : undefined
+  },
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
     environment: 'node',
+    server: {
+      deps: {
+        // Inline svelte component packages so test-time module resolution
+        // sees the same browser entry as the page tests.
+        inline: ['svelte', '@testing-library/svelte']
+      }
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],

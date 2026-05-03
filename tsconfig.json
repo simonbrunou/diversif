@@ -11,8 +11,5 @@
     "strict": true,
     "moduleResolution": "bundler"
   },
-  "exclude": [
-    "src/**/*.test.ts",
-    "src/test/**"
-  ]
+  "exclude": ["src/**/*.test.ts", "src/test/**"]
 }

@@ -151,7 +151,10 @@ export function safeUser(u: Omit<typeof schema.users.$inferSelect, 'passwordHash
  * always return data, so this helper narrows the union for ergonomic
  * downstream assertions.
  */
-export async function callLoad<T>(loadFn: (e: never) => Promise<T> | T, event: unknown): Promise<NonNullable<Awaited<T>>> {
+export async function callLoad<T>(
+  loadFn: (e: never) => Promise<T> | T,
+  event: unknown
+): Promise<NonNullable<Awaited<T>>> {
   const out = await loadFn(event as never);
   return out as NonNullable<Awaited<T>>;
 }
