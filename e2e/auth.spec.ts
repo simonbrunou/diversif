@@ -19,7 +19,7 @@ test.describe('signup → onboarding', () => {
     await page.goto('/login');
     await page.getByLabel('Email').fill('nobody-12345@example.com');
     await page.getByLabel('Mot de passe').fill('wrong-pass');
-    await page.getByRole('button', { name: /se connecter/i }).click();
+    await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
     await expect(page.locator('body')).toContainText(/incorrect/i);
   });
 });

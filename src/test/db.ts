@@ -22,6 +22,8 @@ export function resetTestDb(): void {
     DELETE FROM food_entries;
     DELETE FROM invitations;
     DELETE FROM memberships;
+    DELETE FROM webauthn_challenges;
+    DELETE FROM passkeys;
     DELETE FROM sessions;
     DELETE FROM children;
     DELETE FROM users;

@@ -9,12 +9,15 @@ import {
   invalidateAllUserSessions,
   verifyPassword
 } from '$lib/server/auth';
+import { deletePasskey, listPasskeys, publicPasskey, renamePasskey } from '$lib/server/passkeys';
 import { requireUser } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-  requireUser(locals);
-  return {};
+  const user = requireUser(locals);
+  return {
+    passkeys: listPasskeys(user.id).map(publicPasskey)
+  };
 };
 
 const profileSchema = z.object({
@@ -62,5 +65,32 @@ export const actions: Actions = {
     invalidateAllUserSessions(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });
     throw redirect(303, '/login');
+  },
+
+  renamePasskey: async ({ request, locals }) => {
+    const user = requireUser(locals);
+    const raw = Object.fromEntries(await request.formData());
+    const id = typeof raw.id === 'string' ? raw.id : /* v8 ignore next */ '';
+    const name = typeof raw.name === 'string' ? raw.name : /* v8 ignore next */ '';
+    if (!id || !name.trim()) {
+      return fail(400, { passkeyError: 'Nom invalide.' });
+    }
+    if (!renamePasskey(user.id, id, name)) {
+      return fail(404, { passkeyError: 'Clé introuvable.' });
+    }
+    return { passkeySuccess: 'Clé renommée.' };
+  },
+
+  deletePasskey: async ({ request, locals }) => {
+    const user = requireUser(locals);
+    const raw = Object.fromEntries(await request.formData());
+    const id = typeof raw.id === 'string' ? raw.id : /* v8 ignore next */ '';
+    if (!id) {
+      return fail(400, { passkeyError: 'Identifiant manquant.' });
+    }
+    if (!deletePasskey(user.id, id)) {
+      return fail(404, { passkeyError: 'Clé introuvable.' });
+    }
+    return { passkeySuccess: 'Clé supprimée.' };
   }
 };
