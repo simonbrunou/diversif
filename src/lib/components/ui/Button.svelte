@@ -3,7 +3,8 @@
   export type Size = 'default' | 'sm' | 'lg' | 'icon';
 
   const VARIANTS: Record<Variant, string> = {
-    default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-card',
+    default:
+      'bg-gradient-to-b from-primary to-primary/85 text-primary-foreground hover:from-primary/95 hover:to-primary/80 shadow-card',
     secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
     outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
     ghost: 'hover:bg-accent hover:text-accent-foreground',
