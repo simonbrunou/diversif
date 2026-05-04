@@ -6,6 +6,11 @@ const INVITE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 // code is impractical even on a shared instance. Bumped from 4 chars (32^4 ≈
 // 1M combos) which felt thin for a public deployment.
 const INVITE_CODE_LENGTH = 6;
+// Legacy 4-character codes generated before the entropy bump may still be
+// alive in the DB for up to the 7-day TTL post-deploy. We keep accepting
+// them in `isValidInviteCodeFormat` so existing onboarding links don't
+// suddenly read as malformed; the *generator* always emits 6 chars.
+const LEGACY_INVITE_CODE_LENGTH = 4;
 
 export function generateInviteCodeRaw(): string {
   const bytes = randomBytes(INVITE_CODE_LENGTH);
@@ -17,5 +22,8 @@ export function generateInviteCodeRaw(): string {
 }
 
 export function isValidInviteCodeFormat(code: string): boolean {
-  return new RegExp(`^BEBE-[A-Z2-9]{${INVITE_CODE_LENGTH}}$`).test(code) && !/[0OI1]/.test(code);
+  const pattern = new RegExp(
+    `^BEBE-([A-Z2-9]{${LEGACY_INVITE_CODE_LENGTH}}|[A-Z2-9]{${INVITE_CODE_LENGTH}})$`
+  );
+  return pattern.test(code) && !/[0OI1]/.test(code);
 }

@@ -44,6 +44,14 @@ function bucketKey(name: string, key: string): string {
  * requests should keep the window saturated and continue to be rejected; if
  * we only counted successful checks, an attacker could keep hammering once
  * the window started rolling forward.
+ *
+ * Memory is bounded per bucket at `limit + 1` timestamps. Once the bucket is
+ * already over the limit, additional incoming hits don't change the
+ * decision (still blocked) or the retryAfter (still based on the oldest
+ * in-window hit), so we drop the timestamp instead of pushing. Without this
+ * cap, a single attacker hitting at 1k+ req/s for windowMs seconds would
+ * grow the array to hundreds of thousands of entries and turn the trim
+ * loop's repeated `shift()` calls into a quadratic CPU sink.
  */
 export function checkRateLimit(opts: RateLimitOptions, key: string): RateLimitResult {
   const now = Date.now();
@@ -51,12 +59,17 @@ export function checkRateLimit(opts: RateLimitOptions, key: string): RateLimitRe
   const k = bucketKey(opts.name, key);
 
   const bucket = store.get(k) ?? { hits: [] };
-  // Drop expired hits first.
+  // Drop expired hits first so the cap below reflects the live window.
   while (bucket.hits.length > 0 && bucket.hits[0] < windowStart) {
     bucket.hits.shift();
   }
 
-  bucket.hits.push(now);
+  // Cap memory: once we already have `limit + 1` in-window hits, the
+  // decision is locked at "blocked" until enough of them age out. Recording
+  // more is pointless and unbounded.
+  if (bucket.hits.length <= opts.limit) {
+    bucket.hits.push(now);
+  }
   store.set(k, bucket);
 
   const overLimit = bucket.hits.length > opts.limit;
