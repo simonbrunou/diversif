@@ -171,7 +171,12 @@ export async function buildRegistrationOptions(opts: {
       transports: parseTransports(c.transports)
     })),
     authenticatorSelection: {
-      residentKey: 'preferred',
+      // The login flow is username-less and does not send `allowCredentials`,
+      // so only discoverable (resident) credentials can be used to sign in.
+      // Force the authenticator to create a discoverable credential, otherwise
+      // some keys downgrade and the resulting credential is unusable.
+      residentKey: 'required',
+      requireResidentKey: true,
       userVerification: 'preferred'
     }
   });
