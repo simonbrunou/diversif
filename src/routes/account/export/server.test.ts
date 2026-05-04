@@ -71,4 +71,16 @@ describe('account export GET', () => {
     const response = (await GET(event as unknown as Parameters<typeof GET>[0])) as Response;
     expect(response.status).toBe(200);
   });
+
+  it('rejects a back-to-back second call (no pre-seeding required)', async () => {
+    const u = await seedUser();
+    const event1 = makeRouteEvent({ user: safeUser(u) });
+    const r1 = (await GET(event1 as unknown as Parameters<typeof GET>[0])) as Response;
+    expect(r1.status).toBe(200);
+
+    const event2 = makeRouteEvent({ user: safeUser(u) });
+    const r2 = await captureFlow(() => GET(event2 as unknown as Parameters<typeof GET>[0]));
+    expect(r2.kind).toBe('error');
+    if (r2.kind === 'error') expect(r2.status).toBe(429);
+  });
 });
