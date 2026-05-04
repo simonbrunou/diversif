@@ -15,6 +15,13 @@
       "when": 1777802296039,
       "tag": "0001_acoustic_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1777890997784,
+      "tag": "0002_parched_the_stranger",
+      "breakpoints": true
     }
   ]
 }

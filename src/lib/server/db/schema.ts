@@ -111,6 +111,41 @@ export const tipDismissals = sqliteTable(
   })
 );
 
+export const passkeys = sqliteTable(
+  'passkeys',
+  {
+    // base64url-encoded credential ID returned by the authenticator.
+    id: text('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    // base64url-encoded COSE public key.
+    publicKey: text('public_key').notNull(),
+    // Signature counter reported by the authenticator.
+    counter: integer('counter').notNull().default(0),
+    // JSON-encoded array of AuthenticatorTransportFuture values.
+    transports: text('transports').notNull().default('[]'),
+    deviceType: text('device_type', { enum: ['singleDevice', 'multiDevice'] }).notNull(),
+    backedUp: integer('backed_up', { mode: 'boolean' }).notNull(),
+    name: text('name').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    lastUsedAt: integer('last_used_at', { mode: 'timestamp_ms' })
+  },
+  (t) => ({
+    userIdx: index('passkeys_user_idx').on(t.userId)
+  })
+);
+
+export const webauthnChallenges = sqliteTable('webauthn_challenges', {
+  // Random opaque token stored in a short-lived cookie.
+  token: text('token').primaryKey(),
+  challenge: text('challenge').notNull(),
+  purpose: text('purpose', { enum: ['registration', 'authentication'] }).notNull(),
+  // null for usernameless authentication ceremonies.
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
+});
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Child = typeof children.$inferSelect;
@@ -119,9 +154,13 @@ export type Invitation = typeof invitations.$inferSelect;
 export type Food = typeof foods.$inferSelect;
 export type FoodEntry = typeof foodEntries.$inferSelect;
 export type TipDismissal = typeof tipDismissals.$inferSelect;
+export type Passkey = typeof passkeys.$inferSelect;
+export type WebAuthnChallenge = typeof webauthnChallenges.$inferSelect;
 
 export type NewUser = typeof users.$inferInsert;
 export type NewChild = typeof children.$inferInsert;
 export type NewFood = typeof foods.$inferInsert;
 export type NewFoodEntry = typeof foodEntries.$inferInsert;
 export type NewTipDismissal = typeof tipDismissals.$inferInsert;
+export type NewPasskey = typeof passkeys.$inferInsert;
+export type NewWebAuthnChallenge = typeof webauthnChallenges.$inferInsert;

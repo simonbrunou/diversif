@@ -5,7 +5,7 @@ import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { hashPassword, SESSION_COOKIE, validateSession, createSession } from '$lib/server/auth';
-import { users } from '$lib/server/db/schema';
+import { passkeys, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
@@ -37,12 +37,126 @@ describe('account load', () => {
     if (r.kind === 'redirect') expect(r.location).toBe('/login');
   });
 
-  it('returns empty payload for authenticated users', async () => {
+  it('returns the passkey list for authenticated users', async () => {
     const u = await seed();
+    testDb
+      .insert(passkeys)
+      .values({
+        id: 'p1',
+        userId: u.id,
+        publicKey: 'a',
+        counter: 0,
+        transports: '[]',
+        deviceType: 'singleDevice',
+        backedUp: false,
+        name: 'Phone',
+        createdAt: new Date(),
+        lastUsedAt: null
+      })
+      .run();
     const out = await load(
       makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0]
     );
-    expect(out).toEqual({});
+    expect(out.passkeys.length).toBe(1);
+    expect(out.passkeys[0].id).toBe('p1');
+  });
+});
+
+describe('account renamePasskey / deletePasskey', () => {
+  function seedKey(userId: number, id = 'p1', name = 'Old') {
+    testDb
+      .insert(passkeys)
+      .values({
+        id,
+        userId,
+        publicKey: 'a',
+        counter: 0,
+        transports: '[]',
+        deviceType: 'singleDevice',
+        backedUp: false,
+        name,
+        createdAt: new Date(),
+        lastUsedAt: null
+      })
+      .run();
+  }
+
+  it('renamePasskey fails with empty name', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { id: 'p1', name: '   ' }
+    });
+    const r = (await actions.renamePasskey!(
+      event as unknown as Parameters<NonNullable<typeof actions.renamePasskey>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(400);
+  });
+
+  it('renamePasskey fails 404 for unknown id', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { id: 'missing', name: 'New' }
+    });
+    const r = (await actions.renamePasskey!(
+      event as unknown as Parameters<NonNullable<typeof actions.renamePasskey>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(404);
+  });
+
+  it('renamePasskey updates the name on success', async () => {
+    const u = await seed();
+    seedKey(u.id);
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { id: 'p1', name: 'New Name' }
+    });
+    const r = (await actions.renamePasskey!(
+      event as unknown as Parameters<NonNullable<typeof actions.renamePasskey>>[0]
+    )) as { passkeySuccess: string };
+    expect(r.passkeySuccess).toBeTruthy();
+    const fresh = testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).get();
+    expect(fresh?.name).toBe('New Name');
+  });
+
+  it('deletePasskey fails with no id', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { id: '' }
+    });
+    const r = (await actions.deletePasskey!(
+      event as unknown as Parameters<NonNullable<typeof actions.deletePasskey>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(400);
+  });
+
+  it('deletePasskey fails 404 for unknown id', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { id: 'missing' }
+    });
+    const r = (await actions.deletePasskey!(
+      event as unknown as Parameters<NonNullable<typeof actions.deletePasskey>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(404);
+  });
+
+  it('deletePasskey removes the row on success', async () => {
+    const u = await seed();
+    seedKey(u.id);
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { id: 'p1' }
+    });
+    const r = (await actions.deletePasskey!(
+      event as unknown as Parameters<NonNullable<typeof actions.deletePasskey>>[0]
+    )) as { passkeySuccess: string };
+    expect(r.passkeySuccess).toBeTruthy();
+    const fresh = testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).get();
+    expect(fresh).toBeUndefined();
   });
 });
 

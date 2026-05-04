@@ -8,7 +8,9 @@ import {
   invitations,
   foods,
   foodEntries,
-  tipDismissals
+  tipDismissals,
+  passkeys,
+  webauthnChallenges
 } from './schema';
 
 describe('schema exports', () => {
@@ -21,7 +23,9 @@ describe('schema exports', () => {
       invitations,
       foods,
       foodEntries,
-      tipDismissals
+      tipDismissals,
+      passkeys,
+      webauthnChallenges
     ]) {
       expect(table).toBeDefined();
       expect(typeof table).toBe('object');
@@ -46,5 +50,11 @@ describe('schema exports', () => {
     expect(cfg.primaryKeys.length).toBe(1);
     const cols = cfg.primaryKeys[0].columns.map((c) => c.name).sort();
     expect(cols).toEqual(['child_id', 'reminder_key', 'user_id']);
+  });
+
+  it('passkeys exposes a user_id index', () => {
+    const cfg = getTableConfig(passkeys);
+    const idx = cfg.indexes.find((i) => i.config.name === 'passkeys_user_idx');
+    expect(idx).toBeDefined();
   });
 });

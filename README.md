@@ -6,7 +6,7 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 
 - SvelteKit (Svelte 5 + TypeScript)
 - SQLite via `better-sqlite3` + Drizzle ORM
-- Tailwind CSS, in-house auth (Argon2id sessions)
+- Tailwind CSS, in-house auth (Argon2id sessions, WebAuthn passkeys)
 - PWA via `@vite-pwa/sveltekit`
 - Node adapter, deployed in a single Alpine Docker image
 
