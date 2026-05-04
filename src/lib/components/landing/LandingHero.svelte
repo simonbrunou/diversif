@@ -3,19 +3,19 @@
 </script>
 
 <section
-  class="relative overflow-hidden bg-gradient-to-br from-accent-peach/35 via-accent-butter/25 to-accent-mint/25"
+  class="relative overflow-hidden bg-gradient-to-br from-accent-peach/35 via-accent-butter/25 to-accent-mint/25 dark:from-accent-peach/10 dark:via-accent-butter/5 dark:to-accent-mint/10"
 >
   <div
     aria-hidden="true"
-    class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-accent-butter/40 blur-3xl"
+    class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-accent-butter/40 blur-3xl dark:bg-accent-butter/15"
   ></div>
   <div
     aria-hidden="true"
-    class="pointer-events-none absolute -right-24 top-12 h-80 w-80 rounded-full bg-accent-peach/40 blur-3xl"
+    class="pointer-events-none absolute -right-24 top-12 h-80 w-80 rounded-full bg-accent-peach/40 blur-3xl dark:bg-accent-peach/15"
   ></div>
   <div
     aria-hidden="true"
-    class="pointer-events-none absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-accent-mint/40 blur-3xl"
+    class="pointer-events-none absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-accent-mint/40 blur-3xl dark:bg-accent-mint/15"
   ></div>
 
   <div class="container relative max-w-4xl py-12 text-center md:py-20">

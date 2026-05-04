@@ -18,10 +18,10 @@
 </script>
 
 <div
-  class="flex flex-col items-center justify-center rounded-xl border border-dashed bg-gradient-to-b from-accent-mint/15 to-muted/40 px-6 py-12 text-center"
+  class="flex flex-col items-center justify-center rounded-xl border border-dashed bg-gradient-to-b from-accent-mint/15 to-muted/40 px-6 py-12 text-center dark:from-accent-mint/5"
 >
   <div
-    class="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-accent-mint/40 text-primary shadow-card"
+    class="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-accent-mint/40 text-primary shadow-card dark:bg-accent-mint/15"
   >
     <Icon size={26} aria-hidden="true" />
   </div>

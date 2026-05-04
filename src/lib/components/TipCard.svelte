@@ -3,9 +3,9 @@
 
   const TONES: Record<TipTone, { wrapper: string; eyebrow: string; iconBg: string }> = {
     info: {
-      wrapper: 'border-accent-sky/40 bg-accent-sky/15',
+      wrapper: 'border-accent-sky/40 bg-accent-sky/15 dark:bg-accent-sky/10',
       eyebrow: 'text-info',
-      iconBg: 'bg-accent-sky/40 text-info'
+      iconBg: 'bg-accent-sky/40 dark:bg-accent-sky/15 text-info'
     },
     warn: {
       wrapper: 'border-reaction-inconfort/30 bg-reaction-inconfort/10',
@@ -18,9 +18,10 @@
       iconBg: 'bg-primary text-primary-foreground'
     },
     celebrate: {
-      wrapper: 'border-accent-butter/50 bg-accent-butter/25',
+      wrapper: 'border-accent-butter/50 bg-accent-butter/25 dark:bg-accent-butter/10',
       eyebrow: 'text-[hsl(35_70%_30%)] dark:text-accent-butter',
-      iconBg: 'bg-accent-butter/60 text-[hsl(35_70%_28%)] dark:text-accent-butter'
+      iconBg:
+        'bg-accent-butter/60 dark:bg-accent-butter/20 text-[hsl(35_70%_28%)] dark:text-accent-butter'
     }
   };
 </script>
