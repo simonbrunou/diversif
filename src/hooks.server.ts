@@ -7,6 +7,13 @@ import {
   validateSession
 } from '$lib/server/auth';
 
+// `script-src` and `style-src` are emitted as a `<meta>` tag by SvelteKit
+// (see svelte.config.js `kit.csp`), which lets it hash its own inline
+// hydration scripts. The other directives are header-only and complement that
+// meta tag. `X-Frame-Options: DENY` (below) covers `frame-ancestors`.
+const PERMISSIONS_POLICY =
+  'geolocation=(), camera=(), microphone=(), usb=(), payment=(), interest-cohort=()';
+
 export const handle: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get(SESSION_COOKIE) ?? '';
   const validated = token ? validateSession(token) : null;
@@ -36,5 +43,16 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.memberships = [];
   }
 
-  return resolve(event);
+  const response = await resolve(event);
+
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('Permissions-Policy', PERMISSIONS_POLICY);
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+
+  return response;
 };

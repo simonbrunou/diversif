@@ -41,3 +41,8 @@ export function getDb(): DB {
 
 export const db = getDb();
 export { schema };
+
+if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+  // Imported lazily to avoid a circular import at module init.
+  void import('../cleanup').then(({ startCleanupTimer }) => startCleanupTimer());
+}

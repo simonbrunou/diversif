@@ -80,6 +80,28 @@
         />
       </div>
 
+      <div class="grid gap-2 rounded-md border bg-surface/50 p-3 text-sm">
+        <label class="flex items-start gap-2">
+          <input type="checkbox" name="confirmAge15" required class="mt-0.5" />
+          <span>Je confirme avoir au moins 15 ans.</span>
+        </label>
+        <label class="flex items-start gap-2">
+          <input type="checkbox" name="acceptTos" required class="mt-0.5" />
+          <span>
+            J'accepte les
+            <a href="/cgu" target="_blank" rel="noopener" class="underline">conditions générales d'utilisation</a>.
+          </span>
+        </label>
+        <label class="flex items-start gap-2">
+          <input type="checkbox" name="acceptPrivacy" required class="mt-0.5" />
+          <span>
+            J'ai lu la
+            <a href="/politique-confidentialite" target="_blank" rel="noopener" class="underline">politique de confidentialité</a>
+            et je consens au traitement des données concernant mon enfant (catégorie « santé », article 9 RGPD).
+          </span>
+        </label>
+      </div>
+
       <Button type="submit" size="lg" loading={submitting}>
         {submitting ? 'Création…' : 'Créer mon compte'}
       </Button>

@@ -103,6 +103,34 @@ describe('child/[id] +page.server load', () => {
     expect(out.showWelcomeDialog).toBe(false);
   });
 
+  it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
+    const { u, c, m, food } = await setup();
+    testDb
+      .insert(foodEntries)
+      .values({
+        childId: c.id,
+        foodId: food.id,
+        givenAt: new Date(),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: null,
+        createdAt: new Date()
+      })
+      .run();
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        parent: async () => ({
+          child: { id: c.id, name: c.name, birthDate: c.birthDate }
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.recent).toHaveLength(1);
+    expect(out.recent[0].loggedByName).toBe('Compte supprimé');
+  });
+
   it('marks reactions in the allergen summary', async () => {
     const u = await seedUser();
     const c = seedChild({ createdBy: u.id, birthDate: '2024-01-01' });

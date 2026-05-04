@@ -4,6 +4,7 @@
   import Label from '$components/ui/Label.svelte';
   import Card from '$components/ui/Card.svelte';
   import ThemeToggle from '$components/ThemeToggle.svelte';
+  import LegalLinks from '$lib/components/LegalLinks.svelte';
   import { invalidateAll } from '$app/navigation';
   import { browser } from '$app/environment';
   import { toast } from 'svelte-sonner';
@@ -14,6 +15,7 @@
   let passkeyName = $state('');
   let registering = $state(false);
   let supported = $state(false);
+  let confirmDeleteEmail = $state('');
 
   $effect(() => {
     if (!browser) return;
@@ -30,6 +32,7 @@
     if (form?.passwordError) toast.error(form.passwordError);
     if (form?.passkeySuccess) toast.success(form.passkeySuccess);
     if (form?.passkeyError) toast.error(form.passkeyError);
+    if (form?.deleteError) toast.error(form.deleteError);
   });
 
   function formatDate(ts: number): string {
@@ -201,5 +204,55 @@
     <form method="POST" action="/logout" class="mt-3">
       <Button type="submit" variant="outline">Se déconnecter</Button>
     </form>
+  </Card>
+
+  <Card class="p-4">
+    <h2 class="text-base font-semibold">Mes données (RGPD)</h2>
+    <p class="mt-1 text-sm text-muted-foreground">
+      Téléchargez l'ensemble de vos données au format JSON (profil, enfants accessibles, journal
+      d'aliments, métadonnées des clés d'accès). Limité à un export par minute.
+    </p>
+    <div class="mt-3">
+      <Button href="/account/export" variant="outline">Exporter mes données</Button>
+    </div>
+  </Card>
+
+  <Card class="p-4 border-destructive/30">
+    <h2 class="text-base font-semibold text-destructive">Supprimer mon compte</h2>
+    <p class="mt-1 text-sm text-muted-foreground">
+      Suppression immédiate et irréversible. Les enfants dont vous êtes seul·e responsable et
+      tout leur journal seront supprimés. Pour les enfants partagés, votre accès est retiré et,
+      si vous étiez seul·e propriétaire, le co-parent inscrit le plus tôt devient propriétaire.
+    </p>
+    <form method="POST" action="?/deleteAccount" class="mt-3 grid gap-3">
+      <div class="grid gap-1.5">
+        <Label for="confirmEmail">Saisissez votre email pour confirmer</Label>
+        <Input
+          id="confirmEmail"
+          name="confirmEmail"
+          type="email"
+          autocomplete="off"
+          bind:value={confirmDeleteEmail}
+          placeholder={data.user?.email ?? ''}
+          required
+        />
+      </div>
+      <div>
+        <Button
+          type="submit"
+          variant="destructive"
+          disabled={confirmDeleteEmail.trim().toLowerCase() !== (data.user?.email ?? '')}
+        >
+          Supprimer définitivement mon compte
+        </Button>
+      </div>
+    </form>
+  </Card>
+
+  <Card class="p-4">
+    <h2 class="text-base font-semibold">Liens légaux</h2>
+    <div class="mt-3">
+      <LegalLinks />
+    </div>
   </Card>
 </div>

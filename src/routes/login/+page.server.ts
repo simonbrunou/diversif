@@ -1,5 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
+import { eq } from 'drizzle-orm';
 import {
   SESSION_COOKIE,
   SESSION_DURATION_MS,
@@ -7,6 +8,8 @@ import {
   findUserByEmail,
   verifyPassword
 } from '$lib/server/auth';
+import { db } from '$lib/server/db';
+import { users } from '$lib/server/db/schema';
 import { requireGuest } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -42,6 +45,8 @@ export const actions: Actions = {
         error: 'Email ou mot de passe incorrect.'
       });
     }
+
+    db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id)).run();
 
     const session = createSession(user.id);
     cookies.set(SESSION_COOKIE, session.id, {

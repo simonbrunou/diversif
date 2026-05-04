@@ -21,7 +21,16 @@ const schema = z.object({
   inviteCode: z
     .string()
     .optional()
-    .transform((s) => (s ? s.toUpperCase().trim() : ''))
+    .transform((s) => (s ? s.toUpperCase().trim() : '')),
+  acceptTos: z.literal('on', {
+    errorMap: () => ({ message: 'Vous devez accepter les conditions générales d’utilisation.' })
+  }),
+  acceptPrivacy: z.literal('on', {
+    errorMap: () => ({ message: 'Vous devez accepter la politique de confidentialité.' })
+  }),
+  confirmAge15: z.literal('on', {
+    errorMap: () => ({ message: 'Vous devez confirmer avoir au moins 15 ans.' })
+  })
 });
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -98,7 +107,16 @@ export const actions: Actions = {
 
     const inserted = db
       .insert(users)
-      .values({ email: lowerEmail, passwordHash, displayName, createdAt: now })
+      .values({
+        email: lowerEmail,
+        passwordHash,
+        displayName,
+        createdAt: now,
+        tosAcceptedAt: now,
+        privacyAcceptedAt: now,
+        ageConfirmedAt: now,
+        lastLoginAt: now
+      })
       .returning({ id: users.id })
       .get();
     const userId = inserted.id;

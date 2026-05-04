@@ -58,7 +58,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .innerJoin(users, eq(users.id, foodEntries.loggedBy))
+    .leftJoin(users, eq(users.id, foodEntries.loggedBy))
     .where(and(...conditions))
     .orderBy(desc(foodEntries.givenAt))
     .limit(200)
@@ -73,6 +73,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
   return {
     entries: rows.map((r) => ({
       ...r,
+      loggedByName: r.loggedByName ?? 'Compte supprimé',
       givenAt:
         r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt)
     })),

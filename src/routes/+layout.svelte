@@ -44,6 +44,8 @@
   <meta name="format-detection" content="telephone=no" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="generator" content="SvelteKit" />
+  <link rel="privacy-policy" href="/politique-confidentialite" />
+  <link rel="terms-of-service" href="/cgu" />
 </svelte:head>
 
 <JsonLd data={organizationJsonLd(siteUrl)} />

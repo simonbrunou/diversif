@@ -42,6 +42,9 @@ describe('signup default action', () => {
       password: 'a-very-long-password-12+',
       displayName: 'New User',
       inviteCode: '',
+      acceptTos: 'on',
+      acceptPrivacy: 'on',
+      confirmAge15: 'on',
       ...over
     };
   }
@@ -71,6 +74,17 @@ describe('signup default action', () => {
     )) as { status: number; data: { error: string } };
     expect(r.status).toBe(400);
   });
+
+  for (const missing of ['acceptTos', 'acceptPrivacy', 'confirmAge15'] as const) {
+    it(`fails when ${missing} is not checked`, async () => {
+      const event = makeRouteEvent({ formData: form({ [missing]: undefined }) });
+      const r = (await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )) as { status: number; data: { error: string } };
+      expect(r.status).toBe(400);
+      expect(r.data.error).toMatch(/accepter|confirmer|15 ans/i);
+    });
+  }
 
   it('fails when email already exists', async () => {
     await seedUser({ email: 'taken@example.com' });

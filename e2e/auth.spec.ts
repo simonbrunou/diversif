@@ -11,6 +11,9 @@ test.describe('signup → onboarding', () => {
     await page.getByLabel('Votre prénom').fill('Test Parent');
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Mot de passe').fill('hunter2-very-long');
+    await page.getByLabel(/au moins 15 ans/i).check();
+    await page.getByLabel(/conditions générales/i).check();
+    await page.getByLabel(/politique de confidentialité/i).check();
     await page.getByRole('button', { name: /créer mon compte/i }).click();
     await expect(page).toHaveURL(/\/child\/new/);
   });

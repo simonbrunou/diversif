@@ -272,3 +272,46 @@ describe('account logoutEverywhere', () => {
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
   });
 });
+
+describe('account deleteAccount', () => {
+  it('fails when the typed email does not match', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { confirmEmail: 'wrong@example.com' }
+    });
+    const r = (await actions.deleteAccount!(
+      event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+    )) as { status: number; data: { deleteError: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.deleteError).toMatch(/email exact/i);
+    expect(testDb.select().from(users).where(eq(users.id, u.id)).get()).toBeDefined();
+  });
+
+  it('fails when the confirmEmail field is missing entirely', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({ user: safeUser(u), formData: {} });
+    const r = (await actions.deleteAccount!(
+      event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+    )) as { status: number; data: { deleteError: string } };
+    expect(r.status).toBe(400);
+    expect(testDb.select().from(users).where(eq(users.id, u.id)).get()).toBeDefined();
+  });
+
+  it('deletes the user, clears the cookie and redirects to /account/deleted', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { confirmEmail: 'p@example.com' }
+    });
+    const r = await captureFlow(() =>
+      actions.deleteAccount!(
+        event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/account/deleted');
+    expect(testDb.select().from(users).where(eq(users.id, u.id)).get()).toBeUndefined();
+    expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
+  });
+});

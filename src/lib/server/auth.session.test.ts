@@ -93,8 +93,13 @@ describe('createSession / validateSession', () => {
     expect(result!.renewed).toBe(false);
   });
 
-  it('validateSession renews when within the renewal threshold', async () => {
+  it('validateSession renews when within the renewal threshold and bumps last_login_at', async () => {
     const user = await seedUser();
+    testDb
+      .update(users)
+      .set({ lastLoginAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) })
+      .where(eq(users.id, user.id))
+      .run();
     const session = createSession(user.id);
     // Move expiry to 1 hour from now (well inside renewal window).
     const soon = new Date(Date.now() + 60 * 60 * 1000);
@@ -103,6 +108,8 @@ describe('createSession / validateSession', () => {
     const result = validateSession(session.id);
     expect(result?.renewed).toBe(true);
     expect(result!.session.expiresAt.getTime()).toBeGreaterThan(soon.getTime());
+    const fresh = testDb.select().from(users).where(eq(users.id, user.id)).get();
+    expect(fresh!.lastLoginAt!.getTime()).toBeGreaterThan(Date.now() - 5_000);
   });
 
   it('validateSession returns null when expired', async () => {

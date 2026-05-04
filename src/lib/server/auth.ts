@@ -69,6 +69,12 @@ export function validateSession(token: string): ValidatedSession | null {
   if (session.expiresAt.getTime() - now < SESSION_RENEW_THRESHOLD_MS) {
     const newExpiry = new Date(now + SESSION_DURATION_MS);
     db.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token)).run();
+    // Bump `last_login_at` so retention queries see recent activity even when
+    // the user never explicitly re-logs in (sessions auto-renew up to 30 days).
+    db.update(users)
+      .set({ lastLoginAt: new Date(now) })
+      .where(eq(users.id, row.user.id))
+      .run();
     session = { ...session, expiresAt: newExpiry };
     renewed = true;
   }
@@ -77,7 +83,12 @@ export function validateSession(token: string): ValidatedSession | null {
     id: row.user.id,
     email: row.user.email,
     displayName: row.user.displayName,
-    createdAt: row.user.createdAt
+    createdAt: row.user.createdAt,
+    tosAcceptedAt: row.user.tosAcceptedAt,
+    privacyAcceptedAt: row.user.privacyAcceptedAt,
+    ageConfirmedAt: row.user.ageConfirmedAt,
+    lastLoginAt: row.user.lastLoginAt,
+    lastExportAt: row.user.lastExportAt
   };
 
   return { user: safeUser, session, renewed };
