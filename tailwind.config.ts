@@ -35,7 +35,12 @@ const config: Config = {
         },
         accent: {
           DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
-          foreground: 'hsl(var(--accent-foreground) / <alpha-value>)'
+          foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
+          peach: 'hsl(var(--accent-peach) / <alpha-value>)',
+          butter: 'hsl(var(--accent-butter) / <alpha-value>)',
+          sky: 'hsl(var(--accent-sky) / <alpha-value>)',
+          mint: 'hsl(var(--accent-mint) / <alpha-value>)',
+          lilac: 'hsl(var(--accent-lilac) / <alpha-value>)'
         },
         popover: {
           DEFAULT: 'hsl(var(--popover) / <alpha-value>)',
@@ -62,9 +67,10 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)'
       },
       boxShadow: {
-        card: '0 1px 2px 0 hsl(150 14% 12% / 0.04), 0 1px 1px 0 hsl(150 14% 12% / 0.03)',
+        card: '0 1px 2px 0 hsl(28 30% 20% / 0.05), 0 1px 1px 0 hsl(28 30% 20% / 0.03)',
         'card-hover':
-          '0 4px 12px -2px hsl(150 14% 12% / 0.08), 0 2px 4px -1px hsl(150 14% 12% / 0.04)'
+          '0 6px 14px -2px hsl(28 30% 20% / 0.10), 0 2px 4px -1px hsl(28 30% 20% / 0.05)',
+        'card-soft': '0 8px 24px -8px hsl(28 50% 30% / 0.18)'
       },
       fontFamily: {
         sans: [

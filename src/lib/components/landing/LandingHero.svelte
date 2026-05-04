@@ -2,8 +2,23 @@
   import Button from '$components/ui/Button.svelte';
 </script>
 
-<section class="border-b bg-gradient-to-b from-primary/5 via-surface to-background">
-  <div class="container max-w-4xl py-12 text-center md:py-20">
+<section
+  class="relative overflow-hidden bg-gradient-to-br from-accent-peach/35 via-accent-butter/25 to-accent-mint/25"
+>
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-accent-butter/40 blur-3xl"
+  ></div>
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute -right-24 top-12 h-80 w-80 rounded-full bg-accent-peach/40 blur-3xl"
+  ></div>
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-accent-mint/40 blur-3xl"
+  ></div>
+
+  <div class="container relative max-w-4xl py-12 text-center md:py-20">
     <p class="text-xs font-semibold uppercase tracking-wider text-primary">
       Diversification alimentaire de 4 mois à 3 ans
     </p>
@@ -29,4 +44,16 @@
       Self-hosted · Données chez vous · Sans publicité · Open source
     </p>
   </div>
+
+  <svg
+    aria-hidden="true"
+    class="block w-full text-background"
+    viewBox="0 0 1440 80"
+    preserveAspectRatio="none"
+  >
+    <path
+      fill="currentColor"
+      d="M0,48 C240,80 480,0 720,32 C960,64 1200,16 1440,48 L1440,80 L0,80 Z"
+    />
+  </svg>
 </section>

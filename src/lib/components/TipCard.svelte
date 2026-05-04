@@ -1,11 +1,11 @@
 <script lang="ts" module>
-  export type TipTone = 'info' | 'warn' | 'important';
+  export type TipTone = 'info' | 'warn' | 'important' | 'celebrate';
 
   const TONES: Record<TipTone, { wrapper: string; eyebrow: string; iconBg: string }> = {
     info: {
-      wrapper: 'border-primary/20 bg-primary/5',
-      eyebrow: 'text-primary',
-      iconBg: 'bg-primary/15 text-primary'
+      wrapper: 'border-accent-sky/40 bg-accent-sky/15',
+      eyebrow: 'text-info',
+      iconBg: 'bg-accent-sky/40 text-info'
     },
     warn: {
       wrapper: 'border-reaction-inconfort/30 bg-reaction-inconfort/10',
@@ -16,6 +16,11 @@
       wrapper: 'border-primary/40 bg-accent',
       eyebrow: 'text-primary',
       iconBg: 'bg-primary text-primary-foreground'
+    },
+    celebrate: {
+      wrapper: 'border-accent-butter/50 bg-accent-butter/25',
+      eyebrow: 'text-[hsl(35_70%_30%)] dark:text-accent-butter',
+      iconBg: 'bg-accent-butter/60 text-[hsl(35_70%_28%)] dark:text-accent-butter'
     }
   };
 </script>
