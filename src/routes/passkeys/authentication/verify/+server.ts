@@ -3,6 +3,7 @@ import {
   PASSKEY_CHALLENGE_COOKIE,
   consumeChallenge,
   finishAuthentication,
+  originFromEnv,
   rpIdFromOrigin
 } from '$lib/server/passkeys';
 import { SESSION_COOKIE, SESSION_DURATION_MS, createSession } from '$lib/server/auth';
@@ -27,7 +28,7 @@ export const POST: RequestHandler = async ({ cookies, request, url }) => {
     throw error(400, 'Challenge expiré ou invalide');
   }
 
-  const origin = process.env.ORIGIN ?? url.origin;
+  const origin = originFromEnv(url.origin);
   const rpID = rpIdFromOrigin(origin);
 
   const result = await finishAuthentication({

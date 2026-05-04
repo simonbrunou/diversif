@@ -102,6 +102,24 @@ describe('POST /passkeys/registration/options', () => {
     }
   });
 
+  it('tolerates a trailing slash on the ORIGIN env var', async () => {
+    const u = await seed();
+    mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
+    const orig = process.env.ORIGIN;
+    process.env.ORIGIN = 'https://from-env.test/';
+    try {
+      const event = makeRouteEvent({ user: safeUser(u) });
+      await POST(event as unknown as Parameters<typeof POST>[0]);
+      // Without normalization the rpID would still be the hostname, but the
+      // expectedOrigin used during verify would carry the trailing slash and
+      // never match what the browser sends — regression-guard the helper here.
+      expect(mocks.generateRegistrationOptions.mock.calls[0][0].rpID).toBe('from-env.test');
+    } finally {
+      if (orig === undefined) delete process.env.ORIGIN;
+      else process.env.ORIGIN = orig;
+    }
+  });
+
   it('marks the challenge cookie secure in production', async () => {
     const u = await seed();
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });

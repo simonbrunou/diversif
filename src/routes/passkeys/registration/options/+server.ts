@@ -7,6 +7,7 @@ import {
   PASSKEY_CHALLENGE_TTL_MS,
   buildRegistrationOptions,
   createChallenge,
+  originFromEnv,
   rpIdFromOrigin
 } from '$lib/server/passkeys';
 import { requireUser } from '$lib/server/guards';
@@ -17,7 +18,7 @@ export const POST: RequestHandler = async ({ locals, cookies, url }) => {
   const fresh = db.select().from(users).where(eq(users.id, safe.id)).get();
   if (!fresh) throw error(401, 'Utilisateur introuvable');
 
-  const origin = process.env.ORIGIN ?? url.origin;
+  const origin = originFromEnv(url.origin);
   const rpID = rpIdFromOrigin(origin);
 
   const options = await buildRegistrationOptions({

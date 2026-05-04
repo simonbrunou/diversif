@@ -4,12 +4,13 @@ import {
   PASSKEY_CHALLENGE_TTL_MS,
   buildAuthenticationOptions,
   createChallenge,
+  originFromEnv,
   rpIdFromOrigin
 } from '$lib/server/passkeys';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies, url }) => {
-  const origin = process.env.ORIGIN ?? url.origin;
+  const origin = originFromEnv(url.origin);
   const rpID = rpIdFromOrigin(origin);
 
   const options = await buildAuthenticationOptions({ rpID });

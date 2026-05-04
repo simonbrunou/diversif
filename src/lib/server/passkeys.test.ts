@@ -103,6 +103,25 @@ describe('originFromEnv', () => {
       if (orig !== undefined) process.env.ORIGIN = orig;
     }
   });
+  it('strips trailing slashes and surrounding whitespace', () => {
+    const orig = process.env.ORIGIN;
+    process.env.ORIGIN = '  https://from-env.test/  ';
+    try {
+      expect(originFromEnv('https://fallback.test')).toBe('https://from-env.test');
+    } finally {
+      if (orig === undefined) delete process.env.ORIGIN;
+      else process.env.ORIGIN = orig;
+    }
+  });
+  it('also normalizes the fallback', () => {
+    const orig = process.env.ORIGIN;
+    delete process.env.ORIGIN;
+    try {
+      expect(originFromEnv('https://fallback.test///')).toBe('https://fallback.test');
+    } finally {
+      if (orig !== undefined) process.env.ORIGIN = orig;
+    }
+  });
 });
 
 describe('challenges', () => {

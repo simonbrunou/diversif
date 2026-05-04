@@ -3,6 +3,7 @@ import {
   PASSKEY_CHALLENGE_COOKIE,
   consumeChallenge,
   finishRegistration,
+  originFromEnv,
   publicPasskey,
   rpIdFromOrigin
 } from '$lib/server/passkeys';
@@ -31,7 +32,7 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
     throw error(400, 'Challenge expiré ou invalide');
   }
 
-  const origin = process.env.ORIGIN ?? url.origin;
+  const origin = originFromEnv(url.origin);
   const rpID = rpIdFromOrigin(origin);
   const name = typeof body.name === 'string' ? body.name : 'Passkey';
 
