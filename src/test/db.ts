@@ -17,6 +17,16 @@ migrate(testDb as unknown as BetterSQLite3Database, {
   migrationsFolder: path.resolve('./drizzle')
 });
 
+// Mirror production: PRAGMA foreign_keys = ON does NOT retroactively validate
+// existing rows, so a future migration could leave orphans, every test would
+// still pass, and production startup would crash on the first foreign_key_check.
+// Run the same check here as src/lib/server/db/index.ts so the suite catches
+// data-loss-shaped migrations before they ship.
+const violations = sqlite.pragma('foreign_key_check') as unknown[];
+if (Array.isArray(violations) && violations.length > 0) {
+  throw new Error(`Foreign key violations after migrations: ${JSON.stringify(violations)}`);
+}
+
 sqlite.pragma('foreign_keys = ON');
 
 export function resetTestDb(): void {

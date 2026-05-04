@@ -177,3 +177,32 @@ describe('migration 0003 (GDPR FK relaxation)', () => {
     expect(after.invitations).toBe(0);
   });
 });
+
+describe('foreign_key_check after migrate()', () => {
+  it('flags orphans that a sloppy migration would leave behind', () => {
+    // SQLite's PRAGMA foreign_keys does not retroactively validate existing
+    // rows when toggled on. The bootstrap (production and tests) must run
+    // PRAGMA foreign_key_check after migrate() to catch a migration that
+    // leaves orphans. This test simulates that situation and asserts that
+    // the check actually surfaces the violation.
+    const sqlite = new Database(':memory:');
+    applyMigrationFile(sqlite, '0000_volatile_firestar.sql');
+    applyMigrationFile(sqlite, '0001_acoustic_genesis.sql');
+    applyMigrationFile(sqlite, '0002_parched_the_stranger.sql');
+    applyMigrationFile(sqlite, '0003_needy_thunderbolt_ross.sql');
+    seedFixture(sqlite);
+
+    // Plant an orphan: a session row referencing a user that doesn't exist.
+    // With foreign_keys=OFF this insert succeeds, mimicking a buggy migration.
+    // (The 0003 migration ends with `PRAGMA foreign_keys=ON;`, which is
+    // honored when applied outside a transaction, so we re-disable here.)
+    sqlite.pragma('foreign_keys = OFF');
+    sqlite
+      .prepare('INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)')
+      .run('orphan', 9999, Date.now() + 86_400_000);
+
+    const violations = sqlite.pragma('foreign_key_check') as unknown[];
+    expect(Array.isArray(violations)).toBe(true);
+    expect(violations.length).toBeGreaterThan(0);
+  });
+});
