@@ -93,7 +93,8 @@
     @apply select-none;
   }
 
-  /* iOS Safari centers and resizes native date/time inputs — match text inputs. */
+  /* iOS Safari gives native date/time inputs an intrinsic min-width and centers
+     their text — left-align them and let them shrink to the container. */
   input[type='date'],
   input[type='datetime-local'],
   input[type='time'] {
@@ -102,6 +103,8 @@
     display: block;
     text-align: left;
     min-height: 2.5rem;
+    min-width: 0;
+    max-width: 100%;
   }
   input[type='date']::-webkit-date-and-time-value,
   input[type='datetime-local']::-webkit-date-and-time-value,
