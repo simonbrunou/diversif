@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { and, eq, isNull, lt, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
-import { exportUserData } from '$lib/server/gdpr';
+import { ExportTooLargeError, exportUserData } from '$lib/server/gdpr';
 import { requireUser } from '$lib/server/guards';
 import type { RequestHandler } from './$types';
 
@@ -31,7 +31,21 @@ export const GET: RequestHandler = ({ locals }) => {
     throw error(429, 'Export déjà demandé récemment, veuillez réessayer dans une minute.');
   }
 
-  const payload = exportUserData(user.id);
+  let payload;
+  try {
+    payload = exportUserData(user.id);
+  } catch (err) {
+    // Refuse rather than silently truncate: an article 15 export is supposed
+    // to be complete. If the dataset is unrealistically large we tell the
+    // user explicitly so they can ask for a manual export.
+    if (err instanceof ExportTooLargeError) {
+      throw error(
+        413,
+        'Export trop volumineux pour le téléchargement direct. Contactez-nous pour récupérer vos données.'
+      );
+    }
+    throw err;
+  }
 
   const date = new Date(now).toISOString().slice(0, 10);
   return new Response(JSON.stringify(payload, null, 2), {
