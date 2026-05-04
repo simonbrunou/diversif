@@ -7,13 +7,17 @@ import * as schema from '$lib/server/db/schema';
 type DB = BetterSQLite3Database<typeof schema>;
 
 const sqlite = new Database(':memory:');
-sqlite.pragma('foreign_keys = ON');
+// FK enforcement must be off while migrate() runs (see src/lib/server/db/index.ts
+// for why). Re-enable after migrations so the test suite still exercises FKs.
+sqlite.pragma('foreign_keys = OFF');
 
 export const testDb: DB = drizzle(sqlite, { schema });
 
 migrate(testDb as unknown as BetterSQLite3Database, {
   migrationsFolder: path.resolve('./drizzle')
 });
+
+sqlite.pragma('foreign_keys = ON');
 
 export function resetTestDb(): void {
   // Order respects foreign-key dependencies.
