@@ -1,10 +1,11 @@
 import path from 'node:path';
-import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync } from 'node:fs';
 import Database from 'better-sqlite3';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from './schema';
 import { seedFoods } from './seed';
+import { backupBeforeMigrate } from './backup';
 
 type DB = BetterSQLite3Database<typeof schema>;
 
@@ -18,36 +19,6 @@ function resolveDbPath(): string {
 function ensureDir(filePath: string) {
   const dir = path.dirname(filePath);
   mkdirSync(dir, { recursive: true });
-}
-
-const BACKUP_KEEP = Math.max(1, Number(process.env.DB_BACKUP_KEEP ?? '10'));
-
-export function backupBeforeMigrate(sqlite: Database.Database, dbPath: string): string | null {
-  // Online snapshot of the DB before migrations run, so a destructive migration
-  // can never silently lose data — the operator can always roll back.
-  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupDir = path.join(path.dirname(dbPath), 'backups');
-  mkdirSync(backupDir, { recursive: true });
-  const target = path.join(backupDir, `${path.basename(dbPath, '.db')}-${stamp}.db`);
-  try {
-    sqlite.exec(`VACUUM INTO '${target.replace(/'/g, "''")}'`);
-  } catch (err) {
-    console.error('[db] pre-migration backup failed:', err);
-    return null;
-  }
-
-  const snapshots = readdirSync(backupDir)
-    .filter((f) => f.startsWith(`${path.basename(dbPath, '.db')}-`) && f.endsWith('.db'))
-    .map((f) => ({ f, t: statSync(path.join(backupDir, f)).mtimeMs }))
-    .sort((a, b) => b.t - a.t);
-  for (const old of snapshots.slice(BACKUP_KEEP)) {
-    try {
-      unlinkSync(path.join(backupDir, old.f));
-    } catch {
-      // best-effort rotation, ignore
-    }
-  }
-  return target;
 }
 
 export function getDb(): DB {
