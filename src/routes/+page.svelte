@@ -5,31 +5,52 @@
   import LandingFeatures from '$lib/components/landing/LandingFeatures.svelte';
   import LandingTrust from '$lib/components/landing/LandingTrust.svelte';
   import LandingClosingCta from '$lib/components/landing/LandingClosingCta.svelte';
+  import Seo from '$lib/components/Seo.svelte';
+  import JsonLd from '$lib/components/JsonLd.svelte';
+  import { SITE, faqPageJsonLd, webApplicationJsonLd } from '$lib/seo';
+  import { page } from '$app/stores';
   import { formatAge } from '$lib/utils/age';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
+
+  const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
+
+  const landingFaq = [
+    {
+      q: 'Quand commencer la diversification alimentaire de mon bébé ?',
+      a: "Les recommandations françaises (HCSP 2020, Santé publique France) et européennes (ESPGHAN 2017) convergent : la diversification se commence entre 4 et 6 mois révolus, jamais avant 4 mois (17 semaines), idéalement avant 6 mois pour profiter de la fenêtre d'introduction des allergènes."
+    },
+    {
+      q: 'Quels sont les 12 allergènes prioritaires à introduire ?',
+      a: "Œuf, arachide, fruits à coque, lait de vache, sésame, soja, gluten (blé), poisson, crustacés, mollusques, céleri et moutarde. L'introduction précoce, dès 4–6 mois, réduit le risque d'allergie d'après les études LEAP (2015) et EAT (2016)."
+    },
+    {
+      q: 'Faut-il choisir entre purées et DME (diversification menée par l\'enfant) ?',
+      a: "Non. La Société Française de Pédiatrie reconnaît la DME, les purées classiques et l'approche mixte comme valides. L'important est d'adapter la texture à l'âge, surveiller les signes d'étouffement et proposer une alimentation variée."
+    },
+    {
+      q: 'Quels aliments éviter avant 1 an et avant 3 ans ?',
+      a: "Avant 1 an : miel (botulisme), lait de vache nature en boisson, sel ajouté, sucre ajouté, jus de fruits. Avant 3 ans : aliments crus à risque (œufs crus, viandes/poissons crus), aliments durs et ronds (cacahuètes, raisins entiers), boissons sucrées et édulcorées."
+    },
+    {
+      q: 'Diversif est-il gratuit et sans publicité ?',
+      a: 'Oui. Diversif est open source, self-hosted, gratuit et sans publicité. Vos données restent sur votre propre serveur ou hébergeur.'
+    }
+  ];
 </script>
 
-<svelte:head>
-  {#if data.kind === 'landing'}
-    <title>Diversif — Diversification alimentaire bébé : guide, suivi, partage parents</title>
-    <meta
-      name="description"
-      content="Suivez la diversification alimentaire de votre bébé de 4 mois à 3 ans. Étapes, allergènes, textures, à éviter — adossé HCSP, Santé publique France, ESPGHAN. Self-hosted, sans publicité."
-    />
-    <link rel="canonical" href="/" />
-    <meta
-      property="og:title"
-      content="Diversif — Diversification alimentaire bébé : guide, suivi, partage parents"
-    />
-    <meta
-      property="og:description"
-      content="Suivez la diversification alimentaire de votre bébé de 4 mois à 3 ans. Étapes, allergènes, textures, à éviter — adossé HCSP, Santé publique France, ESPGHAN."
-    />
-    <meta property="og:type" content="website" />
-  {/if}
-</svelte:head>
+{#if data.kind === 'landing'}
+  <Seo
+    title="Diversif — Diversification alimentaire bébé : guide, suivi, partage parents"
+    description={SITE.description}
+    path="/"
+  />
+  <JsonLd data={webApplicationJsonLd(siteUrl)} />
+  <JsonLd data={faqPageJsonLd(landingFaq)} />
+{:else}
+  <Seo title={`Choisir un enfant · ${SITE.name}`} path="/" noindex />
+{/if}
 
 {#if data.kind === 'landing'}
   <LandingHero />

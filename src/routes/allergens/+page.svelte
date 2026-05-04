@@ -4,27 +4,56 @@
   import Badge from '$components/ui/Badge.svelte';
   import AllergenInfoDialog from '$lib/components/AllergenInfoDialog.svelte';
   import SourceCitation from '$lib/components/SourceCitation.svelte';
+  import Seo from '$lib/components/Seo.svelte';
+  import JsonLd from '$lib/components/JsonLd.svelte';
+  import { articleJsonLd, breadcrumbJsonLd, SITE } from '$lib/seo';
+  import { page } from '$app/stores';
   import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
   import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
   import { ShieldCheck } from 'lucide-svelte';
 
   let openAllergenId = $state<AllergenId | null>(null);
+
+  const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
+
+  const allergensItemList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Les 12 allergènes prioritaires en diversification alimentaire',
+    itemListOrder: 'https://schema.org/ItemListOrderAscending',
+    numberOfItems: ALLERGENS.length,
+    itemListElement: ALLERGENS.map((a, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: a.label,
+      description: ALLERGEN_GUIDANCE[a.id].why
+    }))
+  };
 </script>
 
-<svelte:head>
-  <title>Les 12 allergènes majeurs · Diversif</title>
-  <meta
-    name="description"
-    content="Les 12 allergènes prioritaires à introduire entre 4 et 11 mois : œuf, arachide, fruits à coque, lait, sésame, soja, gluten, poisson, crustacés, mollusques, céleri, moutarde. Comment, quand, signes à surveiller."
-  />
-  <link rel="canonical" href="/allergens" />
-  <meta property="og:title" content="Les 12 allergènes majeurs · Diversif" />
-  <meta
-    property="og:description"
-    content="Les 12 allergènes prioritaires à introduire entre 4 et 11 mois — comment, quand, signes à surveiller. Sources LEAP, EAT, ESPGHAN, HCSP."
-  />
-  <meta property="og:type" content="website" />
-</svelte:head>
+<Seo
+  title="Les 12 allergènes prioritaires en diversification alimentaire bébé · Diversif"
+  description="Œuf, arachide, fruits à coque, lait, sésame, soja, gluten, poisson, crustacés, mollusques, céleri, moutarde : quand introduire, comment, signes d'allergie à surveiller. Sources LEAP, EAT, ESPGHAN, HCSP."
+  path="/allergens"
+  ogType="article"
+/>
+<JsonLd
+  data={articleJsonLd(siteUrl, {
+    title: 'Les 12 allergènes prioritaires en diversification alimentaire bébé',
+    description:
+      "Quand et comment introduire chacun des 12 allergènes alimentaires majeurs entre 4 et 11 mois, signes d'allergie à surveiller, conduite à tenir.",
+    path: '/allergens',
+    datePublished: '2025-01-01',
+    dateModified: new Date().toISOString().slice(0, 10)
+  })}
+/>
+<JsonLd data={allergensItemList} />
+<JsonLd
+  data={breadcrumbJsonLd(siteUrl, [
+    { name: 'Accueil', path: '/' },
+    { name: 'Allergènes', path: '/allergens' }
+  ])}
+/>
 
 <div class="container max-w-4xl space-y-8 py-6 md:py-8">
   <header class="space-y-2">
