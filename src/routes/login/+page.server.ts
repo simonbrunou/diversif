@@ -11,7 +11,10 @@ import {
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { requireGuest } from '$lib/server/guards';
+import { checkRateLimit, clientKey, resetRateLimit } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
+
+const LOGIN_LIMIT = { name: 'login', limit: 10, windowMs: 5 * 60 * 1000 };
 
 const schema = z.object({
   email: z.string().email('Email invalide'),
@@ -24,7 +27,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  default: async (event) => {
+    const { request, cookies } = event;
+    const ip = clientKey(event);
+    const rl = checkRateLimit(LOGIN_LIMIT, ip);
+    if (!rl.allowed) {
+      return fail(429, {
+        email: '',
+        error: `Trop de tentatives. Réessayez dans ${rl.retryAfterSeconds}s.`
+      });
+    }
+
     const data = Object.fromEntries(await request.formData());
     const parsed = schema.safeParse(data);
 
@@ -45,6 +58,11 @@ export const actions: Actions = {
         error: 'Email ou mot de passe incorrect.'
       });
     }
+
+    // Successful login: reset the per-IP counter so a legitimate user who
+    // mistyped a few times before getting in isn't penalised on subsequent
+    // logins from the same address.
+    resetRateLimit(LOGIN_LIMIT.name, ip);
 
     db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id)).run();
 

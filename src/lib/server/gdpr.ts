@@ -131,6 +131,15 @@ export type ExportedUser = {
   }>;
 };
 
+// Cap the food-entry payload size so an account with an unusually long log
+// can't blow up memory (we serialise the whole structure into one JSON string)
+// or exceed reasonable reverse-proxy response limits. 50k entries at ~250
+// bytes each is ~12MB pre-pretty-print — well within the comfort zone — and
+// the cap itself is a safeguard against future degradations rather than a
+// constraint any real user is expected to hit (10k+ entries = ~9 yrs of
+// daily logging).
+const EXPORT_FOOD_ENTRIES_LIMIT = 50_000;
+
 // Drizzle's `timestamp_ms` mode always materializes timestamps as Date instances.
 const isoOrNull = (v: Date | null | undefined): string | null =>
   v == null ? null : v.toISOString();
@@ -182,6 +191,7 @@ export function exportUserData(userId: number): ExportedUser {
           .innerJoin(foods, eq(foods.id, foodEntries.foodId))
           .where(inArray(foodEntries.childId, childIds))
           .orderBy(asc(foodEntries.givenAt))
+          .limit(EXPORT_FOOD_ENTRIES_LIMIT)
           .all();
 
   const userPasskeys = db.select().from(passkeys).where(eq(passkeys.userId, userId)).all();

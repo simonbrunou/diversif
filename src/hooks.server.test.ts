@@ -16,7 +16,7 @@ type CookieOpts = {
   maxAge?: number;
 };
 
-function makeEvent(token: string | null) {
+function makeEvent(token: string | null, pathname = '/') {
   const set = vi.fn((_name: string, _value: string, _opts: CookieOpts) => {});
   const del = vi.fn((_name: string, _opts: CookieOpts) => {});
   const cookies = {
@@ -26,6 +26,7 @@ function makeEvent(token: string | null) {
   };
   const event = {
     cookies,
+    url: new URL(`http://localhost${pathname}`),
     locals: {} as App.Locals
   };
   return { event, set, del, cookies };
@@ -115,6 +116,29 @@ describe('handle', () => {
     expect(args[1]).toBe(session.id);
     expect(args[2].path).toBe('/');
     expect(args[2].httpOnly).toBe(true);
+  });
+
+  it('emits X-Robots-Tag noindex for authenticated responses', async () => {
+    const user = await seedUser();
+    const session = createSession(user.id);
+    const { event } = makeEvent(session.id);
+    const resolve = vi.fn(async () => new Response('ok'));
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+  });
+
+  it('emits X-Robots-Tag noindex on the /account area for anonymous requests', async () => {
+    const { event } = makeEvent(null, '/account/deleted');
+    const resolve = vi.fn(async () => new Response('ok'));
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+  });
+
+  it('does not set X-Robots-Tag for anonymous public pages', async () => {
+    const { event } = makeEvent(null, '/');
+    const resolve = vi.fn(async () => new Response('ok'));
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(response.headers.get('X-Robots-Tag')).toBeNull();
   });
 
   it('marks the cookie secure in production', async () => {

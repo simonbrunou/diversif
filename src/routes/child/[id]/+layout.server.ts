@@ -19,7 +19,10 @@ export const load: LayoutServerLoad = async ({ locals, params }) => {
     child: {
       id: child.id,
       name: child.name,
-      birthDate: child.birthDate
+      birthDate: child.birthDate,
+      // Drizzle materialises this as a Date; serialise to ms for client transport
+      // and to spare child pages a second SELECT just for createdAt.
+      createdAt: child.createdAt.getTime()
     },
     membership
   };

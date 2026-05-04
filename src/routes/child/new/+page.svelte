@@ -4,10 +4,12 @@
   import Label from '$components/ui/Label.svelte';
   import Card from '$components/ui/Card.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
+  import { enhance } from '$app/forms';
   import { Baby } from 'lucide-svelte';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();
+  let submitting = $state(false);
 </script>
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
@@ -27,7 +29,17 @@
   </div>
 
   <Card class="mt-6 p-6">
-    <form method="POST" class="grid gap-4">
+    <form
+      method="POST"
+      class="grid gap-4"
+      use:enhance={() => {
+        submitting = true;
+        return async ({ update }) => {
+          await update();
+          submitting = false;
+        };
+      }}
+    >
       {#if form?.error}
         <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {form.error}
@@ -44,7 +56,9 @@
         <Input id="birthDate" name="birthDate" type="date" required value={form?.birthDate ?? ''} />
       </div>
 
-      <Button type="submit" size="lg">Créer</Button>
+      <Button type="submit" size="lg" loading={submitting}>
+        {submitting ? 'Création…' : 'Créer'}
+      </Button>
     </form>
   </Card>
 

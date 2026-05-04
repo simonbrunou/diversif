@@ -76,7 +76,12 @@ describe('child/[id] +page.server load', () => {
         memberships: [m],
         params: { id: String(c.id) },
         parent: async () => ({
-          child: { id: c.id, name: c.name, birthDate: c.birthDate }
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
         })
       }) as unknown as Parameters<typeof load>[0]
     );
@@ -94,7 +99,12 @@ describe('child/[id] +page.server load', () => {
         memberships: [m],
         params: { id: String(c.id) },
         parent: async () => ({
-          child: { id: c.id, name: c.name, birthDate: c.birthDate }
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
         })
       }) as unknown as Parameters<typeof load>[0]
     );
@@ -123,7 +133,12 @@ describe('child/[id] +page.server load', () => {
         memberships: [m],
         params: { id: String(c.id) },
         parent: async () => ({
-          child: { id: c.id, name: c.name, birthDate: c.birthDate }
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
         })
       }) as unknown as Parameters<typeof load>[0]
     );
@@ -179,7 +194,12 @@ describe('child/[id] +page.server load', () => {
         memberships: [m],
         params: { id: String(c.id) },
         parent: async () => ({
-          child: { id: c.id, name: c.name, birthDate: c.birthDate }
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
         })
       }) as unknown as Parameters<typeof load>[0]
     );
@@ -234,7 +254,12 @@ describe('child/[id] +page.server load', () => {
         memberships: [m],
         params: { id: String(c.id) },
         parent: async () => ({
-          child: { id: c.id, name: c.name, birthDate: c.birthDate }
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
         })
       }) as unknown as Parameters<typeof load>[0]
     );

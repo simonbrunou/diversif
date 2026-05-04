@@ -74,7 +74,7 @@
         <Input
           id="inviteCode"
           name="inviteCode"
-          placeholder="BEBE-XXXX"
+          placeholder="BEBE-XXXXXX"
           value={form?.inviteCode ?? data.inviteCode}
           autocomplete="off"
         />

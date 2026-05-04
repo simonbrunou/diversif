@@ -5,6 +5,7 @@
   import Card from '$components/ui/Card.svelte';
   import ThemeToggle from '$components/ThemeToggle.svelte';
   import LegalLinks from '$lib/components/LegalLinks.svelte';
+  import { enhance } from '$app/forms';
   import { invalidateAll } from '$app/navigation';
   import { browser } from '$app/environment';
   import { toast } from 'svelte-sonner';
@@ -16,6 +17,19 @@
   let registering = $state(false);
   let supported = $state(false);
   let confirmDeleteEmail = $state('');
+  let savingProfile = $state(false);
+  let changingPassword = $state(false);
+  let deletingAccount = $state(false);
+
+  function trackSubmission(setter: (b: boolean) => void) {
+    return () => {
+      setter(true);
+      return async ({ update }: { update: () => Promise<void> }) => {
+        await update();
+        setter(false);
+      };
+    };
+  }
 
   $effect(() => {
     if (!browser) return;
@@ -91,20 +105,32 @@
 
   <Card class="p-4">
     <h2 class="text-base font-semibold">Profil</h2>
-    <form method="POST" action="?/updateProfile" class="mt-3 grid gap-3">
+    <form
+      method="POST"
+      action="?/updateProfile"
+      class="mt-3 grid gap-3"
+      use:enhance={trackSubmission((v) => (savingProfile = v))}
+    >
       <div class="grid gap-1.5">
         <Label for="displayName">Nom affiché</Label>
         <Input id="displayName" name="displayName" required maxlength={80} value={data.user?.displayName ?? ''} />
       </div>
       <div>
-        <Button type="submit">Enregistrer</Button>
+        <Button type="submit" loading={savingProfile}>
+          {savingProfile ? 'Enregistrement…' : 'Enregistrer'}
+        </Button>
       </div>
     </form>
   </Card>
 
   <Card class="p-4">
     <h2 class="text-base font-semibold">Mot de passe</h2>
-    <form method="POST" action="?/changePassword" class="mt-3 grid gap-3">
+    <form
+      method="POST"
+      action="?/changePassword"
+      class="mt-3 grid gap-3"
+      use:enhance={trackSubmission((v) => (changingPassword = v))}
+    >
       <div class="grid gap-1.5">
         <Label for="currentPassword">Mot de passe actuel</Label>
         <Input id="currentPassword" name="currentPassword" type="password" required autocomplete="current-password" />
@@ -114,7 +140,9 @@
         <Input id="newPassword" name="newPassword" type="password" required minlength={12} autocomplete="new-password" />
       </div>
       <div>
-        <Button type="submit">Modifier</Button>
+        <Button type="submit" loading={changingPassword}>
+          {changingPassword ? 'Modification…' : 'Modifier'}
+        </Button>
       </div>
     </form>
   </Card>
@@ -224,7 +252,12 @@
       tout leur journal seront supprimés. Pour les enfants partagés, votre accès est retiré et,
       si vous étiez seul·e propriétaire, le co-parent inscrit le plus tôt devient propriétaire.
     </p>
-    <form method="POST" action="?/deleteAccount" class="mt-3 grid gap-3">
+    <form
+      method="POST"
+      action="?/deleteAccount"
+      class="mt-3 grid gap-3"
+      use:enhance={trackSubmission((v) => (deletingAccount = v))}
+    >
       <div class="grid gap-1.5">
         <Label for="confirmEmail">Saisissez votre email pour confirmer</Label>
         <Input
@@ -241,9 +274,10 @@
         <Button
           type="submit"
           variant="destructive"
+          loading={deletingAccount}
           disabled={confirmDeleteEmail.trim().toLowerCase() !== (data.user?.email ?? '')}
         >
-          Supprimer définitivement mon compte
+          {deletingAccount ? 'Suppression…' : 'Supprimer définitivement mon compte'}
         </Button>
       </div>
     </form>

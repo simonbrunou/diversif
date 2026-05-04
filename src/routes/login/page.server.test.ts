@@ -6,10 +6,12 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { hashPassword, SESSION_COOKIE } from '$lib/server/auth';
 import { users } from '$lib/server/db/schema';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { load, actions } from './+page.server';
 
 beforeEach(() => {
   resetTestDb();
+  _clearAllRateLimits();
 });
 
 describe('login load', () => {
@@ -106,6 +108,26 @@ describe('login default action', () => {
     expect(event.cookies.set).toHaveBeenCalled();
     const setArgs = event.cookies.set.mock.calls[0];
     expect(setArgs[0]).toBe(SESSION_COOKIE);
+  });
+
+  it('returns 429 when the per-IP rate limit is exceeded', async () => {
+    // Hit the bucket exactly `limit` times so the next call trips it.
+    for (let i = 0; i < 10; i++) {
+      const event = makeRouteEvent({
+        formData: { email: 'noone@example.com', password: 'whatever' }
+      });
+      await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      );
+    }
+    const event = makeRouteEvent({
+      formData: { email: 'noone@example.com', password: 'whatever' }
+    });
+    const result = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { error: string } };
+    expect(result.status).toBe(429);
+    expect(result.data.error).toMatch(/trop de tentatives/i);
   });
 
   it('marks the cookie secure in production', async () => {

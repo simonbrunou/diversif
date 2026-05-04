@@ -60,4 +60,26 @@ describe('Dialog', () => {
     await fireEvent.mouseDown(body);
     expect(onclose).not.toHaveBeenCalled();
   });
+
+  it('moves focus into the panel on open', async () => {
+    // Place a focusable element outside the dialog so we can verify focus moves.
+    const trigger = document.createElement('button');
+    trigger.textContent = 'Open';
+    document.body.appendChild(trigger);
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    render(Dialog, {
+      props: {
+        open: true,
+        title: 'X',
+        footer: textSnippet('Close')
+      }
+    });
+    // Wait for the queueMicrotask in the focus effect.
+    await new Promise((r) => setTimeout(r, 0));
+    expect(document.activeElement).not.toBe(trigger);
+    expect(document.activeElement?.tagName).not.toBe('BODY');
+    trigger.remove();
+  });
 });

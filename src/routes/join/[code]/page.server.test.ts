@@ -54,18 +54,18 @@ describe('join/[code] load', () => {
   it('redirects guests to /signup with the code', async () => {
     const event = makeRouteEvent({
       user: null,
-      params: { code: 'BEBE-ABCD' }
+      params: { code: 'BEBE-ABCDEF' }
     });
     const r = await captureFlow(() => load(event as unknown as Parameters<typeof load>[0]));
     expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe('/signup?code=BEBE-ABCD');
+    if (r.kind === 'redirect') expect(r.location).toBe('/signup?code=BEBE-ABCDEF');
   });
 
   it('returns "introuvable ou expiré" when no active invite', async () => {
     const u = await seedUser();
     const event = makeRouteEvent({
       user: safeUser(u),
-      params: { code: 'BEBE-ZZZZ' }
+      params: { code: 'BEBE-ZZZZZZ' }
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
     expect(out).toMatchObject({
@@ -78,11 +78,11 @@ describe('join/[code] load', () => {
     const me = await seedUser({ email: 'me@example.com' });
     const child = seedChild({ createdBy: owner.id });
     seedMembership({ userId: me.id, childId: child.id, role: 'member' });
-    await seedInvite({ code: 'BEBE-ABCD', childId: child.id, createdBy: owner.id });
+    await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
 
     const event = makeRouteEvent({
       user: safeUser(me),
-      params: { code: 'BEBE-ABCD' }
+      params: { code: 'BEBE-ABCDEF' }
     });
     const r = await captureFlow(() => load(event as unknown as Parameters<typeof load>[0]));
     expect(r.kind).toBe('redirect');
@@ -93,11 +93,11 @@ describe('join/[code] load', () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const me = await seedUser({ email: 'me@example.com' });
     const child = seedChild({ createdBy: owner.id, name: 'Bébé' });
-    await seedInvite({ code: 'BEBE-ABCD', childId: child.id, createdBy: owner.id });
+    await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
 
     const event = makeRouteEvent({
       user: safeUser(me),
-      params: { code: 'BEBE-ABCD' }
+      params: { code: 'BEBE-ABCDEF' }
     });
     const out = (await load(event as unknown as Parameters<typeof load>[0])) as {
       error: null;
@@ -105,7 +105,7 @@ describe('join/[code] load', () => {
       child: { id: number; name: string };
     };
     expect(out.error).toBeNull();
-    expect(out.code).toBe('BEBE-ABCD');
+    expect(out.code).toBe('BEBE-ABCDEF');
     expect(out.child.id).toBe(child.id);
   });
 });
@@ -126,20 +126,20 @@ describe('join/[code] default action', () => {
   it('redirects guests to /signup', async () => {
     const event = makeRouteEvent({
       user: null,
-      params: { code: 'BEBE-ABCD' }
+      params: { code: 'BEBE-ABCDEF' }
     });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
     );
     expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe('/signup?code=BEBE-ABCD');
+    if (r.kind === 'redirect') expect(r.location).toBe('/signup?code=BEBE-ABCDEF');
   });
 
   it('fails when invite is unknown / expired', async () => {
     const u = await seedUser();
     const event = makeRouteEvent({
       user: safeUser(u),
-      params: { code: 'BEBE-ZZZZ' }
+      params: { code: 'BEBE-ZZZZZZ' }
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
@@ -152,11 +152,11 @@ describe('join/[code] default action', () => {
     const me = await seedUser({ email: 'm@example.com' });
     const child = seedChild({ createdBy: owner.id });
     seedMembership({ userId: me.id, childId: child.id, role: 'member' });
-    await seedInvite({ code: 'BEBE-ABCD', childId: child.id, createdBy: owner.id });
+    await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
 
     const event = makeRouteEvent({
       user: safeUser(me),
-      params: { code: 'BEBE-ABCD' }
+      params: { code: 'BEBE-ABCDEF' }
     });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
@@ -169,11 +169,11 @@ describe('join/[code] default action', () => {
     const owner = await seedUser({ email: 'o@example.com' });
     const me = await seedUser({ email: 'm@example.com' });
     const child = seedChild({ createdBy: owner.id });
-    await seedInvite({ code: 'BEBE-ABCD', childId: child.id, createdBy: owner.id });
+    await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
 
     const event = makeRouteEvent({
       user: safeUser(me),
-      params: { code: 'BEBE-ABCD' }
+      params: { code: 'BEBE-ABCDEF' }
     });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
@@ -184,7 +184,7 @@ describe('join/[code] default action', () => {
     expect(memb.length).toBe(1);
     expect(memb[0].role).toBe('member');
 
-    const inv = testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCD')).get();
+    const inv = testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCDEF')).get();
     expect(inv?.usedAt).not.toBeNull();
     expect(inv?.usedBy).toBe(me.id);
   });
