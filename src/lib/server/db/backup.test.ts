@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtempSync, readdirSync, rmSync, utimesSync } from 'node:fs';
+import * as fs from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
@@ -128,6 +129,92 @@ describe('backupBeforeMigrate', () => {
     } finally {
       err.mockRestore();
     }
+  });
+
+  it('swallows errors during rotation so a single bad entry does not abort the run', () => {
+    const backupDir = path.join(workDir, 'backups');
+    mkdirSync(backupDir, { recursive: true });
+    // Plant a directory that matches the filter and is older than any real
+    // snapshot. The rotation loop will try to unlinkSync it (EISDIR), which
+    // must be swallowed so the rest of the rotation — and the new snapshot —
+    // succeed.
+    const poisoned = path.join(backupDir, 'diversif-1970-01-01T00-00-00-000Z.db');
+    mkdirSync(poisoned);
+
+    const snap = backupBeforeMigrate(sqlite, dbPath, 1);
+    expect(snap).not.toBeNull();
+    const remaining = readdirSync(backupDir);
+    // The fresh snapshot survived.
+    expect(remaining).toContain(path.basename(snap!));
+    // The poisoned entry is still there because unlinkSync failed and the
+    // catch swallowed the error — the function did not throw.
+    expect(remaining).toContain(path.basename(poisoned));
+  });
+
+  it('returns null without throwing when mkdirSync fails (read-only parent)', () => {
+    // Plant a regular file at the path where the helper would create the
+    // backups/ directory. mkdirSync(..., { recursive: true }) throws EEXIST
+    // (not ENOTDIR-tolerant) when the path exists as a non-directory, which
+    // mirrors a permissions-denied scenario.
+    const blocker = path.join(workDir, 'backups');
+    writeFileSync(blocker, 'not a directory');
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const snap = backupBeforeMigrate(sqlite, dbPath, 10);
+      expect(snap).toBeNull();
+      expect(err).toHaveBeenCalled();
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it('still returns the new snapshot when rotation throws (readdirSync fails)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const snap = backupBeforeMigrate(sqlite, dbPath, 10, {
+        ...fs,
+        readdirSync: (() => {
+          throw new Error('synthetic readdir failure');
+        }) as typeof fs.readdirSync
+      });
+      expect(snap).not.toBeNull();
+      expect(warn).toHaveBeenCalledWith(
+        '[db] pre-migration backup rotation failed:',
+        expect.any(Error)
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('survives a poisoned entry whose stat() throws by treating it as the oldest', () => {
+    const backupDir = path.join(workDir, 'backups');
+    // Take one real snapshot so the directory exists.
+    backupBeforeMigrate(sqlite, dbPath, 10);
+
+    const poisoned = path.join(backupDir, 'diversif-1970-01-01T00-00-00-000Z.db');
+    writeFileSync(poisoned, '');
+
+    // Inject an fs whose statSync throws for the poisoned file but otherwise
+    // delegates to the real implementation, mimicking a broken-symlink /
+    // racing-deletion scenario. The map step's inner catch must default the
+    // entry to mtime=0 so it sorts as oldest and gets unlinked.
+    const fsImpl = {
+      ...fs,
+      statSync: ((p: fs.PathLike, ...rest: unknown[]) => {
+        if (p === poisoned) throw new Error('synthetic stat failure');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (fs.statSync as any)(p, ...rest);
+      }) as typeof fs.statSync
+    };
+
+    const snap = backupBeforeMigrate(sqlite, dbPath, 1, fsImpl);
+    expect(snap).not.toBeNull();
+    const remaining = readdirSync(backupDir);
+    // Poisoned entry was treated as oldest (mtime=0) and unlinked.
+    expect(remaining).not.toContain(path.basename(poisoned));
+    // New snapshot survived the rotation.
+    expect(remaining).toContain(path.basename(snap!));
   });
 
   it('safely escapes single quotes in the backup path', () => {
