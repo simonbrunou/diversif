@@ -15,7 +15,13 @@ import { requireGuest } from '$lib/server/guards';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
-const SIGNUP_LIMIT = { name: 'signup', limit: 5, windowMs: 60 * 60 * 1000 };
+// Per-IP signup ceiling. 20/hour comfortably accommodates shared egress
+// (corporate proxies, family households, CI runs) while still keeping a
+// scripted abuser firmly throttled. The bucket is keyed by client IP so the
+// public Internet-facing operator MUST configure ADDRESS_HEADER for adapter-
+// node when behind a reverse proxy — otherwise the proxy IP looks like one
+// noisy client.
+const SIGNUP_LIMIT = { name: 'signup', limit: 20, windowMs: 60 * 60 * 1000 };
 
 const schema = z.object({
   email: z.string().email('Email invalide'),

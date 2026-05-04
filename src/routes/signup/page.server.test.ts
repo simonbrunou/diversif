@@ -52,10 +52,10 @@ describe('signup default action', () => {
   }
 
   it('returns 429 when the per-IP rate limit is exceeded', async () => {
-    // Saturate the signup bucket (limit 5 per hour per IP). Submit invalid
+    // Saturate the signup bucket (limit 20 per hour per IP). Submit invalid
     // payloads so each call returns fail() instead of throwing redirect; the
     // limit fires before validation runs anyway.
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 20; i++) {
       const event = makeRouteEvent({ formData: form({ email: 'invalid' }) });
       await actions.default!(
         event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
