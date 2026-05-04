@@ -30,7 +30,17 @@ export function getDb(): DB {
   const sqlite = new Database(dbPath);
   sqlite.pragma('journal_mode = WAL');
 
-  if (existsSync(dbPath) && statSync(dbPath).size > 0) {
+  // Best-effort: skip the snapshot when the DB file is brand new (size 0)
+  // or when the existence/size probe itself fails (race against another
+  // process, permission error). A backup is a safety net — it must never
+  // abort startup.
+  let shouldBackup = false;
+  try {
+    shouldBackup = existsSync(dbPath) && statSync(dbPath).size > 0;
+  } catch (err) {
+    console.warn('[db] could not probe DB file for pre-migration backup:', err);
+  }
+  if (shouldBackup) {
     backupBeforeMigrate(sqlite, dbPath);
   }
 
