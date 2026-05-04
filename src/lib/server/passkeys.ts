@@ -28,8 +28,18 @@ export function rpIdFromOrigin(origin: string): string {
   }
 }
 
+/**
+ * Browsers send the page's origin in WebAuthn responses without a trailing
+ * slash, while operators sometimes write `ORIGIN=https://example.com/` in env
+ * files. simplewebauthn does an exact string compare, so any trailing slash
+ * (or surrounding whitespace) breaks verification.
+ */
+export function normalizeOrigin(value: string): string {
+  return value.trim().replace(/\/+$/, '');
+}
+
 export function originFromEnv(fallback: string): string {
-  return process.env.ORIGIN ?? fallback;
+  return normalizeOrigin(process.env.ORIGIN ?? fallback);
 }
 
 function newToken(): string {
