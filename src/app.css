@@ -92,6 +92,22 @@
   [role='button'] {
     @apply select-none;
   }
+
+  /* iOS Safari centers and resizes native date/time inputs — match text inputs. */
+  input[type='date'],
+  input[type='datetime-local'],
+  input[type='time'] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    text-align: left;
+    min-height: 2.5rem;
+  }
+  input[type='date']::-webkit-date-and-time-value,
+  input[type='datetime-local']::-webkit-date-and-time-value,
+  input[type='time']::-webkit-date-and-time-value {
+    text-align: left;
+  }
 }
 
 @layer utilities {
