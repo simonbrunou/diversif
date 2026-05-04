@@ -32,7 +32,8 @@ export default ts.config(
       'coverage/',
       'playwright-report/',
       'test-results/',
-      '.e2e-data/'
+      '.e2e-data/',
+      'static/'
     ]
   },
   {

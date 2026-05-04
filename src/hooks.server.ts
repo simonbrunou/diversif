@@ -7,24 +7,10 @@ import {
   validateSession
 } from '$lib/server/auth';
 
-// Tailwind ships static stylesheets but Svelte hydration injects style attributes,
-// so 'unsafe-inline' is required for style-src. Scripts are bundled by Vite so
-// inline scripts are not needed.
-const CSP_DIRECTIVES = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
-  "font-src 'self' data:",
-  "connect-src 'self'",
-  "manifest-src 'self'",
-  "worker-src 'self'",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'"
-].join('; ');
-
+// `script-src` and `style-src` are emitted as a `<meta>` tag by SvelteKit
+// (see svelte.config.js `kit.csp`), which lets it hash its own inline
+// hydration scripts. The other directives are header-only and complement that
+// meta tag. `X-Frame-Options: DENY` (below) covers `frame-ancestors`.
 const PERMISSIONS_POLICY =
   'geolocation=(), camera=(), microphone=(), usb=(), payment=(), interest-cohort=()';
 
@@ -59,7 +45,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const response = await resolve(event);
 
-  response.headers.set('Content-Security-Policy', CSP_DIRECTIVES);
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');

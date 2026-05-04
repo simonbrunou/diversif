@@ -153,4 +153,28 @@ describe('child/[id]/foods load', () => {
     );
     expect(out.entries.every((e) => e.foodName === 'Carotte')).toBe(true);
   });
+
+  it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
+    const { c, carrot } = await setup();
+    testDb
+      .insert(foodEntries)
+      .values({
+        childId: c.id,
+        foodId: carrot.id,
+        givenAt: new Date(),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: null,
+        createdAt: new Date()
+      })
+      .run();
+    const out = await load(
+      makeRouteEvent({
+        params: { id: String(c.id) },
+        url: `http://localhost/child/${c.id}/foods`
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.entries).toHaveLength(1);
+    expect(out.entries[0].loggedByName).toBe('Compte supprimé');
+  });
 });
