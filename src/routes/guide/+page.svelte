@@ -53,7 +53,7 @@
       "Guide complet et sourcé : 10 règles d'or, 4 étapes par âge, 12 allergènes prioritaires, textures, aliments à éviter, réactions allergiques.",
     path: '/guide',
     datePublished: '2025-01-01',
-    dateModified: new Date().toISOString().slice(0, 10)
+    dateModified: '2026-05-03'
   })}
 />
 <JsonLd data={faqPageJsonLd(guideFaq)} />
