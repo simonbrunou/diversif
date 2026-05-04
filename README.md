@@ -104,7 +104,7 @@ Une tâche déclenchée au démarrage du process (puis toutes les 6 heures) supp
 node scripts/cleanup.mjs
 ```
 
-`scripts/list-stale-users.mjs` liste (sans supprimer) les comptes inactifs depuis plus de `RETENTION_INACTIVE_DAYS` jours. Aucune suppression automatique des comptes inactifs n'est effectuée en v1.
+`scripts/list-stale-users.mjs` liste (sans supprimer) les comptes inactifs depuis plus de `RETENTION_INACTIVE_DAYS` jours. L'inactivité est mesurée sur le maximum de `users.last_login_at` (mis à jour à la connexion **et** lors du renouvellement automatique de la session), de la dernière session encore en base (moins 30 jours) et de `users.created_at`. Aucune suppression automatique des comptes inactifs n'est effectuée en v1.
 
 ### Export / suppression manuels d'un compte
 
