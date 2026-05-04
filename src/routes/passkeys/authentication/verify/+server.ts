@@ -10,7 +10,7 @@ import {
 import { SESSION_COOKIE, SESSION_DURATION_MS, createSession } from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
-import { checkRateLimit, clientKey, resetRateLimit } from '$lib/server/rate-limit';
+import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { RequestHandler } from './$types';
 
 const PASSKEY_LIMIT = { name: 'passkey-auth', limit: 20, windowMs: 5 * 60 * 1000 };
@@ -55,7 +55,10 @@ export const POST: RequestHandler = async (event) => {
     return json({ ok: false, error: result.error }, { status: 400 });
   }
 
-  resetRateLimit(PASSKEY_LIMIT.name, ip);
+  // Intentionally do NOT reset the bucket on success — see the matching
+  // comment in src/routes/login/+page.server.ts. Resetting on success lets
+  // an attacker with one valid credential keep the throttle defeated by
+  // alternating failed guesses with their own occasional successful auth.
 
   db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, result.userId)).run();
 

@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { _clearAllRateLimits, checkRateLimit, clientKey, resetRateLimit } from './rate-limit';
+import {
+  _clearAllRateLimits,
+  checkRateLimit,
+  clientKey,
+  evictExpiredRateLimits,
+  resetRateLimit
+} from './rate-limit';
 import type { RequestEvent } from '@sveltejs/kit';
 
 afterEach(() => {
@@ -60,6 +66,33 @@ describe('checkRateLimit', () => {
     expect(checkRateLimit(opts, 'a').allowed).toBe(false);
     resetRateLimit(opts.name, 'a');
     expect(checkRateLimit(opts, 'a').allowed).toBe(true);
+  });
+});
+
+describe('evictExpiredRateLimits', () => {
+  it('drops buckets whose newest hit is older than maxAge', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
+    const opts = { name: 'evict', limit: 10, windowMs: 60_000 };
+    checkRateLimit(opts, 'a');
+    checkRateLimit(opts, 'b');
+
+    // Move past the eviction horizon for `a` only.
+    vi.setSystemTime(new Date('2024-01-01T02:00:00Z'));
+    checkRateLimit(opts, 'b');
+
+    const removed = evictExpiredRateLimits(60 * 60 * 1000);
+    expect(removed).toBe(1);
+    // 'a' has a clean slate (10-1=9); 'b' carries 1 fresh hit (window trimmed
+    // the original 00:00 entry on the second call), plus the new one = 2.
+    expect(checkRateLimit(opts, 'a').remaining).toBe(9);
+    expect(checkRateLimit(opts, 'b').remaining).toBe(8);
+  });
+
+  it('returns 0 when no buckets are stale', () => {
+    const opts = { name: 'evict', limit: 10, windowMs: 60_000 };
+    checkRateLimit(opts, 'a');
+    expect(evictExpiredRateLimits(60 * 60 * 1000)).toBe(0);
   });
 });
 

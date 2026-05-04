@@ -11,7 +11,7 @@ import {
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { requireGuest } from '$lib/server/guards';
-import { checkRateLimit, clientKey, resetRateLimit } from '$lib/server/rate-limit';
+import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
 const LOGIN_LIMIT = { name: 'login', limit: 10, windowMs: 5 * 60 * 1000 };
@@ -59,10 +59,12 @@ export const actions: Actions = {
       });
     }
 
-    // Successful login: reset the per-IP counter so a legitimate user who
-    // mistyped a few times before getting in isn't penalised on subsequent
-    // logins from the same address.
-    resetRateLimit(LOGIN_LIMIT.name, ip);
+    // Intentionally do NOT reset the bucket on success: an attacker with a
+    // single valid credential could otherwise alternate failed guesses
+    // against other accounts with periodic successful logins of their own
+    // and keep the throttle at zero indefinitely. The 10/5min window is
+    // wide enough that a legitimate user who mistyped a few times before
+    // getting it right won't be locked out.
 
     db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id)).run();
 

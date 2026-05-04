@@ -80,6 +80,28 @@ export function resetRateLimit(name: string, key: string): void {
   store.delete(bucketKey(name, key));
 }
 
+/**
+ * Evict buckets whose newest hit is older than `maxAgeMs`. Caps memory growth
+ * for high-cardinality traffic — without this, every distinct client IP that
+ * ever hits an auth endpoint stays in the map for the lifetime of the
+ * process. Wired into the periodic cleanup task in `./cleanup.ts`. Safe to
+ * call from anywhere; no I/O, just an in-memory walk.
+ *
+ * Returns the number of buckets removed (mostly for tests / observability).
+ */
+export function evictExpiredRateLimits(maxAgeMs: number, now: number = Date.now()): number {
+  const cutoff = now - maxAgeMs;
+  let removed = 0;
+  for (const [k, bucket] of store) {
+    const newest = bucket.hits[bucket.hits.length - 1];
+    if (newest === undefined || newest < cutoff) {
+      store.delete(k);
+      removed += 1;
+    }
+  }
+  return removed;
+}
+
 /** Test-only: wipe the entire store. */
 export function _clearAllRateLimits(): void {
   store.clear();
