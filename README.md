@@ -39,6 +39,18 @@ docker compose up -d
 
 The SQLite DB is persisted in the named Docker volume `diversif-data` (pinned via `name:` so it is independent of the Compose project name), mounted at `/app/data` inside the container. The volume survives rebuilds, container recreations, repo re-clones, and renames of the project directory, so accounts and data are kept across deploys. Migrations and seeding run on every container start (idempotent).
 
+### Pre-migration safety net
+
+On every container start, **before** migrations run, the app takes an online snapshot (`VACUUM INTO`) of the current DB into `/app/data/backups/diversif-<ISO timestamp>.db`. The last `DB_BACKUP_KEEP` snapshots (default 10) are retained — older ones are pruned. If a future migration eats data, recover by stopping the container and copying the most recent snapshot back over `diversif.db`:
+
+```bash
+docker compose stop
+docker run --rm -v diversif-data:/data alpine sh -c \
+  'cp "$(ls -1t /data/backups/*.db | head -n1)" /data/diversif.db && \
+   rm -f /data/diversif.db-shm /data/diversif.db-wal'
+docker compose start
+```
+
 To inspect, back up, or restore the database:
 
 ```bash
