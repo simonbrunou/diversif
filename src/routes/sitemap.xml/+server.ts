@@ -5,11 +5,20 @@ export const prerender = true;
 
 type Entry = { path: string; changefreq: string; priority: string; lastmod: string };
 
-const STATIC_PAGES: Omit<Entry, 'lastmod'>[] = [
-  { path: '/', changefreq: 'weekly', priority: '1.0' },
-  { path: '/guide', changefreq: 'monthly', priority: '0.9' },
-  { path: '/allergens', changefreq: 'monthly', priority: '0.9' },
-  { path: '/sources', changefreq: 'yearly', priority: '0.6' }
+// Stable per-page content update dates. Bump the appropriate entry whenever the
+// page's user-visible content meaningfully changes — never use "today" at
+// response time, since a rolling `lastmod` makes crawlers distrust the signal
+// and triggers unnecessary recrawls of pages that haven't actually changed.
+const LANDING_LASTMOD = '2026-05-03';
+const GUIDE_LASTMOD = '2026-05-03';
+const ALLERGENS_LASTMOD = '2026-05-03';
+const SOURCES_LASTMOD = '2026-05-03';
+
+const STATIC_PAGES: Entry[] = [
+  { path: '/', changefreq: 'weekly', priority: '1.0', lastmod: LANDING_LASTMOD },
+  { path: '/guide', changefreq: 'monthly', priority: '0.9', lastmod: GUIDE_LASTMOD },
+  { path: '/allergens', changefreq: 'monthly', priority: '0.9', lastmod: ALLERGENS_LASTMOD },
+  { path: '/sources', changefreq: 'yearly', priority: '0.6', lastmod: SOURCES_LASTMOD }
 ];
 
 const GUIDE_ANCHORS = [
@@ -35,15 +44,15 @@ function escapeXml(s: string): string {
 
 export const GET: RequestHandler = ({ url }) => {
   const origin = resolveOrigin(url);
-  const today = new Date().toISOString().slice(0, 10);
   const entries: Entry[] = [
-    ...STATIC_PAGES.map((p) => ({ ...p, lastmod: today })),
-    // Anchored sub-sections of the guide help search engines surface deep links.
+    ...STATIC_PAGES,
+    // Anchored sub-sections share the guide's lastmod since they all point
+    // into the same page's content.
     ...GUIDE_ANCHORS.map((id) => ({
       path: `/guide#${id}`,
       changefreq: 'monthly',
       priority: '0.5',
-      lastmod: today
+      lastmod: GUIDE_LASTMOD
     }))
   ];
 
