@@ -72,6 +72,48 @@ docker compose start
 - `/child/[id]/settings` — child info, members, invitations, danger zone
 - `/account` — profile, password, logout everywhere
 
+## Vie privée & RGPD
+
+Diversif est conçu pour être conforme au RGPD lorsqu'il est exposé en tant qu'instance publique (l'éditeur agit alors comme responsable de traitement). Aucune donnée n'est partagée avec un tiers ; la base SQLite reste sur l'hôte.
+
+- **Pages légales** : `/mentions-legales`, `/politique-confidentialite`, `/cgu`, `/cookies`. Elles affichent « à compléter » tant que les variables d'environnement décrites ci-dessous ne sont pas renseignées.
+- **Consentement** : à l'inscription, l'utilisateur doit confirmer avoir au moins 15 ans (article 45 LIL), accepter les CGU et la politique de confidentialité. Les horodatages sont stockés dans la table `users`.
+- **Droits** : depuis « Mon compte », l'utilisateur peut télécharger ses données au format JSON (`/account/export`, limité à un export par minute) et supprimer son compte (typage de son email pour confirmer). La suppression est immédiate et transactionnelle ; les enfants partagés restent accessibles aux co-parents (le co-parent inscrit le plus tôt est promu si nécessaire).
+- **Cookies** : seulement deux cookies strictement nécessaires (`session`, `wa_challenge`). Aucune mesure d'audience.
+- **En-têtes de sécurité** : CSP, HSTS (en production), X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin-Opener-Policy sont posés dans `src/hooks.server.ts`.
+
+### Variables d'environnement légales
+
+Ajoutez ces variables au fichier `.env` (voir `.env.example`) avant la mise en production :
+
+```
+LEGAL_CONTROLLER_NAME=
+LEGAL_CONTROLLER_EMAIL=
+LEGAL_CONTROLLER_ADDRESS=
+LEGAL_PUBLICATION_DIRECTOR=
+LEGAL_HOST_PROVIDER=
+LEGAL_HOST_PROVIDER_ADDRESS=
+RETENTION_INACTIVE_DAYS=1095
+```
+
+### Rétention & nettoyage
+
+Une tâche déclenchée au démarrage du process (puis toutes les 6 heures) supprime les sessions, invitations et défis WebAuthn expirés (`src/lib/server/cleanup.ts`). Pour un déclenchement manuel :
+
+```bash
+node scripts/cleanup.mjs
+```
+
+`scripts/list-stale-users.mjs` liste (sans supprimer) les comptes inactifs depuis plus de `RETENTION_INACTIVE_DAYS` jours. Aucune suppression automatique des comptes inactifs n'est effectuée en v1.
+
+### Export / suppression manuels d'un compte
+
+Pour répondre manuellement à une demande RGPD article 15 / 20 (par exemple si l'utilisateur ne peut pas se connecter) :
+
+```bash
+node scripts/export-user.mjs user@example.com
+```
+
 ## Out of scope (for the MVP)
 
 BLW textures, photos, quantities, recipes, growth charts, push notifications, CSV/PDF export, i18n, offline queue, read-only sharing.

@@ -6,3 +6,4 @@ data
 drizzle
 package-lock.json
 *.svelte
+.claude

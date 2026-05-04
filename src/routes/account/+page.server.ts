@@ -10,6 +10,7 @@ import {
   verifyPassword
 } from '$lib/server/auth';
 import { deletePasskey, listPasskeys, publicPasskey, renamePasskey } from '$lib/server/passkeys';
+import { deleteUserAccount } from '$lib/server/gdpr';
 import { requireUser } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -92,5 +93,18 @@ export const actions: Actions = {
       return fail(404, { passkeyError: 'Clé introuvable.' });
     }
     return { passkeySuccess: 'Clé supprimée.' };
+  },
+
+  deleteAccount: async ({ request, locals, cookies }) => {
+    const user = requireUser(locals);
+    const raw = Object.fromEntries(await request.formData());
+    const confirmEmail =
+      typeof raw.confirmEmail === 'string' ? raw.confirmEmail.trim().toLowerCase() : '';
+    if (confirmEmail !== user.email) {
+      return fail(400, { deleteError: 'Saisissez votre email exact pour confirmer.' });
+    }
+    deleteUserAccount(user.id);
+    cookies.delete(SESSION_COOKIE, { path: '/' });
+    throw redirect(303, '/account/deleted');
   }
 };

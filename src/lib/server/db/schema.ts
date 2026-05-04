@@ -1,28 +1,43 @@
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 
-export const users = sqliteTable('users', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  email: text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  displayName: text('display_name').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
-});
+export const users = sqliteTable(
+  'users',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    email: text('email').notNull().unique(),
+    passwordHash: text('password_hash').notNull(),
+    displayName: text('display_name').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    tosAcceptedAt: integer('tos_accepted_at', { mode: 'timestamp_ms' }),
+    privacyAcceptedAt: integer('privacy_accepted_at', { mode: 'timestamp_ms' }),
+    ageConfirmedAt: integer('age_confirmed_at', { mode: 'timestamp_ms' }),
+    lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
+    lastExportAt: integer('last_export_at', { mode: 'timestamp_ms' })
+  },
+  (t) => ({
+    lastLoginIdx: index('users_last_login_at_idx').on(t.lastLoginAt)
+  })
+);
 
-export const sessions = sqliteTable('sessions', {
-  id: text('id').primaryKey(),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
-});
+export const sessions = sqliteTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
+  },
+  (t) => ({
+    expiresIdx: index('sessions_expires_at_idx').on(t.expiresAt)
+  })
+);
 
 export const children = sqliteTable('children', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   birthDate: text('birth_date').notNull(),
-  createdBy: integer('created_by')
-    .notNull()
-    .references(() => users.id),
+  createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
 });
 
@@ -43,19 +58,23 @@ export const memberships = sqliteTable(
   })
 );
 
-export const invitations = sqliteTable('invitations', {
-  code: text('code').primaryKey(),
-  childId: integer('child_id')
-    .notNull()
-    .references(() => children.id, { onDelete: 'cascade' }),
-  createdBy: integer('created_by')
-    .notNull()
-    .references(() => users.id),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
-  usedAt: integer('used_at', { mode: 'timestamp_ms' }),
-  usedBy: integer('used_by').references(() => users.id)
-});
+export const invitations = sqliteTable(
+  'invitations',
+  {
+    code: text('code').primaryKey(),
+    childId: integer('child_id')
+      .notNull()
+      .references(() => children.id, { onDelete: 'cascade' }),
+    createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+    usedAt: integer('used_at', { mode: 'timestamp_ms' }),
+    usedBy: integer('used_by').references(() => users.id, { onDelete: 'set null' })
+  },
+  (t) => ({
+    expiresIdx: index('invitations_expires_at_idx').on(t.expiresAt)
+  })
+);
 
 export const foods = sqliteTable('foods', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -84,9 +103,7 @@ export const foodEntries = sqliteTable(
     givenAt: integer('given_at', { mode: 'timestamp_ms' }).notNull(),
     reaction: text('reaction', { enum: ['ras', 'inconfort', 'reaction'] }).notNull(),
     notes: text('notes'),
-    loggedBy: integer('logged_by')
-      .notNull()
-      .references(() => users.id),
+    loggedBy: integer('logged_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
@@ -114,16 +131,12 @@ export const tipDismissals = sqliteTable(
 export const passkeys = sqliteTable(
   'passkeys',
   {
-    // base64url-encoded credential ID returned by the authenticator.
     id: text('id').primaryKey(),
     userId: integer('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    // base64url-encoded COSE public key.
     publicKey: text('public_key').notNull(),
-    // Signature counter reported by the authenticator.
     counter: integer('counter').notNull().default(0),
-    // JSON-encoded array of AuthenticatorTransportFuture values.
     transports: text('transports').notNull().default('[]'),
     deviceType: text('device_type', { enum: ['singleDevice', 'multiDevice'] }).notNull(),
     backedUp: integer('backed_up', { mode: 'boolean' }).notNull(),
@@ -137,11 +150,9 @@ export const passkeys = sqliteTable(
 );
 
 export const webauthnChallenges = sqliteTable('webauthn_challenges', {
-  // Random opaque token stored in a short-lived cookie.
   token: text('token').primaryKey(),
   challenge: text('challenge').notNull(),
   purpose: text('purpose', { enum: ['registration', 'authentication'] }).notNull(),
-  // null for usernameless authentication ceremonies.
   userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
   expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
 });

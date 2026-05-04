@@ -1,4 +1,5 @@
 import { error, json } from '@sveltejs/kit';
+import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_COOKIE,
   consumeChallenge,
@@ -7,6 +8,8 @@ import {
   rpIdFromOrigin
 } from '$lib/server/passkeys';
 import { SESSION_COOKIE, SESSION_DURATION_MS, createSession } from '$lib/server/auth';
+import { db } from '$lib/server/db';
+import { users } from '$lib/server/db/schema';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies, request, url }) => {
@@ -41,6 +44,8 @@ export const POST: RequestHandler = async ({ cookies, request, url }) => {
   if (!result.ok) {
     return json({ ok: false, error: result.error }, { status: 400 });
   }
+
+  db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, result.userId)).run();
 
   const session = createSession(result.userId);
   cookies.set(SESSION_COOKIE, session.id, {

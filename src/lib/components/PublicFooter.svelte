@@ -21,6 +21,10 @@
       <a href="/allergens" class="hover:text-foreground hover:underline">Allergènes</a>
       <a href="/sources" class="hover:text-foreground hover:underline">Sources</a>
       <a href="/login" class="hover:text-foreground hover:underline">Se connecter</a>
+      <a href="/mentions-legales" class="hover:text-foreground hover:underline">Mentions légales</a>
+      <a href="/politique-confidentialite" class="hover:text-foreground hover:underline">Politique de confidentialité</a>
+      <a href="/cgu" class="hover:text-foreground hover:underline">CGU</a>
+      <a href="/cookies" class="hover:text-foreground hover:underline">Cookies</a>
       <a
         href="https://github.com/simonbrunou/diversif"
         target="_blank"

@@ -77,7 +77,12 @@ export function validateSession(token: string): ValidatedSession | null {
     id: row.user.id,
     email: row.user.email,
     displayName: row.user.displayName,
-    createdAt: row.user.createdAt
+    createdAt: row.user.createdAt,
+    tosAcceptedAt: row.user.tosAcceptedAt,
+    privacyAcceptedAt: row.user.privacyAcceptedAt,
+    ageConfirmedAt: row.user.ageConfirmedAt,
+    lastLoginAt: row.user.lastLoginAt,
+    lastExportAt: row.user.lastExportAt
   };
 
   return { user: safeUser, session, renewed };

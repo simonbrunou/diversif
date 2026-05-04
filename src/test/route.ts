@@ -141,7 +141,12 @@ export function safeUser(u: Omit<typeof schema.users.$inferSelect, 'passwordHash
     id: u.id,
     email: u.email,
     displayName: u.displayName,
-    createdAt: u.createdAt
+    createdAt: u.createdAt,
+    tosAcceptedAt: u.tosAcceptedAt ?? null,
+    privacyAcceptedAt: u.privacyAcceptedAt ?? null,
+    ageConfirmedAt: u.ageConfirmedAt ?? null,
+    lastLoginAt: u.lastLoginAt ?? null,
+    lastExportAt: u.lastExportAt ?? null
   };
 }
 

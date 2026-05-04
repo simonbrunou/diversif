@@ -7,6 +7,27 @@ import {
   validateSession
 } from '$lib/server/auth';
 
+// Tailwind ships static stylesheets but Svelte hydration injects style attributes,
+// so 'unsafe-inline' is required for style-src. Scripts are bundled by Vite so
+// inline scripts are not needed.
+const CSP_DIRECTIVES = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "manifest-src 'self'",
+  "worker-src 'self'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'"
+].join('; ');
+
+const PERMISSIONS_POLICY =
+  'geolocation=(), camera=(), microphone=(), usb=(), payment=(), interest-cohort=()';
+
 export const handle: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get(SESSION_COOKIE) ?? '';
   const validated = token ? validateSession(token) : null;
@@ -36,5 +57,17 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.memberships = [];
   }
 
-  return resolve(event);
+  const response = await resolve(event);
+
+  response.headers.set('Content-Security-Policy', CSP_DIRECTIVES);
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('Permissions-Policy', PERMISSIONS_POLICY);
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+
+  return response;
 };
