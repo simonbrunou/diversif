@@ -3,7 +3,7 @@ import { testDb, resetTestDb } from '../../test/db';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
-import { deleteUserAccount, exportUserData } from './gdpr';
+import { deleteUserAccount, ExportTooLargeError, exportUserData } from './gdpr';
 import {
   children,
   foodEntries,
@@ -305,5 +305,39 @@ describe('exportUserData', () => {
 
     const out = exportUserData(member.id);
     expect(out.children[0].foodEntries[0].loggedByMe).toBe(false);
+  });
+
+  it('throws ExportTooLargeError when food entries exceed the cap', async () => {
+    const u = await insertUser('big@example.com');
+    const c = insertChild('Bébé', u.id);
+    insertMembership(u.id, c.id, 'owner');
+    const food = insertFood('Riz');
+    // Seed 3 entries; pass a cap of 2 so the threshold trips without
+    // having to insert tens of thousands of rows.
+    insertEntry(c.id, food.id, u.id);
+    insertEntry(c.id, food.id, u.id);
+    insertEntry(c.id, food.id, u.id);
+    expect(() => exportUserData(u.id, 2)).toThrow(ExportTooLargeError);
+    try {
+      exportUserData(u.id, 2);
+    } catch (err) {
+      if (err instanceof ExportTooLargeError) {
+        expect(err.count).toBe(3);
+        expect(err.limit).toBe(2);
+      } else {
+        throw err;
+      }
+    }
+  });
+
+  it('exports normally when entry count equals the cap', async () => {
+    const u = await insertUser('exact@example.com');
+    const c = insertChild('Bébé', u.id);
+    insertMembership(u.id, c.id, 'owner');
+    const food = insertFood('Riz');
+    insertEntry(c.id, food.id, u.id);
+    insertEntry(c.id, food.id, u.id);
+    const out = exportUserData(u.id, 2);
+    expect(out.children[0].foodEntries).toHaveLength(2);
   });
 });

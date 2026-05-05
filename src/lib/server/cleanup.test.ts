@@ -5,9 +5,11 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { runCleanup, startCleanupTimer, stopCleanupTimer } from './cleanup';
 import { invitations, sessions, users, webauthnChallenges, children } from './db/schema';
+import { _clearAllRateLimits, checkRateLimit } from './rate-limit';
 
 beforeEach(() => {
   resetTestDb();
+  _clearAllRateLimits();
 });
 
 afterEach(() => {
@@ -73,7 +75,12 @@ describe('runCleanup', () => {
       .run();
 
     const result = runCleanup();
-    expect(result).toEqual({ expiredSessions: 1, expiredInvitations: 1, expiredChallenges: 1 });
+    expect(result).toEqual({
+      expiredSessions: 1,
+      expiredInvitations: 1,
+      expiredChallenges: 1,
+      evictedRateLimitBuckets: 0
+    });
     expect(testDb.select().from(sessions).all()).toHaveLength(1);
     expect(testDb.select().from(invitations).all()).toHaveLength(1);
     expect(testDb.select().from(webauthnChallenges).all()).toHaveLength(1);
@@ -83,8 +90,34 @@ describe('runCleanup', () => {
     expect(runCleanup()).toEqual({
       expiredSessions: 0,
       expiredInvitations: 0,
-      expiredChallenges: 0
+      expiredChallenges: 0,
+      evictedRateLimitBuckets: 0
     });
+  });
+
+  it('evicts stale rate-limit buckets older than the longest auth window', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
+      const opts = { name: 'test', limit: 5, windowMs: 60_000 };
+      checkRateLimit(opts, 'oldClient');
+      checkRateLimit(opts, 'recentClient');
+
+      // Jump forward beyond the eviction cutoff (1h) but only touch one client.
+      vi.setSystemTime(new Date('2024-01-01T01:30:00Z'));
+      checkRateLimit(opts, 'recentClient');
+
+      const result = runCleanup();
+      expect(result.evictedRateLimitBuckets).toBe(1);
+      // 'recentClient' carries one in-window hit at 01:30 (the 00:00 hit was
+      // already trimmed when we touched it again), plus the assertion call
+      // adds a second; remaining = 5 - 2 = 3. 'oldClient' was evicted, so a
+      // fresh hit leaves 4 of 5.
+      expect(checkRateLimit(opts, 'recentClient').remaining).toBe(3);
+      expect(checkRateLimit(opts, 'oldClient').remaining).toBe(4);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

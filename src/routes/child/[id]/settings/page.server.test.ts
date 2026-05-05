@@ -42,7 +42,7 @@ describe('settings load', () => {
       .insert(invitations)
       .values([
         {
-          code: 'BEBE-AAAA',
+          code: 'BEBE-AAAAAA',
           childId: c.id,
           createdBy: u.id,
           createdAt: new Date(),
@@ -52,7 +52,7 @@ describe('settings load', () => {
         },
         {
           // Expired — should be excluded.
-          code: 'BEBE-BBBB',
+          code: 'BEBE-BBBBBB',
           childId: c.id,
           createdBy: u.id,
           createdAt: new Date(),
@@ -62,7 +62,7 @@ describe('settings load', () => {
         },
         {
           // Used — should be excluded.
-          code: 'BEBE-CCCC',
+          code: 'BEBE-CCCCCC',
           childId: c.id,
           createdBy: u.id,
           createdAt: new Date(),
@@ -81,7 +81,7 @@ describe('settings load', () => {
       }) as unknown as Parameters<typeof load>[0]
     );
     expect(out.members.length).toBe(1);
-    expect(out.invitations.map((i) => i.code)).toEqual(['BEBE-AAAA']);
+    expect(out.invitations.map((i) => i.code)).toEqual(['BEBE-AAAAAA']);
     expect(out.role).toBe('owner');
   });
 });
@@ -187,7 +187,7 @@ describe('settings revokeInvitation action', () => {
     testDb
       .insert(invitations)
       .values({
-        code: 'BEBE-ZZZZ',
+        code: 'BEBE-ZZZZZZ',
         childId: c.id,
         createdBy: u.id,
         createdAt: new Date(),
@@ -200,13 +200,17 @@ describe('settings revokeInvitation action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { code: 'BEBE-ZZZZ' }
+      formData: { code: 'BEBE-ZZZZZZ' }
     });
     const r = (await actions.revokeInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.revokeInvitation>>[0]
     )) as { success: string };
     expect(r.success).toBeTruthy();
-    const stored = testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ZZZZ')).get();
+    const stored = testDb
+      .select()
+      .from(invitations)
+      .where(eq(invitations.code, 'BEBE-ZZZZZZ'))
+      .get();
     expect(stored).toBeUndefined();
   });
 });

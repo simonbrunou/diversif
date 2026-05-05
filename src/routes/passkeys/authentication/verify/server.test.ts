@@ -17,10 +17,12 @@ import { hashPassword, SESSION_COOKIE, validateSession } from '$lib/server/auth'
 import { passkeys, sessions, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, createChallenge } from '$lib/server/passkeys';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 
 beforeEach(() => {
   resetTestDb();
   mocks.verifyAuthenticationResponse.mockReset();
+  _clearAllRateLimits();
 });
 
 async function seedUserAndKey() {
@@ -67,6 +69,22 @@ function makeReq(opts: { body?: unknown; cookieToken?: string }) {
 }
 
 describe('POST /passkeys/authentication/verify', () => {
+  it('errors 429 when the per-IP rate limit is exceeded', async () => {
+    // Saturate the passkey-auth bucket (limit 20 per 5 minutes).
+    for (let i = 0; i < 20; i++) {
+      const event = makeReq({ body: { response: { id: 'x' } } });
+      await captureFlow(
+        () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+      );
+    }
+    const event = makeReq({ body: { response: { id: 'x' } } });
+    const r = await captureFlow(
+      () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(429);
+  });
+
   it('errors 400 on invalid JSON', async () => {
     const event = makeReq({ body: 'not json' });
     const r = await captureFlow(

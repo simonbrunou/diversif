@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { foodEntries, foods, users, children as childrenTable } from '$lib/server/db/schema';
+import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { desc, eq, sql, and, isNotNull } from 'drizzle-orm';
 import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import { CATEGORIES } from '$lib/utils/categories';
@@ -128,17 +128,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     };
   });
 
-  const childRow = db
-    .select({ createdAt: childrenTable.createdAt })
-    .from(childrenTable)
-    .where(eq(childrenTable.id, childId))
-    .get();
-  // Drizzle's timestamp_ms mode always materializes createdAt as Date here.
-  /* v8 ignore next 4 */
-  const childCreatedAt =
-    childRow?.createdAt instanceof Date
-      ? childRow.createdAt.getTime()
-      : Number(childRow?.createdAt ?? Date.now());
+  // child.createdAt comes from the layout load, avoiding a second SELECT.
+  const childCreatedAt = child.createdAt;
 
   const dismissals = loadDismissals(user.id, childId);
   const introducedAllergenIds = new Set(

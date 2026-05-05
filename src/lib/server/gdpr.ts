@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, ne } from 'drizzle-orm';
+import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { db } from './db';
 import {
   children,
@@ -131,6 +131,31 @@ export type ExportedUser = {
   }>;
 };
 
+// Hard ceiling on the number of food entries we'll serialise in a single
+// export. The endpoint synchronously buffers the whole JSON payload in memory;
+// without a guard rail, a pathologically-long log could OOM the process or
+// blow past upstream proxy response limits. We do NOT silently truncate — if
+// the count is over this, exportUserData throws ExportTooLargeError so the
+// caller can surface an actionable error rather than handing the user an
+// incomplete archive (which would breach RGPD article 15).
+//
+// 50k entries is well above any realistic user (≈9 years of daily logging
+// and corresponds to ~12MB of JSON pre-pretty-print). If we ever see it
+// hit in practice, the right fix is to stream the response, not to lower
+// the cap.
+export const EXPORT_FOOD_ENTRIES_LIMIT = 50_000;
+
+export class ExportTooLargeError extends Error {
+  readonly count: number;
+  readonly limit: number;
+  constructor(count: number, limit: number) {
+    super(`Export too large: ${count} food entries exceeds limit of ${limit}`);
+    this.name = 'ExportTooLargeError';
+    this.count = count;
+    this.limit = limit;
+  }
+}
+
 // Drizzle's `timestamp_ms` mode always materializes timestamps as Date instances.
 const isoOrNull = (v: Date | null | undefined): string | null =>
   v == null ? null : v.toISOString();
@@ -147,8 +172,16 @@ const isoOrThrow = (v: Date | null | undefined): string => {
  * Excluded by design: password hash, raw session ids, WebAuthn challenges,
  * passkey public keys and signature counters (security material with no
  * portability value to the user).
+ *
+ * Throws `ExportTooLargeError` if the user's food-entry count exceeds the
+ * configured ceiling, so the caller can return a clear error rather than
+ * serialise an incomplete archive. The `entryLimit` parameter exists for
+ * tests; production callers should leave it on the default.
  */
-export function exportUserData(userId: number): ExportedUser {
+export function exportUserData(
+  userId: number,
+  entryLimit: number = EXPORT_FOOD_ENTRIES_LIMIT
+): ExportedUser {
   const user = db.select().from(users).where(eq(users.id, userId)).get();
   if (!user) {
     throw new Error('User not found');
@@ -162,6 +195,18 @@ export function exportUserData(userId: number): ExportedUser {
     childIds.length === 0
       ? []
       : db.select().from(children).where(inArray(children.id, childIds)).all();
+
+  // Count first so we can refuse oversize exports up front, instead of
+  // silently truncating and handing the user an incomplete archive.
+  if (childIds.length > 0) {
+    const total =
+      db.get<{ count: number }>(
+        sql`SELECT COUNT(*) as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
+      )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+    if (total > entryLimit) {
+      throw new ExportTooLargeError(total, entryLimit);
+    }
+  }
 
   const entryRows =
     childIds.length === 0

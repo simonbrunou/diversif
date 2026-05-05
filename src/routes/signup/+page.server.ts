@@ -12,7 +12,16 @@ import {
   isValidInviteCodeFormat
 } from '$lib/server/auth';
 import { requireGuest } from '$lib/server/guards';
+import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
+
+// Per-IP signup ceiling. 20/hour comfortably accommodates shared egress
+// (corporate proxies, family households, CI runs) while still keeping a
+// scripted abuser firmly throttled. The bucket is keyed by client IP so the
+// public Internet-facing operator MUST configure ADDRESS_HEADER for adapter-
+// node when behind a reverse proxy — otherwise the proxy IP looks like one
+// noisy client.
+const SIGNUP_LIMIT = { name: 'signup', limit: 20, windowMs: 60 * 60 * 1000 };
 
 const schema = z.object({
   email: z.string().email('Email invalide'),
@@ -39,7 +48,19 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  default: async (event) => {
+    const { request, cookies } = event;
+    const ip = clientKey(event);
+    const rl = checkRateLimit(SIGNUP_LIMIT, ip);
+    if (!rl.allowed) {
+      return fail(429, {
+        email: '',
+        displayName: '',
+        inviteCode: '',
+        error: `Trop d’inscriptions récentes. Réessayez dans ${rl.retryAfterSeconds}s.`
+      });
+    }
+
     const raw = Object.fromEntries(await request.formData());
     const parsed = schema.safeParse(raw);
 
@@ -105,36 +126,45 @@ export const actions: Actions = {
     const passwordHash = await hashPassword(password);
     const now = new Date();
 
-    const inserted = db
-      .insert(users)
-      .values({
-        email: lowerEmail,
-        passwordHash,
-        displayName,
-        createdAt: now,
-        tosAcceptedAt: now,
-        privacyAcceptedAt: now,
-        ageConfirmedAt: now,
-        lastLoginAt: now
-      })
-      .returning({ id: users.id })
-      .get();
-    const userId = inserted.id;
-
-    if (invitationChildId !== null && inviteCode) {
-      db.insert(memberships)
+    // Transaction: user insert + membership + invitation consumption must
+    // commit atomically. Without it a crash between steps would leave a
+    // user account that can't reach the child it was invited to, with the
+    // invitation either already consumed (orphaned access) or still claimable
+    // (lets a stranger reuse the code).
+    const userId = db.transaction((tx) => {
+      const inserted = tx
+        .insert(users)
         .values({
-          userId,
-          childId: invitationChildId,
-          role: 'member',
-          createdAt: now
+          email: lowerEmail,
+          passwordHash,
+          displayName,
+          createdAt: now,
+          tosAcceptedAt: now,
+          privacyAcceptedAt: now,
+          ageConfirmedAt: now,
+          lastLoginAt: now
         })
-        .run();
-      db.update(invitations)
-        .set({ usedAt: now, usedBy: userId })
-        .where(eq(invitations.code, inviteCode))
-        .run();
-    }
+        .returning({ id: users.id })
+        .get();
+      const id = inserted.id;
+
+      if (invitationChildId !== null && inviteCode) {
+        tx.insert(memberships)
+          .values({
+            userId: id,
+            childId: invitationChildId,
+            role: 'member',
+            createdAt: now
+          })
+          .run();
+        tx.update(invitations)
+          .set({ usedAt: now, usedBy: id })
+          .where(eq(invitations.code, inviteCode))
+          .run();
+      }
+
+      return id;
+    });
 
     const session = createSession(userId);
     cookies.set(SESSION_COOKIE, session.id, {

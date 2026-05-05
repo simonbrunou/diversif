@@ -7,10 +7,12 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 import { invitations, memberships, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { SESSION_COOKIE } from '$lib/server/auth';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { load, actions } from './+page.server';
 
 beforeEach(() => {
   resetTestDb();
+  _clearAllRateLimits();
 });
 
 describe('signup load', () => {
@@ -21,9 +23,9 @@ describe('signup load', () => {
   });
 
   it('reads the code from the URL and uppercases it', async () => {
-    const event = makeRouteEvent({ url: 'http://localhost/signup?code=bebe-abcd' });
+    const event = makeRouteEvent({ url: 'http://localhost/signup?code=bebe-abcdef' });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out).toEqual({ inviteCode: 'BEBE-ABCD' });
+    expect(out).toEqual({ inviteCode: 'BEBE-ABCDEF' });
   });
 
   it('redirects authenticated users away', async () => {
@@ -48,6 +50,24 @@ describe('signup default action', () => {
       ...over
     };
   }
+
+  it('returns 429 when the per-IP rate limit is exceeded', async () => {
+    // Saturate the signup bucket (limit 20 per hour per IP). Submit invalid
+    // payloads so each call returns fail() instead of throwing redirect; the
+    // limit fires before validation runs anyway.
+    for (let i = 0; i < 20; i++) {
+      const event = makeRouteEvent({ formData: form({ email: 'invalid' }) });
+      await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      );
+    }
+    const blocked = makeRouteEvent({ formData: form({ email: 'invalid' }) });
+    const r = (await actions.default!(
+      blocked as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { error: string } };
+    expect(r.status).toBe(429);
+    expect(r.data.error).toMatch(/trop d['’]inscriptions/i);
+  });
 
   it('fails on invalid email', async () => {
     const event = makeRouteEvent({ formData: form({ email: 'not-an-email' }) });
@@ -106,7 +126,7 @@ describe('signup default action', () => {
   });
 
   it('fails when invite code is unknown', async () => {
-    const event = makeRouteEvent({ formData: form({ inviteCode: 'BEBE-ABCD' }) });
+    const event = makeRouteEvent({ formData: form({ inviteCode: 'BEBE-ABCDEF' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
     )) as { status: number; data: { error: string } };
@@ -133,7 +153,7 @@ describe('signup default action', () => {
     testDb
       .insert(invitations)
       .values({
-        code: 'BEBE-ABCD',
+        code: 'BEBE-ABCDEF',
         childId: child.id,
         createdBy: owner.id,
         createdAt: new Date(),
@@ -144,7 +164,7 @@ describe('signup default action', () => {
       .run();
 
     const event = makeRouteEvent({
-      formData: form({ inviteCode: 'BEBE-ABCD' })
+      formData: form({ inviteCode: 'BEBE-ABCDEF' })
     });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
@@ -157,7 +177,7 @@ describe('signup default action', () => {
     const memb = testDb.select().from(memberships).where(eq(memberships.userId, newUser!.id)).all();
     expect(memb.length).toBe(1);
     expect(memb[0].role).toBe('member');
-    const inv = testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCD')).get();
+    const inv = testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCDEF')).get();
     expect(inv?.usedAt).not.toBeNull();
     expect(inv?.usedBy).toBe(newUser!.id);
   });

@@ -76,19 +76,29 @@ export const invitations = sqliteTable(
   })
 );
 
-export const foods = sqliteTable('foods', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
-  category: text('category').notNull(),
-  isMajorAllergen: integer('is_major_allergen', { mode: 'boolean' }).notNull().default(false),
-  allergenType: text('allergen_type'),
-  suggestedAgeMonths: integer('suggested_age_months').notNull(),
-  notes: text('notes'),
-  isCustom: integer('is_custom', { mode: 'boolean' }).notNull().default(false),
-  customForChildId: integer('custom_for_child_id').references(() => children.id, {
-    onDelete: 'cascade'
+export const foods = sqliteTable(
+  'foods',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    name: text('name').notNull(),
+    category: text('category').notNull(),
+    isMajorAllergen: integer('is_major_allergen', { mode: 'boolean' }).notNull().default(false),
+    allergenType: text('allergen_type'),
+    suggestedAgeMonths: integer('suggested_age_months').notNull(),
+    notes: text('notes'),
+    isCustom: integer('is_custom', { mode: 'boolean' }).notNull().default(false),
+    customForChildId: integer('custom_for_child_id').references(() => children.id, {
+      onDelete: 'cascade'
+    })
+  },
+  (t) => ({
+    // Speeds up the catalog query on the food log page that fetches custom
+    // foods scoped to a specific child. Without this the filter falls back
+    // to a full scan of `foods`, which grows linearly with each new custom
+    // entry across the whole instance.
+    customForChildIdx: index('foods_custom_for_child_idx').on(t.customForChildId)
   })
-});
+);
 
 export const foodEntries = sqliteTable(
   'food_entries',

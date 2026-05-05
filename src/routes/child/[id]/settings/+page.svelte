@@ -4,6 +4,7 @@
   import Label from '$components/ui/Label.svelte';
   import Card from '$components/ui/Card.svelte';
   import Dialog from '$components/ui/Dialog.svelte';
+  import { enhance } from '$app/forms';
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
   import { tick } from 'svelte';
@@ -17,6 +18,20 @@
   let deleteOpen = $state(false);
   let leaveOpen = $state(false);
   let confirmName = $state('');
+  let savingChild = $state(false);
+  let creatingInvite = $state(false);
+  let deletingChild = $state(false);
+  let leavingChild = $state(false);
+
+  function trackSubmission(setter: (b: boolean) => void) {
+    return () => {
+      setter(true);
+      return async ({ update }: { update: () => Promise<void> }) => {
+        await update();
+        setter(false);
+      };
+    };
+  }
 
   $effect(() => {
     if (form?.success) {
@@ -58,7 +73,12 @@
   {#if data.role === 'owner'}
     <Card class="p-4">
       <h2 class="text-base font-semibold">Informations</h2>
-      <form method="POST" action="?/updateChild" class="mt-3 grid gap-3">
+      <form
+        method="POST"
+        action="?/updateChild"
+        class="mt-3 grid gap-3"
+        use:enhance={trackSubmission((v) => (savingChild = v))}
+      >
         <div class="grid gap-1.5">
           <Label for="name">Prénom</Label>
           <Input id="name" name="name" required maxlength={80} value={data.child.name} />
@@ -68,7 +88,9 @@
           <Input id="birthDate" name="birthDate" type="date" required value={data.child.birthDate} />
         </div>
         <div>
-          <Button type="submit">Enregistrer</Button>
+          <Button type="submit" loading={savingChild}>
+            {savingChild ? 'Enregistrement…' : 'Enregistrer'}
+          </Button>
         </div>
       </form>
     </Card>
@@ -106,8 +128,15 @@
         Générez un code à partager. Il expire après 7 jours et ne peut être utilisé qu’une fois.
       </p>
 
-      <form method="POST" action="?/createInvitation" class="mt-3">
-        <Button type="submit" variant="secondary">Générer un code</Button>
+      <form
+        method="POST"
+        action="?/createInvitation"
+        class="mt-3"
+        use:enhance={trackSubmission((v) => (creatingInvite = v))}
+      >
+        <Button type="submit" variant="secondary" loading={creatingInvite}>
+          {creatingInvite ? 'Génération…' : 'Générer un code'}
+        </Button>
       </form>
 
       {#if data.invitations.length > 0}
@@ -171,22 +200,38 @@
   title="Supprimer {data.child.name} ?"
   description="Saisissez exactement « {data.child.name} » pour confirmer."
 >
-  <form method="POST" action="?/deleteChild" class="grid gap-3">
+  <form
+    method="POST"
+    action="?/deleteChild"
+    class="grid gap-3"
+    use:enhance={trackSubmission((v) => (deletingChild = v))}
+  >
     <Input id="confirmName" name="confirmName" bind:value={confirmName} placeholder={data.child.name} autocomplete="off" />
     <div class="mt-2 flex justify-end gap-2">
       <Button type="button" variant="outline" onclick={() => (deleteOpen = false)}>Annuler</Button>
-      <Button type="submit" variant="destructive" disabled={confirmName !== data.child.name}>
-        Supprimer définitivement
+      <Button
+        type="submit"
+        variant="destructive"
+        loading={deletingChild}
+        disabled={confirmName !== data.child.name}
+      >
+        {deletingChild ? 'Suppression…' : 'Supprimer définitivement'}
       </Button>
     </div>
   </form>
 </Dialog>
 
 <Dialog bind:open={leaveOpen} title="Quitter ce suivi ?" description="Vous perdrez l’accès aux logs.">
-  <form method="POST" action="?/leaveChild">
+  <form
+    method="POST"
+    action="?/leaveChild"
+    use:enhance={trackSubmission((v) => (leavingChild = v))}
+  >
     <div class="flex justify-end gap-2">
       <Button type="button" variant="outline" onclick={() => (leaveOpen = false)}>Annuler</Button>
-      <Button type="submit" variant="destructive">Quitter</Button>
+      <Button type="submit" variant="destructive" loading={leavingChild}>
+        {leavingChild ? 'Sortie…' : 'Quitter'}
+      </Button>
     </div>
   </form>
 </Dialog>

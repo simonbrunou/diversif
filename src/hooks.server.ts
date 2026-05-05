@@ -54,5 +54,15 @@ export const handle: Handle = async ({ event, resolve }) => {
     response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
 
+  // Belt-and-braces: any response served to an authenticated user is private
+  // by definition, so block crawlers even if a downstream page forgets the
+  // <meta name="robots"> tag. Also noindex the account area for anonymous
+  // requests (login + deletion confirmation already opt in via Seo, but a
+  // missing import shouldn't leak). The blanket header is the cheapest place
+  // to enforce the invariant.
+  if (event.locals.user || event.url.pathname.startsWith('/account')) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+
   return response;
 };

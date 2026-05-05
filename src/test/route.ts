@@ -54,7 +54,8 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     params: opts.params ?? {},
     url,
     request,
-    parent: opts.parent ?? (async () => ({}))
+    parent: opts.parent ?? (async () => ({})),
+    getClientAddress: () => '127.0.0.1'
   };
   return event;
 }
