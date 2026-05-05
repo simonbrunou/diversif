@@ -6,7 +6,8 @@
   import Card from '$components/ui/Card.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
   import ReactionBadge from '$lib/components/ReactionBadge.svelte';
-  import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
+  import CategoryTag from '$lib/components/CategoryTag.svelte';
+  import { CATEGORIES } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
   import { formatRelative } from '$lib/utils/dates';
   import { Apple, RotateCcw } from 'lucide-svelte';
@@ -103,11 +104,11 @@
                     </Badge>
                   {/if}
                 </div>
-                <div class="mt-0.5 text-xs text-muted-foreground">
-                  {formatRelative(e.givenAt)} · par {e.loggedByName}
-                  · {getCategoryLabel(e.category)}
+                <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                  <span>{formatRelative(e.givenAt)} · par {e.loggedByName}</span>
+                  <CategoryTag id={e.category} size="sm" />
                   {#if e.allergenType}
-                    · <span class="text-reaction-inconfort">{getAllergenLabel(e.allergenType)}</span>
+                    <span class="text-reaction-inconfort">· {getAllergenLabel(e.allergenType)}</span>
                   {/if}
                 </div>
                 {#if e.notes}

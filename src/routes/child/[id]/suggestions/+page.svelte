@@ -3,8 +3,13 @@
   import Badge from '$components/ui/Badge.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
-  import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
+  import {
+    CATEGORIES,
+    getCategoryClasses,
+    getCategoryIcon
+  } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
+  import { cn } from '$lib/utils/cn';
   import { Sparkles, Lightbulb } from 'lucide-svelte';
   import type { PageData } from './$types';
 
@@ -67,7 +72,7 @@
                     {getAllergenLabel(f.allergenType)}
                   </Badge>
                 </div>
-                <div class="text-xs text-muted-foreground">{getCategoryLabel(f.category)} · dès {f.suggestedAgeMonths} mois</div>
+                <div class="text-xs text-muted-foreground">dès {f.suggestedAgeMonths} mois</div>
               </Card>
             </a>
           {/each}
@@ -76,14 +81,28 @@
     {/if}
 
     {#each otherGroups as g (g.id)}
+      {@const cls = getCategoryClasses(g.id)}
+      {@const Icon = getCategoryIcon(g.id)}
       <section>
-        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2
+          class={cn(
+            'mb-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider',
+            cls.tint,
+            cls.text
+          )}
+        >
+          <Icon size={12} aria-hidden="true" />
           {g.label}
         </h2>
         <div class="grid gap-2 sm:grid-cols-2">
           {#each g.items as f (f.id)}
             <a href={logHref(f.id)}>
-              <Card class="p-3 transition-colors hover:bg-accent">
+              <Card
+                class={cn(
+                  'border-l-2 p-3 transition-colors hover:bg-accent',
+                  cls.borderLeft
+                )}
+              >
                 <div class="font-medium">{f.name}</div>
                 <div class="text-xs text-muted-foreground">
                   dès {f.suggestedAgeMonths} mois
