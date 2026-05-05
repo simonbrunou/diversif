@@ -1,15 +1,99 @@
 {
+  "/home/sbrn/Projects/diversif/drizzle.config.ts": {
+    "mtime": 1777986940.326292,
+    "hash": "a466dbc5879899abb5ed2cf80da11dc4"
+  },
+  "/home/sbrn/Projects/diversif/eslint.config.js": {
+    "mtime": 1777986940.3271203,
+    "hash": "b63ea4293d07e60872f82a8d723d3104"
+  },
+  "/home/sbrn/Projects/diversif/playwright.config.ts": {
+    "mtime": 1777986940.3271203,
+    "hash": "3ba8ac0e0fee48d29439c324e8bd602b"
+  },
+  "/home/sbrn/Projects/diversif/postcss.config.js": {
+    "mtime": 1777986940.3274472,
+    "hash": "442ee6f3f950b33482963958f133b78c"
+  },
+  "/home/sbrn/Projects/diversif/svelte.config.js": {
+    "mtime": 1777986940.3346534,
+    "hash": "79bb5ad9e49c60caf5f60acf4ca47fa6"
+  },
+  "/home/sbrn/Projects/diversif/vite.config.ts": {
+    "mtime": 1777986940.3346534,
+    "hash": "cdc41639184524f24eda98c04fabc0a4"
+  },
+  "/home/sbrn/Projects/diversif/tailwind.config.ts": {
+    "mtime": 1778009833.1549847,
+    "hash": "df23f344ec2b237b9f1a0b16ba61dddd"
+  },
+  "/home/sbrn/Projects/diversif/drizzle/0000_volatile_firestar.sql": {
+    "mtime": 1777986940.326292,
+    "hash": "579e7e49a7dfea1256b6c47072ff2b68"
+  },
+  "/home/sbrn/Projects/diversif/drizzle/0001_acoustic_genesis.sql": {
+    "mtime": 1777986940.326737,
+    "hash": "fdeaf864ee96aa443a2877cded736e59"
+  },
+  "/home/sbrn/Projects/diversif/drizzle/0002_parched_the_stranger.sql": {
+    "mtime": 1777986940.326737,
+    "hash": "e4dfaf1943cd3493fa347739a43057a8"
+  },
+  "/home/sbrn/Projects/diversif/drizzle/0003_needy_thunderbolt_ross.sql": {
+    "mtime": 1777986940.326737,
+    "hash": "537819a83123e2f9d230de0612101766"
+  },
+  "/home/sbrn/Projects/diversif/drizzle/0004_medical_george_stacy.sql": {
+    "mtime": 1777986940.326737,
+    "hash": "ff5cda605f2399f690c85b3e55646c67"
+  },
+  "/home/sbrn/Projects/diversif/e2e/auth.spec.ts": {
+    "mtime": 1777986940.3268967,
+    "hash": "be845270e6a1af035c315d88d5c84fe0"
+  },
+  "/home/sbrn/Projects/diversif/e2e/dashboard.spec.ts": {
+    "mtime": 1777986940.3271203,
+    "hash": "f6327b9ba5929fe8aedcea7aff48bc36"
+  },
+  "/home/sbrn/Projects/diversif/e2e/gdpr.spec.ts": {
+    "mtime": 1777986940.3271203,
+    "hash": "5b4d61abd588a5ad934eea6a2fdc95e3"
+  },
+  "/home/sbrn/Projects/diversif/e2e/global-setup.ts": {
+    "mtime": 1777986940.3271203,
+    "hash": "dbd3061baa848938991366e2eb34bba7"
+  },
+  "/home/sbrn/Projects/diversif/e2e/membership.spec.ts": {
+    "mtime": 1777986940.3271203,
+    "hash": "54a0d80a189941d5de47521a43370c09"
+  },
+  "/home/sbrn/Projects/diversif/scripts/cleanup.mjs": {
+    "mtime": 1777986940.3274472,
+    "hash": "8bc911c6660ed1e37f70d39f8cb68db0"
+  },
+  "/home/sbrn/Projects/diversif/scripts/export-user.mjs": {
+    "mtime": 1777986940.3284423,
+    "hash": "c55fe11538eb950670a5ec5e61eeb1ec"
+  },
+  "/home/sbrn/Projects/diversif/scripts/generate-icons.mjs": {
+    "mtime": 1777986940.3284423,
+    "hash": "43aa3a20aa2f2797aabc612a2d4e9862"
+  },
+  "/home/sbrn/Projects/diversif/scripts/list-stale-users.mjs": {
+    "mtime": 1777986940.3284423,
+    "hash": "0a2c0ff1d8a78ce1132d74f96ca5a320"
+  },
   "/home/sbrn/Projects/diversif/src/app.d.ts": {
     "mtime": 1777986940.3285525,
     "hash": "47b0dc265427c2e6b510aa13fde5aff5"
   },
-  "/home/sbrn/Projects/diversif/src/hooks.server.test.ts": {
-    "mtime": 1777986940.3285525,
-    "hash": "b8a364c583e2b8cefa8c930aabd53c5c"
-  },
   "/home/sbrn/Projects/diversif/src/hooks.server.ts": {
     "mtime": 1777986940.3285525,
     "hash": "20f5e8109a480b0795f0604e0cd243f5"
+  },
+  "/home/sbrn/Projects/diversif/src/hooks.server.test.ts": {
+    "mtime": 1777994438.9628403,
+    "hash": "4146665f63d1c45b7d032e6b98c60c69"
   },
   "/home/sbrn/Projects/diversif/src/lib/seo.test.ts": {
     "mtime": 1777986940.3301184,
@@ -55,14 +139,6 @@
     "mtime": 1777986940.3286955,
     "hash": "73bbeb064909722659ac5ae161907e01"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/DiversityCard.svelte": {
-    "mtime": 1777986940.3286955,
-    "hash": "d1e1ca3c3f1347ab2bf983f59a1a746b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/DiversityCard.test.ts": {
-    "mtime": 1777986940.3286955,
-    "hash": "2a570e78ef180f8bb143c838ea930397"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/EmptyState.svelte": {
     "mtime": 1777986940.3286955,
     "hash": "2d73bacdde73728ac796ccfbcd623086"
@@ -70,10 +146,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/EmptyState.test.ts": {
     "mtime": 1777986940.3286955,
     "hash": "f4d99757a09ccd4f17466b46bdc2f40f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/FoodCombobox.svelte": {
-    "mtime": 1777986940.3286955,
-    "hash": "98ae8980ea44acb56ae40d89139b2d2d"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/FoodCombobox.test.ts": {
     "mtime": 1777986940.3286955,
@@ -114,18 +186,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/ReactionBadge.svelte": {
     "mtime": 1777986940.3286955,
     "hash": "ebf1eef323d0a2847a94a26091be00ab"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ReactionBadge.test.ts": {
-    "mtime": 1777986940.3286955,
-    "hash": "51b13362889263d70302041bd80bc29a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ReactionPicker.svelte": {
-    "mtime": 1777986940.3286955,
-    "hash": "0604de03ac44254687362208abe12e79"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ReactionPicker.test.ts": {
-    "mtime": 1777986940.3286955,
-    "hash": "708eab8ecc3448cbe035a2d87c20c7ea"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/ReminderBanner.svelte": {
     "mtime": 1777986940.3286955,
@@ -178,6 +238,34 @@
   "/home/sbrn/Projects/diversif/src/lib/components/WelcomeDialog.test.ts": {
     "mtime": 1777986940.3286955,
     "hash": "fd5425cd37875302924fb66c88b71138"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/CategoryTag.svelte": {
+    "mtime": 1778009833.1539845,
+    "hash": "11992e8446846b6ba540d80a472bb82d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/DiversityCard.svelte": {
+    "mtime": 1778009833.1539845,
+    "hash": "e09184f6e786f76db67092b4e4878851"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/DiversityCard.test.ts": {
+    "mtime": 1778009833.1539845,
+    "hash": "dba2ba0cf3d570fa159aa7fd13ce0a8e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/FoodCombobox.svelte": {
+    "mtime": 1778009833.1539845,
+    "hash": "75052d2c55f9ef7a002ebf9f38354771"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReactionBadge.test.ts": {
+    "mtime": 1778009833.1539845,
+    "hash": "935b11e7a0a153a1b37b08a0fade7999"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReactionPicker.svelte": {
+    "mtime": 1778009833.1549847,
+    "hash": "933f5f21cd2569f00b5b0864dec839b4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReactionPicker.test.ts": {
+    "mtime": 1778009833.1549847,
+    "hash": "8e1b48f57f0865fc1a16159528f1a753"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCta.svelte": {
     "mtime": 1777986940.3286955,
@@ -291,10 +379,6 @@
     "mtime": 1777986940.3301184,
     "hash": "07ef1dbfdd834a416237fc8a0e972e64"
   },
-  "/home/sbrn/Projects/diversif/src/lib/server/auth.session.test.ts": {
-    "mtime": 1777986940.3301184,
-    "hash": "799ae51e66dfff7a5982b10cd6767413"
-  },
   "/home/sbrn/Projects/diversif/src/lib/server/auth.test.ts": {
     "mtime": 1777986940.3303578,
     "hash": "315d7e5f27aac5e2a508921386be3934"
@@ -318,14 +402,6 @@
   "/home/sbrn/Projects/diversif/src/lib/server/gdpr.ts": {
     "mtime": 1777986940.3305151,
     "hash": "ffa01a90f0fd14a0c800c86b63c9ea6b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guards.test.ts": {
-    "mtime": 1777986940.3305151,
-    "hash": "dd4ae3f8f62ab6338d0cf5254e2b0807"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guards.ts": {
-    "mtime": 1777986940.3305151,
-    "hash": "08f31be2a5d053aa6c83df847a73f5e0"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/legal.test.ts": {
     "mtime": 1777986940.3308783,
@@ -351,13 +427,21 @@
     "mtime": 1777986940.3308783,
     "hash": "3b4be8b70ac59cc691ffd976b97e9225"
   },
+  "/home/sbrn/Projects/diversif/src/lib/server/auth.session.test.ts": {
+    "mtime": 1777994438.9628403,
+    "hash": "eabb4d59f78f87534309cf0726e06ecf"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guards.test.ts": {
+    "mtime": 1777994438.9632654,
+    "hash": "5352069c0cd6d95c928a8f4804d4ac03"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guards.ts": {
+    "mtime": 1777994438.9632654,
+    "hash": "d053fd99995e46471573393b7c991ce4"
+  },
   "/home/sbrn/Projects/diversif/src/lib/server/db/backup.test.ts": {
     "mtime": 1777986940.3303578,
     "hash": "df7918b0ea2ff8d196a60b75f68aab01"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/backup.ts": {
-    "mtime": 1777986940.3305151,
-    "hash": "f70c38b9b0e4c6c9c533ee91f93c5a52"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/index.ts": {
     "mtime": 1777986940.3305151,
@@ -382,6 +466,10 @@
   "/home/sbrn/Projects/diversif/src/lib/server/db/seed.ts": {
     "mtime": 1777986940.3305151,
     "hash": "b5f5778e21d9e95b34d35957c2a7b21c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/backup.ts": {
+    "mtime": 1777994569.3128724,
+    "hash": "eb78af13e81e395b38a7099f765d6181"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries.test.ts": {
     "mtime": 1777986940.3305151,
@@ -415,14 +503,6 @@
     "mtime": 1777986940.3312488,
     "hash": "68fada3e2ba3746c9afe1c3d29f51cec"
   },
-  "/home/sbrn/Projects/diversif/src/lib/utils/categories.test.ts": {
-    "mtime": 1777986940.3312488,
-    "hash": "b9e8a4bdf5c5f088c64e0629f53916c2"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/categories.ts": {
-    "mtime": 1777986940.3312488,
-    "hash": "6e54d58302fca40e540462f7fdf38f09"
-  },
   "/home/sbrn/Projects/diversif/src/lib/utils/cn.test.ts": {
     "mtime": 1777986940.3312488,
     "hash": "47ea9c6983221e58e57a17c889f309c5"
@@ -455,14 +535,6 @@
     "mtime": 1777986940.3312488,
     "hash": "7e977ca0bdd4144a7d024e12acfb34fd"
   },
-  "/home/sbrn/Projects/diversif/src/lib/utils/reactions.test.ts": {
-    "mtime": 1777986940.3312488,
-    "hash": "60954533cc1946d91e1a5da53948df23"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/reactions.ts": {
-    "mtime": 1777986940.3312488,
-    "hash": "4b9b1dec9ff7de5fcbe80560b748dfb9"
-  },
   "/home/sbrn/Projects/diversif/src/lib/utils/search.test.ts": {
     "mtime": 1777986940.3312488,
     "hash": "769264178cf6d8c1d7fd8b8d8f53c992"
@@ -478,6 +550,30 @@
   "/home/sbrn/Projects/diversif/src/lib/utils/theme.ts": {
     "mtime": 1777986940.3312488,
     "hash": "fbbc0c97be40434e0b4c6cd127f0d2c1"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/categories.test.ts": {
+    "mtime": 1778009833.1549847,
+    "hash": "0eb3bffc1354958a2dd1aa2fe61828ef"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/categories.ts": {
+    "mtime": 1778009833.1549847,
+    "hash": "70d0209d249cd1e4238f6dfc443a6fcd"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/milestones.test.ts": {
+    "mtime": 1778009833.1549847,
+    "hash": "be6d171112b680431d7f278b9aa3046b"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/milestones.ts": {
+    "mtime": 1778009833.1549847,
+    "hash": "5de2d2156d732cebb8c834850c2c85d3"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/reactions.test.ts": {
+    "mtime": 1778009833.1549847,
+    "hash": "958398c5c685be81d75127978cb66a58"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/reactions.ts": {
+    "mtime": 1778009833.1549847,
+    "hash": "d7aa6ad2f256de9d0f04d596c9311e5b"
   },
   "/home/sbrn/Projects/diversif/src/routes/+error.svelte": {
     "mtime": 1777986940.3312488,
@@ -547,21 +643,9 @@
     "mtime": 1777986940.3320394,
     "hash": "3807d7998253a03499608375dd40f1d0"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.server.ts": {
-    "mtime": 1777986940.3321404,
-    "hash": "f46442c82e6b766b94f62cde76cc7ec0"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.svelte": {
     "mtime": 1777986940.3321846,
     "hash": "1f9a45a858e9f3d7f74586a9f5bbdb42"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.server.ts": {
-    "mtime": 1777986940.3321846,
-    "hash": "cbf2060486ec6ca8852f8620ff83b727"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.svelte": {
-    "mtime": 1777986940.3321846,
-    "hash": "cd9b3752c2ec4bee10a2d704fa82e754"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/layout.server.test.ts": {
     "mtime": 1777986940.3326192,
@@ -570,6 +654,18 @@
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/page.server.test.ts": {
     "mtime": 1777986940.332857,
     "hash": "651c4d636a6d20a36a3888a43a7594f8"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.server.ts": {
+    "mtime": 1777994438.9632654,
+    "hash": "707b84390d20a66238a3d20ae7b14e06"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.server.ts": {
+    "mtime": 1777994438.9632654,
+    "hash": "5f98952081e53bba89a1b1ad8323fb53"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.svelte": {
+    "mtime": 1778009833.1549847,
+    "hash": "566e121c254dcb493374dbf8c637e4d6"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/allergens/+page.server.ts": {
     "mtime": 1777986940.3321846,
@@ -587,13 +683,13 @@
     "mtime": 1777986940.3323205,
     "hash": "37ce617cef1cff10e1eff01e41e39acf"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/+page.svelte": {
-    "mtime": 1777986940.3324866,
-    "hash": "250816b8f20d441d593d9df99feb59d2"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/page.server.test.ts": {
     "mtime": 1777986940.3324866,
     "hash": "1d7ac4a7b60bb665ee7439841b988e56"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/+page.svelte": {
+    "mtime": 1778009833.1549847,
+    "hash": "241ca7f8311644354c9dd1df06368c17"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/guide/+page.server.ts": {
     "mtime": 1777986940.3324866,
@@ -608,32 +704,28 @@
     "hash": "84bcbc7f9383a8dbd16786d70919edfb"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.server.ts": {
-    "mtime": 1777986940.3326192,
-    "hash": "3923d90f6947b0e8abeacb7a9fc75c78"
+    "mtime": 1778009833.1549847,
+    "hash": "df72d23f32401b0539a7e2a84c51fc21"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.svelte": {
-    "mtime": 1777986940.332776,
-    "hash": "86d84c1e1adbab4378c5f5816557ce5e"
+    "mtime": 1778009833.1549847,
+    "hash": "a85c642991460e6251776c00502d1741"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/page.server.test.ts": {
-    "mtime": 1777986940.332857,
-    "hash": "28bea35a1b4cb96cf1ebb971e75c0a6f"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
-    "mtime": 1777986940.332776,
-    "hash": "ce805d3cf4d267fc786ca6f04afd23d7"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.svelte": {
-    "mtime": 1777986940.332857,
-    "hash": "4958105ab46b6c319b504efdafa40803"
+    "mtime": 1778009833.1549847,
+    "hash": "40878fb6eec5e81ba62aa231df4f3dc2"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/page.server.test.ts": {
     "mtime": 1777986940.332857,
     "hash": "8193339a02e623e8498de5a921be39d5"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.server.ts": {
-    "mtime": 1777986940.332857,
-    "hash": "10c4be34fe8aabc8a9fd9cccd0b502b8"
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
+    "mtime": 1777994438.9632654,
+    "hash": "1e29c5b3dfd4e52fda1445f318760c10"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.svelte": {
+    "mtime": 1778009833.1549847,
+    "hash": "dfe927f2d2610f3e5067033ae6560152"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.svelte": {
     "mtime": 1777986940.3330193,
@@ -643,17 +735,21 @@
     "mtime": 1777986940.3330193,
     "hash": "2bedc522177a22d71a231d6d9f2ff016"
   },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.server.ts": {
+    "mtime": 1777994438.9632654,
+    "hash": "c5cc8c5d5aac93c7d50dc24da004a88a"
+  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.server.ts": {
     "mtime": 1777986940.3330193,
     "hash": "81b80788ec180da0f17235d989752b32"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.svelte": {
-    "mtime": 1777986940.333135,
-    "hash": "ac76e00700f259cafb088b4a8c65d5c2"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/page.server.test.ts": {
     "mtime": 1777986940.333135,
     "hash": "8bd830d4a035b48f894a68d2e41c3292"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.svelte": {
+    "mtime": 1778009833.1549847,
+    "hash": "3811394834587d2cb7064fb1e61395ec"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/new/+page.server.ts": {
     "mtime": 1777986940.333135,
@@ -712,8 +808,8 @@
     "hash": "fa36b3639358d3626a73ca1faf537afb"
   },
   "/home/sbrn/Projects/diversif/src/routes/logout/server.test.ts": {
-    "mtime": 1777986940.3337202,
-    "hash": "d974f9d60a29edcd554126bedea93e1d"
+    "mtime": 1777994438.9632654,
+    "hash": "1f10ed8ba4c695241d21682418e19e85"
   },
   "/home/sbrn/Projects/diversif/src/routes/mentions-legales/+page.server.ts": {
     "mtime": 1777986940.3337202,
@@ -740,24 +836,24 @@
     "hash": "c845f3cb8176c5ad4ea05607668ed38a"
   },
   "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/verify/server.test.ts": {
-    "mtime": 1777986940.3339684,
-    "hash": "96ee6fb8fad46e1f38044f0c34f3b6d1"
+    "mtime": 1777994438.9632654,
+    "hash": "30976001f3779c7f110c91c0d37fa564"
   },
   "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/options/+server.ts": {
     "mtime": 1777986940.3340094,
     "hash": "daa862a5474d0be7a2a64ba543226000"
   },
   "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/options/server.test.ts": {
-    "mtime": 1777986940.3340378,
-    "hash": "f58414442fd08c977d2b84fd318275c1"
+    "mtime": 1777994438.9632654,
+    "hash": "95302fa3ef87edce13fb758f1e98d886"
   },
   "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/verify/+server.ts": {
     "mtime": 1777986940.3340378,
     "hash": "8cb94abdcd73b33cd6eb89a1555b1f5f"
   },
   "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/verify/server.test.ts": {
-    "mtime": 1777986940.3340938,
-    "hash": "eaeaba1bc358098229baf8444dd0a968"
+    "mtime": 1777994438.9632654,
+    "hash": "eebc72c48d5260529eeb59380aa97344"
   },
   "/home/sbrn/Projects/diversif/src/routes/politique-confidentialite/+page.server.ts": {
     "mtime": 1777986940.3340938,
@@ -827,8 +923,808 @@
     "mtime": 1777986940.3345294,
     "hash": "79c189afcfd4d6c2f315a7f3cea64e8d"
   },
+  "/home/sbrn/Projects/diversif/static/theme-init.js": {
+    "mtime": 1777986940.3346534,
+    "hash": "2214b2ce9b02a296c3cddffc3e374892"
+  },
+  "/home/sbrn/Projects/diversif/coverage/block-navigation.js": {
+    "mtime": 1778009311.596154,
+    "hash": "13c8dd65c9b9571b0b4960aeaf3fab0a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/sorter.js": {
+    "mtime": 1778009311.5962768,
+    "hash": "e2f5129270684bf835820ca4433b4abb"
+  },
+  "/home/sbrn/Projects/diversif/coverage/prettify.js": {
+    "mtime": 1778009311.596383,
+    "hash": "6051903a2f7363ee232a01bd32f60b6a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/block-navigation.js": {
+    "mtime": 1778009311.614914,
+    "hash": "13c8dd65c9b9571b0b4960aeaf3fab0a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/sorter.js": {
+    "mtime": 1778009311.6150284,
+    "hash": "e2f5129270684bf835820ca4433b4abb"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/prettify.js": {
+    "mtime": 1778009311.6151333,
+    "hash": "6051903a2f7363ee232a01bd32f60b6a"
+  },
+  "/home/sbrn/Projects/diversif/README.md": {
+    "mtime": 1777986940.326292,
+    "hash": "2a412109e704859008609cddf8c68264"
+  },
+  "/home/sbrn/Projects/diversif/docker-compose.yml": {
+    "mtime": 1777986940.326292,
+    "hash": "9a63ed9d1532807d69f706691d00ddb1"
+  },
+  "/home/sbrn/Projects/diversif/CLAUDE.md": {
+    "mtime": 1777995307.2786455,
+    "hash": "5b84db742746683d1a11d51ad2c7b723"
+  },
   "/home/sbrn/Projects/diversif/src/app.html": {
     "mtime": 1777986940.3285525,
     "hash": "5d9e376d5523ed9ba46c7e734a7cadd1"
+  },
+  "/home/sbrn/Projects/diversif/coverage/index.html": {
+    "mtime": 1778009311.5971315,
+    "hash": "fed1f47761210a95df0184f82db66f60"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/index.html": {
+    "mtime": 1778009311.5971315,
+    "hash": "a5163193e20efa0f64975464c27d3aa6"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/hooks.server.ts.html": {
+    "mtime": 1778009311.5981317,
+    "hash": "b5fa0739d863518c81cc3f564ac60e21"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/index.html": {
+    "mtime": 1778009311.5981317,
+    "hash": "7fd3a3e4044a67d9c216d94667a50ad0"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/seo.ts.html": {
+    "mtime": 1778009311.598759,
+    "hash": "7560665965a2c0e32831f876e6868211"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/content/index.html": {
+    "mtime": 1778009311.598759,
+    "hash": "ef6b91e7939bf5f063cad0dba5ba9043"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/content/guidance.ts.html": {
+    "mtime": 1778009311.6011314,
+    "hash": "eb7dc8ef953eadef2128e4051882fad5"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/content/sources.ts.html": {
+    "mtime": 1778009311.6011314,
+    "hash": "354db9b582d6c69f1c89e665032797f4"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/index.html": {
+    "mtime": 1778009311.6011314,
+    "hash": "e4d1dfee9875cb6ca2b57b83525df099"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/auth.ts.html": {
+    "mtime": 1778009311.6019773,
+    "hash": "483950bfb1401d0a0ccef7025b26907c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/cleanup.ts.html": {
+    "mtime": 1778009311.6022162,
+    "hash": "528c458c1b60f51ab2908e9fdf448df3"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/gdpr.ts.html": {
+    "mtime": 1778009311.602408,
+    "hash": "e43b56b140b0c54bc3d85a14c49fee8b"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/guards.ts.html": {
+    "mtime": 1778009311.6028543,
+    "hash": "6b3f32cbeab4e075bc92002a835bc8f6"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/legal.ts.html": {
+    "mtime": 1778009311.6030045,
+    "hash": "bd3d2ab61864e28635e3ef2f43ba0e47"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/passkeys.ts.html": {
+    "mtime": 1778009311.6031513,
+    "hash": "403d29f229d17da5225a38fb8c7455d4"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/rate-limit.ts.html": {
+    "mtime": 1778009311.603619,
+    "hash": "188777a2befc7644b08dd69debe514a2"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/db/index.html": {
+    "mtime": 1778009311.603619,
+    "hash": "429c94e3c60959ce8bbe872ffa4d3042"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/db/backup.ts.html": {
+    "mtime": 1778009311.6039577,
+    "hash": "65a2d5c15de0e1474dba907cff0724d9"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/db/seed.ts.html": {
+    "mtime": 1778009311.6041803,
+    "hash": "19d51159c6cb87a98211386e73592036"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/guidance/index.html": {
+    "mtime": 1778009311.6041803,
+    "hash": "3107067a18659dfd0181ac8594eaa4f9"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/guidance/queries.ts.html": {
+    "mtime": 1778009311.60459,
+    "hash": "8af3995bb048233f7a1a924371386738"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/server/guidance/reminders.ts.html": {
+    "mtime": 1778009311.6051316,
+    "hash": "45b764d71b2ef584e8d9cd1452cade14"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/index.html": {
+    "mtime": 1778009311.6051316,
+    "hash": "509aaa78a107083c44e71ef07a9fd53e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/age.ts.html": {
+    "mtime": 1778009311.6057985,
+    "hash": "c63efaf1e3e75cf217309eea7c308d99"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/allergens.ts.html": {
+    "mtime": 1778009311.605946,
+    "hash": "ce381933fc461193e610fa788a734af6"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/categories.ts.html": {
+    "mtime": 1778009311.6060627,
+    "hash": "d12cf663e40f55298bd2d1237e8a715c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/cn.ts.html": {
+    "mtime": 1778009311.6062653,
+    "hash": "c37895d6d67e73f3c72aa74f2aa431df"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/dates.ts.html": {
+    "mtime": 1778009311.6063545,
+    "hash": "fee494a696ea956b4ac3411bc85921bb"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/invites.ts.html": {
+    "mtime": 1778009311.606505,
+    "hash": "f8144571b120cd73696885fcf3bd75f7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/milestones.ts.html": {
+    "mtime": 1778009311.6066904,
+    "hash": "15b571be6320a05d069f23288e3dca7b"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/nav.ts.html": {
+    "mtime": 1778009311.6068754,
+    "hash": "e3f77603a45295ee9547e249c9455094"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/reactions.ts.html": {
+    "mtime": 1778009311.6070237,
+    "hash": "39bf9666fe95180faf3209e09152cb66"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/search.ts.html": {
+    "mtime": 1778009311.6071935,
+    "hash": "0aa97ac72940d6388870b75844998a86"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/lib/utils/theme.ts.html": {
+    "mtime": 1778009311.6073122,
+    "hash": "c4708caf7461a900f5d746cf97bcdc68"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/index.html": {
+    "mtime": 1778009311.6073122,
+    "hash": "9615a3e4cd49235704107249cede72d1"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/+layout.server.ts.html": {
+    "mtime": 1778009311.6075456,
+    "hash": "7e454928432089136327a00b07ae2a33"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/+page.server.ts.html": {
+    "mtime": 1778009311.607687,
+    "hash": "3b4e75529968fba3158ae45048ece1c9"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/account/index.html": {
+    "mtime": 1778009311.607687,
+    "hash": "9aea5ea0f1c636922ed4b931b457350e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/account/+page.server.ts.html": {
+    "mtime": 1778009311.6078897,
+    "hash": "8141d982c19000f7b8c0fc4d662ed6b2"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/account/export/index.html": {
+    "mtime": 1778009311.6078897,
+    "hash": "178b1c127fc79be5d419714d79906c27"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/account/export/+server.ts.html": {
+    "mtime": 1778009311.6081822,
+    "hash": "172e7b3a84f6e0734939e17c1c4f4de1"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/allergens/index.html": {
+    "mtime": 1778009311.6081822,
+    "hash": "86b6607187c9e7b1aeba26174de6031d"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/allergens/+page.server.ts.html": {
+    "mtime": 1778009311.6084092,
+    "hash": "2e19e989c8f7d8735f1c4364d795c661"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/index.html": {
+    "mtime": 1778009311.6084092,
+    "hash": "88f1bf83c9a2d0aecd305829b3764766"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/+layout.server.ts.html": {
+    "mtime": 1778009311.6085987,
+    "hash": "2d1548d6e6c866347410b032f34d66f3"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/+page.server.ts.html": {
+    "mtime": 1778009311.608716,
+    "hash": "5df7e273c8ce8757b87296c3b5761914"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/allergens/index.html": {
+    "mtime": 1778009311.608716,
+    "hash": "5cc29b5fddb09955daa7f0dfb74e676e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/allergens/+page.server.ts.html": {
+    "mtime": 1778009311.6090827,
+    "hash": "cb0c48756c64fdd24377ce240d60a4df"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/foods/index.html": {
+    "mtime": 1778009311.6090827,
+    "hash": "26ed1e54b36020132f97ecfaf4eb4032"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/foods/+page.server.ts.html": {
+    "mtime": 1778009311.6093206,
+    "hash": "81979a727043e69bc09ea68e4d46afaf"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/guide/index.html": {
+    "mtime": 1778009311.6093206,
+    "hash": "a55641ce29b7caf936987cd2f20aba2e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/guide/+page.server.ts.html": {
+    "mtime": 1778009311.609583,
+    "hash": "55df97eb12d783ec7c6cf8e62cfb8c17"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/log/index.html": {
+    "mtime": 1778009311.609583,
+    "hash": "27d8c0a870680a9ff141c76a0a7d5a17"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/log/+page.server.ts.html": {
+    "mtime": 1778009311.6097753,
+    "hash": "e78fe97c8c1453eb37268e6ff0b8a81e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/log/[entryId]/index.html": {
+    "mtime": 1778009311.6097753,
+    "hash": "593ccbbbb0911e0388f2c7c10209542a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/log/[entryId]/+page.server.ts.html": {
+    "mtime": 1778009311.6101358,
+    "hash": "847c60d7ab2ff140b5e7d0f734cb4f05"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/settings/index.html": {
+    "mtime": 1778009311.6101358,
+    "hash": "537714ccab726032c75d054355d785a8"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/settings/+page.server.ts.html": {
+    "mtime": 1778009311.610474,
+    "hash": "82478270b04c032cf620a40a21ce9e17"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/suggestions/index.html": {
+    "mtime": 1778009311.610474,
+    "hash": "2aa9a9bc43628209ed8aa694850fc706"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/suggestions/+page.server.ts.html": {
+    "mtime": 1778009311.610824,
+    "hash": "2f4e985a515b043feb31a160fdcf5741"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/new/index.html": {
+    "mtime": 1778009311.610824,
+    "hash": "cdec71d9461a6d23fcd3342045d950ff"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/new/+page.server.ts.html": {
+    "mtime": 1778009311.611039,
+    "hash": "6b9fcc9d8dc5ce767bca1a5f2db5d2ee"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/guide/index.html": {
+    "mtime": 1778009311.611039,
+    "hash": "9ed205958460776ef8a5f1e02769bbe5"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/guide/+page.server.ts.html": {
+    "mtime": 1778009311.6112485,
+    "hash": "3e9fd7bce253e5d197a020870887c4ac"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/join/[code]/index.html": {
+    "mtime": 1778009311.6112485,
+    "hash": "e30ac835c48986c23db18bfef61e0fc3"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/join/[code]/+page.server.ts.html": {
+    "mtime": 1778009311.6114287,
+    "hash": "a611c89f451b6b9e26b7c6f2b5472cdb"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/login/index.html": {
+    "mtime": 1778009311.6114287,
+    "hash": "dfec47112ae9b327211a338f8dd4036d"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/login/+page.server.ts.html": {
+    "mtime": 1778009311.6116993,
+    "hash": "89c41eb6e0c4d5ae9a1e3903000c7ad3"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/logout/index.html": {
+    "mtime": 1778009311.6116993,
+    "hash": "302428c90121f29862ac2007b291f5ae"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/logout/+server.ts.html": {
+    "mtime": 1778009311.6119285,
+    "hash": "51f04a63aac4e5f0d4406d2ba8d5c0f7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/mentions-legales/index.html": {
+    "mtime": 1778009311.6119285,
+    "hash": "d51866374d40ef49549e5bddc4cec1bb"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/mentions-legales/+page.server.ts.html": {
+    "mtime": 1778009311.6121023,
+    "hash": "6c52290daba601862ceeee7f0eb040e4"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/authentication/options/index.html": {
+    "mtime": 1778009311.6121023,
+    "hash": "d969f14eb1d54ee5be23dfd203c6a26e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/authentication/options/+server.ts.html": {
+    "mtime": 1778009311.6123357,
+    "hash": "1b27796302000b243bdde18fc0535840"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/authentication/verify/index.html": {
+    "mtime": 1778009311.6123357,
+    "hash": "bf0b00fe1b005c38dd45444514590d65"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/authentication/verify/+server.ts.html": {
+    "mtime": 1778009311.6125424,
+    "hash": "e9c83e4bc83e8f5cddcdef31604db1f6"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/registration/options/index.html": {
+    "mtime": 1778009311.6125424,
+    "hash": "9f5f4e2a20e37644c6da541826b0f3b4"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/registration/options/+server.ts.html": {
+    "mtime": 1778009311.6127946,
+    "hash": "fbc3b6bdcc8c90ded933816479d91387"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/registration/verify/index.html": {
+    "mtime": 1778009311.6127946,
+    "hash": "b257341c04a1382f582bd84bee631d1c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/registration/verify/+server.ts.html": {
+    "mtime": 1778009311.6130037,
+    "hash": "5875f1ff78b3ab7a70348ce5d65c51b9"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/politique-confidentialite/index.html": {
+    "mtime": 1778009311.6130037,
+    "hash": "5468e65ee30bfb2f20a22ad5d65f0c7e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/politique-confidentialite/+page.server.ts.html": {
+    "mtime": 1778009311.6132138,
+    "hash": "2010973fb06d513136772a2138756263"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/robots.txt/index.html": {
+    "mtime": 1778009311.6132138,
+    "hash": "71e521a239b7de109344cd30f6bfd1d8"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/robots.txt/+server.ts.html": {
+    "mtime": 1778009311.6133826,
+    "hash": "8f5802739d1ea00b58cb875ae3e46af1"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/signup/index.html": {
+    "mtime": 1778009311.6133826,
+    "hash": "d582cbb2260c194ee7e0ee581f13185c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/signup/+page.server.ts.html": {
+    "mtime": 1778009311.6135676,
+    "hash": "0e61801c20d74a240a87889f303b4941"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/sitemap.xml/index.html": {
+    "mtime": 1778009311.6135676,
+    "hash": "aef0d518f419d5d1f4a8b6561a32b84f"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/sitemap.xml/+server.ts.html": {
+    "mtime": 1778009311.6139266,
+    "hash": "8213e19331ce062ab0b7762870b2bd9c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/sources/index.html": {
+    "mtime": 1778009311.6139266,
+    "hash": "edde42c3a30eaddcc57113b606813966"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/sources/+page.server.ts.html": {
+    "mtime": 1778009311.6141746,
+    "hash": "61086301a230cc65d1a79ff579404f9b"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/index.html": {
+    "mtime": 1778009311.6151774,
+    "hash": "377708e9d704db80520216a7d31cadf2"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/index.html": {
+    "mtime": 1778009311.6151774,
+    "hash": "ee8ed30c4052d0422a64f6bc6fca75d9"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/hooks.server.ts.html": {
+    "mtime": 1778009311.6160781,
+    "hash": "1847695e55e477dedfc203e1d156cf39"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/index.html": {
+    "mtime": 1778009311.6160781,
+    "hash": "f5e2c5420997654e950ae5d0cbd0f26b"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/seo.ts.html": {
+    "mtime": 1778009311.6161313,
+    "hash": "dfb7436860586847a2bb94283bfbd9a8"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/content/index.html": {
+    "mtime": 1778009311.6161313,
+    "hash": "0f31dfc888d7707b99711534842a5e7f"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/content/guidance.ts.html": {
+    "mtime": 1778009311.6201315,
+    "hash": "eadd55d65b93c4f160389b88da5a9e73"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/content/sources.ts.html": {
+    "mtime": 1778009311.6211314,
+    "hash": "89b5e1524b29c53c27034a9185618020"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/index.html": {
+    "mtime": 1778009311.6211314,
+    "hash": "497ce5c5b67a11900022e6ffc83be69a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/auth.ts.html": {
+    "mtime": 1778009311.622123,
+    "hash": "337b0a85c73f0d3e68440594d4bfe061"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/cleanup.ts.html": {
+    "mtime": 1778009311.6221313,
+    "hash": "18f6898ade77528ec224f1d745326ffe"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/gdpr.ts.html": {
+    "mtime": 1778009311.623292,
+    "hash": "cfd5b21ef6d7c26cdd1043bd0fd77ab3"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/guards.ts.html": {
+    "mtime": 1778009311.6238654,
+    "hash": "977241f501825076c75e845094fedee0"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/legal.ts.html": {
+    "mtime": 1778009311.624172,
+    "hash": "b906d80f8fad1f1edbd80a4924f91b46"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/passkeys.ts.html": {
+    "mtime": 1778009311.625309,
+    "hash": "e923b1b35c97a5074e4f3dd08b6a4ed1"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/rate-limit.ts.html": {
+    "mtime": 1778009311.626007,
+    "hash": "4cc9e8f2a2a5445f89f598a06c9593ac"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/db/index.html": {
+    "mtime": 1778009311.626007,
+    "hash": "4676aca2d5a61379c7a50c99f2f32774"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/db/backup.ts.html": {
+    "mtime": 1778009311.6261313,
+    "hash": "7d7dc625b892d156002703c18cb9afae"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/db/seed.ts.html": {
+    "mtime": 1778009311.6271374,
+    "hash": "011a39ed2e87eb9023e72061220c764c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/guidance/index.html": {
+    "mtime": 1778009311.6271374,
+    "hash": "5ac5211f8b663a9d8675281c3c8322ad"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/guidance/queries.ts.html": {
+    "mtime": 1778009311.627943,
+    "hash": "b9bbf6261d143665ed26038f2083fb0e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/guidance/reminders.ts.html": {
+    "mtime": 1778009311.6291313,
+    "hash": "7e56959276177a63252a2da38bcea803"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/index.html": {
+    "mtime": 1778009311.6291313,
+    "hash": "e2caff9338b453e598351fbae88acbfe"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/age.ts.html": {
+    "mtime": 1778009311.6298392,
+    "hash": "8adbb7072d88c4e90de7c906abc1cc8c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/allergens.ts.html": {
+    "mtime": 1778009311.6300788,
+    "hash": "0eee199e02b469ed98ff5c94cf06a86e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/categories.ts.html": {
+    "mtime": 1778009311.6301312,
+    "hash": "7fb61396903b8b696d6a4245cbfcb7b9"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/cn.ts.html": {
+    "mtime": 1778009311.6307497,
+    "hash": "45201b1362f6990937f0e9a06fbb1556"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/dates.ts.html": {
+    "mtime": 1778009311.6310618,
+    "hash": "151a77b595cef7f70cd20d6b731c8bed"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/invites.ts.html": {
+    "mtime": 1778009311.631302,
+    "hash": "97a8be8020f1ddde0b1b5e38d0793065"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/milestones.ts.html": {
+    "mtime": 1778009311.631647,
+    "hash": "91ca5d6eb01f3dd65f39b011a3ccc23e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/nav.ts.html": {
+    "mtime": 1778009311.631928,
+    "hash": "c273b612432e78cd6224552b6096c63b"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/reactions.ts.html": {
+    "mtime": 1778009311.632156,
+    "hash": "82c09f7b5181c93b0284c58318d223c8"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/search.ts.html": {
+    "mtime": 1778009311.6324112,
+    "hash": "1c5660b054b93aa76a56f9f2675e48fa"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/theme.ts.html": {
+    "mtime": 1778009311.632678,
+    "hash": "cb5080803f86d6bd5805683836063f60"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/index.html": {
+    "mtime": 1778009311.632678,
+    "hash": "897ca37676fb571618f668d7aa7a940a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/+layout.server.ts.html": {
+    "mtime": 1778009311.633027,
+    "hash": "4a91ab91a160b2ec243b1aa676b05545"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/+page.server.ts.html": {
+    "mtime": 1778009311.6332443,
+    "hash": "9b1a7ef546ee2d677cc9feb8e4e8334b"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/account/index.html": {
+    "mtime": 1778009311.6332443,
+    "hash": "f846ea794d95473a905d110fd98899b1"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/account/+page.server.ts.html": {
+    "mtime": 1778009311.6338322,
+    "hash": "671a8a9b2b4c6ad9598191f4f22733f7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/account/export/index.html": {
+    "mtime": 1778009311.6338322,
+    "hash": "c1f4a1a33d927c8c8c1bc60779c38718"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/account/export/+server.ts.html": {
+    "mtime": 1778009311.6341312,
+    "hash": "e78947dff47c6e56054386b468f4cce4"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/allergens/index.html": {
+    "mtime": 1778009311.6341312,
+    "hash": "6761500f277dc4075e017e204b4a1f04"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/allergens/+page.server.ts.html": {
+    "mtime": 1778009311.6346908,
+    "hash": "78bfb3e4cd1c1fff6a65858cdb036c7e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/index.html": {
+    "mtime": 1778009311.6346908,
+    "hash": "9353b1f16b1d229e76756e6b4fbe7adc"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/+layout.server.ts.html": {
+    "mtime": 1778009311.6350105,
+    "hash": "aa8def19bd26394d3a76092107601f87"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/+page.server.ts.html": {
+    "mtime": 1778009311.6351311,
+    "hash": "3775459c2a96bce33aaf6f28613275b3"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/allergens/index.html": {
+    "mtime": 1778009311.6351311,
+    "hash": "83ffcede31724096451e9c6321d521d7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/allergens/+page.server.ts.html": {
+    "mtime": 1778009311.6361809,
+    "hash": "be5a7dc2ac183190dd90c8b6cc1f8d12"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/foods/index.html": {
+    "mtime": 1778009311.6361809,
+    "hash": "fbcfc0788c300843b4033473a8cd255a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/foods/+page.server.ts.html": {
+    "mtime": 1778009311.6366801,
+    "hash": "82cd636f498f585e31df1bbe1e7df872"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/guide/index.html": {
+    "mtime": 1778009311.6366801,
+    "hash": "a2b86776ea720aa100db30bca2b1540c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/guide/+page.server.ts.html": {
+    "mtime": 1778009311.6369874,
+    "hash": "cadc1feb8a6b863641bd2085319ec28a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/log/index.html": {
+    "mtime": 1778009311.6369874,
+    "hash": "0d124ff0e83e46e8cc5f91c0955c4274"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/log/+page.server.ts.html": {
+    "mtime": 1778009311.6371312,
+    "hash": "8ef709deba17b188a209c64e03c76452"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/log/[entryId]/index.html": {
+    "mtime": 1778009311.6371312,
+    "hash": "1db72b345b54a2ccb4e658a31ea443e0"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/log/[entryId]/+page.server.ts.html": {
+    "mtime": 1778009311.6381311,
+    "hash": "0a152dab0fc2b3b897a79d85c1cdc9d1"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/settings/index.html": {
+    "mtime": 1778009311.6381311,
+    "hash": "c2db3d30ce5114b3624321bc64c76b5d"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/settings/+page.server.ts.html": {
+    "mtime": 1778009311.6391313,
+    "hash": "82333bc37d22399aec42089a5cb8269a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/suggestions/index.html": {
+    "mtime": 1778009311.6391313,
+    "hash": "df61e125779615d73eb6c165f9a5e8de"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/suggestions/+page.server.ts.html": {
+    "mtime": 1778009311.6399906,
+    "hash": "7395129e121a219ded5c8c158930f4c6"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/new/index.html": {
+    "mtime": 1778009311.6399906,
+    "hash": "1ede88f719af4234fde461e96074d2b7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/new/+page.server.ts.html": {
+    "mtime": 1778009311.6401312,
+    "hash": "93f890af5d6e460d5cedd8b8c5fc963c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/guide/index.html": {
+    "mtime": 1778009311.6401312,
+    "hash": "e0aced86067f4db2cc914edf70316eef"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/guide/+page.server.ts.html": {
+    "mtime": 1778009311.6406436,
+    "hash": "cbedc040ceee9aa9b3605ea59371fcfc"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/join/[code]/index.html": {
+    "mtime": 1778009311.6406436,
+    "hash": "27009fbe5db8aa16d9f7fd958e4637de"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/join/[code]/+page.server.ts.html": {
+    "mtime": 1778009311.6411319,
+    "hash": "a5c8b2a60211f3716c91f8425b599d93"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/login/index.html": {
+    "mtime": 1778009311.6411319,
+    "hash": "d232f9c00278b5f7f33b075d6c44303d"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/login/+page.server.ts.html": {
+    "mtime": 1778009311.6416254,
+    "hash": "4f8104428a24e95c5bf0176cbe04e2a5"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/logout/index.html": {
+    "mtime": 1778009311.6416254,
+    "hash": "4b10ae099b5377bd3b7231a2c179bcdd"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/logout/+server.ts.html": {
+    "mtime": 1778009311.641925,
+    "hash": "fc9261ea560c74f2ace2151c272f2348"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/mentions-legales/index.html": {
+    "mtime": 1778009311.641925,
+    "hash": "abf151c9fe25b7fa575f83ce960ebfb7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/mentions-legales/+page.server.ts.html": {
+    "mtime": 1778009311.6421437,
+    "hash": "005953f0f69e896293e0358a843643db"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/authentication/options/index.html": {
+    "mtime": 1778009311.6421437,
+    "hash": "37ab252e23f0ad6a869a99e0121454b7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/authentication/options/+server.ts.html": {
+    "mtime": 1778009311.6424367,
+    "hash": "e69bbfdcebd278f23953ac1b2d70ca48"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/authentication/verify/index.html": {
+    "mtime": 1778009311.6424367,
+    "hash": "6ab343835b902d3a9f3e166e18c66517"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/authentication/verify/+server.ts.html": {
+    "mtime": 1778009311.64285,
+    "hash": "fd907d962d5193a41b8addde9311dee7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/registration/options/index.html": {
+    "mtime": 1778009311.64285,
+    "hash": "08e69e8288abd936354b3d995a9ddcc5"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/registration/options/+server.ts.html": {
+    "mtime": 1778009311.6432266,
+    "hash": "0e63052e65e1e65e4442de4f8e3774a7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/registration/verify/index.html": {
+    "mtime": 1778009311.6432266,
+    "hash": "c55c469d731b0223537bf7dd8950822c"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/registration/verify/+server.ts.html": {
+    "mtime": 1778009311.6436071,
+    "hash": "1244b998db942df59732f690457b701a"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/politique-confidentialite/index.html": {
+    "mtime": 1778009311.6436071,
+    "hash": "d637eef28537e39ad96f5ce0252b297e"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/politique-confidentialite/+page.server.ts.html": {
+    "mtime": 1778009311.6438897,
+    "hash": "e78c6dd33e81ca07ee4ad87e1110d0bb"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/robots.txt/index.html": {
+    "mtime": 1778009311.6438897,
+    "hash": "5998b2b481e0ecb1f9633e7c2027e979"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/robots.txt/+server.ts.html": {
+    "mtime": 1778009311.6441746,
+    "hash": "fe3dea82e609e4b622d3757268415f13"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/signup/index.html": {
+    "mtime": 1778009311.6441746,
+    "hash": "e89f0ac7715b94cb0d3ff7b9cc7794a3"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/signup/+page.server.ts.html": {
+    "mtime": 1778009311.644894,
+    "hash": "83e215dee454fdeb68adbcfbb300302b"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/sitemap.xml/index.html": {
+    "mtime": 1778009311.644894,
+    "hash": "b03258cc23f6595e1a3b6c0b3a4a2697"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/sitemap.xml/+server.ts.html": {
+    "mtime": 1778009311.645131,
+    "hash": "2870666108fa5b5146f6e8eb952c27c7"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/sources/index.html": {
+    "mtime": 1778009311.645131,
+    "hash": "1f4e77f13a05cde11c268dd9b429c3fe"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/sources/+page.server.ts.html": {
+    "mtime": 1778009311.6459353,
+    "hash": "762a973c8e5e5779de0d55d7a6037d79"
+  },
+  "/home/sbrn/Projects/diversif/graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md": {
+    "mtime": 1777989129.8008497,
+    "hash": "8d44fb3c5405840e5f21060915d15bc9"
+  },
+  "/home/sbrn/Projects/diversif/graphify-out/memory/query_20260505_140943_why_do_5__test_files_independently_call_hashpasswo.md": {
+    "mtime": 1777990183.5297256,
+    "hash": "24f44a49ae59007336bdfb8a389efd8d"
+  },
+  "/home/sbrn/Projects/diversif/static/favicon.svg": {
+    "mtime": 1777986940.3345294,
+    "hash": "153afe870528e1656e89e938a4b939e1"
+  },
+  "/home/sbrn/Projects/diversif/static/og-image.svg": {
+    "mtime": 1777986940.3346534,
+    "hash": "a59654b4da7890bdf940adb9c60c9229"
+  },
+  "/home/sbrn/Projects/diversif/static/icons/icon-192.png": {
+    "mtime": 1777986940.3346262,
+    "hash": "d451953c1832571543b657bc01041d11"
+  },
+  "/home/sbrn/Projects/diversif/static/icons/icon-512.png": {
+    "mtime": 1777986940.3346534,
+    "hash": "9004a35bfb4afee02cb902977627d429"
+  },
+  "/home/sbrn/Projects/diversif/coverage/favicon.png": {
+    "mtime": 1778009311.5961962,
+    "hash": "8c814a46f24208d0bc459bb2cf8b7b88"
+  },
+  "/home/sbrn/Projects/diversif/coverage/sort-arrow-sprite.png": {
+    "mtime": 1778009311.5962365,
+    "hash": "fd08a5625d21e34b1d6d9c026f2728a9"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/favicon.png": {
+    "mtime": 1778009311.614953,
+    "hash": "8c814a46f24208d0bc459bb2cf8b7b88"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/sort-arrow-sprite.png": {
+    "mtime": 1778009311.6149864,
+    "hash": "fd08a5625d21e34b1d6d9c026f2728a9"
   }
 }
