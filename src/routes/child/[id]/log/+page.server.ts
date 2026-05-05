@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
-import { and, eq, isNull, or, sql } from 'drizzle-orm';
+import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { requireMembership } from '$lib/server/guards';
@@ -109,12 +109,14 @@ export const actions: Actions = {
         .where(eq(foodEntries.childId, childId))
         .get()?.n ?? 0;
 
+    // Mirror loadDiversityMetrics: exclude the `autre` bucket so this count
+    // shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
     const priorCategoriesCovered =
       db
         .select({ n: sql<number>`count(distinct ${foods.category})` })
         .from(foodEntries)
         .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-        .where(eq(foodEntries.childId, childId))
+        .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
         .get()?.n ?? 0;
 
     const priorAllergenCount =
@@ -144,7 +146,7 @@ export const actions: Actions = {
         .select({ n: sql<number>`count(distinct ${foods.category})` })
         .from(foodEntries)
         .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-        .where(eq(foodEntries.childId, childId))
+        .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
         .get()?.n ?? 0;
 
     const search = new URLSearchParams({ logged: '1' });
