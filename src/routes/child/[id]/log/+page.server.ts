@@ -102,12 +102,13 @@ export const actions: Actions = {
     }
 
     // Snapshot pre-insert state so we can detect milestones after the insert.
+    // The `?? 0` fallbacks are defensive — sqlite COUNT() always returns a row.
     const priorEntryCount =
       db
         .select({ n: sql<number>`count(*)` })
         .from(foodEntries)
         .where(eq(foodEntries.childId, childId))
-        .get()?.n ?? 0;
+        .get()?.n /* v8 ignore next */ ?? 0;
 
     // Mirror loadDiversityMetrics: exclude the `autre` bucket so this count
     // shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
@@ -117,7 +118,7 @@ export const actions: Actions = {
         .from(foodEntries)
         .innerJoin(foods, eq(foods.id, foodEntries.foodId))
         .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
-        .get()?.n ?? 0;
+        .get()?.n /* v8 ignore next */ ?? 0;
 
     const priorAllergenCount =
       food.allergenType != null
@@ -126,7 +127,7 @@ export const actions: Actions = {
             .from(foodEntries)
             .innerJoin(foods, eq(foods.id, foodEntries.foodId))
             .where(and(eq(foodEntries.childId, childId), eq(foods.allergenType, food.allergenType)))
-            .get()?.n ?? 0)
+            .get()?.n /* v8 ignore next */ ?? 0)
         : null;
 
     db.insert(foodEntries)
@@ -147,7 +148,7 @@ export const actions: Actions = {
         .from(foodEntries)
         .innerJoin(foods, eq(foods.id, foodEntries.foodId))
         .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
-        .get()?.n ?? 0;
+        .get()?.n /* v8 ignore next */ ?? 0;
 
     const search = new URLSearchParams({ logged: '1' });
     if (priorEntryCount === 0) search.set('first', '1');
