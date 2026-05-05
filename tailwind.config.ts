@@ -58,7 +58,15 @@ const config: Config = {
           ras: 'hsl(var(--reaction-ras) / <alpha-value>)',
           inconfort: 'hsl(var(--reaction-inconfort) / <alpha-value>)',
           reaction: 'hsl(var(--reaction-reaction) / <alpha-value>)'
+        },
+        celebrate: {
+          DEFAULT: 'hsl(var(--celebrate) / <alpha-value>)',
+          foreground: 'hsl(var(--celebrate-foreground) / <alpha-value>)'
         }
+      },
+      transitionTimingFunction: {
+        soft: 'cubic-bezier(0.32, 0.72, 0, 1)',
+        spring: 'cubic-bezier(0.34, 1.4, 0.64, 1)'
       },
       borderRadius: {
         xl: 'calc(var(--radius) + 4px)',
@@ -84,7 +92,8 @@ const config: Config = {
           'Helvetica Neue',
           'Arial',
           'sans-serif'
-        ]
+        ],
+        display: ['"Fraunces Variable"', 'Fraunces', 'Georgia', 'serif']
       }
     }
   }

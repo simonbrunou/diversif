@@ -1,7 +1,8 @@
 <script lang="ts">
   import { fuzzyMatch, normalize } from '$lib/utils/search';
-  import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
+  import { CATEGORIES, getCategoryClasses, getCategoryIcon } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
+  import CategoryTag from '$lib/components/CategoryTag.svelte';
   import Input from '$components/ui/Input.svelte';
   import Select from '$components/ui/Select.svelte';
   import { cn } from '$lib/utils/cn';
@@ -78,15 +79,20 @@
         Tous
       </button>
       {#each CATEGORIES as c (c.id)}
+        {@const cls = getCategoryClasses(c.id)}
+        {@const Icon = getCategoryIcon(c.id)}
         <button
           type="button"
           class={cn(
-            'rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+            'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            activeCategory === c.id ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+            activeCategory === c.id
+              ? 'bg-primary text-primary-foreground'
+              : cn(cls.tint, cls.text, 'hover:brightness-95 dark:hover:brightness-110')
           )}
           onclick={() => (activeCategory = activeCategory === c.id ? '' : c.id)}
         >
+          <Icon size={12} aria-hidden="true" />
           {c.label}
         </button>
       {/each}
@@ -97,10 +103,10 @@
     <div class="flex items-center justify-between rounded-md border bg-accent/40 p-3">
       <div class="min-w-0">
         <div class="truncate font-medium">{selected.name}</div>
-        <div class="text-xs text-muted-foreground">
-          {getCategoryLabel(selected.category)}
+        <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <CategoryTag id={selected.category} size="sm" />
           {#if selected.allergenType}
-            · <span class="text-reaction-inconfort">{getAllergenLabel(selected.allergenType)}</span>
+            <span class="text-reaction-inconfort">· {getAllergenLabel(selected.allergenType)}</span>
           {/if}
         </div>
       </div>
@@ -124,8 +130,8 @@
                 <span class="ml-1 text-xs text-muted-foreground">(approchant)</span>
               {/if}
             </span>
-            <span class="ml-2 shrink-0 text-xs text-muted-foreground">
-              {getCategoryLabel(f.category)}
+            <span class="ml-2 flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+              <CategoryTag id={f.category} size="sm" />
               {#if f.allergenType}
                 · {getAllergenLabel(f.allergenType)}
               {/if}

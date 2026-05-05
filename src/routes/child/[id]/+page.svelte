@@ -9,8 +9,8 @@
   import TipCard from '$lib/components/TipCard.svelte';
   import StageBadge from '$lib/components/StageBadge.svelte';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
+  import CategoryTag from '$lib/components/CategoryTag.svelte';
   import { formatAge, ageInMonths } from '$lib/utils/age';
-  import { getCategoryLabel } from '$lib/utils/categories';
   import {
     getStageForAgeMonths,
     getTipsFor,
@@ -100,7 +100,7 @@
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
         <p class="text-xs font-medium uppercase tracking-wider text-primary/80">Suivi</p>
-        <h1 class="mt-1 truncate text-3xl font-semibold leading-tight md:text-4xl">
+        <h1 class="mt-1 truncate font-display text-3xl font-semibold leading-tight md:text-4xl">
           {data.child.name}
         </h1>
         <p class="mt-1 text-sm text-muted-foreground">{formatAge(data.child.birthDate)}</p>
@@ -138,7 +138,7 @@
         <UtensilsCrossed size={14} aria-hidden="true" />
         Aliments
       </div>
-      <div class="mt-2 text-3xl font-semibold leading-none">{data.stats.foodsIntroduced}</div>
+      <div class="mt-2 font-display text-2xl font-semibold leading-none tabular-nums md:text-3xl">{data.stats.foodsIntroduced}</div>
       <div class="mt-1 text-xs text-muted-foreground">introduits au total</div>
     </Card>
     <Card class="p-4">
@@ -146,7 +146,7 @@
         <ShieldCheck size={14} aria-hidden="true" />
         Allergènes
       </div>
-      <div class="mt-2 text-3xl font-semibold leading-none">
+      <div class="mt-2 font-display text-2xl font-semibold leading-none tabular-nums md:text-3xl">
         {data.stats.allergens.introduced}
         <span class="text-base font-normal text-muted-foreground">/ {data.stats.allergens.total}</span>
       </div>
@@ -157,7 +157,7 @@
         <CalendarDays size={14} aria-hidden="true" />
         Cette semaine
       </div>
-      <div class="mt-2 text-3xl font-semibold leading-none">{data.stats.weekCount}</div>
+      <div class="mt-2 font-display text-2xl font-semibold leading-none tabular-nums md:text-3xl">{data.stats.weekCount}</div>
       <div class="mt-1 text-xs text-muted-foreground">
         {data.stats.weekCount > 1 ? 'aliments enregistrés' : 'aliment enregistré'}
       </div>
@@ -215,9 +215,9 @@
                     <span class="truncate font-medium">{e.foodName}</span>
                     <ReactionBadge reaction={e.reaction} />
                   </div>
-                  <div class="mt-0.5 text-xs text-muted-foreground">
-                    par {e.loggedByName}
-                    <span class="opacity-70">· {getCategoryLabel(e.category)}</span>
+                  <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                    <span>par {e.loggedByName}</span>
+                    <CategoryTag id={e.category} size="sm" />
                   </div>
                 </div>
               </a>
@@ -250,9 +250,9 @@
                           <span class="truncate font-medium">{e.foodName}</span>
                           <ReactionBadge reaction={e.reaction} />
                         </div>
-                        <div class="mt-0.5 text-xs text-muted-foreground">
-                          {dayjs(e.givenAt).format('HH:mm')} · par {e.loggedByName}
-                          <span class="opacity-70">· {getCategoryLabel(e.category)}</span>
+                        <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                          <span>{dayjs(e.givenAt).format('HH:mm')} · par {e.loggedByName}</span>
+                          <CategoryTag id={e.category} size="sm" />
                         </div>
                       </div>
                     </a>

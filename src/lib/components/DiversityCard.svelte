@@ -26,9 +26,9 @@
   <dl class="mt-3 grid grid-cols-3 gap-3">
     <div>
       <dt class="text-[11px] uppercase tracking-wider text-muted-foreground">Catégories</dt>
-      <dd class="mt-1 text-2xl font-semibold leading-none">
+      <dd class="mt-1 font-display text-2xl font-semibold leading-none tabular-nums">
         {metrics.categoriesCovered}
-        <span class="text-base font-normal text-muted-foreground">/ {metrics.totalCategories}</span>
+        <span class="font-sans text-base font-normal text-muted-foreground">/ {metrics.totalCategories}</span>
       </dd>
       <p class="mt-1 text-[11px] text-muted-foreground">groupes couverts</p>
     </div>
@@ -38,7 +38,7 @@
         <Clock size={11} aria-hidden="true" />
         Nouveauté
       </dt>
-      <dd class="mt-1 truncate text-2xl font-semibold leading-none">{lastNewLabel}</dd>
+      <dd class="mt-1 truncate font-display text-2xl font-semibold leading-none">{lastNewLabel}</dd>
       <p class="mt-1 text-[11px] text-muted-foreground">dernier nouvel aliment</p>
     </div>
 
@@ -47,7 +47,7 @@
         <RotateCcw size={11} aria-hidden="true" />
         À reproposer
       </dt>
-      <dd class="mt-1 text-2xl font-semibold leading-none">{metrics.repeatExposureCount}</dd>
+      <dd class="mt-1 font-display text-2xl font-semibold leading-none tabular-nums">{metrics.repeatExposureCount}</dd>
       <p class="mt-1 text-[11px] text-muted-foreground">testés &lt; 3 fois</p>
     </div>
   </dl>
