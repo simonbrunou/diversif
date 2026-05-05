@@ -17,3 +17,6 @@ coverage
 .e2e-data
 playwright-report
 test-results
+graphify-out/cost.json
+graphify-out/.graphify_python
+graphify-out/.graphify_root

@@ -7,3 +7,4 @@ drizzle
 package-lock.json
 *.svelte
 .claude
+graphify-out

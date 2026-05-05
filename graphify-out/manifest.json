@@ -1,0 +1,834 @@
+{
+  "/home/sbrn/Projects/diversif/src/app.d.ts": {
+    "mtime": 1777986940.3285525,
+    "hash": "47b0dc265427c2e6b510aa13fde5aff5"
+  },
+  "/home/sbrn/Projects/diversif/src/hooks.server.test.ts": {
+    "mtime": 1777986940.3285525,
+    "hash": "b8a364c583e2b8cefa8c930aabd53c5c"
+  },
+  "/home/sbrn/Projects/diversif/src/hooks.server.ts": {
+    "mtime": 1777986940.3285525,
+    "hash": "20f5e8109a480b0795f0604e0cd243f5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/seo.test.ts": {
+    "mtime": 1777986940.3301184,
+    "hash": "3e8955a71bb8ef4e657fd490d0bd4bd0"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/seo.ts": {
+    "mtime": 1777986940.3301184,
+    "hash": "a71b081b851aacfc63d8b29a91e8944b"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/types.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "b1b6af0eeb4d8d3af785871da749bf24"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.svelte": {
+    "mtime": 1777986940.32866,
+    "hash": "db8973b06a0e7f5df45683fdee37a41d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "ec7c8890b48b3b21af4620d08f6f0391"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AllergenProgress.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "9020699a620c78e1d5cdd6d97541b633"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AllergenProgress.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "52fee7f27c35701f6d72ced710c5fc79"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AppShell.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "b1cf9881de4b287127bc22eb5ce03201"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AppShell.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "a5925e9db1e469882b34d616c71d4c7d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/BottomNav.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "d180d1e23d79e97c21658145e0df96ea"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/BottomNav.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "73bbeb064909722659ac5ae161907e01"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/DiversityCard.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "d1e1ca3c3f1347ab2bf983f59a1a746b"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/DiversityCard.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "2a570e78ef180f8bb143c838ea930397"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/EmptyState.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "2d73bacdde73728ac796ccfbcd623086"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/EmptyState.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "f4d99757a09ccd4f17466b46bdc2f40f"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/FoodCombobox.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "98ae8980ea44acb56ae40d89139b2d2d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/FoodCombobox.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "dcff0a9e0a6acd0b63477525ead9f49a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/GuideStaticSections.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "b4273195f233e078eba0b0d8bb49ab7f"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/GuideStaticSections.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "fb6d00457cd095334a93b400ca86a0a0"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/JsonLd.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "ecaaa15392e9c4f81f02b8779167df6c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/LegalLinks.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "285d6b4da30bde7d74bd8de06f0bb354"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/PublicFooter.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "54b4d4b1b315ff9516057e045b09af8f"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/PublicFooter.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "b4ad6b5b07dbca1823f57a59ea9c4509"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/PublicHeader.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "e852ac084a5691db75e8b392d9c90869"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/PublicHeader.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "4319f253bbd3081dd26631d17097007a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReactionBadge.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "ebf1eef323d0a2847a94a26091be00ab"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReactionBadge.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "51b13362889263d70302041bd80bc29a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReactionPicker.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "0604de03ac44254687362208abe12e79"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReactionPicker.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "708eab8ecc3448cbe035a2d87c20c7ea"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReminderBanner.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "39f9a6b2372334f8723600da13810ccb"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ReminderBanner.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "6ce2929a760c98a382647b38e54a21dd"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/Seo.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "3db104a1fd865383740cb4ad9585fa85"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/SourceCitation.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "586bcf728c9579b45ba432a3d5e3c6b7"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/SourceCitation.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "b91a62b6191faa974f746266be7f0ea5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/StageBadge.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "08426275cc8675ab11614d377123f1ec"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/StageBadge.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "a7a1c1ce460030357993f3034fce5ed4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ThemeToggle.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "cea81f846c10a4f2f5dcc89df807e89c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ThemeToggle.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "d689c915112c3eb8ad477a10702da0b3"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/TipCard.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "7e1491527eff894e5b2ddc14edfd3f62"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/TipCard.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "f450f263680d0db679dfd3a0549b0f8a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/WelcomeDialog.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "7045ad764d6d93331ea5bd361bed3159"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/WelcomeDialog.test.ts": {
+    "mtime": 1777986940.3286955,
+    "hash": "fd5425cd37875302924fb66c88b71138"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCta.svelte": {
+    "mtime": 1777986940.3286955,
+    "hash": "aff8509ed278d0f6e5d1ec719c00963d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCta.test.ts": {
+    "mtime": 1777986940.329566,
+    "hash": "ec223f42a2099630c1a409d3b888f500"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingFeatures.svelte": {
+    "mtime": 1777986940.329566,
+    "hash": "1bb62072eb6133e3cce037a70c2873eb"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingFeatures.test.ts": {
+    "mtime": 1777986940.329566,
+    "hash": "c970bf7ae25557dcfb61550ac315b091"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingHero.svelte": {
+    "mtime": 1777986940.329566,
+    "hash": "f1fcecff84af91f5a291b81eeb885e90"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingHero.test.ts": {
+    "mtime": 1777986940.329566,
+    "hash": "16e84df2934b5bd50e34344b8f959d72"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingTrust.svelte": {
+    "mtime": 1777986940.329566,
+    "hash": "5b3daed47aeedaa4b76474303a6c3b85"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingTrust.test.ts": {
+    "mtime": 1777986940.329566,
+    "hash": "7f3add6fa619935343dede4dbe9c8009"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Badge.svelte": {
+    "mtime": 1777986940.329566,
+    "hash": "de7e25c05653400be7d2f4e50b120e6c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Badge.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "798802c097b96b49ca819540057a299d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.svelte": {
+    "mtime": 1777986940.3297348,
+    "hash": "b9804d7dd70a5a3cc67ac3fed1d58b03"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "fa3dabd3423ef96a56850070c76eb9a5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.svelte": {
+    "mtime": 1777986940.3297348,
+    "hash": "8b3b3a5fa375d1de55685d67877652d4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "f84d910066e6eaab22a746dcd1404885"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Dialog.svelte": {
+    "mtime": 1777986940.3297348,
+    "hash": "c5211374f9beb64e35bb653d46bbab98"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Dialog.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "881fd4a457dc5d5f6525f09cb4a3ea7d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Input.svelte": {
+    "mtime": 1777986940.3297348,
+    "hash": "57d020d3f805cf5c93b3a85d66c0effa"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Input.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "d6c6762ae75b8acff71cf51402fa385a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Label.svelte": {
+    "mtime": 1777986940.3297348,
+    "hash": "76df27674b9f1d72c196f91884da58a8"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Label.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "d0e939d772e2521a788dc9df7ba524fe"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Select.svelte": {
+    "mtime": 1777986940.3297348,
+    "hash": "4e03d19273bacae214ecc43b5926dfd7"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Select.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "78d3d690aa9d67569b9c167c8194736d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Textarea.svelte": {
+    "mtime": 1777986940.3297348,
+    "hash": "dec59b169568cb4dbbd5d9cde5e2c61a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Textarea.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "29a31ea9f2ef02cbf5995c6475c74c11"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
+    "mtime": 1777986940.3297348,
+    "hash": "1099ccc015376940c86b99d5a68d9a8e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/content/guidance.ts": {
+    "mtime": 1777986940.3301184,
+    "hash": "716c8cb5e6cd68352e208d569bc205ee"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/content/sources.test.ts": {
+    "mtime": 1777986940.3301184,
+    "hash": "c765d5bdba24580bc336eee45c8aadeb"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/content/sources.ts": {
+    "mtime": 1777986940.3301184,
+    "hash": "07ef1dbfdd834a416237fc8a0e972e64"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/auth.session.test.ts": {
+    "mtime": 1777986940.3301184,
+    "hash": "799ae51e66dfff7a5982b10cd6767413"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/auth.test.ts": {
+    "mtime": 1777986940.3303578,
+    "hash": "315d7e5f27aac5e2a508921386be3934"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/auth.ts": {
+    "mtime": 1777986940.3303578,
+    "hash": "a94ee5ef89007f15c8b8d5e3c4167303"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/cleanup.test.ts": {
+    "mtime": 1777986940.3303578,
+    "hash": "d0daebbbdeaa8357212a6e173fd0c088"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/cleanup.ts": {
+    "mtime": 1777986940.3303578,
+    "hash": "2e9f2ba1502f6024f28a7e8974ea5734"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.test.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "c600988ed3ad035f4a6df2f206ca73a5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "ffa01a90f0fd14a0c800c86b63c9ea6b"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guards.test.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "dd4ae3f8f62ab6338d0cf5254e2b0807"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guards.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "08f31be2a5d053aa6c83df847a73f5e0"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/legal.test.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "c4ac36eef171f204a149a6d73c8f83ae"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/legal.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "088b6b0fe3587e79da74b643a2155f3d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/passkeys.test.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "d4ce816b1682840628b1af0b6066fb3e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/passkeys.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "4b763f680db16d52004cf95db7629e11"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/rate-limit.test.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "3ca1e46041bc1a82e7fc8c0650e9143c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/rate-limit.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "3b4be8b70ac59cc691ffd976b97e9225"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/backup.test.ts": {
+    "mtime": 1777986940.3303578,
+    "hash": "df7918b0ea2ff8d196a60b75f68aab01"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/backup.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "f70c38b9b0e4c6c9c533ee91f93c5a52"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/index.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "fb49fcafbbad708fdf9120a3d38e5114"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/migration.test.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "c98839e9d6dbae6c8c5a43a49daae4c9"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/schema.test.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "6b077ca6d50aae17ad6706be89df1b7c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/schema.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "5c6b6a43fbce50bb193b9f1fff81e02e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/seed.test.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "51b153b9aab02e1d859df604a4a1196f"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/seed.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "b5f5778e21d9e95b34d35957c2a7b21c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries.test.ts": {
+    "mtime": 1777986940.3305151,
+    "hash": "99ea1c20125174987ccc70c9748a915c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "3f214b385bc51ad1d7c121e9c159cf17"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/reminders.test.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "ecc2d8064de2ea70d6efdbd4e86a1dd5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/reminders.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "6440271a209b6519bb97d59ae4bb185f"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/age.test.ts": {
+    "mtime": 1777986940.3308783,
+    "hash": "0697b1973c46913698f4049902447623"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/age.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "441f57f0fe12d653672b47b6296a4c25"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/allergens.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "d3618ab9c9f2f6399b2e847571554efc"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/allergens.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "68fada3e2ba3746c9afe1c3d29f51cec"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/categories.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "b9e8a4bdf5c5f088c64e0629f53916c2"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/categories.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "6e54d58302fca40e540462f7fdf38f09"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/cn.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "47ea9c6983221e58e57a17c889f309c5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/cn.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "2d01b535f0be7422af24560c9f31c327"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/dates.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "b6fdf929926a508c78ded55e98782a09"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/dates.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "83a8765bf91b9cf17f3320a1b1d4eea0"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/invites.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "195f9c0e4012651b4b6beeb776104d24"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/invites.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "122dce0f7aa0c02668393e7347904194"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/nav.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "eaf7c76f2e25f444bfec217370611cef"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/nav.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "7e977ca0bdd4144a7d024e12acfb34fd"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/reactions.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "60954533cc1946d91e1a5da53948df23"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/reactions.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "4b9b1dec9ff7de5fcbe80560b748dfb9"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/search.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "769264178cf6d8c1d7fd8b8d8f53c992"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/search.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "f2c1c76e1c25718a48bc0fcc526fda2e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/theme.test.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "78907caef40a2e426083e457cc5d7e46"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/theme.ts": {
+    "mtime": 1777986940.3312488,
+    "hash": "fbbc0c97be40434e0b4c6cd127f0d2c1"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/+error.svelte": {
+    "mtime": 1777986940.3312488,
+    "hash": "0754fd21e35eba3a032e63fd260373ff"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/+layout.server.ts": {
+    "mtime": 1777986940.3316872,
+    "hash": "70fffb52c2fcd8472d1fe63aeff96d85"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/+layout.svelte": {
+    "mtime": 1777986940.3316872,
+    "hash": "808ce48b425079b6ed0199cfc6243cef"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/+page.server.ts": {
+    "mtime": 1777986940.3316872,
+    "hash": "d8b289231144639838b433c217c4bdc1"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/+page.svelte": {
+    "mtime": 1777986940.3316872,
+    "hash": "f4c92dc83bbe04aeaf843041611d3000"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/layout.server.test.ts": {
+    "mtime": 1777986940.333481,
+    "hash": "63ec531a742046e55dad880511280770"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
+    "mtime": 1777986940.3337736,
+    "hash": "eb1e69290d93b39f17314c4331abe2f4"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/account/+page.server.ts": {
+    "mtime": 1777986940.3316872,
+    "hash": "b52a73ccfaf07b58b17ced3f97d7533d"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/account/+page.svelte": {
+    "mtime": 1777986940.3318114,
+    "hash": "4f6373e507a0b4d89c591cca038e0bb4"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/account/page.server.test.ts": {
+    "mtime": 1777986940.3319242,
+    "hash": "6cc54052bfa2e4a4cad430d395939a57"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/account/deleted/+page.svelte": {
+    "mtime": 1777986940.3318114,
+    "hash": "ff25fea50af9ab1b10edf38f7becdf91"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/account/export/+server.ts": {
+    "mtime": 1777986940.3318114,
+    "hash": "54e50fd18f952dcb68ee41fa047033da"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/account/export/server.test.ts": {
+    "mtime": 1777986940.3319242,
+    "hash": "8cc5bae872a366ea2f6e11f1a515075d"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/allergens/+page.server.ts": {
+    "mtime": 1777986940.3319242,
+    "hash": "d3578a07ef8e970937c9c50a165c1bf3"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/allergens/+page.svelte": {
+    "mtime": 1777986940.3320394,
+    "hash": "91b31892b478339f08c8eb01f178f29b"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/allergens/page.server.test.ts": {
+    "mtime": 1777986940.3320394,
+    "hash": "7060c932aabcbe14865cba61117f617e"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/cgu/+page.svelte": {
+    "mtime": 1777986940.3320394,
+    "hash": "3807d7998253a03499608375dd40f1d0"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.server.ts": {
+    "mtime": 1777986940.3321404,
+    "hash": "f46442c82e6b766b94f62cde76cc7ec0"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.svelte": {
+    "mtime": 1777986940.3321846,
+    "hash": "1f9a45a858e9f3d7f74586a9f5bbdb42"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.server.ts": {
+    "mtime": 1777986940.3321846,
+    "hash": "cbf2060486ec6ca8852f8620ff83b727"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.svelte": {
+    "mtime": 1777986940.3321846,
+    "hash": "cd9b3752c2ec4bee10a2d704fa82e754"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/layout.server.test.ts": {
+    "mtime": 1777986940.3326192,
+    "hash": "e0d4d056f67e8547e9c9d7afdc3bf82b"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/page.server.test.ts": {
+    "mtime": 1777986940.332857,
+    "hash": "651c4d636a6d20a36a3888a43a7594f8"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/allergens/+page.server.ts": {
+    "mtime": 1777986940.3321846,
+    "hash": "ce4964d619c74b5fc8be5c36bf154428"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/allergens/+page.svelte": {
+    "mtime": 1777986940.3323205,
+    "hash": "5f5058d17f0a9a72123788e8087fc75a"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/allergens/page.server.test.ts": {
+    "mtime": 1777986940.3323205,
+    "hash": "da8c192dca370afeda027b8ac86840f6"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/+page.server.ts": {
+    "mtime": 1777986940.3323205,
+    "hash": "37ce617cef1cff10e1eff01e41e39acf"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/+page.svelte": {
+    "mtime": 1777986940.3324866,
+    "hash": "250816b8f20d441d593d9df99feb59d2"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/page.server.test.ts": {
+    "mtime": 1777986940.3324866,
+    "hash": "1d7ac4a7b60bb665ee7439841b988e56"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/guide/+page.server.ts": {
+    "mtime": 1777986940.3324866,
+    "hash": "eac5cd3866145c5a5cf8b2ff788da13d"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/guide/+page.svelte": {
+    "mtime": 1777986940.3326192,
+    "hash": "47300185e2d2ef7cbcbbc123698b6f3b"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/guide/page.server.test.ts": {
+    "mtime": 1777986940.3326192,
+    "hash": "84bcbc7f9383a8dbd16786d70919edfb"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.server.ts": {
+    "mtime": 1777986940.3326192,
+    "hash": "3923d90f6947b0e8abeacb7a9fc75c78"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.svelte": {
+    "mtime": 1777986940.332776,
+    "hash": "86d84c1e1adbab4378c5f5816557ce5e"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/page.server.test.ts": {
+    "mtime": 1777986940.332857,
+    "hash": "28bea35a1b4cb96cf1ebb971e75c0a6f"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
+    "mtime": 1777986940.332776,
+    "hash": "ce805d3cf4d267fc786ca6f04afd23d7"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.svelte": {
+    "mtime": 1777986940.332857,
+    "hash": "4958105ab46b6c319b504efdafa40803"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/page.server.test.ts": {
+    "mtime": 1777986940.332857,
+    "hash": "8193339a02e623e8498de5a921be39d5"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.server.ts": {
+    "mtime": 1777986940.332857,
+    "hash": "10c4be34fe8aabc8a9fd9cccd0b502b8"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.svelte": {
+    "mtime": 1777986940.3330193,
+    "hash": "742726b2c7892b0d12b63225803bff5e"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/page.server.test.ts": {
+    "mtime": 1777986940.3330193,
+    "hash": "2bedc522177a22d71a231d6d9f2ff016"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.server.ts": {
+    "mtime": 1777986940.3330193,
+    "hash": "81b80788ec180da0f17235d989752b32"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.svelte": {
+    "mtime": 1777986940.333135,
+    "hash": "ac76e00700f259cafb088b4a8c65d5c2"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/page.server.test.ts": {
+    "mtime": 1777986940.333135,
+    "hash": "8bd830d4a035b48f894a68d2e41c3292"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/new/+page.server.ts": {
+    "mtime": 1777986940.333135,
+    "hash": "179e5f64108e148b5686f3e6eea77d83"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/new/+page.svelte": {
+    "mtime": 1777986940.3332438,
+    "hash": "9275a507b5c7297ed0176fef0ee0df5f"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/new/page.server.test.ts": {
+    "mtime": 1777986940.3332438,
+    "hash": "a10b24d7c78cfa54a896d431b5e197db"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/cookies/+page.svelte": {
+    "mtime": 1777986940.3332438,
+    "hash": "6722e029f1fe6fc958a86dca37b2756e"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/guide/+page.server.ts": {
+    "mtime": 1777986940.3332438,
+    "hash": "d3578a07ef8e970937c9c50a165c1bf3"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/guide/+page.svelte": {
+    "mtime": 1777986940.3333771,
+    "hash": "3412f29de24620d04601ee64e552322b"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/guide/page.server.test.ts": {
+    "mtime": 1777986940.3333771,
+    "hash": "30febdd7f2bc1cbaea9592ab2032fee3"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/join/[code]/+page.server.ts": {
+    "mtime": 1777986940.3334436,
+    "hash": "ed02df562546fccb97564adf9a04a6df"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/join/[code]/+page.svelte": {
+    "mtime": 1777986940.333481,
+    "hash": "4bc78c75efcb94ce5b72476b6a1cdf58"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/join/[code]/page.server.test.ts": {
+    "mtime": 1777986940.333481,
+    "hash": "669a7c3e1303936032ea5e9286184d56"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/login/+page.server.ts": {
+    "mtime": 1777986940.333481,
+    "hash": "7a5efcdb482073a384d3718484527ff2"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/login/+page.svelte": {
+    "mtime": 1777986940.3336222,
+    "hash": "bccb7403138988ef9227bdcf7d3d6e9c"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/login/page.server.test.ts": {
+    "mtime": 1777986940.3336222,
+    "hash": "02e59b74e3697108dc050689a869d75b"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/logout/+server.ts": {
+    "mtime": 1777986940.3336222,
+    "hash": "fa36b3639358d3626a73ca1faf537afb"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/logout/server.test.ts": {
+    "mtime": 1777986940.3337202,
+    "hash": "d974f9d60a29edcd554126bedea93e1d"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/mentions-legales/+page.server.ts": {
+    "mtime": 1777986940.3337202,
+    "hash": "8e822653b5e0dd04d475ecd4db94991c"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/mentions-legales/+page.svelte": {
+    "mtime": 1777986940.3337736,
+    "hash": "2ea4161d8ca38c7ae9e789d8877815bb"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/mentions-legales/page.server.test.ts": {
+    "mtime": 1777986940.3337736,
+    "hash": "2d66b24b9ea6b38ea7e034693cf05a2c"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/options/+server.ts": {
+    "mtime": 1777986940.3338401,
+    "hash": "482c9a6b73294d49c022848a0497c5b7"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/options/server.test.ts": {
+    "mtime": 1777986940.3338866,
+    "hash": "0b077b7f12055a637afd8f1ec6314166"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/verify/+server.ts": {
+    "mtime": 1777986940.3338866,
+    "hash": "c845f3cb8176c5ad4ea05607668ed38a"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/verify/server.test.ts": {
+    "mtime": 1777986940.3339684,
+    "hash": "96ee6fb8fad46e1f38044f0c34f3b6d1"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/options/+server.ts": {
+    "mtime": 1777986940.3340094,
+    "hash": "daa862a5474d0be7a2a64ba543226000"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/options/server.test.ts": {
+    "mtime": 1777986940.3340378,
+    "hash": "f58414442fd08c977d2b84fd318275c1"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/verify/+server.ts": {
+    "mtime": 1777986940.3340378,
+    "hash": "8cb94abdcd73b33cd6eb89a1555b1f5f"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/verify/server.test.ts": {
+    "mtime": 1777986940.3340938,
+    "hash": "eaeaba1bc358098229baf8444dd0a968"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/politique-confidentialite/+page.server.ts": {
+    "mtime": 1777986940.3340938,
+    "hash": "8e822653b5e0dd04d475ecd4db94991c"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/politique-confidentialite/+page.svelte": {
+    "mtime": 1777986940.3341386,
+    "hash": "b559bf78ce276aa3f32d8b4162fe545e"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/politique-confidentialite/page.server.test.ts": {
+    "mtime": 1777986940.3341386,
+    "hash": "d72b81c8843f4400f2d7c3fc82308517"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/robots.txt/+server.ts": {
+    "mtime": 1777986940.3341386,
+    "hash": "afd5fbee1d3b7d006c1e43bf60f512be"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/robots.txt/server.test.ts": {
+    "mtime": 1777986940.3342252,
+    "hash": "abda780cc840d0caebc8abab4ef0ef02"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/signup/+page.server.ts": {
+    "mtime": 1777986940.3342252,
+    "hash": "bfa0e27324cab964acc7db69e1928cce"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/signup/+page.svelte": {
+    "mtime": 1777986940.3342783,
+    "hash": "7e43e0d890fb4e8da75c87921bd2737f"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/signup/page.server.test.ts": {
+    "mtime": 1777986940.3342783,
+    "hash": "bb4752d9004cf38b3317a428c64de46e"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/+server.ts": {
+    "mtime": 1777986940.3342783,
+    "hash": "b983c6fc781ccd0806a1196d92394cd0"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/server.test.ts": {
+    "mtime": 1777986940.334406,
+    "hash": "6d4852b3d327444f98d3899d5e99f49c"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/sources/+page.server.ts": {
+    "mtime": 1777986940.334406,
+    "hash": "d3578a07ef8e970937c9c50a165c1bf3"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/sources/+page.svelte": {
+    "mtime": 1777986940.3344586,
+    "hash": "843966c81924e4eb02d806838d3cf2d4"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/sources/page.server.test.ts": {
+    "mtime": 1777986940.3344586,
+    "hash": "9d2db5faabb378413e8cdae1154bdd9a"
+  },
+  "/home/sbrn/Projects/diversif/src/test/app-stubs.ts": {
+    "mtime": 1777986940.3344586,
+    "hash": "0eb6b8479bc57e3adc32137325a20461"
+  },
+  "/home/sbrn/Projects/diversif/src/test/component.ts": {
+    "mtime": 1777986940.3345294,
+    "hash": "47cd061c73510d3c35a46bd0b005f80a"
+  },
+  "/home/sbrn/Projects/diversif/src/test/db.ts": {
+    "mtime": 1777986940.3345294,
+    "hash": "8440da73c6b39bb1ccf5aeb0a6e0ee72"
+  },
+  "/home/sbrn/Projects/diversif/src/test/route.ts": {
+    "mtime": 1777986940.3345294,
+    "hash": "79c189afcfd4d6c2f315a7f3cea64e8d"
+  },
+  "/home/sbrn/Projects/diversif/src/app.html": {
+    "mtime": 1777986940.3285525,
+    "hash": "5d9e376d5523ed9ba46c7e734a7cadd1"
+  }
+}
