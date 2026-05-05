@@ -39,7 +39,9 @@
       ← Tableau
     </a>
     <h1 class="mt-2 text-xl font-semibold">Suggestions</h1>
-    <p class="text-sm text-muted-foreground">À introduire bientôt selon l’âge ({data.ageMonths} mois).</p>
+    <p class="text-sm text-muted-foreground">
+      À tester ces jours-ci selon l’âge de {data.child.name} ({data.ageMonths} mois).
+    </p>
   </header>
 
   <TipCard
@@ -53,8 +55,8 @@
   {#if data.priorityAllergens.length === 0 && data.others.length === 0}
     <EmptyState
       icon={Sparkles}
-      title="Tout le catalogue a été introduit"
-      description="Pensez à varier les préparations et à confirmer les introductions."
+      title="Vous avez fait le tour du catalogue"
+      description="Variez les préparations et confirmez les introductions à votre rythme."
     />
   {:else}
     {#if data.priorityAllergens.length > 0}

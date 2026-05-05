@@ -65,4 +65,32 @@ describe('DiversityCard', () => {
     });
     expect(container.textContent).toMatch(/il y a 5/);
   });
+
+  it('celebrates when every category is covered', () => {
+    const { container } = render(DiversityCard, {
+      props: {
+        metrics: {
+          categoriesCovered: 11,
+          totalCategories: 11,
+          lastNewFoodAt: Date.now() - DAY,
+          repeatExposureCount: 0
+        }
+      }
+    });
+    expect(container.textContent).toContain('Toutes les familles couvertes');
+  });
+
+  it('nudges when most categories are covered but not all', () => {
+    const { container } = render(DiversityCard, {
+      props: {
+        metrics: {
+          categoriesCovered: 9,
+          totalCategories: 11,
+          lastNewFoodAt: Date.now() - DAY,
+          repeatExposureCount: 0
+        }
+      }
+    });
+    expect(container.textContent).toContain('Plus que 2 groupes');
+  });
 });

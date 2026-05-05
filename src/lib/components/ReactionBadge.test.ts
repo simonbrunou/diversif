@@ -6,9 +6,9 @@ import ReactionBadge from './ReactionBadge.svelte';
 
 describe('ReactionBadge', () => {
   it.each([
-    ['ras', 'RAS'],
-    ['inconfort', 'Inconfort'],
-    ['reaction', 'Réaction']
+    ['ras', 'Tout va bien'],
+    ['inconfort', 'Petit inconfort'],
+    ['reaction', 'Réaction marquée']
   ] as const)('renders the label for reaction=%s', (reaction, label) => {
     const { container } = render(ReactionBadge, { props: { reaction } });
     expect(container.textContent).toContain(label);

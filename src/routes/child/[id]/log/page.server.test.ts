@@ -182,7 +182,12 @@ describe('child/[id]/log default action', () => {
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
     );
     expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}?logged=1`);
+    if (r.kind === 'redirect') {
+      expect(r.location).toContain(`/child/${c.id}?logged=1`);
+      expect(r.location).toContain('first=1');
+      expect(r.location).toContain('categories=1');
+      expect(r.location).toContain('prevCategories=0');
+    }
     const entries = testDb.select().from(foodEntries).all();
     expect(entries.length).toBe(1);
     expect(entries[0].notes).toBe('some notes');

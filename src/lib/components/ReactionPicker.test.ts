@@ -13,9 +13,9 @@ describe('ReactionPicker', () => {
 
   it('shows the labels', () => {
     const { container } = render(ReactionPicker, { props: { name: 'r' } });
-    expect(container.textContent).toContain('RAS');
-    expect(container.textContent).toContain('Inconfort');
-    expect(container.textContent).toContain('Réaction');
+    expect(container.textContent).toContain('Tout va bien');
+    expect(container.textContent).toContain('Petit inconfort');
+    expect(container.textContent).toContain('Réaction marquée');
   });
 
   it('selects the default value (ras)', () => {
