@@ -4,7 +4,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { generateInviteCodeRaw } from '$lib/server/auth';
-import { requireMembership, requireOwnership, requireUser } from '$lib/server/guards';
+import { requireMembership, requireOwnership } from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -24,8 +24,7 @@ function generateUniqueInviteCode(): string | null {
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   const childId = Number(params.id);
-  requireUser(locals);
-  const membership = requireMembership(locals, childId);
+  const { membership } = requireMembership(locals, childId);
 
   const memberRows = db
     .select({
@@ -87,9 +86,8 @@ export const actions: Actions = {
   },
 
   createInvitation: async ({ params, locals }) => {
-    const user = requireUser(locals);
     const childId = Number(params.id);
-    requireOwnership(locals, childId);
+    const { user } = requireOwnership(locals, childId);
 
     const code = generateUniqueInviteCode();
     /* v8 ignore next — astronomical 1/32^16 probability after 5 attempts */
@@ -123,9 +121,8 @@ export const actions: Actions = {
   },
 
   removeMember: async ({ params, request, locals }) => {
-    const owner = requireUser(locals);
     const childId = Number(params.id);
-    requireOwnership(locals, childId);
+    const { user: owner } = requireOwnership(locals, childId);
     const data = await request.formData();
     const userId = Number(data.get('userId'));
     if (!Number.isInteger(userId)) return fail(400, { error: 'Utilisateur invalide.' });
@@ -139,9 +136,8 @@ export const actions: Actions = {
   },
 
   leaveChild: async ({ params, locals }) => {
-    const user = requireUser(locals);
     const childId = Number(params.id);
-    const membership = requireMembership(locals, childId);
+    const { user, membership } = requireMembership(locals, childId);
     if (membership.role === 'owner') {
       return fail(400, {
         error: 'Le créateur ne peut pas quitter, supprimez l’enfant à la place.'

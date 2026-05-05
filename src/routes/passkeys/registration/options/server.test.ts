@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { hashPassword, SESSION_COOKIE } from '$lib/server/auth';
+import { SESSION_COOKIE } from '$lib/server/auth';
 import { users, webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
@@ -23,13 +23,12 @@ beforeEach(() => {
   mocks.generateRegistrationOptions.mockReset();
 });
 
-async function seed() {
-  const passwordHash = await hashPassword('hunter2!');
+function seed() {
   return testDb
     .insert(users)
     .values({
       email: 'p@example.com',
-      passwordHash,
+      passwordHash: 'placeholder-hash',
       displayName: 'Parent',
       createdAt: new Date()
     })
@@ -48,7 +47,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('errors 401 when the user no longer exists', async () => {
-    const u = await seed();
+    const u = seed();
     testDb.delete(users).where(eq(users.id, u.id)).run();
     const event = makeRouteEvent({ user: safeUser(u) });
     const r = await captureFlow(
@@ -59,7 +58,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('returns options, sets the challenge cookie, and stores the challenge', async () => {
-    const u = await seed();
+    const u = seed();
     mocks.generateRegistrationOptions.mockResolvedValue({
       challenge: 'big-challenge',
       rp: { id: 'localhost', name: 'Diversif' }
@@ -88,7 +87,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('honours the ORIGIN env override', async () => {
-    const u = await seed();
+    const u = seed();
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
     const orig = process.env.ORIGIN;
     process.env.ORIGIN = 'https://from-env.test';
@@ -103,7 +102,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('tolerates a trailing slash on the ORIGIN env var', async () => {
-    const u = await seed();
+    const u = seed();
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
     const orig = process.env.ORIGIN;
     process.env.ORIGIN = 'https://from-env.test/';
@@ -121,7 +120,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('marks the challenge cookie secure in production', async () => {
-    const u = await seed();
+    const u = seed();
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
     const orig = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';

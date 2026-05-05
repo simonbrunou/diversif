@@ -6,11 +6,13 @@ import { requireMembership, requireUser } from '$lib/server/guards';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals, params }) => {
+  // requireUser before the integer check so unauthed visitors hit /login
+  // rather than a 404 when the URL has a malformed id.
   requireUser(locals);
   const childId = Number(params.id);
   if (!Number.isInteger(childId) || childId <= 0) throw error(404, 'Enfant introuvable');
 
-  const membership = requireMembership(locals, childId);
+  const { membership } = requireMembership(locals, childId);
 
   const child = db.select().from(children).where(eq(children.id, childId)).get();
   if (!child) throw error(404, 'Enfant introuvable');

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { and, eq, isNull, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { requireMembership, requireUser } from '$lib/server/guards';
+import { requireMembership } from '$lib/server/guards';
 import { CATEGORY_IDS } from '$lib/utils/categories';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -21,7 +21,6 @@ const schema = z
   });
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-  requireUser(locals);
   const childId = Number(params.id);
   requireMembership(locals, childId);
 
@@ -42,9 +41,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
   default: async ({ request, params, locals }) => {
-    const user = requireUser(locals);
     const childId = Number(params.id);
-    requireMembership(locals, childId);
+    const { user } = requireMembership(locals, childId);
 
     const raw = Object.fromEntries(await request.formData());
     const parsed = schema.safeParse(raw);

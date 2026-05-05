@@ -4,7 +4,7 @@ import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
-import { createSession, hashPassword, SESSION_COOKIE, validateSession } from '$lib/server/auth';
+import { createSession, SESSION_COOKIE, validateSession } from '$lib/server/auth';
 import { users } from '$lib/server/db/schema';
 import { POST } from './+server';
 
@@ -14,12 +14,11 @@ beforeEach(() => {
 
 describe('logout POST', () => {
   it('invalidates the session and clears the cookie', async () => {
-    const ph = await hashPassword('pw');
     const u = testDb
       .insert(users)
       .values({
         email: 'a@example.com',
-        passwordHash: ph,
+        passwordHash: 'placeholder-hash',
         displayName: 'A',
         createdAt: new Date()
       })

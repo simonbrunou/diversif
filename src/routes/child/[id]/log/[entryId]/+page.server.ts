@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { and, eq, isNull, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { requireMembership, requireUser } from '$lib/server/guards';
+import { requireMembership } from '$lib/server/guards';
 import { CATEGORY_IDS } from '$lib/utils/categories';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -37,7 +37,6 @@ function loadEntry(entryId: number, childId: number) {
 }
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
-  requireUser(locals);
   const childId = Number(params.id);
   requireMembership(locals, childId);
   const entryId = parseEntryId(params.entryId);
@@ -76,7 +75,6 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 
 export const actions: Actions = {
   update: async ({ request, params, locals }) => {
-    requireUser(locals);
     const childId = Number(params.id);
     requireMembership(locals, childId);
     const entryId = parseEntryId(params.entryId);
@@ -153,7 +151,6 @@ export const actions: Actions = {
   },
 
   delete: async ({ request, params, locals }) => {
-    requireUser(locals);
     const childId = Number(params.id);
     requireMembership(locals, childId);
     const entryId = parseEntryId(params.entryId);

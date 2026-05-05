@@ -173,9 +173,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
 export const actions: Actions = {
   dismissReminder: async ({ request, params, locals }) => {
-    const user = requireUser(locals);
     const childId = Number(params.id);
-    requireMembership(locals, childId);
+    const { user } = requireMembership(locals, childId);
     const data = await request.formData();
     const key = data.get('reminderKey');
     if (typeof key !== 'string' || key.length === 0 || key.length > 100) {

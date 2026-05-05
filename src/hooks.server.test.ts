@@ -4,7 +4,7 @@ import { testDb, resetTestDb } from './test/db';
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { handle } from './hooks.server';
-import { hashPassword, createSession, SESSION_COOKIE } from '$lib/server/auth';
+import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -32,13 +32,12 @@ function makeEvent(token: string | null, pathname = '/') {
   return { event, set, del, cookies };
 }
 
-async function seedUser() {
-  const passwordHash = await hashPassword('pw');
+function seedUser() {
   return testDb
     .insert(users)
     .values({
       email: 'a@example.com',
-      passwordHash,
+      passwordHash: 'placeholder-hash',
       displayName: 'A',
       createdAt: new Date()
     })
@@ -70,7 +69,7 @@ describe('handle', () => {
   });
 
   it('populates locals on a valid session', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     const child = testDb
       .insert(children)
       .values({
@@ -97,7 +96,7 @@ describe('handle', () => {
   });
 
   it('renews the cookie when session is close to expiry', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     const session = createSession(user.id);
     // Force expiry into the renewal window.
     testDb
@@ -119,7 +118,7 @@ describe('handle', () => {
   });
 
   it('emits X-Robots-Tag noindex for authenticated responses', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     const session = createSession(user.id);
     const { event } = makeEvent(session.id);
     const resolve = vi.fn(async () => new Response('ok'));
@@ -145,7 +144,7 @@ describe('handle', () => {
     const orig = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {
-      const user = await seedUser();
+      const user = seedUser();
       const session = createSession(user.id);
       testDb
         .update(sessions)

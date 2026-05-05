@@ -14,19 +14,25 @@ export function requireGuest(locals: App.Locals): void {
   }
 }
 
-export function requireMembership(locals: App.Locals, childId: number): Membership {
+export function requireMembership(
+  locals: App.Locals,
+  childId: number
+): { user: SafeUser; membership: Membership } {
   const user = requireUser(locals);
-  const m = locals.memberships.find((m) => m.childId === childId && m.userId === user.id);
-  if (!m) {
+  const membership = locals.memberships.find((m) => m.childId === childId && m.userId === user.id);
+  if (!membership) {
     throw error(403, 'Accès refusé');
   }
-  return m;
+  return { user, membership };
 }
 
-export function requireOwnership(locals: App.Locals, childId: number): Membership {
-  const m = requireMembership(locals, childId);
-  if (m.role !== 'owner') {
+export function requireOwnership(
+  locals: App.Locals,
+  childId: number
+): { user: SafeUser; membership: Membership } {
+  const result = requireMembership(locals, childId);
+  if (result.membership.role !== 'owner') {
     throw error(403, 'Action réservée au créateur');
   }
-  return m;
+  return result;
 }

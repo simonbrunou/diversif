@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { hashPassword, SESSION_COOKIE, validateSession } from '$lib/server/auth';
+import { SESSION_COOKIE, validateSession } from '$lib/server/auth';
 import { passkeys, sessions, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, createChallenge } from '$lib/server/passkeys';
@@ -25,13 +25,12 @@ beforeEach(() => {
   _clearAllRateLimits();
 });
 
-async function seedUserAndKey() {
-  const passwordHash = await hashPassword('hunter2!');
+function seedUserAndKey() {
   const u = testDb
     .insert(users)
     .values({
       email: 'p@example.com',
-      passwordHash,
+      passwordHash: 'placeholder-hash',
       displayName: 'Parent',
       createdAt: new Date()
     })
@@ -110,7 +109,7 @@ describe('POST /passkeys/authentication/verify', () => {
   });
 
   it('returns 400 when verification fails', async () => {
-    await seedUserAndKey();
+    seedUserAndKey();
     const c = createChallenge({ challenge: 'ch', purpose: 'authentication' });
     mocks.verifyAuthenticationResponse.mockResolvedValue({ verified: false });
     const event = makeReq({
@@ -130,7 +129,7 @@ describe('POST /passkeys/authentication/verify', () => {
   });
 
   it('issues a session cookie on success', async () => {
-    const u = await seedUserAndKey();
+    const u = seedUserAndKey();
     const c = createChallenge({ challenge: 'ch', purpose: 'authentication' });
     mocks.verifyAuthenticationResponse.mockResolvedValue({
       verified: true,
@@ -170,7 +169,7 @@ describe('POST /passkeys/authentication/verify', () => {
   });
 
   it('marks the session cookie secure in production', async () => {
-    await seedUserAndKey();
+    seedUserAndKey();
     const c = createChallenge({ challenge: 'ch', purpose: 'authentication' });
     mocks.verifyAuthenticationResponse.mockResolvedValue({
       verified: true,

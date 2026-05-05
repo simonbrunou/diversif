@@ -61,7 +61,7 @@ describe('requireGuest', () => {
 });
 
 describe('requireMembership', () => {
-  it('returns the membership when present', () => {
+  it('returns the user and membership when present', () => {
     const m: Membership = {
       userId: 1,
       childId: 7,
@@ -69,7 +69,8 @@ describe('requireMembership', () => {
       createdAt: new Date()
     };
     const result = requireMembership(makeLocals({ user: fakeUser, memberships: [m] }), 7);
-    expect(result).toBe(m);
+    expect(result.membership).toBe(m);
+    expect(result.user).toBe(fakeUser);
   });
 
   it('redirects unauthenticated users to login first', () => {
@@ -82,14 +83,16 @@ describe('requireMembership', () => {
 });
 
 describe('requireOwnership', () => {
-  it('returns membership when role is owner', () => {
+  it('returns user and membership when role is owner', () => {
     const m: Membership = {
       userId: 1,
       childId: 7,
       role: 'owner',
       createdAt: new Date()
     };
-    expect(requireOwnership(makeLocals({ user: fakeUser, memberships: [m] }), 7)).toBe(m);
+    const result = requireOwnership(makeLocals({ user: fakeUser, memberships: [m] }), 7);
+    expect(result.membership).toBe(m);
+    expect(result.user).toBe(fakeUser);
   });
 
   it('throws 403 when role is member', () => {

@@ -19,14 +19,13 @@ import {
 import { users, memberships, children, sessions } from './db/schema';
 import { eq } from 'drizzle-orm';
 
-async function seedUser(opts: { email?: string; displayName?: string } = {}) {
+function seedUser(opts: { email?: string; displayName?: string } = {}) {
   const email = (opts.email ?? 'parent@example.com').toLowerCase();
-  const passwordHash = await hashPassword('hunter2!');
   const inserted = testDb
     .insert(users)
     .values({
       email,
-      passwordHash,
+      passwordHash: 'placeholder-hash',
       displayName: opts.displayName ?? 'Parent',
       createdAt: new Date()
     })
@@ -66,7 +65,7 @@ describe('hashPassword / verifyPassword', () => {
 
 describe('createSession / validateSession', () => {
   it('creates a session row for the user', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     const session = createSession(user.id);
     expect(session.userId).toBe(user.id);
     expect(session.expiresAt.getTime()).toBeGreaterThan(Date.now());
@@ -83,7 +82,7 @@ describe('createSession / validateSession', () => {
   });
 
   it('validateSession returns the user and session for a fresh token', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     const session = createSession(user.id);
     const result = validateSession(session.id);
     expect(result).not.toBeNull();
@@ -94,7 +93,7 @@ describe('createSession / validateSession', () => {
   });
 
   it('validateSession renews when within the renewal threshold and bumps last_login_at', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     testDb
       .update(users)
       .set({ lastLoginAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) })
@@ -113,7 +112,7 @@ describe('createSession / validateSession', () => {
   });
 
   it('validateSession returns null when expired', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     const session = createSession(user.id);
     testDb
       .update(sessions)
@@ -126,7 +125,7 @@ describe('createSession / validateSession', () => {
 
 describe('invalidateSession', () => {
   it('removes the session row', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     const session = createSession(user.id);
     invalidateSession(session.id);
     expect(validateSession(session.id)).toBeNull();
@@ -139,7 +138,7 @@ describe('invalidateSession', () => {
 
 describe('invalidateAllUserSessions', () => {
   it('removes every session for a user', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     const a = createSession(user.id);
     const b = createSession(user.id);
     invalidateAllUserSessions(user.id);
@@ -150,7 +149,7 @@ describe('invalidateAllUserSessions', () => {
 
 describe('findUserByEmail', () => {
   it('finds a user by case-insensitive email', async () => {
-    const user = await seedUser({ email: 'Parent@Example.com' });
+    const user = seedUser({ email: 'Parent@Example.com' });
     expect(findUserByEmail('parent@example.com')?.id).toBe(user.id);
     expect(findUserByEmail('PARENT@EXAMPLE.COM')?.id).toBe(user.id);
   });
@@ -162,13 +161,13 @@ describe('findUserByEmail', () => {
 
 describe('listMembershipsForUser', () => {
   it('returns empty array for new user', async () => {
-    const user = await seedUser();
+    const user = seedUser();
     expect(listMembershipsForUser(user.id)).toEqual([]);
   });
 
   it('returns memberships for the user only', async () => {
-    const user = await seedUser({ email: 'a@example.com' });
-    const other = await seedUser({ email: 'b@example.com' });
+    const user = seedUser({ email: 'a@example.com' });
+    const other = seedUser({ email: 'b@example.com' });
 
     const child = testDb
       .insert(children)

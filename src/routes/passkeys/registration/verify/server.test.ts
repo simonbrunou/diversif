@@ -13,7 +13,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { hashPassword } from '$lib/server/auth';
 import { users, webauthnChallenges, passkeys } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, createChallenge } from '$lib/server/passkeys';
@@ -23,13 +22,12 @@ beforeEach(() => {
   mocks.verifyRegistrationResponse.mockReset();
 });
 
-async function seedUser() {
-  const passwordHash = await hashPassword('hunter2!');
+function seedUser() {
   return testDb
     .insert(users)
     .values({
       email: 'p@example.com',
-      passwordHash,
+      passwordHash: 'placeholder-hash',
       displayName: 'Parent',
       createdAt: new Date()
     })
@@ -70,7 +68,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('errors 400 on invalid JSON', async () => {
-    const u = await seedUser();
+    const u = seedUser();
     const event = makeReq({ user: safeUser(u), body: 'not json' });
     const r = await captureFlow(
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
@@ -80,7 +78,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('errors 400 when the response body is missing', async () => {
-    const u = await seedUser();
+    const u = seedUser();
     const event = makeReq({ user: safeUser(u), body: { name: 'X' } });
     const r = await captureFlow(
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
@@ -90,7 +88,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('errors 400 when the challenge cookie is missing', async () => {
-    const u = await seedUser();
+    const u = seedUser();
     const event = makeReq({
       user: safeUser(u),
       body: { response: { id: 'cred' } }
@@ -102,7 +100,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('errors 400 when the challenge belongs to a different user', async () => {
-    const u = await seedUser();
+    const u = seedUser();
     const other = await testDb
       .insert(users)
       .values({
@@ -130,7 +128,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('returns ok with the public passkey on success', async () => {
-    const u = await seedUser();
+    const u = seedUser();
     const c = createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
     mocks.verifyRegistrationResponse.mockResolvedValue({
       verified: true,
@@ -158,7 +156,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('returns 400 when verification fails', async () => {
-    const u = await seedUser();
+    const u = seedUser();
     const c = createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
     mocks.verifyRegistrationResponse.mockResolvedValue({ verified: false });
     const event = makeReq({
@@ -173,7 +171,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('removes the cookie on failure as well', async () => {
-    const u = await seedUser();
+    const u = seedUser();
     const c = createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
     mocks.verifyRegistrationResponse.mockResolvedValue({ verified: false });
     const event = makeReq({
@@ -192,7 +190,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('falls back to a default name when none is provided', async () => {
-    const u = await seedUser();
+    const u = seedUser();
     const c = createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
     mocks.verifyRegistrationResponse.mockResolvedValue({
       verified: true,

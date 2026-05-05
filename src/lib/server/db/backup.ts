@@ -1,5 +1,6 @@
 import path from 'node:path';
 import * as nodeFs from 'node:fs';
+import { randomBytes } from 'node:crypto';
 import type Database from 'better-sqlite3';
 
 export type FsLike = Pick<typeof nodeFs, 'mkdirSync' | 'readdirSync' | 'statSync' | 'unlinkSync'>;
@@ -34,10 +35,15 @@ export function backupBeforeMigrate(
   // so a backup problem can never turn into a startup outage.
   let target: string;
   try {
+    // ISO timestamp is only millisecond-resolution, so two startup attempts
+    // (or a tight test loop) within the same ms would race onto the same path
+    // and the second VACUUM INTO would throw `output file already exists`.
+    // Suffix with random bytes so the filename is unique per call.
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const suffix = randomBytes(4).toString('hex');
     const backupDir = path.join(path.dirname(dbPath), 'backups');
     fs.mkdirSync(backupDir, { recursive: true });
-    target = path.join(backupDir, `${path.basename(dbPath, '.db')}-${stamp}.db`);
+    target = path.join(backupDir, `${path.basename(dbPath, '.db')}-${stamp}-${suffix}.db`);
     sqlite.exec(`VACUUM INTO '${target.replace(/'/g, "''")}'`);
   } catch (err) {
     console.error('[db] pre-migration backup failed:', err);
