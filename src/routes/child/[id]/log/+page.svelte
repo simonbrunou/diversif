@@ -38,7 +38,7 @@
     <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
       ← Retour
     </a>
-    <h1 class="mt-2 text-xl font-semibold">Logguer un aliment</h1>
+    <h1 class="mt-2 text-xl font-semibold">Noter un repas</h1>
     <p class="text-sm text-muted-foreground">Pour {data.child.name}</p>
   </header>
 
@@ -62,44 +62,50 @@
     <FoodCombobox foods={data.foods} {initialFoodId} />
 
     <div class="grid gap-1.5">
-      <Label for="givenAt">Date et heure</Label>
+      <Label for="givenAt">Quand ?</Label>
       <Input id="givenAt" name="givenAt" type="datetime-local" bind:value={givenAt} required />
     </div>
 
     <div class="grid gap-1.5">
-      <Label>Réaction</Label>
+      <Label>Comment bébé a réagi ?</Label>
       <ReactionPicker name="reaction" bind:value={reaction} />
       <details class="mt-1 rounded-md border bg-muted/40 p-2 text-xs">
         <summary class="flex cursor-pointer items-center gap-1.5 font-medium text-foreground/80">
           <Info size={12} aria-hidden="true" />
-          Que choisir ?
+          Comment choisir ?
         </summary>
         <ul class="mt-2 space-y-1.5 pl-4 text-muted-foreground">
           <li>
-            <strong class="text-reaction-ras">RAS</strong> — rien à signaler. Bébé tolère bien.
+            <strong class="text-reaction-ras">Tout va bien</strong> — bébé a bien toléré, aucun
+            signe particulier.
           </li>
           <li>
-            <strong class="text-reaction-inconfort">Inconfort</strong> — léger inconfort digestif
-            ou cutané (régurgitation, selles molles, rougeurs autour de la bouche). Reproposer
-            à distance, observer.
+            <strong class="text-reaction-inconfort">Petit inconfort</strong> — gêne digestive ou
+            cutanée légère (régurgitation, selles molles, rougeurs autour de la bouche). Reproposez
+            à distance et observez.
           </li>
           <li>
-            <strong class="text-reaction-reaction">Réaction</strong> — urticaire, œdème,
-            vomissements, gêne respiratoire. <strong>Arrêter immédiatement</strong> et consulter ;
-            en cas de signes respiratoires ou d'œdème de la gorge, appeler le 15.
+            <strong class="text-reaction-reaction">Réaction marquée</strong> — urticaire, œdème,
+            vomissements, gêne respiratoire. <strong>Arrêtez tout de suite</strong> et consultez.
+            En cas de gêne respiratoire ou d'œdème de la gorge, appelez le 15.
           </li>
         </ul>
       </details>
     </div>
 
     <div class="grid gap-1.5">
-      <Label for="notes">Notes (optionnel)</Label>
-      <Textarea id="notes" name="notes" maxlength={2000} placeholder="Quantité, contexte, observations…" />
+      <Label for="notes">Une note ? (facultatif)</Label>
+      <Textarea
+        id="notes"
+        name="notes"
+        maxlength={2000}
+        placeholder="Quantité, ambiance du repas, observations…"
+      />
     </div>
 
     <div class="flex gap-2">
       <Button type="submit" size="lg" class="flex-1" loading={submitting}>
-        {submitting ? 'Enregistrement…' : 'Enregistrer'}
+        {submitting ? 'Enregistrement…' : 'Noter ce repas'}
       </Button>
       <Button href={`/child/${data.child.id}`} variant="outline" size="lg">Annuler</Button>
     </div>

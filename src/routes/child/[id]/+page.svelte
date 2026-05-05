@@ -18,6 +18,7 @@
   } from '$lib/content/guidance';
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
+  import { celebrate, pickMilestoneFromQuery } from '$lib/utils/milestones';
   import {
     UserCircle2,
     Plus,
@@ -56,12 +57,17 @@
   });
 
   $effect(() => {
-    if ($page.url.searchParams.get('logged') === '1') {
-      toast.success('Aliment enregistré.');
-      const url = new URL($page.url);
-      url.searchParams.delete('logged');
-      history.replaceState({}, '', url);
+    const milestone = pickMilestoneFromQuery(
+      $page.url.searchParams,
+      data.diversity.totalCategories
+    );
+    if (!milestone) return;
+    celebrate(toast, milestone);
+    const url = new URL($page.url);
+    for (const key of ['logged', 'first', 'allergen', 'categories', 'prevCategories']) {
+      url.searchParams.delete(key);
     }
+    history.replaceState({}, '', url);
   });
 
   type Entry = (typeof data.recent)[number];
@@ -99,7 +105,7 @@
   >
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
-        <p class="text-xs font-medium uppercase tracking-wider text-primary/80">Suivi</p>
+        <p class="text-xs font-medium uppercase tracking-wider text-primary/80">Le suivi de</p>
         <h1 class="mt-1 truncate font-display text-3xl font-semibold leading-tight md:text-4xl">
           {data.child.name}
         </h1>
@@ -119,7 +125,7 @@
     <div class="mt-5">
       <Button href={`/child/${data.child.id}/log`} size="lg" class="w-full sm:w-auto">
         <Plus size={18} aria-hidden="true" />
-        Logguer un aliment
+        Noter un repas
       </Button>
     </div>
   </section>
@@ -182,23 +188,23 @@
 
   <section>
     <div class="mb-3 flex items-center justify-between">
-      <h2 class="text-base font-semibold">Derniers logs</h2>
+      <h2 class="text-base font-semibold">Repas récents</h2>
       <a
         href={`/child/${data.child.id}/foods`}
         class="text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
       >
-        Tout voir
+        Tout l’historique
       </a>
     </div>
 
     {#if data.recent.length === 0}
       <EmptyState
         icon={UtensilsCrossed}
-        title="Pas encore de log"
-        description="Commencez à enregistrer les aliments donnés à {data.child.name}."
+        title="Le carnet est encore vide"
+        description="Notez le premier repas pour commencer le suivi de {data.child.name}."
       >
         {#snippet action()}
-          <Button href={`/child/${data.child.id}/log`}>Logguer le premier</Button>
+          <Button href={`/child/${data.child.id}/log`}>Noter le premier repas</Button>
         {/snippet}
       </EmptyState>
     {:else if !mounted}
@@ -278,7 +284,7 @@
           </div>
           <div>
             <div class="text-sm font-medium">Allergènes</div>
-            <div class="text-xs text-muted-foreground">Suivi des introductions</div>
+            <div class="text-xs text-muted-foreground">Où en sont les 12 grands allergènes</div>
           </div>
         </div>
         <ChevronRight size={18} class="text-muted-foreground" aria-hidden="true" />
@@ -295,7 +301,7 @@
           </div>
           <div>
             <div class="text-sm font-medium">Suggestions</div>
-            <div class="text-xs text-muted-foreground">À introduire bientôt</div>
+            <div class="text-xs text-muted-foreground">À tester ces jours-ci</div>
           </div>
         </div>
         <ChevronRight size={18} class="text-muted-foreground" aria-hidden="true" />
@@ -312,7 +318,7 @@
           </div>
           <div>
             <div class="text-sm font-medium">Guide</div>
-            <div class="text-xs text-muted-foreground">Conseils, allergènes, sources</div>
+            <div class="text-xs text-muted-foreground">Repères, sources, sécurité</div>
           </div>
         </div>
         <ChevronRight size={18} class="text-muted-foreground" aria-hidden="true" />
@@ -325,7 +331,7 @@
       href={`/child/${data.child.id}/settings`}
       class="text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
     >
-      Paramètres de l’enfant
+      Réglages de la fiche
     </a>
   </div>
 </div>

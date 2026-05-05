@@ -9,9 +9,9 @@ describe('REACTIONS', () => {
 
 describe('getReactionLabel', () => {
   it('returns the matching label', () => {
-    expect(getReactionLabel('ras')).toBe('RAS');
-    expect(getReactionLabel('inconfort')).toBe('Inconfort');
-    expect(getReactionLabel('reaction')).toBe('Réaction');
+    expect(getReactionLabel('ras')).toBe('Tout va bien');
+    expect(getReactionLabel('inconfort')).toBe('Petit inconfort');
+    expect(getReactionLabel('reaction')).toBe('Réaction marquée');
   });
 
   it('falls back to the id when unknown (defensive)', () => {

@@ -182,10 +182,54 @@ describe('child/[id]/log default action', () => {
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
     );
     expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}?logged=1`);
+    if (r.kind === 'redirect') {
+      expect(r.location).toContain(`/child/${c.id}?logged=1`);
+      expect(r.location).toContain('first=1');
+      expect(r.location).toContain('categories=1');
+      expect(r.location).toContain('prevCategories=0');
+    }
     const entries = testDb.select().from(foodEntries).all();
     expect(entries.length).toBe(1);
     expect(entries[0].notes).toBe('some notes');
+  });
+
+  it('emits the allergen flag when logging an allergen food for the first time', async () => {
+    const { u, c, m } = await setup();
+    const allergenFood = testDb
+      .insert(foods)
+      .values({
+        name: 'Beurre de cacahuète',
+        category: 'allergenes',
+        isMajorAllergen: true,
+        allergenType: 'arachide',
+        suggestedAgeMonths: 6,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+      .all()[0];
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(allergenFood.id),
+        givenAt: '2024-06-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') {
+      expect(r.location).toContain('allergen=arachide');
+      // 'allergenes' counts as a category bucket (only 'autre' is excluded
+      // from the dashboard's diversity denominator), so coverage bumps to 1.
+      expect(r.location).toContain('categories=1');
+      expect(r.location).toContain('prevCategories=0');
+    }
   });
 
   it('creates a custom food when only customFood.name is provided (and uses "autre" category by default)', async () => {

@@ -7,20 +7,26 @@
     value = $bindable<ReactionId>('ras')
   }: { name: string; value?: ReactionId } = $props();
 
-  const STYLES: Record<ReactionId, { bg: string; ring: string; text: string }> = {
+  const STYLES: Record<
+    ReactionId,
+    { tint: string; tintHover: string; ring: string; text: string }
+  > = {
     ras: {
-      bg: 'bg-reaction-ras/10',
-      ring: 'border-reaction-ras ring-reaction-ras/30',
+      tint: 'bg-reaction-ras/5 border-reaction-ras/20',
+      tintHover: 'hover:bg-reaction-ras/10 hover:border-reaction-ras/30',
+      ring: 'border-reaction-ras ring-reaction-ras/30 bg-reaction-ras/10',
       text: 'text-reaction-ras'
     },
     inconfort: {
-      bg: 'bg-reaction-inconfort/10',
-      ring: 'border-reaction-inconfort ring-reaction-inconfort/30',
+      tint: 'bg-reaction-inconfort/5 border-reaction-inconfort/20',
+      tintHover: 'hover:bg-reaction-inconfort/10 hover:border-reaction-inconfort/30',
+      ring: 'border-reaction-inconfort ring-reaction-inconfort/30 bg-reaction-inconfort/10',
       text: 'text-reaction-inconfort'
     },
     reaction: {
-      bg: 'bg-reaction-reaction/10',
-      ring: 'border-reaction-reaction ring-reaction-reaction/30',
+      tint: 'bg-reaction-reaction/5 border-reaction-reaction/20',
+      tintHover: 'hover:bg-reaction-reaction/10 hover:border-reaction-reaction/30',
+      ring: 'border-reaction-reaction ring-reaction-reaction/30 bg-reaction-reaction/10',
       text: 'text-reaction-reaction'
     }
   };
@@ -31,16 +37,24 @@
   {#each REACTIONS as r (r.id)}
     {@const active = value === r.id}
     {@const s = STYLES[r.id]}
+    {@const Icon = r.icon}
     <label
       class={cn(
-        'flex cursor-pointer flex-col items-center gap-1 rounded-md border bg-background p-3 text-sm transition-colors hover:bg-accent',
+        'group relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border p-3 text-center transition-all duration-200 ease-soft',
         'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
-        active && [s.bg, s.ring, s.text, 'border-2 ring-2']
+        s.tint,
+        s.text,
+        active
+          ? cn(s.ring, 'border-2 ring-2 -translate-y-0.5 shadow-card motion-reduce:transform-none')
+          : s.tintHover
       )}
     >
       <input type="radio" {name} value={r.id} bind:group={value} class="sr-only" />
-      <span class="font-medium">{r.label}</span>
-      <span class="text-[11px] text-muted-foreground">{r.description}</span>
+      <Icon size={20} aria-hidden="true" />
+      <span class="text-sm font-medium">{r.label}</span>
+      {#if active}
+        <span class="text-[11px] text-muted-foreground">{r.description}</span>
+      {/if}
     </label>
   {/each}
 </fieldset>

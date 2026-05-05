@@ -32,7 +32,7 @@
 <div class="container max-w-xl space-y-5 py-6">
   <header>
     <a href={backHref} class="text-sm text-muted-foreground hover:underline">← Retour</a>
-    <h1 class="mt-2 text-xl font-semibold">Modifier le log</h1>
+    <h1 class="mt-2 text-xl font-semibold">Modifier ce repas</h1>
     <p class="text-sm text-muted-foreground">Pour {data.child.name}</p>
   </header>
 
@@ -59,22 +59,22 @@
     <FoodCombobox foods={data.foods} initialFoodId={data.entry.foodId} />
 
     <div class="grid gap-1.5">
-      <Label for="givenAt">Date et heure</Label>
+      <Label for="givenAt">Quand ?</Label>
       <Input id="givenAt" name="givenAt" type="datetime-local" bind:value={givenAt} required />
     </div>
 
     <div class="grid gap-1.5">
-      <Label>Réaction</Label>
+      <Label>Comment bébé a réagi ?</Label>
       <ReactionPicker name="reaction" bind:value={reaction} />
     </div>
 
     <div class="grid gap-1.5">
-      <Label for="notes">Notes (optionnel)</Label>
+      <Label for="notes">Une note ? (facultatif)</Label>
       <Textarea
         id="notes"
         name="notes"
         maxlength={2000}
-        placeholder="Quantité, contexte, observations…"
+        placeholder="Quantité, ambiance du repas, observations…"
         bind:value={notes}
       />
     </div>
@@ -92,7 +92,7 @@
     action="?/delete"
     class="border-t pt-5"
     use:enhance={({ cancel }) => {
-      if (!confirm('Supprimer ce log ? Cette action est définitive.')) {
+      if (!confirm('Supprimer ce repas ? L’opération est définitive.')) {
         cancel();
         return;
       }
@@ -106,7 +106,7 @@
     <input type="hidden" name="from" value={data.from} />
     <Button type="submit" variant="ghost" size="sm" class="text-destructive hover:text-destructive" loading={deleting}>
       <Trash2 size={16} aria-hidden="true" />
-      {deleting ? 'Suppression…' : 'Supprimer ce log'}
+      {deleting ? 'Suppression…' : 'Supprimer ce repas'}
     </Button>
   </form>
 </div>

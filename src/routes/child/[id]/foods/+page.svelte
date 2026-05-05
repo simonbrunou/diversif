@@ -32,7 +32,7 @@
     <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
       ← Tableau
     </a>
-    <h1 class="mt-2 text-xl font-semibold">Aliments donnés à {data.child.name}</h1>
+    <h1 class="mt-2 text-xl font-semibold">Le carnet de {data.child.name}</h1>
   </header>
 
   <form method="GET" class="grid gap-2 sm:grid-cols-[1fr,auto,auto,auto]">
@@ -45,9 +45,9 @@
     </Select>
     <Select name="reaction" value={data.filters.reaction}>
       <option value="">Toutes réactions</option>
-      <option value="ras">RAS</option>
-      <option value="inconfort">Inconfort</option>
-      <option value="reaction">Réaction</option>
+      <option value="ras">Tout va bien</option>
+      <option value="inconfort">Petit inconfort</option>
+      <option value="reaction">Réaction marquée</option>
     </Select>
     {#if data.filters.repeat}
       <input type="hidden" name="repeat" value="1" />
@@ -79,11 +79,11 @@
   {#if data.entries.length === 0}
     <EmptyState
       icon={Apple}
-      title="Aucun aliment"
-      description="Affinez vos filtres ou commencez à logguer."
+      title="Rien dans ce filtre"
+      description="Élargissez la recherche ou notez un nouveau repas."
     >
       {#snippet action()}
-        <Button href={`/child/${data.child.id}/log`}>+ Logguer</Button>
+        <Button href={`/child/${data.child.id}/log`}>Noter un repas</Button>
       {/snippet}
     </EmptyState>
   {:else}
