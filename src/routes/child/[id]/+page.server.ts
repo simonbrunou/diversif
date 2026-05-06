@@ -9,6 +9,8 @@ import { computeReminders } from '$lib/server/guidance/reminders';
 import {
   loadDiversityMetrics,
   loadDismissals,
+  loadStreak,
+  loadWeeklyRecap,
   dismissReminder,
   type EnrichedEntry
 } from '$lib/server/guidance/queries';
@@ -95,6 +97,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
   // Diversity metrics
   const diversity = loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
+  const streak = loadStreak(childId);
+  const weeklyRecap = loadWeeklyRecap(childId);
 
   // Reminders: full history is required so first-introduction and
   // exposure-count rules (stale-diversity, repeat-exposure) are correct
@@ -166,6 +170,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       allergens: summary
     },
     diversity,
+    streak,
+    weeklyRecap,
     reminders,
     showWelcomeDialog
   };

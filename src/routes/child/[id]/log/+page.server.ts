@@ -5,6 +5,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { requireMembership } from '$lib/server/guards';
 import { CATEGORY_IDS } from '$lib/utils/categories';
+import { ALLERGENS } from '$lib/utils/allergens';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z
@@ -130,6 +131,16 @@ export const actions: Actions = {
             .get()?.n /* v8 ignore next */ ?? 0)
         : null;
 
+    // Distinct allergens introduced for this child, pre-insert. Used to detect
+    // crossing the "all 12 allergens" finish line on the *new* introduction.
+    const priorAllergensIntroduced =
+      db
+        .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
+        .from(foodEntries)
+        .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+        .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`))
+        .get()?.n /* v8 ignore next */ ?? 0;
+
     db.insert(foodEntries)
       .values({
         childId,
@@ -150,9 +161,14 @@ export const actions: Actions = {
         .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
         .get()?.n /* v8 ignore next */ ?? 0;
 
+    const isFirstAllergen = priorAllergenCount === 0 && food.allergenType != null;
+    const allAllergensJustCompleted =
+      isFirstAllergen && priorAllergensIntroduced + 1 === ALLERGENS.length;
+
     const search = new URLSearchParams({ logged: '1' });
     if (priorEntryCount === 0) search.set('first', '1');
-    if (priorAllergenCount === 0 && food.allergenType) search.set('allergen', food.allergenType);
+    if (isFirstAllergen) search.set('allergen', food.allergenType as string);
+    if (allAllergensJustCompleted) search.set('allAllergens', '1');
     search.set('categories', String(categoriesNowCovered));
     search.set('prevCategories', String(priorCategoriesCovered));
 

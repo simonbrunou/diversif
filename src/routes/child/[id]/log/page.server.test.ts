@@ -225,10 +225,90 @@ describe('child/[id]/log default action', () => {
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') {
       expect(r.location).toContain('allergen=arachide');
+      expect(r.location).not.toContain('allAllergens=1');
       // 'allergenes' counts as a category bucket (only 'autre' is excluded
       // from the dashboard's diversity denominator), so coverage bumps to 1.
       expect(r.location).toContain('categories=1');
       expect(r.location).toContain('prevCategories=0');
+    }
+  });
+
+  it('emits allAllergens=1 when the 12th and final allergen is introduced', async () => {
+    const { u, c, m } = await setup();
+    // Seed 11 of the 12 priority allergens as already-introduced.
+    const eleven = [
+      'gluten',
+      'oeuf',
+      'lait',
+      'arachide',
+      'fruits_a_coque',
+      'sesame',
+      'soja',
+      'poisson',
+      'crustace',
+      'mollusque',
+      'celeri'
+    ];
+    for (const id of eleven) {
+      const f = testDb
+        .insert(foods)
+        .values({
+          name: `food-${id}`,
+          category: 'allergenes',
+          isMajorAllergen: true,
+          allergenType: id,
+          suggestedAgeMonths: 6,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning()
+        .all()[0];
+      testDb
+        .insert(foodEntries)
+        .values({
+          childId: c.id,
+          foodId: f.id,
+          givenAt: new Date('2024-05-01T10:00:00Z'),
+          reaction: 'ras',
+          notes: null,
+          loggedBy: u.id,
+          createdAt: new Date()
+        })
+        .run();
+    }
+    // Log the 12th: moutarde.
+    const moutarde = testDb
+      .insert(foods)
+      .values({
+        name: 'Moutarde douce',
+        category: 'allergenes',
+        isMajorAllergen: true,
+        allergenType: 'moutarde',
+        suggestedAgeMonths: 6,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+      .all()[0];
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(moutarde.id),
+        givenAt: '2024-06-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') {
+      expect(r.location).toContain('allergen=moutarde');
+      expect(r.location).toContain('allAllergens=1');
     }
   });
 

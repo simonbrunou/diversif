@@ -27,6 +27,14 @@ describe('pickMilestoneFromQuery', () => {
     expect(m).toEqual({ kind: 'first-allergen', allergenType: 'arachide' });
   });
 
+  it('prioritises all-allergens over every other milestone when set', () => {
+    const m = pickMilestoneFromQuery(
+      qs('logged=1&first=1&allergen=moutarde&allAllergens=1&categories=8&prevCategories=7'),
+      11
+    );
+    expect(m).toEqual({ kind: 'all-allergens' });
+  });
+
   it('returns first-food when prior entry count was 0', () => {
     const m = pickMilestoneFromQuery(qs('logged=1&first=1&categories=1&prevCategories=0'), 11);
     expect(m).toEqual({ kind: 'first-food' });
@@ -89,6 +97,14 @@ describe('celebrate', () => {
     celebrate(toast, { kind: 'first-allergen', allergenType: 'arachide' });
     expect(success).toHaveBeenCalledOnce();
     expect(success.mock.calls[0][0].toLowerCase()).toContain('arachide');
+  });
+
+  it('fires the all-allergens completion toast', () => {
+    const { toast, success } = fakeToast();
+    celebrate(toast, { kind: 'all-allergens' });
+    expect(success).toHaveBeenCalledOnce();
+    expect(success.mock.calls[0][0]).toContain('12 allergènes');
+    expect(success.mock.calls[0][1]?.class).toContain('celebrate');
   });
 
   it('fires the all-covered variant when covered === total', () => {

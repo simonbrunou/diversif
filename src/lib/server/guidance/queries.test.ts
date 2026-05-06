@@ -8,6 +8,8 @@ import {
   loadDiversityMetrics,
   loadRepeatCandidates,
   loadDismissals,
+  loadStreak,
+  loadWeeklyRecap,
   dismissReminder
 } from './queries';
 import { children, foods, foodEntries, users, tipDismissals } from '../db/schema';
@@ -340,5 +342,133 @@ describe('loadDismissals / dismissReminder', () => {
     expect(set.has('welcome-dialog')).toBe(true);
     expect(set.has('stage-transition:6m')).toBe(true);
     expect(set.has('forbidden-reminder:miel')).toBe(true);
+  });
+});
+
+describe('loadStreak', () => {
+  it('returns 0 when no entries exist', async () => {
+    const { child } = await seedUserAndChild();
+    expect(loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toBe(0);
+  });
+
+  it('returns 0 when last entry is older than yesterday', async () => {
+    const { user, child } = await seedUserAndChild();
+    const f = seedFood({ name: 'A', category: 'legumes' });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: new Date('2024-06-05T10:00:00Z'),
+      reaction: 'ras'
+    });
+    expect(loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toBe(0);
+  });
+
+  it('counts a single same-day entry as a 1-day streak', async () => {
+    const { user, child } = await seedUserAndChild();
+    const f = seedFood({ name: 'A', category: 'legumes' });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: new Date('2024-06-10T08:00:00Z'),
+      reaction: 'ras'
+    });
+    expect(loadStreak(child.id, new Date('2024-06-10T20:00:00Z'))).toBe(1);
+  });
+
+  it('allows the streak to start yesterday when nothing logged today yet', async () => {
+    const { user, child } = await seedUserAndChild();
+    const f = seedFood({ name: 'A', category: 'legumes' });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: new Date('2024-06-08T10:00:00Z'),
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: new Date('2024-06-09T10:00:00Z'),
+      reaction: 'ras'
+    });
+    expect(loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toBe(2);
+  });
+
+  it('counts consecutive UTC days and stops at the first gap', async () => {
+    const { user, child } = await seedUserAndChild();
+    const f = seedFood({ name: 'A', category: 'legumes' });
+    for (const day of [3, 4, 6, 8, 9, 10]) {
+      const dd = String(day).padStart(2, '0');
+      logEntry({
+        childId: child.id,
+        foodId: f.id,
+        userId: user.id,
+        givenAt: new Date(`2024-06-${dd}T10:00:00Z`),
+        reaction: 'ras'
+      });
+    }
+    // Today=10, yesterday=9, day before=8 → 3 in a row, then gap at day 7.
+    expect(loadStreak(child.id, new Date('2024-06-10T15:00:00Z'))).toBe(3);
+  });
+});
+
+describe('loadWeeklyRecap', () => {
+  it('returns zeros when there are no entries', async () => {
+    const { child } = await seedUserAndChild();
+    const recap = loadWeeklyRecap(child.id, new Date('2024-06-10T12:00:00Z'));
+    expect(recap).toEqual({ entries: 0, newFoods: 0, newAllergens: 0 });
+  });
+
+  it('counts entries, distinct first-introductions, and distinct first allergens within the window', async () => {
+    const { user, child } = await seedUserAndChild();
+    const carrot = seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = seedFood({ name: 'Pomme', category: 'fruits' });
+    const peanut = seedFood({
+      name: 'Beurre cacahuète',
+      category: 'allergenes',
+      allergen: 'arachide'
+    });
+    const now = new Date('2024-06-10T12:00:00Z');
+    const within = new Date('2024-06-08T10:00:00Z'); // 2d ago
+    const outside = new Date('2024-05-15T10:00:00Z'); // ~26d ago
+    // Carrot first introduced outside the window, then re-logged within → not new this week.
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: outside,
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: within,
+      reaction: 'ras'
+    });
+    // Apple first introduced within the window → counts as new.
+    logEntry({
+      childId: child.id,
+      foodId: apple.id,
+      userId: user.id,
+      givenAt: within,
+      reaction: 'ras'
+    });
+    // Peanut introduced within the window → counts as new + new allergen.
+    logEntry({
+      childId: child.id,
+      foodId: peanut.id,
+      userId: user.id,
+      givenAt: within,
+      reaction: 'ras'
+    });
+
+    const recap = loadWeeklyRecap(child.id, now);
+    expect(recap.entries).toBe(3); // 2 within + 1 within (the outside one excluded)
+    expect(recap.newFoods).toBe(2); // apple + peanut
+    expect(recap.newAllergens).toBe(1); // arachide
   });
 });
