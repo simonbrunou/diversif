@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scrubEvent, scrubPathname } from './sentry';
+import { scrubEvent, scrubPathname, filterUiBreadcrumb } from './sentry';
 
 describe('scrubPathname', () => {
   it('returns the route pattern verbatim when given one', () => {
@@ -142,5 +142,26 @@ describe('scrubEvent', () => {
     });
     // The guard passes (boom is a non-null object), then accessing boom.request throws.
     expect(scrubEvent(boom as never)).toBeNull();
+  });
+});
+
+describe('filterUiBreadcrumb', () => {
+  it('drops ui.click breadcrumbs', () => {
+    expect(filterUiBreadcrumb({ category: 'ui.click', message: 'click .x' })).toBeNull();
+  });
+  it('drops ui.input breadcrumbs', () => {
+    expect(filterUiBreadcrumb({ category: 'ui.input', message: 'type #email' })).toBeNull();
+  });
+  it('keeps navigation breadcrumbs', () => {
+    const b = { category: 'navigation', data: { from: '/a', to: '/b' } };
+    expect(filterUiBreadcrumb(b)).toBe(b);
+  });
+  it('keeps console breadcrumbs', () => {
+    const b = { category: 'console', message: 'hi' };
+    expect(filterUiBreadcrumb(b)).toBe(b);
+  });
+  it('keeps breadcrumbs without a category', () => {
+    const b = { message: 'no category here' };
+    expect(filterUiBreadcrumb(b)).toBe(b);
   });
 });

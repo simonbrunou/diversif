@@ -55,6 +55,15 @@ function scrubUrlString(raw: string, routeId: string | null = null): string {
   }
 }
 
+/**
+ * Drop UI breadcrumbs (clicks, focus) at capture time as a belt-and-braces
+ * complement to the same filter inside scrubEvent. SDK-shape signature so it
+ * can be passed directly to Sentry.init({ beforeBreadcrumb }).
+ */
+export function filterUiBreadcrumb<B extends { category?: string }>(b: B): B | null {
+  return b.category === 'ui.click' || b.category === 'ui.input' ? null : b;
+}
+
 export function scrubEvent<E extends ScrubbableEvent>(event: E): E | null {
   try {
     if (!event || typeof event !== 'object') return null;

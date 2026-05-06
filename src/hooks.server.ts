@@ -8,7 +8,7 @@ import {
   validateSession
 } from '$lib/server/auth';
 import * as Sentry from '@sentry/sveltekit';
-import { scrubEvent } from '$lib/sentry';
+import { scrubEvent, filterUiBreadcrumb } from '$lib/sentry';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN || '',
@@ -21,7 +21,7 @@ Sentry.init({
   // on our type so we can clone breadcrumb data with `{ ...b, data }`). Drop this
   // suppression if either type tightens — it'll fail loudly via @ts-expect-error.
   beforeSend: scrubEvent,
-  beforeBreadcrumb: (b) => (b.category === 'ui.click' || b.category === 'ui.input' ? null : b)
+  beforeBreadcrumb: filterUiBreadcrumb
 });
 
 /**

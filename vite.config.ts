@@ -60,6 +60,7 @@ export default defineConfig({
       include: [
         'src/lib/**/*.ts',
         'src/hooks.server.ts',
+        'src/hooks.client.ts',
         'src/routes/**/+page.server.ts',
         'src/routes/**/+layout.server.ts',
         'src/routes/**/+server.ts'
@@ -77,7 +78,11 @@ export default defineConfig({
         // foreign-key resolvers, evaluated lazily by the ORM. The declarations
         // themselves are exercised in schema.test.ts and indirectly by every
         // DB-backed test via INSERT/SELECT.
-        'src/lib/server/db/schema.ts'
+        'src/lib/server/db/schema.ts',
+        // Bootstrap singleton calling Sentry.init at module top — exercises
+        // real network/SDK runtime; covered indirectly via scrubEvent unit
+        // tests and hooks.server tests with a mocked SDK.
+        'src/hooks.client.ts'
       ],
       thresholds: {
         lines: 100,
