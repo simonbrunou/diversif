@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-06)
 
 ## Corpus Check
-- 247 files · ~265,988 words
+- 247 files · ~266,093 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b4d4e94f`
+- Built from commit: `5900ba0b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -359,11 +359,11 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `Diversification guidance content (FR)` and `RGPD Article 15 (right of access)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `requireUser()` connect `App Shell & Navigation` to `Passkey / WebAuthn`, `UI Primitives`, `Account & Root Layout`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
 - **Why does `resetTestDb()` connect `Test Seed Helpers` to `Passkey / WebAuthn`, `UI Primitives`, `Reaction Widgets`, `Account & Root Layout`, `GDPR Data Export`, `Diversification Guidance Content`?**
-  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
 - **Why does `makeRouteEvent()` connect `Test Seed Helpers` to `Server Auth & GDPR Cleanup`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+  _High betweenness centrality (0.036) - this node is a cross-community bridge._
 - **Are the 4 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**
   _`makeRouteEvent()` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `safeUser()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**
