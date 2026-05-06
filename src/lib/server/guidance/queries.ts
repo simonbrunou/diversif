@@ -20,6 +20,11 @@ export type EnrichedEntry = {
 };
 
 export function loadRecentEntries(childId: number, days: number): EnrichedEntry[] {
+  // Drizzle's typed gte() on a timestamp_ms column maps the bound value via
+  // SQLiteTimestamp.mapToDriverValue, which calls .getTime() on its input —
+  // we MUST pass a Date here, not a bare number. Helpers below that compose
+  // raw `sql\`\`` templates instead use a bare ms epoch, since the typed
+  // column-mapper isn't in the path there.
   const since = new Date(Date.now() - days * DAY_MS);
   return db
     .select({
@@ -68,15 +73,17 @@ export function loadDiversityMetrics(childId: number, totalCategories: number): 
             AND ${foods.category} != 'autre'`
     )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
 
-  const lastNewFood = db.get<{ given_at: number }>(
-    sql`SELECT MIN(given_at) as given_at
+  // For each food, take the timestamp of its FIRST appearance (introduction).
+  // We want the most recent of those, i.e. when the latest "new food" event
+  // happened. MAX-of-grouped-MINs expresses this directly without the
+  // accidental ORDER BY/LIMIT 1/outer MIN dance we used to do.
+  const lastNewFood = db.get<{ given_at: number | null }>(
+    sql`SELECT MAX(first_given_at) as given_at
         FROM (
-          SELECT ${foodEntries.foodId} as food_id, MIN(${foodEntries.givenAt}) as given_at
+          SELECT MIN(${foodEntries.givenAt}) as first_given_at
           FROM ${foodEntries}
           WHERE ${foodEntries.childId} = ${childId}
           GROUP BY ${foodEntries.foodId}
-          ORDER BY given_at DESC
-          LIMIT 1
         )`
   );
   const lastNewFoodAt = lastNewFood?.given_at != null ? Number(lastNewFood.given_at) : null;
@@ -289,6 +296,8 @@ export function loadCoparentActivity(
   days: number = 7,
   limit: number = 5
 ): CoparentEntry[] {
+  // Date here, not a bare ms — see loadRecentEntries for the timestamp_ms
+  // / typed-gte rationale.
   const since = new Date(Date.now() - days * DAY_MS);
   const rows = db
     .select({
@@ -346,37 +355,34 @@ export function loadAnalyticsBuckets(
 ): WeekBucket[] {
   const horizonMs = now.getTime() - weeks * 7 * DAY_MS;
 
-  // Pull the data we need once; bucketing happens in JS for clarity.
-  const rows = db
+  // Per-food first-introduction timestamps + category. One row per distinct
+  // food the child has ever eaten — typically 50-200 rows even for an
+  // active child. Powers BOTH "introductions in bucket" (first_at in window)
+  // and "cumulative categories through bucket end" (categories whose first
+  // intro was before window end). We need history older than horizonMs for
+  // cumulative correctness, but it's a tiny rollup, not the full entry log.
+  const introRows = db
     .select({
       foodId: foods.id,
       category: foods.category,
-      reaction: foodEntries.reaction,
-      givenAt: foodEntries.givenAt
+      firstAt: sql<number>`MIN(${foodEntries.givenAt})`.as('first_at')
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(eq(foodEntries.childId, childId))
-    .orderBy(asc(foodEntries.givenAt))
+    .groupBy(foodEntries.foodId)
     .all();
 
-  // Per-row precomputation: which rows are first-introductions for their
-  // food, and the running cumulative-category count after each row. Walking
-  // the rows once here means the per-bucket loop below is a simple range
-  // filter without re-doing this work.
-  const introRowIdx = new Set<number>();
-  const seenFoodIds = new Set<number>();
-  const seenCategories = new Set<string>();
-  const runningCatSize: number[] = [];
-  for (let idx = 0; idx < rows.length; idx++) {
-    const r = rows[idx];
-    if (!seenFoodIds.has(r.foodId)) {
-      seenFoodIds.add(r.foodId);
-      introRowIdx.add(idx);
-    }
-    if (r.category !== 'autre') seenCategories.add(r.category);
-    runningCatSize.push(seenCategories.size);
-  }
+  // In-horizon entry rows for reaction counts. Cap the scan at the chart
+  // window so years-of-history children don't drag the dashboard down.
+  const horizonRows = db
+    .select({
+      reaction: foodEntries.reaction,
+      givenAt: foodEntries.givenAt
+    })
+    .from(foodEntries)
+    .where(and(eq(foodEntries.childId, childId), gte(foodEntries.givenAt, new Date(horizonMs))))
+    .all();
 
   const buckets: WeekBucket[] = [];
   for (let i = weeks - 1; i >= 0; i--) {
@@ -386,23 +392,25 @@ export function loadAnalyticsBuckets(
     let ras = 0;
     let inconfort = 0;
     let reaction = 0;
-    let cumulativeCategories = 0;
-    for (let idx = 0; idx < rows.length; idx++) {
-      const r = rows[idx];
+    const cumulativeCategorySet = new Set<string>();
+    for (const r of introRows) {
+      const firstAt = Number(r.firstAt);
+      if (firstAt < end && r.category !== 'autre') cumulativeCategorySet.add(r.category);
+      if (firstAt >= start && firstAt < end) introductions += 1;
+    }
+    for (const r of horizonRows) {
       const ts = r.givenAt.getTime();
-      if (ts < end) cumulativeCategories = runningCatSize[idx];
       if (ts >= start && ts < end) {
         if (r.reaction === 'ras') ras += 1;
         else if (r.reaction === 'inconfort') inconfort += 1;
         else if (r.reaction === 'reaction') reaction += 1;
-        if (introRowIdx.has(idx)) introductions += 1;
       }
     }
     buckets.push({
       weekStart: Math.max(start, horizonMs),
       introductions,
       reactions: { ras, inconfort, reaction },
-      cumulativeCategories
+      cumulativeCategories: cumulativeCategorySet.size
     });
   }
   return buckets;

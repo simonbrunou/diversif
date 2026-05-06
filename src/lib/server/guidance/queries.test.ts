@@ -579,6 +579,41 @@ describe('loadAnalyticsBuckets', () => {
     expect(recent.reactions).toEqual({ ras: 1, inconfort: 1, reaction: 1 });
   });
 
+  it('cumulative categories include foods first introduced BEFORE the horizon', async () => {
+    const { user, child } = await seedUserAndChild();
+    // Two foods, both first introduced more than 4 weeks before "now" — i.e.
+    // outside the chart's horizon. Reactions for those entries shouldn't
+    // influence the visible buckets, but their categories must still appear
+    // in the cumulative count of every bucket.
+    const carrot = seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = seedFood({ name: 'Pomme', category: 'fruits' });
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: new Date('2023-12-01T10:00:00Z'),
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: apple.id,
+      userId: user.id,
+      givenAt: new Date('2024-01-15T10:00:00Z'),
+      reaction: 'ras'
+    });
+
+    const buckets = loadAnalyticsBuckets(child.id, 4, new Date('2024-06-10T12:00:00Z'));
+    expect(buckets.every((b) => b.cumulativeCategories === 2)).toBe(true);
+    // No introductions or reactions should fall inside the 4-week window.
+    expect(buckets.reduce((s, b) => s + b.introductions, 0)).toBe(0);
+    expect(
+      buckets.reduce(
+        (s, b) => s + b.reactions.ras + b.reactions.inconfort + b.reactions.reaction,
+        0
+      )
+    ).toBe(0);
+  });
+
   it('does not double-count introductions when two rows share the exact givenAt', async () => {
     const { user, child } = await seedUserAndChild();
     const carrot = seedFood({ name: 'Carotte', category: 'legumes' });

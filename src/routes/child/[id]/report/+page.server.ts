@@ -67,7 +67,8 @@ export const load: PageServerLoad = async ({ parent }) => {
     category: r.category as CategoryId,
     allergenType: r.allergenType,
     reaction: r.reaction as ReactionId,
-    givenAt: r.givenAt.getTime(),
+    givenAt:
+      r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt),
     notes: r.notes
   }));
 
@@ -127,7 +128,8 @@ export const load: PageServerLoad = async ({ parent }) => {
   for (const r of allergenJoinRows) {
     /* v8 ignore next — query already filters allergenType IS NOT NULL */
     if (!r.allergenType) continue;
-    const at = r.givenAt.getTime();
+    const at =
+      r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt);
     const cur = allergenAggMap.get(r.allergenType);
     const reaction = r.reaction as ReactionId;
     if (!cur) {
