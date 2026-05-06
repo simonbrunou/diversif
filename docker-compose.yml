@@ -11,6 +11,13 @@ services:
       - ORIGIN=${ORIGIN:?ORIGIN must be set in .env}
       - DATABASE_PATH=/app/data/diversif.db
       - NODE_ENV=production
+    mem_limit: 512m
+    mem_reservation: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
 
 volumes:
   diversif-data:
