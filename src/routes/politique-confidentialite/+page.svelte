@@ -69,8 +69,9 @@
     </p>
   </section>
 
-  <!-- TODO before production: replace "adresse complète à vérifier" placeholder
-       below with Sentry GmbH's registered address from https://sentry.io/legal/dpa/ -->
+  <!-- Optional follow-up: append Sentry GmbH's full street address from
+       https://sentry.io/legal/dpa/ if the policy needs more precision than
+       "Berlin, Allemagne". -->
   <section class="space-y-2">
     <h2 class="text-lg font-semibold">4. Destinataires et sous-traitants</h2>
     <p class="text-sm">
@@ -86,8 +87,7 @@
     <ul class="list-disc space-y-1 pl-5 text-sm">
       <li>
         <span class="font-medium">Sentry GmbH</span> (entité européenne de Functional Software,
-        Inc., siège social en Allemagne — adresse complète à vérifier sur le DPA et à
-        renseigner ici lors de la mise en service) — collecte des erreurs techniques produites
+        Inc., siège social à Berlin, Allemagne) — collecte des erreurs techniques produites
         par l'application (trace d'exécution, route SvelteKit anonymisée, identifiant d'erreur
         opaque). Aucun identifiant utilisateur, aucune adresse e-mail, aucun corps de requête,
         aucun cookie ni en-tête ne sont transmis. Base légale : intérêt légitime à corriger les
