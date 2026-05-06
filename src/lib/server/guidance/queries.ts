@@ -3,7 +3,7 @@
 
 import { db } from '$lib/server/db';
 import { foodEntries, foods, tipDismissals } from '$lib/server/db/schema';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 import type { CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 
@@ -228,6 +228,91 @@ export function loadStreak(childId: number, now: Date = new Date()): number {
     }
   }
   return streak;
+}
+
+export type WeekBucket = {
+  /** Inclusive UTC start of the bucket, ms. */
+  weekStart: number;
+  /** Distinct foods first introduced in this bucket. */
+  introductions: number;
+  /** Reaction counts for entries within this bucket. */
+  reactions: { ras: number; inconfort: number; reaction: number };
+  /** Distinct categories covered through the END of this bucket (excluding 'autre'). */
+  cumulativeCategories: number;
+};
+
+/**
+ * Build N rolling 7-day buckets ending "now". The most recent bucket is
+ * [now - 7d, now); index 0 in the returned array is the OLDEST bucket so
+ * charts read left-to-right chronologically.
+ */
+export function loadAnalyticsBuckets(
+  childId: number,
+  weeks: number = 12,
+  now: Date = new Date()
+): WeekBucket[] {
+  const horizonMs = now.getTime() - weeks * 7 * DAY_MS;
+
+  // Pull the data we need once; bucketing happens in JS for clarity.
+  const rows = db
+    .select({
+      foodId: foods.id,
+      category: foods.category,
+      reaction: foodEntries.reaction,
+      givenAt: foodEntries.givenAt
+    })
+    .from(foodEntries)
+    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+    .where(eq(foodEntries.childId, childId))
+    .orderBy(asc(foodEntries.givenAt))
+    .all();
+
+  // Per-row precomputation: which rows are first-introductions for their
+  // food, and the running cumulative-category count after each row. Walking
+  // the rows once here means the per-bucket loop below is a simple range
+  // filter without re-doing this work.
+  const introRowIdx = new Set<number>();
+  const seenFoodIds = new Set<number>();
+  const seenCategories = new Set<string>();
+  const runningCatSize: number[] = [];
+  for (let idx = 0; idx < rows.length; idx++) {
+    const r = rows[idx];
+    if (!seenFoodIds.has(r.foodId)) {
+      seenFoodIds.add(r.foodId);
+      introRowIdx.add(idx);
+    }
+    if (r.category !== 'autre') seenCategories.add(r.category);
+    runningCatSize.push(seenCategories.size);
+  }
+
+  const buckets: WeekBucket[] = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const start = now.getTime() - (i + 1) * 7 * DAY_MS;
+    const end = now.getTime() - i * 7 * DAY_MS;
+    let introductions = 0;
+    let ras = 0;
+    let inconfort = 0;
+    let reaction = 0;
+    let cumulativeCategories = 0;
+    for (let idx = 0; idx < rows.length; idx++) {
+      const r = rows[idx];
+      const ts = r.givenAt.getTime();
+      if (ts < end) cumulativeCategories = runningCatSize[idx];
+      if (ts >= start && ts < end) {
+        if (r.reaction === 'ras') ras += 1;
+        else if (r.reaction === 'inconfort') inconfort += 1;
+        else if (r.reaction === 'reaction') reaction += 1;
+        if (introRowIdx.has(idx)) introductions += 1;
+      }
+    }
+    buckets.push({
+      weekStart: Math.max(start, horizonMs),
+      introductions,
+      reactions: { ras, inconfort, reaction },
+      cumulativeCategories
+    });
+  }
+  return buckets;
 }
 
 export function loadDismissals(userId: number, childId: number): Set<string> {

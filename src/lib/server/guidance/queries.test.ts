@@ -10,6 +10,7 @@ import {
   loadDismissals,
   loadStreak,
   loadWeeklyRecap,
+  loadAnalyticsBuckets,
   dismissReminder
 } from './queries';
 import { children, foods, foodEntries, users, tipDismissals } from '../db/schema';
@@ -470,5 +471,133 @@ describe('loadWeeklyRecap', () => {
     expect(recap.entries).toBe(3); // 2 within + 1 within (the outside one excluded)
     expect(recap.newFoods).toBe(2); // apple + peanut
     expect(recap.newAllergens).toBe(1); // arachide
+  });
+});
+
+describe('loadAnalyticsBuckets', () => {
+  it('returns N buckets with zeros when there are no entries', async () => {
+    const { child } = await seedUserAndChild();
+    const buckets = loadAnalyticsBuckets(child.id, 4, new Date('2024-06-10T12:00:00Z'));
+    expect(buckets).toHaveLength(4);
+    for (const b of buckets) {
+      expect(b.introductions).toBe(0);
+      expect(b.reactions).toEqual({ ras: 0, inconfort: 0, reaction: 0 });
+      expect(b.cumulativeCategories).toBe(0);
+    }
+    // Buckets are oldest-first.
+    expect(buckets[0].weekStart).toBeLessThan(buckets[3].weekStart);
+  });
+
+  it('counts a re-log of an existing food as activity but not as a new introduction', async () => {
+    const { user, child } = await seedUserAndChild();
+    const carrot = seedFood({ name: 'Carotte', category: 'legumes' });
+    // Older introduction (3 weeks ago).
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: new Date('2024-05-20T10:00:00Z'),
+      reaction: 'ras'
+    });
+    // Re-log within the most recent week.
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: new Date('2024-06-08T10:00:00Z'),
+      reaction: 'inconfort'
+    });
+
+    const buckets = loadAnalyticsBuckets(child.id, 4, new Date('2024-06-10T12:00:00Z'));
+    const totalIntros = buckets.reduce((s, b) => s + b.introductions, 0);
+    expect(totalIntros).toBe(1); // only the original introduction counts
+
+    const recent = buckets[buckets.length - 1];
+    expect(recent.reactions.inconfort).toBe(1);
+    expect(recent.introductions).toBe(0);
+  });
+
+  it("tracks cumulative categories monotonically and ignores 'autre'", async () => {
+    const { user, child } = await seedUserAndChild();
+    const carrot = seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = seedFood({ name: 'Pomme', category: 'fruits' });
+    const other = seedFood({ name: 'Autre', category: 'autre' });
+
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: new Date('2024-05-20T10:00:00Z'),
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: apple.id,
+      userId: user.id,
+      givenAt: new Date('2024-06-01T10:00:00Z'),
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: other.id,
+      userId: user.id,
+      givenAt: new Date('2024-06-05T10:00:00Z'),
+      reaction: 'ras'
+    });
+
+    const buckets = loadAnalyticsBuckets(child.id, 4, new Date('2024-06-10T12:00:00Z'));
+    const series = buckets.map((b) => b.cumulativeCategories);
+    // Monotonically non-decreasing.
+    for (let i = 1; i < series.length; i++) expect(series[i]).toBeGreaterThanOrEqual(series[i - 1]);
+    // Final value reflects 2 categories (legumes + fruits); 'autre' excluded.
+    expect(series[series.length - 1]).toBe(2);
+  });
+
+  it('counts each reaction kind separately in the bucket totals', async () => {
+    const { user, child } = await seedUserAndChild();
+    const f = seedFood({ name: 'A', category: 'legumes' });
+    const ts = new Date('2024-06-08T10:00:00Z');
+    logEntry({ childId: child.id, foodId: f.id, userId: user.id, givenAt: ts, reaction: 'ras' });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: ts,
+      reaction: 'inconfort'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: ts,
+      reaction: 'reaction'
+    });
+    const buckets = loadAnalyticsBuckets(child.id, 2, new Date('2024-06-10T12:00:00Z'));
+    const recent = buckets[buckets.length - 1];
+    expect(recent.reactions).toEqual({ ras: 1, inconfort: 1, reaction: 1 });
+  });
+
+  it('does not double-count introductions when two rows share the exact givenAt', async () => {
+    const { user, child } = await seedUserAndChild();
+    const carrot = seedFood({ name: 'Carotte', category: 'legumes' });
+    const same = new Date('2024-06-08T10:00:00Z');
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: same,
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: same,
+      reaction: 'ras'
+    });
+
+    const buckets = loadAnalyticsBuckets(child.id, 2, new Date('2024-06-10T12:00:00Z'));
+    const totalIntros = buckets.reduce((s, b) => s + b.introductions, 0);
+    expect(totalIntros).toBe(1);
   });
 });

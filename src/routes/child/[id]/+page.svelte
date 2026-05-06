@@ -378,6 +378,13 @@
     </a>
     <span class="text-muted-foreground/40" aria-hidden="true">·</span>
     <a
+      href={`/child/${data.child.id}/analytics`}
+      class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      Tendances
+    </a>
+    <span class="text-muted-foreground/40" aria-hidden="true">·</span>
+    <a
       href={`/child/${data.child.id}/report`}
       class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
