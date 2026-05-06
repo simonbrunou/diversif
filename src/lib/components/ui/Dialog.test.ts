@@ -21,10 +21,29 @@ describe('Dialog', () => {
         footer: textSnippet('Footer')
       }
     });
-    expect(screen.getByRole('dialog').getAttribute('aria-label')).toBe('Confirm');
+    const dialog = screen.getByRole('dialog');
+    // APG: link the dialog to its visible heading via aria-labelledby rather
+    // than duplicating the title via aria-label.
+    const labelledBy = dialog.getAttribute('aria-labelledby');
+    expect(labelledBy).toBeTruthy();
+    expect(dialog.getAttribute('aria-label')).toBeNull();
+    const heading = screen.getByText('Confirm');
+    expect(heading.id).toBe(labelledBy);
     expect(screen.getByText('Body')).toBeTruthy();
     expect(screen.getByText('Footer')).toBeTruthy();
     expect(screen.getByText('Are you sure?')).toBeTruthy();
+  });
+
+  it('falls back to a generic aria-label when no title is given', () => {
+    render(Dialog, {
+      props: {
+        open: true,
+        children: textSnippet('Body')
+      }
+    });
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.getAttribute('aria-labelledby')).toBeNull();
+    expect(dialog.getAttribute('aria-label')).toBe('Dialogue');
   });
 
   it('closes on backdrop click and fires onclose', async () => {

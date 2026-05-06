@@ -6,6 +6,7 @@ import {
   foods,
   memberships,
   passkeys,
+  sessions,
   users,
   type Child,
   type FoodEntry,
@@ -82,6 +83,12 @@ export function deleteUserAccount(userId: number): DeletionSummary {
         .run();
       summary.removedMemberships += 1;
     }
+
+    // Explicitly drop every live session before the user row goes away.
+    // The sessions FK has ON DELETE CASCADE so SQLite would do this for us,
+    // but the explicit delete documents the intent — future moves of the
+    // session store (Redis, etc.) would silently lose revocation otherwise.
+    tx.delete(sessions).where(eq(sessions.userId, userId)).run();
 
     tx.delete(users).where(eq(users.id, userId)).run();
 
