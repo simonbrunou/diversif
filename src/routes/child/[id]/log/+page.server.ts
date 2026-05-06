@@ -40,6 +40,16 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   return { foods: list };
 };
 
+class LogActionAbort extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly userMessage: string
+  ) {
+    super(userMessage);
+    this.name = 'LogActionAbort';
+  }
+}
+
 export const actions: Actions = {
   default: async ({ request, params, locals }) => {
     const childId = Number(params.id);
@@ -53,125 +63,137 @@ export const actions: Actions = {
       });
     }
 
-    let foodId = parsed.data.foodId ?? null;
-    const customName = parsed.data['customFood.name']?.trim();
-    const customCategoryRaw = parsed.data['customFood.category']?.trim();
-
-    if (!foodId && customName) {
-      const category = CATEGORY_IDS.includes(customCategoryRaw ?? /* v8 ignore next */ '')
-        ? (customCategoryRaw as string)
-        : 'autre';
-      const inserted = db
-        .insert(foods)
-        .values({
-          name: customName,
-          category,
-          isMajorAllergen: false,
-          allergenType: null,
-          suggestedAgeMonths: 0,
-          notes: null,
-          isCustom: true,
-          customForChildId: childId
-        })
-        .returning({ id: foods.id })
-        .get();
-      foodId = inserted.id;
-    }
-
-    if (!foodId) {
-      return fail(400, { error: 'Aucun aliment sélectionné.' });
-    }
-
-    // Verify the food belongs to this child or is from the global catalog.
-    const food = db
-      .select()
-      .from(foods)
-      .where(
-        and(
-          eq(foods.id, foodId),
-          or(isNull(foods.customForChildId), eq(foods.customForChildId, childId))
-        )
-      )
-      .get();
-    if (!food) {
-      return fail(400, { error: 'Aliment introuvable.' });
-    }
-
     const givenAtDate = new Date(parsed.data.givenAt);
     if (Number.isNaN(givenAtDate.getTime())) {
       return fail(400, { error: 'Date invalide.' });
     }
 
-    // Snapshot pre-insert state so we can detect milestones after the insert.
-    // The `?? 0` fallbacks are defensive — sqlite COUNT() always returns a row.
-    const priorEntryCount =
-      db
-        .select({ n: sql<number>`count(*)` })
-        .from(foodEntries)
-        .where(eq(foodEntries.childId, childId))
-        .get()?.n /* v8 ignore next */ ?? 0;
+    let redirectQs: URLSearchParams;
+    try {
+      redirectQs = db.transaction((tx) => {
+        let foodId = parsed.data.foodId ?? null;
+        const customName = parsed.data['customFood.name']?.trim();
+        const customCategoryRaw = parsed.data['customFood.category']?.trim();
 
-    // Mirror loadDiversityMetrics: exclude the `autre` bucket so this count
-    // shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
-    const priorCategoriesCovered =
-      db
-        .select({ n: sql<number>`count(distinct ${foods.category})` })
-        .from(foodEntries)
-        .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-        .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
-        .get()?.n /* v8 ignore next */ ?? 0;
+        if (!foodId && customName) {
+          const category = CATEGORY_IDS.includes(customCategoryRaw ?? /* v8 ignore next */ '')
+            ? (customCategoryRaw as string)
+            : 'autre';
+          const inserted = tx
+            .insert(foods)
+            .values({
+              name: customName,
+              category,
+              isMajorAllergen: false,
+              allergenType: null,
+              suggestedAgeMonths: 0,
+              notes: null,
+              isCustom: true,
+              customForChildId: childId
+            })
+            .returning({ id: foods.id })
+            .get();
+          foodId = inserted.id;
+        }
 
-    const priorAllergenCount =
-      food.allergenType != null
-        ? (db
+        if (!foodId) {
+          throw new LogActionAbort(400, 'Aucun aliment sélectionné.');
+        }
+
+        // Verify the food belongs to this child or is from the global catalog.
+        const food = tx
+          .select()
+          .from(foods)
+          .where(
+            and(
+              eq(foods.id, foodId),
+              or(isNull(foods.customForChildId), eq(foods.customForChildId, childId))
+            )
+          )
+          .get();
+        if (!food) {
+          throw new LogActionAbort(400, 'Aliment introuvable.');
+        }
+
+        // Snapshot pre-insert state so we can detect milestones after the insert.
+        const priorEntryCount =
+          tx
             .select({ n: sql<number>`count(*)` })
             .from(foodEntries)
+            .where(eq(foodEntries.childId, childId))
+            .get()?.n /* v8 ignore next */ ?? 0;
+
+        // Mirror loadDiversityMetrics: exclude the `autre` bucket so this count
+        // shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
+        const priorCategoriesCovered =
+          tx
+            .select({ n: sql<number>`count(distinct ${foods.category})` })
+            .from(foodEntries)
             .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-            .where(and(eq(foodEntries.childId, childId), eq(foods.allergenType, food.allergenType)))
-            .get()?.n /* v8 ignore next */ ?? 0)
-        : null;
+            .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
+            .get()?.n /* v8 ignore next */ ?? 0;
 
-    // Distinct allergens introduced for this child, pre-insert. Used to detect
-    // crossing the "all 12 allergens" finish line on the *new* introduction.
-    const priorAllergensIntroduced =
-      db
-        .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
-        .from(foodEntries)
-        .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-        .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`))
-        .get()?.n /* v8 ignore next */ ?? 0;
+        const priorAllergenCount =
+          food.allergenType != null
+            ? (tx
+                .select({ n: sql<number>`count(*)` })
+                .from(foodEntries)
+                .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+                .where(
+                  and(eq(foodEntries.childId, childId), eq(foods.allergenType, food.allergenType))
+                )
+                .get()?.n /* v8 ignore next */ ?? 0)
+            : null;
 
-    db.insert(foodEntries)
-      .values({
-        childId,
-        foodId,
-        givenAt: givenAtDate,
-        reaction: parsed.data.reaction,
-        notes: parsed.data.notes?.trim() || null,
-        loggedBy: user.id,
-        createdAt: new Date()
-      })
-      .run();
+        // Distinct allergens introduced for this child, pre-insert. Used to detect
+        // crossing the "all 12 allergens" finish line on the *new* introduction.
+        const priorAllergensIntroduced =
+          tx
+            .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
+            .from(foodEntries)
+            .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+            .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`))
+            .get()?.n /* v8 ignore next */ ?? 0;
 
-    const categoriesNowCovered =
-      db
-        .select({ n: sql<number>`count(distinct ${foods.category})` })
-        .from(foodEntries)
-        .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-        .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
-        .get()?.n /* v8 ignore next */ ?? 0;
+        tx.insert(foodEntries)
+          .values({
+            childId,
+            foodId,
+            givenAt: givenAtDate,
+            reaction: parsed.data.reaction,
+            notes: parsed.data.notes?.trim() || null,
+            loggedBy: user.id,
+            createdAt: new Date()
+          })
+          .run();
 
-    const isFirstAllergen = priorAllergenCount === 0 && food.allergenType != null;
-    const allAllergensJustCompleted =
-      isFirstAllergen && priorAllergensIntroduced + 1 === ALLERGENS.length;
+        const categoriesNowCovered =
+          tx
+            .select({ n: sql<number>`count(distinct ${foods.category})` })
+            .from(foodEntries)
+            .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+            .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
+            .get()?.n /* v8 ignore next */ ?? 0;
 
-    const search = new URLSearchParams({ logged: '1' });
-    if (priorEntryCount === 0) search.set('first', '1');
-    if (isFirstAllergen) search.set('allergen', food.allergenType as string);
-    if (allAllergensJustCompleted) search.set('allAllergens', '1');
-    search.set('categories', String(categoriesNowCovered));
-    search.set('prevCategories', String(priorCategoriesCovered));
+        const isFirstAllergen = priorAllergenCount === 0 && food.allergenType != null;
+        const allAllergensJustCompleted =
+          isFirstAllergen && priorAllergensIntroduced + 1 === ALLERGENS.length;
 
-    throw redirect(303, `/child/${childId}?${search.toString()}`);
+        const search = new URLSearchParams({ logged: '1' });
+        if (priorEntryCount === 0) search.set('first', '1');
+        if (isFirstAllergen) search.set('allergen', food.allergenType as string);
+        if (allAllergensJustCompleted) search.set('allAllergens', '1');
+        search.set('categories', String(categoriesNowCovered));
+        search.set('prevCategories', String(priorCategoriesCovered));
+        return search;
+      });
+    } catch (e) {
+      if (e instanceof LogActionAbort) {
+        return fail(e.status, { error: e.userMessage });
+      }
+      throw e;
+    }
+
+    throw redirect(303, `/child/${childId}?${redirectQs.toString()}`);
   }
 };

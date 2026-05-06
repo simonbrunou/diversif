@@ -12,7 +12,7 @@ import {
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
 beforeEach(() => {
@@ -373,5 +373,50 @@ describe('child/[id]/log default action', () => {
     );
     const created = testDb.select().from(foods).where(eq(foods.name, 'Crêpe')).get();
     expect(created!.category).toBe('feculents');
+  });
+
+  it('rolls back the custom-food insert when the entry insert fails', async () => {
+    const { u, c, m } = await setup();
+
+    // Install a SQLite trigger that aborts any food_entries insert whose notes
+    // match the sentinel string. Both `db.insert(...)` and the drizzle `tx.insert(...)`
+    // path inside the action's transaction route through the same connection,
+    // so the trigger fires regardless of which API the action uses. After the
+    // RAISE(ABORT), better-sqlite3 throws and the surrounding transaction
+    // rolls back — exactly what we want to verify.
+    testDb.run(
+      sql`CREATE TRIGGER tmp_abort_entry BEFORE INSERT ON food_entries WHEN NEW.notes = '__simulated_fail__' BEGIN SELECT RAISE(ABORT, 'simulated entry insert failure'); END`
+    );
+
+    try {
+      const event = makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        formData: {
+          'customFood.name': 'Plat unique de test',
+          'customFood.category': 'autre',
+          givenAt: new Date().toISOString().slice(0, 16),
+          reaction: 'ras',
+          notes: '__simulated_fail__'
+        }
+      });
+
+      await expect(
+        captureFlow(() =>
+          actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+        )
+      ).rejects.toThrow('simulated entry insert failure');
+    } finally {
+      testDb.run(sql`DROP TRIGGER IF EXISTS tmp_abort_entry`);
+    }
+
+    // Assert: no custom food committed for this child
+    const customFoods = testDb.select().from(foods).where(eq(foods.customForChildId, c.id)).all();
+    expect(customFoods).toEqual([]);
+
+    // Assert: no entry committed for this child
+    const entries = testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id)).all();
+    expect(entries).toEqual([]);
   });
 });
