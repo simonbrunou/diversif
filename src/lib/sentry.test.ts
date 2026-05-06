@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scrubEvent, scrubPathname, filterUiBreadcrumb } from './sentry';
+import { scrubEvent, scrubPathname, filterIncomingBreadcrumb } from './sentry';
 
 describe('scrubPathname', () => {
   it('returns the route pattern verbatim when given one', () => {
@@ -77,10 +77,10 @@ describe('scrubEvent', () => {
     expect(out.user).toBeUndefined();
   });
 
-  it('drops ui.click and ui.input breadcrumbs but keeps navigation and console', () => {
+  it('drops ui.click, ui.input, and console breadcrumbs but keeps navigation', () => {
     const out = scrubEvent(baseEvent())!;
     const cats = out.breadcrumbs!.map((b) => b.category);
-    expect(cats).toEqual(['navigation', 'console']);
+    expect(cats).toEqual(['navigation']);
   });
 
   it('scrubs URLs inside navigation breadcrumb data', () => {
@@ -113,6 +113,14 @@ describe('scrubEvent', () => {
     };
     const out = scrubEvent(e)!;
     expect(out.request!.url).toBe('https://diversif.app/child/[id]/log/[entryId]');
+  });
+
+  it('passes through breadcrumbs with no data field unchanged', () => {
+    const e = {
+      breadcrumbs: [{ category: 'navigation', message: 'some nav' }]
+    };
+    const out = scrubEvent(e)!;
+    expect(out.breadcrumbs![0]).toEqual({ category: 'navigation', message: 'some nav' });
   });
 
   it('scrubs breadcrumb data keys other than url/from/to left as-is', () => {
@@ -222,23 +230,24 @@ describe('scrubEvent', () => {
   });
 });
 
-describe('filterUiBreadcrumb', () => {
+describe('filterIncomingBreadcrumb', () => {
   it('drops ui.click breadcrumbs', () => {
-    expect(filterUiBreadcrumb({ category: 'ui.click', message: 'click .x' })).toBeNull();
+    expect(filterIncomingBreadcrumb({ category: 'ui.click', message: 'click .x' })).toBeNull();
   });
   it('drops ui.input breadcrumbs', () => {
-    expect(filterUiBreadcrumb({ category: 'ui.input', message: 'type #email' })).toBeNull();
+    expect(filterIncomingBreadcrumb({ category: 'ui.input', message: 'type #email' })).toBeNull();
+  });
+  it('drops console breadcrumbs (would leak [diversif:error] JSON)', () => {
+    expect(
+      filterIncomingBreadcrumb({ category: 'console', message: '[diversif:error] {"id":"x"}' })
+    ).toBeNull();
   });
   it('keeps navigation breadcrumbs', () => {
     const b = { category: 'navigation', data: { from: '/a', to: '/b' } };
-    expect(filterUiBreadcrumb(b)).toBe(b);
-  });
-  it('keeps console breadcrumbs', () => {
-    const b = { category: 'console', message: 'hi' };
-    expect(filterUiBreadcrumb(b)).toBe(b);
+    expect(filterIncomingBreadcrumb(b)).toBe(b);
   });
   it('keeps breadcrumbs without a category', () => {
     const b = { message: 'no category here' };
-    expect(filterUiBreadcrumb(b)).toBe(b);
+    expect(filterIncomingBreadcrumb(b)).toBe(b);
   });
 });

@@ -67,12 +67,24 @@ function scrubUrlString(raw: string, routeId: string | null = null): string {
 }
 
 /**
- * Drop UI breadcrumbs (clicks, focus) at capture time as a belt-and-braces
- * complement to the same filter inside scrubEvent. SDK-shape signature so it
- * can be passed directly to Sentry.init({ beforeBreadcrumb }).
+ * Drop breadcrumbs that the SDK auto-collects but we don't want sent to
+ * Sentry under the strict-PII contract:
+ *
+ * - `ui.click` / `ui.input` — DOM events may capture user input via target
+ *   attributes (e.g. value="user@example.com" on a form input).
+ * - `console` — our handleError emits a structured JSON `[diversif:error]`
+ *   log line via console.error before Sentry.captureException; the SDK would
+ *   attach that JSON (containing userId, raw path, msg, stack) as a
+ *   breadcrumb on subsequent events, bypassing the rest of scrubEvent.
+ *
+ * Wired as `beforeBreadcrumb` in both hooks so dropped breadcrumbs never
+ * enter the SDK's internal buffer; the same filter is also applied inside
+ * scrubEvent as a belt-and-braces second pass.
  */
-export function filterUiBreadcrumb<B extends { category?: string }>(b: B): B | null {
-  return b.category === 'ui.click' || b.category === 'ui.input' ? null : b;
+export function filterIncomingBreadcrumb<B extends { category?: string }>(b: B): B | null {
+  if (b.category === 'ui.click' || b.category === 'ui.input') return null;
+  if (b.category === 'console') return null;
+  return b;
 }
 
 export function scrubEvent<E extends ScrubbableEvent>(event: E): E | null {
@@ -117,7 +129,9 @@ export function scrubEvent<E extends ScrubbableEvent>(event: E): E | null {
 
     if (Array.isArray(event.breadcrumbs)) {
       event.breadcrumbs = event.breadcrumbs
-        .filter((b) => b.category !== 'ui.click' && b.category !== 'ui.input')
+        .filter(
+          (b) => b.category !== 'ui.click' && b.category !== 'ui.input' && b.category !== 'console'
+        )
         .map((b) => {
           if (b.data && typeof b.data === 'object') {
             const data = { ...(b.data as Record<string, unknown>) };

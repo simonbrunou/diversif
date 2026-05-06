@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/sveltekit';
 import { env } from '$env/dynamic/public';
 import type { HandleClientError } from '@sveltejs/kit';
-import { scrubEvent, filterUiBreadcrumb } from '$lib/sentry';
+import { scrubEvent, filterIncomingBreadcrumb } from '$lib/sentry';
 
 Sentry.init({
   dsn: env.PUBLIC_SENTRY_DSN || '',
@@ -13,7 +13,7 @@ Sentry.init({
   // on our type so we can clone breadcrumb data with `{ ...b, data }`). Drop this
   // suppression if either type tightens — it'll fail loudly via @ts-expect-error.
   beforeSend: scrubEvent,
-  beforeBreadcrumb: filterUiBreadcrumb
+  beforeBreadcrumb: filterIncomingBreadcrumb
 });
 
 // Tags omit `method` (which the server hook records): SvelteKit's
