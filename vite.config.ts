@@ -44,18 +44,29 @@ export default defineConfig({
             org: process.env.SENTRY_ORG || 'diversif',
             project: process.env.SENTRY_PROJECT || 'diversif',
             release: { name: process.env.SENTRY_RELEASE || undefined },
-            sourcemaps: { assets: ['./build/**'] },
+            sourcemaps: {
+              assets: ['./build/**'],
+              // Delete .map files after upload so the deployed build
+              // (which adapter-node copies into the runtime image) doesn't
+              // ship reachable .map files. Sentry retains them for stack
+              // symbolication.
+              filesToDeleteAfterUpload: ['./build/**/*.map']
+            },
             telemetry: false
           })
         ]
       : [])
   ],
   build: {
-    // 'hidden' emits .map files (so @sentry/vite-plugin can find and upload
-    // them when SENTRY_AUTH_TOKEN is set) but does NOT add sourceMappingURL
-    // comments to the output bundles. End users don't see the references
-    // in production code; only Sentry has the maps for stack symbolication.
-    sourcemap: 'hidden'
+    // Emit hidden source maps ONLY when SENTRY_AUTH_TOKEN is set, so we
+    // produce them precisely when the Sentry plugin will upload + delete
+    // them. Without the token (local builds, CI without Sentry creds), no
+    // .map files are written — nothing for an attacker to fetch.
+    //
+    // 'hidden' (vs 'true') omits the //# sourceMappingURL= comment, but
+    // the .map files would still be reachable by URL-guessing without the
+    // post-upload delete (configured below in the plugin block).
+    sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false
   },
   resolve: {
     // For component tests we want the browser/client export of Svelte. The
