@@ -69,6 +69,8 @@
     </p>
   </section>
 
+  <!-- TODO before production: replace "adresse complète à vérifier" placeholder
+       below with Sentry GmbH's registered address from https://sentry.io/legal/dpa/ -->
   <section class="space-y-2">
     <h2 class="text-lg font-semibold">4. Destinataires et sous-traitants</h2>
     <p class="text-sm">
