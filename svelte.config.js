@@ -24,7 +24,16 @@ const config = {
         'style-src': ['self', 'unsafe-inline'],
         'img-src': ['self', 'data:'],
         'font-src': ['self', 'data:'],
-        'connect-src': ['self'],
+        'connect-src': [
+          'self',
+          // Sentry SaaS EU region ingest endpoints — needed for browser-side
+          // captureException to reach Sentry. Cleared via wildcards because the
+          // exact org-id-based subdomain (e.g o123456.ingest.de.sentry.io) is
+          // determined by the runtime DSN. If we ever switch to a same-origin
+          // Sentry tunnel, these can be removed.
+          'https://*.ingest.de.sentry.io',
+          'https://*.ingest.sentry.io'
+        ],
         'manifest-src': ['self'],
         'worker-src': ['self'],
         'base-uri': ['self'],
