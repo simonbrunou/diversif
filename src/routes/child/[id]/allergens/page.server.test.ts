@@ -50,7 +50,7 @@ describe('child/[id]/allergens load', () => {
     expect(r.kind).toBe('redirect');
   });
 
-  it('rejects non-numeric child IDs with 403 before any query runs', async () => {
+  it('rejects non-numeric child IDs with 404 before any query or membership check', async () => {
     const ctx = await setup();
     const r = await captureFlow(() =>
       load(
@@ -62,7 +62,7 @@ describe('child/[id]/allergens load', () => {
       )
     );
     expect(r.kind).toBe('error');
-    if (r.kind === 'error') expect(r.status).toBe(403);
+    if (r.kind === 'error') expect(r.status).toBe(404);
   });
 
   it('rejects authenticated users without membership with 403', async () => {

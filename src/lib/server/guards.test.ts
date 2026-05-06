@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { requireUser, requireGuest, requireMembership, requireOwnership } from './guards';
+import {
+  parseChildIdParam,
+  requireUser,
+  requireGuest,
+  requireMembership,
+  requireOwnership
+} from './guards';
 import type { SafeUser, Membership } from '$lib/types';
 
 const fakeUser: SafeUser = {
@@ -79,6 +85,29 @@ describe('requireMembership', () => {
 
   it('throws 403 when user has no matching membership', () => {
     expectError(() => requireMembership(makeLocals({ user: fakeUser }), 7), 403);
+  });
+});
+
+describe('parseChildIdParam', () => {
+  it('returns the integer id for valid numeric strings', () => {
+    expect(parseChildIdParam({ id: '42' })).toBe(42);
+  });
+
+  it('throws 404 on non-numeric strings', () => {
+    expectError(() => parseChildIdParam({ id: 'abc' }), 404);
+  });
+
+  it('throws 404 on negative or zero ids', () => {
+    expectError(() => parseChildIdParam({ id: '0' }), 404);
+    expectError(() => parseChildIdParam({ id: '-3' }), 404);
+  });
+
+  it('throws 404 on fractional ids', () => {
+    expectError(() => parseChildIdParam({ id: '1.5' }), 404);
+  });
+
+  it('throws 404 when id is missing', () => {
+    expectError(() => parseChildIdParam({}), 404);
   });
 });
 
