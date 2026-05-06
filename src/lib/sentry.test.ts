@@ -145,6 +145,81 @@ describe('scrubEvent', () => {
     // The guard passes (boom is a non-null object), then accessing boom.request throws.
     expect(scrubEvent(boom as never)).toBeNull();
   });
+
+  it('redacts top-level event.message', () => {
+    const e = {
+      tags: { errorId: 'abc' },
+      message: 'User a@example.com had invalid input'
+    };
+    const out = scrubEvent(e)!;
+    expect(out.message).toBe('[redacted: see errorId in stderr]');
+  });
+
+  it('redacts each exception.values[].value', () => {
+    const e = {
+      tags: { errorId: 'abc' },
+      exception: {
+        values: [
+          { type: 'TypeError', value: 'User a@example.com invalid' },
+          { type: 'Error', value: 'child Sophie failed lookup' }
+        ]
+      }
+    };
+    const out = scrubEvent(e)!;
+    expect(out.exception!.values![0].value).toBe('[redacted: see errorId in stderr]');
+    expect(out.exception!.values![1].value).toBe('[redacted: see errorId in stderr]');
+    // type is preserved
+    expect(out.exception!.values![0].type).toBe('TypeError');
+  });
+
+  it('drops stack frame vars (which may capture local PII)', () => {
+    const e = {
+      tags: { errorId: 'abc' },
+      exception: {
+        values: [
+          {
+            type: 'TypeError',
+            stacktrace: {
+              frames: [
+                {
+                  function: 'load',
+                  filename: 'src/routes/+page.server.ts',
+                  lineno: 42,
+                  vars: { user: { email: 'a@example.com' }, secret: 'xyz' }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    };
+    const out = scrubEvent(e)!;
+    const frame = out.exception!.values![0].stacktrace!.frames![0];
+    expect(frame.vars).toBeUndefined();
+    // Other frame fields are preserved
+    expect(frame.function).toBe('load');
+    expect(frame.filename).toBe('src/routes/+page.server.ts');
+    expect(frame.lineno).toBe(42);
+  });
+
+  it('handles events with no exception field', () => {
+    const out = scrubEvent({ tags: { errorId: 'abc' } })!;
+    expect(out.tags).toEqual({ errorId: 'abc' });
+  });
+
+  it('handles exception with no values array', () => {
+    const out = scrubEvent({ tags: { errorId: 'abc' }, exception: {} })!;
+    expect(out.exception).toEqual({});
+  });
+
+  it('handles exception value with no stacktrace', () => {
+    const e = {
+      tags: { errorId: 'abc' },
+      exception: { values: [{ type: 'TypeError', value: 'msg' }] }
+    };
+    const out = scrubEvent(e)!;
+    expect(out.exception!.values![0].value).toBe('[redacted: see errorId in stderr]');
+  });
 });
 
 describe('filterUiBreadcrumb', () => {

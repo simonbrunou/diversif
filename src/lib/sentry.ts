@@ -16,6 +16,16 @@ type ScrubbableEvent = {
     headers?: unknown;
   };
   user?: unknown;
+  message?: unknown;
+  exception?: {
+    values?: Array<{
+      type?: string;
+      value?: string;
+      stacktrace?: { frames?: Array<{ vars?: unknown; [key: string]: unknown }> };
+      [key: string]: unknown;
+    }>;
+    [key: string]: unknown;
+  };
   breadcrumbs?: Array<{
     category?: string;
     data?: unknown;
@@ -85,6 +95,25 @@ export function scrubEvent<E extends ScrubbableEvent>(event: E): E | null {
     }
 
     delete event.user;
+
+    // Strip free-form text that may contain user input. The errorId tag is
+    // still attached, and the full Error message + stack live in the
+    // [diversif:error] stderr line indexed by that token.
+    const REDACTED = '[redacted: see errorId in stderr]';
+    if (typeof event.message === 'string') {
+      event.message = REDACTED;
+    }
+    if (event.exception && Array.isArray(event.exception.values)) {
+      for (const ex of event.exception.values) {
+        if (typeof ex.value === 'string') ex.value = REDACTED;
+        const frames = ex.stacktrace?.frames;
+        if (Array.isArray(frames)) {
+          for (const frame of frames) {
+            delete frame.vars;
+          }
+        }
+      }
+    }
 
     if (Array.isArray(event.breadcrumbs)) {
       event.breadcrumbs = event.breadcrumbs
