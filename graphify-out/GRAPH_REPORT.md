@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-06)
 
 ## Corpus Check
-- 247 files · ~266,922 words
+- 247 files · ~269,391 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1059 nodes · 1595 edges · 205 communities (161 shown, 44 thin omitted)
+- 1059 nodes · 1602 edges · 205 communities (161 shown, 44 thin omitted)
 - Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 177 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `322384cd`
+- Built from commit: `78d947e7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -170,7 +170,7 @@ Nodes (31): seed(), seedKey(), loadFor(), setup(), seedInvite(), setup(), seedUs
 
 ### Community 1 - "App Shell & Navigation"
 Cohesion: 0.08
-Nodes (23): load(), load(), allergens load test, load(), loadEntry(), parseEntryId(), load(), load() (+15 more)
+Nodes (22): load(), load(), allergens load test, load(), loadEntry(), parseEntryId(), load(), load() (+14 more)
 
 ### Community 2 - "Passkey / WebAuthn"
 Cohesion: 0.11
@@ -185,12 +185,12 @@ Cohesion: 0.15
 Nodes (25): POST(), base64UrlToBuffer(), bufferToBase64Url(), buildAuthenticationOptions(), buildRegistrationOptions(), consumeChallenge(), createChallenge(), deletePasskey() (+17 more)
 
 ### Community 5 - "Allergens & Foods Loaders"
-Cohesion: 0.08
-Nodes (6): #each(), 12 priority allergens, Focus trap (Tab cycling), Food diversification 4 months to 3 years, LEAP & EAT studies (early allergen introduction), WCAG SC 2.4.3 focus management for modals
+Cohesion: 0.15
+Nodes (15): POST(), createSession(), findUserByEmail(), hashPassword(), invalidateAllUserSessions(), invalidateSession(), listMembershipsForUser(), newToken() (+7 more)
 
 ### Community 6 - "Reaction Widgets"
-Cohesion: 0.18
-Nodes (14): POST(), createSession(), findUserByEmail(), hashPassword(), invalidateAllUserSessions(), invalidateSession(), listMembershipsForUser(), newToken() (+6 more)
+Cohesion: 0.08
+Nodes (6): #each(), 12 priority allergens, Focus trap (Tab cycling), Food diversification 4 months to 3 years, LEAP & EAT studies (early allergen introduction), WCAG SC 2.4.3 focus management for modals
 
 ### Community 7 - "Server Auth & GDPR Cleanup"
 Cohesion: 0.16
@@ -312,11 +312,11 @@ Nodes (6): server/cleanup.ts (periodic cleanup), db/index.ts (Drizzle SQLite cli
 Cohesion: 0.6
 Nodes (3): signUp(), signUpOwnerAndCreateChild(), unique()
 
-### Community 48 - "Cookies Page & Login Bucket"
+### Community 46 - "Child Nav Helpers"
 Cohesion: 0.7
 Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
-### Community 49 - "Robots.txt"
+### Community 47 - "Fuzzy Search Helpers"
 Cohesion: 0.7
 Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
@@ -359,11 +359,11 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `Diversification guidance content (FR)` and `RGPD Article 15 (right of access)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `requireUser()` connect `App Shell & Navigation` to `Passkey / WebAuthn`, `UI Primitives`, `GDPR Data Export`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
-- **Why does `resetTestDb()` connect `Test Seed Helpers` to `Passkey / WebAuthn`, `UI Primitives`, `Reaction Widgets`, `Account & Root Layout`, `GDPR Data Export`, `Diversification Guidance Content`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Why does `POST()` connect `UI Primitives` to `Test Seed Helpers`, `App Shell & Navigation`, `Account & Root Layout`, `Reaction Widgets`?**
-  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `resetTestDb()` connect `Test Seed Helpers` to `Passkey / WebAuthn`, `UI Primitives`, `Allergens & Foods Loaders`, `Account & Root Layout`, `GDPR Data Export`, `Diversification Guidance Content`?**
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
+- **Why does `makeRouteEvent()` connect `Test Seed Helpers` to `Server Auth & GDPR Cleanup`?**
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
 - **Are the 4 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**
   _`makeRouteEvent()` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `safeUser()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**
