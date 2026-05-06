@@ -103,7 +103,7 @@
           {#each g.items as f (f.id)}
             <a
               href={logHref(f.id)}
-              aria-label={`Noter ${f.name}, dès ${f.suggestedAgeMonths} mois`}
+              aria-label={`Noter ${f.name}, dès ${f.suggestedAgeMonths} mois${f.allergenType ? `, ${getAllergenLabel(f.allergenType) ?? f.allergenType}` : ''}`}
             >
               <Card
                 class={cn(
