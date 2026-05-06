@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -35,7 +36,19 @@ export default defineConfig({
         ]
       },
       devOptions: { enabled: false }
-    })
+    }),
+    ...(process.env.SENTRY_AUTH_TOKEN
+      ? [
+          sentryVitePlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: process.env.SENTRY_ORG || 'diversif',
+            project: process.env.SENTRY_PROJECT || 'diversif',
+            release: { name: process.env.SENTRY_RELEASE || undefined },
+            sourcemaps: { assets: ['./build/**'] },
+            telemetry: false
+          })
+        ]
+      : [])
   ],
   resolve: {
     // For component tests we want the browser/client export of Svelte. The
