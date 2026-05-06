@@ -1,0 +1,146 @@
+import { describe, it, expect } from 'vitest';
+import { scrubEvent, scrubPathname } from './sentry';
+
+describe('scrubPathname', () => {
+  it('returns the route pattern verbatim when given one', () => {
+    expect(scrubPathname('/child/42/log/9', '/child/[id]/log/[entryId]')).toBe(
+      '/child/[id]/log/[entryId]'
+    );
+  });
+
+  it('replaces purely numeric segments in the fallback path', () => {
+    expect(scrubPathname('/child/2/guide')).toBe('/child/[id]/guide');
+  });
+
+  it('replaces long token-like segments in the fallback path', () => {
+    expect(scrubPathname('/passkeys/auth/abc123def-9876xyz/verify')).toBe(
+      '/passkeys/auth/[id]/verify'
+    );
+  });
+
+  it('keeps short alphabetic segments untouched', () => {
+    expect(scrubPathname('/account/export')).toBe('/account/export');
+  });
+
+  it('handles trailing and leading slashes', () => {
+    expect(scrubPathname('/')).toBe('/');
+    expect(scrubPathname('')).toBe('/');
+  });
+});
+
+describe('scrubEvent', () => {
+  function baseEvent() {
+    return {
+      tags: { errorId: 'abcd1234', route: '/child/[id]/log/[entryId]' },
+      request: {
+        url: 'https://diversif.app/child/42/log/9?cid=secret',
+        data: { foo: 'bar' },
+        cookies: 'session=...',
+        headers: { authorization: 'Bearer x' }
+      },
+      user: { id: '7', email: 'a@example.com', ip_address: '1.2.3.4' },
+      breadcrumbs: [
+        { category: 'navigation', data: { from: '/child/42', to: '/child/42/log/9' } },
+        { category: 'ui.click', message: 'click on .submit-button' },
+        { category: 'ui.input', message: 'type in #email' },
+        { category: 'console', message: 'hi', level: 'log' }
+      ]
+    };
+  }
+
+  it('rewrites the request URL using the route tag', () => {
+    const e = baseEvent();
+    const out = scrubEvent(e);
+    expect(out).not.toBeNull();
+    expect(out!.request!.url).toBe('https://diversif.app/child/[id]/log/[entryId]');
+  });
+
+  it('drops query strings even when route tag is missing', () => {
+    const e = baseEvent();
+    delete e.tags.route;
+    e.request.url = 'https://diversif.app/foo?cid=abc';
+    const out = scrubEvent(e)!;
+    expect(out.request!.url).toBe('https://diversif.app/foo');
+  });
+
+  it('drops request.data, request.cookies, request.headers', () => {
+    const out = scrubEvent(baseEvent())!;
+    expect(out.request!.data).toBeUndefined();
+    expect(out.request!.cookies).toBeUndefined();
+    expect(out.request!.headers).toBeUndefined();
+  });
+
+  it('strips user context entirely', () => {
+    const out = scrubEvent(baseEvent())!;
+    expect(out.user).toBeUndefined();
+  });
+
+  it('drops ui.click and ui.input breadcrumbs but keeps navigation and console', () => {
+    const out = scrubEvent(baseEvent())!;
+    const cats = out.breadcrumbs!.map((b) => b.category);
+    expect(cats).toEqual(['navigation', 'console']);
+  });
+
+  it('scrubs URLs inside navigation breadcrumb data', () => {
+    const out = scrubEvent(baseEvent())!;
+    const nav = out.breadcrumbs!.find((b) => b.category === 'navigation')!;
+    expect(nav.data).toEqual({ from: '/child/[id]', to: '/child/[id]/log/[id]' });
+  });
+
+  it('preserves tags untouched', () => {
+    const out = scrubEvent(baseEvent())!;
+    expect(out.tags).toEqual({ errorId: 'abcd1234', route: '/child/[id]/log/[entryId]' });
+  });
+
+  it('returns null on a malformed input rather than throwing', () => {
+    // @ts-expect-error deliberately broken
+    expect(scrubEvent(null)).toBeNull();
+    // Malformed URL — scrubEvent must not throw; it returns the mutated event.
+    expect(() => scrubEvent({ request: { url: 'not a url' } })).not.toThrow();
+  });
+
+  it('handles events without request, user, or breadcrumbs', () => {
+    const out = scrubEvent({ tags: { errorId: 'x' } })!;
+    expect(out.tags).toEqual({ errorId: 'x' });
+  });
+
+  it('uses event.transaction as route fallback when tags.route is absent', () => {
+    const e = {
+      transaction: '/child/[id]/log/[entryId]',
+      request: { url: 'https://diversif.app/child/99/log/1?q=secret' }
+    };
+    const out = scrubEvent(e)!;
+    expect(out.request!.url).toBe('https://diversif.app/child/[id]/log/[entryId]');
+  });
+
+  it('scrubs breadcrumb data keys other than url/from/to left as-is', () => {
+    const e = {
+      breadcrumbs: [
+        {
+          category: 'navigation',
+          data: { from: '/child/42', to: '/child/42/log/9', extra: 'keep' }
+        }
+      ]
+    };
+    const out = scrubEvent(e)!;
+    expect(out.breadcrumbs![0].data).toEqual({
+      from: '/child/[id]',
+      to: '/child/[id]/log/[id]',
+      extra: 'keep'
+    });
+  });
+
+  it('returns null when internal processing throws unexpectedly', () => {
+    // Construct an event whose property access throws inside the try block.
+    const boom = Object.create(null, {
+      request: {
+        get() {
+          throw new Error('internal boom');
+        },
+        enumerable: true
+      }
+    });
+    // The guard passes (boom is a non-null object), then accessing boom.request throws.
+    expect(scrubEvent(boom as never)).toBeNull();
+  });
+});
