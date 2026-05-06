@@ -68,13 +68,17 @@ export function validateSession(token: string): ValidatedSession | null {
   let renewed = false;
   if (session.expiresAt.getTime() - now < SESSION_RENEW_THRESHOLD_MS) {
     const newExpiry = new Date(now + SESSION_DURATION_MS);
-    db.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token)).run();
-    // Bump `last_login_at` so retention queries see recent activity even when
-    // the user never explicitly re-logs in (sessions auto-renew up to 30 days).
-    db.update(users)
-      .set({ lastLoginAt: new Date(now) })
-      .where(eq(users.id, row.user.id))
-      .run();
+    // Wrap both updates in a transaction so a crash between them can't leave
+    // the session renewed without a corresponding lastLoginAt bump (or vice
+    // versa). Bumping `last_login_at` keeps retention queries seeing recent
+    // activity even when the user never explicitly re-logs in.
+    db.transaction((tx) => {
+      tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token)).run();
+      tx.update(users)
+        .set({ lastLoginAt: new Date(now) })
+        .where(eq(users.id, row.user.id))
+        .run();
+    });
     session = { ...session, expiresAt: newExpiry };
     renewed = true;
   }

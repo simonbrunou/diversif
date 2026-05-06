@@ -172,6 +172,42 @@ describe('loadDiversityMetrics', () => {
     expect(m.repeatExposureCount).toBe(0);
   });
 
+  it('returns lastNewFoodAt as the most-recent first-introduction across foods', async () => {
+    const { user, child } = await seedUserAndChild();
+    const carrot = seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = seedFood({ name: 'Pomme', category: 'fruits' });
+    // Carrot first-introduced earlier; apple first-introduced later, then re-logged
+    // even later (later re-log must NOT pull lastNewFoodAt forward — only first
+    // introductions count).
+    const carrotFirst = new Date('2024-05-01T10:00:00Z');
+    const appleFirst = new Date('2024-05-10T10:00:00Z');
+    const appleAgain = new Date('2024-05-20T10:00:00Z');
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: carrotFirst,
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: apple.id,
+      userId: user.id,
+      givenAt: appleFirst,
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: apple.id,
+      userId: user.id,
+      givenAt: appleAgain,
+      reaction: 'ras'
+    });
+
+    const m = loadDiversityMetrics(child.id, 11);
+    expect(m.lastNewFoodAt).toBe(appleFirst.getTime());
+  });
+
   it('excludes foods given >= 3 times from repeat exposure', async () => {
     const { user, child } = await seedUserAndChild();
     const food = seedFood({ name: 'Carotte', category: 'legumes' });
@@ -577,6 +613,67 @@ describe('loadAnalyticsBuckets', () => {
     const buckets = loadAnalyticsBuckets(child.id, 2, new Date('2024-06-10T12:00:00Z'));
     const recent = buckets[buckets.length - 1];
     expect(recent.reactions).toEqual({ ras: 1, inconfort: 1, reaction: 1 });
+  });
+
+  it('cumulative categories include foods first introduced BEFORE the horizon', async () => {
+    const { user, child } = await seedUserAndChild();
+    // Two foods, both first introduced more than 4 weeks before "now" — i.e.
+    // outside the chart's horizon. Reactions for those entries shouldn't
+    // influence the visible buckets, but their categories must still appear
+    // in the cumulative count of every bucket.
+    const carrot = seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = seedFood({ name: 'Pomme', category: 'fruits' });
+    logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: new Date('2023-12-01T10:00:00Z'),
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: apple.id,
+      userId: user.id,
+      givenAt: new Date('2024-01-15T10:00:00Z'),
+      reaction: 'ras'
+    });
+
+    const buckets = loadAnalyticsBuckets(child.id, 4, new Date('2024-06-10T12:00:00Z'));
+    expect(buckets.every((b) => b.cumulativeCategories === 2)).toBe(true);
+    // No introductions or reactions should fall inside the 4-week window.
+    expect(buckets.reduce((s, b) => s + b.introductions, 0)).toBe(0);
+    expect(
+      buckets.reduce(
+        (s, b) => s + b.reactions.ras + b.reactions.inconfort + b.reactions.reaction,
+        0
+      )
+    ).toBe(0);
+  });
+
+  it('counts an entry at exactly horizonMs in the oldest bucket, not below', async () => {
+    const { user, child } = await seedUserAndChild();
+    const f = seedFood({ name: 'Carotte', category: 'legumes' });
+    const weeks = 4;
+    const now = new Date('2024-06-10T12:00:00Z');
+    const horizonMs = now.getTime() - weeks * 7 * 24 * 60 * 60 * 1000;
+    // Entry at exactly horizonMs — should land in bucket 0 (the oldest visible
+    // bucket) and contribute to its reaction count, never to a non-existent
+    // earlier bucket.
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: new Date(horizonMs),
+      reaction: 'ras'
+    });
+
+    const buckets = loadAnalyticsBuckets(child.id, weeks, now);
+    expect(buckets[0].reactions.ras).toBe(1);
+    expect(buckets[0].introductions).toBe(1);
+    for (let i = 1; i < buckets.length; i++) {
+      expect(buckets[i].reactions.ras).toBe(0);
+      expect(buckets[i].introductions).toBe(0);
+    }
   });
 
   it('does not double-count introductions when two rows share the exact givenAt', async () => {

@@ -107,9 +107,13 @@ export const foodEntries = sqliteTable(
     childId: integer('child_id')
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
+    // Restrict — historical entries are the source-of-truth for what was
+    // actually fed to the child. Deleting a catalog row out from under them
+    // would silently rewrite history. Custom foods that are no longer wanted
+    // should be archived/hidden, not hard-deleted.
     foodId: integer('food_id')
       .notNull()
-      .references(() => foods.id),
+      .references(() => foods.id, { onDelete: 'restrict' }),
     givenAt: integer('given_at', { mode: 'timestamp_ms' }).notNull(),
     reaction: text('reaction', { enum: ['ras', 'inconfort', 'reaction'] }).notNull(),
     notes: text('notes'),
@@ -159,13 +163,21 @@ export const passkeys = sqliteTable(
   })
 );
 
-export const webauthnChallenges = sqliteTable('webauthn_challenges', {
-  token: text('token').primaryKey(),
-  challenge: text('challenge').notNull(),
-  purpose: text('purpose', { enum: ['registration', 'authentication'] }).notNull(),
-  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
-  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
-});
+export const webauthnChallenges = sqliteTable(
+  'webauthn_challenges',
+  {
+    token: text('token').primaryKey(),
+    challenge: text('challenge').notNull(),
+    purpose: text('purpose', { enum: ['registration', 'authentication'] }).notNull(),
+    userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
+  },
+  (t) => ({
+    // The cleanup job runs `DELETE WHERE expires_at < now` every 6 hours;
+    // index lets it skip the unexpired rows instead of full-scanning.
+    expiresIdx: index('webauthn_challenges_expires_idx').on(t.expiresAt)
+  })
+);
 
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
