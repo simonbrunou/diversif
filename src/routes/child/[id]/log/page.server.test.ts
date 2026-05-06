@@ -12,7 +12,7 @@ import {
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
 beforeEach(() => {
@@ -375,19 +375,18 @@ describe('child/[id]/log default action', () => {
     expect(created!.category).toBe('feculents');
   });
 
-  it('rolls back the custom-food insert when the entry insert throws', async () => {
+  it('rolls back the custom-food insert when the entry insert fails', async () => {
     const { u, c, m } = await setup();
 
-    // Spy testDb.insert: throw when called with foodEntries (the action's
-    // entry-insert call). The custom-food insert (called with foods) goes
-    // through normally — that's the write we want to see rolled back.
-    const realInsert = testDb.insert.bind(testDb);
-    const insertSpy = vi.spyOn(testDb, 'insert').mockImplementation((table) => {
-      if (table === foodEntries) {
-        throw new Error('simulated entry insert failure');
-      }
-      return realInsert(table);
-    });
+    // Install a SQLite trigger that aborts any food_entries insert whose notes
+    // match the sentinel string. Both `db.insert(...)` and the drizzle `tx.insert(...)`
+    // path inside the action's transaction route through the same connection,
+    // so the trigger fires regardless of which API the action uses. After the
+    // RAISE(ABORT), better-sqlite3 throws and the surrounding transaction
+    // rolls back — exactly what we want to verify.
+    testDb.run(
+      sql`CREATE TRIGGER tmp_abort_entry BEFORE INSERT ON food_entries WHEN NEW.notes = '__simulated_fail__' BEGIN SELECT RAISE(ABORT, 'simulated entry insert failure'); END`
+    );
 
     try {
       const event = makeRouteEvent({
@@ -398,7 +397,8 @@ describe('child/[id]/log default action', () => {
           'customFood.name': 'Plat unique de test',
           'customFood.category': 'autre',
           givenAt: new Date().toISOString().slice(0, 16),
-          reaction: 'ras'
+          reaction: 'ras',
+          notes: '__simulated_fail__'
         }
       });
 
@@ -408,7 +408,7 @@ describe('child/[id]/log default action', () => {
         )
       ).rejects.toThrow('simulated entry insert failure');
     } finally {
-      insertSpy.mockRestore();
+      testDb.run(sql`DROP TRIGGER IF EXISTS tmp_abort_entry`);
     }
 
     // Assert: no custom food committed for this child

@@ -70,7 +70,7 @@ export const actions: Actions = {
 
     let redirectQs: URLSearchParams;
     try {
-      redirectQs = db.transaction(() => {
+      redirectQs = db.transaction((tx) => {
         let foodId = parsed.data.foodId ?? null;
         const customName = parsed.data['customFood.name']?.trim();
         const customCategoryRaw = parsed.data['customFood.category']?.trim();
@@ -79,7 +79,7 @@ export const actions: Actions = {
           const category = CATEGORY_IDS.includes(customCategoryRaw ?? /* v8 ignore next */ '')
             ? (customCategoryRaw as string)
             : 'autre';
-          const inserted = db
+          const inserted = tx
             .insert(foods)
             .values({
               name: customName,
@@ -101,7 +101,7 @@ export const actions: Actions = {
         }
 
         // Verify the food belongs to this child or is from the global catalog.
-        const food = db
+        const food = tx
           .select()
           .from(foods)
           .where(
@@ -117,7 +117,7 @@ export const actions: Actions = {
 
         // Snapshot pre-insert state so we can detect milestones after the insert.
         const priorEntryCount =
-          db
+          tx
             .select({ n: sql<number>`count(*)` })
             .from(foodEntries)
             .where(eq(foodEntries.childId, childId))
@@ -126,7 +126,7 @@ export const actions: Actions = {
         // Mirror loadDiversityMetrics: exclude the `autre` bucket so this count
         // shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
         const priorCategoriesCovered =
-          db
+          tx
             .select({ n: sql<number>`count(distinct ${foods.category})` })
             .from(foodEntries)
             .innerJoin(foods, eq(foods.id, foodEntries.foodId))
@@ -135,7 +135,7 @@ export const actions: Actions = {
 
         const priorAllergenCount =
           food.allergenType != null
-            ? (db
+            ? (tx
                 .select({ n: sql<number>`count(*)` })
                 .from(foodEntries)
                 .innerJoin(foods, eq(foods.id, foodEntries.foodId))
@@ -148,14 +148,14 @@ export const actions: Actions = {
         // Distinct allergens introduced for this child, pre-insert. Used to detect
         // crossing the "all 12 allergens" finish line on the *new* introduction.
         const priorAllergensIntroduced =
-          db
+          tx
             .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
             .from(foodEntries)
             .innerJoin(foods, eq(foods.id, foodEntries.foodId))
             .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`))
             .get()?.n /* v8 ignore next */ ?? 0;
 
-        db.insert(foodEntries)
+        tx.insert(foodEntries)
           .values({
             childId,
             foodId,
@@ -168,7 +168,7 @@ export const actions: Actions = {
           .run();
 
         const categoriesNowCovered =
-          db
+          tx
             .select({ n: sql<number>`count(distinct ${foods.category})` })
             .from(foodEntries)
             .innerJoin(foods, eq(foods.id, foodEntries.foodId))
