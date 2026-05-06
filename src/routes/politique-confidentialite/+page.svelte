@@ -16,7 +16,7 @@
 <div class="container max-w-3xl space-y-6 py-8 md:py-12">
   <header class="space-y-2">
     <h1 class="text-2xl font-semibold tracking-tight md:text-3xl">Politique de confidentialité</h1>
-    <p class="text-sm text-muted-foreground">Dernière mise à jour : 4 mai 2026.</p>
+    <p class="text-sm text-muted-foreground">Dernière mise à jour : 6 mai 2026.</p>
   </header>
 
   <section class="space-y-2">
@@ -63,19 +63,37 @@
       <li>Invitations : code à durée limitée, identifiants du créateur et de l'utilisateur ayant accepté.</li>
     </ul>
     <p class="text-sm">
-      Aucun cookie de mesure, aucune adresse IP, aucun User-Agent, aucun service tiers ne sont
-      enregistrés.
+      Aucun cookie de mesure d'audience, aucune adresse IP et aucun User-Agent ne sont
+      enregistrés dans la base applicative. Un service tiers de remontée d'erreurs techniques
+      (voir section 4) reçoit, en cas de panne, une trace technique sans identifiant utilisateur.
     </p>
   </section>
 
   <section class="space-y-2">
-    <h2 class="text-lg font-semibold">4. Destinataires</h2>
+    <h2 class="text-lg font-semibold">4. Destinataires et sous-traitants</h2>
     <p class="text-sm">
-      Les données sont stockées dans une base SQLite hébergée par {legal.hostProvider}. Aucun
-      tiers (analytique, publicité, suivi, e-mail, notification, CDN) ne reçoit vos données.
-      Les co-parents auxquels vous transmettez un code d'invitation accèdent au journal de
-      l'enfant correspondant.
+      Les données applicatives (compte, enfants, journal, sessions) sont stockées dans une base
+      SQLite hébergée par {legal.hostProvider}. Aucun tiers de mesure d'audience, de publicité,
+      de suivi commercial, d'e-mail, de notification ou de CDN ne reçoit vos données. Les
+      co-parents auxquels vous transmettez un code d'invitation accèdent au journal de l'enfant
+      correspondant.
     </p>
+    <p class="text-sm">
+      Un seul sous-traitant technique reçoit des données strictement limitées :
+    </p>
+    <ul class="list-disc space-y-1 pl-5 text-sm">
+      <li>
+        <span class="font-medium">Sentry GmbH</span> (entité européenne de Functional Software,
+        Inc., siège social en Allemagne — adresse complète à vérifier sur le DPA et à
+        renseigner ici lors de la mise en service) — collecte des erreurs techniques produites
+        par l'application (trace d'exécution, route SvelteKit anonymisée, identifiant d'erreur
+        opaque). Aucun identifiant utilisateur, aucune adresse e-mail, aucun corps de requête,
+        aucun cookie ni en-tête ne sont transmis. Base légale : intérêt légitime à corriger les
+        pannes (article 6.1.f RGPD). Données hébergées en Union européenne (région Francfort).
+        Durée de conservation : 90 jours. Lien :
+        <a class="underline" href="https://sentry.io/legal/dpa/" target="_blank" rel="noopener noreferrer">accord de traitement (DPA)</a>.
+      </li>
+    </ul>
   </section>
 
   <section class="space-y-2">
