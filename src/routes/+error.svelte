@@ -16,6 +16,11 @@
     <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Erreur {status}</p>
     <h1 class="mt-1 text-2xl font-semibold">{title}</h1>
     <p class="mt-2 text-sm text-muted-foreground">{message}</p>
+    {#if $page.error?.errorId}
+      <p class="mt-2 text-xs text-muted-foreground/80">
+        Réf : <code class="font-mono">{$page.error.errorId}</code>
+      </p>
+    {/if}
   </div>
   <div class="flex flex-wrap justify-center gap-2">
     <Button href="/">Retour à l’accueil</Button>

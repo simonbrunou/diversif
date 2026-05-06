@@ -8,7 +8,10 @@ declare global {
       sessionId: string | null;
     }
     // interface PageData {}
-    // interface Error {}
+    interface Error {
+      message: string;
+      errorId?: string;
+    }
     // interface Platform {}
   }
 }

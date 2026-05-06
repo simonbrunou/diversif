@@ -3,7 +3,7 @@ import { testDb, resetTestDb } from './test/db';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
-import { handle } from './hooks.server';
+import { handle, handleError } from './hooks.server';
 import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -157,6 +157,86 @@ describe('handle', () => {
       expect(set.mock.calls[0][2].secure).toBe(true);
     } finally {
       process.env.NODE_ENV = orig;
+    }
+  });
+});
+
+describe('handleError', () => {
+  function makeErrorEvent(
+    pathname = '/child/2/guide',
+    method = 'GET',
+    userId: number | null = null
+  ) {
+    return {
+      request: { method } as Request,
+      url: new URL(`http://localhost${pathname}`),
+      locals: { user: userId ? { id: userId } : null } as unknown as App.Locals
+    };
+  }
+
+  it('logs a structured stderr line and returns a generic message + errorId', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const err = new TypeError('boom');
+      const result = handleError({
+        error: err,
+        event: makeErrorEvent('/child/2/guide', 'GET', 42),
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+
+      expect(result?.message).toBe('Internal Error');
+      expect(result?.errorId).toMatch(/^[0-9a-f]{8}$/);
+
+      expect(spy).toHaveBeenCalledOnce();
+      expect(spy.mock.calls[0][0]).toBe('[diversif:error]');
+      const payload = JSON.parse(spy.mock.calls[0][1] as string);
+      expect(payload.id).toBe(result?.errorId);
+      expect(payload.path).toBe('/child/2/guide');
+      expect(payload.method).toBe('GET');
+      expect(payload.userId).toBe(42);
+      expect(payload.status).toBe(500);
+      expect(payload.name).toBe('TypeError');
+      expect(payload.msg).toBe('boom');
+      expect(payload.stack).toContain('TypeError');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('records userId as null when there is no authenticated user', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      handleError({
+        error: new Error('x'),
+        event: makeErrorEvent('/login', 'POST', null),
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+      const payload = JSON.parse(spy.mock.calls[0][1] as string);
+      expect(payload.userId).toBeNull();
+      expect(payload.method).toBe('POST');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('handles non-Error-shaped throws without crashing', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const result = handleError({
+        error: null,
+        event: makeErrorEvent(),
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+      expect(result?.message).toBe('Internal Error');
+      expect(result?.errorId).toMatch(/^[0-9a-f]{8}$/);
+      const payload = JSON.parse(spy.mock.calls[0][1] as string);
+      expect(payload.name).toBeUndefined();
+      expect(payload.msg).toBeUndefined();
+    } finally {
+      spy.mockRestore();
     }
   });
 });
