@@ -7,6 +7,18 @@ import {
   listMembershipsForUser,
   validateSession
 } from '$lib/server/auth';
+import * as Sentry from '@sentry/sveltekit';
+import { scrubEvent } from '$lib/sentry';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || '',
+  environment: process.env.SENTRY_ENVIRONMENT || 'production',
+  release: process.env.SENTRY_RELEASE || undefined,
+  tracesSampleRate: 0,
+  // @ts-expect-error - the SDK accepts ScrubbableEvent shape; types are conservative
+  beforeSend: scrubEvent,
+  beforeBreadcrumb: (b) => (b.category === 'ui.click' || b.category === 'ui.input' ? null : b)
+});
 
 /**
  * Tag every server-side error with a short id, log a structured stderr line,
@@ -31,6 +43,14 @@ export const handleError: HandleServerError = ({ error, event, status, message }
       stack: err?.stack
     })
   );
+  Sentry.captureException(err, {
+    tags: {
+      errorId,
+      status,
+      method: event.request.method,
+      route: event.route?.id ?? null
+    }
+  });
   return { message: 'Internal Error', errorId };
 };
 
