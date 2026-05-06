@@ -20,12 +20,26 @@ describe('child/new load', () => {
     expect(r.kind).toBe('redirect');
   });
 
-  it('returns empty payload for authenticated users', async () => {
+  it('flags isFirstChild=true when the user has no children yet', async () => {
     const u = await seedUser();
     const out = await load(
-      makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0]
+      makeRouteEvent({
+        user: safeUser(u),
+        parent: async () => ({ children: [] })
+      }) as unknown as Parameters<typeof load>[0]
     );
-    expect(out).toEqual({});
+    expect(out).toEqual({ isFirstChild: true });
+  });
+
+  it('flags isFirstChild=false once at least one child exists', async () => {
+    const u = await seedUser();
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        parent: async () => ({ children: [{ id: 1, name: 'Bébé', birthDate: '2024-01-01' }] })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out).toEqual({ isFirstChild: false });
   });
 });
 

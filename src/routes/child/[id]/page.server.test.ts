@@ -89,6 +89,8 @@ describe('child/[id] +page.server load', () => {
     expect(out.stats.foodsIntroduced).toBe(0);
     expect(out.stats.weekCount).toBe(0);
     expect(out.showWelcomeDialog).toBe(true);
+    expect(out.starterFoods.length).toBeGreaterThan(0);
+    expect(out.starterFoods[0]).toMatchObject({ name: 'Carotte', category: 'legumes' });
   });
 
   it('returns dashboard data with entries and hides welcome dialog', async () => {
@@ -111,6 +113,7 @@ describe('child/[id] +page.server load', () => {
     expect(out.recent.length).toBe(3);
     expect(out.stats.foodsIntroduced).toBe(1);
     expect(out.showWelcomeDialog).toBe(false);
+    expect(out.starterFoods).toEqual([]);
   });
 
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {

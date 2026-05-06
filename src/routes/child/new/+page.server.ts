@@ -11,9 +11,13 @@ const schema = z.object({
   birthDate: z.string().refine(isValidBirthDate, 'Date invalide')
 });
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, parent }) => {
   requireUser(locals);
-  return {};
+  // True only when this is the very first child the user is creating —
+  // lets the page render a warmer "welcome aboard" header instead of the
+  // utilitarian "Ajouter un enfant".
+  const { children: existing } = await parent();
+  return { isFirstChild: existing.length === 0 };
 };
 
 export const actions: Actions = {
