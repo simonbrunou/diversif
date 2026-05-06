@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-06)
 
 ## Corpus Check
-- 240 files · ~247,350 words
+- 240 files · ~247,882 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1033 nodes · 1509 edges · 203 communities (160 shown, 43 thin omitted)
+- 1034 nodes · 1510 edges · 203 communities (160 shown, 43 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 150 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `83c0fc1a`
+- Built from commit: `5072f0e4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -70,16 +70,16 @@
 - [[_COMMUNITY_DiversityCard|DiversityCard]]
 - [[_COMMUNITY_ReactionBadge|ReactionBadge]]
 - [[_COMMUNITY_ReminderBanner|ReminderBanner]]
-- [[_COMMUNITY_SourceCitation|SourceCitation]]
 - [[_COMMUNITY_StageBadge|StageBadge]]
 - [[_COMMUNITY_ThemeToggle|ThemeToggle]]
 - [[_COMMUNITY_WelcomeDialog|WelcomeDialog]]
 - [[_COMMUNITY_LandingClosingCta|LandingClosingCta]]
-- [[_COMMUNITY_LandingTrust|LandingTrust]]
+- [[_COMMUNITY_LandingHero|LandingHero]]
 - [[_COMMUNITY_Input|Input]]
 - [[_COMMUNITY_Textarea|Textarea]]
 - [[_COMMUNITY_Community 66|Community 66]]
 - [[_COMMUNITY_Community 67|Community 67]]
+- [[_COMMUNITY_Community 68|Community 68]]
 - [[_COMMUNITY_Community 110|Community 110]]
 - [[_COMMUNITY_Community 111|Community 111]]
 - [[_COMMUNITY_Community 112|Community 112]]
@@ -177,12 +177,12 @@ Cohesion: 0.09
 Nodes (18): load(), load(), loadEntry(), parseEntryId(), load(), load(), load(), load() (+10 more)
 
 ### Community 3 - "Route Loaders & Guards"
-Cohesion: 0.12
-Nodes (21): dismissReminder(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadRepeatCandidates(), loadStreak(), loadWeeklyRecap(), logEntry() (+13 more)
-
-### Community 4 - "UI Primitives"
 Cohesion: 0.15
 Nodes (25): POST(), base64UrlToBuffer(), bufferToBase64Url(), buildAuthenticationOptions(), buildRegistrationOptions(), consumeChallenge(), createChallenge(), deletePasskey() (+17 more)
+
+### Community 4 - "UI Primitives"
+Cohesion: 0.17
+Nodes (18): dismissReminder(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadRepeatCandidates(), loadStreak(), loadWeeklyRecap(), logEntry() (+10 more)
 
 ### Community 5 - "Allergens & Foods Loaders"
 Cohesion: 0.08
@@ -212,45 +212,45 @@ Nodes (25): utils/allergens.ts (ALLERGENS catalog), backupBeforeMigrate (VACUUM 
 Cohesion: 0.1
 Nodes (24): login page.server.test.ts, Login Page (Svelte), signInWithPasskey, Logout POST handler, logout server.test.ts, mentions-legales +page.server.ts, mentions-legales page.server.test.ts, Mentions Légales page (+16 more)
 
-### Community 13 - "Account & Root Layout"
+### Community 12 - "SEO JSON-LD Helpers"
+Cohesion: 0.15
+Nodes (7): getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), load(), load(), ageInMonths(), formatAge()
+
+### Community 14 - "GDPR Data Export"
 Cohesion: 0.21
 Nodes (11): GET(), deleteUserAccount(), ExportTooLargeError, exportUserData(), isoOrNull(), isoOrThrow(), insertChild(), insertEntry() (+3 more)
 
-### Community 14 - "GDPR Data Export"
+### Community 15 - "Diversification Guidance Content"
 Cohesion: 0.3
 Nodes (10): runCleanup(), startCleanupTimer(), stopCleanupTimer(), seedUserAndChild(), bucketKey(), checkRateLimit(), _clearAllRateLimits(), clientKey() (+2 more)
 
-### Community 15 - "Diversification Guidance Content"
+### Community 16 - "Cleanup & Rate Limiting"
 Cohesion: 0.22
 Nodes (6): backupBeforeMigrate(), resolveBackupKeep(), ensureDir(), getDb(), resolveDbPath(), seedFoods()
 
-### Community 16 - "Cleanup & Rate Limiting"
+### Community 17 - "Age Stages & Tips"
 Cohesion: 0.14
 Nodes (16): src/routes/account/deleted/+page.svelte, src/routes/account/+page.server.ts, src/routes/account/page.server.test.ts, src/routes/account/+page.svelte, src/routes/+error.svelte, src/routes/+layout.server.ts, src/routes/layout.server.test.ts, src/routes/+layout.svelte (+8 more)
-
-### Community 17 - "Age Stages & Tips"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 18 - "Child Settings, New, Guide"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 19 - "Database Backup & Migrations"
-Cohesion: 0.14
-Nodes (14): child/[id]/settings +page.server.ts, child/[id]/settings page.server.test.ts, child/[id]/settings +page.svelte, child/new +page.server.ts, child/new page.server.test.ts, child/new +page.svelte, guide +page.server.ts, guide page.server.test.ts (+6 more)
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 20 - "Invitation Codes"
-Cohesion: 0.18
-Nodes (3): #each(), destroy(), setPagePathname()
+Cohesion: 0.14
+Nodes (14): child/[id]/settings +page.server.ts, child/[id]/settings page.server.test.ts, child/[id]/settings +page.svelte, child/new +page.server.ts, child/new page.server.test.ts, child/new +page.svelte, guide +page.server.ts, guide page.server.test.ts (+6 more)
 
 ### Community 21 - "Allergen Education Components"
 Cohesion: 0.22
 Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
 
 ### Community 22 - "Food Log & Suggestions"
-Cohesion: 0.27
-Nodes (4): getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), load()
+Cohesion: 0.18
+Nodes (3): #each(), destroy(), setPagePathname()
 
 ### Community 23 - "Sitemap & Sources Routes"
 Cohesion: 0.32
@@ -285,12 +285,12 @@ Cohesion: 0.27
 Nodes (10): Rationale: FK off during migrate, on after, with foreign_key_check, Rationale: stable per-page lastmod prevents crawler distrust, signup +page.server tests, sitemap.xml GET handler, sitemap.xml GET tests, sources +page.server load, sources +page.server tests, sources +page.svelte (+2 more)
 
 ### Community 31 - "Rate-Limit Internals"
-Cohesion: 0.33
-Nodes (3): load(), fuzzyMatch(), normalize()
-
-### Community 32 - "DB Migration Runner"
 Cohesion: 0.56
 Nodes (5): formatDateInputValue(), formatDateTime(), formatRelative(), isValidBirthDate(), parseDateTimeLocal()
+
+### Community 32 - "DB Migration Runner"
+Cohesion: 0.33
+Nodes (3): load(), fuzzyMatch(), normalize()
 
 ### Community 33 - "Invite Code Format"
 Cohesion: 0.25
@@ -304,7 +304,7 @@ Nodes (9): absoluteUrl, articleJsonLd, breadcrumbJsonLd, Centralised SEO/JSON-LD
 Cohesion: 0.39
 Nodes (4): getCategoryClasses(), getCategoryColor(), getCategoryIcon(), getCategoryLabel()
 
-### Community 38 - "Button Variants"
+### Community 37 - "Landing Features"
 Cohesion: 0.53
 Nodes (4): applyMigrationFile(), counts(), markMigrationsApplied(), seedFixture()
 
@@ -332,19 +332,19 @@ Nodes (5): generateInviteCodeRaw, isValidInviteCodeFormat, src/lib/utils/invites
 Cohesion: 0.4
 Nodes (5): Refuse oversize export instead of truncating (Article 15), GET /account/export, account export GET tests, Atomic throttle prevents concurrent exports, Conditions générales d'utilisation page
 
-### Community 64 - "Input"
+### Community 65 - "Textarea"
 Cohesion: 0.67
 Nodes (3): getChildNavItems, isNavItemActive, src/lib/utils/nav.test.ts
 
-### Community 65 - "Textarea"
+### Community 66 - "Community 66"
 Cohesion: 1.0
 Nodes (3): fuzzyMatch, normalize, src/lib/utils/search.test.ts
 
-### Community 66 - "Community 66"
+### Community 67 - "Community 67"
 Cohesion: 0.67
 Nodes (3): cookies +page.svelte (Cookies info page), login +page.server.ts, Do NOT reset rate-limit bucket on successful login to prevent attacker bypass
 
-### Community 67 - "Community 67"
+### Community 68 - "Community 68"
 Cohesion: 0.67
 Nodes (3): Disallow private surfaces from crawlers, robots.txt GET, robots.txt test
 
@@ -362,12 +362,12 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Diversification guidance content (FR)` and `RGPD Article 15 (right of access)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `resetTestDb()` connect `Test Seed Helpers` to `Route Loaders & Guards`, `UI Primitives`, `Database Schema & Catalogs`, `Account & Root Layout`, `GDPR Data Export`, `Diversification Guidance Content`?**
+- **Why does `resetTestDb()` connect `Test Seed Helpers` to `Route Loaders & Guards`, `UI Primitives`, `Database Schema & Catalogs`, `GDPR Data Export`, `Diversification Guidance Content`, `Cleanup & Rate Limiting`?**
   _High betweenness centrality (0.041) - this node is a cross-community bridge._
-- **Why does `requireUser()` connect `Passkey / WebAuthn` to `Route Loaders & Guards`, `UI Primitives`, `Account & Root Layout`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
+- **Why does `requireUser()` connect `Passkey / WebAuthn` to `Route Loaders & Guards`, `UI Primitives`, `GDPR Data Export`?**
+  _High betweenness centrality (0.034) - this node is a cross-community bridge._
 - **Why does `makeRouteEvent()` connect `Test Seed Helpers` to `Server Auth & GDPR Cleanup`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `seedChild()` (e.g. with `setup()` and `setup()`) actually correct?**
   _`seedChild()` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `app.html (HTML shell)`, `theme-init.js inline loader`, `PERMISSIONS_POLICY constant` to the rest of the system?**
