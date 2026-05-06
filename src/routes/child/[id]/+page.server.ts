@@ -36,7 +36,13 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   const childId = parseChildIdParam(params);
   const { user } = requireMembership(locals, childId);
   const { child } = await parent();
-  const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS);
+  // Pin a single "now" so ageMonths, the reminder windows, and the
+  // weekCount cutoff all see the same instant. Otherwise a request that
+  // straddles a month boundary by a few microseconds could compute
+  // ageMonths from one Date and the 4-11-month allergen window from
+  // another, silently disagreeing.
+  const nowAtLoad = new Date();
+  const sevenDaysAgo = new Date(nowAtLoad.getTime() - SEVEN_DAYS_MS);
 
   const recent = db
     .select({
@@ -141,11 +147,6 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   // child.createdAt comes from the layout load, avoiding a second SELECT.
   const childCreatedAt = child.createdAt;
 
-  // Pin a single "now" so ageMonths and the reminder windows all see the
-  // same instant. Otherwise a request that straddles a month boundary by
-  // a few microseconds could compute ageMonths from one Date and the
-  // 4-11-month allergen window from another, silently disagreeing.
-  const nowAtLoad = new Date();
   const ageMonths = ageInMonths(child.birthDate, nowAtLoad);
 
   // Suggest a tiny starter list ONLY when the child has zero entries — once
