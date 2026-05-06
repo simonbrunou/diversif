@@ -47,9 +47,8 @@ The action runs ~6 sequential mutations: optional `INSERT` of a custom food (lin
 **Change:**
 
 - Wrap everything from the optional custom-food insert through the post-insert count in `db.transaction(() => { ... })()` (better-sqlite3's `db.transaction(fn)` returns a wrapped callable; we invoke it).
-- Pre-action validation (`requireMembership`, schema parse, food lookup, date validation) stays _outside_ the transaction — those are side-effect-free read paths and should fail fast with `fail(400, ...)` before any mutation.
-- The `fail(400, ...)` returns inside the transaction (e.g. "Aliment introuvable.") still need to short-circuit; throwing inside a transaction rolls it back automatically, so we either keep the `return fail(...)` shape (which won't roll back, since better-sqlite3 commits on normal return) by moving those guards outside the transaction, or we throw a sentinel and translate it.
-- Cleanest split: do the verify-food guard _before_ the transaction (it's a `SELECT`); inside the transaction do only the mutations and snapshot reads. The redirect happens _after_ the transaction commits.
+- `requireMembership`, schema parse, and the date-validity check stay _outside_ the transaction — they're synchronous side-effect-free guards that should fail fast with `fail(400, ...)` before any mutation.
+- The food-verify `SELECT` cannot move outside (see Architecture), so it lives inside the transaction. Validation failures inside the transaction throw a `LogActionAbort` sentinel; the outer `try/catch` translates it back to `fail(400, ...)`. Throw → automatic rollback in better-sqlite3.
 
 **Behaviour change:** Atomic. If anything in the mutation sequence throws, no writes commit. The custom-food insert can no longer leak when downstream queries fail.
 
