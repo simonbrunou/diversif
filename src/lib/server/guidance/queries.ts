@@ -148,6 +148,88 @@ export function loadRepeatCandidates(childId: number, limit = 5): RepeatCandidat
     }));
 }
 
+export type WeeklyRecap = {
+  /** Total entries in the past 7 days */
+  entries: number;
+  /** Distinct foods appearing for the FIRST time for this child in the past 7 days */
+  newFoods: number;
+  /** Distinct allergen types appearing for the FIRST time for this child in the past 7 days */
+  newAllergens: number;
+};
+
+export function loadWeeklyRecap(childId: number, now: Date = new Date()): WeeklyRecap {
+  const sinceMs = now.getTime() - 7 * DAY_MS;
+
+  const entries =
+    db.get<{ count: number }>(
+      sql`SELECT COUNT(*) as count
+          FROM ${foodEntries}
+          WHERE ${foodEntries.childId} = ${childId}
+            AND ${foodEntries.givenAt} >= ${sinceMs}`
+    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+
+  // First-ever appearance per food, kept only if that first appearance is in the window.
+  const newFoods =
+    db.get<{ count: number }>(
+      sql`SELECT COUNT(*) as count FROM (
+            SELECT ${foodEntries.foodId} as food_id, MIN(${foodEntries.givenAt}) as first_at
+            FROM ${foodEntries}
+            WHERE ${foodEntries.childId} = ${childId}
+            GROUP BY ${foodEntries.foodId}
+            HAVING first_at >= ${sinceMs}
+          )`
+    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+
+  // First-ever appearance per allergenType, restricted to non-null allergens.
+  const newAllergens =
+    db.get<{ count: number }>(
+      sql`SELECT COUNT(*) as count FROM (
+            SELECT ${foods.allergenType} as allergen_type, MIN(${foodEntries.givenAt}) as first_at
+            FROM ${foodEntries}
+            INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
+            WHERE ${foodEntries.childId} = ${childId}
+              AND ${foods.allergenType} IS NOT NULL
+            GROUP BY ${foods.allergenType}
+            HAVING first_at >= ${sinceMs}
+          )`
+    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+
+  return { entries, newFoods, newAllergens };
+}
+
+export function loadStreak(childId: number, now: Date = new Date()): number {
+  // Distinct UTC days that contain at least one entry, in descending order.
+  const rows = db.all<{ day: number }>(
+    sql`SELECT DISTINCT CAST((${foodEntries.givenAt} / ${DAY_MS}) AS INTEGER) as day
+        FROM ${foodEntries}
+        WHERE ${foodEntries.childId} = ${childId}
+        ORDER BY day DESC`
+  );
+  if (rows.length === 0) return 0;
+
+  const today = Math.floor(now.getTime() / DAY_MS);
+  let cursor = today;
+  // Allow the streak to start "yesterday" if the user has not logged today yet.
+  if (rows[0].day !== today) {
+    if (rows[0].day === today - 1) {
+      cursor = today - 1;
+    } else {
+      return 0;
+    }
+  }
+
+  let streak = 0;
+  for (const r of rows) {
+    if (r.day === cursor) {
+      streak += 1;
+      cursor -= 1;
+    } else if (r.day < cursor) {
+      break;
+    }
+  }
+  return streak;
+}
+
 export function loadDismissals(userId: number, childId: number): Set<string> {
   const rows = db
     .select({ key: tipDismissals.reminderKey, at: tipDismissals.dismissedAt })

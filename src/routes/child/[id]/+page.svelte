@@ -28,7 +28,8 @@
     UtensilsCrossed,
     CalendarDays,
     BookOpen,
-    Lightbulb
+    Lightbulb,
+    Flame
   } from 'lucide-svelte';
   import dayjs from 'dayjs';
   import { onMount } from 'svelte';
@@ -64,7 +65,14 @@
     if (!milestone) return;
     celebrate(toast, milestone);
     const url = new URL($page.url);
-    for (const key of ['logged', 'first', 'allergen', 'categories', 'prevCategories']) {
+    for (const key of [
+      'logged',
+      'first',
+      'allergen',
+      'allAllergens',
+      'categories',
+      'prevCategories'
+    ]) {
       url.searchParams.delete(key);
     }
     history.replaceState({}, '', url);
@@ -110,8 +118,17 @@
           {data.child.name}
         </h1>
         <p class="mt-1 text-sm text-muted-foreground">{formatAge(data.child.birthDate)}</p>
-        <div class="mt-2">
+        <div class="mt-2 flex flex-wrap items-center gap-2">
           <StageBadge stage={stage} />
+          {#if data.streak >= 2}
+            <span
+              class="inline-flex items-center gap-1 rounded-full bg-celebrate/15 px-2 py-0.5 text-xs font-medium text-celebrate-foreground ring-1 ring-celebrate/30"
+              aria-label="{data.streak} jours d'affilée"
+            >
+              <Flame size={12} class="text-celebrate" aria-hidden="true" />
+              {data.streak} jours d'affilée
+            </span>
+          {/if}
         </div>
       </div>
       <a
@@ -169,6 +186,32 @@
       </div>
     </Card>
   </section>
+
+  {#if data.weeklyRecap.entries > 0}
+    <Card class="border-l-2 border-l-celebrate p-4 md:p-5">
+      <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-celebrate-foreground">
+        <Sparkles size={12} class="text-celebrate" aria-hidden="true" />
+        Cette semaine
+      </div>
+      <p class="mt-2 text-sm text-foreground/90">
+        {data.weeklyRecap.entries} {data.weeklyRecap.entries > 1 ? 'repas notés' : 'repas noté'}
+        {#if data.weeklyRecap.newFoods > 0}
+          · <strong class="font-semibold text-foreground"
+            >{data.weeklyRecap.newFoods} {data.weeklyRecap.newFoods > 1
+              ? 'nouveaux aliments'
+              : 'nouvel aliment'}</strong
+          >
+        {/if}
+        {#if data.weeklyRecap.newAllergens > 0}
+          · <strong class="font-semibold text-foreground"
+            >{data.weeklyRecap.newAllergens} {data.weeklyRecap.newAllergens > 1
+              ? 'nouveaux allergènes'
+              : 'nouvel allergène'}</strong
+          >
+        {/if}
+      </p>
+    </Card>
+  {/if}
 
   <Card class="p-4 md:p-5">
     <AllergenProgress summary={data.stats.allergens} />
