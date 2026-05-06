@@ -86,6 +86,30 @@ describe('deleteUserAccount', () => {
     expect(testDb.select().from(users).all()).toHaveLength(0);
   });
 
+  it('drops every live session for the deleted user (revocation across devices)', async () => {
+    const u = await insertUser('many-sessions@example.com');
+    const other = await insertUser('keep-me@example.com');
+    // Three live sessions for the user being deleted, plus one for someone else
+    // who must NOT be touched. Deletion has to revoke all of u's sessions
+    // atomically so a parallel device can't keep transacting on the dead row.
+    const future = new Date(Date.now() + 86400_000);
+    testDb
+      .insert(sessions)
+      .values([
+        { id: 'sess-a', userId: u.id, expiresAt: future },
+        { id: 'sess-b', userId: u.id, expiresAt: future },
+        { id: 'sess-c', userId: u.id, expiresAt: future },
+        { id: 'sess-other', userId: other.id, expiresAt: future }
+      ])
+      .run();
+
+    deleteUserAccount(u.id);
+
+    const remaining = testDb.select().from(sessions).all();
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].id).toBe('sess-other');
+  });
+
   it('cascades child deletion when sole owner with no other members', async () => {
     const u = await insertUser('only@example.com');
     const c = insertChild('Bébé', u.id);

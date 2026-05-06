@@ -22,6 +22,11 @@
 
   let panel = $state<HTMLDivElement | null>(null);
   let previouslyFocused: HTMLElement | null = null;
+  // Per-instance id so aria-labelledby points at THIS dialog's heading even
+  // when several dialogs share the same DOM tree. APG recommends linking
+  // the dialog to its visible heading rather than duplicating the text via
+  // aria-label, since duplicated content drifts when the title prop changes.
+  const titleId = `dialog-title-${Math.random().toString(36).slice(2, 9)}`;
 
   const FOCUSABLE_SELECTOR =
     'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -87,7 +92,8 @@
   <div
     role="dialog"
     aria-modal="true"
-    aria-label={title}
+    aria-labelledby={title ? titleId : undefined}
+    aria-label={title ? undefined : 'Dialogue'}
     tabindex="-1"
     class="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
     onmousedown={handleBackdrop}
@@ -101,7 +107,7 @@
       )}
     >
       {#if title}
-        <h2 class="text-lg font-semibold">{title}</h2>
+        <h2 id={titleId} class="text-lg font-semibold">{title}</h2>
       {/if}
       {#if description}
         <p class="mt-1 text-sm text-muted-foreground">{description}</p>

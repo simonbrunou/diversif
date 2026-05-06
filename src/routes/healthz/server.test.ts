@@ -10,6 +10,7 @@ describe('GET /healthz', () => {
     get.mockReturnValueOnce({ ok: 1 });
     const res = await GET({} as unknown as Parameters<typeof GET>[0]);
     expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe('no-store');
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.db).toBe('ok');
@@ -23,6 +24,7 @@ describe('GET /healthz', () => {
     });
     const res = await GET({} as unknown as Parameters<typeof GET>[0]);
     expect(res.status).toBe(503);
+    expect(res.headers.get('cache-control')).toBe('no-store');
     const body = await res.json();
     expect(body.ok).toBe(false);
     expect(body.db).toBe('down');

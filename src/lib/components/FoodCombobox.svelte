@@ -110,7 +110,12 @@
           {/if}
         </div>
       </div>
-      <button type="button" class="text-sm text-muted-foreground hover:underline" onclick={() => pick(0)}>
+      <button
+        type="button"
+        class="text-sm text-muted-foreground hover:underline"
+        aria-label={`Changer l'aliment sélectionné (actuellement ${selected.name})`}
+        onclick={() => pick(0)}
+      >
         Changer
       </button>
     </div>

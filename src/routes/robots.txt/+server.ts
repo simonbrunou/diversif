@@ -15,6 +15,7 @@ export const GET: RequestHandler = ({ url }) => {
     'Disallow: /account',
     'Disallow: /child/',
     'Disallow: /join/',
+    'Disallow: /healthz',
     '',
     `Sitemap: ${origin}/sitemap.xml`,
     ''

@@ -20,6 +20,7 @@ describe('GET /robots.txt', () => {
     expect(body).toContain('User-agent: *');
     expect(body).toContain('Disallow: /child/');
     expect(body).toContain('Disallow: /account');
+    expect(body).toContain('Disallow: /healthz');
     expect(body).toContain('Sitemap: https://my.app/sitemap.xml');
   });
 

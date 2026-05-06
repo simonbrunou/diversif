@@ -66,7 +66,10 @@
         </h2>
         <div class="grid gap-2 sm:grid-cols-2">
           {#each data.priorityAllergens as f (f.id)}
-            <a href={logHref(f.id)}>
+            <a
+              href={logHref(f.id)}
+              aria-label={`Noter ${f.name}, allergène ${getAllergenLabel(f.allergenType)}, dès ${f.suggestedAgeMonths} mois`}
+            >
               <Card class="p-3 transition-colors hover:bg-accent">
                 <div class="flex items-center justify-between gap-2">
                   <span class="truncate font-medium">{f.name}</span>
@@ -98,7 +101,10 @@
         </h2>
         <div class="grid gap-2 sm:grid-cols-2">
           {#each g.items as f (f.id)}
-            <a href={logHref(f.id)}>
+            <a
+              href={logHref(f.id)}
+              aria-label={`Noter ${f.name}, dès ${f.suggestedAgeMonths} mois`}
+            >
               <Card
                 class={cn(
                   'border-l-2 p-3 transition-colors hover:bg-accent',
