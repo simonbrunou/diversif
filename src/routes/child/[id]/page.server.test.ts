@@ -116,6 +116,36 @@ describe('child/[id] +page.server load', () => {
     expect(out.starterFoods).toEqual([]);
   });
 
+  it('keeps starterFoods populated even after the welcome dialog is dismissed', async () => {
+    const { u, c, m } = await setup();
+    testDb
+      .insert(tipDismissals)
+      .values({
+        userId: u.id,
+        childId: c.id,
+        reminderKey: 'welcome-dialog',
+        dismissedAt: new Date()
+      })
+      .run();
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        parent: async () => ({
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.showWelcomeDialog).toBe(false);
+    expect(out.starterFoods.length).toBeGreaterThan(0);
+  });
+
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
     const { u, c, m, food } = await setup();
     testDb

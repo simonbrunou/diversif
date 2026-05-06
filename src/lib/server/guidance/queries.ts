@@ -246,7 +246,7 @@ export type StarterFood = {
  * surfaces a sensible starter set.
  */
 export function loadStarterFoods(ageMonths: number, limit: number = 4): StarterFood[] {
-  const ceil = Math.max(4, ageMonths);
+  const effectiveAge = Math.max(4, ageMonths);
   return db
     .select({
       id: foods.id,
@@ -256,7 +256,7 @@ export function loadStarterFoods(ageMonths: number, limit: number = 4): StarterF
       allergenType: foods.allergenType
     })
     .from(foods)
-    .where(and(eq(foods.isCustom, false), lte(foods.suggestedAgeMonths, ceil)))
+    .where(and(eq(foods.isCustom, false), lte(foods.suggestedAgeMonths, effectiveAge)))
     .orderBy(asc(foods.suggestedAgeMonths), asc(foods.name))
     .limit(limit)
     .all()

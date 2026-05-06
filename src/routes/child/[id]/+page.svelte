@@ -295,6 +295,7 @@
               <li>
                 <a
                   href={`/child/${data.child.id}/log?foodId=${f.id}`}
+                  aria-label={`Noter ${f.name}, dès ${f.suggestedAgeMonths} mois`}
                   class="flex items-center justify-between gap-2 rounded-md border p-2.5 text-sm transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span class="flex min-w-0 flex-1 items-center gap-2">

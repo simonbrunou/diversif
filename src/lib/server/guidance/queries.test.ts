@@ -740,6 +740,13 @@ describe('loadStarterFoods', () => {
     expect(out.map((f) => f.name)).toEqual(['Carotte']);
   });
 
+  it('includes 4-month foods when the requested age is exactly 4 (boundary)', () => {
+    seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
+    seedStarter({ name: 'Tomate', category: 'legumes', suggestedAgeMonths: 5 });
+    const out = loadStarterFoods(4);
+    expect(out.map((f) => f.name)).toEqual(['Carotte']);
+  });
+
   it('excludes custom foods', () => {
     seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
     seedStarter({

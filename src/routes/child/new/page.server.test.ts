@@ -31,15 +31,30 @@ describe('child/new load', () => {
     expect(out).toEqual({ isFirstChild: true });
   });
 
-  it('flags isFirstChild=false once at least one child exists', async () => {
+  it('flags isFirstChild=false once at least one owned child exists', async () => {
     const u = await seedUser();
     const out = await load(
       makeRouteEvent({
         user: safeUser(u),
-        parent: async () => ({ children: [{ id: 1, name: 'Bébé', birthDate: '2024-01-01' }] })
+        parent: async () => ({
+          children: [{ id: 1, name: 'Bébé', birthDate: '2024-01-01', role: 'owner' }]
+        })
       }) as unknown as Parameters<typeof load>[0]
     );
     expect(out).toEqual({ isFirstChild: false });
+  });
+
+  it('still flags isFirstChild=true for co-parents with only member memberships', async () => {
+    const u = await seedUser();
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        parent: async () => ({
+          children: [{ id: 1, name: "Bébé d'un autre", birthDate: '2024-01-01', role: 'member' }]
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out).toEqual({ isFirstChild: true });
   });
 });
 
