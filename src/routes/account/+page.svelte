@@ -39,14 +39,21 @@
       typeof navigator.credentials?.create === 'function';
   });
 
+  // Toast each form action result exactly once. Without this, any subsequent
+  // re-render that reads `form` (e.g. the same object surviving a passkey
+  // rename triggering a passkey-list update) would re-fire stale toasts.
+  let lastFormSeen: typeof form;
   $effect(() => {
-    if (form?.profileSuccess) toast.success(form.profileSuccess);
-    if (form?.profileError) toast.error(form.profileError);
-    if (form?.passwordSuccess) toast.success(form.passwordSuccess);
-    if (form?.passwordError) toast.error(form.passwordError);
-    if (form?.passkeySuccess) toast.success(form.passkeySuccess);
-    if (form?.passkeyError) toast.error(form.passkeyError);
-    if (form?.deleteError) toast.error(form.deleteError);
+    if (form === lastFormSeen) return;
+    lastFormSeen = form;
+    if (!form) return;
+    if (form.profileSuccess) toast.success(form.profileSuccess);
+    if (form.profileError) toast.error(form.profileError);
+    if (form.passwordSuccess) toast.success(form.passwordSuccess);
+    if (form.passwordError) toast.error(form.passwordError);
+    if (form.passkeySuccess) toast.success(form.passkeySuccess);
+    if (form.passkeyError) toast.error(form.passkeyError);
+    if (form.deleteError) toast.error(form.deleteError);
   });
 
   function formatDate(ts: number): string {
