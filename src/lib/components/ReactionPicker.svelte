@@ -56,11 +56,15 @@
     >
       <input type="radio" {name} value={r.id} bind:group={value} class="sr-only" />
       {#if active}
+        <!-- The label still carries `s.text` (the reaction color), so
+             `bg-current` resolves to the reaction color here. The inner
+             Check overrides currentColor with `text-background` so the
+             tick reads as a contrasting mark on the colored disc. -->
         <span
-          class="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-current text-background"
+          class="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-current"
           aria-hidden="true"
         >
-          <Check size={11} strokeWidth={3} />
+          <Check size={11} strokeWidth={3} class="text-background" />
         </span>
       {/if}
       <Icon size={20} aria-hidden="true" />
