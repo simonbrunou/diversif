@@ -154,4 +154,48 @@ describe('child/[id]/report load', () => {
     expect(out.notable[0].foodName).toBe('Saumon');
     expect(out.notable[0].notes).toBe('urticaire 30min');
   });
+
+  it('aggregates allergens from a mixed entries fixture', async () => {
+    const { u, c } = await setup();
+    const oeuf = seedFood('Œuf', 'proteines', 'oeuf');
+    const arachide = seedFood('Arachide', 'proteines', 'arachide');
+    const carotte = seedFood('Carotte', 'legumes', null);
+
+    // 3 oeuf entries: ras, inconfort, ras → worst=inconfort, exposures=3
+    logEntry(c.id, oeuf.id, u.id, new Date('2026-04-01'), 'ras');
+    logEntry(c.id, oeuf.id, u.id, new Date('2026-04-15'), 'inconfort');
+    logEntry(c.id, oeuf.id, u.id, new Date('2026-05-01'), 'ras');
+    // 1 arachide entry: reaction → worst=reaction, exposures=1
+    logEntry(c.id, arachide.id, u.id, new Date('2026-04-20'), 'reaction');
+    // 2 non-allergen entries: should NOT appear in allergens output
+    logEntry(c.id, carotte.id, u.id, new Date('2026-04-10'), 'ras');
+    logEntry(c.id, carotte.id, u.id, new Date('2026-04-12'), 'ras');
+
+    const data = await load(
+      makeRouteEvent({
+        user: u,
+        params: { id: String(c.id) },
+        parent: async () => ({ child: c })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+
+    const oeufRow = data.allergens.find((a) => a.id === 'oeuf');
+    expect(oeufRow).toMatchObject({
+      status: 'introduced',
+      worst: 'inconfort',
+      exposures: 3,
+      firstGivenAt: new Date('2026-04-01').getTime(),
+      lastGivenAt: new Date('2026-05-01').getTime()
+    });
+
+    const arachideRow = data.allergens.find((a) => a.id === 'arachide');
+    expect(arachideRow).toMatchObject({
+      status: 'introduced',
+      worst: 'reaction',
+      exposures: 1
+    });
+
+    const lait = data.allergens.find((a) => a.id === 'lait');
+    expect(lait).toMatchObject({ status: 'untested', worst: null, exposures: 0 });
+  });
 });

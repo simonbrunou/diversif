@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { and, asc, eq, isNotNull } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { ALLERGENS } from '$lib/utils/allergens';
 import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
@@ -109,41 +109,29 @@ export const load: PageServerLoad = async ({ parent }) => {
     .filter(([, list]) => list.length > 0)
     .map(([id, list]) => ({ id, foods: list }));
 
-  // Per-allergen summary: introduced / worst / counts.
-  const allergenJoinRows = db
-    .select({
-      allergenType: foods.allergenType,
-      reaction: foodEntries.reaction,
-      givenAt: foodEntries.givenAt
-    })
-    .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)))
-    .all();
-
+  // Per-allergen summary: introduced / worst / counts. Derived from `entries`
+  // in memory rather than a second SQL scan — `entries` already contains
+  // exactly the columns we need (allergenType, reaction, givenAt) because the
+  // primary query above joins on the food catalog.
   const allergenAggMap = new Map<
     string,
     { worst: ReactionId; exposures: number; first: number; last: number }
   >();
-  for (const r of allergenJoinRows) {
-    /* v8 ignore next — query already filters allergenType IS NOT NULL */
-    if (!r.allergenType) continue;
-    const at =
-      r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt);
-    const cur = allergenAggMap.get(r.allergenType);
-    const reaction = r.reaction as ReactionId;
+  for (const e of entries) {
+    if (e.allergenType == null) continue;
+    const cur = allergenAggMap.get(e.allergenType);
     if (!cur) {
-      allergenAggMap.set(r.allergenType, {
-        worst: reaction,
+      allergenAggMap.set(e.allergenType, {
+        worst: e.reaction,
         exposures: 1,
-        first: at,
-        last: at
+        first: e.givenAt,
+        last: e.givenAt
       });
     } else {
       cur.exposures += 1;
-      cur.first = Math.min(cur.first, at);
-      cur.last = Math.max(cur.last, at);
-      if (reactionRank[reaction] > reactionRank[cur.worst]) cur.worst = reaction;
+      cur.first = Math.min(cur.first, e.givenAt);
+      cur.last = Math.max(cur.last, e.givenAt);
+      if (reactionRank[e.reaction] > reactionRank[cur.worst]) cur.worst = e.reaction;
     }
   }
 
