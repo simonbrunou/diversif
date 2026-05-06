@@ -1,4 +1,4 @@
-# Route-loader Performance — Design
+# Route-loader Hardening — Design
 
 **Date:** 2026-05-06
 **Status:** Approved (pending implementation plan)
@@ -6,120 +6,114 @@
 
 ## Goal
 
-Tighten three route-loader / form-action paths whose query patterns will degrade as a child's history grows: the child dashboard, the report page, and the food-log write action. The dashboard cap and report dedup are pure perf; the log-action transaction is also a correctness fix.
+Tighten two route-loader / form-action paths: dedup a redundant full-table scan in the report loader, and wrap the food-log create action in a transaction so partial writes can't land. The dedup is pure perf; the transaction is also a correctness fix.
+
+## Scope changes from initial brainstorm
+
+Initial scope included a third target — capping the dashboard's `recentForReminders` query to last-60-days + `LIMIT 200`. Reading the actual code surfaced the reminders module's type signature:
+
+```ts
+entries: EnrichedEntry[]; // full history, recent first — first-intro and exposure-count rules need it
+```
+
+The reminder rules `first-introduction`, `repeat-exposure`, and `stale-diversity` require the full per-child history. Capping silently breaks them. At realistic sizes (≤1500 entries over 2 years), the unbounded scan is sub-millisecond on better-sqlite3, so the original concern is theoretical. Target dropped.
 
 ## Non-goals
 
-- Merging COUNT/SELECT queries into CTEs to reduce query count. better-sqlite3 is synchronous and in-process; the wall-clock cost is dominated by unbounded scans, not query count. YAGNI.
-- Changing read-only loader cardinality elsewhere (allergens, suggestions, analytics, layout): the Explore audit confirmed they're already bounded.
-- Adding caching, request-coalescing, or N+1 detection middleware. None apply.
+- Capping the dashboard `recentForReminders` query (see scope changes).
+- Merging COUNT/SELECT queries elsewhere into CTEs to reduce query count. better-sqlite3 is synchronous and in-process; query count is not the bottleneck.
+- Caching or request coalescing.
 - Touching the form action's UX (still single-submit), rendering pipeline, or schema.
+- Indexing changes (separate concern; would warrant its own spec).
 
 ## Targets
 
-### 1. Dashboard scan cap (`src/routes/child/[id]/+page.server.ts`)
+### 1. Report query dedup (`src/routes/child/[id]/report/+page.server.ts`)
 
-The dashboard fetches the child's **entire** food-entry history into `recentForReminders` and feeds it to `computeReminders`. With no `WHERE` and no `LIMIT`, this scan grows linearly with the child's lifetime and runs on every dashboard render.
-
-**Change:**
-
-- Add `WHERE date >= <now − 60 days>` and `LIMIT 200` to the `recentForReminders` query, ordered by `date DESC`.
-- Document the bound in an inline comment: "60 days covers reaction follow-up windows and the introduction rhythm we model in computeReminders; 200 is a safety ceiling for very-active loggers."
-
-**Why those numbers:**
-
-- 60 days comfortably exceeds the effective horizon of `computeReminders` (its rules look at recent reactions and short-window repeat candidates, not lifetime history). The implementation plan should re-confirm this against the reminders module before the cap lands.
-- 200 entries protects against an unrealistically active logger (≈3-4 entries/day for two months).
-- We pick the **intersection** (`AND`), so both clauses bind. The 60-day clause is the load-bearing one in steady state; the 200 LIMIT is a paranoid ceiling.
-
-**Behaviour change:** A child whose only logged entries are older than 60 days would see "no recent activity" reminders. This matches the intent — the reminder engine is meant to nudge based on _recent_ patterns, not lifetime history.
-
-### 2. Report query dedup (`src/routes/child/[id]/report/+page.server.ts`)
-
-Two full-table scans run sequentially: a primary `rows` query (full join over the entry catalog) and a secondary `allergenJoinRows` that is a strict subset of `rows`. The aggregation can be derived from `rows` in memory.
+Two full-table scans run sequentially: a primary `rows` query (full join over the entry catalog, lines 47-61) and a secondary `allergenJoinRows` (lines 113-122) that is a strict subset of `rows`. The aggregation can be derived from `rows` in memory.
 
 **Change:**
 
-- Delete the `allergenJoinRows` query and its call site.
-- Replace with an in-memory filter+reduce over the `rows` array (filter to allergen-typed entries, group by allergen, keep min/max/count).
-- The aggregated object's shape is unchanged. Existing tests must continue to pass without change.
+- Delete the `allergenJoinRows` query and its call site (lines 113-122).
+- Replace with an in-memory filter+reduce over the existing `entries` array (which is already mapped from `rows`): filter to entries where `allergenType != null`, group by `allergenType`, keep `worst` reaction (by reactionRank), `exposures` count, `first` and `last` timestamps.
+- The aggregated `allergenAggMap` shape is unchanged. Existing tests must continue to pass without change.
 
 **Behaviour:** Pure refactor, no observable change.
 
-### 3. Log form action transaction (`src/routes/child/[id]/foods/+page.server.ts`)
+### 2. Log form action transaction (`src/routes/child/[id]/log/+page.server.ts`)
 
-The form action runs ~6 sequential mutations (insert custom food → verify food → 3 pre-insert snapshot reads → insert entry → 1 post-insert count) without a transaction wrapper. Failure mid-sequence can leave inconsistent state — most concerningly, an entry can land without the allergen-snapshot bookkeeping that the reminder engine and the milestones logic depend on.
+The action runs ~6 sequential mutations: optional `INSERT` of a custom food (lines 64-78), `SELECT` to verify food (lines 86-95), three pre-insert snapshot reads (`priorEntryCount`, `priorCategoriesCovered`, `priorAllergenCount`, `priorAllergensIntroduced`, lines 107-142), `INSERT` of the entry (lines 144-154), and a post-insert distinct-categories count (lines 156-162). All without a transaction. Failure mid-sequence can leave inconsistent state — most concerningly, an entry can land while the redirect URL's milestone params are computed off stale snapshots, or (worse) a custom food can be persisted without a successful entry insert that would have referenced it.
 
 **Change:**
 
-- Wrap the entire mutation sequence in `db.transaction(() => { ... })`.
-- Move the entry-insert and post-insert count inside the same transaction so the snapshot-vs-insert race is closed.
-- Pre-insert snapshot reads stay as 3 separate queries (different tables; merging them adds complexity for no win).
+- Wrap everything from the optional custom-food insert through the post-insert count in `db.transaction(() => { ... })()` (better-sqlite3's `db.transaction(fn)` returns a wrapped callable; we invoke it).
+- Pre-action validation (`requireMembership`, schema parse, food lookup, date validation) stays _outside_ the transaction — those are side-effect-free read paths and should fail fast with `fail(400, ...)` before any mutation.
+- The `fail(400, ...)` returns inside the transaction (e.g. "Aliment introuvable.") still need to short-circuit; throwing inside a transaction rolls it back automatically, so we either keep the `return fail(...)` shape (which won't roll back, since better-sqlite3 commits on normal return) by moving those guards outside the transaction, or we throw a sentinel and translate it.
+- Cleanest split: do the verify-food guard _before_ the transaction (it's a `SELECT`); inside the transaction do only the mutations and snapshot reads. The redirect happens _after_ the transaction commits.
 
-**Behaviour change:** Atomic. If anything in the sequence throws, none of the writes commit. The failure-mode tests must verify this.
+**Behaviour change:** Atomic. If anything in the mutation sequence throws, no writes commit. The custom-food insert can no longer leak when downstream queries fail.
 
 ## Architecture
 
 ```
                     Before                              After
 ─────────────────────────────────────   ─────────────────────────────────────
-Dashboard           +page.server.ts     Dashboard           +page.server.ts
-                    └─ recentForReminders                   └─ recentForReminders
-                       SELECT * FROM entries                   SELECT * FROM entries
-                       WHERE child=...                         WHERE child=...
-                       ORDER BY date DESC                        AND date >= now-60d
-                                                               ORDER BY date DESC
-                                                               LIMIT 200
-
 Report              +page.server.ts     Report              +page.server.ts
                     ├─ rows (full join)                     └─ rows (full join)
                     └─ allergenJoinRows                        + in-memory allergen reduce
-                       (full scan, redundant)
+                       (full scan, redundant)                    over entries[]
 
-Foods action        +page.server.ts     Foods action        +page.server.ts
-                    1. INSERT custom food (maybe)           db.transaction(() => {
-                    2. SELECT food (verify)                   1. INSERT custom food
-                    3. SELECT count A                         2. SELECT food
-                    4. SELECT count B                         3. SELECT count A
-                    5. SELECT count C                         4. SELECT count B
-                    6. INSERT entry                           5. SELECT count C
-                    7. SELECT count D (milestone)             6. INSERT entry
-                                                              7. SELECT count D
-                                                            })
+Log action          +page.server.ts     Log action          +page.server.ts
+                    1. parse + validate                     1. parse + validate
+                    2. INSERT custom food (maybe)           2. SELECT food (verify)
+                    3. SELECT food (verify)                 3. db.transaction(() => {
+                    4. SELECT priorEntryCount                    INSERT custom food (maybe)
+                    5. SELECT priorCategories                    SELECT priorEntryCount
+                    6. SELECT priorAllergen                      SELECT priorCategories
+                    7. SELECT priorAllergensIntro                SELECT priorAllergen
+                    8. INSERT entry                              SELECT priorAllergensIntro
+                    9. SELECT categoriesNow                      INSERT entry
+                                                                 SELECT categoriesNow
+                                                              })()
+                                                            4. redirect
 ```
+
+Why the food-verify SELECT moves inside the transaction: the original control flow is "if `foodId` is provided, skip the custom-food insert; otherwise insert and use the returned id." So the verify-food guard cannot run before the custom-food insert in the custom-food path. Both must live inside the transaction; if verification fails, throw a sentinel error to roll back, then translate to `fail(400, ...)` outside the transaction. The redirect happens after the transaction commits.
 
 ## Components
 
-| File                                               | Status | Responsibility                                                   |
-| -------------------------------------------------- | ------ | ---------------------------------------------------------------- |
-| `src/routes/child/[id]/+page.server.ts`            | edit   | Cap `recentForReminders` (date + LIMIT).                         |
-| `src/routes/child/[id]/report/+page.server.ts`     | edit   | Drop `allergenJoinRows`; derive in memory.                       |
-| `src/routes/child/[id]/foods/+page.server.ts`      | edit   | Wrap action's 6+ queries in `db.transaction(...)`.               |
-| `src/routes/child/[id]/page.server.test.ts`        | edit   | Add scan-cap tests (60-day window + 200-row LIMIT).              |
-| `src/routes/child/[id]/report/page.server.test.ts` | edit   | Add an assertion that the allergen aggregate shape is preserved. |
-| `src/routes/child/[id]/foods/page.server.test.ts`  | edit   | Add a fail-mid-sequence test asserting no partial commit.        |
+| File                                               | Status | Responsibility                                                                                                                                  |
+| -------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/routes/child/[id]/report/+page.server.ts`     | edit   | Drop `allergenJoinRows`; derive in memory from `entries`.                                                                                       |
+| `src/routes/child/[id]/log/+page.server.ts`        | edit   | Wrap mutations + dependent reads in `db.transaction(() => ...)()`. Use a sentinel-throw pattern for the in-transaction validation failure path. |
+| `src/routes/child/[id]/report/page.server.test.ts` | edit   | Add an assertion that the `allergens` array byte-equals the previous output for a fixture with mixed allergen + non-allergen entries.           |
+| `src/routes/child/[id]/log/page.server.test.ts`    | edit   | Add a test that forces the `INSERT entry` query to fail mid-sequence and asserts no rows committed for the child (transaction rollback).        |
 
-No new files. All changes are surgical edits.
+No new files. Two surgical edits.
 
 ## Data flow / failure modes
 
-- **Dashboard cap:** A child with no entries in the last 60 days produces an empty `recentForReminders` array. `computeReminders` already handles empty input (existing behaviour for new children); no extra guard needed.
-- **Report dedup:** If `rows` is empty, the in-memory reduce returns an empty aggregate (same shape as today's empty SQL result).
-- **Log action transaction:** better-sqlite3's `db.transaction(fn)` returns a wrapped callable. We invoke it; if any query inside throws, the transaction rolls back automatically. The form action's existing `try/catch` around the sequence must be preserved (it returns a typed error to the client) — the transaction wrapper goes _inside_ the try block.
+- **Report dedup:** If `entries` is empty, the in-memory reduce returns an empty `allergenAggMap` (same shape as today's empty SQL result).
+- **Log action transaction:**
+  - Schema validation failure → `fail(400, ...)` _before_ the transaction. No DB activity. ✅
+  - Verify-food failure (food not in catalog or not for this child) → throw a `LogActionAbort` sentinel inside the transaction → caught outside → `fail(400, 'Aliment introuvable.')`. Custom-food insert (if it happened in the same transaction) is rolled back. ✅
+  - Date parse failure → still inside the transaction in the new layout; throw the sentinel, roll back. ✅
+  - Entry insert fails (e.g. FK violation) → exception bubbles up through `db.transaction(fn)`, which rolls back automatically. The custom-food insert from earlier in the same transaction is rolled back. ✅
+  - Post-insert count fails → exception rolls back. The entry isn't written. ✅
+- **Sentinel pattern:** define `class LogActionAbort extends Error { constructor(public readonly status: number, public readonly userMessage: string) { super(userMessage); } }` at module scope. Throw inside the transaction; catch outside; convert to `fail(status, { error: userMessage })`. Never leaks to the user.
 
 ## Testing
 
-| File                                               | New assertion                                                                                                                                                                                                                             |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/routes/child/[id]/page.server.test.ts`        | Seed 250 entries spanning 90 days. Load page. Assert: the entries fed to `computeReminders` are all dated within 60 days AND `length ≤ 200`. (Mock `computeReminders` to capture its first arg, or assert via the SQL result indirectly.) |
-| `src/routes/child/[id]/report/page.server.test.ts` | Seed mixed allergen + non-allergen entries. Load page. Assert the aggregated allergen object is byte-equal (after JSON serialization) to a fixture computed from the seeded entries.                                                      |
-| `src/routes/child/[id]/foods/page.server.test.ts`  | Spy on the entry-insert query and force it to throw mid-action. Assert: no entry row exists for the child after the failure (transaction rollback). The 100% coverage gate must still hold.                                               |
+| File                                               | New assertion                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/routes/child/[id]/report/page.server.test.ts` | Seed mixed allergen + non-allergen entries (e.g. 3 allergen entries across 2 distinct allergens with varying reactions, 2 non-allergen entries). Load page. Assert: the returned `allergens` array (after filtering to the introduced ones) equals a fixture with the expected `worst`, `exposures`, `firstGivenAt`, `lastGivenAt`. (The test asserts the _output_ shape, not the internal aggregation method, so it'll pass before AND after the refactor.) |
+| `src/routes/child/[id]/log/page.server.test.ts`    | Use `vi.spyOn(db, 'insert')` (or whatever lower-level helper better-sqlite3 exposes) to force the entry-insert to throw the second time it's called (first call = custom-food insert, second = entry insert). Submit the action. Assert: the action returns a `fail(500, ...)`-shaped error, AND no `food_entries` row exists for the child, AND no orphan custom `foods` row exists.                                                                        |
 
-The codebase has a 100%-coverage CI gate. Any new branch in the implementation must be exercised by a test.
+The codebase has a 100%-coverage CI gate. Any new branch in the implementation must be exercised by a test — including the sentinel-catch path.
 
 ## Out of scope (followups)
 
-- N+1 detection middleware or query budget per request.
-- Background prefetch / streaming.
+- Add a composite index on `food_entries(child_id, given_at DESC)` to back-stop the dashboard scan if datasets ever grow beyond expectations.
 - Pagination of the report's full-history scan (independent perf concern; report is rarely accessed).
-- Replacing the 3 pre-insert snapshot reads with a single derived query.
+- Replacing the 4 pre-insert snapshot reads with a single derived query.
+- Capping the dashboard `recentForReminders` query (would require restructuring the reminders module to be window-aware).
