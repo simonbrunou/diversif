@@ -93,6 +93,22 @@ describe('child/[id]/foods load', () => {
     expect(r.kind).toBe('redirect');
   });
 
+  it('rejects non-numeric child IDs with 403 before any query runs', async () => {
+    const ctx = await setup();
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: 'not-a-number' },
+          url: `http://localhost/child/abc/foods`
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(403);
+  });
+
   it('rejects authenticated users without membership with 403', async () => {
     const ctx = await setup();
     const intruder = await seedUser({ email: 'intruder@example.com' });

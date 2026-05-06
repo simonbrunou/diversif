@@ -57,15 +57,34 @@ async function setup(opts: { entries?: number } = {}) {
 
 describe('child/[id] +page.server load', () => {
   it('redirects guests', async () => {
+    const { c } = await setup();
     const r = await captureFlow(() =>
       load(
         makeRouteEvent({
           user: null,
-          params: { id: '1' }
+          params: { id: String(c.id) }
         }) as unknown as Parameters<typeof load>[0]
       )
     );
     expect(r.kind).toBe('redirect');
+  });
+
+  it('rejects non-numeric child IDs with 403 before any query runs', async () => {
+    const { u, m } = await setup();
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: 'not-a-number' },
+          parent: async () => {
+            throw new Error('parent() must not be reached when childId is invalid');
+          }
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(403);
   });
 
   it('rejects authenticated users without membership with 403', async () => {
