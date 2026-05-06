@@ -37,8 +37,9 @@ Two SDK init points using `@sentry/sveltekit` (the official SvelteKit wrapper).
 Source maps uploaded at build via `@sentry/vite-plugin`, gated on
 `SENTRY_AUTH_TOKEN` so dev builds and CI without the token still succeed.
 
-Single source of truth for the PII scrub rule lives in
-`src/lib/server/sentry.ts` and is imported by both hooks.
+Single source of truth for the PII scrub rule lives in `src/lib/sentry.ts`
+(isomorphic; not under `$lib/server/` because the client hook also imports it)
+and is referenced by both hooks via `Sentry.init({ beforeSend: scrubEvent })`.
 
 ## PII posture (strict)
 
@@ -64,15 +65,15 @@ in Coolify, which has the full structured context (`userId`, real path, etc.).
 
 ## Components
 
-| File                                                | Status | Purpose                                                                                                                                                                                            |
-| --------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/server/sentry.ts`                          | new    | `initServerSentry()`, `initClientSentry()`, `scrubEvent(event)`. Pure functions where possible; SDK calls in init.                                                                                 |
-| `src/hooks.server.ts`                               | edit   | Call `initServerSentry()` at module top; in `handleError`, call `Sentry.captureException(err, { tags: { errorId, status, method, route } })` after the existing `console.error` line.              |
-| `src/hooks.client.ts`                               | new    | Call `initClientSentry()`. Export `handleError` (SvelteKit's client hook) that captures via Sentry.                                                                                                |
-| `vite.config.ts`                                    | edit   | Add `sentryVitePlugin({ org, project, authToken: env.SENTRY_AUTH_TOKEN })` — gated; absent token = plugin not added.                                                                               |
-| `.env.example`                                      | edit   | Document `SENTRY_DSN`, `PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ENVIRONMENT` (default `production`), `SENTRY_RELEASE` (default git SHA).                                                  |
-| `src/routes/politique-confidentialite/+page.svelte` | edit   | Add Sentry GmbH (Frankfurt) to the sous-traitants list (French copy, matching the page's existing tone) with role ("collecte des erreurs techniques"), data location ("UE — Allemagne"), DPA link. |
-| `package.json`                                      | edit   | Add `@sentry/sveltekit` (runtime) and `@sentry/vite-plugin` (devDep).                                                                                                                              |
+| File                                                | Status | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/sentry.ts`                                 | new    | `scrubEvent(event)` — the PII scrub rule. Pure, isomorphic, no SDK side effects. Imported by both hooks.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `src/hooks.server.ts`                               | edit   | Call `Sentry.init({ dsn, beforeSend: scrubEvent })` at module top; in `handleError`, call `Sentry.captureException(err, { tags: { errorId, status, method, route } })` after the existing `console.error` line.                                                                                                                                                                                                                                                                                                                                               |
+| `src/hooks.client.ts`                               | new    | Call `Sentry.init({ dsn: PUBLIC_SENTRY_DSN, beforeSend: scrubEvent })` at module top. Export `handleError` (SvelteKit's client hook) that captures via Sentry.                                                                                                                                                                                                                                                                                                                                                                                                |
+| `vite.config.ts`                                    | edit   | Add `sentryVitePlugin({ org, project, authToken: env.SENTRY_AUTH_TOKEN })` — gated; absent token = plugin not added.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `.env.example`                                      | edit   | Document `SENTRY_DSN`, `PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ENVIRONMENT` (default `production`), `SENTRY_RELEASE` (default git SHA).                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `src/routes/politique-confidentialite/+page.svelte` | edit   | Substantive rewrite: the page currently asserts "aucun service tiers" (sections 3 & 4) and no extra-EU transfer (section 9). Soften §3 ("aucun cookie de mesure, aucune adresse IP, aucun User-Agent") to retain its intent; revise §4 to disclose Sentry GmbH as a sous-traitant for technical error collection (rôle, base légale: intérêt légitime, durée: 90 jours, localisation: Francfort UE); keep §9 accurate (Sentry EU region keeps data in the EU). Update "Dernière mise à jour" date. French copy throughout, matching the page's existing tone. |
+| `package.json`                                      | edit   | Add `@sentry/sveltekit` (runtime) and `@sentry/vite-plugin` (devDep).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ## Data flow
 
@@ -122,7 +123,7 @@ in Coolify, which has the full structured context (`userId`, real path, etc.).
 
 No e2e for Sentry — CI must not depend on Sentry SaaS reachability.
 
-**Coverage gate:** existing 100% threshold applies. `src/lib/server/sentry.ts`
+**Coverage gate:** existing 100% threshold applies. `src/lib/sentry.ts`
 must hit 100%. The init paths in `hooks.client.ts` and the init call site in
 `hooks.server.ts` are bootstrap singletons exercising real SDK / network; they
 go in the existing `coverage.exclude` list with the same justification as
