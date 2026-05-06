@@ -365,6 +365,8 @@ export function loadAnalyticsBuckets(
     .select({
       foodId: foods.id,
       category: foods.category,
+      // Raw sql<> template: SQLiteTimestamp.mapToDriverValue is bypassed,
+      // so this comes back as a plain ms integer (no Date wrapping).
       firstAt: sql<number>`MIN(${foodEntries.givenAt})`.as('first_at')
     })
     .from(foodEntries)
