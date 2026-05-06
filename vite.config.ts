@@ -80,8 +80,10 @@ export default defineConfig({
         // DB-backed test via INSERT/SELECT.
         'src/lib/server/db/schema.ts',
         // Bootstrap singleton calling Sentry.init at module top — exercises
-        // real network/SDK runtime; covered indirectly via scrubEvent unit
-        // tests and hooks.server tests with a mocked SDK.
+        // real network/SDK runtime; the `handleError` body itself is a thin
+        // pass-through to Sentry.captureException with no logic worth covering
+        // (the strict-PII contract lives in scrubEvent, which is tested in
+        // src/lib/sentry.test.ts at 100%).
         'src/hooks.client.ts'
       ],
       thresholds: {
