@@ -426,7 +426,7 @@
       "source_file": "drizzle.config.ts",
       "source_location": "L1",
       "id": "drizzle_config_ts",
-      "community": 121,
+      "community": 122,
       "norm_label": "drizzle.config.ts"
     },
     {
@@ -435,7 +435,7 @@
       "source_file": "eslint.config.js",
       "source_location": "L1",
       "id": "eslint_config_js",
-      "community": 122,
+      "community": 123,
       "norm_label": "eslint.config.js"
     },
     {
@@ -444,7 +444,7 @@
       "source_file": "playwright.config.ts",
       "source_location": "L1",
       "id": "playwright_config_ts",
-      "community": 123,
+      "community": 124,
       "norm_label": "playwright.config.ts"
     },
     {
@@ -453,7 +453,7 @@
       "source_file": "postcss.config.js",
       "source_location": "L1",
       "id": "postcss_config_js",
-      "community": 124,
+      "community": 125,
       "norm_label": "postcss.config.js"
     },
     {
@@ -462,7 +462,7 @@
       "source_file": "svelte.config.js",
       "source_location": "L1",
       "id": "svelte_config_js",
-      "community": 125,
+      "community": 126,
       "norm_label": "svelte.config.js"
     },
     {
@@ -471,7 +471,7 @@
       "source_file": "vite.config.ts",
       "source_location": "L1",
       "id": "vite_config_ts",
-      "community": 126,
+      "community": 127,
       "norm_label": "vite.config.ts"
     },
     {
@@ -480,7 +480,7 @@
       "source_file": "tailwind.config.ts",
       "source_location": "L1",
       "id": "tailwind_config_ts",
-      "community": 127,
+      "community": 128,
       "norm_label": "tailwind.config.ts"
     },
     {
@@ -489,7 +489,7 @@
       "source_file": "e2e/auth.spec.ts",
       "source_location": "L1",
       "id": "e2e_auth_spec_ts",
-      "community": 69,
+      "community": 70,
       "norm_label": "auth.spec.ts"
     },
     {
@@ -498,7 +498,7 @@
       "source_file": "e2e/auth.spec.ts",
       "source_location": "L3",
       "id": "e2e_auth_spec_unique",
-      "community": 69,
+      "community": 70,
       "norm_label": "unique()"
     },
     {
@@ -561,7 +561,7 @@
       "source_file": "e2e/global-setup.ts",
       "source_location": "L1",
       "id": "e2e_global_setup_ts",
-      "community": 70,
+      "community": 71,
       "norm_label": "global-setup.ts"
     },
     {
@@ -570,7 +570,7 @@
       "source_file": "e2e/global-setup.ts",
       "source_location": "L4",
       "id": "e2e_global_setup_globalsetup",
-      "community": 70,
+      "community": 71,
       "norm_label": "globalsetup()"
     },
     {
@@ -624,7 +624,7 @@
       "source_file": "scripts/cleanup.mjs",
       "source_location": "L1",
       "id": "scripts_cleanup_mjs",
-      "community": 128,
+      "community": 129,
       "norm_label": "cleanup.mjs"
     },
     {
@@ -633,7 +633,7 @@
       "source_file": "scripts/export-user.mjs",
       "source_location": "L1",
       "id": "scripts_export_user_mjs",
-      "community": 71,
+      "community": 72,
       "norm_label": "export-user.mjs"
     },
     {
@@ -642,7 +642,7 @@
       "source_file": "scripts/export-user.mjs",
       "source_location": "L56",
       "id": "scripts_export_user_iso",
-      "community": 71,
+      "community": 72,
       "norm_label": "iso()"
     },
     {
@@ -678,7 +678,7 @@
       "source_file": "scripts/list-stale-users.mjs",
       "source_location": "L1",
       "id": "scripts_list_stale_users_mjs",
-      "community": 129,
+      "community": 130,
       "norm_label": "list-stale-users.mjs"
     },
     {
@@ -687,7 +687,7 @@
       "source_file": "src/app.d.ts",
       "source_location": "L1",
       "id": "src_app_d_ts",
-      "community": 130,
+      "community": 131,
       "norm_label": "app.d.ts"
     },
     {
@@ -849,7 +849,7 @@
       "source_file": "src/lib/types.ts",
       "source_location": "L1",
       "id": "src_lib_types_ts",
-      "community": 131,
+      "community": 132,
       "norm_label": "types.ts"
     },
     {
@@ -858,7 +858,7 @@
       "source_file": "src/lib/components/AllergenInfoDialog.svelte",
       "source_location": "L1",
       "id": "src_lib_components_allergeninfodialog_svelte",
-      "community": 72,
+      "community": 73,
       "norm_label": "allergeninfodialog.svelte"
     },
     {
@@ -867,7 +867,7 @@
       "source_file": "src/lib/components/AllergenInfoDialog.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_allergeninfodialog_test_ts",
-      "community": 72,
+      "community": 73,
       "norm_label": "allergeninfodialog.test.ts"
     },
     {
@@ -876,7 +876,7 @@
       "source_file": "src/lib/components/AppShell.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_appshell_test_ts",
-      "community": 45,
+      "community": 49,
       "norm_label": "appshell.test.ts"
     },
     {
@@ -885,7 +885,7 @@
       "source_file": "src/lib/components/BottomNav.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bottomnav_test_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "bottomnav.test.ts"
     },
     {
@@ -912,7 +912,7 @@
       "source_file": "src/lib/components/FoodCombobox.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_foodcombobox_test_ts",
-      "community": 73,
+      "community": 74,
       "norm_label": "foodcombobox.test.ts"
     },
     {
@@ -948,7 +948,7 @@
       "source_file": "src/lib/components/JsonLd.svelte",
       "source_location": "L1",
       "id": "src_lib_components_jsonld_svelte",
-      "community": 132,
+      "community": 133,
       "norm_label": "jsonld.svelte"
     },
     {
@@ -957,7 +957,7 @@
       "source_file": "src/lib/components/LegalLinks.svelte",
       "source_location": "L1",
       "id": "src_lib_components_legallinks_svelte",
-      "community": 133,
+      "community": 134,
       "norm_label": "legallinks.svelte"
     },
     {
@@ -966,7 +966,7 @@
       "source_file": "src/lib/components/PublicFooter.svelte",
       "source_location": "L1",
       "id": "src_lib_components_publicfooter_svelte",
-      "community": 74,
+      "community": 75,
       "norm_label": "publicfooter.svelte"
     },
     {
@@ -975,7 +975,7 @@
       "source_file": "src/lib/components/PublicFooter.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_publicfooter_test_ts",
-      "community": 74,
+      "community": 75,
       "norm_label": "publicfooter.test.ts"
     },
     {
@@ -984,7 +984,7 @@
       "source_file": "src/lib/components/PublicHeader.svelte",
       "source_location": "L1",
       "id": "src_lib_components_publicheader_svelte",
-      "community": 20,
+      "community": 21,
       "norm_label": "publicheader.svelte"
     },
     {
@@ -993,7 +993,7 @@
       "source_file": "src/lib/components/PublicHeader.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_publicheader_test_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "publicheader.test.ts"
     },
     {
@@ -1002,7 +1002,7 @@
       "source_file": "src/lib/components/ReactionBadge.svelte",
       "source_location": "L1",
       "id": "src_lib_components_reactionbadge_svelte",
-      "community": 81,
+      "community": 82,
       "norm_label": "reactionbadge.svelte"
     },
     {
@@ -1011,7 +1011,7 @@
       "source_file": "src/lib/components/ReminderBanner.svelte",
       "source_location": "L1",
       "id": "src_lib_components_reminderbanner_svelte",
-      "community": 75,
+      "community": 76,
       "norm_label": "reminderbanner.svelte"
     },
     {
@@ -1020,7 +1020,7 @@
       "source_file": "src/lib/components/ReminderBanner.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_reminderbanner_test_ts",
-      "community": 75,
+      "community": 76,
       "norm_label": "reminderbanner.test.ts"
     },
     {
@@ -1029,7 +1029,7 @@
       "source_file": "src/lib/components/Seo.svelte",
       "source_location": "L1",
       "id": "src_lib_components_seo_svelte",
-      "community": 134,
+      "community": 135,
       "norm_label": "seo.svelte"
     },
     {
@@ -1038,7 +1038,7 @@
       "source_file": "src/lib/components/SourceCitation.svelte",
       "source_location": "L1",
       "id": "src_lib_components_sourcecitation_svelte",
-      "community": 76,
+      "community": 77,
       "norm_label": "sourcecitation.svelte"
     },
     {
@@ -1047,7 +1047,7 @@
       "source_file": "src/lib/components/SourceCitation.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_sourcecitation_test_ts",
-      "community": 76,
+      "community": 77,
       "norm_label": "sourcecitation.test.ts"
     },
     {
@@ -1056,7 +1056,7 @@
       "source_file": "src/lib/components/StageBadge.svelte",
       "source_location": "L1",
       "id": "src_lib_components_stagebadge_svelte",
-      "community": 77,
+      "community": 78,
       "norm_label": "stagebadge.svelte"
     },
     {
@@ -1065,7 +1065,7 @@
       "source_file": "src/lib/components/StageBadge.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_stagebadge_test_ts",
-      "community": 77,
+      "community": 78,
       "norm_label": "stagebadge.test.ts"
     },
     {
@@ -1074,7 +1074,7 @@
       "source_file": "src/lib/components/ThemeToggle.svelte",
       "source_location": "L1",
       "id": "src_lib_components_themetoggle_svelte",
-      "community": 78,
+      "community": 79,
       "norm_label": "themetoggle.svelte"
     },
     {
@@ -1083,7 +1083,7 @@
       "source_file": "src/lib/components/ThemeToggle.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_themetoggle_test_ts",
-      "community": 78,
+      "community": 79,
       "norm_label": "themetoggle.test.ts"
     },
     {
@@ -1110,7 +1110,7 @@
       "source_file": "src/lib/components/WelcomeDialog.svelte",
       "source_location": "L1",
       "id": "src_lib_components_welcomedialog_svelte",
-      "community": 79,
+      "community": 80,
       "norm_label": "welcomedialog.svelte"
     },
     {
@@ -1119,7 +1119,7 @@
       "source_file": "src/lib/components/WelcomeDialog.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_welcomedialog_test_ts",
-      "community": 79,
+      "community": 80,
       "norm_label": "welcomedialog.test.ts"
     },
     {
@@ -1128,7 +1128,7 @@
       "source_file": "src/lib/components/CategoryTag.svelte",
       "source_location": "L1",
       "id": "src_lib_components_categorytag_svelte",
-      "community": 135,
+      "community": 136,
       "norm_label": "categorytag.svelte"
     },
     {
@@ -1137,7 +1137,7 @@
       "source_file": "src/lib/components/DiversityCard.svelte",
       "source_location": "L1",
       "id": "src_lib_components_diversitycard_svelte",
-      "community": 80,
+      "community": 81,
       "norm_label": "diversitycard.svelte"
     },
     {
@@ -1146,7 +1146,7 @@
       "source_file": "src/lib/components/DiversityCard.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_diversitycard_test_ts",
-      "community": 80,
+      "community": 81,
       "norm_label": "diversitycard.test.ts"
     },
     {
@@ -1155,7 +1155,7 @@
       "source_file": "src/lib/components/FoodCombobox.svelte",
       "source_location": "L1",
       "id": "src_lib_components_foodcombobox_svelte",
-      "community": 73,
+      "community": 74,
       "norm_label": "foodcombobox.svelte"
     },
     {
@@ -1164,7 +1164,7 @@
       "source_file": "src/lib/components/ReactionBadge.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_reactionbadge_test_ts",
-      "community": 81,
+      "community": 82,
       "norm_label": "reactionbadge.test.ts"
     },
     {
@@ -1200,7 +1200,7 @@
       "source_file": "src/lib/components/ReactionPicker.svelte",
       "source_location": "L1",
       "id": "src_lib_components_reactionpicker_svelte",
-      "community": 82,
+      "community": 83,
       "norm_label": "reactionpicker.svelte"
     },
     {
@@ -1209,7 +1209,7 @@
       "source_file": "src/lib/components/ReactionPicker.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_reactionpicker_test_ts",
-      "community": 82,
+      "community": 83,
       "norm_label": "reactionpicker.test.ts"
     },
     {
@@ -1218,7 +1218,7 @@
       "source_file": "src/lib/components/AppShell.svelte",
       "source_location": "L1",
       "id": "src_lib_components_appshell_svelte",
-      "community": 45,
+      "community": 49,
       "norm_label": "appshell.svelte"
     },
     {
@@ -1227,7 +1227,7 @@
       "source_file": "src/lib/components/AppShell.svelte",
       "source_location": "L40",
       "id": "components_appshell_each",
-      "community": 45,
+      "community": 49,
       "norm_label": "#each()"
     },
     {
@@ -1236,7 +1236,7 @@
       "source_file": "src/lib/components/BottomNav.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bottomnav_svelte",
-      "community": 20,
+      "community": 21,
       "norm_label": "bottomnav.svelte"
     },
     {
@@ -1245,7 +1245,7 @@
       "source_file": "src/lib/components/BottomNav.svelte",
       "source_location": "L16",
       "id": "components_bottomnav_each",
-      "community": 20,
+      "community": 21,
       "norm_label": "#each()"
     },
     {
@@ -1254,7 +1254,7 @@
       "source_file": "src/lib/components/landing/LandingClosingCta.svelte",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingclosingcta_svelte",
-      "community": 83,
+      "community": 84,
       "norm_label": "landingclosingcta.svelte"
     },
     {
@@ -1263,7 +1263,7 @@
       "source_file": "src/lib/components/landing/LandingClosingCta.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingclosingcta_test_ts",
-      "community": 83,
+      "community": 84,
       "norm_label": "landingclosingcta.test.ts"
     },
     {
@@ -1272,7 +1272,7 @@
       "source_file": "src/lib/components/landing/LandingFeatures.svelte",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingfeatures_svelte",
-      "community": 49,
+      "community": 41,
       "norm_label": "landingfeatures.svelte"
     },
     {
@@ -1281,7 +1281,7 @@
       "source_file": "src/lib/components/landing/LandingFeatures.svelte",
       "source_location": "L36",
       "id": "landing_landingfeatures_each",
-      "community": 49,
+      "community": 41,
       "norm_label": "#each()"
     },
     {
@@ -1290,7 +1290,7 @@
       "source_file": "src/lib/components/landing/LandingFeatures.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingfeatures_test_ts",
-      "community": 49,
+      "community": 41,
       "norm_label": "landingfeatures.test.ts"
     },
     {
@@ -1299,7 +1299,7 @@
       "source_file": "src/lib/components/landing/LandingHero.svelte",
       "source_location": "L1",
       "id": "src_lib_components_landing_landinghero_svelte",
-      "community": 84,
+      "community": 85,
       "norm_label": "landinghero.svelte"
     },
     {
@@ -1308,7 +1308,7 @@
       "source_file": "src/lib/components/landing/LandingHero.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_landing_landinghero_test_ts",
-      "community": 84,
+      "community": 85,
       "norm_label": "landinghero.test.ts"
     },
     {
@@ -1317,7 +1317,7 @@
       "source_file": "src/lib/components/landing/LandingTrust.svelte",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingtrust_svelte",
-      "community": 85,
+      "community": 86,
       "norm_label": "landingtrust.svelte"
     },
     {
@@ -1326,7 +1326,7 @@
       "source_file": "src/lib/components/landing/LandingTrust.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingtrust_test_ts",
-      "community": 85,
+      "community": 86,
       "norm_label": "landingtrust.test.ts"
     },
     {
@@ -1398,7 +1398,7 @@
       "source_file": "src/lib/components/ui/Dialog.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_dialog_svelte",
-      "community": 92,
+      "community": 12,
       "norm_label": "dialog.svelte"
     },
     {
@@ -1407,7 +1407,7 @@
       "source_file": "src/lib/components/ui/Dialog.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_dialog_test_ts",
-      "community": 92,
+      "community": 12,
       "norm_label": "dialog.test.ts"
     },
     {
@@ -1416,7 +1416,7 @@
       "source_file": "src/lib/components/ui/Input.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_input_svelte",
-      "community": 86,
+      "community": 87,
       "norm_label": "input.svelte"
     },
     {
@@ -1425,7 +1425,7 @@
       "source_file": "src/lib/components/ui/Input.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_input_test_ts",
-      "community": 86,
+      "community": 87,
       "norm_label": "input.test.ts"
     },
     {
@@ -1434,7 +1434,7 @@
       "source_file": "src/lib/components/ui/Label.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_label_svelte",
-      "community": 93,
+      "community": 12,
       "norm_label": "label.svelte"
     },
     {
@@ -1443,7 +1443,7 @@
       "source_file": "src/lib/components/ui/Label.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_label_test_ts",
-      "community": 93,
+      "community": 12,
       "norm_label": "label.test.ts"
     },
     {
@@ -1452,7 +1452,7 @@
       "source_file": "src/lib/components/ui/Select.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_select_svelte",
-      "community": 46,
+      "community": 48,
       "norm_label": "select.svelte"
     },
     {
@@ -1461,7 +1461,7 @@
       "source_file": "src/lib/components/ui/Select.svelte",
       "source_location": "L17",
       "id": "ui_select_cn",
-      "community": 46,
+      "community": 48,
       "norm_label": "cn()"
     },
     {
@@ -1470,7 +1470,7 @@
       "source_file": "src/lib/components/ui/Select.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_select_test_ts",
-      "community": 46,
+      "community": 48,
       "norm_label": "select.test.ts"
     },
     {
@@ -1479,7 +1479,7 @@
       "source_file": "src/lib/components/ui/Textarea.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_textarea_svelte",
-      "community": 87,
+      "community": 88,
       "norm_label": "textarea.svelte"
     },
     {
@@ -1488,7 +1488,7 @@
       "source_file": "src/lib/components/ui/Textarea.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_textarea_test_ts",
-      "community": 87,
+      "community": 88,
       "norm_label": "textarea.test.ts"
     },
     {
@@ -1542,7 +1542,7 @@
       "source_file": "src/lib/content/sources.test.ts",
       "source_location": "L1",
       "id": "src_lib_content_sources_test_ts",
-      "community": 41,
+      "community": 42,
       "norm_label": "sources.test.ts"
     },
     {
@@ -1551,7 +1551,7 @@
       "source_file": "src/lib/content/sources.ts",
       "source_location": "L1",
       "id": "src_lib_content_sources_ts",
-      "community": 41,
+      "community": 42,
       "norm_label": "sources.ts"
     },
     {
@@ -1560,7 +1560,7 @@
       "source_file": "src/lib/content/sources.ts",
       "source_location": "L77",
       "id": "content_sources_getsource",
-      "community": 41,
+      "community": 42,
       "norm_label": "getsource()"
     },
     {
@@ -1569,7 +1569,7 @@
       "source_file": "src/lib/server/auth.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_auth_test_ts",
-      "community": 136,
+      "community": 137,
       "norm_label": "auth.test.ts"
     },
     {
@@ -1839,7 +1839,7 @@
       "source_file": "src/lib/server/legal.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_legal_test_ts",
-      "community": 21,
+      "community": 20,
       "norm_label": "legal.test.ts"
     },
     {
@@ -1848,7 +1848,7 @@
       "source_file": "src/lib/server/legal.ts",
       "source_location": "L1",
       "id": "src_lib_server_legal_ts",
-      "community": 21,
+      "community": 20,
       "norm_label": "legal.ts"
     },
     {
@@ -1857,7 +1857,7 @@
       "source_file": "src/lib/server/legal.ts",
       "source_location": "L13",
       "id": "server_legal_read",
-      "community": 21,
+      "community": 20,
       "norm_label": "read()"
     },
     {
@@ -1866,7 +1866,7 @@
       "source_file": "src/lib/server/legal.ts",
       "source_location": "L18",
       "id": "server_legal_getlegalidentity",
-      "community": 21,
+      "community": 20,
       "norm_label": "getlegalidentity()"
     },
     {
@@ -1875,7 +1875,7 @@
       "source_file": "src/lib/server/legal.ts",
       "source_location": "L35",
       "id": "server_legal_isplaceholder",
-      "community": 21,
+      "community": 20,
       "norm_label": "isplaceholder()"
     },
     {
@@ -2199,7 +2199,7 @@
       "source_file": "src/lib/server/guards.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_guards_test_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "guards.test.ts"
     },
     {
@@ -2208,7 +2208,7 @@
       "source_file": "src/lib/server/guards.test.ts",
       "source_location": "L12",
       "id": "server_guards_test_makelocals",
-      "community": 2,
+      "community": 3,
       "norm_label": "makelocals()"
     },
     {
@@ -2217,7 +2217,7 @@
       "source_file": "src/lib/server/guards.test.ts",
       "source_location": "L20",
       "id": "server_guards_test_expectredirect",
-      "community": 2,
+      "community": 3,
       "norm_label": "expectredirect()"
     },
     {
@@ -2226,7 +2226,7 @@
       "source_file": "src/lib/server/guards.test.ts",
       "source_location": "L32",
       "id": "server_guards_test_expecterror",
-      "community": 2,
+      "community": 3,
       "norm_label": "expecterror()"
     },
     {
@@ -2235,7 +2235,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L1",
       "id": "src_lib_server_guards_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "guards.ts"
     },
     {
@@ -2244,7 +2244,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L4",
       "id": "server_guards_requireuser",
-      "community": 2,
+      "community": 3,
       "norm_label": "requireuser()"
     },
     {
@@ -2253,7 +2253,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L11",
       "id": "server_guards_requireguest",
-      "community": 2,
+      "community": 3,
       "norm_label": "requireguest()"
     },
     {
@@ -2262,7 +2262,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L17",
       "id": "server_guards_requiremembership",
-      "community": 2,
+      "community": 3,
       "norm_label": "requiremembership()"
     },
     {
@@ -2271,7 +2271,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L29",
       "id": "server_guards_requireownership",
-      "community": 2,
+      "community": 3,
       "norm_label": "requireownership()"
     },
     {
@@ -2325,7 +2325,7 @@
       "source_file": "src/lib/server/db/migration.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_db_migration_test_ts",
-      "community": 37,
+      "community": 38,
       "norm_label": "migration.test.ts"
     },
     {
@@ -2334,7 +2334,7 @@
       "source_file": "src/lib/server/db/migration.test.ts",
       "source_location": "L12",
       "id": "db_migration_test_applymigrationfile",
-      "community": 37,
+      "community": 38,
       "norm_label": "applymigrationfile()"
     },
     {
@@ -2343,7 +2343,7 @@
       "source_file": "src/lib/server/db/migration.test.ts",
       "source_location": "L22",
       "id": "db_migration_test_markmigrationsapplied",
-      "community": 37,
+      "community": 38,
       "norm_label": "markmigrationsapplied()"
     },
     {
@@ -2352,7 +2352,7 @@
       "source_file": "src/lib/server/db/migration.test.ts",
       "source_location": "L47",
       "id": "db_migration_test_seedfixture",
-      "community": 37,
+      "community": 38,
       "norm_label": "seedfixture()"
     },
     {
@@ -2361,7 +2361,7 @@
       "source_file": "src/lib/server/db/migration.test.ts",
       "source_location": "L92",
       "id": "db_migration_test_counts",
-      "community": 37,
+      "community": 38,
       "norm_label": "counts()"
     },
     {
@@ -2370,7 +2370,7 @@
       "source_file": "src/lib/server/db/schema.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_db_schema_test_ts",
-      "community": 137,
+      "community": 138,
       "norm_label": "schema.test.ts"
     },
     {
@@ -2379,7 +2379,7 @@
       "source_file": "src/lib/server/db/schema.ts",
       "source_location": "L1",
       "id": "src_lib_server_db_schema_ts",
-      "community": 138,
+      "community": 139,
       "norm_label": "schema.ts"
     },
     {
@@ -2442,7 +2442,7 @@
       "source_file": "src/lib/server/guidance/reminders.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_guidance_reminders_test_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "reminders.test.ts"
     },
     {
@@ -2451,7 +2451,7 @@
       "source_file": "src/lib/server/guidance/reminders.test.ts",
       "source_location": "L10",
       "id": "guidance_reminders_test_entry",
-      "community": 3,
+      "community": 1,
       "norm_label": "entry()"
     },
     {
@@ -2460,7 +2460,7 @@
       "source_file": "src/lib/server/guidance/reminders.test.ts",
       "source_location": "L23",
       "id": "guidance_reminders_test_input",
-      "community": 3,
+      "community": 1,
       "norm_label": "input()"
     },
     {
@@ -2469,7 +2469,7 @@
       "source_file": "src/lib/server/guidance/reminders.test.ts",
       "source_location": "L37",
       "id": "guidance_reminders_test_isolated",
-      "community": 3,
+      "community": 1,
       "norm_label": "isolated()"
     },
     {
@@ -2478,7 +2478,7 @@
       "source_file": "src/lib/server/guidance/reminders.ts",
       "source_location": "L1",
       "id": "src_lib_server_guidance_reminders_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "reminders.ts"
     },
     {
@@ -2487,7 +2487,7 @@
       "source_file": "src/lib/server/guidance/reminders.ts",
       "source_location": "L56",
       "id": "guidance_reminders_computereminders",
-      "community": 3,
+      "community": 1,
       "norm_label": "computereminders()"
     },
     {
@@ -2496,7 +2496,7 @@
       "source_file": "src/lib/server/guidance/reminders.ts",
       "source_location": "L278",
       "id": "guidance_reminders_push",
-      "community": 3,
+      "community": 1,
       "norm_label": "push()"
     },
     {
@@ -2505,7 +2505,7 @@
       "source_file": "src/lib/server/guidance/reminders.ts",
       "source_location": "L283",
       "id": "guidance_reminders_categorylabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "categorylabel()"
     },
     {
@@ -2514,34 +2514,34 @@
       "source_file": "src/lib/server/guidance/queries.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_guidance_queries_test_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "queries.test.ts"
     },
     {
       "label": "seedUserAndChild()",
       "file_type": "code",
       "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L20",
+      "source_location": "L21",
       "id": "guidance_queries_test_seeduserandchild",
-      "community": 3,
+      "community": 1,
       "norm_label": "seeduserandchild()"
     },
     {
       "label": "seedFood()",
       "file_type": "code",
       "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L44",
+      "source_location": "L45",
       "id": "guidance_queries_test_seedfood",
-      "community": 3,
+      "community": 1,
       "norm_label": "seedfood()"
     },
     {
       "label": "logEntry()",
       "file_type": "code",
       "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L61",
+      "source_location": "L62",
       "id": "guidance_queries_test_logentry",
-      "community": 3,
+      "community": 1,
       "norm_label": "logentry()"
     },
     {
@@ -2550,7 +2550,7 @@
       "source_file": "src/lib/server/guidance/queries.ts",
       "source_location": "L1",
       "id": "src_lib_server_guidance_queries_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "queries.ts"
     },
     {
@@ -2559,7 +2559,7 @@
       "source_file": "src/lib/server/guidance/queries.ts",
       "source_location": "L22",
       "id": "guidance_queries_loadrecententries",
-      "community": 3,
+      "community": 1,
       "norm_label": "loadrecententries()"
     },
     {
@@ -2568,7 +2568,7 @@
       "source_file": "src/lib/server/guidance/queries.ts",
       "source_location": "L58",
       "id": "guidance_queries_loaddiversitymetrics",
-      "community": 3,
+      "community": 1,
       "norm_label": "loaddiversitymetrics()"
     },
     {
@@ -2577,7 +2577,7 @@
       "source_file": "src/lib/server/guidance/queries.ts",
       "source_location": "L115",
       "id": "guidance_queries_loadrepeatcandidates",
-      "community": 3,
+      "community": 1,
       "norm_label": "loadrepeatcandidates()"
     },
     {
@@ -2586,7 +2586,7 @@
       "source_file": "src/lib/server/guidance/queries.ts",
       "source_location": "L160",
       "id": "guidance_queries_loadweeklyrecap",
-      "community": 3,
+      "community": 1,
       "norm_label": "loadweeklyrecap()"
     },
     {
@@ -2595,34 +2595,43 @@
       "source_file": "src/lib/server/guidance/queries.ts",
       "source_location": "L200",
       "id": "guidance_queries_loadstreak",
-      "community": 3,
+      "community": 1,
       "norm_label": "loadstreak()"
+    },
+    {
+      "label": "loadAnalyticsBuckets()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L249",
+      "id": "guidance_queries_loadanalyticsbuckets",
+      "community": 1,
+      "norm_label": "loadanalyticsbuckets()"
     },
     {
       "label": "loadDismissals()",
       "file_type": "code",
       "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L233",
+      "source_location": "L318",
       "id": "guidance_queries_loaddismissals",
-      "community": 3,
+      "community": 1,
       "norm_label": "loaddismissals()"
     },
     {
       "label": "ttlForReminderKey()",
       "file_type": "code",
       "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L252",
+      "source_location": "L337",
       "id": "guidance_queries_ttlforreminderkey",
-      "community": 3,
+      "community": 1,
       "norm_label": "ttlforreminderkey()"
     },
     {
       "label": "dismissReminder()",
       "file_type": "code",
       "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L271",
+      "source_location": "L356",
       "id": "guidance_queries_dismissreminder",
-      "community": 3,
+      "community": 1,
       "norm_label": "dismissreminder()"
     },
     {
@@ -2631,7 +2640,7 @@
       "source_file": "src/lib/utils/age.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_age_test_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "age.test.ts"
     },
     {
@@ -2640,7 +2649,7 @@
       "source_file": "src/lib/utils/age.ts",
       "source_location": "L1",
       "id": "src_lib_utils_age_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "age.ts"
     },
     {
@@ -2649,7 +2658,7 @@
       "source_file": "src/lib/utils/age.ts",
       "source_location": "L1",
       "id": "utils_age_ageinmonths",
-      "community": 3,
+      "community": 1,
       "norm_label": "ageinmonths()"
     },
     {
@@ -2658,7 +2667,7 @@
       "source_file": "src/lib/utils/age.ts",
       "source_location": "L9",
       "id": "utils_age_formatage",
-      "community": 3,
+      "community": 1,
       "norm_label": "formatage()"
     },
     {
@@ -2694,7 +2703,7 @@
       "source_file": "src/lib/utils/cn.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_cn_test_ts",
-      "community": 42,
+      "community": 43,
       "norm_label": "cn.test.ts"
     },
     {
@@ -2703,7 +2712,7 @@
       "source_file": "src/lib/utils/cn.ts",
       "source_location": "L1",
       "id": "src_lib_utils_cn_ts",
-      "community": 42,
+      "community": 43,
       "norm_label": "cn.ts"
     },
     {
@@ -2712,7 +2721,7 @@
       "source_file": "src/lib/utils/cn.ts",
       "source_location": "L4",
       "id": "utils_cn_cn",
-      "community": 42,
+      "community": 43,
       "norm_label": "cn()"
     },
     {
@@ -2820,7 +2829,7 @@
       "source_file": "src/lib/utils/nav.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_nav_test_ts",
-      "community": 38,
+      "community": 37,
       "norm_label": "nav.test.ts"
     },
     {
@@ -2829,7 +2838,7 @@
       "source_file": "src/lib/utils/nav.ts",
       "source_location": "L1",
       "id": "src_lib_utils_nav_ts",
-      "community": 38,
+      "community": 37,
       "norm_label": "nav.ts"
     },
     {
@@ -2838,7 +2847,7 @@
       "source_file": "src/lib/utils/nav.ts",
       "source_location": "L18",
       "id": "utils_nav_getchildnavitems",
-      "community": 38,
+      "community": 37,
       "norm_label": "getchildnavitems()"
     },
     {
@@ -2847,7 +2856,7 @@
       "source_file": "src/lib/utils/nav.ts",
       "source_location": "L35",
       "id": "utils_nav_isnavitemactive",
-      "community": 38,
+      "community": 37,
       "norm_label": "isnavitemactive()"
     },
     {
@@ -3009,7 +3018,7 @@
       "source_file": "src/lib/utils/reactions.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_reactions_test_ts",
-      "community": 43,
+      "community": 44,
       "norm_label": "reactions.test.ts"
     },
     {
@@ -3018,7 +3027,7 @@
       "source_file": "src/lib/utils/reactions.ts",
       "source_location": "L1",
       "id": "src_lib_utils_reactions_ts",
-      "community": 43,
+      "community": 44,
       "norm_label": "reactions.ts"
     },
     {
@@ -3027,7 +3036,7 @@
       "source_file": "src/lib/utils/reactions.ts",
       "source_location": "L31",
       "id": "utils_reactions_getreactionlabel",
-      "community": 43,
+      "community": 44,
       "norm_label": "getreactionlabel()"
     },
     {
@@ -3144,7 +3153,7 @@
       "source_file": "src/routes/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_page_svelte",
-      "community": 139,
+      "community": 140,
       "norm_label": "+page.svelte"
     },
     {
@@ -3171,7 +3180,7 @@
       "source_file": "src/routes/+error.svelte",
       "source_location": "L1",
       "id": "src_routes_error_svelte",
-      "community": 140,
+      "community": 141,
       "norm_label": "+error.svelte"
     },
     {
@@ -3180,7 +3189,7 @@
       "source_file": "src/routes/account/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_account_page_server_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3189,7 +3198,7 @@
       "source_file": "src/routes/account/+page.server.ts",
       "source_location": "L17",
       "id": "account_page_server_load",
-      "community": 2,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -3198,7 +3207,7 @@
       "source_file": "src/routes/account/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_account_page_svelte",
-      "community": 44,
+      "community": 45,
       "norm_label": "+page.svelte"
     },
     {
@@ -3207,7 +3216,7 @@
       "source_file": "src/routes/login/+page.svelte",
       "confidence": "EXTRACTED",
       "id": "browser",
-      "community": 44,
+      "community": 45,
       "norm_label": "@simplewebauthn/browser"
     },
     {
@@ -3243,7 +3252,7 @@
       "source_file": "src/routes/account/deleted/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_account_deleted_page_svelte",
-      "community": 141,
+      "community": 142,
       "norm_label": "+page.svelte"
     },
     {
@@ -3333,7 +3342,7 @@
       "source_file": "src/routes/cgu/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_cgu_page_svelte",
-      "community": 142,
+      "community": 143,
       "norm_label": "+page.svelte"
     },
     {
@@ -3342,7 +3351,7 @@
       "source_file": "src/routes/child/[id]/+layout.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_layout_svelte",
-      "community": 143,
+      "community": 144,
       "norm_label": "+layout.svelte"
     },
     {
@@ -3378,7 +3387,7 @@
       "source_file": "src/routes/child/[id]/+layout.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_layout_server_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "+layout.server.ts"
     },
     {
@@ -3387,7 +3396,7 @@
       "source_file": "src/routes/child/[id]/+layout.server.ts",
       "source_location": "L8",
       "id": "id_layout_server_load",
-      "community": 2,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -3396,7 +3405,7 @@
       "source_file": "src/routes/child/[id]/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_page_server_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3405,7 +3414,7 @@
       "source_file": "src/routes/child/[id]/+page.server.ts",
       "source_location": "L30",
       "id": "id_page_server_load",
-      "community": 3,
+      "community": 1,
       "norm_label": "load()"
     },
     {
@@ -3414,7 +3423,7 @@
       "source_file": "src/routes/child/[id]/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_page_svelte",
-      "community": 144,
+      "community": 145,
       "norm_label": "+page.svelte"
     },
     {
@@ -3432,7 +3441,7 @@
       "source_file": "src/routes/child/[id]/allergens/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_allergens_page_svelte",
-      "community": 145,
+      "community": 146,
       "norm_label": "+page.svelte"
     },
     {
@@ -3486,7 +3495,7 @@
       "source_file": "src/routes/child/[id]/foods/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_foods_page_svelte",
-      "community": 146,
+      "community": 147,
       "norm_label": "+page.svelte"
     },
     {
@@ -3513,7 +3522,7 @@
       "source_file": "src/routes/child/[id]/guide/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_guide_page_svelte",
-      "community": 147,
+      "community": 148,
       "norm_label": "+page.svelte"
     },
     {
@@ -3531,7 +3540,7 @@
       "source_file": "src/routes/child/[id]/log/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_log_page_svelte",
-      "community": 148,
+      "community": 149,
       "norm_label": "+page.svelte"
     },
     {
@@ -3540,7 +3549,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_log_page_server_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3549,7 +3558,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L24",
       "id": "log_page_server_load",
-      "community": 2,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -3594,7 +3603,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_log_entryid_page_server_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3603,7 +3612,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L23",
       "id": "entryid_page_server_parseentryid",
-      "community": 2,
+      "community": 3,
       "norm_label": "parseentryid()"
     },
     {
@@ -3612,7 +3621,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L29",
       "id": "entryid_page_server_loadentry",
-      "community": 2,
+      "community": 3,
       "norm_label": "loadentry()"
     },
     {
@@ -3621,7 +3630,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L39",
       "id": "entryid_page_server_load",
-      "community": 2,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -3630,7 +3639,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_log_entryid_page_svelte",
-      "community": 149,
+      "community": 150,
       "norm_label": "+page.svelte"
     },
     {
@@ -3639,7 +3648,7 @@
       "source_file": "src/routes/child/[id]/settings/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_settings_page_svelte",
-      "community": 150,
+      "community": 151,
       "norm_label": "+page.svelte"
     },
     {
@@ -3666,7 +3675,7 @@
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_settings_page_server_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3675,7 +3684,7 @@
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
       "source_location": "L15",
       "id": "settings_page_server_generateuniqueinvitecode",
-      "community": 2,
+      "community": 3,
       "norm_label": "generateuniqueinvitecode()"
     },
     {
@@ -3684,7 +3693,7 @@
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
       "source_location": "L25",
       "id": "settings_page_server_load",
-      "community": 2,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -3693,7 +3702,7 @@
       "source_file": "src/routes/child/[id]/suggestions/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_suggestions_page_server_ts",
-      "community": 3,
+      "community": 1,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3702,7 +3711,7 @@
       "source_file": "src/routes/child/[id]/suggestions/+page.server.ts",
       "source_location": "L8",
       "id": "suggestions_page_server_load",
-      "community": 3,
+      "community": 1,
       "norm_label": "load()"
     },
     {
@@ -3738,7 +3747,7 @@
       "source_file": "src/routes/child/[id]/suggestions/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_suggestions_page_svelte",
-      "community": 151,
+      "community": 152,
       "norm_label": "+page.svelte"
     },
     {
@@ -3747,7 +3756,7 @@
       "source_file": "src/routes/child/[id]/report/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_report_page_server_ts",
-      "community": 88,
+      "community": 89,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3756,7 +3765,7 @@
       "source_file": "src/routes/child/[id]/report/+page.server.ts",
       "source_location": "L41",
       "id": "report_page_server_load",
-      "community": 88,
+      "community": 89,
       "norm_label": "load()"
     },
     {
@@ -3765,7 +3774,7 @@
       "source_file": "src/routes/child/[id]/report/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_report_page_svelte",
-      "community": 89,
+      "community": 90,
       "norm_label": "+page.svelte"
     },
     {
@@ -3774,7 +3783,7 @@
       "source_file": "src/routes/child/[id]/report/+page.svelte",
       "source_location": "L184",
       "id": "report_page_e",
-      "community": 89,
+      "community": 90,
       "norm_label": "e()"
     },
     {
@@ -3816,10 +3825,64 @@
     {
       "label": "+page.server.ts",
       "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
+      "source_location": "L1",
+      "id": "src_routes_child_id_analytics_page_server_ts",
+      "community": 1,
+      "norm_label": "+page.server.ts"
+    },
+    {
+      "label": "load()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
+      "source_location": "L7",
+      "id": "analytics_page_server_load",
+      "community": 1,
+      "norm_label": "load()"
+    },
+    {
+      "label": "+page.svelte",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L1",
+      "id": "src_routes_child_id_analytics_page_svelte",
+      "community": 60,
+      "norm_label": "+page.svelte"
+    },
+    {
+      "label": "weekLabel()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L32",
+      "id": "analytics_page_weeklabel",
+      "community": 60,
+      "norm_label": "weeklabel()"
+    },
+    {
+      "label": "i()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L136",
+      "id": "analytics_page_i",
+      "community": 60,
+      "norm_label": "i()"
+    },
+    {
+      "label": "page.server.test.ts",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L1",
+      "id": "src_routes_child_id_analytics_page_server_test_ts",
+      "community": 0,
+      "norm_label": "page.server.test.ts"
+    },
+    {
+      "label": "+page.server.ts",
+      "file_type": "code",
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_new_page_server_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3828,7 +3891,7 @@
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L14",
       "id": "new_page_server_load",
-      "community": 2,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -3837,7 +3900,7 @@
       "source_file": "src/routes/child/new/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_new_page_svelte",
-      "community": 152,
+      "community": 153,
       "norm_label": "+page.svelte"
     },
     {
@@ -3855,7 +3918,7 @@
       "source_file": "src/routes/cookies/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_cookies_page_svelte",
-      "community": 153,
+      "community": 154,
       "norm_label": "+page.svelte"
     },
     {
@@ -3873,7 +3936,7 @@
       "source_file": "src/routes/guide/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_guide_page_svelte",
-      "community": 154,
+      "community": 155,
       "norm_label": "+page.svelte"
     },
     {
@@ -3927,7 +3990,7 @@
       "source_file": "src/routes/join/[code]/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_join_code_page_svelte",
-      "community": 155,
+      "community": 156,
       "norm_label": "+page.svelte"
     },
     {
@@ -3954,7 +4017,7 @@
       "source_file": "src/routes/login/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_login_page_server_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -3963,7 +4026,7 @@
       "source_file": "src/routes/login/+page.server.ts",
       "source_location": "L24",
       "id": "login_page_server_load",
-      "community": 2,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -3972,7 +4035,7 @@
       "source_file": "src/routes/login/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_login_page_svelte",
-      "community": 44,
+      "community": 45,
       "norm_label": "+page.svelte"
     },
     {
@@ -4026,7 +4089,7 @@
       "source_file": "src/routes/mentions-legales/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_mentions_legales_page_server_ts",
-      "community": 21,
+      "community": 20,
       "norm_label": "+page.server.ts"
     },
     {
@@ -4035,7 +4098,7 @@
       "source_file": "src/routes/mentions-legales/+page.server.ts",
       "source_location": "L4",
       "id": "mentions_legales_page_server_load",
-      "community": 21,
+      "community": 20,
       "norm_label": "load()"
     },
     {
@@ -4044,7 +4107,7 @@
       "source_file": "src/routes/mentions-legales/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_mentions_legales_page_svelte",
-      "community": 156,
+      "community": 157,
       "norm_label": "+page.svelte"
     },
     {
@@ -4053,7 +4116,7 @@
       "source_file": "src/routes/mentions-legales/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_mentions_legales_page_server_test_ts",
-      "community": 157,
+      "community": 158,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -4188,7 +4251,7 @@
       "source_file": "src/routes/politique-confidentialite/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_politique_confidentialite_page_server_ts",
-      "community": 21,
+      "community": 20,
       "norm_label": "+page.server.ts"
     },
     {
@@ -4197,7 +4260,7 @@
       "source_file": "src/routes/politique-confidentialite/+page.server.ts",
       "source_location": "L4",
       "id": "politique_confidentialite_page_server_load",
-      "community": 21,
+      "community": 20,
       "norm_label": "load()"
     },
     {
@@ -4206,7 +4269,7 @@
       "source_file": "src/routes/politique-confidentialite/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_politique_confidentialite_page_svelte",
-      "community": 158,
+      "community": 159,
       "norm_label": "+page.svelte"
     },
     {
@@ -4215,7 +4278,7 @@
       "source_file": "src/routes/politique-confidentialite/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_politique_confidentialite_page_server_test_ts",
-      "community": 159,
+      "community": 160,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -4251,7 +4314,7 @@
       "source_file": "src/routes/signup/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_signup_page_server_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -4260,7 +4323,7 @@
       "source_file": "src/routes/signup/+page.server.ts",
       "source_location": "L45",
       "id": "signup_page_server_load",
-      "community": 2,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -4269,7 +4332,7 @@
       "source_file": "src/routes/signup/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_signup_page_svelte",
-      "community": 160,
+      "community": 161,
       "norm_label": "+page.svelte"
     },
     {
@@ -4332,7 +4395,7 @@
       "source_file": "src/routes/sources/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_sources_page_server_ts",
-      "community": 60,
+      "community": 61,
       "norm_label": "+page.server.ts"
     },
     {
@@ -4341,7 +4404,7 @@
       "source_file": "src/routes/sources/+page.server.ts",
       "source_location": "L3",
       "id": "sources_page_server_load",
-      "community": 60,
+      "community": 61,
       "norm_label": "load()"
     },
     {
@@ -4350,7 +4413,7 @@
       "source_file": "src/routes/sources/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_sources_page_svelte",
-      "community": 61,
+      "community": 62,
       "norm_label": "+page.svelte"
     },
     {
@@ -4359,7 +4422,7 @@
       "source_file": "src/routes/sources/+page.svelte",
       "source_location": "L64",
       "id": "sources_page_each",
-      "community": 61,
+      "community": 62,
       "norm_label": "#each()"
     },
     {
@@ -4377,7 +4440,7 @@
       "source_file": "src/routes/healthz/+server.ts",
       "source_location": "L1",
       "id": "src_routes_healthz_server_ts",
-      "community": 62,
+      "community": 63,
       "norm_label": "+server.ts"
     },
     {
@@ -4386,7 +4449,7 @@
       "source_file": "src/routes/healthz/+server.ts",
       "source_location": "L8",
       "id": "healthz_server_get",
-      "community": 62,
+      "community": 63,
       "norm_label": "get()"
     },
     {
@@ -4395,7 +4458,7 @@
       "source_file": "src/routes/healthz/server.test.ts",
       "source_location": "L1",
       "id": "src_routes_healthz_server_test_ts",
-      "community": 62,
+      "community": 63,
       "norm_label": "server.test.ts"
     },
     {
@@ -4404,7 +4467,7 @@
       "source_file": "src/test/app-stubs.ts",
       "source_location": "L1",
       "id": "src_test_app_stubs_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "app-stubs.ts"
     },
     {
@@ -4413,7 +4476,7 @@
       "source_file": "src/test/app-stubs.ts",
       "source_location": "L31",
       "id": "test_app_stubs_destroy",
-      "community": 20,
+      "community": 21,
       "norm_label": "destroy()"
     },
     {
@@ -4422,7 +4485,7 @@
       "source_file": "src/test/app-stubs.ts",
       "source_location": "L49",
       "id": "test_app_stubs_setpagepathname",
-      "community": 20,
+      "community": 21,
       "norm_label": "setpagepathname()"
     },
     {
@@ -4548,7 +4611,7 @@
       "source_file": "static/theme-init.js",
       "source_location": "L1",
       "id": "static_theme_init_js",
-      "community": 161,
+      "community": 162,
       "norm_label": "theme-init.js"
     },
     {
@@ -4557,7 +4620,7 @@
       "source_file": "coverage/block-navigation.js",
       "source_location": "L1",
       "id": "coverage_block_navigation_js",
-      "community": 47,
+      "community": 46,
       "norm_label": "block-navigation.js"
     },
     {
@@ -4566,7 +4629,7 @@
       "source_file": "coverage/block-navigation.js",
       "source_location": "L24",
       "id": "coverage_block_navigation_toggleclass",
-      "community": 47,
+      "community": 46,
       "norm_label": "toggleclass()"
     },
     {
@@ -4575,7 +4638,7 @@
       "source_file": "coverage/block-navigation.js",
       "source_location": "L31",
       "id": "coverage_block_navigation_makecurrent",
-      "community": 47,
+      "community": 46,
       "norm_label": "makecurrent()"
     },
     {
@@ -4584,7 +4647,7 @@
       "source_file": "coverage/block-navigation.js",
       "source_location": "L41",
       "id": "coverage_block_navigation_gotoprevious",
-      "community": 47,
+      "community": 46,
       "norm_label": "gotoprevious()"
     },
     {
@@ -4593,7 +4656,7 @@
       "source_file": "coverage/block-navigation.js",
       "source_location": "L52",
       "id": "coverage_block_navigation_gotonext",
-      "community": 47,
+      "community": 46,
       "norm_label": "gotonext()"
     },
     {
@@ -4827,7 +4890,7 @@
       "source_file": "coverage/lcov-report/block-navigation.js",
       "source_location": "L1",
       "id": "coverage_lcov_report_block_navigation_js",
-      "community": 48,
+      "community": 47,
       "norm_label": "block-navigation.js"
     },
     {
@@ -4836,7 +4899,7 @@
       "source_file": "coverage/lcov-report/block-navigation.js",
       "source_location": "L24",
       "id": "lcov_report_block_navigation_toggleclass",
-      "community": 48,
+      "community": 47,
       "norm_label": "toggleclass()"
     },
     {
@@ -4845,7 +4908,7 @@
       "source_file": "coverage/lcov-report/block-navigation.js",
       "source_location": "L31",
       "id": "lcov_report_block_navigation_makecurrent",
-      "community": 48,
+      "community": 47,
       "norm_label": "makecurrent()"
     },
     {
@@ -4854,7 +4917,7 @@
       "source_file": "coverage/lcov-report/block-navigation.js",
       "source_location": "L41",
       "id": "lcov_report_block_navigation_gotoprevious",
-      "community": 48,
+      "community": 47,
       "norm_label": "gotoprevious()"
     },
     {
@@ -4863,7 +4926,7 @@
       "source_file": "coverage/lcov-report/block-navigation.js",
       "source_location": "L52",
       "id": "lcov_report_block_navigation_gotonext",
-      "community": 48,
+      "community": 47,
       "norm_label": "gotonext()"
     },
     {
@@ -5096,7 +5159,7 @@
       "file_type": "code",
       "source_file": "app.d.ts",
       "source_location": "L1",
-      "community": 162,
+      "community": 163,
       "norm_label": "app.d.ts",
       "id": "app_d_ts"
     },
@@ -5141,7 +5204,7 @@
       "file_type": "code",
       "source_file": "lib/types.ts",
       "source_location": "L1",
-      "community": 163,
+      "community": 164,
       "norm_label": "types.ts",
       "id": "lib_types_ts"
     },
@@ -5150,7 +5213,7 @@
       "file_type": "code",
       "source_file": "lib/components/AllergenInfoDialog.svelte",
       "source_location": "L1",
-      "community": 94,
+      "community": 91,
       "norm_label": "allergeninfodialog.svelte",
       "id": "lib_components_allergeninfodialog_svelte"
     },
@@ -5159,7 +5222,7 @@
       "file_type": "code",
       "source_file": "lib/components/AllergenInfoDialog.test.ts",
       "source_location": "L1",
-      "community": 94,
+      "community": 91,
       "norm_label": "allergeninfodialog.test.ts",
       "id": "lib_components_allergeninfodialog_test_ts"
     },
@@ -5168,7 +5231,7 @@
       "file_type": "code",
       "source_file": "lib/components/AllergenProgress.svelte",
       "source_location": "L1",
-      "community": 95,
+      "community": 92,
       "norm_label": "allergenprogress.svelte",
       "id": "lib_components_allergenprogress_svelte"
     },
@@ -5177,7 +5240,7 @@
       "file_type": "code",
       "source_file": "lib/components/AllergenProgress.test.ts",
       "source_location": "L1",
-      "community": 95,
+      "community": 92,
       "norm_label": "allergenprogress.test.ts",
       "id": "lib_components_allergenprogress_test_ts"
     },
@@ -5186,7 +5249,7 @@
       "file_type": "code",
       "source_file": "lib/components/AppShell.svelte",
       "source_location": "L1",
-      "community": 45,
+      "community": 49,
       "norm_label": "appshell.svelte",
       "id": "lib_components_appshell_svelte"
     },
@@ -5195,7 +5258,7 @@
       "file_type": "code",
       "source_file": "lib/components/AppShell.test.ts",
       "source_location": "L1",
-      "community": 45,
+      "community": 49,
       "norm_label": "appshell.test.ts",
       "id": "lib_components_appshell_test_ts"
     },
@@ -5204,7 +5267,7 @@
       "file_type": "code",
       "source_file": "lib/components/BottomNav.svelte",
       "source_location": "L1",
-      "community": 20,
+      "community": 21,
       "norm_label": "bottomnav.svelte",
       "id": "lib_components_bottomnav_svelte"
     },
@@ -5213,7 +5276,7 @@
       "file_type": "code",
       "source_file": "lib/components/BottomNav.test.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 21,
       "norm_label": "bottomnav.test.ts",
       "id": "lib_components_bottomnav_test_ts"
     },
@@ -5222,7 +5285,7 @@
       "file_type": "code",
       "source_file": "lib/components/DiversityCard.svelte",
       "source_location": "L1",
-      "community": 96,
+      "community": 97,
       "norm_label": "diversitycard.svelte",
       "id": "lib_components_diversitycard_svelte"
     },
@@ -5231,7 +5294,7 @@
       "file_type": "code",
       "source_file": "lib/components/DiversityCard.test.ts",
       "source_location": "L1",
-      "community": 96,
+      "community": 97,
       "norm_label": "diversitycard.test.ts",
       "id": "lib_components_diversitycard_test_ts"
     },
@@ -5240,7 +5303,7 @@
       "file_type": "code",
       "source_file": "lib/components/EmptyState.svelte",
       "source_location": "L1",
-      "community": 90,
+      "community": 95,
       "norm_label": "emptystate.svelte",
       "id": "lib_components_emptystate_svelte"
     },
@@ -5249,7 +5312,7 @@
       "file_type": "code",
       "source_file": "lib/components/EmptyState.test.ts",
       "source_location": "L1",
-      "community": 90,
+      "community": 95,
       "norm_label": "emptystate.test.ts",
       "id": "lib_components_emptystate_test_ts"
     },
@@ -5258,7 +5321,7 @@
       "file_type": "code",
       "source_file": "lib/components/FoodCombobox.svelte",
       "source_location": "L1",
-      "community": 63,
+      "community": 64,
       "norm_label": "foodcombobox.svelte",
       "id": "lib_components_foodcombobox_svelte"
     },
@@ -5267,7 +5330,7 @@
       "file_type": "code",
       "source_file": "lib/components/FoodCombobox.svelte",
       "source_location": "L101",
-      "community": 63,
+      "community": 64,
       "norm_label": "getcategorylabel()",
       "id": "components_foodcombobox_getcategorylabel"
     },
@@ -5276,7 +5339,7 @@
       "file_type": "code",
       "source_file": "lib/components/FoodCombobox.test.ts",
       "source_location": "L1",
-      "community": 63,
+      "community": 64,
       "norm_label": "foodcombobox.test.ts",
       "id": "lib_components_foodcombobox_test_ts"
     },
@@ -5303,7 +5366,7 @@
       "file_type": "code",
       "source_file": "lib/components/JsonLd.svelte",
       "source_location": "L1",
-      "community": 164,
+      "community": 165,
       "norm_label": "jsonld.svelte",
       "id": "lib_components_jsonld_svelte"
     },
@@ -5312,7 +5375,7 @@
       "file_type": "code",
       "source_file": "lib/components/LegalLinks.svelte",
       "source_location": "L1",
-      "community": 165,
+      "community": 166,
       "norm_label": "legallinks.svelte",
       "id": "lib_components_legallinks_svelte"
     },
@@ -5321,7 +5384,7 @@
       "file_type": "code",
       "source_file": "lib/components/PublicFooter.svelte",
       "source_location": "L1",
-      "community": 97,
+      "community": 98,
       "norm_label": "publicfooter.svelte",
       "id": "lib_components_publicfooter_svelte"
     },
@@ -5330,7 +5393,7 @@
       "file_type": "code",
       "source_file": "lib/components/PublicFooter.test.ts",
       "source_location": "L1",
-      "community": 97,
+      "community": 98,
       "norm_label": "publicfooter.test.ts",
       "id": "lib_components_publicfooter_test_ts"
     },
@@ -5339,7 +5402,7 @@
       "file_type": "code",
       "source_file": "lib/components/PublicHeader.svelte",
       "source_location": "L1",
-      "community": 20,
+      "community": 21,
       "norm_label": "publicheader.svelte",
       "id": "lib_components_publicheader_svelte"
     },
@@ -5348,7 +5411,7 @@
       "file_type": "code",
       "source_file": "lib/components/PublicHeader.test.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 21,
       "norm_label": "publicheader.test.ts",
       "id": "lib_components_publicheader_test_ts"
     },
@@ -5357,7 +5420,7 @@
       "file_type": "code",
       "source_file": "lib/components/ReactionBadge.svelte",
       "source_location": "L1",
-      "community": 98,
+      "community": 99,
       "norm_label": "reactionbadge.svelte",
       "id": "lib_components_reactionbadge_svelte"
     },
@@ -5366,7 +5429,7 @@
       "file_type": "code",
       "source_file": "lib/components/ReactionBadge.test.ts",
       "source_location": "L1",
-      "community": 98,
+      "community": 99,
       "norm_label": "reactionbadge.test.ts",
       "id": "lib_components_reactionbadge_test_ts"
     },
@@ -5375,7 +5438,7 @@
       "file_type": "code",
       "source_file": "lib/components/ReactionPicker.svelte",
       "source_location": "L1",
-      "community": 99,
+      "community": 100,
       "norm_label": "reactionpicker.svelte",
       "id": "lib_components_reactionpicker_svelte"
     },
@@ -5384,7 +5447,7 @@
       "file_type": "code",
       "source_file": "lib/components/ReactionPicker.test.ts",
       "source_location": "L1",
-      "community": 99,
+      "community": 100,
       "norm_label": "reactionpicker.test.ts",
       "id": "lib_components_reactionpicker_test_ts"
     },
@@ -5393,7 +5456,7 @@
       "file_type": "code",
       "source_file": "lib/components/ReminderBanner.svelte",
       "source_location": "L1",
-      "community": 100,
+      "community": 101,
       "norm_label": "reminderbanner.svelte",
       "id": "lib_components_reminderbanner_svelte"
     },
@@ -5402,7 +5465,7 @@
       "file_type": "code",
       "source_file": "lib/components/ReminderBanner.test.ts",
       "source_location": "L1",
-      "community": 100,
+      "community": 101,
       "norm_label": "reminderbanner.test.ts",
       "id": "lib_components_reminderbanner_test_ts"
     },
@@ -5411,7 +5474,7 @@
       "file_type": "code",
       "source_file": "lib/components/Seo.svelte",
       "source_location": "L1",
-      "community": 166,
+      "community": 167,
       "norm_label": "seo.svelte",
       "id": "lib_components_seo_svelte"
     },
@@ -5420,7 +5483,7 @@
       "file_type": "code",
       "source_file": "lib/components/SourceCitation.svelte",
       "source_location": "L1",
-      "community": 101,
+      "community": 102,
       "norm_label": "sourcecitation.svelte",
       "id": "lib_components_sourcecitation_svelte"
     },
@@ -5429,7 +5492,7 @@
       "file_type": "code",
       "source_file": "lib/components/SourceCitation.test.ts",
       "source_location": "L1",
-      "community": 101,
+      "community": 102,
       "norm_label": "sourcecitation.test.ts",
       "id": "lib_components_sourcecitation_test_ts"
     },
@@ -5438,7 +5501,7 @@
       "file_type": "code",
       "source_file": "lib/components/StageBadge.svelte",
       "source_location": "L1",
-      "community": 102,
+      "community": 103,
       "norm_label": "stagebadge.svelte",
       "id": "lib_components_stagebadge_svelte"
     },
@@ -5447,7 +5510,7 @@
       "file_type": "code",
       "source_file": "lib/components/StageBadge.test.ts",
       "source_location": "L1",
-      "community": 102,
+      "community": 103,
       "norm_label": "stagebadge.test.ts",
       "id": "lib_components_stagebadge_test_ts"
     },
@@ -5456,7 +5519,7 @@
       "file_type": "code",
       "source_file": "lib/components/ThemeToggle.svelte",
       "source_location": "L1",
-      "community": 103,
+      "community": 104,
       "norm_label": "themetoggle.svelte",
       "id": "lib_components_themetoggle_svelte"
     },
@@ -5465,7 +5528,7 @@
       "file_type": "code",
       "source_file": "lib/components/ThemeToggle.test.ts",
       "source_location": "L1",
-      "community": 103,
+      "community": 104,
       "norm_label": "themetoggle.test.ts",
       "id": "lib_components_themetoggle_test_ts"
     },
@@ -5474,7 +5537,7 @@
       "file_type": "code",
       "source_file": "lib/components/TipCard.svelte",
       "source_location": "L1",
-      "community": 12,
+      "community": 94,
       "norm_label": "tipcard.svelte",
       "id": "lib_components_tipcard_svelte"
     },
@@ -5483,7 +5546,7 @@
       "file_type": "code",
       "source_file": "lib/components/TipCard.test.ts",
       "source_location": "L1",
-      "community": 12,
+      "community": 94,
       "norm_label": "tipcard.test.ts",
       "id": "lib_components_tipcard_test_ts"
     },
@@ -5492,7 +5555,7 @@
       "file_type": "code",
       "source_file": "lib/components/WelcomeDialog.svelte",
       "source_location": "L1",
-      "community": 104,
+      "community": 105,
       "norm_label": "welcomedialog.svelte",
       "id": "lib_components_welcomedialog_svelte"
     },
@@ -5501,7 +5564,7 @@
       "file_type": "code",
       "source_file": "lib/components/WelcomeDialog.test.ts",
       "source_location": "L1",
-      "community": 104,
+      "community": 105,
       "norm_label": "welcomedialog.test.ts",
       "id": "lib_components_welcomedialog_test_ts"
     },
@@ -5510,7 +5573,7 @@
       "file_type": "code",
       "source_file": "lib/components/landing/LandingClosingCta.svelte",
       "source_location": "L1",
-      "community": 105,
+      "community": 106,
       "norm_label": "landingclosingcta.svelte",
       "id": "lib_components_landing_landingclosingcta_svelte"
     },
@@ -5519,7 +5582,7 @@
       "file_type": "code",
       "source_file": "lib/components/landing/LandingClosingCta.test.ts",
       "source_location": "L1",
-      "community": 105,
+      "community": 106,
       "norm_label": "landingclosingcta.test.ts",
       "id": "lib_components_landing_landingclosingcta_test_ts"
     },
@@ -5528,7 +5591,7 @@
       "file_type": "code",
       "source_file": "lib/components/landing/LandingFeatures.svelte",
       "source_location": "L1",
-      "community": 49,
+      "community": 41,
       "norm_label": "landingfeatures.svelte",
       "id": "lib_components_landing_landingfeatures_svelte"
     },
@@ -5537,7 +5600,7 @@
       "file_type": "code",
       "source_file": "lib/components/landing/LandingFeatures.test.ts",
       "source_location": "L1",
-      "community": 49,
+      "community": 41,
       "norm_label": "landingfeatures.test.ts",
       "id": "lib_components_landing_landingfeatures_test_ts"
     },
@@ -5546,7 +5609,7 @@
       "file_type": "code",
       "source_file": "lib/components/landing/LandingHero.svelte",
       "source_location": "L1",
-      "community": 106,
+      "community": 107,
       "norm_label": "landinghero.svelte",
       "id": "lib_components_landing_landinghero_svelte"
     },
@@ -5555,7 +5618,7 @@
       "file_type": "code",
       "source_file": "lib/components/landing/LandingHero.test.ts",
       "source_location": "L1",
-      "community": 106,
+      "community": 107,
       "norm_label": "landinghero.test.ts",
       "id": "lib_components_landing_landinghero_test_ts"
     },
@@ -5564,7 +5627,7 @@
       "file_type": "code",
       "source_file": "lib/components/landing/LandingTrust.svelte",
       "source_location": "L1",
-      "community": 107,
+      "community": 108,
       "norm_label": "landingtrust.svelte",
       "id": "lib_components_landing_landingtrust_svelte"
     },
@@ -5573,7 +5636,7 @@
       "file_type": "code",
       "source_file": "lib/components/landing/LandingTrust.test.ts",
       "source_location": "L1",
-      "community": 107,
+      "community": 108,
       "norm_label": "landingtrust.test.ts",
       "id": "lib_components_landing_landingtrust_test_ts"
     },
@@ -5582,7 +5645,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Badge.svelte",
       "source_location": "L1",
-      "community": 12,
+      "community": 96,
       "norm_label": "badge.svelte",
       "id": "lib_components_ui_badge_svelte"
     },
@@ -5591,7 +5654,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Badge.test.ts",
       "source_location": "L1",
-      "community": 12,
+      "community": 96,
       "norm_label": "badge.test.ts",
       "id": "lib_components_ui_badge_test_ts"
     },
@@ -5618,7 +5681,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Card.svelte",
       "source_location": "L1",
-      "community": 12,
+      "community": 93,
       "norm_label": "card.svelte",
       "id": "lib_components_ui_card_svelte"
     },
@@ -5627,7 +5690,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Card.test.ts",
       "source_location": "L1",
-      "community": 12,
+      "community": 93,
       "norm_label": "card.test.ts",
       "id": "lib_components_ui_card_test_ts"
     },
@@ -5654,7 +5717,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Input.svelte",
       "source_location": "L1",
-      "community": 108,
+      "community": 109,
       "norm_label": "input.svelte",
       "id": "lib_components_ui_input_svelte"
     },
@@ -5663,7 +5726,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Input.test.ts",
       "source_location": "L1",
-      "community": 108,
+      "community": 109,
       "norm_label": "input.test.ts",
       "id": "lib_components_ui_input_test_ts"
     },
@@ -5672,7 +5735,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Label.svelte",
       "source_location": "L1",
-      "community": 91,
+      "community": 12,
       "norm_label": "label.svelte",
       "id": "lib_components_ui_label_svelte"
     },
@@ -5681,7 +5744,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Label.test.ts",
       "source_location": "L1",
-      "community": 91,
+      "community": 12,
       "norm_label": "label.test.ts",
       "id": "lib_components_ui_label_test_ts"
     },
@@ -5690,7 +5753,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Select.svelte",
       "source_location": "L1",
-      "community": 46,
+      "community": 48,
       "norm_label": "select.svelte",
       "id": "lib_components_ui_select_svelte"
     },
@@ -5699,7 +5762,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Select.test.ts",
       "source_location": "L1",
-      "community": 46,
+      "community": 48,
       "norm_label": "select.test.ts",
       "id": "lib_components_ui_select_test_ts"
     },
@@ -5708,7 +5771,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Textarea.svelte",
       "source_location": "L1",
-      "community": 109,
+      "community": 110,
       "norm_label": "textarea.svelte",
       "id": "lib_components_ui_textarea_svelte"
     },
@@ -5717,7 +5780,7 @@
       "file_type": "code",
       "source_file": "lib/components/ui/Textarea.test.ts",
       "source_location": "L1",
-      "community": 109,
+      "community": 110,
       "norm_label": "textarea.test.ts",
       "id": "lib_components_ui_textarea_test_ts"
     },
@@ -5744,7 +5807,7 @@
       "file_type": "code",
       "source_file": "lib/content/sources.test.ts",
       "source_location": "L1",
-      "community": 41,
+      "community": 42,
       "norm_label": "sources.test.ts",
       "id": "lib_content_sources_test_ts"
     },
@@ -5753,7 +5816,7 @@
       "file_type": "code",
       "source_file": "lib/content/sources.ts",
       "source_location": "L1",
-      "community": 41,
+      "community": 42,
       "norm_label": "sources.ts",
       "id": "lib_content_sources_ts"
     },
@@ -5771,7 +5834,7 @@
       "file_type": "code",
       "source_file": "lib/server/auth.test.ts",
       "source_location": "L1",
-      "community": 167,
+      "community": 168,
       "norm_label": "auth.test.ts",
       "id": "lib_server_auth_test_ts"
     },
@@ -5825,7 +5888,7 @@
       "file_type": "code",
       "source_file": "lib/server/guards.test.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "guards.test.ts",
       "id": "lib_server_guards_test_ts"
     },
@@ -5834,7 +5897,7 @@
       "file_type": "code",
       "source_file": "lib/server/guards.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "guards.ts",
       "id": "lib_server_guards_ts"
     },
@@ -5843,7 +5906,7 @@
       "file_type": "code",
       "source_file": "lib/server/legal.test.ts",
       "source_location": "L1",
-      "community": 21,
+      "community": 20,
       "norm_label": "legal.test.ts",
       "id": "lib_server_legal_test_ts"
     },
@@ -5852,7 +5915,7 @@
       "file_type": "code",
       "source_file": "lib/server/legal.ts",
       "source_location": "L1",
-      "community": 21,
+      "community": 20,
       "norm_label": "legal.ts",
       "id": "lib_server_legal_ts"
     },
@@ -5924,7 +5987,7 @@
       "file_type": "code",
       "source_file": "lib/server/db/migration.test.ts",
       "source_location": "L1",
-      "community": 37,
+      "community": 38,
       "norm_label": "migration.test.ts",
       "id": "lib_server_db_migration_test_ts"
     },
@@ -5933,7 +5996,7 @@
       "file_type": "code",
       "source_file": "lib/server/db/schema.test.ts",
       "source_location": "L1",
-      "community": 168,
+      "community": 169,
       "norm_label": "schema.test.ts",
       "id": "lib_server_db_schema_test_ts"
     },
@@ -5942,7 +6005,7 @@
       "file_type": "code",
       "source_file": "lib/server/db/schema.ts",
       "source_location": "L1",
-      "community": 169,
+      "community": 170,
       "norm_label": "schema.ts",
       "id": "lib_server_db_schema_ts"
     },
@@ -5969,7 +6032,7 @@
       "file_type": "code",
       "source_file": "lib/server/guidance/queries.test.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 1,
       "norm_label": "queries.test.ts",
       "id": "lib_server_guidance_queries_test_ts"
     },
@@ -5978,7 +6041,7 @@
       "file_type": "code",
       "source_file": "lib/server/guidance/queries.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 1,
       "norm_label": "queries.ts",
       "id": "lib_server_guidance_queries_ts"
     },
@@ -5987,7 +6050,7 @@
       "file_type": "code",
       "source_file": "lib/server/guidance/reminders.test.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 1,
       "norm_label": "reminders.test.ts",
       "id": "lib_server_guidance_reminders_test_ts"
     },
@@ -5996,7 +6059,7 @@
       "file_type": "code",
       "source_file": "lib/server/guidance/reminders.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 1,
       "norm_label": "reminders.ts",
       "id": "lib_server_guidance_reminders_ts"
     },
@@ -6005,7 +6068,7 @@
       "file_type": "code",
       "source_file": "lib/utils/age.test.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 1,
       "norm_label": "age.test.ts",
       "id": "lib_utils_age_test_ts"
     },
@@ -6014,7 +6077,7 @@
       "file_type": "code",
       "source_file": "lib/utils/age.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 1,
       "norm_label": "age.ts",
       "id": "lib_utils_age_ts"
     },
@@ -6059,7 +6122,7 @@
       "file_type": "code",
       "source_file": "lib/utils/cn.test.ts",
       "source_location": "L1",
-      "community": 42,
+      "community": 43,
       "norm_label": "cn.test.ts",
       "id": "lib_utils_cn_test_ts"
     },
@@ -6068,7 +6131,7 @@
       "file_type": "code",
       "source_file": "lib/utils/cn.ts",
       "source_location": "L1",
-      "community": 42,
+      "community": 43,
       "norm_label": "cn.ts",
       "id": "lib_utils_cn_ts"
     },
@@ -6113,7 +6176,7 @@
       "file_type": "code",
       "source_file": "lib/utils/nav.test.ts",
       "source_location": "L1",
-      "community": 38,
+      "community": 37,
       "norm_label": "nav.test.ts",
       "id": "lib_utils_nav_test_ts"
     },
@@ -6122,7 +6185,7 @@
       "file_type": "code",
       "source_file": "lib/utils/nav.ts",
       "source_location": "L1",
-      "community": 38,
+      "community": 37,
       "norm_label": "nav.ts",
       "id": "lib_utils_nav_ts"
     },
@@ -6131,7 +6194,7 @@
       "file_type": "code",
       "source_file": "lib/utils/reactions.test.ts",
       "source_location": "L1",
-      "community": 43,
+      "community": 44,
       "norm_label": "reactions.test.ts",
       "id": "lib_utils_reactions_test_ts"
     },
@@ -6140,7 +6203,7 @@
       "file_type": "code",
       "source_file": "lib/utils/reactions.ts",
       "source_location": "L1",
-      "community": 43,
+      "community": 44,
       "norm_label": "reactions.ts",
       "id": "lib_utils_reactions_ts"
     },
@@ -6185,7 +6248,7 @@
       "file_type": "code",
       "source_file": "routes/+error.svelte",
       "source_location": "L1",
-      "community": 170,
+      "community": 171,
       "norm_label": "+error.svelte",
       "id": "routes_error_svelte"
     },
@@ -6221,7 +6284,7 @@
       "file_type": "code",
       "source_file": "routes/+page.svelte",
       "source_location": "L1",
-      "community": 171,
+      "community": 172,
       "norm_label": "+page.svelte",
       "id": "routes_page_svelte"
     },
@@ -6248,7 +6311,7 @@
       "file_type": "code",
       "source_file": "routes/account/+page.server.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts",
       "id": "routes_account_page_server_ts"
     },
@@ -6257,7 +6320,7 @@
       "file_type": "code",
       "source_file": "routes/account/+page.svelte",
       "source_location": "L1",
-      "community": 44,
+      "community": 45,
       "norm_label": "+page.svelte",
       "id": "routes_account_page_svelte"
     },
@@ -6275,7 +6338,7 @@
       "file_type": "code",
       "source_file": "routes/account/deleted/+page.svelte",
       "source_location": "L1",
-      "community": 172,
+      "community": 173,
       "norm_label": "+page.svelte",
       "id": "routes_account_deleted_page_svelte"
     },
@@ -6329,7 +6392,7 @@
       "file_type": "code",
       "source_file": "routes/cgu/+page.svelte",
       "source_location": "L1",
-      "community": 173,
+      "community": 174,
       "norm_label": "+page.svelte",
       "id": "routes_cgu_page_svelte"
     },
@@ -6338,7 +6401,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/+layout.server.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "+layout.server.ts",
       "id": "routes_child_id_layout_server_ts"
     },
@@ -6347,7 +6410,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/+layout.svelte",
       "source_location": "L1",
-      "community": 174,
+      "community": 175,
       "norm_label": "+layout.svelte",
       "id": "routes_child_id_layout_svelte"
     },
@@ -6356,7 +6419,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/+page.server.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 1,
       "norm_label": "+page.server.ts",
       "id": "routes_child_id_page_server_ts"
     },
@@ -6365,7 +6428,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/+page.svelte",
       "source_location": "L1",
-      "community": 175,
+      "community": 176,
       "norm_label": "+page.svelte",
       "id": "routes_child_id_page_svelte"
     },
@@ -6401,7 +6464,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/allergens/+page.svelte",
       "source_location": "L1",
-      "community": 176,
+      "community": 177,
       "norm_label": "+page.svelte",
       "id": "routes_child_id_allergens_page_svelte"
     },
@@ -6428,7 +6491,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/foods/+page.svelte",
       "source_location": "L1",
-      "community": 110,
+      "community": 111,
       "norm_label": "+page.svelte",
       "id": "routes_child_id_foods_page_svelte"
     },
@@ -6437,7 +6500,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/foods/+page.svelte",
       "source_location": "L107",
-      "community": 110,
+      "community": 111,
       "norm_label": "formatrelative()",
       "id": "foods_page_formatrelative"
     },
@@ -6464,7 +6527,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/guide/+page.svelte",
       "source_location": "L1",
-      "community": 177,
+      "community": 178,
       "norm_label": "+page.svelte",
       "id": "routes_child_id_guide_page_svelte"
     },
@@ -6482,7 +6545,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/log/+page.server.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts",
       "id": "routes_child_id_log_page_server_ts"
     },
@@ -6491,7 +6554,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/log/+page.svelte",
       "source_location": "L1",
-      "community": 178,
+      "community": 179,
       "norm_label": "+page.svelte",
       "id": "routes_child_id_log_page_svelte"
     },
@@ -6509,7 +6572,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts",
       "id": "routes_child_id_log_entryid_page_server_ts"
     },
@@ -6518,7 +6581,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/log/[entryId]/+page.svelte",
       "source_location": "L1",
-      "community": 179,
+      "community": 180,
       "norm_label": "+page.svelte",
       "id": "routes_child_id_log_entryid_page_svelte"
     },
@@ -6536,7 +6599,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/settings/+page.server.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts",
       "id": "routes_child_id_settings_page_server_ts"
     },
@@ -6545,7 +6608,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/settings/+page.svelte",
       "source_location": "L1",
-      "community": 180,
+      "community": 181,
       "norm_label": "+page.svelte",
       "id": "routes_child_id_settings_page_svelte"
     },
@@ -6563,7 +6626,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/suggestions/+page.server.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 1,
       "norm_label": "+page.server.ts",
       "id": "routes_child_id_suggestions_page_server_ts"
     },
@@ -6572,7 +6635,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/suggestions/+page.svelte",
       "source_location": "L1",
-      "community": 111,
+      "community": 112,
       "norm_label": "+page.svelte",
       "id": "routes_child_id_suggestions_page_svelte"
     },
@@ -6581,7 +6644,7 @@
       "file_type": "code",
       "source_file": "routes/child/[id]/suggestions/+page.svelte",
       "source_location": "L70",
-      "community": 111,
+      "community": 112,
       "norm_label": "getcategorylabel()",
       "id": "suggestions_page_getcategorylabel"
     },
@@ -6599,7 +6662,7 @@
       "file_type": "code",
       "source_file": "routes/child/new/+page.server.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts",
       "id": "routes_child_new_page_server_ts"
     },
@@ -6608,7 +6671,7 @@
       "file_type": "code",
       "source_file": "routes/child/new/+page.svelte",
       "source_location": "L1",
-      "community": 181,
+      "community": 182,
       "norm_label": "+page.svelte",
       "id": "routes_child_new_page_svelte"
     },
@@ -6626,7 +6689,7 @@
       "file_type": "code",
       "source_file": "routes/cookies/+page.svelte",
       "source_location": "L1",
-      "community": 182,
+      "community": 183,
       "norm_label": "+page.svelte",
       "id": "routes_cookies_page_svelte"
     },
@@ -6644,7 +6707,7 @@
       "file_type": "code",
       "source_file": "routes/guide/+page.svelte",
       "source_location": "L1",
-      "community": 183,
+      "community": 184,
       "norm_label": "+page.svelte",
       "id": "routes_guide_page_svelte"
     },
@@ -6671,7 +6734,7 @@
       "file_type": "code",
       "source_file": "routes/join/[code]/+page.svelte",
       "source_location": "L1",
-      "community": 184,
+      "community": 185,
       "norm_label": "+page.svelte",
       "id": "routes_join_code_page_svelte"
     },
@@ -6689,7 +6752,7 @@
       "file_type": "code",
       "source_file": "routes/login/+page.server.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts",
       "id": "routes_login_page_server_ts"
     },
@@ -6698,7 +6761,7 @@
       "file_type": "code",
       "source_file": "routes/login/+page.svelte",
       "source_location": "L1",
-      "community": 44,
+      "community": 45,
       "norm_label": "+page.svelte",
       "id": "routes_login_page_svelte"
     },
@@ -6734,7 +6797,7 @@
       "file_type": "code",
       "source_file": "routes/mentions-legales/+page.server.ts",
       "source_location": "L1",
-      "community": 21,
+      "community": 20,
       "norm_label": "+page.server.ts",
       "id": "routes_mentions_legales_page_server_ts"
     },
@@ -6743,7 +6806,7 @@
       "file_type": "code",
       "source_file": "routes/mentions-legales/+page.svelte",
       "source_location": "L1",
-      "community": 185,
+      "community": 186,
       "norm_label": "+page.svelte",
       "id": "routes_mentions_legales_page_svelte"
     },
@@ -6752,7 +6815,7 @@
       "file_type": "code",
       "source_file": "routes/mentions-legales/page.server.test.ts",
       "source_location": "L1",
-      "community": 186,
+      "community": 187,
       "norm_label": "page.server.test.ts",
       "id": "routes_mentions_legales_page_server_test_ts"
     },
@@ -6833,7 +6896,7 @@
       "file_type": "code",
       "source_file": "routes/politique-confidentialite/+page.server.ts",
       "source_location": "L1",
-      "community": 21,
+      "community": 20,
       "norm_label": "+page.server.ts",
       "id": "routes_politique_confidentialite_page_server_ts"
     },
@@ -6842,7 +6905,7 @@
       "file_type": "code",
       "source_file": "routes/politique-confidentialite/+page.svelte",
       "source_location": "L1",
-      "community": 187,
+      "community": 188,
       "norm_label": "+page.svelte",
       "id": "routes_politique_confidentialite_page_svelte"
     },
@@ -6851,7 +6914,7 @@
       "file_type": "code",
       "source_file": "routes/politique-confidentialite/page.server.test.ts",
       "source_location": "L1",
-      "community": 188,
+      "community": 189,
       "norm_label": "page.server.test.ts",
       "id": "routes_politique_confidentialite_page_server_test_ts"
     },
@@ -6878,7 +6941,7 @@
       "file_type": "code",
       "source_file": "routes/signup/+page.server.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "+page.server.ts",
       "id": "routes_signup_page_server_ts"
     },
@@ -6887,7 +6950,7 @@
       "file_type": "code",
       "source_file": "routes/signup/+page.svelte",
       "source_location": "L1",
-      "community": 189,
+      "community": 190,
       "norm_label": "+page.svelte",
       "id": "routes_signup_page_svelte"
     },
@@ -6923,7 +6986,7 @@
       "file_type": "code",
       "source_file": "routes/sources/+page.server.ts",
       "source_location": "L1",
-      "community": 60,
+      "community": 61,
       "norm_label": "+page.server.ts",
       "id": "routes_sources_page_server_ts"
     },
@@ -6932,7 +6995,7 @@
       "file_type": "code",
       "source_file": "routes/sources/+page.svelte",
       "source_location": "L1",
-      "community": 61,
+      "community": 62,
       "norm_label": "+page.svelte",
       "id": "routes_sources_page_svelte"
     },
@@ -6950,7 +7013,7 @@
       "file_type": "code",
       "source_file": "test/app-stubs.ts",
       "source_location": "L1",
-      "community": 20,
+      "community": 21,
       "norm_label": "app-stubs.ts",
       "id": "test_app_stubs_ts"
     },
@@ -6990,7 +7053,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "app.locals",
       "id": "app_locals"
     },
@@ -7003,7 +7066,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 112,
+      "community": 113,
       "norm_label": "app.html (html shell)",
       "id": "app_html_shell"
     },
@@ -7016,7 +7079,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 112,
+      "community": 113,
       "norm_label": "theme-init.js inline loader",
       "id": "app_html_themeinit"
     },
@@ -7029,7 +7092,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "handle (sveltekit handle hook)",
       "id": "hooks_server_handle"
     },
@@ -7042,7 +7105,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "permissions_policy constant",
       "id": "hooks_server_permissions_policy"
     },
@@ -7055,7 +7118,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "security headers strategy (csp/hsts/referrer/frame-options)",
       "id": "hooks_server_security_headers"
     },
@@ -7068,7 +7131,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "x-robots-tag noindex invariant for auth/account",
       "id": "hooks_server_xrobotstag_invariant"
     },
@@ -7081,7 +7144,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "sliding session-cookie renewal",
       "id": "hooks_server_session_renewal"
     },
@@ -7094,7 +7157,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "makeevent (test helper)",
       "id": "hooks_server_test_makeevent"
     },
@@ -7107,7 +7170,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "seeduser (test helper)",
       "id": "hooks_server_test_seeduser"
     },
@@ -7120,7 +7183,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "site config (centralised seo)",
       "id": "seo_site"
     },
@@ -7133,7 +7196,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "absoluteurl",
       "id": "seo_absoluteurl"
     },
@@ -7146,7 +7209,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "resolveorigin",
       "id": "seo_resolveorigin"
     },
@@ -7159,7 +7222,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "breadcrumbjsonld",
       "id": "seo_breadcrumbjsonld"
     },
@@ -7172,7 +7235,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "organizationjsonld",
       "id": "seo_organizationjsonld"
     },
@@ -7185,7 +7248,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "websitejsonld",
       "id": "seo_websitejsonld"
     },
@@ -7198,7 +7261,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "webapplicationjsonld",
       "id": "seo_webapplicationjsonld"
     },
@@ -7211,7 +7274,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "articlejsonld",
       "id": "seo_articlejsonld"
     },
@@ -7224,7 +7287,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 190,
+      "community": 191,
       "norm_label": "faqpagejsonld",
       "id": "seo_faqpagejsonld"
     },
@@ -7237,7 +7300,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 34,
+      "community": 33,
       "norm_label": "centralised seo/json-ld source-of-truth pattern",
       "id": "seo_centralisation_pattern"
     },
@@ -7250,7 +7313,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 33,
+      "community": 34,
       "norm_label": "safeuser type",
       "id": "types_safeuser"
     },
@@ -7263,7 +7326,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 191,
+      "community": 192,
       "norm_label": "childsummary type",
       "id": "types_childsummary"
     },
@@ -7315,7 +7378,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 113,
+      "community": 115,
       "norm_label": "appshell component",
       "id": "appshell_component"
     },
@@ -7328,7 +7391,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 113,
+      "community": 115,
       "norm_label": "bottomnav component",
       "id": "bottomnav_component"
     },
@@ -7354,7 +7417,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 192,
+      "community": 193,
       "norm_label": "emptystate component",
       "id": "emptystate_component"
     },
@@ -7471,7 +7534,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 64,
+      "community": 65,
       "norm_label": "jsonld.svelte",
       "id": "jsonld_component"
     },
@@ -7627,7 +7690,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 64,
+      "community": 65,
       "norm_label": "seo.svelte",
       "id": "seo_component"
     },
@@ -7796,7 +7859,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 64,
+      "community": 65,
       "norm_label": "$lib/seo",
       "id": "seo_lib"
     },
@@ -7861,7 +7924,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 193,
+      "community": 194,
       "norm_label": "test/component helper",
       "id": "test_component_helper"
     },
@@ -8290,7 +8353,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "diversification guidance content (fr)",
       "id": "guidance_module"
     },
@@ -8303,7 +8366,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "guidance integrity tests",
       "id": "guidance_test"
     },
@@ -8316,7 +8379,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "authoritative source registry",
       "id": "sources_module"
     },
@@ -8329,7 +8392,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "sources tests",
       "id": "sources_test"
     },
@@ -8342,7 +8405,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "server auth (sessions, passwords)",
       "id": "auth_module"
     },
@@ -8355,7 +8418,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "auth tests",
       "id": "auth_test"
     },
@@ -8368,7 +8431,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "session validation tests",
       "id": "auth_session_test"
     },
@@ -8381,7 +8444,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "periodic cleanup of expired rows",
       "id": "cleanup_module"
     },
@@ -8394,7 +8457,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "cleanup tests",
       "id": "cleanup_test"
     },
@@ -8407,7 +8470,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "rgpd account deletion and export",
       "id": "gdpr_module"
     },
@@ -8420,7 +8483,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "gdpr tests",
       "id": "gdpr_test"
     },
@@ -8433,7 +8496,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "route auth guards",
       "id": "guards_module"
     },
@@ -8446,7 +8509,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "guards tests",
       "id": "guards_test"
     },
@@ -8459,7 +8522,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 115,
+      "community": 116,
       "norm_label": "legal identity from env",
       "id": "legal_module"
     },
@@ -8472,7 +8535,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 115,
+      "community": 116,
       "norm_label": "legal tests",
       "id": "legal_test"
     },
@@ -8485,7 +8548,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "webauthn passkey registration/auth",
       "id": "passkeys_module"
     },
@@ -8498,7 +8561,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "passkeys tests",
       "id": "passkeys_test"
     },
@@ -8511,7 +8574,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "rate-limit tests",
       "id": "rate_limit_test"
     },
@@ -8524,7 +8587,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "rate-limit subsystem (referenced)",
       "id": "rate_limit_module"
     },
@@ -8537,7 +8600,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "drizzle db schema",
       "id": "db_schema"
     },
@@ -8550,7 +8613,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "drizzle db client",
       "id": "db_module"
     },
@@ -8563,7 +8626,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "invite-code utilities",
       "id": "invites_util"
     },
@@ -8576,7 +8639,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "allergen taxonomy",
       "id": "allergens_util"
     },
@@ -8589,7 +8652,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "food category taxonomy",
       "id": "categories_util"
     },
@@ -8602,7 +8665,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "refuse oversize gdpr export rather than truncate",
       "id": "rationale_export_size_cap"
     },
@@ -8615,7 +8678,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "auto-renew sessions and bump lastloginat",
       "id": "rationale_session_renew"
     },
@@ -8628,7 +8691,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "strip trailing slash to match webauthn exact compare",
       "id": "rationale_origin_normalize"
     },
@@ -8641,7 +8704,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "force discoverable credential for username-less login",
       "id": "rationale_resident_key"
     },
@@ -8654,7 +8717,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "promote earliest member as owner on deletion",
       "id": "rationale_owner_promotion"
     },
@@ -8667,7 +8730,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "drop rate-limit buckets older than 1h auth window",
       "id": "rationale_rate_limit_eviction"
     },
@@ -8680,7 +8743,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "rgpd article 15 (right of access)",
       "id": "concept_rgpd_article_15"
     },
@@ -8693,7 +8756,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "rgpd article 17 (right to erasure)",
       "id": "concept_rgpd_article_17"
     },
@@ -8706,7 +8769,7 @@
       "captured_at": null,
       "author": "Du Toit et al.",
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "leap 2015 trial",
       "id": "study_leap_2015"
     },
@@ -8719,7 +8782,7 @@
       "captured_at": null,
       "author": "Perkin et al.",
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "eat 2016 trial",
       "id": "study_eat_2016"
     },
@@ -8732,7 +8795,7 @@
       "captured_at": null,
       "author": "Fewtrell et al.",
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "espghan complementary feeding 2017",
       "id": "study_espghan_2017"
     },
@@ -8745,7 +8808,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "hcsp 2020 reperes alimentaires <3 ans",
       "id": "guideline_hcsp_2020"
     },
@@ -8758,7 +8821,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "spf/pnns guide diversification",
       "id": "guideline_spf_pnns"
     },
@@ -8771,7 +8834,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "anses reperes alimentaires nourrissons",
       "id": "guideline_anses_nourrisson"
     },
@@ -8784,7 +8847,7 @@
       "captured_at": null,
       "author": "Bocquet et al.",
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "sfp dme position",
       "id": "guideline_sfp_dme"
     },
@@ -8797,7 +8860,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "who complementary feeding",
       "id": "guideline_who_cf"
     },
@@ -8810,7 +8873,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "1000 premiers jours",
       "id": "guideline_1000_jours"
     },
@@ -8875,7 +8938,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 2,
       "norm_label": "db/backup.ts",
       "id": "backup_module"
     },
@@ -9083,7 +9146,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 194,
+      "community": 195,
       "norm_label": "db/seed.ts",
       "id": "seed_module"
     },
@@ -9122,7 +9185,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 195,
+      "community": 196,
       "norm_label": "guidance/queries.ts",
       "id": "guidance_queries_module"
     },
@@ -9226,7 +9289,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 196,
+      "community": 197,
       "norm_label": "utils/age.ts",
       "id": "age_module"
     },
@@ -9239,7 +9302,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 116,
+      "community": 117,
       "norm_label": "ageinmonths",
       "id": "age_in_months"
     },
@@ -9252,7 +9315,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 116,
+      "community": 117,
       "norm_label": "formatage",
       "id": "age_format_age"
     },
@@ -9291,7 +9354,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 197,
+      "community": 198,
       "norm_label": "utils/cn.ts (twmerge wrapper)",
       "id": "cn_module"
     },
@@ -9317,7 +9380,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 198,
+      "community": 199,
       "norm_label": "src/lib/utils/dates.ts",
       "id": "dates_module"
     },
@@ -9330,7 +9393,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 117,
+      "community": 118,
       "norm_label": "formatrelative",
       "id": "dates_format_relative"
     },
@@ -9343,7 +9406,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 117,
+      "community": 118,
       "norm_label": "formatdatetime",
       "id": "dates_format_date_time"
     },
@@ -9356,7 +9419,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 199,
+      "community": 200,
       "norm_label": "formatdateinputvalue",
       "id": "dates_format_date_input_value"
     },
@@ -9369,7 +9432,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 200,
+      "community": 201,
       "norm_label": "parsedatetimelocal",
       "id": "dates_parse_date_time_local"
     },
@@ -9382,7 +9445,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 118,
+      "community": 119,
       "norm_label": "isvalidbirthdate",
       "id": "dates_is_valid_birth_date"
     },
@@ -9395,7 +9458,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 201,
+      "community": 202,
       "norm_label": "src/lib/utils/invites.ts",
       "id": "invites_module"
     },
@@ -9447,7 +9510,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 202,
+      "community": 203,
       "norm_label": "src/lib/utils/nav.ts",
       "id": "nav_module"
     },
@@ -9460,7 +9523,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 66,
       "norm_label": "getchildnavitems",
       "id": "nav_get_child_nav_items"
     },
@@ -9473,7 +9536,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 66,
       "norm_label": "isnavitemactive",
       "id": "nav_is_nav_item_active"
     },
@@ -9486,7 +9549,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 65,
+      "community": 66,
       "norm_label": "src/lib/utils/nav.test.ts",
       "id": "nav_test_module"
     },
@@ -9499,7 +9562,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 119,
+      "community": 120,
       "norm_label": "getreactionlabel",
       "id": "reactions_get_reaction_label"
     },
@@ -9512,7 +9575,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 119,
+      "community": 120,
       "norm_label": "src/lib/utils/reactions.test.ts",
       "id": "reactions_test_module"
     },
@@ -9525,7 +9588,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 203,
+      "community": 204,
       "norm_label": "src/lib/utils/search.ts",
       "id": "search_module"
     },
@@ -9538,7 +9601,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 66,
+      "community": 67,
       "norm_label": "normalize",
       "id": "search_normalize"
     },
@@ -9551,7 +9614,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 66,
+      "community": 67,
       "norm_label": "fuzzymatch",
       "id": "search_fuzzy_match"
     },
@@ -9564,7 +9627,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 66,
+      "community": 67,
       "norm_label": "src/lib/utils/search.test.ts",
       "id": "search_test_module"
     },
@@ -9577,7 +9640,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 204,
+      "community": 205,
       "norm_label": "src/lib/utils/theme.ts",
       "id": "theme_module"
     },
@@ -9811,7 +9874,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 118,
+      "community": 119,
       "norm_label": "round-trip iso encode catches impossible calendar days",
       "id": "rationale_birth_date_roundtrip"
     },
@@ -10383,7 +10446,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 67,
+      "community": 68,
       "norm_label": "cookies +page.svelte (cookies info page)",
       "id": "cookies_page_svelte"
     },
@@ -10474,7 +10537,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 67,
+      "community": 68,
       "norm_label": "login +page.server.ts",
       "id": "login_page_server"
     },
@@ -10500,7 +10563,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 67,
+      "community": 68,
       "norm_label": "do not reset rate-limit bucket on successful login to prevent attacker bypass",
       "id": "rationale_no_bucket_reset_login"
     },
@@ -10799,7 +10862,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 68,
+      "community": 69,
       "norm_label": "robots.txt get",
       "id": "robots_txt_server"
     },
@@ -10812,7 +10875,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 68,
+      "community": 69,
       "norm_label": "robots.txt test",
       "id": "robots_txt_test"
     },
@@ -10890,7 +10953,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 68,
+      "community": 69,
       "norm_label": "disallow private surfaces from crawlers",
       "id": "rationale_robots_disallow"
     },
@@ -10981,7 +11044,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 120,
+      "community": 121,
       "norm_label": "test/app-stubs",
       "id": "test_app_stubs"
     },
@@ -10994,7 +11057,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 120,
+      "community": 121,
       "norm_label": "test/component helpers",
       "id": "test_component"
     },
@@ -16320,6 +16383,17 @@
       "source_file": "src/lib/server/guidance/queries.test.ts",
       "source_location": "L6",
       "weight": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loadanalyticsbuckets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_lib_server_guidance_queries_test_ts",
       "target": "guidance_queries_dismissreminder"
@@ -16433,6 +16507,16 @@
       "confidence_score": 1.0,
       "source": "src_lib_server_guidance_queries_ts",
       "target": "guidance_queries_loadstreak"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L249",
+      "weight": 1.0,
+      "source": "src_lib_server_guidance_queries_ts",
+      "target": "guidance_queries_loadanalyticsbuckets",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -16592,6 +16676,28 @@
       "weight": 1.0,
       "source": "id_page_server_load",
       "target": "guidance_queries_loadstreak"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_ts",
+      "target": "guidance_queries_loadanalyticsbuckets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "analytics_page_server_load",
+      "target": "guidance_queries_loadanalyticsbuckets"
     },
     {
       "relation": "calls",
@@ -19408,9 +19514,9 @@
       "source_file": "src/routes/child/[id]/report/+page.server.ts",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_server_ts",
-      "target": "report_page_server_load",
-      "confidence_score": 1.0
+      "target": "report_page_server_load"
     },
     {
       "relation": "contains",
@@ -19418,9 +19524,9 @@
       "source_file": "src/routes/child/[id]/report/+page.svelte",
       "source_location": "L184",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_svelte",
-      "target": "report_page_e",
-      "confidence_score": 1.0
+      "target": "report_page_e"
     },
     {
       "relation": "imports",
@@ -19429,9 +19535,9 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_server_test_ts",
-      "target": "test_db_resettestdb",
-      "confidence_score": 1.0
+      "target": "test_db_resettestdb"
     },
     {
       "relation": "imports",
@@ -19440,9 +19546,9 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_server_test_ts",
-      "target": "test_route_makerouteevent",
-      "confidence_score": 1.0
+      "target": "test_route_makerouteevent"
     },
     {
       "relation": "imports",
@@ -19451,9 +19557,9 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_server_test_ts",
-      "target": "test_route_seedchild",
-      "confidence_score": 1.0
+      "target": "test_route_seedchild"
     },
     {
       "relation": "imports",
@@ -19462,9 +19568,9 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_server_test_ts",
-      "target": "test_route_seeduser",
-      "confidence_score": 1.0
+      "target": "test_route_seeduser"
     },
     {
       "relation": "contains",
@@ -19472,9 +19578,9 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_server_test_ts",
-      "target": "report_page_server_test_setup",
-      "confidence_score": 1.0
+      "target": "report_page_server_test_setup"
     },
     {
       "relation": "contains",
@@ -19482,9 +19588,9 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_server_test_ts",
-      "target": "report_page_server_test_seedfood",
-      "confidence_score": 1.0
+      "target": "report_page_server_test_seedfood"
     },
     {
       "relation": "contains",
@@ -19492,9 +19598,9 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_server_test_ts",
-      "target": "report_page_server_test_logentry",
-      "confidence_score": 1.0
+      "target": "report_page_server_test_logentry"
     },
     {
       "relation": "calls",
@@ -19506,6 +19612,80 @@
       "weight": 1.0,
       "source": "report_page_server_test_setup",
       "target": "test_route_seedchild"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_ts",
+      "target": "analytics_page_server_load",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "src_routes_child_id_analytics_page_svelte",
+      "target": "analytics_page_weeklabel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "src_routes_child_id_analytics_page_svelte",
+      "target": "analytics_page_i",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
+      "target": "test_db_resettestdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
+      "target": "test_route_makerouteevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
+      "target": "test_route_seedchild",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
+      "target": "test_route_seeduser",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -27372,5 +27552,5 @@
       "source_file": "src/routes/sources/+page.svelte"
     }
   ],
-  "built_at_commit": "f3ed72ab5926aed91fee4cb6698fbe251917e2ab"
+  "built_at_commit": "70233f4d2d68de9ab4c4943761442355de3e05cc"
 }

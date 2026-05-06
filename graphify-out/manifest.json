@@ -480,12 +480,12 @@
     "hash": "6440271a209b6519bb97d59ae4bb185f"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries.test.ts": {
-    "mtime": 1778047792.100677,
-    "hash": "948445c1b81c7f7e14ec7eebdf98ad98"
+    "mtime": 1778053991.368774,
+    "hash": "9cf59f02d940ae6cbf805a72eb094e2e"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries.ts": {
-    "mtime": 1778047792.100677,
-    "hash": "f95e4a8be4f96a965578f1bf7704acf2"
+    "mtime": 1778053991.368774,
+    "hash": "895ba2becab1ee0f05f2e12d3bb3382e"
   },
   "/home/sbrn/Projects/diversif/src/lib/utils/age.test.ts": {
     "mtime": 1777986940.3308783,
@@ -664,8 +664,8 @@
     "hash": "d433c76b191a7650f51ddf3dbef5ed89"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.svelte": {
-    "mtime": 1778051820.8315132,
-    "hash": "0f0dba563a08a651a04e3e04b0c6663f"
+    "mtime": 1778053991.368774,
+    "hash": "dbbe1cc4adfc14da37074ea63ca79972"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/allergens/+page.server.ts": {
     "mtime": 1777986940.3321846,
@@ -762,6 +762,18 @@
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/report/page.server.test.ts": {
     "mtime": 1778051820.8333313,
     "hash": "10c628693dd53a83e25f111cb56b1ea7"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/analytics/+page.server.ts": {
+    "mtime": 1778053991.368774,
+    "hash": "d96e395287d87198a94f524be27bf22c"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/analytics/+page.svelte": {
+    "mtime": 1778053991.369774,
+    "hash": "15c62f911b7206bd6d8d28975f6c075a"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/analytics/page.server.test.ts": {
+    "mtime": 1778053991.369774,
+    "hash": "c4f3b63cac89c0489a43a94442610e3c"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/new/+page.server.ts": {
     "mtime": 1777986940.333135,
@@ -948,27 +960,27 @@
     "hash": "2214b2ce9b02a296c3cddffc3e374892"
   },
   "/home/sbrn/Projects/diversif/coverage/block-navigation.js": {
-    "mtime": 1778051080.7256672,
+    "mtime": 1778053217.3469446,
     "hash": "13c8dd65c9b9571b0b4960aeaf3fab0a"
   },
   "/home/sbrn/Projects/diversif/coverage/sorter.js": {
-    "mtime": 1778051080.7257924,
+    "mtime": 1778053217.347059,
     "hash": "e2f5129270684bf835820ca4433b4abb"
   },
   "/home/sbrn/Projects/diversif/coverage/prettify.js": {
-    "mtime": 1778051080.7258976,
+    "mtime": 1778053217.3471606,
     "hash": "6051903a2f7363ee232a01bd32f60b6a"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/block-navigation.js": {
-    "mtime": 1778051080.7459822,
+    "mtime": 1778053217.3682992,
     "hash": "13c8dd65c9b9571b0b4960aeaf3fab0a"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/sorter.js": {
-    "mtime": 1778051080.7460878,
+    "mtime": 1778053217.3684888,
     "hash": "e2f5129270684bf835820ca4433b4abb"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/prettify.js": {
-    "mtime": 1778051080.746177,
+    "mtime": 1778053217.368604,
     "hash": "6051903a2f7363ee232a01bd32f60b6a"
   },
   "/home/sbrn/Projects/diversif/README.md": {
@@ -988,756 +1000,772 @@
     "hash": "5d9e376d5523ed9ba46c7e734a7cadd1"
   },
   "/home/sbrn/Projects/diversif/coverage/index.html": {
-    "mtime": 1778051080.7261672,
-    "hash": "4e937cb5ed7876bdb728bd499efa6f30"
+    "mtime": 1778053217.3473847,
+    "hash": "d73ffc3bb4e5b4599a0bbb9eee31d580"
   },
   "/home/sbrn/Projects/diversif/coverage/src/index.html": {
-    "mtime": 1778051080.7261672,
-    "hash": "8bbbbc057beb2487e2ffbaa3b6f36b29"
+    "mtime": 1778053217.3473847,
+    "hash": "b1938a496b507267d9d2d01f98690855"
   },
   "/home/sbrn/Projects/diversif/coverage/src/hooks.server.ts.html": {
-    "mtime": 1778051080.7272255,
-    "hash": "6c8a602f01b03936f740c52f88b2ace1"
+    "mtime": 1778053217.3488584,
+    "hash": "ff82fb9eb45bea4677cda8e555421009"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/index.html": {
-    "mtime": 1778051080.7272255,
-    "hash": "00b307d244427933955af64824420ee5"
+    "mtime": 1778053217.3488584,
+    "hash": "284b9863f99f838c5dfe6d664235e83d"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/seo.ts.html": {
-    "mtime": 1778051080.7281673,
-    "hash": "e3b9bea2b973495a236a2573eaa12ef3"
+    "mtime": 1778053217.3496885,
+    "hash": "b42604c3d03ec3d117b921a4e9d86d3f"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/content/index.html": {
-    "mtime": 1778051080.7281673,
-    "hash": "966e955e1edce596c8d400d3106283c9"
+    "mtime": 1778053217.3498585,
+    "hash": "128186070025f0243e1c8f6e6673ca0b"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/content/guidance.ts.html": {
-    "mtime": 1778051080.7301672,
-    "hash": "0a3afe43e457bbc6df316e93e8e920fd"
+    "mtime": 1778053217.3528583,
+    "hash": "eb331f390c44dbe3e4648642887ea1ec"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/content/sources.ts.html": {
-    "mtime": 1778051080.7311673,
-    "hash": "e0e6b7e58bb20bfff05bc385ade820d0"
+    "mtime": 1778053217.3528583,
+    "hash": "10429980d792b1ec320abcfdd59e186d"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/index.html": {
-    "mtime": 1778051080.7311673,
-    "hash": "e9769e25efbea26c6e498bc0f03e5729"
+    "mtime": 1778053217.3538585,
+    "hash": "d0639f7ec526e92e88e155ce75dd3e76"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/auth.ts.html": {
-    "mtime": 1778051080.7316318,
-    "hash": "1726e3723d4438efeb99df58233128e1"
+    "mtime": 1778053217.3545902,
+    "hash": "dae3a080dcb451d82925d1ed7b93ddb9"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/cleanup.ts.html": {
-    "mtime": 1778051080.7318995,
-    "hash": "31226da8b0d2cfb96322add18eb7072e"
+    "mtime": 1778053217.3548405,
+    "hash": "0c95b8311fc420eb27d39d8780dc9756"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/gdpr.ts.html": {
-    "mtime": 1778051080.7321672,
-    "hash": "b58bfa059d1c41f1f4ff59de2201f084"
+    "mtime": 1778053217.35502,
+    "hash": "21d50c5a34f7463915bf33e1b99c0454"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/guards.ts.html": {
-    "mtime": 1778051080.7321672,
-    "hash": "e1fedd8bd83538535d5828b1cd072848"
+    "mtime": 1778053217.3554587,
+    "hash": "67832902080d7d3291aa75cff20795db"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/legal.ts.html": {
-    "mtime": 1778051080.7332938,
-    "hash": "cf9c5795d743c8c06549fa5e3b70d367"
+    "mtime": 1778053217.3555992,
+    "hash": "f64581330390a45e641803ba05a1c86a"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/passkeys.ts.html": {
-    "mtime": 1778051080.7334502,
-    "hash": "7f28bfc82d4bb3a7a8fa2ba975e0a25c"
+    "mtime": 1778053217.3557448,
+    "hash": "ec2bb9abd37b4f87a64882a3ff7b16ab"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/rate-limit.ts.html": {
-    "mtime": 1778051080.7339158,
-    "hash": "51d36e9800185c177be459f55aa4b4e0"
+    "mtime": 1778053217.3562112,
+    "hash": "2140e1c9b0caff5a656fdaeabdd25836"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/db/index.html": {
-    "mtime": 1778051080.7339158,
-    "hash": "c3c44bfbe749dc31cf7fc560c61ef711"
+    "mtime": 1778053217.3562112,
+    "hash": "02ff883798e0a90cb370e8a68f94241b"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/db/backup.ts.html": {
-    "mtime": 1778051080.734267,
-    "hash": "8853cedf83de8c32e4f195c8180f70be"
+    "mtime": 1778053217.3565652,
+    "hash": "36ab3b3418def468f19695f9b908f397"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/db/seed.ts.html": {
-    "mtime": 1778051080.734493,
-    "hash": "51838b75a939da296d0650c1c38d989c"
+    "mtime": 1778053217.3567712,
+    "hash": "b24112d62da8fe620850ee38aacd3563"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/guidance/index.html": {
-    "mtime": 1778051080.734493,
-    "hash": "456b99efbfeb0877415e2ec8675f7b58"
+    "mtime": 1778053217.3567712,
+    "hash": "25183497915d6f426ef44b9731b1784e"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/guidance/queries.ts.html": {
-    "mtime": 1778051080.7348657,
-    "hash": "8db31c877fe1785936e77180d57159af"
+    "mtime": 1778053217.357151,
+    "hash": "b9b75928cfa95cfd80137397d55d522e"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/server/guidance/reminders.ts.html": {
-    "mtime": 1778051080.7353203,
-    "hash": "b004db34dab13e7517bce7ffbf174d3a"
+    "mtime": 1778053217.357697,
+    "hash": "04e2ae8fddaf7b352a3a75e0ef3f1967"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/index.html": {
-    "mtime": 1778051080.7353203,
-    "hash": "f1d8cbe4d05807907a2067fd6601ecb5"
+    "mtime": 1778053217.357697,
+    "hash": "dc208ceed68318b726b03c75a9c1ec61"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/age.ts.html": {
-    "mtime": 1778051080.735997,
-    "hash": "73a68506d9b681195046a29121f630f3"
+    "mtime": 1778053217.358338,
+    "hash": "e1792d48f36cea2ea3fcaa81b0fcdeae"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/allergens.ts.html": {
-    "mtime": 1778051080.7361295,
-    "hash": "eeac6ad60fcbbb896a6e5589e38227db"
+    "mtime": 1778053217.3584812,
+    "hash": "62fb06c30a71230add52df2c8fa9221c"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/categories.ts.html": {
-    "mtime": 1778051080.7362442,
-    "hash": "a7984e8a22f165ff245a2e6ee457d453"
+    "mtime": 1778053217.3585927,
+    "hash": "ba9671204589372ea4fdc5153e66d9e1"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/cn.ts.html": {
-    "mtime": 1778051080.736451,
-    "hash": "77a44963f56bd5cd2345642eb6d0bedd"
+    "mtime": 1778053217.3588073,
+    "hash": "6a2cec3b211d4767c763f07638fdc9f4"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/dates.ts.html": {
-    "mtime": 1778051080.7365408,
-    "hash": "0e0143d06d86564cc985f2582e0e5c5b"
+    "mtime": 1778053217.358907,
+    "hash": "f6fa8fa29f480fdd3d7c3ea718249dcb"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/invites.ts.html": {
-    "mtime": 1778051080.7367468,
-    "hash": "254ba00a6e71c6e7438d892c5c77218f"
+    "mtime": 1778053217.3590705,
+    "hash": "80d7192f47dc61c9f69a74de94c330b8"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/milestones.ts.html": {
-    "mtime": 1778051080.7369351,
-    "hash": "648f42f5ded54c4624b8c0d1510af6dc"
+    "mtime": 1778053217.3592212,
+    "hash": "af548598dbab83aba9465c0fa2cdcd26"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/nav.ts.html": {
-    "mtime": 1778051080.7371364,
-    "hash": "5911a3fdb7eba41e3fc98b79990b74a8"
+    "mtime": 1778053217.35942,
+    "hash": "e3463f5b8e3dccf546ccbea9817cdda2"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/reactions.ts.html": {
-    "mtime": 1778051080.7372894,
-    "hash": "65d0549a45e4731ac3d6922bf08daf7a"
+    "mtime": 1778053217.3595467,
+    "hash": "4b271b354ed1a54354f881bb9985aa5a"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/search.ts.html": {
-    "mtime": 1778051080.737462,
-    "hash": "12ce0048e7d2d6dc0454574a34f68d57"
+    "mtime": 1778053217.3596685,
+    "hash": "1724e3a3290cfdb95e3c6bae7dc33294"
   },
   "/home/sbrn/Projects/diversif/coverage/src/lib/utils/theme.ts.html": {
-    "mtime": 1778051080.7375817,
-    "hash": "d880490ad537b79fffd35d701f2f7c97"
+    "mtime": 1778053217.3597813,
+    "hash": "f0b7049ca1209b79a88c860a0c0d4db2"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/index.html": {
-    "mtime": 1778051080.7375817,
-    "hash": "c4ec7803acaaa2a2011188476c988274"
+    "mtime": 1778053217.3597813,
+    "hash": "27c663313d3725a8b9a792716c111795"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/+layout.server.ts.html": {
-    "mtime": 1778051080.7378066,
-    "hash": "8bebdb64c38bd2b60bc3115d07ca703a"
+    "mtime": 1778053217.3599868,
+    "hash": "126e553e44521aa3c751235176a94280"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/+page.server.ts.html": {
-    "mtime": 1778051080.7379794,
-    "hash": "e86a226d2f131e963b702e69716f782c"
+    "mtime": 1778053217.3601217,
+    "hash": "08675b4c8272d2db8822a965b1650333"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/account/index.html": {
-    "mtime": 1778051080.7379794,
-    "hash": "2b5e0b48f953ea70177e902004ab4bdf"
+    "mtime": 1778053217.3601217,
+    "hash": "5e7c7d406f8b2f15c8b96bca6e22bdfd"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/account/+page.server.ts.html": {
-    "mtime": 1778051080.738171,
-    "hash": "dfb449d5a433303867e42273cd50c64e"
+    "mtime": 1778053217.3603084,
+    "hash": "f1e46590996df3c987b40937d06e32f4"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/account/export/index.html": {
-    "mtime": 1778051080.738171,
-    "hash": "3c2f5bb32a430546204b30247ec11474"
+    "mtime": 1778053217.3603084,
+    "hash": "e32b779844ceb333e05d3c63f3008b23"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/account/export/+server.ts.html": {
-    "mtime": 1778051080.7384582,
-    "hash": "5b32d5e6340dc40c95f1eeb58272b047"
+    "mtime": 1778053217.3605912,
+    "hash": "6a15e08316f287b30820c7e5c46b77fe"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/allergens/index.html": {
-    "mtime": 1778051080.7384582,
-    "hash": "6eb155475c630f8fa9d49869c76a6573"
+    "mtime": 1778053217.3605912,
+    "hash": "4025c9b5c6c8d17611a9dfe8f16c6bd7"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/allergens/+page.server.ts.html": {
-    "mtime": 1778051080.7386727,
-    "hash": "3a874038cc9a3c02806457166910530b"
+    "mtime": 1778053217.3608072,
+    "hash": "3326f2e6209a0a2a2f81cc77ea55e006"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/index.html": {
-    "mtime": 1778051080.7386727,
-    "hash": "a1ef05da5ffcb79b747e0244e87c3172"
+    "mtime": 1778053217.3608072,
+    "hash": "216903a6cf396da0a54a04b880215fcb"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/+layout.server.ts.html": {
-    "mtime": 1778051080.7388556,
-    "hash": "e2eff213d215e5ae4949187d04f005ca"
+    "mtime": 1778053217.3609922,
+    "hash": "ef0430d1d61b6d1a34d713348c1d4adb"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/+page.server.ts.html": {
-    "mtime": 1778051080.7389698,
-    "hash": "9b96b0be1198a92ce43a658573ed11d7"
+    "mtime": 1778053217.3611035,
+    "hash": "38943c214ddf4659cc5c1d3eeec5e46f"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/allergens/index.html": {
-    "mtime": 1778051080.7389698,
-    "hash": "eacf02de2de41a4cf968254255a99e85"
+    "mtime": 1778053217.3611035,
+    "hash": "6c7d992c5c83000d6ab0534e5a4aca97"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/allergens/+page.server.ts.html": {
-    "mtime": 1778051080.7393394,
-    "hash": "be6c3e930de909abb461dc86b0880a91"
+    "mtime": 1778053217.361493,
+    "hash": "8faeb89ea71ebc1a5d2bac34495ed3ce"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/analytics/index.html": {
+    "mtime": 1778053217.361493,
+    "hash": "7131ae339b1e0bb89fb2ee07a73d44be"
+  },
+  "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/analytics/+page.server.ts.html": {
+    "mtime": 1778053217.3617167,
+    "hash": "016336931203649acbbff99b4c800757"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/foods/index.html": {
-    "mtime": 1778051080.7393394,
-    "hash": "1639578dbc8b2868293475de42204eef"
+    "mtime": 1778053217.3617167,
+    "hash": "0520f0f2c4ca48980c77b64bf7319af4"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/foods/+page.server.ts.html": {
-    "mtime": 1778051080.7395701,
-    "hash": "c8b1545b60498ff91171dd770177f55e"
+    "mtime": 1778053217.361907,
+    "hash": "8725769ae7a37fc5a2f99310148dca46"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/guide/index.html": {
-    "mtime": 1778051080.7395701,
-    "hash": "b96cfbf6fbfa526ede420e05b6df07dd"
+    "mtime": 1778053217.361907,
+    "hash": "03639e824ae9fbc42fa2c88f4319f6be"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/guide/+page.server.ts.html": {
-    "mtime": 1778051080.7398257,
-    "hash": "0b87477ede6801a114c05a6a7d36a5d4"
+    "mtime": 1778053217.362166,
+    "hash": "fb70f94a946530a658841d724069945f"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/log/index.html": {
-    "mtime": 1778051080.7398257,
-    "hash": "45990e93c3e93f02c2707f9df308773a"
+    "mtime": 1778053217.362166,
+    "hash": "0d14fce84c4694381e35b40b65075273"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/log/+page.server.ts.html": {
-    "mtime": 1778051080.740008,
-    "hash": "78fdf2164e4cb63afe5d8b542105ff31"
+    "mtime": 1778053217.362333,
+    "hash": "b93c39ef572dcb2be6dcdf852cf626a9"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/log/[entryId]/index.html": {
-    "mtime": 1778051080.740008,
-    "hash": "bd27a6e6857a138374470eab47eb471b"
+    "mtime": 1778053217.362333,
+    "hash": "a547cd4f1e74ee165b36037e0d1aefe6"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/log/[entryId]/+page.server.ts.html": {
-    "mtime": 1778051080.7401671,
-    "hash": "c588e3d49e542af03661df2d039a0bf3"
+    "mtime": 1778053217.3627086,
+    "hash": "b15d76c33f2751f6a9b20671e988d9b6"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/report/index.html": {
-    "mtime": 1778051080.7401671,
-    "hash": "b4229401c722fed8f6003adcabbc98cf"
+    "mtime": 1778053217.3627086,
+    "hash": "9a3e8b32862b5d48db1fdbe7120a4ab6"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/report/+page.server.ts.html": {
-    "mtime": 1778051080.7407117,
-    "hash": "58da7fbf72f9f3848ffd8f582d2ecc2d"
+    "mtime": 1778053217.363044,
+    "hash": "9d40ecd2cf3d07ebff102f1b95ee2e6b"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/settings/index.html": {
-    "mtime": 1778051080.7407117,
-    "hash": "544ac4fd6f659a59084700f2e0cb7766"
+    "mtime": 1778053217.363044,
+    "hash": "967f16177f85e97f261f357eac1953fb"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/settings/+page.server.ts.html": {
-    "mtime": 1778051080.7410684,
-    "hash": "f2c275c5a29fc3b49660df4c7f8eec8a"
+    "mtime": 1778053217.3634174,
+    "hash": "f398ad36a9de7a8094541d7330b082dd"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/suggestions/index.html": {
-    "mtime": 1778051080.741167,
-    "hash": "41a241f9ec55b08c66a84ba09836a218"
+    "mtime": 1778053217.3634174,
+    "hash": "87c9eb924adebd908cf4039ceb6f8b01"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/[id]/suggestions/+page.server.ts.html": {
-    "mtime": 1778051080.741167,
-    "hash": "37915c4e74e5de9c77b6dfa1c734ac18"
+    "mtime": 1778053217.3637621,
+    "hash": "ef0f43d83b5c7332cb0f6ea9afd06a95"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/new/index.html": {
-    "mtime": 1778051080.741167,
-    "hash": "2a98e5090dc3c03da927cf75323f50f5"
+    "mtime": 1778053217.3637621,
+    "hash": "d62c2b0199764c5060c6b1cfea23a0ad"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/child/new/+page.server.ts.html": {
-    "mtime": 1778051080.7416275,
-    "hash": "ba041112c04e5c43761b2ddc5228d998"
+    "mtime": 1778053217.3639781,
+    "hash": "d7c516fa8c386f373416e11a090c5924"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/guide/index.html": {
-    "mtime": 1778051080.7416275,
-    "hash": "2fd3e959b051dbcf950985d59e31f827"
+    "mtime": 1778053217.3639781,
+    "hash": "3fed91bccc4dd17b9bc25aa4182aa5d0"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/guide/+page.server.ts.html": {
-    "mtime": 1778051080.7418344,
-    "hash": "b37164d47adbbdbdb77b65227c423112"
+    "mtime": 1778053217.3641949,
+    "hash": "b35d5fccdc6c03bf1e8f69837e0c6ec9"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/healthz/index.html": {
-    "mtime": 1778051080.7418344,
-    "hash": "82611c989fe80057326cf117b6fe5525"
+    "mtime": 1778053217.3641949,
+    "hash": "f31804730fbbc1e7e8a68bb904c72443"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/healthz/+server.ts.html": {
-    "mtime": 1778051080.74199,
-    "hash": "104a49a85773155896d8ba5aebb78b68"
+    "mtime": 1778053217.3643687,
+    "hash": "919ff7e9ed7de665d8c13fab71c5e062"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/join/[code]/index.html": {
-    "mtime": 1778051080.74199,
-    "hash": "bcbb878ae287ce36557420c5bcc2cf91"
+    "mtime": 1778053217.3643687,
+    "hash": "d52e5a971a57e179d16ee804f48abbb7"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/join/[code]/+page.server.ts.html": {
-    "mtime": 1778051080.7421901,
-    "hash": "b1eec4c30c4320e6cf627aa053c06f3e"
+    "mtime": 1778053217.364561,
+    "hash": "19d397fa0ae622046530c3cbc453f67b"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/login/index.html": {
-    "mtime": 1778051080.7421901,
-    "hash": "e163ed8293f2a719eb069356ef1feeaf"
+    "mtime": 1778053217.364561,
+    "hash": "f5f7dc56125ac60db9f28f300816a3ea"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/login/+page.server.ts.html": {
-    "mtime": 1778051080.7424667,
-    "hash": "c74c996d579e6262cd366b7139f2aa48"
+    "mtime": 1778053217.3648462,
+    "hash": "9312fc6a555f9c8ae73dae8b46ebce99"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/logout/index.html": {
-    "mtime": 1778051080.7424667,
-    "hash": "dc9cd0cfbbb7fcad840b3d1943c01a24"
+    "mtime": 1778053217.3648462,
+    "hash": "e8c4bb3bb9714c69b31f433e0fbd9fa2"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/logout/+server.ts.html": {
-    "mtime": 1778051080.7427855,
-    "hash": "46daae20e6461172a21758f640e68393"
+    "mtime": 1778053217.365091,
+    "hash": "28e45f6453fdcecc21b6a320ee04f7a5"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/mentions-legales/index.html": {
-    "mtime": 1778051080.7427855,
-    "hash": "295cb41af3370254f153aa9dd568a033"
+    "mtime": 1778053217.365091,
+    "hash": "d18e9bc74338b0f6c139edaf5179fbfe"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/mentions-legales/+page.server.ts.html": {
-    "mtime": 1778051080.7430162,
-    "hash": "cde4ae742e97e7ea7ab92839e99cbacf"
+    "mtime": 1778053217.365263,
+    "hash": "26d5dbdac579e9e2f33c5705711f9f69"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/authentication/options/index.html": {
-    "mtime": 1778051080.7430162,
-    "hash": "80de20cf55a95c6a16a13ac7312fb41f"
+    "mtime": 1778053217.365263,
+    "hash": "8d75a0657602ef4de848dce224c2118c"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/authentication/options/+server.ts.html": {
-    "mtime": 1778051080.7432148,
-    "hash": "698810b2a92a8ec23c0829b5d26623b4"
+    "mtime": 1778053217.3654587,
+    "hash": "4274b3eca820d86c9ff1422983b84e5e"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/authentication/verify/index.html": {
-    "mtime": 1778051080.7432148,
-    "hash": "567c2777581a3ade3e6e5d87e4eec7ac"
+    "mtime": 1778053217.3654587,
+    "hash": "812498dc034e2ff82ad537a3cf3a4fd6"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/authentication/verify/+server.ts.html": {
-    "mtime": 1778051080.7434108,
-    "hash": "f0e004e9a553053edd8270f6c2d1953e"
+    "mtime": 1778053217.3656468,
+    "hash": "26926b8a9e2e4ecf6af2477278e1bcf1"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/registration/options/index.html": {
-    "mtime": 1778051080.7434108,
-    "hash": "609700d16f94d5205b88b1fc4ff25fa8"
+    "mtime": 1778053217.3656468,
+    "hash": "8cb3e576f918a9f4e1eedfb399a8baaf"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/registration/options/+server.ts.html": {
-    "mtime": 1778051080.7436619,
-    "hash": "6aeb9a9e917816638b00ac354e211ebc"
+    "mtime": 1778053217.3659024,
+    "hash": "2013dfdaa314696150a2dc0c85a3cb07"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/registration/verify/index.html": {
-    "mtime": 1778051080.7436619,
-    "hash": "6de7b43b566815a9a8343f171cb6d621"
+    "mtime": 1778053217.3659024,
+    "hash": "0104c8aafb7e2dbcdba11764afad5085"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/passkeys/registration/verify/+server.ts.html": {
-    "mtime": 1778051080.743873,
-    "hash": "713bf84b7d06df7853c80f1c64506e62"
+    "mtime": 1778053217.3661034,
+    "hash": "b35c4646c8edf064cf98f3b9c8535195"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/politique-confidentialite/index.html": {
-    "mtime": 1778051080.743873,
-    "hash": "eec692b636085fc46fc035fc9a9e3c83"
+    "mtime": 1778053217.3661034,
+    "hash": "32eea4d5fb27f6de161f76a25b348f12"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/politique-confidentialite/+page.server.ts.html": {
-    "mtime": 1778051080.744088,
-    "hash": "7aa6c1e1bb257231674865cb8d0356ab"
+    "mtime": 1778053217.366324,
+    "hash": "502283282b400042b2f834111e3349cf"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/robots.txt/index.html": {
-    "mtime": 1778051080.744088,
-    "hash": "d31a3b13967c4d5db61d85d15d18843d"
+    "mtime": 1778053217.366324,
+    "hash": "7dd261b5921796b45b8fdec2e4cc7c48"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/robots.txt/+server.ts.html": {
-    "mtime": 1778051080.7442477,
-    "hash": "053025c3dd48475a9f52bddbadf0ad51"
+    "mtime": 1778053217.3665435,
+    "hash": "2e977cc39d37d7a300092e3f8f938d52"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/signup/index.html": {
-    "mtime": 1778051080.7442477,
-    "hash": "987afe358ea9226917fd2439b9b9721c"
+    "mtime": 1778053217.3665435,
+    "hash": "2205762926331c677cfbf97a1bbf0639"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/signup/+page.server.ts.html": {
-    "mtime": 1778051080.7444499,
-    "hash": "1c12710a940964a5397d42b1a913f787"
+    "mtime": 1778053217.3667636,
+    "hash": "8fcc18d3bf5ec0c2e420a4cbcfc9d215"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/sitemap.xml/index.html": {
-    "mtime": 1778051080.7444499,
-    "hash": "de94c5c9e81f7adc9cec670e5c25f4ed"
+    "mtime": 1778053217.3667636,
+    "hash": "e0ebffcef890ec2ed49d67001db04c3f"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/sitemap.xml/+server.ts.html": {
-    "mtime": 1778051080.7448993,
-    "hash": "97a6764782bc93c258c228ec05963c33"
+    "mtime": 1778053217.3671334,
+    "hash": "82127c740f1365c067b4f2ecd7213ce6"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/sources/index.html": {
-    "mtime": 1778051080.7448993,
-    "hash": "94163558c9260642e2cfc33c8db5e7fd"
+    "mtime": 1778053217.3671334,
+    "hash": "6619717ebc44cc594dce4bf70c87ba51"
   },
   "/home/sbrn/Projects/diversif/coverage/src/routes/sources/+page.server.ts.html": {
-    "mtime": 1778051080.7452471,
-    "hash": "cb33a620f0e0cc46668ff5653d2659d6"
+    "mtime": 1778053217.3673854,
+    "hash": "9a64d934a293cfda4f78d77a37d50943"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/index.html": {
-    "mtime": 1778051080.7462215,
-    "hash": "1aff34b71f34169203ae390723b55c78"
+    "mtime": 1778053217.3686604,
+    "hash": "2c56e32828cbaae1b7aae4ef02907675"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/index.html": {
-    "mtime": 1778051080.7462215,
-    "hash": "70061303a56343ba0981939042a12888"
+    "mtime": 1778053217.3686604,
+    "hash": "3c2f60c1f16234c04c5a39fb28642e19"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/hooks.server.ts.html": {
-    "mtime": 1778051080.7471561,
-    "hash": "36dfe19aa9f98890001771bdf8ae4ca7"
+    "mtime": 1778053217.368858,
+    "hash": "3df4c8a0f1e931b7aeab7954adaf5c91"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/index.html": {
-    "mtime": 1778051080.747167,
-    "hash": "eb93d3f5dc2cbd7d71b2518645cefbca"
+    "mtime": 1778053217.368858,
+    "hash": "0c5b569d0c38109ebd0601462d1e1629"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/seo.ts.html": {
-    "mtime": 1778051080.747167,
-    "hash": "533248e7f63db74dd6a3a67de3e3d6ed"
+    "mtime": 1778053217.3698583,
+    "hash": "11ce8e6220a670b64b8728e9731a3965"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/content/index.html": {
-    "mtime": 1778051080.748167,
-    "hash": "1f1712d7fcc2c5fa1f5c220e6fb11c06"
+    "mtime": 1778053217.3698583,
+    "hash": "bdb751bd6ae0f3088b319fba37edca37"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/content/guidance.ts.html": {
-    "mtime": 1778051080.751167,
-    "hash": "4543e87e0f58f6b0a2e816e235e8a9c1"
+    "mtime": 1778053217.3738582,
+    "hash": "201d77e91d5845fa1eb03130038dd6f5"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/content/sources.ts.html": {
-    "mtime": 1778051080.752167,
-    "hash": "a7e492d9632ea6dab38fc23724fbb51b"
+    "mtime": 1778053217.3738582,
+    "hash": "c12108f186e514bcd13b435b861e6372"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/index.html": {
-    "mtime": 1778051080.752167,
-    "hash": "b44fc9bb11ee90f53053a0880df0b13c"
+    "mtime": 1778053217.3738582,
+    "hash": "e574c02c7ae80a6f8806cc027ce1523b"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/auth.ts.html": {
-    "mtime": 1778051080.753217,
-    "hash": "5ae7aa788481eeb098f22850fc811196"
+    "mtime": 1778053217.3748581,
+    "hash": "ddde060ee2eea96eda5890a72dea125f"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/cleanup.ts.html": {
-    "mtime": 1778051080.7537203,
-    "hash": "72b301300d1e43d8eb900da86064c0d8"
+    "mtime": 1778053217.3760366,
+    "hash": "838951b2f670fa7ba1d2a62c8bc15285"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/gdpr.ts.html": {
-    "mtime": 1778051080.754167,
-    "hash": "ac34d8301bea26557bf8200ec1166090"
+    "mtime": 1778053217.3768358,
+    "hash": "52386996ad8f88b6886eb1c266f7a693"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/guards.ts.html": {
-    "mtime": 1778051080.755167,
-    "hash": "c683bad8b08700484804a956e9a7b06d"
+    "mtime": 1778053217.3768582,
+    "hash": "5d5d79c1c096da9813a8f2d3aed4de1c"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/legal.ts.html": {
-    "mtime": 1778051080.7556994,
-    "hash": "f573ae3443f07a551078bb8548917d41"
+    "mtime": 1778053217.3776834,
+    "hash": "b7357842bd89233aacfda12906200eec"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/passkeys.ts.html": {
-    "mtime": 1778051080.756167,
-    "hash": "1c552bdf0d50086390c3f9342161a244"
+    "mtime": 1778053217.3778582,
+    "hash": "df927e30c5e8564b5f5324657d0356d2"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/rate-limit.ts.html": {
-    "mtime": 1778051080.7571669,
-    "hash": "44a7e123ccf407f0afb0ba85f5a9c372"
+    "mtime": 1778053217.378858,
+    "hash": "75fe31ae52e957f729d4263d5fa87541"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/db/index.html": {
-    "mtime": 1778051080.7571669,
-    "hash": "5e2bb5084a6087b85b85561bd60949eb"
+    "mtime": 1778053217.378858,
+    "hash": "a135028472bd30df9bd5befe72ec5738"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/db/backup.ts.html": {
-    "mtime": 1778051080.7580311,
-    "hash": "45824b12722760f519988a61261ab5da"
+    "mtime": 1778053217.3800325,
+    "hash": "1a985928c314cf24f0542c842c9ee48f"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/db/seed.ts.html": {
-    "mtime": 1778051080.758167,
-    "hash": "39fdb4ba36e0298153cb25a5234a3a09"
+    "mtime": 1778053217.3805985,
+    "hash": "15ed270b21ff44dc35d6435630e7339f"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/guidance/index.html": {
-    "mtime": 1778051080.758167,
-    "hash": "8e043278f63c5ad7fd13232fe4c3ab20"
+    "mtime": 1778053217.3805985,
+    "hash": "1877348c7d139b4f91b16c3e2573b74e"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/guidance/queries.ts.html": {
-    "mtime": 1778051080.759167,
-    "hash": "fcf28999176ee8bd572e7580a7dc97c4"
+    "mtime": 1778053217.3808582,
+    "hash": "bf680b9231f0191cb5ae90356a2dbd10"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/server/guidance/reminders.ts.html": {
-    "mtime": 1778051080.760167,
-    "hash": "f637e0a942de32f46eea66a52ccd6373"
+    "mtime": 1778053217.382858,
+    "hash": "45bad454930aacaa8390e375f7e32cbd"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/index.html": {
-    "mtime": 1778051080.760167,
-    "hash": "58a82ea76734864b3be99581580c49df"
+    "mtime": 1778053217.382858,
+    "hash": "b55d77c27d3356c26fa83abecfb9c45c"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/age.ts.html": {
-    "mtime": 1778051080.7611668,
-    "hash": "54734cb399d47e62772dbf5947185073"
+    "mtime": 1778053217.383958,
+    "hash": "c522e7760130691f113f350065189830"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/allergens.ts.html": {
-    "mtime": 1778051080.7618134,
-    "hash": "cfa6120da323fc5bfc7483196b4d6a72"
+    "mtime": 1778053217.3841865,
+    "hash": "09bbd05677eb9ce861099e71a56c1f88"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/categories.ts.html": {
-    "mtime": 1778051080.7622082,
-    "hash": "bb4b5710cb51ddc8a67fe19472248fd1"
+    "mtime": 1778053217.384593,
+    "hash": "faac21ae51182137628e08a4c63ffc8f"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/cn.ts.html": {
-    "mtime": 1778051080.7624655,
-    "hash": "1bca0e1764eb3dba98bbb12f6809514b"
+    "mtime": 1778053217.3848383,
+    "hash": "3c649f63136bb6d01928740e85da8b98"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/dates.ts.html": {
-    "mtime": 1778051080.7627685,
-    "hash": "83a05bd1e1244c830344537b39ef3a52"
+    "mtime": 1778053217.3851428,
+    "hash": "584fe327dd0d60c197630b4feea05a82"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/invites.ts.html": {
-    "mtime": 1778051080.7630043,
-    "hash": "b8b27a6e62065ff16d0188a3f4ae53e5"
+    "mtime": 1778053217.3853877,
+    "hash": "a58ec8acba65f1b2b2a391a9b8f58944"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/milestones.ts.html": {
-    "mtime": 1778051080.763167,
-    "hash": "82ea3231d752791c5c84faee77c666d1"
+    "mtime": 1778053217.3857586,
+    "hash": "1000648ff6a81ded52ff3de3392d2088"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/nav.ts.html": {
-    "mtime": 1778051080.7636607,
-    "hash": "511c8a9b1c389b99dc74e03cdcb8d4d9"
+    "mtime": 1778053217.3860393,
+    "hash": "7dc91a0b27fcc624632c0b09f3dd11a1"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/reactions.ts.html": {
-    "mtime": 1778051080.7638907,
-    "hash": "ce2b3418b4f9541333832b7d46d2c329"
+    "mtime": 1778053217.3862596,
+    "hash": "9e1f474c20115a9dbf5ffebf6b9b150f"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/search.ts.html": {
-    "mtime": 1778051080.7641392,
-    "hash": "3f745d8109e1197962f74aa221303894"
+    "mtime": 1778053217.38652,
+    "hash": "a4957fc7335895f7f318cf6609d5f1bf"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/lib/utils/theme.ts.html": {
-    "mtime": 1778051080.7641668,
-    "hash": "27f8391a6bb4984afe7dbf11a19e9189"
+    "mtime": 1778053217.3867996,
+    "hash": "82a5226695ab0d22da4ed8b72855caa7"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/index.html": {
-    "mtime": 1778051080.7641668,
-    "hash": "2500a246b8892dbb3717e4dbbd7ef0a9"
+    "mtime": 1778053217.3867996,
+    "hash": "75da9f02898f1fee36fa31228c4c8e1c"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/+layout.server.ts.html": {
-    "mtime": 1778051080.7648194,
-    "hash": "5b271af035d53125de086e44dbc321e3"
+    "mtime": 1778053217.3871849,
+    "hash": "5e176a19b72417425745eef8f0dcc230"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/+page.server.ts.html": {
-    "mtime": 1778051080.7650483,
-    "hash": "342f6f7d468d5e2e64b825304f2c14db"
+    "mtime": 1778053217.3873966,
+    "hash": "b8d4f27604a4ac617ec4506d0436ef7d"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/account/index.html": {
-    "mtime": 1778051080.7650483,
-    "hash": "81131f00b2d91855ac2bde0f6193aaf6"
+    "mtime": 1778053217.3873966,
+    "hash": "4a7694e6f3c2449207fa11de49847cfa"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/account/+page.server.ts.html": {
-    "mtime": 1778051080.765167,
-    "hash": "ad96a7f510aee8684ec6b5917a7c018f"
+    "mtime": 1778053217.3879728,
+    "hash": "85bd4f6d792cb3851b5f49ed790e95af"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/account/export/index.html": {
-    "mtime": 1778051080.765167,
-    "hash": "a06bf9a5a97c2dada52fdfe75fb0f733"
+    "mtime": 1778053217.3879728,
+    "hash": "7f21cd1f30cf6d67778adb3cf24272df"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/account/export/+server.ts.html": {
-    "mtime": 1778051080.7663217,
-    "hash": "4edb88a623bcc83fa8f6478172a76ae2"
+    "mtime": 1778053217.3884141,
+    "hash": "9124f5eb977ccfdbd21f71967ac528b1"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/allergens/index.html": {
-    "mtime": 1778051080.7663217,
-    "hash": "43152807b79b3411696e828f695aafe0"
+    "mtime": 1778053217.3884141,
+    "hash": "7f064df8f7240d8f95b7fddb32f38fb9"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/allergens/+page.server.ts.html": {
-    "mtime": 1778051080.7665966,
-    "hash": "b89e35812adcd74b5f6d5b0aab75c5f9"
+    "mtime": 1778053217.3887386,
+    "hash": "fc085e95bd06de695ea5f61f1c611f48"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/index.html": {
-    "mtime": 1778051080.7665966,
-    "hash": "36738b5e84c388c9074ccb1983ed53a2"
+    "mtime": 1778053217.3887386,
+    "hash": "045bfc69b328caebd400ee2c92776534"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/+layout.server.ts.html": {
-    "mtime": 1778051080.7670283,
-    "hash": "a32aa7d2ca6e16df53e12c3de8bc171c"
+    "mtime": 1778053217.3890517,
+    "hash": "7e8bfde1fad79048ad7e9e396d5d9aec"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/+page.server.ts.html": {
-    "mtime": 1778051080.7671669,
-    "hash": "5849e0b58eb1fdfcf8b9d912a447b0ea"
+    "mtime": 1778053217.3896499,
+    "hash": "596745a788b0e0815ecee372404b22a7"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/allergens/index.html": {
-    "mtime": 1778051080.7671669,
-    "hash": "10806dd6df4337eae0e0ccfdd35a83db"
+    "mtime": 1778053217.3896499,
+    "hash": "57eab8d47a895e4dceb26fa53a9f9626"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/allergens/+page.server.ts.html": {
-    "mtime": 1778051080.768194,
-    "hash": "6072bf1c4e36f452c09bf7e76a11a4f4"
+    "mtime": 1778053217.3901906,
+    "hash": "361ae28cddb495697cb88cb086dc6af6"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/analytics/index.html": {
+    "mtime": 1778053217.3901906,
+    "hash": "4f8d79725be8a8aa8b05120d69ac649b"
+  },
+  "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/analytics/+page.server.ts.html": {
+    "mtime": 1778053217.3904915,
+    "hash": "6a8476c86a188eaaac4e1d1de137af46"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/foods/index.html": {
-    "mtime": 1778051080.768194,
-    "hash": "664074e509168758d4aae3a7e6ceac26"
+    "mtime": 1778053217.3904915,
+    "hash": "711d7cd4d154aa0de33406902e64d8d4"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/foods/+page.server.ts.html": {
-    "mtime": 1778051080.768692,
-    "hash": "16d13b6573575c9393b0c324e1351f04"
+    "mtime": 1778053217.3909292,
+    "hash": "37448623ffd484d4a008d0dd30dc706e"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/guide/index.html": {
-    "mtime": 1778051080.768692,
-    "hash": "5add1a9a45715a5597a4fc2ea1155576"
+    "mtime": 1778053217.3909292,
+    "hash": "889b764e7d3644feb32fc34a8a6163a3"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/guide/+page.server.ts.html": {
-    "mtime": 1778051080.7690003,
-    "hash": "4d0eb9004f68f0486a15261cdb8207c3"
+    "mtime": 1778053217.3912404,
+    "hash": "879bbe01af3bfa510b1a586b5fcfc300"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/log/index.html": {
-    "mtime": 1778051080.7690003,
-    "hash": "00cc43671d4c5d439f3f0081e88b259a"
+    "mtime": 1778053217.3912404,
+    "hash": "308f5ffab2acc75b5685659092f6d5b2"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/log/+page.server.ts.html": {
-    "mtime": 1778051080.769167,
-    "hash": "c2001ccd0fae7fb2208104192187d11a"
+    "mtime": 1778053217.3919508,
+    "hash": "7a1a1f42d1ea2d165e3f18fdba170a9f"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/log/[entryId]/index.html": {
-    "mtime": 1778051080.769167,
-    "hash": "f3d7da409ef58ee56b2a3a498225e003"
+    "mtime": 1778053217.3919508,
+    "hash": "78b7acffe05980f71dc597672731222c"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/log/[entryId]/+page.server.ts.html": {
-    "mtime": 1778051080.7701669,
-    "hash": "2edb07db978b3761051b6285296f0441"
+    "mtime": 1778053217.3928761,
+    "hash": "cb2bedbc740b1ad457ec59e594801345"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/report/index.html": {
-    "mtime": 1778051080.7701669,
-    "hash": "cc4947f0d5aa7fecccf1fa48a1d887cc"
+    "mtime": 1778053217.3928761,
+    "hash": "1528c9fa6140bf15745b910e15ba9aad"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/report/+page.server.ts.html": {
-    "mtime": 1778051080.7711668,
-    "hash": "87f5ff251758327f1ce142bbaf17353e"
+    "mtime": 1778053217.3936667,
+    "hash": "33d0268c7f978b6747cecdfe09f4b69c"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/settings/index.html": {
-    "mtime": 1778051080.7711668,
-    "hash": "d2f1e89069d4913c9456aac5ac44a9a2"
+    "mtime": 1778053217.3936667,
+    "hash": "9dae6d6fd2034a40eb710c46b2f16630"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/settings/+page.server.ts.html": {
-    "mtime": 1778051080.7722576,
-    "hash": "4b933f60d175ff6f7aae73ccece76b0f"
+    "mtime": 1778053217.393858,
+    "hash": "d5f4f5d777d38d12d35a251ef1efad22"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/suggestions/index.html": {
-    "mtime": 1778051080.7722576,
-    "hash": "d4b7a1af9ba4298e2407f727380db64c"
+    "mtime": 1778053217.393858,
+    "hash": "7d2c35a9146eef98640049049857f897"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/[id]/suggestions/+page.server.ts.html": {
-    "mtime": 1778051080.7727933,
-    "hash": "995b96247a32166a9ec0272d84067282"
+    "mtime": 1778053217.395353,
+    "hash": "d13322062cd492d1f2600654b20eb02f"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/new/index.html": {
-    "mtime": 1778051080.7727933,
-    "hash": "37f351d19fef9056c83cc6dfe3dce61d"
+    "mtime": 1778053217.395353,
+    "hash": "6749f80615fd20d6d2cd861ed1cf5197"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/child/new/+page.server.ts.html": {
-    "mtime": 1778051080.773171,
-    "hash": "5d8aab0c9af1c924a4333904ede59176"
+    "mtime": 1778053217.3957758,
+    "hash": "f26d184757a051dfde965cb256677505"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/guide/index.html": {
-    "mtime": 1778051080.773171,
-    "hash": "018f0b8bae283091f11dccfb6ac3c1f3"
+    "mtime": 1778053217.3957758,
+    "hash": "21f2fb82fc4e0f23f496a79b4aa4530c"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/guide/+page.server.ts.html": {
-    "mtime": 1778051080.773431,
-    "hash": "21aca7333342d032dbb1b2c39da02654"
+    "mtime": 1778053217.39605,
+    "hash": "0006326b067636de885afd4153ecce32"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/healthz/index.html": {
-    "mtime": 1778051080.773431,
-    "hash": "a47a5fa4c8200846ddfa7c8fb4acb70d"
+    "mtime": 1778053217.39605,
+    "hash": "0a75bc0b921ce9dd98f068986a43ca3e"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/healthz/+server.ts.html": {
-    "mtime": 1778051080.7736685,
-    "hash": "e563850dbb0ac1400beaf368456dbc40"
+    "mtime": 1778053217.396288,
+    "hash": "42018d2a6f6ef1f79371c0cdeb3d2170"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/join/[code]/index.html": {
-    "mtime": 1778051080.7736685,
-    "hash": "104ee6c0c0c46302c9eb0bdc93a40b0b"
+    "mtime": 1778053217.396288,
+    "hash": "cb0ba85177d75945345dada983c42ad0"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/join/[code]/+page.server.ts.html": {
-    "mtime": 1778051080.7741668,
-    "hash": "a92f88818ad0e710cb7d046f6f671bce"
+    "mtime": 1778053217.396794,
+    "hash": "d5981fe032e363ced072d57e9b0751fd"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/login/index.html": {
-    "mtime": 1778051080.7741668,
-    "hash": "aad05c1e34def6df078cc6b5237e1bcd"
+    "mtime": 1778053217.396794,
+    "hash": "fa18ec5c485163375cfd41428ebd0da4"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/login/+page.server.ts.html": {
-    "mtime": 1778051080.7748892,
-    "hash": "af2c8914ea8ceb0328a2bb19170c8294"
+    "mtime": 1778053217.39729,
+    "hash": "3efecfe827b5ac5355a4ad0f49c1b2ec"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/logout/index.html": {
-    "mtime": 1778051080.7748892,
-    "hash": "bb91b713b0a5bee8c4444a748dca0105"
+    "mtime": 1778053217.39729,
+    "hash": "53c5c5da1beec884c38537171217f71d"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/logout/+server.ts.html": {
-    "mtime": 1778051080.775235,
-    "hash": "a241d0b78f348d10561ced898a005b95"
+    "mtime": 1778053217.3977392,
+    "hash": "c89196b032fb4ba70dd73f5d7cc10b3a"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/mentions-legales/index.html": {
-    "mtime": 1778051080.775235,
-    "hash": "e87ee0f4dbabb278f77fe3b2f8ee4744"
+    "mtime": 1778053217.3977392,
+    "hash": "2c9e6efd21ef8e829e783ca726def04d"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/mentions-legales/+page.server.ts.html": {
-    "mtime": 1778051080.7754757,
-    "hash": "622b152c56f885cd9ab368c9eca1478b"
+    "mtime": 1778053217.3980167,
+    "hash": "32d406223abb747517a17c86ba5b42b5"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/authentication/options/index.html": {
-    "mtime": 1778051080.7754757,
-    "hash": "a8d7f9c6f5ad759bc6455ad5e6560564"
+    "mtime": 1778053217.3980167,
+    "hash": "de5e2c2664c8b91d7f9d64ae6fafe5fc"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/authentication/options/+server.ts.html": {
-    "mtime": 1778051080.7757714,
-    "hash": "a4df2b956b53b996e77640a4cc256fab"
+    "mtime": 1778053217.3983035,
+    "hash": "57d739bc6242545828d185ef016c2b5c"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/authentication/verify/index.html": {
-    "mtime": 1778051080.7757714,
-    "hash": "7e76c92772eb946e338a0bf80cdd5187"
+    "mtime": 1778053217.3983035,
+    "hash": "6c5cb785492e2ace73494019b6fecc5a"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/authentication/verify/+server.ts.html": {
-    "mtime": 1778051080.7761757,
-    "hash": "bd59798f048b746ff63ebdd494ca8b93"
+    "mtime": 1778053217.3987129,
+    "hash": "5750b86f12087caf8a7b4153fb159b0d"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/registration/options/index.html": {
-    "mtime": 1778051080.7761757,
-    "hash": "ae1a59bab15f67012cf61c612225d1e1"
+    "mtime": 1778053217.3987129,
+    "hash": "6e29c996fe0dc69b41390ea31ec81185"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/registration/options/+server.ts.html": {
-    "mtime": 1778051080.7765543,
-    "hash": "ec907e705c9d4ba6a0169573e41e630a"
+    "mtime": 1778053217.3990927,
+    "hash": "0242c57c1cc195a22bf0e3ef7164db09"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/registration/verify/index.html": {
-    "mtime": 1778051080.7765543,
-    "hash": "e005d325ded330a08c55ab2c99add9bf"
+    "mtime": 1778053217.3990927,
+    "hash": "ae97f9ce3ecb7283abd6a6cde42b3b6e"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/passkeys/registration/verify/+server.ts.html": {
-    "mtime": 1778051080.7769341,
-    "hash": "e39801806afa15609d0d910649c54b94"
+    "mtime": 1778053217.39949,
+    "hash": "e55e62286acf9b6455d25d8f069a2f72"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/politique-confidentialite/index.html": {
-    "mtime": 1778051080.7769341,
-    "hash": "1eb5344d3df461a155af013c4cd5f767"
+    "mtime": 1778053217.39949,
+    "hash": "a31f203625016428634dd58bce50caf7"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/politique-confidentialite/+page.server.ts.html": {
-    "mtime": 1778051080.7771907,
-    "hash": "60e733d3f4210d598300e90333983e2d"
+    "mtime": 1778053217.3997843,
+    "hash": "d6477256b22a0f74ca0bd8a961c7553b"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/robots.txt/index.html": {
-    "mtime": 1778051080.7771907,
-    "hash": "64ad4b9e928a882338da97d39025edad"
+    "mtime": 1778053217.3997843,
+    "hash": "de2d10315f949428d4563ac8d7ccf6c5"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/robots.txt/+server.ts.html": {
-    "mtime": 1778051080.7774682,
-    "hash": "8a73cf6d75b2852df5d41d97ad35a5a8"
+    "mtime": 1778053217.4000492,
+    "hash": "4fefa0d4bc26165cea597bd74915ac03"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/signup/index.html": {
-    "mtime": 1778051080.7774682,
-    "hash": "64f164ae5cdd3bb6e8d9629ba4f19c4e"
+    "mtime": 1778053217.4000492,
+    "hash": "4735fbca4c15dcfc5a3797e43e99fcd2"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/signup/+page.server.ts.html": {
-    "mtime": 1778051080.7781887,
-    "hash": "650b8d30f54f06c8edf3a7521cb4077d"
+    "mtime": 1778053217.4007585,
+    "hash": "a6e6387716550afa9a73d33efce9515a"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/sitemap.xml/index.html": {
-    "mtime": 1778051080.7781887,
-    "hash": "01ef6edcf61239fe4b744a180c2a3769"
+    "mtime": 1778053217.4007585,
+    "hash": "317de408cbf1613ff34052e6c0a09198"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/sitemap.xml/+server.ts.html": {
-    "mtime": 1778051080.7791722,
-    "hash": "45279a898390ee587f565ce5f2d17bb4"
+    "mtime": 1778053217.4013374,
+    "hash": "cb98da4fe39f4f33a8927bc3d2c00f8c"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/sources/index.html": {
-    "mtime": 1778051080.7791722,
-    "hash": "a0a5722a8508b7343134ec5872946d37"
+    "mtime": 1778053217.4013374,
+    "hash": "d11b168e535d3ae26a6aa448dbff16ea"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/src/routes/sources/+page.server.ts.html": {
-    "mtime": 1778051080.7796764,
-    "hash": "d3ff20450b8ff831c669eaeb1949b099"
+    "mtime": 1778053217.4016469,
+    "hash": "383f56f639a9f2f4f831fe2b3b890985"
   },
   "/home/sbrn/Projects/diversif/graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md": {
     "mtime": 1777989129.8008497,
@@ -1764,19 +1792,19 @@
     "hash": "9004a35bfb4afee02cb902977627d429"
   },
   "/home/sbrn/Projects/diversif/coverage/favicon.png": {
-    "mtime": 1778051080.7257102,
+    "mtime": 1778053217.3469837,
     "hash": "8c814a46f24208d0bc459bb2cf8b7b88"
   },
   "/home/sbrn/Projects/diversif/coverage/sort-arrow-sprite.png": {
-    "mtime": 1778051080.725751,
+    "mtime": 1778053217.3470209,
     "hash": "fd08a5625d21e34b1d6d9c026f2728a9"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/favicon.png": {
-    "mtime": 1778051080.7460213,
+    "mtime": 1778053217.368375,
     "hash": "8c814a46f24208d0bc459bb2cf8b7b88"
   },
   "/home/sbrn/Projects/diversif/coverage/lcov-report/sort-arrow-sprite.png": {
-    "mtime": 1778051080.7460554,
+    "mtime": 1778053217.3684301,
     "hash": "fd08a5625d21e34b1d6d9c026f2728a9"
   }
 }
