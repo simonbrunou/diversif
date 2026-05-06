@@ -7,6 +7,7 @@ import { CATEGORIES } from '$lib/utils/categories';
 import { ageInMonths } from '$lib/utils/age';
 import { computeReminders } from '$lib/server/guidance/reminders';
 import {
+  loadCoparentActivity,
   loadDiversityMetrics,
   loadDismissals,
   loadStreak,
@@ -99,6 +100,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   const diversity = loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
   const streak = loadStreak(childId);
   const weeklyRecap = loadWeeklyRecap(childId);
+  const coparentActivity = loadCoparentActivity(childId, user.id);
 
   // Reminders: full history is required so first-introduction and
   // exposure-count rules (stale-diversity, repeat-exposure) are correct
@@ -172,6 +174,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     diversity,
     streak,
     weeklyRecap,
+    coparentActivity,
     reminders,
     showWelcomeDialog
   };

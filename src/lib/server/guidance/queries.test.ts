@@ -11,6 +11,7 @@ import {
   loadStreak,
   loadWeeklyRecap,
   loadAnalyticsBuckets,
+  loadCoparentActivity,
   dismissReminder
 } from './queries';
 import { children, foods, foodEntries, users, tipDismissals } from '../db/schema';
@@ -599,5 +600,99 @@ describe('loadAnalyticsBuckets', () => {
     const buckets = loadAnalyticsBuckets(child.id, 2, new Date('2024-06-10T12:00:00Z'));
     const totalIntros = buckets.reduce((s, b) => s + b.introductions, 0);
     expect(totalIntros).toBe(1);
+  });
+});
+
+describe('loadCoparentActivity', () => {
+  async function seedSecondUser(email = 'partner@example.com', name = 'Partenaire') {
+    return testDb
+      .insert(users)
+      .values({ email, passwordHash: 'pw', displayName: name, createdAt: new Date() })
+      .returning()
+      .all()[0];
+  }
+
+  it('returns empty when nobody else has logged anything', async () => {
+    const { user, child } = await seedUserAndChild();
+    const f = seedFood({ name: 'Carotte', category: 'legumes' });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: new Date(),
+      reaction: 'ras'
+    });
+    expect(loadCoparentActivity(child.id, user.id)).toEqual([]);
+  });
+
+  it("excludes the current user's own entries even when others have logged too", async () => {
+    const { user, child } = await seedUserAndChild();
+    const partner = await seedSecondUser();
+    const f = seedFood({ name: 'Carotte', category: 'legumes' });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: user.id,
+      givenAt: new Date(),
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: partner.id,
+      givenAt: new Date(),
+      reaction: 'ras'
+    });
+    const out = loadCoparentActivity(child.id, user.id);
+    expect(out).toHaveLength(1);
+    expect(out[0].loggedByName).toBe('Partenaire');
+  });
+
+  it('filters out entries older than the day window and orders newest-first', async () => {
+    const { user, child } = await seedUserAndChild();
+    const partner = await seedSecondUser();
+    const f = seedFood({ name: 'Pomme', category: 'fruits' });
+    const now = Date.now();
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: partner.id,
+      givenAt: new Date(now - 30 * DAY_MS),
+      reaction: 'ras'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: partner.id,
+      givenAt: new Date(now - 2 * DAY_MS),
+      reaction: 'inconfort'
+    });
+    logEntry({
+      childId: child.id,
+      foodId: f.id,
+      userId: partner.id,
+      givenAt: new Date(now - 1 * DAY_MS),
+      reaction: 'ras'
+    });
+    const out = loadCoparentActivity(child.id, user.id);
+    expect(out).toHaveLength(2); // 30d-old one excluded
+    expect(out[0].givenAt).toBeGreaterThan(out[1].givenAt);
+  });
+
+  it('caps the result at the requested limit', async () => {
+    const { user, child } = await seedUserAndChild();
+    const partner = await seedSecondUser();
+    const f = seedFood({ name: 'Pomme', category: 'fruits' });
+    const now = Date.now();
+    for (let i = 0; i < 8; i++) {
+      logEntry({
+        childId: child.id,
+        foodId: f.id,
+        userId: partner.id,
+        givenAt: new Date(now - i * 60_000),
+        reaction: 'ras'
+      });
+    }
+    expect(loadCoparentActivity(child.id, user.id, 7, 3)).toHaveLength(3);
   });
 });

@@ -29,9 +29,14 @@
     CalendarDays,
     BookOpen,
     Lightbulb,
-    Flame
+    Flame,
+    Users
   } from 'lucide-svelte';
   import dayjs from 'dayjs';
+  import 'dayjs/locale/fr';
+  import relativeTime from 'dayjs/plugin/relativeTime';
+  dayjs.extend(relativeTime);
+  dayjs.locale('fr');
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
@@ -210,6 +215,31 @@
           >
         {/if}
       </p>
+    </Card>
+  {/if}
+
+  {#if data.coparentActivity.length > 0}
+    <Card class="p-4 md:p-5">
+      <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <Users size={12} aria-hidden="true" />
+        Récemment notés à plusieurs
+      </div>
+      <ul class="mt-2 divide-y">
+        {#each data.coparentActivity as e (e.id)}
+          <li class="flex items-baseline justify-between gap-3 py-1.5 text-sm">
+            <span class="flex min-w-0 items-baseline gap-1.5">
+              <span class="truncate"
+                ><strong class="font-medium">{e.loggedByName}</strong>
+                <span class="text-muted-foreground"> · {e.foodName}</span></span
+              >
+              <ReactionBadge reaction={e.reaction} />
+            </span>
+            <span class="shrink-0 text-xs text-muted-foreground">
+              {dayjs(e.givenAt).fromNow()}
+            </span>
+          </li>
+        {/each}
+      </ul>
     </Card>
   {/if}
 
