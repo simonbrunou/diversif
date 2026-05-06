@@ -1,4 +1,5 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { randomBytes } from 'node:crypto';
 import {
   SESSION_COOKIE,
   SESSION_DURATION_MS,
@@ -6,6 +7,32 @@ import {
   listMembershipsForUser,
   validateSession
 } from '$lib/server/auth';
+
+/**
+ * Tag every server-side error with a short id, log a structured stderr line,
+ * and pass only the id back to the client. Operators read the prefixed log
+ * line (Coolify streams stderr) and correlate to user reports via the id
+ * shown on /+error.svelte.
+ */
+export const handleError: HandleServerError = ({ error, event, status, message }) => {
+  const errorId = randomBytes(4).toString('hex');
+  const err = error as Error;
+  console.error(
+    '[diversif:error]',
+    JSON.stringify({
+      id: errorId,
+      method: event.request.method,
+      path: event.url.pathname,
+      userId: event.locals.user?.id ?? null,
+      status,
+      message,
+      name: err?.name,
+      msg: err?.message,
+      stack: err?.stack
+    })
+  );
+  return { message: 'Internal Error', errorId };
+};
 
 // `script-src` and `style-src` are emitted as a `<meta>` tag by SvelteKit
 // (see svelte.config.js `kit.csp`), which lets it hash its own inline
