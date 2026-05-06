@@ -68,7 +68,7 @@
           {#each data.priorityAllergens as f (f.id)}
             <a
               href={logHref(f.id)}
-              aria-label={`Noter ${f.name}, allergène ${getAllergenLabel(f.allergenType)}, dès ${f.suggestedAgeMonths} mois`}
+              aria-label={`Noter ${f.name}, allergène ${getAllergenLabel(f.allergenType) ?? f.allergenType ?? 'inconnu'}, dès ${f.suggestedAgeMonths} mois`}
             >
               <Card class="p-3 transition-colors hover:bg-accent">
                 <div class="flex items-center justify-between gap-2">
