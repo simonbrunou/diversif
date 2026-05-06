@@ -14,7 +14,6 @@ import {
  */
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   const err = error as Error;
-   
   console.error('[diversif:handleError]', event.url.pathname, {
     status,
     message,

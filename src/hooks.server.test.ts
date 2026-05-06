@@ -3,7 +3,7 @@ import { testDb, resetTestDb } from './test/db';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
-import { handle } from './hooks.server';
+import { handle, handleError } from './hooks.server';
 import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -157,6 +157,57 @@ describe('handle', () => {
       expect(set.mock.calls[0][2].secure).toBe(true);
     } finally {
       process.env.NODE_ENV = orig;
+    }
+  });
+});
+
+describe('handleError (debug)', () => {
+  it('logs the error and returns its name + message to the client', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const err = new TypeError('thing exploded');
+      const result = handleError({
+        error: err,
+        event: { url: new URL('http://localhost/child/2/guide') },
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+      expect(result?.message).toBe('TypeError: thing exploded');
+      expect(spy).toHaveBeenCalledOnce();
+      expect(spy.mock.calls[0][0]).toBe('[diversif:handleError]');
+      expect(spy.mock.calls[0][1]).toBe('/child/2/guide');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('falls back to a generic name + message when the error is non-Error-shaped', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const result = handleError({
+        error: null,
+        event: { url: new URL('http://localhost/x') },
+        status: 500,
+        message: 'fallback'
+      } as unknown as Parameters<typeof handleError>[0]);
+      expect(result?.message).toBe('Error: fallback');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('falls back further when neither error nor message provide info', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const result = handleError({
+        error: null,
+        event: { url: new URL('http://localhost/x') },
+        status: 500,
+        message: undefined
+      } as unknown as Parameters<typeof handleError>[0]);
+      expect(result?.message).toBe('Error: unknown');
+    } finally {
+      spy.mockRestore();
     }
   });
 });
