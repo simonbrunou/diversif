@@ -48,10 +48,13 @@
     pickRotatingTip(getTipsFor({ ageMonths: stageMonths }), data.child.id)
   );
 
-  let welcomeOpen = $state(false);
-  $effect(() => {
-    welcomeOpen = data.showWelcomeDialog;
-  });
+  // Initial state only — once the user closes the dialog (or any other form
+  // action runs and re-fires `data`), we must NOT re-open the welcome modal.
+  // Server-side dismissal flows through `data.showWelcomeDialog === false` on
+  // the next full navigation and re-initializes us correctly. Capturing the
+  // initial prop value into $state is exactly what we want here.
+  // svelte-ignore state_referenced_locally
+  let welcomeOpen = $state(data.showWelcomeDialog);
 
   // Day-grouping uses the user's local timezone, which differs from the
   // server's. Defer to post-mount so SSR and initial hydration render the
