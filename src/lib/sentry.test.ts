@@ -35,6 +35,7 @@ describe('scrubEvent', () => {
       request: {
         url: 'https://diversif.app/child/42/log/9?cid=secret',
         data: { foo: 'bar' },
+        query_string: 'cid=secret&foo=bar',
         cookies: 'session=...',
         headers: { authorization: 'Bearer x' }
       },
@@ -63,11 +64,12 @@ describe('scrubEvent', () => {
     expect(out.request!.url).toBe('https://diversif.app/foo');
   });
 
-  it('drops request.data, request.cookies, request.headers', () => {
+  it('drops request.data, request.cookies, request.headers, request.query_string', () => {
     const out = scrubEvent(baseEvent())!;
     expect(out.request!.data).toBeUndefined();
     expect(out.request!.cookies).toBeUndefined();
     expect(out.request!.headers).toBeUndefined();
+    expect(out.request!.query_string).toBeUndefined();
   });
 
   it('strips user context entirely', () => {
