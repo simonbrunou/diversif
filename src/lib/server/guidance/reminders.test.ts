@@ -265,6 +265,27 @@ describe('computeReminders', () => {
     });
   });
 
+  describe('pinned now / age consistency', () => {
+    it('honors a caller-pinned now so age and high-risk-window stay coherent', () => {
+      // Caller pins `now` ≥ 4 months past childCreatedAt and tells us the
+      // child is exactly 5 months old. The 4-11 month allergen window must
+      // fire regardless of the wall clock the engine would have read by
+      // default — proving the dashboard load can pin a single instant
+      // through ageInMonths and computeReminders without drift.
+      const pinnedNow = new Date('2026-05-06T12:00:00Z').getTime();
+      const out = computeReminders({
+        childId: 1,
+        ageMonths: 5,
+        childCreatedAt: pinnedNow - 90 * DAY,
+        entries: [entry({ givenAt: pinnedNow - DAY })],
+        introducedAllergens: new Set<AllergenId>(),
+        dismissals: new Set<string>(),
+        now: pinnedNow
+      });
+      expect(out.find((r) => r.key === 'high-risk-window')).toBeDefined();
+    });
+  });
+
   describe('stale-diversity reduce', () => {
     it('selects the most recent first-intro across multiple foods', () => {
       // Two foods: the more recent first-intro is inserted *before* the older

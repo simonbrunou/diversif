@@ -218,6 +218,15 @@ export async function finishRegistration(opts: {
       expectedChallenge: opts.expectedChallenge,
       expectedOrigin: opts.expectedOrigin,
       expectedRPID: opts.expectedRPID,
+      // Deliberate downgrade. We request `userVerification: 'preferred'` at
+      // options-generation time but accept responses without UV here, so
+      // hardware authenticators that don't surface a PIN/biometric (e.g.
+      // basic security keys) can still be used. Passkeys with platform
+      // biometrics will perform UV anyway. The trade-off: a stolen unlocked
+      // device could authenticate without a re-prompt — which is the same
+      // threat model as a stolen unlocked browser session, since we already
+      // gate sensitive flows (account deletion, password change) behind
+      // their own confirmation steps.
       requireUserVerification: false
     });
   } catch (err) {
@@ -286,6 +295,8 @@ export async function finishAuthentication(opts: {
         counter: credential.counter,
         transports: parseTransports(credential.transports)
       },
+      // Mirrors the registration choice — see finishRegistration above for
+      // the full rationale.
       requireUserVerification: false
     });
   } catch (err) {

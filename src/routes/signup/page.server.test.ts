@@ -106,14 +106,38 @@ describe('signup default action', () => {
     });
   }
 
-  it('fails when email already exists', async () => {
+  it('returns the same invite-error response for registered and unregistered emails (XOR-resistance)', async () => {
+    await seedUser({ email: 'taken@example.com' });
+    const ev1 = makeRouteEvent({
+      formData: form({ email: 'taken@example.com', inviteCode: 'BAD-CODE' })
+    });
+    const ev2 = makeRouteEvent({
+      formData: form({ email: 'fresh@example.com', inviteCode: 'BAD-CODE' })
+    });
+    const r1 = (await actions.default!(
+      ev1 as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { error: string } };
+    const r2 = (await actions.default!(
+      ev2 as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { error: string } };
+    // Both must respond with the invite error — varying only the email
+    // must not reveal whether the address is on file.
+    expect(r1.status).toBe(400);
+    expect(r2.status).toBe(400);
+    expect(r1.data.error).toBe(r2.data.error);
+    expect(r1.data.error).toMatch(/invitation/i);
+  });
+
+  it('fails generically when email already exists (no enumeration leak)', async () => {
     await seedUser({ email: 'taken@example.com' });
     const event = makeRouteEvent({ formData: form({ email: 'taken@example.com' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
     )) as { status: number; data: { error: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/existe/i);
+    expect(r.data.error).toMatch(/inscription impossible/i);
+    // Must NOT confirm whether the address is on file.
+    expect(r.data.error).not.toMatch(/existe/i);
   });
 
   it('fails when invite code format is invalid', async () => {

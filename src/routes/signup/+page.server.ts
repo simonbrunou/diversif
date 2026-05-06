@@ -82,15 +82,12 @@ export const actions: Actions = {
     const { email, password, displayName, inviteCode } = parsed.data;
     const lowerEmail = email.toLowerCase();
 
-    if (findUserByEmail(lowerEmail)) {
-      return fail(400, {
-        email: formEmail,
-        displayName: formDisplayName,
-        inviteCode: formInvite,
-        error: 'Un compte existe déjà pour cet email.'
-      });
-    }
-
+    // Validate the invite code BEFORE checking the duplicate email. If we
+    // returned the generic "Inscription impossible" for a registered email
+    // but a more specific "Code d'invitation invalide" for an unregistered
+    // one (when both sent the same bad invite), an attacker could XOR the
+    // two responses to enumerate registered addresses. Running invite
+    // validation first means a bad invite always wins regardless of email.
     let invitationChildId: number | null = null;
     if (inviteCode) {
       if (!isValidInviteCodeFormat(inviteCode)) {
@@ -121,6 +118,22 @@ export const actions: Actions = {
         });
       }
       invitationChildId = inv.childId;
+    }
+
+    if (findUserByEmail(lowerEmail)) {
+      // Generic message — the previous "compte existe déjà" wording let an
+      // attacker enumerate registered addresses by attempting to sign up.
+      // The new copy gently nudges existing users towards /login without
+      // confirming whether the address is on file. A residual leak still
+      // exists between this 400 and the success-redirect for an
+      // unregistered email; closing it fully would require an email
+      // confirmation flow, which we don't have yet.
+      return fail(400, {
+        email: formEmail,
+        displayName: formDisplayName,
+        inviteCode: formInvite,
+        error: 'Inscription impossible. Si vous avez déjà un compte, essayez de vous connecter.'
+      });
     }
 
     const passwordHash = await hashPassword(password);
