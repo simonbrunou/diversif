@@ -11,9 +11,14 @@ const schema = z.object({
   birthDate: z.string().refine(isValidBirthDate, 'Date invalide')
 });
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, parent }) => {
   requireUser(locals);
-  return {};
+  // True only when the user owns no child yet — lets the page render a
+  // warmer "welcome aboard" header instead of the utilitarian "Ajouter
+  // un enfant". Co-parents who only have member memberships still get
+  // the warm greeting the first time they create their own child.
+  const { children: existing } = await parent();
+  return { isFirstChild: existing.every((c) => c.role !== 'owner') };
 };
 
 export const actions: Actions = {

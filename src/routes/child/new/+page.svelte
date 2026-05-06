@@ -6,16 +6,26 @@
   import TipCard from '$lib/components/TipCard.svelte';
   import { enhance } from '$app/forms';
   import { Baby } from 'lucide-svelte';
-  import type { ActionData } from './$types';
+  import type { ActionData, PageData } from './$types';
 
-  let { form }: { form: ActionData } = $props();
+  let { data, form }: { data: PageData; form: ActionData } = $props();
   let submitting = $state(false);
 </script>
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
   <div class="text-center">
-    <h1 class="text-2xl font-semibold">Ajouter un enfant</h1>
-    <p class="mt-2 text-sm text-muted-foreground">Pour suivre sa diversification.</p>
+    {#if data.isFirstChild}
+      <p class="text-xs font-medium uppercase tracking-wider text-primary/80">Bienvenue</p>
+      <h1 class="mt-1 font-display text-2xl font-semibold leading-tight md:text-3xl">
+        Présentez-nous votre bébé
+      </h1>
+      <p class="mt-2 text-sm text-muted-foreground">
+        Quelques infos suffisent pour démarrer le suivi.
+      </p>
+    {:else}
+      <h1 class="text-2xl font-semibold">Ajouter un enfant</h1>
+      <p class="mt-2 text-sm text-muted-foreground">Pour suivre sa diversification.</p>
+    {/if}
   </div>
 
   <div class="mt-6">

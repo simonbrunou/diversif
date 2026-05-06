@@ -12,6 +12,7 @@ import {
   loadWeeklyRecap,
   loadAnalyticsBuckets,
   loadCoparentActivity,
+  loadStarterFoods,
   dismissReminder
 } from './queries';
 import { children, foods, foodEntries, users, tipDismissals } from '../db/schema';
@@ -694,5 +695,103 @@ describe('loadCoparentActivity', () => {
       });
     }
     expect(loadCoparentActivity(child.id, user.id, 7, 3)).toHaveLength(3);
+  });
+});
+
+describe('loadStarterFoods', () => {
+  function seedStarter(opts: {
+    name: string;
+    category: string;
+    suggestedAgeMonths: number;
+    isCustom?: boolean;
+    allergen?: string | null;
+  }) {
+    return testDb
+      .insert(foods)
+      .values({
+        name: opts.name,
+        category: opts.category,
+        isMajorAllergen: opts.allergen != null,
+        allergenType: opts.allergen ?? null,
+        suggestedAgeMonths: opts.suggestedAgeMonths,
+        notes: null,
+        isCustom: opts.isCustom ?? false,
+        customForChildId: null
+      })
+      .returning()
+      .all()[0];
+  }
+
+  it('returns an empty list when the catalog is empty', () => {
+    expect(loadStarterFoods(6)).toEqual([]);
+  });
+
+  it('excludes foods whose suggested age is above the requested age', () => {
+    seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
+    seedStarter({ name: 'Tomate', category: 'legumes', suggestedAgeMonths: 8 });
+    const out = loadStarterFoods(5);
+    expect(out.map((f) => f.name)).toEqual(['Carotte']);
+  });
+
+  it('clamps ages below 4 months up to 4 so the starter set is never empty', () => {
+    seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
+    seedStarter({ name: 'Pomme', category: 'fruits', suggestedAgeMonths: 5 });
+    const out = loadStarterFoods(0);
+    expect(out.map((f) => f.name)).toEqual(['Carotte']);
+  });
+
+  it('includes 4-month foods when the requested age is exactly 4 (boundary)', () => {
+    seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
+    seedStarter({ name: 'Tomate', category: 'legumes', suggestedAgeMonths: 5 });
+    const out = loadStarterFoods(4);
+    expect(out.map((f) => f.name)).toEqual(['Carotte']);
+  });
+
+  it('excludes custom foods', () => {
+    seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
+    seedStarter({
+      name: 'Recette maison',
+      category: 'legumes',
+      suggestedAgeMonths: 4,
+      isCustom: true
+    });
+    const out = loadStarterFoods(6);
+    expect(out.map((f) => f.name)).toEqual(['Carotte']);
+  });
+
+  it('orders by suggested age ascending, then name ascending, and honors the limit', () => {
+    seedStarter({ name: 'Banane', category: 'fruits', suggestedAgeMonths: 6 });
+    seedStarter({ name: 'Pomme', category: 'fruits', suggestedAgeMonths: 4 });
+    seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
+    seedStarter({ name: 'Courgette', category: 'legumes', suggestedAgeMonths: 5 });
+    seedStarter({ name: 'Poire', category: 'fruits', suggestedAgeMonths: 4 });
+
+    const out = loadStarterFoods(8, 3);
+    expect(out.map((f) => f.name)).toEqual(['Carotte', 'Poire', 'Pomme']);
+    expect(out.map((f) => f.suggestedAgeMonths)).toEqual([4, 4, 4]);
+  });
+
+  it('exposes category and allergen alongside the catalog row', () => {
+    seedStarter({
+      name: 'Œuf',
+      category: 'proteines',
+      suggestedAgeMonths: 6,
+      allergen: 'oeuf'
+    });
+    const [first] = loadStarterFoods(6);
+    expect(first).toMatchObject({
+      name: 'Œuf',
+      category: 'proteines',
+      suggestedAgeMonths: 6,
+      allergenType: 'oeuf'
+    });
+    expect(typeof first.id).toBe('number');
+  });
+
+  it('defaults the limit to 4 when none is provided', () => {
+    for (let i = 0; i < 6; i++) {
+      seedStarter({ name: `Food${i}`, category: 'legumes', suggestedAgeMonths: 4 });
+    }
+    expect(loadStarterFoods(6)).toHaveLength(4);
   });
 });

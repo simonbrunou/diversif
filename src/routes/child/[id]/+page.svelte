@@ -280,6 +280,35 @@
           <Button href={`/child/${data.child.id}/log`}>Noter le premier repas</Button>
         {/snippet}
       </EmptyState>
+
+      {#if data.starterFoods.length > 0}
+        <Card class="p-4 md:p-5">
+          <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Sparkles size={12} class="text-celebrate" aria-hidden="true" />
+            Pour démarrer en douceur
+          </div>
+          <p class="mt-1 text-xs text-muted-foreground">
+            Quelques pistes adaptées à l'âge de {data.child.name}.
+          </p>
+          <ul class="mt-3 grid gap-2 sm:grid-cols-2">
+            {#each data.starterFoods as f (f.id)}
+              <li>
+                <a
+                  href={`/child/${data.child.id}/log?foodId=${f.id}`}
+                  aria-label={`Noter ${f.name}, dès ${f.suggestedAgeMonths} mois`}
+                  class="flex items-center justify-between gap-2 rounded-md border p-2.5 text-sm transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span class="flex min-w-0 flex-1 items-center gap-2">
+                    <CategoryTag id={f.category} size="sm" />
+                    <span class="truncate font-medium">{f.name}</span>
+                  </span>
+                  <span class="shrink-0 text-xs text-muted-foreground">dès {f.suggestedAgeMonths} m</span>
+                </a>
+              </li>
+            {/each}
+          </ul>
+        </Card>
+      {/if}
     {:else if !mounted}
       <Card>
         <ul class="divide-y" aria-busy="true">
