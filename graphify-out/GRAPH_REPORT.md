@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-06)
 
 ## Corpus Check
-- 246 files · ~261,233 words
+- 246 files · ~262,996 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1051 nodes · 1536 edges · 206 communities (163 shown, 43 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 153 edges (avg confidence: 0.82)
+- 1053 nodes · 1543 edges · 205 communities (162 shown, 43 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 154 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1f7d4859`
+- Built from commit: `f10d0c83`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -67,19 +67,19 @@
 - [[_COMMUNITY_Robots.txt|Robots.txt]]
 - [[_COMMUNITY_AllergenInfoDialog|AllergenInfoDialog]]
 - [[_COMMUNITY_AllergenProgress|AllergenProgress]]
-- [[_COMMUNITY_DiversityCard|DiversityCard]]
-- [[_COMMUNITY_ReactionBadge|ReactionBadge]]
-- [[_COMMUNITY_ReminderBanner|ReminderBanner]]
+- [[_COMMUNITY_PublicFooter|PublicFooter]]
+- [[_COMMUNITY_ReactionPicker|ReactionPicker]]
+- [[_COMMUNITY_SourceCitation|SourceCitation]]
 - [[_COMMUNITY_StageBadge|StageBadge]]
-- [[_COMMUNITY_ThemeToggle|ThemeToggle]]
+- [[_COMMUNITY_WelcomeDialog|WelcomeDialog]]
 - [[_COMMUNITY_LandingClosingCta|LandingClosingCta]]
 - [[_COMMUNITY_LandingHero|LandingHero]]
-- [[_COMMUNITY_LandingTrust|LandingTrust]]
+- [[_COMMUNITY_Input|Input]]
 - [[_COMMUNITY_Textarea|Textarea]]
 - [[_COMMUNITY_Community 66|Community 66]]
 - [[_COMMUNITY_Community 67|Community 67]]
 - [[_COMMUNITY_Community 68|Community 68]]
-- [[_COMMUNITY_Community 69|Community 69]]
+- [[_COMMUNITY_Community 112|Community 112]]
 - [[_COMMUNITY_Community 113|Community 113]]
 - [[_COMMUNITY_Community 114|Community 114]]
 - [[_COMMUNITY_Community 115|Community 115]]
@@ -88,7 +88,7 @@
 - [[_COMMUNITY_Community 118|Community 118]]
 - [[_COMMUNITY_Community 119|Community 119]]
 - [[_COMMUNITY_Community 120|Community 120]]
-- [[_COMMUNITY_Community 121|Community 121]]
+- [[_COMMUNITY_Community 190|Community 190]]
 - [[_COMMUNITY_Community 191|Community 191]]
 - [[_COMMUNITY_Community 192|Community 192]]
 - [[_COMMUNITY_Community 193|Community 193]]
@@ -103,7 +103,6 @@
 - [[_COMMUNITY_Community 202|Community 202]]
 - [[_COMMUNITY_Community 203|Community 203]]
 - [[_COMMUNITY_Community 204|Community 204]]
-- [[_COMMUNITY_Community 205|Community 205]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `makeRouteEvent()` - 60 edges
@@ -113,9 +112,9 @@
 5. `seedChild()` - 33 edges
 6. `seedUser()` - 28 edges
 7. `seedMembership()` - 20 edges
-8. `POST()` - 18 edges
-9. `textSnippet()` - 18 edges
-10. `requireUser()` - 17 edges
+8. `requireUser()` - 18 edges
+9. `POST()` - 18 edges
+10. `textSnippet()` - 18 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Diversification guidance content (FR)` --conceptually_related_to--> `RGPD Article 15 (right of access)`  [AMBIGUOUS]
@@ -162,27 +161,27 @@
 - **Shared test harness for SvelteKit routes** — test_db, test_route, test_app_stubs [INFERRED 0.85]
 - **Sources route (server load + svelte page + test)** — sources_page_server, sources_page_svelte, sources_page_server_test [EXTRACTED 1.00]
 
-## Communities (206 total, 43 thin omitted)
+## Communities (205 total, 43 thin omitted)
 
 ### Community 0 - "Test Seed Helpers"
 Cohesion: 0.08
 Nodes (27): seed(), seedKey(), seedInvite(), setup(), seedUser(), setup(), setup(), setup() (+19 more)
 
 ### Community 1 - "App Shell & Navigation"
-Cohesion: 0.1
-Nodes (24): load(), dismissReminder(), loadAnalyticsBuckets(), loadCoparentActivity(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadRepeatCandidates() (+16 more)
+Cohesion: 0.08
+Nodes (23): load(), load(), loadEntry(), parseEntryId(), load(), load(), load(), load() (+15 more)
 
 ### Community 2 - "Passkey / WebAuthn"
 Cohesion: 0.06
 Nodes (40): Allergen taxonomy, Server auth (sessions, passwords), Session validation tests, Auth tests, db/backup.ts, Food category taxonomy, Periodic cleanup of expired rows, Cleanup tests (+32 more)
 
 ### Community 3 - "Route Loaders & Guards"
-Cohesion: 0.09
-Nodes (18): load(), load(), loadEntry(), parseEntryId(), load(), load(), load(), load() (+10 more)
-
-### Community 4 - "UI Primitives"
 Cohesion: 0.15
 Nodes (25): POST(), base64UrlToBuffer(), bufferToBase64Url(), buildAuthenticationOptions(), buildRegistrationOptions(), consumeChallenge(), createChallenge(), deletePasskey() (+17 more)
+
+### Community 4 - "UI Primitives"
+Cohesion: 0.13
+Nodes (22): load(), dismissReminder(), loadAnalyticsBuckets(), loadCoparentActivity(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadRepeatCandidates() (+14 more)
 
 ### Community 5 - "Allergens & Foods Loaders"
 Cohesion: 0.08
@@ -193,12 +192,12 @@ Cohesion: 0.08
 Nodes (24): load(), allergens load test, allergens public landing page, child/[id]/allergens load (per-allergen status), child/[id]/allergens load tests, child/[id]/allergens view, child/[id]/foods load (filters + repeat), child/[id]/foods load tests (+16 more)
 
 ### Community 7 - "Server Auth & GDPR Cleanup"
-Cohesion: 0.16
-Nodes (12): absoluteUrl(), articleJsonLd(), breadcrumbJsonLd(), faqPageJsonLd(), organizationJsonLd(), resolveOrigin(), webApplicationJsonLd(), websiteJsonLd() (+4 more)
-
-### Community 8 - "Database Schema & Catalogs"
 Cohesion: 0.18
 Nodes (14): POST(), createSession(), findUserByEmail(), hashPassword(), invalidateAllUserSessions(), invalidateSession(), listMembershipsForUser(), newToken() (+6 more)
+
+### Community 8 - "Database Schema & Catalogs"
+Cohesion: 0.16
+Nodes (12): absoluteUrl(), articleJsonLd(), breadcrumbJsonLd(), faqPageJsonLd(), organizationJsonLd(), resolveOrigin(), webApplicationJsonLd(), websiteJsonLd() (+4 more)
 
 ### Community 9 - "Hooks & Auth Tests"
 Cohesion: 0.11
@@ -212,65 +211,65 @@ Nodes (25): utils/allergens.ts (ALLERGENS catalog), backupBeforeMigrate (VACUUM 
 Cohesion: 0.1
 Nodes (24): login page.server.test.ts, Login Page (Svelte), signInWithPasskey, Logout POST handler, logout server.test.ts, mentions-legales +page.server.ts, mentions-legales page.server.test.ts, Mentions Légales page (+16 more)
 
-### Community 13 - "Account & Root Layout"
+### Community 12 - "SEO JSON-LD Helpers"
+Cohesion: 0.15
+Nodes (7): getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), load(), load(), ageInMonths(), formatAge()
+
+### Community 14 - "GDPR Data Export"
 Cohesion: 0.21
 Nodes (11): GET(), deleteUserAccount(), ExportTooLargeError, exportUserData(), isoOrNull(), isoOrThrow(), insertChild(), insertEntry() (+3 more)
 
-### Community 14 - "GDPR Data Export"
+### Community 15 - "Diversification Guidance Content"
 Cohesion: 0.3
 Nodes (10): runCleanup(), startCleanupTimer(), stopCleanupTimer(), seedUserAndChild(), bucketKey(), checkRateLimit(), _clearAllRateLimits(), clientKey() (+2 more)
 
-### Community 15 - "Diversification Guidance Content"
+### Community 16 - "Cleanup & Rate Limiting"
 Cohesion: 0.22
 Nodes (6): backupBeforeMigrate(), resolveBackupKeep(), ensureDir(), getDb(), resolveDbPath(), seedFoods()
 
-### Community 16 - "Cleanup & Rate Limiting"
+### Community 17 - "Age Stages & Tips"
 Cohesion: 0.14
 Nodes (16): src/routes/account/deleted/+page.svelte, src/routes/account/+page.server.ts, src/routes/account/page.server.test.ts, src/routes/account/+page.svelte, src/routes/+error.svelte, src/routes/+layout.server.ts, src/routes/layout.server.test.ts, src/routes/+layout.svelte (+8 more)
-
-### Community 17 - "Age Stages & Tips"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 18 - "Child Settings, New, Guide"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 19 - "Database Backup & Migrations"
-Cohesion: 0.14
-Nodes (14): child/[id]/settings +page.server.ts, child/[id]/settings page.server.test.ts, child/[id]/settings +page.svelte, child/new +page.server.ts, child/new page.server.test.ts, child/new +page.svelte, guide +page.server.ts, guide page.server.test.ts (+6 more)
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 20 - "Invitation Codes"
-Cohesion: 0.22
-Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
+Cohesion: 0.14
+Nodes (14): child/[id]/settings +page.server.ts, child/[id]/settings page.server.test.ts, child/[id]/settings +page.svelte, child/new +page.server.ts, child/new page.server.test.ts, child/new +page.svelte, guide +page.server.ts, guide page.server.test.ts (+6 more)
 
 ### Community 21 - "Allergen Education Components"
 Cohesion: 0.18
 Nodes (3): #each(), destroy(), setPagePathname()
 
 ### Community 22 - "Food Log & Suggestions"
+Cohesion: 0.22
+Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
+
+### Community 23 - "Sitemap & Sources Routes"
 Cohesion: 0.32
 Nodes (6): handler(), applyTheme(), getStoredTheme(), resolveTheme(), browser(), makeBrowserGlobals()
 
-### Community 23 - "Sitemap & Sources Routes"
-Cohesion: 0.27
-Nodes (4): getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), load()
-
 ### Community 24 - "Legal Identity Module"
-Cohesion: 0.31
-Nodes (5): findActiveInvitation(), load(), userHasMembership(), generateInviteCodeRaw(), isValidInviteCodeFormat()
-
-### Community 25 - "Theme System"
 Cohesion: 0.22
 Nodes (3): getAllergenLabel(), celebrate(), pickMilestoneFromQuery()
+
+### Community 25 - "Theme System"
+Cohesion: 0.35
+Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 26 - "Security Headers & Hooks"
 Cohesion: 0.35
 Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 27 - "SEO Source of Truth"
-Cohesion: 0.35
-Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
+Cohesion: 0.31
+Nodes (5): findActiveInvitation(), load(), userHasMembership(), generateInviteCodeRaw(), isValidInviteCodeFormat()
 
 ### Community 28 - "Date Utilities"
 Cohesion: 0.22
@@ -285,66 +284,62 @@ Cohesion: 0.27
 Nodes (10): Rationale: FK off during migrate, on after, with foreign_key_check, Rationale: stable per-page lastmod prevents crawler distrust, signup +page.server tests, sitemap.xml GET handler, sitemap.xml GET tests, sources +page.server load, sources +page.server tests, sources +page.svelte (+2 more)
 
 ### Community 31 - "Rate-Limit Internals"
-Cohesion: 0.56
-Nodes (5): formatDateInputValue(), formatDateTime(), formatRelative(), isValidBirthDate(), parseDateTimeLocal()
-
-### Community 32 - "DB Migration Runner"
 Cohesion: 0.33
 Nodes (3): load(), fuzzyMatch(), normalize()
 
-### Community 33 - "Invite Code Format"
+### Community 32 - "DB Migration Runner"
 Cohesion: 0.25
 Nodes (9): App.Locals, handle (SvelteKit Handle hook), PERMISSIONS_POLICY constant, Security headers strategy (CSP/HSTS/Referrer/Frame-Options), Sliding session-cookie renewal, makeEvent (test helper), seedUser (test helper), X-Robots-Tag noindex invariant for auth/account (+1 more)
 
-### Community 34 - "Export & Throttle Rationales"
+### Community 33 - "Invite Code Format"
 Cohesion: 0.33
 Nodes (9): absoluteUrl, articleJsonLd, breadcrumbJsonLd, Centralised SEO/JSON-LD source-of-truth pattern, organizationJsonLd, resolveOrigin, SITE config (centralised SEO), webApplicationJsonLd (+1 more)
 
-### Community 35 - "Input & Label UI"
+### Community 34 - "Export & Throttle Rationales"
 Cohesion: 0.39
 Nodes (4): getCategoryClasses(), getCategoryColor(), getCategoryIcon(), getCategoryLabel()
 
-### Community 37 - "Landing Features"
+### Community 36 - "Food Combobox"
 Cohesion: 0.53
 Nodes (4): applyMigrationFile(), counts(), markMigrationsApplied(), seedFixture()
 
-### Community 39 - "Sources Module"
+### Community 38 - "Button Variants"
 Cohesion: 0.33
 Nodes (6): server/cleanup.ts (periodic cleanup), db/index.ts (Drizzle SQLite client), checkRateLimit, clientKey, evictExpiredRateLimits, resetRateLimit
 
-### Community 40 - "Allergens Helpers"
+### Community 39 - "Sources Module"
 Cohesion: 0.6
 Nodes (3): signUp(), signUpOwnerAndCreateChild(), unique()
+
+### Community 47 - "Fuzzy Search Helpers"
+Cohesion: 0.7
+Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
 ### Community 48 - "Cookies Page & Login Bucket"
 Cohesion: 0.7
 Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
-### Community 49 - "Robots.txt"
-Cohesion: 0.7
-Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
-
-### Community 51 - "AllergenProgress"
+### Community 50 - "AllergenInfoDialog"
 Cohesion: 0.4
 Nodes (5): generateInviteCodeRaw, isValidInviteCodeFormat, src/lib/utils/invites.test.ts, Invite codes bumped from 4 to 6 chars for entropy, Accept legacy 4-char codes during 7-day TTL rollout
 
-### Community 52 - "DiversityCard"
+### Community 51 - "AllergenProgress"
 Cohesion: 0.4
 Nodes (5): Refuse oversize export instead of truncating (Article 15), GET /account/export, account export GET tests, Atomic throttle prevents concurrent exports, Conditions générales d'utilisation page
 
-### Community 66 - "Community 66"
+### Community 65 - "Textarea"
 Cohesion: 0.67
 Nodes (3): getChildNavItems, isNavItemActive, src/lib/utils/nav.test.ts
 
-### Community 67 - "Community 67"
+### Community 66 - "Community 66"
 Cohesion: 1.0
 Nodes (3): fuzzyMatch, normalize, src/lib/utils/search.test.ts
 
-### Community 68 - "Community 68"
+### Community 67 - "Community 67"
 Cohesion: 0.67
 Nodes (3): cookies +page.svelte (Cookies info page), login +page.server.ts, Do NOT reset rate-limit bucket on successful login to prevent attacker bypass
 
-### Community 69 - "Community 69"
+### Community 68 - "Community 68"
 Cohesion: 0.67
 Nodes (3): Disallow private surfaces from crawlers, robots.txt GET, robots.txt test
 
@@ -362,11 +357,11 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Diversification guidance content (FR)` and `RGPD Article 15 (right of access)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `resetTestDb()` connect `Test Seed Helpers` to `App Shell & Navigation`, `UI Primitives`, `Database Schema & Catalogs`, `Account & Root Layout`, `GDPR Data Export`, `Diversification Guidance Content`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
-- **Why does `requireUser()` connect `Route Loaders & Guards` to `App Shell & Navigation`, `UI Primitives`, `Account & Root Layout`?**
+- **Why does `resetTestDb()` connect `Test Seed Helpers` to `Route Loaders & Guards`, `UI Primitives`, `Server Auth & GDPR Cleanup`, `GDPR Data Export`, `Diversification Guidance Content`, `Cleanup & Rate Limiting`?**
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+- **Why does `requireUser()` connect `App Shell & Navigation` to `Route Loaders & Guards`, `UI Primitives`, `GDPR Data Export`?**
   _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **Why does `makeRouteEvent()` connect `Test Seed Helpers` to `Server Auth & GDPR Cleanup`?**
+- **Why does `makeRouteEvent()` connect `Test Seed Helpers` to `Database Schema & Catalogs`?**
   _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Are the 7 inferred relationships involving `seedChild()` (e.g. with `setup()` and `setup()`) actually correct?**
   _`seedChild()` has 7 INFERRED edges - model-reasoned connections that need verification._
