@@ -50,6 +50,13 @@ export default defineConfig({
         ]
       : [])
   ],
+  build: {
+    // 'hidden' emits .map files (so @sentry/vite-plugin can find and upload
+    // them when SENTRY_AUTH_TOKEN is set) but does NOT add sourceMappingURL
+    // comments to the output bundles. End users don't see the references
+    // in production code; only Sentry has the maps for stack symbolication.
+    sourcemap: 'hidden'
+  },
   resolve: {
     // For component tests we want the browser/client export of Svelte. The
     // sveltekit plugin sets server conditions for SSR builds; here we only
