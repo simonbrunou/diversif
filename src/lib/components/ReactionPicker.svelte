@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Check } from 'lucide-svelte';
   import { REACTIONS, type ReactionId } from '$lib/utils/reactions';
   import { cn } from '$lib/utils/cn';
 
@@ -40,8 +41,12 @@
     {@const Icon = r.icon}
     <label
       class={cn(
+        // Visible focus ring on every option (active or not), and a
+        // hover/tint cue. The :has(:focus-visible) style only paints a ring
+        // when the radio receives keyboard focus, so mouse selection stays
+        // quiet but tab-navigation is unmistakable.
         'group relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border p-3 text-center transition-all duration-200 ease-soft',
-        'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+        'has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2',
         s.tint,
         s.text,
         active
@@ -50,8 +55,16 @@
       )}
     >
       <input type="radio" {name} value={r.id} bind:group={value} class="sr-only" />
+      {#if active}
+        <span
+          class="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-current text-background"
+          aria-hidden="true"
+        >
+          <Check size={11} strokeWidth={3} />
+        </span>
+      {/if}
       <Icon size={20} aria-hidden="true" />
-      <span class="text-sm font-medium">{r.label}</span>
+      <span class={cn('text-sm', active ? 'font-semibold' : 'font-medium')}>{r.label}</span>
       {#if active}
         <span class="text-[11px] text-muted-foreground">{r.description}</span>
       {/if}

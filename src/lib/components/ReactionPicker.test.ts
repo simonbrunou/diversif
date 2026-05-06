@@ -38,4 +38,26 @@ describe('ReactionPicker', () => {
     const reaction = container.querySelector<HTMLInputElement>('input[value="reaction"]')!;
     expect(reaction.checked).toBe(true);
   });
+
+  it('paints a visible focus ring on every option (not only the active one)', () => {
+    const { container } = render(ReactionPicker, { props: { name: 'r' } });
+    const labels = Array.from(container.querySelectorAll('label'));
+    expect(labels.length).toBe(3);
+    for (const label of labels) {
+      const cls = label.className;
+      // has-[:focus-visible] paints a primary ring on keyboard focus regardless of selection state
+      expect(cls).toContain('has-[:focus-visible]:ring-2');
+      expect(cls).toContain('has-[:focus-visible]:ring-ring');
+    }
+  });
+
+  it('shows a non-color check badge on the active option (so selection is not color-only)', () => {
+    const { container } = render(ReactionPicker, {
+      props: { name: 'r', value: 'inconfort' }
+    });
+    // The active label's icon area is augmented with a check; we look for an
+    // svg whose stroke-width is 3 (the heavier check we draw to make it pop).
+    const heavyCheck = container.querySelector('svg[stroke-width="3"]');
+    expect(heavyCheck).not.toBeNull();
+  });
 });
