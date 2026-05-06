@@ -2,6 +2,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import { ALLERGENS } from '$lib/utils/allergens';
+import { requireMembership } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
 export type AllergenStatus = {
@@ -13,8 +14,9 @@ export type AllergenStatus = {
   count: number;
 };
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
   const childId = Number(params.id);
+  requireMembership(locals, childId);
 
   const rows = db
     .select({

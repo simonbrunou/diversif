@@ -68,6 +68,30 @@ describe('child/[id] +page.server load', () => {
     expect(r.kind).toBe('redirect');
   });
 
+  it('rejects authenticated users without membership with 403', async () => {
+    const { c } = await setup();
+    const intruder = await seedUser({ email: 'intruder@example.com' });
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(intruder),
+          memberships: [],
+          params: { id: String(c.id) },
+          parent: async () => ({
+            child: {
+              id: c.id,
+              name: c.name,
+              birthDate: c.birthDate,
+              createdAt: c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(403);
+  });
+
   it('returns dashboard data with no entries', async () => {
     const { u, c, m } = await setup();
     const out = await load(

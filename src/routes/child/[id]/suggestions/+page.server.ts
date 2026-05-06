@@ -3,10 +3,12 @@ import { foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, lte, notInArray, sql } from 'drizzle-orm';
 import { ALLERGENS } from '$lib/utils/allergens';
 import { ageInMonths } from '$lib/utils/age';
+import { requireMembership } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent }) => {
+export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const childId = Number(params.id);
+  requireMembership(locals, childId);
   const { child } = await parent();
   const months = ageInMonths(child.birthDate);
 

@@ -1,10 +1,12 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { requireMembership } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, url }) => {
+export const load: PageServerLoad = async ({ params, url, locals }) => {
   const childId = Number(params.id);
+  requireMembership(locals, childId);
 
   const q = url.searchParams.get('q')?.trim() ?? '';
   const category = url.searchParams.get('category') ?? '';

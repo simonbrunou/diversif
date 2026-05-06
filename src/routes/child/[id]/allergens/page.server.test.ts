@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { testDb, resetTestDb } from '../../../../test/db';
-import { makeRouteEvent, seedChild, seedUser } from '../../../../test/route';
+import {
+  captureFlow,
+  makeRouteEvent,
+  safeUser,
+  seedChild,
+  seedMembership,
+  seedUser
+} from '../../../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
@@ -12,20 +19,62 @@ beforeEach(() => {
   resetTestDb();
 });
 
+async function setup() {
+  const u = await seedUser();
+  const c = seedChild({ createdBy: u.id });
+  const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+  return { u, c, m };
+}
+
+function loadFor({ u, c, m }: Awaited<ReturnType<typeof setup>>) {
+  return load(
+    makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) }
+    }) as unknown as Parameters<typeof load>[0]
+  );
+}
+
 describe('child/[id]/allergens load', () => {
-  it('returns every allergen with introduced=false when no entries', async () => {
-    const u = await seedUser();
-    const c = seedChild({ createdBy: u.id });
-    const out = await load(
-      makeRouteEvent({ params: { id: String(c.id) } }) as unknown as Parameters<typeof load>[0]
+  it('rejects guests with a redirect to /login', async () => {
+    const { c } = await setup();
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: null,
+          params: { id: String(c.id) }
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
+    expect(r.kind).toBe('redirect');
+  });
+
+  it('rejects authenticated users without membership with 403', async () => {
+    const { c } = await setup();
+    const intruder = await seedUser({ email: 'intruder@example.com' });
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(intruder),
+          memberships: [],
+          params: { id: String(c.id) }
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(403);
+  });
+
+  it('returns every allergen with introduced=false when no entries', async () => {
+    const ctx = await setup();
+    const out = await loadFor(ctx);
     expect(out.allergens.length).toBe(ALLERGENS.length);
     expect(out.allergens.every((a) => !a.introduced)).toBe(true);
   });
 
   it('counts introductions and tracks first/last timestamps', async () => {
-    const u = await seedUser();
-    const c = seedChild({ createdBy: u.id });
+    const ctx = await setup();
     const food = testDb
       .insert(foods)
       .values({
@@ -46,29 +95,27 @@ describe('child/[id]/allergens load', () => {
       .insert(foodEntries)
       .values([
         {
-          childId: c.id,
+          childId: ctx.c.id,
           foodId: food.id,
           givenAt: t1,
           reaction: 'ras',
           notes: null,
-          loggedBy: u.id,
+          loggedBy: ctx.u.id,
           createdAt: new Date()
         },
         {
-          childId: c.id,
+          childId: ctx.c.id,
           foodId: food.id,
           givenAt: t2,
           reaction: 'ras',
           notes: null,
-          loggedBy: u.id,
+          loggedBy: ctx.u.id,
           createdAt: new Date()
         }
       ])
       .run();
 
-    const out = await load(
-      makeRouteEvent({ params: { id: String(c.id) } }) as unknown as Parameters<typeof load>[0]
-    );
+    const out = await loadFor(ctx);
     const oeuf = out.allergens.find((a) => a.id === 'oeuf')!;
     expect(oeuf.introduced).toBe(true);
     expect(oeuf.count).toBe(2);

@@ -16,7 +16,7 @@ import {
   dismissReminder,
   type EnrichedEntry
 } from '$lib/server/guidance/queries';
-import { requireMembership, requireUser } from '$lib/server/guards';
+import { requireMembership } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -30,8 +30,8 @@ export type AllergenSummary = {
 };
 
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
-  const user = requireUser(locals);
   const childId = Number(params.id);
+  const { user } = requireMembership(locals, childId);
   const { child } = await parent();
   const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS);
 
