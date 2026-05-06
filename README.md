@@ -39,6 +39,20 @@ docker compose up -d
 
 The SQLite DB is persisted in the named Docker volume `diversif-data` (pinned via `name:` so it is independent of the Compose project name), mounted at `/app/data` inside the container. The volume survives rebuilds, container recreations, repo re-clones, and renames of the project directory, so accounts and data are kept across deploys. Migrations and seeding run on every container start (idempotent).
 
+### Reverse proxy / Cloudflare Tunnel
+
+When the app sits behind a proxy (Coolify/Traefik, a Cloudflare Tunnel, nginx, etc.), `adapter-node` needs a few env vars to recover the real client IP and scheme. Without them the per-IP rate limits on `/signup` and `/login` see the proxy as a single client, so one bad actor can lock everyone out.
+
+For a Cloudflare Tunnel terminating at Coolify (the reference deploy):
+
+```
+ADDRESS_HEADER=cf-connecting-ip
+PROTOCOL_HEADER=x-forwarded-proto
+HOST_HEADER=x-forwarded-host
+```
+
+`cf-connecting-ip` is safe to trust **only because** a Tunnel origin has no public port — all traffic must transit Cloudflare, so a direct connection can't spoof the header. If you ever expose the Coolify host directly to the Internet, switch to `ADDRESS_HEADER=x-forwarded-for` and set `XFF_DEPTH` to the number of trusted proxies between you and the client (otherwise a client-supplied XFF entry wins).
+
 ### Pre-migration safety net
 
 On every container start, **before** migrations run, the app takes an online snapshot (`VACUUM INTO`) of the current DB into `/app/data/backups/diversif-<ISO timestamp>.db`. The last `DB_BACKUP_KEEP` snapshots (default 10) are retained — older ones are pruned. If a future migration eats data, recover by stopping the container and copying the most recent snapshot back over `diversif.db`:
