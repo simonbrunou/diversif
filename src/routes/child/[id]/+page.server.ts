@@ -16,7 +16,7 @@ import {
   dismissReminder,
   type EnrichedEntry
 } from '$lib/server/guidance/queries';
-import { parseChildIdParam, requireMembership } from '$lib/server/guards';
+import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -30,6 +30,9 @@ export type AllergenSummary = {
 };
 
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
+  // Same ordering as the layout: redirect guests to /login *before* a
+  // malformed id can turn the response into a 404.
+  requireUser(locals);
   const childId = parseChildIdParam(params);
   const { user } = requireMembership(locals, childId);
   const { child } = await parent();
@@ -188,6 +191,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
 export const actions: Actions = {
   dismissReminder: async ({ request, params, locals }) => {
+    requireUser(locals);
     const childId = parseChildIdParam(params);
     const { user } = requireMembership(locals, childId);
     const data = await request.formData();

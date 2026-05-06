@@ -2,7 +2,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import { ALLERGENS } from '$lib/utils/allergens';
-import { parseChildIdParam, requireMembership } from '$lib/server/guards';
+import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
 export type AllergenStatus = {
@@ -15,6 +15,7 @@ export type AllergenStatus = {
 };
 
 export const load: PageServerLoad = async ({ params, locals }) => {
+  requireUser(locals);
   const childId = parseChildIdParam(params);
   requireMembership(locals, childId);
 

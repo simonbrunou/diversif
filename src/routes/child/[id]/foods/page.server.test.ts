@@ -93,6 +93,19 @@ describe('child/[id]/foods load', () => {
     expect(r.kind).toBe('redirect');
   });
 
+  it('redirects guests to /login even when the URL has a malformed id', async () => {
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: null,
+          params: { id: 'not-a-number' },
+          url: `http://localhost/child/abc/foods`
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+  });
+
   it('rejects non-numeric child IDs with 404 before any query or membership check', async () => {
     const ctx = await setup();
     const r = await captureFlow(() =>
