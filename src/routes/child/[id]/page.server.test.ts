@@ -57,15 +57,70 @@ async function setup(opts: { entries?: number } = {}) {
 
 describe('child/[id] +page.server load', () => {
   it('redirects guests', async () => {
+    const { c } = await setup();
     const r = await captureFlow(() =>
       load(
         makeRouteEvent({
           user: null,
-          params: { id: '1' }
+          params: { id: String(c.id) }
         }) as unknown as Parameters<typeof load>[0]
       )
     );
     expect(r.kind).toBe('redirect');
+  });
+
+  it('redirects guests to /login even when the URL has a malformed id', async () => {
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: null,
+          params: { id: 'not-a-number' }
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+  });
+
+  it('rejects non-numeric child IDs with 404 before any query or membership check', async () => {
+    const { u, m } = await setup();
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: 'not-a-number' },
+          parent: async () => {
+            throw new Error('parent() must not be reached when childId is invalid');
+          }
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(404);
+  });
+
+  it('rejects authenticated users without membership with 403', async () => {
+    const { c } = await setup();
+    const intruder = await seedUser({ email: 'intruder@example.com' });
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(intruder),
+          memberships: [],
+          params: { id: String(c.id) },
+          parent: async () => ({
+            child: {
+              id: c.id,
+              name: c.name,
+              birthDate: c.birthDate,
+              createdAt: c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(403);
   });
 
   it('returns dashboard data with no entries', async () => {

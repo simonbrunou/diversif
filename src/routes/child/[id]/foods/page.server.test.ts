@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { testDb, resetTestDb } from '../../../../test/db';
-import { makeRouteEvent, seedChild, seedUser } from '../../../../test/route';
+import {
+  captureFlow,
+  makeRouteEvent,
+  safeUser,
+  seedChild,
+  seedMembership,
+  seedUser
+} from '../../../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
@@ -14,6 +21,7 @@ beforeEach(() => {
 async function setup() {
   const u = await seedUser();
   const c = seedChild({ createdBy: u.id });
+  const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
   const carrot = testDb
     .insert(foods)
     .values({
@@ -55,112 +63,149 @@ async function setup() {
         createdAt: new Date()
       })
       .run();
-  return { u, c, carrot, apple, log };
+  return { u, c, m, carrot, apple, log };
+}
+
+type SetupCtx = Awaited<ReturnType<typeof setup>>;
+function loadFor(ctx: SetupCtx, url: string) {
+  return load(
+    makeRouteEvent({
+      user: safeUser(ctx.u),
+      memberships: [ctx.m],
+      params: { id: String(ctx.c.id) },
+      url
+    }) as unknown as Parameters<typeof load>[0]
+  );
 }
 
 describe('child/[id]/foods load', () => {
-  it('returns all entries when no filter', async () => {
-    const { c, carrot, apple, log } = await setup();
-    log(carrot.id, 'ras', 1);
-    log(apple.id, 'ras', 2);
-    const out = await load(
-      makeRouteEvent({
-        params: { id: String(c.id) },
-        url: `http://localhost/child/${c.id}/foods`
-      }) as unknown as Parameters<typeof load>[0]
+  it('rejects guests with a redirect to /login', async () => {
+    const { c } = await setup();
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: null,
+          params: { id: String(c.id) },
+          url: `http://localhost/child/${c.id}/foods`
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
+    expect(r.kind).toBe('redirect');
+  });
+
+  it('redirects guests to /login even when the URL has a malformed id', async () => {
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: null,
+          params: { id: 'not-a-number' },
+          url: `http://localhost/child/abc/foods`
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+  });
+
+  it('rejects non-numeric child IDs with 404 before any query or membership check', async () => {
+    const ctx = await setup();
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: 'not-a-number' },
+          url: `http://localhost/child/abc/foods`
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(404);
+  });
+
+  it('rejects authenticated users without membership with 403', async () => {
+    const ctx = await setup();
+    const intruder = await seedUser({ email: 'intruder@example.com' });
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(intruder),
+          memberships: [],
+          params: { id: String(ctx.c.id) },
+          url: `http://localhost/child/${ctx.c.id}/foods`
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(403);
+  });
+
+  it('returns all entries when no filter', async () => {
+    const ctx = await setup();
+    ctx.log(ctx.carrot.id, 'ras', 1);
+    ctx.log(ctx.apple.id, 'ras', 2);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
     expect(out.entries.length).toBe(2);
     expect(out.filters).toEqual({ q: '', category: '', reaction: '', repeat: false });
   });
 
   it('filters by category', async () => {
-    const { c, carrot, apple, log } = await setup();
-    log(carrot.id, 'ras', 1);
-    log(apple.id, 'ras', 2);
-    const out = await load(
-      makeRouteEvent({
-        params: { id: String(c.id) },
-        url: `http://localhost/child/${c.id}/foods?category=fruits`
-      }) as unknown as Parameters<typeof load>[0]
-    );
+    const ctx = await setup();
+    ctx.log(ctx.carrot.id, 'ras', 1);
+    ctx.log(ctx.apple.id, 'ras', 2);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?category=fruits`);
     expect(out.entries.length).toBe(1);
     expect(out.entries[0].foodName).toBe('Pomme');
   });
 
   it('filters by reaction', async () => {
-    const { c, carrot, apple, log } = await setup();
-    log(carrot.id, 'ras', 1);
-    log(apple.id, 'inconfort', 2);
-    const out = await load(
-      makeRouteEvent({
-        params: { id: String(c.id) },
-        url: `http://localhost/child/${c.id}/foods?reaction=inconfort`
-      }) as unknown as Parameters<typeof load>[0]
-    );
+    const ctx = await setup();
+    ctx.log(ctx.carrot.id, 'ras', 1);
+    ctx.log(ctx.apple.id, 'inconfort', 2);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?reaction=inconfort`);
     expect(out.entries.map((e) => e.foodName)).toEqual(['Pomme']);
   });
 
   it('ignores reaction filter for unknown values', async () => {
-    const { c, carrot, log } = await setup();
-    log(carrot.id, 'ras', 1);
-    const out = await load(
-      makeRouteEvent({
-        params: { id: String(c.id) },
-        url: `http://localhost/child/${c.id}/foods?reaction=bogus`
-      }) as unknown as Parameters<typeof load>[0]
-    );
+    const ctx = await setup();
+    ctx.log(ctx.carrot.id, 'ras', 1);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?reaction=bogus`);
     expect(out.entries.length).toBe(1);
   });
 
   it('filters by text query (q)', async () => {
-    const { c, carrot, apple, log } = await setup();
-    log(carrot.id, 'ras', 1);
-    log(apple.id, 'ras', 2);
-    const out = await load(
-      makeRouteEvent({
-        params: { id: String(c.id) },
-        url: `http://localhost/child/${c.id}/foods?q=pom`
-      }) as unknown as Parameters<typeof load>[0]
-    );
+    const ctx = await setup();
+    ctx.log(ctx.carrot.id, 'ras', 1);
+    ctx.log(ctx.apple.id, 'ras', 2);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?q=pom`);
     expect(out.entries.map((e) => e.foodName)).toEqual(['Pomme']);
   });
 
   it('repeat=1 with no candidates returns empty', async () => {
-    const { c } = await setup();
-    const out = await load(
-      makeRouteEvent({
-        params: { id: String(c.id) },
-        url: `http://localhost/child/${c.id}/foods?repeat=1`
-      }) as unknown as Parameters<typeof load>[0]
-    );
+    const ctx = await setup();
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
     expect(out.entries).toEqual([]);
     expect(out.filters.repeat).toBe(true);
   });
 
   it('repeat=1 includes only foods given <=2 times with worst <= inconfort', async () => {
-    const { c, carrot, apple, log } = await setup();
+    const ctx = await setup();
     // carrot: 1 ras → candidate
-    log(carrot.id, 'ras', 1);
+    ctx.log(ctx.carrot.id, 'ras', 1);
     // apple: 3 ras → not candidate (count > 2)
-    log(apple.id, 'ras', 1);
-    log(apple.id, 'ras', 2);
-    log(apple.id, 'ras', 3);
-    const out = await load(
-      makeRouteEvent({
-        params: { id: String(c.id) },
-        url: `http://localhost/child/${c.id}/foods?repeat=1`
-      }) as unknown as Parameters<typeof load>[0]
-    );
+    ctx.log(ctx.apple.id, 'ras', 1);
+    ctx.log(ctx.apple.id, 'ras', 2);
+    ctx.log(ctx.apple.id, 'ras', 3);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
     expect(out.entries.every((e) => e.foodName === 'Carotte')).toBe(true);
   });
 
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
-    const { c, carrot } = await setup();
+    const ctx = await setup();
     testDb
       .insert(foodEntries)
       .values({
-        childId: c.id,
-        foodId: carrot.id,
+        childId: ctx.c.id,
+        foodId: ctx.carrot.id,
         givenAt: new Date(),
         reaction: 'ras',
         notes: null,
@@ -168,12 +213,7 @@ describe('child/[id]/foods load', () => {
         createdAt: new Date()
       })
       .run();
-    const out = await load(
-      makeRouteEvent({
-        params: { id: String(c.id) },
-        url: `http://localhost/child/${c.id}/foods`
-      }) as unknown as Parameters<typeof load>[0]
-    );
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
     expect(out.entries).toHaveLength(1);
     expect(out.entries[0].loggedByName).toBe('Compte supprimé');
   });

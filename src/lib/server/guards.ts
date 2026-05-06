@@ -1,6 +1,13 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { Membership, SafeUser } from '$lib/types';
 
+export function parseChildIdParam(params: Partial<Record<string, string>>): number {
+  const raw = params.id;
+  const n = raw === undefined ? NaN : Number(raw);
+  if (!Number.isInteger(n) || n <= 0) throw error(404, 'Enfant introuvable');
+  return n;
+}
+
 export function requireUser(locals: App.Locals): SafeUser {
   if (!locals.user) {
     throw redirect(303, '/login');

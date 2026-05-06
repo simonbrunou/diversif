@@ -16,7 +16,7 @@ import {
   dismissReminder,
   type EnrichedEntry
 } from '$lib/server/guidance/queries';
-import { requireMembership, requireUser } from '$lib/server/guards';
+import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -30,8 +30,11 @@ export type AllergenSummary = {
 };
 
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
-  const user = requireUser(locals);
-  const childId = Number(params.id);
+  // Same ordering as the layout: redirect guests to /login *before* a
+  // malformed id can turn the response into a 404.
+  requireUser(locals);
+  const childId = parseChildIdParam(params);
+  const { user } = requireMembership(locals, childId);
   const { child } = await parent();
   const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS);
 
@@ -188,7 +191,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
 export const actions: Actions = {
   dismissReminder: async ({ request, params, locals }) => {
-    const childId = Number(params.id);
+    requireUser(locals);
+    const childId = parseChildIdParam(params);
     const { user } = requireMembership(locals, childId);
     const data = await request.formData();
     const key = data.get('reminderKey');
