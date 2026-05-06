@@ -2,8 +2,8 @@
 // repeat-exposure candidates, dismissal lookups. Pure SQL via Drizzle.
 
 import { db } from '$lib/server/db';
-import { foodEntries, foods, tipDismissals } from '$lib/server/db/schema';
-import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
+import { foodEntries, foods, tipDismissals, users } from '$lib/server/db/schema';
+import { and, asc, desc, eq, gte, ne, sql } from 'drizzle-orm';
 import type { CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 
@@ -228,6 +228,60 @@ export function loadStreak(childId: number, now: Date = new Date()): number {
     }
   }
   return streak;
+}
+
+export type CoparentEntry = {
+  id: number;
+  foodName: string;
+  category: CategoryId;
+  reaction: ReactionId;
+  givenAt: number;
+  loggedByName: string;
+};
+
+/**
+ * Recent food entries on this child logged by someone OTHER than the current
+ * viewer, within the last `days`. Used to power a "your co-parent has been
+ * busy" card on the dashboard. Empty for solo accounts.
+ */
+export function loadCoparentActivity(
+  childId: number,
+  currentUserId: number,
+  days: number = 7,
+  limit: number = 5
+): CoparentEntry[] {
+  const since = new Date(Date.now() - days * DAY_MS);
+  const rows = db
+    .select({
+      id: foodEntries.id,
+      foodName: foods.name,
+      category: foods.category,
+      reaction: foodEntries.reaction,
+      givenAt: foodEntries.givenAt,
+      loggedByName: users.displayName
+    })
+    .from(foodEntries)
+    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+    .innerJoin(users, eq(users.id, foodEntries.loggedBy))
+    .where(
+      and(
+        eq(foodEntries.childId, childId),
+        ne(foodEntries.loggedBy, currentUserId),
+        gte(foodEntries.givenAt, since)
+      )
+    )
+    .orderBy(desc(foodEntries.givenAt))
+    .limit(limit)
+    .all();
+
+  return rows.map((r) => ({
+    id: r.id,
+    foodName: r.foodName,
+    category: r.category as CategoryId,
+    reaction: r.reaction as ReactionId,
+    givenAt: r.givenAt.getTime(),
+    loggedByName: r.loggedByName
+  }));
 }
 
 export type WeekBucket = {
