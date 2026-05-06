@@ -374,4 +374,49 @@ describe('child/[id]/log default action', () => {
     const created = testDb.select().from(foods).where(eq(foods.name, 'Crêpe')).get();
     expect(created!.category).toBe('feculents');
   });
+
+  it('rolls back the custom-food insert when the entry insert throws', async () => {
+    const { u, c, m } = await setup();
+
+    // Spy testDb.insert: throw when called with foodEntries (the action's
+    // entry-insert call). The custom-food insert (called with foods) goes
+    // through normally — that's the write we want to see rolled back.
+    const realInsert = testDb.insert.bind(testDb);
+    const insertSpy = vi.spyOn(testDb, 'insert').mockImplementation((table) => {
+      if (table === foodEntries) {
+        throw new Error('simulated entry insert failure');
+      }
+      return realInsert(table);
+    });
+
+    try {
+      const event = makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        formData: {
+          'customFood.name': 'Plat unique de test',
+          'customFood.category': 'autre',
+          givenAt: new Date().toISOString().slice(0, 16),
+          reaction: 'ras'
+        }
+      });
+
+      await expect(
+        captureFlow(() =>
+          actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+        )
+      ).rejects.toThrow('simulated entry insert failure');
+    } finally {
+      insertSpy.mockRestore();
+    }
+
+    // Assert: no custom food committed for this child
+    const customFoods = testDb.select().from(foods).where(eq(foods.customForChildId, c.id)).all();
+    expect(customFoods).toEqual([]);
+
+    // Assert: no entry committed for this child
+    const entries = testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id)).all();
+    expect(entries).toEqual([]);
+  });
 });
