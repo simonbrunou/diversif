@@ -1,4 +1,4 @@
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit';
 import {
   SESSION_COOKIE,
   SESSION_DURATION_MS,
@@ -6,25 +6,6 @@ import {
   listMembershipsForUser,
   validateSession
 } from '$lib/server/auth';
-
-/**
- * DEBUG (temporary): surface server-side errors to the client and log the
- * stack with a recognisable prefix. Remove once the production 500 we're
- * tracking on /child/[id]/guide is resolved.
- */
-export const handleError: HandleServerError = ({ error, event, status, message }) => {
-  const err = error as Error;
-  console.error('[diversif:handleError]', event.url.pathname, {
-    status,
-    message,
-    name: err?.name,
-    msg: err?.message,
-    stack: err?.stack
-  });
-  return {
-    message: `${err?.name ?? 'Error'}: ${err?.message ?? message ?? 'unknown'}`
-  };
-};
 
 // `script-src` and `style-src` are emitted as a `<meta>` tag by SvelteKit
 // (see svelte.config.js `kit.csp`), which lets it hash its own inline
