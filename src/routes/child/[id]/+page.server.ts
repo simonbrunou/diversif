@@ -141,9 +141,16 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   // child.createdAt comes from the layout load, avoiding a second SELECT.
   const childCreatedAt = child.createdAt;
 
+  // Pin a single "now" so ageMonths and the reminder windows all see the
+  // same instant. Otherwise a request that straddles a month boundary by
+  // a few microseconds could compute ageMonths from one Date and the
+  // 4-11-month allergen window from another, silently disagreeing.
+  const nowAtLoad = new Date();
+  const ageMonths = ageInMonths(child.birthDate, nowAtLoad);
+
   // Suggest a tiny starter list ONLY when the child has zero entries — once
   // any food is logged, the dashboard's full "recent" feed takes over.
-  const starterFoods = distinctFoods === 0 ? loadStarterFoods(ageInMonths(child.birthDate), 4) : [];
+  const starterFoods = distinctFoods === 0 ? loadStarterFoods(ageMonths, 4) : [];
 
   const dismissals = loadDismissals(user.id, childId);
   const introducedAllergenIds = new Set(
@@ -154,11 +161,12 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
   const reminders = computeReminders({
     childId,
-    ageMonths: ageInMonths(child.birthDate),
+    ageMonths,
     childCreatedAt,
     entries: entriesNormalized,
     introducedAllergens: introducedAllergenIds,
-    dismissals
+    dismissals,
+    now: nowAtLoad.getTime()
   });
 
   // Welcome dialog: show only if not dismissed and the child has no entries

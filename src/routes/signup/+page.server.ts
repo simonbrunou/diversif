@@ -83,11 +83,15 @@ export const actions: Actions = {
     const lowerEmail = email.toLowerCase();
 
     if (findUserByEmail(lowerEmail)) {
+      // Generic message — the previous "compte existe déjà" wording let an
+      // attacker enumerate registered addresses by attempting to sign up.
+      // The new copy gently nudges existing users towards /login without
+      // confirming whether the address is on file.
       return fail(400, {
         email: formEmail,
         displayName: formDisplayName,
         inviteCode: formInvite,
-        error: 'Un compte existe déjà pour cet email.'
+        error: 'Inscription impossible. Si vous avez déjà un compte, essayez de vous connecter.'
       });
     }
 

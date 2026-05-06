@@ -205,6 +205,14 @@ export function loadWeeklyRecap(childId: number, now: Date = new Date()): Weekly
 }
 
 export function loadStreak(childId: number, now: Date = new Date()): number {
+  // We bucket by UTC day on purpose. Most parents are within UTC±2 (Europe),
+  // and a UTC-day boundary differs from local-day by at most ~2 hours — well
+  // outside the normal awake window for logging baby meals (basically nobody
+  // logs lunch at 02:00 local). The cost of UTC-bucketing is a theoretical
+  // off-by-one for someone logging right around midnight in a far-east
+  // timezone; the benefit is a stable computation that doesn't depend on the
+  // server's TZ env or a costly per-row TZ shift. If we ever start serving
+  // users far from Europe, switch to a localized bucketing here.
   // Distinct UTC days that contain at least one entry, in descending order.
   const rows = db.all<{ day: number }>(
     sql`SELECT DISTINCT CAST((${foodEntries.givenAt} / ${DAY_MS}) AS INTEGER) as day

@@ -106,14 +106,16 @@ describe('signup default action', () => {
     });
   }
 
-  it('fails when email already exists', async () => {
+  it('fails generically when email already exists (no enumeration leak)', async () => {
     await seedUser({ email: 'taken@example.com' });
     const event = makeRouteEvent({ formData: form({ email: 'taken@example.com' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
     )) as { status: number; data: { error: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/existe/i);
+    expect(r.data.error).toMatch(/inscription impossible/i);
+    // Must NOT confirm whether the address is on file.
+    expect(r.data.error).not.toMatch(/existe/i);
   });
 
   it('fails when invite code format is invalid', async () => {
