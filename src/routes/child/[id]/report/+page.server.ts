@@ -1,0 +1,192 @@
+import { db } from '$lib/server/db';
+import { foodEntries, foods } from '$lib/server/db/schema';
+import { and, asc, eq, isNotNull } from 'drizzle-orm';
+import { ALLERGENS } from '$lib/utils/allergens';
+import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
+import type { ReactionId } from '$lib/utils/reactions';
+import type { PageServerLoad } from './$types';
+
+export type ReportEntry = {
+  id: number;
+  foodId: number;
+  foodName: string;
+  category: CategoryId;
+  allergenType: string | null;
+  reaction: ReactionId;
+  givenAt: number;
+  notes: string | null;
+};
+
+export type ReportFood = {
+  foodId: number;
+  foodName: string;
+  category: CategoryId;
+  firstGivenAt: number;
+  lastGivenAt: number;
+  exposures: number;
+  worstReaction: ReactionId;
+  allergenType: string | null;
+};
+
+export type AllergenReportRow = {
+  id: string;
+  label: string;
+  status: 'introduced' | 'untested';
+  worst: ReactionId | null;
+  exposures: number;
+  firstGivenAt: number | null;
+  lastGivenAt: number | null;
+};
+
+export const load: PageServerLoad = async ({ parent }) => {
+  const { child } = await parent();
+  const childId = child.id;
+
+  // Pull all entries with their food join, ordered chronologically.
+  const rows = db
+    .select({
+      id: foodEntries.id,
+      foodId: foods.id,
+      foodName: foods.name,
+      category: foods.category,
+      allergenType: foods.allergenType,
+      reaction: foodEntries.reaction,
+      givenAt: foodEntries.givenAt,
+      notes: foodEntries.notes
+    })
+    .from(foodEntries)
+    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+    .where(eq(foodEntries.childId, childId))
+    .orderBy(asc(foodEntries.givenAt))
+    .all();
+
+  const entries: ReportEntry[] = rows.map((r) => ({
+    id: r.id,
+    foodId: r.foodId,
+    foodName: r.foodName,
+    category: r.category as CategoryId,
+    allergenType: r.allergenType,
+    reaction: r.reaction as ReactionId,
+    givenAt: r.givenAt.getTime(),
+    notes: r.notes
+  }));
+
+  const reactionRank: Record<ReactionId, number> = { ras: 0, inconfort: 1, reaction: 2 };
+
+  // Aggregate per food: first/last/count/worst.
+  const byFood = new Map<number, ReportFood>();
+  for (const e of entries) {
+    const cur = byFood.get(e.foodId);
+    if (!cur) {
+      byFood.set(e.foodId, {
+        foodId: e.foodId,
+        foodName: e.foodName,
+        category: e.category,
+        firstGivenAt: e.givenAt,
+        lastGivenAt: e.givenAt,
+        exposures: 1,
+        worstReaction: e.reaction,
+        allergenType: e.allergenType
+      });
+    } else {
+      cur.lastGivenAt = e.givenAt;
+      cur.exposures += 1;
+      if (reactionRank[e.reaction] > reactionRank[cur.worstReaction]) {
+        cur.worstReaction = e.reaction;
+      }
+    }
+  }
+  const foodsByCategory = new Map<CategoryId, ReportFood[]>();
+  for (const id of CATEGORY_IDS) foodsByCategory.set(id as CategoryId, []);
+  for (const f of byFood.values()) {
+    foodsByCategory.get(f.category)?.push(f);
+  }
+  for (const list of foodsByCategory.values()) {
+    list.sort((a, b) => a.firstGivenAt - b.firstGivenAt);
+  }
+  const categoryGroups = Array.from(foodsByCategory.entries())
+    .filter(([, list]) => list.length > 0)
+    .map(([id, list]) => ({ id, foods: list }));
+
+  // Per-allergen summary: introduced / worst / counts.
+  const allergenJoinRows = db
+    .select({
+      allergenType: foods.allergenType,
+      reaction: foodEntries.reaction,
+      givenAt: foodEntries.givenAt
+    })
+    .from(foodEntries)
+    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)))
+    .all();
+
+  const allergenAggMap = new Map<
+    string,
+    { worst: ReactionId; exposures: number; first: number; last: number }
+  >();
+  for (const r of allergenJoinRows) {
+    /* v8 ignore next — query already filters allergenType IS NOT NULL */
+    if (!r.allergenType) continue;
+    const at = r.givenAt.getTime();
+    const cur = allergenAggMap.get(r.allergenType);
+    const reaction = r.reaction as ReactionId;
+    if (!cur) {
+      allergenAggMap.set(r.allergenType, {
+        worst: reaction,
+        exposures: 1,
+        first: at,
+        last: at
+      });
+    } else {
+      cur.exposures += 1;
+      cur.first = Math.min(cur.first, at);
+      cur.last = Math.max(cur.last, at);
+      if (reactionRank[reaction] > reactionRank[cur.worst]) cur.worst = reaction;
+    }
+  }
+
+  const allergens: AllergenReportRow[] = ALLERGENS.map((a) => {
+    const agg = allergenAggMap.get(a.id);
+    if (!agg) {
+      return {
+        id: a.id,
+        label: a.label,
+        status: 'untested' as const,
+        worst: null,
+        exposures: 0,
+        firstGivenAt: null,
+        lastGivenAt: null
+      };
+    }
+    return {
+      id: a.id,
+      label: a.label,
+      status: 'introduced' as const,
+      worst: agg.worst,
+      exposures: agg.exposures,
+      firstGivenAt: agg.first,
+      lastGivenAt: agg.last
+    };
+  });
+
+  // Notable reactions for the timeline section: every inconfort/réaction
+  // entry, oldest first. We deliberately don't cap — this section exists so
+  // the pediatrician sees the full reaction history, and silently dropping
+  // older entries would defeat the report's purpose.
+  const notable = entries.filter((e) => e.reaction !== 'ras');
+
+  return {
+    generatedAt: Date.now(),
+    totals: {
+      foods: byFood.size,
+      entries: entries.length,
+      categoriesCovered: categoryGroups.filter((g) => g.id !== 'autre').length,
+      categoriesTotal: CATEGORY_IDS.length - 1,
+      allergensIntroduced: allergens.filter((a) => a.status === 'introduced').length,
+      allergensTotal: ALLERGENS.length
+    },
+    categoryGroups,
+    allergens,
+    notable
+  };
+};

@@ -24,7 +24,7 @@
 
 <div class="flex flex-1">
   <aside
-    class="hidden w-60 shrink-0 border-r bg-surface md:sticky md:top-0 md:flex md:h-dvh md:flex-col"
+    class="hidden w-60 shrink-0 border-r bg-surface print:hidden md:sticky md:top-0 md:flex md:h-dvh md:flex-col"
   >
     <div class="border-b p-5">
       <a href="/" class="text-sm font-semibold tracking-tight text-primary hover:underline">

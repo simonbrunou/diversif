@@ -369,12 +369,19 @@
     </a>
   </section>
 
-  <div class="text-center">
+  <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center">
     <a
       href={`/child/${data.child.id}/settings`}
-      class="text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+      class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       Réglages de la fiche
+    </a>
+    <span class="text-muted-foreground/40" aria-hidden="true">·</span>
+    <a
+      href={`/child/${data.child.id}/report`}
+      class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      Récap imprimable
     </a>
   </div>
 </div>
