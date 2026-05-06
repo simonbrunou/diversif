@@ -169,8 +169,11 @@ export const load: PageServerLoad = async ({ parent }) => {
     };
   });
 
-  // Notable reactions for the timeline section: anything inconfort/reaction.
-  const notable = entries.filter((e) => e.reaction !== 'ras').slice(-30);
+  // Notable reactions for the timeline section: every inconfort/réaction
+  // entry, oldest first. We deliberately don't cap — this section exists so
+  // the pediatrician sees the full reaction history, and silently dropping
+  // older entries would defeat the report's purpose.
+  const notable = entries.filter((e) => e.reaction !== 'ras');
 
   return {
     generatedAt: Date.now(),

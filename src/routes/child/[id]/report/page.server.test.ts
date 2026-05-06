@@ -121,6 +121,22 @@ describe('child/[id]/report load', () => {
     expect(out.totals.allergensIntroduced).toBe(1);
   });
 
+  it('returns every non-RAS entry in the notable timeline (no silent cap)', async () => {
+    const { u, c } = await setup();
+    const f = seedFood('Pomme', 'fruits');
+    const N = 35; // larger than the previous 30-entry cap we removed
+    const start = Date.UTC(2024, 4, 1, 10);
+    const DAY = 24 * 60 * 60 * 1000;
+    for (let i = 0; i < N; i++) {
+      logEntry(c.id, f.id, u.id, new Date(start + i * DAY), 'inconfort');
+    }
+    const event = makeRouteEvent({
+      parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
+    });
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out.notable.length).toBe(N);
+  });
+
   it('surfaces only non-RAS reactions in the notable timeline and includes notes', async () => {
     const { u, c } = await setup();
     const banana = seedFood('Banane', 'fruits');

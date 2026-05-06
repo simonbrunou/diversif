@@ -170,23 +170,31 @@
 
   <!-- Notable reactions -->
   {#if data.notable.length > 0}
-    <section class="space-y-3 break-inside-avoid">
+    <section class="space-y-3">
       <h2 class="font-display text-xl font-semibold">Réactions à signaler</h2>
-      <ul class="space-y-1 text-sm">
+      <ul class="space-y-2 text-sm">
         {#each data.notable as e (e.id)}
           {@const Icon = reactionIcon(e.reaction)}
-          <li class="flex items-baseline justify-between gap-3 border-b pb-1 print:border-black/15">
+          <li
+            class="flex flex-col gap-1 border-b pb-1.5 print:break-inside-avoid print:border-black/15 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3"
+          >
             <span class="flex min-w-0 items-baseline gap-1.5">
               <Icon size={12} class={reactionClass(e.reaction)} aria-hidden="true" />
-              <span class="truncate"
-                ><strong>{e.foodName}</strong>
-                <span class="text-xs text-muted-foreground">·
-                  {getCategoryLabel(e.category)}{#if e.notes}
-                    · {e.notes}{/if}</span
-                ></span
-              >
+              <span class="min-w-0">
+                <strong>{e.foodName}</strong>
+                <span class="text-xs text-muted-foreground"
+                  >· {getCategoryLabel(e.category)}</span
+                >
+                {#if e.notes}
+                  <span class="mt-0.5 block whitespace-pre-wrap text-xs text-muted-foreground">
+                    {e.notes}
+                  </span>
+                {/if}
+              </span>
             </span>
-            <span class="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+            <span
+              class="shrink-0 whitespace-nowrap text-xs text-muted-foreground sm:self-baseline"
+            >
               {fmtDay(e.givenAt)} · {getReactionLabel(e.reaction)}
             </span>
           </li>
