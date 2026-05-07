@@ -1,5 +1,12 @@
+// Side-effect-only: ensures Sentry is initialised before getDb() runs at
+// module init time. The captureException calls below would otherwise
+// silently drop events because hooks.server.ts's own Sentry.init has not
+// run yet at that point in the import chain.
+import '$lib/sentry-init.server';
+
 import path from 'node:path';
 import { existsSync, mkdirSync, statSync } from 'node:fs';
+import * as Sentry from '@sentry/sveltekit';
 import Database from 'better-sqlite3';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
@@ -29,6 +36,8 @@ export function getDb(): DB {
 
   const sqlite = new Database(dbPath);
   sqlite.pragma('journal_mode = WAL');
+  sqlite.pragma('busy_timeout = 5000');
+  sqlite.pragma('synchronous = NORMAL');
 
   // Best-effort: skip the snapshot when the DB file is brand new (size 0)
   // or when the existence/size probe itself fails (race against another
@@ -62,7 +71,9 @@ export function getDb(): DB {
 
   const violations = sqlite.pragma('foreign_key_check') as unknown[];
   if (Array.isArray(violations) && violations.length > 0) {
-    throw new Error(`Foreign key violations after migrations: ${JSON.stringify(violations)}`);
+    const err = new Error(`Foreign key violations after migrations: ${JSON.stringify(violations)}`);
+    Sentry.captureException(err, { tags: { subsystem: 'db-migrate' } });
+    throw err;
   }
   sqlite.pragma('foreign_keys = ON');
 

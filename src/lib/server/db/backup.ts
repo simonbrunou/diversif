@@ -2,6 +2,7 @@ import path from 'node:path';
 import * as nodeFs from 'node:fs';
 import { randomBytes } from 'node:crypto';
 import type Database from 'better-sqlite3';
+import * as Sentry from '@sentry/sveltekit';
 
 export type FsLike = Pick<typeof nodeFs, 'mkdirSync' | 'readdirSync' | 'statSync' | 'unlinkSync'>;
 
@@ -47,6 +48,7 @@ export function backupBeforeMigrate(
     sqlite.exec(`VACUUM INTO '${target.replace(/'/g, "''")}'`);
   } catch (err) {
     console.error('[db] pre-migration backup failed:', err);
+    Sentry.captureException(err, { tags: { subsystem: 'db-backup' } });
     return null;
   }
 
