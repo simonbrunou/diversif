@@ -3,6 +3,16 @@ import { testDb, resetTestDb } from './test/db';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
+const { captureExceptionMock, initMock } = vi.hoisted(() => ({
+  captureExceptionMock: vi.fn(),
+  initMock: vi.fn()
+}));
+
+vi.mock('@sentry/sveltekit', () => ({
+  init: initMock,
+  captureException: captureExceptionMock
+}));
+
 import { handle, handleError } from './hooks.server';
 import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';
@@ -235,6 +245,82 @@ describe('handleError', () => {
       const payload = JSON.parse(spy.mock.calls[0][1] as string);
       expect(payload.name).toBeUndefined();
       expect(payload.msg).toBeUndefined();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
+
+describe('handleError → Sentry', () => {
+  beforeEach(() => {
+    captureExceptionMock.mockClear();
+  });
+
+  function makeSentryErrorEvent(pathname = '/child/42/log/9', method = 'POST') {
+    return {
+      request: { method } as Request,
+      url: new URL(`http://localhost${pathname}`),
+      route: { id: '/child/[id]/log/[entryId]' },
+      locals: { user: { id: 7 } } as unknown as App.Locals
+    };
+  }
+
+  it('forwards the error to Sentry with errorId, status, method, route tags', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const err = new TypeError('boom');
+      const result = handleError({
+        error: err,
+        event: makeSentryErrorEvent(),
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+
+      expect(captureExceptionMock).toHaveBeenCalledOnce();
+      const [capturedErr, capturedCtx] = captureExceptionMock.mock.calls[0];
+      expect(capturedErr).toBe(err);
+      expect(capturedCtx.tags).toEqual({
+        errorId: result?.errorId,
+        status: 500,
+        method: 'POST',
+        route: '/child/[id]/log/[entryId]'
+      });
+      // No PII slipped in
+      expect(capturedCtx.user).toBeUndefined();
+      expect(capturedCtx.contexts).toBeUndefined();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('still emits the [diversif:error] stderr line', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      handleError({
+        error: new Error('x'),
+        event: makeSentryErrorEvent(),
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+      expect(spy).toHaveBeenCalledOnce();
+      expect(spy.mock.calls[0][0]).toBe('[diversif:error]');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('routes default to null when SvelteKit did not match a route', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      handleError({
+        error: new Error('x'),
+        event: { ...makeSentryErrorEvent(), route: { id: null } },
+        status: 404,
+        message: 'Not Found'
+      } as unknown as Parameters<typeof handleError>[0]);
+      const ctx = captureExceptionMock.mock.calls[0][1];
+      expect(ctx.tags.route).toBeNull();
+      expect(ctx.tags.status).toBe(404);
     } finally {
       spy.mockRestore();
     }

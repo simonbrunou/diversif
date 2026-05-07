@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -35,8 +36,38 @@ export default defineConfig({
         ]
       },
       devOptions: { enabled: false }
-    })
+    }),
+    ...(process.env.SENTRY_AUTH_TOKEN
+      ? [
+          sentryVitePlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: process.env.SENTRY_ORG || 'diversif',
+            project: process.env.SENTRY_PROJECT || 'diversif',
+            release: { name: process.env.SENTRY_RELEASE || undefined },
+            sourcemaps: {
+              assets: ['./build/**'],
+              // Delete .map files after upload so the deployed build
+              // (which adapter-node copies into the runtime image) doesn't
+              // ship reachable .map files. Sentry retains them for stack
+              // symbolication.
+              filesToDeleteAfterUpload: ['./build/**/*.map']
+            },
+            telemetry: false
+          })
+        ]
+      : [])
   ],
+  build: {
+    // Emit hidden source maps ONLY when SENTRY_AUTH_TOKEN is set, so we
+    // produce them precisely when the Sentry plugin will upload + delete
+    // them. Without the token (local builds, CI without Sentry creds), no
+    // .map files are written — nothing for an attacker to fetch.
+    //
+    // 'hidden' (vs 'true') omits the //# sourceMappingURL= comment, but
+    // the .map files would still be reachable by URL-guessing without the
+    // post-upload delete (configured below in the plugin block).
+    sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false
+  },
   resolve: {
     // For component tests we want the browser/client export of Svelte. The
     // sveltekit plugin sets server conditions for SSR builds; here we only
@@ -60,6 +91,7 @@ export default defineConfig({
       include: [
         'src/lib/**/*.ts',
         'src/hooks.server.ts',
+        'src/hooks.client.ts',
         'src/routes/**/+page.server.ts',
         'src/routes/**/+layout.server.ts',
         'src/routes/**/+server.ts'
@@ -77,7 +109,13 @@ export default defineConfig({
         // foreign-key resolvers, evaluated lazily by the ORM. The declarations
         // themselves are exercised in schema.test.ts and indirectly by every
         // DB-backed test via INSERT/SELECT.
-        'src/lib/server/db/schema.ts'
+        'src/lib/server/db/schema.ts',
+        // Bootstrap singleton calling Sentry.init at module top — exercises
+        // real network/SDK runtime; the `handleError` body itself is a thin
+        // pass-through to Sentry.captureException with no logic worth covering
+        // (the strict-PII contract lives in scrubEvent, which is tested in
+        // src/lib/sentry.test.ts at 100%).
+        'src/hooks.client.ts'
       ],
       thresholds: {
         lines: 100,
