@@ -5,6 +5,8 @@
   import { getChildNavItems, isNavItemActive } from '$lib/utils/nav';
   import { formatAge } from '$lib/utils/age';
   import { UserCircle2 } from 'lucide-svelte';
+  import QueueBadge from './QueueBadge.svelte';
+  import InstallPrompt from './InstallPrompt.svelte';
 
   let {
     childId,
@@ -74,6 +76,10 @@
         <UserCircle2 size={18} aria-hidden="true" />
         <span>Mon compte</span>
       </a>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <QueueBadge />
+        <InstallPrompt />
+      </div>
     </div>
   </aside>
 
