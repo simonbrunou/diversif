@@ -38,4 +38,8 @@
   .locale-switcher a:hover:not([data-active='true']) {
     color: hsl(var(--foreground));
   }
+  .locale-switcher a:focus-visible {
+    outline: 2px solid hsl(var(--foreground));
+    outline-offset: 2px;
+  }
 </style>
