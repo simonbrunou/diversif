@@ -13,6 +13,9 @@
   }
 
   const items = $derived(getChildNavItems(childId));
+  // Strip the /en prefix so isNavItemActive (which compares against unprefixed
+  // item.href values) still highlights the correct tab on English child routes.
+  const pathname = $derived($page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/');
 </script>
 
 <nav
@@ -21,7 +24,7 @@
 >
   <ul class="grid grid-cols-5 gap-1 px-2 pt-2">
     {#each items as item (item.href)}
-      {@const active = isNavItemActive(item.href, $page.url.pathname, childId)}
+      {@const active = isNavItemActive(item.href, pathname, childId)}
       {@const Icon = item.icon}
       <li>
         <a

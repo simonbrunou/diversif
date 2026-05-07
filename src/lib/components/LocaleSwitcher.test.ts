@@ -5,7 +5,7 @@ import '../../test/component';
 import LocaleSwitcher from './LocaleSwitcher.svelte';
 
 vi.mock('$app/state', () => ({
-  page: { url: { pathname: '/login' } }
+  page: { url: { pathname: '/login', search: '', hash: '' } }
 }));
 
 vi.mock('$lib/paraglide/runtime', () => ({
@@ -34,6 +34,23 @@ describe('LocaleSwitcher', () => {
     const en = screen.getByRole('link', { name: /en/i });
     expect(fr.getAttribute('data-active')).toBe('true');
     expect(en.getAttribute('data-active')).toBeNull();
+  });
+
+  it('preserves query string and hash when switching locales', async () => {
+    const state = await import('$app/state');
+    const original = state.page.url;
+    Object.assign(state.page, {
+      url: { pathname: '/signup', search: '?code=INVITE', hash: '#form' }
+    });
+    try {
+      render(LocaleSwitcher);
+      const fr = screen.getByRole('link', { name: /fr/i });
+      const en = screen.getByRole('link', { name: /en/i });
+      expect(fr.getAttribute('href')).toBe('/signup?code=INVITE#form');
+      expect(en.getAttribute('href')).toBe('/en/signup?code=INVITE#form');
+    } finally {
+      Object.assign(state.page, { url: original });
+    }
   });
 
   it('flips data-active when languageTag is en', async () => {

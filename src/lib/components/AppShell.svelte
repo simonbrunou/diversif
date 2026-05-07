@@ -27,7 +27,10 @@
   } = $props();
 
   const items = $derived(getChildNavItems(childId, { includeGuide: true }));
-  const pathname = $derived($page.url.pathname);
+  // Strip the /en locale prefix so isNavItemActive (which compares against
+  // unprefixed item.href values) and the account-link check still match on
+  // English child routes like /en/child/1/log.
+  const pathname = $derived($page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/');
 </script>
 
 <div class="flex flex-1">
@@ -50,7 +53,7 @@
           {@const Icon = item.icon}
           <li>
             <a
-              href={item.href}
+              href={localizedHref(item.href)}
               class={cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

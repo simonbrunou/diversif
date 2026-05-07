@@ -10,7 +10,7 @@
 <nav class="locale-switcher" aria-label={m.chromeLocaleSwitcherLabel()}>
   {#each availableLanguageTags as locale}
     <a
-      href={i18n.resolveRoute(page.url.pathname, locale)}
+      href={i18n.resolveRoute(page.url.pathname, locale) + page.url.search + page.url.hash}
       data-active={languageTag() === locale ? 'true' : undefined}
       hreflang={locale}
       lang={locale}
