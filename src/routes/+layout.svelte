@@ -16,15 +16,23 @@
 
   const siteUrl = $derived(data.siteUrl ?? SITE.defaultOrigin);
 
-  const isChildRoute = $derived($page.url.pathname.startsWith('/child/'));
+  // Strip the /en locale prefix once before route classification — the visible
+  // URL keeps the prefix, but reroute makes the underlying SvelteKit route the
+  // same as the FR variant, so shell predicates have to match the unprefixed
+  // form to keep `/en/login` etc. on the auth layout instead of the public shell.
+  const unprefixedPath = $derived(
+    $page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/'
+  );
+
+  const isChildRoute = $derived(unprefixedPath.startsWith('/child/'));
 
   const isPublicShell = $derived(
-    !$page.url.pathname.startsWith('/child/') &&
-      !$page.url.pathname.startsWith('/account') &&
-      !$page.url.pathname.startsWith('/login') &&
-      !$page.url.pathname.startsWith('/signup') &&
-      !$page.url.pathname.startsWith('/join') &&
-      !($page.url.pathname === '/' && data.user)
+    !unprefixedPath.startsWith('/child/') &&
+      !unprefixedPath.startsWith('/account') &&
+      !unprefixedPath.startsWith('/login') &&
+      !unprefixedPath.startsWith('/signup') &&
+      !unprefixedPath.startsWith('/join') &&
+      !(unprefixedPath === '/' && data.user)
   );
 
   const firstChildId = $derived(data.children[0]?.id ?? null);
@@ -35,7 +43,7 @@
   // pathname here ($page.url is the visible URL, which still has the prefix).
   // SSR sets these correctly via hooks.server.ts; this $effect handles all
   // client-side navigations after hydration.
-  const locale = $derived(/^\/en(?:\/|$)/.test($page.url.pathname) ? 'en' : 'fr');
+  const locale = $derived(unprefixedPath !== $page.url.pathname ? 'en' : 'fr');
 
   $effect(() => {
     if (!browser) return;

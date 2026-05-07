@@ -14,16 +14,6 @@ const GUIDE_LASTMOD = '2026-05-03';
 const ALLERGENS_LASTMOD = '2026-05-03';
 const SOURCES_LASTMOD = '2026-05-03';
 
-// EN counterparts for translated routes. Only include paths whose body copy is
-// actually translated — chrome-only translations (e.g. the landing page, where
-// only the header/footer flip) don't qualify, since hreflang would advertise an
-// English page that's still mostly French to users and crawlers.
-const EN_TRANSLATED_PATHS: Entry[] = [
-  { path: '/en/login', changefreq: 'monthly', priority: '0.5', lastmod: LANDING_LASTMOD },
-  { path: '/en/signup', changefreq: 'monthly', priority: '0.5', lastmod: LANDING_LASTMOD },
-  { path: '/en/cookies', changefreq: 'yearly', priority: '0.3', lastmod: LANDING_LASTMOD }
-];
-
 const STATIC_PAGES: Entry[] = [
   { path: '/', changefreq: 'weekly', priority: '1.0', lastmod: LANDING_LASTMOD },
   { path: '/guide', changefreq: 'monthly', priority: '0.9', lastmod: GUIDE_LASTMOD },
@@ -63,9 +53,11 @@ export const GET: RequestHandler = ({ url }) => {
       changefreq: 'monthly',
       priority: '0.5',
       lastmod: GUIDE_LASTMOD
-    })),
-    // EN counterparts for translated routes.
-    ...EN_TRANSLATED_PATHS
+    }))
+    // No EN entries: the only routes with EN body translations (login/signup/
+    // cookies) are noindex, so submitting them conflicts with their robots
+    // directive. The chrome-only translation on /, /guide, /allergens, /sources
+    // does not qualify the FR pages as having English equivalents either.
   ];
 
   const body =
