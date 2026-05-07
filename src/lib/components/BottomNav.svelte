@@ -3,8 +3,14 @@
   import { cn } from '$lib/utils/cn';
   import { getChildNavItems, isNavItemActive } from '$lib/utils/nav';
   import * as m from '$lib/paraglide/messages';
+  import { i18n } from '$lib/i18n';
+  import { languageTag } from '$lib/paraglide/runtime';
 
   let { childId }: { childId: number } = $props();
+
+  function localizedHref(path: string): string {
+    return i18n.resolveRoute(path, languageTag());
+  }
 
   const items = $derived(getChildNavItems(childId));
 </script>
@@ -19,7 +25,7 @@
       {@const Icon = item.icon}
       <li>
         <a
-          href={item.href}
+          href={localizedHref(item.href)}
           class={cn(
             'flex flex-col items-center gap-0.5 rounded-md px-1 py-1.5 text-[11px] font-medium transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

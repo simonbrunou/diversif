@@ -7,6 +7,12 @@
   import { formatAge } from '$lib/utils/age';
   import { UserCircle2 } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
+  import { i18n } from '$lib/i18n';
+  import { languageTag } from '$lib/paraglide/runtime';
+
+  function localizedHref(path: string): string {
+    return i18n.resolveRoute(path, languageTag());
+  }
 
   let {
     childId,
@@ -29,7 +35,7 @@
     class="hidden w-60 shrink-0 border-r bg-surface print:hidden md:sticky md:top-0 md:flex md:h-dvh md:flex-col"
   >
     <div class="border-b p-5">
-      <a href="/" class="text-sm font-semibold tracking-tight text-primary hover:underline">
+      <a href={localizedHref('/')} class="text-sm font-semibold tracking-tight text-primary hover:underline">
         Diversif
       </a>
       <div class="mt-3">
@@ -63,7 +69,7 @@
     </nav>
     <div class="border-t p-3">
       <a
-        href="/account"
+        href={localizedHref('/account')}
         class={cn(
           'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

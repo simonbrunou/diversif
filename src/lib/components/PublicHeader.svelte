@@ -5,6 +5,8 @@
   import type { SafeUser } from '$lib/types';
   import { Menu, X } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
+  import { i18n } from '$lib/i18n';
+  import { languageTag } from '$lib/paraglide/runtime';
 
   let {
     user,
@@ -13,24 +15,28 @@
 
   let mobileOpen = $state(false);
 
+  function localizedHref(path: string): string {
+    return i18n.resolveRoute(path, languageTag());
+  }
+
   const navLinks = $derived([
-    { href: '/', label: m.chromePublicHeaderNavHome() },
-    { href: '/guide', label: m.chromePublicHeaderNavGuide() },
-    { href: '/allergens', label: m.chromePublicHeaderNavAllergens() },
-    { href: '/sources', label: m.chromePublicHeaderNavSources() }
+    { href: localizedHref('/'), label: m.chromePublicHeaderNavHome() },
+    { href: localizedHref('/guide'), label: m.chromePublicHeaderNavGuide() },
+    { href: localizedHref('/allergens'), label: m.chromePublicHeaderNavAllergens() },
+    { href: localizedHref('/sources'), label: m.chromePublicHeaderNavSources() }
   ]);
 
-  const dashboardHref = $derived(firstChildId ? `/child/${firstChildId}` : '/');
+  const dashboardHref = $derived(firstChildId ? `/child/${firstChildId}` : localizedHref('/'));
 
   function isActive(href: string): boolean {
-    if (href === '/') return $page.url.pathname === '/';
+    if (href === '/' || href === localizedHref('/')) return $page.url.pathname === href;
     return $page.url.pathname === href || $page.url.pathname.startsWith(`${href}/`);
   }
 </script>
 
 <header class="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
   <div class="container flex h-14 items-center justify-between gap-4 md:h-16">
-    <a href="/" class="inline-flex items-center gap-2 font-semibold text-foreground">
+    <a href={localizedHref('/')} class="inline-flex items-center gap-2 font-semibold text-foreground">
       <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
       <span>{m.chromePublicHeaderBrand()}</span>
     </a>
@@ -54,10 +60,10 @@
     <div class="hidden items-center gap-2 md:flex">
       {#if user}
         <Button href={dashboardHref} variant="outline" size="sm">{m.chromePublicHeaderMyDashboard()}</Button>
-        <Button href="/account" variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
+        <Button href={localizedHref('/account')} variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
       {:else}
-        <Button href="/login" variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
-        <Button href="/signup" size="sm">{m.chromePublicHeaderNavSignup()}</Button>
+        <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
+        <Button href={localizedHref('/signup')} size="sm">{m.chromePublicHeaderNavSignup()}</Button>
       {/if}
       <LocaleSwitcher />
     </div>
@@ -98,10 +104,10 @@
         <div class="flex flex-wrap gap-2 pt-2">
           {#if user}
             <Button href={dashboardHref} variant="outline" size="sm">{m.chromePublicHeaderMyDashboard()}</Button>
-            <Button href="/account" variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
+            <Button href={localizedHref('/account')} variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
           {:else}
-            <Button href="/login" variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
-            <Button href="/signup" size="sm">{m.chromePublicHeaderNavSignup()}</Button>
+            <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
+            <Button href={localizedHref('/signup')} size="sm">{m.chromePublicHeaderNavSignup()}</Button>
           {/if}
         </div>
       </div>
