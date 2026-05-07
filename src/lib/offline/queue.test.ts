@@ -199,8 +199,16 @@ describe('queue', () => {
 
   it('flush is reentrant-safe', async () => {
     let resolveFetch: ((r: Response) => void) | undefined;
+    let fetchInvoked: () => void = () => {};
+    const fetchWasInvoked = new Promise<void>((res) => {
+      fetchInvoked = res;
+    });
     vi.spyOn(globalThis, 'fetch').mockImplementation(
-      () => new Promise<Response>((res) => (resolveFetch = res))
+      () =>
+        new Promise<Response>((res) => {
+          resolveFetch = res;
+          fetchInvoked();
+        })
     );
 
     await enqueue({
@@ -211,10 +219,12 @@ describe('queue', () => {
     });
     const p1 = flush();
     const p2 = flush();
-    // readAllOrdered() is the first await inside the flush IIFE; let it settle
-    // before resolving the fetch mock so resolveFetch is populated.
-    await new Promise((res) => setTimeout(res, 0));
-    resolveFetch?.(goodActionResult());
+    // tx() now resolves on transaction.oncomplete (after the merge), which
+    // takes a few microtasks longer than fn()'s synchronous resolution. Wait
+    // until fetch is actually invoked before resolving the response, so
+    // resolveFetch is guaranteed populated.
+    await fetchWasInvoked;
+    resolveFetch!(goodActionResult());
     await Promise.all([p1, p2]);
 
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);

@@ -1,13 +1,15 @@
 <script lang="ts">
+  import * as m from '$lib/paraglide/messages';
+
   function retry() {
     location.reload();
   }
 </script>
 
 <main class="offline-page">
-  <h1>Hors-ligne</h1>
-  <p>Vous êtes hors-ligne. Vos entrées en attente seront synchronisées dès le retour de la connexion.</p>
-  <button type="button" onclick={retry}>Réessayer</button>
+  <h1>{m.offlineFallbackTitle()}</h1>
+  <p>{m.offlineFallbackBody()}</p>
+  <button type="button" onclick={retry}>{m.offlineFallbackRetry()}</button>
 </main>
 
 <style>

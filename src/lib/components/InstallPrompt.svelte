@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import * as m from '$lib/paraglide/messages';
 
 	type BIPEvent = Event & {
 		prompt: () => Promise<void>;
@@ -72,16 +73,16 @@
 
 {#if showButton}
 	<button type="button" class="install-cta" onclick={onClick}>
-		Installer
+		{m.installCta()}
 	</button>
 {/if}
 
 {#if modalOpen}
 	<div class="install-modal" role="dialog" aria-modal="true">
-		<h2>Installer sur iPhone</h2>
-		<p>Appuyez sur le bouton de partage en bas de l'écran, puis « Sur l'écran d'accueil ».</p>
+		<h2>{m.installIosInstructionsTitle()}</h2>
+		<p>{m.installIosInstructionsBody()}</p>
 		<button type="button" onclick={dismissModal}>
-			Fermer
+			{m.installIosInstructionsDismiss()}
 		</button>
 	</div>
 {/if}

@@ -7,6 +7,9 @@
     STATIC_NAV_SECTIONS
   } from '$lib/components/GuideStaticSections.svelte';
   import { getStageForAgeMonths } from '$lib/content/guidance';
+  import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
+  import { page } from '$app/stores';
   import { BookOpen, Compass, AlertTriangle } from 'lucide-svelte';
   import type { PageData } from './$types';
 
@@ -23,7 +26,7 @@
 <div class="container max-w-4xl space-y-8 py-6 md:py-8">
   <header class="space-y-2">
     <a
-      href={`/child/${data.child.id}`}
+      href={localizedHref(`/child/${data.child.id}`)}
       class="text-sm text-muted-foreground hover:underline"
     >
       ← Tableau
@@ -58,8 +61,15 @@
     </ul>
   </nav>
 
-  <!-- 1. Current stage (child-specific) -->
-  <section id="etape" class="scroll-mt-6 space-y-3">
+  {#if $page.url.pathname.startsWith('/en')}
+    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+      {m.commonFrOnlyBannerGuide()}
+    </aside>
+  {/if}
+
+  <section lang="fr" class="space-y-8">
+    <!-- 1. Current stage (child-specific) -->
+    <section id="etape" class="scroll-mt-6 space-y-3">
     <div class="flex items-center gap-2">
       <Compass size={18} class="text-primary" aria-hidden="true" />
       <h2 class="text-xl font-semibold">Où en est bébé</h2>
@@ -130,9 +140,10 @@
     </Card>
   </section>
 
-  <GuideStaticSections currentStageId={currentStage.id} />
+    <GuideStaticSections currentStageId={currentStage.id} />
+  </section>
 
   <div class="pt-2 text-center">
-    <Button href={`/child/${data.child.id}`} variant="ghost">← Retour au tableau</Button>
+    <Button href={localizedHref(`/child/${data.child.id}`)} variant="ghost">← Retour au tableau</Button>
   </div>
 </div>

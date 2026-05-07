@@ -10,6 +10,7 @@
   } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
   import { cn } from '$lib/utils/cn';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { Sparkles, Lightbulb } from 'lucide-svelte';
   import type { PageData } from './$types';
 
@@ -35,7 +36,7 @@
 
 <div class="container max-w-2xl space-y-6 py-6">
   <header>
-    <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
+    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
       ← Tableau
     </a>
     <h1 class="mt-2 text-xl font-semibold">Suggestions</h1>

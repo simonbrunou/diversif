@@ -25,6 +25,10 @@ vi.mock('$lib/offline/queue', () => ({
   pendingCount: { subscribe: countStore.subscribe }
 }));
 
+vi.mock('$lib/paraglide/messages', () => ({
+  offlineBadgeLabel: ({ count }: { count: number }) => `${count} à synchroniser`
+}));
+
 afterEach(() => cleanup());
 
 describe('QueueBadge', () => {

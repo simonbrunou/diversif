@@ -1,10 +1,11 @@
 <script lang="ts">
   import { pendingCount } from '$lib/offline/queue';
+  import * as m from '$lib/paraglide/messages';
 </script>
 
 {#if $pendingCount > 0}
   <span class="queue-badge" role="status">
-    {$pendingCount} à synchroniser
+    {m.offlineBadgeLabel({ count: $pendingCount })}
   </span>
 {/if}
 

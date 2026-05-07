@@ -3,6 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/svelte';
 import InstallPrompt from './InstallPrompt.svelte';
 
+vi.mock('$lib/paraglide/messages', () => ({
+  installCta: () => 'Installer',
+  installIosInstructionsTitle: () => 'Installer sur iPhone',
+  installIosInstructionsBody: () =>
+    "Appuyez sur le bouton de partage en bas de l'écran, puis « Sur l'écran d'accueil ».",
+  installIosInstructionsDismiss: () => 'Fermer'
+}));
+
 const ANDROID_UA =
   'Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110 Mobile Safari/537.36';
 const IPHONE_UA =

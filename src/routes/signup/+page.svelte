@@ -5,19 +5,21 @@
   import Card from '$components/ui/Card.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
+  import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let submitting = $state(false);
 </script>
 
-<Seo title="Créer un compte · Diversif" path="/signup" noindex />
+<Seo title={m.authSignupTitle()} path="/signup" noindex alternateLocales={['en']} />
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
   <div class="text-center">
-    <h1 class="text-3xl font-semibold">Créer un compte</h1>
+    <h1 class="text-3xl font-semibold">{m.authSignupHeading()}</h1>
     <p class="mt-2 text-sm text-muted-foreground">
-      {data.inviteCode ? 'Vous avez été invité·e à rejoindre un enfant.' : 'Suivez la diversification de votre enfant.'}
+      {data.inviteCode ? m.authSignupSubheadingInvited() : m.authSignupSubheadingDefault()}
     </p>
   </div>
 
@@ -33,14 +35,15 @@
         };
       }}
     >
-      {#if form?.error}
+      {#if form?.errorKey}
+        {@const k = form.errorKey as keyof typeof m}
         <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-          {form.error}
+          {(m[k] as (() => string) | undefined)?.() ?? /* v8 ignore next */ m.errorsGenericFallback()}
         </div>
       {/if}
 
       <div class="grid gap-1.5">
-        <Label for="displayName">Votre prénom</Label>
+        <Label for="displayName">{m.authSignupDisplayNameLabel()}</Label>
         <Input
           id="displayName"
           name="displayName"
@@ -52,7 +55,7 @@
       </div>
 
       <div class="grid gap-1.5">
-        <Label for="email">Email</Label>
+        <Label for="email">{m.authSignupEmailLabel()}</Label>
         <Input
           id="email"
           name="email"
@@ -64,13 +67,13 @@
       </div>
 
       <div class="grid gap-1.5">
-        <Label for="password">Mot de passe</Label>
+        <Label for="password">{m.authSignupPasswordLabel()}</Label>
         <Input id="password" name="password" type="password" autocomplete="new-password" required minlength={12} />
-        <p class="text-xs text-muted-foreground">12 caractères minimum.</p>
+        <p class="text-xs text-muted-foreground">{m.authSignupPasswordHint()}</p>
       </div>
 
       <div class="grid gap-1.5">
-        <Label for="inviteCode">Code d’invitation (optionnel)</Label>
+        <Label for="inviteCode">{m.authSignupInviteCodeLabel()}</Label>
         <Input
           id="inviteCode"
           name="inviteCode"
@@ -83,32 +86,32 @@
       <div class="grid gap-2 rounded-md border bg-surface/50 p-3 text-sm">
         <label class="flex items-start gap-2">
           <input type="checkbox" name="confirmAge15" required class="mt-0.5" />
-          <span>Je confirme avoir au moins 15 ans.</span>
+          <span>{m.authSignupAge15()}</span>
         </label>
         <label class="flex items-start gap-2">
           <input type="checkbox" name="acceptTos" required class="mt-0.5" />
           <span>
-            J'accepte les
-            <a href="/cgu" target="_blank" rel="noopener" class="underline">conditions générales d'utilisation</a>.
+            {m.authSignupAcceptTosPrefix()}
+            <a href={localizedHref('/cgu')} target="_blank" rel="noopener" class="underline">{m.authSignupAcceptTosLink()}</a>.
           </span>
         </label>
         <label class="flex items-start gap-2">
           <input type="checkbox" name="acceptPrivacy" required class="mt-0.5" />
           <span>
-            J'ai lu la
-            <a href="/politique-confidentialite" target="_blank" rel="noopener" class="underline">politique de confidentialité</a>
-            et je consens au traitement des données concernant mon enfant (catégorie « santé », article 9 RGPD).
+            {m.authSignupAcceptPrivacyPrefix()}
+            <a href={localizedHref('/politique-confidentialite')} target="_blank" rel="noopener" class="underline">{m.authSignupAcceptPrivacyLink()}</a>
+            {m.authSignupAcceptPrivacySuffix()}
           </span>
         </label>
       </div>
 
       <Button type="submit" size="lg" loading={submitting}>
-        {submitting ? 'Création…' : 'Créer mon compte'}
+        {submitting ? m.authSignupSubmitting() : m.authSignupSubmit()}
       </Button>
     </form>
   </Card>
 
   <p class="mt-6 text-center text-sm text-muted-foreground">
-    Déjà un compte ? <a href="/login" class="font-medium text-primary hover:underline">Se connecter</a>
+    {m.authSignupAlreadyAccount()} <a href={localizedHref('/login')} class="font-medium text-primary hover:underline">{m.authSignupLogin()}</a>
   </p>
 </div>

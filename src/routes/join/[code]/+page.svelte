@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import Button from '$components/ui/Button.svelte';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -13,7 +14,7 @@
     {#if data.error}
       <p class="mt-3 text-sm text-destructive">{data.error}</p>
       <div class="mt-6">
-        <Button href="/" variant="outline">Retour</Button>
+        <Button href={localizedHref('/')} variant="outline">Retour</Button>
       </div>
     {:else if data.child}
       <p class="mt-3 text-sm text-muted-foreground">
@@ -28,7 +29,7 @@
       {/if}
 
       <form method="POST" class="mt-6 flex justify-center gap-2">
-        <Button href="/" variant="outline">Annuler</Button>
+        <Button href={localizedHref('/')} variant="outline">Annuler</Button>
         <Button type="submit">Accepter l’invitation</Button>
       </form>
     {/if}

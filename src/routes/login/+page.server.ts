@@ -34,7 +34,7 @@ export const actions: Actions = {
     if (!rl.allowed) {
       return fail(429, {
         email: '',
-        error: `Trop de tentatives. Réessayez dans ${rl.retryAfterSeconds}s.`
+        errorKey: 'errorsAuthRateLimited'
       });
     }
 
@@ -44,7 +44,7 @@ export const actions: Actions = {
     if (!parsed.success) {
       return fail(400, {
         email: typeof data.email === 'string' ? data.email : /* v8 ignore next */ '',
-        error: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides'
+        errorKey: 'errorsAuthBadInput'
       });
     }
 
@@ -55,7 +55,7 @@ export const actions: Actions = {
     if (!user || !valid) {
       return fail(400, {
         email,
-        error: 'Email ou mot de passe incorrect.'
+        errorKey: 'errorsAuthInvalidCredentials'
       });
     }
 

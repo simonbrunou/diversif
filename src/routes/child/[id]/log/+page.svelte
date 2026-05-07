@@ -15,6 +15,8 @@
   import { toast } from 'svelte-sonner';
   import { enqueue } from '$lib/offline/queue';
   import { newId } from '$lib/offline/uuid';
+  import { localizedHref } from '$lib/utils/localized-href';
+  import * as m from '$lib/paraglide/messages';
   import { Info } from 'lucide-svelte';
   import type { ActionData, PageData } from './$types';
 
@@ -39,7 +41,7 @@
 
 <div class="container max-w-xl space-y-5 py-6">
   <header>
-    <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
+    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
       ← Retour
     </a>
     <h1 class="mt-2 text-xl font-semibold">Noter un repas</h1>
@@ -69,16 +71,19 @@
               formData: formObj,
               queuedAt: Date.now()
             });
-            toast.success('Enregistré hors-ligne — sera synchronisé.');
-            await goto(`/child/${data.child.id}`);
           } catch {
-            // Most likely IDB unavailable (iOS Safari private mode, quota exceeded,
-            // disk full). The submit failed AND we have no durable queue — surface
-            // the error so the user knows their entry was not saved.
-            toast.error("Impossible d'enregistrer hors-ligne. Réessayez quand vous serez en ligne.");
-          } finally {
+            toast.error(m.offlineQueueFailedToast());
             submitting = false;
+            return;
           }
+          toast.success(m.offlineQueuedToast());
+          submitting = false;
+          // The entry is durably queued. Navigation is best-effort — if the dashboard
+          // route isn't cached and we're truly offline, goto() may reject; the queued
+          // row still syncs when we're back online.
+          await goto(`/child/${data.child.id}`).catch(() => {
+            /* best-effort navigation */
+          });
         })();
         return async () => {};
       }
@@ -142,7 +147,7 @@
       <Button type="submit" size="lg" class="flex-1" loading={submitting}>
         {submitting ? 'Enregistrement…' : 'Noter ce repas'}
       </Button>
-      <Button href={`/child/${data.child.id}`} variant="outline" size="lg">Annuler</Button>
+      <Button href={localizedHref(`/child/${data.child.id}`)} variant="outline" size="lg">Annuler</Button>
     </div>
   </form>
 

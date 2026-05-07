@@ -45,4 +45,11 @@ describe('GET /sitemap.xml', () => {
     expect(body).toContain('<loc>https://prod.app/</loc>');
     expect(body).not.toContain('localhost');
   });
+
+  it('does NOT include any /en entries (chrome-only translations + noindex auth)', async () => {
+    const event = makeRouteEvent({ url: 'https://my.app/sitemap.xml' });
+    const res = await GET(event as unknown as Parameters<typeof GET>[0]);
+    const body = await res.text();
+    expect(body).not.toContain('/en');
+  });
 });

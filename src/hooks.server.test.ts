@@ -13,6 +13,44 @@ vi.mock('@sentry/sveltekit', () => ({
   captureException: captureExceptionMock
 }));
 
+// Paraglide's handle reads event.request.headers (for Accept-Language) and
+// calls event.cookies.set (for the lang cookie). The synthetic test events
+// don't carry a real Request, so we replace i18n.handle() with a plain
+// pass-through to keep all existing handle tests exercising appHandle only.
+vi.mock('$lib/i18n', () => ({
+  i18n: {
+    handle:
+      () =>
+      async ({ event, resolve }: Parameters<import('@sveltejs/kit').Handle>[0]) =>
+        resolve(event),
+    reroute: () => ({ ...undefined })
+  }
+}));
+
+const { setLanguageTagMock } = vi.hoisted(() => ({ setLanguageTagMock: vi.fn() }));
+
+vi.mock('$lib/paraglide/runtime', () => ({
+  setLanguageTag: setLanguageTagMock
+}));
+
+// SvelteKit's sequence() calls get_request_store() which requires a live
+// server context unavailable in unit tests. Replace with a simple chainer
+// that invokes each handler in order with the same event/resolve pair.
+vi.mock('@sveltejs/kit/hooks', () => ({
+  sequence:
+    (...handlers: import('@sveltejs/kit').Handle[]) =>
+    async ({ event, resolve }: Parameters<import('@sveltejs/kit').Handle>[0]) => {
+      let i = 0;
+      const next = async (
+        e: Parameters<import('@sveltejs/kit').Handle>[0]['event']
+      ): Promise<Response> => {
+        if (i >= handlers.length) return resolve(e);
+        return handlers[i++]({ event: e, resolve: next });
+      };
+      return next(event);
+    }
+}));
+
 import { handle, handleError } from './hooks.server';
 import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';
@@ -34,9 +72,11 @@ function makeEvent(token: string | null, pathname = '/') {
     set,
     delete: del
   };
+  const url = new URL(`http://localhost${pathname}`);
   const event = {
     cookies,
-    url: new URL(`http://localhost${pathname}`),
+    url,
+    request: { url: url.toString(), method: 'GET' } as Request,
     locals: {} as App.Locals
   };
   return { event, set, del, cookies };
@@ -168,6 +208,55 @@ describe('handle', () => {
     } finally {
       process.env.NODE_ENV = orig;
     }
+  });
+
+  it('sets locale to fr for paths without /en/ prefix', async () => {
+    const { event } = makeEvent(null, '/mentions-legales');
+    const resolve = vi.fn(async () => new Response('ok'));
+    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(setLanguageTagMock).toHaveBeenCalledWith('fr');
+  });
+
+  it('sets locale to en for /en/ prefixed paths', async () => {
+    const { event } = makeEvent(null, '/en/mentions-legales');
+    const resolve = vi.fn(async () => new Response('ok'));
+    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(setLanguageTagMock).toHaveBeenCalledWith('en');
+  });
+
+  it('sets locale to en for the bare /en path', async () => {
+    const { event } = makeEvent(null, '/en');
+    const resolve = vi.fn(async () => new Response('ok'));
+    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(setLanguageTagMock).toHaveBeenCalledWith('en');
+  });
+
+  it('substitutes %paraglide.lang% in the rendered HTML', async () => {
+    const { event } = makeEvent(null, '/en/mentions-legales');
+    // SvelteKit can split the response across chunks; the <html lang>
+    // placeholder lives in the very first chunk that gets streamed. Asserting
+    // both done=false and done=true chunks get the substitution prevents a
+    // regression where gating on `done` leaks `%paraglide.lang%` to the wire.
+    const resolve = vi.fn(
+      async (
+        _event,
+        opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
+      ) => {
+        const final = opts.transformPageChunk({
+          html: '<body>x</body></html>',
+          done: true
+        });
+        const partial = opts.transformPageChunk({
+          html: '<html lang="%paraglide.lang%">',
+          done: false
+        });
+        return new Response(`${partial}${final}`);
+      }
+    );
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    const body = await response.text();
+    expect(body).toContain('<html lang="en">');
+    expect(body).not.toContain('%paraglide.lang%');
   });
 });
 

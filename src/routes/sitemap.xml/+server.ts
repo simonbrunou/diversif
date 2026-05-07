@@ -54,6 +54,10 @@ export const GET: RequestHandler = ({ url }) => {
       priority: '0.5',
       lastmod: GUIDE_LASTMOD
     }))
+    // No EN entries: the only routes with EN body translations (login/signup/
+    // cookies) are noindex, so submitting them conflicts with their robots
+    // directive. The chrome-only translation on /, /guide, /allergens, /sources
+    // does not qualify the FR pages as having English equivalents either.
   ];
 
   const body =
