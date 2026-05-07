@@ -29,6 +29,7 @@ export type RouteEventOptions = {
   params?: Record<string, string>;
   url?: string; // full URL
   formData?: Record<string, string>;
+  headers?: Record<string, string>;
   parent?: () => Promise<unknown>;
 };
 
@@ -41,7 +42,8 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
   }
   const request = new Request(url, {
     method: 'POST',
-    body: opts.formData ? formData : undefined
+    body: opts.formData ? formData : undefined,
+    headers: opts.headers
   });
 
   const event = {
