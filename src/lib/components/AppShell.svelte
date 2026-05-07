@@ -1,10 +1,12 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import LocaleSwitcher from './LocaleSwitcher.svelte';
   import { page } from '$app/stores';
   import { cn } from '$lib/utils/cn';
   import { getChildNavItems, isNavItemActive } from '$lib/utils/nav';
   import { formatAge } from '$lib/utils/age';
   import { UserCircle2 } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
 
   let {
     childId,
@@ -72,8 +74,11 @@
         aria-current={pathname === '/account' ? 'page' : undefined}
       >
         <UserCircle2 size={18} aria-hidden="true" />
-        <span>Mon compte</span>
+        <span>{m.chromeAppShellMyAccount()}</span>
       </a>
+      <div class="mt-2 flex justify-end">
+        <LocaleSwitcher />
+      </div>
     </div>
   </aside>
 

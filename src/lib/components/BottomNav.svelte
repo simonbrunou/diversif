@@ -2,6 +2,7 @@
   import { page } from '$app/stores';
   import { cn } from '$lib/utils/cn';
   import { getChildNavItems, isNavItemActive } from '$lib/utils/nav';
+  import * as m from '$lib/paraglide/messages';
 
   let { childId }: { childId: number } = $props();
 
@@ -10,7 +11,7 @@
 
 <nav
   class="safe-bottom sticky bottom-0 z-30 mt-auto border-t bg-background/95 backdrop-blur print:hidden md:hidden"
-  aria-label="Navigation principale"
+  aria-label={m.chromeBottomNavLabel()}
 >
   <ul class="grid grid-cols-5 gap-1 px-2 pt-2">
     {#each items as item (item.href)}

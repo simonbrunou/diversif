@@ -2,11 +2,12 @@
   import { page } from '$app/state';
   import { languageTag, availableLanguageTags } from '$lib/paraglide/runtime';
   import { i18n } from '$lib/i18n';
+  import * as m from '$lib/paraglide/messages';
 
   const labels: Record<string, string> = { fr: 'FR', en: 'EN' };
 </script>
 
-<nav class="locale-switcher" aria-label="Choix de la langue">
+<nav class="locale-switcher" aria-label={m.chromeLocaleSwitcherLabel()}>
   {#each availableLanguageTags as locale}
     <a
       href={i18n.resolveRoute(page.url.pathname, locale)}
