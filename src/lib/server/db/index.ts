@@ -64,7 +64,11 @@ export function getDb(): DB {
 
   const violations = sqlite.pragma('foreign_key_check') as unknown[];
   if (Array.isArray(violations) && violations.length > 0) {
-    throw new Error(`Foreign key violations after migrations: ${JSON.stringify(violations)}`);
+    const err = new Error(`Foreign key violations after migrations: ${JSON.stringify(violations)}`);
+    void import('@sentry/sveltekit')
+      .then(({ captureException }) => captureException(err, { tags: { subsystem: 'db-migrate' } }))
+      .catch(() => {});
+    throw err;
   }
   sqlite.pragma('foreign_keys = ON');
 

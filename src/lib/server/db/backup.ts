@@ -47,6 +47,12 @@ export function backupBeforeMigrate(
     sqlite.exec(`VACUUM INTO '${target.replace(/'/g, "''")}'`);
   } catch (err) {
     console.error('[db] pre-migration backup failed:', err);
+    void import('@sentry/sveltekit')
+      .then(({ captureException }) => captureException(err, { tags: { subsystem: 'db-backup' } }))
+      .catch(() => {
+        // Sentry not initialised (DSN missing, dev mode); console.error
+        // above is enough.
+      });
     return null;
   }
 
