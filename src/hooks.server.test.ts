@@ -72,9 +72,11 @@ function makeEvent(token: string | null, pathname = '/') {
     set,
     delete: del
   };
+  const url = new URL(`http://localhost${pathname}`);
   const event = {
     cookies,
-    url: new URL(`http://localhost${pathname}`),
+    url,
+    request: { url: url.toString(), method: 'GET' } as Request,
     locals: {} as App.Locals
   };
   return { event, set, del, cookies };
@@ -227,6 +229,30 @@ describe('handle', () => {
     const resolve = vi.fn(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(setLanguageTagMock).toHaveBeenCalledWith('en');
+  });
+
+  it('substitutes %paraglide.lang% in the rendered HTML', async () => {
+    const { event } = makeEvent(null, '/en/mentions-legales');
+    const resolve = vi.fn(
+      async (
+        _event,
+        opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
+      ) => {
+        const out = opts.transformPageChunk({
+          html: '<html lang="%paraglide.lang%"><body>x</body></html>',
+          done: true
+        });
+        const partial = opts.transformPageChunk({
+          html: '<html lang="%paraglide.lang%">',
+          done: false
+        });
+        return new Response(`${out}|${partial}`);
+      }
+    );
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    const body = await response.text();
+    expect(body).toContain('<html lang="en">');
+    expect(body).toContain('<html lang="%paraglide.lang%">');
   });
 });
 

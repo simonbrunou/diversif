@@ -1,7 +1,7 @@
 <script lang="ts">
   import Seo from '$lib/components/Seo.svelte';
-  import { languageTag } from '$lib/paraglide/runtime';
   import * as m from '$lib/paraglide/messages';
+  import { page } from '$app/stores';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -16,7 +16,7 @@
 />
 
 <div class="container max-w-3xl space-y-6 py-8 md:py-12">
-  {#if languageTag() === 'en'}
+  {#if $page.url.pathname.startsWith('/en')}
     <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
       {m.commonFrOnlyBannerLegal()}
     </aside>

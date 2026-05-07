@@ -3,6 +3,8 @@
   import { Toaster } from 'svelte-sonner';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/stores';
+  import { browser } from '$app/environment';
+  import { setLanguageTag } from '$lib/paraglide/runtime';
   import { applyTheme, getStoredTheme } from '$lib/utils/theme';
   import PublicHeader from '$lib/components/PublicHeader.svelte';
   import PublicFooter from '$lib/components/PublicFooter.svelte';
@@ -26,6 +28,22 @@
   );
 
   const firstChildId = $derived(data.children[0]?.id ?? null);
+
+  // Keep paraglide's runtime locale and the <html lang> attribute in sync with
+  // the URL on the client. SvelteKit's reroute strips the /en/ prefix from
+  // event.url before the server hook runs, so we resolve from the original
+  // pathname here ($page.url is the visible URL, which still has the prefix).
+  // SSR sets these correctly via hooks.server.ts; this $effect handles all
+  // client-side navigations after hydration.
+  const locale = $derived(/^\/en(?:\/|$)/.test($page.url.pathname) ? 'en' : 'fr');
+
+  $effect(() => {
+    if (!browser) return;
+    setLanguageTag(locale);
+    if (document.documentElement.lang !== locale) {
+      document.documentElement.lang = locale;
+    }
+  });
 
   onMount(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');

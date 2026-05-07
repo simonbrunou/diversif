@@ -7,8 +7,8 @@
     STATIC_NAV_SECTIONS
   } from '$lib/components/GuideStaticSections.svelte';
   import { getStageForAgeMonths } from '$lib/content/guidance';
-  import { languageTag } from '$lib/paraglide/runtime';
   import * as m from '$lib/paraglide/messages';
+  import { page } from '$app/stores';
   import { BookOpen, Compass, AlertTriangle } from 'lucide-svelte';
   import type { PageData } from './$types';
 
@@ -60,7 +60,7 @@
     </ul>
   </nav>
 
-  {#if languageTag() === 'en'}
+  {#if $page.url.pathname.startsWith('/en')}
     <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
       {m.commonFrOnlyBannerGuide()}
     </aside>

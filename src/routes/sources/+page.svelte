@@ -4,7 +4,6 @@
   import Seo from '$lib/components/Seo.svelte';
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { breadcrumbJsonLd, SITE } from '$lib/seo';
-  import { languageTag } from '$lib/paraglide/runtime';
   import * as m from '$lib/paraglide/messages';
   import { page } from '$app/stores';
   import { SOURCES, ALL_SOURCE_IDS } from '$lib/content/sources';
@@ -48,7 +47,7 @@
 />
 
 <div class="container max-w-3xl space-y-8 py-6 md:py-8">
-  {#if languageTag() === 'en'}
+  {#if $page.url.pathname.startsWith('/en')}
     <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
       {m.commonFrOnlyBannerSources()}
     </aside>
