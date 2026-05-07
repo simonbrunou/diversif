@@ -64,35 +64,36 @@ describe('signup default action', () => {
     const blocked = makeRouteEvent({ formData: form({ email: 'invalid' }) });
     const r = (await actions.default!(
       blocked as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(429);
-    expect(r.data.error).toMatch(/trop d['’]inscriptions/i);
+    expect(r.data.errorKey).toBe('errorsAuthRateLimited');
   });
 
   it('fails on invalid email', async () => {
     const event = makeRouteEvent({ formData: form({ email: 'not-an-email' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/email/i);
+    expect(r.data.errorKey).toBe('errorsAuthBadInput');
   });
 
   it('fails on short password', async () => {
     const event = makeRouteEvent({ formData: form({ password: 'short' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/court|caractères/i);
+    expect(r.data.errorKey).toBe('errorsAuthBadInput');
   });
 
   it('fails on empty displayName', async () => {
     const event = makeRouteEvent({ formData: form({ displayName: '' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsAuthBadInput');
   });
 
   for (const missing of ['acceptTos', 'acceptPrivacy', 'confirmAge15'] as const) {
@@ -100,9 +101,9 @@ describe('signup default action', () => {
       const event = makeRouteEvent({ formData: form({ [missing]: undefined }) });
       const r = (await actions.default!(
         event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-      )) as { status: number; data: { error: string } };
+      )) as { status: number; data: { errorKey: string } };
       expect(r.status).toBe(400);
-      expect(r.data.error).toMatch(/accepter|confirmer|15 ans/i);
+      expect(r.data.errorKey).toBe('errorsAuthBadInput');
     });
   }
 
@@ -116,16 +117,16 @@ describe('signup default action', () => {
     });
     const r1 = (await actions.default!(
       ev1 as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     const r2 = (await actions.default!(
       ev2 as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     // Both must respond with the invite error — varying only the email
     // must not reveal whether the address is on file.
     expect(r1.status).toBe(400);
     expect(r2.status).toBe(400);
-    expect(r1.data.error).toBe(r2.data.error);
-    expect(r1.data.error).toMatch(/invitation/i);
+    expect(r1.data.errorKey).toBe(r2.data.errorKey);
+    expect(r1.data.errorKey).toBe('errorsAuthInvalidInvite');
   });
 
   it('fails generically when email already exists (no enumeration leak)', async () => {
@@ -133,29 +134,27 @@ describe('signup default action', () => {
     const event = makeRouteEvent({ formData: form({ email: 'taken@example.com' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/inscription impossible/i);
-    // Must NOT confirm whether the address is on file.
-    expect(r.data.error).not.toMatch(/existe/i);
+    expect(r.data.errorKey).toBe('errorsAuthSignupImpossible');
   });
 
   it('fails when invite code format is invalid', async () => {
     const event = makeRouteEvent({ formData: form({ inviteCode: 'BAD-CODE' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/invalide/i);
+    expect(r.data.errorKey).toBe('errorsAuthInvalidInvite');
   });
 
   it('fails when invite code is unknown', async () => {
     const event = makeRouteEvent({ formData: form({ inviteCode: 'BEBE-ABCDEF' }) });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/introuvable|expir/i);
+    expect(r.data.errorKey).toBe('errorsAuthInvalidInviteExpired');
   });
 
   it('succeeds without invite — sets cookie + redirects /', async () => {

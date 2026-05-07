@@ -8,6 +8,7 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
+  import * as m from '$lib/paraglide/messages';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();
@@ -54,12 +55,12 @@
   }
 </script>
 
-<Seo title="Connexion · Diversif" path="/login" noindex />
+<Seo title={m.authLoginTitle()} path="/login" noindex />
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
   <div class="text-center">
-    <h1 class="text-3xl font-semibold">Diversif</h1>
-    <p class="mt-2 text-sm text-muted-foreground">Connexion</p>
+    <h1 class="text-3xl font-semibold">{m.authLoginHeading()}</h1>
+    <p class="mt-2 text-sm text-muted-foreground">{m.authLoginSubheading()}</p>
   </div>
 
   <Card class="mt-8 p-6">
@@ -74,14 +75,15 @@
         };
       }}
     >
-      {#if form?.error}
+      {#if form?.errorKey}
+        {@const k = form.errorKey as keyof typeof m}
         <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-          {form.error}
+          {(m[k] as (() => string) | undefined)?.() ?? /* v8 ignore next */ m.errorsGenericFallback()}
         </div>
       {/if}
 
       <div class="grid gap-1.5">
-        <Label for="email">Email</Label>
+        <Label for="email">{m.authLoginEmailLabel()}</Label>
         <Input
           id="email"
           name="email"
@@ -93,7 +95,7 @@
       </div>
 
       <div class="grid gap-1.5">
-        <Label for="password">Mot de passe</Label>
+        <Label for="password">{m.authLoginPasswordLabel()}</Label>
         <Input
           id="password"
           name="password"
@@ -104,14 +106,14 @@
       </div>
 
       <Button type="submit" size="lg" loading={submitting}>
-        {submitting ? 'Connexion…' : 'Se connecter'}
+        {submitting ? m.authLoginSubmitting() : m.authLoginSubmit()}
       </Button>
     </form>
 
     {#if supported}
       <div class="mt-4 flex items-center gap-2 text-xs uppercase text-muted-foreground">
         <span class="h-px flex-1 bg-border"></span>
-        <span>ou</span>
+        <span>{m.authLoginOrDivider()}</span>
         <span class="h-px flex-1 bg-border"></span>
       </div>
       <Button
@@ -122,12 +124,12 @@
         loading={passkeyLoading}
         onclick={signInWithPasskey}
       >
-        {passkeyLoading ? 'Connexion…' : 'Se connecter avec une clé d’accès'}
+        {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeyButton()}
       </Button>
     {/if}
   </Card>
 
   <p class="mt-6 text-center text-sm text-muted-foreground">
-    Pas encore de compte ? <a href="/signup" class="font-medium text-primary hover:underline">Créer un compte</a>
+    {m.authLoginNoAccount()} <a href="/signup" class="font-medium text-primary hover:underline">{m.authLoginCreateAccount()}</a>
   </p>
 </div>
