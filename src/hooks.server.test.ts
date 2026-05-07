@@ -13,6 +13,38 @@ vi.mock('@sentry/sveltekit', () => ({
   captureException: captureExceptionMock
 }));
 
+// Paraglide's handle reads event.request.headers (for Accept-Language) and
+// calls event.cookies.set (for the lang cookie). The synthetic test events
+// don't carry a real Request, so we replace i18n.handle() with a plain
+// pass-through to keep all existing handle tests exercising appHandle only.
+vi.mock('$lib/i18n', () => ({
+  i18n: {
+    handle:
+      () =>
+      async ({ event, resolve }: Parameters<import('@sveltejs/kit').Handle>[0]) =>
+        resolve(event),
+    reroute: () => ({ ...undefined })
+  }
+}));
+
+// SvelteKit's sequence() calls get_request_store() which requires a live
+// server context unavailable in unit tests. Replace with a simple chainer
+// that invokes each handler in order with the same event/resolve pair.
+vi.mock('@sveltejs/kit/hooks', () => ({
+  sequence:
+    (...handlers: import('@sveltejs/kit').Handle[]) =>
+    async ({ event, resolve }: Parameters<import('@sveltejs/kit').Handle>[0]) => {
+      let i = 0;
+      const next = async (
+        e: Parameters<import('@sveltejs/kit').Handle>[0]['event']
+      ): Promise<Response> => {
+        if (i >= handlers.length) return resolve(e);
+        return handlers[i++]({ event: e, resolve: next });
+      };
+      return next(event);
+    }
+}));
+
 import { handle, handleError } from './hooks.server';
 import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';

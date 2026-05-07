@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import type { SafeUser } from '$lib/types';
   import { Menu, X } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
 
   let {
     user,
@@ -30,7 +31,7 @@
   <div class="container flex h-14 items-center justify-between gap-4 md:h-16">
     <a href="/" class="inline-flex items-center gap-2 font-semibold text-foreground">
       <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
-      <span>Diversif</span>
+      <span>{m.chromePublicHeaderBrand()}</span>
     </a>
 
     <nav aria-label="Navigation principale" class="hidden md:block">

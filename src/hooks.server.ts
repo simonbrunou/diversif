@@ -1,4 +1,5 @@
 import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
 import { randomBytes } from 'node:crypto';
 import {
   SESSION_COOKIE,
@@ -9,6 +10,7 @@ import {
 } from '$lib/server/auth';
 import * as Sentry from '@sentry/sveltekit';
 import { scrubEvent, filterIncomingBreadcrumb } from '$lib/sentry';
+import { i18n } from '$lib/i18n';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN || '',
@@ -65,7 +67,7 @@ export const handleError: HandleServerError = ({ error, event, status, message }
 const PERMISSIONS_POLICY =
   'geolocation=(), camera=(), microphone=(), usb=(), payment=(), interest-cohort=()';
 
-export const handle: Handle = async ({ event, resolve }) => {
+const appHandle: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get(SESSION_COOKIE) ?? '';
   const validated = token ? validateSession(token) : null;
 
@@ -117,3 +119,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return response;
 };
+
+export const handle: Handle = sequence(i18n.handle(), appHandle);
