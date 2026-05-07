@@ -26,7 +26,9 @@
     { href: localizedHref('/sources'), label: m.chromePublicHeaderNavSources() }
   ]);
 
-  const dashboardHref = $derived(firstChildId ? `/child/${firstChildId}` : localizedHref('/'));
+  const dashboardHref = $derived(
+    firstChildId ? localizedHref(`/child/${firstChildId}`) : localizedHref('/')
+  );
 
   function isActive(href: string): boolean {
     if (href === '/' || href === localizedHref('/')) return $page.url.pathname === href;

@@ -6,7 +6,13 @@
   import Seo from '$lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
   import * as m from '$lib/paraglide/messages';
+  import { languageTag } from '$lib/paraglide/runtime';
+  import { i18n } from '$lib/i18n';
   import type { ActionData, PageData } from './$types';
+
+  function localizedHref(path: string): string {
+    return i18n.resolveRoute(path, languageTag());
+  }
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let submitting = $state(false);
@@ -91,14 +97,14 @@
           <input type="checkbox" name="acceptTos" required class="mt-0.5" />
           <span>
             {m.authSignupAcceptTosPrefix()}
-            <a href="/cgu" target="_blank" rel="noopener" class="underline">{m.authSignupAcceptTosLink()}</a>.
+            <a href={localizedHref('/cgu')} target="_blank" rel="noopener" class="underline">{m.authSignupAcceptTosLink()}</a>.
           </span>
         </label>
         <label class="flex items-start gap-2">
           <input type="checkbox" name="acceptPrivacy" required class="mt-0.5" />
           <span>
             {m.authSignupAcceptPrivacyPrefix()}
-            <a href="/politique-confidentialite" target="_blank" rel="noopener" class="underline">{m.authSignupAcceptPrivacyLink()}</a>
+            <a href={localizedHref('/politique-confidentialite')} target="_blank" rel="noopener" class="underline">{m.authSignupAcceptPrivacyLink()}</a>
             {m.authSignupAcceptPrivacySuffix()}
           </span>
         </label>
@@ -111,6 +117,6 @@
   </Card>
 
   <p class="mt-6 text-center text-sm text-muted-foreground">
-    {m.authSignupAlreadyAccount()} <a href="/login" class="font-medium text-primary hover:underline">{m.authSignupLogin()}</a>
+    {m.authSignupAlreadyAccount()} <a href={localizedHref('/login')} class="font-medium text-primary hover:underline">{m.authSignupLogin()}</a>
   </p>
 </div>

@@ -10,7 +10,7 @@
     "paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
     "check": "npm run paraglide && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold warning",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold warning --watch",
-    "lint": "prettier --check . && eslint .",
+    "lint": "npm run paraglide && prettier --check . && eslint .",
     "format": "prettier --write .",
     "test": "npm run paraglide && vitest run",
     "test:watch": "vitest",

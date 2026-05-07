@@ -50,10 +50,16 @@ describe('GET /sitemap.xml', () => {
     const event = makeRouteEvent({ url: 'https://my.app/sitemap.xml' });
     const res = await GET(event as unknown as Parameters<typeof GET>[0]);
     const body = await res.text();
-    expect(body).toContain('<loc>https://my.app/en</loc>');
     expect(body).toContain('<loc>https://my.app/en/login</loc>');
     expect(body).toContain('<loc>https://my.app/en/signup</loc>');
     expect(body).toContain('<loc>https://my.app/en/cookies</loc>');
+  });
+
+  it('does NOT advertise the EN landing page (chrome-only translation)', async () => {
+    const event = makeRouteEvent({ url: 'https://my.app/sitemap.xml' });
+    const res = await GET(event as unknown as Parameters<typeof GET>[0]);
+    const body = await res.text();
+    expect(body).not.toContain('<loc>https://my.app/en</loc>');
   });
 
   it('does NOT include EN entries for FR-only routes', async () => {

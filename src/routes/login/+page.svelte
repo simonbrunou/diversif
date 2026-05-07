@@ -9,7 +9,13 @@
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
+  import { languageTag } from '$lib/paraglide/runtime';
+  import { i18n } from '$lib/i18n';
   import type { ActionData } from './$types';
+
+  function localizedHref(path: string): string {
+    return i18n.resolveRoute(path, languageTag());
+  }
 
   let { form }: { form: ActionData } = $props();
   let submitting = $state(false);
@@ -130,6 +136,6 @@
   </Card>
 
   <p class="mt-6 text-center text-sm text-muted-foreground">
-    {m.authLoginNoAccount()} <a href="/signup" class="font-medium text-primary hover:underline">{m.authLoginCreateAccount()}</a>
+    {m.authLoginNoAccount()} <a href={localizedHref('/signup')} class="font-medium text-primary hover:underline">{m.authLoginCreateAccount()}</a>
   </p>
 </div>
