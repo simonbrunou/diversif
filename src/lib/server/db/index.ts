@@ -29,6 +29,8 @@ export function getDb(): DB {
 
   const sqlite = new Database(dbPath);
   sqlite.pragma('journal_mode = WAL');
+  sqlite.pragma('busy_timeout = 5000');
+  sqlite.pragma('synchronous = NORMAL');
 
   // Best-effort: skip the snapshot when the DB file is brand new (size 0)
   // or when the existence/size probe itself fails (race against another
