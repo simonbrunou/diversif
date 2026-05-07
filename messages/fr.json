@@ -210,5 +210,8 @@
   "dashboardFooterAnalyticsLink": "Tendances",
   "dashboardFooterReportLink": "Récap imprimable",
   "dashboardDayEntriesCountOne": "{count} entrée",
-  "dashboardDayEntriesCountOther": "{count} entrées"
+  "dashboardDayEntriesCountOther": "{count} entrées",
+  "commonFrOnlyBannerGuide": "Le guide n'est pour l'instant disponible qu'en français.",
+  "commonFrOnlyBannerLegal": "Cette page concerne le droit français et n'est disponible qu'en français.",
+  "commonFrOnlyBannerSources": "Bibliographie en français."
 }

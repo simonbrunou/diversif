@@ -210,5 +210,8 @@
   "dashboardFooterAnalyticsLink": "Analytics",
   "dashboardFooterReportLink": "Printable summary",
   "dashboardDayEntriesCountOne": "{count} entry",
-  "dashboardDayEntriesCountOther": "{count} entries"
+  "dashboardDayEntriesCountOther": "{count} entries",
+  "commonFrOnlyBannerGuide": "The guide is currently only available in French. A translation requires review by a paediatrics expert.",
+  "commonFrOnlyBannerLegal": "This page concerns French law and is only available in French.",
+  "commonFrOnlyBannerSources": "Bibliography in French."
 }

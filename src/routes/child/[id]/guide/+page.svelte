@@ -7,6 +7,8 @@
     STATIC_NAV_SECTIONS
   } from '$lib/components/GuideStaticSections.svelte';
   import { getStageForAgeMonths } from '$lib/content/guidance';
+  import { languageTag } from '$lib/paraglide/runtime';
+  import * as m from '$lib/paraglide/messages';
   import { BookOpen, Compass, AlertTriangle } from 'lucide-svelte';
   import type { PageData } from './$types';
 
@@ -58,8 +60,15 @@
     </ul>
   </nav>
 
-  <!-- 1. Current stage (child-specific) -->
-  <section id="etape" class="scroll-mt-6 space-y-3">
+  {#if languageTag() === 'en'}
+    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+      {m.commonFrOnlyBannerGuide()}
+    </aside>
+  {/if}
+
+  <section lang="fr" class="space-y-8">
+    <!-- 1. Current stage (child-specific) -->
+    <section id="etape" class="scroll-mt-6 space-y-3">
     <div class="flex items-center gap-2">
       <Compass size={18} class="text-primary" aria-hidden="true" />
       <h2 class="text-xl font-semibold">Où en est bébé</h2>
@@ -130,7 +139,8 @@
     </Card>
   </section>
 
-  <GuideStaticSections currentStageId={currentStage.id} />
+    <GuideStaticSections currentStageId={currentStage.id} />
+  </section>
 
   <div class="pt-2 text-center">
     <Button href={`/child/${data.child.id}`} variant="ghost">← Retour au tableau</Button>

@@ -1,5 +1,7 @@
 <script lang="ts">
   import Seo from '$lib/components/Seo.svelte';
+  import { languageTag } from '$lib/paraglide/runtime';
+  import * as m from '$lib/paraglide/messages';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -14,10 +16,17 @@
 />
 
 <div class="container max-w-3xl space-y-6 py-8 md:py-12">
-  <header class="space-y-2">
-    <h1 class="text-2xl font-semibold tracking-tight md:text-3xl">Politique de confidentialité</h1>
-    <p class="text-sm text-muted-foreground">Dernière mise à jour : 6 mai 2026.</p>
-  </header>
+  {#if languageTag() === 'en'}
+    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+      {m.commonFrOnlyBannerLegal()}
+    </aside>
+  {/if}
+
+  <section lang="fr" class="space-y-6">
+    <header class="space-y-2">
+      <h1 class="text-2xl font-semibold tracking-tight md:text-3xl">Politique de confidentialité</h1>
+      <p class="text-sm text-muted-foreground">Dernière mise à jour : 6 mai 2026.</p>
+    </header>
 
   <section class="space-y-2">
     <h2 class="text-lg font-semibold">1. Responsable de traitement</h2>
@@ -146,11 +155,12 @@
     </p>
   </section>
 
-  <section class="space-y-2">
-    <h2 class="text-lg font-semibold">9. Transferts hors Union européenne</h2>
-    <p class="text-sm">
-      Aucun transfert hors Union européenne n'est effectué tant que l'hébergement reste assuré
-      par {legal.hostProvider}.
-    </p>
+    <section class="space-y-2">
+      <h2 class="text-lg font-semibold">9. Transferts hors Union européenne</h2>
+      <p class="text-sm">
+        Aucun transfert hors Union européenne n'est effectué tant que l'hébergement reste assuré
+        par {legal.hostProvider}.
+      </p>
+    </section>
   </section>
 </div>
