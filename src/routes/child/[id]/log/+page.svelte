@@ -11,6 +11,10 @@
   import { getTipsFor, pickRotatingTip } from '$lib/content/guidance';
   import { page } from '$app/stores';
   import { enhance } from '$app/forms';
+  import { goto } from '$app/navigation';
+  import { toast } from 'svelte-sonner';
+  import { enqueue } from '$lib/offline/queue';
+  import { newId } from '$lib/offline/uuid';
   import { Info } from 'lucide-svelte';
   import type { ActionData, PageData } from './$types';
 
@@ -45,8 +49,27 @@
   <form
     method="POST"
     class="grid gap-5"
-    use:enhance={() => {
+    use:enhance={({ formData, cancel }) => {
       submitting = true;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        cancel();
+        const formObj: Record<string, string> = {};
+        formData.forEach((value, key) => {
+          if (typeof value === 'string') formObj[key] = value;
+        });
+        void (async () => {
+          await enqueue({
+            key: newId(),
+            childId: data.child.id,
+            formData: formObj,
+            queuedAt: Date.now()
+          });
+          toast.success('Enregistré hors-ligne — sera synchronisé.');
+          submitting = false;
+          await goto(`/child/${data.child.id}`);
+        })();
+        return async () => {};
+      }
       return async ({ update }) => {
         await update();
         submitting = false;
