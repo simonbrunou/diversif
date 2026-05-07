@@ -11,6 +11,7 @@ import {
 import * as Sentry from '@sentry/sveltekit';
 import { scrubEvent, filterIncomingBreadcrumb } from '$lib/sentry';
 import { i18n } from '$lib/i18n';
+import { setLanguageTag } from '$lib/paraglide/runtime';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN || '',
@@ -95,6 +96,16 @@ const appHandle: Handle = async ({ event, resolve }) => {
     event.locals.sessionId = null;
     event.locals.memberships = [];
   }
+
+  // Guarantee the paraglide runtime tag matches the URL prefix during SSR.
+  // paraglide-sveltekit 0.16's i18n.handle() does the URL rerouting but its
+  // async-local-storage context is not always propagated into SvelteKit's
+  // resolve() in the adapter-node production build. Setting the tag here
+  // (before resolve) ensures languageTag() returns the correct value inside
+  // .svelte files during SSR regardless of async context propagation.
+  const localeFromUrl =
+    event.url.pathname.startsWith('/en/') || event.url.pathname === '/en' ? 'en' : 'fr';
+  setLanguageTag(localeFromUrl);
 
   const response = await resolve(event);
 

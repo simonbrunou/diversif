@@ -27,6 +27,12 @@ vi.mock('$lib/i18n', () => ({
   }
 }));
 
+const { setLanguageTagMock } = vi.hoisted(() => ({ setLanguageTagMock: vi.fn() }));
+
+vi.mock('$lib/paraglide/runtime', () => ({
+  setLanguageTag: setLanguageTagMock
+}));
+
 // SvelteKit's sequence() calls get_request_store() which requires a live
 // server context unavailable in unit tests. Replace with a simple chainer
 // that invokes each handler in order with the same event/resolve pair.
@@ -200,6 +206,27 @@ describe('handle', () => {
     } finally {
       process.env.NODE_ENV = orig;
     }
+  });
+
+  it('sets locale to fr for paths without /en/ prefix', async () => {
+    const { event } = makeEvent(null, '/mentions-legales');
+    const resolve = vi.fn(async () => new Response('ok'));
+    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(setLanguageTagMock).toHaveBeenCalledWith('fr');
+  });
+
+  it('sets locale to en for /en/ prefixed paths', async () => {
+    const { event } = makeEvent(null, '/en/mentions-legales');
+    const resolve = vi.fn(async () => new Response('ok'));
+    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(setLanguageTagMock).toHaveBeenCalledWith('en');
+  });
+
+  it('sets locale to en for the bare /en path', async () => {
+    const { event } = makeEvent(null, '/en');
+    const resolve = vi.fn(async () => new Response('ok'));
+    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(setLanguageTagMock).toHaveBeenCalledWith('en');
   });
 });
 
