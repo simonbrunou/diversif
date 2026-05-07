@@ -1,6 +1,7 @@
 <script lang="ts">
   import '../app.css';
-  import { Toaster } from 'svelte-sonner';
+  import { Toaster, toast } from 'svelte-sonner';
+  import { flush } from '$lib/offline/queue';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/stores';
   import { applyTheme, getStoredTheme } from '$lib/utils/theme';
@@ -34,6 +35,39 @@
     };
     media.addEventListener('change', handler);
     return () => media.removeEventListener('change', handler);
+  });
+
+  onMount(() => {
+    const handleOnline = () => {
+      void flush();
+    };
+    const handleSynced = () => {
+      toast.success('Synchronisé.');
+    };
+    const handleDropped = () => {
+      toast.error("Une entrée n'a pas pu être synchronisée.");
+    };
+    const handleSessionExpired = () => {
+      toast.error('Session expirée — reconnectez-vous puis ressaisissez l\'entrée.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('queue:synced', handleSynced);
+    window.addEventListener('queue:dropped', handleDropped);
+    window.addEventListener('queue:sessionExpired', handleSessionExpired);
+
+    if (navigator.onLine) void flush();
+    const interval = window.setInterval(() => {
+      if (navigator.onLine) void flush();
+    }, 60_000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('queue:synced', handleSynced);
+      window.removeEventListener('queue:dropped', handleDropped);
+      window.removeEventListener('queue:sessionExpired', handleSessionExpired);
+      window.clearInterval(interval);
+    };
   });
 </script>
 
