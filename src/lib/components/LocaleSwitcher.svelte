@@ -5,12 +5,18 @@
   import * as m from '$lib/paraglide/messages';
 
   const labels: Record<string, string> = { fr: 'FR', en: 'EN' };
+
+  // resolveRoute expects the canonical (unprefixed) path. The visible
+  // pathname carries the /en prefix on English pages, so pass it through
+  // and resolveRoute would treat /en/login as the route — producing
+  // /en/login for FR (no flip) and /en/en/login for EN (doubled prefix).
+  const canonicalPath = $derived(page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/');
 </script>
 
 <nav class="locale-switcher" aria-label={m.chromeLocaleSwitcherLabel()}>
   {#each availableLanguageTags as locale}
     <a
-      href={i18n.resolveRoute(page.url.pathname, locale) + page.url.search + page.url.hash}
+      href={i18n.resolveRoute(canonicalPath, locale) + page.url.search + page.url.hash}
       data-active={languageTag() === locale ? 'true' : undefined}
       hreflang={locale}
       lang={locale}

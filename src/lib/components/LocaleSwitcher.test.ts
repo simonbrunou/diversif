@@ -36,6 +36,25 @@ describe('LocaleSwitcher', () => {
     expect(en.getAttribute('data-active')).toBeNull();
   });
 
+  it('strips the /en prefix before resolving (avoids /en/en/... and same-URL flips)', async () => {
+    const state = await import('$app/state');
+    const original = state.page.url;
+    const runtime = await import('$lib/paraglide/runtime');
+    vi.mocked(runtime.languageTag).mockReturnValue('en');
+    Object.assign(state.page, {
+      url: { pathname: '/en/login', search: '', hash: '' }
+    });
+    try {
+      render(LocaleSwitcher);
+      const fr = screen.getByRole('link', { name: /fr/i });
+      const en = screen.getByRole('link', { name: /en/i });
+      expect(fr.getAttribute('href')).toBe('/login');
+      expect(en.getAttribute('href')).toBe('/en/login');
+    } finally {
+      Object.assign(state.page, { url: original });
+    }
+  });
+
   it('preserves query string and hash when switching locales', async () => {
     const state = await import('$app/state');
     const original = state.page.url;
