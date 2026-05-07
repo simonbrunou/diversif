@@ -39,6 +39,7 @@ export function resetTestDb(): void {
     DELETE FROM webauthn_challenges;
     DELETE FROM passkeys;
     DELETE FROM sessions;
+    DELETE FROM idempotency_keys;
     DELETE FROM children;
     DELETE FROM users;
     DELETE FROM foods;
