@@ -15,6 +15,13 @@ export class IdempotencyScopeMismatch extends Error {
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * MUST be called inside `db.transaction((tx) => ...)`, never with the bare `db` singleton.
+ * The fresh-key check is a SELECT followed by an INSERT; outside a transaction two concurrent
+ * first-time requests could both pass the SELECT and both INSERT, breaking the guarantee.
+ * The transaction also gives free rollback of the inserted key row when `doWork()` throws
+ * (verified by test 5).
+ */
 export function withIdempotencyKey<T extends { redirect: string }>(
   tx: Tx,
   args: { key: string; userId: number; scope: string },
