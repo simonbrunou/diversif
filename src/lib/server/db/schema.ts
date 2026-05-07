@@ -179,6 +179,22 @@ export const webauthnChallenges = sqliteTable(
   })
 );
 
+export const idempotencyKeys = sqliteTable(
+  'idempotency_keys',
+  {
+    key: text('key').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    scope: text('scope').notNull(),
+    redirect: text('redirect'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
+  },
+  (t) => ({
+    createdAtIdx: index('idempotency_keys_created_at_idx').on(t.createdAt)
+  })
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Child = typeof children.$inferSelect;
@@ -189,11 +205,13 @@ export type FoodEntry = typeof foodEntries.$inferSelect;
 export type TipDismissal = typeof tipDismissals.$inferSelect;
 export type Passkey = typeof passkeys.$inferSelect;
 export type WebAuthnChallenge = typeof webauthnChallenges.$inferSelect;
+export type IdempotencyKey = typeof idempotencyKeys.$inferSelect;
 
 export type NewUser = typeof users.$inferInsert;
 export type NewChild = typeof children.$inferInsert;
 export type NewFood = typeof foods.$inferInsert;
 export type NewFoodEntry = typeof foodEntries.$inferInsert;
-export type NewTipDismissal = typeof tipDismissals.$inferInsert;
+export type NewIdempotencyKey = typeof idempotencyKeys.$inferInsert;
 export type NewPasskey = typeof passkeys.$inferInsert;
+export type NewTipDismissal = typeof tipDismissals.$inferInsert;
 export type NewWebAuthnChallenge = typeof webauthnChallenges.$inferInsert;

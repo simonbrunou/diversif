@@ -11,7 +11,12 @@
   import { getTipsFor, pickRotatingTip } from '$lib/content/guidance';
   import { page } from '$app/stores';
   import { enhance } from '$app/forms';
+  import { goto } from '$app/navigation';
+  import { toast } from 'svelte-sonner';
+  import { enqueue } from '$lib/offline/queue';
+  import { newId } from '$lib/offline/uuid';
   import { localizedHref } from '$lib/utils/localized-href';
+  import * as m from '$lib/paraglide/messages';
   import { Info } from 'lucide-svelte';
   import type { ActionData, PageData } from './$types';
 
@@ -46,8 +51,42 @@
   <form
     method="POST"
     class="grid gap-5"
-    use:enhance={() => {
+    use:enhance={({ formData, cancel }) => {
+      if (submitting) {
+        cancel();
+        return async () => {};
+      }
       submitting = true;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        cancel();
+        const formObj: Record<string, string> = {};
+        formData.forEach((value, key) => {
+          if (typeof value === 'string') formObj[key] = value;
+        });
+        void (async () => {
+          try {
+            await enqueue({
+              key: newId(),
+              childId: data.child.id,
+              formData: formObj,
+              queuedAt: Date.now()
+            });
+          } catch {
+            toast.error(m.offlineQueueFailedToast());
+            submitting = false;
+            return;
+          }
+          toast.success(m.offlineQueuedToast());
+          submitting = false;
+          // The entry is durably queued. Navigation is best-effort — if the dashboard
+          // route isn't cached and we're truly offline, goto() may reject; the queued
+          // row still syncs when we're back online.
+          await goto(`/child/${data.child.id}`).catch(() => {
+            /* best-effort navigation */
+          });
+        })();
+        return async () => {};
+      }
       return async ({ update }) => {
         await update();
         submitting = false;

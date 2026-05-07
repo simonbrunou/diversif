@@ -213,5 +213,18 @@
   "dashboardDayEntriesCountOther": "{count} entries",
   "commonFrOnlyBannerGuide": "The guide is currently only available in French. A translation requires review by a paediatrics expert.",
   "commonFrOnlyBannerLegal": "This page concerns French law and is only available in French.",
-  "commonFrOnlyBannerSources": "Bibliography in French."
+  "commonFrOnlyBannerSources": "Bibliography in French.",
+  "installCta": "Install",
+  "installIosInstructionsBody": "Tap the share button at the bottom, then 'Add to Home Screen'.",
+  "installIosInstructionsDismiss": "Close",
+  "installIosInstructionsTitle": "Install on iPhone",
+  "offlineBadgeLabel": "{count} to sync",
+  "offlineDroppedToast": "An entry could not be synced.",
+  "offlineFallbackBody": "You're offline. Your pending entries will sync as soon as you reconnect.",
+  "offlineFallbackRetry": "Retry",
+  "offlineFallbackTitle": "Offline",
+  "offlineQueuedToast": "Saved offline — will sync.",
+  "offlineQueueFailedToast": "Could not save offline. Try again when you're online.",
+  "offlineSessionExpiredToast": "Session expired — sign in and re-enter the item.",
+  "offlineSyncedToast": "Synced."
 }

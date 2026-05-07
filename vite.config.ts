@@ -18,7 +18,7 @@ export default defineConfig({
       injectRegister: 'auto',
       workbox: {
         globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-        navigateFallback: '/',
+        navigateFallback: '/offline',
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === 'navigate',

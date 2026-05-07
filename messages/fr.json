@@ -213,5 +213,18 @@
   "dashboardDayEntriesCountOther": "{count} entrées",
   "commonFrOnlyBannerGuide": "Le guide n'est pour l'instant disponible qu'en français.",
   "commonFrOnlyBannerLegal": "Cette page concerne le droit français et n'est disponible qu'en français.",
-  "commonFrOnlyBannerSources": "Bibliographie en français."
+  "commonFrOnlyBannerSources": "Bibliographie en français.",
+  "installCta": "Installer",
+  "installIosInstructionsBody": "Appuyez sur le bouton de partage en bas de l'écran, puis « Sur l'écran d'accueil ».",
+  "installIosInstructionsDismiss": "Fermer",
+  "installIosInstructionsTitle": "Installer sur iPhone",
+  "offlineBadgeLabel": "{count} à synchroniser",
+  "offlineDroppedToast": "Une entrée n'a pas pu être synchronisée.",
+  "offlineFallbackBody": "Vous êtes hors-ligne. Vos entrées en attente seront synchronisées dès le retour de la connexion.",
+  "offlineFallbackRetry": "Réessayer",
+  "offlineFallbackTitle": "Hors-ligne",
+  "offlineQueuedToast": "Enregistré hors-ligne — sera synchronisé.",
+  "offlineQueueFailedToast": "Impossible d'enregistrer hors-ligne. Réessayez quand vous serez en ligne.",
+  "offlineSessionExpiredToast": "Session expirée — reconnectez-vous puis ressaisissez l'entrée.",
+  "offlineSyncedToast": "Synchronisé."
 }

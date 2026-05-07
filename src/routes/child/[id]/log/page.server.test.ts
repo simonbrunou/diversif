@@ -420,3 +420,198 @@ describe('child/[id]/log default action', () => {
     expect(entries).toEqual([]);
   });
 });
+
+describe('Idempotency-Key', () => {
+  it('same key replay — only one food_entries row, both calls redirect to same location', async () => {
+    const { u, c, m, food } = await setup();
+    const formData = {
+      foodId: String(food.id),
+      givenAt: '2026-05-07T10:00:00.000Z',
+      reaction: 'ras'
+    };
+
+    const r1 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData,
+          headers: { 'Idempotency-Key': 'key-replay-1' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+    const r2 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData,
+          headers: { 'Idempotency-Key': 'key-replay-1' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+
+    expect(r1.kind).toBe('redirect');
+    expect(r2.kind).toBe('redirect');
+    if (r1.kind === 'redirect' && r2.kind === 'redirect') {
+      expect(r1.location).toBe(r2.location);
+    }
+
+    const count =
+      testDb
+        .select({ n: sql<number>`count(*)` })
+        .from(foodEntries)
+        .get()?.n ?? 0;
+    expect(count).toBe(1);
+  });
+
+  it('different keys, same form — two food_entries rows', async () => {
+    const { u, c, m, food } = await setup();
+    const formData = {
+      foodId: String(food.id),
+      givenAt: '2026-05-07T10:00:00.000Z',
+      reaction: 'ras'
+    };
+
+    const r1 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData,
+          headers: { 'Idempotency-Key': 'k-A' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+    const r2 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData,
+          headers: { 'Idempotency-Key': 'k-B' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+
+    expect(r1.kind).toBe('redirect');
+    expect(r2.kind).toBe('redirect');
+
+    const count =
+      testDb
+        .select({ n: sql<number>`count(*)` })
+        .from(foodEntries)
+        .get()?.n ?? 0;
+    expect(count).toBe(2);
+  });
+
+  it('invalid Idempotency-Key (length 101) — returns 400', async () => {
+    const { u, c, m, food } = await setup();
+    const r = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData: {
+            foodId: String(food.id),
+            givenAt: '2026-05-07T10:00:00.000Z',
+            reaction: 'ras'
+          },
+          headers: { 'Idempotency-Key': 'x'.repeat(101) }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+    expect(r.kind).toBe('return');
+    if (r.kind === 'return') {
+      expect((r.value as { status: number }).status).toBe(400);
+    }
+  });
+
+  it('same key for different scope — second call returns 409', async () => {
+    const { u, food } = await setup();
+    const childA = seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+    const childB = seedChild({ createdBy: u.id, birthDate: '2024-02-01' });
+    const mA = seedMembership({ userId: u.id, childId: childA.id, role: 'owner' });
+    const mB = seedMembership({ userId: u.id, childId: childB.id, role: 'owner' });
+
+    const formData = {
+      foodId: String(food.id),
+      givenAt: '2026-05-07T10:00:00.000Z',
+      reaction: 'ras'
+    };
+
+    const r1 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [mA, mB],
+          params: { id: String(childA.id) },
+          formData,
+          headers: { 'Idempotency-Key': 'k1' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+    expect(r1.kind).toBe('redirect');
+
+    const r2 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [mA, mB],
+          params: { id: String(childB.id) },
+          formData,
+          headers: { 'Idempotency-Key': 'k1' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+    expect(r2.kind).toBe('return');
+    if (r2.kind === 'return') {
+      expect((r2.value as { status: number }).status).toBe(409);
+    }
+  });
+
+  it('no header — existing behaviour — two calls produce two food_entries rows', async () => {
+    const { u, c, m, food } = await setup();
+    const formData = {
+      foodId: String(food.id),
+      givenAt: '2026-05-07T10:00:00.000Z',
+      reaction: 'ras'
+    };
+
+    const r1 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+    const r2 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+
+    expect(r1.kind).toBe('redirect');
+    expect(r2.kind).toBe('redirect');
+
+    const count =
+      testDb
+        .select({ n: sql<number>`count(*)` })
+        .from(foodEntries)
+        .get()?.n ?? 0;
+    expect(count).toBe(2);
+  });
+});

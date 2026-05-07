@@ -1,10 +1,12 @@
 <script lang="ts">
   import '../app.css';
-  import { Toaster } from 'svelte-sonner';
+  import { Toaster, toast } from 'svelte-sonner';
+  import { flush } from '$lib/offline/queue';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/stores';
   import { browser } from '$app/environment';
   import { setLanguageTag } from '$lib/paraglide/runtime';
+  import * as m from '$lib/paraglide/messages';
   import { applyTheme, getStoredTheme } from '$lib/utils/theme';
   import PublicHeader from '$lib/components/PublicHeader.svelte';
   import PublicFooter from '$lib/components/PublicFooter.svelte';
@@ -60,6 +62,39 @@
     };
     media.addEventListener('change', handler);
     return () => media.removeEventListener('change', handler);
+  });
+
+  onMount(() => {
+    const handleOnline = () => {
+      void flush();
+    };
+    const handleSynced = () => {
+      toast.success(m.offlineSyncedToast());
+    };
+    const handleDropped = () => {
+      toast.error(m.offlineDroppedToast());
+    };
+    const handleSessionExpired = () => {
+      toast.error(m.offlineSessionExpiredToast());
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('queue:synced', handleSynced);
+    window.addEventListener('queue:dropped', handleDropped);
+    window.addEventListener('queue:sessionExpired', handleSessionExpired);
+
+    if (navigator.onLine) void flush();
+    const interval = window.setInterval(() => {
+      if (navigator.onLine) void flush();
+    }, 60_000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('queue:synced', handleSynced);
+      window.removeEventListener('queue:dropped', handleDropped);
+      window.removeEventListener('queue:sessionExpired', handleSessionExpired);
+      window.clearInterval(interval);
+    };
   });
 </script>
 
