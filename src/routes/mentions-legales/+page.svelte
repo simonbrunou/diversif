@@ -2,6 +2,7 @@
   import Seo from '$lib/components/Seo.svelte';
   import * as m from '$lib/paraglide/messages';
   import { page } from '$app/stores';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -70,7 +71,7 @@
       <h2 class="text-lg font-semibold">Données personnelles</h2>
       <p class="text-sm">
         Le traitement des données personnelles est décrit sur la page
-        <a class="underline" href="/politique-confidentialite">Politique de confidentialité</a>.
+        <a class="underline" href={localizedHref('/politique-confidentialite')}>Politique de confidentialité</a>.
       </p>
     </section>
   </section>
