@@ -45,6 +45,7 @@
     title="Diversif — Diversification alimentaire bébé : guide, suivi, partage parents"
     description={SITE.description}
     path="/"
+    alternateLocales={['en']}
   />
   <JsonLd data={webApplicationJsonLd(siteUrl)} />
   <JsonLd data={faqPageJsonLd(landingFaq)} />

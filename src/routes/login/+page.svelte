@@ -55,7 +55,7 @@
   }
 </script>
 
-<Seo title={m.authLoginTitle()} path="/login" noindex />
+<Seo title={m.authLoginTitle()} path="/login" noindex alternateLocales={['en']} />
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
   <div class="text-center">

@@ -3,7 +3,7 @@
   import * as m from '$lib/paraglide/messages';
 </script>
 
-<Seo title={m.authDeletedTitle()} path="/account/deleted" noindex />
+<Seo title={m.authDeletedTitle()} path="/account/deleted" noindex alternateLocales={['en']} />
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10 text-center">
   <h1 class="text-2xl font-semibold">{m.authDeletedHeading()}</h1>

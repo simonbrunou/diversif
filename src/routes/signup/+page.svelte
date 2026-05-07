@@ -12,7 +12,7 @@
   let submitting = $state(false);
 </script>
 
-<Seo title={m.authSignupTitle()} path="/signup" noindex />
+<Seo title={m.authSignupTitle()} path="/signup" noindex alternateLocales={['en']} />
 
 <div class="container flex max-w-md flex-1 flex-col justify-center py-10">
   <div class="text-center">

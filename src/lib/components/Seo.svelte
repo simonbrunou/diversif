@@ -10,8 +10,9 @@
     ogImage = SITE.ogImage,
     noindex = false,
     publishedTime,
-    modifiedTime
-  }: SeoInput = $props();
+    modifiedTime,
+    alternateLocales = []
+  }: SeoInput & { alternateLocales?: string[] } = $props();
 
   const origin = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
   const canonical = $derived(absoluteUrl(origin, path));
@@ -23,6 +24,17 @@
   <title>{title}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonical} />
+  {#if alternateLocales.length > 0}
+    <link rel="alternate" hreflang="fr" href={canonical} />
+    {#each alternateLocales as locale}
+      <link
+        rel="alternate"
+        hreflang={locale}
+        href={absoluteUrl(origin, `/${locale}${path === '/' ? '' : path}`)}
+      />
+    {/each}
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+  {/if}
   {#if noindex}
     <meta name="robots" content="noindex, nofollow" />
   {:else}

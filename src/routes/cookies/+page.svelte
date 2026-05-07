@@ -8,6 +8,7 @@
   description="Diversif n'utilise que deux cookies strictement nécessaires au fonctionnement du service. Aucun cookie de mesure ni de publicité."
   path="/cookies"
   noindex
+  alternateLocales={['en']}
 />
 
 <div class="container max-w-3xl space-y-6 py-8 md:py-12">

@@ -14,6 +14,17 @@ const GUIDE_LASTMOD = '2026-05-03';
 const ALLERGENS_LASTMOD = '2026-05-03';
 const SOURCES_LASTMOD = '2026-05-03';
 
+// EN counterparts for translated routes. For paths that exist in STATIC_PAGES
+// the entry is derived from there; for auth routes (noindex) we add them
+// explicitly so EN users can also reach them via search / direct crawl.
+// Only include paths that are genuinely translated — no FR-only routes here.
+const EN_TRANSLATED_PATHS: Entry[] = [
+  { path: '/en', changefreq: 'weekly', priority: '1.0', lastmod: LANDING_LASTMOD },
+  { path: '/en/login', changefreq: 'monthly', priority: '0.5', lastmod: LANDING_LASTMOD },
+  { path: '/en/signup', changefreq: 'monthly', priority: '0.5', lastmod: LANDING_LASTMOD },
+  { path: '/en/cookies', changefreq: 'yearly', priority: '0.3', lastmod: LANDING_LASTMOD }
+];
+
 const STATIC_PAGES: Entry[] = [
   { path: '/', changefreq: 'weekly', priority: '1.0', lastmod: LANDING_LASTMOD },
   { path: '/guide', changefreq: 'monthly', priority: '0.9', lastmod: GUIDE_LASTMOD },
@@ -53,7 +64,9 @@ export const GET: RequestHandler = ({ url }) => {
       changefreq: 'monthly',
       priority: '0.5',
       lastmod: GUIDE_LASTMOD
-    }))
+    })),
+    // EN counterparts for translated routes.
+    ...EN_TRANSLATED_PATHS
   ];
 
   const body =
