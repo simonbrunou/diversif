@@ -39,6 +39,32 @@ docker compose up -d
 
 The SQLite DB is persisted in the named Docker volume `diversif-data` (pinned via `name:` so it is independent of the Compose project name), mounted at `/app/data` inside the container. The volume survives rebuilds, container recreations, repo re-clones, and renames of the project directory, so accounts and data are kept across deploys. Migrations and seeding run on every container start (idempotent).
 
+### Volume ownership (non-root container)
+
+The container runs as the `node` user (UID 1000). The build-time `chown` on `/app/data` only fixes the **empty** image layer — it cannot change ownership of an already-populated named volume. Two cases to handle:
+
+**Fresh deploy on an unprivileged Proxmox LXC:** container UID 1000 maps to host UID 101000. The first deploy will create the volume owned by host root, and migrations will fail with `EACCES`. Fix once on the LXC host before `docker compose up`:
+
+```bash
+docker volume create diversif-data  # if not yet created
+chown -R 101000:101000 /var/lib/docker/volumes/diversif-data/_data
+```
+
+(Replace `101000` with the actual mapped UID if your LXC uses a different `subuid` range.)
+
+**Upgrading from an older deploy that ran as root:** the existing DB and WAL files are owned by root inside the volume, so the new non-root container can open the DB read-only and then crash on the first write. Stop the container, chown on the host, then start:
+
+```bash
+docker compose down
+# Privileged LXC or non-LXC host: container UID 1000 == host UID 1000
+chown -R 1000:1000 /var/lib/docker/volumes/diversif-data/_data
+# Unprivileged LXC: map to subuid range
+chown -R 101000:101000 /var/lib/docker/volumes/diversif-data/_data
+docker compose up -d
+```
+
+You can verify in-container with `docker exec diversif id` (should show `uid=1000(node)`) and `docker exec diversif ls -lan /app/data` (`diversif.db` should be owned by UID 1000).
+
 ### Reverse proxy / Cloudflare Tunnel
 
 When the app sits behind a proxy (Coolify/Traefik, a Cloudflare Tunnel, nginx, etc.), `adapter-node` needs a few env vars to recover the real client IP and scheme. Without them the per-IP rate limits on `/signup` and `/login` see the proxy as a single client, so one bad actor can lock everyone out.
