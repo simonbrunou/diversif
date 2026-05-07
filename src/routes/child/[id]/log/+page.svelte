@@ -50,6 +50,10 @@
     method="POST"
     class="grid gap-5"
     use:enhance={({ formData, cancel }) => {
+      if (submitting) {
+        cancel();
+        return async () => {};
+      }
       submitting = true;
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
         cancel();
@@ -58,15 +62,23 @@
           if (typeof value === 'string') formObj[key] = value;
         });
         void (async () => {
-          await enqueue({
-            key: newId(),
-            childId: data.child.id,
-            formData: formObj,
-            queuedAt: Date.now()
-          });
-          toast.success('Enregistré hors-ligne — sera synchronisé.');
-          submitting = false;
-          await goto(`/child/${data.child.id}`);
+          try {
+            await enqueue({
+              key: newId(),
+              childId: data.child.id,
+              formData: formObj,
+              queuedAt: Date.now()
+            });
+            toast.success('Enregistré hors-ligne — sera synchronisé.');
+            await goto(`/child/${data.child.id}`);
+          } catch {
+            // Most likely IDB unavailable (iOS Safari private mode, quota exceeded,
+            // disk full). The submit failed AND we have no durable queue — surface
+            // the error so the user knows their entry was not saved.
+            toast.error("Impossible d'enregistrer hors-ligne. Réessayez quand vous serez en ligne.");
+          } finally {
+            submitting = false;
+          }
         })();
         return async () => {};
       }

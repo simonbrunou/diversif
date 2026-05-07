@@ -38,8 +38,27 @@ async function tx<T>(
   return new Promise<T>((resolve, reject) => {
     const transaction = db.transaction(STORE, mode);
     const store = transaction.objectStore(STORE);
-    fn(store).then(resolve).catch(reject);
+    let result: T;
+    let pending: Promise<T> | null = fn(store);
+    pending.then(
+      (r) => {
+        result = r;
+      },
+      (err) => {
+        try {
+          transaction.abort();
+        } catch {
+          // already aborted
+        }
+        reject(err);
+        pending = null;
+      }
+    );
+    transaction.oncomplete = () => {
+      if (pending !== null) resolve(result);
+    };
     transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error ?? new Error('IDB transaction aborted'));
   });
 }
 
