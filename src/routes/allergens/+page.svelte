@@ -10,6 +10,7 @@
   import { page } from '$app/stores';
   import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
   import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { ShieldCheck } from 'lucide-svelte';
 
   let openAllergenId = $state<AllergenId | null>(null);
@@ -106,8 +107,8 @@
       qui restent à proposer dans la bonne fenêtre.
     </p>
     <div class="mt-4 flex flex-wrap justify-center gap-3">
-      <Button href="/signup">Créer un compte pour les suivre</Button>
-      <Button href="/guide" variant="outline">Lire le guide complet</Button>
+      <Button href={localizedHref('/signup')}>Créer un compte pour les suivre</Button>
+      <Button href={localizedHref('/guide')} variant="outline">Lire le guide complet</Button>
     </div>
   </Card>
 </div>

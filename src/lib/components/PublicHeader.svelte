@@ -5,8 +5,7 @@
   import type { SafeUser } from '$lib/types';
   import { Menu, X } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
-  import { i18n } from '$lib/i18n';
-  import { languageTag } from '$lib/paraglide/runtime';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let {
     user,
@@ -14,10 +13,6 @@
   }: { user: SafeUser | null; firstChildId: number | null } = $props();
 
   let mobileOpen = $state(false);
-
-  function localizedHref(path: string): string {
-    return i18n.resolveRoute(path, languageTag());
-  }
 
   const navLinks = $derived([
     { href: localizedHref('/'), label: m.chromePublicHeaderNavHome() },

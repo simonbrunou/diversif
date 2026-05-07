@@ -5,6 +5,7 @@
   import Card from '$components/ui/Card.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
   import { enhance } from '$app/forms';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { Baby } from 'lucide-svelte';
   import type { ActionData, PageData } from './$types';
 
@@ -73,6 +74,6 @@
   </Card>
 
   <div class="mt-4 text-center">
-    <a href="/" class="text-sm text-muted-foreground hover:underline">Annuler</a>
+    <a href={localizedHref('/')} class="text-sm text-muted-foreground hover:underline">Annuler</a>
   </div>
 </div>

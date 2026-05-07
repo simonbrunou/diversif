@@ -20,6 +20,7 @@
   import { toast } from 'svelte-sonner';
   import { celebrate, pickMilestoneFromQuery } from '$lib/utils/milestones';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import {
     UserCircle2,
     Plus,
@@ -171,7 +172,7 @@
         </div>
       </div>
       <a
-        href="/account"
+        href={localizedHref('/account')}
         class="rounded-full p-2 text-muted-foreground transition-colors hover:bg-background/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
         aria-label={m.dashboardMyAccount()}
       >
@@ -179,7 +180,7 @@
       </a>
     </div>
     <div class="mt-5">
-      <Button href={`/child/${data.child.id}/log`} size="lg" class="w-full sm:w-auto">
+      <Button href={localizedHref(`/child/${data.child.id}/log`)} size="lg" class="w-full sm:w-auto">
         <Plus size={18} aria-hidden="true" />
         {m.dashboardLogCta()}
       </Button>
@@ -293,7 +294,7 @@
     <div class="mb-3 flex items-center justify-between">
       <h2 class="text-base font-semibold">{m.dashboardRecentMealsSection()}</h2>
       <a
-        href={`/child/${data.child.id}/foods`}
+        href={localizedHref(`/child/${data.child.id}/foods`)}
         class="text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
       >
         {m.dashboardRecentMealsViewAll()}
@@ -307,7 +308,7 @@
         description={m.dashboardEmptyStateDescription({ name: data.child.name })}
       >
         {#snippet action()}
-          <Button href={`/child/${data.child.id}/log`}>{m.dashboardEmptyStateLogCta()}</Button>
+          <Button href={localizedHref(`/child/${data.child.id}/log`)}>{m.dashboardEmptyStateLogCta()}</Button>
         {/snippet}
       </EmptyState>
 
@@ -324,7 +325,7 @@
             {#each data.starterFoods as f (f.id)}
               <li>
                 <a
-                  href={`/child/${data.child.id}/log?foodId=${f.id}`}
+                  href={localizedHref(`/child/${data.child.id}/log?foodId=${f.id}`)}
                   aria-label={`Noter ${f.name}, dès ${f.suggestedAgeMonths} mois`}
                   class="flex items-center justify-between gap-2 rounded-md border p-2.5 text-sm transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
@@ -345,7 +346,7 @@
           {#each data.recent as e (e.id)}
             <li>
               <a
-                href={`/child/${data.child.id}/log/${e.id}?from=dashboard`}
+                href={localizedHref(`/child/${data.child.id}/log/${e.id}?from=dashboard`)}
                 class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none md:p-4"
               >
                 <div class="min-w-0 flex-1">
@@ -382,7 +383,7 @@
                 {#each day.entries as e (e.id)}
                   <li>
                     <a
-                      href={`/child/${data.child.id}/log/${e.id}?from=dashboard`}
+                      href={localizedHref(`/child/${data.child.id}/log/${e.id}?from=dashboard`)}
                       class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none md:p-4"
                     >
                       <div class="min-w-0 flex-1">
@@ -408,7 +409,7 @@
 
   <section class="grid grid-cols-1 gap-3 sm:grid-cols-3">
     <a
-      href={`/child/${data.child.id}/allergens`}
+      href={localizedHref(`/child/${data.child.id}/allergens`)}
       class="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       <Card class="flex items-center justify-between p-4 transition-colors group-hover:bg-accent">
@@ -425,7 +426,7 @@
       </Card>
     </a>
     <a
-      href={`/child/${data.child.id}/suggestions`}
+      href={localizedHref(`/child/${data.child.id}/suggestions`)}
       class="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       <Card class="flex items-center justify-between p-4 transition-colors group-hover:bg-accent">
@@ -442,7 +443,7 @@
       </Card>
     </a>
     <a
-      href={`/child/${data.child.id}/guide`}
+      href={localizedHref(`/child/${data.child.id}/guide`)}
       class="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       <Card class="flex items-center justify-between p-4 transition-colors group-hover:bg-accent">
@@ -462,21 +463,21 @@
 
   <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center">
     <a
-      href={`/child/${data.child.id}/settings`}
+      href={localizedHref(`/child/${data.child.id}/settings`)}
       class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       {m.dashboardFooterSettingsLink()}
     </a>
     <span class="text-muted-foreground/40" aria-hidden="true">·</span>
     <a
-      href={`/child/${data.child.id}/analytics`}
+      href={localizedHref(`/child/${data.child.id}/analytics`)}
       class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       {m.dashboardFooterAnalyticsLink()}
     </a>
     <span class="text-muted-foreground/40" aria-hidden="true">·</span>
     <a
-      href={`/child/${data.child.id}/report`}
+      href={localizedHref(`/child/${data.child.id}/report`)}
       class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       {m.dashboardFooterReportLink()}

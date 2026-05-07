@@ -5,6 +5,7 @@
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { breadcrumbJsonLd, SITE } from '$lib/seo';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { page } from '$app/stores';
   import { SOURCES, ALL_SOURCE_IDS } from '$lib/content/sources';
   import { Library, ExternalLink } from 'lucide-svelte';
@@ -95,8 +96,8 @@
         aliment, demandez conseil à votre pédiatre ou à un allergologue.
       </p>
       <div class="mt-4 flex flex-wrap justify-center gap-3">
-        <Button href="/signup">Créer un compte</Button>
-        <Button href="/guide" variant="outline">Lire le guide</Button>
+        <Button href={localizedHref('/signup')}>Créer un compte</Button>
+        <Button href={localizedHref('/guide')} variant="outline">Lire le guide</Button>
       </div>
     </Card>
   </section>

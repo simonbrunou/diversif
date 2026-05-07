@@ -9,13 +9,8 @@
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
-  import { languageTag } from '$lib/paraglide/runtime';
-  import { i18n } from '$lib/i18n';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData } from './$types';
-
-  function localizedHref(path: string): string {
-    return i18n.resolveRoute(path, languageTag());
-  }
 
   let { form }: { form: ActionData } = $props();
   let submitting = $state(false);

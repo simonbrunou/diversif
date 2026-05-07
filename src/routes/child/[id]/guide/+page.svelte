@@ -8,6 +8,7 @@
   } from '$lib/components/GuideStaticSections.svelte';
   import { getStageForAgeMonths } from '$lib/content/guidance';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { page } from '$app/stores';
   import { BookOpen, Compass, AlertTriangle } from 'lucide-svelte';
   import type { PageData } from './$types';
@@ -25,7 +26,7 @@
 <div class="container max-w-4xl space-y-8 py-6 md:py-8">
   <header class="space-y-2">
     <a
-      href={`/child/${data.child.id}`}
+      href={localizedHref(`/child/${data.child.id}`)}
       class="text-sm text-muted-foreground hover:underline"
     >
       ← Tableau
@@ -143,6 +144,6 @@
   </section>
 
   <div class="pt-2 text-center">
-    <Button href={`/child/${data.child.id}`} variant="ghost">← Retour au tableau</Button>
+    <Button href={localizedHref(`/child/${data.child.id}`)} variant="ghost">← Retour au tableau</Button>
   </div>
 </div>

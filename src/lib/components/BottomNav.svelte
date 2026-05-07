@@ -3,14 +3,9 @@
   import { cn } from '$lib/utils/cn';
   import { getChildNavItems, isNavItemActive } from '$lib/utils/nav';
   import * as m from '$lib/paraglide/messages';
-  import { i18n } from '$lib/i18n';
-  import { languageTag } from '$lib/paraglide/runtime';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let { childId }: { childId: number } = $props();
-
-  function localizedHref(path: string): string {
-    return i18n.resolveRoute(path, languageTag());
-  }
 
   const items = $derived(getChildNavItems(childId));
   // Strip the /en prefix so isNavItemActive (which compares against unprefixed

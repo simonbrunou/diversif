@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import { Activity, Flame, Sparkles } from 'lucide-svelte';
+  import { localizedHref } from '$lib/utils/localized-href';
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
   import type { PageData } from './$types';
@@ -37,7 +38,7 @@
 <div class="container max-w-3xl space-y-6 py-6 md:py-8">
   <header class="space-y-1">
     <a
-      href={`/child/${data.child.id}`}
+      href={localizedHref(`/child/${data.child.id}`)}
       class="text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
     >
       ← Tableau

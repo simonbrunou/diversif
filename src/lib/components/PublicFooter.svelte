@@ -1,13 +1,8 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages';
-  import { i18n } from '$lib/i18n';
-  import { languageTag } from '$lib/paraglide/runtime';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   const year = new Date().getFullYear();
-
-  function localizedHref(path: string): string {
-    return i18n.resolveRoute(path, languageTag());
-  }
 </script>
 
 <footer class="mt-12 border-t bg-surface">

@@ -10,6 +10,7 @@
   import { SITE, faqPageJsonLd, webApplicationJsonLd } from '$lib/seo';
   import { page } from '$app/stores';
   import { formatAge } from '$lib/utils/age';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -62,7 +63,7 @@
       {#each [{ href: '/guide#regles', label: "10 règles d'or" }, { href: '/guide#etapes', label: '4 étapes' }, { href: '/guide#allergenes', label: '12 allergènes' }] as chip (chip.href)}
         <li>
           <a
-            href={chip.href}
+            href={localizedHref(chip.href)}
             class="inline-flex items-center rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {chip.label}
@@ -81,7 +82,7 @@
 
     <div class="mt-6 grid gap-3">
       {#each data.children as child (child.id)}
-        <a href={`/child/${child.id}`} class="block">
+        <a href={localizedHref(`/child/${child.id}`)} class="block">
           <Card class="p-4 transition-colors hover:bg-accent">
             <div class="flex items-center justify-between">
               <div>
@@ -98,7 +99,7 @@
     </div>
 
     <div class="mt-6">
-      <Button href="/child/new" variant="outline">+ Ajouter un enfant</Button>
+      <Button href={localizedHref('/child/new')} variant="outline">+ Ajouter un enfant</Button>
     </div>
   </div>
 {/if}

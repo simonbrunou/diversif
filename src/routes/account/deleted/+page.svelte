@@ -1,6 +1,7 @@
 <script lang="ts">
   import Seo from '$lib/components/Seo.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
 </script>
 
 <Seo title={m.authDeletedTitle()} path="/account/deleted" noindex alternateLocales={['en']} />
@@ -11,6 +12,6 @@
     {m.authDeletedBody()}
   </p>
   <p class="mt-6 text-sm">
-    <a href="/" class="font-medium text-primary hover:underline">{m.authDeletedBackHome()}</a>
+    <a href={localizedHref('/')} class="font-medium text-primary hover:underline">{m.authDeletedBackHome()}</a>
   </p>
 </div>

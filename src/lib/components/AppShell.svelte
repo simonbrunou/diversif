@@ -7,12 +7,7 @@
   import { formatAge } from '$lib/utils/age';
   import { UserCircle2 } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
-  import { i18n } from '$lib/i18n';
-  import { languageTag } from '$lib/paraglide/runtime';
-
-  function localizedHref(path: string): string {
-    return i18n.resolveRoute(path, languageTag());
-  }
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let {
     childId,

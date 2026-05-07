@@ -8,6 +8,7 @@
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { articleJsonLd, breadcrumbJsonLd, faqPageJsonLd, SITE } from '$lib/seo';
   import { page } from '$app/stores';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { BookOpen } from 'lucide-svelte';
 
   const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
@@ -104,8 +105,8 @@
       avec l'autre parent.
     </p>
     <div class="mt-4 flex flex-wrap justify-center gap-3">
-      <Button href="/signup">Créer un compte gratuit</Button>
-      <Button href="/sources" variant="outline">Voir les sources</Button>
+      <Button href={localizedHref('/signup')}>Créer un compte gratuit</Button>
+      <Button href={localizedHref('/sources')} variant="outline">Voir les sources</Button>
     </div>
   </Card>
 </div>

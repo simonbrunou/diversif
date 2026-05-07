@@ -4,6 +4,7 @@
   import { enhance } from '$app/forms';
   import { Heart, Sparkles, BookOpen } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let {
     open = $bindable(false),
@@ -78,7 +79,7 @@
     {#if step < 2}
       <Button onclick={next}>{m.dialogsWelcomeButtonNext()}</Button>
     {:else}
-      <Button href={`/child/${childId}/guide`}>{m.dialogsWelcomeButtonOpenGuide()}</Button>
+      <Button href={localizedHref(`/child/${childId}/guide`)}>{m.dialogsWelcomeButtonOpenGuide()}</Button>
     {/if}
   {/snippet}
 </Dialog>

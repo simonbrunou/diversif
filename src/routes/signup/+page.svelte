@@ -6,13 +6,8 @@
   import Seo from '$lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
   import * as m from '$lib/paraglide/messages';
-  import { languageTag } from '$lib/paraglide/runtime';
-  import { i18n } from '$lib/i18n';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData, PageData } from './$types';
-
-  function localizedHref(path: string): string {
-    return i18n.resolveRoute(path, languageTag());
-  }
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let submitting = $state(false);

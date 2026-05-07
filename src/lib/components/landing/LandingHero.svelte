@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
+  import { localizedHref } from '$lib/utils/localized-href';
 </script>
 
 <section
@@ -31,12 +32,12 @@
       recommandations HCSP, Santé publique France et ESPGHAN.
     </p>
     <div class="mt-7 flex flex-wrap justify-center gap-3">
-      <Button href="/signup" size="lg">Créer mon compte gratuit</Button>
-      <Button href="/guide" size="lg" variant="outline">Lire le guide</Button>
+      <Button href={localizedHref('/signup')} size="lg">Créer mon compte gratuit</Button>
+      <Button href={localizedHref('/guide')} size="lg" variant="outline">Lire le guide</Button>
     </div>
     <p class="mt-4 text-sm text-muted-foreground">
       Déjà un compte ?
-      <a href="/login" class="font-medium text-foreground underline-offset-4 hover:underline">
+      <a href={localizedHref('/login')} class="font-medium text-foreground underline-offset-4 hover:underline">
         Se connecter
       </a>
     </p>

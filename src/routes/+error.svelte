@@ -3,6 +3,7 @@
   import Button from '$components/ui/Button.svelte';
   import { AlertTriangle } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   const status = $derived($page.status);
   const message = $derived($page.error?.message ?? 'Une erreur est survenue.');
@@ -24,7 +25,7 @@
     {/if}
   </div>
   <div class="flex flex-wrap justify-center gap-2">
-    <Button href="/">{m.errorsGenericHome()}</Button>
+    <Button href={localizedHref('/')}>{m.errorsGenericHome()}</Button>
     <Button variant="outline" onclick={() => history.back()}>{m.errorsGenericBack()}</Button>
   </div>
 </div>

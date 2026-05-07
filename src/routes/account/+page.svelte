@@ -10,6 +10,7 @@
   import { browser } from '$app/environment';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -109,7 +110,7 @@
 
 <div class="container max-w-2xl space-y-6 py-6">
   <header>
-    <a href="/" class="text-sm text-muted-foreground hover:underline">{m.authAccountBack()}</a>
+    <a href={localizedHref('/')} class="text-sm text-muted-foreground hover:underline">{m.authAccountBack()}</a>
     <h1 class="mt-2 text-xl font-semibold">{m.authAccountHeading()}</h1>
     {#if data.user}
       <p class="text-sm text-muted-foreground">{data.user.email}</p>
@@ -253,7 +254,7 @@
       {m.authAccountDataDescription()}
     </p>
     <div class="mt-3">
-      <Button href="/account/export" variant="outline">{m.authAccountDataExport()}</Button>
+      <Button href={localizedHref('/account/export')} variant="outline">{m.authAccountDataExport()}</Button>
     </div>
   </Card>
 
