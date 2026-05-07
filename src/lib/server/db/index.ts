@@ -1,5 +1,12 @@
+// Side-effect-only: ensures Sentry is initialised before getDb() runs at
+// module init time. The captureException calls below would otherwise
+// silently drop events because hooks.server.ts's own Sentry.init has not
+// run yet at that point in the import chain.
+import '$lib/sentry-init.server';
+
 import path from 'node:path';
 import { existsSync, mkdirSync, statSync } from 'node:fs';
+import * as Sentry from '@sentry/sveltekit';
 import Database from 'better-sqlite3';
 import { drizzle, type BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
@@ -65,9 +72,7 @@ export function getDb(): DB {
   const violations = sqlite.pragma('foreign_key_check') as unknown[];
   if (Array.isArray(violations) && violations.length > 0) {
     const err = new Error(`Foreign key violations after migrations: ${JSON.stringify(violations)}`);
-    void import('@sentry/sveltekit')
-      .then(({ captureException }) => captureException(err, { tags: { subsystem: 'db-migrate' } }))
-      .catch(() => {});
+    Sentry.captureException(err, { tags: { subsystem: 'db-migrate' } });
     throw err;
   }
   sqlite.pragma('foreign_keys = ON');
