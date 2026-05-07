@@ -10,6 +10,7 @@
   import { page } from '$app/stores';
   import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
   import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
+  import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
   import { ShieldCheck } from 'lucide-svelte';
 
@@ -57,6 +58,13 @@
 />
 
 <div class="container max-w-4xl space-y-8 py-6 md:py-8">
+  {#if $page.url.pathname.startsWith('/en')}
+    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+      {m.commonFrOnlyBannerGuide()}
+    </aside>
+  {/if}
+
+  <section lang="fr" class="space-y-8">
   <header class="space-y-2">
     <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-primary/80">
       <ShieldCheck size={14} aria-hidden="true" />
@@ -111,6 +119,7 @@
       <Button href={localizedHref('/guide')} variant="outline">Lire le guide complet</Button>
     </div>
   </Card>
+  </section>
 </div>
 
 <AllergenInfoDialog bind:allergenId={openAllergenId} />

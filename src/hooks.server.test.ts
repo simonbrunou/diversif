@@ -233,26 +233,30 @@ describe('handle', () => {
 
   it('substitutes %paraglide.lang% in the rendered HTML', async () => {
     const { event } = makeEvent(null, '/en/mentions-legales');
+    // SvelteKit can split the response across chunks; the <html lang>
+    // placeholder lives in the very first chunk that gets streamed. Asserting
+    // both done=false and done=true chunks get the substitution prevents a
+    // regression where gating on `done` leaks `%paraglide.lang%` to the wire.
     const resolve = vi.fn(
       async (
         _event,
         opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
       ) => {
-        const out = opts.transformPageChunk({
-          html: '<html lang="%paraglide.lang%"><body>x</body></html>',
+        const final = opts.transformPageChunk({
+          html: '<body>x</body></html>',
           done: true
         });
         const partial = opts.transformPageChunk({
           html: '<html lang="%paraglide.lang%">',
           done: false
         });
-        return new Response(`${out}|${partial}`);
+        return new Response(`${partial}${final}`);
       }
     );
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     const body = await response.text();
     expect(body).toContain('<html lang="en">');
-    expect(body).toContain('<html lang="%paraglide.lang%">');
+    expect(body).not.toContain('%paraglide.lang%');
   });
 });
 

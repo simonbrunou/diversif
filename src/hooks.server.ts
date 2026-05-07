@@ -114,9 +114,12 @@ export const handle: Handle = async ({ event, resolve }) => {
   // Replace %paraglide.lang% in app.html with the resolved locale. Doing this
   // here (rather than via paraglide-sveltekit's i18n.handle()) avoids a bug
   // where the upstream handle reads event.url AFTER reroute has stripped the
-  // /en prefix and so always sees 'fr'.
+  // /en prefix and so always sees 'fr'. Run on every chunk: the placeholder
+  // sits in the opening <html> tag, which can land in any chunk when SvelteKit
+  // streams a response — gating on `done` would leak `%paraglide.lang%` to the
+  // client whenever the head is flushed before the closing chunk.
   const response = await resolve(event, {
-    transformPageChunk: ({ html, done }) => (done ? html.replace('%paraglide.lang%', locale) : html)
+    transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
   });
 
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
