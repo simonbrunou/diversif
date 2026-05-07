@@ -1,8 +1,11 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
+  import LocaleSwitcher from './LocaleSwitcher.svelte';
   import { page } from '$app/stores';
   import type { SafeUser } from '$lib/types';
   import { Menu, X } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let {
     user,
@@ -11,29 +14,31 @@
 
   let mobileOpen = $state(false);
 
-  const navLinks = [
-    { href: '/', label: 'Accueil' },
-    { href: '/guide', label: 'Guide' },
-    { href: '/allergens', label: 'Allergènes' },
-    { href: '/sources', label: 'Sources' }
-  ] as const;
+  const navLinks = $derived([
+    { href: localizedHref('/'), label: m.chromePublicHeaderNavHome() },
+    { href: localizedHref('/guide'), label: m.chromePublicHeaderNavGuide() },
+    { href: localizedHref('/allergens'), label: m.chromePublicHeaderNavAllergens() },
+    { href: localizedHref('/sources'), label: m.chromePublicHeaderNavSources() }
+  ]);
 
-  const dashboardHref = $derived(firstChildId ? `/child/${firstChildId}` : '/');
+  const dashboardHref = $derived(
+    firstChildId ? localizedHref(`/child/${firstChildId}`) : localizedHref('/')
+  );
 
   function isActive(href: string): boolean {
-    if (href === '/') return $page.url.pathname === '/';
+    if (href === '/' || href === localizedHref('/')) return $page.url.pathname === href;
     return $page.url.pathname === href || $page.url.pathname.startsWith(`${href}/`);
   }
 </script>
 
 <header class="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
   <div class="container flex h-14 items-center justify-between gap-4 md:h-16">
-    <a href="/" class="inline-flex items-center gap-2 font-semibold text-foreground">
+    <a href={localizedHref('/')} class="inline-flex items-center gap-2 font-semibold text-foreground">
       <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
-      <span>Diversif</span>
+      <span>{m.chromePublicHeaderBrand()}</span>
     </a>
 
-    <nav aria-label="Navigation principale" class="hidden md:block">
+    <nav aria-label={m.chromePublicHeaderNavLabel()} class="hidden md:block">
       <ul class="flex items-center gap-1 text-sm">
         {#each navLinks as l (l.href)}
           <li>
@@ -51,12 +56,13 @@
 
     <div class="hidden items-center gap-2 md:flex">
       {#if user}
-        <Button href={dashboardHref} variant="outline" size="sm">Mon tableau</Button>
-        <Button href="/account" variant="ghost" size="sm">Mon compte</Button>
+        <Button href={dashboardHref} variant="outline" size="sm">{m.chromePublicHeaderMyDashboard()}</Button>
+        <Button href={localizedHref('/account')} variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
       {:else}
-        <Button href="/login" variant="ghost" size="sm">Se connecter</Button>
-        <Button href="/signup" size="sm">Créer un compte</Button>
+        <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
+        <Button href={localizedHref('/signup')} size="sm">{m.chromePublicHeaderNavSignup()}</Button>
       {/if}
+      <LocaleSwitcher />
     </div>
 
     <button
@@ -64,7 +70,7 @@
       class="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
       aria-expanded={mobileOpen}
       aria-controls="public-mobile-nav"
-      aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+      aria-label={mobileOpen ? m.chromePublicHeaderMenuClose() : m.chromePublicHeaderMenuOpen()}
       onclick={() => (mobileOpen = !mobileOpen)}
     >
       {#if mobileOpen}
@@ -94,11 +100,11 @@
         </ul>
         <div class="flex flex-wrap gap-2 pt-2">
           {#if user}
-            <Button href={dashboardHref} variant="outline" size="sm">Mon tableau</Button>
-            <Button href="/account" variant="ghost" size="sm">Mon compte</Button>
+            <Button href={dashboardHref} variant="outline" size="sm">{m.chromePublicHeaderMyDashboard()}</Button>
+            <Button href={localizedHref('/account')} variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
           {:else}
-            <Button href="/login" variant="ghost" size="sm">Se connecter</Button>
-            <Button href="/signup" size="sm">Créer un compte</Button>
+            <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
+            <Button href={localizedHref('/signup')} size="sm">{m.chromePublicHeaderNavSignup()}</Button>
           {/if}
         </div>
       </div>

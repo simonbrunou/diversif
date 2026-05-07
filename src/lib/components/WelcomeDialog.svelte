@@ -3,6 +3,8 @@
   import Button from '$components/ui/Button.svelte';
   import { enhance } from '$app/forms';
   import { Heart, Sparkles, BookOpen } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let {
     open = $bindable(false),
@@ -27,53 +29,44 @@
     {#if step === 0}
       <div class="flex items-center gap-2">
         <Heart size={20} class="text-primary" aria-hidden="true" />
-        <h2 class="text-lg font-semibold">Bienvenue dans la diversification</h2>
+        <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep0Title()}</h2>
       </div>
       <p class="text-foreground/90">
-        Diversif vous aide à introduire les aliments en toute sérénité, à suivre les
-        allergènes et à varier les goûts.
+        {m.dialogsWelcomeStep0Body()}
       </p>
       <ul class="list-disc space-y-1.5 pl-5 text-foreground/90">
         <li>
-          On démarre <strong>entre 4 mois révolus et 6 mois</strong>, dès que bébé tient sa tête et
-          montre de l'intérêt pour le repas.
+          {m.dialogsWelcomeStep0Bullet1Before()} <strong>{m.dialogsWelcomeStep0Bullet1Bold()}</strong>{m.dialogsWelcomeStep0Bullet1After()}
         </li>
         <li>
-          On <strong>introduit les allergènes tôt</strong> (œuf, arachide en purée, lait, gluten…) :
-          ça réduit le risque d'allergie.
+          {m.dialogsWelcomeStep0Bullet2Before()} <strong>{m.dialogsWelcomeStep0Bullet2Bold()}</strong> {m.dialogsWelcomeStep0Bullet2After()}
         </li>
         <li>
-          On <strong>repropose un aliment refusé jusqu'à 10 fois</strong> — l'acceptation se
-          construit, sans forcer.
+          {m.dialogsWelcomeStep0Bullet3Before()} <strong>{m.dialogsWelcomeStep0Bullet3Bold()}</strong> {m.dialogsWelcomeStep0Bullet3After()}
         </li>
       </ul>
     {:else if step === 1}
       <div class="flex items-center gap-2">
         <Sparkles size={20} class="text-primary" aria-hidden="true" />
-        <h2 class="text-lg font-semibold">Comment Diversif vous accompagne</h2>
+        <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep1Title()}</h2>
       </div>
       <ul class="list-disc space-y-1.5 pl-5 text-foreground/90">
-        <li><strong>Logguer</strong> : enregistrez chaque aliment donné et la réaction observée.</li>
-        <li>
-          <strong>Suivi des allergènes</strong> : visualisez les 12 allergènes majeurs et leur
-          progression.
-        </li>
-        <li><strong>Suggestions</strong> : des aliments à introduire bientôt selon l'âge.</li>
-        <li><strong>Guide</strong> : étapes, allergènes, textures, sources officielles.</li>
-        <li><strong>Rappels</strong> : nudges intelligents quand un aliment ou un allergène traîne.</li>
+        <li><strong>{m.dialogsWelcomeStep1Bullet1Bold()}</strong>{m.dialogsWelcomeStep1Bullet1After()}</li>
+        <li><strong>{m.dialogsWelcomeStep1Bullet2Bold()}</strong>{m.dialogsWelcomeStep1Bullet2After()}</li>
+        <li><strong>{m.dialogsWelcomeStep1Bullet3Bold()}</strong>{m.dialogsWelcomeStep1Bullet3After()}</li>
+        <li><strong>{m.dialogsWelcomeStep1Bullet4Bold()}</strong>{m.dialogsWelcomeStep1Bullet4After()}</li>
+        <li><strong>{m.dialogsWelcomeStep1Bullet5Bold()}</strong>{m.dialogsWelcomeStep1Bullet5After()}</li>
       </ul>
     {:else}
       <div class="flex items-center gap-2">
         <BookOpen size={20} class="text-primary" aria-hidden="true" />
-        <h2 class="text-lg font-semibold">Prêt·e à explorer</h2>
+        <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep2Title()}</h2>
       </div>
       <p class="text-foreground/90">
-        Le guide rassemble tout ce qu'il faut savoir : règles d'or, aliments par étape,
-        allergènes en détail, aliments interdits, sécurité, sources officielles
-        (Santé publique France, HCSP, ESPGHAN, études LEAP &amp; EAT).
+        {m.dialogsWelcomeStep2Body1()}
       </p>
       <p class="text-foreground/90">
-        Vous pouvez l'ouvrir à tout moment depuis le menu « Guide ».
+        {m.dialogsWelcomeStep2Body2()}
       </p>
     {/if}
   </div>
@@ -81,12 +74,12 @@
   {#snippet footer()}
     <form method="POST" action={formAction} use:enhance={() => () => close()}>
       <input type="hidden" name="reminderKey" value="welcome-dialog" />
-      <Button variant="ghost" type="submit">Plus tard</Button>
+      <Button variant="ghost" type="submit">{m.dialogsWelcomeButtonDismiss()}</Button>
     </form>
     {#if step < 2}
-      <Button onclick={next}>Suivant</Button>
+      <Button onclick={next}>{m.dialogsWelcomeButtonNext()}</Button>
     {:else}
-      <Button href={`/child/${childId}/guide`}>Ouvrir le guide</Button>
+      <Button href={localizedHref(`/child/${childId}/guide`)}>{m.dialogsWelcomeButtonOpenGuide()}</Button>
     {/if}
   {/snippet}
 </Dialog>

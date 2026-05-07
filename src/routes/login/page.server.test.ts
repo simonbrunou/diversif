@@ -56,9 +56,9 @@ describe('login default action', () => {
     });
     const result = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(result.status).toBe(400);
-    expect(result.data.error).toMatch(/email|invalide/i);
+    expect(result.data.errorKey).toBe('errorsAuthBadInput');
   });
 
   it('fails 400 on empty password', async () => {
@@ -67,8 +67,9 @@ describe('login default action', () => {
     });
     const result = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(result.status).toBe(400);
+    expect(result.data.errorKey).toBe('errorsAuthBadInput');
   });
 
   it('fails 400 when user does not exist', async () => {
@@ -77,9 +78,9 @@ describe('login default action', () => {
     });
     const result = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string; email: string } };
+    )) as { status: number; data: { errorKey: string; email: string } };
     expect(result.status).toBe(400);
-    expect(result.data.error).toMatch(/incorrect/i);
+    expect(result.data.errorKey).toBe('errorsAuthInvalidCredentials');
     expect(result.data.email).toBe('nobody@example.com');
   });
 
@@ -90,9 +91,9 @@ describe('login default action', () => {
     });
     const result = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(result.status).toBe(400);
-    expect(result.data.error).toMatch(/incorrect/i);
+    expect(result.data.errorKey).toBe('errorsAuthInvalidCredentials');
   });
 
   it('issues a session cookie and redirects on success', async () => {
@@ -125,9 +126,9 @@ describe('login default action', () => {
     });
     const result = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(result.status).toBe(429);
-    expect(result.data.error).toMatch(/trop de tentatives/i);
+    expect(result.data.errorKey).toBe('errorsAuthRateLimited');
   });
 
   it('marks the cookie secure in production', async () => {

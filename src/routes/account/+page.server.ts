@@ -35,12 +35,12 @@ export const actions: Actions = {
     const user = requireUser(locals);
     const raw = Object.fromEntries(await request.formData());
     const parsed = profileSchema.safeParse(raw);
-    if (!parsed.success) return fail(400, { profileError: 'Nom invalide.' });
+    if (!parsed.success) return fail(400, { profileErrorKey: 'errorsAccountProfileNameInvalid' });
     db.update(users)
       .set({ displayName: parsed.data.displayName.trim() })
       .where(eq(users.id, user.id))
       .run();
-    return { profileSuccess: 'Profil mis à jour.' };
+    return { profileSuccessKey: 'errorsAccountProfileSuccess' };
   },
 
   changePassword: async ({ request, locals }) => {
@@ -49,16 +49,16 @@ export const actions: Actions = {
     const parsed = passwordSchema.safeParse(raw);
     if (!parsed.success) {
       return fail(400, {
-        passwordError: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides.'
+        passwordErrorKey: 'errorsAuthBadInput'
       });
     }
     const fresh = db.select().from(users).where(eq(users.id, user.id)).get();
     if (!fresh) throw redirect(303, '/login');
     const ok = await verifyPassword(fresh.passwordHash, parsed.data.currentPassword);
-    if (!ok) return fail(400, { passwordError: 'Mot de passe actuel incorrect.' });
+    if (!ok) return fail(400, { passwordErrorKey: 'errorsAccountPasswordIncorrect' });
     const newHash = await hashPassword(parsed.data.newPassword);
     db.update(users).set({ passwordHash: newHash }).where(eq(users.id, user.id)).run();
-    return { passwordSuccess: 'Mot de passe modifié.' };
+    return { passwordSuccessKey: 'errorsAccountPasswordSuccess' };
   },
 
   logoutEverywhere: async ({ locals, cookies }) => {
@@ -74,12 +74,12 @@ export const actions: Actions = {
     const id = typeof raw.id === 'string' ? raw.id : /* v8 ignore next */ '';
     const name = typeof raw.name === 'string' ? raw.name : /* v8 ignore next */ '';
     if (!id || !name.trim()) {
-      return fail(400, { passkeyError: 'Nom invalide.' });
+      return fail(400, { passkeyErrorKey: 'errorsAccountPasskeyNameInvalid' });
     }
     if (!renamePasskey(user.id, id, name)) {
-      return fail(404, { passkeyError: 'Clé introuvable.' });
+      return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
     }
-    return { passkeySuccess: 'Clé renommée.' };
+    return { passkeySuccessKey: 'errorsAccountPasskeyRenameSuccess' };
   },
 
   deletePasskey: async ({ request, locals }) => {
@@ -87,12 +87,12 @@ export const actions: Actions = {
     const raw = Object.fromEntries(await request.formData());
     const id = typeof raw.id === 'string' ? raw.id : /* v8 ignore next */ '';
     if (!id) {
-      return fail(400, { passkeyError: 'Identifiant manquant.' });
+      return fail(400, { passkeyErrorKey: 'errorsAccountPasskeyIdMissing' });
     }
     if (!deletePasskey(user.id, id)) {
-      return fail(404, { passkeyError: 'Clé introuvable.' });
+      return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
     }
-    return { passkeySuccess: 'Clé supprimée.' };
+    return { passkeySuccessKey: 'errorsAccountPasskeyDeleteSuccess' };
   },
 
   deleteAccount: async ({ request, locals, cookies }) => {
@@ -101,7 +101,7 @@ export const actions: Actions = {
     const confirmEmail =
       typeof raw.confirmEmail === 'string' ? raw.confirmEmail.trim().toLowerCase() : '';
     if (confirmEmail !== user.email) {
-      return fail(400, { deleteError: 'Saisissez votre email exact pour confirmer.' });
+      return fail(400, { deleteErrorKey: 'errorsAccountDeleteEmailMismatch' });
     }
     deleteUserAccount(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });

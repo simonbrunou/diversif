@@ -1,5 +1,6 @@
 <script lang="ts">
   import { SOURCES, ALL_SOURCE_IDS } from '$lib/content/sources';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   const orgs = ALL_SOURCE_IDS.map((id) => SOURCES[id].org);
   const uniqueOrgs = Array.from(new Set(orgs));
@@ -15,7 +16,7 @@
       {#each uniqueOrgs as org (org)}
         <li>
           <a
-            href="/sources"
+            href={localizedHref('/sources')}
             class="inline-flex items-center rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {org}

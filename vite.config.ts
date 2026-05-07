@@ -1,3 +1,4 @@
+import { paraglide } from '@inlang/paraglide-sveltekit/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
@@ -6,6 +7,10 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [
     sveltekit(),
+    paraglide({
+      project: './project.inlang',
+      outdir: './src/lib/paraglide'
+    }),
     SvelteKitPWA({
       registerType: 'autoUpdate',
       strategies: 'generateSW',
@@ -115,7 +120,14 @@ export default defineConfig({
         // pass-through to Sentry.captureException with no logic worth covering
         // (the strict-PII contract lives in scrubEvent, which is tested in
         // src/lib/sentry.test.ts at 100%).
-        'src/hooks.client.ts'
+        'src/hooks.client.ts',
+        // Paraglide-generated runtime + messages — regenerated on every
+        // build by @inlang/paraglide-sveltekit/vite. No point measuring.
+        'src/lib/paraglide/**',
+        // Universal hook (one-line re-export of paraglide's reroute helper).
+        'src/hooks.ts',
+        // Paraglide adapter bootstrap — exercises real runtime; covered indirectly via the e2e smoke in Task 7.
+        'src/lib/i18n.ts'
       ],
       thresholds: {
         lines: 100,

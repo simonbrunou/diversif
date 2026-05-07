@@ -2,23 +2,28 @@
   import { page } from '$app/stores';
   import { cn } from '$lib/utils/cn';
   import { getChildNavItems, isNavItemActive } from '$lib/utils/nav';
+  import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let { childId }: { childId: number } = $props();
 
   const items = $derived(getChildNavItems(childId));
+  // Strip the /en prefix so isNavItemActive (which compares against unprefixed
+  // item.href values) still highlights the correct tab on English child routes.
+  const pathname = $derived($page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/');
 </script>
 
 <nav
   class="safe-bottom sticky bottom-0 z-30 mt-auto border-t bg-background/95 backdrop-blur print:hidden md:hidden"
-  aria-label="Navigation principale"
+  aria-label={m.chromeBottomNavLabel()}
 >
   <ul class="grid grid-cols-5 gap-1 px-2 pt-2">
     {#each items as item (item.href)}
-      {@const active = isNavItemActive(item.href, $page.url.pathname, childId)}
+      {@const active = isNavItemActive(item.href, pathname, childId)}
       {@const Icon = item.icon}
       <li>
         <a
-          href={item.href}
+          href={localizedHref(item.href)}
           class={cn(
             'flex flex-col items-center gap-0.5 rounded-md px-1 py-1.5 text-[11px] font-medium transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

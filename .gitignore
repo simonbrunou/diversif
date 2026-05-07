@@ -20,3 +20,5 @@ test-results
 graphify-out/cost.json
 graphify-out/.graphify_python
 graphify-out/.graphify_root
+# Paraglide-generated runtime — vite plugin regenerates on build/dev.
+src/lib/paraglide/

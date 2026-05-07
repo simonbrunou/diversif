@@ -32,13 +32,13 @@ const schema = z.object({
     .optional()
     .transform((s) => (s ? s.toUpperCase().trim() : '')),
   acceptTos: z.literal('on', {
-    errorMap: () => ({ message: 'Vous devez accepter les conditions générales d’utilisation.' })
+    errorMap: () => ({ message: `Vous devez accepter les conditions générales d'utilisation.` })
   }),
   acceptPrivacy: z.literal('on', {
-    errorMap: () => ({ message: 'Vous devez accepter la politique de confidentialité.' })
+    errorMap: () => ({ message: `Vous devez accepter la politique de confidentialité.` })
   }),
   confirmAge15: z.literal('on', {
-    errorMap: () => ({ message: 'Vous devez confirmer avoir au moins 15 ans.' })
+    errorMap: () => ({ message: `Vous devez confirmer avoir au moins 15 ans.` })
   })
 });
 
@@ -57,7 +57,7 @@ export const actions: Actions = {
         email: '',
         displayName: '',
         inviteCode: '',
-        error: `Trop d’inscriptions récentes. Réessayez dans ${rl.retryAfterSeconds}s.`
+        errorKey: 'errorsAuthRateLimited'
       });
     }
 
@@ -75,7 +75,7 @@ export const actions: Actions = {
         email: formEmail,
         displayName: formDisplayName,
         inviteCode: formInvite,
-        error: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides'
+        errorKey: 'errorsAuthBadInput'
       });
     }
 
@@ -95,7 +95,7 @@ export const actions: Actions = {
           email: formEmail,
           displayName: formDisplayName,
           inviteCode: formInvite,
-          error: 'Code d’invitation invalide.'
+          errorKey: 'errorsAuthInvalidInvite'
         });
       }
       const inv = db
@@ -114,7 +114,7 @@ export const actions: Actions = {
           email: formEmail,
           displayName: formDisplayName,
           inviteCode: formInvite,
-          error: 'Code d’invitation introuvable ou expiré.'
+          errorKey: 'errorsAuthInvalidInviteExpired'
         });
       }
       invitationChildId = inv.childId;
@@ -132,7 +132,7 @@ export const actions: Actions = {
         email: formEmail,
         displayName: formDisplayName,
         inviteCode: formInvite,
-        error: 'Inscription impossible. Si vous avez déjà un compte, essayez de vous connecter.'
+        errorKey: 'errorsAuthSignupImpossible'
       });
     }
 

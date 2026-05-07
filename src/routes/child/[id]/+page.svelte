@@ -19,6 +19,8 @@
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
   import { celebrate, pickMilestoneFromQuery } from '$lib/utils/milestones';
+  import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import {
     UserCircle2,
     Plus,
@@ -113,6 +115,36 @@
   }
 
   const days = $derived(mounted ? groupByDay(data.recent) : []);
+
+  const streakLabel = $derived(
+    data.streak === 1
+      ? m.dashboardStreakLabelOne({ days: data.streak })
+      : m.dashboardStreakLabelOther({ days: data.streak })
+  );
+
+  const weekCountLabel = $derived(
+    data.stats.weekCount === 1
+      ? m.dashboardWeekCountLabelOne({ count: data.stats.weekCount })
+      : m.dashboardWeekCountLabelOther({ count: data.stats.weekCount })
+  );
+
+  const weeklyRecapMealsLabel = $derived(
+    data.weeklyRecap.entries === 1
+      ? m.dashboardWeeklyRecapMealsOne({ count: data.weeklyRecap.entries })
+      : m.dashboardWeeklyRecapMealsOther({ count: data.weeklyRecap.entries })
+  );
+
+  const weeklyRecapNewFoodsLabel = $derived(
+    data.weeklyRecap.newFoods === 1
+      ? m.dashboardWeeklyRecapNewFoodsOne({ count: data.weeklyRecap.newFoods })
+      : m.dashboardWeeklyRecapNewFoodsOther({ count: data.weeklyRecap.newFoods })
+  );
+
+  const weeklyRecapNewAllergensLabel = $derived(
+    data.weeklyRecap.newAllergens === 1
+      ? m.dashboardWeeklyRecapNewAllergensOne({ count: data.weeklyRecap.newAllergens })
+      : m.dashboardWeeklyRecapNewAllergensOther({ count: data.weeklyRecap.newAllergens })
+  );
 </script>
 
 <div class="container max-w-3xl space-y-6 py-6 md:py-8">
@@ -121,7 +153,7 @@
   >
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
-        <p class="text-xs font-medium uppercase tracking-wider text-primary/80">Le suivi de</p>
+        <p class="text-xs font-medium uppercase tracking-wider text-primary/80">{m.dashboardTrackingLabel()}</p>
         <h1 class="mt-1 truncate font-display text-3xl font-semibold leading-tight md:text-4xl">
           {data.child.name}
         </h1>
@@ -131,26 +163,26 @@
           {#if data.streak >= 2}
             <span
               class="inline-flex items-center gap-1 rounded-full bg-celebrate/15 px-2 py-0.5 text-xs font-medium text-celebrate-foreground ring-1 ring-celebrate/30"
-              aria-label="{data.streak} jours d'affilée"
+              aria-label={streakLabel}
             >
               <Flame size={12} class="text-celebrate" aria-hidden="true" />
-              {data.streak} jours d'affilée
+              {streakLabel}
             </span>
           {/if}
         </div>
       </div>
       <a
-        href="/account"
+        href={localizedHref('/account')}
         class="rounded-full p-2 text-muted-foreground transition-colors hover:bg-background/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
-        aria-label="Mon compte"
+        aria-label={m.dashboardMyAccount()}
       >
         <UserCircle2 size={22} aria-hidden="true" />
       </a>
     </div>
     <div class="mt-5">
-      <Button href={`/child/${data.child.id}/log`} size="lg" class="w-full sm:w-auto">
+      <Button href={localizedHref(`/child/${data.child.id}/log`)} size="lg" class="w-full sm:w-auto">
         <Plus size={18} aria-hidden="true" />
-        Noter un repas
+        {m.dashboardLogCta()}
       </Button>
     </div>
   </section>
@@ -167,30 +199,30 @@
     <Card class="p-4">
       <div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <UtensilsCrossed size={14} aria-hidden="true" />
-        Aliments
+        {m.dashboardFoodsLabel()}
       </div>
       <div class="mt-2 font-display text-2xl font-semibold leading-none tabular-nums md:text-3xl">{data.stats.foodsIntroduced}</div>
-      <div class="mt-1 text-xs text-muted-foreground">introduits au total</div>
+      <div class="mt-1 text-xs text-muted-foreground">{m.dashboardFoodsIntroducedLabel()}</div>
     </Card>
     <Card class="p-4">
       <div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <ShieldCheck size={14} aria-hidden="true" />
-        Allergènes
+        {m.dashboardAllergensLabel()}
       </div>
       <div class="mt-2 font-display text-2xl font-semibold leading-none tabular-nums md:text-3xl">
         {data.stats.allergens.introduced}
         <span class="text-base font-normal text-muted-foreground">/ {data.stats.allergens.total}</span>
       </div>
-      <div class="mt-1 text-xs text-muted-foreground">testés</div>
+      <div class="mt-1 text-xs text-muted-foreground">{m.dashboardAllergensTestedLabel()}</div>
     </Card>
     <Card class="col-span-2 p-4 md:col-span-1">
       <div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <CalendarDays size={14} aria-hidden="true" />
-        Cette semaine
+        {m.dashboardWeekLabel()}
       </div>
       <div class="mt-2 font-display text-2xl font-semibold leading-none tabular-nums md:text-3xl">{data.stats.weekCount}</div>
       <div class="mt-1 text-xs text-muted-foreground">
-        {data.stats.weekCount > 1 ? 'aliments enregistrés' : 'aliment enregistré'}
+        {weekCountLabel}
       </div>
     </Card>
   </section>
@@ -199,22 +231,18 @@
     <Card class="border-l-2 border-l-celebrate p-4 md:p-5">
       <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-celebrate-foreground">
         <Sparkles size={12} class="text-celebrate" aria-hidden="true" />
-        Cette semaine
+        {m.dashboardWeeklyRecapLabel()}
       </div>
       <p class="mt-2 text-sm text-foreground/90">
-        {data.weeklyRecap.entries} {data.weeklyRecap.entries > 1 ? 'repas notés' : 'repas noté'}
+        {weeklyRecapMealsLabel}
         {#if data.weeklyRecap.newFoods > 0}
           · <strong class="font-semibold text-foreground"
-            >{data.weeklyRecap.newFoods} {data.weeklyRecap.newFoods > 1
-              ? 'nouveaux aliments'
-              : 'nouvel aliment'}</strong
+            >{weeklyRecapNewFoodsLabel}</strong
           >
         {/if}
         {#if data.weeklyRecap.newAllergens > 0}
           · <strong class="font-semibold text-foreground"
-            >{data.weeklyRecap.newAllergens} {data.weeklyRecap.newAllergens > 1
-              ? 'nouveaux allergènes'
-              : 'nouvel allergène'}</strong
+            >{weeklyRecapNewAllergensLabel}</strong
           >
         {/if}
       </p>
@@ -225,7 +253,7 @@
     <Card class="p-4 md:p-5">
       <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
         <Users size={12} aria-hidden="true" />
-        Récemment notés à plusieurs
+        {m.dashboardCoparentActivityLabel()}
       </div>
       <ul class="mt-2 divide-y">
         {#each data.coparentActivity as e (e.id)}
@@ -256,7 +284,7 @@
     <TipCard
       tone="info"
       icon={Lightbulb}
-      eyebrow="Conseil du jour"
+      eyebrow={m.dashboardDailyTip()}
       body={rotatingTip.body}
       sources={rotatingTip.sources ? [...rotatingTip.sources] : undefined}
     />
@@ -264,23 +292,23 @@
 
   <section>
     <div class="mb-3 flex items-center justify-between">
-      <h2 class="text-base font-semibold">Repas récents</h2>
+      <h2 class="text-base font-semibold">{m.dashboardRecentMealsSection()}</h2>
       <a
-        href={`/child/${data.child.id}/foods`}
+        href={localizedHref(`/child/${data.child.id}/foods`)}
         class="text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
       >
-        Tout l’historique
+        {m.dashboardRecentMealsViewAll()}
       </a>
     </div>
 
     {#if data.recent.length === 0}
       <EmptyState
         icon={UtensilsCrossed}
-        title="Le carnet est encore vide"
-        description="Notez le premier repas pour commencer le suivi de {data.child.name}."
+        title={m.dashboardEmptyStateTitle()}
+        description={m.dashboardEmptyStateDescription({ name: data.child.name })}
       >
         {#snippet action()}
-          <Button href={`/child/${data.child.id}/log`}>Noter le premier repas</Button>
+          <Button href={localizedHref(`/child/${data.child.id}/log`)}>{m.dashboardEmptyStateLogCta()}</Button>
         {/snippet}
       </EmptyState>
 
@@ -288,16 +316,16 @@
         <Card class="p-4 md:p-5">
           <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <Sparkles size={12} class="text-celebrate" aria-hidden="true" />
-            Pour démarrer en douceur
+            {m.dashboardStarterFoodsLabel()}
           </div>
           <p class="mt-1 text-xs text-muted-foreground">
-            Quelques pistes adaptées à l'âge de {data.child.name}.
+            {m.dashboardStarterFoodsDescription({ name: data.child.name })}
           </p>
           <ul class="mt-3 grid gap-2 sm:grid-cols-2">
             {#each data.starterFoods as f (f.id)}
               <li>
                 <a
-                  href={`/child/${data.child.id}/log?foodId=${f.id}`}
+                  href={localizedHref(`/child/${data.child.id}/log?foodId=${f.id}`)}
                   aria-label={`Noter ${f.name}, dès ${f.suggestedAgeMonths} mois`}
                   class="flex items-center justify-between gap-2 rounded-md border p-2.5 text-sm transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
@@ -318,7 +346,7 @@
           {#each data.recent as e (e.id)}
             <li>
               <a
-                href={`/child/${data.child.id}/log/${e.id}?from=dashboard`}
+                href={localizedHref(`/child/${data.child.id}/log/${e.id}?from=dashboard`)}
                 class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none md:p-4"
               >
                 <div class="min-w-0 flex-1">
@@ -345,7 +373,9 @@
                 {day.label}
               </h3>
               <span class="text-xs text-muted-foreground">
-                {day.entries.length} {day.entries.length > 1 ? 'entrées' : 'entrée'}
+                {day.entries.length === 1
+                  ? m.dashboardDayEntriesCountOne({ count: day.entries.length })
+                  : m.dashboardDayEntriesCountOther({ count: day.entries.length })}
               </span>
             </div>
             <Card>
@@ -353,7 +383,7 @@
                 {#each day.entries as e (e.id)}
                   <li>
                     <a
-                      href={`/child/${data.child.id}/log/${e.id}?from=dashboard`}
+                      href={localizedHref(`/child/${data.child.id}/log/${e.id}?from=dashboard`)}
                       class="flex items-center justify-between gap-3 p-3 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none md:p-4"
                     >
                       <div class="min-w-0 flex-1">
@@ -379,7 +409,7 @@
 
   <section class="grid grid-cols-1 gap-3 sm:grid-cols-3">
     <a
-      href={`/child/${data.child.id}/allergens`}
+      href={localizedHref(`/child/${data.child.id}/allergens`)}
       class="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       <Card class="flex items-center justify-between p-4 transition-colors group-hover:bg-accent">
@@ -388,15 +418,15 @@
             <ShieldCheck size={18} aria-hidden="true" />
           </div>
           <div>
-            <div class="text-sm font-medium">Allergènes</div>
-            <div class="text-xs text-muted-foreground">Où en sont les 12 grands allergènes</div>
+            <div class="text-sm font-medium">{m.dashboardNavAllergensLabel()}</div>
+            <div class="text-xs text-muted-foreground">{m.dashboardNavAllergensDescription()}</div>
           </div>
         </div>
         <ChevronRight size={18} class="text-muted-foreground" aria-hidden="true" />
       </Card>
     </a>
     <a
-      href={`/child/${data.child.id}/suggestions`}
+      href={localizedHref(`/child/${data.child.id}/suggestions`)}
       class="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       <Card class="flex items-center justify-between p-4 transition-colors group-hover:bg-accent">
@@ -405,15 +435,15 @@
             <Sparkles size={18} aria-hidden="true" />
           </div>
           <div>
-            <div class="text-sm font-medium">Suggestions</div>
-            <div class="text-xs text-muted-foreground">À tester ces jours-ci</div>
+            <div class="text-sm font-medium">{m.dashboardNavSuggestionsLabel()}</div>
+            <div class="text-xs text-muted-foreground">{m.dashboardNavSuggestionsDescription()}</div>
           </div>
         </div>
         <ChevronRight size={18} class="text-muted-foreground" aria-hidden="true" />
       </Card>
     </a>
     <a
-      href={`/child/${data.child.id}/guide`}
+      href={localizedHref(`/child/${data.child.id}/guide`)}
       class="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       <Card class="flex items-center justify-between p-4 transition-colors group-hover:bg-accent">
@@ -422,8 +452,8 @@
             <BookOpen size={18} aria-hidden="true" />
           </div>
           <div>
-            <div class="text-sm font-medium">Guide</div>
-            <div class="text-xs text-muted-foreground">Repères, sources, sécurité</div>
+            <div class="text-sm font-medium">{m.dashboardNavGuideLabel()}</div>
+            <div class="text-xs text-muted-foreground">{m.dashboardNavGuideDescription()}</div>
           </div>
         </div>
         <ChevronRight size={18} class="text-muted-foreground" aria-hidden="true" />
@@ -433,24 +463,24 @@
 
   <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center">
     <a
-      href={`/child/${data.child.id}/settings`}
+      href={localizedHref(`/child/${data.child.id}/settings`)}
       class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
-      Réglages de la fiche
+      {m.dashboardFooterSettingsLink()}
     </a>
     <span class="text-muted-foreground/40" aria-hidden="true">·</span>
     <a
-      href={`/child/${data.child.id}/analytics`}
+      href={localizedHref(`/child/${data.child.id}/analytics`)}
       class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
-      Tendances
+      {m.dashboardFooterAnalyticsLink()}
     </a>
     <span class="text-muted-foreground/40" aria-hidden="true">·</span>
     <a
-      href={`/child/${data.child.id}/report`}
+      href={localizedHref(`/child/${data.child.id}/report`)}
       class="rounded text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
-      Récap imprimable
+      {m.dashboardFooterReportLink()}
     </a>
   </div>
 </div>

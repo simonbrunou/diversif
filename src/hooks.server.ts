@@ -9,6 +9,7 @@ import {
 } from '$lib/server/auth';
 import * as Sentry from '@sentry/sveltekit';
 import { scrubEvent, filterIncomingBreadcrumb } from '$lib/sentry';
+import { setLanguageTag, type AvailableLanguageTag } from '$lib/paraglide/runtime';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN || '',
@@ -65,7 +66,23 @@ export const handleError: HandleServerError = ({ error, event, status, message }
 const PERMISSIONS_POLICY =
   'geolocation=(), camera=(), microphone=(), usb=(), payment=(), interest-cohort=()';
 
+/**
+ * Resolve the request's locale from the ORIGINAL URL — `event.request.url` is
+ * the path the browser actually requested, before SvelteKit's `reroute` (in
+ * src/hooks.ts) strips the `/en/` prefix. Using `event.url` here would always
+ * see the rerouted path and wrongly default to FR.
+ */
+function resolveLocaleFromRequest(event: Parameters<Handle>[0]['event']): AvailableLanguageTag {
+  const path = new URL(event.request.url).pathname;
+  return path === '/en' || path.startsWith('/en/') ? 'en' : 'fr';
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
+  // Set paraglide's runtime tag for SSR (m.X() calls during render + the
+  // %paraglide.lang% placeholder substitution below).
+  const locale = resolveLocaleFromRequest(event);
+  setLanguageTag(locale);
+
   const token = event.cookies.get(SESSION_COOKIE) ?? '';
   const validated = token ? validateSession(token) : null;
 
@@ -94,7 +111,16 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.memberships = [];
   }
 
-  const response = await resolve(event);
+  // Replace %paraglide.lang% in app.html with the resolved locale. Doing this
+  // here (rather than via paraglide-sveltekit's i18n.handle()) avoids a bug
+  // where the upstream handle reads event.url AFTER reroute has stripped the
+  // /en prefix and so always sees 'fr'. Run on every chunk: the placeholder
+  // sits in the opening <html> tag, which can land in any chunk when SvelteKit
+  // streams a response — gating on `done` would leak `%paraglide.lang%` to the
+  // client whenever the head is flushed before the closing chunk.
+  const response = await resolve(event, {
+    transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
+  });
 
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-Content-Type-Options', 'nosniff');

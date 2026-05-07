@@ -11,6 +11,7 @@
   import { getTipsFor, pickRotatingTip } from '$lib/content/guidance';
   import { page } from '$app/stores';
   import { enhance } from '$app/forms';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { Info } from 'lucide-svelte';
   import type { ActionData, PageData } from './$types';
 
@@ -35,7 +36,7 @@
 
 <div class="container max-w-xl space-y-5 py-6">
   <header>
-    <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
+    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
       ← Retour
     </a>
     <h1 class="mt-2 text-xl font-semibold">Noter un repas</h1>
@@ -107,7 +108,7 @@
       <Button type="submit" size="lg" class="flex-1" loading={submitting}>
         {submitting ? 'Enregistrement…' : 'Noter ce repas'}
       </Button>
-      <Button href={`/child/${data.child.id}`} variant="outline" size="lg">Annuler</Button>
+      <Button href={localizedHref(`/child/${data.child.id}`)} variant="outline" size="lg">Annuler</Button>
     </div>
   </form>
 

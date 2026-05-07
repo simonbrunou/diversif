@@ -12,6 +12,7 @@
   import { formatRelative } from '$lib/utils/dates';
   import { Apple, RotateCcw } from 'lucide-svelte';
   import { cn } from '$lib/utils/cn';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -29,7 +30,7 @@
 
 <div class="container max-w-2xl space-y-5 py-6">
   <header>
-    <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
+    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
       ← Tableau
     </a>
     <h1 class="mt-2 text-xl font-semibold">Le carnet de {data.child.name}</h1>
@@ -83,7 +84,7 @@
       description="Élargissez la recherche ou notez un nouveau repas."
     >
       {#snippet action()}
-        <Button href={`/child/${data.child.id}/log`}>Noter un repas</Button>
+        <Button href={localizedHref(`/child/${data.child.id}/log`)}>Noter un repas</Button>
       {/snippet}
     </EmptyState>
   {:else}
@@ -92,7 +93,7 @@
         {#each data.entries as e (e.id)}
           <li>
             <a
-              href={`/child/${data.child.id}/log/${e.id}?from=foods`}
+              href={localizedHref(`/child/${data.child.id}/log/${e.id}?from=foods`)}
               class="flex items-start justify-between gap-3 p-4 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
             >
               <div class="min-w-0 flex-1">

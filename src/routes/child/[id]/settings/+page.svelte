@@ -8,6 +8,7 @@
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
   import { tick } from 'svelte';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -63,7 +64,7 @@
 
 <div class="container max-w-2xl space-y-6 py-6">
   <header>
-    <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
+    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
       ← Tableau
     </a>
     <h1 class="mt-2 text-xl font-semibold">Paramètres</h1>

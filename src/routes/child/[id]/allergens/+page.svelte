@@ -6,6 +6,7 @@
   import { formatRelative } from '$lib/utils/dates';
   import type { AllergenId } from '$lib/utils/allergens';
   import { Info, ShieldCheck } from 'lucide-svelte';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -17,7 +18,7 @@
 
 <div class="container max-w-2xl space-y-5 py-6">
   <header>
-    <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
+    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
       ← Tableau
     </a>
     <h1 class="mt-2 text-xl font-semibold">Allergènes</h1>
@@ -42,7 +43,7 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <a
-                href={`/child/${data.child.id}/foods?q=${encodeURIComponent(a.label)}`}
+                href={localizedHref(`/child/${data.child.id}/foods?q=${encodeURIComponent(a.label)}`)}
                 class="font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
               >
                 {a.label}

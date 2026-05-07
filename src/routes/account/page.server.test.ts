@@ -114,8 +114,8 @@ describe('account renamePasskey / deletePasskey', () => {
     });
     const r = (await actions.renamePasskey!(
       event as unknown as Parameters<NonNullable<typeof actions.renamePasskey>>[0]
-    )) as { passkeySuccess: string };
-    expect(r.passkeySuccess).toBeTruthy();
+    )) as { passkeySuccessKey: string };
+    expect(r.passkeySuccessKey).toBeTruthy();
     const fresh = testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).get();
     expect(fresh?.name).toBe('New Name');
   });
@@ -153,8 +153,8 @@ describe('account renamePasskey / deletePasskey', () => {
     });
     const r = (await actions.deletePasskey!(
       event as unknown as Parameters<NonNullable<typeof actions.deletePasskey>>[0]
-    )) as { passkeySuccess: string };
-    expect(r.passkeySuccess).toBeTruthy();
+    )) as { passkeySuccessKey: string };
+    expect(r.passkeySuccessKey).toBeTruthy();
     const fresh = testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).get();
     expect(fresh).toBeUndefined();
   });
@@ -181,8 +181,8 @@ describe('account updateProfile', () => {
     });
     const r = (await actions.updateProfile!(
       event as unknown as Parameters<NonNullable<typeof actions.updateProfile>>[0]
-    )) as { profileSuccess: string };
-    expect(r.profileSuccess).toBeTruthy();
+    )) as { profileSuccessKey: string };
+    expect(r.profileSuccessKey).toBeTruthy();
     const fresh = testDb.select().from(users).where(eq(users.id, u.id)).get();
     expect(fresh?.displayName).toBe('New Name');
   });
@@ -197,8 +197,9 @@ describe('account changePassword', () => {
     });
     const r = (await actions.changePassword!(
       event as unknown as Parameters<NonNullable<typeof actions.changePassword>>[0]
-    )) as { status: number; data: { passwordError: string } };
+    )) as { status: number; data: { passwordErrorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.passwordErrorKey).toBe('errorsAuthBadInput');
   });
 
   it('redirects to /login when user no longer exists', async () => {
@@ -231,9 +232,9 @@ describe('account changePassword', () => {
     });
     const r = (await actions.changePassword!(
       event as unknown as Parameters<NonNullable<typeof actions.changePassword>>[0]
-    )) as { status: number; data: { passwordError: string } };
+    )) as { status: number; data: { passwordErrorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.passwordError).toMatch(/incorrect/i);
+    expect(r.data.passwordErrorKey).toBe('errorsAccountPasswordIncorrect');
   });
 
   it('updates the password hash on success', async () => {
@@ -247,8 +248,8 @@ describe('account changePassword', () => {
     });
     const r = (await actions.changePassword!(
       event as unknown as Parameters<NonNullable<typeof actions.changePassword>>[0]
-    )) as { passwordSuccess: string };
-    expect(r.passwordSuccess).toBeTruthy();
+    )) as { passwordSuccessKey: string };
+    expect(r.passwordSuccessKey).toBeTruthy();
     const fresh = testDb.select().from(users).where(eq(users.id, u.id)).get();
     expect(fresh?.passwordHash).not.toBe(u.passwordHash);
   });
@@ -282,9 +283,9 @@ describe('account deleteAccount', () => {
     });
     const r = (await actions.deleteAccount!(
       event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
-    )) as { status: number; data: { deleteError: string } };
+    )) as { status: number; data: { deleteErrorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.deleteError).toMatch(/email exact/i);
+    expect(r.data.deleteErrorKey).toBe('errorsAccountDeleteEmailMismatch');
     expect(testDb.select().from(users).where(eq(users.id, u.id)).get()).toBeDefined();
   });
 
@@ -293,7 +294,7 @@ describe('account deleteAccount', () => {
     const event = makeRouteEvent({ user: safeUser(u), formData: {} });
     const r = (await actions.deleteAccount!(
       event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
-    )) as { status: number; data: { deleteError: string } };
+    )) as { status: number; data: { deleteErrorKey: string } };
     expect(r.status).toBe(400);
     expect(testDb.select().from(users).where(eq(users.id, u.id)).get()).toBeDefined();
   });

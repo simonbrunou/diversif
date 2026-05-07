@@ -1,10 +1,13 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import LocaleSwitcher from './LocaleSwitcher.svelte';
   import { page } from '$app/stores';
   import { cn } from '$lib/utils/cn';
   import { getChildNavItems, isNavItemActive } from '$lib/utils/nav';
   import { formatAge } from '$lib/utils/age';
   import { UserCircle2 } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let {
     childId,
@@ -19,7 +22,10 @@
   } = $props();
 
   const items = $derived(getChildNavItems(childId, { includeGuide: true }));
-  const pathname = $derived($page.url.pathname);
+  // Strip the /en locale prefix so isNavItemActive (which compares against
+  // unprefixed item.href values) and the account-link check still match on
+  // English child routes like /en/child/1/log.
+  const pathname = $derived($page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/');
 </script>
 
 <div class="flex flex-1">
@@ -27,7 +33,7 @@
     class="hidden w-60 shrink-0 border-r bg-surface print:hidden md:sticky md:top-0 md:flex md:h-dvh md:flex-col"
   >
     <div class="border-b p-5">
-      <a href="/" class="text-sm font-semibold tracking-tight text-primary hover:underline">
+      <a href={localizedHref('/')} class="text-sm font-semibold tracking-tight text-primary hover:underline">
         Diversif
       </a>
       <div class="mt-3">
@@ -42,7 +48,7 @@
           {@const Icon = item.icon}
           <li>
             <a
-              href={item.href}
+              href={localizedHref(item.href)}
               class={cn(
                 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -61,7 +67,7 @@
     </nav>
     <div class="border-t p-3">
       <a
-        href="/account"
+        href={localizedHref('/account')}
         class={cn(
           'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -72,8 +78,11 @@
         aria-current={pathname === '/account' ? 'page' : undefined}
       >
         <UserCircle2 size={18} aria-hidden="true" />
-        <span>Mon compte</span>
+        <span>{m.chromeAppShellMyAccount()}</span>
       </a>
+      <div class="mt-2 flex justify-end">
+        <LocaleSwitcher />
+      </div>
     </div>
   </aside>
 

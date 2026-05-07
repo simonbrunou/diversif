@@ -5,6 +5,7 @@
   import { getReactionLabel } from '$lib/utils/reactions';
   import { formatAge, ageInMonths } from '$lib/utils/age';
   import { getStageForAgeMonths } from '$lib/content/guidance';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { Printer, CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
@@ -47,7 +48,7 @@
 >
   <!-- Toolbar (screen only) -->
   <div class="flex items-center justify-between print:hidden">
-    <a href={`/child/${data.child.id}`} class="text-sm text-muted-foreground hover:underline">
+    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
       ← Tableau
     </a>
     <Button variant="outline" onclick={printPage}>
