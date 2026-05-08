@@ -146,39 +146,63 @@ export const actions: Actions = {
     // user account that can't reach the child it was invited to, with the
     // invitation either already consumed (orphaned access) or still claimable
     // (lets a stranger reuse the code).
-    const userId = await db.transaction(async (tx) => {
-      const inserted = (
-        await tx
-          .insert(users)
-          .values({
-            email: lowerEmail,
-            passwordHash,
-            displayName,
-            createdAt: now,
-            tosAcceptedAt: now,
-            privacyAcceptedAt: now,
-            ageConfirmedAt: now,
-            lastLoginAt: now
-          })
-          .returning({ id: users.id })
-      )[0];
-      const id = inserted.id;
+    //
+    // The invitation read above is unlocked, so two concurrent signups
+    // sharing the same code can both pass it. Condition the UPDATE on
+    // `used_at IS NULL` and check `rowCount` to detect the race; if we lose
+    // we throw a sentinel that rolls the whole transaction back (no phantom
+    // account left behind) and surface the same expired-invite error the
+    // read path uses.
+    class InviteRace extends Error {}
 
-      if (invitationChildId !== null && inviteCode) {
-        await tx.insert(memberships).values({
-          userId: id,
-          childId: invitationChildId,
-          role: 'member',
-          createdAt: now
+    let userId: number;
+    try {
+      userId = await db.transaction(async (tx) => {
+        const inserted = (
+          await tx
+            .insert(users)
+            .values({
+              email: lowerEmail,
+              passwordHash,
+              displayName,
+              createdAt: now,
+              tosAcceptedAt: now,
+              privacyAcceptedAt: now,
+              ageConfirmedAt: now,
+              lastLoginAt: now
+            })
+            .returning({ id: users.id })
+        )[0];
+        const id = inserted.id;
+
+        if (invitationChildId !== null && inviteCode) {
+          const result = await tx
+            .update(invitations)
+            .set({ usedAt: now, usedBy: id })
+            .where(and(eq(invitations.code, inviteCode), isNull(invitations.usedAt)));
+          /* v8 ignore next — node-postgres always populates rowCount for UPDATE */
+          if ((result.rowCount ?? 0) === 0) throw new InviteRace();
+          await tx.insert(memberships).values({
+            userId: id,
+            childId: invitationChildId,
+            role: 'member',
+            createdAt: now
+          });
+        }
+
+        return id;
+      });
+    } catch (err) {
+      if (err instanceof InviteRace) {
+        return fail(400, {
+          email: formEmail,
+          displayName: formDisplayName,
+          inviteCode: formInvite,
+          errorKey: 'errorsAuthInvalidInviteExpired'
         });
-        await tx
-          .update(invitations)
-          .set({ usedAt: now, usedBy: id })
-          .where(eq(invitations.code, inviteCode));
       }
-
-      return id;
-    });
+      throw err;
+    }
 
     const session = await createSession(userId);
     cookies.set(SESSION_COOKIE, session.id, {

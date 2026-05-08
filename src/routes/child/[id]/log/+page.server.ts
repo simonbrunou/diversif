@@ -132,11 +132,15 @@ export const actions: Actions = {
             throw new LogActionAbort(400, 'Aliment introuvable.');
           }
 
-          // Snapshot pre-insert state so we can detect milestones after the insert.
+          // Snapshot pre-insert state so we can detect milestones after the
+          // insert. Cast counts to int — node-postgres returns BIGINT as a
+          // string by default, which would make every `=== 0` comparison
+          // below false and silently disable the first-food / first-allergen
+          // / all-allergens redirects.
           const priorEntryCount =
             (
               await tx
-                .select({ n: sql<number>`count(*)` })
+                .select({ n: sql<number>`count(*)::int` })
                 .from(foodEntries)
                 .where(eq(foodEntries.childId, childId))
                 .limit(1)
@@ -147,7 +151,7 @@ export const actions: Actions = {
           const priorCategoriesCovered =
             (
               await tx
-                .select({ n: sql<number>`count(distinct ${foods.category})` })
+                .select({ n: sql<number>`count(distinct ${foods.category})::int` })
                 .from(foodEntries)
                 .innerJoin(foods, eq(foods.id, foodEntries.foodId))
                 .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
@@ -158,7 +162,7 @@ export const actions: Actions = {
             food.allergenType != null
               ? ((
                   await tx
-                    .select({ n: sql<number>`count(*)` })
+                    .select({ n: sql<number>`count(*)::int` })
                     .from(foodEntries)
                     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
                     .where(
@@ -176,7 +180,7 @@ export const actions: Actions = {
           const priorAllergensIntroduced =
             (
               await tx
-                .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
+                .select({ n: sql<number>`count(distinct ${foods.allergenType})::int` })
                 .from(foodEntries)
                 .innerJoin(foods, eq(foods.id, foodEntries.foodId))
                 .where(
@@ -198,7 +202,7 @@ export const actions: Actions = {
           const categoriesNowCovered =
             (
               await tx
-                .select({ n: sql<number>`count(distinct ${foods.category})` })
+                .select({ n: sql<number>`count(distinct ${foods.category})::int` })
                 .from(foodEntries)
                 .innerJoin(foods, eq(foods.id, foodEntries.foodId))
                 .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))

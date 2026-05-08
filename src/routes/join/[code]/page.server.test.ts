@@ -187,4 +187,41 @@ describe('join/[code] default action', () => {
     expect(inv?.usedAt).not.toBeNull();
     expect(inv?.usedBy).toBe(me.id);
   });
+
+  it('rejects with "introuvable ou expiré" when another claim consumes the invite mid-transaction', async () => {
+    const owner = await seedUser({ email: 'o@example.com' });
+    const me = await seedUser({ email: 'm@example.com' });
+    const racer = await seedUser({ email: 'r@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
+
+    // Simulate the race: between findActiveInvitation (read) and the
+    // transaction's UPDATE, another claim flips used_at. The transaction's
+    // conditional WHERE used_at IS NULL should match 0 rows and we should
+    // bail without inserting a membership row for `me`.
+    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+      await testDb
+        .update(invitations)
+        .set({ usedAt: new Date(), usedBy: racer.id })
+        .where(eq(invitations.code, 'BEBE-ABCDEF'));
+      return testDb.transaction(fn);
+    });
+
+    try {
+      const event = makeRouteEvent({
+        user: safeUser(me),
+        params: { code: 'BEBE-ABCDEF' }
+      });
+      const r = (await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )) as { status: number; data: { error: string } };
+      expect(r.status).toBe(400);
+      expect(r.data.error).toMatch(/introuvable|expiré/i);
+
+      const memb = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
+      expect(memb).toHaveLength(0);
+    } finally {
+      txSpy.mockRestore();
+    }
+  });
 });

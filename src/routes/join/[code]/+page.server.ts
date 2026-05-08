@@ -96,13 +96,28 @@ export const actions: Actions = {
     }
 
     const now = new Date();
-    await db
-      .insert(memberships)
-      .values({ userId: locals.user.id, childId: inv.childId, role: 'member', createdAt: now });
-    await db
-      .update(invitations)
-      .set({ usedAt: now, usedBy: locals.user.id })
-      .where(eq(invitations.code, code));
+    // Atomic single-claim: race between two POSTs from different users would
+    // otherwise both pass the read above and both insert membership rows
+    // against the same one-shot code. Wrap the consumption in a transaction
+    // and condition the invitation UPDATE on `used_at IS NULL`. If rowCount
+    // is 0 someone else won the race and we abort the membership write.
+    let consumed = false;
+    await db.transaction(async (tx) => {
+      const result = await tx
+        .update(invitations)
+        .set({ usedAt: now, usedBy: locals.user!.id })
+        .where(and(eq(invitations.code, code), isNull(invitations.usedAt)));
+      /* v8 ignore next — node-postgres always populates rowCount for UPDATE */
+      if ((result.rowCount ?? 0) === 0) return;
+      await tx
+        .insert(memberships)
+        .values({ userId: locals.user!.id, childId: inv.childId, role: 'member', createdAt: now });
+      consumed = true;
+    });
+
+    if (!consumed) {
+      return fail(400, { error: 'Code d’invitation introuvable ou expiré.' });
+    }
 
     throw redirect(303, `/child/${inv.childId}`);
   }

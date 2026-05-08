@@ -207,4 +207,79 @@ describe('signup default action', () => {
     expect(inv?.usedAt).not.toBeNull();
     expect(inv?.usedBy).toBe(newUser!.id);
   });
+
+  it('re-throws non-race errors from the signup transaction (so SvelteKit returns 500)', async () => {
+    const owner = await seedUser({ email: 'owner@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    await testDb.insert(invitations).values({
+      code: 'BEBE-ABCDEF',
+      childId: child.id,
+      createdBy: owner.id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 86400_000),
+      usedAt: null,
+      usedBy: null
+    });
+
+    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async () => {
+      throw new Error('pool timeout');
+    });
+
+    try {
+      const event = makeRouteEvent({
+        formData: form({ inviteCode: 'BEBE-ABCDEF' })
+      });
+      await expect(
+        actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+      ).rejects.toThrow('pool timeout');
+    } finally {
+      txSpy.mockRestore();
+    }
+  });
+
+  it('rolls back the user insert when the invite is consumed mid-transaction', async () => {
+    const owner = await seedUser({ email: 'owner@example.com' });
+    const racer = await seedUser({ email: 'racer@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    await testDb.insert(invitations).values({
+      code: 'BEBE-ABCDEF',
+      childId: child.id,
+      createdBy: owner.id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 86400_000),
+      usedAt: null,
+      usedBy: null
+    });
+
+    // Simulate the race: between the unlocked findActiveInvitation read and
+    // the transaction's conditional UPDATE, another claim flips used_at.
+    // The transaction throws InviteRace and rolls back the user insert.
+    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+      await testDb
+        .update(invitations)
+        .set({ usedAt: new Date(), usedBy: racer.id })
+        .where(eq(invitations.code, 'BEBE-ABCDEF'));
+      return testDb.transaction(fn);
+    });
+
+    try {
+      const event = makeRouteEvent({
+        formData: form({ inviteCode: 'BEBE-ABCDEF' })
+      });
+      const r = (await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )) as { status: number; data: { errorKey: string } };
+      expect(r.status).toBe(400);
+      expect(r.data.errorKey).toBe('errorsAuthInvalidInviteExpired');
+
+      const newUser = (
+        await testDb.select().from(users).where(eq(users.email, 'new@example.com')).limit(1)
+      )[0];
+      expect(newUser).toBeUndefined();
+      const memb = await testDb.select().from(memberships).where(eq(memberships.childId, child.id));
+      expect(memb).toHaveLength(0);
+    } finally {
+      txSpy.mockRestore();
+    }
+  });
 });
