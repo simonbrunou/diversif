@@ -11,10 +11,9 @@
 **Clear-cut bugs** (code or attribution wrong, no domain judgment needed):
 
 1. 🚨 **`oeuf-cru` blocked `< 12 mois`** (`guidance.ts:647`) and tip `egg-fully-cooked` (`:860`) — HCSP says 0–3 ans for raw eggs / mayo maison.
-2. 🚨 **Tofu seeded at age 6** (`seed.ts:79`), `ALLERGEN_GUIDANCE.soja` recommends tofu at 6 mo, and `FORBIDDEN_FOODS[sojaboisson-3ans]` only restricts _regular_ consumption with a "tofu en petite quantité reste possible" caveat — internally consistent but at odds with HCSP §1.4 + §2.6 + ANSES NUT2017SA0145 which discourage soja products as a class before 3 ans (phyto-œstrogènes). The app cites HCSP-2020 as a source on the soja card, so this is a citation/policy gap, not just an editorial choice.
-3. 🚨 **`allergens.ts:1` comment claims "12 priority allergens per the HCSP-2020 avis"** — HCSP names only `produits laitiers / œuf / arachide` explicitly. The 12 = **EU Regulation 1169/2011 minus lupin and sulphites** (a _labelling_ list, not an introduction list).
-4. 🚨 **Egg portion contradiction**: `oeuf.howToOffer` (`guidance.ts:240`) says "1/4 de **jaune**" (yolk only), focus text (`:73`) says "œuf entier ~1/4 puis 1/2", HCSP §2.7 says "œuf entier (jaune+blanc), ¼ entre 6–12 mois, 1/3 entre 1–2 ans, 1/2 entre 2–3 ans". App skips the 1/3 step and contradicts itself on yolk vs whole.
-5. 🚨 **"Noix de beurre" translation bug** (`guidance.ts:69`): HCSP §2.9 highlights _huile de colza_ and _huile de noix_ (walnut oil, ALA-rich). App lists "huile de colza, huile d'olive, **noix de beurre**" — "noix de beurre" means _a knob of butter_, a different fat with different rationale.
+2. 🚨 **`allergens.ts:1` comment claims "12 priority allergens per the HCSP-2020 avis"** — HCSP names only `produits laitiers / œuf / arachide` explicitly. The 12 = **EU Regulation 1169/2011 minus lupin and sulphites** (a _labelling_ list, not an introduction list).
+3. 🚨 **Egg portion contradiction**: `oeuf.howToOffer` (`guidance.ts:240`) says "1/4 de **jaune**" (yolk only), focus text (`:73`) says "œuf entier ~1/4 puis 1/2", HCSP §2.7 says "œuf entier (jaune+blanc), ¼ entre 6–12 mois, 1/3 entre 1–2 ans, 1/2 entre 2–3 ans". App skips the 1/3 step and contradicts itself on yolk vs whole.
+4. 🚨 **"Noix de beurre" translation bug** (`guidance.ts:69`): HCSP §2.9 highlights _huile de colza_ and _huile de noix_ (walnut oil, ALA-rich). App lists "huile de colza, huile d'olive, **noix de beurre**" — "noix de beurre" means _a knob of butter_, a different fat with different rationale.
 
 **Audit findings that did NOT hold up under verification** (kept here for transparency, not actionable):
 
@@ -23,6 +22,7 @@
 
 **Editorial / domain-judgment items** (where authoritative sources differ from the app, and the app's stance may be intentionally conservative):
 
+- **Soja: app picks ESPGHAN-permissive, not HCSP/ANSES-conservative.** Tofu seeded at 6 mo, soja card sources `['espghan-2017']` only, FORBIDDEN_FOODS[sojaboisson-3ans] restricts only regular consumption with a "tofu en petite quantité reste possible" caveat — internally consistent app policy, but at odds with HCSP §1.4 + §2.6 and ANSES NUT2017SA0145, which discourage soja products as a class before 3 ans. Owner judgment: align with HCSP/ANSES (defensible French stance) or stay with ESPGHAN (defensible international evidence-based stance), but document the choice on the soja card.
 - All allergen `recommendedAgeMonths: 6` (HCSP allows 4)
 - Meat grammage 30g at 1yr / 50g at 3yr (HCSP §2.7 says 20g 1–2yr / 30g 2–3yr — app off ~50%)
 - Milk floor `~600–800 mL/j` at 4–6 mo (HCSP §2.1 says minimum 500 mL/j)
@@ -67,17 +67,7 @@ App says "œufs crus / mayo maison: avant 12 mois". HCSP avis 2020 §2.10 (l.620
 
 Should be `< 3 ans`, not `< 12 mois`. The 12-mo gate implies it's safe at 1 yr, which contradicts HCSP.
 
-### 2. Tofu / soja: app policy diverges from HCSP and ANSES
-
-**Files:** `src/lib/server/db/seed.ts:79` (Tofu, suggestedAgeMonths: 6), `src/lib/content/guidance.ts:683` (`FORBIDDEN_FOODS[sojaboisson-3ans]`, `until: '< 3 ans (consommation régulière)'`, with caveat _"Le tofu en petite quantité reste possible"_), `ALLERGEN_GUIDANCE.soja` (`guidance.ts:347-352`, recommending tofu at 6 mo).
-
-The three sites are internally consistent — they agree that tofu in small quantity at 6 mo is acceptable while regular soja consumption is discouraged before 3 ans. HCSP §1.4 + §2.6 + l.793 and ANSES NUT2017SA0145 take a stricter stance: soja products as a class are discouraged before 3 ans (phyto-œstrogènes), with no "small quantity" carve-out. SpF parent brochure (l.419) is explicit: _"Le « lait » de soja et tous les produits à base de soja"_ — discouraged under 3.
-
-So this is HCSP/ANSES vs app-policy divergence (where the app cites HCSP), not internal contradiction. The fix is the same regardless: align with the cited authority.
-
-**Fix shape:** raise Tofu's `suggestedAgeMonths` to 36, drop the "petite quantité possible" caveat from the FORBIDDEN_FOODS entry, and rewrite `ALLERGEN_GUIDANCE.soja` to defer to 3 ans (or remove `hcsp-2020` from sources if the app intentionally chooses ESPGHAN-aligned behaviour).
-
-### 3. "12 allergens per HCSP-2020" attribution is wrong
+### 2. "12 allergens per HCSP-2020" attribution is wrong
 
 **File:** `src/lib/utils/allergens.ts:1-11`
 
@@ -85,7 +75,7 @@ The header comment says "12 priority allergens for early-introduction guidance p
 
 **Fix shape:** either (a) rewrite the comment to attribute to EU 1169/2011 (which is the actual source); or (b) rebrand the list as "the 12 allergens the app tracks for diversification logging" without claiming HCSP authorship. Cascading consequence: every UI string referencing "12 allergènes prioritaires" would benefit from a similar attribution rephrase (`milestones.ts:48`, `allergens.ts:1` comment, several SEO/landing/guide strings).
 
-### 4. Egg portion contradiction
+### 3. Egg portion contradiction
 
 **Files:** `src/lib/content/guidance.ts:73` (focus, 6–9 mo) vs `:240` (`ALLERGEN_GUIDANCE.oeuf.howToOffer`)
 
@@ -103,7 +93,7 @@ Two issues:
 
 **Fix shape:** align both to the HCSP staircase ¼ → 1/3 → 1/2, with whole egg from start.
 
-### 5. Walnut oil mistranslated as "knob of butter"
+### 4. Walnut oil mistranslated as "knob of butter"
 
 **File:** `src/lib/content/guidance.ts:69`
 
@@ -141,7 +131,7 @@ Agent B claimed `isFirstAllergen` requires "the first allergen ever logged" — 
 
 ### Céleri in "viennent plus tard" (only existed inside closed PR #52)
 
-The contradiction "Crustacés, mollusques, **céleri** et moutarde viennent plus tard" only appeared inside the closed PR #52 branch (commit `7c4fda6`), not in shipped code. Listing it as a current bug overstates the audit; current `guidance.ts:74` is the original "12 prioritaires (8 listed)" sentence. The underlying inconsistency (the "8 listed" are framed as priorities while ALLERGENS has 12 entries) is the attribution issue captured in clear-cut bug #3, not a céleri-specific defect.
+The contradiction "Crustacés, mollusques, **céleri** et moutarde viennent plus tard" only appeared inside the closed PR #52 branch (commit `7c4fda6`), not in shipped code. Listing it as a current bug overstates the audit; current `guidance.ts:74` is the original "12 prioritaires (8 listed)" sentence. The underlying inconsistency (the "8 listed" are framed as priorities while ALLERGENS has 12 entries) is the attribution issue captured in clear-cut bug #2, not a céleri-specific defect.
 
 ---
 
@@ -149,13 +139,28 @@ The contradiction "Crustacés, mollusques, **céleri** et moutarde viennent plus
 
 These items show the app diverging from cited authoritative sources, but the app's stance may be intentionally conservative or based on supplementary sources (SFP, ANSES nourrissons, AAP). Owner judgment required.
 
-### A. Allergen `recommendedAgeMonths: 6`
+### A. Soja: ESPGHAN-permissive vs HCSP/ANSES-conservative
+
+**Files:** `src/lib/server/db/seed.ts:79` (Tofu, suggestedAgeMonths: 6); `src/lib/content/guidance.ts:345-356` (`ALLERGEN_GUIDANCE.soja`, `recommendedAgeMonths: 6`, `sources: ['espghan-2017']`); `src/lib/content/guidance.ts:683` (`FORBIDDEN_FOODS[sojaboisson-3ans]`, `until: '< 3 ans (consommation régulière)'`, caveat _"Le tofu en petite quantité reste possible"_, `sources: ['anses-nourrisson']`).
+
+The three sites are internally consistent — they collectively say "tofu in small quantity at 6 mo is acceptable, regular soja consumption is discouraged before 3 ans." That's an ESPGHAN-aligned stance (ESPGHAN 2017 doesn't single soja out for early restriction).
+
+HCSP §1.4 + §2.6 + l.793 and ANSES NUT2017SA0145 are stricter: soja products as a class are discouraged before 3 ans (phyto-œstrogènes), with no "small quantity" carve-out. SpF parent brochure (l.419) is explicit: _"Le « lait » de soja et tous les produits à base de soja"_ — discouraged under 3.
+
+**Owner judgment required.** Both stances are defensible:
+
+- **HCSP/ANSES-aligned (conservative French stance):** raise Tofu's `suggestedAgeMonths` to 36, drop the "petite quantité possible" caveat from FORBIDDEN_FOODS, rewrite `ALLERGEN_GUIDANCE.soja` to defer to 3 ans, swap sources to `['hcsp-2020', 'anses-nourrisson']`. Surface this in the soja card so parents know.
+- **ESPGHAN-aligned (international evidence-based stance):** keep current data, but document on the soja card that this is an explicit ESPGHAN-over-HCSP choice.
+
+The current code does the second implicitly. Either path is fine; the audit's only ask is that the soja card's framing match the chosen stance.
+
+### B. Allergen `recommendedAgeMonths: 6`
 
 `ALLERGEN_GUIDANCE` for oeuf, arachide, lait, gluten, fruits*a_coque, sesame, soja, poisson all set `recommendedAgeMonths: 6`. HCSP avis 2020 §1.2.1 + §1.2.2 + Annexe 1 explicitly allows introduction \_from start of diversification*, i.e. 4 mo. ESPGHAN 2017: "any time after 4 months". The app's 6-mo gate is conservative — defensible as "most common French practice" but creates a 2-month window where parents who follow per-card guidance may push past HCSP's "pas après 6 mois révolus" warning.
 
 **Defensible if intentional**; if not, lower to 4. Same change should propagate to the seed catalog (`seed.ts` for cabillaud/saumon/poulet/bœuf/pâtes/lentilles/comté etc.).
 
-### B. Meat / fish / egg grammage table
+### C. Meat / fish / egg grammage table
 
 App: "10–20 g/j à 6 mo, ~30 g/j à 1 an, jusqu'à 50 g vers 3 ans" (`guidance.ts:72, 130, 476`).
 
@@ -165,31 +170,31 @@ HCSP §2.7:
 
 The app figures are 50% higher than HCSP at the upper end. The "50 g vers 3 ans" has no HCSP basis. ESPGHAN provides per-kg-protein guidance that gives slightly higher numbers, so the app's stance may be ESPGHAN-derived; if so, the citation should be ESPGHAN, not HCSP / SpF.
 
-### C. Milk floor 4–6 mo
+### D. Milk floor 4–6 mo
 
 App: "~600–800 mL/jour" (`guidance.ts:41, 51`). HCSP §2.1: "minimum 500 mL/j, sans dépasser 800 mL/j". The 600 floor is 100 mL above HCSP. Stage 6–9 (`:79`) drops to 500 mL — internally inconsistent with the 4–6 mo number.
 
-### D. Choking-hazard ages
+### E. Choking-hazard ages
 
 App: 4 yr (raisin, carotte crue) / 5 yr (fruits à coque entiers, pop-corn, chewing-gum). HCSP §1.4: 3 yr. SFP/AAP convention: 4–5 yr. The app's stance is the SFP/AAP-style conservative one; defensible but misattributed to HCSP if cited as such.
 
-### E. Crustacé / mollusque / moutarde / céleri ages
+### F. Crustacé / mollusque / moutarde / céleri ages
 
 `ALLERGEN_GUIDANCE.crustace.recommendedAgeMonths = 12`, `mollusque = 12`, `moutarde = 9`, `celeri = 6`. None of these specific numbers traces to HCSP / SpF / ANSES. They're app-policy. If kept, the citation should say so explicitly.
 
-### F. Légumineuses cadence
+### G. Légumineuses cadence
 
 App: "1–2 fois par semaine" (`guidance.ts:468`). HCSP §2.4: "le repère après un an d'au moins 2 fois par semaine". Should be `≥ 2/sem après 1 an`.
 
-### G. Salt framing
+### H. Salt framing
 
 `FORBIDDEN_FOODS[sel].until: '< 12 mois'` (`guidance.ts:631`) and `KEY_PRINCIPLES[no-added-salt]` use a "<1 g/jour" gram figure. HCSP §2.10 has no age cliff and no per-day gram limit — the message is "limit always" through 36 mo. The "<12 mois" framing implies salt is OK after 1 yr.
 
-### H. EAT study `/3` framing
+### I. EAT study `/3` framing
 
 `guidance.ts:954` and `GuideStaticSections.svelte:165` claim early multi-allergen introduction "divise par 3" the allergy risk per the EAT study. EAT (NEJM 2016) per-protocol analysis showed reductions; intention-to-treat was non-significant. The headline phrasing is loose.
 
-### I. LEAP / EAT for "4–6 mois"
+### J. LEAP / EAT for "4–6 mois"
 
 `routes/+page.svelte:27` says LEAP and EAT support "dès 4–6 mois". LEAP used 4–11 mo for arachide; EAT used 3–4 mo. Conflating both as "4–6 mois" is misattribution.
 
