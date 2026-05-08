@@ -23,6 +23,10 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: diversif-postgres
+    # Published so `npm run dev` on the host can reach it. The compose-internal
+    # service-name `postgres` continues to work for the app container.
+    ports:
+      - '5432:5432'
     environment:
       POSTGRES_USER: diversif
       POSTGRES_PASSWORD: diversif
