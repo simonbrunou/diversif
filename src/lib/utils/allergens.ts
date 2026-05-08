@@ -32,6 +32,29 @@ export const ALLERGENS = [
 
 export type AllergenId = (typeof ALLERGENS)[number]['id'];
 
+// Allergens for which LEAP (2015), EAT (2016), ESPGHAN 2017 and HCSP 2020
+// support early introduction in the 4–11 mo window. Surfacing reminders or
+// suggestion-list "à introduire" prompts is only justified for this subset.
+//
+// Intentionally absent:
+//   - soja: HCSP 2020 + ANSES discourage soja products before 3 ans
+//     (phyto-œstrogènes).
+//   - céleri, moutarde, crustacés, mollusques: tracked in `ALLERGENS` for
+//     log completeness against EU 1169/2011 only — no early-introduction
+//     trial covered them, so prompting parents to introduce them with
+//     LEAP/EAT/ESPGHAN copy would misattribute the evidence.
+export const PRIORITY_INTRODUCTION_ALLERGENS = [
+  'oeuf',
+  'arachide',
+  'lait',
+  'gluten',
+  'poisson',
+  'fruits_a_coque',
+  'sesame'
+] as const satisfies readonly AllergenId[];
+
+export type PriorityIntroductionAllergenId = (typeof PRIORITY_INTRODUCTION_ALLERGENS)[number];
+
 export function getAllergenLabel(id: string | null | undefined): string | null {
   if (!id) return null;
   return ALLERGENS.find((a) => a.id === id)?.label ?? null;
