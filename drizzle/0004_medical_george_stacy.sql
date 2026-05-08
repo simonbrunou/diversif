@@ -1,1 +1,0 @@
-CREATE INDEX `foods_custom_for_child_idx` ON `foods` (`custom_for_child_id`);

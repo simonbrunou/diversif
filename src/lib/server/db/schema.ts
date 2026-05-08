@@ -1,47 +1,56 @@
-import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
+import {
+  pgTable,
+  text,
+  integer,
+  serial,
+  boolean,
+  timestamp,
+  primaryKey,
+  index
+} from 'drizzle-orm/pg-core';
 
-export const users = sqliteTable(
+export const users = pgTable(
   'users',
   {
-    id: integer('id').primaryKey({ autoIncrement: true }),
+    id: serial('id').primaryKey(),
     email: text('email').notNull().unique(),
     passwordHash: text('password_hash').notNull(),
     displayName: text('display_name').notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-    tosAcceptedAt: integer('tos_accepted_at', { mode: 'timestamp_ms' }),
-    privacyAcceptedAt: integer('privacy_accepted_at', { mode: 'timestamp_ms' }),
-    ageConfirmedAt: integer('age_confirmed_at', { mode: 'timestamp_ms' }),
-    lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
-    lastExportAt: integer('last_export_at', { mode: 'timestamp_ms' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull(),
+    tosAcceptedAt: timestamp('tos_accepted_at', { withTimezone: true, mode: 'date' }),
+    privacyAcceptedAt: timestamp('privacy_accepted_at', { withTimezone: true, mode: 'date' }),
+    ageConfirmedAt: timestamp('age_confirmed_at', { withTimezone: true, mode: 'date' }),
+    lastLoginAt: timestamp('last_login_at', { withTimezone: true, mode: 'date' }),
+    lastExportAt: timestamp('last_export_at', { withTimezone: true, mode: 'date' })
   },
   (t) => ({
     lastLoginIdx: index('users_last_login_at_idx').on(t.lastLoginAt)
   })
 );
 
-export const sessions = sqliteTable(
+export const sessions = pgTable(
   'sessions',
   {
     id: text('id').primaryKey(),
     userId: integer('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
   },
   (t) => ({
     expiresIdx: index('sessions_expires_at_idx').on(t.expiresAt)
   })
 );
 
-export const children = sqliteTable('children', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const children = pgTable('children', {
+  id: serial('id').primaryKey(),
   name: text('name').notNull(),
   birthDate: text('birth_date').notNull(),
   createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
 });
 
-export const memberships = sqliteTable(
+export const memberships = pgTable(
   'memberships',
   {
     userId: integer('user_id')
@@ -51,14 +60,14 @@ export const memberships = sqliteTable(
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
     role: text('role', { enum: ['owner', 'member'] }).notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.childId] })
   })
 );
 
-export const invitations = sqliteTable(
+export const invitations = pgTable(
   'invitations',
   {
     code: text('code').primaryKey(),
@@ -66,9 +75,9 @@ export const invitations = sqliteTable(
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
     createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
-    usedAt: integer('used_at', { mode: 'timestamp_ms' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true, mode: 'date' }),
     usedBy: integer('used_by').references(() => users.id, { onDelete: 'set null' })
   },
   (t) => ({
@@ -76,34 +85,30 @@ export const invitations = sqliteTable(
   })
 );
 
-export const foods = sqliteTable(
+export const foods = pgTable(
   'foods',
   {
-    id: integer('id').primaryKey({ autoIncrement: true }),
+    id: serial('id').primaryKey(),
     name: text('name').notNull(),
     category: text('category').notNull(),
-    isMajorAllergen: integer('is_major_allergen', { mode: 'boolean' }).notNull().default(false),
+    isMajorAllergen: boolean('is_major_allergen').notNull().default(false),
     allergenType: text('allergen_type'),
     suggestedAgeMonths: integer('suggested_age_months').notNull(),
     notes: text('notes'),
-    isCustom: integer('is_custom', { mode: 'boolean' }).notNull().default(false),
+    isCustom: boolean('is_custom').notNull().default(false),
     customForChildId: integer('custom_for_child_id').references(() => children.id, {
       onDelete: 'cascade'
     })
   },
   (t) => ({
-    // Speeds up the catalog query on the food log page that fetches custom
-    // foods scoped to a specific child. Without this the filter falls back
-    // to a full scan of `foods`, which grows linearly with each new custom
-    // entry across the whole instance.
     customForChildIdx: index('foods_custom_for_child_idx').on(t.customForChildId)
   })
 );
 
-export const foodEntries = sqliteTable(
+export const foodEntries = pgTable(
   'food_entries',
   {
-    id: integer('id').primaryKey({ autoIncrement: true }),
+    id: serial('id').primaryKey(),
     childId: integer('child_id')
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
@@ -114,18 +119,18 @@ export const foodEntries = sqliteTable(
     foodId: integer('food_id')
       .notNull()
       .references(() => foods.id, { onDelete: 'restrict' }),
-    givenAt: integer('given_at', { mode: 'timestamp_ms' }).notNull(),
+    givenAt: timestamp('given_at', { withTimezone: true, mode: 'date' }).notNull(),
     reaction: text('reaction', { enum: ['ras', 'inconfort', 'reaction'] }).notNull(),
     notes: text('notes'),
     loggedBy: integer('logged_by').references(() => users.id, { onDelete: 'set null' }),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
   },
   (t) => ({
     childIdx: index('food_entries_child_idx').on(t.childId, t.givenAt)
   })
 );
 
-export const tipDismissals = sqliteTable(
+export const tipDismissals = pgTable(
   'tip_dismissals',
   {
     userId: integer('user_id')
@@ -135,14 +140,14 @@ export const tipDismissals = sqliteTable(
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
     reminderKey: text('reminder_key').notNull(),
-    dismissedAt: integer('dismissed_at', { mode: 'timestamp_ms' }).notNull()
+    dismissedAt: timestamp('dismissed_at', { withTimezone: true, mode: 'date' }).notNull()
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.childId, t.reminderKey] })
   })
 );
 
-export const passkeys = sqliteTable(
+export const passkeys = pgTable(
   'passkeys',
   {
     id: text('id').primaryKey(),
@@ -153,33 +158,31 @@ export const passkeys = sqliteTable(
     counter: integer('counter').notNull().default(0),
     transports: text('transports').notNull().default('[]'),
     deviceType: text('device_type', { enum: ['singleDevice', 'multiDevice'] }).notNull(),
-    backedUp: integer('backed_up', { mode: 'boolean' }).notNull(),
+    backedUp: boolean('backed_up').notNull(),
     name: text('name').notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
-    lastUsedAt: integer('last_used_at', { mode: 'timestamp_ms' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull(),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true, mode: 'date' })
   },
   (t) => ({
     userIdx: index('passkeys_user_idx').on(t.userId)
   })
 );
 
-export const webauthnChallenges = sqliteTable(
+export const webauthnChallenges = pgTable(
   'webauthn_challenges',
   {
     token: text('token').primaryKey(),
     challenge: text('challenge').notNull(),
     purpose: text('purpose', { enum: ['registration', 'authentication'] }).notNull(),
     userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
-    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
   },
   (t) => ({
-    // The cleanup job runs `DELETE WHERE expires_at < now` every 6 hours;
-    // index lets it skip the unexpired rows instead of full-scanning.
     expiresIdx: index('webauthn_challenges_expires_idx').on(t.expiresAt)
   })
 );
 
-export const idempotencyKeys = sqliteTable(
+export const idempotencyKeys = pgTable(
   'idempotency_keys',
   {
     key: text('key').primaryKey(),
@@ -188,7 +191,7 @@ export const idempotencyKeys = sqliteTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     scope: text('scope').notNull(),
     redirect: text('redirect'),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
   },
   (t) => ({
     createdAtIdx: index('idempotency_keys_created_at_idx').on(t.createdAt)
