@@ -11,7 +11,7 @@
 **Clear-cut bugs** (code or attribution wrong, no domain judgment needed):
 
 1. 🚨 **`oeuf-cru` blocked `< 12 mois`** (`guidance.ts:647`) and tip `egg-fully-cooked` (`:860`) — HCSP says 0–3 ans for raw eggs / mayo maison.
-2. 🚨 **Tofu seeded at age 6** (`seed.ts:79`) while `FORBIDDEN_FOODS[sojaboisson-3ans]` (`guidance.ts:683`) says soja products `< 3 ans`. Internal contradiction; HCSP backs the 3-yr stance for all soja products, not just drinks.
+2. 🚨 **Tofu seeded at age 6** (`seed.ts:79`), `ALLERGEN_GUIDANCE.soja` recommends tofu at 6 mo, and `FORBIDDEN_FOODS[sojaboisson-3ans]` only restricts _regular_ consumption with a "tofu en petite quantité reste possible" caveat — internally consistent but at odds with HCSP §1.4 + §2.6 + ANSES NUT2017SA0145 which discourage soja products as a class before 3 ans (phyto-œstrogènes). The app cites HCSP-2020 as a source on the soja card, so this is a citation/policy gap, not just an editorial choice.
 3. 🚨 **`allergens.ts:1` comment claims "12 priority allergens per the HCSP-2020 avis"** — HCSP names only `produits laitiers / œuf / arachide` explicitly. The 12 = **EU Regulation 1169/2011 minus lupin and sulphites** (a _labelling_ list, not an introduction list).
 4. 🚨 **Egg portion contradiction**: `oeuf.howToOffer` (`guidance.ts:240`) says "1/4 de **jaune**" (yolk only), focus text (`:73`) says "œuf entier ~1/4 puis 1/2", HCSP §2.7 says "œuf entier (jaune+blanc), ¼ entre 6–12 mois, 1/3 entre 1–2 ans, 1/2 entre 2–3 ans". App skips the 1/3 step and contradicts itself on yolk vs whole.
 5. 🚨 **"Noix de beurre" translation bug** (`guidance.ts:69`): HCSP §2.9 highlights _huile de colza_ and _huile de noix_ (walnut oil, ALA-rich). App lists "huile de colza, huile d'olive, **noix de beurre**" — "noix de beurre" means _a knob of butter_, a different fat with different rationale.
@@ -67,13 +67,15 @@ App says "œufs crus / mayo maison: avant 12 mois". HCSP avis 2020 §2.10 (l.620
 
 Should be `< 3 ans`, not `< 12 mois`. The 12-mo gate implies it's safe at 1 yr, which contradicts HCSP.
 
-### 2. Tofu age conflicts with soja FORBIDDEN_FOOD
+### 2. Tofu / soja: app policy diverges from HCSP and ANSES
 
-**Files:** `src/lib/server/db/seed.ts:79` (Tofu, suggestedAgeMonths: 6) vs `src/lib/content/guidance.ts:683` (`FORBIDDEN_FOODS[sojaboisson-3ans]`, `until: '< 3 ans'`)
+**Files:** `src/lib/server/db/seed.ts:79` (Tofu, suggestedAgeMonths: 6), `src/lib/content/guidance.ts:683` (`FORBIDDEN_FOODS[sojaboisson-3ans]`, `until: '< 3 ans (consommation régulière)'`, with caveat _"Le tofu en petite quantité reste possible"_), `ALLERGEN_GUIDANCE.soja` (`guidance.ts:347-352`, recommending tofu at 6 mo).
 
-HCSP §1.4 + §2.6 + l.793: soja products discouraged before 3 ans (phyto-œstrogènes + ANSES 2016c). The "sojaboisson-3ans" entry is correct; tofu seeded at 6 mo contradicts it. SpF parent brochure (l.419) is explicit: _"Le « lait » de soja et tous les produits à base de soja"_ — discouraged under 3.
+The three sites are internally consistent — they agree that tofu in small quantity at 6 mo is acceptable while regular soja consumption is discouraged before 3 ans. HCSP §1.4 + §2.6 + l.793 and ANSES NUT2017SA0145 take a stricter stance: soja products as a class are discouraged before 3 ans (phyto-œstrogènes), with no "small quantity" carve-out. SpF parent brochure (l.419) is explicit: _"Le « lait » de soja et tous les produits à base de soja"_ — discouraged under 3.
 
-**Fix shape:** raise Tofu's `suggestedAgeMonths` to 36, or add a `notes` caveat acknowledging the soja restriction. Cross-check `ALLERGEN_GUIDANCE.soja` (`guidance.ts:347-352`) which currently recommends tofu at 6 mo — same fix.
+So this is HCSP/ANSES vs app-policy divergence (where the app cites HCSP), not internal contradiction. The fix is the same regardless: align with the cited authority.
+
+**Fix shape:** raise Tofu's `suggestedAgeMonths` to 36, drop the "petite quantité possible" caveat from the FORBIDDEN_FOODS entry, and rewrite `ALLERGEN_GUIDANCE.soja` to defer to 3 ans (or remove `hcsp-2020` from sources if the app intentionally chooses ESPGHAN-aligned behaviour).
 
 ### 3. "12 allergens per HCSP-2020" attribution is wrong
 
