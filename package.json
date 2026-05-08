@@ -15,7 +15,7 @@
     "test": "npm run paraglide && vitest run",
     "test:watch": "vitest",
     "test:coverage": "npm run paraglide && vitest run --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "node scripts/reset-e2e-db.mjs && playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",

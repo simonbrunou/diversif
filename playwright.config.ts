@@ -5,7 +5,10 @@ const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: 'e2e',
-  globalSetup: './e2e/global-setup.ts',
+  // No globalSetup: Playwright invokes globalSetup AFTER the webServer boots,
+  // so a schema reset there would clobber the migrations the webServer just
+  // applied. Tests assume a fresh database — supply one via the E2E
+  // postgres service in CI, or run scripts/reset-e2e-db.sh locally.
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
