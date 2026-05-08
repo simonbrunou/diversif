@@ -32,6 +32,10 @@ export type ReminderInput = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// Allergens to nag the user about introducing in the 6-mo+ window.
+// Soja is intentionally absent: HCSP 2020 and ANSES discourage soja
+// products before 3 ans (phyto-œstrogènes), so we don't surface it as
+// an "à introduire" reminder.
 const ALLERGEN_PRIORITY: AllergenId[] = [
   'oeuf',
   'arachide',
@@ -40,7 +44,6 @@ const ALLERGEN_PRIORITY: AllergenId[] = [
   'poisson',
   'fruits_a_coque',
   'sesame',
-  'soja',
   'celeri',
   'moutarde',
   'crustace',

@@ -71,7 +71,7 @@ export const STAGES = [
     focus: [
       'Viande / poisson : 10–20 g par jour (≈ 2 cuillères à café). Poisson 2 fois par semaine dont un gras (saumon, sardine).',
       "Œuf entier bien cuit (jaune + blanc) : ~1/4 d'œuf, à augmenter après 1 an (1/3 entre 1–2 ans, 1/2 entre 2–3 ans).",
-      "Allergènes : à 6–9 mois, terminer l'introduction des allergènes courants à cet âge (œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait).",
+      "Allergènes : à 6–9 mois, terminer l'introduction des allergènes courants à cet âge (œuf, arachide, fruits à coque en purée, sésame, gluten, poisson, lait). Le soja n'est pas dans cette liste : HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans.",
       'Légumineuses cuites bien écrasées (lentilles corail, pois chiches, haricots blancs).'
     ],
     textures:
@@ -162,7 +162,7 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
   {
     id: 'allergens-early',
     title: 'Introduire les allergènes tôt et sans tarder',
-    body: "Dès que la diversification est lancée, proposer œuf bien cuit, arachide (en purée fine), lait (yaourt/fromage), gluten, poisson, fruits à coque (en purée), sésame, soja. L'introduction précoce réduit le risque d'allergie alimentaire (LEAP, EAT).",
+    body: "Dès que la diversification est lancée, proposer œuf bien cuit, arachide (en purée fine), lait (yaourt/fromage), gluten, poisson, fruits à coque (en purée), sésame. L'introduction précoce réduit le risque d'allergie alimentaire (LEAP, EAT). Le soja n'entre pas dans cette liste — HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans.",
     sources: ['leap-2015', 'eat-2016', 'espghan-2017', 'hcsp-2020']
   },
   {
@@ -344,17 +344,17 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
   },
   soja: {
     id: 'soja',
-    recommendedAgeMonths: 6,
-    why: 'Le soja est un allergène majeur ; la tolérance se construit avec une introduction précoce (ESPGHAN 2017). HCSP 2020 recommande toutefois de limiter la consommation de produits à base de soja avant 3 ans (phyto-œstrogènes).',
+    recommendedAgeMonths: 36,
+    why: "Le soja contient des phyto-œstrogènes. HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans (tofu, boissons végétales, yaourts au soja). Le soja n'est pas un allergène à introduction prioritaire dans la fenêtre 4–11 mois ; il est suivi ici pour la complétude du carnet, pas en tant qu'allergène à introduire tôt.",
     howToOffer: [
-      'Tofu nature bien cuit, bien écrasé — en petite quantité, occasionnellement.',
-      'Les boissons végétales au soja ne remplacent pas le lait infantile.',
-      'Pas de consommation régulière de produits à base de soja avant 3 ans.'
+      'Avant 3 ans : éviter les produits à base de soja (tofu, yaourts au soja, boissons végétales au soja).',
+      'Les boissons végétales au soja ne remplacent jamais le lait infantile.',
+      'Si introduction après 3 ans : tofu nature bien cuit, en petite quantité.'
     ],
     firstSigns: ['Diarrhée, vomissements', "Plaques d'urticaire"],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['espghan-2017', 'hcsp-2020', 'anses-nourrisson']
+    sources: ['hcsp-2020', 'anses-nourrisson']
   },
   poisson: {
     id: 'poisson',
@@ -467,7 +467,7 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
     why: 'Protéines végétales et fer. Excellent complément à la viande.',
     whenStart: 'Dès 6 mois, bien cuites et écrasées (lentilles corail en purée).',
     cadence: '1–2 fois par semaine, en alternance avec viande/poisson.',
-    examples: ['Lentilles corail', 'Pois chiches', 'Haricots blancs', 'Tofu cuit'],
+    examples: ['Lentilles corail', 'Pois chiches', 'Haricots blancs', 'Fèves'],
     sources: ['spf-pnns-guide']
   },
   viandes: {
@@ -509,7 +509,7 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
     whenStart: 'Dès 4–6 mois, en formes adaptées (purée fine).',
     cadence:
       "Une fois introduit, **maintenir l'exposition régulière** (1–2 fois par semaine) pour entretenir la tolérance.",
-    examples: ['Beurre de cacahuète lisse', "Purée d'amande", 'Tahin (sésame)', 'Tofu'],
+    examples: ['Beurre de cacahuète lisse', "Purée d'amande", 'Tahin (sésame)', 'Œuf bien cuit'],
     sources: ['leap-2015', 'eat-2016', 'espghan-2017']
   },
   matieres_grasses: {

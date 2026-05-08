@@ -23,8 +23,8 @@
       a: "Les recommandations françaises (HCSP 2020, Santé publique France) et européennes (ESPGHAN 2017) convergent : la diversification se commence entre 4 et 6 mois révolus, jamais avant 4 mois (17 semaines), idéalement avant 6 mois pour profiter de la fenêtre d'introduction des allergènes."
     },
     {
-      q: 'Quels sont les 12 allergènes prioritaires à introduire ?',
-      a: "Œuf, arachide, fruits à coque, lait de vache, sésame, soja, gluten (blé), poisson, crustacés, mollusques, céleri et moutarde. L'introduction précoce, dès 4–6 mois, réduit le risque d'allergie d'après les études LEAP (2015) et EAT (2016)."
+      q: 'Quels allergènes sont à introduire tôt ?',
+      a: "HCSP 2020 et les études LEAP (2015) et EAT (2016) recommandent une introduction précoce (dès 4–6 mois) pour : œuf, arachide, lait de vache, gluten (blé), poisson, fruits à coque (en purée), sésame. L'app trace 12 allergènes au total (référence : règlement UE 1169/2011 d'étiquetage, moins lupin et sulfites) ; les autres (crustacés, mollusques, céleri, moutarde) sont suivis pour la complétude du carnet. Le soja n'est pas dans la liste à introduire tôt : HCSP et ANSES déconseillent les produits à base de soja avant 3 ans."
     },
     {
       q: 'Faut-il choisir entre purées et DME (diversification menée par l\'enfant) ?',
