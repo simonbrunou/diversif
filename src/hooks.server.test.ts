@@ -82,21 +82,22 @@ function makeEvent(token: string | null, pathname = '/') {
   return { event, set, del, cookies };
 }
 
-function seedUser() {
-  return testDb
-    .insert(users)
-    .values({
-      email: 'a@example.com',
-      passwordHash: 'placeholder-hash',
-      displayName: 'A',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+async function seedUser() {
+  return (
+    await testDb
+      .insert(users)
+      .values({
+        email: 'a@example.com',
+        passwordHash: 'placeholder-hash',
+        displayName: 'A',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 describe('handle', () => {
@@ -119,22 +120,22 @@ describe('handle', () => {
   });
 
   it('populates locals on a valid session', async () => {
-    const user = seedUser();
-    const child = testDb
-      .insert(children)
-      .values({
-        name: 'Bébé',
-        birthDate: '2024-01-01',
-        createdBy: user.id,
-        createdAt: new Date()
-      })
-      .returning()
-      .all()[0];
-    testDb
+    const user = await seedUser();
+    const child = (
+      await testDb
+        .insert(children)
+        .values({
+          name: 'Bébé',
+          birthDate: '2024-01-01',
+          createdBy: user.id,
+          createdAt: new Date()
+        })
+        .returning()
+    )[0];
+    await testDb
       .insert(memberships)
-      .values({ userId: user.id, childId: child.id, role: 'owner', createdAt: new Date() })
-      .run();
-    const session = createSession(user.id);
+      .values({ userId: user.id, childId: child.id, role: 'owner', createdAt: new Date() });
+    const session = await createSession(user.id);
 
     const { event } = makeEvent(session.id);
     const resolve = vi.fn(async () => new Response('ok'));
@@ -146,14 +147,13 @@ describe('handle', () => {
   });
 
   it('renews the cookie when session is close to expiry', async () => {
-    const user = seedUser();
-    const session = createSession(user.id);
+    const user = await seedUser();
+    const session = await createSession(user.id);
     // Force expiry into the renewal window.
-    testDb
+    await testDb
       .update(sessions)
       .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
-      .where(eq(sessions.id, session.id))
-      .run();
+      .where(eq(sessions.id, session.id));
 
     const { event, set } = makeEvent(session.id);
     const resolve = vi.fn(async () => new Response('ok'));
@@ -168,8 +168,8 @@ describe('handle', () => {
   });
 
   it('emits X-Robots-Tag noindex for authenticated responses', async () => {
-    const user = seedUser();
-    const session = createSession(user.id);
+    const user = await seedUser();
+    const session = await createSession(user.id);
     const { event } = makeEvent(session.id);
     const resolve = vi.fn(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
@@ -194,13 +194,12 @@ describe('handle', () => {
     const orig = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {
-      const user = seedUser();
-      const session = createSession(user.id);
-      testDb
+      const user = await seedUser();
+      const session = await createSession(user.id);
+      await testDb
         .update(sessions)
         .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
-        .where(eq(sessions.id, session.id))
-        .run();
+        .where(eq(sessions.id, session.id));
       const { event, set } = makeEvent(session.id);
       const resolve = vi.fn(async () => new Response('ok'));
       await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);

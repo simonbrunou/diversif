@@ -18,22 +18,23 @@ import { users, webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   mocks.generateRegistrationOptions.mockReset();
 });
 
-function seed() {
-  return testDb
-    .insert(users)
-    .values({
-      email: 'p@example.com',
-      passwordHash: 'placeholder-hash',
-      displayName: 'Parent',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+async function seed() {
+  return (
+    await testDb
+      .insert(users)
+      .values({
+        email: 'p@example.com',
+        passwordHash: 'placeholder-hash',
+        displayName: 'Parent',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
 describe('POST /passkeys/registration/options', () => {
@@ -47,8 +48,8 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('errors 401 when the user no longer exists', async () => {
-    const u = seed();
-    testDb.delete(users).where(eq(users.id, u.id)).run();
+    const u = await seed();
+    await testDb.delete(users).where(eq(users.id, u.id));
     const event = makeRouteEvent({ user: safeUser(u) });
     const r = await captureFlow(
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
@@ -58,7 +59,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('returns options, sets the challenge cookie, and stores the challenge', async () => {
-    const u = seed();
+    const u = await seed();
     mocks.generateRegistrationOptions.mockResolvedValue({
       challenge: 'big-challenge',
       rp: { id: 'localhost', name: 'Diversif' }
@@ -73,11 +74,13 @@ describe('POST /passkeys/registration/options', () => {
     expect(event.cookies.set).toHaveBeenCalled();
     const [name, token] = event.cookies.set.mock.calls[0];
     expect(name).toBe(PASSKEY_CHALLENGE_COOKIE);
-    const stored = testDb
-      .select()
-      .from(webauthnChallenges)
-      .where(eq(webauthnChallenges.token, token as string))
-      .get();
+    const stored = (
+      await testDb
+        .select()
+        .from(webauthnChallenges)
+        .where(eq(webauthnChallenges.token, token as string))
+        .limit(1)
+    )[0];
     expect(stored?.challenge).toBe('big-challenge');
     expect(stored?.userId).toBe(u.id);
 
@@ -87,7 +90,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('honours the ORIGIN env override', async () => {
-    const u = seed();
+    const u = await seed();
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
     const orig = process.env.ORIGIN;
     process.env.ORIGIN = 'https://from-env.test';
@@ -102,7 +105,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('tolerates a trailing slash on the ORIGIN env var', async () => {
-    const u = seed();
+    const u = await seed();
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
     const orig = process.env.ORIGIN;
     process.env.ORIGIN = 'https://from-env.test/';
@@ -120,7 +123,7 @@ describe('POST /passkeys/registration/options', () => {
   });
 
   it('marks the challenge cookie secure in production', async () => {
-    const u = seed();
+    const u = await seed();
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
     const orig = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';

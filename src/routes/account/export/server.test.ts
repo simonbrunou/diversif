@@ -24,24 +24,25 @@ beforeAll(async () => {
   realExport = actual.exportUserData;
 });
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   // Default the spy to the real implementation; individual tests can
   // override it to simulate the oversize path without seeding 50k rows.
   exportSpy.fn.mockImplementation((userId: number) => realExport(userId));
 });
 
 async function seedUser() {
-  return testDb
-    .insert(users)
-    .values({
-      email: 'exp@example.com',
-      passwordHash: 'h',
-      displayName: 'E',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+  return (
+    await testDb
+      .insert(users)
+      .values({
+        email: 'exp@example.com',
+        passwordHash: 'h',
+        displayName: 'E',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
 describe('account export GET', () => {
@@ -62,17 +63,16 @@ describe('account export GET', () => {
     const json = JSON.parse(await response.text());
     expect(json.profile.email).toBe('exp@example.com');
 
-    const fresh = testDb.select().from(users).where(eq(users.id, u.id)).get();
+    const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
     expect(fresh?.lastExportAt).toBeInstanceOf(Date);
   });
 
   it('throttles a second request within one minute', async () => {
     const u = await seedUser();
-    testDb
+    await testDb
       .update(users)
       .set({ lastExportAt: new Date(Date.now() - 5_000) })
-      .where(eq(users.id, u.id))
-      .run();
+      .where(eq(users.id, u.id));
     const event = makeRouteEvent({ user: safeUser(u) });
     const r = await captureFlow(() => GET(event as unknown as Parameters<typeof GET>[0]));
     expect(r.kind).toBe('error');
@@ -81,11 +81,10 @@ describe('account export GET', () => {
 
   it('allows a new export after the throttle window has passed', async () => {
     const u = await seedUser();
-    testDb
+    await testDb
       .update(users)
       .set({ lastExportAt: new Date(Date.now() - 120_000) })
-      .where(eq(users.id, u.id))
-      .run();
+      .where(eq(users.id, u.id));
     const event = makeRouteEvent({ user: safeUser(u) });
     const response = (await GET(event as unknown as Parameters<typeof GET>[0])) as Response;
     expect(response.status).toBe(200);
@@ -123,6 +122,6 @@ describe('account export GET', () => {
       throw new Error('unexpected');
     });
     const event = makeRouteEvent({ user: safeUser(u) });
-    expect(() => GET(event as unknown as Parameters<typeof GET>[0])).toThrow('unexpected');
+    await expect(GET(event as unknown as Parameters<typeof GET>[0])).rejects.toThrow('unexpected');
   });
 });

@@ -17,22 +17,23 @@ import { users, webauthnChallenges, passkeys } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, createChallenge } from '$lib/server/passkeys';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   mocks.verifyRegistrationResponse.mockReset();
 });
 
-function seedUser() {
-  return testDb
-    .insert(users)
-    .values({
-      email: 'p@example.com',
-      passwordHash: 'placeholder-hash',
-      displayName: 'Parent',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+async function seedUser() {
+  return (
+    await testDb
+      .insert(users)
+      .values({
+        email: 'p@example.com',
+        passwordHash: 'placeholder-hash',
+        displayName: 'Parent',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
 function makeReq(opts: {
@@ -68,7 +69,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('errors 400 on invalid JSON', async () => {
-    const u = seedUser();
+    const u = await seedUser();
     const event = makeReq({ user: safeUser(u), body: 'not json' });
     const r = await captureFlow(
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
@@ -78,7 +79,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('errors 400 when the response body is missing', async () => {
-    const u = seedUser();
+    const u = await seedUser();
     const event = makeReq({ user: safeUser(u), body: { name: 'X' } });
     const r = await captureFlow(
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
@@ -88,7 +89,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('errors 400 when the challenge cookie is missing', async () => {
-    const u = seedUser();
+    const u = await seedUser();
     const event = makeReq({
       user: safeUser(u),
       body: { response: { id: 'cred' } }
@@ -100,7 +101,7 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('errors 400 when the challenge belongs to a different user', async () => {
-    const u = seedUser();
+    const u = await seedUser();
     const other = await testDb
       .insert(users)
       .values({
@@ -109,9 +110,8 @@ describe('POST /passkeys/registration/verify', () => {
         displayName: 'B',
         createdAt: new Date()
       })
-      .returning()
-      .all();
-    const c = createChallenge({
+      .returning();
+    const c = await createChallenge({
       challenge: 'ch',
       purpose: 'registration',
       userId: other[0].id
@@ -128,8 +128,8 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('returns ok with the public passkey on success', async () => {
-    const u = seedUser();
-    const c = createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
+    const u = await seedUser();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
     mocks.verifyRegistrationResponse.mockResolvedValue({
       verified: true,
       registrationInfo: {
@@ -149,15 +149,17 @@ describe('POST /passkeys/registration/verify', () => {
     expect(body.ok).toBe(true);
     expect(body.passkey.id).toBe('new-cred');
     expect(body.passkey.deviceType).toBe('multiDevice');
-    const stored = testDb.select().from(passkeys).where(eq(passkeys.id, 'new-cred')).get();
+    const stored = (
+      await testDb.select().from(passkeys).where(eq(passkeys.id, 'new-cred')).limit(1)
+    )[0];
     expect(stored?.userId).toBe(u.id);
     // Challenge cookie was cleared.
     expect(event.cookies.delete).toHaveBeenCalled();
   });
 
   it('returns 400 when verification fails', async () => {
-    const u = seedUser();
-    const c = createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
+    const u = await seedUser();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
     mocks.verifyRegistrationResponse.mockResolvedValue({ verified: false });
     const event = makeReq({
       user: safeUser(u),
@@ -171,8 +173,8 @@ describe('POST /passkeys/registration/verify', () => {
   });
 
   it('removes the cookie on failure as well', async () => {
-    const u = seedUser();
-    const c = createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
+    const u = await seedUser();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
     mocks.verifyRegistrationResponse.mockResolvedValue({ verified: false });
     const event = makeReq({
       user: safeUser(u),
@@ -181,17 +183,19 @@ describe('POST /passkeys/registration/verify', () => {
     });
     await POST(event as unknown as Parameters<typeof POST>[0]);
     expect(event.cookies.delete).toHaveBeenCalledWith(PASSKEY_CHALLENGE_COOKIE, { path: '/' });
-    const stillThere = testDb
-      .select()
-      .from(webauthnChallenges)
-      .where(eq(webauthnChallenges.token, c.token))
-      .get();
+    const stillThere = (
+      await testDb
+        .select()
+        .from(webauthnChallenges)
+        .where(eq(webauthnChallenges.token, c.token))
+        .limit(1)
+    )[0];
     expect(stillThere).toBeUndefined();
   });
 
   it('falls back to a default name when none is provided', async () => {
-    const u = seedUser();
-    const c = createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
+    const u = await seedUser();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'registration', userId: u.id });
     mocks.verifyRegistrationResponse.mockResolvedValue({
       verified: true,
       registrationInfo: {
@@ -206,7 +210,9 @@ describe('POST /passkeys/registration/verify', () => {
       body: { response: { id: 'cred-1', response: {} } }
     });
     await POST(event as unknown as Parameters<typeof POST>[0]);
-    const stored = testDb.select().from(passkeys).where(eq(passkeys.id, 'cred-1')).get();
+    const stored = (
+      await testDb.select().from(passkeys).where(eq(passkeys.id, 'cred-1')).limit(1)
+    )[0];
     expect(stored?.name).toBe('Passkey');
   });
 });

@@ -97,46 +97,49 @@ export async function seedUser(
     passwordHash?: string;
   } = {}
 ) {
-  return testDb
-    .insert(schema.users)
-    .values({
-      email: (opts.email ?? 'parent@example.com').toLowerCase(),
-      passwordHash: opts.passwordHash ?? 'placeholder-hash',
-      displayName: opts.displayName ?? 'Parent',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+  return (
+    await testDb
+      .insert(schema.users)
+      .values({
+        email: (opts.email ?? 'parent@example.com').toLowerCase(),
+        passwordHash: opts.passwordHash ?? 'placeholder-hash',
+        displayName: opts.displayName ?? 'Parent',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
-export function seedChild(opts: { name?: string; birthDate?: string; createdBy: number }) {
-  return testDb
-    .insert(schema.children)
-    .values({
-      name: opts.name ?? 'Bébé',
-      birthDate: opts.birthDate ?? '2024-01-01',
-      createdBy: opts.createdBy,
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+export async function seedChild(opts: { name?: string; birthDate?: string; createdBy: number }) {
+  return (
+    await testDb
+      .insert(schema.children)
+      .values({
+        name: opts.name ?? 'Bébé',
+        birthDate: opts.birthDate ?? '2024-01-01',
+        createdBy: opts.createdBy,
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
-export function seedMembership(opts: {
+export async function seedMembership(opts: {
   userId: number;
   childId: number;
   role?: 'owner' | 'member';
-}): Membership {
-  return testDb
-    .insert(schema.memberships)
-    .values({
-      userId: opts.userId,
-      childId: opts.childId,
-      role: opts.role ?? 'owner',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+}): Promise<Membership> {
+  return (
+    await testDb
+      .insert(schema.memberships)
+      .values({
+        userId: opts.userId,
+        childId: opts.childId,
+        role: opts.role ?? 'owner',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
 export function safeUser(u: Omit<typeof schema.users.$inferSelect, 'passwordHash'>): SafeUser {

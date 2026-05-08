@@ -67,6 +67,7 @@ export async function loadDiversityMetrics(
         WHERE ${foodEntries.childId} = ${childId}
           AND ${foods.category} != 'autre'`
   );
+  /* v8 ignore next — pg COUNT(*) always returns a single row */
   const distinctCategories = Number(distinctRes.rows[0]?.count ?? 0);
 
   // For each food, take the timestamp of its FIRST appearance (introduction).
@@ -86,21 +87,23 @@ export async function loadDiversityMetrics(
   const lastNewFoodAt =
     lastNewFoodRow?.given_at != null ? new Date(lastNewFoodRow.given_at).getTime() : null;
 
-  // Foods given 1–2 times whose worst reaction is 'ras' or 'inconfort'
-  const repeatRes = await db.execute<{ food_id: number; n: string; worst: number }>(
-    sql`SELECT ${foodEntries.foodId} as food_id,
-               COUNT(*)::int as n,
-               MAX(CASE ${foodEntries.reaction}
-                     WHEN 'reaction' THEN 2
-                     WHEN 'inconfort' THEN 1
-                     ELSE 0 END) as worst
-        FROM ${foodEntries}
-        WHERE ${foodEntries.childId} = ${childId}
-        GROUP BY ${foodEntries.foodId}
-        HAVING COUNT(*) <= 2 AND MAX(CASE ${foodEntries.reaction}
-                                       WHEN 'reaction' THEN 2
-                                       WHEN 'inconfort' THEN 1
-                                       ELSE 0 END) <= 1`
+  // Foods given 1–2 times whose worst reaction is 'ras' or 'inconfort'.
+  // Filter via a wrapping WHERE rather than HAVING — pg-mem can't traverse a
+  // HAVING clause that contains MAX(CASE ... END), and the rewrite is also
+  // friendlier to query planners.
+  const repeatRes = await db.execute<{ food_id: number; n: number; worst: number }>(
+    sql`SELECT food_id, n, worst FROM (
+          SELECT ${foodEntries.foodId} as food_id,
+                 COUNT(*)::int as n,
+                 MAX(CASE ${foodEntries.reaction}
+                       WHEN 'reaction' THEN 2
+                       WHEN 'inconfort' THEN 1
+                       ELSE 0 END) as worst
+          FROM ${foodEntries}
+          WHERE ${foodEntries.childId} = ${childId}
+          GROUP BY ${foodEntries.foodId}
+        ) sub
+        WHERE n <= 2 AND worst <= 1`
   );
   const repeatExposureCount = repeatRes.rows.length;
 
@@ -121,6 +124,8 @@ export type RepeatCandidate = {
 };
 
 export async function loadRepeatCandidates(childId: number, limit = 5): Promise<RepeatCandidate[]> {
+  // Same wrapping-WHERE shape as loadDiversityMetrics' repeat query — see
+  // comment there for why we don't use HAVING.
   const res = await db.execute<{
     food_id: number;
     food_name: string;
@@ -129,23 +134,22 @@ export async function loadRepeatCandidates(childId: number, limit = 5): Promise<
     last_at: Date;
     worst: number;
   }>(
-    sql`SELECT ${foodEntries.foodId} as food_id,
-               ${foods.name} as food_name,
-               ${foods.category} as category,
-               COUNT(*)::int as n,
-               MAX(${foodEntries.givenAt}) as last_at,
-               MAX(CASE ${foodEntries.reaction}
-                     WHEN 'reaction' THEN 2
-                     WHEN 'inconfort' THEN 1
-                     ELSE 0 END) as worst
-        FROM ${foodEntries}
-        INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
-        WHERE ${foodEntries.childId} = ${childId}
-        GROUP BY ${foodEntries.foodId}, ${foods.name}, ${foods.category}
-        HAVING COUNT(*) <= 2 AND MAX(CASE ${foodEntries.reaction}
-                                       WHEN 'reaction' THEN 2
-                                       WHEN 'inconfort' THEN 1
-                                       ELSE 0 END) <= 1
+    sql`SELECT food_id, food_name, category, n, last_at, worst FROM (
+          SELECT ${foodEntries.foodId} as food_id,
+                 ${foods.name} as food_name,
+                 ${foods.category} as category,
+                 COUNT(*)::int as n,
+                 MAX(${foodEntries.givenAt}) as last_at,
+                 MAX(CASE ${foodEntries.reaction}
+                       WHEN 'reaction' THEN 2
+                       WHEN 'inconfort' THEN 1
+                       ELSE 0 END) as worst
+          FROM ${foodEntries}
+          INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
+          WHERE ${foodEntries.childId} = ${childId}
+          GROUP BY ${foodEntries.foodId}, ${foods.name}, ${foods.category}
+        ) sub
+        WHERE n <= 2 AND worst <= 1
         ORDER BY last_at ASC
         LIMIT ${limit}`
   );
@@ -179,18 +183,21 @@ export async function loadWeeklyRecap(
         WHERE ${foodEntries.childId} = ${childId}
           AND ${foodEntries.givenAt} >= ${since}`
   );
+  /* v8 ignore next — pg COUNT(*) always returns a single row */
   const entries = Number(entriesRes.rows[0]?.count ?? 0);
 
-  // First-ever appearance per food, kept only if that first appearance is in the window.
+  // First-ever appearance per food, kept only if that first appearance is in
+  // the window. Wrap with WHERE rather than HAVING so pg-mem can plan it.
   const newFoodsRes = await db.execute<{ count: string }>(
     sql`SELECT COUNT(*)::text as count FROM (
           SELECT ${foodEntries.foodId} as food_id, MIN(${foodEntries.givenAt}) as first_at
           FROM ${foodEntries}
           WHERE ${foodEntries.childId} = ${childId}
           GROUP BY ${foodEntries.foodId}
-          HAVING MIN(${foodEntries.givenAt}) >= ${since}
-        ) firsts`
+        ) firsts
+        WHERE first_at >= ${since}`
   );
+  /* v8 ignore next — pg COUNT(*) always returns a single row */
   const newFoods = Number(newFoodsRes.rows[0]?.count ?? 0);
 
   // First-ever appearance per allergenType, restricted to non-null allergens.
@@ -202,9 +209,10 @@ export async function loadWeeklyRecap(
           WHERE ${foodEntries.childId} = ${childId}
             AND ${foods.allergenType} IS NOT NULL
           GROUP BY ${foods.allergenType}
-          HAVING MIN(${foodEntries.givenAt}) >= ${since}
-        ) firsts`
+        ) firsts
+        WHERE first_at >= ${since}`
   );
+  /* v8 ignore next — pg COUNT(*) always returns a single row */
   const newAllergens = Number(newAllergensRes.rows[0]?.count ?? 0);
 
   return { entries, newFoods, newAllergens };

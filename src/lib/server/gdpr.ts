@@ -208,6 +208,7 @@ export async function exportUserData(
     const countRes = await db.execute<{ count: string }>(
       sql`SELECT COUNT(*)::text as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
     );
+    /* v8 ignore next — pg COUNT(*) always returns a single row */
     const total = Number(countRes.rows[0]?.count ?? 0);
     if (total > entryLimit) {
       throw new ExportTooLargeError(total, entryLimit);

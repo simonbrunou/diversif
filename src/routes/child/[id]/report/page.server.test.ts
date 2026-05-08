@@ -7,34 +7,35 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { load } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function setup() {
   const u = await seedUser();
-  const c = seedChild({ createdBy: u.id });
+  const c = await seedChild({ createdBy: u.id });
   return { u, c };
 }
 
-function seedFood(name: string, category: string, allergen: string | null = null) {
-  return testDb
-    .insert(foods)
-    .values({
-      name,
-      category,
-      isMajorAllergen: allergen != null,
-      allergenType: allergen,
-      suggestedAgeMonths: 6,
-      notes: null,
-      isCustom: false,
-      customForChildId: null
-    })
-    .returning()
-    .all()[0];
+async function seedFood(name: string, category: string, allergen: string | null = null) {
+  return (
+    await testDb
+      .insert(foods)
+      .values({
+        name,
+        category,
+        isMajorAllergen: allergen != null,
+        allergenType: allergen,
+        suggestedAgeMonths: 6,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+  )[0];
 }
 
-function logEntry(
+async function logEntry(
   childId: number,
   foodId: number,
   userId: number,
@@ -42,19 +43,20 @@ function logEntry(
   reaction: 'ras' | 'inconfort' | 'reaction' = 'ras',
   notes: string | null = null
 ) {
-  return testDb
-    .insert(foodEntries)
-    .values({
-      childId,
-      foodId,
-      givenAt,
-      reaction,
-      notes,
-      loggedBy: userId,
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+  return (
+    await testDb
+      .insert(foodEntries)
+      .values({
+        childId,
+        foodId,
+        givenAt,
+        reaction,
+        notes,
+        loggedBy: userId,
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
 describe('child/[id]/report load', () => {
@@ -75,12 +77,12 @@ describe('child/[id]/report load', () => {
 
   it('aggregates per-food (count, first/last, worst reaction) and groups by category', async () => {
     const { u, c } = await setup();
-    const carrot = seedFood('Carotte', 'legumes');
-    const apple = seedFood('Pomme', 'fruits');
+    const carrot = await seedFood('Carotte', 'legumes');
+    const apple = await seedFood('Pomme', 'fruits');
 
-    logEntry(c.id, carrot.id, u.id, new Date('2024-05-01T10:00:00Z'), 'ras');
-    logEntry(c.id, carrot.id, u.id, new Date('2024-05-08T10:00:00Z'), 'inconfort');
-    logEntry(c.id, apple.id, u.id, new Date('2024-05-10T10:00:00Z'), 'ras');
+    await logEntry(c.id, carrot.id, u.id, new Date('2024-05-01T10:00:00Z'), 'ras');
+    await logEntry(c.id, carrot.id, u.id, new Date('2024-05-08T10:00:00Z'), 'inconfort');
+    await logEntry(c.id, apple.id, u.id, new Date('2024-05-10T10:00:00Z'), 'ras');
 
     const event = makeRouteEvent({
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
@@ -99,9 +101,9 @@ describe('child/[id]/report load', () => {
 
   it('marks only introduced allergens as such and bubbles the worst reaction to the row', async () => {
     const { u, c } = await setup();
-    const peanut = seedFood('Beurre cacahuète', 'allergenes', 'arachide');
-    logEntry(c.id, peanut.id, u.id, new Date('2024-05-01T10:00:00Z'), 'ras');
-    logEntry(c.id, peanut.id, u.id, new Date('2024-05-05T10:00:00Z'), 'inconfort');
+    const peanut = await seedFood('Beurre cacahuète', 'allergenes', 'arachide');
+    await logEntry(c.id, peanut.id, u.id, new Date('2024-05-01T10:00:00Z'), 'ras');
+    await logEntry(c.id, peanut.id, u.id, new Date('2024-05-05T10:00:00Z'), 'inconfort');
 
     const event = makeRouteEvent({
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
@@ -123,12 +125,12 @@ describe('child/[id]/report load', () => {
 
   it('returns every non-RAS entry in the notable timeline (no silent cap)', async () => {
     const { u, c } = await setup();
-    const f = seedFood('Pomme', 'fruits');
+    const f = await seedFood('Pomme', 'fruits');
     const N = 35; // larger than the previous 30-entry cap we removed
     const start = Date.UTC(2024, 4, 1, 10);
     const DAY = 24 * 60 * 60 * 1000;
     for (let i = 0; i < N; i++) {
-      logEntry(c.id, f.id, u.id, new Date(start + i * DAY), 'inconfort');
+      await logEntry(c.id, f.id, u.id, new Date(start + i * DAY), 'inconfort');
     }
     const event = makeRouteEvent({
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
@@ -139,11 +141,25 @@ describe('child/[id]/report load', () => {
 
   it('surfaces only non-RAS reactions in the notable timeline and includes notes', async () => {
     const { u, c } = await setup();
-    const banana = seedFood('Banane', 'fruits');
-    const fish = seedFood('Saumon', 'poissons', 'poisson');
+    const banana = await seedFood('Banane', 'fruits');
+    const fish = await seedFood('Saumon', 'poissons', 'poisson');
 
-    logEntry(c.id, banana.id, u.id, new Date('2024-05-01T10:00:00Z'), 'ras', 'OK au petit déj');
-    logEntry(c.id, fish.id, u.id, new Date('2024-05-02T10:00:00Z'), 'reaction', 'urticaire 30min');
+    await logEntry(
+      c.id,
+      banana.id,
+      u.id,
+      new Date('2024-05-01T10:00:00Z'),
+      'ras',
+      'OK au petit déj'
+    );
+    await logEntry(
+      c.id,
+      fish.id,
+      u.id,
+      new Date('2024-05-02T10:00:00Z'),
+      'reaction',
+      'urticaire 30min'
+    );
 
     const event = makeRouteEvent({
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
@@ -157,19 +173,19 @@ describe('child/[id]/report load', () => {
 
   it('aggregates allergens from a mixed entries fixture', async () => {
     const { u, c } = await setup();
-    const oeuf = seedFood('Œuf', 'proteines', 'oeuf');
-    const arachide = seedFood('Arachide', 'proteines', 'arachide');
-    const carotte = seedFood('Carotte', 'legumes', null);
+    const oeuf = await seedFood('Œuf', 'proteines', 'oeuf');
+    const arachide = await seedFood('Arachide', 'proteines', 'arachide');
+    const carotte = await seedFood('Carotte', 'legumes', null);
 
     // 3 oeuf entries: ras, inconfort, ras → worst=inconfort, exposures=3
-    logEntry(c.id, oeuf.id, u.id, new Date('2026-04-01'), 'ras');
-    logEntry(c.id, oeuf.id, u.id, new Date('2026-04-15'), 'inconfort');
-    logEntry(c.id, oeuf.id, u.id, new Date('2026-05-01'), 'ras');
+    await logEntry(c.id, oeuf.id, u.id, new Date('2026-04-01'), 'ras');
+    await logEntry(c.id, oeuf.id, u.id, new Date('2026-04-15'), 'inconfort');
+    await logEntry(c.id, oeuf.id, u.id, new Date('2026-05-01'), 'ras');
     // 1 arachide entry: reaction → worst=reaction, exposures=1
-    logEntry(c.id, arachide.id, u.id, new Date('2026-04-20'), 'reaction');
+    await logEntry(c.id, arachide.id, u.id, new Date('2026-04-20'), 'reaction');
     // 2 non-allergen entries: should NOT appear in allergens output
-    logEntry(c.id, carotte.id, u.id, new Date('2026-04-10'), 'ras');
-    logEntry(c.id, carotte.id, u.id, new Date('2026-04-12'), 'ras');
+    await logEntry(c.id, carotte.id, u.id, new Date('2026-04-10'), 'ras');
+    await logEntry(c.id, carotte.id, u.id, new Date('2026-04-12'), 'ras');
 
     const data = await load(
       makeRouteEvent({

@@ -15,14 +15,14 @@ import { children, invitations, memberships } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function setup(opts: { role?: 'owner' | 'member' } = {}) {
   const u = await seedUser();
-  const c = seedChild({ createdBy: u.id, name: 'Bébé' });
-  const m = seedMembership({ userId: u.id, childId: c.id, role: opts.role ?? 'owner' });
+  const c = await seedChild({ createdBy: u.id, name: 'Bébé' });
+  const m = await seedMembership({ userId: u.id, childId: c.id, role: opts.role ?? 'owner' });
   return { u, c, m };
 }
 
@@ -38,40 +38,37 @@ describe('settings load', () => {
 
   it('returns members + active invitations + role for the user', async () => {
     const { u, c, m } = await setup();
-    testDb
-      .insert(invitations)
-      .values([
-        {
-          code: 'BEBE-AAAAAA',
-          childId: c.id,
-          createdBy: u.id,
-          createdAt: new Date(),
-          expiresAt: new Date(Date.now() + 86400_000),
-          usedAt: null,
-          usedBy: null
-        },
-        {
-          // Expired — should be excluded.
-          code: 'BEBE-BBBBBB',
-          childId: c.id,
-          createdBy: u.id,
-          createdAt: new Date(),
-          expiresAt: new Date(Date.now() - 86400_000),
-          usedAt: null,
-          usedBy: null
-        },
-        {
-          // Used — should be excluded.
-          code: 'BEBE-CCCCCC',
-          childId: c.id,
-          createdBy: u.id,
-          createdAt: new Date(),
-          expiresAt: new Date(Date.now() + 86400_000),
-          usedAt: new Date(),
-          usedBy: u.id
-        }
-      ])
-      .run();
+    await testDb.insert(invitations).values([
+      {
+        code: 'BEBE-AAAAAA',
+        childId: c.id,
+        createdBy: u.id,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 86400_000),
+        usedAt: null,
+        usedBy: null
+      },
+      {
+        // Expired — should be excluded.
+        code: 'BEBE-BBBBBB',
+        childId: c.id,
+        createdBy: u.id,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() - 86400_000),
+        usedAt: null,
+        usedBy: null
+      },
+      {
+        // Used — should be excluded.
+        code: 'BEBE-CCCCCC',
+        childId: c.id,
+        createdBy: u.id,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 86400_000),
+        usedAt: new Date(),
+        usedBy: u.id
+      }
+    ]);
 
     const out = await load(
       makeRouteEvent({
@@ -144,7 +141,7 @@ describe('settings updateChild action', () => {
       event as unknown as Parameters<NonNullable<typeof actions.updateChild>>[0]
     )) as { success: string };
     expect(r.success).toBeTruthy();
-    const fresh = testDb.select().from(children).where(eq(children.id, c.id)).get();
+    const fresh = (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0];
     expect(fresh?.name).toBe('Lulu');
     expect(fresh?.birthDate).toBe('2024-02-15');
   });
@@ -162,7 +159,9 @@ describe('settings createInvitation action', () => {
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
     )) as { success: string; code: string };
     expect(r.code).toMatch(/^BEBE-/);
-    const stored = testDb.select().from(invitations).where(eq(invitations.code, r.code)).get();
+    const stored = (
+      await testDb.select().from(invitations).where(eq(invitations.code, r.code)).limit(1)
+    )[0];
     expect(stored).toBeDefined();
   });
 });
@@ -184,18 +183,15 @@ describe('settings revokeInvitation action', () => {
 
   it('deletes the matching invitation', async () => {
     const { u, c, m } = await setup();
-    testDb
-      .insert(invitations)
-      .values({
-        code: 'BEBE-ZZZZZZ',
-        childId: c.id,
-        createdBy: u.id,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 86400_000),
-        usedAt: null,
-        usedBy: null
-      })
-      .run();
+    await testDb.insert(invitations).values({
+      code: 'BEBE-ZZZZZZ',
+      childId: c.id,
+      createdBy: u.id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 86400_000),
+      usedAt: null,
+      usedBy: null
+    });
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
@@ -206,11 +202,9 @@ describe('settings revokeInvitation action', () => {
       event as unknown as Parameters<NonNullable<typeof actions.revokeInvitation>>[0]
     )) as { success: string };
     expect(r.success).toBeTruthy();
-    const stored = testDb
-      .select()
-      .from(invitations)
-      .where(eq(invitations.code, 'BEBE-ZZZZZZ'))
-      .get();
+    const stored = (
+      await testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ZZZZZZ')).limit(1)
+    )[0];
     expect(stored).toBeUndefined();
   });
 });
@@ -248,7 +242,7 @@ describe('settings removeMember action', () => {
   it('removes another member', async () => {
     const { u, c, m } = await setup();
     const other = await seedUser({ email: 'other@example.com' });
-    seedMembership({ userId: other.id, childId: c.id, role: 'member' });
+    await seedMembership({ userId: other.id, childId: c.id, role: 'member' });
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
@@ -259,7 +253,7 @@ describe('settings removeMember action', () => {
       event as unknown as Parameters<NonNullable<typeof actions.removeMember>>[0]
     )) as { success: string };
     expect(r.success).toBeTruthy();
-    const remaining = testDb.select().from(memberships).where(eq(memberships.childId, c.id)).all();
+    const remaining = await testDb.select().from(memberships).where(eq(memberships.childId, c.id));
     expect(remaining.find((mm) => mm.userId === other.id)).toBeUndefined();
   });
 });
@@ -281,9 +275,9 @@ describe('settings leaveChild action', () => {
   it('member can leave + redirects /', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const me = await seedUser({ email: 'me@example.com' });
-    const c = seedChild({ createdBy: owner.id });
-    seedMembership({ userId: owner.id, childId: c.id, role: 'owner' });
-    const m = seedMembership({ userId: me.id, childId: c.id, role: 'member' });
+    const c = await seedChild({ createdBy: owner.id });
+    await seedMembership({ userId: owner.id, childId: c.id, role: 'owner' });
+    const m = await seedMembership({ userId: me.id, childId: c.id, role: 'member' });
     const event = makeRouteEvent({
       user: safeUser(me),
       memberships: [m],
@@ -294,7 +288,7 @@ describe('settings leaveChild action', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe('/');
-    const remaining = testDb.select().from(memberships).where(eq(memberships.userId, me.id)).all();
+    const remaining = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
     expect(remaining.length).toBe(0);
   });
 });
@@ -316,7 +310,7 @@ describe('settings deleteChild action', () => {
 
   it('redirects when child no longer exists', async () => {
     const { u, c, m } = await setup();
-    testDb.delete(children).where(eq(children.id, c.id)).run();
+    await testDb.delete(children).where(eq(children.id, c.id));
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
@@ -347,6 +341,8 @@ describe('settings deleteChild action', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe('/');
-    expect(testDb.select().from(children).where(eq(children.id, c.id)).get()).toBeUndefined();
+    expect(
+      (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0]
+    ).toBeUndefined();
   });
 });

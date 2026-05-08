@@ -15,8 +15,8 @@ import { invitations, memberships } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function seedInvite(opts: {
@@ -26,18 +26,15 @@ async function seedInvite(opts: {
   expiresAt?: Date;
   usedAt?: Date | null;
 }) {
-  testDb
-    .insert(invitations)
-    .values({
-      code: opts.code,
-      childId: opts.childId,
-      createdBy: opts.createdBy,
-      createdAt: new Date(),
-      expiresAt: opts.expiresAt ?? new Date(Date.now() + 86400_000),
-      usedAt: opts.usedAt ?? null,
-      usedBy: null
-    })
-    .run();
+  await testDb.insert(invitations).values({
+    code: opts.code,
+    childId: opts.childId,
+    createdBy: opts.createdBy,
+    createdAt: new Date(),
+    expiresAt: opts.expiresAt ?? new Date(Date.now() + 86400_000),
+    usedAt: opts.usedAt ?? null,
+    usedBy: null
+  });
 }
 
 describe('join/[code] load', () => {
@@ -76,8 +73,8 @@ describe('join/[code] load', () => {
   it('redirects to /child/{id} when the user is already a member', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const me = await seedUser({ email: 'me@example.com' });
-    const child = seedChild({ createdBy: owner.id });
-    seedMembership({ userId: me.id, childId: child.id, role: 'member' });
+    const child = await seedChild({ createdBy: owner.id });
+    await seedMembership({ userId: me.id, childId: child.id, role: 'member' });
     await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
 
     const event = makeRouteEvent({
@@ -92,7 +89,7 @@ describe('join/[code] load', () => {
   it('returns the child preview for a valid invite', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const me = await seedUser({ email: 'me@example.com' });
-    const child = seedChild({ createdBy: owner.id, name: 'Bébé' });
+    const child = await seedChild({ createdBy: owner.id, name: 'Bébé' });
     await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
 
     const event = makeRouteEvent({
@@ -150,8 +147,8 @@ describe('join/[code] default action', () => {
   it('redirects when user is already a member', async () => {
     const owner = await seedUser({ email: 'o@example.com' });
     const me = await seedUser({ email: 'm@example.com' });
-    const child = seedChild({ createdBy: owner.id });
-    seedMembership({ userId: me.id, childId: child.id, role: 'member' });
+    const child = await seedChild({ createdBy: owner.id });
+    await seedMembership({ userId: me.id, childId: child.id, role: 'member' });
     await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
 
     const event = makeRouteEvent({
@@ -168,7 +165,7 @@ describe('join/[code] default action', () => {
   it('joins the child + consumes the invite + redirects on success', async () => {
     const owner = await seedUser({ email: 'o@example.com' });
     const me = await seedUser({ email: 'm@example.com' });
-    const child = seedChild({ createdBy: owner.id });
+    const child = await seedChild({ createdBy: owner.id });
     await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
 
     const event = makeRouteEvent({
@@ -180,11 +177,13 @@ describe('join/[code] default action', () => {
     );
     expect(r.kind).toBe('redirect');
 
-    const memb = testDb.select().from(memberships).where(eq(memberships.userId, me.id)).all();
+    const memb = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
     expect(memb.length).toBe(1);
     expect(memb[0].role).toBe('member');
 
-    const inv = testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCDEF')).get();
+    const inv = (
+      await testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCDEF')).limit(1)
+    )[0];
     expect(inv?.usedAt).not.toBeNull();
     expect(inv?.usedBy).toBe(me.id);
   });

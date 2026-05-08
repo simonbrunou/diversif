@@ -8,23 +8,24 @@ import { createSession, SESSION_COOKIE, validateSession } from '$lib/server/auth
 import { users } from '$lib/server/db/schema';
 import { POST } from './+server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 describe('logout POST', () => {
   it('invalidates the session and clears the cookie', async () => {
-    const u = testDb
-      .insert(users)
-      .values({
-        email: 'a@example.com',
-        passwordHash: 'placeholder-hash',
-        displayName: 'A',
-        createdAt: new Date()
-      })
-      .returning()
-      .all()[0];
-    const session = createSession(u.id);
+    const u = (
+      await testDb
+        .insert(users)
+        .values({
+          email: 'a@example.com',
+          passwordHash: 'placeholder-hash',
+          displayName: 'A',
+          createdAt: new Date()
+        })
+        .returning()
+    )[0];
+    const session = await createSession(u.id);
 
     const event = makeRouteEvent({
       user: safeUser(u),
@@ -33,7 +34,7 @@ describe('logout POST', () => {
     const result = await captureFlow(() => POST(event as unknown as Parameters<typeof POST>[0]));
     expect(result.kind).toBe('redirect');
     if (result.kind === 'redirect') expect(result.location).toBe('/login');
-    expect(validateSession(session.id)).toBeNull();
+    expect(await validateSession(session.id)).toBeNull();
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
   });
 

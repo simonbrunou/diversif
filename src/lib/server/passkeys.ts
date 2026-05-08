@@ -134,6 +134,7 @@ export async function deletePasskey(userId: number, credentialId: string): Promi
   const result = await db
     .delete(passkeys)
     .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
+  /* v8 ignore next — node-postgres always populates rowCount for DELETE */
   return (result.rowCount ?? 0) > 0;
 }
 
@@ -148,6 +149,7 @@ export async function renamePasskey(
     .update(passkeys)
     .set({ name: trimmed.slice(0, 80) })
     .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
+  /* v8 ignore next — node-postgres always populates rowCount for UPDATE */
   return (result.rowCount ?? 0) > 0;
 }
 

@@ -15,41 +15,43 @@ import { foodEntries, foods } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function setup() {
   const u = await seedUser();
-  const c = seedChild({ createdBy: u.id });
-  const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-  const food = testDb
-    .insert(foods)
-    .values({
-      name: 'Carotte',
-      category: 'legumes',
-      isMajorAllergen: false,
-      allergenType: null,
-      suggestedAgeMonths: 4,
-      notes: null,
-      isCustom: false,
-      customForChildId: null
-    })
-    .returning()
-    .all()[0];
-  const entry = testDb
-    .insert(foodEntries)
-    .values({
-      childId: c.id,
-      foodId: food.id,
-      givenAt: new Date('2024-06-01T10:00:00Z'),
-      reaction: 'ras',
-      notes: 'init',
-      loggedBy: u.id,
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+  const c = await seedChild({ createdBy: u.id });
+  const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+  const food = (
+    await testDb
+      .insert(foods)
+      .values({
+        name: 'Carotte',
+        category: 'legumes',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+  )[0];
+  const entry = (
+    await testDb
+      .insert(foodEntries)
+      .values({
+        childId: c.id,
+        foodId: food.id,
+        givenAt: new Date('2024-06-01T10:00:00Z'),
+        reaction: 'ras',
+        notes: 'init',
+        loggedBy: u.id,
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
   return { u, c, m, food, entry };
 }
 
@@ -135,7 +137,9 @@ describe('child/[id]/log/[entryId] update action', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}/foods`);
-    const fresh = testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).get();
+    const fresh = (
+      await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).limit(1)
+    )[0];
     expect(fresh?.reaction).toBe('inconfort');
     expect(fresh?.notes).toBe('updated');
   });
@@ -195,21 +199,22 @@ describe('child/[id]/log/[entryId] update action', () => {
 
   it('fails when foodId not accessible', async () => {
     const { u, c, m, entry } = await setup();
-    const other = seedChild({ createdBy: u.id, birthDate: '2023-01-01' });
-    const otherFood = testDb
-      .insert(foods)
-      .values({
-        name: 'Autre',
-        category: 'autre',
-        isMajorAllergen: false,
-        allergenType: null,
-        suggestedAgeMonths: 0,
-        notes: null,
-        isCustom: true,
-        customForChildId: other.id
-      })
-      .returning()
-      .all()[0];
+    const other = await seedChild({ createdBy: u.id, birthDate: '2023-01-01' });
+    const otherFood = (
+      await testDb
+        .insert(foods)
+        .values({
+          name: 'Autre',
+          category: 'autre',
+          isMajorAllergen: false,
+          allergenType: null,
+          suggestedAgeMonths: 0,
+          notes: null,
+          isCustom: true,
+          customForChildId: other.id
+        })
+        .returning()
+    )[0];
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
@@ -262,7 +267,9 @@ describe('child/[id]/log/[entryId] update action', () => {
       actions.update!(event as unknown as Parameters<NonNullable<typeof actions.update>>[0])
     );
     expect(r.kind).toBe('redirect');
-    const created = testDb.select().from(foods).where(eq(foods.name, 'Plat surprise')).get();
+    const created = (
+      await testDb.select().from(foods).where(eq(foods.name, 'Plat surprise')).limit(1)
+    )[0];
     expect(created!.category).toBe('autre');
   });
 
@@ -283,7 +290,9 @@ describe('child/[id]/log/[entryId] update action', () => {
       actions.update!(event as unknown as Parameters<NonNullable<typeof actions.update>>[0])
     );
     expect(r.kind).toBe('redirect');
-    const created = testDb.select().from(foods).where(eq(foods.name, 'Velouté maison')).get();
+    const created = (
+      await testDb.select().from(foods).where(eq(foods.name, 'Velouté maison')).limit(1)
+    )[0];
     expect(created).toBeDefined();
   });
 });
@@ -302,7 +311,9 @@ describe('child/[id]/log/[entryId] delete action', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}/foods`);
-    const fresh = testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).get();
+    const fresh = (
+      await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).limit(1)
+    )[0];
     expect(fresh).toBeUndefined();
   });
 

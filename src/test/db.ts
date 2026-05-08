@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
-import { newDb, DataType, type IMemoryDb } from 'pg-mem';
+import { newDb, DataType, type IBackup, type IMemoryDb } from 'pg-mem';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { sql } from 'drizzle-orm';
 import * as schema from '$lib/server/db/schema';
@@ -65,8 +65,27 @@ type PgQueryConfig = {
   rowMode?: unknown;
 } & Record<string, unknown>;
 
+// pg-mem's emulated Pool ignores BEGIN/ROLLBACK semantically — a transaction
+// rollback would leave inserted rows behind, breaking any test that exercises
+// transactional behaviour. Emulate per-client transactions by snapshotting the
+// whole memory db on BEGIN and restoring on ROLLBACK. SAVEPOINT-based nested
+// transactions push another snapshot frame; tests don't run concurrently so
+// the global mem.backup() semantics are safe.
 function wrapClient<T extends { query: (...args: unknown[]) => unknown }>(client: T): T {
   const original = client.query.bind(client);
+  const txStack: IBackup[] = [];
+
+  function getSql(args: unknown[]): string {
+    if (args.length === 0) return '';
+    const arg = args[0];
+    if (typeof arg === 'string') return arg;
+    if (arg && typeof arg === 'object' && 'text' in arg) {
+      const t = (arg as { text: unknown }).text;
+      if (typeof t === 'string') return t;
+    }
+    return '';
+  }
+
   client.query = (async (...args: unknown[]) => {
     let arrayMode = false;
     if (args.length > 0 && args[0] && typeof args[0] === 'object') {
@@ -77,6 +96,17 @@ function wrapClient<T extends { query: (...args: unknown[]) => unknown }>(client
         args[0] = rest;
       }
     }
+
+    const trimmedSql = getSql(args).trim().replace(/;$/, '').toUpperCase();
+    if (trimmedSql === 'BEGIN' || trimmedSql.startsWith('SAVEPOINT ')) {
+      txStack.push(mem.backup());
+    } else if (trimmedSql === 'COMMIT' || trimmedSql.startsWith('RELEASE SAVEPOINT ')) {
+      txStack.pop();
+    } else if (trimmedSql === 'ROLLBACK' || trimmedSql.startsWith('ROLLBACK TO SAVEPOINT ')) {
+      const snap = txStack.pop();
+      if (snap) snap.restore();
+    }
+
     const result = (await original(...args)) as { rows?: unknown[] };
     if (arrayMode && Array.isArray(result.rows)) {
       result.rows = result.rows.map((row) =>

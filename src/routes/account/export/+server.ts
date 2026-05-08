@@ -26,6 +26,7 @@ export const GET: RequestHandler = async ({ locals }) => {
       )
     );
 
+  /* v8 ignore next — node-postgres always populates rowCount for UPDATE */
   if ((claimed.rowCount ?? 0) === 0) {
     throw error(429, 'Export déjà demandé récemment, veuillez réessayer dans une minute.');
   }

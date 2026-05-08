@@ -72,5 +72,6 @@ export async function pruneExpiredKeys(
 ): Promise<number> {
   const cutoff = new Date(Date.now() - olderThanMs);
   const result = await tx.delete(idempotencyKeys).where(lt(idempotencyKeys.createdAt, cutoff));
+  /* v8 ignore next — node-postgres always populates rowCount for DELETE */
   return result.rowCount ?? 0;
 }

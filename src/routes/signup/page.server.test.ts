@@ -10,8 +10,8 @@ import { SESSION_COOKIE } from '$lib/server/auth';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { load, actions } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   _clearAllRateLimits();
 });
 
@@ -166,25 +166,24 @@ describe('signup default action', () => {
     if (r.kind === 'redirect') expect(r.location).toBe('/');
     expect(event.cookies.set).toHaveBeenCalled();
     expect(event.cookies.set.mock.calls[0][0]).toBe(SESSION_COOKIE);
-    const created = testDb.select().from(users).where(eq(users.email, 'new@example.com')).get();
+    const created = (
+      await testDb.select().from(users).where(eq(users.email, 'new@example.com')).limit(1)
+    )[0];
     expect(created).toBeDefined();
   });
 
   it('succeeds with valid invite — adds membership and redirects to /child/{id}', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
-    const child = seedChild({ createdBy: owner.id });
-    testDb
-      .insert(invitations)
-      .values({
-        code: 'BEBE-ABCDEF',
-        childId: child.id,
-        createdBy: owner.id,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 86400_000),
-        usedAt: null,
-        usedBy: null
-      })
-      .run();
+    const child = await seedChild({ createdBy: owner.id });
+    await testDb.insert(invitations).values({
+      code: 'BEBE-ABCDEF',
+      childId: child.id,
+      createdBy: owner.id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 86400_000),
+      usedAt: null,
+      usedBy: null
+    });
 
     const event = makeRouteEvent({
       formData: form({ inviteCode: 'BEBE-ABCDEF' })
@@ -195,12 +194,16 @@ describe('signup default action', () => {
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe(`/child/${child.id}`);
 
-    const newUser = testDb.select().from(users).where(eq(users.email, 'new@example.com')).get();
+    const newUser = (
+      await testDb.select().from(users).where(eq(users.email, 'new@example.com')).limit(1)
+    )[0];
     expect(newUser).toBeDefined();
-    const memb = testDb.select().from(memberships).where(eq(memberships.userId, newUser!.id)).all();
+    const memb = await testDb.select().from(memberships).where(eq(memberships.userId, newUser!.id));
     expect(memb.length).toBe(1);
     expect(memb[0].role).toBe('member');
-    const inv = testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCDEF')).get();
+    const inv = (
+      await testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCDEF')).limit(1)
+    )[0];
     expect(inv?.usedAt).not.toBeNull();
     expect(inv?.usedBy).toBe(newUser!.id);
   });

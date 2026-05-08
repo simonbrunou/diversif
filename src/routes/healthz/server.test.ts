@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 
-const { get } = vi.hoisted(() => ({ get: vi.fn() }));
-vi.mock('$lib/server/db', () => ({ db: { get } }));
+const { execute } = vi.hoisted(() => ({ execute: vi.fn() }));
+vi.mock('$lib/server/db', () => ({ db: { execute } }));
 
 import { GET } from './+server';
 
 describe('GET /healthz', () => {
   it('returns 200 with ok payload when the DB probe succeeds', async () => {
-    get.mockReturnValueOnce({ ok: 1 });
+    execute.mockResolvedValueOnce({ rows: [{ ok: 1 }] });
     const res = await GET({} as unknown as Parameters<typeof GET>[0]);
     expect(res.status).toBe(200);
     expect(res.headers.get('cache-control')).toBe('no-store');
@@ -19,9 +19,7 @@ describe('GET /healthz', () => {
   });
 
   it('returns 503 with down payload when the DB probe throws', async () => {
-    get.mockImplementationOnce(() => {
-      throw new Error('SQLITE_CORRUPT');
-    });
+    execute.mockRejectedValueOnce(new Error('connection refused'));
     const res = await GET({} as unknown as Parameters<typeof GET>[0]);
     expect(res.status).toBe(503);
     expect(res.headers.get('cache-control')).toBe('no-store');
