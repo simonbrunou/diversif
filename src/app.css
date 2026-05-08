@@ -7,93 +7,98 @@
 
 @layer base {
   :root {
-    --background: 30 40% 98%;
-    --foreground: 162 18% 14%;
+    /* Catppuccin Latte — https://github.com/catppuccin/catppuccin
+       Pairs with Mocha (in .dark below). Primary is Catppuccin Green,
+       which is the closest match to the diversif sage brand inside the
+       palette and stays visually consistent across both themes. */
+    --background: 220 23% 95%; /* Base    #eff1f5 */
+    --foreground: 234 16% 35%; /* Text    #4c4f69 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 162 18% 14%;
-    --surface: 28 50% 95%;
+    --card: 0 0% 100%; /* pure white for raised panels */
+    --card-foreground: 234 16% 35%;
+    --surface: 220 22% 92%; /* Mantle  #e6e9ef */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 162 18% 14%;
+    --popover-foreground: 234 16% 35%;
 
-    --primary: 162 42% 38%;
+    --primary: 109 58% 40%; /* Green   #40a02b */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 48 50% 94%;
-    --secondary-foreground: 162 24% 20%;
+    --secondary: 220 21% 89%; /* Crust   #dce0e8 */
+    --secondary-foreground: 234 16% 35%;
 
-    --muted: 30 20% 94%;
-    --muted-foreground: 162 10% 42%;
+    --muted: 220 21% 89%; /* Crust */
+    --muted-foreground: 233 10% 47%; /* Subtext0 #6c6f85 */
 
-    --accent: 28 80% 92%;
-    --accent-foreground: 18 60% 24%;
+    --accent: 223 16% 83%; /* Surface0 #ccd0da */
+    --accent-foreground: 234 16% 35%;
 
-    --destructive: 0 65% 52%;
+    --destructive: 347 87% 44%; /* Red     #d20f39 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 22% 88%;
-    --input: 30 22% 88%;
-    --ring: 162 42% 42%;
+    --border: 220 21% 89%; /* Crust */
+    --input: 220 21% 89%;
+    --ring: 109 58% 40%; /* Green */
 
     --radius: 1rem;
 
-    --reaction-ras: 152 44% 40%;
-    --reaction-inconfort: 28 82% 50%;
-    --reaction-reaction: 358 66% 56%;
+    --reaction-ras: 109 58% 40%; /* Green   #40a02b */
+    --reaction-inconfort: 22 99% 52%; /* Peach   #fe640b */
+    --reaction-reaction: 347 87% 44%; /* Red     #d20f39 */
 
     --success: var(--reaction-ras);
     --warning: var(--reaction-inconfort);
-    --info: 205 75% 55%;
+    --info: 197 97% 46%; /* Sky     #04a5e5 */
 
-    --accent-peach: 20 85% 75%;
-    --accent-butter: 45 90% 78%;
-    --accent-sky: 200 75% 78%;
-    --accent-mint: 155 50% 78%;
-    --accent-lilac: 280 50% 82%;
+    --accent-peach: 22 99% 75%; /* Peach lifted to pastel for soft tints */
+    --accent-butter: 35 77% 78%; /* Yellow lifted */
+    --accent-sky: 197 80% 78%; /* Sky lifted */
+    --accent-mint: 170 50% 78%; /* Teal lifted */
+    --accent-lilac: 266 60% 82%; /* Mauve lifted */
 
-    --celebrate: 35 90% 60%;
-    --celebrate-foreground: 30 60% 14%;
+    --celebrate: 35 77% 60%; /* Yellow saturated */
+    --celebrate-foreground: 234 16% 20%;
 
     --motion-soft: 220ms cubic-bezier(0.32, 0.72, 0, 1);
     --motion-spring: 400ms cubic-bezier(0.34, 1.4, 0.64, 1);
   }
 
   .dark {
-    /* Warm "dim wood lounge" palette — surfaces drift to hue 30–40 (warm
-       cocoa/cream) at low saturation so the dark mode feels coherent with
-       the brand sage rather than slate-cold. Primary stays at hue ~120
-       (true sage) to match #6b8e6b. */
-    --background: 35 10% 9%;
-    --foreground: 30 30% 94%;
-    --card: 35 9% 13%;
-    --card-foreground: 30 30% 94%;
-    --surface: 35 8% 16%;
-    --popover: 35 9% 13%;
-    --popover-foreground: 30 30% 94%;
-    --primary: 120 22% 60%;
-    --primary-foreground: 120 32% 10%;
-    --secondary: 35 8% 22%;
-    --secondary-foreground: 30 30% 94%;
-    --muted: 35 8% 18%;
-    --muted-foreground: 30 12% 70%;
-    --accent: 28 18% 24%;
-    --accent-foreground: 30 30% 94%;
-    --destructive: 0 60% 55%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 35 8% 26%;
-    --input: 35 8% 26%;
-    --ring: 120 35% 58%;
-    --info: 205 70% 70%;
+    /* Catppuccin Mocha — https://github.com/catppuccin/catppuccin
+       Surfaces use Base / Mantle / Surface0–2 (cool indigo) and the warm
+       Catppuccin accents (Peach, Yellow, Red, Mauve) provide the warmth
+       balance. Primary maps to Catppuccin Green — closest semantic match
+       to diversif's sage brand within the palette. */
+    --background: 240 21% 15%; /* Base    #1e1e2e */
+    --foreground: 226 64% 88%; /* Text    #cdd6f4 */
+    --card: 240 21% 12%; /* Mantle  #181825 */
+    --card-foreground: 226 64% 88%;
+    --surface: 237 16% 23%; /* Surface0 #313244 */
+    --popover: 240 21% 12%; /* Mantle */
+    --popover-foreground: 226 64% 88%;
+    --primary: 115 54% 76%; /* Green   #a6e3a1 */
+    --primary-foreground: 240 21% 12%; /* Mantle for contrast on Green */
+    --secondary: 234 13% 31%; /* Surface1 #45475a */
+    --secondary-foreground: 226 64% 88%;
+    --muted: 234 13% 31%; /* Surface1 */
+    --muted-foreground: 228 24% 72%; /* Subtext0 #a6adc8 */
+    --accent: 233 12% 39%; /* Surface2 #585b70 */
+    --accent-foreground: 226 64% 88%;
+    --destructive: 343 81% 75%; /* Red     #f38ba8 */
+    --destructive-foreground: 240 21% 12%;
+    --border: 234 13% 31%; /* Surface1 */
+    --input: 234 13% 31%;
+    --ring: 115 54% 76%; /* Green */
+    --info: 217 92% 76%; /* Blue    #89b4fa */
 
-    --accent-peach: 22 80% 72%;
-    --accent-butter: 45 80% 72%;
-    --accent-sky: 200 70% 72%;
-    --accent-mint: 140 36% 70%;
-    --accent-lilac: 280 50% 78%;
+    --accent-peach: 23 92% 75%; /* Peach   #fab387 */
+    --accent-butter: 41 86% 83%; /* Yellow  #f9e2af */
+    --accent-sky: 189 71% 73%; /* Sky     #89dceb */
+    --accent-mint: 170 57% 73%; /* Teal    #94e2d5 */
+    --accent-lilac: 267 84% 81%; /* Mauve   #cba6f7 */
 
-    --celebrate: 35 88% 68%;
-    --celebrate-foreground: 30 60% 14%;
+    --celebrate: 41 86% 83%; /* Yellow */
+    --celebrate-foreground: 240 21% 12%; /* Mantle */
   }
 
   * {
