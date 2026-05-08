@@ -345,15 +345,16 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
   soja: {
     id: 'soja',
     recommendedAgeMonths: 6,
-    why: 'Le soja est un allergène majeur ; la tolérance se construit avec une introduction précoce.',
+    why: 'Le soja est un allergène majeur ; la tolérance se construit avec une introduction précoce (ESPGHAN 2017). HCSP 2020 recommande toutefois de limiter la consommation de produits à base de soja avant 3 ans (phyto-œstrogènes).',
     howToOffer: [
-      'Tofu nature bien cuit, bien écrasé.',
-      'Les boissons végétales au soja ne remplacent pas le lait infantile.'
+      'Tofu nature bien cuit, bien écrasé — en petite quantité, occasionnellement.',
+      'Les boissons végétales au soja ne remplacent pas le lait infantile.',
+      'Pas de consommation régulière de produits à base de soja avant 3 ans.'
     ],
     firstSigns: ['Diarrhée, vomissements', "Plaques d'urticaire"],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['espghan-2017']
+    sources: ['espghan-2017', 'hcsp-2020', 'anses-nourrisson']
   },
   poisson: {
     id: 'poisson',
