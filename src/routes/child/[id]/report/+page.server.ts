@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ parent }) => {
   const childId = child.id;
 
   // Pull all entries with their food join, ordered chronologically.
-  const rows = db
+  const rows = await db
     .select({
       id: foodEntries.id,
       foodId: foods.id,
@@ -57,8 +57,7 @@ export const load: PageServerLoad = async ({ parent }) => {
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(eq(foodEntries.childId, childId))
-    .orderBy(asc(foodEntries.givenAt))
-    .all();
+    .orderBy(asc(foodEntries.givenAt));
 
   const entries: ReportEntry[] = rows.map((r) => ({
     id: r.id,

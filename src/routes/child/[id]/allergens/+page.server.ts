@@ -20,15 +20,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   const childId = parseChildIdParam(params);
   requireMembership(locals, childId);
 
-  const rows = db
+  const rows = await db
     .select({
       allergenType: foods.allergenType,
       givenAt: foodEntries.givenAt
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)))
-    .all();
+    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)));
 
   const acc = new Map<string, { count: number; first: number; last: number }>();
   for (const r of rows) {

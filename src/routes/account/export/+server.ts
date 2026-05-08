@@ -8,15 +8,15 @@ import type { RequestHandler } from './$types';
 
 const EXPORT_THROTTLE_MS = 60_000;
 
-export const GET: RequestHandler = ({ locals }) => {
+export const GET: RequestHandler = async ({ locals }) => {
   const user = requireUser(locals);
   const now = Date.now();
 
   // Atomic check-and-set: only one concurrent request can flip lastExportAt
   // past the throttle window because the WHERE clause requires the prior
-  // value to be older than now - throttle (or NULL). If `changes === 0`,
+  // value to be older than now - throttle (or NULL). If `rowCount === 0`,
   // another request beat us to it.
-  const claimed = db
+  const claimed = await db
     .update(users)
     .set({ lastExportAt: new Date(now) })
     .where(
@@ -24,16 +24,15 @@ export const GET: RequestHandler = ({ locals }) => {
         eq(users.id, user.id),
         or(isNull(users.lastExportAt), lt(users.lastExportAt, new Date(now - EXPORT_THROTTLE_MS)))
       )
-    )
-    .run();
+    );
 
-  if (claimed.changes === 0) {
+  if ((claimed.rowCount ?? 0) === 0) {
     throw error(429, 'Export déjà demandé récemment, veuillez réessayer dans une minute.');
   }
 
   let payload;
   try {
-    payload = exportUserData(user.id);
+    payload = await exportUserData(user.id);
   } catch (err) {
     // Refuse rather than silently truncate: an article 15 export is supposed
     // to be complete. If the dataset is unrealistically large we tell the

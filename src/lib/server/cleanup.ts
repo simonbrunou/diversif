@@ -16,15 +16,15 @@ export type CleanupResult = {
   evictedRateLimitBuckets: number;
 };
 
-export function runCleanup(now: Date = new Date()): CleanupResult {
-  const s = db.delete(sessions).where(lt(sessions.expiresAt, now)).run();
-  const i = db.delete(invitations).where(lt(invitations.expiresAt, now)).run();
-  const c = db.delete(webauthnChallenges).where(lt(webauthnChallenges.expiresAt, now)).run();
+export async function runCleanup(now: Date = new Date()): Promise<CleanupResult> {
+  const s = await db.delete(sessions).where(lt(sessions.expiresAt, now));
+  const i = await db.delete(invitations).where(lt(invitations.expiresAt, now));
+  const c = await db.delete(webauthnChallenges).where(lt(webauthnChallenges.expiresAt, now));
   const evicted = evictExpiredRateLimits(RATE_LIMIT_MAX_AGE_MS, now.getTime());
   return {
-    expiredSessions: s.changes,
-    expiredInvitations: i.changes,
-    expiredChallenges: c.changes,
+    expiredSessions: s.rowCount ?? 0,
+    expiredInvitations: i.rowCount ?? 0,
+    expiredChallenges: c.rowCount ?? 0,
     evictedRateLimitBuckets: evicted
   };
 }
@@ -33,17 +33,13 @@ let timer: ReturnType<typeof setInterval> | null = null;
 
 export function startCleanupTimer(): void {
   if (timer) return;
-  try {
-    runCleanup();
-  } catch (err) {
+  void runCleanup().catch((err) => {
     console.error('[cleanup] initial run failed:', err);
-  }
+  });
   timer = setInterval(() => {
-    try {
-      runCleanup();
-    } catch (err) {
+    void runCleanup().catch((err) => {
       console.error('[cleanup] scheduled run failed:', err);
-    }
+    });
   }, CLEANUP_INTERVAL_MS);
   timer.unref?.();
 }

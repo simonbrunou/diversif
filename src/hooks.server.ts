@@ -73,12 +73,12 @@ export const handle: Handle = async ({ event, resolve }) => {
   setLanguageTag(locale);
 
   const token = event.cookies.get(SESSION_COOKIE) ?? '';
-  const validated = token ? validateSession(token) : null;
+  const validated = token ? await validateSession(token) : null;
 
   if (validated) {
     event.locals.user = validated.user;
     event.locals.sessionId = validated.session.id;
-    event.locals.memberships = listMembershipsForUser(validated.user.id);
+    event.locals.memberships = await listMembershipsForUser(validated.user.id);
 
     if (validated.renewed) {
       event.cookies.set(SESSION_COOKIE, validated.session.id, {
@@ -92,7 +92,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   } else {
     if (token) {
       // Stale token: clear it.
-      invalidateSession(token);
+      await invalidateSession(token);
       event.cookies.delete(SESSION_COOKIE, { path: '/' });
     }
     event.locals.user = null;

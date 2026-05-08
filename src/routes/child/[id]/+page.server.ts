@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   const nowAtLoad = new Date();
   const sevenDaysAgo = new Date(nowAtLoad.getTime() - SEVEN_DAYS_MS);
 
-  const recent = db
+  const recent = await db
     .select({
       id: foodEntries.id,
       givenAt: foodEntries.givenAt,
@@ -60,28 +60,38 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     .leftJoin(users, eq(users.id, foodEntries.loggedBy))
     .where(eq(foodEntries.childId, childId))
     .orderBy(desc(foodEntries.givenAt))
-    .limit(20)
-    .all();
+    .limit(20);
 
-  const distinctFoods =
-    db.get<{ count: number }>(
-      sql`SELECT COUNT(DISTINCT food_id) as count FROM food_entries WHERE child_id = ${childId}`
-    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+  const distinctFoods = Number(
+    (
+      await db
+        .select({ count: sql<number>`count(distinct ${foodEntries.foodId})` })
+        .from(foodEntries)
+        .where(eq(foodEntries.childId, childId))
+        .limit(1)
+    )[0]?.count /* v8 ignore next — COUNT() always returns a row */ ?? 0
+  );
 
-  const weekCount =
-    db.get<{ count: number }>(
-      sql`SELECT COUNT(*) as count FROM food_entries WHERE child_id = ${childId} AND given_at >= ${sevenDaysAgo.getTime()}`
-    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+  const weekCount = Number(
+    (
+      await db
+        .select({ count: sql<number>`count(*)` })
+        .from(foodEntries)
+        .where(
+          and(eq(foodEntries.childId, childId), sql`${foodEntries.givenAt} >= ${sevenDaysAgo}`)
+        )
+        .limit(1)
+    )[0]?.count /* v8 ignore next — COUNT() always returns a row */ ?? 0
+  );
 
-  const allergenRows = db
+  const allergenRows = await db
     .select({
       allergenType: foods.allergenType,
       reaction: foodEntries.reaction
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)))
-    .all();
+    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)));
 
   const worstByAllergen = new Map<string, 'ras' | 'inconfort' | 'reaction'>();
   for (const r of allergenRows) {
@@ -107,15 +117,15 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   for (const v of worstByAllergen.values()) summary[v] += 1;
 
   // Diversity metrics
-  const diversity = loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
-  const streak = loadStreak(childId);
-  const weeklyRecap = loadWeeklyRecap(childId);
-  const coparentActivity = loadCoparentActivity(childId, user.id);
+  const diversity = await loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
+  const streak = await loadStreak(childId);
+  const weeklyRecap = await loadWeeklyRecap(childId);
+  const coparentActivity = await loadCoparentActivity(childId, user.id);
 
   // Reminders: full history is required so first-introduction and
   // exposure-count rules (stale-diversity, repeat-exposure) are correct
   // for active children with logs older than 90 days.
-  const recentForReminders = db
+  const recentForReminders = await db
     .select({
       id: foodEntries.id,
       foodId: foods.id,
@@ -128,8 +138,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(eq(foodEntries.childId, childId))
-    .orderBy(desc(foodEntries.givenAt))
-    .all();
+    .orderBy(desc(foodEntries.givenAt));
 
   const entriesNormalized: EnrichedEntry[] = recentForReminders.map((r) => {
     const ts = r.givenAt as unknown;
@@ -151,9 +160,9 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
   // Suggest a tiny starter list ONLY when the child has zero entries — once
   // any food is logged, the dashboard's full "recent" feed takes over.
-  const starterFoods = distinctFoods === 0 ? loadStarterFoods(ageMonths, 4) : [];
+  const starterFoods = distinctFoods === 0 ? await loadStarterFoods(ageMonths, 4) : [];
 
-  const dismissals = loadDismissals(user.id, childId);
+  const dismissals = await loadDismissals(user.id, childId);
   const introducedAllergenIds = new Set(
     Array.from(worstByAllergen.keys()).filter((id): id is AllergenId =>
       ALLERGENS.some((a) => a.id === id)
@@ -208,7 +217,7 @@ export const actions: Actions = {
     if (typeof key !== 'string' || key.length === 0 || key.length > 100) {
       return fail(400, { error: 'Clé invalide' });
     }
-    dismissReminder(user.id, childId, key);
+    await dismissReminder(user.id, childId, key);
     return { ok: true };
   }
 };

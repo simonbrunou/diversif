@@ -19,14 +19,9 @@ export type EnrichedEntry = {
   givenAt: number;
 };
 
-export function loadRecentEntries(childId: number, days: number): EnrichedEntry[] {
-  // Drizzle's typed gte() on a timestamp_ms column maps the bound value via
-  // SQLiteTimestamp.mapToDriverValue, which calls .getTime() on its input —
-  // we MUST pass a Date here, not a bare number. Helpers below that compose
-  // raw `sql\`\`` templates instead use a bare ms epoch, since the typed
-  // column-mapper isn't in the path there.
+export async function loadRecentEntries(childId: number, days: number): Promise<EnrichedEntry[]> {
   const since = new Date(Date.now() - days * DAY_MS);
-  return db
+  const rows = await db
     .select({
       id: foodEntries.id,
       foodId: foods.id,
@@ -39,18 +34,16 @@ export function loadRecentEntries(childId: number, days: number): EnrichedEntry[
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(and(eq(foodEntries.childId, childId), gte(foodEntries.givenAt, since)))
-    .orderBy(desc(foodEntries.givenAt))
-    .all()
-    .map((r) => ({
-      id: r.id,
-      foodId: r.foodId,
-      foodName: r.foodName,
-      category: r.category as CategoryId,
-      allergenType: r.allergenType,
-      reaction: r.reaction as ReactionId,
-      // Drizzle's timestamp_ms mode always materializes givenAt as a Date.
-      givenAt: r.givenAt.getTime()
-    }));
+    .orderBy(desc(foodEntries.givenAt));
+  return rows.map((r) => ({
+    id: r.id,
+    foodId: r.foodId,
+    foodName: r.foodName,
+    category: r.category as CategoryId,
+    allergenType: r.allergenType,
+    reaction: r.reaction as ReactionId,
+    givenAt: r.givenAt.getTime()
+  }));
 }
 
 export type DiversityMetrics = {
@@ -60,38 +53,43 @@ export type DiversityMetrics = {
   repeatExposureCount: number;
 };
 
-export function loadDiversityMetrics(childId: number, totalCategories: number): DiversityMetrics {
+export async function loadDiversityMetrics(
+  childId: number,
+  totalCategories: number
+): Promise<DiversityMetrics> {
   // Exclude 'autre' so the numerator matches the denominator the dashboard
   // passes (CATEGORIES.length - 1). Otherwise an `autre` log would push
   // categoriesCovered above totalCategories.
-  const distinctCategories =
-    db.get<{ count: number }>(
-      sql`SELECT COUNT(DISTINCT ${foods.category}) as count
-          FROM ${foodEntries}
-          INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
-          WHERE ${foodEntries.childId} = ${childId}
-            AND ${foods.category} != 'autre'`
-    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+  const distinctRes = await db.execute<{ count: string }>(
+    sql`SELECT COUNT(DISTINCT ${foods.category})::text as count
+        FROM ${foodEntries}
+        INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
+        WHERE ${foodEntries.childId} = ${childId}
+          AND ${foods.category} != 'autre'`
+  );
+  const distinctCategories = Number(distinctRes.rows[0]?.count ?? 0);
 
   // For each food, take the timestamp of its FIRST appearance (introduction).
   // We want the most recent of those, i.e. when the latest "new food" event
   // happened. MAX-of-grouped-MINs expresses this directly without the
   // accidental ORDER BY/LIMIT 1/outer MIN dance we used to do.
-  const lastNewFood = db.get<{ given_at: number | null }>(
+  const lastNewFoodRes = await db.execute<{ given_at: Date | null }>(
     sql`SELECT MAX(first_given_at) as given_at
         FROM (
           SELECT MIN(${foodEntries.givenAt}) as first_given_at
           FROM ${foodEntries}
           WHERE ${foodEntries.childId} = ${childId}
           GROUP BY ${foodEntries.foodId}
-        )`
+        ) firsts`
   );
-  const lastNewFoodAt = lastNewFood?.given_at != null ? Number(lastNewFood.given_at) : null;
+  const lastNewFoodRow = lastNewFoodRes.rows[0];
+  const lastNewFoodAt =
+    lastNewFoodRow?.given_at != null ? new Date(lastNewFoodRow.given_at).getTime() : null;
 
   // Foods given 1–2 times whose worst reaction is 'ras' or 'inconfort'
-  const repeatRows = db.all<{ food_id: number; n: number; worst: string }>(
+  const repeatRes = await db.execute<{ food_id: number; n: string; worst: number }>(
     sql`SELECT ${foodEntries.foodId} as food_id,
-               COUNT(*) as n,
+               COUNT(*)::int as n,
                MAX(CASE ${foodEntries.reaction}
                      WHEN 'reaction' THEN 2
                      WHEN 'inconfort' THEN 1
@@ -99,9 +97,12 @@ export function loadDiversityMetrics(childId: number, totalCategories: number): 
         FROM ${foodEntries}
         WHERE ${foodEntries.childId} = ${childId}
         GROUP BY ${foodEntries.foodId}
-        HAVING n <= 2 AND worst <= 1`
+        HAVING COUNT(*) <= 2 AND MAX(CASE ${foodEntries.reaction}
+                                       WHEN 'reaction' THEN 2
+                                       WHEN 'inconfort' THEN 1
+                                       ELSE 0 END) <= 1`
   );
-  const repeatExposureCount = repeatRows.length;
+  const repeatExposureCount = repeatRes.rows.length;
 
   return {
     categoriesCovered: distinctCategories,
@@ -119,40 +120,42 @@ export type RepeatCandidate = {
   lastGivenAt: number;
 };
 
-export function loadRepeatCandidates(childId: number, limit = 5): RepeatCandidate[] {
-  return db
-    .all<{
-      food_id: number;
-      food_name: string;
-      category: string;
-      n: number;
-      last_at: number;
-      worst: number;
-    }>(
-      sql`SELECT ${foodEntries.foodId} as food_id,
-                 ${foods.name} as food_name,
-                 ${foods.category} as category,
-                 COUNT(*) as n,
-                 MAX(${foodEntries.givenAt}) as last_at,
-                 MAX(CASE ${foodEntries.reaction}
-                       WHEN 'reaction' THEN 2
-                       WHEN 'inconfort' THEN 1
-                       ELSE 0 END) as worst
-          FROM ${foodEntries}
-          INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
-          WHERE ${foodEntries.childId} = ${childId}
-          GROUP BY ${foodEntries.foodId}
-          HAVING n <= 2 AND worst <= 1
-          ORDER BY last_at ASC
-          LIMIT ${limit}`
-    )
-    .map((r) => ({
-      foodId: Number(r.food_id),
-      foodName: r.food_name,
-      category: r.category as CategoryId,
-      count: Number(r.n),
-      lastGivenAt: Number(r.last_at)
-    }));
+export async function loadRepeatCandidates(childId: number, limit = 5): Promise<RepeatCandidate[]> {
+  const res = await db.execute<{
+    food_id: number;
+    food_name: string;
+    category: string;
+    n: number;
+    last_at: Date;
+    worst: number;
+  }>(
+    sql`SELECT ${foodEntries.foodId} as food_id,
+               ${foods.name} as food_name,
+               ${foods.category} as category,
+               COUNT(*)::int as n,
+               MAX(${foodEntries.givenAt}) as last_at,
+               MAX(CASE ${foodEntries.reaction}
+                     WHEN 'reaction' THEN 2
+                     WHEN 'inconfort' THEN 1
+                     ELSE 0 END) as worst
+        FROM ${foodEntries}
+        INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
+        WHERE ${foodEntries.childId} = ${childId}
+        GROUP BY ${foodEntries.foodId}, ${foods.name}, ${foods.category}
+        HAVING COUNT(*) <= 2 AND MAX(CASE ${foodEntries.reaction}
+                                       WHEN 'reaction' THEN 2
+                                       WHEN 'inconfort' THEN 1
+                                       ELSE 0 END) <= 1
+        ORDER BY last_at ASC
+        LIMIT ${limit}`
+  );
+  return res.rows.map((r) => ({
+    foodId: Number(r.food_id),
+    foodName: r.food_name,
+    category: r.category as CategoryId,
+    count: Number(r.n),
+    lastGivenAt: new Date(r.last_at).getTime()
+  }));
 }
 
 export type WeeklyRecap = {
@@ -164,47 +167,50 @@ export type WeeklyRecap = {
   newAllergens: number;
 };
 
-export function loadWeeklyRecap(childId: number, now: Date = new Date()): WeeklyRecap {
-  const sinceMs = now.getTime() - 7 * DAY_MS;
+export async function loadWeeklyRecap(
+  childId: number,
+  now: Date = new Date()
+): Promise<WeeklyRecap> {
+  const since = new Date(now.getTime() - 7 * DAY_MS);
 
-  const entries =
-    db.get<{ count: number }>(
-      sql`SELECT COUNT(*) as count
-          FROM ${foodEntries}
-          WHERE ${foodEntries.childId} = ${childId}
-            AND ${foodEntries.givenAt} >= ${sinceMs}`
-    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+  const entriesRes = await db.execute<{ count: string }>(
+    sql`SELECT COUNT(*)::text as count
+        FROM ${foodEntries}
+        WHERE ${foodEntries.childId} = ${childId}
+          AND ${foodEntries.givenAt} >= ${since}`
+  );
+  const entries = Number(entriesRes.rows[0]?.count ?? 0);
 
   // First-ever appearance per food, kept only if that first appearance is in the window.
-  const newFoods =
-    db.get<{ count: number }>(
-      sql`SELECT COUNT(*) as count FROM (
-            SELECT ${foodEntries.foodId} as food_id, MIN(${foodEntries.givenAt}) as first_at
-            FROM ${foodEntries}
-            WHERE ${foodEntries.childId} = ${childId}
-            GROUP BY ${foodEntries.foodId}
-            HAVING first_at >= ${sinceMs}
-          )`
-    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+  const newFoodsRes = await db.execute<{ count: string }>(
+    sql`SELECT COUNT(*)::text as count FROM (
+          SELECT ${foodEntries.foodId} as food_id, MIN(${foodEntries.givenAt}) as first_at
+          FROM ${foodEntries}
+          WHERE ${foodEntries.childId} = ${childId}
+          GROUP BY ${foodEntries.foodId}
+          HAVING MIN(${foodEntries.givenAt}) >= ${since}
+        ) firsts`
+  );
+  const newFoods = Number(newFoodsRes.rows[0]?.count ?? 0);
 
   // First-ever appearance per allergenType, restricted to non-null allergens.
-  const newAllergens =
-    db.get<{ count: number }>(
-      sql`SELECT COUNT(*) as count FROM (
-            SELECT ${foods.allergenType} as allergen_type, MIN(${foodEntries.givenAt}) as first_at
-            FROM ${foodEntries}
-            INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
-            WHERE ${foodEntries.childId} = ${childId}
-              AND ${foods.allergenType} IS NOT NULL
-            GROUP BY ${foods.allergenType}
-            HAVING first_at >= ${sinceMs}
-          )`
-    )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+  const newAllergensRes = await db.execute<{ count: string }>(
+    sql`SELECT COUNT(*)::text as count FROM (
+          SELECT ${foods.allergenType} as allergen_type, MIN(${foodEntries.givenAt}) as first_at
+          FROM ${foodEntries}
+          INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
+          WHERE ${foodEntries.childId} = ${childId}
+            AND ${foods.allergenType} IS NOT NULL
+          GROUP BY ${foods.allergenType}
+          HAVING MIN(${foodEntries.givenAt}) >= ${since}
+        ) firsts`
+  );
+  const newAllergens = Number(newAllergensRes.rows[0]?.count ?? 0);
 
   return { entries, newFoods, newAllergens };
 }
 
-export function loadStreak(childId: number, now: Date = new Date()): number {
+export async function loadStreak(childId: number, now: Date = new Date()): Promise<number> {
   // We bucket by UTC day on purpose. Most parents are within UTC±2 (Europe),
   // and a UTC-day boundary differs from local-day by at most ~2 hours — well
   // outside the normal awake window for logging baby meals (basically nobody
@@ -214,12 +220,13 @@ export function loadStreak(childId: number, now: Date = new Date()): number {
   // server's TZ env or a costly per-row TZ shift. If we ever start serving
   // users far from Europe, switch to a localized bucketing here.
   // Distinct UTC days that contain at least one entry, in descending order.
-  const rows = db.all<{ day: number }>(
-    sql`SELECT DISTINCT CAST((${foodEntries.givenAt} / ${DAY_MS}) AS INTEGER) as day
+  const res = await db.execute<{ day: string }>(
+    sql`SELECT DISTINCT FLOOR(EXTRACT(EPOCH FROM ${foodEntries.givenAt}) / ${sql.raw(String(DAY_MS / 1000))})::bigint::text as day
         FROM ${foodEntries}
         WHERE ${foodEntries.childId} = ${childId}
         ORDER BY day DESC`
   );
+  const rows = res.rows.map((r) => ({ day: Number(r.day) }));
   if (rows.length === 0) return 0;
 
   const today = Math.floor(now.getTime() / DAY_MS);
@@ -260,9 +267,12 @@ export type StarterFood = {
  * is clamped to at least 4 so a "before 4 months" misconfiguration still
  * surfaces a sensible starter set.
  */
-export function loadStarterFoods(ageMonths: number, limit: number = 4): StarterFood[] {
+export async function loadStarterFoods(
+  ageMonths: number,
+  limit: number = 4
+): Promise<StarterFood[]> {
   const effectiveAge = Math.max(4, ageMonths);
-  return db
+  const rows = await db
     .select({
       id: foods.id,
       name: foods.name,
@@ -273,15 +283,14 @@ export function loadStarterFoods(ageMonths: number, limit: number = 4): StarterF
     .from(foods)
     .where(and(eq(foods.isCustom, false), lte(foods.suggestedAgeMonths, effectiveAge)))
     .orderBy(asc(foods.suggestedAgeMonths), asc(foods.name))
-    .limit(limit)
-    .all()
-    .map((r) => ({
-      id: r.id,
-      name: r.name,
-      category: r.category as CategoryId,
-      suggestedAgeMonths: r.suggestedAgeMonths,
-      allergenType: r.allergenType
-    }));
+    .limit(limit);
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    category: r.category as CategoryId,
+    suggestedAgeMonths: r.suggestedAgeMonths,
+    allergenType: r.allergenType
+  }));
 }
 
 export type CoparentEntry = {
@@ -298,16 +307,14 @@ export type CoparentEntry = {
  * viewer, within the last `days`. Used to power a "your co-parent has been
  * busy" card on the dashboard. Empty for solo accounts.
  */
-export function loadCoparentActivity(
+export async function loadCoparentActivity(
   childId: number,
   currentUserId: number,
   days: number = 7,
   limit: number = 5
-): CoparentEntry[] {
-  // Date here, not a bare ms — see loadRecentEntries for the timestamp_ms
-  // / typed-gte rationale.
+): Promise<CoparentEntry[]> {
   const since = new Date(Date.now() - days * DAY_MS);
-  const rows = db
+  const rows = await db
     .select({
       id: foodEntries.id,
       foodName: foods.name,
@@ -327,8 +334,7 @@ export function loadCoparentActivity(
       )
     )
     .orderBy(desc(foodEntries.givenAt))
-    .limit(limit)
-    .all();
+    .limit(limit);
 
   return rows.map((r) => ({
     id: r.id,
@@ -356,12 +362,13 @@ export type WeekBucket = {
  * [now - 7d, now); index 0 in the returned array is the OLDEST bucket so
  * charts read left-to-right chronologically.
  */
-export function loadAnalyticsBuckets(
+export async function loadAnalyticsBuckets(
   childId: number,
   weeks: number = 12,
   now: Date = new Date()
-): WeekBucket[] {
+): Promise<WeekBucket[]> {
   const horizonMs = now.getTime() - weeks * 7 * DAY_MS;
+  const horizon = new Date(horizonMs);
 
   // Per-food first-introduction timestamps + category. One row per distinct
   // food the child has ever eaten — typically 50-200 rows even for an
@@ -369,30 +376,26 @@ export function loadAnalyticsBuckets(
   // and "cumulative categories through bucket end" (categories whose first
   // intro was before window end). We need history older than horizonMs for
   // cumulative correctness, but it's a tiny rollup, not the full entry log.
-  const introRows = db
+  const introRows = await db
     .select({
       foodId: foods.id,
       category: foods.category,
-      // Raw sql<> template: SQLiteTimestamp.mapToDriverValue is bypassed,
-      // so this comes back as a plain ms integer (no Date wrapping).
-      firstAt: sql<number>`MIN(${foodEntries.givenAt})`.as('first_at')
+      firstAt: sql<Date>`MIN(${foodEntries.givenAt})`.as('first_at')
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(eq(foodEntries.childId, childId))
-    .groupBy(foodEntries.foodId)
-    .all();
+    .groupBy(foods.id, foods.category);
 
   // In-horizon entry rows for reaction counts. Cap the scan at the chart
   // window so years-of-history children don't drag the dashboard down.
-  const horizonRows = db
+  const horizonRows = await db
     .select({
       reaction: foodEntries.reaction,
       givenAt: foodEntries.givenAt
     })
     .from(foodEntries)
-    .where(and(eq(foodEntries.childId, childId), gte(foodEntries.givenAt, new Date(horizonMs))))
-    .all();
+    .where(and(eq(foodEntries.childId, childId), gte(foodEntries.givenAt, horizon)));
 
   const buckets: WeekBucket[] = [];
   for (let i = weeks - 1; i >= 0; i--) {
@@ -404,7 +407,7 @@ export function loadAnalyticsBuckets(
     let reaction = 0;
     const cumulativeCategorySet = new Set<string>();
     for (const r of introRows) {
-      const firstAt = Number(r.firstAt);
+      const firstAt = new Date(r.firstAt).getTime();
       if (firstAt < end && r.category !== 'autre') cumulativeCategorySet.add(r.category);
       if (firstAt >= start && firstAt < end) introductions += 1;
     }
@@ -426,12 +429,11 @@ export function loadAnalyticsBuckets(
   return buckets;
 }
 
-export function loadDismissals(userId: number, childId: number): Set<string> {
-  const rows = db
+export async function loadDismissals(userId: number, childId: number): Promise<Set<string>> {
+  const rows = await db
     .select({ key: tipDismissals.reminderKey, at: tipDismissals.dismissedAt })
     .from(tipDismissals)
-    .where(and(eq(tipDismissals.userId, userId), eq(tipDismissals.childId, childId)))
-    .all();
+    .where(and(eq(tipDismissals.userId, userId), eq(tipDismissals.childId, childId)));
   // Honor TTL by reminderKey prefix (info: 30d, warn: 90d, important: never)
   const now = Date.now();
   const out = new Set<string>();
@@ -464,12 +466,12 @@ function ttlForReminderKey(key: string): number | null {
   return 30 * DAY_MS;
 }
 
-export function dismissReminder(userId: number, childId: number, key: string): void {
-  db.insert(tipDismissals)
+export async function dismissReminder(userId: number, childId: number, key: string): Promise<void> {
+  await db
+    .insert(tipDismissals)
     .values({ userId, childId, reminderKey: key, dismissedAt: new Date() })
     .onConflictDoUpdate({
       target: [tipDismissals.userId, tipDismissals.childId, tipDismissals.reminderKey],
       set: { dismissedAt: new Date() }
-    })
-    .run();
+    });
 }

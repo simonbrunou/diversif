@@ -12,9 +12,9 @@ const startedAt = Date.now();
 // process crashed.
 const NO_STORE = { 'Cache-Control': 'no-store' };
 
-export const GET: RequestHandler = () => {
+export const GET: RequestHandler = async () => {
   try {
-    db.get(sql`SELECT 1 as ok`);
+    await db.execute(sql`SELECT 1 as ok`);
     return json({ ok: true, db: 'ok', uptimeMs: Date.now() - startedAt }, { headers: NO_STORE });
   } catch {
     return json({ ok: false, db: 'down' }, { status: 503, headers: NO_STORE });

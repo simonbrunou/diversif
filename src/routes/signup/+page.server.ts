@@ -98,17 +98,19 @@ export const actions: Actions = {
           errorKey: 'errorsAuthInvalidInvite'
         });
       }
-      const inv = db
-        .select()
-        .from(invitations)
-        .where(
-          and(
-            eq(invitations.code, inviteCode),
-            isNull(invitations.usedAt),
-            gt(invitations.expiresAt, new Date())
+      const inv = (
+        await db
+          .select()
+          .from(invitations)
+          .where(
+            and(
+              eq(invitations.code, inviteCode),
+              isNull(invitations.usedAt),
+              gt(invitations.expiresAt, new Date())
+            )
           )
-        )
-        .get();
+          .limit(1)
+      )[0];
       if (!inv) {
         return fail(400, {
           email: formEmail,
@@ -120,7 +122,7 @@ export const actions: Actions = {
       invitationChildId = inv.childId;
     }
 
-    if (findUserByEmail(lowerEmail)) {
+    if (await findUserByEmail(lowerEmail)) {
       // Generic message — the previous "compte existe déjà" wording let an
       // attacker enumerate registered addresses by attempting to sign up.
       // The new copy gently nudges existing users towards /login without
@@ -144,42 +146,41 @@ export const actions: Actions = {
     // user account that can't reach the child it was invited to, with the
     // invitation either already consumed (orphaned access) or still claimable
     // (lets a stranger reuse the code).
-    const userId = db.transaction((tx) => {
-      const inserted = tx
-        .insert(users)
-        .values({
-          email: lowerEmail,
-          passwordHash,
-          displayName,
-          createdAt: now,
-          tosAcceptedAt: now,
-          privacyAcceptedAt: now,
-          ageConfirmedAt: now,
-          lastLoginAt: now
-        })
-        .returning({ id: users.id })
-        .get();
+    const userId = await db.transaction(async (tx) => {
+      const inserted = (
+        await tx
+          .insert(users)
+          .values({
+            email: lowerEmail,
+            passwordHash,
+            displayName,
+            createdAt: now,
+            tosAcceptedAt: now,
+            privacyAcceptedAt: now,
+            ageConfirmedAt: now,
+            lastLoginAt: now
+          })
+          .returning({ id: users.id })
+      )[0];
       const id = inserted.id;
 
       if (invitationChildId !== null && inviteCode) {
-        tx.insert(memberships)
-          .values({
-            userId: id,
-            childId: invitationChildId,
-            role: 'member',
-            createdAt: now
-          })
-          .run();
-        tx.update(invitations)
+        await tx.insert(memberships).values({
+          userId: id,
+          childId: invitationChildId,
+          role: 'member',
+          createdAt: now
+        });
+        await tx
+          .update(invitations)
           .set({ usedAt: now, usedBy: id })
-          .where(eq(invitations.code, inviteCode))
-          .run();
+          .where(eq(invitations.code, inviteCode));
       }
 
       return id;
     });
 
-    const session = createSession(userId);
+    const session = await createSession(userId);
     cookies.set(SESSION_COOKIE, session.id, {
       path: '/',
       httpOnly: true,

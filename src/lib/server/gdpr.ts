@@ -30,33 +30,31 @@ export type DeletionSummary = {
  * user is the sole owner of a shared child, the earliest remaining member by
  * `memberships.created_at` (tiebreak: lowest user_id) is promoted to owner.
  */
-export function deleteUserAccount(userId: number): DeletionSummary {
-  return db.transaction((tx) => {
+export async function deleteUserAccount(userId: number): Promise<DeletionSummary> {
+  return db.transaction(async (tx) => {
     const summary: DeletionSummary = {
       deletedChildren: 0,
       promotedMemberships: 0,
       removedMemberships: 0
     };
 
-    const userMemberships = tx
+    const userMemberships = await tx
       .select({ childId: memberships.childId, role: memberships.role })
       .from(memberships)
-      .where(eq(memberships.userId, userId))
-      .all();
+      .where(eq(memberships.userId, userId));
 
     for (const m of userMemberships) {
-      const others = tx
+      const others = await tx
         .select({
           userId: memberships.userId,
           role: memberships.role,
           createdAt: memberships.createdAt
         })
         .from(memberships)
-        .where(and(eq(memberships.childId, m.childId), ne(memberships.userId, userId)))
-        .all();
+        .where(and(eq(memberships.childId, m.childId), ne(memberships.userId, userId)));
 
       if (others.length === 0) {
-        tx.delete(children).where(eq(children.id, m.childId)).run();
+        await tx.delete(children).where(eq(children.id, m.childId));
         summary.deletedChildren += 1;
         continue;
       }
@@ -70,27 +68,27 @@ export function deleteUserAccount(userId: number): DeletionSummary {
             if (ta !== tb) return ta - tb;
             return a.userId - b.userId;
           })[0];
-          tx.update(memberships)
+          await tx
+            .update(memberships)
             .set({ role: 'owner' })
-            .where(and(eq(memberships.childId, m.childId), eq(memberships.userId, heir.userId)))
-            .run();
+            .where(and(eq(memberships.childId, m.childId), eq(memberships.userId, heir.userId)));
           summary.promotedMemberships += 1;
         }
       }
 
-      tx.delete(memberships)
-        .where(and(eq(memberships.childId, m.childId), eq(memberships.userId, userId)))
-        .run();
+      await tx
+        .delete(memberships)
+        .where(and(eq(memberships.childId, m.childId), eq(memberships.userId, userId)));
       summary.removedMemberships += 1;
     }
 
     // Explicitly drop every live session before the user row goes away.
-    // The sessions FK has ON DELETE CASCADE so SQLite would do this for us,
+    // The sessions FK has ON DELETE CASCADE so Postgres would do this for us,
     // but the explicit delete documents the intent — future moves of the
     // session store (Redis, etc.) would silently lose revocation otherwise.
-    tx.delete(sessions).where(eq(sessions.userId, userId)).run();
+    await tx.delete(sessions).where(eq(sessions.userId, userId));
 
-    tx.delete(users).where(eq(users.id, userId)).run();
+    await tx.delete(users).where(eq(users.id, userId));
 
     return summary;
   });
@@ -185,31 +183,32 @@ const isoOrThrow = (v: Date | null | undefined): string => {
  * serialise an incomplete archive. The `entryLimit` parameter exists for
  * tests; production callers should leave it on the default.
  */
-export function exportUserData(
+export async function exportUserData(
   userId: number,
   entryLimit: number = EXPORT_FOOD_ENTRIES_LIMIT
-): ExportedUser {
-  const user = db.select().from(users).where(eq(users.id, userId)).get();
+): Promise<ExportedUser> {
+  const userRows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const user = userRows[0];
   if (!user) {
     throw new Error('User not found');
   }
 
-  const userMemberships = db.select().from(memberships).where(eq(memberships.userId, userId)).all();
+  const userMemberships = await db.select().from(memberships).where(eq(memberships.userId, userId));
 
   const childIds = userMemberships.map((m) => m.childId);
 
   const childRows: Child[] =
     childIds.length === 0
       ? []
-      : db.select().from(children).where(inArray(children.id, childIds)).all();
+      : await db.select().from(children).where(inArray(children.id, childIds));
 
   // Count first so we can refuse oversize exports up front, instead of
   // silently truncating and handing the user an incomplete archive.
   if (childIds.length > 0) {
-    const total =
-      db.get<{ count: number }>(
-        sql`SELECT COUNT(*) as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
-      )?.count /* v8 ignore next — sqlite COUNT() always returns a row */ ?? 0;
+    const countRes = await db.execute<{ count: string }>(
+      sql`SELECT COUNT(*)::text as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
+    );
+    const total = Number(countRes.rows[0]?.count ?? 0);
     if (total > entryLimit) {
       throw new ExportTooLargeError(total, entryLimit);
     }
@@ -218,7 +217,7 @@ export function exportUserData(
   const entryRows =
     childIds.length === 0
       ? []
-      : db
+      : await db
           .select({
             id: foodEntries.id,
             childId: foodEntries.childId,
@@ -233,10 +232,9 @@ export function exportUserData(
           .from(foodEntries)
           .innerJoin(foods, eq(foods.id, foodEntries.foodId))
           .where(inArray(foodEntries.childId, childIds))
-          .orderBy(asc(foodEntries.givenAt))
-          .all();
+          .orderBy(asc(foodEntries.givenAt));
 
-  const userPasskeys = db.select().from(passkeys).where(eq(passkeys.userId, userId)).all();
+  const userPasskeys = await db.select().from(passkeys).where(eq(passkeys.userId, userId));
 
   const membershipByChildId = new Map(userMemberships.map((m) => [m.childId, m]));
   const entriesByChildId = new Map<number, typeof entryRows>();

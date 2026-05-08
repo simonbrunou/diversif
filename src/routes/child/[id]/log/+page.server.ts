@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   const childId = Number(params.id);
   requireMembership(locals, childId);
 
-  const list = db
+  const list = await db
     .select({
       id: foods.id,
       name: foods.name,
@@ -40,8 +40,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     })
     .from(foods)
     .where(or(isNull(foods.customForChildId), eq(foods.customForChildId, childId)))
-    .orderBy(foods.name)
-    .all();
+    .orderBy(foods.name);
 
   return { foods: list };
 };
@@ -84,8 +83,8 @@ export const actions: Actions = {
 
     let redirectPath: string;
     try {
-      redirectPath = db.transaction((tx) => {
-        const work = (): { redirect: string } => {
+      redirectPath = await db.transaction(async (tx) => {
+        const work = async (): Promise<{ redirect: string }> => {
           let foodId = parsed.data.foodId ?? null;
           const customName = parsed.data['customFood.name']?.trim();
           const customCategoryRaw = parsed.data['customFood.category']?.trim();
@@ -94,20 +93,21 @@ export const actions: Actions = {
             const category = CATEGORY_IDS.includes(customCategoryRaw ?? /* v8 ignore next */ '')
               ? (customCategoryRaw as string)
               : 'autre';
-            const inserted = tx
-              .insert(foods)
-              .values({
-                name: customName,
-                category,
-                isMajorAllergen: false,
-                allergenType: null,
-                suggestedAgeMonths: 0,
-                notes: null,
-                isCustom: true,
-                customForChildId: childId
-              })
-              .returning({ id: foods.id })
-              .get();
+            const inserted = (
+              await tx
+                .insert(foods)
+                .values({
+                  name: customName,
+                  category,
+                  isMajorAllergen: false,
+                  allergenType: null,
+                  suggestedAgeMonths: 0,
+                  notes: null,
+                  isCustom: true,
+                  customForChildId: childId
+                })
+                .returning({ id: foods.id })
+            )[0];
             foodId = inserted.id;
           }
 
@@ -116,79 +116,94 @@ export const actions: Actions = {
           }
 
           // Verify the food belongs to this child or is from the global catalog.
-          const food = tx
-            .select()
-            .from(foods)
-            .where(
-              and(
-                eq(foods.id, foodId),
-                or(isNull(foods.customForChildId), eq(foods.customForChildId, childId))
+          const food = (
+            await tx
+              .select()
+              .from(foods)
+              .where(
+                and(
+                  eq(foods.id, foodId),
+                  or(isNull(foods.customForChildId), eq(foods.customForChildId, childId))
+                )
               )
-            )
-            .get();
+              .limit(1)
+          )[0];
           if (!food) {
             throw new LogActionAbort(400, 'Aliment introuvable.');
           }
 
           // Snapshot pre-insert state so we can detect milestones after the insert.
           const priorEntryCount =
-            tx
-              .select({ n: sql<number>`count(*)` })
-              .from(foodEntries)
-              .where(eq(foodEntries.childId, childId))
-              .get()?.n /* v8 ignore next */ ?? 0;
+            (
+              await tx
+                .select({ n: sql<number>`count(*)` })
+                .from(foodEntries)
+                .where(eq(foodEntries.childId, childId))
+                .limit(1)
+            )[0]?.n /* v8 ignore next */ ?? 0;
 
           // Mirror loadDiversityMetrics: exclude the `autre` bucket so this count
           // shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
           const priorCategoriesCovered =
-            tx
-              .select({ n: sql<number>`count(distinct ${foods.category})` })
-              .from(foodEntries)
-              .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-              .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
-              .get()?.n /* v8 ignore next */ ?? 0;
+            (
+              await tx
+                .select({ n: sql<number>`count(distinct ${foods.category})` })
+                .from(foodEntries)
+                .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+                .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
+                .limit(1)
+            )[0]?.n /* v8 ignore next */ ?? 0;
 
           const priorAllergenCount =
             food.allergenType != null
-              ? (tx
-                  .select({ n: sql<number>`count(*)` })
-                  .from(foodEntries)
-                  .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-                  .where(
-                    and(eq(foodEntries.childId, childId), eq(foods.allergenType, food.allergenType))
-                  )
-                  .get()?.n /* v8 ignore next */ ?? 0)
+              ? ((
+                  await tx
+                    .select({ n: sql<number>`count(*)` })
+                    .from(foodEntries)
+                    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+                    .where(
+                      and(
+                        eq(foodEntries.childId, childId),
+                        eq(foods.allergenType, food.allergenType)
+                      )
+                    )
+                    .limit(1)
+                )[0]?.n /* v8 ignore next */ ?? 0)
               : null;
 
           // Distinct allergens introduced for this child, pre-insert. Used to detect
           // crossing the "all 12 allergens" finish line on the *new* introduction.
           const priorAllergensIntroduced =
-            tx
-              .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
-              .from(foodEntries)
-              .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-              .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`))
-              .get()?.n /* v8 ignore next */ ?? 0;
+            (
+              await tx
+                .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
+                .from(foodEntries)
+                .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+                .where(
+                  and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`)
+                )
+                .limit(1)
+            )[0]?.n /* v8 ignore next */ ?? 0;
 
-          tx.insert(foodEntries)
-            .values({
-              childId,
-              foodId,
-              givenAt: givenAtDate,
-              reaction: parsed.data.reaction,
-              notes: parsed.data.notes?.trim() || null,
-              loggedBy: user.id,
-              createdAt: new Date()
-            })
-            .run();
+          await tx.insert(foodEntries).values({
+            childId,
+            foodId,
+            givenAt: givenAtDate,
+            reaction: parsed.data.reaction,
+            notes: parsed.data.notes?.trim() || null,
+            loggedBy: user.id,
+            createdAt: new Date()
+          });
 
           const categoriesNowCovered =
-            tx
-              .select({ n: sql<number>`count(distinct ${foods.category})` })
-              .from(foodEntries)
-              .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-              .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
-              .get()?.n /* v8 ignore next */ ?? 0;
+            (
+              await tx
+                .select({ n: sql<number>`count(distinct ${foods.category})` })
+                .from(foodEntries)
+                .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+                .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
+                .limit(1)
+            )[0]?.n /* v8 ignore next */ ?? 0;
 
           const isFirstAllergen = priorAllergenCount === 0 && food.allergenType != null;
           const allAllergensJustCompleted =
@@ -204,15 +219,15 @@ export const actions: Actions = {
         };
 
         if (idempotencyKey) {
-          const result = withIdempotencyKey(
+          const result = await withIdempotencyKey(
             tx,
             { key: idempotencyKey, userId: user.id, scope: `log:child:${childId}` },
             work
           );
-          pruneExpiredKeys(tx);
+          await pruneExpiredKeys(tx);
           return result.redirect;
         }
-        return work().redirect;
+        return (await work()).redirect;
       });
     } catch (e) {
       if (e instanceof LogActionAbort) {

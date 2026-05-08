@@ -76,36 +76,34 @@ export type StoredChallenge = {
   expiresAt: Date;
 };
 
-export function purgeExpiredChallenges(now: Date = new Date()): void {
-  db.delete(webauthnChallenges).where(lt(webauthnChallenges.expiresAt, now)).run();
+export async function purgeExpiredChallenges(now: Date = new Date()): Promise<void> {
+  await db.delete(webauthnChallenges).where(lt(webauthnChallenges.expiresAt, now));
 }
 
-export function createChallenge(opts: {
+export async function createChallenge(opts: {
   challenge: string;
   purpose: 'registration' | 'authentication';
   userId?: number | null;
-}): StoredChallenge {
-  purgeExpiredChallenges();
+}): Promise<StoredChallenge> {
+  await purgeExpiredChallenges();
   const token = newToken();
   const expiresAt = new Date(Date.now() + PASSKEY_CHALLENGE_TTL_MS);
-  db.insert(webauthnChallenges)
-    .values({
-      token,
-      challenge: opts.challenge,
-      purpose: opts.purpose,
-      userId: opts.userId ?? null,
-      expiresAt
-    })
-    .run();
+  await db.insert(webauthnChallenges).values({
+    token,
+    challenge: opts.challenge,
+    purpose: opts.purpose,
+    userId: opts.userId ?? null,
+    expiresAt
+  });
   return { token, challenge: opts.challenge, expiresAt };
 }
 
-export function consumeChallenge(
+export async function consumeChallenge(
   token: string,
   purpose: 'registration' | 'authentication'
-): { challenge: string; userId: number | null } | null {
+): Promise<{ challenge: string; userId: number | null } | null> {
   if (!token) return null;
-  const row = db
+  const rows = await db
     .select()
     .from(webauthnChallenges)
     .where(
@@ -115,48 +113,42 @@ export function consumeChallenge(
         gt(webauthnChallenges.expiresAt, new Date())
       )
     )
-    .get();
+    .limit(1);
+  const row = rows[0];
   // Always remove the token if it exists, even if expired.
-  db.delete(webauthnChallenges).where(eq(webauthnChallenges.token, token)).run();
+  await db.delete(webauthnChallenges).where(eq(webauthnChallenges.token, token));
   if (!row) return null;
   return { challenge: row.challenge, userId: row.userId ?? null };
 }
 
-export function listPasskeys(userId: number): Passkey[] {
-  return db.select().from(passkeys).where(eq(passkeys.userId, userId)).all();
+export async function listPasskeys(userId: number): Promise<Passkey[]> {
+  return db.select().from(passkeys).where(eq(passkeys.userId, userId));
 }
 
-export function findPasskey(credentialId: string): Passkey | undefined {
-  return db.select().from(passkeys).where(eq(passkeys.id, credentialId)).get();
+export async function findPasskey(credentialId: string): Promise<Passkey | undefined> {
+  const rows = await db.select().from(passkeys).where(eq(passkeys.id, credentialId)).limit(1);
+  return rows[0];
 }
 
-export function deletePasskey(userId: number, credentialId: string): boolean {
-  const row = db
-    .select()
-    .from(passkeys)
-    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)))
-    .get();
-  if (!row) return false;
-  db.delete(passkeys)
-    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)))
-    .run();
-  return true;
+export async function deletePasskey(userId: number, credentialId: string): Promise<boolean> {
+  const result = await db
+    .delete(passkeys)
+    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
+  return (result.rowCount ?? 0) > 0;
 }
 
-export function renamePasskey(userId: number, credentialId: string, name: string): boolean {
+export async function renamePasskey(
+  userId: number,
+  credentialId: string,
+  name: string
+): Promise<boolean> {
   const trimmed = name.trim();
   if (!trimmed) return false;
-  const row = db
-    .select()
-    .from(passkeys)
-    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)))
-    .get();
-  if (!row) return false;
-  db.update(passkeys)
+  const result = await db
+    .update(passkeys)
     .set({ name: trimmed.slice(0, 80) })
-    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)))
-    .run();
-  return true;
+    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
+  return (result.rowCount ?? 0) > 0;
 }
 
 export async function buildRegistrationOptions(opts: {
@@ -165,7 +157,7 @@ export async function buildRegistrationOptions(opts: {
   displayName: string;
   rpID: string;
 }): Promise<PublicKeyCredentialCreationOptionsJSON> {
-  const existing = listPasskeys(opts.userId);
+  const existing = await listPasskeys(opts.userId);
   // The WebAuthn user handle should be a stable, opaque identifier — we use
   // the numeric user id encoded as bytes.
   const userIdBytes = new TextEncoder().encode(String(opts.userId));
@@ -239,7 +231,7 @@ export async function finishRegistration(opts: {
 
   const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
 
-  const existing = findPasskey(credential.id);
+  const existing = await findPasskey(credential.id);
   if (existing) {
     return { ok: false, error: 'Cette clé est déjà enregistrée.' };
   }
@@ -247,7 +239,7 @@ export async function finishRegistration(opts: {
   const trimmedName = opts.name.trim().slice(0, 80) || 'Passkey';
   const transportsJson = JSON.stringify(opts.response.response.transports ?? []);
 
-  const row = db
+  const inserted = await db
     .insert(passkeys)
     .values({
       id: credential.id,
@@ -261,10 +253,9 @@ export async function finishRegistration(opts: {
       createdAt: new Date(),
       lastUsedAt: null
     })
-    .returning()
-    .get();
+    .returning();
 
-  return { ok: true, passkey: row };
+  return { ok: true, passkey: inserted[0] };
 }
 
 export type AuthenticationResult =
@@ -277,7 +268,7 @@ export async function finishAuthentication(opts: {
   expectedOrigin: string;
   expectedRPID: string;
 }): Promise<AuthenticationResult> {
-  const credential = findPasskey(opts.response.id);
+  const credential = await findPasskey(opts.response.id);
   if (!credential) {
     return { ok: false, error: 'Clé inconnue.' };
   }
@@ -307,7 +298,7 @@ export async function finishAuthentication(opts: {
     return { ok: false, error: 'Authentication could not be verified' };
   }
 
-  const updated = db
+  const updated = await db
     .update(passkeys)
     .set({
       counter: verification.authenticationInfo.newCounter,
@@ -315,10 +306,9 @@ export async function finishAuthentication(opts: {
       lastUsedAt: new Date()
     })
     .where(eq(passkeys.id, credential.id))
-    .returning()
-    .get();
+    .returning();
 
-  return { ok: true, passkey: updated, userId: credential.userId };
+  return { ok: true, passkey: updated[0], userId: credential.userId };
 }
 
 export function publicPasskey(p: Passkey) {

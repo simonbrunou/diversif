@@ -49,7 +49,7 @@ export const actions: Actions = {
     }
 
     const { email, password } = parsed.data;
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     const valid = user ? await verifyPassword(user.passwordHash, password) : false;
 
     if (!user || !valid) {
@@ -66,9 +66,9 @@ export const actions: Actions = {
     // wide enough that a legitimate user who mistyped a few times before
     // getting it right won't be locked out.
 
-    db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id)).run();
+    await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
 
-    const session = createSession(user.id);
+    const session = await createSession(user.id);
     cookies.set(SESSION_COOKIE, session.id, {
       path: '/',
       httpOnly: true,

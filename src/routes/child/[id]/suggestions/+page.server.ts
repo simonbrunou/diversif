@@ -13,19 +13,20 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const { child } = await parent();
   const months = ageInMonths(child.birthDate);
 
-  const introducedIds = db
-    .selectDistinct({ id: foodEntries.foodId })
-    .from(foodEntries)
-    .where(eq(foodEntries.childId, childId))
-    .all()
-    .map((r) => r.id);
+  const introducedIds = (
+    await db
+      .selectDistinct({ id: foodEntries.foodId })
+      .from(foodEntries)
+      .where(eq(foodEntries.childId, childId))
+  ).map((r) => r.id);
 
-  const introducedAllergens = db
-    .selectDistinct({ allergenType: foods.allergenType })
-    .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(eq(foodEntries.childId, childId))
-    .all()
+  const introducedAllergens = (
+    await db
+      .selectDistinct({ allergenType: foods.allergenType })
+      .from(foodEntries)
+      .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+      .where(eq(foodEntries.childId, childId))
+  )
     .map((r) => r.allergenType)
     .filter((x): x is string => !!x);
 
@@ -37,12 +38,11 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     conditions.push(notInArray(foods.id, introducedIds));
   }
 
-  const candidates = db
+  const candidates = await db
     .select()
     .from(foods)
     .where(and(...conditions))
-    .orderBy(sql`${foods.suggestedAgeMonths} ASC, ${foods.name} ASC`)
-    .all();
+    .orderBy(sql`${foods.suggestedAgeMonths} ASC, ${foods.name} ASC`);
 
   // Only surface "Allergènes à introduire" prompts for the priority subset
   // (LEAP/EAT/ESPGHAN-supported). Soja and the EU-1169-only allergens

@@ -15,7 +15,7 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, url }) => {
   const safe = requireUser(locals);
-  const fresh = db.select().from(users).where(eq(users.id, safe.id)).get();
+  const fresh = (await db.select().from(users).where(eq(users.id, safe.id)).limit(1))[0];
   if (!fresh) throw error(401, 'Utilisateur introuvable');
 
   const origin = originFromEnv(url.origin);
@@ -28,7 +28,7 @@ export const POST: RequestHandler = async ({ locals, cookies, url }) => {
     rpID
   });
 
-  const stored = createChallenge({
+  const stored = await createChallenge({
     challenge: options.challenge,
     purpose: 'registration',
     userId: fresh.id

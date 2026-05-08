@@ -36,7 +36,7 @@ export const POST: RequestHandler = async (event) => {
   const token = cookies.get(PASSKEY_CHALLENGE_COOKIE) ?? '';
   cookies.delete(PASSKEY_CHALLENGE_COOKIE, { path: '/' });
 
-  const challenge = consumeChallenge(token, 'authentication');
+  const challenge = await consumeChallenge(token, 'authentication');
   if (!challenge) {
     throw error(400, 'Challenge expiré ou invalide');
   }
@@ -60,9 +60,9 @@ export const POST: RequestHandler = async (event) => {
   // an attacker with one valid credential keep the throttle defeated by
   // alternating failed guesses with their own occasional successful auth.
 
-  db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, result.userId)).run();
+  await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, result.userId));
 
-  const session = createSession(result.userId);
+  const session = await createSession(result.userId);
   cookies.set(SESSION_COOKIE, session.id, {
     path: '/',
     httpOnly: true,
