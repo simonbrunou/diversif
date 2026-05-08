@@ -99,8 +99,10 @@ Both stacks need the same env vars:
 ```
 DOMAIN=diversif.app
 ORIGIN=https://diversif.app
-IMAGE=ghcr.io/simonbrunou/diversif:<sha>
+IMAGE=ghcr.io/simonbrunou/diversif:latest
 ```
+
+**Why `:latest`** — the GitHub Actions `publish` job pushes both `:latest` (mutable, what the stacks pull) and `:${{ github.sha }}` (immutable, for traceability and rollback). Procedure executions pull-and-recreate, so `:latest` always lands the freshly built image. The `:sha` tag stays in GHCR forever — to roll back, override `IMAGE` on both stacks to a known-good `:sha` and run the Procedure manually.
 
 Plus a `.env` alongside each compose file for app secrets (`SESSION_SECRET`, `SENTRY_DSN`, etc. — get these from the existing single-stack deploy if migrating).
 
@@ -115,12 +117,24 @@ Sync `compose/komodo-procedure.toml` into Komodo's resource sync, or recreate th
 
 ### 5. Wire the Procedure trigger
 
-The Procedure should run automatically when a new image is built. Two paths:
+This is already done in CI. `.github/workflows/ci.yml` has a `publish` job that runs after the three test jobs pass on `main`. It builds the image, pushes `ghcr.io/simonbrunou/diversif:${sha}` and `:latest`, then POSTs to Komodo's `/execute` to fire `RunProcedure { procedure: "diversif-rolling-deploy" }`.
 
-- **If you build images via Komodo:** wire the Build resource's success webhook to fire the Procedure.
-- **If you build images in CI elsewhere:** call Komodo's API endpoint for the Procedure on CI success. (Komodo's webhooks doc covers the auth pattern.)
+You need to set three GitHub Actions secrets on the repo before the next push to `main`:
 
-Verify by triggering a manual Procedure run after a no-op image rebuild — both slots should redeploy in sequence and the app should never go fully unavailable from the outside.
+| Secret              | Value                                                                                                                |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `KOMODO_ADDRESS`    | The base URL of your Komodo Core, e.g. `https://komodo.example.com` (no trailing slash needed; the workflow strips). |
+| `KOMODO_API_KEY`    | Generate in Komodo: User → Settings → API Keys.                                                                      |
+| `KOMODO_API_SECRET` | Paired secret from the same key generation.                                                                          |
+
+The API key needs permission to **Execute** the `diversif-rolling-deploy` Procedure (and read the linked Stacks). Scope it as narrowly as Komodo allows.
+
+Verify by pushing a no-op commit to `main` and watching:
+
+1. The three test jobs pass.
+2. The `publish` job builds and pushes the image (visible in GHCR).
+3. Komodo's UI shows the Procedure firing, stage 1 (`DeployStack diversif-a`) completing, then stage 2 (`DeployStack diversif-b`) completing.
+4. The verify-with-curl loop below stays green throughout.
 
 ## How to verify it works
 
