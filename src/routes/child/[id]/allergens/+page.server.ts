@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, isNotNull } from 'drizzle-orm';
-import { ALLERGENS } from '$lib/utils/allergens';
+import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
@@ -9,6 +9,7 @@ export type AllergenStatus = {
   id: string;
   label: string;
   introduced: boolean;
+  priority: boolean;
   firstIntroAt: number | null;
   lastIntroAt: number | null;
   count: number;
@@ -46,12 +47,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     }
   }
 
+  const prioritySet = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
   const status: AllergenStatus[] = ALLERGENS.map((a) => {
     const stats = acc.get(a.id);
     return {
       id: a.id,
       label: a.label,
       introduced: !!stats,
+      priority: prioritySet.has(a.id),
       firstIntroAt: stats ? stats.first : null,
       lastIntroAt: stats ? stats.last : null,
       count: stats?.count ?? 0
