@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies, locals }) => {
   if (locals.sessionId) {
-    invalidateSession(locals.sessionId);
+    await invalidateSession(locals.sessionId);
   }
   cookies.delete(SESSION_COOKIE, { path: '/' });
   throw redirect(303, '/login');
