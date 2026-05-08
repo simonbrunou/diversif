@@ -60,35 +60,39 @@
   }
 
   .dark {
-    --background: 162 18% 9%;
-    --foreground: 30 35% 96%;
-    --card: 162 16% 13%;
-    --card-foreground: 30 35% 96%;
-    --surface: 162 14% 15%;
-    --popover: 162 16% 13%;
-    --popover-foreground: 30 35% 96%;
-    --primary: 162 42% 64%;
-    --primary-foreground: 162 38% 10%;
-    --secondary: 162 12% 20%;
-    --secondary-foreground: 30 35% 96%;
-    --muted: 162 12% 18%;
-    --muted-foreground: 162 10% 70%;
-    --accent: 162 18% 22%;
-    --accent-foreground: 30 35% 96%;
+    /* Warm "dim wood lounge" palette — surfaces drift to hue 30–40 (warm
+       cocoa/cream) at low saturation so the dark mode feels coherent with
+       the brand sage rather than slate-cold. Primary stays at hue ~120
+       (true sage) to match #6b8e6b. */
+    --background: 35 10% 9%;
+    --foreground: 30 30% 94%;
+    --card: 35 9% 13%;
+    --card-foreground: 30 30% 94%;
+    --surface: 35 8% 16%;
+    --popover: 35 9% 13%;
+    --popover-foreground: 30 30% 94%;
+    --primary: 120 22% 60%;
+    --primary-foreground: 120 32% 10%;
+    --secondary: 35 8% 22%;
+    --secondary-foreground: 30 30% 94%;
+    --muted: 35 8% 18%;
+    --muted-foreground: 30 12% 70%;
+    --accent: 28 18% 24%;
+    --accent-foreground: 30 30% 94%;
     --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 162 12% 24%;
-    --input: 162 12% 24%;
-    --ring: 162 42% 64%;
-    --info: 205 80% 70%;
+    --border: 35 8% 26%;
+    --input: 35 8% 26%;
+    --ring: 120 35% 58%;
+    --info: 205 70% 70%;
 
     --accent-peach: 22 80% 72%;
     --accent-butter: 45 80% 72%;
     --accent-sky: 200 70% 72%;
-    --accent-mint: 155 50% 70%;
+    --accent-mint: 140 36% 70%;
     --accent-lilac: 280 50% 78%;
 
-    --celebrate: 35 80% 70%;
+    --celebrate: 35 88% 68%;
     --celebrate-foreground: 30 60% 14%;
   }
 
