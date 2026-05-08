@@ -1,0 +1,96 @@
+# Diversif — zero-downtime rolling deploy via Traefik + blue/green slots.
+#
+# Both `blue` and `green` services share the same data volume (the SQLite
+# file) and are routed by Traefik under one router, `diversif`. Only one
+# slot runs at a time except during the cutover window (~3-5s).
+#
+# Required env (Komodo stack vars or .env beside this file):
+#   DOMAIN=diversif.app
+#   ORIGIN=https://diversif.app
+#   IMAGE=ghcr.io/simonbrunou/diversif:tag
+#   ACTIVE_SLOT=blue|green   # set to whichever slot is currently live
+#
+# Prerequisite: traefik.yaml stack is running on the host (Traefik
+# listens on 80/443 and watches the traefik-web network).
+#
+# Deploy procedure (run via Komodo Procedure or compose/deploy.sh):
+#   1. Update IMAGE to new tag
+#   2. Set ACTIVE_SLOT to the *idle* slot
+#   3. `docker compose --profile $ACTIVE_SLOT up -d`
+#   4. Wait for health: `docker inspect --format='{{.State.Health.Status}}' diversif-$ACTIVE_SLOT` → healthy
+#   5. (Traefik discovers the new slot automatically)
+#   6. `docker compose --profile $OTHER_SLOT down`
+
+name: diversif
+
+x-app: &app
+  image: ${IMAGE:?IMAGE required (e.g. ghcr.io/simonbrunou/diversif:sha)}
+  restart: unless-stopped
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    - ORIGIN=${ORIGIN:?ORIGIN required}
+    - DATABASE_PATH=/app/data/diversif.db
+    - NODE_ENV=production
+    - BODY_SIZE_LIMIT=65536
+  volumes:
+    - data:/app/data
+  networks:
+    - traefik-web
+  mem_limit: 512m
+  mem_reservation: 256m
+  pids_limit: 200
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+  healthcheck:
+    test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/healthz']
+    interval: 5s
+    timeout: 2s
+    retries: 3
+    start_period: 30s
+  logging:
+    driver: json-file
+    options:
+      max-size: '10m'
+      max-file: '5'
+
+x-traefik-labels: &traefik-labels
+  - 'traefik.enable=true'
+  - 'traefik.docker.network=traefik-web'
+  - 'traefik.http.routers.diversif.rule=Host(`${DOMAIN:?DOMAIN required}`)'
+  - 'traefik.http.routers.diversif.entrypoints=websecure'
+  - 'traefik.http.routers.diversif.tls.certresolver=le'
+  - 'traefik.http.services.diversif.loadbalancer.server.port=3000'
+  - 'traefik.http.services.diversif.loadbalancer.healthcheck.path=/healthz'
+  - 'traefik.http.services.diversif.loadbalancer.healthcheck.interval=5s'
+  - 'traefik.http.services.diversif.loadbalancer.healthcheck.timeout=2s'
+  # Graceful drain: wait for in-flight requests to complete before removing
+  # this upstream when Traefik observes the container stopping.
+  - 'traefik.http.services.diversif.loadbalancer.responseforwarding.flushinterval=100ms'
+
+services:
+  blue:
+    <<: *app
+    container_name: diversif-blue
+    profiles: [blue]
+    labels: *traefik-labels
+
+  green:
+    <<: *app
+    container_name: diversif-green
+    profiles: [green]
+    labels: *traefik-labels
+
+volumes:
+  data:
+    name: diversif-data
+
+networks:
+  traefik-web:
+    name: traefik-web
+    external: true

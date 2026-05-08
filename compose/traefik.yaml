@@ -1,0 +1,49 @@
+# Traefik — host-level reverse proxy + ACME (Let's Encrypt).
+# Deploy ONCE on the Komodo host. After that, every app stack just
+# attaches labels and Traefik picks them up automatically.
+#
+# Required env (set in Komodo or in a .env beside this file):
+#   ACME_EMAIL=you@example.com   # Let's Encrypt registration email
+#
+# After this stack is running, point your DNS A records at this host.
+
+name: traefik
+
+services:
+  traefik:
+    image: traefik:v3.1
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/letsencrypt
+    command:
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.network=traefik-web'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+      - '--entrypoints.websecure.address=:443'
+      - '--certificatesresolvers.le.acme.email=${ACME_EMAIL:?ACME_EMAIL required}'
+      - '--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.le.acme.httpchallenge=true'
+      - '--certificatesresolvers.le.acme.httpchallenge.entrypoint=web'
+      # - '--api.dashboard=true'   # uncomment + add a router for /dashboard if you want UI
+    networks:
+      - traefik-web
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:80/ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  traefik_certs:
+    name: traefik_certs
+
+networks:
+  traefik-web:
+    name: traefik-web
