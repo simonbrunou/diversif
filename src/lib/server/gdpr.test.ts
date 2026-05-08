@@ -17,7 +17,7 @@ import {
 import { and, eq } from 'drizzle-orm';
 
 async function insertUser(email: string, displayName = email) {
-  const u = testDb
+  const u = await testDb
     .insert(users)
     .values({
       email: email.toLowerCase(),
@@ -29,61 +29,63 @@ async function insertUser(email: string, displayName = email) {
       ageConfirmedAt: new Date(),
       lastLoginAt: new Date()
     })
-    .returning()
-    .all();
+    .returning();
   return u[0];
 }
 
-function insertChild(name: string, createdBy: number) {
-  return testDb
-    .insert(children)
-    .values({ name, birthDate: '2024-01-01', createdBy, createdAt: new Date() })
-    .returning()
-    .all()[0];
+async function insertChild(name: string, createdBy: number) {
+  return (
+    await testDb
+      .insert(children)
+      .values({ name, birthDate: '2024-01-01', createdBy, createdAt: new Date() })
+      .returning()
+  )[0];
 }
 
-function insertMembership(
+async function insertMembership(
   userId: number,
   childId: number,
   role: 'owner' | 'member',
   createdAt = new Date()
 ) {
-  testDb.insert(memberships).values({ userId, childId, role, createdAt }).run();
+  await testDb.insert(memberships).values({ userId, childId, role, createdAt });
 }
 
-function insertFood(name: string, category = 'fruit') {
-  return testDb
-    .insert(foods)
-    .values({ name, category, isMajorAllergen: false, suggestedAgeMonths: 6 })
-    .returning()
-    .all()[0];
+async function insertFood(name: string, category = 'fruit') {
+  return (
+    await testDb
+      .insert(foods)
+      .values({ name, category, isMajorAllergen: false, suggestedAgeMonths: 6 })
+      .returning()
+  )[0];
 }
 
-function insertEntry(childId: number, foodId: number, loggedBy: number) {
-  return testDb
-    .insert(foodEntries)
-    .values({
-      childId,
-      foodId,
-      givenAt: new Date(),
-      reaction: 'ras',
-      loggedBy,
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+async function insertEntry(childId: number, foodId: number, loggedBy: number) {
+  return (
+    await testDb
+      .insert(foodEntries)
+      .values({
+        childId,
+        foodId,
+        givenAt: new Date(),
+        reaction: 'ras',
+        loggedBy,
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 describe('deleteUserAccount', () => {
   it('deletes a user with no memberships', async () => {
     const u = await insertUser('lone@example.com');
-    const summary = deleteUserAccount(u.id);
+    const summary = await deleteUserAccount(u.id);
     expect(summary).toEqual({ deletedChildren: 0, promotedMemberships: 0, removedMemberships: 0 });
-    expect(testDb.select().from(users).all()).toHaveLength(0);
+    expect(await testDb.select().from(users)).toHaveLength(0);
   });
 
   it('drops every live session for the deleted user (revocation across devices)', async () => {
@@ -93,53 +95,50 @@ describe('deleteUserAccount', () => {
     // who must NOT be touched. Deletion has to revoke all of u's sessions
     // atomically so a parallel device can't keep transacting on the dead row.
     const future = new Date(Date.now() + 86400_000);
-    testDb
-      .insert(sessions)
-      .values([
-        { id: 'sess-a', userId: u.id, expiresAt: future },
-        { id: 'sess-b', userId: u.id, expiresAt: future },
-        { id: 'sess-c', userId: u.id, expiresAt: future },
-        { id: 'sess-other', userId: other.id, expiresAt: future }
-      ])
-      .run();
+    await testDb.insert(sessions).values([
+      { id: 'sess-a', userId: u.id, expiresAt: future },
+      { id: 'sess-b', userId: u.id, expiresAt: future },
+      { id: 'sess-c', userId: u.id, expiresAt: future },
+      { id: 'sess-other', userId: other.id, expiresAt: future }
+    ]);
 
-    deleteUserAccount(u.id);
+    await deleteUserAccount(u.id);
 
-    const remaining = testDb.select().from(sessions).all();
+    const remaining = await testDb.select().from(sessions);
     expect(remaining).toHaveLength(1);
     expect(remaining[0].id).toBe('sess-other');
   });
 
   it('cascades child deletion when sole owner with no other members', async () => {
     const u = await insertUser('only@example.com');
-    const c = insertChild('Bébé', u.id);
-    insertMembership(u.id, c.id, 'owner');
-    const food = insertFood('Carotte');
-    insertEntry(c.id, food.id, u.id);
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Carotte');
+    await insertEntry(c.id, food.id, u.id);
 
-    const summary = deleteUserAccount(u.id);
+    const summary = await deleteUserAccount(u.id);
     expect(summary.deletedChildren).toBe(1);
     expect(summary.removedMemberships).toBe(0);
-    expect(testDb.select().from(children).all()).toHaveLength(0);
-    expect(testDb.select().from(foodEntries).all()).toHaveLength(0);
-    expect(testDb.select().from(memberships).all()).toHaveLength(0);
-    expect(testDb.select().from(users).all()).toHaveLength(0);
+    expect(await testDb.select().from(children)).toHaveLength(0);
+    expect(await testDb.select().from(foodEntries)).toHaveLength(0);
+    expect(await testDb.select().from(memberships)).toHaveLength(0);
+    expect(await testDb.select().from(users)).toHaveLength(0);
   });
 
   it('promotes earliest member when sole owner leaves a shared child', async () => {
     const owner = await insertUser('owner@example.com');
     const memberA = await insertUser('a@example.com');
     const memberB = await insertUser('b@example.com');
-    const c = insertChild('Bébé', owner.id);
-    insertMembership(owner.id, c.id, 'owner', new Date(1000));
-    insertMembership(memberB.id, c.id, 'member', new Date(3000));
-    insertMembership(memberA.id, c.id, 'member', new Date(2000));
+    const c = await insertChild('Bébé', owner.id);
+    await insertMembership(owner.id, c.id, 'owner', new Date(1000));
+    await insertMembership(memberB.id, c.id, 'member', new Date(3000));
+    await insertMembership(memberA.id, c.id, 'member', new Date(2000));
 
-    const summary = deleteUserAccount(owner.id);
+    const summary = await deleteUserAccount(owner.id);
     expect(summary.promotedMemberships).toBe(1);
     expect(summary.deletedChildren).toBe(0);
 
-    const remaining = testDb.select().from(memberships).where(eq(memberships.childId, c.id)).all();
+    const remaining = await testDb.select().from(memberships).where(eq(memberships.childId, c.id));
     expect(remaining).toHaveLength(2);
     const promoted = remaining.find((m) => m.userId === memberA.id);
     expect(promoted?.role).toBe('owner');
@@ -151,19 +150,18 @@ describe('deleteUserAccount', () => {
     const owner = await insertUser('owner@example.com');
     const a = await insertUser('a@example.com');
     const b = await insertUser('b@example.com');
-    const c = insertChild('Bébé', owner.id);
+    const c = await insertChild('Bébé', owner.id);
     const ts = new Date(2000);
-    insertMembership(owner.id, c.id, 'owner', new Date(1000));
-    insertMembership(b.id, c.id, 'member', ts);
-    insertMembership(a.id, c.id, 'member', ts);
+    await insertMembership(owner.id, c.id, 'owner', new Date(1000));
+    await insertMembership(b.id, c.id, 'member', ts);
+    await insertMembership(a.id, c.id, 'member', ts);
 
-    deleteUserAccount(owner.id);
+    await deleteUserAccount(owner.id);
 
-    const promoted = testDb
+    const promoted = await testDb
       .select()
       .from(memberships)
-      .where(and(eq(memberships.childId, c.id), eq(memberships.role, 'owner')))
-      .all();
+      .where(and(eq(memberships.childId, c.id), eq(memberships.role, 'owner')));
     expect(promoted).toHaveLength(1);
     // a.id < b.id since a was inserted first.
     expect(promoted[0].userId).toBe(a.id);
@@ -172,15 +170,15 @@ describe('deleteUserAccount', () => {
   it('does not promote when another owner remains', async () => {
     const o1 = await insertUser('o1@example.com');
     const o2 = await insertUser('o2@example.com');
-    const c = insertChild('Bébé', o1.id);
-    insertMembership(o1.id, c.id, 'owner');
-    insertMembership(o2.id, c.id, 'owner');
+    const c = await insertChild('Bébé', o1.id);
+    await insertMembership(o1.id, c.id, 'owner');
+    await insertMembership(o2.id, c.id, 'owner');
 
-    const summary = deleteUserAccount(o1.id);
+    const summary = await deleteUserAccount(o1.id);
     expect(summary.promotedMemberships).toBe(0);
     expect(summary.removedMemberships).toBe(1);
 
-    const remaining = testDb.select().from(memberships).where(eq(memberships.childId, c.id)).all();
+    const remaining = await testDb.select().from(memberships).where(eq(memberships.childId, c.id));
     expect(remaining).toHaveLength(1);
     expect(remaining[0].userId).toBe(o2.id);
     expect(remaining[0].role).toBe('owner');
@@ -189,100 +187,92 @@ describe('deleteUserAccount', () => {
   it('removes a non-owner membership without touching the child', async () => {
     const owner = await insertUser('o@example.com');
     const member = await insertUser('m@example.com');
-    const c = insertChild('Bébé', owner.id);
-    insertMembership(owner.id, c.id, 'owner');
-    insertMembership(member.id, c.id, 'member');
+    const c = await insertChild('Bébé', owner.id);
+    await insertMembership(owner.id, c.id, 'owner');
+    await insertMembership(member.id, c.id, 'member');
 
-    const summary = deleteUserAccount(member.id);
+    const summary = await deleteUserAccount(member.id);
     expect(summary).toEqual({ deletedChildren: 0, promotedMemberships: 0, removedMemberships: 1 });
-    expect(testDb.select().from(children).all()).toHaveLength(1);
-    expect(testDb.select().from(memberships).all()).toHaveLength(1);
+    expect(await testDb.select().from(children)).toHaveLength(1);
+    expect(await testDb.select().from(memberships)).toHaveLength(1);
   });
 
   it('preserves food entries from a deleted member by nulling logged_by', async () => {
     const owner = await insertUser('o@example.com');
     const member = await insertUser('m@example.com');
-    const c = insertChild('Bébé', owner.id);
-    insertMembership(owner.id, c.id, 'owner');
-    insertMembership(member.id, c.id, 'member');
-    const food = insertFood('Pomme');
-    const entry = insertEntry(c.id, food.id, member.id);
+    const c = await insertChild('Bébé', owner.id);
+    await insertMembership(owner.id, c.id, 'owner');
+    await insertMembership(member.id, c.id, 'member');
+    const food = await insertFood('Pomme');
+    const entry = await insertEntry(c.id, food.id, member.id);
 
-    deleteUserAccount(member.id);
-    const remaining = testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).all();
+    await deleteUserAccount(member.id);
+    const remaining = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(remaining).toHaveLength(1);
     expect(remaining[0].loggedBy).toBeNull();
   });
 
   it('cascades sessions, passkeys and tip dismissals', async () => {
     const u = await insertUser('me@example.com');
-    const c = insertChild('Bébé', u.id);
-    insertMembership(u.id, c.id, 'owner');
-    testDb
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    await testDb
       .insert(sessions)
-      .values({ id: 'sess1', userId: u.id, expiresAt: new Date(Date.now() + 100000) })
-      .run();
-    testDb
-      .insert(passkeys)
-      .values({
-        id: 'pk1',
-        userId: u.id,
-        publicKey: 'k',
-        counter: 0,
-        transports: '[]',
-        deviceType: 'singleDevice',
-        backedUp: false,
-        name: 'Téléphone',
-        createdAt: new Date()
-      })
-      .run();
-    testDb
+      .values({ id: 'sess1', userId: u.id, expiresAt: new Date(Date.now() + 100000) });
+    await testDb.insert(passkeys).values({
+      id: 'pk1',
+      userId: u.id,
+      publicKey: 'k',
+      counter: 0,
+      transports: '[]',
+      deviceType: 'singleDevice',
+      backedUp: false,
+      name: 'Téléphone',
+      createdAt: new Date()
+    });
+    await testDb
       .insert(tipDismissals)
-      .values({ userId: u.id, childId: c.id, reminderKey: 'k', dismissedAt: new Date() })
-      .run();
+      .values({ userId: u.id, childId: c.id, reminderKey: 'k', dismissedAt: new Date() });
 
-    deleteUserAccount(u.id);
+    await deleteUserAccount(u.id);
 
-    expect(testDb.select().from(sessions).all()).toHaveLength(0);
-    expect(testDb.select().from(passkeys).all()).toHaveLength(0);
-    expect(testDb.select().from(tipDismissals).all()).toHaveLength(0);
+    expect(await testDb.select().from(sessions)).toHaveLength(0);
+    expect(await testDb.select().from(passkeys)).toHaveLength(0);
+    expect(await testDb.select().from(tipDismissals)).toHaveLength(0);
   });
 
   it('frees the email for re-signup', async () => {
     const u = await insertUser('reuse@example.com');
-    deleteUserAccount(u.id);
+    await deleteUserAccount(u.id);
     const u2 = await insertUser('reuse@example.com');
     expect(u2.id).not.toBe(u.id);
   });
 });
 
 describe('exportUserData', () => {
-  it('throws for unknown users', () => {
-    expect(() => exportUserData(99_999)).toThrow();
+  it('throws for unknown users', async () => {
+    await expect(exportUserData(99_999)).rejects.toThrow();
   });
 
   it('returns the expected shape with redactions', async () => {
     const u = await insertUser('export@example.com', 'Eve');
-    const c = insertChild('Léa', u.id);
-    insertMembership(u.id, c.id, 'owner');
-    const food = insertFood('Banane');
-    insertEntry(c.id, food.id, u.id);
-    testDb
-      .insert(passkeys)
-      .values({
-        id: 'pk-export',
-        userId: u.id,
-        publicKey: 'SECRET-PUBLIC-KEY',
-        counter: 42,
-        transports: '["internal"]',
-        deviceType: 'multiDevice',
-        backedUp: true,
-        name: 'iPhone',
-        createdAt: new Date()
-      })
-      .run();
+    const c = await insertChild('Léa', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Banane');
+    await insertEntry(c.id, food.id, u.id);
+    await testDb.insert(passkeys).values({
+      id: 'pk-export',
+      userId: u.id,
+      publicKey: 'SECRET-PUBLIC-KEY',
+      counter: 42,
+      transports: '["internal"]',
+      deviceType: 'multiDevice',
+      backedUp: true,
+      name: 'iPhone',
+      createdAt: new Date()
+    });
 
-    const out = exportUserData(u.id);
+    const out = await exportUserData(u.id);
     expect(out.generator).toBe('diversif');
     expect(out.schemaVersion).toBe(1);
     expect(out.profile.email).toBe('export@example.com');
@@ -304,16 +294,16 @@ describe('exportUserData', () => {
 
   it('returns empty children list when user has no memberships', async () => {
     const u = await insertUser('alone@example.com');
-    const out = exportUserData(u.id);
+    const out = await exportUserData(u.id);
     expect(out.children).toEqual([]);
     expect(out.passkeys).toEqual([]);
   });
 
   it('returns child with empty foodEntries when nothing has been logged yet', async () => {
     const u = await insertUser('blank@example.com');
-    const c = insertChild('Bébé', u.id);
-    insertMembership(u.id, c.id, 'owner');
-    const out = exportUserData(u.id);
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const out = await exportUserData(u.id);
     expect(out.children).toHaveLength(1);
     expect(out.children[0].foodEntries).toEqual([]);
   });
@@ -321,29 +311,29 @@ describe('exportUserData', () => {
   it('marks entries logged by another member as not loggedByMe', async () => {
     const owner = await insertUser('owner@example.com');
     const member = await insertUser('member@example.com');
-    const c = insertChild('Bébé', owner.id);
-    insertMembership(owner.id, c.id, 'owner');
-    insertMembership(member.id, c.id, 'member');
-    const food = insertFood('Riz');
-    insertEntry(c.id, food.id, owner.id);
+    const c = await insertChild('Bébé', owner.id);
+    await insertMembership(owner.id, c.id, 'owner');
+    await insertMembership(member.id, c.id, 'member');
+    const food = await insertFood('Riz');
+    await insertEntry(c.id, food.id, owner.id);
 
-    const out = exportUserData(member.id);
+    const out = await exportUserData(member.id);
     expect(out.children[0].foodEntries[0].loggedByMe).toBe(false);
   });
 
   it('throws ExportTooLargeError when food entries exceed the cap', async () => {
     const u = await insertUser('big@example.com');
-    const c = insertChild('Bébé', u.id);
-    insertMembership(u.id, c.id, 'owner');
-    const food = insertFood('Riz');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Riz');
     // Seed 3 entries; pass a cap of 2 so the threshold trips without
     // having to insert tens of thousands of rows.
-    insertEntry(c.id, food.id, u.id);
-    insertEntry(c.id, food.id, u.id);
-    insertEntry(c.id, food.id, u.id);
-    expect(() => exportUserData(u.id, 2)).toThrow(ExportTooLargeError);
+    await insertEntry(c.id, food.id, u.id);
+    await insertEntry(c.id, food.id, u.id);
+    await insertEntry(c.id, food.id, u.id);
+    await expect(exportUserData(u.id, 2)).rejects.toThrow(ExportTooLargeError);
     try {
-      exportUserData(u.id, 2);
+      await exportUserData(u.id, 2);
     } catch (err) {
       if (err instanceof ExportTooLargeError) {
         expect(err.count).toBe(3);
@@ -356,12 +346,12 @@ describe('exportUserData', () => {
 
   it('exports normally when entry count equals the cap', async () => {
     const u = await insertUser('exact@example.com');
-    const c = insertChild('Bébé', u.id);
-    insertMembership(u.id, c.id, 'owner');
-    const food = insertFood('Riz');
-    insertEntry(c.id, food.id, u.id);
-    insertEntry(c.id, food.id, u.id);
-    const out = exportUserData(u.id, 2);
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Riz');
+    await insertEntry(c.id, food.id, u.id);
+    await insertEntry(c.id, food.id, u.id);
+    const out = await exportUserData(u.id, 2);
     expect(out.children[0].foodEntries).toHaveLength(2);
   });
 });

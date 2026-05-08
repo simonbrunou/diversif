@@ -17,7 +17,7 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
   const user = requireUser(locals);
   return {
-    passkeys: listPasskeys(user.id).map(publicPasskey)
+    passkeys: (await listPasskeys(user.id)).map(publicPasskey)
   };
 };
 
@@ -36,10 +36,10 @@ export const actions: Actions = {
     const raw = Object.fromEntries(await request.formData());
     const parsed = profileSchema.safeParse(raw);
     if (!parsed.success) return fail(400, { profileErrorKey: 'errorsAccountProfileNameInvalid' });
-    db.update(users)
+    await db
+      .update(users)
       .set({ displayName: parsed.data.displayName.trim() })
-      .where(eq(users.id, user.id))
-      .run();
+      .where(eq(users.id, user.id));
     return { profileSuccessKey: 'errorsAccountProfileSuccess' };
   },
 
@@ -52,18 +52,18 @@ export const actions: Actions = {
         passwordErrorKey: 'errorsAuthBadInput'
       });
     }
-    const fresh = db.select().from(users).where(eq(users.id, user.id)).get();
+    const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
     if (!fresh) throw redirect(303, '/login');
     const ok = await verifyPassword(fresh.passwordHash, parsed.data.currentPassword);
     if (!ok) return fail(400, { passwordErrorKey: 'errorsAccountPasswordIncorrect' });
     const newHash = await hashPassword(parsed.data.newPassword);
-    db.update(users).set({ passwordHash: newHash }).where(eq(users.id, user.id)).run();
+    await db.update(users).set({ passwordHash: newHash }).where(eq(users.id, user.id));
     return { passwordSuccessKey: 'errorsAccountPasswordSuccess' };
   },
 
   logoutEverywhere: async ({ locals, cookies }) => {
     const user = requireUser(locals);
-    invalidateAllUserSessions(user.id);
+    await invalidateAllUserSessions(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });
     throw redirect(303, '/login');
   },
@@ -76,7 +76,7 @@ export const actions: Actions = {
     if (!id || !name.trim()) {
       return fail(400, { passkeyErrorKey: 'errorsAccountPasskeyNameInvalid' });
     }
-    if (!renamePasskey(user.id, id, name)) {
+    if (!(await renamePasskey(user.id, id, name))) {
       return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
     }
     return { passkeySuccessKey: 'errorsAccountPasskeyRenameSuccess' };
@@ -89,7 +89,7 @@ export const actions: Actions = {
     if (!id) {
       return fail(400, { passkeyErrorKey: 'errorsAccountPasskeyIdMissing' });
     }
-    if (!deletePasskey(user.id, id)) {
+    if (!(await deletePasskey(user.id, id))) {
       return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
     }
     return { passkeySuccessKey: 'errorsAccountPasskeyDeleteSuccess' };
@@ -103,7 +103,7 @@ export const actions: Actions = {
     if (confirmEmail !== user.email) {
       return fail(400, { deleteErrorKey: 'errorsAccountDeleteEmailMismatch' });
     }
-    deleteUserAccount(user.id);
+    await deleteUserAccount(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });
     throw redirect(303, '/account/deleted');
   }

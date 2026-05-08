@@ -107,8 +107,9 @@ export default defineConfig({
         'src/test/**',
         // Pure type aliases — no runtime statements to cover.
         'src/lib/types.ts',
-        // Bootstrap singleton — exercises real filesystem & better-sqlite3 binding;
-        // covered indirectly via the in-memory test harness that mirrors it.
+        // Bootstrap singleton — opens a real Postgres pool and runs migrations
+        // at module init; covered indirectly via the pg-mem test harness that
+        // mirrors it.
         'src/lib/server/db/index.ts',
         // Schema declarations: the runtime arrow functions here are drizzle's
         // foreign-key resolvers, evaluated lazily by the ORM. The declarations

@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
 
   if (repeat) {
     // Foods given <= 2 times whose worst reaction is RAS or Inconfort (worth re-exposing).
-    const repeatRows = db.all<{ food_id: number }>(
+    const repeatResult = await db.execute(
       sql`SELECT food_id FROM (
             SELECT ${foodEntries.foodId} AS food_id,
                    COUNT(*) AS n,
@@ -33,9 +33,10 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
             FROM ${foodEntries}
             WHERE ${foodEntries.childId} = ${childId}
             GROUP BY ${foodEntries.foodId}
-          )
+          ) sub
           WHERE n <= 2 AND worst <= 1`
     );
+    const repeatRows = repeatResult.rows as Array<{ food_id: number }>;
     const ids = repeatRows.map((r) => Number(r.food_id));
     if (ids.length === 0) {
       return {
@@ -46,7 +47,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     conditions.push(inArray(foodEntries.foodId, ids));
   }
 
-  let rows = db
+  let rows = await db
     .select({
       id: foodEntries.id,
       givenAt: foodEntries.givenAt,
@@ -64,8 +65,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     .leftJoin(users, eq(users.id, foodEntries.loggedBy))
     .where(and(...conditions))
     .orderBy(desc(foodEntries.givenAt))
-    .limit(200)
-    .all();
+    .limit(200);
 
   if (q) {
     const { normalize } = await import('$lib/utils/search');

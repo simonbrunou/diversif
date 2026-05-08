@@ -7,8 +7,8 @@ import { runCleanup, startCleanupTimer, stopCleanupTimer } from './cleanup';
 import { invitations, sessions, users, webauthnChallenges, children } from './db/schema';
 import { _clearAllRateLimits, checkRateLimit } from './rate-limit';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   _clearAllRateLimits();
 });
 
@@ -17,21 +17,23 @@ afterEach(() => {
 });
 
 async function seedUserAndChild() {
-  const u = testDb
-    .insert(users)
-    .values({
-      email: 'a@b.c',
-      passwordHash: 'h',
-      displayName: 'A',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
-  const c = testDb
-    .insert(children)
-    .values({ name: 'Bébé', birthDate: '2024-01-01', createdBy: u.id, createdAt: new Date() })
-    .returning()
-    .all()[0];
+  const u = (
+    await testDb
+      .insert(users)
+      .values({
+        email: 'a@b.c',
+        passwordHash: 'h',
+        displayName: 'A',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
+  const c = (
+    await testDb
+      .insert(children)
+      .values({ name: 'Bébé', birthDate: '2024-01-01', createdBy: u.id, createdAt: new Date() })
+      .returning()
+  )[0];
   return { u, c };
 }
 
@@ -41,53 +43,45 @@ describe('runCleanup', () => {
     const past = new Date(Date.now() - 10_000);
     const future = new Date(Date.now() + 10_000);
 
-    testDb.insert(sessions).values({ id: 'old', userId: u.id, expiresAt: past }).run();
-    testDb.insert(sessions).values({ id: 'fresh', userId: u.id, expiresAt: future }).run();
+    await testDb.insert(sessions).values({ id: 'old', userId: u.id, expiresAt: past });
+    await testDb.insert(sessions).values({ id: 'fresh', userId: u.id, expiresAt: future });
 
-    testDb
-      .insert(invitations)
-      .values({
-        code: 'OLD',
-        childId: c.id,
-        createdBy: u.id,
-        createdAt: past,
-        expiresAt: past
-      })
-      .run();
-    testDb
-      .insert(invitations)
-      .values({
-        code: 'FRESH',
-        childId: c.id,
-        createdBy: u.id,
-        createdAt: new Date(),
-        expiresAt: future
-      })
-      .run();
+    await testDb.insert(invitations).values({
+      code: 'OLD',
+      childId: c.id,
+      createdBy: u.id,
+      createdAt: past,
+      expiresAt: past
+    });
+    await testDb.insert(invitations).values({
+      code: 'FRESH',
+      childId: c.id,
+      createdBy: u.id,
+      createdAt: new Date(),
+      expiresAt: future
+    });
 
-    testDb
+    await testDb
       .insert(webauthnChallenges)
-      .values({ token: 'old', challenge: 'x', purpose: 'authentication', expiresAt: past })
-      .run();
-    testDb
+      .values({ token: 'old', challenge: 'x', purpose: 'authentication', expiresAt: past });
+    await testDb
       .insert(webauthnChallenges)
-      .values({ token: 'fresh', challenge: 'y', purpose: 'authentication', expiresAt: future })
-      .run();
+      .values({ token: 'fresh', challenge: 'y', purpose: 'authentication', expiresAt: future });
 
-    const result = runCleanup();
+    const result = await runCleanup();
     expect(result).toEqual({
       expiredSessions: 1,
       expiredInvitations: 1,
       expiredChallenges: 1,
       evictedRateLimitBuckets: 0
     });
-    expect(testDb.select().from(sessions).all()).toHaveLength(1);
-    expect(testDb.select().from(invitations).all()).toHaveLength(1);
-    expect(testDb.select().from(webauthnChallenges).all()).toHaveLength(1);
+    expect(await testDb.select().from(sessions)).toHaveLength(1);
+    expect(await testDb.select().from(invitations)).toHaveLength(1);
+    expect(await testDb.select().from(webauthnChallenges)).toHaveLength(1);
   });
 
-  it('returns zeros when nothing has expired', () => {
-    expect(runCleanup()).toEqual({
+  it('returns zeros when nothing has expired', async () => {
+    expect(await runCleanup()).toEqual({
       expiredSessions: 0,
       expiredInvitations: 0,
       expiredChallenges: 0,
@@ -95,8 +89,8 @@ describe('runCleanup', () => {
     });
   });
 
-  it('evicts stale rate-limit buckets older than the longest auth window', () => {
-    vi.useFakeTimers();
+  it('evicts stale rate-limit buckets older than the longest auth window', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
     try {
       vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
       const opts = { name: 'test', limit: 5, windowMs: 60_000 };
@@ -107,7 +101,7 @@ describe('runCleanup', () => {
       vi.setSystemTime(new Date('2024-01-01T01:30:00Z'));
       checkRateLimit(opts, 'recentClient');
 
-      const result = runCleanup();
+      const result = await runCleanup();
       expect(result.evictedRateLimitBuckets).toBe(1);
       // 'recentClient' carries one in-window hit at 01:30 (the 00:00 hit was
       // already trimmed when we touched it again), plus the assertion call
@@ -125,11 +119,12 @@ describe('startCleanupTimer', () => {
   it('runs once on start and is idempotent', async () => {
     const { u } = await seedUserAndChild();
     const past = new Date(Date.now() - 1);
-    testDb.insert(sessions).values({ id: 's1', userId: u.id, expiresAt: past }).run();
+    await testDb.insert(sessions).values({ id: 's1', userId: u.id, expiresAt: past });
 
     startCleanupTimer();
-    // Initial run is synchronous.
-    expect(testDb.select().from(sessions).all()).toHaveLength(0);
+    // Allow the initial async run to flush.
+    await new Promise((r) => setImmediate(r));
+    expect(await testDb.select().from(sessions)).toHaveLength(0);
 
     // Second call is a no-op.
     startCleanupTimer();
@@ -138,7 +133,7 @@ describe('startCleanupTimer', () => {
     stopCleanupTimer();
   });
 
-  it('logs but does not throw when initial or scheduled runs fail', () => {
+  it('logs but does not throw when initial or scheduled runs fail', async () => {
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     let throwsLeft = 2;
@@ -151,11 +146,19 @@ describe('startCleanupTimer', () => {
       return originalDelete.apply(testDb, args as Parameters<typeof originalDelete>);
     });
 
-    vi.useFakeTimers();
+    // Fake setInterval/setTimeout so we can advance to the next scheduled run
+    // without waiting six real hours; leave microtasks / hrtime alone so the
+    // awaited db operations inside runCleanup still settle.
+    vi.useFakeTimers({
+      toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout', 'Date']
+    });
     startCleanupTimer();
+    // Drain the synchronously-queued initial run.
+    await Promise.resolve();
+    await Promise.resolve();
     expect(errSpy).toHaveBeenCalledWith('[cleanup] initial run failed:', expect.any(Error));
 
-    vi.advanceTimersByTime(1000 * 60 * 60 * 6);
+    await vi.advanceTimersByTimeAsync(1000 * 60 * 60 * 6);
     expect(errSpy).toHaveBeenCalledWith('[cleanup] scheduled run failed:', expect.any(Error));
 
     stopCleanupTimer();

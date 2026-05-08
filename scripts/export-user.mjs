@@ -4,11 +4,10 @@
  * manuellement à une demande RGPD article 15 / 20 (en cas de besoin
  * d'agir en lieu et place de l'utilisateur).
  *
- * Usage: node scripts/export-user.mjs <email>
- *   ou : node scripts/export-user.mjs --id <userId>
+ * Usage: DATABASE_URL=postgres://… node scripts/export-user.mjs <email>
+ *   ou : DATABASE_URL=… node scripts/export-user.mjs --id <userId>
  */
-import Database from 'better-sqlite3';
-import path from 'node:path';
+import pg from 'pg';
 
 const args = process.argv.slice(2);
 let userId = null;
@@ -23,35 +22,49 @@ if (!userId && !email) {
   process.exit(1);
 }
 
-const dbPath = path.resolve(process.env.DATABASE_PATH ?? './data/diversif.db');
-const db = new Database(dbPath, { readonly: true });
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  console.error('DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif)');
+  process.exit(1);
+}
 
-const user = userId
-  ? db.prepare('SELECT * FROM users WHERE id = ?').get(userId)
-  : db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
+const client = new pg.Client({ connectionString: databaseUrl });
+await client.connect();
+
+const userRes = userId
+  ? await client.query('SELECT * FROM users WHERE id = $1', [userId])
+  : await client.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
+const user = userRes.rows[0];
 
 if (!user) {
   console.error('Utilisateur introuvable.');
+  await client.end();
   process.exit(2);
 }
 
-const memberships = db.prepare('SELECT * FROM memberships WHERE user_id = ?').all(user.id);
+const membershipsRes = await client.query('SELECT * FROM memberships WHERE user_id = $1', [
+  user.id
+]);
+const memberships = membershipsRes.rows;
 const childIds = memberships.map((m) => m.child_id);
 
-const placeholders = childIds.map(() => '?').join(',') || 'NULL';
 const children = childIds.length
-  ? db.prepare(`SELECT * FROM children WHERE id IN (${placeholders})`).all(...childIds)
+  ? (await client.query('SELECT * FROM children WHERE id = ANY($1::int[])', [childIds])).rows
   : [];
 const entries = childIds.length
-  ? db
-      .prepare(
+  ? (
+      await client.query(
         `SELECT fe.*, f.name AS food_name
-         FROM food_entries fe JOIN foods f ON f.id = fe.food_id
-         WHERE fe.child_id IN (${placeholders}) ORDER BY fe.given_at ASC`
+           FROM food_entries fe
+           JOIN foods f ON f.id = fe.food_id
+          WHERE fe.child_id = ANY($1::int[])
+          ORDER BY fe.given_at ASC`,
+        [childIds]
       )
-      .all(...childIds)
+    ).rows
   : [];
-const passkeys = db.prepare('SELECT * FROM passkeys WHERE user_id = ?').all(user.id);
+const passkeysRes = await client.query('SELECT * FROM passkeys WHERE user_id = $1', [user.id]);
+const passkeys = passkeysRes.rows;
 
 const iso = (v) => (v == null ? null : new Date(v).toISOString());
 
@@ -103,4 +116,4 @@ const payload = {
 };
 
 console.log(JSON.stringify(payload, null, 2));
-db.close();
+await client.end();

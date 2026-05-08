@@ -14,55 +14,55 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { load } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function setup() {
   const u = await seedUser();
-  const c = seedChild({ createdBy: u.id });
-  const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-  const carrot = testDb
-    .insert(foods)
-    .values({
-      name: 'Carotte',
-      category: 'legumes',
-      isMajorAllergen: false,
-      allergenType: null,
-      suggestedAgeMonths: 4,
-      notes: null,
-      isCustom: false,
-      customForChildId: null
-    })
-    .returning()
-    .all()[0];
-  const apple = testDb
-    .insert(foods)
-    .values({
-      name: 'Pomme',
-      category: 'fruits',
-      isMajorAllergen: false,
-      allergenType: null,
-      suggestedAgeMonths: 4,
-      notes: null,
-      isCustom: false,
-      customForChildId: null
-    })
-    .returning()
-    .all()[0];
-  const log = (foodId: number, reaction: 'ras' | 'inconfort' | 'reaction', daysAgo = 0) =>
-    testDb
-      .insert(foodEntries)
+  const c = await seedChild({ createdBy: u.id });
+  const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+  const carrot = (
+    await testDb
+      .insert(foods)
       .values({
-        childId: c.id,
-        foodId,
-        givenAt: new Date(Date.now() - daysAgo * 86400_000),
-        reaction,
+        name: 'Carotte',
+        category: 'legumes',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
         notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
+        isCustom: false,
+        customForChildId: null
       })
-      .run();
+      .returning()
+  )[0];
+  const apple = (
+    await testDb
+      .insert(foods)
+      .values({
+        name: 'Pomme',
+        category: 'fruits',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+  )[0];
+  const log = async (foodId: number, reaction: 'ras' | 'inconfort' | 'reaction', daysAgo = 0) => {
+    await testDb.insert(foodEntries).values({
+      childId: c.id,
+      foodId,
+      givenAt: new Date(Date.now() - daysAgo * 86400_000),
+      reaction,
+      notes: null,
+      loggedBy: u.id,
+      createdAt: new Date()
+    });
+  };
   return { u, c, m, carrot, apple, log };
 }
 
@@ -141,8 +141,8 @@ describe('child/[id]/foods load', () => {
 
   it('returns all entries when no filter', async () => {
     const ctx = await setup();
-    ctx.log(ctx.carrot.id, 'ras', 1);
-    ctx.log(ctx.apple.id, 'ras', 2);
+    await ctx.log(ctx.carrot.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'ras', 2);
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
     expect(out.entries.length).toBe(2);
     expect(out.filters).toEqual({ q: '', category: '', reaction: '', repeat: false });
@@ -150,8 +150,8 @@ describe('child/[id]/foods load', () => {
 
   it('filters by category', async () => {
     const ctx = await setup();
-    ctx.log(ctx.carrot.id, 'ras', 1);
-    ctx.log(ctx.apple.id, 'ras', 2);
+    await ctx.log(ctx.carrot.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'ras', 2);
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?category=fruits`);
     expect(out.entries.length).toBe(1);
     expect(out.entries[0].foodName).toBe('Pomme');
@@ -159,23 +159,23 @@ describe('child/[id]/foods load', () => {
 
   it('filters by reaction', async () => {
     const ctx = await setup();
-    ctx.log(ctx.carrot.id, 'ras', 1);
-    ctx.log(ctx.apple.id, 'inconfort', 2);
+    await ctx.log(ctx.carrot.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'inconfort', 2);
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?reaction=inconfort`);
     expect(out.entries.map((e) => e.foodName)).toEqual(['Pomme']);
   });
 
   it('ignores reaction filter for unknown values', async () => {
     const ctx = await setup();
-    ctx.log(ctx.carrot.id, 'ras', 1);
+    await ctx.log(ctx.carrot.id, 'ras', 1);
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?reaction=bogus`);
     expect(out.entries.length).toBe(1);
   });
 
   it('filters by text query (q)', async () => {
     const ctx = await setup();
-    ctx.log(ctx.carrot.id, 'ras', 1);
-    ctx.log(ctx.apple.id, 'ras', 2);
+    await ctx.log(ctx.carrot.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'ras', 2);
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?q=pom`);
     expect(out.entries.map((e) => e.foodName)).toEqual(['Pomme']);
   });
@@ -189,30 +189,25 @@ describe('child/[id]/foods load', () => {
 
   it('repeat=1 includes only foods given <=2 times with worst <= inconfort', async () => {
     const ctx = await setup();
-    // carrot: 1 ras → candidate
-    ctx.log(ctx.carrot.id, 'ras', 1);
-    // apple: 3 ras → not candidate (count > 2)
-    ctx.log(ctx.apple.id, 'ras', 1);
-    ctx.log(ctx.apple.id, 'ras', 2);
-    ctx.log(ctx.apple.id, 'ras', 3);
+    await ctx.log(ctx.carrot.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'ras', 2);
+    await ctx.log(ctx.apple.id, 'ras', 3);
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
     expect(out.entries.every((e) => e.foodName === 'Carotte')).toBe(true);
   });
 
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
     const ctx = await setup();
-    testDb
-      .insert(foodEntries)
-      .values({
-        childId: ctx.c.id,
-        foodId: ctx.carrot.id,
-        givenAt: new Date(),
-        reaction: 'ras',
-        notes: null,
-        loggedBy: null,
-        createdAt: new Date()
-      })
-      .run();
+    await testDb.insert(foodEntries).values({
+      childId: ctx.c.id,
+      foodId: ctx.carrot.id,
+      givenAt: new Date(),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: null,
+      createdAt: new Date()
+    });
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
     expect(out.entries).toHaveLength(1);
     expect(out.entries[0].loggedByName).toBe('Compte supprimé');

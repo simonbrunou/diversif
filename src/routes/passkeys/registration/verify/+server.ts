@@ -27,7 +27,7 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
   const token = cookies.get(PASSKEY_CHALLENGE_COOKIE) ?? '';
   cookies.delete(PASSKEY_CHALLENGE_COOKIE, { path: '/' });
 
-  const challenge = consumeChallenge(token, 'registration');
+  const challenge = await consumeChallenge(token, 'registration');
   if (!challenge || challenge.userId !== user.id) {
     throw error(400, 'Challenge expiré ou invalide');
   }

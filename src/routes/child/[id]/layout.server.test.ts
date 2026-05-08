@@ -13,8 +13,8 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { load } from './+layout.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 describe('child/[id] +layout.server load', () => {
@@ -93,8 +93,8 @@ describe('child/[id] +layout.server load', () => {
 
   it('returns the child + membership when authorized', async () => {
     const u = await seedUser();
-    const c = seedChild({ createdBy: u.id, name: 'Lulu' });
-    const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const c = await seedChild({ createdBy: u.id, name: 'Lulu' });
+    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
     const out = await load(
       makeRouteEvent({
         user: safeUser(u),

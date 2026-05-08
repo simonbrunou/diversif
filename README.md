@@ -7,7 +7,7 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 ## Stack
 
 - SvelteKit (Svelte 5 + TypeScript)
-- SQLite via `better-sqlite3` + Drizzle ORM
+- Postgres via `pg` + Drizzle ORM (`pg-mem` in tests)
 - Tailwind CSS, in-house auth (Argon2id sessions, WebAuthn passkeys)
 - i18n via `@inlang/paraglide-sveltekit` (FR default, `/en/` for English)
 - PWA via `@vite-pwa/sveltekit` with an in-page offline log queue
@@ -18,11 +18,12 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 
 ```bash
 npm install
+docker compose up -d postgres   # local Postgres for dev
+DATABASE_URL=postgres://diversif:diversif@localhost:5432/diversif npm run dev
 npm run db:generate   # only when schema.ts changes
-npm run dev
 ```
 
-The app creates `./data/diversif.db` on first run, runs migrations, and seeds the food catalog automatically.
+The app reads `DATABASE_URL` at startup, runs migrations, and seeds the food catalog automatically on first connect.
 
 ## Tests / checks
 
@@ -33,41 +34,11 @@ npm run test
 npm run build
 ```
 
-## Production with Docker
+## Production deploy
 
-```bash
-cp .env.example .env  # edit ORIGIN if needed
-docker compose build
-docker compose up -d
-```
+The reference deploy is **Coolify**, which provides a managed Postgres and injects `DATABASE_URL` into the app container automatically. Migrations and seeding run on every container start (idempotent). Backups are handled by Coolify's managed-DB tooling.
 
-The SQLite DB is persisted in the named Docker volume `diversif-data` (pinned via `name:` so it is independent of the Compose project name), mounted at `/app/data` inside the container. The volume survives rebuilds, container recreations, repo re-clones, and renames of the project directory, so accounts and data are kept across deploys. Migrations and seeding run on every container start (idempotent).
-
-### Volume ownership (non-root container)
-
-The container runs as the `node` user (UID 1000). The build-time `chown` on `/app/data` only fixes the **empty** image layer — it cannot change ownership of an already-populated named volume. Two cases to handle:
-
-**Fresh deploy on an unprivileged Proxmox LXC:** container UID 1000 maps to host UID 101000. The first deploy will create the volume owned by host root, and migrations will fail with `EACCES`. Fix once on the LXC host before `docker compose up`:
-
-```bash
-docker volume create diversif-data  # if not yet created
-chown -R 101000:101000 /var/lib/docker/volumes/diversif-data/_data
-```
-
-(Replace `101000` with the actual mapped UID if your LXC uses a different `subuid` range.)
-
-**Upgrading from an older deploy that ran as root:** the existing DB and WAL files are owned by root inside the volume, so the new non-root container can open the DB read-only and then crash on the first write. Stop the container, chown on the host, then start:
-
-```bash
-docker compose down
-# Privileged LXC or non-LXC host: container UID 1000 == host UID 1000
-chown -R 1000:1000 /var/lib/docker/volumes/diversif-data/_data
-# Unprivileged LXC: map to subuid range
-chown -R 101000:101000 /var/lib/docker/volumes/diversif-data/_data
-docker compose up -d
-```
-
-You can verify in-container with `docker exec diversif id` (should show `uid=1000(node)`) and `docker exec diversif ls -lan /app/data` (`diversif.db` should be owned by UID 1000).
+The repo's `docker-compose.yml` is a **local-dev example only** — it brings up the app plus a throwaway Postgres on `localhost:5432`. Don't use it in production unless you own the Postgres lifecycle yourself.
 
 ### Reverse proxy / Cloudflare Tunnel
 
@@ -83,39 +54,15 @@ HOST_HEADER=x-forwarded-host
 
 `cf-connecting-ip` is safe to trust **only because** a Tunnel origin has no public port — all traffic must transit Cloudflare, so a direct connection can't spoof the header. If you ever expose the Coolify host directly to the Internet, switch to `ADDRESS_HEADER=x-forwarded-for` and set `XFF_DEPTH` to the number of trusted proxies between you and the client (otherwise a client-supplied XFF entry wins).
 
-### Pre-migration safety net
+### Backups
 
-On every container start, **before** migrations run, the app takes an online snapshot (`VACUUM INTO`) of the current DB into `/app/data/backups/diversif-<ISO timestamp>.db`. The last `DB_BACKUP_KEEP` snapshots (default 10) are retained — older ones are pruned. If a future migration eats data, recover by stopping the container and copying the most recent snapshot back over `diversif.db`:
-
-```bash
-docker compose stop
-docker run --rm -v diversif-data:/data alpine sh -c \
-  'cp "$(ls -1t /data/backups/*.db | head -n1)" /data/diversif.db && \
-   rm -f /data/diversif.db-shm /data/diversif.db-wal'
-docker compose start
-```
-
-To inspect, back up, or restore the database:
+Coolify's managed-DB tooling owns backup orchestration in production. For ad-hoc local dumps:
 
 ```bash
-# Locate the volume on the host
-docker volume inspect diversif-data
-
-# Hot backup using a one-shot alpine container with sqlite3 installed
-docker run --rm \
-  -v diversif-data:/data \
-  -v "$PWD":/backup \
-  alpine sh -c 'apk add --no-cache sqlite >/dev/null && \
-    sqlite3 /data/diversif.db ".backup /backup/diversif-backup.db"'
-
-# Restore (stop the app first to avoid clobbering an open DB)
-docker compose stop
-docker run --rm -v diversif-data:/data -v "$PWD":/backup alpine \
-  cp /backup/diversif-backup.db /data/diversif.db
-docker compose start
+docker compose exec postgres pg_dump -U diversif diversif > diversif-$(date +%F).sql
 ```
 
-> Only run `docker compose down -v` if you intend to wipe the database — the `-v` flag deletes named volumes.
+> Only run `docker compose down -v` if you intend to wipe the local-dev database — the `-v` flag deletes the named volume.
 
 ## Routes overview
 
@@ -130,7 +77,7 @@ docker compose start
 
 ## Vie privée & RGPD
 
-Diversif est conçu pour être conforme au RGPD lorsqu'il est exposé en tant qu'instance publique (l'éditeur agit alors comme responsable de traitement). Aucune donnée n'est partagée avec un tiers ; la base SQLite reste sur l'hôte.
+Diversif est conçu pour être conforme au RGPD lorsqu'il est exposé en tant qu'instance publique (l'éditeur agit alors comme responsable de traitement). Aucune donnée n'est partagée avec un tiers ; la base Postgres reste chez l'hébergeur de l'instance.
 
 - **Pages légales** : `/mentions-legales`, `/politique-confidentialite`, `/cgu`, `/cookies`. Elles affichent « à compléter » tant que les variables d'environnement décrites ci-dessous ne sont pas renseignées.
 - **Consentement** : à l'inscription, l'utilisateur doit confirmer avoir au moins 15 ans (article 45 LIL), accepter les CGU et la politique de confidentialité. Les horodatages sont stockés dans la table `users`.

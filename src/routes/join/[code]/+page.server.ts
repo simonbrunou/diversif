@@ -11,32 +11,37 @@ type ActiveInvite = {
   childName: string;
 };
 
-function findActiveInvitation(code: string): ActiveInvite | null {
-  const row = db
-    .select({
-      code: invitations.code,
-      childId: invitations.childId,
-      childName: children.name
-    })
-    .from(invitations)
-    .innerJoin(children, eq(children.id, invitations.childId))
-    .where(
-      and(
-        eq(invitations.code, code),
-        isNull(invitations.usedAt),
-        gt(invitations.expiresAt, new Date())
+async function findActiveInvitation(code: string): Promise<ActiveInvite | null> {
+  const row = (
+    await db
+      .select({
+        code: invitations.code,
+        childId: invitations.childId,
+        childName: children.name
+      })
+      .from(invitations)
+      .innerJoin(children, eq(children.id, invitations.childId))
+      .where(
+        and(
+          eq(invitations.code, code),
+          isNull(invitations.usedAt),
+          gt(invitations.expiresAt, new Date())
+        )
       )
-    )
-    .get();
+      .limit(1)
+  )[0];
   return row ?? null;
 }
 
-function userHasMembership(userId: number, childId: number): boolean {
-  return !!db
-    .select()
-    .from(memberships)
-    .where(and(eq(memberships.userId, userId), eq(memberships.childId, childId)))
-    .get();
+async function userHasMembership(userId: number, childId: number): Promise<boolean> {
+  const row = (
+    await db
+      .select()
+      .from(memberships)
+      .where(and(eq(memberships.userId, userId), eq(memberships.childId, childId)))
+      .limit(1)
+  )[0];
+  return !!row;
 }
 
 /**
@@ -55,12 +60,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     throw redirect(303, `/signup?code=${encodeURIComponent(code)}`);
   }
 
-  const inv = findActiveInvitation(code);
+  const inv = await findActiveInvitation(code);
   if (!inv) {
     return { error: 'Code d’invitation introuvable ou expiré.' as const, code, child: null };
   }
 
-  if (userHasMembership(locals.user.id, inv.childId)) {
+  if (await userHasMembership(locals.user.id, inv.childId)) {
     throw redirect(303, `/child/${inv.childId}`);
   }
 
@@ -81,23 +86,38 @@ export const actions: Actions = {
       throw redirect(303, `/signup?code=${encodeURIComponent(code)}`);
     }
 
-    const inv = findActiveInvitation(code);
+    const inv = await findActiveInvitation(code);
     if (!inv) {
       return fail(400, { error: 'Code d’invitation introuvable ou expiré.' });
     }
 
-    if (userHasMembership(locals.user.id, inv.childId)) {
+    if (await userHasMembership(locals.user.id, inv.childId)) {
       throw redirect(303, `/child/${inv.childId}`);
     }
 
     const now = new Date();
-    db.insert(memberships)
-      .values({ userId: locals.user.id, childId: inv.childId, role: 'member', createdAt: now })
-      .run();
-    db.update(invitations)
-      .set({ usedAt: now, usedBy: locals.user.id })
-      .where(eq(invitations.code, code))
-      .run();
+    // Atomic single-claim: race between two POSTs from different users would
+    // otherwise both pass the read above and both insert membership rows
+    // against the same one-shot code. Wrap the consumption in a transaction
+    // and condition the invitation UPDATE on `used_at IS NULL`. If rowCount
+    // is 0 someone else won the race and we abort the membership write.
+    let consumed = false;
+    await db.transaction(async (tx) => {
+      const result = await tx
+        .update(invitations)
+        .set({ usedAt: now, usedBy: locals.user!.id })
+        .where(and(eq(invitations.code, code), isNull(invitations.usedAt)));
+      /* v8 ignore next — node-postgres always populates rowCount for UPDATE */
+      if ((result.rowCount ?? 0) === 0) return;
+      await tx
+        .insert(memberships)
+        .values({ userId: locals.user!.id, childId: inv.childId, role: 'member', createdAt: now });
+      consumed = true;
+    });
+
+    if (!consumed) {
+      return fail(400, { error: 'Code d’invitation introuvable ou expiré.' });
+    }
 
     throw redirect(303, `/child/${inv.childId}`);
   }

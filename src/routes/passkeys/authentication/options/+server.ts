@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ cookies, url }) => {
 
   const options = await buildAuthenticationOptions({ rpID });
 
-  const stored = createChallenge({
+  const stored = await createChallenge({
     challenge: options.challenge,
     purpose: 'authentication',
     userId: null

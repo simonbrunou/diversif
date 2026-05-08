@@ -35,20 +35,21 @@ export const actions: Actions = {
     }
 
     const now = new Date();
-    const inserted = db
-      .insert(children)
-      .values({
-        name: parsed.data.name.trim(),
-        birthDate: parsed.data.birthDate,
-        createdBy: user.id,
-        createdAt: now
-      })
-      .returning({ id: children.id })
-      .get();
+    const inserted = (
+      await db
+        .insert(children)
+        .values({
+          name: parsed.data.name.trim(),
+          birthDate: parsed.data.birthDate,
+          createdBy: user.id,
+          createdAt: now
+        })
+        .returning({ id: children.id })
+    )[0];
 
-    db.insert(memberships)
-      .values({ userId: user.id, childId: inserted.id, role: 'owner', createdAt: now })
-      .run();
+    await db
+      .insert(memberships)
+      .values({ userId: user.id, childId: inserted.id, role: 'owner', createdAt: now });
 
     throw redirect(303, `/child/${inserted.id}`);
   }

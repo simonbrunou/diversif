@@ -9,8 +9,8 @@ import { users } from '$lib/server/db/schema';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { load, actions } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   _clearAllRateLimits();
 });
 
@@ -38,16 +38,17 @@ describe('login load', () => {
 describe('login default action', () => {
   async function seedTestUser() {
     const passwordHash = await hashPassword('correct-password');
-    return testDb
-      .insert(users)
-      .values({
-        email: 'parent@example.com',
-        passwordHash,
-        displayName: 'Parent',
-        createdAt: new Date()
-      })
-      .returning()
-      .all()[0];
+    return (
+      await testDb
+        .insert(users)
+        .values({
+          email: 'parent@example.com',
+          passwordHash,
+          displayName: 'Parent',
+          createdAt: new Date()
+        })
+        .returning()
+    )[0];
   }
 
   it('fails 400 on invalid email shape', async () => {

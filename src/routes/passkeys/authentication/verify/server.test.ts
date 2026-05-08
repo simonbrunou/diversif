@@ -19,38 +19,36 @@ import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, createChallenge } from '$lib/server/passkeys';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   mocks.verifyAuthenticationResponse.mockReset();
   _clearAllRateLimits();
 });
 
-function seedUserAndKey() {
-  const u = testDb
-    .insert(users)
-    .values({
-      email: 'p@example.com',
-      passwordHash: 'placeholder-hash',
-      displayName: 'Parent',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
-  testDb
-    .insert(passkeys)
-    .values({
-      id: 'cred-id',
-      userId: u.id,
-      publicKey: 'cHVi',
-      counter: 0,
-      transports: '[]',
-      deviceType: 'singleDevice',
-      backedUp: false,
-      name: 'Test',
-      createdAt: new Date(),
-      lastUsedAt: null
-    })
-    .run();
+async function seedUserAndKey() {
+  const u = (
+    await testDb
+      .insert(users)
+      .values({
+        email: 'p@example.com',
+        passwordHash: 'placeholder-hash',
+        displayName: 'Parent',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
+  await testDb.insert(passkeys).values({
+    id: 'cred-id',
+    userId: u.id,
+    publicKey: 'cHVi',
+    counter: 0,
+    transports: '[]',
+    deviceType: 'singleDevice',
+    backedUp: false,
+    name: 'Test',
+    createdAt: new Date(),
+    lastUsedAt: null
+  });
   return u;
 }
 
@@ -109,8 +107,8 @@ describe('POST /passkeys/authentication/verify', () => {
   });
 
   it('returns 400 when verification fails', async () => {
-    seedUserAndKey();
-    const c = createChallenge({ challenge: 'ch', purpose: 'authentication' });
+    await seedUserAndKey();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'authentication' });
     mocks.verifyAuthenticationResponse.mockResolvedValue({ verified: false });
     const event = makeReq({
       body: { response: { id: 'cred-id' } },
@@ -129,8 +127,8 @@ describe('POST /passkeys/authentication/verify', () => {
   });
 
   it('issues a session cookie on success', async () => {
-    const u = seedUserAndKey();
-    const c = createChallenge({ challenge: 'ch', purpose: 'authentication' });
+    const u = await seedUserAndKey();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'authentication' });
     mocks.verifyAuthenticationResponse.mockResolvedValue({
       verified: true,
       authenticationInfo: {
@@ -156,21 +154,25 @@ describe('POST /passkeys/authentication/verify', () => {
     const setCalls = event.cookies.set.mock.calls.filter((args) => args[0] === SESSION_COOKIE);
     expect(setCalls.length).toBe(1);
     const sessionToken = setCalls[0][1] as string;
-    const validated = validateSession(sessionToken);
+    const validated = await validateSession(sessionToken);
     expect(validated?.user.id).toBe(u.id);
 
     // Counter was bumped on the passkey.
-    const updated = testDb.select().from(passkeys).where(eq(passkeys.id, 'cred-id')).get();
+    const updated = (
+      await testDb.select().from(passkeys).where(eq(passkeys.id, 'cred-id')).limit(1)
+    )[0];
     expect(updated?.counter).toBe(5);
 
     // Sanity check session row exists.
-    const row = testDb.select().from(sessions).where(eq(sessions.id, sessionToken)).get();
+    const row = (
+      await testDb.select().from(sessions).where(eq(sessions.id, sessionToken)).limit(1)
+    )[0];
     expect(row?.userId).toBe(u.id);
   });
 
   it('marks the session cookie secure in production', async () => {
-    seedUserAndKey();
-    const c = createChallenge({ challenge: 'ch', purpose: 'authentication' });
+    await seedUserAndKey();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'authentication' });
     mocks.verifyAuthenticationResponse.mockResolvedValue({
       verified: true,
       authenticationInfo: {

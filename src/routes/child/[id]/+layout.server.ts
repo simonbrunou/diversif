@@ -12,7 +12,7 @@ export const load: LayoutServerLoad = async ({ locals, params }) => {
   const childId = parseChildIdParam(params);
   const { membership } = requireMembership(locals, childId);
 
-  const child = db.select().from(children).where(eq(children.id, childId)).get();
+  const child = (await db.select().from(children).where(eq(children.id, childId)).limit(1))[0];
   if (!child) throw error(404, 'Enfant introuvable');
 
   return {

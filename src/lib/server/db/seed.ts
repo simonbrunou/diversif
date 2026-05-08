@@ -1,4 +1,4 @@
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { sql } from 'drizzle-orm';
 import { foods } from './schema';
 import type * as schema from './schema';
@@ -137,9 +137,13 @@ export const FOODS_SEED: SeedFood[] = [
   { name: 'Paprika doux', category: 'aromates', age: 6 }
 ];
 
-export function seedFoods(db: BetterSQLite3Database<typeof schema>): void {
-  const existing = db.get<{ count: number }>(sql`SELECT COUNT(*) as count FROM foods`);
-  if (existing && existing.count > 0) return;
+export async function seedFoods(db: NodePgDatabase<typeof schema>): Promise<void> {
+  const existing = await db.execute<{ count: string }>(
+    sql`SELECT COUNT(*)::text as count FROM foods`
+  );
+  /* v8 ignore next — pg COUNT(*) always returns a single row */
+  const count = Number(existing.rows[0]?.count ?? 0);
+  if (count > 0) return;
 
   const rows = FOODS_SEED.map((f) => ({
     name: f.name,
@@ -152,5 +156,5 @@ export function seedFoods(db: BetterSQLite3Database<typeof schema>): void {
     customForChildId: null
   }));
 
-  db.insert(foods).values(rows).run();
+  await db.insert(foods).values(rows);
 }

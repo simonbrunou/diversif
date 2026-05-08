@@ -9,7 +9,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
   let childList: ChildSummary[] = [];
   if (locals.user && locals.memberships.length > 0) {
     const childIds = locals.memberships.map((m) => m.childId);
-    const rows = db.select().from(children).where(inArray(children.id, childIds)).all();
+    const rows = await db.select().from(children).where(inArray(children.id, childIds));
     const byId = new Map(rows.map((c) => [c.id, c]));
     childList = locals.memberships
       .map((m) => {

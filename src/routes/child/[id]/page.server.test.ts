@@ -14,42 +14,40 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 import { foodEntries, foods, tipDismissals } from '$lib/server/db/schema';
 import { load, actions } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function setup(opts: { entries?: number } = {}) {
   const u = await seedUser();
-  const c = seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-  const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-  const food = testDb
-    .insert(foods)
-    .values({
-      name: 'Carotte',
-      category: 'legumes',
-      isMajorAllergen: false,
-      allergenType: null,
-      suggestedAgeMonths: 4,
-      notes: null,
-      isCustom: false,
-      customForChildId: null
-    })
-    .returning()
-    .all()[0];
+  const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+  const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+  const food = (
+    await testDb
+      .insert(foods)
+      .values({
+        name: 'Carotte',
+        category: 'legumes',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+  )[0];
   if (opts.entries) {
     for (let i = 0; i < opts.entries; i++) {
-      testDb
-        .insert(foodEntries)
-        .values({
-          childId: c.id,
-          foodId: food.id,
-          givenAt: new Date(Date.now() - i * 86400_000),
-          reaction: 'ras',
-          notes: null,
-          loggedBy: u.id,
-          createdAt: new Date()
-        })
-        .run();
+      await testDb.insert(foodEntries).values({
+        childId: c.id,
+        foodId: food.id,
+        givenAt: new Date(Date.now() - i * 86400_000),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      });
     }
   }
   return { u, c, m, food };
@@ -173,15 +171,12 @@ describe('child/[id] +page.server load', () => {
 
   it('keeps starterFoods populated even after the welcome dialog is dismissed', async () => {
     const { u, c, m } = await setup();
-    testDb
-      .insert(tipDismissals)
-      .values({
-        userId: u.id,
-        childId: c.id,
-        reminderKey: 'welcome-dialog',
-        dismissedAt: new Date()
-      })
-      .run();
+    await testDb.insert(tipDismissals).values({
+      userId: u.id,
+      childId: c.id,
+      reminderKey: 'welcome-dialog',
+      dismissedAt: new Date()
+    });
     const out = await load(
       makeRouteEvent({
         user: safeUser(u),
@@ -203,18 +198,15 @@ describe('child/[id] +page.server load', () => {
 
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
     const { u, c, m, food } = await setup();
-    testDb
-      .insert(foodEntries)
-      .values({
-        childId: c.id,
-        foodId: food.id,
-        givenAt: new Date(),
-        reaction: 'ras',
-        notes: null,
-        loggedBy: null,
-        createdAt: new Date()
-      })
-      .run();
+    await testDb.insert(foodEntries).values({
+      childId: c.id,
+      foodId: food.id,
+      givenAt: new Date(),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: null,
+      createdAt: new Date()
+    });
     const out = await load(
       makeRouteEvent({
         user: safeUser(u),
@@ -236,46 +228,44 @@ describe('child/[id] +page.server load', () => {
 
   it('marks reactions in the allergen summary', async () => {
     const u = await seedUser();
-    const c = seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    const allergen = testDb
-      .insert(foods)
-      .values({
-        name: 'Œuf',
-        category: 'oeufs',
-        isMajorAllergen: true,
-        allergenType: 'oeuf',
-        suggestedAgeMonths: 6,
-        notes: null,
-        isCustom: false,
-        customForChildId: null
-      })
-      .returning()
-      .all()[0];
+    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const allergen = (
+      await testDb
+        .insert(foods)
+        .values({
+          name: 'Œuf',
+          category: 'oeufs',
+          isMajorAllergen: true,
+          allergenType: 'oeuf',
+          suggestedAgeMonths: 6,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning()
+    )[0];
     // Two entries: ras then inconfort — worst should be inconfort.
-    testDb
-      .insert(foodEntries)
-      .values([
-        {
-          childId: c.id,
-          foodId: allergen.id,
-          givenAt: new Date(Date.now() - 86400_000),
-          reaction: 'ras',
-          notes: null,
-          loggedBy: u.id,
-          createdAt: new Date()
-        },
-        {
-          childId: c.id,
-          foodId: allergen.id,
-          givenAt: new Date(),
-          reaction: 'inconfort',
-          notes: null,
-          loggedBy: u.id,
-          createdAt: new Date()
-        }
-      ])
-      .run();
+    await testDb.insert(foodEntries).values([
+      {
+        childId: c.id,
+        foodId: allergen.id,
+        givenAt: new Date(Date.now() - 86400_000),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: c.id,
+        foodId: allergen.id,
+        givenAt: new Date(),
+        reaction: 'inconfort',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      }
+    ]);
     const out = await load(
       makeRouteEvent({
         user: safeUser(u),
@@ -297,45 +287,43 @@ describe('child/[id] +page.server load', () => {
 
   it('upgrades worst-allergen reaction when reaction > inconfort encountered', async () => {
     const u = await seedUser();
-    const c = seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    const allergen = testDb
-      .insert(foods)
-      .values({
-        name: 'Arachide',
-        category: 'allergenes',
-        isMajorAllergen: true,
-        allergenType: 'arachide',
-        suggestedAgeMonths: 6,
+    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const allergen = (
+      await testDb
+        .insert(foods)
+        .values({
+          name: 'Arachide',
+          category: 'allergenes',
+          isMajorAllergen: true,
+          allergenType: 'arachide',
+          suggestedAgeMonths: 6,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning()
+    )[0];
+    await testDb.insert(foodEntries).values([
+      {
+        childId: c.id,
+        foodId: allergen.id,
+        givenAt: new Date(Date.now() - 86400_000),
+        reaction: 'inconfort',
         notes: null,
-        isCustom: false,
-        customForChildId: null
-      })
-      .returning()
-      .all()[0];
-    testDb
-      .insert(foodEntries)
-      .values([
-        {
-          childId: c.id,
-          foodId: allergen.id,
-          givenAt: new Date(Date.now() - 86400_000),
-          reaction: 'inconfort',
-          notes: null,
-          loggedBy: u.id,
-          createdAt: new Date()
-        },
-        {
-          childId: c.id,
-          foodId: allergen.id,
-          givenAt: new Date(),
-          reaction: 'reaction',
-          notes: null,
-          loggedBy: u.id,
-          createdAt: new Date()
-        }
-      ])
-      .run();
+        loggedBy: u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: c.id,
+        foodId: allergen.id,
+        givenAt: new Date(),
+        reaction: 'reaction',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      }
+    ]);
     const out = await load(
       makeRouteEvent({
         user: safeUser(u),
@@ -396,7 +384,7 @@ describe('child/[id] dismissReminder action', () => {
       event as unknown as Parameters<NonNullable<typeof actions.dismissReminder>>[0]
     )) as { ok: boolean };
     expect(r.ok).toBe(true);
-    const rows = testDb.select().from(tipDismissals).all();
+    const rows = await testDb.select().from(tipDismissals);
     expect(rows.length).toBe(1);
     expect(rows[0].reminderKey).toBe('welcome');
   });

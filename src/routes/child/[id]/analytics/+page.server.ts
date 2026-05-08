@@ -6,7 +6,7 @@ const WEEKS = 12;
 
 export const load: PageServerLoad = async ({ parent }) => {
   const { child } = await parent();
-  const buckets = loadAnalyticsBuckets(child.id, WEEKS);
+  const buckets = await loadAnalyticsBuckets(child.id, WEEKS);
   return {
     weeks: WEEKS,
     buckets,

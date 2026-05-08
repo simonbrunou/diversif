@@ -14,8 +14,8 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { load } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function setup() {
@@ -24,8 +24,8 @@ async function setup() {
   const birth = new Date();
   birth.setMonth(birth.getMonth() - 9);
   const dateStr = `${birth.getFullYear()}-${String(birth.getMonth() + 1).padStart(2, '0')}-${String(birth.getDate()).padStart(2, '0')}`;
-  const c = seedChild({ createdBy: u.id, birthDate: dateStr });
-  const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+  const c = await seedChild({ createdBy: u.id, birthDate: dateStr });
+  const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
   return { u, c, m };
 }
 
@@ -40,21 +40,27 @@ function loadFor({ u, c, m }: Awaited<ReturnType<typeof setup>>) {
   );
 }
 
-function insertFood(opts: { name: string; category: string; age: number; allergen?: string }) {
-  return testDb
-    .insert(foods)
-    .values({
-      name: opts.name,
-      category: opts.category,
-      isMajorAllergen: opts.allergen != null,
-      allergenType: opts.allergen ?? null,
-      suggestedAgeMonths: opts.age,
-      notes: null,
-      isCustom: false,
-      customForChildId: null
-    })
-    .returning()
-    .all()[0];
+async function insertFood(opts: {
+  name: string;
+  category: string;
+  age: number;
+  allergen?: string;
+}) {
+  return (
+    await testDb
+      .insert(foods)
+      .values({
+        name: opts.name,
+        category: opts.category,
+        isMajorAllergen: opts.allergen != null,
+        allergenType: opts.allergen ?? null,
+        suggestedAgeMonths: opts.age,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+  )[0];
 }
 
 describe('child/[id]/suggestions load', () => {
@@ -121,9 +127,9 @@ describe('child/[id]/suggestions load', () => {
 
   it('returns priorityAllergens and others, age-appropriate', async () => {
     const ctx = await setup();
-    const young = insertFood({ name: 'Young', category: 'legumes', age: 4 });
-    const old = insertFood({ name: 'Old', category: 'fruits', age: 18 });
-    const peanut = insertFood({
+    const young = await insertFood({ name: 'Young', category: 'legumes', age: 4 });
+    const old = await insertFood({ name: 'Old', category: 'fruits', age: 18 });
+    const peanut = await insertFood({
       name: 'Beurre de cacahuète',
       category: 'allergenes',
       age: 6,
@@ -140,31 +146,28 @@ describe('child/[id]/suggestions load', () => {
 
   it('excludes already-introduced foods + drops introduced allergens from priority', async () => {
     const ctx = await setup();
-    const peanut = insertFood({
+    const peanut = await insertFood({
       name: 'Beurre de cacahuète',
       category: 'allergenes',
       age: 6,
       allergen: 'arachide'
     });
-    const egg = insertFood({
+    const egg = await insertFood({
       name: 'Œuf',
       category: 'oeufs',
       age: 6,
       allergen: 'oeuf'
     });
 
-    testDb
-      .insert(foodEntries)
-      .values({
-        childId: ctx.c.id,
-        foodId: peanut.id,
-        givenAt: new Date(),
-        reaction: 'ras',
-        notes: null,
-        loggedBy: ctx.u.id,
-        createdAt: new Date()
-      })
-      .run();
+    await testDb.insert(foodEntries).values({
+      childId: ctx.c.id,
+      foodId: peanut.id,
+      givenAt: new Date(),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: ctx.u.id,
+      createdAt: new Date()
+    });
 
     const out = await loadFor(ctx);
 
@@ -180,9 +183,9 @@ describe('child/[id]/suggestions load', () => {
     const veryYoung = new Date();
     veryYoung.setMonth(veryYoung.getMonth() - 1);
     const dateStr = `${veryYoung.getFullYear()}-${String(veryYoung.getMonth() + 1).padStart(2, '0')}-${String(veryYoung.getDate()).padStart(2, '0')}`;
-    const c = seedChild({ createdBy: u.id, birthDate: dateStr });
-    const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    const okFood = insertFood({ name: 'Carotte', category: 'legumes', age: 4 });
+    const c = await seedChild({ createdBy: u.id, birthDate: dateStr });
+    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const okFood = await insertFood({ name: 'Carotte', category: 'legumes', age: 4 });
     const out = await load(
       makeRouteEvent({
         user: safeUser(u),

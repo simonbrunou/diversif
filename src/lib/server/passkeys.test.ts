@@ -33,8 +33,8 @@ import {
 import { passkeys, users, webauthnChallenges } from './db/schema';
 import { eq } from 'drizzle-orm';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   mocks.generateRegistrationOptions.mockReset();
   mocks.verifyRegistrationResponse.mockReset();
   mocks.generateAuthenticationOptions.mockReset();
@@ -42,35 +42,37 @@ beforeEach(() => {
 });
 
 async function seedUser() {
-  return testDb
-    .insert(users)
-    .values({
-      email: 'parent@example.com',
-      passwordHash: 'h',
-      displayName: 'Parent',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+  return (
+    await testDb
+      .insert(users)
+      .values({
+        email: 'parent@example.com',
+        passwordHash: 'h',
+        displayName: 'Parent',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
 }
 
-function seedPasskey(userId: number, overrides: Partial<typeof passkeys.$inferInsert> = {}) {
-  return testDb
-    .insert(passkeys)
-    .values({
-      id: overrides.id ?? 'cred-id',
-      userId,
-      publicKey: overrides.publicKey ?? 'cHVi', // base64url for "pub"
-      counter: overrides.counter ?? 0,
-      transports: overrides.transports ?? '["internal"]',
-      deviceType: overrides.deviceType ?? 'singleDevice',
-      backedUp: overrides.backedUp ?? false,
-      name: overrides.name ?? 'Test Key',
-      createdAt: overrides.createdAt ?? new Date(),
-      lastUsedAt: overrides.lastUsedAt ?? null
-    })
-    .returning()
-    .get();
+async function seedPasskey(userId: number, overrides: Partial<typeof passkeys.$inferInsert> = {}) {
+  return (
+    await testDb
+      .insert(passkeys)
+      .values({
+        id: overrides.id ?? 'cred-id',
+        userId,
+        publicKey: overrides.publicKey ?? 'cHVi', // base64url for "pub"
+        counter: overrides.counter ?? 0,
+        transports: overrides.transports ?? '["internal"]',
+        deviceType: overrides.deviceType ?? 'singleDevice',
+        backedUp: overrides.backedUp ?? false,
+        name: overrides.name ?? 'Test Key',
+        createdAt: overrides.createdAt ?? new Date(),
+        lastUsedAt: overrides.lastUsedAt ?? null
+      })
+      .returning()
+  )[0];
 }
 
 describe('rpIdFromOrigin', () => {
@@ -127,63 +129,88 @@ describe('originFromEnv', () => {
 describe('challenges', () => {
   it('creates and consumes a challenge', async () => {
     const u = await seedUser();
-    const c = createChallenge({ challenge: 'abc', purpose: 'registration', userId: u.id });
+    const c = await createChallenge({ challenge: 'abc', purpose: 'registration', userId: u.id });
     expect(c.token).toMatch(/^[0-9a-f]+$/);
     expect(c.challenge).toBe('abc');
     expect(c.expiresAt.getTime()).toBeGreaterThan(Date.now());
 
-    const consumed = consumeChallenge(c.token, 'registration');
+    const consumed = await consumeChallenge(c.token, 'registration');
     expect(consumed).toEqual({ challenge: 'abc', userId: u.id });
 
     // Token is single-use.
-    expect(consumeChallenge(c.token, 'registration')).toBeNull();
+    expect(await consumeChallenge(c.token, 'registration')).toBeNull();
   });
 
-  it('createChallenge defaults missing userId to null', () => {
-    const c = createChallenge({ challenge: 'x', purpose: 'authentication' });
-    const row = testDb
-      .select()
-      .from(webauthnChallenges)
-      .where(eq(webauthnChallenges.token, c.token))
-      .get();
+  it('createChallenge defaults missing userId to null', async () => {
+    const c = await createChallenge({ challenge: 'x', purpose: 'authentication' });
+    const row = (
+      await testDb
+        .select()
+        .from(webauthnChallenges)
+        .where(eq(webauthnChallenges.token, c.token))
+        .limit(1)
+    )[0];
     expect(row?.userId).toBeNull();
   });
 
-  it('returns null for an empty token', () => {
-    expect(consumeChallenge('', 'registration')).toBeNull();
+  it('returns null for an empty token', async () => {
+    expect(await consumeChallenge('', 'registration')).toBeNull();
   });
 
-  it('returns null for the wrong purpose', () => {
-    const c = createChallenge({ challenge: 'x', purpose: 'registration', userId: null });
-    expect(consumeChallenge(c.token, 'authentication')).toBeNull();
+  it('returns null for the wrong purpose', async () => {
+    const c = await createChallenge({ challenge: 'x', purpose: 'registration', userId: null });
+    expect(await consumeChallenge(c.token, 'authentication')).toBeNull();
   });
 
-  it('purges expired challenges and ignores them', () => {
+  it('purges expired challenges and ignores them', async () => {
     const past = new Date(Date.now() - 1000);
-    testDb
-      .insert(webauthnChallenges)
-      .values({
-        token: 'expired',
-        challenge: 'x',
-        purpose: 'registration',
-        userId: null,
-        expiresAt: past
-      })
-      .run();
+    await testDb.insert(webauthnChallenges).values({
+      token: 'expired',
+      challenge: 'x',
+      purpose: 'registration',
+      userId: null,
+      expiresAt: past
+    });
 
-    expect(consumeChallenge('expired', 'registration')).toBeNull();
+    expect(await consumeChallenge('expired', 'registration')).toBeNull();
 
-    purgeExpiredChallenges();
-    const stillThere = testDb
-      .select()
-      .from(webauthnChallenges)
-      .where(eq(webauthnChallenges.token, 'expired'))
-      .get();
+    await purgeExpiredChallenges();
+    const stillThere = (
+      await testDb
+        .select()
+        .from(webauthnChallenges)
+        .where(eq(webauthnChallenges.token, 'expired'))
+        .limit(1)
+    )[0];
     expect(stillThere).toBeUndefined();
   });
 
   it('exposes the challenge TTL', () => {
     expect(PASSKEY_CHALLENGE_TTL_MS).toBeGreaterThan(0);
+  });
+
+  it('atomically consumes a challenge — concurrent verifies cannot both succeed', async () => {
+    const c = await createChallenge({ challenge: 'x', purpose: 'registration', userId: null });
+
+    const [first, second] = await Promise.all([
+      consumeChallenge(c.token, 'registration'),
+      consumeChallenge(c.token, 'registration')
+    ]);
+
+    const successes = [first, second].filter((r) => r !== null);
+    expect(successes).toHaveLength(1);
+    expect(successes[0]).toEqual({ challenge: 'x', userId: null });
+
+    // The row is gone (the DELETE-RETURNING winner removed it; the loser
+    // got nothing back, but the table reflects the same outcome).
+    const stillThere = (
+      await testDb
+        .select()
+        .from(webauthnChallenges)
+        .where(eq(webauthnChallenges.token, c.token))
+        .limit(1)
+    )[0];
+    expect(stillThere).toBeUndefined();
   });
 });
 
@@ -198,51 +225,46 @@ describe('listPasskeys / findPasskey / deletePasskey / renamePasskey', () => {
         displayName: 'B',
         createdAt: new Date()
       })
-      .returning()
-      .all();
-    seedPasskey(u.id, { id: 'a' });
-    seedPasskey(u.id, { id: 'b', name: 'Other Key' });
-    seedPasskey(other[0].id, { id: 'c' });
+      .returning();
+    await seedPasskey(u.id, { id: 'a' });
+    await seedPasskey(u.id, { id: 'b', name: 'Other Key' });
+    await seedPasskey(other[0].id, { id: 'c' });
 
-    expect(
-      listPasskeys(u.id)
-        .map((p) => p.id)
-        .sort()
-    ).toEqual(['a', 'b']);
-    expect(findPasskey('a')?.id).toBe('a');
-    expect(findPasskey('missing')).toBeUndefined();
+    expect((await listPasskeys(u.id)).map((p) => p.id).sort()).toEqual(['a', 'b']);
+    expect((await findPasskey('a'))?.id).toBe('a');
+    expect(await findPasskey('missing')).toBeUndefined();
 
-    expect(renamePasskey(u.id, 'a', '  My Phone  ')).toBe(true);
-    expect(findPasskey('a')?.name).toBe('My Phone');
+    expect(await renamePasskey(u.id, 'a', '  My Phone  ')).toBe(true);
+    expect((await findPasskey('a'))?.name).toBe('My Phone');
 
     // Empty name rejected.
-    expect(renamePasskey(u.id, 'a', '   ')).toBe(false);
+    expect(await renamePasskey(u.id, 'a', '   ')).toBe(false);
 
     // Wrong owner cannot rename or delete.
-    expect(renamePasskey(other[0].id, 'a', 'Hijack')).toBe(false);
-    expect(deletePasskey(other[0].id, 'a')).toBe(false);
+    expect(await renamePasskey(other[0].id, 'a', 'Hijack')).toBe(false);
+    expect(await deletePasskey(other[0].id, 'a')).toBe(false);
 
     // Unknown id.
-    expect(renamePasskey(u.id, 'nope', 'X')).toBe(false);
-    expect(deletePasskey(u.id, 'nope')).toBe(false);
+    expect(await renamePasskey(u.id, 'nope', 'X')).toBe(false);
+    expect(await deletePasskey(u.id, 'nope')).toBe(false);
 
-    expect(deletePasskey(u.id, 'a')).toBe(true);
-    expect(findPasskey('a')).toBeUndefined();
+    expect(await deletePasskey(u.id, 'a')).toBe(true);
+    expect(await findPasskey('a')).toBeUndefined();
   });
 
   it('truncates very long names on rename', async () => {
     const u = await seedUser();
-    seedPasskey(u.id, { id: 'a' });
+    await seedPasskey(u.id, { id: 'a' });
     const long = 'x'.repeat(200);
-    expect(renamePasskey(u.id, 'a', long)).toBe(true);
-    expect(findPasskey('a')?.name.length).toBe(80);
+    expect(await renamePasskey(u.id, 'a', long)).toBe(true);
+    expect((await findPasskey('a'))?.name.length).toBe(80);
   });
 });
 
 describe('buildRegistrationOptions', () => {
   it('passes the right RP context and excludes existing credentials', async () => {
     const u = await seedUser();
-    seedPasskey(u.id, { id: 'existing', transports: '["usb","internal"]' });
+    await seedPasskey(u.id, { id: 'existing', transports: '["usb","internal"]' });
 
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'ch' });
 
@@ -264,7 +286,7 @@ describe('buildRegistrationOptions', () => {
 
   it('handles malformed transports json gracefully', async () => {
     const u = await seedUser();
-    seedPasskey(u.id, { id: 'existing', transports: 'not-json' });
+    await seedPasskey(u.id, { id: 'existing', transports: 'not-json' });
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'ch' });
     await buildRegistrationOptions({
       userId: u.id,
@@ -278,7 +300,7 @@ describe('buildRegistrationOptions', () => {
 
   it('drops non-string transport entries', async () => {
     const u = await seedUser();
-    seedPasskey(u.id, { id: 'existing', transports: '[1,"usb",null]' });
+    await seedPasskey(u.id, { id: 'existing', transports: '[1,"usb",null]' });
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'ch' });
     await buildRegistrationOptions({
       userId: u.id,
@@ -292,7 +314,7 @@ describe('buildRegistrationOptions', () => {
 
   it('treats non-array json as empty', async () => {
     const u = await seedUser();
-    seedPasskey(u.id, { id: 'existing', transports: '"oops"' });
+    await seedPasskey(u.id, { id: 'existing', transports: '"oops"' });
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'ch' });
     await buildRegistrationOptions({
       userId: u.id,
@@ -389,7 +411,7 @@ describe('finishRegistration', () => {
 
   it('rejects duplicate credential ids', async () => {
     const u = await seedUser();
-    seedPasskey(u.id, { id: 'dup' });
+    await seedPasskey(u.id, { id: 'dup' });
     mocks.verifyRegistrationResponse.mockResolvedValue({
       verified: true,
       registrationInfo: {
@@ -461,7 +483,7 @@ describe('finishAuthentication', () => {
 
   it('updates counter, lastUsedAt, and backedUp on success', async () => {
     const u = await seedUser();
-    seedPasskey(u.id);
+    await seedPasskey(u.id);
     mocks.verifyAuthenticationResponse.mockResolvedValue({
       verified: true,
       authenticationInfo: {
@@ -502,8 +524,8 @@ describe('finishAuthentication', () => {
 
   it('cascades deletion when the owning user is removed', async () => {
     const u = await seedUser();
-    seedPasskey(u.id);
-    testDb.delete(users).where(eq(users.id, u.id)).run();
+    await seedPasskey(u.id);
+    await testDb.delete(users).where(eq(users.id, u.id));
     // FK cascade should have removed the passkey row.
     const result = await finishAuthentication({
       response: authResponse(),
@@ -517,7 +539,7 @@ describe('finishAuthentication', () => {
 
   it('returns the verifier error message', async () => {
     const u = await seedUser();
-    seedPasskey(u.id);
+    await seedPasskey(u.id);
     mocks.verifyAuthenticationResponse.mockRejectedValue(new Error('bad'));
     const result = await finishAuthentication({
       response: authResponse(),
@@ -531,7 +553,7 @@ describe('finishAuthentication', () => {
 
   it('returns the fallback when thrown value is not an Error', async () => {
     const u = await seedUser();
-    seedPasskey(u.id);
+    await seedPasskey(u.id);
     mocks.verifyAuthenticationResponse.mockRejectedValue('nope');
     const result = await finishAuthentication({
       response: authResponse(),
@@ -545,7 +567,7 @@ describe('finishAuthentication', () => {
 
   it('rejects when not verified', async () => {
     const u = await seedUser();
-    seedPasskey(u.id);
+    await seedPasskey(u.id);
     mocks.verifyAuthenticationResponse.mockResolvedValue({ verified: false });
     const result = await finishAuthentication({
       response: authResponse(),
@@ -558,7 +580,7 @@ describe('finishAuthentication', () => {
 
   it('passes the stored transports to the verifier', async () => {
     const u = await seedUser();
-    seedPasskey(u.id, { transports: '["usb"]' });
+    await seedPasskey(u.id, { transports: '["usb"]' });
     mocks.verifyAuthenticationResponse.mockResolvedValue({
       verified: true,
       authenticationInfo: {
@@ -588,7 +610,7 @@ describe('publicPasskey', () => {
     const u = await seedUser();
     const created = new Date(2024, 0, 1);
     const used = new Date(2024, 5, 1);
-    const p = seedPasskey(u.id, { createdAt: created, lastUsedAt: used });
+    const p = await seedPasskey(u.id, { createdAt: created, lastUsedAt: used });
     const out = publicPasskey(p);
     expect(out).toEqual({
       id: 'cred-id',
@@ -602,7 +624,7 @@ describe('publicPasskey', () => {
 
   it('handles a never-used passkey', async () => {
     const u = await seedUser();
-    const p = seedPasskey(u.id);
+    const p = await seedPasskey(u.id);
     expect(publicPasskey(p).lastUsedAt).toBeNull();
   });
 });

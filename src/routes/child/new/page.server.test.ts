@@ -8,8 +8,8 @@ import { children, memberships } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 describe('child/new load', () => {
@@ -97,13 +97,14 @@ describe('child/new default action', () => {
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toMatch(/^\/child\/\d+$/);
 
-    const childRow = testDb.select().from(children).where(eq(children.name, 'Bébé')).get();
+    const childRow = (
+      await testDb.select().from(children).where(eq(children.name, 'Bébé')).limit(1)
+    )[0];
     expect(childRow).toBeDefined();
-    const memb = testDb
+    const memb = await testDb
       .select()
       .from(memberships)
-      .where(eq(memberships.childId, childRow!.id))
-      .all();
+      .where(eq(memberships.childId, childRow!.id));
     expect(memb.length).toBe(1);
     expect(memb[0].role).toBe('owner');
   });

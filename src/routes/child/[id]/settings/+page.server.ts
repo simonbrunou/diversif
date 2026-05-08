@@ -12,10 +12,12 @@ const INVITE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 
 /* v8 ignore start — defensive helper: iterations 2..5 are unreachable
    without a deterministic mock (collision odds are 1/32^4 per try). */
-function generateUniqueInviteCode(): string | null {
+async function generateUniqueInviteCode(): Promise<string | null> {
   for (let i = 0; i < 5; i++) {
     const code = generateInviteCodeRaw();
-    const existing = db.select().from(invitations).where(eq(invitations.code, code)).get();
+    const existing = (
+      await db.select().from(invitations).where(eq(invitations.code, code)).limit(1)
+    )[0];
     if (!existing) return code;
   }
   return null;
@@ -26,7 +28,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   const childId = Number(params.id);
   const { membership } = requireMembership(locals, childId);
 
-  const memberRows = db
+  const memberRows = await db
     .select({
       userId: memberships.userId,
       role: memberships.role,
@@ -36,10 +38,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     })
     .from(memberships)
     .innerJoin(users, eq(users.id, memberships.userId))
-    .where(eq(memberships.childId, childId))
-    .all();
+    .where(eq(memberships.childId, childId));
 
-  const activeInvites = db
+  const activeInvites = await db
     .select()
     .from(invitations)
     .where(
@@ -48,8 +49,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
         isNull(invitations.usedAt),
         gt(invitations.expiresAt, new Date())
       )
-    )
-    .all();
+    );
 
   return {
     members: memberRows.map((m) => ({
@@ -78,10 +78,10 @@ export const actions: Actions = {
     const parsed = updateSchema.safeParse(raw);
     if (!parsed.success) return fail(400, { error: 'Champs invalides.' });
 
-    db.update(children)
+    await db
+      .update(children)
       .set({ name: parsed.data.name.trim(), birthDate: parsed.data.birthDate })
-      .where(eq(children.id, childId))
-      .run();
+      .where(eq(children.id, childId));
     return { success: 'Enfant mis à jour.' };
   },
 
@@ -89,22 +89,20 @@ export const actions: Actions = {
     const childId = Number(params.id);
     const { user } = requireOwnership(locals, childId);
 
-    const code = generateUniqueInviteCode();
+    const code = await generateUniqueInviteCode();
     /* v8 ignore next — astronomical 1/32^16 probability after 5 attempts */
     if (!code) return fail(500, { error: 'Impossible de générer un code unique.' });
 
     const now = new Date();
-    db.insert(invitations)
-      .values({
-        code,
-        childId,
-        createdBy: user.id,
-        createdAt: now,
-        expiresAt: new Date(now.getTime() + INVITE_DURATION_MS),
-        usedAt: null,
-        usedBy: null
-      })
-      .run();
+    await db.insert(invitations).values({
+      code,
+      childId,
+      createdBy: user.id,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + INVITE_DURATION_MS),
+      usedAt: null,
+      usedBy: null
+    });
     return { success: 'Code généré.', code };
   },
 
@@ -114,9 +112,9 @@ export const actions: Actions = {
     const data = await request.formData();
     const code = String(data.get('code') ?? '');
     if (!code) return fail(400, { error: 'Code manquant.' });
-    db.delete(invitations)
-      .where(and(eq(invitations.code, code), eq(invitations.childId, childId)))
-      .run();
+    await db
+      .delete(invitations)
+      .where(and(eq(invitations.code, code), eq(invitations.childId, childId)));
     return { success: 'Invitation révoquée.' };
   },
 
@@ -129,9 +127,9 @@ export const actions: Actions = {
     if (userId === owner.id)
       return fail(400, { error: 'Vous ne pouvez pas vous retirer vous-même.' });
 
-    db.delete(memberships)
-      .where(and(eq(memberships.childId, childId), eq(memberships.userId, userId)))
-      .run();
+    await db
+      .delete(memberships)
+      .where(and(eq(memberships.childId, childId), eq(memberships.userId, userId)));
     return { success: 'Membre retiré.' };
   },
 
@@ -143,9 +141,9 @@ export const actions: Actions = {
         error: 'Le créateur ne peut pas quitter, supprimez l’enfant à la place.'
       });
     }
-    db.delete(memberships)
-      .where(and(eq(memberships.childId, childId), eq(memberships.userId, user.id)))
-      .run();
+    await db
+      .delete(memberships)
+      .where(and(eq(memberships.childId, childId), eq(memberships.userId, user.id)));
     throw redirect(303, '/');
   },
 
@@ -155,13 +153,13 @@ export const actions: Actions = {
 
     const data = await request.formData();
     const confirmName = String(data.get('confirmName') ?? /* v8 ignore next */ '').trim();
-    const child = db.select().from(children).where(eq(children.id, childId)).get();
+    const child = (await db.select().from(children).where(eq(children.id, childId)).limit(1))[0];
     if (!child) throw redirect(303, '/');
     if (confirmName !== child.name) {
       return fail(400, { error: 'Saisissez le prénom exact pour confirmer.' });
     }
 
-    db.delete(children).where(eq(children.id, childId)).run();
+    await db.delete(children).where(eq(children.id, childId));
     throw redirect(303, '/');
   }
 };

@@ -34,11 +34,11 @@ function newToken(): string {
   return randomBytes(32).toString('hex');
 }
 
-export function createSession(userId: number): Session {
+export async function createSession(userId: number): Promise<Session> {
   const now = Date.now();
   const id = newToken();
   const expiresAt = new Date(now + SESSION_DURATION_MS);
-  db.insert(sessions).values({ id, userId, expiresAt }).run();
+  await db.insert(sessions).values({ id, userId, expiresAt });
   return { id, userId, expiresAt };
 }
 
@@ -48,11 +48,11 @@ export type ValidatedSession = {
   renewed: boolean;
 };
 
-export function validateSession(token: string): ValidatedSession | null {
+export async function validateSession(token: string): Promise<ValidatedSession | null> {
   if (!token) return null;
   const now = Date.now();
 
-  const row = db
+  const rows = await db
     .select({
       session: sessions,
       user: users
@@ -60,7 +60,8 @@ export function validateSession(token: string): ValidatedSession | null {
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
     .where(and(eq(sessions.id, token), gt(sessions.expiresAt, new Date(now))))
-    .get();
+    .limit(1);
+  const row = rows[0];
 
   if (!row) return null;
 
@@ -72,12 +73,12 @@ export function validateSession(token: string): ValidatedSession | null {
     // the session renewed without a corresponding lastLoginAt bump (or vice
     // versa). Bumping `last_login_at` keeps retention queries seeing recent
     // activity even when the user never explicitly re-logs in.
-    db.transaction((tx) => {
-      tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token)).run();
-      tx.update(users)
+    await db.transaction(async (tx) => {
+      await tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token));
+      await tx
+        .update(users)
         .set({ lastLoginAt: new Date(now) })
-        .where(eq(users.id, row.user.id))
-        .run();
+        .where(eq(users.id, row.user.id));
     });
     session = { ...session, expiresAt: newExpiry };
     renewed = true;
@@ -98,21 +99,22 @@ export function validateSession(token: string): ValidatedSession | null {
   return { user: safeUser, session, renewed };
 }
 
-export function invalidateSession(token: string): void {
+export async function invalidateSession(token: string): Promise<void> {
   if (!token) return;
-  db.delete(sessions).where(eq(sessions.id, token)).run();
+  await db.delete(sessions).where(eq(sessions.id, token));
 }
 
-export function invalidateAllUserSessions(userId: number): void {
-  db.delete(sessions).where(eq(sessions.userId, userId)).run();
+export async function invalidateAllUserSessions(userId: number): Promise<void> {
+  await db.delete(sessions).where(eq(sessions.userId, userId));
 }
 
-export function listMembershipsForUser(userId: number) {
-  return db.select().from(memberships).where(eq(memberships.userId, userId)).all();
+export async function listMembershipsForUser(userId: number) {
+  return db.select().from(memberships).where(eq(memberships.userId, userId));
 }
 
-export function findUserByEmail(email: string): User | undefined {
-  return db.select().from(users).where(eq(users.email, email.toLowerCase())).get();
+export async function findUserByEmail(email: string): Promise<User | undefined> {
+  const rows = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+  return rows[0];
 }
 
 export { generateInviteCodeRaw, isValidInviteCodeFormat } from '$lib/utils/invites';

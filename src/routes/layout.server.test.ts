@@ -6,8 +6,8 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { load } from './+layout.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 describe('+layout.server load', () => {
@@ -28,10 +28,10 @@ describe('+layout.server load', () => {
 
   it('returns memberships joined with children rows', async () => {
     const u = await seedUser();
-    const c1 = seedChild({ createdBy: u.id, name: 'Alice' });
-    const c2 = seedChild({ createdBy: u.id, name: 'Bob' });
-    const m1 = seedMembership({ userId: u.id, childId: c1.id, role: 'owner' });
-    const m2 = seedMembership({ userId: u.id, childId: c2.id, role: 'member' });
+    const c1 = await seedChild({ createdBy: u.id, name: 'Alice' });
+    const c2 = await seedChild({ createdBy: u.id, name: 'Bob' });
+    const m1 = await seedMembership({ userId: u.id, childId: c1.id, role: 'owner' });
+    const m2 = await seedMembership({ userId: u.id, childId: c2.id, role: 'member' });
 
     const out = await load(
       makeRouteEvent({ user: safeUser(u), memberships: [m1, m2] }) as unknown as Parameters<

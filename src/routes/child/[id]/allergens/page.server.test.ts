@@ -15,14 +15,14 @@ import { foodEntries, foods } from '$lib/server/db/schema';
 import { ALLERGENS } from '$lib/utils/allergens';
 import { load } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function setup() {
   const u = await seedUser();
-  const c = seedChild({ createdBy: u.id });
-  const m = seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+  const c = await seedChild({ createdBy: u.id });
+  const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
   return { u, c, m };
 }
 
@@ -102,45 +102,43 @@ describe('child/[id]/allergens load', () => {
 
   it('counts introductions and tracks first/last timestamps', async () => {
     const ctx = await setup();
-    const food = testDb
-      .insert(foods)
-      .values({
-        name: 'Œuf',
-        category: 'oeufs',
-        isMajorAllergen: true,
-        allergenType: 'oeuf',
-        suggestedAgeMonths: 6,
-        notes: null,
-        isCustom: false,
-        customForChildId: null
-      })
-      .returning()
-      .all()[0];
+    const food = (
+      await testDb
+        .insert(foods)
+        .values({
+          name: 'Œuf',
+          category: 'oeufs',
+          isMajorAllergen: true,
+          allergenType: 'oeuf',
+          suggestedAgeMonths: 6,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning()
+    )[0];
     const t1 = new Date('2024-06-01T10:00:00Z');
     const t2 = new Date('2024-07-15T10:00:00Z');
-    testDb
-      .insert(foodEntries)
-      .values([
-        {
-          childId: ctx.c.id,
-          foodId: food.id,
-          givenAt: t1,
-          reaction: 'ras',
-          notes: null,
-          loggedBy: ctx.u.id,
-          createdAt: new Date()
-        },
-        {
-          childId: ctx.c.id,
-          foodId: food.id,
-          givenAt: t2,
-          reaction: 'ras',
-          notes: null,
-          loggedBy: ctx.u.id,
-          createdAt: new Date()
-        }
-      ])
-      .run();
+    await testDb.insert(foodEntries).values([
+      {
+        childId: ctx.c.id,
+        foodId: food.id,
+        givenAt: t1,
+        reaction: 'ras',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: ctx.c.id,
+        foodId: food.id,
+        givenAt: t2,
+        reaction: 'ras',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      }
+    ]);
 
     const out = await loadFor(ctx);
     const oeuf = out.allergens.find((a) => a.id === 'oeuf')!;

@@ -2,6 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { invitations, memberships, users } from '$lib/server/db/schema';
+import { isUniqueViolation } from '$lib/server/db/errors';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import {
   SESSION_COOKIE,
@@ -98,17 +99,19 @@ export const actions: Actions = {
           errorKey: 'errorsAuthInvalidInvite'
         });
       }
-      const inv = db
-        .select()
-        .from(invitations)
-        .where(
-          and(
-            eq(invitations.code, inviteCode),
-            isNull(invitations.usedAt),
-            gt(invitations.expiresAt, new Date())
+      const inv = (
+        await db
+          .select()
+          .from(invitations)
+          .where(
+            and(
+              eq(invitations.code, inviteCode),
+              isNull(invitations.usedAt),
+              gt(invitations.expiresAt, new Date())
+            )
           )
-        )
-        .get();
+          .limit(1)
+      )[0];
       if (!inv) {
         return fail(400, {
           email: formEmail,
@@ -120,7 +123,7 @@ export const actions: Actions = {
       invitationChildId = inv.childId;
     }
 
-    if (findUserByEmail(lowerEmail)) {
+    if (await findUserByEmail(lowerEmail)) {
       // Generic message — the previous "compte existe déjà" wording let an
       // attacker enumerate registered addresses by attempting to sign up.
       // The new copy gently nudges existing users towards /login without
@@ -144,42 +147,78 @@ export const actions: Actions = {
     // user account that can't reach the child it was invited to, with the
     // invitation either already consumed (orphaned access) or still claimable
     // (lets a stranger reuse the code).
-    const userId = db.transaction((tx) => {
-      const inserted = tx
-        .insert(users)
-        .values({
-          email: lowerEmail,
-          passwordHash,
-          displayName,
-          createdAt: now,
-          tosAcceptedAt: now,
-          privacyAcceptedAt: now,
-          ageConfirmedAt: now,
-          lastLoginAt: now
-        })
-        .returning({ id: users.id })
-        .get();
-      const id = inserted.id;
+    //
+    // The invitation read above is unlocked, so two concurrent signups
+    // sharing the same code can both pass it. Condition the UPDATE on
+    // `used_at IS NULL` and check `rowCount` to detect the race; if we lose
+    // we throw a sentinel that rolls the whole transaction back (no phantom
+    // account left behind) and surface the same expired-invite error the
+    // read path uses.
+    class InviteRace extends Error {}
 
-      if (invitationChildId !== null && inviteCode) {
-        tx.insert(memberships)
-          .values({
+    let userId: number;
+    try {
+      userId = await db.transaction(async (tx) => {
+        const inserted = (
+          await tx
+            .insert(users)
+            .values({
+              email: lowerEmail,
+              passwordHash,
+              displayName,
+              createdAt: now,
+              tosAcceptedAt: now,
+              privacyAcceptedAt: now,
+              ageConfirmedAt: now,
+              lastLoginAt: now
+            })
+            .returning({ id: users.id })
+        )[0];
+        const id = inserted.id;
+
+        if (invitationChildId !== null && inviteCode) {
+          const result = await tx
+            .update(invitations)
+            .set({ usedAt: now, usedBy: id })
+            .where(and(eq(invitations.code, inviteCode), isNull(invitations.usedAt)));
+          /* v8 ignore next — node-postgres always populates rowCount for UPDATE */
+          if ((result.rowCount ?? 0) === 0) throw new InviteRace();
+          await tx.insert(memberships).values({
             userId: id,
             childId: invitationChildId,
             role: 'member',
             createdAt: now
-          })
-          .run();
-        tx.update(invitations)
-          .set({ usedAt: now, usedBy: id })
-          .where(eq(invitations.code, inviteCode))
-          .run();
+          });
+        }
+
+        return id;
+      });
+    } catch (err) {
+      if (err instanceof InviteRace) {
+        return fail(400, {
+          email: formEmail,
+          displayName: formDisplayName,
+          inviteCode: formInvite,
+          errorKey: 'errorsAuthInvalidInviteExpired'
+        });
       }
+      // The findUserByEmail check above is unlocked, so two concurrent signups
+      // with the same email can both pass it; the loser hits users.email's
+      // UNIQUE constraint at INSERT time. Map the resulting 23505 to the same
+      // generic "signup impossible" 400 used for the read path so a normal
+      // double-submit doesn't surface as a 500.
+      if (isUniqueViolation(err)) {
+        return fail(400, {
+          email: formEmail,
+          displayName: formDisplayName,
+          inviteCode: formInvite,
+          errorKey: 'errorsAuthSignupImpossible'
+        });
+      }
+      throw err;
+    }
 
-      return id;
-    });
-
-    const session = createSession(userId);
+    const session = await createSession(userId);
     cookies.set(SESSION_COOKIE, session.id, {
       path: '/',
       httpOnly: true,

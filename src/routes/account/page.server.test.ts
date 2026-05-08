@@ -9,22 +9,23 @@ import { passkeys, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
 });
 
 async function seed() {
   const passwordHash = await hashPassword('current-password-12');
-  const u = testDb
-    .insert(users)
-    .values({
-      email: 'p@example.com',
-      passwordHash,
-      displayName: 'Parent',
-      createdAt: new Date()
-    })
-    .returning()
-    .all()[0];
+  const u = (
+    await testDb
+      .insert(users)
+      .values({
+        email: 'p@example.com',
+        passwordHash,
+        displayName: 'Parent',
+        createdAt: new Date()
+      })
+      .returning()
+  )[0];
   return u;
 }
 
@@ -39,21 +40,18 @@ describe('account load', () => {
 
   it('returns the passkey list for authenticated users', async () => {
     const u = await seed();
-    testDb
-      .insert(passkeys)
-      .values({
-        id: 'p1',
-        userId: u.id,
-        publicKey: 'a',
-        counter: 0,
-        transports: '[]',
-        deviceType: 'singleDevice',
-        backedUp: false,
-        name: 'Phone',
-        createdAt: new Date(),
-        lastUsedAt: null
-      })
-      .run();
+    await testDb.insert(passkeys).values({
+      id: 'p1',
+      userId: u.id,
+      publicKey: 'a',
+      counter: 0,
+      transports: '[]',
+      deviceType: 'singleDevice',
+      backedUp: false,
+      name: 'Phone',
+      createdAt: new Date(),
+      lastUsedAt: null
+    });
     const out = await load(
       makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0]
     );
@@ -63,22 +61,19 @@ describe('account load', () => {
 });
 
 describe('account renamePasskey / deletePasskey', () => {
-  function seedKey(userId: number, id = 'p1', name = 'Old') {
-    testDb
-      .insert(passkeys)
-      .values({
-        id,
-        userId,
-        publicKey: 'a',
-        counter: 0,
-        transports: '[]',
-        deviceType: 'singleDevice',
-        backedUp: false,
-        name,
-        createdAt: new Date(),
-        lastUsedAt: null
-      })
-      .run();
+  async function seedKey(userId: number, id = 'p1', name = 'Old') {
+    await testDb.insert(passkeys).values({
+      id,
+      userId,
+      publicKey: 'a',
+      counter: 0,
+      transports: '[]',
+      deviceType: 'singleDevice',
+      backedUp: false,
+      name,
+      createdAt: new Date(),
+      lastUsedAt: null
+    });
   }
 
   it('renamePasskey fails with empty name', async () => {
@@ -107,7 +102,7 @@ describe('account renamePasskey / deletePasskey', () => {
 
   it('renamePasskey updates the name on success', async () => {
     const u = await seed();
-    seedKey(u.id);
+    await seedKey(u.id);
     const event = makeRouteEvent({
       user: safeUser(u),
       formData: { id: 'p1', name: 'New Name' }
@@ -116,7 +111,7 @@ describe('account renamePasskey / deletePasskey', () => {
       event as unknown as Parameters<NonNullable<typeof actions.renamePasskey>>[0]
     )) as { passkeySuccessKey: string };
     expect(r.passkeySuccessKey).toBeTruthy();
-    const fresh = testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).get();
+    const fresh = (await testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).limit(1))[0];
     expect(fresh?.name).toBe('New Name');
   });
 
@@ -146,7 +141,7 @@ describe('account renamePasskey / deletePasskey', () => {
 
   it('deletePasskey removes the row on success', async () => {
     const u = await seed();
-    seedKey(u.id);
+    await seedKey(u.id);
     const event = makeRouteEvent({
       user: safeUser(u),
       formData: { id: 'p1' }
@@ -155,7 +150,7 @@ describe('account renamePasskey / deletePasskey', () => {
       event as unknown as Parameters<NonNullable<typeof actions.deletePasskey>>[0]
     )) as { passkeySuccessKey: string };
     expect(r.passkeySuccessKey).toBeTruthy();
-    const fresh = testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).get();
+    const fresh = (await testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).limit(1))[0];
     expect(fresh).toBeUndefined();
   });
 });
@@ -183,7 +178,7 @@ describe('account updateProfile', () => {
       event as unknown as Parameters<NonNullable<typeof actions.updateProfile>>[0]
     )) as { profileSuccessKey: string };
     expect(r.profileSuccessKey).toBeTruthy();
-    const fresh = testDb.select().from(users).where(eq(users.id, u.id)).get();
+    const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
     expect(fresh?.displayName).toBe('New Name');
   });
 });
@@ -204,7 +199,7 @@ describe('account changePassword', () => {
 
   it('redirects to /login when user no longer exists', async () => {
     const u = await seed();
-    testDb.delete(users).where(eq(users.id, u.id)).run();
+    await testDb.delete(users).where(eq(users.id, u.id));
     const event = makeRouteEvent({
       user: safeUser(u),
       formData: {
@@ -250,7 +245,7 @@ describe('account changePassword', () => {
       event as unknown as Parameters<NonNullable<typeof actions.changePassword>>[0]
     )) as { passwordSuccessKey: string };
     expect(r.passwordSuccessKey).toBeTruthy();
-    const fresh = testDb.select().from(users).where(eq(users.id, u.id)).get();
+    const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
     expect(fresh?.passwordHash).not.toBe(u.passwordHash);
   });
 });
@@ -258,8 +253,8 @@ describe('account changePassword', () => {
 describe('account logoutEverywhere', () => {
   it('invalidates every session and clears the cookie + redirects', async () => {
     const u = await seed();
-    const a = createSession(u.id);
-    const b = createSession(u.id);
+    const a = await createSession(u.id);
+    const b = await createSession(u.id);
     const event = makeRouteEvent({ user: safeUser(u) });
     const r = await captureFlow(() =>
       actions.logoutEverywhere!(
@@ -268,8 +263,8 @@ describe('account logoutEverywhere', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe('/login');
-    expect(validateSession(a.id)).toBeNull();
-    expect(validateSession(b.id)).toBeNull();
+    expect(await validateSession(a.id)).toBeNull();
+    expect(await validateSession(b.id)).toBeNull();
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
   });
 });
@@ -286,7 +281,7 @@ describe('account deleteAccount', () => {
     )) as { status: number; data: { deleteErrorKey: string } };
     expect(r.status).toBe(400);
     expect(r.data.deleteErrorKey).toBe('errorsAccountDeleteEmailMismatch');
-    expect(testDb.select().from(users).where(eq(users.id, u.id)).get()).toBeDefined();
+    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 
   it('fails when the confirmEmail field is missing entirely', async () => {
@@ -296,7 +291,7 @@ describe('account deleteAccount', () => {
       event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
     )) as { status: number; data: { deleteErrorKey: string } };
     expect(r.status).toBe(400);
-    expect(testDb.select().from(users).where(eq(users.id, u.id)).get()).toBeDefined();
+    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 
   it('deletes the user, clears the cookie and redirects to /account/deleted', async () => {
@@ -312,7 +307,9 @@ describe('account deleteAccount', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe('/account/deleted');
-    expect(testDb.select().from(users).where(eq(users.id, u.id)).get()).toBeUndefined();
+    expect(
+      (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]
+    ).toBeUndefined();
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
   });
 });

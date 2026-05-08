@@ -11,169 +11,271 @@ import {
 
 const SCOPE = 'log:child:1';
 
-function seedUser(id = 1): void {
-  testDb
-    .insert(users)
-    .values({
-      id,
-      email: `u${id}@test.local`,
-      displayName: `U${id}`,
-      passwordHash: 'x',
-      createdAt: new Date()
-    })
-    .run();
+async function seedUser(id = 1): Promise<void> {
+  await testDb.insert(users).values({
+    id,
+    email: `u${id}@test.local`,
+    displayName: `U${id}`,
+    passwordHash: 'x',
+    createdAt: new Date()
+  });
 }
 
 describe('withIdempotencyKey', () => {
-  beforeEach(() => {
-    resetTestDb();
-    seedUser();
+  beforeEach(async () => {
+    await resetTestDb();
+    await seedUser();
   });
 
-  it('runs doWork on a fresh key, stores redirect, returns "fresh"', () => {
+  it('runs doWork on a fresh key, stores redirect, returns "fresh"', async () => {
     const doWork = vi.fn(() => ({ redirect: '/child/1?logged=1' }));
-    const result = testDb.transaction((tx) =>
+    const result = await testDb.transaction(async (tx) =>
       withIdempotencyKey(tx, { key: 'k1', userId: 1, scope: SCOPE }, doWork)
     );
     expect(doWork).toHaveBeenCalledOnce();
     expect(result).toEqual({ kind: 'fresh', redirect: '/child/1?logged=1' });
 
-    const row = testDb.select().from(idempotencyKeys).where(eq(idempotencyKeys.key, 'k1')).get();
+    const row = (
+      await testDb.select().from(idempotencyKeys).where(eq(idempotencyKeys.key, 'k1')).limit(1)
+    )[0];
     expect(row?.redirect).toBe('/child/1?logged=1');
   });
 
-  it('replays without calling doWork when key has a stored redirect', () => {
-    testDb.transaction((tx) =>
+  it('replays without calling doWork when key has a stored redirect', async () => {
+    await testDb.transaction(async (tx) =>
       withIdempotencyKey(tx, { key: 'k2', userId: 1, scope: SCOPE }, () => ({
         redirect: '/child/1?logged=1&first=1'
       }))
     );
 
     const doWork = vi.fn(() => ({ redirect: 'should-not-run' }));
-    const result = testDb.transaction((tx) =>
+    const result = await testDb.transaction(async (tx) =>
       withIdempotencyKey(tx, { key: 'k2', userId: 1, scope: SCOPE }, doWork)
     );
     expect(doWork).not.toHaveBeenCalled();
     expect(result).toEqual({ kind: 'replay', redirect: '/child/1?logged=1&first=1' });
   });
 
-  it('throws IdempotencyInFlight when a row exists with null redirect', () => {
-    testDb
+  it('throws IdempotencyInFlight when a row exists with null redirect', async () => {
+    await testDb
       .insert(idempotencyKeys)
-      .values({ key: 'k3', userId: 1, scope: SCOPE, redirect: null, createdAt: new Date() })
-      .run();
+      .values({ key: 'k3', userId: 1, scope: SCOPE, redirect: null, createdAt: new Date() });
 
     const doWork = vi.fn();
-    expect(() =>
-      testDb.transaction((tx) =>
+    await expect(
+      testDb.transaction(async (tx) =>
         withIdempotencyKey(tx, { key: 'k3', userId: 1, scope: SCOPE }, doWork)
       )
-    ).toThrow(IdempotencyInFlight);
+    ).rejects.toThrow(IdempotencyInFlight);
     expect(doWork).not.toHaveBeenCalled();
   });
 
-  it('throws IdempotencyScopeMismatch when a row exists with a different scope', () => {
-    testDb
-      .insert(idempotencyKeys)
-      .values({
-        key: 'k4',
-        userId: 1,
-        scope: 'log:child:99',
-        redirect: '/child/99?logged=1',
-        createdAt: new Date()
-      })
-      .run();
+  it('throws IdempotencyScopeMismatch when a row exists with a different scope', async () => {
+    await testDb.insert(idempotencyKeys).values({
+      key: 'k4',
+      userId: 1,
+      scope: 'log:child:99',
+      redirect: '/child/99?logged=1',
+      createdAt: new Date()
+    });
 
     const doWork = vi.fn();
-    expect(() =>
-      testDb.transaction((tx) =>
+    await expect(
+      testDb.transaction(async (tx) =>
         withIdempotencyKey(tx, { key: 'k4', userId: 1, scope: SCOPE }, doWork)
       )
-    ).toThrow(IdempotencyScopeMismatch);
+    ).rejects.toThrow(IdempotencyScopeMismatch);
     expect(doWork).not.toHaveBeenCalled();
   });
 
-  it('rolls back the inserted key row when doWork throws', () => {
+  it('rolls back the inserted key row when doWork throws', async () => {
     const err = new Error('boom');
-    expect(() =>
-      testDb.transaction((tx) =>
+    await expect(
+      testDb.transaction(async (tx) =>
         withIdempotencyKey(tx, { key: 'k5', userId: 1, scope: SCOPE }, () => {
           throw err;
         })
       )
-    ).toThrow(err);
+    ).rejects.toThrow(err);
 
-    const row = testDb.select().from(idempotencyKeys).where(eq(idempotencyKeys.key, 'k5')).get();
+    const row = (
+      await testDb.select().from(idempotencyKeys).where(eq(idempotencyKeys.key, 'k5')).limit(1)
+    )[0];
     expect(row).toBeUndefined();
+  });
+
+  it('absorbs a concurrent INSERT race as IdempotencyInFlight, not a 500', async () => {
+    // Simulate the race: another concurrent transaction wins the optimistic
+    // INSERT before our savepoint runs. Our INSERT raises 23505; the savepoint
+    // rolls back so the outer tx is still alive and we should detect the
+    // existing in-flight row and throw IdempotencyInFlight (which the route
+    // turns into a 409, never a 500).
+    const doWork = vi.fn(() => ({ redirect: '/should-not-run' }));
+    let racePlanted = false;
+    await expect(
+      testDb.transaction(async (tx) => {
+        if (!racePlanted) {
+          racePlanted = true;
+          // Insert via the outer testDb so the row is committed to the shared
+          // pg-mem store before tx's savepoint fires.
+          await testDb.insert(idempotencyKeys).values({
+            key: 'race',
+            userId: 1,
+            scope: SCOPE,
+            redirect: null,
+            createdAt: new Date()
+          });
+        }
+        return withIdempotencyKey(tx, { key: 'race', userId: 1, scope: SCOPE }, doWork);
+      })
+    ).rejects.toThrow(IdempotencyInFlight);
+    expect(doWork).not.toHaveBeenCalled();
+  });
+
+  it('rethrows non-PK errors from the savepoint INSERT', async () => {
+    // Trigger a FK violation (23503) by passing a userId that doesn't exist.
+    // The savepoint INSERT fails — isUniqueViolation rejects 23503, so
+    // withIdempotencyKey re-throws instead of treating it as a race.
+    const doWork = vi.fn();
+    await expect(
+      testDb.transaction(async (tx) =>
+        withIdempotencyKey(tx, { key: 'fk', userId: 99999, scope: SCOPE }, doWork)
+      )
+    ).rejects.toThrow();
+    expect(doWork).not.toHaveBeenCalled();
+  });
+
+  it('absorbs a 23505 error with the code on the top-level error (real-pg shape)', async () => {
+    // pg-mem nests the SQLSTATE under err.cause.code; the real `pg` driver
+    // surfaces it on err.code directly. Mock the inner transaction to throw
+    // an Error in the top-level shape so isUniqueViolation's first branch
+    // is exercised.
+    await testDb.insert(idempotencyKeys).values({
+      key: 'real-pg',
+      userId: 1,
+      scope: SCOPE,
+      redirect: null,
+      createdAt: new Date()
+    });
+
+    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+      const realTx = testDb.transaction.bind(testDb);
+      txSpy.mockRestore();
+      return realTx(async (tx) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const subSpy = vi.spyOn(tx as any, 'transaction').mockRejectedValueOnce(
+          Object.assign(new Error('duplicate key value violates unique constraint'), {
+            code: '23505'
+          })
+        );
+        try {
+          return await fn(tx);
+        } finally {
+          subSpy.mockRestore();
+        }
+      });
+    });
+
+    await expect(
+      testDb.transaction(async (tx) =>
+        withIdempotencyKey(tx, { key: 'real-pg', userId: 1, scope: SCOPE }, () => ({
+          redirect: '/should-not-run'
+        }))
+      )
+    ).rejects.toThrow(IdempotencyInFlight);
+  });
+
+  it('isUniqueViolation distinguishes 23505 from other shapes', async () => {
+    // Direct cover for the predicate's non-23505 branches: only thrown
+    // through the PK race path of withIdempotencyKey at runtime, but the
+    // helper must reject everything that isn't shaped like a PK violation.
+    // We assert behaviour observably: a primitive error makes the helper
+    // re-throw rather than swallow as a race.
+    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+      const realTx = testDb.transaction.bind(testDb);
+      txSpy.mockRestore();
+      return realTx(async (tx) => {
+        // Force the inner savepoint call to reject with a non-Error value.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const subSpy = vi.spyOn(tx as any, 'transaction').mockRejectedValueOnce('plain string');
+        try {
+          return await fn(tx);
+        } finally {
+          subSpy.mockRestore();
+        }
+      });
+    });
+
+    await expect(
+      testDb.transaction(async (tx) =>
+        withIdempotencyKey(tx, { key: 'plain', userId: 1, scope: SCOPE }, () => ({
+          redirect: '/x'
+        }))
+      )
+    ).rejects.toBe('plain string');
   });
 });
 
 describe('pruneExpiredKeys', () => {
-  beforeEach(() => {
-    resetTestDb();
-    seedUser();
+  beforeEach(async () => {
+    await resetTestDb();
+    await seedUser();
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('deletes only rows older than the threshold and returns the count', () => {
+  it('deletes only rows older than the threshold and returns the count', async () => {
     const now = new Date('2026-05-07T12:00:00Z');
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(now);
 
-    testDb
-      .insert(idempotencyKeys)
-      .values([
-        {
-          key: 'old1',
-          userId: 1,
-          scope: SCOPE,
-          redirect: '/x',
-          createdAt: new Date(now.getTime() - 25 * 60 * 60 * 1000)
-        },
-        {
-          key: 'old2',
-          userId: 1,
-          scope: SCOPE,
-          redirect: '/x',
-          createdAt: new Date(now.getTime() - 48 * 60 * 60 * 1000)
-        },
-        {
-          key: 'fresh',
-          userId: 1,
-          scope: SCOPE,
-          redirect: '/x',
-          createdAt: new Date(now.getTime() - 1 * 60 * 60 * 1000)
-        }
-      ])
-      .run();
-
-    const deleted = testDb.transaction((tx) => pruneExpiredKeys(tx));
-    expect(deleted).toBe(2);
-
-    const remaining = testDb.select().from(idempotencyKeys).all();
-    expect(remaining.map((r) => r.key)).toEqual(['fresh']);
-  });
-
-  it('respects a custom threshold', () => {
-    const now = new Date('2026-05-07T12:00:00Z');
-    vi.useFakeTimers();
-    vi.setSystemTime(now);
-
-    testDb
-      .insert(idempotencyKeys)
-      .values({
-        key: 'k',
+    await testDb.insert(idempotencyKeys).values([
+      {
+        key: 'old1',
         userId: 1,
         scope: SCOPE,
         redirect: '/x',
-        createdAt: new Date(now.getTime() - 90 * 1000)
-      })
-      .run();
+        createdAt: new Date(now.getTime() - 25 * 60 * 60 * 1000)
+      },
+      {
+        key: 'old2',
+        userId: 1,
+        scope: SCOPE,
+        redirect: '/x',
+        createdAt: new Date(now.getTime() - 48 * 60 * 60 * 1000)
+      },
+      {
+        key: 'fresh',
+        userId: 1,
+        scope: SCOPE,
+        redirect: '/x',
+        createdAt: new Date(now.getTime() - 1 * 60 * 60 * 1000)
+      }
+    ]);
 
-    const deleted = testDb.transaction((tx) => pruneExpiredKeys(tx, 60 * 1000));
+    const deleted = await testDb.transaction(async (tx) => pruneExpiredKeys(tx));
+    expect(deleted).toBe(2);
+
+    const remaining = await testDb.select().from(idempotencyKeys);
+    expect(remaining.map((r) => r.key)).toEqual(['fresh']);
+  });
+
+  it('respects a custom threshold', async () => {
+    const now = new Date('2026-05-07T12:00:00Z');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(now);
+
+    await testDb.insert(idempotencyKeys).values({
+      key: 'k',
+      userId: 1,
+      scope: SCOPE,
+      redirect: '/x',
+      createdAt: new Date(now.getTime() - 90 * 1000)
+    });
+
+    const deleted = await testDb.transaction(async (tx) => pruneExpiredKeys(tx, 60 * 1000));
     expect(deleted).toBe(1);
   });
 });

@@ -17,8 +17,8 @@ import { webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
 
-beforeEach(() => {
-  resetTestDb();
+beforeEach(async () => {
+  await resetTestDb();
   mocks.generateAuthenticationOptions.mockReset();
 });
 
@@ -34,11 +34,13 @@ describe('POST /passkeys/authentication/options', () => {
     expect(event.cookies.set).toHaveBeenCalled();
     const [name, token] = event.cookies.set.mock.calls[0];
     expect(name).toBe(PASSKEY_CHALLENGE_COOKIE);
-    const stored = testDb
-      .select()
-      .from(webauthnChallenges)
-      .where(eq(webauthnChallenges.token, token as string))
-      .get();
+    const stored = (
+      await testDb
+        .select()
+        .from(webauthnChallenges)
+        .where(eq(webauthnChallenges.token, token as string))
+        .limit(1)
+    )[0];
     expect(stored?.purpose).toBe('authentication');
     expect(stored?.userId).toBeNull();
     expect(mocks.generateAuthenticationOptions.mock.calls[0][0].rpID).toBe('app.example.com');

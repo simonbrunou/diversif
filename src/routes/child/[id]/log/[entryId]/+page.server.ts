@@ -26,12 +26,14 @@ function parseEntryId(value: string | undefined): number {
   return id;
 }
 
-function loadEntry(entryId: number, childId: number) {
-  const row = db
-    .select()
-    .from(foodEntries)
-    .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)))
-    .get();
+async function loadEntry(entryId: number, childId: number) {
+  const row = (
+    await db
+      .select()
+      .from(foodEntries)
+      .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)))
+      .limit(1)
+  )[0];
   if (!row) throw error(404, 'Entrée introuvable');
   return row;
 }
@@ -41,9 +43,9 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
   requireMembership(locals, childId);
   const entryId = parseEntryId(params.entryId);
 
-  const entry = loadEntry(entryId, childId);
+  const entry = await loadEntry(entryId, childId);
 
-  const list = db
+  const list = await db
     .select({
       id: foods.id,
       name: foods.name,
@@ -52,8 +54,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
     })
     .from(foods)
     .where(or(isNull(foods.customForChildId), eq(foods.customForChildId, childId)))
-    .orderBy(foods.name)
-    .all();
+    .orderBy(foods.name);
 
   // Drizzle's timestamp_ms mode always materializes givenAt as a Date.
   const givenAt = entry.givenAt as Date;
@@ -78,7 +79,7 @@ export const actions: Actions = {
     const childId = Number(params.id);
     requireMembership(locals, childId);
     const entryId = parseEntryId(params.entryId);
-    loadEntry(entryId, childId);
+    await loadEntry(entryId, childId);
 
     const raw = Object.fromEntries(await request.formData());
     const parsed = schema.safeParse(raw);
@@ -96,20 +97,21 @@ export const actions: Actions = {
       const category = CATEGORY_IDS.includes(customCategoryRaw ?? /* v8 ignore next */ '')
         ? (customCategoryRaw as string)
         : 'autre';
-      const inserted = db
-        .insert(foods)
-        .values({
-          name: customName,
-          category,
-          isMajorAllergen: false,
-          allergenType: null,
-          suggestedAgeMonths: 0,
-          notes: null,
-          isCustom: true,
-          customForChildId: childId
-        })
-        .returning({ id: foods.id })
-        .get();
+      const inserted = (
+        await db
+          .insert(foods)
+          .values({
+            name: customName,
+            category,
+            isMajorAllergen: false,
+            allergenType: null,
+            suggestedAgeMonths: 0,
+            notes: null,
+            isCustom: true,
+            customForChildId: childId
+          })
+          .returning({ id: foods.id })
+      )[0];
       foodId = inserted.id;
     }
 
@@ -117,16 +119,18 @@ export const actions: Actions = {
       return fail(400, { error: 'Aucun aliment sélectionné.' });
     }
 
-    const food = db
-      .select()
-      .from(foods)
-      .where(
-        and(
-          eq(foods.id, foodId),
-          or(isNull(foods.customForChildId), eq(foods.customForChildId, childId))
+    const food = (
+      await db
+        .select()
+        .from(foods)
+        .where(
+          and(
+            eq(foods.id, foodId),
+            or(isNull(foods.customForChildId), eq(foods.customForChildId, childId))
+          )
         )
-      )
-      .get();
+        .limit(1)
+    )[0];
     if (!food) {
       return fail(400, { error: 'Aliment introuvable.' });
     }
@@ -136,15 +140,15 @@ export const actions: Actions = {
       return fail(400, { error: 'Date invalide.' });
     }
 
-    db.update(foodEntries)
+    await db
+      .update(foodEntries)
       .set({
         foodId,
         givenAt: givenAtDate,
         reaction: parsed.data.reaction,
         notes: parsed.data.notes?.trim() || null
       })
-      .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)))
-      .run();
+      .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
 
     const from = (raw.from as string) === 'dashboard' ? 'dashboard' : 'foods';
     throw redirect(303, from === 'dashboard' ? `/child/${childId}` : `/child/${childId}/foods`);
@@ -154,11 +158,11 @@ export const actions: Actions = {
     const childId = Number(params.id);
     requireMembership(locals, childId);
     const entryId = parseEntryId(params.entryId);
-    loadEntry(entryId, childId);
+    await loadEntry(entryId, childId);
 
-    db.delete(foodEntries)
-      .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)))
-      .run();
+    await db
+      .delete(foodEntries)
+      .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
 
     const data = await request.formData();
     const from = String(data.get('from') ?? '') === 'dashboard' ? 'dashboard' : 'foods';
