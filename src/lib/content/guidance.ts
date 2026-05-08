@@ -71,7 +71,7 @@ export const STAGES = [
     focus: [
       'Viande / poisson : 10–20 g par jour (≈ 2 cuillères à café). Poisson 2 fois par semaine dont un gras (saumon, sardine).',
       "Œuf entier bien cuit (jaune + blanc) : ~1/4 d'œuf, à augmenter après 1 an (1/3 entre 1–2 ans, 1/2 entre 2–3 ans).",
-      "Allergènes : terminer l'introduction des 12 allergènes prioritaires (œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait).",
+      "Allergènes : à 6–9 mois, terminer l'introduction des allergènes courants à cet âge (œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait).",
       'Légumineuses cuites bien écrasées (lentilles corail, pois chiches, haricots blancs).'
     ],
     textures:
