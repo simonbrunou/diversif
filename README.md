@@ -1,5 +1,7 @@
 # Diversif
 
+[![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-ec4899?logo=github)](https://github.com/sponsors/simonbrunou)
+
 Web app to track a baby's food diversification, with parent sharing. Self-hosted, single Docker container, French UI.
 
 ## Stack
