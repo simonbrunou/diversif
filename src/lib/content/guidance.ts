@@ -238,7 +238,7 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     howToOffer: [
       'Œuf entier bien cuit (jaune et blanc), durs ou en omelette bien cuite.',
       "~1/4 d'œuf entier (jaune + blanc) écrasé dans une purée à 6–12 mois, puis ~1/3 à 1–2 ans, puis ~1/2 à 2–3 ans (HCSP 2020).",
-      "Pas d'œuf cru (mayo maison, mousse au chocolat) avant 12 mois."
+      "Pas d'œuf cru (mayo maison, mousse au chocolat) avant 3 ans."
     ],
     firstSigns: [
       'Rougeurs autour de la bouche',
@@ -644,10 +644,10 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
   {
     id: 'oeuf-cru',
     name: 'Œuf cru ou peu cuit',
-    until: '< 12 mois',
+    until: '< 3 ans',
     reason:
       'Risque de salmonellose. Pas de mayonnaise maison, mousse au chocolat, œuf coulant, tiramisu.',
-    sources: ['anses-nourrisson']
+    sources: ['hcsp-2020', 'anses-nourrisson']
   },
   {
     id: 'viande-poisson-cru',
@@ -857,9 +857,9 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'egg-fully-cooked',
-    body: "Toujours œuf bien cuit (jaune et blanc fermes). Pas d'œuf coulant ni de mayo maison avant 12 mois.",
+    body: "Toujours œuf bien cuit (jaune et blanc fermes). Pas d'œuf coulant ni de mayo maison avant 3 ans.",
     allergens: ['oeuf'],
-    sources: ['anses-nourrisson']
+    sources: ['hcsp-2020', 'anses-nourrisson']
   },
   {
     id: 'no-honey',
