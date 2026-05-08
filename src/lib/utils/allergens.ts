@@ -1,14 +1,20 @@
-// The 12 priority allergens for early-introduction guidance per the HCSP-2020
-// avis on infant feeding. EU Regulation 1169/2011 declares 14 allergens for
-// food labelling (these 12 plus lupin and sulphites/SO₂), but those two are
-// excluded here intentionally:
-//   - lupin: not a relevant introduction-window allergen for French infants
-//     and rarely encountered in unprocessed home cooking.
-//   - sulphites: a preservative, not a primary infant-diversification food
-//     group. Threshold is 10 mg/kg, mostly found in dried fruit and wine —
-//     out of scope for "what to feed my 6-month-old".
-// If diversif ever expands beyond the diversification window or starts
-// generating ingredient labels, this list will need to expand to the EU 14.
+// The 12 allergens diversif tracks for the diversification logbook,
+// derived from EU Regulation 1169/2011 Annexe II (14 allergens for
+// food labelling) minus two:
+//   - lupin: rarely encountered in unprocessed home cooking.
+//   - sulphites: a preservative, not a food group; mostly in dried
+//     fruit and wine — out of scope for infant diversification.
+//
+// HCSP 2020 (avis du 30/06/2020) specifically names produits laitiers,
+// œuf, arachide, fruits à coque and gluten as introduction priorities
+// in the 4–6 mois window. The other entries here (poisson, sésame,
+// soja, céleri, moutarde, crustacés, mollusques) are tracked for
+// log-completeness against EU labelling, not because HCSP names them
+// as priority introduction allergens.
+//
+// If diversif ever expands beyond the diversification window or
+// starts generating ingredient labels, this list will need to expand
+// to the EU 14.
 export const ALLERGENS = [
   { id: 'gluten', label: 'Gluten' },
   { id: 'oeuf', label: 'Œuf' },
