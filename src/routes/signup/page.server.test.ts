@@ -237,6 +237,37 @@ describe('signup default action', () => {
     }
   });
 
+  it('returns the generic signup-impossible error when a concurrent insert wins the email race', async () => {
+    // Plant the conflicting row mid-transaction so the inner INSERT races on
+    // the users.email unique constraint and raises 23505. The handler should
+    // map that to the same opaque "signup impossible" 400 the registered-email
+    // read path returns, NOT a 500.
+    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+      await testDb.insert(users).values({
+        email: 'new@example.com',
+        passwordHash: 'h',
+        displayName: 'Other',
+        createdAt: new Date()
+      });
+      return testDb.transaction(fn);
+    });
+
+    try {
+      const event = makeRouteEvent({ formData: form() });
+      const r = (await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )) as { status: number; data: { errorKey: string } };
+      expect(r.status).toBe(400);
+      expect(r.data.errorKey).toBe('errorsAuthSignupImpossible');
+
+      // Only one row exists for the email — the planted one.
+      const rows = await testDb.select().from(users).where(eq(users.email, 'new@example.com'));
+      expect(rows).toHaveLength(1);
+    } finally {
+      txSpy.mockRestore();
+    }
+  });
+
   it('rolls back the user insert when the invite is consumed mid-transaction', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const racer = await seedUser({ email: 'racer@example.com' });

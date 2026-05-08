@@ -1,5 +1,6 @@
 import { eq, lt } from 'drizzle-orm';
 import { idempotencyKeys } from './db/schema';
+import { isUniqueViolation } from './db/errors';
 import type { NodePgDatabase, NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
 import type { PgTransaction } from 'drizzle-orm/pg-core';
 import type { ExtractTablesWithRelations } from 'drizzle-orm';
@@ -79,17 +80,6 @@ export async function withIdempotencyKey<T extends { redirect: string }>(
     .where(eq(idempotencyKeys.key, args.key));
 
   return { kind: 'fresh', redirect: result.redirect };
-}
-
-function isUniqueViolation(err: unknown): boolean {
-  if (!err || typeof err !== 'object') return false;
-  const code = (err as { code?: unknown }).code;
-  if (code === '23505') return true;
-  const cause = (err as { cause?: unknown }).cause;
-  if (cause && typeof cause === 'object' && (cause as { code?: unknown }).code === '23505') {
-    return true;
-  }
-  return false;
 }
 
 export async function pruneExpiredKeys(

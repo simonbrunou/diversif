@@ -2,6 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { invitations, memberships, users } from '$lib/server/db/schema';
+import { isUniqueViolation } from '$lib/server/db/errors';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import {
   SESSION_COOKIE,
@@ -199,6 +200,19 @@ export const actions: Actions = {
           displayName: formDisplayName,
           inviteCode: formInvite,
           errorKey: 'errorsAuthInvalidInviteExpired'
+        });
+      }
+      // The findUserByEmail check above is unlocked, so two concurrent signups
+      // with the same email can both pass it; the loser hits users.email's
+      // UNIQUE constraint at INSERT time. Map the resulting 23505 to the same
+      // generic "signup impossible" 400 used for the read path so a normal
+      // double-submit doesn't surface as a 500.
+      if (isUniqueViolation(err)) {
+        return fail(400, {
+          email: formEmail,
+          displayName: formDisplayName,
+          inviteCode: formInvite,
+          errorKey: 'errorsAuthSignupImpossible'
         });
       }
       throw err;
