@@ -72,8 +72,9 @@
     </div>
     <h1 class="text-2xl font-semibold leading-tight md:text-3xl">Les 12 allergènes majeurs</h1>
     <p class="max-w-2xl text-sm text-muted-foreground">
-      Les recommandations actuelles sont claires : ne plus retarder l'introduction des allergènes.
-      La fenêtre 4–11 mois est clé pour réduire le risque d'allergie.
+      Les recommandations actuelles sont claires : ne plus retarder l'introduction des allergènes
+      prioritaires (œuf, arachide, lait, gluten, poisson, fruits à coque, sésame). La fenêtre 4–11
+      mois est clé pour réduire le risque d'allergie.
     </p>
   </header>
 
@@ -83,6 +84,13 @@
       86 % le risque d'allergie chez les nourrissons à risque. L'étude <strong>EAT</strong>,
       portant sur 6 allergènes (arachide, œuf, lait, sésame, poisson, blé) introduits dès 3–4
       mois, a divisé par 3 la prévalence d'allergies alimentaires.
+    </p>
+    <p class="mt-2 text-sm text-foreground/90">
+      <strong>Cas particuliers.</strong> Le <strong>soja</strong> est tracé ici pour le suivi mais
+      HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans (phyto-œstrogènes).
+      Les <strong>crustacés, mollusques, céleri et moutarde</strong> figurent dans la liste pour
+      la complétude (règlement UE 1169/2011), sans recommandation d'introduction précoce
+      spécifique.
     </p>
     <div class="mt-3">
       <SourceCitation ids={['leap-2015', 'eat-2016', 'espghan-2017', 'hcsp-2020']} inline />
@@ -111,8 +119,9 @@
   <Card class="p-5 text-center md:p-6">
     <h2 class="text-lg font-semibold">Suivre l'introduction des allergènes</h2>
     <p class="mt-1 text-sm text-muted-foreground">
-      Diversif suit pour vous l'introduction des 12 allergènes prioritaires et vous rappelle ceux
-      qui restent à proposer dans la bonne fenêtre.
+      Diversif suit l'introduction des 12 allergènes du carnet et vous rappelle les allergènes
+      prioritaires (œuf, arachide, lait, gluten, poisson, fruits à coque, sésame) qui restent à
+      proposer dans la fenêtre 4–11 mois.
     </p>
     <div class="mt-4 flex flex-wrap justify-center gap-3">
       <Button href={localizedHref('/signup')}>Créer un compte pour les suivre</Button>

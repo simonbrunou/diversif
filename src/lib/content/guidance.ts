@@ -682,10 +682,11 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
   },
   {
     id: 'sojaboisson-3ans',
-    name: 'Boissons et préparations à base de soja',
-    until: '< 3 ans (consommation régulière)',
-    reason: 'Présence de phyto-œstrogènes. Le tofu en petite quantité reste possible.',
-    sources: ['anses-nourrisson']
+    name: 'Produits à base de soja (tofu, yaourts, boissons végétales au soja)',
+    until: '< 3 ans',
+    reason:
+      'Présence de phyto-œstrogènes. HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans (tofu compris).',
+    sources: ['hcsp-2020', 'anses-nourrisson']
   }
 ];
 
