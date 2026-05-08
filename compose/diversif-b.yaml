@@ -18,6 +18,13 @@ services:
       - DATABASE_PATH=/app/data/diversif.db
       - NODE_ENV=production
       - BODY_SIZE_LIMIT=65536
+      # adapter-node reads client identity from these headers (set by Cloudflare,
+      # passed through cloudflared and Traefik unchanged). Without them, the app
+      # sees Traefik's container IP / scheme=http / host=container, breaking
+      # redirects, CSRF/origin checks, and Sentry IP scrubbing.
+      - ADDRESS_HEADER=cf-connecting-ip
+      - PROTOCOL_HEADER=x-forwarded-proto
+      - HOST_HEADER=x-forwarded-host
     volumes:
       - data:/app/data
     networks:
