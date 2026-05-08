@@ -98,11 +98,29 @@ function wrapClient<T extends { query: (...args: unknown[]) => unknown }>(client
     }
 
     const trimmedSql = getSql(args).trim().replace(/;$/, '').toUpperCase();
-    if (trimmedSql === 'BEGIN' || trimmedSql.startsWith('SAVEPOINT ')) {
+    // pg-mem's parser rejects `SAVEPOINT sp1` / `RELEASE SAVEPOINT …` /
+    // `ROLLBACK TO SAVEPOINT …`, so we handle nested-transaction control
+    // statements entirely in the wrapper: track a snapshot stack and short-
+    // circuit before pg-mem ever sees the SQL. BEGIN/COMMIT/ROLLBACK are
+    // recognised by pg-mem so we still forward those.
+    if (trimmedSql.startsWith('SAVEPOINT ')) {
       txStack.push(mem.backup());
-    } else if (trimmedSql === 'COMMIT' || trimmedSql.startsWith('RELEASE SAVEPOINT ')) {
+      return { rows: [], rowCount: 0, command: 'SAVEPOINT', oid: 0, fields: [] };
+    }
+    if (trimmedSql.startsWith('RELEASE SAVEPOINT ')) {
       txStack.pop();
-    } else if (trimmedSql === 'ROLLBACK' || trimmedSql.startsWith('ROLLBACK TO SAVEPOINT ')) {
+      return { rows: [], rowCount: 0, command: 'RELEASE', oid: 0, fields: [] };
+    }
+    if (trimmedSql.startsWith('ROLLBACK TO SAVEPOINT ')) {
+      const snap = txStack.pop();
+      if (snap) snap.restore();
+      return { rows: [], rowCount: 0, command: 'ROLLBACK', oid: 0, fields: [] };
+    }
+    if (trimmedSql === 'BEGIN') {
+      txStack.push(mem.backup());
+    } else if (trimmedSql === 'COMMIT') {
+      txStack.pop();
+    } else if (trimmedSql === 'ROLLBACK') {
       const snap = txStack.pop();
       if (snap) snap.restore();
     }

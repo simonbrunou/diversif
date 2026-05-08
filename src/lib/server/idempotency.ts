@@ -21,24 +21,47 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
 /**
  * MUST be called inside `await db.transaction(async (tx) => ...)`, never with the bare `db`
- * singleton. The fresh-key check is a SELECT followed by an INSERT; outside a transaction two
- * concurrent first-time requests could both pass the SELECT and both INSERT, breaking the
- * guarantee. The transaction also gives free rollback of the inserted key row when `doWork()`
- * throws.
+ * singleton. The transaction gives free rollback of the inserted key row when `doWork()`
+ * throws, and serializes the rest of the action against the inserted-but-uncommitted row.
+ *
+ * Concurrency: a plain SELECT-then-INSERT would let two concurrent first-time requests both
+ * pass the SELECT and race on the INSERT, with the loser getting a 23505 duplicate-key
+ * error instead of the in-flight/replay path. Use a savepoint-wrapped INSERT — if it raises
+ * 23505, the savepoint rolls back so the outer transaction is still alive, and we re-read
+ * the existing row to decide replay/in-flight/scope-mismatch.
  */
 export async function withIdempotencyKey<T extends { redirect: string }>(
   tx: Tx,
   args: { key: string; userId: number; scope: string },
   doWork: () => Promise<T> | T
 ): Promise<{ kind: 'fresh' | 'replay'; redirect: string }> {
-  const existingRows = await tx
-    .select()
-    .from(idempotencyKeys)
-    .where(eq(idempotencyKeys.key, args.key))
-    .limit(1);
-  const existing = existingRows[0];
+  let weInserted = false;
+  try {
+    await tx.transaction(async (sub) => {
+      await sub.insert(idempotencyKeys).values({
+        key: args.key,
+        userId: args.userId,
+        scope: args.scope,
+        redirect: null,
+        createdAt: new Date()
+      });
+    });
+    weInserted = true;
+  } catch (err) {
+    if (!isUniqueViolation(err)) throw err;
+  }
 
-  if (existing) {
+  if (!weInserted) {
+    const existingRows = await tx
+      .select()
+      .from(idempotencyKeys)
+      .where(eq(idempotencyKeys.key, args.key))
+      .limit(1);
+    const existing = existingRows[0];
+    /* v8 ignore next 3 — present by construction: 23505 only fires when a row exists */
+    if (!existing) {
+      throw new Error(`idempotency key ${args.key} vanished after conflict`);
+    }
     if (existing.scope !== args.scope) {
       throw new IdempotencyScopeMismatch(`scope mismatch for key ${args.key}`);
     }
@@ -48,14 +71,6 @@ export async function withIdempotencyKey<T extends { redirect: string }>(
     return { kind: 'replay', redirect: existing.redirect };
   }
 
-  await tx.insert(idempotencyKeys).values({
-    key: args.key,
-    userId: args.userId,
-    scope: args.scope,
-    redirect: null,
-    createdAt: new Date()
-  });
-
   const result = await doWork();
 
   await tx
@@ -64,6 +79,17 @@ export async function withIdempotencyKey<T extends { redirect: string }>(
     .where(eq(idempotencyKeys.key, args.key));
 
   return { kind: 'fresh', redirect: result.redirect };
+}
+
+function isUniqueViolation(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const code = (err as { code?: unknown }).code;
+  if (code === '23505') return true;
+  const cause = (err as { cause?: unknown }).cause;
+  if (cause && typeof cause === 'object' && (cause as { code?: unknown }).code === '23505') {
+    return true;
+  }
+  return false;
 }
 
 export async function pruneExpiredKeys(
