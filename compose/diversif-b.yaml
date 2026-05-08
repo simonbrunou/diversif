@@ -7,7 +7,7 @@ name: diversif-b
 
 services:
   app:
-    image: ${IMAGE:?IMAGE required}
+    image: ${DIVERSIF_IMAGE:?DIVERSIF_IMAGE required (set as a Komodo Variable, updated per-deploy by CI)}
     container_name: diversif-b
     restart: unless-stopped
     env_file:

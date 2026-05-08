@@ -13,15 +13,16 @@
 # Required Komodo Stack environment vars:
 #   DOMAIN=diversif.app
 #   ORIGIN=https://diversif.app
-#   IMAGE=ghcr.io/simonbrunou/diversif:tag
-# Plus any app secrets in a .env file alongside this YAML (SESSION_SECRET,
-# SENTRY_DSN, etc.).
+# Plus a Komodo Variable named DIVERSIF_IMAGE (e.g. ghcr.io/simonbrunou/diversif:sha)
+# which CI updates per-deploy via the /write API. The stack reads it as
+# `${DIVERSIF_IMAGE}` below. App secrets (SESSION_SECRET, SENTRY_DSN, …)
+# go in a .env file alongside this YAML.
 
 name: diversif-a
 
 services:
   app:
-    image: ${IMAGE:?IMAGE required}
+    image: ${DIVERSIF_IMAGE:?DIVERSIF_IMAGE required (set as a Komodo Variable, updated per-deploy by CI)}
     container_name: diversif-a
     restart: unless-stopped
     env_file:

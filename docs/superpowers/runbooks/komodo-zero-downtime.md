@@ -109,10 +109,9 @@ Both stacks need the same env vars:
 ```
 DOMAIN=diversif.app
 ORIGIN=https://diversif.app
-IMAGE=ghcr.io/simonbrunou/diversif:latest
 ```
 
-**Why `:latest`** — the GitHub Actions `publish` job pushes both `:latest` (mutable, what the stacks pull) and `:${{ github.sha }}` (immutable, for traceability and rollback). Procedure executions pull-and-recreate, so `:latest` always lands the freshly built image. The `:sha` tag stays in GHCR forever — to roll back, override `IMAGE` on both stacks to a known-good `:sha` and run the Procedure manually.
+The image to run is **not** a per-stack env var. It's a Komodo Variable named `DIVERSIF_IMAGE` referenced by both stacks as `${DIVERSIF_IMAGE}`, updated by CI on each deploy via Komodo's `/write` API. Create it once in the Komodo UI (Resources → Variables, or sync) with an initial value pointing to any valid published `:sha` tag (`ghcr.io/simonbrunou/diversif:<bootstrap-sha>`). CI overwrites it on every push to `main`.
 
 Plus a `.env` alongside each compose file for app secrets (`SESSION_SECRET`, `SENTRY_DSN`, etc. — get these from the existing single-stack deploy if migrating).
 
@@ -127,24 +126,29 @@ Sync `compose/komodo-procedure.toml` into Komodo's resource sync, or recreate th
 
 ### 5. Wire the Procedure trigger
 
-This is already done in CI. `.github/workflows/ci.yml` has a `publish` job that runs after the three test jobs pass on `main`. It builds the image, pushes `ghcr.io/simonbrunou/diversif:${sha}` and `:latest`, then POSTs to Komodo's `/execute` to fire `RunProcedure { procedure: "diversif-rolling-deploy" }`.
+This is already done in CI. `.github/workflows/ci.yml` has a `publish-and-deploy` job that runs after the three test jobs pass on `main`. It:
 
-You need to set three GitHub Actions secrets on the repo before the next push to `main`:
+1. Builds the Dockerfile via buildx (with gha cache).
+2. Pushes a single immutable tag: `ghcr.io/simonbrunou/diversif:${{ github.sha }}`.
+3. POSTs to `https://komodo.sbrn.eu/write` with `{type: UpdateVariableValue, params: {name: DIVERSIF_IMAGE, value: ghcr.io/simonbrunou/diversif:<sha>}}` — atomically updates the Variable both stacks reference.
+4. POSTs to `https://komodo.sbrn.eu/execute` with `{type: RunProcedure, params: {procedure: diversif-rolling-deploy}}` — fires the rolling deploy.
 
-| Secret              | Value                                                                                                                |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `KOMODO_ADDRESS`    | The base URL of your Komodo Core, e.g. `https://komodo.example.com` (no trailing slash needed; the workflow strips). |
-| `KOMODO_API_KEY`    | Generate in Komodo: User → Settings → API Keys.                                                                      |
-| `KOMODO_API_SECRET` | Paired secret from the same key generation.                                                                          |
+You need to set two GitHub Actions secrets on the repo before the next push to `main`:
 
-The API key needs permission to **Execute** the `diversif-rolling-deploy` Procedure (and read the linked Stacks). Scope it as narrowly as Komodo allows.
+| Secret              | Value                                           |
+| ------------------- | ----------------------------------------------- |
+| `KOMODO_API_KEY`    | Generate in Komodo: User → Settings → API Keys. |
+| `KOMODO_API_SECRET` | Paired secret from the same key generation.     |
+
+The Komodo URL `https://komodo.sbrn.eu` is hardcoded in the workflow — change it there if you ever move the Komodo host. The API key needs permission to **Write** the `DIVERSIF_IMAGE` Variable AND to **Execute** the `diversif-rolling-deploy` Procedure (and read the linked Stacks). Scope it as narrowly as Komodo allows.
 
 Verify by pushing a no-op commit to `main` and watching:
 
 1. The three test jobs pass.
-2. The `publish` job builds and pushes the image (visible in GHCR).
-3. Komodo's UI shows the Procedure firing, stage 1 (`DeployStack diversif-a`) completing, then stage 2 (`DeployStack diversif-b`) completing.
-4. The verify-with-curl loop below stays green throughout.
+2. The `publish-and-deploy` job builds and pushes the image (visible in GHCR).
+3. Komodo's UI shows the Variable's value updated to the new sha.
+4. The Procedure fires, stage 1 (`DeployStack diversif-a`) completes, then stage 2 (`DeployStack diversif-b`) completes.
+5. The verify-with-curl loop below stays green throughout.
 
 ## How to verify it works
 
@@ -156,7 +160,7 @@ If you see a 5s gap of failures: check that both stacks are running BEFORE the P
 
 ## Failure modes
 
-- **Both stacks crash-looping with the same broken image.** Rollback by overriding `IMAGE` in both stacks to the previous SHA and redeploying. There's no automatic rollback — Komodo doesn't track previous-known-good.
+- **Both stacks crash-looping with the same broken image.** Rollback by setting the `DIVERSIF_IMAGE` Komodo Variable back to a known-good `:sha` (Komodo UI → Variables) and re-running the `diversif-rolling-deploy` Procedure manually. Every CI build leaves its `:sha` tag in GHCR forever, so any past commit can be the rollback target. There's no automatic rollback — Komodo doesn't track previous-known-good.
 - **Migration breaks the old slot.** This is the expand-and-contract violation. If a deploy adds a NOT NULL column without default, the still-running old slot's INSERTs (without the new column) will fail during the overlap window. Convention: mark new columns nullable in deploy N, fill in code-side, then mark NOT NULL in deploy N+1.
 - **cloudflared tunnel down.** Cloudflare edge will return its own 5xx page; Traefik isn't reachable from outside. Check the cloudflared service on CT 201; the tunnel config should still point at `http://192.168.1.55:80`. Traefik certs aren't a concern in this topology — TLS lives at Cloudflare.
 - **Both slots holding the SQLite write lock.** Should not happen — `busy_timeout=5000` serializes them. If you see app-level errors about "database is locked", check that nobody is running long-lived transactions across the deploy window.
