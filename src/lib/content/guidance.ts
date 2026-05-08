@@ -71,7 +71,7 @@ export const STAGES = [
     focus: [
       'Viande / poisson : 10–20 g par jour (≈ 2 cuillères à café). Poisson 2 fois par semaine dont un gras (saumon, sardine).',
       'Œuf entier bien cuit, jaune et blanc, ~1/4 puis 1/2.',
-      "Allergènes : terminer l'introduction des 12 allergènes prioritaires. Les plus courants à cet âge : œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait. Ajouter crustacés, mollusques, céleri et moutarde selon ce que vous consommez au foyer.",
+      "Allergènes : terminer l'introduction des principaux allergènes prioritaires de cet âge (œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait). Crustacés, mollusques, céleri et moutarde viennent plus tard — voir leurs fiches dédiées.",
       'Légumineuses cuites bien écrasées (lentilles corail, pois chiches, haricots blancs).'
     ],
     textures:
