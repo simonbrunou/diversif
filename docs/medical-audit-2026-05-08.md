@@ -10,13 +10,16 @@
 
 **Clear-cut bugs** (code or attribution wrong, no domain judgment needed):
 
-1. 🚨 **Milestone "Les 12 allergènes prioritaires" toast can never fire.** Logic bug in `src/routes/child/[id]/log/+page.server.ts` — `allAllergensJustCompleted = isFirstAllergen && priorAllergensIntroduced + 1 === ALLERGENS.length` requires the first allergen ever logged to also be the 12th. Impossible.
-2. 🚨 **`oeuf-cru` blocked `< 12 mois`** (`guidance.ts:647`) and tip `egg-fully-cooked` (`:860`) — HCSP says 0–3 ans for raw eggs / mayo maison.
-3. 🚨 **Tofu seeded at age 6** (`seed.ts:79`) while `FORBIDDEN_FOODS[sojaboisson-3ans]` (`guidance.ts:683`) says soja products `< 3 ans`. Internal contradiction; HCSP backs the 3-yr stance for all soja products, not just drinks.
-4. 🚨 **`allergens.ts:1` comment claims "12 priority allergens per the HCSP-2020 avis"** — HCSP names only `produits laitiers / œuf / arachide` explicitly. The 12 = **EU Regulation 1169/2011 minus lupin and sulphites** (a *labelling* list, not an introduction list).
-5. 🚨 **Egg portion contradiction**: `oeuf.howToOffer` (`guidance.ts:240`) says "1/4 de **jaune**" (yolk only), focus text (`:73`) says "œuf entier ~1/4 puis 1/2", HCSP §2.7 says "œuf entier (jaune+blanc), ¼ entre 6–12 mois, 1/3 entre 1–2 ans, 1/2 entre 2–3 ans". App skips the 1/3 step and contradicts itself on yolk vs whole.
-6. 🚨 **"Noix de beurre" translation bug** (`guidance.ts:69`): HCSP §2.9 highlights *huile de colza* and *huile de noix* (walnut oil, ALA-rich). App lists "huile de colza, huile d'olive, **noix de beurre**" — "noix de beurre" means *a knob of butter*, a different fat with different rationale.
-7. 🚨 **Céleri in "viennent plus tard" list** (current `guidance.ts:74`, from the closed PR #52 attempt) while `celeri.recommendedAgeMonths: 6`.
+1. 🚨 **`oeuf-cru` blocked `< 12 mois`** (`guidance.ts:647`) and tip `egg-fully-cooked` (`:860`) — HCSP says 0–3 ans for raw eggs / mayo maison.
+2. 🚨 **Tofu seeded at age 6** (`seed.ts:79`) while `FORBIDDEN_FOODS[sojaboisson-3ans]` (`guidance.ts:683`) says soja products `< 3 ans`. Internal contradiction; HCSP backs the 3-yr stance for all soja products, not just drinks.
+3. 🚨 **`allergens.ts:1` comment claims "12 priority allergens per the HCSP-2020 avis"** — HCSP names only `produits laitiers / œuf / arachide` explicitly. The 12 = **EU Regulation 1169/2011 minus lupin and sulphites** (a _labelling_ list, not an introduction list).
+4. 🚨 **Egg portion contradiction**: `oeuf.howToOffer` (`guidance.ts:240`) says "1/4 de **jaune**" (yolk only), focus text (`:73`) says "œuf entier ~1/4 puis 1/2", HCSP §2.7 says "œuf entier (jaune+blanc), ¼ entre 6–12 mois, 1/3 entre 1–2 ans, 1/2 entre 2–3 ans". App skips the 1/3 step and contradicts itself on yolk vs whole.
+5. 🚨 **"Noix de beurre" translation bug** (`guidance.ts:69`): HCSP §2.9 highlights _huile de colza_ and _huile de noix_ (walnut oil, ALA-rich). App lists "huile de colza, huile d'olive, **noix de beurre**" — "noix de beurre" means _a knob of butter_, a different fat with different rationale.
+
+**Audit findings that did NOT hold up under verification** (kept here for transparency, not actionable):
+
+- ❌ **Milestone "Les 12 allergènes prioritaires" toast can never fire.** Agent B claimed this. On code re-read, `priorAllergenCount` is filtered by `eq(foods.allergenType, food.allergenType)` (line 158 of `+page.server.ts`) — it counts entries for _this specific allergen type_, not total. The toast fires correctly when the 12th distinct allergen is first logged. Audit was wrong.
+- ❌ **Céleri in "viennent plus tard" list.** This contradiction only existed inside the closed PR #52 branch (commit `7c4fda6`), not in shipped code. Listing it here as a current bug overstates the audit; current `guidance.ts:74` is the original "12 prioritaires (8 listed)" sentence, which is the underlying inconsistency, not a céleri-specific one.
 
 **Editorial / domain-judgment items** (where authoritative sources differ from the app, and the app's stance may be intentionally conservative):
 
@@ -54,21 +57,7 @@ Source URLs:
 
 ## Clear-cut bugs (detail)
 
-### 1. Milestone "all 12 allergens" can never fire
-
-**File:** `src/routes/child/[id]/log/+page.server.ts:194-195`
-
-```ts
-const isFirstAllergen = priorAllergenCount === 0 && food.allergenType != null;
-const allAllergensJustCompleted =
-  isFirstAllergen && priorAllergensIntroduced + 1 === ALLERGENS.length;
-```
-
-`isFirstAllergen` is true only when *this* allergen has never been logged for the child (`priorAllergenCount === 0`). Combined with the `+1 === ALLERGENS.length` clause, the celebration only fires if the first allergen logged is also the 12th — impossible.
-
-**Fix shape:** drop the `isFirstAllergen &&` conjunct; the condition should be "this insert took us from N–1 distinct allergens to N (= ALLERGENS.length)". The existing `priorAllergensIntroduced` already counts distinct allergens pre-insert; checking `priorAllergensIntroduced + 1 === ALLERGENS.length && food.allergenType != null && priorAllergenCount === 0` (where `priorAllergenCount` is for *this* allergen, not all) is what was intended.
-
-### 2. `oeuf-cru` and `egg-fully-cooked` use the wrong age cliff
+### 1. `oeuf-cru` and `egg-fully-cooked` use the wrong age cliff
 
 **Files:** `src/lib/content/guidance.ts:647` and `:860`
 
@@ -78,23 +67,23 @@ App says "œufs crus / mayo maison: avant 12 mois". HCSP avis 2020 §2.10 (l.620
 
 Should be `< 3 ans`, not `< 12 mois`. The 12-mo gate implies it's safe at 1 yr, which contradicts HCSP.
 
-### 3. Tofu age conflicts with soja FORBIDDEN_FOOD
+### 2. Tofu age conflicts with soja FORBIDDEN_FOOD
 
 **Files:** `src/lib/server/db/seed.ts:79` (Tofu, suggestedAgeMonths: 6) vs `src/lib/content/guidance.ts:683` (`FORBIDDEN_FOODS[sojaboisson-3ans]`, `until: '< 3 ans'`)
 
-HCSP §1.4 + §2.6 + l.793: soja products discouraged before 3 ans (phyto-œstrogènes + ANSES 2016c). The "sojaboisson-3ans" entry is correct; tofu seeded at 6 mo contradicts it. SpF parent brochure (l.419) is explicit: *"Le « lait » de soja et tous les produits à base de soja"* — discouraged under 3.
+HCSP §1.4 + §2.6 + l.793: soja products discouraged before 3 ans (phyto-œstrogènes + ANSES 2016c). The "sojaboisson-3ans" entry is correct; tofu seeded at 6 mo contradicts it. SpF parent brochure (l.419) is explicit: _"Le « lait » de soja et tous les produits à base de soja"_ — discouraged under 3.
 
 **Fix shape:** raise Tofu's `suggestedAgeMonths` to 36, or add a `notes` caveat acknowledging the soja restriction. Cross-check `ALLERGEN_GUIDANCE.soja` (`guidance.ts:347-352`) which currently recommends tofu at 6 mo — same fix.
 
-### 4. "12 allergens per HCSP-2020" attribution is wrong
+### 3. "12 allergens per HCSP-2020" attribution is wrong
 
 **File:** `src/lib/utils/allergens.ts:1-11`
 
-The header comment says "12 priority allergens for early-introduction guidance per the HCSP-2020 avis". HCSP §1.2.2 names only `produits laitiers / œuf / arachide` explicitly as priority introduction allergens (the rest of HCSP's allergen content is risk-management, not introduction-priority). The "12" matches **EU Regulation 1169/2011 Annexe II minus lupin and sulphites** — a *food labelling* list, not an introduction-priority list.
+The header comment says "12 priority allergens for early-introduction guidance per the HCSP-2020 avis". HCSP §1.2.2 names only `produits laitiers / œuf / arachide` explicitly as priority introduction allergens (the rest of HCSP's allergen content is risk-management, not introduction-priority). The "12" matches **EU Regulation 1169/2011 Annexe II minus lupin and sulphites** — a _food labelling_ list, not an introduction-priority list.
 
 **Fix shape:** either (a) rewrite the comment to attribute to EU 1169/2011 (which is the actual source); or (b) rebrand the list as "the 12 allergens the app tracks for diversification logging" without claiming HCSP authorship. Cascading consequence: every UI string referencing "12 allergènes prioritaires" would benefit from a similar attribution rephrase (`milestones.ts:48`, `allergens.ts:1` comment, several SEO/landing/guide strings).
 
-### 5. Egg portion contradiction
+### 4. Egg portion contradiction
 
 **Files:** `src/lib/content/guidance.ts:73` (focus, 6–9 mo) vs `:240` (`ALLERGEN_GUIDANCE.oeuf.howToOffer`)
 
@@ -106,12 +95,13 @@ HCSP §2.7:
 > "L'œuf doit être consommé cuit (dur) : ¼ d'œuf entre 6 et 12 mois, 1/3 de 1 à 2 ans, puis 1/2 de 2 à 3 ans"
 
 Two issues:
+
 - `:240` says "1/4 de jaune" (yolk only) — HCSP says whole egg (jaune+blanc) from start.
 - Both strings skip the 1/3 step at 1–2 yr.
 
 **Fix shape:** align both to the HCSP staircase ¼ → 1/3 → 1/2, with whole egg from start.
 
-### 6. Walnut oil mistranslated as "knob of butter"
+### 5. Walnut oil mistranslated as "knob of butter"
 
 **File:** `src/lib/content/guidance.ts:69`
 
@@ -121,19 +111,35 @@ HCSP §2.9 (l.869):
 
 > "Privilégier les huiles de colza et de noix (riches en ALA) et l'huile d'olive, par rapport aux huiles pauvres en ALA (tournesol, arachide)"
 
-"Huile de noix" = walnut oil (ALA-rich, the rationale for HCSP's recommendation). "Noix de beurre" in French = a knob/pat of butter — a *saturated* fat. Two different recommendations got conflated. HCSP §2.9 also adds:
+"Huile de noix" = walnut oil (ALA-rich, the rationale for HCSP's recommendation). "Noix de beurre" in French = a knob/pat of butter — a _saturated_ fat. Two different recommendations got conflated. HCSP §2.9 also adds:
 
 > "Les matières grasses animales [beurre] sont à réserver à un usage cru ou tartinable et en quantité limitée"
 
-i.e. butter is allowed but in *limited* quantity, not interchangeable with walnut oil.
+i.e. butter is allowed but in _limited_ quantity, not interchangeable with walnut oil.
 
 **Fix shape:** "(huile de colza, huile de noix, huile d'olive ; beurre cru en petite quantité possible)".
 
-### 7. Céleri in "viennent plus tard" list (PR #52 regression)
+---
 
-**File:** the closed PR #52 branch had `src/lib/content/guidance.ts:74` saying "Crustacés, mollusques, **céleri** et moutarde viennent plus tard". But `ALLERGEN_GUIDANCE.celeri` sets `recommendedAgeMonths: 6`. Internal contradiction — same class as the original Codex P2.
+## Audit findings that did NOT hold up under verification (detail)
 
-**Fix shape:** if PR #52 is reopened or its content is folded into a comprehensive PR, list céleri among the principal allergens (8 → 9), and the deferred list becomes "Crustacés, mollusques et moutarde viennent plus tard" (4 → 3). 9 + 3 = 12.
+These two items appeared in the initial multi-agent output but failed code-level re-verification. They are kept here for transparency, not as actionable bugs.
+
+### Milestone "all 12 allergens" toast (Agent B claim — wrong)
+
+**File:** `src/routes/child/[id]/log/+page.server.ts:194-195`
+
+```ts
+const isFirstAllergen = priorAllergenCount === 0 && food.allergenType != null;
+const allAllergensJustCompleted =
+  isFirstAllergen && priorAllergensIntroduced + 1 === ALLERGENS.length;
+```
+
+Agent B claimed `isFirstAllergen` requires "the first allergen ever logged" — implying the toast can never fire. Re-reading the actual code shows `priorAllergenCount` is filtered by `eq(foods.allergenType, food.allergenType)` (line 158) — it counts entries for _this specific allergen type_, not the child's total allergen entries. So `isFirstAllergen` correctly means "this is the first time this particular allergen is being introduced", and the toast fires when introducing the 12th distinct allergen for the first time. Audit was wrong; logic is correct.
+
+### Céleri in "viennent plus tard" (only existed inside closed PR #52)
+
+The contradiction "Crustacés, mollusques, **céleri** et moutarde viennent plus tard" only appeared inside the closed PR #52 branch (commit `7c4fda6`), not in shipped code. Listing it as a current bug overstates the audit; current `guidance.ts:74` is the original "12 prioritaires (8 listed)" sentence. The underlying inconsistency (the "8 listed" are framed as priorities while ALLERGENS has 12 entries) is the attribution issue captured in clear-cut bug #3, not a céleri-specific defect.
 
 ---
 
@@ -143,7 +149,7 @@ These items show the app diverging from cited authoritative sources, but the app
 
 ### A. Allergen `recommendedAgeMonths: 6`
 
-`ALLERGEN_GUIDANCE` for oeuf, arachide, lait, gluten, fruits_a_coque, sesame, soja, poisson all set `recommendedAgeMonths: 6`. HCSP avis 2020 §1.2.1 + §1.2.2 + Annexe 1 explicitly allows introduction *from start of diversification*, i.e. 4 mo. ESPGHAN 2017: "any time after 4 months". The app's 6-mo gate is conservative — defensible as "most common French practice" but creates a 2-month window where parents who follow per-card guidance may push past HCSP's "pas après 6 mois révolus" warning.
+`ALLERGEN_GUIDANCE` for oeuf, arachide, lait, gluten, fruits*a_coque, sesame, soja, poisson all set `recommendedAgeMonths: 6`. HCSP avis 2020 §1.2.1 + §1.2.2 + Annexe 1 explicitly allows introduction \_from start of diversification*, i.e. 4 mo. ESPGHAN 2017: "any time after 4 months". The app's 6-mo gate is conservative — defensible as "most common French practice" but creates a 2-month window where parents who follow per-card guidance may push past HCSP's "pas après 6 mois révolus" warning.
 
 **Defensible if intentional**; if not, lower to 4. Same change should propagate to the seed catalog (`seed.ts` for cabillaud/saumon/poulet/bœuf/pâtes/lentilles/comté etc.).
 
@@ -152,6 +158,7 @@ These items show the app diverging from cited authoritative sources, but the app
 App: "10–20 g/j à 6 mo, ~30 g/j à 1 an, jusqu'à 50 g vers 3 ans" (`guidance.ts:72, 130, 476`).
 
 HCSP §2.7:
+
 > "10 g/j de 6 à 12 mois, 20 g/j de 1 à 2 ans, 30 g/j de 2 à 3 ans"
 
 The app figures are 50% higher than HCSP at the upper end. The "50 g vers 3 ans" has no HCSP basis. ESPGHAN provides per-kg-protein guidance that gives slightly higher numbers, so the app's stance may be ESPGHAN-derived; if so, the citation should be ESPGHAN, not HCSP / SpF.
