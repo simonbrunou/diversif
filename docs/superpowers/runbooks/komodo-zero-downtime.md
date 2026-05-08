@@ -15,12 +15,18 @@ The app uses **SQLite via better-sqlite3** with WAL mode. Two writers cannot hol
 ## Architecture
 
 ```
-                 diversif.app (DNS A → host)
+                 diversif.app (Cloudflare DNS, proxied)
                           │
+                          ▼
+                  Cloudflare edge (TLS terminated here)
+                          │
+                          ▼
+                  cloudflared on CT 201 (tunnel)
+                          │  ingress → http://192.168.1.55:80
                           ▼
                    ┌──────────────┐
                    │   Traefik    │   reads container labels via Docker socket
-                   │   :80/:443   │   load-balances across healthy upstreams
+                   │   :80 (HTTP) │   load-balances across healthy upstreams
                    └──────┬───────┘
                           │
               ┌───────────┴───────────┐
@@ -36,6 +42,8 @@ The app uses **SQLite via better-sqlite3** with WAL mode. Two writers cannot hol
             (shared SQLite WAL file)
 ```
 
+TLS is terminated at the Cloudflare edge. cloudflared on CT 201 forwards plain HTTP into Traefik, which then load-balances across the two slots. So Traefik runs HTTP-only on :80 — no Let's Encrypt, no certs volume, no public 443.
+
 Both `diversif-a` and `diversif-b` register identical Traefik labels under the same router (`diversif`). Traefik discovers them by their Docker labels and removes/adds upstreams as health flips.
 
 ## Why two stages, not one
@@ -50,7 +58,7 @@ Putting `DeployStack diversif-a` and `DeployStack diversif-b` in the same stage 
 ## Files in the repo (already committed on `main`)
 
 ```
-compose/traefik.yaml              one-time host stack — Traefik v3 + Let's Encrypt
+compose/traefik.yaml              one-time host stack — Traefik v3, HTTP-only (TLS at Cloudflare)
 compose/diversif-a.yaml           slot A — long-lived stack
 compose/diversif-b.yaml           slot B — long-lived stack (identical service def)
 compose/komodo-procedure.toml     the rolling-deploy Procedure (two stages)
@@ -75,13 +83,15 @@ docker volume create diversif-data
 
 ### 2. Deploy the Traefik stack
 
-Register a Komodo Stack pointing to `compose/traefik.yaml`. Provide the env var:
+Register a Komodo Stack pointing to `compose/traefik.yaml`. No env vars required (the file is HTTP-only and has no ACME).
 
-```
-ACME_EMAIL=you@example.com
+Deploy. Verify Traefik is listening on `:80` and `/ping` returns 200:
+
+```bash
+curl -fsS http://localhost:80/ping
 ```
 
-Deploy. Verify Traefik is listening on 80/443 and the dashboard (if enabled) is reachable.
+Then update the cloudflared ingress for `diversif.app` to forward to `http://192.168.1.55:80` (replacing whatever `:3000` route was there before).
 
 ### 3. Register the two diversif stacks
 
@@ -138,7 +148,7 @@ Verify by pushing a no-op commit to `main` and watching:
 
 ## How to verify it works
 
-1. From a separate machine, run `while true; do curl -fsS https://diversif.app/healthz && echo $(date); sleep 0.2; done` during a deploy.
+1. From a separate machine, run `while true; do curl -fsS https://diversif.app/healthz && echo $(date); sleep 0.2; done` during a deploy. (HTTPS is terminated by Cloudflare → cloudflared → Traefik HTTP — the public URL is still `https://diversif.app`.)
 2. You should see continuous 200s — no failures, no 503s, no DNS-resolution gaps.
 3. Inside the Komodo UI, the Procedure should show stage 1 complete, then stage 2 complete, with healthy state on both slots at the end.
 
@@ -148,7 +158,7 @@ If you see a 5s gap of failures: check that both stacks are running BEFORE the P
 
 - **Both stacks crash-looping with the same broken image.** Rollback by overriding `IMAGE` in both stacks to the previous SHA and redeploying. There's no automatic rollback — Komodo doesn't track previous-known-good.
 - **Migration breaks the old slot.** This is the expand-and-contract violation. If a deploy adds a NOT NULL column without default, the still-running old slot's INSERTs (without the new column) will fail during the overlap window. Convention: mark new columns nullable in deploy N, fill in code-side, then mark NOT NULL in deploy N+1.
-- **Traefik certificate expiry.** Let's Encrypt renews automatically via the ACME resolver. If the certs volume gets nuked, certs will be reissued — but you'll burn rate-limit budget. Don't delete `traefik_certs` volume casually.
+- **cloudflared tunnel down.** Cloudflare edge will return its own 5xx page; Traefik isn't reachable from outside. Check the cloudflared service on CT 201; the tunnel config should still point at `http://192.168.1.55:80`. Traefik certs aren't a concern in this topology — TLS lives at Cloudflare.
 - **Both slots holding the SQLite write lock.** Should not happen — `busy_timeout=5000` serializes them. If you see app-level errors about "database is locked", check that nobody is running long-lived transactions across the deploy window.
 
 ## What is NOT in scope

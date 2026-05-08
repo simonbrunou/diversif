@@ -1,11 +1,10 @@
-# Traefik — host-level reverse proxy + ACME (Let's Encrypt).
-# Deploy ONCE on the Komodo host. After that, every app stack just
-# attaches labels and Traefik picks them up automatically.
+# Traefik — host-level reverse proxy for the diversif-a/b zero-downtime pair.
+# Runs HTTP-only on :80; TLS is terminated upstream at the Cloudflare edge,
+# cloudflared on CT 201 forwards plain HTTP into this Traefik. So no LE,
+# no certs volume, no public 443.
 #
-# Required env (set in Komodo or in a .env beside this file):
-#   ACME_EMAIL=you@example.com   # Let's Encrypt registration email
-#
-# After this stack is running, point your DNS A records at this host.
+# After this stack is running, point the cloudflared ingress for diversif.app
+# at http://192.168.1.55:80 (replacing the current :3000 route).
 
 name: traefik
 
@@ -15,23 +14,16 @@ services:
     restart: unless-stopped
     ports:
       - '80:80'
-      - '443:443'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_certs:/letsencrypt
     command:
       - '--providers.docker=true'
       - '--providers.docker.exposedbydefault=false'
       - '--providers.docker.network=traefik-web'
       - '--entrypoints.web.address=:80'
-      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
-      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
-      - '--entrypoints.websecure.address=:443'
-      - '--certificatesresolvers.le.acme.email=${ACME_EMAIL:?ACME_EMAIL required}'
-      - '--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json'
-      - '--certificatesresolvers.le.acme.httpchallenge=true'
-      - '--certificatesresolvers.le.acme.httpchallenge.entrypoint=web'
-      # - '--api.dashboard=true'   # uncomment + add a router for /dashboard if you want UI
+      - '--ping=true'
+      - '--ping.entryPoint=web'
+      # - '--api.dashboard=true'
     networks:
       - traefik-web
     healthcheck:
@@ -39,10 +31,6 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
-
-volumes:
-  traefik_certs:
-    name: traefik_certs
 
 networks:
   traefik-web:
