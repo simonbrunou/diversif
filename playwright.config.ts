@@ -24,7 +24,11 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: `npm run build && DATABASE_PATH=./.e2e-data/diversif.db PORT=${PORT} HOST=127.0.0.1 ORIGIN=${BASE_URL} node build/index.js`,
+    // E2E expects a Postgres reachable via E2E_DATABASE_URL (a throwaway
+    // database — the suite runs migrations on every start). Set it in CI to
+    // a postgres:16-alpine service container; locally, point it at a docker
+    // compose postgres or skip the suite.
+    command: `npm run build && PORT=${PORT} HOST=127.0.0.1 ORIGIN=${BASE_URL} node build/index.js`,
     port: PORT,
     timeout: 180_000,
     reuseExistingServer: !process.env.CI,
@@ -32,7 +36,8 @@ export default defineConfig({
     stderr: 'pipe',
     env: {
       NODE_ENV: 'production',
-      DATABASE_PATH: './.e2e-data/diversif.db'
+      DATABASE_URL:
+        process.env.E2E_DATABASE_URL ?? 'postgres://diversif:diversif@localhost:5432/diversif_e2e'
     }
   }
 });
