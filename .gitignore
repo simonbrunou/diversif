@@ -12,6 +12,7 @@ data
 .DS_Store
 .idea
 .vscode
+.claude/scheduled_tasks.lock
 *.log
 coverage
 .e2e-data
