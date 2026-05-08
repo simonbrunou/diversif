@@ -32,10 +32,17 @@ export type ReminderInput = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Allergens to nag the user about introducing in the 6-mo+ window.
-// Soja is intentionally absent: HCSP 2020 and ANSES discourage soja
-// products before 3 ans (phyto-œstrogènes), so we don't surface it as
-// an "à introduire" reminder.
+// Allergens for which the LEAP/EAT/ESPGHAN early-introduction evidence
+// applies. The reminder copy ("Plus on attend, plus le risque d'allergie
+// augmente") and the LEAP/EAT/ESPGHAN sources are only valid for this set.
+//
+// Intentionally absent:
+//   - soja: HCSP 2020 + ANSES discourage soja products before 3 ans
+//     (phyto-œstrogènes), so we don't surface it as "à introduire".
+//   - céleri, moutarde, crustacés, mollusques: tracked in `ALLERGENS` for
+//     log completeness against EU 1169/2011, but no early-introduction
+//     evidence supports nagging parents on these — citing LEAP/EAT/ESPGHAN
+//     for them would misattribute the source.
 const ALLERGEN_PRIORITY: AllergenId[] = [
   'oeuf',
   'arachide',
@@ -43,11 +50,7 @@ const ALLERGEN_PRIORITY: AllergenId[] = [
   'gluten',
   'poisson',
   'fruits_a_coque',
-  'sesame',
-  'celeri',
-  'moutarde',
-  'crustace',
-  'mollusque'
+  'sesame'
 ];
 
 const ALLERGEN_LABELS: Record<AllergenId, string> = Object.fromEntries(
