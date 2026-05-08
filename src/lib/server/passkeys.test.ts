@@ -188,6 +188,30 @@ describe('challenges', () => {
   it('exposes the challenge TTL', () => {
     expect(PASSKEY_CHALLENGE_TTL_MS).toBeGreaterThan(0);
   });
+
+  it('atomically consumes a challenge — concurrent verifies cannot both succeed', async () => {
+    const c = await createChallenge({ challenge: 'x', purpose: 'registration', userId: null });
+
+    const [first, second] = await Promise.all([
+      consumeChallenge(c.token, 'registration'),
+      consumeChallenge(c.token, 'registration')
+    ]);
+
+    const successes = [first, second].filter((r) => r !== null);
+    expect(successes).toHaveLength(1);
+    expect(successes[0]).toEqual({ challenge: 'x', userId: null });
+
+    // The row is gone (the DELETE-RETURNING winner removed it; the loser
+    // got nothing back, but the table reflects the same outcome).
+    const stillThere = (
+      await testDb
+        .select()
+        .from(webauthnChallenges)
+        .where(eq(webauthnChallenges.token, c.token))
+        .limit(1)
+    )[0];
+    expect(stillThere).toBeUndefined();
+  });
 });
 
 describe('listPasskeys / findPasskey / deletePasskey / renamePasskey', () => {

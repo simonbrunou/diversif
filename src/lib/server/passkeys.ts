@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { and, eq, gt, lt } from 'drizzle-orm';
+import { and, eq, lt } from 'drizzle-orm';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -103,21 +103,24 @@ export async function consumeChallenge(
   purpose: 'registration' | 'authentication'
 ): Promise<{ challenge: string; userId: number | null } | null> {
   if (!token) return null;
+  // Atomic single-use consume: DELETE … RETURNING is the one operation, so two
+  // concurrent verifies with the same token can never both walk away with a
+  // valid challenge — exactly one request receives a row, the other gets none.
+  // We DELETE on the bare token (mirrors prior "always remove if it exists,
+  // even if expired" behaviour) and post-filter purpose / expiry in JS.
   const rows = await db
-    .select()
-    .from(webauthnChallenges)
-    .where(
-      and(
-        eq(webauthnChallenges.token, token),
-        eq(webauthnChallenges.purpose, purpose),
-        gt(webauthnChallenges.expiresAt, new Date())
-      )
-    )
-    .limit(1);
+    .delete(webauthnChallenges)
+    .where(eq(webauthnChallenges.token, token))
+    .returning({
+      challenge: webauthnChallenges.challenge,
+      userId: webauthnChallenges.userId,
+      purpose: webauthnChallenges.purpose,
+      expiresAt: webauthnChallenges.expiresAt
+    });
   const row = rows[0];
-  // Always remove the token if it exists, even if expired.
-  await db.delete(webauthnChallenges).where(eq(webauthnChallenges.token, token));
   if (!row) return null;
+  if (row.purpose !== purpose) return null;
+  if (row.expiresAt <= new Date()) return null;
   return { challenge: row.challenge, userId: row.userId ?? null };
 }
 
