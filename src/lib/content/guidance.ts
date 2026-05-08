@@ -71,7 +71,7 @@ export const STAGES = [
     focus: [
       'Viande / poisson : 10–20 g par jour (≈ 2 cuillères à café). Poisson 2 fois par semaine dont un gras (saumon, sardine).',
       'Œuf entier bien cuit, jaune et blanc, ~1/4 puis 1/2.',
-      "Allergènes : terminer l'introduction des 12 allergènes prioritaires (œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait).",
+      "Allergènes : terminer l'introduction des 12 allergènes prioritaires. Les plus courants à cet âge : œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait. Ajouter crustacés, mollusques, céleri et moutarde selon ce que vous consommez au foyer.",
       'Légumineuses cuites bien écrasées (lentilles corail, pois chiches, haricots blancs).'
     ],
     textures:
@@ -262,7 +262,7 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
       'Beurre de cacahuète **lisse** (sans morceaux) dilué dans une purée, un yaourt ou un peu de lait.',
       'Commencer par une demi-cuillère à café diluée, puis augmenter.',
       '**Jamais** de cacahuètes entières avant 5 ans (étouffement).',
-      "Si bébé a un eczéma sévère ou une allergie à l'œuf : consulter un allergologue avant introduction."
+      "Si bébé a un eczéma sévère ou une allergie à l'œuf : consulter un allergologue **et** introduire dans la fenêtre 4–11 mois après évaluation (ESPGHAN 2017). Ne pas retarder au-delà."
     ],
     firstSigns: ['Rougeurs locales', 'Démangeaisons buccales', "Plaques d'urticaire"],
     severeSigns: [
@@ -447,7 +447,7 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
   },
   fruits: {
     id: 'fruits',
-    why: 'Vitamines, fibres, hydratation. Goûts naturellement appréciés — à proposer **après** les légumes pour ne pas créer une préférence sucrée.',
+    why: 'Vitamines, fibres, hydratation. Goûts naturellement appréciés.',
     whenStart: 'Dès 4 mois, en purée ou bien mûrs et écrasés.',
     cadence: 'Au goûter principalement, parfois en dessert.',
     examples: ['Pomme', 'Poire', 'Banane', 'Avocat', 'Pêche'],
@@ -927,11 +927,6 @@ export const TIPS: readonly Tip[] = [
     id: 'raw-cheese',
     body: 'Pas de fromages au lait cru avant 5 ans (sauf pâte pressée cuite type comté, emmental).',
     sources: ['anses-nourrisson']
-  },
-  {
-    id: 'fruit-after-veg',
-    body: 'Présentez les légumes avant les fruits sur un repas — sinon le sucré rend le salé moins attractif.',
-    sources: ['spf-pnns-guide']
   },
   {
     id: 'spices',
