@@ -66,11 +66,11 @@ export const STAGES = [
       'Tous les groupes en routine : légumes, fruits, féculents, légumineuses, viande, poisson, œuf, produits laitiers, allergènes.',
       'Augmenter progressivement la quantité ; passer à 4 repas (matin, midi, goûter, soir).',
       "Continuer à proposer un aliment refusé jusqu'à ~10 fois — l'acceptation gustative se construit.",
-      "Toujours ajouter des matières grasses crues à la fin de la cuisson (huile de colza, huile d'olive, noix de beurre)."
+      "Toujours ajouter des matières grasses crues à la fin de la cuisson (huile de colza, huile de noix, huile d'olive ; beurre en petite quantité possible)."
     ],
     focus: [
       'Viande / poisson : 10–20 g par jour (≈ 2 cuillères à café). Poisson 2 fois par semaine dont un gras (saumon, sardine).',
-      'Œuf entier bien cuit, jaune et blanc, ~1/4 puis 1/2.',
+      "Œuf entier bien cuit (jaune + blanc) : ~1/4 d'œuf, à augmenter après 1 an (1/3 entre 1–2 ans, 1/2 entre 2–3 ans).",
       "Allergènes : terminer l'introduction des 12 allergènes prioritaires (œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait).",
       'Légumineuses cuites bien écrasées (lentilles corail, pois chiches, haricots blancs).'
     ],
@@ -237,7 +237,7 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     why: "L'œuf est l'un des allergènes majeurs chez l'enfant. Une introduction précoce, dès 4–6 mois, réduit significativement le risque d'allergie (étude EAT).",
     howToOffer: [
       'Œuf entier bien cuit (jaune et blanc), durs ou en omelette bien cuite.',
-      "Commencer par 1/4 de jaune écrasé dans une purée, puis 1/2, puis l'œuf entier.",
+      "~1/4 d'œuf entier (jaune + blanc) écrasé dans une purée à 6–12 mois, puis ~1/3 à 1–2 ans, puis ~1/2 à 2–3 ans (HCSP 2020).",
       "Pas d'œuf cru (mayo maison, mousse au chocolat) avant 12 mois."
     ],
     firstSigns: [
