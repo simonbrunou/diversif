@@ -45,6 +45,20 @@ jobs:
   e2e:
     name: End-to-end tests (Playwright)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: diversif
+          POSTGRES_PASSWORD: diversif
+          POSTGRES_DB: diversif_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U diversif"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -57,6 +71,7 @@ jobs:
       - run: npx playwright test
         env:
           CI: 'true'
+          E2E_DATABASE_URL: postgres://diversif:diversif@localhost:5432/diversif_e2e
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
