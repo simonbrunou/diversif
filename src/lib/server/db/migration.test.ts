@@ -178,6 +178,143 @@ describe('migration 0003 (GDPR FK relaxation)', () => {
   });
 });
 
+describe('migration 0007 (backfill Tofu age to align with HCSP soja stance)', () => {
+  // The shipped FOODS_SEED used to seed Tofu at suggested_age_months = 6.
+  // Self-hosted DBs that were seeded before the soja-HCSP fix still hold
+  // that value. seedFoods() returns early when the table has any rows, so
+  // a code-only change to FOODS_SEED would leave existing data stale.
+  // Migration 0007 backfills the seeded built-in row.
+
+  function buildDbAt0006(): Database.Database {
+    const sqlite = new Database(':memory:');
+    applyMigrationFile(sqlite, '0000_volatile_firestar.sql');
+    applyMigrationFile(sqlite, '0001_acoustic_genesis.sql');
+    applyMigrationFile(sqlite, '0002_parched_the_stranger.sql');
+    sqlite.pragma('foreign_keys = OFF');
+    applyMigrationFile(sqlite, '0003_needy_thunderbolt_ross.sql');
+    sqlite.pragma('foreign_keys = ON');
+    applyMigrationFile(sqlite, '0004_medical_george_stacy.sql');
+    applyMigrationFile(sqlite, '0005_awesome_jack_power.sql');
+    applyMigrationFile(sqlite, '0006_idempotency_keys.sql');
+    markMigrationsApplied(sqlite, [
+      '0000_volatile_firestar',
+      '0001_acoustic_genesis',
+      '0002_parched_the_stranger',
+      '0003_needy_thunderbolt_ross',
+      '0004_medical_george_stacy',
+      '0005_awesome_jack_power',
+      '0006_idempotency_keys'
+    ]);
+    return sqlite;
+  }
+
+  it('updates the seeded Tofu row from 6 to 36 months', () => {
+    const sqlite = buildDbAt0006();
+    sqlite
+      .prepare(
+        `INSERT INTO foods (name, category, is_major_allergen, allergen_type, suggested_age_months, is_custom)
+       VALUES ('Tofu', 'legumineuses', 1, 'soja', 6, 0)`
+      )
+      .run();
+
+    sqlite.pragma('foreign_keys = OFF');
+    const db = drizzle(sqlite, { schema });
+    migrate(db as unknown as BetterSQLite3Database, { migrationsFolder: DRIZZLE_DIR });
+    sqlite.pragma('foreign_keys = ON');
+
+    const tofu = sqlite
+      .prepare('SELECT suggested_age_months FROM foods WHERE name = ?')
+      .get('Tofu') as { suggested_age_months: number };
+    expect(tofu.suggested_age_months).toBe(36);
+  });
+
+  it('leaves a parent-customised Tofu row untouched', () => {
+    // A self-hosted operator who chose a different age for their built-in
+    // row (e.g. 24 because they saw the FORBIDDEN soja-3ans note and lowered
+    // it) is not overridden — the migration only touches rows still on the
+    // old default value of 6.
+    const sqlite = buildDbAt0006();
+    sqlite
+      .prepare(
+        `INSERT INTO foods (name, category, is_major_allergen, allergen_type, suggested_age_months, is_custom)
+       VALUES ('Tofu', 'legumineuses', 1, 'soja', 24, 0)`
+      )
+      .run();
+
+    sqlite.pragma('foreign_keys = OFF');
+    const db = drizzle(sqlite, { schema });
+    migrate(db as unknown as BetterSQLite3Database, { migrationsFolder: DRIZZLE_DIR });
+    sqlite.pragma('foreign_keys = ON');
+
+    const tofu = sqlite
+      .prepare('SELECT suggested_age_months FROM foods WHERE name = ?')
+      .get('Tofu') as { suggested_age_months: number };
+    expect(tofu.suggested_age_months).toBe(24);
+  });
+
+  it('leaves a custom child food named Tofu untouched', () => {
+    // A parent who manually added a custom food named "Tofu" for their
+    // child is not affected — only the built-in seeded row (is_custom = 0)
+    // gets backfilled.
+    const sqlite = buildDbAt0006();
+    sqlite
+      .prepare(
+        `INSERT INTO users (email, password_hash, display_name, created_at)
+       VALUES ('alice@example.com', 'hash', 'Alice', ?)`
+      )
+      .run(Date.now());
+    const userId = (
+      sqlite.prepare('SELECT id FROM users WHERE email = ?').get('alice@example.com') as {
+        id: number;
+      }
+    ).id;
+    sqlite
+      .prepare(
+        `INSERT INTO children (name, birth_date, created_by, created_at)
+       VALUES ('Bébé', '2025-01-01', ?, ?)`
+      )
+      .run(userId, Date.now());
+    const childId = (sqlite.prepare('SELECT id FROM children').get() as { id: number }).id;
+
+    sqlite
+      .prepare(
+        `INSERT INTO foods (name, category, is_major_allergen, allergen_type, suggested_age_months, is_custom, custom_for_child_id)
+       VALUES ('Tofu', 'legumineuses', 1, 'soja', 6, 1, ?)`
+      )
+      .run(childId);
+
+    sqlite.pragma('foreign_keys = OFF');
+    const db = drizzle(sqlite, { schema });
+    migrate(db as unknown as BetterSQLite3Database, { migrationsFolder: DRIZZLE_DIR });
+    sqlite.pragma('foreign_keys = ON');
+
+    const tofu = sqlite
+      .prepare('SELECT suggested_age_months FROM foods WHERE name = ? AND is_custom = 1')
+      .get('Tofu') as { suggested_age_months: number };
+    expect(tofu.suggested_age_months).toBe(6);
+  });
+
+  it('is idempotent — running on a fresh seed (already 36) is a no-op', () => {
+    const sqlite = buildDbAt0006();
+    sqlite
+      .prepare(
+        `INSERT INTO foods (name, category, is_major_allergen, allergen_type, suggested_age_months, is_custom)
+       VALUES ('Tofu', 'legumineuses', 1, 'soja', 36, 0)`
+      )
+      .run();
+
+    sqlite.pragma('foreign_keys = OFF');
+    const db = drizzle(sqlite, { schema });
+    migrate(db as unknown as BetterSQLite3Database, { migrationsFolder: DRIZZLE_DIR });
+    sqlite.pragma('foreign_keys = ON');
+
+    const tofu = sqlite
+      .prepare('SELECT suggested_age_months FROM foods WHERE name = ?')
+      .get('Tofu') as { suggested_age_months: number };
+    expect(tofu.suggested_age_months).toBe(36);
+  });
+});
+
 describe('foreign_key_check after migrate()', () => {
   it('flags orphans that a sloppy migration would leave behind', () => {
     // SQLite's PRAGMA foreign_keys does not retroactively validate existing

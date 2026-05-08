@@ -152,6 +152,32 @@ describe('computeReminders', () => {
       );
       expect(out.find((r) => r.key === 'high-risk-window')).toBeUndefined();
     });
+
+    it('still fires when only a log-completeness allergen was introduced', () => {
+      // Logging céleri/moutarde/crustacés/mollusques/soja shouldn't suppress
+      // the LEAP/EAT high-risk-window framing — those allergens weren't
+      // covered by either trial. The gate must check the priority subset,
+      // not the full ALLERGENS set.
+      const out = computeReminders(
+        input({
+          ageMonths: 5,
+          entries: [entry()],
+          introducedAllergens: new Set<AllergenId>(['celeri'])
+        })
+      );
+      expect(out.find((r) => r.key === 'high-risk-window')).toBeDefined();
+    });
+
+    it('still fires when only soja was introduced', () => {
+      const out = computeReminders(
+        input({
+          ageMonths: 5,
+          entries: [entry()],
+          introducedAllergens: new Set<AllergenId>(['soja'])
+        })
+      );
+      expect(out.find((r) => r.key === 'high-risk-window')).toBeDefined();
+    });
   });
 
   describe('repeat-exposure', () => {

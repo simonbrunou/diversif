@@ -76,7 +76,7 @@ export const FOODS_SEED: SeedFood[] = [
   { name: 'Pois chiches', category: 'legumineuses', age: 6 },
   { name: 'Haricots blancs', category: 'legumineuses', age: 8 },
   { name: 'Haricots rouges', category: 'legumineuses', age: 8 },
-  { name: 'Tofu', category: 'legumineuses', age: 6, allergen: 'soja' },
+  { name: 'Tofu', category: 'legumineuses', age: 36, allergen: 'soja' },
 
   // Viandes
   { name: 'Poulet', category: 'viandes', age: 6 },

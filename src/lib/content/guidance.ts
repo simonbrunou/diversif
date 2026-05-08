@@ -66,12 +66,12 @@ export const STAGES = [
       'Tous les groupes en routine : légumes, fruits, féculents, légumineuses, viande, poisson, œuf, produits laitiers, allergènes.',
       'Augmenter progressivement la quantité ; passer à 4 repas (matin, midi, goûter, soir).',
       "Continuer à proposer un aliment refusé jusqu'à ~10 fois — l'acceptation gustative se construit.",
-      "Toujours ajouter des matières grasses crues à la fin de la cuisson (huile de colza, huile d'olive, noix de beurre)."
+      "Toujours ajouter des matières grasses crues à la fin de la cuisson (huile de colza, huile de noix, huile d'olive ; beurre en petite quantité possible)."
     ],
     focus: [
       'Viande / poisson : 10–20 g par jour (≈ 2 cuillères à café). Poisson 2 fois par semaine dont un gras (saumon, sardine).',
-      'Œuf entier bien cuit, jaune et blanc, ~1/4 puis 1/2.',
-      "Allergènes : terminer l'introduction des 12 allergènes prioritaires (œuf, arachide, fruits à coque en purée, sésame, soja, gluten, poisson, lait).",
+      "Œuf entier bien cuit (jaune + blanc) : ~1/4 d'œuf, à augmenter après 1 an (1/3 entre 1–2 ans, 1/2 entre 2–3 ans).",
+      "Allergènes : à 6–9 mois, terminer l'introduction des allergènes courants à cet âge (œuf, arachide, fruits à coque en purée, sésame, gluten, poisson, lait). Le soja n'est pas dans cette liste : HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans.",
       'Légumineuses cuites bien écrasées (lentilles corail, pois chiches, haricots blancs).'
     ],
     textures:
@@ -162,7 +162,7 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
   {
     id: 'allergens-early',
     title: 'Introduire les allergènes tôt et sans tarder',
-    body: "Dès que la diversification est lancée, proposer œuf bien cuit, arachide (en purée fine), lait (yaourt/fromage), gluten, poisson, fruits à coque (en purée), sésame, soja. L'introduction précoce réduit le risque d'allergie alimentaire (LEAP, EAT).",
+    body: "Dès que la diversification est lancée, proposer œuf bien cuit, arachide (en purée fine), lait (yaourt/fromage), gluten, poisson, fruits à coque (en purée), sésame. L'introduction précoce réduit le risque d'allergie alimentaire (LEAP, EAT). Le soja n'entre pas dans cette liste — HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans.",
     sources: ['leap-2015', 'eat-2016', 'espghan-2017', 'hcsp-2020']
   },
   {
@@ -237,8 +237,8 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     why: "L'œuf est l'un des allergènes majeurs chez l'enfant. Une introduction précoce, dès 4–6 mois, réduit significativement le risque d'allergie (étude EAT).",
     howToOffer: [
       'Œuf entier bien cuit (jaune et blanc), durs ou en omelette bien cuite.',
-      "Commencer par 1/4 de jaune écrasé dans une purée, puis 1/2, puis l'œuf entier.",
-      "Pas d'œuf cru (mayo maison, mousse au chocolat) avant 12 mois."
+      "~1/4 d'œuf entier (jaune + blanc) écrasé dans une purée à 6–12 mois, puis ~1/3 à 1–2 ans, puis ~1/2 à 2–3 ans (HCSP 2020).",
+      "Pas d'œuf cru (mayo maison, mousse au chocolat) avant 3 ans."
     ],
     firstSigns: [
       'Rougeurs autour de la bouche',
@@ -262,7 +262,7 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
       'Beurre de cacahuète **lisse** (sans morceaux) dilué dans une purée, un yaourt ou un peu de lait.',
       'Commencer par une demi-cuillère à café diluée, puis augmenter.',
       '**Jamais** de cacahuètes entières avant 5 ans (étouffement).',
-      "Si bébé a un eczéma sévère ou une allergie à l'œuf : consulter un allergologue avant introduction."
+      "Si bébé a un eczéma sévère ou une allergie à l'œuf : consulter un allergologue **et** introduire dans la fenêtre 4–11 mois après évaluation (ESPGHAN 2017). Ne pas retarder au-delà."
     ],
     firstSigns: ['Rougeurs locales', 'Démangeaisons buccales', "Plaques d'urticaire"],
     severeSigns: [
@@ -344,16 +344,17 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
   },
   soja: {
     id: 'soja',
-    recommendedAgeMonths: 6,
-    why: 'Le soja est un allergène majeur ; la tolérance se construit avec une introduction précoce.',
+    recommendedAgeMonths: 36,
+    why: "Le soja contient des phyto-œstrogènes. HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans (tofu, boissons végétales, yaourts au soja). Le soja n'est pas un allergène à introduction prioritaire dans la fenêtre 4–11 mois ; il est suivi ici pour la complétude du carnet, pas en tant qu'allergène à introduire tôt.",
     howToOffer: [
-      'Tofu nature bien cuit, bien écrasé.',
-      'Les boissons végétales au soja ne remplacent pas le lait infantile.'
+      'Avant 3 ans : éviter les produits à base de soja (tofu, yaourts au soja, boissons végétales au soja).',
+      'Les boissons végétales au soja ne remplacent jamais le lait infantile.',
+      'Si introduction après 3 ans : tofu nature bien cuit, en petite quantité.'
     ],
     firstSigns: ['Diarrhée, vomissements', "Plaques d'urticaire"],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['espghan-2017']
+    sources: ['hcsp-2020', 'anses-nourrisson']
   },
   poisson: {
     id: 'poisson',
@@ -447,7 +448,7 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
   },
   fruits: {
     id: 'fruits',
-    why: 'Vitamines, fibres, hydratation. Goûts naturellement appréciés — à proposer **après** les légumes pour ne pas créer une préférence sucrée.',
+    why: 'Vitamines, fibres, hydratation. Goûts naturellement appréciés.',
     whenStart: 'Dès 4 mois, en purée ou bien mûrs et écrasés.',
     cadence: 'Au goûter principalement, parfois en dessert.',
     examples: ['Pomme', 'Poire', 'Banane', 'Avocat', 'Pêche'],
@@ -466,7 +467,7 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
     why: 'Protéines végétales et fer. Excellent complément à la viande.',
     whenStart: 'Dès 6 mois, bien cuites et écrasées (lentilles corail en purée).',
     cadence: '1–2 fois par semaine, en alternance avec viande/poisson.',
-    examples: ['Lentilles corail', 'Pois chiches', 'Haricots blancs', 'Tofu cuit'],
+    examples: ['Lentilles corail', 'Pois chiches', 'Haricots blancs', 'Fèves'],
     sources: ['spf-pnns-guide']
   },
   viandes: {
@@ -508,7 +509,7 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
     whenStart: 'Dès 4–6 mois, en formes adaptées (purée fine).',
     cadence:
       "Une fois introduit, **maintenir l'exposition régulière** (1–2 fois par semaine) pour entretenir la tolérance.",
-    examples: ['Beurre de cacahuète lisse', "Purée d'amande", 'Tahin (sésame)', 'Tofu'],
+    examples: ['Beurre de cacahuète lisse', "Purée d'amande", 'Tahin (sésame)', 'Œuf bien cuit'],
     sources: ['leap-2015', 'eat-2016', 'espghan-2017']
   },
   matieres_grasses: {
@@ -644,10 +645,10 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
   {
     id: 'oeuf-cru',
     name: 'Œuf cru ou peu cuit',
-    until: '< 12 mois',
+    until: '< 3 ans',
     reason:
       'Risque de salmonellose. Pas de mayonnaise maison, mousse au chocolat, œuf coulant, tiramisu.',
-    sources: ['anses-nourrisson']
+    sources: ['hcsp-2020', 'anses-nourrisson']
   },
   {
     id: 'viande-poisson-cru',
@@ -681,10 +682,11 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
   },
   {
     id: 'sojaboisson-3ans',
-    name: 'Boissons et préparations à base de soja',
-    until: '< 3 ans (consommation régulière)',
-    reason: 'Présence de phyto-œstrogènes. Le tofu en petite quantité reste possible.',
-    sources: ['anses-nourrisson']
+    name: 'Produits à base de soja (tofu, yaourts, boissons végétales au soja)',
+    until: '< 3 ans',
+    reason:
+      'Présence de phyto-œstrogènes. HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans (tofu compris).',
+    sources: ['hcsp-2020', 'anses-nourrisson']
   }
 ];
 
@@ -857,9 +859,9 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'egg-fully-cooked',
-    body: "Toujours œuf bien cuit (jaune et blanc fermes). Pas d'œuf coulant ni de mayo maison avant 12 mois.",
+    body: "Toujours œuf bien cuit (jaune et blanc fermes). Pas d'œuf coulant ni de mayo maison avant 3 ans.",
     allergens: ['oeuf'],
-    sources: ['anses-nourrisson']
+    sources: ['hcsp-2020', 'anses-nourrisson']
   },
   {
     id: 'no-honey',
@@ -927,11 +929,6 @@ export const TIPS: readonly Tip[] = [
     id: 'raw-cheese',
     body: 'Pas de fromages au lait cru avant 5 ans (sauf pâte pressée cuite type comté, emmental).',
     sources: ['anses-nourrisson']
-  },
-  {
-    id: 'fruit-after-veg',
-    body: 'Présentez les légumes avant les fruits sur un repas — sinon le sucré rend le salé moins attractif.',
-    sources: ['spf-pnns-guide']
   },
   {
     id: 'spices',

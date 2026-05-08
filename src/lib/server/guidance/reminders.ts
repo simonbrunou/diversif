@@ -2,7 +2,7 @@
 // list of reminders the dashboard should currently surface. No DB calls here
 // — the caller passes plain data — to keep this trivially testable.
 
-import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
+import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import type { CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import type { SourceId } from '$lib/content/sources';
@@ -32,20 +32,11 @@ export type ReminderInput = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const ALLERGEN_PRIORITY: AllergenId[] = [
-  'oeuf',
-  'arachide',
-  'lait',
-  'gluten',
-  'poisson',
-  'fruits_a_coque',
-  'sesame',
-  'soja',
-  'celeri',
-  'moutarde',
-  'crustace',
-  'mollusque'
-];
+// "Plus on attend, plus le risque d'allergie augmente" + LEAP/EAT/ESPGHAN
+// sources are only valid for the early-introduction priority set. See
+// PRIORITY_INTRODUCTION_ALLERGENS for which allergens are in scope and why
+// the others (soja, céleri, moutarde, crustacés, mollusques) are excluded.
+const ALLERGEN_PRIORITY: readonly AllergenId[] = PRIORITY_INTRODUCTION_ALLERGENS;
 
 const ALLERGEN_LABELS: Record<AllergenId, string> = Object.fromEntries(
   ALLERGENS.map((a) => [a.id, a.label])
@@ -158,11 +149,18 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     }
   }
 
-  // 5. High-risk window 4-11 mo with no allergen introduced
+  // 5. High-risk window 4-11 mo with no priority allergen introduced.
+  // Note: gates on the priority subset, not the full ALLERGENS set —
+  // logging a log-completeness allergen (céleri, moutarde, crustacés,
+  // mollusques) or soja shouldn't suppress the LEAP/EAT framing, since
+  // those weren't covered by either trial.
+  const priorityIntroduced = PRIORITY_INTRODUCTION_ALLERGENS.some((id) =>
+    input.introducedAllergens.has(id)
+  );
   if (
     input.ageMonths >= 4 &&
     input.ageMonths <= 11 &&
-    input.introducedAllergens.size === 0 &&
+    !priorityIntroduced &&
     input.entries.length > 0
   ) {
     push(out, input.dismissals, {

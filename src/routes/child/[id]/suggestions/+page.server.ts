@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, lte, notInArray, sql } from 'drizzle-orm';
-import { ALLERGENS } from '$lib/utils/allergens';
+import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 import { ageInMonths } from '$lib/utils/age';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
@@ -44,10 +44,13 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     .orderBy(sql`${foods.suggestedAgeMonths} ASC, ${foods.name} ASC`)
     .all();
 
-  const allergenPriority = ALLERGENS.filter((a) => !introducedAllergenSet.has(a.id)).map(
-    (a) => a.id as string
+  // Only surface "Allergènes à introduire" prompts for the priority subset
+  // (LEAP/EAT/ESPGHAN-supported). Soja and the EU-1169-only allergens
+  // (céleri, moutarde, crustacés, mollusques) are intentionally excluded
+  // — see PRIORITY_INTRODUCTION_ALLERGENS for the reasoning.
+  const allergenSet = new Set<string>(
+    PRIORITY_INTRODUCTION_ALLERGENS.filter((id) => !introducedAllergenSet.has(id))
   );
-  const allergenSet = new Set<string>(allergenPriority);
 
   const priority = candidates.filter((f) => f.allergenType && allergenSet.has(f.allergenType));
   const others = candidates.filter((f) => !f.allergenType || !allergenSet.has(f.allergenType));
