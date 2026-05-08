@@ -262,7 +262,7 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
       'Beurre de cacahuète **lisse** (sans morceaux) dilué dans une purée, un yaourt ou un peu de lait.',
       'Commencer par une demi-cuillère à café diluée, puis augmenter.',
       '**Jamais** de cacahuètes entières avant 5 ans (étouffement).',
-      "Si bébé a un eczéma sévère ou une allergie à l'œuf : consulter un allergologue avant introduction."
+      "Si bébé a un eczéma sévère ou une allergie à l'œuf : consulter un allergologue **et** introduire dans la fenêtre 4–11 mois après évaluation (ESPGHAN 2017). Ne pas retarder au-delà."
     ],
     firstSigns: ['Rougeurs locales', 'Démangeaisons buccales', "Plaques d'urticaire"],
     severeSigns: [
@@ -448,7 +448,7 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
   },
   fruits: {
     id: 'fruits',
-    why: 'Vitamines, fibres, hydratation. Goûts naturellement appréciés — à proposer **après** les légumes pour ne pas créer une préférence sucrée.',
+    why: 'Vitamines, fibres, hydratation. Goûts naturellement appréciés.',
     whenStart: 'Dès 4 mois, en purée ou bien mûrs et écrasés.',
     cadence: 'Au goûter principalement, parfois en dessert.',
     examples: ['Pomme', 'Poire', 'Banane', 'Avocat', 'Pêche'],
@@ -928,11 +928,6 @@ export const TIPS: readonly Tip[] = [
     id: 'raw-cheese',
     body: 'Pas de fromages au lait cru avant 5 ans (sauf pâte pressée cuite type comté, emmental).',
     sources: ['anses-nourrisson']
-  },
-  {
-    id: 'fruit-after-veg',
-    body: 'Présentez les légumes avant les fruits sur un repas — sinon le sucré rend le salé moins attractif.',
-    sources: ['spf-pnns-guide']
   },
   {
     id: 'spices',
