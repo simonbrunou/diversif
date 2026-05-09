@@ -143,18 +143,39 @@ export async function seedFoods(db: NodePgDatabase<typeof schema>): Promise<void
   );
   /* v8 ignore next — pg COUNT(*) always returns a single row */
   const count = Number(existing.rows[0]?.count ?? 0);
-  if (count > 0) return;
 
-  const rows = FOODS_SEED.map((f) => ({
-    name: f.name,
-    category: f.category,
-    isMajorAllergen: f.allergen != null,
-    allergenType: f.allergen ?? null,
-    suggestedAgeMonths: f.age,
-    notes: null,
-    isCustom: false,
-    customForChildId: null
-  }));
+  if (count === 0) {
+    const rows = FOODS_SEED.map((f) => ({
+      name: f.name,
+      category: f.category,
+      isMajorAllergen: f.allergen != null,
+      allergenType: f.allergen ?? null,
+      suggestedAgeMonths: f.age,
+      notes: null,
+      isCustom: false,
+      customForChildId: null
+    }));
 
-  await db.insert(foods).values(rows);
+    await db.insert(foods).values(rows);
+  }
+
+  await applySeedCorrections(db);
+}
+
+// Self-healing pass for seed-row drift that older deployments may carry.
+// Mirrors drizzle/0001_backfill_tofu_age.sql so a deploy that skipped or
+// missed the migration (e.g. operator pg_restore from a pre-Postgres dump
+// after migrations were applied) still converges on the right values.
+// Idempotent: each UPDATE filters on the stale value, so re-runs no-op,
+// and operator-customised rows (is_custom = true) are left alone.
+export async function applySeedCorrections(db: NodePgDatabase<typeof schema>): Promise<void> {
+  await db.execute(sql`
+    UPDATE foods
+    SET suggested_age_months = 36
+    WHERE name = 'Tofu'
+      AND category = 'legumineuses'
+      AND allergen_type = 'soja'
+      AND is_custom = false
+      AND suggested_age_months = 6
+  `);
 }
