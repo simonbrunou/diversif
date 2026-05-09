@@ -10,6 +10,7 @@
   import { browser } from '$app/environment';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
+  import { languageTag } from '$lib/paraglide/runtime';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData, PageData } from './$types';
 
@@ -65,7 +66,7 @@
   });
 
   function formatDate(ts: number): string {
-    return new Date(ts).toLocaleDateString('fr-FR', {
+    return new Date(ts).toLocaleDateString(languageTag() === 'en' ? 'en-GB' : 'fr-FR', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'

@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
+import { setLanguageTag, sourceLanguageTag } from '$lib/paraglide/runtime';
 import {
   formatRelative,
   formatDateTime,
@@ -64,6 +65,31 @@ describe('formatRelative', () => {
   it('returns full date for different years', () => {
     const old = new Date('2024-03-01T09:00:00Z');
     expect(formatRelative(old, now)).toMatch(/2024/);
+  });
+
+  describe('locale switching', () => {
+    afterEach(() => {
+      setLanguageTag(sourceLanguageTag);
+    });
+
+    it('returns English strings when paraglide locale is en', () => {
+      setLanguageTag('en');
+      expect(formatRelative(now.getTime() - 5_000, now)).toBe('just now');
+      expect(formatRelative(now.getTime() - 5 * 60_000, now)).toBe('5 min ago');
+      expect(formatRelative(now.getTime() - 3 * 3_600_000, now)).toBe('3 h ago');
+
+      const earlySameDay = new Date('2026-05-03T01:00:00Z');
+      expect(formatRelative(earlySameDay, now).startsWith('today ')).toBe(true);
+
+      const yesterday = new Date('2026-05-02T18:00:00Z');
+      expect(formatRelative(yesterday, now).startsWith('yesterday ')).toBe(true);
+    });
+
+    it('renders dayjs month names in English when locale is en', () => {
+      setLanguageTag('en');
+      // March '24 is "Mar" in English vs "mars" in French
+      expect(formatDateTime(new Date('2024-03-01T09:30:00Z'))).toMatch(/Mar/);
+    });
   });
 });
 

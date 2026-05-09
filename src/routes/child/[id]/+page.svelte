@@ -37,8 +37,8 @@
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
   import relativeTime from 'dayjs/plugin/relativeTime';
+  import { languageTag } from '$lib/paraglide/runtime';
   dayjs.extend(relativeTime);
-  dayjs.locale('fr');
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
@@ -92,10 +92,11 @@
   type DayGroup = { key: string; label: string; entries: Entry[] };
 
   function dayLabel(ts: number): string {
-    const d = dayjs(ts);
-    const now = dayjs();
-    if (d.isSame(now, 'day')) return 'Aujourd’hui';
-    if (d.isSame(now.subtract(1, 'day'), 'day')) return 'Hier';
+    const locale = languageTag();
+    const d = dayjs(ts).locale(locale);
+    const now = dayjs().locale(locale);
+    if (d.isSame(now, 'day')) return m.dateLabelToday();
+    if (d.isSame(now.subtract(1, 'day'), 'day')) return m.dateLabelYesterday();
     if (d.isSame(now, 'year')) return d.format('dddd D MMMM');
     return d.format('D MMMM YYYY');
   }
@@ -266,7 +267,7 @@
               <ReactionBadge reaction={e.reaction} />
             </span>
             <span class="shrink-0 text-xs text-muted-foreground">
-              {dayjs(e.givenAt).fromNow()}
+              {dayjs(e.givenAt).locale(languageTag()).fromNow()}
             </span>
           </li>
         {/each}
