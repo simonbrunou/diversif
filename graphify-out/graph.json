@@ -1827,7 +1827,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L19",
       "id": "server_guards_requireguest",
-      "community": 5,
+      "community": 4,
       "norm_label": "requireguest()"
     },
     {
@@ -2056,123 +2056,6 @@
       "norm_label": "stopcleanuptimer()"
     },
     {
-      "label": "gdpr.test.ts",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L1",
-      "id": "src_lib_server_gdpr_test_ts",
-      "community": 13,
-      "norm_label": "gdpr.test.ts"
-    },
-    {
-      "label": "insertUser()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L19",
-      "id": "server_gdpr_test_insertuser",
-      "community": 13,
-      "norm_label": "insertuser()"
-    },
-    {
-      "label": "insertChild()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L36",
-      "id": "server_gdpr_test_insertchild",
-      "community": 13,
-      "norm_label": "insertchild()"
-    },
-    {
-      "label": "insertMembership()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L45",
-      "id": "server_gdpr_test_insertmembership",
-      "community": 13,
-      "norm_label": "insertmembership()"
-    },
-    {
-      "label": "insertFood()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L54",
-      "id": "server_gdpr_test_insertfood",
-      "community": 13,
-      "norm_label": "insertfood()"
-    },
-    {
-      "label": "insertEntry()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L63",
-      "id": "server_gdpr_test_insertentry",
-      "community": 13,
-      "norm_label": "insertentry()"
-    },
-    {
-      "label": "gdpr.ts",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L1",
-      "id": "src_lib_server_gdpr_ts",
-      "community": 13,
-      "norm_label": "gdpr.ts"
-    },
-    {
-      "label": "deleteUserAccount()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L33",
-      "id": "server_gdpr_deleteuseraccount",
-      "community": 13,
-      "norm_label": "deleteuseraccount()"
-    },
-    {
-      "label": "ExportTooLargeError",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L153",
-      "id": "server_gdpr_exporttoolargeerror",
-      "community": 13,
-      "norm_label": "exporttoolargeerror"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L156",
-      "id": "server_gdpr_exporttoolargeerror_constructor",
-      "community": 13,
-      "norm_label": ".constructor()"
-    },
-    {
-      "label": "isoOrNull()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L165",
-      "id": "server_gdpr_isoornull",
-      "community": 13,
-      "norm_label": "isoornull()"
-    },
-    {
-      "label": "isoOrThrow()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L168",
-      "id": "server_gdpr_isoorthrow",
-      "community": 13,
-      "norm_label": "isoorthrow()"
-    },
-    {
-      "label": "exportUserData()",
-      "file_type": "code",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L186",
-      "id": "server_gdpr_exportuserdata",
-      "community": 13,
-      "norm_label": "exportuserdata()"
-    },
-    {
       "label": "passkeys.test.ts",
       "file_type": "code",
       "source_file": "src/lib/server/passkeys.test.ts",
@@ -2396,6 +2279,123 @@
       "id": "server_passkeys_publicpasskey",
       "community": 5,
       "norm_label": "publicpasskey()"
+    },
+    {
+      "label": "gdpr.ts",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L1",
+      "id": "src_lib_server_gdpr_ts",
+      "community": 13,
+      "norm_label": "gdpr.ts"
+    },
+    {
+      "label": "deleteUserAccount()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L35",
+      "id": "server_gdpr_deleteuseraccount",
+      "community": 13,
+      "norm_label": "deleteuseraccount()"
+    },
+    {
+      "label": "ExportTooLargeError",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L180",
+      "id": "server_gdpr_exporttoolargeerror",
+      "community": 13,
+      "norm_label": "exporttoolargeerror"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L183",
+      "id": "server_gdpr_exporttoolargeerror_constructor",
+      "community": 13,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": "isoOrNull()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L192",
+      "id": "server_gdpr_isoornull",
+      "community": 13,
+      "norm_label": "isoornull()"
+    },
+    {
+      "label": "isoOrThrow()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L195",
+      "id": "server_gdpr_isoorthrow",
+      "community": 13,
+      "norm_label": "isoorthrow()"
+    },
+    {
+      "label": "exportUserData()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L213",
+      "id": "server_gdpr_exportuserdata",
+      "community": 13,
+      "norm_label": "exportuserdata()"
+    },
+    {
+      "label": "gdpr.test.ts",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L1",
+      "id": "src_lib_server_gdpr_test_ts",
+      "community": 13,
+      "norm_label": "gdpr.test.ts"
+    },
+    {
+      "label": "insertUser()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L20",
+      "id": "server_gdpr_test_insertuser",
+      "community": 13,
+      "norm_label": "insertuser()"
+    },
+    {
+      "label": "insertChild()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L37",
+      "id": "server_gdpr_test_insertchild",
+      "community": 13,
+      "norm_label": "insertchild()"
+    },
+    {
+      "label": "insertMembership()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L46",
+      "id": "server_gdpr_test_insertmembership",
+      "community": 13,
+      "norm_label": "insertmembership()"
+    },
+    {
+      "label": "insertFood()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L55",
+      "id": "server_gdpr_test_insertfood",
+      "community": 13,
+      "norm_label": "insertfood()"
+    },
+    {
+      "label": "insertEntry()",
+      "file_type": "code",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L64",
+      "id": "server_gdpr_test_insertentry",
+      "community": 13,
+      "norm_label": "insertentry()"
     },
     {
       "label": "errors.ts",
@@ -10773,7 +10773,7 @@
       "source_file": "src/routes/login/+page.server.ts",
       "source_location": "L25",
       "id": "login_page_server_load",
-      "community": 5,
+      "community": 4,
       "norm_label": "load()"
     },
     {
@@ -11070,7 +11070,7 @@
       "source_file": "src/routes/signup/+page.server.ts",
       "source_location": "L47",
       "id": "signup_page_server_load",
-      "community": 5,
+      "community": 4,
       "norm_label": "load()"
     },
     {
@@ -17746,9 +17746,9 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_log_page_server_ts",
-      "target": "server_guards_requireuser",
-      "confidence_score": 1.0
+      "target": "server_guards_requireuser"
     },
     {
       "relation": "imports",
@@ -17757,9 +17757,9 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_log_entryid_page_server_ts",
-      "target": "server_guards_requireuser",
-      "confidence_score": 1.0
+      "target": "server_guards_requireuser"
     },
     {
       "relation": "imports",
@@ -17768,9 +17768,9 @@
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_settings_page_server_ts",
-      "target": "server_guards_requireuser",
-      "confidence_score": 1.0
+      "target": "server_guards_requireuser"
     },
     {
       "relation": "imports",
@@ -18958,237 +18958,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "test_db_resettestdb"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "server_gdpr_deleteuseraccount"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "server_gdpr_exporttoolargeerror"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "server_gdpr_exportuserdata"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "server_gdpr_test_insertuser"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L37",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "server_gdpr_test_insertchild"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L45",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "server_gdpr_test_insertmembership"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L54",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "server_gdpr_test_insertfood"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.test.ts",
-      "source_location": "L62",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_test_ts",
-      "target": "server_gdpr_test_insertentry"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_ts",
-      "target": "server_gdpr_deleteuseraccount"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L155",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_ts",
-      "target": "server_gdpr_exporttoolargeerror"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L167",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_ts",
-      "target": "server_gdpr_isoornull"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L170",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_ts",
-      "target": "server_gdpr_isoorthrow"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L188",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_gdpr_ts",
-      "target": "server_gdpr_exportuserdata"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "server_gdpr_deleteuseraccount",
-      "target": "src_routes_account_page_server_ts"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L158",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "server_gdpr_exporttoolargeerror",
-      "target": "server_gdpr_exporttoolargeerror_constructor"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/account/export/+server.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_account_export_server_ts",
-      "target": "server_gdpr_exporttoolargeerror"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/account/export/server.test.ts",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_account_export_server_test_ts",
-      "target": "server_gdpr_exporttoolargeerror"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L258",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "server_gdpr_isoornull",
-      "target": "server_gdpr_exportuserdata"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L257",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "server_gdpr_isoorthrow",
-      "target": "server_gdpr_exportuserdata"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/account/export/+server.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_account_export_server_ts",
-      "target": "server_gdpr_exportuserdata"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/routes/account/export/+server.ts",
-      "source_location": "L36",
-      "weight": 1.0,
-      "source": "server_gdpr_exportuserdata",
-      "target": "export_server_get"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/lib/server/passkeys.test.ts",
       "source_location": "L2",
       "weight": 1.0,
@@ -20084,6 +19853,237 @@
       "weight": 1.0,
       "source": "server_passkeys_publicpasskey",
       "target": "verify_server_post"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_ts",
+      "target": "server_gdpr_deleteuseraccount"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L155",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_ts",
+      "target": "server_gdpr_exporttoolargeerror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L167",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_ts",
+      "target": "server_gdpr_isoornull"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L170",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_ts",
+      "target": "server_gdpr_isoorthrow"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L188",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_ts",
+      "target": "server_gdpr_exportuserdata"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "server_gdpr_deleteuseraccount"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "server_gdpr_deleteuseraccount",
+      "target": "src_routes_account_page_server_ts"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L158",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "server_gdpr_exporttoolargeerror",
+      "target": "server_gdpr_exporttoolargeerror_constructor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "server_gdpr_exporttoolargeerror"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/export/+server.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_account_export_server_ts",
+      "target": "server_gdpr_exporttoolargeerror"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/export/server.test.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_account_export_server_test_ts",
+      "target": "server_gdpr_exporttoolargeerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L258",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "server_gdpr_isoornull",
+      "target": "server_gdpr_exportuserdata"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L257",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "server_gdpr_isoorthrow",
+      "target": "server_gdpr_exportuserdata"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "server_gdpr_exportuserdata"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/export/+server.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_account_export_server_ts",
+      "target": "server_gdpr_exportuserdata"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/account/export/+server.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "server_gdpr_exportuserdata",
+      "target": "export_server_get"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "test_db_resettestdb"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "server_gdpr_test_insertuser"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "server_gdpr_test_insertchild"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L45",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "server_gdpr_test_insertmembership"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "server_gdpr_test_insertfood"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/gdpr.test.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_gdpr_test_ts",
+      "target": "server_gdpr_test_insertentry"
     },
     {
       "relation": "contains",
@@ -37605,5 +37605,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "ed1ec010f41a26e5e38d49d3fea9ac9d03bd7ca5"
+  "built_at_commit": "6be95cc9e563e11cc360a5e08d3ae987c5fe61ca"
 }

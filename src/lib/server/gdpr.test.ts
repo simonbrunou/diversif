@@ -8,6 +8,7 @@ import {
   children,
   foodEntries,
   foods,
+  invitations,
   memberships,
   passkeys,
   sessions,
@@ -306,6 +307,92 @@ describe('exportUserData', () => {
     const out = await exportUserData(u.id);
     expect(out.children).toHaveLength(1);
     expect(out.children[0].foodEntries).toEqual([]);
+  });
+
+  it('exports invitations the user sent and accepted, with the right relationship', async () => {
+    const inviter = await insertUser('inviter@example.com');
+    const c = await insertChild('Bébé', inviter.id);
+    await insertMembership(inviter.id, c.id, 'owner');
+    const accepted = await insertUser('joiner@example.com');
+    const childOfAccepted = await insertChild('Léo', accepted.id);
+    await insertMembership(accepted.id, childOfAccepted.id, 'owner');
+
+    // Invite #1 — sent by `inviter`, never used
+    await testDb.insert(invitations).values({
+      code: 'INV-SENT',
+      childId: c.id,
+      createdBy: inviter.id,
+      createdAt: new Date('2026-05-01'),
+      expiresAt: new Date('2026-05-08'),
+      usedAt: null,
+      usedBy: null
+    });
+    // Invite #2 — sent by someone else, accepted by `accepted`
+    await testDb.insert(invitations).values({
+      code: 'INV-ACCEPTED',
+      childId: childOfAccepted.id,
+      createdBy: inviter.id,
+      createdAt: new Date('2026-05-02'),
+      expiresAt: new Date('2026-05-09'),
+      usedAt: new Date('2026-05-03'),
+      usedBy: accepted.id
+    });
+
+    const senderOut = await exportUserData(inviter.id);
+    expect(senderOut.invitations).toHaveLength(2);
+    // Ordered by createdAt: INV-SENT first (2026-05-01), INV-ACCEPTED second
+    // (2026-05-02). Identify by usedAt rather than code (code is intentionally
+    // absent from the export — see ExportedUser.invitations docstring).
+    expect(senderOut.invitations[0]).toMatchObject({ relationship: 'sent', usedAt: null });
+    expect(senderOut.invitations[1].relationship).toBe('sent');
+    expect(senderOut.invitations[1].usedAt).not.toBeNull();
+
+    const accepterOut = await exportUserData(accepted.id);
+    expect(accepterOut.invitations).toHaveLength(1);
+    expect(accepterOut.invitations[0].relationship).toBe('accepted');
+    expect(accepterOut.invitations[0].usedAt).not.toBeNull();
+
+    // Regression guard for the bearer-token leak: invitation `code` is the
+    // join token and must never end up in the downloadable archive.
+    const serialized = JSON.stringify(senderOut) + JSON.stringify(accepterOut);
+    expect(serialized).not.toContain('INV-SENT');
+    expect(serialized).not.toContain('INV-ACCEPTED');
+  });
+
+  it('exports tipDismissals scoped to the user and their children', async () => {
+    const u = await insertUser('dismisser@example.com');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    // Other user's dismissal — must not leak.
+    const other = await insertUser('other@example.com');
+    const otherChild = await insertChild('Léo', other.id);
+    await insertMembership(other.id, otherChild.id, 'owner');
+    await testDb.insert(tipDismissals).values({
+      userId: other.id,
+      childId: otherChild.id,
+      reminderKey: 'priority-allergens',
+      dismissedAt: new Date('2026-05-01')
+    });
+    await testDb.insert(tipDismissals).values({
+      userId: u.id,
+      childId: c.id,
+      reminderKey: 'priority-allergens',
+      dismissedAt: new Date('2026-05-02')
+    });
+    await testDb.insert(tipDismissals).values({
+      userId: u.id,
+      childId: c.id,
+      reminderKey: 'first-foods',
+      dismissedAt: new Date('2026-05-03')
+    });
+
+    const out = await exportUserData(u.id);
+    expect(out.tipDismissals).toHaveLength(2);
+    expect(out.tipDismissals.map((t) => t.reminderKey)).toEqual([
+      'priority-allergens',
+      'first-foods'
+    ]);
+    expect(out.tipDismissals.every((t) => t.childId === c.id)).toBe(true);
   });
 
   it('marks entries logged by another member as not loggedByMe', async () => {

@@ -1,12 +1,14 @@
-import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, ne, or, sql } from 'drizzle-orm';
 import { db } from './db';
 import {
   children,
   foodEntries,
   foods,
+  invitations,
   memberships,
   passkeys,
   sessions,
+  tipDismissals,
   users,
   type Child,
   type FoodEntry,
@@ -134,6 +136,31 @@ export type ExportedUser = {
     createdAt: string;
     lastUsedAt: string | null;
   }>;
+  // Co-parent invitations the user generated (relationship: 'sent') or
+  // accepted to join a shared child (relationship: 'accepted'). Personal
+  // data per RGPD article 15.
+  //
+  // The invitation `code` itself is deliberately omitted — it's a bearer
+  // token, structurally identical to a session id (matched by exact-string
+  // lookup at the join endpoint, redeemable by anyone who possesses it
+  // until expiry). Including it in a downloadable archive lets a leaked or
+  // intercepted export be redeemed for co-parent access on still-unused
+  // codes. The exported metadata (childId, relationship, dates) is what
+  // the user actually has portability interest in.
+  invitations: Array<{
+    childId: number;
+    relationship: 'sent' | 'accepted';
+    createdAt: string;
+    expiresAt: string;
+    usedAt: string | null;
+  }>;
+  // Per-user/per-child reminder dismissals. Surface them so users can see
+  // which tips they've already silenced.
+  tipDismissals: Array<{
+    childId: number;
+    reminderKey: string;
+    dismissedAt: string;
+  }>;
 };
 
 // Hard ceiling on the number of food entries we'll serialise in a single
@@ -237,6 +264,35 @@ export async function exportUserData(
 
   const userPasskeys = await db.select().from(passkeys).where(eq(passkeys.userId, userId));
 
+  // Invitations the user generated OR consumed. The `relationship` field
+  // disambiguates the two so the same code (sent and later used by the
+  // same user) shows up twice — that's the right semantic.
+  const userInvitations = await db
+    .select({
+      childId: invitations.childId,
+      createdBy: invitations.createdBy,
+      usedBy: invitations.usedBy,
+      createdAt: invitations.createdAt,
+      expiresAt: invitations.expiresAt,
+      usedAt: invitations.usedAt
+    })
+    .from(invitations)
+    .where(or(eq(invitations.createdBy, userId), eq(invitations.usedBy, userId)))
+    .orderBy(asc(invitations.createdAt));
+
+  const userTipDismissals =
+    childIds.length === 0
+      ? []
+      : await db
+          .select({
+            childId: tipDismissals.childId,
+            reminderKey: tipDismissals.reminderKey,
+            dismissedAt: tipDismissals.dismissedAt
+          })
+          .from(tipDismissals)
+          .where(and(eq(tipDismissals.userId, userId), inArray(tipDismissals.childId, childIds)))
+          .orderBy(asc(tipDismissals.dismissedAt));
+
   const membershipByChildId = new Map(userMemberships.map((m) => [m.childId, m]));
   const entriesByChildId = new Map<number, typeof entryRows>();
   for (const e of entryRows) {
@@ -293,6 +349,18 @@ export async function exportUserData(
       transports: p.transports,
       createdAt: isoOrThrow(p.createdAt),
       lastUsedAt: isoOrNull(p.lastUsedAt)
+    })),
+    invitations: userInvitations.map((inv) => ({
+      childId: inv.childId,
+      relationship: inv.createdBy === userId ? ('sent' as const) : ('accepted' as const),
+      createdAt: isoOrThrow(inv.createdAt),
+      expiresAt: isoOrThrow(inv.expiresAt),
+      usedAt: isoOrNull(inv.usedAt)
+    })),
+    tipDismissals: userTipDismissals.map((t) => ({
+      childId: t.childId,
+      reminderKey: t.reminderKey,
+      dismissedAt: isoOrThrow(t.dismissedAt)
     }))
   };
 }
