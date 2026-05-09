@@ -125,6 +125,12 @@ export function organizationJsonLd(origin: string) {
   };
 }
 
+// inLanguage on every type is hardcoded to SITE.lang ('fr'). The /en/ URLs
+// only translate chrome (header, footer, skip link, FR-only banner); the
+// substantive page bodies — articles, FAQ Q/A, landing copy — remain in
+// French. Per schema.org and Google's guidance, inLanguage describes the
+// content's actual language, not the URL prefix, so 'fr' is the correct
+// signal even on /en/ pages until the bodies themselves get translated.
 export function websiteJsonLd(origin: string) {
   return {
     '@context': 'https://schema.org',
@@ -181,10 +187,12 @@ export function articleJsonLd(
   };
 }
 
+// inLanguage was missing here entirely; the other JSON-LD types had it.
 export function faqPageJsonLd(qa: { q: string; a: string }[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
+    inLanguage: SITE.lang,
     mainEntity: qa.map((it) => ({
       '@type': 'Question',
       name: it.q,

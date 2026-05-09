@@ -112,7 +112,7 @@
 <JsonLd data={organizationJsonLd(siteUrl)} />
 <JsonLd data={websiteJsonLd(siteUrl)} />
 
-<a href="#main" class="skip-link">Aller au contenu</a>
+<a href="#main" class="skip-link">{m.chromeSkipToContent()}</a>
 
 <div class="safe-top flex min-h-dvh flex-col">
   {#if isChildRoute}

@@ -177,12 +177,13 @@ describe('JSON-LD generators', () => {
     expect(ld.dateModified).toBe('2025-06-01');
   });
 
-  it('builds a FAQPage from a list of Q/A pairs', () => {
+  it('builds a FAQPage with inLanguage from a list of Q/A pairs', () => {
     const ld = faqPageJsonLd([
       { q: 'Q1', a: 'A1' },
       { q: 'Q2', a: 'A2' }
     ]);
     expect(ld['@type']).toBe('FAQPage');
+    expect(ld.inLanguage).toBe('fr');
     expect(ld.mainEntity).toHaveLength(2);
     expect(ld.mainEntity[0]).toMatchObject({
       '@type': 'Question',
