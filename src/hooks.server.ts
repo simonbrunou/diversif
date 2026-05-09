@@ -71,6 +71,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   // %paraglide.lang% placeholder substitution below).
   const locale = resolveLocaleFromRequest(event);
   setLanguageTag(locale);
+  event.locals.locale = locale;
 
   const token = event.cookies.get(SESSION_COOKIE) ?? '';
   const validated = token ? await validateSession(token) : null;

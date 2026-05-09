@@ -1,4 +1,5 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
@@ -243,6 +244,6 @@ export const actions: Actions = {
       throw e;
     }
 
-    throw redirect(303, redirectPath);
+    throw localizedRedirect(locals.locale, 303, redirectPath);
   }
 };

@@ -1,8 +1,9 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships } from '$lib/server/db/schema';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { isValidInviteCodeFormat } from '$lib/utils/invites';
+import { localizedRedirect } from '$lib/server/redirect';
 import type { Actions, PageServerLoad } from './$types';
 
 type ActiveInvite = {
@@ -57,7 +58,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   }
 
   if (!locals.user) {
-    throw redirect(303, `/signup?code=${encodeURIComponent(code)}`);
+    throw localizedRedirect(locals.locale, 303, `/signup?code=${encodeURIComponent(code)}`);
   }
 
   const inv = await findActiveInvitation(code);
@@ -66,7 +67,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   }
 
   if (await userHasMembership(locals.user.id, inv.childId)) {
-    throw redirect(303, `/child/${inv.childId}`);
+    throw localizedRedirect(locals.locale, 303, `/child/${inv.childId}`);
   }
 
   return {
@@ -83,7 +84,7 @@ export const actions: Actions = {
       return fail(400, { error: 'Code d’invitation invalide.' });
     }
     if (!locals.user) {
-      throw redirect(303, `/signup?code=${encodeURIComponent(code)}`);
+      throw localizedRedirect(locals.locale, 303, `/signup?code=${encodeURIComponent(code)}`);
     }
 
     const inv = await findActiveInvitation(code);
@@ -92,7 +93,7 @@ export const actions: Actions = {
     }
 
     if (await userHasMembership(locals.user.id, inv.childId)) {
-      throw redirect(303, `/child/${inv.childId}`);
+      throw localizedRedirect(locals.locale, 303, `/child/${inv.childId}`);
     }
 
     const now = new Date();
@@ -119,6 +120,6 @@ export const actions: Actions = {
       return fail(400, { error: 'Code d’invitation introuvable ou expiré.' });
     }
 
-    throw redirect(303, `/child/${inv.childId}`);
+    throw localizedRedirect(locals.locale, 303, `/child/${inv.childId}`);
   }
 };

@@ -1,4 +1,5 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { children, memberships } from '$lib/server/db/schema';
@@ -51,6 +52,6 @@ export const actions: Actions = {
       .insert(memberships)
       .values({ userId: user.id, childId: inserted.id, role: 'owner', createdAt: now });
 
-    throw redirect(303, `/child/${inserted.id}`);
+    throw localizedRedirect(locals.locale, 303, `/child/${inserted.id}`);
   }
 };
