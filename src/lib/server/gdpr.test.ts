@@ -3,6 +3,12 @@ import { testDb, resetTestDb } from '../../test/db';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
+const auditSpy = vi.fn();
+vi.mock('./audit', async () => {
+  const actual = await vi.importActual<typeof import('./audit')>('./audit');
+  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
+});
+
 import { deleteUserAccount, ExportTooLargeError, exportUserData } from './gdpr';
 import {
   children,
@@ -79,6 +85,7 @@ async function insertEntry(childId: number, foodId: number, loggedBy: number) {
 
 beforeEach(async () => {
   await resetTestDb();
+  auditSpy.mockClear();
 });
 
 describe('deleteUserAccount', () => {
@@ -247,6 +254,23 @@ describe('deleteUserAccount', () => {
     await deleteUserAccount(u.id);
     const u2 = await insertUser('reuse@example.com');
     expect(u2.id).not.toBe(u.id);
+  });
+
+  it('emits an account.deleted audit event with the deletion summary', async () => {
+    const owner = await insertUser('audited@example.com');
+    const c = await insertChild('Bébé', owner.id);
+    await insertMembership(owner.id, c.id, 'owner');
+
+    await deleteUserAccount(owner.id);
+
+    expect(auditSpy).toHaveBeenCalledOnce();
+    expect(auditSpy).toHaveBeenCalledWith({
+      type: 'account.deleted',
+      userId: owner.id,
+      deletedChildren: 1,
+      promotedMemberships: 0,
+      removedMemberships: 0
+    });
   });
 });
 
@@ -440,5 +464,24 @@ describe('exportUserData', () => {
     await insertEntry(c.id, food.id, u.id);
     const out = await exportUserData(u.id, 2);
     expect(out.children[0].foodEntries).toHaveLength(2);
+  });
+
+  it('emits an account.exported audit event with the entry count', async () => {
+    const u = await insertUser('exporter@example.com');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Banane');
+    await insertEntry(c.id, food.id, u.id);
+    await insertEntry(c.id, food.id, u.id);
+    await insertEntry(c.id, food.id, u.id);
+
+    await exportUserData(u.id);
+
+    expect(auditSpy).toHaveBeenCalledOnce();
+    expect(auditSpy).toHaveBeenCalledWith({
+      type: 'account.exported',
+      userId: u.id,
+      foodEntryCount: 3
+    });
   });
 });

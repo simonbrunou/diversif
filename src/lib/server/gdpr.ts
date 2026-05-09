@@ -1,5 +1,6 @@
 import { and, asc, eq, inArray, ne, or, sql } from 'drizzle-orm';
 import { db } from './db';
+import { audit } from './audit';
 import {
   children,
   foodEntries,
@@ -33,7 +34,7 @@ export type DeletionSummary = {
  * `memberships.created_at` (tiebreak: lowest user_id) is promoted to owner.
  */
 export async function deleteUserAccount(userId: number): Promise<DeletionSummary> {
-  return db.transaction(async (tx) => {
+  const summary = await db.transaction(async (tx) => {
     const summary: DeletionSummary = {
       deletedChildren: 0,
       promotedMemberships: 0,
@@ -94,6 +95,9 @@ export async function deleteUserAccount(userId: number): Promise<DeletionSummary
 
     return summary;
   });
+
+  audit({ type: 'account.deleted', userId, ...summary });
+  return summary;
 }
 
 export type ExportedUser = {
@@ -300,6 +304,8 @@ export async function exportUserData(
     list.push(e);
     entriesByChildId.set(e.childId, list);
   }
+
+  audit({ type: 'account.exported', userId, foodEntryCount: entryRows.length });
 
   return {
     exportedAt: new Date().toISOString(),

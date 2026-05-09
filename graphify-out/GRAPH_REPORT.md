@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-09)
 
 ## Corpus Check
-- 273 files · ~372,664 words
+- 275 files · ~374,438 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1546 nodes · 2150 edges · 180 communities (126 shown, 54 thin omitted)
-- Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 378 edges (avg confidence: 0.8)
+- 1549 nodes · 2155 edges · 180 communities (126 shown, 54 thin omitted)
+- Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 380 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6be95cc9`
+- Built from commit: `042290ba`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -161,11 +161,11 @@ Nodes (30): seed(), loadFor(), setup(), setup(), loadFor(), setup(), setup(), se
 
 ### Community 4 - "Test Fixtures & Setup Helpers"
 Cohesion: 0.06
-Nodes (39): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), loadEntry() (+31 more)
+Nodes (40): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), loadEntry() (+32 more)
 
 ### Community 5 - "Branding, App Shell & PWA Manifest"
-Cohesion: 0.08
-Nodes (38): load(), POST(), createSession(), findUserByEmail(), getDecoyHash(), invalidateAllUserSessions(), newToken(), verifyPassword() (+30 more)
+Cohesion: 0.1
+Nodes (32): load(), POST(), invalidateAllUserSessions(), runCleanup(), startCleanupTimer(), stopCleanupTimer(), base64UrlToBuffer(), bufferToBase64Url() (+24 more)
 
 ### Community 6 - "Architecture Patterns & Conventions"
 Cohesion: 0.06
@@ -184,20 +184,20 @@ Cohesion: 0.09
 Nodes (15): clear(), deleteRow(), emit(), enqueue(), flush(), openDb(), postOne(), readAllOrdered() (+7 more)
 
 ### Community 10 - "Offline Log Queue (IndexedDB)"
+Cohesion: 0.13
+Nodes (11): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), POST(), enforceLanguageTag(), setLanguageTag(), invalidateSession() (+3 more)
+
+### Community 11 - "User Memory & Medical Audit"
 Cohesion: 0.19
 Nodes (11): absoluteUrl(), articleJsonLd(), breadcrumbJsonLd(), faqPageJsonLd(), organizationJsonLd(), resolveOrigin(), webApplicationJsonLd(), websiteJsonLd() (+3 more)
 
-### Community 11 - "User Memory & Medical Audit"
+### Community 12 - "SEO / JSON-LD Library"
 Cohesion: 0.13
 Nodes (8): $components/ui/Badge.svelte, $lib/utils/cn, Select.svelte UI component, Select component tests, $lib/content/sources, Textarea.svelte UI component, Textarea component tests, $lib/utils/theme
 
-### Community 12 - "SEO / JSON-LD Library"
-Cohesion: 0.2
-Nodes (6): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), enforceLanguageTag(), setLanguageTag()
-
 ### Community 13 - "UI Component Library"
-Cohesion: 0.19
-Nodes (6): GET(), deleteUserAccount(), ExportTooLargeError, exportUserData(), isoOrNull(), isoOrThrow()
+Cohesion: 0.16
+Nodes (7): GET(), audit(), deleteUserAccount(), ExportTooLargeError, exportUserData(), isoOrNull(), isoOrThrow()
 
 ### Community 14 - "Account Export / Delete"
 Cohesion: 0.27
@@ -319,12 +319,12 @@ Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 50`, `SEO / JSON-LD Library`?**
-  _High betweenness centrality (0.086) - this node is a cross-community bridge._
-- **Why does `setLanguageTag()` connect `SEO / JSON-LD Library` to `i18n Messages (auth.*)`, `Page Loaders & Form Actions`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
-- **Why does `validateSession()` connect `Page Loaders & Form Actions` to `Branding, App Shell & PWA Manifest`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 50`, `Offline Log Queue (IndexedDB)`?**
+  _High betweenness centrality (0.084) - this node is a cross-community bridge._
+- **Why does `setLanguageTag()` connect `Offline Log Queue (IndexedDB)` to `i18n Messages (auth.*)`?**
+  _High betweenness centrality (0.077) - this node is a cross-community bridge._
+- **Why does `validateSession()` connect `Page Loaders & Form Actions` to `Offline Log Queue (IndexedDB)`?**
+  _High betweenness centrality (0.045) - this node is a cross-community bridge._
 - **Are the 231 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `chromeAppShellMyAccount()`) actually correct?**
   _`languageTag()` has 231 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**
