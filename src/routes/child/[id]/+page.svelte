@@ -92,10 +92,11 @@
   type DayGroup = { key: string; label: string; entries: Entry[] };
 
   function dayLabel(ts: number): string {
-    const d = dayjs(ts);
-    const now = dayjs();
-    if (d.isSame(now, 'day')) return 'Aujourd’hui';
-    if (d.isSame(now.subtract(1, 'day'), 'day')) return 'Hier';
+    const locale = languageTag();
+    const d = dayjs(ts).locale(locale);
+    const now = dayjs().locale(locale);
+    if (d.isSame(now, 'day')) return m.dateLabelToday();
+    if (d.isSame(now.subtract(1, 'day'), 'day')) return m.dateLabelYesterday();
     if (d.isSame(now, 'year')) return d.format('dddd D MMMM');
     return d.format('D MMMM YYYY');
   }

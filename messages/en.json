@@ -32,6 +32,8 @@
   "chromePublicHeaderNavLogin": "Log in",
   "chromePublicHeaderNavSignup": "Create an account",
   "chromePublicHeaderNavSources": "Sources",
+  "dateLabelToday": "Today",
+  "dateLabelYesterday": "Yesterday",
   "dateRelativeHours": "{hour} h ago",
   "dateRelativeMinutes": "{min} min ago",
   "dateRelativeNow": "just now",
