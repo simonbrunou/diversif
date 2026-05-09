@@ -12,7 +12,7 @@ import {
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { hashPassword } from '$lib/server/auth';
-import { children, invitations, memberships } from '$lib/server/db/schema';
+import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
@@ -404,6 +404,34 @@ describe('settings deleteChild action', () => {
     expect(
       (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0]
     ).toBeDefined();
+  });
+
+  it('redirects to /login when owner row is gone (race)', async () => {
+    const { u, c, m } = await setup();
+    await testDb.delete(memberships).where(eq(memberships.userId, u.id));
+    await testDb.insert(memberships).values({
+      userId: u.id,
+      childId: c.id,
+      role: 'owner',
+      createdAt: new Date()
+    });
+    // Delete the owner row AFTER the membership re-insert so requireOwnership
+    // (which reads from locals.memberships) still passes, but the password
+    // re-fetch from the users table comes back empty.
+    await testDb.delete(users).where(eq(users.id, u.id));
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { confirmName: 'Bébé', currentPassword: PASSWORD }
+    });
+    const r = await captureFlow(() =>
+      actions.deleteChild!(
+        event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/login');
   });
 
   it('fails when currentPassword is wrong', async () => {

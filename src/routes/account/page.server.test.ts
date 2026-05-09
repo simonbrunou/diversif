@@ -337,6 +337,22 @@ describe('account deleteAccount', () => {
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 
+  it('redirects to /login when user row is gone (race)', async () => {
+    const u = await seed();
+    await testDb.delete(users).where(eq(users.id, u.id));
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { confirmEmail: 'p@example.com', currentPassword: 'current-password-12' }
+    });
+    const r = await captureFlow(() =>
+      actions.deleteAccount!(
+        event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/login');
+  });
+
   it('fails when currentPassword is wrong', async () => {
     const u = await seed();
     const event = makeRouteEvent({
