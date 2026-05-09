@@ -12,6 +12,7 @@ import {
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { hashPassword } from '$lib/server/auth';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
@@ -28,6 +29,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await resetTestDb();
+  _clearAllRateLimits();
 });
 
 async function setup(opts: { role?: 'owner' | 'member' } = {}) {
@@ -469,5 +471,34 @@ describe('settings deleteChild action', () => {
     expect(
       (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0]
     ).toBeUndefined();
+  });
+
+  it('rate-limits brute-force attempts on the currentPassword field', async () => {
+    const { u, c, m } = await setup();
+    // 5 wrong-password attempts allowed, the 6th gets 429.
+    for (let i = 0; i < 5; i++) {
+      const event = makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        formData: { confirmName: 'Bébé', currentPassword: 'wrong' }
+      });
+      await actions.deleteChild!(
+        event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
+      );
+    }
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { confirmName: 'Bébé', currentPassword: 'wrong' }
+    });
+    const r = (await actions.deleteChild!(
+      event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(429);
+    expect(
+      (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0]
+    ).toBeDefined();
   });
 });

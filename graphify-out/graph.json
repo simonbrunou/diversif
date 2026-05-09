@@ -10570,24 +10570,6 @@
       "norm_label": "+page.svelte"
     },
     {
-      "label": "page.server.test.ts",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
-      "source_location": "L1",
-      "id": "src_routes_child_id_settings_page_server_test_ts",
-      "community": 4,
-      "norm_label": "page.server.test.ts"
-    },
-    {
-      "label": "setup()",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
-      "source_location": "L33",
-      "id": "settings_page_server_test_setup",
-      "community": 4,
-      "norm_label": "setup()"
-    },
-    {
       "label": "+page.server.ts",
       "file_type": "code",
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
@@ -10600,7 +10582,7 @@
       "label": "generateUniqueInviteCode()",
       "file_type": "code",
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
-      "source_location": "L21",
+      "source_location": "L28",
       "id": "settings_page_server_generateuniqueinvitecode",
       "community": 3,
       "norm_label": "generateuniqueinvitecode()"
@@ -10609,10 +10591,28 @@
       "label": "load()",
       "file_type": "code",
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
-      "source_location": "L33",
+      "source_location": "L40",
       "id": "settings_page_server_load",
       "community": 3,
       "norm_label": "load()"
+    },
+    {
+      "label": "page.server.test.ts",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
+      "source_location": "L1",
+      "id": "src_routes_child_id_settings_page_server_test_ts",
+      "community": 4,
+      "norm_label": "page.server.test.ts"
+    },
+    {
+      "label": "setup()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
+      "source_location": "L35",
+      "id": "settings_page_server_test_setup",
+      "community": 4,
+      "norm_label": "setup()"
     },
     {
       "label": "+page.svelte",
@@ -17052,7 +17052,18 @@
       "source_file": "src/routes/account/+page.server.ts",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_account_page_server_ts",
+      "target": "server_rate_limit_checkratelimit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_routes_child_id_settings_page_server_ts",
       "target": "server_rate_limit_checkratelimit",
       "confidence_score": 1.0
     },
@@ -17162,7 +17173,18 @@
       "source_file": "src/routes/account/page.server.test.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_account_page_server_test_ts",
+      "target": "server_rate_limit_clearallratelimits"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "src_routes_child_id_settings_page_server_test_ts",
       "target": "server_rate_limit_clearallratelimits",
       "confidence_score": 1.0
     },
@@ -33381,6 +33403,26 @@
       "target": "entryid_page_server_load"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_settings_page_server_ts",
+      "target": "settings_page_server_generateuniqueinvitecode"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_settings_page_server_ts",
+      "target": "settings_page_server_load"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -33488,26 +33530,6 @@
       "weight": 1.0,
       "source": "settings_page_server_test_setup",
       "target": "test_route_seedmembership"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_settings_page_server_ts",
-      "target": "settings_page_server_generateuniqueinvitecode"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_settings_page_server_ts",
-      "target": "settings_page_server_load"
     },
     {
       "relation": "contains",
@@ -38239,5 +38261,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "16c46d2660433b61f47baf9cefa39ba09988fc54"
+  "built_at_commit": "c563171b10dc6a909b052678518e73f7e27e35e2"
 }

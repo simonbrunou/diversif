@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-09)
 
 ## Corpus Check
-- 275 files · ~377,250 words
+- 275 files · ~377,757 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1570 nodes · 2190 edges · 180 communities (125 shown, 55 thin omitted)
+- 1570 nodes · 2192 edges · 180 communities (125 shown, 55 thin omitted)
 - Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 390 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `16c46d26`
+- Built from commit: `c563171b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -323,9 +323,9 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 50`, `Offline Log Queue (IndexedDB)`, `Community 52`?**
   _High betweenness centrality (0.094) - this node is a cross-community bridge._
 - **Why does `setLanguageTag()` connect `Offline Log Queue (IndexedDB)` to `i18n Messages (auth.*)`?**
-  _High betweenness centrality (0.051) - this node is a cross-community bridge._
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
 - **Why does `isValidBirthDate()` connect `Page Loaders & Form Actions` to `Offline Log Queue (IndexedDB)`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Are the 241 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `formatRelative()`) actually correct?**
   _`languageTag()` has 241 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**
