@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { testDb, resetTestDb } from '../../../../test/db';
 import {
   captureFlow,
@@ -11,16 +11,27 @@ import {
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
+import { hashPassword } from '$lib/server/auth';
 import { children, invitations, memberships } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
+
+const PASSWORD = 'current-password-12';
+let realHash: string;
+
+beforeAll(async () => {
+  // Hash once per file (~50 ms) and reuse across every setup() call. The
+  // deleteChild action verifies the password via argon2id, so the seeded
+  // user must hold a real hash, not a placeholder.
+  realHash = await hashPassword(PASSWORD);
+});
 
 beforeEach(async () => {
   await resetTestDb();
 });
 
 async function setup(opts: { role?: 'owner' | 'member' } = {}) {
-  const u = await seedUser();
+  const u = await seedUser({ passwordHash: realHash });
   const c = await seedChild({ createdBy: u.id, name: 'Bébé' });
   const m = await seedMembership({ userId: u.id, childId: c.id, role: opts.role ?? 'owner' });
   return { u, c, m };
@@ -352,7 +363,7 @@ describe('settings deleteChild action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Wrong' }
+      formData: { confirmName: 'Wrong', currentPassword: PASSWORD }
     });
     const r = (await actions.deleteChild!(
       event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
@@ -367,7 +378,7 @@ describe('settings deleteChild action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Bébé' }
+      formData: { confirmName: 'Bébé', currentPassword: PASSWORD }
     });
     const r = await captureFlow(() =>
       actions.deleteChild!(
@@ -378,13 +389,47 @@ describe('settings deleteChild action', () => {
     if (r.kind === 'redirect') expect(r.location).toBe('/');
   });
 
-  it('deletes the child and redirects /', async () => {
+  it('fails when currentPassword is missing', async () => {
     const { u, c, m } = await setup();
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
       formData: { confirmName: 'Bébé' }
+    });
+    const r = (await actions.deleteChild!(
+      event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(400);
+    expect(
+      (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0]
+    ).toBeDefined();
+  });
+
+  it('fails when currentPassword is wrong', async () => {
+    const { u, c, m } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { confirmName: 'Bébé', currentPassword: 'wrong-current' }
+    });
+    const r = (await actions.deleteChild!(
+      event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(400);
+    expect(
+      (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0]
+    ).toBeDefined();
+  });
+
+  it('deletes the child and redirects /', async () => {
+    const { u, c, m } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { confirmName: 'Bébé', currentPassword: PASSWORD }
     });
     const r = await captureFlow(() =>
       actions.deleteChild!(

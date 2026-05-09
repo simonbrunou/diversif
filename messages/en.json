@@ -165,6 +165,7 @@
   "authAccountDeleteSection": "Delete my account",
   "authAccountDeleteDescription": "Immediate and irreversible deletion. Children for which you are the sole owner and their entire journal will be deleted. For shared children, your access is removed and, if you were the sole owner, the earliest-registered co-parent becomes the owner.",
   "authAccountDeleteConfirmLabel": "Enter your email to confirm",
+  "authAccountDeletePasswordLabel": "Confirm with your password",
   "authAccountDeleteSubmit": "Permanently delete my account",
   "authAccountDeleteSubmitting": "Deleting…",
   "authAccountLegalSection": "Legal links",

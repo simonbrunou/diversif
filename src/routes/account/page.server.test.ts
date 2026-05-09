@@ -248,6 +248,35 @@ describe('account changePassword', () => {
     const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
     expect(fresh?.passwordHash).not.toBe(u.passwordHash);
   });
+
+  it('drops every existing session and issues a new one for this tab', async () => {
+    const u = await seed();
+    const a = await createSession(u.id);
+    const b = await createSession(u.id);
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: {
+        currentPassword: 'current-password-12',
+        newPassword: 'new-very-long-password-12+'
+      }
+    });
+    await actions.changePassword!(
+      event as unknown as Parameters<NonNullable<typeof actions.changePassword>>[0]
+    );
+
+    // The two pre-existing sessions are both gone.
+    expect(await validateSession(a.id)).toBeNull();
+    expect(await validateSession(b.id)).toBeNull();
+
+    // A fresh session was created for this tab and the cookie was set.
+    const setCalls = (event.cookies.set as ReturnType<typeof vi.fn>).mock.calls;
+    expect(setCalls.length).toBeGreaterThanOrEqual(1);
+    const [name, value, opts] = setCalls[setCalls.length - 1];
+    expect(name).toBe(SESSION_COOKIE);
+    expect(typeof value).toBe('string');
+    expect((opts as { httpOnly?: boolean }).httpOnly).toBe(true);
+    expect(await validateSession(value as string)).not.toBeNull();
+  });
 });
 
 describe('account logoutEverywhere', () => {
@@ -294,11 +323,42 @@ describe('account deleteAccount', () => {
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 
-  it('deletes the user, clears the cookie and redirects to /account/deleted', async () => {
+  it('fails when currentPassword is missing', async () => {
     const u = await seed();
     const event = makeRouteEvent({
       user: safeUser(u),
       formData: { confirmEmail: 'p@example.com' }
+    });
+    const r = (await actions.deleteAccount!(
+      event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+    )) as { status: number; data: { deleteErrorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.deleteErrorKey).toBe('errorsAccountPasswordIncorrect');
+    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+  });
+
+  it('fails when currentPassword is wrong', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { confirmEmail: 'p@example.com', currentPassword: 'wrong-current' }
+    });
+    const r = (await actions.deleteAccount!(
+      event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+    )) as { status: number; data: { deleteErrorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.deleteErrorKey).toBe('errorsAccountPasswordIncorrect');
+    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+  });
+
+  it('deletes the user, clears the cookie and redirects to /account/deleted', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: {
+        confirmEmail: 'p@example.com',
+        currentPassword: 'current-password-12'
+      }
     });
     const r = await captureFlow(() =>
       actions.deleteAccount!(
