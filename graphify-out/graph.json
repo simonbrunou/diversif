@@ -1138,15 +1138,6 @@
       "norm_label": "legallinks.svelte"
     },
     {
-      "label": "LocaleSwitcher.test.ts",
-      "file_type": "code",
-      "source_file": "src/lib/components/LocaleSwitcher.test.ts",
-      "source_location": "L1",
-      "id": "src_lib_components_localeswitcher_test_ts",
-      "community": 72,
-      "norm_label": "localeswitcher.test.ts"
-    },
-    {
       "label": "PublicFooter.svelte",
       "file_type": "code",
       "source_file": "src/lib/components/PublicFooter.svelte",
@@ -1219,15 +1210,6 @@
       "norm_label": "#each()"
     },
     {
-      "label": "LocaleSwitcher.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/LocaleSwitcher.svelte",
-      "source_location": "L1",
-      "id": "src_lib_components_localeswitcher_svelte",
-      "community": 72,
-      "norm_label": "localeswitcher.svelte"
-    },
-    {
       "label": "GuideStaticSections.svelte",
       "file_type": "code",
       "source_file": "src/lib/components/GuideStaticSections.svelte",
@@ -1244,6 +1226,24 @@
       "id": "components_guidestaticsections_each",
       "community": 7,
       "norm_label": "#each()"
+    },
+    {
+      "label": "LocaleSwitcher.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/LocaleSwitcher.svelte",
+      "source_location": "L1",
+      "id": "src_lib_components_localeswitcher_svelte",
+      "community": 72,
+      "norm_label": "localeswitcher.svelte"
+    },
+    {
+      "label": "LocaleSwitcher.test.ts",
+      "file_type": "code",
+      "source_file": "src/lib/components/LocaleSwitcher.test.ts",
+      "source_location": "L1",
+      "id": "src_lib_components_localeswitcher_test_ts",
+      "community": 72,
+      "norm_label": "localeswitcher.test.ts"
     },
     {
       "label": "LandingClosingCta.test.ts",
@@ -3181,6 +3181,15 @@
       "norm_label": "getallergenlabel()"
     },
     {
+      "label": "allergens.test.ts",
+      "file_type": "code",
+      "source_file": "src/lib/utils/allergens.test.ts",
+      "source_location": "L1",
+      "id": "src_lib_utils_allergens_test_ts",
+      "community": 18,
+      "norm_label": "allergens.test.ts"
+    },
+    {
       "label": "milestones.ts",
       "file_type": "code",
       "source_file": "src/lib/utils/milestones.ts",
@@ -3206,15 +3215,6 @@
       "id": "utils_milestones_celebrate",
       "community": 18,
       "norm_label": "celebrate()"
-    },
-    {
-      "label": "allergens.test.ts",
-      "file_type": "code",
-      "source_file": "src/lib/utils/allergens.test.ts",
-      "source_location": "L1",
-      "id": "src_lib_utils_allergens_test_ts",
-      "community": 18,
-      "norm_label": "allergens.test.ts"
     },
     {
       "label": "uuid.test.ts",
@@ -16213,17 +16213,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/LocaleSwitcher.test.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_localeswitcher_test_ts",
-      "target": "src_lib_components_localeswitcher_svelte"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/lib/components/QueueBadge.test.ts",
       "source_location": "L4",
       "weight": 1.0,
@@ -16272,6 +16261,17 @@
       "confidence_score": 1.0,
       "source": "src_lib_components_guidestaticsections_svelte",
       "target": "components_guidestaticsections_each"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/LocaleSwitcher.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_localeswitcher_test_ts",
+      "target": "src_lib_components_localeswitcher_svelte"
     },
     {
       "relation": "imports_from",
@@ -21472,22 +21472,22 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/utils/milestones.ts",
+      "source_file": "src/lib/utils/allergens.test.ts",
       "source_location": "L2",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "src_lib_utils_milestones_ts",
+      "source": "src_lib_utils_allergens_test_ts",
       "target": "utils_allergens_getallergenlabel"
     },
     {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/utils/allergens.test.ts",
+      "source_file": "src/lib/utils/milestones.ts",
       "source_location": "L2",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "src_lib_utils_allergens_test_ts",
+      "source": "src_lib_utils_milestones_ts",
       "target": "utils_allergens_getallergenlabel"
     },
     {
@@ -37473,5 +37473,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "abc7d777a3a25feb0e7dba4d694a9722f1cf30b3"
+  "built_at_commit": "041c93cce6fe65b4685ab1e198774fa4080a086b"
 }

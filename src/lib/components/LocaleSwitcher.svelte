@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { browser } from '$app/environment';
+  import { building } from '$app/environment';
   import { languageTag, availableLanguageTags } from '$lib/paraglide/runtime';
   import { i18n } from '$lib/i18n';
   import * as m from '$lib/paraglide/messages';
@@ -13,10 +13,13 @@
   // /en/login for FR (no flip) and /en/en/login for EN (doubled prefix).
   const canonicalPath = $derived(page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/');
 
-  // page.url.search / .hash throw during prerender (SvelteKit disallows dynamic
-  // URL access on prerendered pages). The locale switcher doesn't need to
-  // preserve query strings on prerendered pages, so we fall back to empty strings.
-  const urlSuffix = $derived(browser ? page.url.search + page.url.hash : '');
+  // page.url.search / .hash are only inert during the build-time prerender
+  // pass (where SvelteKit forbids dynamic URL access — the prerender URL has
+  // no query/hash anyway). Per-request SSR can read them just fine, so guard
+  // on `building` rather than `browser` — gating on `browser` would drop the
+  // query/hash on the SSR'd HTML for routes like /child/[id]/log?date=…, and
+  // a user clicking the switcher before hydration would lose the param.
+  const urlSuffix = $derived(building ? '' : page.url.search + page.url.hash);
 </script>
 
 <nav class="locale-switcher" aria-label={m.chromeLocaleSwitcherLabel()}>

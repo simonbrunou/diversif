@@ -8,6 +8,10 @@ vi.mock('$app/state', () => ({
   page: { url: { pathname: '/login', search: '', hash: '' } }
 }));
 
+vi.mock('$app/environment', () => ({
+  building: false
+}));
+
 vi.mock('$lib/paraglide/runtime', () => ({
   languageTag: vi.fn(() => 'fr'),
   availableLanguageTags: ['fr', 'en'] as const
@@ -68,6 +72,26 @@ describe('LocaleSwitcher', () => {
       expect(fr.getAttribute('href')).toBe('/signup?code=INVITE#form');
       expect(en.getAttribute('href')).toBe('/en/signup?code=INVITE#form');
     } finally {
+      Object.assign(state.page, { url: original });
+    }
+  });
+
+  it('drops the query/hash suffix during prerender (building === true)', async () => {
+    const env = await import('$app/environment');
+    const state = await import('$app/state');
+    const original = state.page.url;
+    Object.assign(state.page, {
+      url: { pathname: '/signup', search: '?code=INVITE', hash: '#form' }
+    });
+    vi.mocked(env).building = true;
+    try {
+      render(LocaleSwitcher);
+      const fr = screen.getByRole('link', { name: /fr/i });
+      const en = screen.getByRole('link', { name: /en/i });
+      expect(fr.getAttribute('href')).toBe('/signup');
+      expect(en.getAttribute('href')).toBe('/en/signup');
+    } finally {
+      vi.mocked(env).building = false;
       Object.assign(state.page, { url: original });
     }
   });
