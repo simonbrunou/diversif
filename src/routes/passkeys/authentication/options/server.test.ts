@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { testDb, resetTestDb } from '../../../../test/db';
-import { makeRouteEvent } from '../../../../test/route';
+import { captureFlow, makeRouteEvent } from '../../../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
@@ -16,10 +16,12 @@ import { POST } from './+server';
 import { webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 
 beforeEach(async () => {
   await resetTestDb();
   mocks.generateAuthenticationOptions.mockReset();
+  _clearAllRateLimits();
 });
 
 describe('POST /passkeys/authentication/options', () => {
@@ -72,5 +74,20 @@ describe('POST /passkeys/authentication/options', () => {
       if (orig === undefined) delete process.env.ORIGIN;
       else process.env.ORIGIN = orig;
     }
+  });
+
+  it('returns 429 when the per-IP rate limit is exceeded', async () => {
+    mocks.generateAuthenticationOptions.mockResolvedValue({ challenge: 'x' });
+    // Saturate the passkey-auth-options bucket (limit 20 per 5 minutes).
+    for (let i = 0; i < 20; i++) {
+      const event = makeRouteEvent();
+      await POST(event as unknown as Parameters<typeof POST>[0]);
+    }
+    const event = makeRouteEvent();
+    const r = await captureFlow(
+      () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(429);
   });
 });
