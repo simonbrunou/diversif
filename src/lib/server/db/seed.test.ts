@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { eq, and } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../test/db';
-import { FOODS_SEED, seedFoods } from './seed';
+import { FOODS_SEED, seedFoods, applySeedCorrections } from './seed';
 import { foods } from './schema';
 
 beforeEach(async () => {
@@ -34,11 +35,69 @@ describe('seedFoods', () => {
     for (const m of major) expect(m.allergenType).not.toBeNull();
   });
 
-  it('is a no-op when foods already exist', async () => {
+  it('does not duplicate rows when foods already exist', async () => {
     await seedFoods(testDb);
     const before = (await testDb.select().from(foods)).length;
     await seedFoods(testDb);
     const after = (await testDb.select().from(foods)).length;
     expect(after).toBe(before);
+  });
+
+  it('runs corrections on a populated DB carrying stale Tofu age', async () => {
+    await seedFoods(testDb);
+    // Simulate a deploy that crossed the SQLite -> Postgres cutover with the
+    // pre-2026-05-08 Tofu age still in the table.
+    await testDb.update(foods).set({ suggestedAgeMonths: 6 }).where(eq(foods.name, 'Tofu'));
+
+    await seedFoods(testDb);
+
+    const [tofu] = await testDb.select().from(foods).where(eq(foods.name, 'Tofu'));
+    expect(tofu.suggestedAgeMonths).toBe(36);
+  });
+});
+
+describe('applySeedCorrections', () => {
+  it('raises stale Tofu age from 6 to 36', async () => {
+    await seedFoods(testDb);
+    await testDb.update(foods).set({ suggestedAgeMonths: 6 }).where(eq(foods.name, 'Tofu'));
+
+    await applySeedCorrections(testDb);
+
+    const [tofu] = await testDb.select().from(foods).where(eq(foods.name, 'Tofu'));
+    expect(tofu.suggestedAgeMonths).toBe(36);
+  });
+
+  it('is a no-op on a freshly seeded DB (Tofu already at 36)', async () => {
+    await seedFoods(testDb);
+    const [before] = await testDb.select().from(foods).where(eq(foods.name, 'Tofu'));
+
+    await applySeedCorrections(testDb);
+
+    const [after] = await testDb.select().from(foods).where(eq(foods.name, 'Tofu'));
+    expect(after.suggestedAgeMonths).toBe(before.suggestedAgeMonths);
+  });
+
+  it('leaves an operator-customised Tofu row alone', async () => {
+    await seedFoods(testDb);
+    // Operator copy: a custom child-scoped Tofu pinned at 6 months on purpose.
+    await testDb.insert(foods).values({
+      name: 'Tofu',
+      category: 'legumineuses',
+      isMajorAllergen: true,
+      allergenType: 'soja',
+      suggestedAgeMonths: 6,
+      notes: null,
+      isCustom: true,
+      customForChildId: null
+    });
+
+    await applySeedCorrections(testDb);
+
+    const customRows = await testDb
+      .select()
+      .from(foods)
+      .where(and(eq(foods.name, 'Tofu'), eq(foods.isCustom, true)));
+    expect(customRows).toHaveLength(1);
+    expect(customRows[0].suggestedAgeMonths).toBe(6);
   });
 });
