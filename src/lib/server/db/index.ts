@@ -22,7 +22,32 @@ function resolveDatabaseUrl(): string {
   return url;
 }
 
-const pool = new Pool({ connectionString: resolveDatabaseUrl() });
+function resolvePoolMax(): number {
+  const raw = process.env.PGPOOL_MAX;
+  /* v8 ignore next — defensive for invalid env input, no test env sets PGPOOL_MAX */
+  if (!raw) return 10;
+  const n = Number(raw);
+  /* v8 ignore next — defensive for invalid env input */
+  if (!Number.isInteger(n) || n <= 0) return 10;
+  return n;
+}
+
+// Pool defaults are dangerous for a single-process Node app:
+//   - connectionTimeoutMillis: 0 means acquires wait forever, so a saturated
+//     pool wedges every incoming request including /healthz, defeating the
+//     Docker HEALTHCHECK that's meant to detect a wedged DB.
+//   - idleTimeoutMillis: 10s churns connections under sustained load.
+//   - no statement_timeout means a single runaway query holds a worker until
+//     the OS kills the connection.
+// Override all four so failures fail fast and surface as 5xx instead of
+// hangs. PGPOOL_MAX lets self-hosters scale the pool to their pg server.
+const pool = new Pool({
+  connectionString: resolveDatabaseUrl(),
+  max: resolvePoolMax(),
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5_000,
+  statement_timeout: 10_000
+});
 const drizzleDb = drizzle(pool, { schema });
 
 // Top-level await: SvelteKit's Node adapter runs as ESM, so importing this
