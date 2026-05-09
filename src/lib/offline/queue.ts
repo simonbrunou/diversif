@@ -149,11 +149,14 @@ async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry'> {
   }
 
   if (result.type === 'redirect') {
-    if (result.location === '/login' || result.location.startsWith('/login?')) {
+    // Match every locale-prefixed login redirect (paraglide rewrites bare
+    // /login to /en/login for English-locale users). Bare /login covers FR
+    // since FR is the unprefixed default.
+    if (/^\/(?:[a-z]{2}\/)?login(?:\?|$)/.test(result.location)) {
       emit('queue:sessionExpired');
       return 'drop';
     }
-    const m = result.location.match(/^\/child\/(\d+)\?(.+)$/);
+    const m = result.location.match(/^\/(?:[a-z]{2}\/)?child\/(\d+)\?(.+)$/);
     if (m) {
       emit('queue:synced', { childId: Number(m[1]), qs: m[2] });
     }

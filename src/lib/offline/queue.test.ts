@@ -177,6 +177,44 @@ describe('queue', () => {
     window.removeEventListener('queue:sessionExpired', handler);
   });
 
+  it('treats /en/login (paraglide locale prefix) the same as /login', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login'));
+    const events: string[] = [];
+    const handler = () => events.push('expired');
+    window.addEventListener('queue:sessionExpired', handler);
+
+    await enqueue({
+      key: 'k1-en',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    await flush();
+
+    expect(get(pendingCount)).toBe(0);
+    expect(events).toContain('expired');
+    window.removeEventListener('queue:sessionExpired', handler);
+  });
+
+  it('also fires sessionExpired on /en/login?next=...', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login?next=/child/1'));
+    const events: string[] = [];
+    const handler = () => events.push('expired');
+    window.addEventListener('queue:sessionExpired', handler);
+
+    await enqueue({
+      key: 'k1-en-qs',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    await flush();
+
+    expect(get(pendingCount)).toBe(0);
+    expect(events).toContain('expired');
+    window.removeEventListener('queue:sessionExpired', handler);
+  });
+
   it('emits queue:synced with milestone qs on success', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       goodActionResult('/child/1?logged=1&first=1&categories=2&prevCategories=1')
