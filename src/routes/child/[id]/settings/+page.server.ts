@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
-import { generateInviteCodeRaw } from '$lib/server/auth';
+import { generateInviteCodeRaw, verifyPassword } from '$lib/server/auth';
 import { requireMembership, requireOwnership } from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
@@ -158,14 +158,25 @@ export const actions: Actions = {
 
   deleteChild: async ({ params, request, locals }) => {
     const childId = Number(params.id);
-    requireOwnership(locals, childId);
+    const { user } = requireOwnership(locals, childId);
 
     const data = await request.formData();
     const confirmName = String(data.get('confirmName') ?? /* v8 ignore next */ '').trim();
+    const currentPassword = String(data.get('currentPassword') ?? /* v8 ignore next */ '');
     const child = (await db.select().from(children).where(eq(children.id, childId)).limit(1))[0];
     if (!child) throw redirect(303, '/');
     if (confirmName !== child.name) {
       return fail(400, { error: 'Saisissez le prénom exact pour confirmer.' });
+    }
+
+    // Fresh-auth: typed name is visible on the page; require the current
+    // password as proof the request comes from the owner, not a stolen
+    // session cookie.
+    const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
+    if (!fresh) throw redirect(303, '/login');
+    const ok = currentPassword ? await verifyPassword(fresh.passwordHash, currentPassword) : false;
+    if (!ok) {
+      return fail(400, { error: 'Mot de passe incorrect.' });
     }
 
     await db.delete(children).where(eq(children.id, childId));

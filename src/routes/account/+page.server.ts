@@ -5,6 +5,8 @@ import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import {
   SESSION_COOKIE,
+  SESSION_DURATION_MS,
+  createSession,
   hashPassword,
   invalidateAllUserSessions,
   verifyPassword
@@ -43,7 +45,7 @@ export const actions: Actions = {
     return { profileSuccessKey: 'errorsAccountProfileSuccess' };
   },
 
-  changePassword: async ({ request, locals }) => {
+  changePassword: async ({ request, locals, cookies }) => {
     const user = requireUser(locals);
     const raw = Object.fromEntries(await request.formData());
     const parsed = passwordSchema.safeParse(raw);
@@ -58,6 +60,20 @@ export const actions: Actions = {
     if (!ok) return fail(400, { passwordErrorKey: 'errorsAccountPasswordIncorrect' });
     const newHash = await hashPassword(parsed.data.newPassword);
     await db.update(users).set({ passwordHash: newHash }).where(eq(users.id, user.id));
+
+    // Rotate sessions: drop every existing session (including any stolen cookie
+    // an attacker might already hold) and re-issue one for this tab so the user
+    // stays logged in on the device they just used to change their password.
+    await invalidateAllUserSessions(user.id);
+    const session = await createSession(user.id);
+    cookies.set(SESSION_COOKIE, session.id, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: Math.floor(SESSION_DURATION_MS / 1000)
+    });
+
     return { passwordSuccessKey: 'errorsAccountPasswordSuccess' };
   },
 
@@ -100,8 +116,18 @@ export const actions: Actions = {
     const raw = Object.fromEntries(await request.formData());
     const confirmEmail =
       typeof raw.confirmEmail === 'string' ? raw.confirmEmail.trim().toLowerCase() : '';
+    const currentPassword = typeof raw.currentPassword === 'string' ? raw.currentPassword : '';
     if (confirmEmail !== user.email) {
       return fail(400, { deleteErrorKey: 'errorsAccountDeleteEmailMismatch' });
+    }
+    // Fresh-auth: typed email is visible on the page, so a stolen session
+    // cookie alone shouldn't be enough to permanently destroy the account.
+    // Require the current password as proof the request comes from the owner.
+    const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
+    if (!fresh) throw redirect(303, '/login');
+    const ok = currentPassword ? await verifyPassword(fresh.passwordHash, currentPassword) : false;
+    if (!ok) {
+      return fail(400, { deleteErrorKey: 'errorsAccountPasswordIncorrect' });
     }
     await deleteUserAccount(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });

@@ -19,6 +19,7 @@
   let registering = $state(false);
   let supported = $state(false);
   let confirmDeleteEmail = $state('');
+  let confirmDeletePassword = $state('');
   let savingProfile = $state(false);
   let changingPassword = $state(false);
   let deletingAccount = $state(false);
@@ -281,12 +282,24 @@
           required
         />
       </div>
+      <div class="grid gap-1.5">
+        <Label for="deletePassword">{m.authAccountDeletePasswordLabel()}</Label>
+        <Input
+          id="deletePassword"
+          name="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          bind:value={confirmDeletePassword}
+          required
+        />
+      </div>
       <div>
         <Button
           type="submit"
           variant="destructive"
           loading={deletingAccount}
-          disabled={confirmDeleteEmail.trim().toLowerCase() !== (data.user?.email ?? '')}
+          disabled={confirmDeleteEmail.trim().toLowerCase() !== (data.user?.email ?? '') ||
+            confirmDeletePassword.length === 0}
         >
           {deletingAccount ? m.authAccountDeleteSubmitting() : m.authAccountDeleteSubmit()}
         </Button>

@@ -52,6 +52,7 @@ test.describe('account deletion', () => {
 
     await page.goto('/account');
     await page.getByLabel(/Saisissez votre email/i).fill(email);
+    await page.getByLabel(/Confirmez avec votre mot de passe/i).fill('hunter2-very-long');
     await page.getByRole('button', { name: /Supprimer définitivement/i }).click();
     await expect(page).toHaveURL(/\/account\/deleted/);
 

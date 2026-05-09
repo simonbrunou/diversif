@@ -19,6 +19,7 @@
   let deleteOpen = $state(false);
   let leaveOpen = $state(false);
   let confirmName = $state('');
+  let confirmDeleteChildPassword = $state('');
   let savingChild = $state(false);
   let creatingInvite = $state(false);
   let deletingChild = $state(false);
@@ -210,13 +211,24 @@
     use:enhance={trackSubmission((v) => (deletingChild = v))}
   >
     <Input id="confirmName" name="confirmName" bind:value={confirmName} placeholder={data.child.name} autocomplete="off" />
+    <div class="grid gap-1.5">
+      <Label for="confirmDeleteChildPassword">Mot de passe</Label>
+      <Input
+        id="confirmDeleteChildPassword"
+        name="currentPassword"
+        type="password"
+        autocomplete="current-password"
+        bind:value={confirmDeleteChildPassword}
+        required
+      />
+    </div>
     <div class="mt-2 flex justify-end gap-2">
       <Button type="button" variant="outline" onclick={() => (deleteOpen = false)}>Annuler</Button>
       <Button
         type="submit"
         variant="destructive"
         loading={deletingChild}
-        disabled={confirmName !== data.child.name}
+        disabled={confirmName !== data.child.name || confirmDeleteChildPassword.length === 0}
       >
         {deletingChild ? 'Suppression…' : 'Supprimer définitivement'}
       </Button>

@@ -165,6 +165,7 @@
   "authAccountDeleteSection": "Supprimer mon compte",
   "authAccountDeleteDescription": "Suppression immédiate et irréversible. Les enfants dont vous êtes seul·e responsable et tout leur journal seront supprimés. Pour les enfants partagés, votre accès est retiré et, si vous étiez seul·e propriétaire, le co-parent inscrit le plus tôt devient propriétaire.",
   "authAccountDeleteConfirmLabel": "Saisissez votre email pour confirmer",
+  "authAccountDeletePasswordLabel": "Confirmez avec votre mot de passe",
   "authAccountDeleteSubmit": "Supprimer définitivement mon compte",
   "authAccountDeleteSubmitting": "Suppression…",
   "authAccountLegalSection": "Liens légaux",
