@@ -27,6 +27,7 @@
     <a
       href={i18n.resolveRoute(canonicalPath, locale) + urlSuffix}
       data-active={languageTag() === locale ? 'true' : undefined}
+      aria-current={languageTag() === locale ? 'true' : undefined}
       hreflang={locale}
       lang={locale}
     >

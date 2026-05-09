@@ -307,17 +307,17 @@
     "mtime": 1778228438.1926215,
     "hash": "089882b540ec452af66612b0d1349ab7"
   },
+  "/home/sbrn/Projects/diversif/src/lib/components/Seo.svelte": {
+    "mtime": 1778354028.7046087,
+    "hash": "85dec49bb2e5593f4588bda299a2aa09"
+  },
   "/home/sbrn/Projects/diversif/src/lib/components/LocaleSwitcher.svelte": {
-    "mtime": 1778339053.2115636,
-    "hash": "5d8d6c73d9756034afaf34013bd25df6"
+    "mtime": 1778354037.7035162,
+    "hash": "791dc45693af402a0ecf6e11381dec10"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/LocaleSwitcher.test.ts": {
-    "mtime": 1778339053.2115636,
-    "hash": "98b2d5f4fd35a9396c72e96baefe6f09"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/Seo.svelte": {
-    "mtime": 1778350999.9351351,
-    "hash": "be31ab3811e3b5664898e7497624731a"
+    "mtime": 1778354056.434324,
+    "hash": "5fdcc11e89aea1a9d399056d099909db"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCta.test.ts": {
     "mtime": 1777986940.329566,
@@ -507,13 +507,13 @@
     "mtime": 1778353154.740581,
     "hash": "d7b47520dbaa8fce3e26e91bb70015ad"
   },
-  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.ts": {
-    "mtime": 1778353239.0237148,
-    "hash": "8b7c5a1046571fdbd7fe5b724162af4c"
-  },
   "/home/sbrn/Projects/diversif/src/lib/server/gdpr.test.ts": {
-    "mtime": 1778353281.163282,
+    "mtime": 1778353815.0128012,
     "hash": "cd666233fa7be74b496f7e20a8fc8055"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.ts": {
+    "mtime": 1778353815.0128012,
+    "hash": "8b7c5a1046571fdbd7fe5b724162af4c"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/errors.ts": {
     "mtime": 1778271141.4718957,
@@ -668,19 +668,19 @@
     "hash": "a65b10139574baa7f02810986cba9775"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1778353341.604661,
+    "mtime": 1778354086.5100155,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1778353341.604661,
+    "mtime": 1778354086.5100155,
     "hash": "9592c7894abf06e84d6b310a8ace1e2b"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1778353341.604661,
+    "mtime": 1778354086.5100155,
     "hash": "93483aaffa148fa70f9bdfa1d9df710e"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1778353341.604661,
+    "mtime": 1778354086.5100155,
     "hash": "17634d6c31fc28228092a73085602682"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
@@ -716,11 +716,11 @@
     "hash": "a4c9214f38c9e1fb4a73e8ec05fb4d4f"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/+page.server.ts": {
-    "mtime": 1778353253.698564,
+    "mtime": 1778353815.0128012,
     "hash": "da29797770d2311c89aa3a78c555af27"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/page.server.test.ts": {
-    "mtime": 1778353302.0510674,
+    "mtime": 1778353815.0128012,
     "hash": "e8731ce57e3df906e5677fbc6f341b7f"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/deleted/+page.svelte": {
