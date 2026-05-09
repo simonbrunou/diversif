@@ -89,6 +89,19 @@ describe('resolveOrigin', () => {
   it('falls through gracefully when given a malformed URL string', () => {
     expect(resolveOrigin('not a url')).toBe(SITE.defaultOrigin);
   });
+
+  it("falls back to ORIGIN when the URL is SvelteKit's prerender placeholder", () => {
+    process.env.ORIGIN = 'https://prod.app';
+    expect(resolveOrigin(new URL('http://sveltekit-prerender/robots.txt'))).toBe(
+      'https://prod.app'
+    );
+  });
+
+  it("falls back to SITE.defaultOrigin on prerender placeholder when ORIGIN isn't set", () => {
+    expect(resolveOrigin(new URL('http://sveltekit-prerender/sitemap.xml'))).toBe(
+      SITE.defaultOrigin
+    );
+  });
 });
 
 describe('JSON-LD generators', () => {

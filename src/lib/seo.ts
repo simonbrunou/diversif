@@ -69,17 +69,25 @@ export function resolveOrigin(url?: URL | string | null): string {
   try {
     if (url) {
       const parsed = typeof url === 'string' ? new URL(url) : url;
+      // SvelteKit's prerender pipeline passes a placeholder URL with host
+      // `sveltekit-prerender`; surfaces that bake the URL into output
+      // (robots.txt, sitemap.xml, JSON-LD canonicals) would otherwise leak
+      // that host. Treat it as a non-origin: prefer ORIGIN env, then
+      // SITE.defaultOrigin.
+      const isPrerenderPlaceholder = /^https?:\/\/sveltekit-prerender/i.test(parsed.origin);
       // In dev SvelteKit's URL is the request origin which is fine. Skip
       // private-network origins only if we have a real ORIGIN to fall back to.
       const env = (typeof process !== 'undefined' && process.env?.ORIGIN) || '';
       if (
         env &&
         /^https?:\/\//i.test(env) &&
+        !isPrerenderPlaceholder &&
         !/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(parsed.origin)
       ) {
         return parsed.origin;
       }
       if (env && /^https?:\/\//i.test(env)) return env.replace(/\/$/, '');
+      if (isPrerenderPlaceholder) return SITE.defaultOrigin;
       return parsed.origin;
     }
   } catch {
