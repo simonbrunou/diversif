@@ -12,6 +12,16 @@
 
 export type AuditEvent =
   | { type: 'account.exported'; userId: number; foodEntryCount: number }
+  // Article-15 requests we received but refused (export too large). Logged
+  // separately so the operator can still demonstrate the request was handled
+  // even when no payload was returned.
+  | {
+      type: 'account.export_blocked';
+      userId: number;
+      reason: 'too_large';
+      count: number;
+      limit: number;
+    }
   | {
       type: 'account.deleted';
       userId: number;

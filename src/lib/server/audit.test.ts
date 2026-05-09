@@ -41,4 +41,24 @@ describe('audit', () => {
       foodEntryCount: 1234
     });
   });
+
+  it('emits the export_blocked event with the refusal reason and counts', () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    audit({
+      type: 'account.export_blocked',
+      userId: 9,
+      reason: 'too_large',
+      count: 51_234,
+      limit: 50_000
+    });
+    const parsed = JSON.parse(spy.mock.calls[0][0] as string);
+    expect(parsed).toMatchObject({
+      level: 'audit',
+      type: 'account.export_blocked',
+      userId: 9,
+      reason: 'too_large',
+      count: 51_234,
+      limit: 50_000
+    });
+  });
 });

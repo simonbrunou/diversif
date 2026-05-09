@@ -455,6 +455,26 @@ describe('exportUserData', () => {
     }
   });
 
+  it('emits an account.export_blocked audit event when the cap trips', async () => {
+    const u = await insertUser('refused@example.com');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Riz');
+    await insertEntry(c.id, food.id, u.id);
+    await insertEntry(c.id, food.id, u.id);
+
+    await expect(exportUserData(u.id, 1)).rejects.toThrow(ExportTooLargeError);
+
+    expect(auditSpy).toHaveBeenCalledOnce();
+    expect(auditSpy).toHaveBeenCalledWith({
+      type: 'account.export_blocked',
+      userId: u.id,
+      reason: 'too_large',
+      count: 2,
+      limit: 1
+    });
+  });
+
   it('exports normally when entry count equals the cap', async () => {
     const u = await insertUser('exact@example.com');
     const c = await insertChild('Bébé', u.id);

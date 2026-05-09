@@ -242,6 +242,13 @@ export async function exportUserData(
     /* v8 ignore next — pg COUNT(*) always returns a single row */
     const total = Number(countRes.rows[0]?.count ?? 0);
     if (total > entryLimit) {
+      audit({
+        type: 'account.export_blocked',
+        userId,
+        reason: 'too_large',
+        count: total,
+        limit: entryLimit
+      });
       throw new ExportTooLargeError(total, entryLimit);
     }
   }
