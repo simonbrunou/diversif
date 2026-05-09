@@ -5,7 +5,12 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { generateInviteCodeRaw, verifyPassword } from '$lib/server/auth';
-import { parseChildIdParam, requireMembership, requireOwnership } from '$lib/server/guards';
+import {
+  parseChildIdParam,
+  requireMembership,
+  requireOwnership,
+  requireUser
+} from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -26,6 +31,7 @@ async function generateUniqueInviteCode(): Promise<string | null> {
 /* v8 ignore stop */
 
 export const load: PageServerLoad = async ({ params, locals }) => {
+  requireUser(locals);
   const childId = parseChildIdParam(params);
   const { membership } = requireMembership(locals, childId);
 
@@ -82,6 +88,7 @@ const updateSchema = z.object({
 
 export const actions: Actions = {
   updateChild: async ({ params, request, locals }) => {
+    requireUser(locals);
     const childId = parseChildIdParam(params);
     requireOwnership(locals, childId);
     const raw = Object.fromEntries(await request.formData());
@@ -96,6 +103,7 @@ export const actions: Actions = {
   },
 
   createInvitation: async ({ params, locals }) => {
+    requireUser(locals);
     const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
 
@@ -117,6 +125,7 @@ export const actions: Actions = {
   },
 
   revokeInvitation: async ({ params, request, locals }) => {
+    requireUser(locals);
     const childId = parseChildIdParam(params);
     requireOwnership(locals, childId);
     const data = await request.formData();
@@ -129,6 +138,7 @@ export const actions: Actions = {
   },
 
   removeMember: async ({ params, request, locals }) => {
+    requireUser(locals);
     const childId = parseChildIdParam(params);
     const { user: owner } = requireOwnership(locals, childId);
     const data = await request.formData();
@@ -144,6 +154,7 @@ export const actions: Actions = {
   },
 
   leaveChild: async ({ params, locals }) => {
+    requireUser(locals);
     const childId = parseChildIdParam(params);
     const { user, membership } = requireMembership(locals, childId);
     if (membership.role === 'owner') {
@@ -158,6 +169,7 @@ export const actions: Actions = {
   },
 
   deleteChild: async ({ params, request, locals }) => {
+    requireUser(locals);
     const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
 
