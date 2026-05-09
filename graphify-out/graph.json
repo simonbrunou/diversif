@@ -2302,7 +2302,7 @@
       "label": "ExportTooLargeError",
       "file_type": "code",
       "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L175",
+      "source_location": "L180",
       "id": "server_gdpr_exporttoolargeerror",
       "community": 13,
       "norm_label": "exporttoolargeerror"
@@ -2311,7 +2311,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L178",
+      "source_location": "L183",
       "id": "server_gdpr_exporttoolargeerror_constructor",
       "community": 13,
       "norm_label": ".constructor()"
@@ -2320,7 +2320,7 @@
       "label": "isoOrNull()",
       "file_type": "code",
       "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L187",
+      "source_location": "L192",
       "id": "server_gdpr_isoornull",
       "community": 13,
       "norm_label": "isoornull()"
@@ -2329,7 +2329,7 @@
       "label": "isoOrThrow()",
       "file_type": "code",
       "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L190",
+      "source_location": "L195",
       "id": "server_gdpr_isoorthrow",
       "community": 13,
       "norm_label": "isoorthrow()"
@@ -2338,7 +2338,7 @@
       "label": "exportUserData()",
       "file_type": "code",
       "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L208",
+      "source_location": "L213",
       "id": "server_gdpr_exportuserdata",
       "community": 13,
       "norm_label": "exportuserdata()"
@@ -37605,5 +37605,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "c256404a23208fde285b422a0b719b92d5ea0a3c"
+  "built_at_commit": "6be95cc9e563e11cc360a5e08d3ae987c5fe61ca"
 }

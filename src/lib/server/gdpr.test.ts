@@ -339,15 +339,24 @@ describe('exportUserData', () => {
     });
 
     const senderOut = await exportUserData(inviter.id);
-    expect(senderOut.invitations.map((i) => i.code)).toEqual(['INV-SENT', 'INV-ACCEPTED']);
-    expect(senderOut.invitations[0].relationship).toBe('sent');
-    expect(senderOut.invitations[0].usedAt).toBeNull();
+    expect(senderOut.invitations).toHaveLength(2);
+    // Ordered by createdAt: INV-SENT first (2026-05-01), INV-ACCEPTED second
+    // (2026-05-02). Identify by usedAt rather than code (code is intentionally
+    // absent from the export — see ExportedUser.invitations docstring).
+    expect(senderOut.invitations[0]).toMatchObject({ relationship: 'sent', usedAt: null });
     expect(senderOut.invitations[1].relationship).toBe('sent');
+    expect(senderOut.invitations[1].usedAt).not.toBeNull();
 
     const accepterOut = await exportUserData(accepted.id);
-    expect(accepterOut.invitations.map((i) => i.code)).toEqual(['INV-ACCEPTED']);
+    expect(accepterOut.invitations).toHaveLength(1);
     expect(accepterOut.invitations[0].relationship).toBe('accepted');
     expect(accepterOut.invitations[0].usedAt).not.toBeNull();
+
+    // Regression guard for the bearer-token leak: invitation `code` is the
+    // join token and must never end up in the downloadable archive.
+    const serialized = JSON.stringify(senderOut) + JSON.stringify(accepterOut);
+    expect(serialized).not.toContain('INV-SENT');
+    expect(serialized).not.toContain('INV-ACCEPTED');
   });
 
   it('exports tipDismissals scoped to the user and their children', async () => {

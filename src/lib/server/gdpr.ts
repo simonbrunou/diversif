@@ -138,11 +138,16 @@ export type ExportedUser = {
   }>;
   // Co-parent invitations the user generated (relationship: 'sent') or
   // accepted to join a shared child (relationship: 'accepted'). Personal
-  // data per RGPD article 15 — the user should be able to see invites they
-  // emitted (and to whom they were sent, by way of `usedBy` resolution at
-  // the receiver end).
+  // data per RGPD article 15.
+  //
+  // The invitation `code` itself is deliberately omitted — it's a bearer
+  // token, structurally identical to a session id (matched by exact-string
+  // lookup at the join endpoint, redeemable by anyone who possesses it
+  // until expiry). Including it in a downloadable archive lets a leaked or
+  // intercepted export be redeemed for co-parent access on still-unused
+  // codes. The exported metadata (childId, relationship, dates) is what
+  // the user actually has portability interest in.
   invitations: Array<{
-    code: string;
     childId: number;
     relationship: 'sent' | 'accepted';
     createdAt: string;
@@ -264,7 +269,6 @@ export async function exportUserData(
   // same user) shows up twice — that's the right semantic.
   const userInvitations = await db
     .select({
-      code: invitations.code,
       childId: invitations.childId,
       createdBy: invitations.createdBy,
       usedBy: invitations.usedBy,
@@ -347,7 +351,6 @@ export async function exportUserData(
       lastUsedAt: isoOrNull(p.lastUsedAt)
     })),
     invitations: userInvitations.map((inv) => ({
-      code: inv.code,
       childId: inv.childId,
       relationship: inv.createdBy === userId ? ('sent' as const) : ('accepted' as const),
       createdAt: isoOrThrow(inv.createdAt),
