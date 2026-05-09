@@ -81,6 +81,58 @@ describe('settings load', () => {
     expect(out.invitations.map((i) => i.code)).toEqual(['BEBE-AAAAAA']);
     expect(out.role).toBe('owner');
   });
+
+  it('owners see every member email (administrative need)', async () => {
+    const owner = await seedUser({ email: 'owner@example.com' });
+    const c = await seedChild({ createdBy: owner.id, name: 'Bébé' });
+    const ownerMembership = await seedMembership({
+      userId: owner.id,
+      childId: c.id,
+      role: 'owner'
+    });
+    const peer = await seedUser({ email: 'peer@example.com' });
+    await seedMembership({ userId: peer.id, childId: c.id, role: 'member' });
+
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(owner),
+        memberships: [ownerMembership],
+        params: { id: String(c.id) }
+      }) as unknown as Parameters<typeof load>[0]
+    );
+
+    const byUserId = new Map(out.members.map((m) => [m.userId, m]));
+    expect(byUserId.get(owner.id)?.email).toBe('owner@example.com');
+    expect(byUserId.get(peer.id)?.email).toBe('peer@example.com');
+  });
+
+  it('non-owner members never see any co-parent email', async () => {
+    const owner = await seedUser({ email: 'owner@example.com' });
+    const c = await seedChild({ createdBy: owner.id, name: 'Bébé' });
+    await seedMembership({ userId: owner.id, childId: c.id, role: 'owner' });
+    const viewer = await seedUser({ email: 'viewer@example.com' });
+    const viewerMembership = await seedMembership({
+      userId: viewer.id,
+      childId: c.id,
+      role: 'member'
+    });
+    const peer = await seedUser({ email: 'peer@example.com' });
+    await seedMembership({ userId: peer.id, childId: c.id, role: 'member' });
+
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(viewer),
+        memberships: [viewerMembership],
+        params: { id: String(c.id) }
+      }) as unknown as Parameters<typeof load>[0]
+    );
+
+    expect(out.role).toBe('member');
+    for (const m of out.members) {
+      expect(m.email).toBeNull();
+      expect(m.displayName).toBeTruthy();
+    }
+  });
 });
 
 describe('settings updateChild action', () => {

@@ -51,9 +51,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       )
     );
 
+  // Owners need email to identify which co-parent to remove from the roster
+  // (administrative use). Non-owner members get displayName only — exposing
+  // every co-parent's email to every newly-joined member is a PII leak with
+  // no operational need.
+  const isOwner = membership.role === 'owner';
+
   return {
     members: memberRows.map((m) => ({
-      ...m,
+      userId: m.userId,
+      role: m.role,
+      displayName: m.displayName,
+      email: isOwner ? m.email : null,
       // Drizzle's timestamp_ms mode always materializes timestamps as Date.
       createdAt: (m.createdAt as Date).getTime()
     })),
