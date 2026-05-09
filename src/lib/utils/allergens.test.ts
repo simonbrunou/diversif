@@ -9,8 +9,9 @@ describe('ALLERGENS', () => {
   });
 
   // The literal "12" appears in static SEO copy, page titles, article bodies,
-  // toasts and FAQ answers. If you grow or shrink ALLERGENS, this test fails
-  // first — sweep these consumers before updating the expected count:
+  // toasts, FAQ answers and paraglide messages. If you grow or shrink
+  // ALLERGENS, this test fails first — sweep these consumers before updating
+  // the expected count:
   //   - src/lib/seo.ts (description meta)
   //   - src/lib/components/landing/LandingFeatures.svelte
   //   - src/lib/components/GuideStaticSections.svelte
@@ -20,6 +21,8 @@ describe('ALLERGENS', () => {
   //   - src/routes/child/[id]/log/+page.server.ts (comment)
   //   - src/routes/child/[id]/log/page.server.test.ts (comment)
   //   - src/lib/utils/milestones.test.ts (toast assertion)
+  //   - messages/fr.json + messages/en.json (dialogsWelcomeStep1Bullet2After
+  //     and dashboardNavAllergensDescription both reference the count)
   // Programmatic call sites (milestones.ts toast) already interpolate
   // ALLERGENS.length and don't need a manual update.
   it('matches the "12" hardcoded in user-facing copy', () => {
