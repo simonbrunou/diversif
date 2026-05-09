@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { localizedRedirect } from '$lib/server/redirect';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, parent }) => {
@@ -9,10 +9,10 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
   const { children } = await parent();
 
   if (children.length === 0) {
-    throw redirect(303, '/child/new');
+    throw localizedRedirect(locals.locale, 303, '/child/new');
   }
   if (children.length === 1) {
-    throw redirect(303, `/child/${children[0].id}`);
+    throw localizedRedirect(locals.locale, 303, `/child/${children[0].id}`);
   }
   return { kind: 'picker' as const, children };
 };

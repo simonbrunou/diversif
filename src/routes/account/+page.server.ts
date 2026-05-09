@@ -1,4 +1,5 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
@@ -55,7 +56,7 @@ export const actions: Actions = {
       });
     }
     const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
-    if (!fresh) throw redirect(303, '/login');
+    if (!fresh) throw localizedRedirect(locals.locale, 303, '/login');
     const ok = await verifyPassword(fresh.passwordHash, parsed.data.currentPassword);
     if (!ok) return fail(400, { passwordErrorKey: 'errorsAccountPasswordIncorrect' });
     const newHash = await hashPassword(parsed.data.newPassword);
@@ -81,7 +82,7 @@ export const actions: Actions = {
     const user = requireUser(locals);
     await invalidateAllUserSessions(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });
-    throw redirect(303, '/login');
+    throw localizedRedirect(locals.locale, 303, '/login');
   },
 
   renamePasskey: async ({ request, locals }) => {
@@ -124,13 +125,13 @@ export const actions: Actions = {
     // cookie alone shouldn't be enough to permanently destroy the account.
     // Require the current password as proof the request comes from the owner.
     const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
-    if (!fresh) throw redirect(303, '/login');
+    if (!fresh) throw localizedRedirect(locals.locale, 303, '/login');
     const ok = currentPassword ? await verifyPassword(fresh.passwordHash, currentPassword) : false;
     if (!ok) {
       return fail(400, { deleteErrorKey: 'errorsAccountPasswordIncorrect' });
     }
     await deleteUserAccount(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });
-    throw redirect(303, '/account/deleted');
+    throw localizedRedirect(locals.locale, 303, '/account/deleted');
   }
 };

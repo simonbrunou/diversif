@@ -1,5 +1,5 @@
-import { redirect } from '@sveltejs/kit';
 import { SESSION_COOKIE, invalidateSession } from '$lib/server/auth';
+import { localizedRedirect } from '$lib/server/redirect';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies, locals }) => {
@@ -7,5 +7,5 @@ export const POST: RequestHandler = async ({ cookies, locals }) => {
     await invalidateSession(locals.sessionId);
   }
   cookies.delete(SESSION_COOKIE, { path: '/' });
-  throw redirect(303, '/login');
+  throw localizedRedirect(locals.locale, 303, '/login');
 };

@@ -1,4 +1,5 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import {
@@ -77,6 +78,6 @@ export const actions: Actions = {
       maxAge: Math.floor(SESSION_DURATION_MS / 1000)
     });
 
-    throw redirect(303, '/');
+    throw localizedRedirect(event.locals.locale, 303, '/');
   }
 };

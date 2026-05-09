@@ -1,3 +1,4 @@
+import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
 import type { Membership, SafeUser } from '$lib/types';
 
 declare global {
@@ -6,6 +7,7 @@ declare global {
       user: SafeUser | null;
       memberships: Membership[];
       sessionId: string | null;
+      locale: AvailableLanguageTag;
     }
     // interface PageData {}
     interface Error {

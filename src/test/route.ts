@@ -31,6 +31,7 @@ export type RouteEventOptions = {
   formData?: Record<string, string>;
   headers?: Record<string, string>;
   parent?: () => Promise<unknown>;
+  locale?: 'fr' | 'en';
 };
 
 export function makeRouteEvent(opts: RouteEventOptions = {}) {
@@ -51,7 +52,8 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     locals: {
       user: opts.user ?? null,
       memberships: opts.memberships ?? [],
-      sessionId: opts.sessionId ?? (opts.user ? 'sess-id' : null)
+      sessionId: opts.sessionId ?? (opts.user ? 'sess-id' : null),
+      locale: opts.locale ?? 'fr'
     },
     params: opts.params ?? {},
     url,

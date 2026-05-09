@@ -1,4 +1,5 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
@@ -153,7 +154,7 @@ export const actions: Actions = {
     await db
       .delete(memberships)
       .where(and(eq(memberships.childId, childId), eq(memberships.userId, user.id)));
-    throw redirect(303, '/');
+    throw localizedRedirect(locals.locale, 303, '/');
   },
 
   deleteChild: async ({ params, request, locals }) => {
@@ -164,7 +165,7 @@ export const actions: Actions = {
     const confirmName = String(data.get('confirmName') ?? /* v8 ignore next */ '').trim();
     const currentPassword = String(data.get('currentPassword') ?? /* v8 ignore next */ '');
     const child = (await db.select().from(children).where(eq(children.id, childId)).limit(1))[0];
-    if (!child) throw redirect(303, '/');
+    if (!child) throw localizedRedirect(locals.locale, 303, '/');
     if (confirmName !== child.name) {
       return fail(400, { error: 'Saisissez le prénom exact pour confirmer.' });
     }
@@ -173,13 +174,13 @@ export const actions: Actions = {
     // password as proof the request comes from the owner, not a stolen
     // session cookie.
     const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
-    if (!fresh) throw redirect(303, '/login');
+    if (!fresh) throw localizedRedirect(locals.locale, 303, '/login');
     const ok = currentPassword ? await verifyPassword(fresh.passwordHash, currentPassword) : false;
     if (!ok) {
       return fail(400, { error: 'Mot de passe incorrect.' });
     }
 
     await db.delete(children).where(eq(children.id, childId));
-    throw redirect(303, '/');
+    throw localizedRedirect(locals.locale, 303, '/');
   }
 };

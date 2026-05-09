@@ -1,4 +1,5 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
+import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { and, eq, isNull, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
@@ -151,7 +152,11 @@ export const actions: Actions = {
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
 
     const from = (raw.from as string) === 'dashboard' ? 'dashboard' : 'foods';
-    throw redirect(303, from === 'dashboard' ? `/child/${childId}` : `/child/${childId}/foods`);
+    throw localizedRedirect(
+      locals.locale,
+      303,
+      from === 'dashboard' ? `/child/${childId}` : `/child/${childId}/foods`
+    );
   },
 
   delete: async ({ request, params, locals }) => {
@@ -166,6 +171,10 @@ export const actions: Actions = {
 
     const data = await request.formData();
     const from = String(data.get('from') ?? '') === 'dashboard' ? 'dashboard' : 'foods';
-    throw redirect(303, from === 'dashboard' ? `/child/${childId}` : `/child/${childId}/foods`);
+    throw localizedRedirect(
+      locals.locale,
+      303,
+      from === 'dashboard' ? `/child/${childId}` : `/child/${childId}/foods`
+    );
   }
 };

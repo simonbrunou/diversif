@@ -1,4 +1,5 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { invitations, memberships, users } from '$lib/server/db/schema';
@@ -227,6 +228,10 @@ export const actions: Actions = {
       maxAge: Math.floor(SESSION_DURATION_MS / 1000)
     });
 
-    throw redirect(303, invitationChildId !== null ? `/child/${invitationChildId}` : '/');
+    throw localizedRedirect(
+      event.locals.locale,
+      303,
+      invitationChildId !== null ? `/child/${invitationChildId}` : '/'
+    );
   }
 };

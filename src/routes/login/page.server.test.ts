@@ -112,6 +112,19 @@ describe('login default action', () => {
     expect(setArgs[0]).toBe(SESSION_COOKIE);
   });
 
+  it('preserves the /en locale on successful redirect', async () => {
+    await seedTestUser();
+    const event = makeRouteEvent({
+      locale: 'en',
+      formData: { email: 'parent@example.com', password: 'correct-password' }
+    });
+    const result = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(result.kind).toBe('redirect');
+    if (result.kind === 'redirect') expect(result.location).toBe('/en');
+  });
+
   it('returns 429 when the per-IP rate limit is exceeded', async () => {
     // Hit the bucket exactly `limit` times so the next call trips it.
     for (let i = 0; i < 10; i++) {
