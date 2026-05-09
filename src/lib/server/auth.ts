@@ -30,6 +30,41 @@ export async function verifyPassword(hash: string, plain: string): Promise<boole
   }
 }
 
+// Decoy hash. Built lazily so importing the module is cheap (skipping argon
+// during the import keeps the test suite fast), and warmed at module load in
+// non-test runs so the FIRST production "no such user" attempt isn't ~2x
+// slower than the steady state -- which would itself be a timing oracle.
+// A single hash is reused for the lifetime of the process.
+let decoyHashPromise: Promise<string> | null = null;
+function getDecoyHash(): Promise<string> {
+  if (!decoyHashPromise) {
+    decoyHashPromise = hashPassword(`argon-decoy-${randomBytes(16).toString('hex')}`);
+  }
+  return decoyHashPromise;
+}
+/* v8 ignore next 3 — module-load warming, skipped in tests by design */
+if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+  void getDecoyHash();
+}
+
+/**
+ * Verify a password against a hash, or against a decoy hash if no real hash
+ * is available. The decoy path makes the wall-clock time of "user does not
+ * exist" indistinguishable from "user exists, password wrong" -- defeating
+ * the timing oracle that would otherwise let an unauthenticated visitor probe
+ * which emails are registered.
+ */
+export async function verifyPasswordOrDecoy(
+  hash: string | null | undefined,
+  plain: string
+): Promise<boolean> {
+  if (hash == null) {
+    await verifyPassword(await getDecoyHash(), plain);
+    return false;
+  }
+  return verifyPassword(hash, plain);
+}
+
 function newToken(): string {
   return randomBytes(32).toString('hex');
 }
