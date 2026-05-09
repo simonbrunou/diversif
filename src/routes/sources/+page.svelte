@@ -37,7 +37,6 @@
   title="Sources et références — diversification alimentaire bébé · Diversif"
   description="Les 10 sources qui font autorité derrière Diversif : HCSP, Santé publique France, ANSES, ESPGHAN, OMS, Société Française de Pédiatrie, études LEAP et EAT."
   path="/sources"
-  ogType="article"
 />
 <JsonLd data={sourcesItemList} />
 <JsonLd
