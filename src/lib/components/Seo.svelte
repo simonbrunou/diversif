@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { SITE, absoluteUrl, type SeoInput } from '$lib/seo';
-  import { languageTag } from '$lib/paraglide/runtime';
 
   let {
     title,
@@ -43,7 +42,7 @@
   {/if}
 
   <meta property="og:site_name" content={SITE.name} />
-  <meta property="og:locale" content={languageTag() === 'en' ? 'en_GB' : 'fr_FR'} />
+  <meta property="og:locale" content={SITE.locale} />
   <meta property="og:type" content={ogType} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
