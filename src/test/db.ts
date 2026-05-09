@@ -23,10 +23,34 @@ function buildMem(): IMemoryDb {
     returns: DataType.float,
     implementation: (n: number) => Math.floor(n)
   });
+  // hashtext + pg_advisory_xact_lock are used by seedFoods to serialize
+  // concurrent boots in production. Tests run single-process, so the lock is
+  // safely a no-op; we register typed shims so pg-mem accepts the calls.
+  mem.public.registerFunction({
+    name: 'hashtext',
+    args: [DataType.text],
+    returns: DataType.integer,
+    implementation: (s: string) => {
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+      return h;
+    }
+  });
+  mem.public.registerFunction({
+    name: 'pg_advisory_xact_lock',
+    args: [DataType.integer],
+    returns: DataType.null as unknown as DataType,
+    implementation: () => null
+  });
   return mem;
 }
 
 function applyMigrations(mem: IMemoryDb): void {
+  // pg-mem only models the initial schema for tests; later drizzle migrations
+  // (data backfills, partial unique indexes that pg-mem's wrapped-client
+  // semantics don't fully simulate) are enforced in production but skipped
+  // here. seedFoods + applySeedCorrections idempotently re-establish the same
+  // post-migration state in tests.
   const initSql = readFileSync(path.resolve('./drizzle/0000_init.sql'), 'utf8');
 
   // Drizzle wraps each ADD CONSTRAINT in a DO $$ BEGIN ... EXCEPTION WHEN

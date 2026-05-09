@@ -15,6 +15,13 @@
       "when": 1778315477851,
       "tag": "0001_backfill_tofu_age",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778315953453,
+      "tag": "0002_foods_name_seed_unique",
+      "breakpoints": true
     }
   ]
 }
