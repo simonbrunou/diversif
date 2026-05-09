@@ -17,7 +17,6 @@
   let { data }: { data: PageData } = $props();
 
   const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
-  const locale = $derived($page.data.locale ?? SITE.lang);
 
   const landingFaq = [
     {
@@ -49,8 +48,8 @@
     description={SITE.description}
     path="/"
   />
-  <JsonLd data={webApplicationJsonLd(siteUrl, locale)} />
-  <JsonLd data={faqPageJsonLd(landingFaq, locale)} />
+  <JsonLd data={webApplicationJsonLd(siteUrl)} />
+  <JsonLd data={faqPageJsonLd(landingFaq)} />
 {:else}
   <Seo title={`Choisir un enfant · ${SITE.name}`} path="/" noindex />
 {/if}

@@ -177,7 +177,7 @@ describe('JSON-LD generators', () => {
     expect(ld.dateModified).toBe('2025-06-01');
   });
 
-  it('builds a FAQPage from a list of Q/A pairs', () => {
+  it('builds a FAQPage with inLanguage from a list of Q/A pairs', () => {
     const ld = faqPageJsonLd([
       { q: 'Q1', a: 'A1' },
       { q: 'Q2', a: 'A2' }
@@ -190,32 +190,5 @@ describe('JSON-LD generators', () => {
       name: 'Q1',
       acceptedAnswer: { '@type': 'Answer', text: 'A1' }
     });
-  });
-
-  it('honours a locale override on every language-bearing JSON-LD type', () => {
-    expect(websiteJsonLd(origin, 'en').inLanguage).toBe('en');
-    expect(webApplicationJsonLd(origin, 'en').inLanguage).toBe('en');
-    expect(
-      articleJsonLd(origin, {
-        title: 'X',
-        description: 'Y',
-        path: '/x',
-        datePublished: '2025-06-01',
-        locale: 'en'
-      }).inLanguage
-    ).toBe('en');
-    expect(faqPageJsonLd([{ q: 'Q', a: 'A' }], 'en').inLanguage).toBe('en');
-  });
-
-  it('defaults inLanguage to fr when no locale override is provided', () => {
-    expect(webApplicationJsonLd(origin).inLanguage).toBe('fr');
-    expect(
-      articleJsonLd(origin, {
-        title: 'X',
-        description: 'Y',
-        path: '/x',
-        datePublished: '2025-06-01'
-      }).inLanguage
-    ).toBe('fr');
   });
 });

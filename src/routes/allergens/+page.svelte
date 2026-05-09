@@ -17,7 +17,6 @@
   let openAllergenId = $state<AllergenId | null>(null);
 
   const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
-  const locale = $derived($page.data.locale ?? SITE.lang);
 
   const allergensItemList = {
     '@context': 'https://schema.org',
@@ -47,8 +46,7 @@
       "Quand et comment introduire chacun des 12 allergènes alimentaires majeurs entre 4 et 11 mois, signes d'allergie à surveiller, conduite à tenir.",
     path: '/allergens',
     datePublished: '2025-01-01',
-    dateModified: '2026-05-03',
-    locale
+    dateModified: '2026-05-03'
   })}
 />
 <JsonLd data={allergensItemList} />

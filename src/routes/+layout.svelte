@@ -110,7 +110,7 @@
 </svelte:head>
 
 <JsonLd data={organizationJsonLd(siteUrl)} />
-<JsonLd data={websiteJsonLd(siteUrl, data.locale)} />
+<JsonLd data={websiteJsonLd(siteUrl)} />
 
 <a href="#main" class="skip-link">{m.chromeSkipToContent()}</a>
 

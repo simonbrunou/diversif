@@ -28,7 +28,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
   return {
     user: locals.user,
     children: childList,
-    siteUrl: resolveOrigin(url),
-    locale: locals.locale
+    siteUrl: resolveOrigin(url)
   };
 };

@@ -13,7 +13,6 @@
   import { BookOpen } from 'lucide-svelte';
 
   const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
-  const locale = $derived($page.data.locale ?? SITE.lang);
 
   const guideFaq = [
     {
@@ -56,11 +55,10 @@
       "Guide complet et sourcé : 10 règles d'or, 4 étapes par âge, 12 allergènes prioritaires, textures, aliments à éviter, réactions allergiques.",
     path: '/guide',
     datePublished: '2025-01-01',
-    dateModified: '2026-05-03',
-    locale
+    dateModified: '2026-05-03'
   })}
 />
-<JsonLd data={faqPageJsonLd(guideFaq, locale)} />
+<JsonLd data={faqPageJsonLd(guideFaq)} />
 <JsonLd
   data={breadcrumbJsonLd(siteUrl, [
     { name: 'Accueil', path: '/' },

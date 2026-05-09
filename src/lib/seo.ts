@@ -125,23 +125,25 @@ export function organizationJsonLd(origin: string) {
   };
 }
 
-// Language-bearing JSON-LD types: callers pass the active locale so the page's
-// declared language matches what the user actually sees. Defaults to SITE.lang
-// for callers that don't yet know about the locale (back-compat with existing
-// tests). Production callers should always pass it.
-export function websiteJsonLd(origin: string, locale: string = SITE.lang) {
+// inLanguage on every type is hardcoded to SITE.lang ('fr'). The /en/ URLs
+// only translate chrome (header, footer, skip link, FR-only banner); the
+// substantive page bodies — articles, FAQ Q/A, landing copy — remain in
+// French. Per schema.org and Google's guidance, inLanguage describes the
+// content's actual language, not the URL prefix, so 'fr' is the correct
+// signal even on /en/ pages until the bodies themselves get translated.
+export function websiteJsonLd(origin: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: SITE.name,
     url: absoluteUrl(origin, '/'),
-    inLanguage: locale,
+    inLanguage: SITE.lang,
     description: SITE.shortDescription,
     publisher: { '@type': 'Organization', name: SITE.name }
   };
 }
 
-export function webApplicationJsonLd(origin: string, locale: string = SITE.lang) {
+export function webApplicationJsonLd(origin: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
@@ -149,7 +151,7 @@ export function webApplicationJsonLd(origin: string, locale: string = SITE.lang)
     url: absoluteUrl(origin, '/'),
     applicationCategory: 'HealthApplication',
     operatingSystem: 'Any',
-    inLanguage: locale,
+    inLanguage: SITE.lang,
     description: SITE.shortDescription,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
     isAccessibleForFree: true
@@ -164,7 +166,6 @@ export function articleJsonLd(
     path: string;
     datePublished?: string;
     dateModified?: string;
-    locale?: string;
   }
 ) {
   return {
@@ -172,7 +173,7 @@ export function articleJsonLd(
     '@type': 'Article',
     headline: args.title,
     description: args.description,
-    inLanguage: args.locale ?? SITE.lang,
+    inLanguage: SITE.lang,
     mainEntityOfPage: absoluteUrl(origin, args.path),
     image: absoluteUrl(origin, SITE.ogImageFallback),
     author: { '@type': 'Organization', name: SITE.name },
@@ -186,11 +187,12 @@ export function articleJsonLd(
   };
 }
 
-export function faqPageJsonLd(qa: { q: string; a: string }[], locale: string = SITE.lang) {
+// inLanguage was missing here entirely; the other JSON-LD types had it.
+export function faqPageJsonLd(qa: { q: string; a: string }[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    inLanguage: locale,
+    inLanguage: SITE.lang,
     mainEntity: qa.map((it) => ({
       '@type': 'Question',
       name: it.q,
