@@ -11,6 +11,7 @@
   import { page } from '$app/stores';
   import { formatAge } from '$lib/utils/age';
   import { localizedHref } from '$lib/utils/localized-href';
+  import * as m from '$lib/paraglide/messages';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -54,6 +55,16 @@
 {/if}
 
 {#if data.kind === 'landing'}
+  {#if $page.url.pathname.startsWith('/en')}
+    <div class="container max-w-4xl pt-4 md:pt-6">
+      <aside
+        class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
+        role="note"
+      >
+        {m.commonFrOnlyBannerLanding()}
+      </aside>
+    </div>
+  {/if}
   <LandingHero />
   <LandingFeatures />
 
