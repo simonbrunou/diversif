@@ -40,6 +40,22 @@ describe('localizedRedirect', () => {
     expect(r).toEqual({ status: 303, location: '/en' });
   });
 
+  it('does not double-prefix "/en?foo=1" or "/en#hash"', () => {
+    expect(captureRedirect(() => localizedRedirect('en', 303, '/en?foo=1'))).toEqual({
+      status: 303,
+      location: '/en?foo=1'
+    });
+    expect(captureRedirect(() => localizedRedirect('en', 303, '/en#hash'))).toEqual({
+      status: 303,
+      location: '/en#hash'
+    });
+  });
+
+  it('still prefixes /english (does not over-match "/en" without a delimiter)', () => {
+    const r = captureRedirect(() => localizedRedirect('en', 303, '/english'));
+    expect(r).toEqual({ status: 303, location: '/en/english' });
+  });
+
   it('passes absolute URLs through unchanged', () => {
     const r = captureRedirect(() => localizedRedirect('en', 303, 'https://example.com/x'));
     expect(r).toEqual({ status: 303, location: 'https://example.com/x' });

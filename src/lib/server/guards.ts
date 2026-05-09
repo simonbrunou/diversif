@@ -1,4 +1,5 @@
-import { error, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
+import { localizedRedirect } from './redirect';
 import type { Membership, SafeUser } from '$lib/types';
 
 export function parseChildIdParam(params: Partial<Record<string, string>>): number {
@@ -10,14 +11,14 @@ export function parseChildIdParam(params: Partial<Record<string, string>>): numb
 
 export function requireUser(locals: App.Locals): SafeUser {
   if (!locals.user) {
-    throw redirect(303, '/login');
+    throw localizedRedirect(locals.locale, 303, '/login');
   }
   return locals.user;
 }
 
 export function requireGuest(locals: App.Locals): void {
   if (locals.user) {
-    throw redirect(303, '/');
+    throw localizedRedirect(locals.locale, 303, '/');
   }
 }
 

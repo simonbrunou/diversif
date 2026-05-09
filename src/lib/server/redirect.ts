@@ -19,7 +19,10 @@ export function localizedRedirect(
   status: RedirectStatus,
   path: string
 ): never {
-  if (locale === 'en' && path.startsWith('/') && path !== '/en' && !path.startsWith('/en/')) {
+  // Treat /en, /en/..., /en?..., /en#... all as already-prefixed so they
+  // never get double-stitched into /en/en?... when a caller hand-builds an
+  // already-prefixed path.
+  if (locale === 'en' && path.startsWith('/') && !/^\/en(?:[/?#]|$)/.test(path)) {
     throw redirect(status, path === '/' ? '/en' : '/en' + path);
   }
   throw redirect(status, path);
