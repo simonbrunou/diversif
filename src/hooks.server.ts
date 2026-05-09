@@ -12,6 +12,7 @@ import {
   validateSession
 } from '$lib/server/auth';
 import * as Sentry from '@sentry/sveltekit';
+import { scrubPathname } from '$lib/sentry';
 import { setLanguageTag, type AvailableLanguageTag } from '$lib/paraglide/runtime';
 
 /**
@@ -23,12 +24,17 @@ import { setLanguageTag, type AvailableLanguageTag } from '$lib/paraglide/runtim
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   const errorId = randomBytes(4).toString('hex');
   const err = error as Error;
+  // The Sentry event already drops user.id and scrubs the URL — this stderr
+  // line is the operator-side trail. Apply the same path scrub so child/food
+  // IDs and other dynamic segments don't end up in the deployment platform's
+  // log aggregator. The event.route?.id pattern (e.g. /child/[id]/log) is a
+  // strict superset of the path's debugging value, so prefer it when set.
   console.error(
     '[diversif:error]',
     JSON.stringify({
       id: errorId,
       method: event.request.method,
-      path: event.url.pathname,
+      path: scrubPathname(event.url.pathname, event.route?.id ?? null),
       userId: event.locals.user?.id ?? null,
       status,
       message,

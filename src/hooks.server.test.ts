@@ -290,13 +290,39 @@ describe('handleError', () => {
       expect(spy.mock.calls[0][0]).toBe('[diversif:error]');
       const payload = JSON.parse(spy.mock.calls[0][1] as string);
       expect(payload.id).toBe(result?.errorId);
-      expect(payload.path).toBe('/child/2/guide');
+      // Path is scrubbed: numeric IDs become [id] so child/food identifiers
+      // don't leak to the deployment platform's log aggregator.
+      expect(payload.path).toBe('/child/[id]/guide');
       expect(payload.method).toBe('GET');
       expect(payload.userId).toBe(42);
       expect(payload.status).toBe(500);
       expect(payload.name).toBe('TypeError');
       expect(payload.msg).toBe('boom');
       expect(payload.stack).toContain('TypeError');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('prefers event.route.id over the raw URL when scrubbing the path', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const event = {
+        request: { method: 'GET' } as Request,
+        url: new URL('http://localhost/child/2/log/7'),
+        route: { id: '/child/[id]/log/[entryId]' },
+        locals: { user: null } as unknown as App.Locals
+      };
+      handleError({
+        error: new Error('boom'),
+        event,
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+      const payload = JSON.parse(spy.mock.calls[0][1] as string);
+      // When route.id is set, it's the canonical scrubbed form — no need to
+      // run the segment heuristics over the raw pathname.
+      expect(payload.path).toBe('/child/[id]/log/[entryId]');
     } finally {
       spy.mockRestore();
     }
