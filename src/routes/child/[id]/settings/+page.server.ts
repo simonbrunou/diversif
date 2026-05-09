@@ -5,7 +5,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { generateInviteCodeRaw, verifyPassword } from '$lib/server/auth';
-import { requireMembership, requireOwnership } from '$lib/server/guards';
+import { parseChildIdParam, requireMembership, requireOwnership } from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -26,7 +26,7 @@ async function generateUniqueInviteCode(): Promise<string | null> {
 /* v8 ignore stop */
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-  const childId = Number(params.id);
+  const childId = parseChildIdParam(params);
   const { membership } = requireMembership(locals, childId);
 
   const memberRows = await db
@@ -82,7 +82,7 @@ const updateSchema = z.object({
 
 export const actions: Actions = {
   updateChild: async ({ params, request, locals }) => {
-    const childId = Number(params.id);
+    const childId = parseChildIdParam(params);
     requireOwnership(locals, childId);
     const raw = Object.fromEntries(await request.formData());
     const parsed = updateSchema.safeParse(raw);
@@ -96,7 +96,7 @@ export const actions: Actions = {
   },
 
   createInvitation: async ({ params, locals }) => {
-    const childId = Number(params.id);
+    const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
 
     const code = await generateUniqueInviteCode();
@@ -117,7 +117,7 @@ export const actions: Actions = {
   },
 
   revokeInvitation: async ({ params, request, locals }) => {
-    const childId = Number(params.id);
+    const childId = parseChildIdParam(params);
     requireOwnership(locals, childId);
     const data = await request.formData();
     const code = String(data.get('code') ?? '');
@@ -129,7 +129,7 @@ export const actions: Actions = {
   },
 
   removeMember: async ({ params, request, locals }) => {
-    const childId = Number(params.id);
+    const childId = parseChildIdParam(params);
     const { user: owner } = requireOwnership(locals, childId);
     const data = await request.formData();
     const userId = Number(data.get('userId'));
@@ -144,7 +144,7 @@ export const actions: Actions = {
   },
 
   leaveChild: async ({ params, locals }) => {
-    const childId = Number(params.id);
+    const childId = parseChildIdParam(params);
     const { user, membership } = requireMembership(locals, childId);
     if (membership.role === 'owner') {
       return fail(400, {
@@ -158,7 +158,7 @@ export const actions: Actions = {
   },
 
   deleteChild: async ({ params, request, locals }) => {
-    const childId = Number(params.id);
+    const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
 
     const data = await request.formData();
