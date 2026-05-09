@@ -4,9 +4,8 @@
   import { localizedHref } from '$lib/utils/localized-href';
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
+  import { languageTag } from '$lib/paraglide/runtime';
   import type { PageData } from './$types';
-
-  dayjs.locale('fr');
 
   let { data }: { data: PageData } = $props();
 
@@ -31,7 +30,7 @@
   const lastBucket = $derived(data.buckets[data.buckets.length - 1]);
 
   function weekLabel(ts: number): string {
-    return dayjs(ts).format('D MMM');
+    return dayjs(ts).locale(languageTag()).format('D MMM');
   }
 </script>
 

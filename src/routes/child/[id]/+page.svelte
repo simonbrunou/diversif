@@ -37,8 +37,8 @@
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
   import relativeTime from 'dayjs/plugin/relativeTime';
+  import { languageTag } from '$lib/paraglide/runtime';
   dayjs.extend(relativeTime);
-  dayjs.locale('fr');
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
@@ -266,7 +266,7 @@
               <ReactionBadge reaction={e.reaction} />
             </span>
             <span class="shrink-0 text-xs text-muted-foreground">
-              {dayjs(e.givenAt).fromNow()}
+              {dayjs(e.givenAt).locale(languageTag()).fromNow()}
             </span>
           </li>
         {/each}

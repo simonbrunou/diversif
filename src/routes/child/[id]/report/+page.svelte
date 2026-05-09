@@ -9,9 +9,8 @@
   import { Printer, CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
+  import { languageTag } from '$lib/paraglide/runtime';
   import type { PageData } from './$types';
-
-  dayjs.locale('fr');
 
   let { data }: { data: PageData } = $props();
 
@@ -22,7 +21,7 @@
   }
 
   function fmtDay(ts: number): string {
-    return dayjs(ts).format('D MMM YYYY');
+    return dayjs(ts).locale(languageTag()).format('D MMM YYYY');
   }
 
   function reactionIcon(r: 'ras' | 'inconfort' | 'reaction') {
