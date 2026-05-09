@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "NODE_OPTIONS='--unhandled-rejections=warn' vite build",
     "preview": "vite preview",
     "paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
     "check": "npm run paraglide && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold warning",
