@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-09)
 
 ## Corpus Check
-- 273 files · ~370,747 words
+- 273 files · ~372,455 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ed1ec010`
+- Built from commit: `c256404a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -161,11 +161,11 @@ Nodes (30): seed(), loadFor(), setup(), setup(), loadFor(), setup(), setup(), se
 
 ### Community 4 - "Test Fixtures & Setup Helpers"
 Cohesion: 0.06
-Nodes (36): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), loadEntry() (+28 more)
+Nodes (39): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), loadEntry() (+31 more)
 
 ### Community 5 - "Branding, App Shell & PWA Manifest"
-Cohesion: 0.07
-Nodes (41): load(), load(), POST(), createSession(), findUserByEmail(), getDecoyHash(), invalidateAllUserSessions(), newToken() (+33 more)
+Cohesion: 0.08
+Nodes (38): load(), POST(), createSession(), findUserByEmail(), getDecoyHash(), invalidateAllUserSessions(), newToken(), verifyPassword() (+30 more)
 
 ### Community 6 - "Architecture Patterns & Conventions"
 Cohesion: 0.06
