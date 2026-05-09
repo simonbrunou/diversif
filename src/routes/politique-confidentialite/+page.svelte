@@ -25,7 +25,7 @@
   <section lang="fr" class="space-y-6">
     <header class="space-y-2">
       <h1 class="text-2xl font-semibold tracking-tight md:text-3xl">Politique de confidentialité</h1>
-      <p class="text-sm text-muted-foreground">Dernière mise à jour : 6 mai 2026.</p>
+      <p class="text-sm text-muted-foreground">Dernière mise à jour : 9 mai 2026.</p>
     </header>
 
   <section class="space-y-2">
@@ -85,7 +85,7 @@
     <h2 class="text-lg font-semibold">4. Destinataires et sous-traitants</h2>
     <p class="text-sm">
       Les données applicatives (compte, enfants, journal, sessions) sont stockées dans une base
-      SQLite hébergée par {legal.hostProvider}. Aucun tiers de mesure d'audience, de publicité,
+      PostgreSQL hébergée par {legal.hostProvider}. Aucun tiers de mesure d'audience, de publicité,
       de suivi commercial, d'e-mail, de notification ou de CDN ne reçoit vos données. Les
       co-parents auxquels vous transmettez un code d'invitation accèdent au journal de l'enfant
       correspondant.
