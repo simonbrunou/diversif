@@ -32,12 +32,14 @@ describe('LocaleSwitcher', () => {
     expect(en.getAttribute('href')).toBe('/en/login');
   });
 
-  it('marks the current locale with data-active', () => {
+  it('marks the current locale with data-active and aria-current', () => {
     render(LocaleSwitcher);
     const fr = screen.getByRole('link', { name: /fr/i });
     const en = screen.getByRole('link', { name: /en/i });
     expect(fr.getAttribute('data-active')).toBe('true');
     expect(en.getAttribute('data-active')).toBeNull();
+    expect(fr.getAttribute('aria-current')).toBe('true');
+    expect(en.getAttribute('aria-current')).toBeNull();
   });
 
   it('strips the /en prefix before resolving (avoids /en/en/... and same-URL flips)', async () => {
@@ -96,7 +98,7 @@ describe('LocaleSwitcher', () => {
     }
   });
 
-  it('flips data-active when languageTag is en', async () => {
+  it('flips data-active and aria-current when languageTag is en', async () => {
     const runtime = await import('$lib/paraglide/runtime');
     vi.mocked(runtime.languageTag).mockReturnValue('en');
 
@@ -105,5 +107,7 @@ describe('LocaleSwitcher', () => {
     const en = screen.getByRole('link', { name: /en/i });
     expect(fr.getAttribute('data-active')).toBeNull();
     expect(en.getAttribute('data-active')).toBe('true');
+    expect(fr.getAttribute('aria-current')).toBeNull();
+    expect(en.getAttribute('aria-current')).toBe('true');
   });
 });
