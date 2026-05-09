@@ -125,19 +125,23 @@ export function organizationJsonLd(origin: string) {
   };
 }
 
-export function websiteJsonLd(origin: string) {
+// Language-bearing JSON-LD types: callers pass the active locale so the page's
+// declared language matches what the user actually sees. Defaults to SITE.lang
+// for callers that don't yet know about the locale (back-compat with existing
+// tests). Production callers should always pass it.
+export function websiteJsonLd(origin: string, locale: string = SITE.lang) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: SITE.name,
     url: absoluteUrl(origin, '/'),
-    inLanguage: SITE.lang,
+    inLanguage: locale,
     description: SITE.shortDescription,
     publisher: { '@type': 'Organization', name: SITE.name }
   };
 }
 
-export function webApplicationJsonLd(origin: string) {
+export function webApplicationJsonLd(origin: string, locale: string = SITE.lang) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
@@ -145,7 +149,7 @@ export function webApplicationJsonLd(origin: string) {
     url: absoluteUrl(origin, '/'),
     applicationCategory: 'HealthApplication',
     operatingSystem: 'Any',
-    inLanguage: SITE.lang,
+    inLanguage: locale,
     description: SITE.shortDescription,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
     isAccessibleForFree: true
@@ -160,6 +164,7 @@ export function articleJsonLd(
     path: string;
     datePublished?: string;
     dateModified?: string;
+    locale?: string;
   }
 ) {
   return {
@@ -167,7 +172,7 @@ export function articleJsonLd(
     '@type': 'Article',
     headline: args.title,
     description: args.description,
-    inLanguage: SITE.lang,
+    inLanguage: args.locale ?? SITE.lang,
     mainEntityOfPage: absoluteUrl(origin, args.path),
     image: absoluteUrl(origin, SITE.ogImageFallback),
     author: { '@type': 'Organization', name: SITE.name },
@@ -181,10 +186,11 @@ export function articleJsonLd(
   };
 }
 
-export function faqPageJsonLd(qa: { q: string; a: string }[]) {
+export function faqPageJsonLd(qa: { q: string; a: string }[], locale: string = SITE.lang) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
+    inLanguage: locale,
     mainEntity: qa.map((it) => ({
       '@type': 'Question',
       name: it.q,

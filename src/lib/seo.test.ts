@@ -183,11 +183,39 @@ describe('JSON-LD generators', () => {
       { q: 'Q2', a: 'A2' }
     ]);
     expect(ld['@type']).toBe('FAQPage');
+    expect(ld.inLanguage).toBe('fr');
     expect(ld.mainEntity).toHaveLength(2);
     expect(ld.mainEntity[0]).toMatchObject({
       '@type': 'Question',
       name: 'Q1',
       acceptedAnswer: { '@type': 'Answer', text: 'A1' }
     });
+  });
+
+  it('honours a locale override on every language-bearing JSON-LD type', () => {
+    expect(websiteJsonLd(origin, 'en').inLanguage).toBe('en');
+    expect(webApplicationJsonLd(origin, 'en').inLanguage).toBe('en');
+    expect(
+      articleJsonLd(origin, {
+        title: 'X',
+        description: 'Y',
+        path: '/x',
+        datePublished: '2025-06-01',
+        locale: 'en'
+      }).inLanguage
+    ).toBe('en');
+    expect(faqPageJsonLd([{ q: 'Q', a: 'A' }], 'en').inLanguage).toBe('en');
+  });
+
+  it('defaults inLanguage to fr when no locale override is provided', () => {
+    expect(webApplicationJsonLd(origin).inLanguage).toBe('fr');
+    expect(
+      articleJsonLd(origin, {
+        title: 'X',
+        description: 'Y',
+        path: '/x',
+        datePublished: '2025-06-01'
+      }).inLanguage
+    ).toBe('fr');
   });
 });
