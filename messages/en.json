@@ -213,6 +213,7 @@
   "dashboardDayEntriesCountOne": "{count} entry",
   "dashboardDayEntriesCountOther": "{count} entries",
   "commonFrOnlyBannerGuide": "The guide is currently only available in French. A translation requires review by a paediatrics expert.",
+  "commonFrOnlyBannerLanding": "Diversif is currently only available in French — the paediatric content below is in French.",
   "commonFrOnlyBannerLegal": "This page concerns French law and is only available in French.",
   "commonFrOnlyBannerSources": "Bibliography in French.",
   "installCta": "Install",
