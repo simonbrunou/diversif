@@ -25,6 +25,7 @@ import {
   finishRegistration,
   listPasskeys,
   originFromEnv,
+  PASSKEY_AUTH_FAILED_MESSAGE,
   publicPasskey,
   purgeExpiredChallenges,
   renamePasskey,
@@ -534,10 +535,10 @@ describe('finishAuthentication', () => {
       expectedRPID: 'example.com'
     });
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('Clé inconnue.');
+    if (!result.ok) expect(result.error).toBe(PASSKEY_AUTH_FAILED_MESSAGE);
   });
 
-  it('returns the verifier error message', async () => {
+  it('returns the uniform failure message when the verifier throws', async () => {
     const u = await seedUser();
     await seedPasskey(u.id);
     mocks.verifyAuthenticationResponse.mockRejectedValue(new Error('bad'));
@@ -548,10 +549,10 @@ describe('finishAuthentication', () => {
       expectedRPID: 'example.com'
     });
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('bad');
+    if (!result.ok) expect(result.error).toBe(PASSKEY_AUTH_FAILED_MESSAGE);
   });
 
-  it('returns the fallback when thrown value is not an Error', async () => {
+  it('returns the uniform failure message when the verifier throws a non-Error', async () => {
     const u = await seedUser();
     await seedPasskey(u.id);
     mocks.verifyAuthenticationResponse.mockRejectedValue('nope');
@@ -562,7 +563,7 @@ describe('finishAuthentication', () => {
       expectedRPID: 'example.com'
     });
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('Verification failed');
+    if (!result.ok) expect(result.error).toBe(PASSKEY_AUTH_FAILED_MESSAGE);
   });
 
   it('rejects when not verified', async () => {

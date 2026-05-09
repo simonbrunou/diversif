@@ -21,19 +21,15 @@ export const PASSKEY_CHALLENGE_COOKIE = 'wa_challenge';
 export const PASSKEY_CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // Decoy ECDSA P-256 keypair (matches the curve simplewebauthn uses for ES256
-// passkeys) generated lazily at first use. The wall-clock cost of an ECDSA
-// verify on this curve is the dominant cost of finishAuthentication, so
-// running it on the missing-credential branch keeps the response timing
-// indistinguishable from a real "credential exists, signature wrong" answer.
+// passkeys) generated lazily at first use, then warmed at module load in
+// non-test runs so the FIRST production "no such credential" attempt doesn't
+// pay the keygen cost on top of the verify cost. A single key is reused for
+// the lifetime of the process.
 let decoyVerifyKey: ReturnType<typeof generateKeyPairSync>['publicKey'] | null = null;
 function timingDecoyVerify(): void {
   if (!decoyVerifyKey) {
     decoyVerifyKey = generateKeyPairSync('ec', { namedCurve: 'P-256' }).publicKey;
   }
-  // Random data + random signature -> verify will return false. We don't care
-  // about the result; the goal is to make the wall-clock cost similar to a
-  // real verifyAuthenticationResponse call. crypto.verify throws on malformed
-  // signatures, which is fine and just as fast as a clean rejection.
   /* v8 ignore start — node's crypto.verify throws on some malformed sigs
      and returns false on others; either path satisfies the timing goal */
   try {
@@ -42,6 +38,10 @@ function timingDecoyVerify(): void {
     /* expected on malformed sig */
   }
   /* v8 ignore stop */
+}
+/* v8 ignore next 3 — module-load warming, skipped in tests by design */
+if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+  timingDecoyVerify();
 }
 
 export function rpIdFromOrigin(origin: string): string {
@@ -291,6 +291,12 @@ export type AuthenticationResult =
   | { ok: true; passkey: Passkey; userId: number }
   | { ok: false; error: string };
 
+// Single error string returned for every failure mode in finishAuthentication
+// (unknown credential, bad signature, unverified). Distinct messages would
+// give an unauthenticated probe a content oracle for credential existence
+// even when the timing decoy keeps wall-clock costs equal.
+export const PASSKEY_AUTH_FAILED_MESSAGE = "Échec de l'authentification.";
+
 export async function finishAuthentication(opts: {
   response: AuthenticationResponseJSON;
   expectedChallenge: string;
@@ -300,11 +306,13 @@ export async function finishAuthentication(opts: {
   const credential = await findPasskey(opts.response.id);
   if (!credential) {
     // Run a decoy ECDSA verify so the response timing of "no such credential"
-    // matches "credential found, signature wrong" -- defeats the timing
-    // oracle that would otherwise tell an unauthenticated visitor whether a
-    // given credential id is registered.
+    // matches "credential found, signature wrong". Use the same generic error
+    // message as the verified-but-bad-signature branch below: returning a
+    // distinct string here would re-open the enumeration oracle the timing
+    // decoy is meant to close (response body would tell the attacker which
+    // branch fired even when wall-clock times match).
     timingDecoyVerify();
-    return { ok: false, error: 'Clé inconnue.' };
+    return { ok: false, error: PASSKEY_AUTH_FAILED_MESSAGE };
   }
 
   let verification;
@@ -324,12 +332,12 @@ export async function finishAuthentication(opts: {
       // the full rationale.
       requireUserVerification: false
     });
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Verification failed' };
+  } catch {
+    return { ok: false, error: PASSKEY_AUTH_FAILED_MESSAGE };
   }
 
   if (!verification.verified) {
-    return { ok: false, error: 'Authentication could not be verified' };
+    return { ok: false, error: PASSKEY_AUTH_FAILED_MESSAGE };
   }
 
   const updated = await db
