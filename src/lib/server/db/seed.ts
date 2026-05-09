@@ -1,7 +1,13 @@
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { NodePgDatabase, NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
+import type { PgTransaction } from 'drizzle-orm/pg-core';
+import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { foods } from './schema';
 import type * as schema from './schema';
+
+type Tx =
+  | NodePgDatabase<typeof schema>
+  | PgTransaction<NodePgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 type SeedFood = {
   name: string;
@@ -138,28 +144,38 @@ export const FOODS_SEED: SeedFood[] = [
 ];
 
 export async function seedFoods(db: NodePgDatabase<typeof schema>): Promise<void> {
-  const existing = await db.execute<{ count: string }>(
-    sql`SELECT COUNT(*)::text as count FROM foods`
-  );
-  /* v8 ignore next — pg COUNT(*) always returns a single row */
-  const count = Number(existing.rows[0]?.count ?? 0);
+  await db.transaction(async (tx) => {
+    // Serialize concurrent boots (rolling deploy, sidecar, healthcheck-driven
+    // respawn) so two processes can't both observe an empty table and both
+    // bulk-insert the catalog. The xact-level lock auto-releases at commit.
+    // The unique partial index foods_name_seed_idx (migration 0002) is the
+    // hard guard; this lock + ON CONFLICT DO NOTHING below avoid the loud
+    // 23505 on the race-loser without that guard's protection being missed.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('diversif.seed_foods'))`);
 
-  if (count === 0) {
-    const rows = FOODS_SEED.map((f) => ({
-      name: f.name,
-      category: f.category,
-      isMajorAllergen: f.allergen != null,
-      allergenType: f.allergen ?? null,
-      suggestedAgeMonths: f.age,
-      notes: null,
-      isCustom: false,
-      customForChildId: null
-    }));
+    const existing = await tx.execute<{ count: string }>(
+      sql`SELECT COUNT(*)::text as count FROM foods`
+    );
+    /* v8 ignore next — pg COUNT(*) always returns a single row */
+    const count = Number(existing.rows[0]?.count ?? 0);
 
-    await db.insert(foods).values(rows);
-  }
+    if (count === 0) {
+      const rows = FOODS_SEED.map((f) => ({
+        name: f.name,
+        category: f.category,
+        isMajorAllergen: f.allergen != null,
+        allergenType: f.allergen ?? null,
+        suggestedAgeMonths: f.age,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      }));
 
-  await applySeedCorrections(db);
+      await tx.insert(foods).values(rows).onConflictDoNothing();
+    }
+
+    await applySeedCorrections(tx);
+  });
 }
 
 // Self-healing pass for seed-row drift that older deployments may carry.
@@ -168,7 +184,7 @@ export async function seedFoods(db: NodePgDatabase<typeof schema>): Promise<void
 // after migrations were applied) still converges on the right values.
 // Idempotent: each UPDATE filters on the stale value, so re-runs no-op,
 // and operator-customised rows (is_custom = true) are left alone.
-export async function applySeedCorrections(db: NodePgDatabase<typeof schema>): Promise<void> {
+export async function applySeedCorrections(db: Tx): Promise<void> {
   await db.execute(sql`
     UPDATE foods
     SET suggested_age_months = 36

@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   pgTable,
   text,
@@ -6,7 +7,8 @@ import {
   boolean,
   timestamp,
   primaryKey,
-  index
+  index,
+  uniqueIndex
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable(
@@ -101,7 +103,16 @@ export const foods = pgTable(
     })
   },
   (t) => ({
-    customForChildIdx: index('foods_custom_for_child_idx').on(t.customForChildId)
+    customForChildIdx: index('foods_custom_for_child_idx').on(t.customForChildId),
+    // Built-in seeded rows (is_custom = false) must be unique by name. Without
+    // this, the non-transactional read-then-insert in seedFoods() would let two
+    // processes booting concurrently both observe an empty table and both bulk-
+    // insert, duplicating the entire catalog. Custom (per-child) rows are
+    // intentionally excluded so a parent can still name a custom food after a
+    // built-in entry.
+    nameSeedUnique: uniqueIndex('foods_name_seed_idx')
+      .on(t.name)
+      .where(sql`${t.isCustom} = false`)
   })
 );
 

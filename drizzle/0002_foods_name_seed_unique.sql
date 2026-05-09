@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "foods_name_seed_idx" ON "foods" USING btree ("name") WHERE "foods"."is_custom" = false;
