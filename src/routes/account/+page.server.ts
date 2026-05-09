@@ -15,7 +15,17 @@ import {
 import { deletePasskey, listPasskeys, publicPasskey, renamePasskey } from '$lib/server/passkeys';
 import { deleteUserAccount } from '$lib/server/gdpr';
 import { requireUser } from '$lib/server/guards';
+import { checkRateLimit } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
+
+// Both actions take a currentPassword and run it through argon2id. Without a
+// cap, a stolen session cookie can brute-force the password field at full
+// speed — the KDF cost is the only brake. Key on user.id (not IP) because
+// the legitimate user is necessarily authenticated, and the threat is a
+// stolen session that may move across IPs. 5 attempts per 5 minutes is
+// generous for a real user fat-fingering and tight enough to make
+// password-stuffing pointless.
+const FRESH_AUTH_LIMIT = { name: 'fresh-auth', limit: 5, windowMs: 5 * 60 * 1000 };
 
 export const load: PageServerLoad = async ({ locals }) => {
   const user = requireUser(locals);
@@ -48,6 +58,10 @@ export const actions: Actions = {
 
   changePassword: async ({ request, locals, cookies }) => {
     const user = requireUser(locals);
+    const rl = checkRateLimit(FRESH_AUTH_LIMIT, String(user.id));
+    if (!rl.allowed) {
+      return fail(429, { passwordErrorKey: 'errorsAuthRateLimited' });
+    }
     const raw = Object.fromEntries(await request.formData());
     const parsed = passwordSchema.safeParse(raw);
     if (!parsed.success) {
@@ -114,6 +128,10 @@ export const actions: Actions = {
 
   deleteAccount: async ({ request, locals, cookies }) => {
     const user = requireUser(locals);
+    const rl = checkRateLimit(FRESH_AUTH_LIMIT, String(user.id));
+    if (!rl.allowed) {
+      return fail(429, { deleteErrorKey: 'errorsAuthRateLimited' });
+    }
     const raw = Object.fromEntries(await request.formData());
     const confirmEmail =
       typeof raw.confirmEmail === 'string' ? raw.confirmEmail.trim().toLowerCase() : '';
