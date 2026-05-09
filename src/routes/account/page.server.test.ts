@@ -357,6 +357,41 @@ describe('account deleteAccount', () => {
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 
+  it('matches the typed email case-insensitively against the stored email', async () => {
+    // Stored emails are lowercased by signup, but if a row ever bypasses
+    // signup and lands with mixed case, the user must still be able to
+    // confirm deletion. Lowercase both sides at compare time.
+    const passwordHash = await hashPassword('current-password-12');
+    const u = (
+      await testDb
+        .insert(users)
+        .values({
+          email: 'Mixed@Example.COM',
+          passwordHash,
+          displayName: 'Parent',
+          createdAt: new Date()
+        })
+        .returning()
+    )[0];
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: {
+        confirmEmail: '  mixed@example.com  ',
+        currentPassword: 'current-password-12'
+      }
+    });
+    const r = await captureFlow(() =>
+      actions.deleteAccount!(
+        event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/account/deleted');
+    expect(
+      (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]
+    ).toBeUndefined();
+  });
+
   it('fails when the confirmEmail field is missing entirely', async () => {
     const u = await seed();
     const event = makeRouteEvent({ user: safeUser(u), formData: {} });

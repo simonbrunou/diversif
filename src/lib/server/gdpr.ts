@@ -113,6 +113,7 @@ export type ExportedUser = {
     privacyAcceptedAt: string | null;
     ageConfirmedAt: string | null;
     lastLoginAt: string | null;
+    lastExportAt: string | null;
   };
   children: Array<{
     id: number;
@@ -326,7 +327,8 @@ export async function exportUserData(
       tosAcceptedAt: isoOrNull(user.tosAcceptedAt),
       privacyAcceptedAt: isoOrNull(user.privacyAcceptedAt),
       ageConfirmedAt: isoOrNull(user.ageConfirmedAt),
-      lastLoginAt: isoOrNull(user.lastLoginAt)
+      lastLoginAt: isoOrNull(user.lastLoginAt),
+      lastExportAt: isoOrNull(user.lastExportAt)
     },
     children: childRows.map((c) => {
       const m = membershipByChildId.get(c.id);

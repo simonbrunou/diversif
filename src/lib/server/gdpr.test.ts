@@ -297,11 +297,20 @@ describe('exportUserData', () => {
       createdAt: new Date()
     });
 
+    // Stamp lastExportAt so the assertion below isn't testing only the null
+    // path — every export operation flips this field on the users row, so a
+    // returning user's archive should reflect their previous export.
+    await testDb
+      .update(users)
+      .set({ lastExportAt: new Date('2026-04-01T00:00:00Z') })
+      .where(eq(users.id, u.id));
+
     const out = await exportUserData(u.id);
     expect(out.generator).toBe('diversif');
     expect(out.schemaVersion).toBe(1);
     expect(out.profile.email).toBe('export@example.com');
     expect(out.profile.displayName).toBe('Eve');
+    expect(out.profile.lastExportAt).toBe('2026-04-01T00:00:00.000Z');
     expect(out.children).toHaveLength(1);
     expect(out.children[0].name).toBe('Léa');
     expect(out.children[0].membership.role).toBe('owner');

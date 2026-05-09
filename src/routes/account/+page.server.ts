@@ -141,7 +141,11 @@ export const actions: Actions = {
     const confirmEmail =
       typeof raw.confirmEmail === 'string' ? raw.confirmEmail.trim().toLowerCase() : '';
     const currentPassword = typeof raw.currentPassword === 'string' ? raw.currentPassword : '';
-    if (confirmEmail !== user.email) {
+    // Lowercase both sides: signup normalises to lowercase before insert, but
+    // the DB column has no CITEXT/CHECK constraint forcing it, so any account
+    // that ever bypassed signup (manual import, future paths) could have
+    // mixed-case email and lock the user out of their own deletion.
+    if (confirmEmail !== user.email.toLowerCase()) {
       return fail(400, { deleteErrorKey: 'errorsAccountDeleteEmailMismatch' });
     }
     // Fresh-auth: typed email is visible on the page, so a stolen session
