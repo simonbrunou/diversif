@@ -5,6 +5,13 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { generateInviteCodeRaw, verifyPassword } from '$lib/server/auth';
+import { checkRateLimit } from '$lib/server/rate-limit';
+
+// Same fresh-auth bucket the /account changePassword and deleteAccount
+// actions use — sharing the budget across all currentPassword-gated
+// surfaces is intentional, the threat model is identical (a session
+// cookie attacker brute-forcing the password against argon2id).
+const FRESH_AUTH_LIMIT = { name: 'fresh-auth', limit: 5, windowMs: 5 * 60 * 1000 };
 import {
   parseChildIdParam,
   requireMembership,
@@ -172,6 +179,11 @@ export const actions: Actions = {
     requireUser(locals);
     const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
+
+    const rl = checkRateLimit(FRESH_AUTH_LIMIT, String(user.id));
+    if (!rl.allowed) {
+      return fail(429, { error: 'Trop de tentatives. Réessayez plus tard.' });
+    }
 
     const data = await request.formData();
     const confirmName = String(data.get('confirmName') ?? /* v8 ignore next */ '').trim();

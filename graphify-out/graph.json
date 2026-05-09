@@ -1665,7 +1665,7 @@
       "source_file": "src/lib/server/rate-limit.ts",
       "source_location": "L119",
       "id": "server_rate_limit_clearallratelimits",
-      "community": 3,
+      "community": 4,
       "norm_label": "_clearallratelimits()"
     },
     {
@@ -1683,7 +1683,7 @@
       "source_file": "src/lib/server/guards.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_guards_test_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "guards.test.ts"
     },
     {
@@ -1692,7 +1692,7 @@
       "source_file": "src/lib/server/guards.test.ts",
       "source_location": "L18",
       "id": "server_guards_test_makelocals",
-      "community": 4,
+      "community": 3,
       "norm_label": "makelocals()"
     },
     {
@@ -1701,7 +1701,7 @@
       "source_file": "src/lib/server/guards.test.ts",
       "source_location": "L26",
       "id": "server_guards_test_expectredirect",
-      "community": 4,
+      "community": 3,
       "norm_label": "expectredirect()"
     },
     {
@@ -1710,7 +1710,7 @@
       "source_file": "src/lib/server/guards.test.ts",
       "source_location": "L38",
       "id": "server_guards_test_expecterror",
-      "community": 4,
+      "community": 3,
       "norm_label": "expecterror()"
     },
     {
@@ -1719,7 +1719,7 @@
       "source_file": "src/lib/server/auth.session.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_auth_session_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "auth.session.test.ts"
     },
     {
@@ -1728,7 +1728,7 @@
       "source_file": "src/lib/server/auth.session.test.ts",
       "source_location": "L22",
       "id": "server_auth_session_test_seeduser",
-      "community": 3,
+      "community": 4,
       "norm_label": "seeduser()"
     },
     {
@@ -1737,7 +1737,7 @@
       "source_file": "src/lib/server/idempotency.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_idempotency_test_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "idempotency.test.ts"
     },
     {
@@ -1746,7 +1746,7 @@
       "source_file": "src/lib/server/idempotency.test.ts",
       "source_location": "L14",
       "id": "server_idempotency_test_seeduser",
-      "community": 4,
+      "community": 3,
       "norm_label": "seeduser()"
     },
     {
@@ -1755,7 +1755,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L1",
       "id": "src_lib_server_idempotency_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "idempotency.ts"
     },
     {
@@ -1764,7 +1764,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L13",
       "id": "server_idempotency_idempotencyinflight",
-      "community": 4,
+      "community": 3,
       "norm_label": "idempotencyinflight"
     },
     {
@@ -1773,7 +1773,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L17",
       "id": "server_idempotency_idempotencyscopemismatch",
-      "community": 4,
+      "community": 3,
       "norm_label": "idempotencyscopemismatch"
     },
     {
@@ -1782,7 +1782,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L34",
       "id": "server_idempotency_withidempotencykey",
-      "community": 4,
+      "community": 3,
       "norm_label": "withidempotencykey()"
     },
     {
@@ -1791,7 +1791,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L85",
       "id": "server_idempotency_pruneexpiredkeys",
-      "community": 4,
+      "community": 3,
       "norm_label": "pruneexpiredkeys()"
     },
     {
@@ -1800,7 +1800,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L1",
       "id": "src_lib_server_guards_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "guards.ts"
     },
     {
@@ -1809,7 +1809,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L5",
       "id": "server_guards_parsechildidparam",
-      "community": 4,
+      "community": 3,
       "norm_label": "parsechildidparam()"
     },
     {
@@ -1818,7 +1818,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L12",
       "id": "server_guards_requireuser",
-      "community": 4,
+      "community": 3,
       "norm_label": "requireuser()"
     },
     {
@@ -1827,7 +1827,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L19",
       "id": "server_guards_requireguest",
-      "community": 4,
+      "community": 3,
       "norm_label": "requireguest()"
     },
     {
@@ -1836,7 +1836,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L25",
       "id": "server_guards_requiremembership",
-      "community": 4,
+      "community": 3,
       "norm_label": "requiremembership()"
     },
     {
@@ -1845,7 +1845,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L37",
       "id": "server_guards_requireownership",
-      "community": 4,
+      "community": 3,
       "norm_label": "requireownership()"
     },
     {
@@ -1854,7 +1854,7 @@
       "source_file": "src/lib/server/redirect.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_redirect_test_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "redirect.test.ts"
     },
     {
@@ -1863,7 +1863,7 @@
       "source_file": "src/lib/server/redirect.test.ts",
       "source_location": "L4",
       "id": "server_redirect_test_captureredirect",
-      "community": 4,
+      "community": 3,
       "norm_label": "captureredirect()"
     },
     {
@@ -1872,7 +1872,7 @@
       "source_file": "src/lib/server/redirect.ts",
       "source_location": "L1",
       "id": "src_lib_server_redirect_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "redirect.ts"
     },
     {
@@ -1881,7 +1881,7 @@
       "source_file": "src/lib/server/redirect.ts",
       "source_location": "L17",
       "id": "server_redirect_localizedredirect",
-      "community": 4,
+      "community": 3,
       "norm_label": "localizedredirect()"
     },
     {
@@ -1890,7 +1890,7 @@
       "source_file": "src/lib/server/auth.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_auth_test_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "auth.test.ts"
     },
     {
@@ -1899,7 +1899,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L1",
       "id": "src_lib_server_auth_ts",
-      "community": 5,
+      "community": 3,
       "norm_label": "auth.ts"
     },
     {
@@ -1908,7 +1908,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L21",
       "id": "server_auth_hashpassword",
-      "community": 3,
+      "community": 4,
       "norm_label": "hashpassword()"
     },
     {
@@ -1917,7 +1917,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L25",
       "id": "server_auth_verifypassword",
-      "community": 5,
+      "community": 3,
       "norm_label": "verifypassword()"
     },
     {
@@ -1926,7 +1926,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L39",
       "id": "server_auth_getdecoyhash",
-      "community": 5,
+      "community": 3,
       "norm_label": "getdecoyhash()"
     },
     {
@@ -1935,7 +1935,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L57",
       "id": "server_auth_verifypasswordordecoy",
-      "community": 5,
+      "community": 3,
       "norm_label": "verifypasswordordecoy()"
     },
     {
@@ -1944,7 +1944,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L68",
       "id": "server_auth_newtoken",
-      "community": 5,
+      "community": 3,
       "norm_label": "newtoken()"
     },
     {
@@ -1962,7 +1962,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L86",
       "id": "server_auth_validatesession",
-      "community": 3,
+      "community": 4,
       "norm_label": "validatesession()"
     },
     {
@@ -1971,7 +1971,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L137",
       "id": "server_auth_invalidatesession",
-      "community": 10,
+      "community": 3,
       "norm_label": "invalidatesession()"
     },
     {
@@ -1980,7 +1980,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L142",
       "id": "server_auth_invalidateallusersessions",
-      "community": 5,
+      "community": 3,
       "norm_label": "invalidateallusersessions()"
     },
     {
@@ -1998,7 +1998,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L150",
       "id": "server_auth_finduserbyemail",
-      "community": 4,
+      "community": 3,
       "norm_label": "finduserbyemail()"
     },
     {
@@ -2430,7 +2430,7 @@
       "source_file": "src/lib/server/db/errors.ts",
       "source_location": "L1",
       "id": "src_lib_server_db_errors_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "errors.ts"
     },
     {
@@ -2439,7 +2439,7 @@
       "source_file": "src/lib/server/db/errors.ts",
       "source_location": "L4",
       "id": "db_errors_isuniqueviolation",
-      "community": 4,
+      "community": 3,
       "norm_label": "isuniqueviolation()"
     },
     {
@@ -2826,7 +2826,7 @@
       "source_file": "src/lib/utils/invites.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_invites_test_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "invites.test.ts"
     },
     {
@@ -2835,7 +2835,7 @@
       "source_file": "src/lib/utils/invites.ts",
       "source_location": "L1",
       "id": "src_lib_utils_invites_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "invites.ts"
     },
     {
@@ -2844,7 +2844,7 @@
       "source_file": "src/lib/utils/invites.ts",
       "source_location": "L15",
       "id": "utils_invites_generateinvitecoderaw",
-      "community": 4,
+      "community": 3,
       "norm_label": "generateinvitecoderaw()"
     },
     {
@@ -2853,7 +2853,7 @@
       "source_file": "src/lib/utils/invites.ts",
       "source_location": "L24",
       "id": "utils_invites_isvalidinvitecodeformat",
-      "community": 4,
+      "community": 3,
       "norm_label": "isvalidinvitecodeformat()"
     },
     {
@@ -2898,7 +2898,7 @@
       "source_file": "src/lib/utils/search.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_search_test_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "search.test.ts"
     },
     {
@@ -2907,7 +2907,7 @@
       "source_file": "src/lib/utils/search.ts",
       "source_location": "L1",
       "id": "src_lib_utils_search_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "search.ts"
     },
     {
@@ -2916,7 +2916,7 @@
       "source_file": "src/lib/utils/search.ts",
       "source_location": "L1",
       "id": "utils_search_normalize",
-      "community": 4,
+      "community": 3,
       "norm_label": "normalize()"
     },
     {
@@ -2925,7 +2925,7 @@
       "source_file": "src/lib/utils/search.ts",
       "source_location": "L11",
       "id": "utils_search_fuzzymatch",
-      "community": 4,
+      "community": 3,
       "norm_label": "fuzzymatch()"
     },
     {
@@ -3240,7 +3240,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L58",
       "id": "utils_dates_isvalidbirthdate",
-      "community": 4,
+      "community": 3,
       "norm_label": "isvalidbirthdate()"
     },
     {
@@ -9936,7 +9936,7 @@
       "source_file": "src/routes/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -9954,7 +9954,7 @@
       "source_file": "src/routes/layout.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_layout_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "layout.server.test.ts"
     },
     {
@@ -9963,7 +9963,7 @@
       "source_file": "src/routes/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -9972,7 +9972,7 @@
       "source_file": "src/routes/+page.server.ts",
       "source_location": "L4",
       "id": "routes_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10057,51 +10057,6 @@
       "norm_label": "handlesessionexpired()"
     },
     {
-      "label": "+page.server.ts",
-      "file_type": "code",
-      "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L1",
-      "id": "src_routes_account_page_server_ts",
-      "community": 5,
-      "norm_label": "+page.server.ts"
-    },
-    {
-      "label": "load()",
-      "file_type": "code",
-      "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L20",
-      "id": "account_page_server_load",
-      "community": 5,
-      "norm_label": "load()"
-    },
-    {
-      "label": "page.server.test.ts",
-      "file_type": "code",
-      "source_file": "src/routes/account/page.server.test.ts",
-      "source_location": "L1",
-      "id": "src_routes_account_page_server_test_ts",
-      "community": 3,
-      "norm_label": "page.server.test.ts"
-    },
-    {
-      "label": "seed()",
-      "file_type": "code",
-      "source_file": "src/routes/account/page.server.test.ts",
-      "source_location": "L16",
-      "id": "account_page_server_test_seed",
-      "community": 3,
-      "norm_label": "seed()"
-    },
-    {
-      "label": "seedKey()",
-      "file_type": "code",
-      "source_file": "src/routes/account/page.server.test.ts",
-      "source_location": "L64",
-      "id": "account_page_server_test_seedkey",
-      "community": 3,
-      "norm_label": "seedkey()"
-    },
-    {
       "label": "+page.svelte",
       "file_type": "code",
       "source_file": "src/routes/account/+page.svelte",
@@ -10118,6 +10073,51 @@
       "id": "browser",
       "community": 51,
       "norm_label": "@simplewebauthn/browser"
+    },
+    {
+      "label": "+page.server.ts",
+      "file_type": "code",
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L1",
+      "id": "src_routes_account_page_server_ts",
+      "community": 5,
+      "norm_label": "+page.server.ts"
+    },
+    {
+      "label": "load()",
+      "file_type": "code",
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L30",
+      "id": "account_page_server_load",
+      "community": 5,
+      "norm_label": "load()"
+    },
+    {
+      "label": "page.server.test.ts",
+      "file_type": "code",
+      "source_file": "src/routes/account/page.server.test.ts",
+      "source_location": "L1",
+      "id": "src_routes_account_page_server_test_ts",
+      "community": 4,
+      "norm_label": "page.server.test.ts"
+    },
+    {
+      "label": "seed()",
+      "file_type": "code",
+      "source_file": "src/routes/account/page.server.test.ts",
+      "source_location": "L18",
+      "id": "account_page_server_test_seed",
+      "community": 4,
+      "norm_label": "seed()"
+    },
+    {
+      "label": "seedKey()",
+      "file_type": "code",
+      "source_file": "src/routes/account/page.server.test.ts",
+      "source_location": "L66",
+      "id": "account_page_server_test_seedkey",
+      "community": 4,
+      "norm_label": "seedkey()"
     },
     {
       "label": "+page.svelte",
@@ -10152,7 +10152,7 @@
       "source_file": "src/routes/account/export/server.test.ts",
       "source_location": "L1",
       "id": "src_routes_account_export_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "server.test.ts"
     },
     {
@@ -10161,7 +10161,7 @@
       "source_file": "src/routes/account/export/server.test.ts",
       "source_location": "L34",
       "id": "export_server_test_seeduser",
-      "community": 3,
+      "community": 4,
       "norm_label": "seeduser()"
     },
     {
@@ -10170,7 +10170,7 @@
       "source_file": "src/routes/allergens/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_allergens_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10179,7 +10179,7 @@
       "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
       "source_location": "L18",
       "id": "allergens_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10188,7 +10188,7 @@
       "source_file": "src/routes/allergens/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_allergens_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10233,7 +10233,7 @@
       "source_file": "src/routes/child/[id]/+layout.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_layout_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+layout.server.ts"
     },
     {
@@ -10242,7 +10242,7 @@
       "source_file": "src/routes/child/[id]/+layout.server.ts",
       "source_location": "L8",
       "id": "id_layout_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10269,7 +10269,7 @@
       "source_file": "src/routes/child/[id]/layout.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_layout_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "layout.server.test.ts"
     },
     {
@@ -10278,7 +10278,7 @@
       "source_file": "src/routes/child/[id]/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10287,7 +10287,7 @@
       "source_file": "src/routes/child/[id]/page.server.test.ts",
       "source_location": "L21",
       "id": "id_page_server_test_setup",
-      "community": 3,
+      "community": 4,
       "norm_label": "setup()"
     },
     {
@@ -10314,7 +10314,7 @@
       "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_allergens_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10323,7 +10323,7 @@
       "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_allergens_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10332,7 +10332,7 @@
       "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
       "source_location": "L22",
       "id": "allergens_page_server_test_setup",
-      "community": 3,
+      "community": 4,
       "norm_label": "setup()"
     },
     {
@@ -10341,7 +10341,7 @@
       "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
       "source_location": "L29",
       "id": "allergens_page_server_test_loadfor",
-      "community": 3,
+      "community": 4,
       "norm_label": "loadfor()"
     },
     {
@@ -10359,7 +10359,7 @@
       "source_file": "src/routes/child/[id]/foods/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_foods_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10368,7 +10368,7 @@
       "source_file": "src/routes/child/[id]/foods/+page.server.ts",
       "source_location": "L7",
       "id": "foods_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10377,7 +10377,7 @@
       "source_file": "src/routes/child/[id]/foods/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_foods_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10386,7 +10386,7 @@
       "source_file": "src/routes/child/[id]/foods/page.server.test.ts",
       "source_location": "L21",
       "id": "foods_page_server_test_setup",
-      "community": 3,
+      "community": 4,
       "norm_label": "setup()"
     },
     {
@@ -10395,7 +10395,7 @@
       "source_file": "src/routes/child/[id]/foods/page.server.test.ts",
       "source_location": "L70",
       "id": "foods_page_server_test_loadfor",
-      "community": 3,
+      "community": 4,
       "norm_label": "loadfor()"
     },
     {
@@ -10422,7 +10422,7 @@
       "source_file": "src/routes/child/[id]/guide/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_guide_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10449,7 +10449,7 @@
       "source_file": "src/routes/child/[id]/log/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_log_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10458,7 +10458,7 @@
       "source_file": "src/routes/child/[id]/log/page.server.test.ts",
       "source_location": "L22",
       "id": "log_page_server_test_setup",
-      "community": 3,
+      "community": 4,
       "norm_label": "setup()"
     },
     {
@@ -10467,7 +10467,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_log_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10476,7 +10476,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L30",
       "id": "log_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10485,7 +10485,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L49",
       "id": "log_page_server_logactionabort",
-      "community": 4,
+      "community": 3,
       "norm_label": "logactionabort"
     },
     {
@@ -10494,7 +10494,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L50",
       "id": "log_page_server_logactionabort_constructor",
-      "community": 4,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -10512,7 +10512,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_log_entryid_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10521,7 +10521,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/page.server.test.ts",
       "source_location": "L22",
       "id": "entryid_page_server_test_setup",
-      "community": 3,
+      "community": 4,
       "norm_label": "setup()"
     },
     {
@@ -10530,7 +10530,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_log_entryid_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10539,7 +10539,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L24",
       "id": "entryid_page_server_parseentryid",
-      "community": 4,
+      "community": 3,
       "norm_label": "parseentryid()"
     },
     {
@@ -10548,7 +10548,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L30",
       "id": "entryid_page_server_loadentry",
-      "community": 4,
+      "community": 3,
       "norm_label": "loadentry()"
     },
     {
@@ -10557,7 +10557,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
       "source_location": "L42",
       "id": "entryid_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10570,49 +10570,49 @@
       "norm_label": "+page.svelte"
     },
     {
-      "label": "page.server.test.ts",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
-      "source_location": "L1",
-      "id": "src_routes_child_id_settings_page_server_test_ts",
-      "community": 3,
-      "norm_label": "page.server.test.ts"
-    },
-    {
-      "label": "setup()",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
-      "source_location": "L33",
-      "id": "settings_page_server_test_setup",
-      "community": 3,
-      "norm_label": "setup()"
-    },
-    {
       "label": "+page.server.ts",
       "file_type": "code",
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_settings_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
       "label": "generateUniqueInviteCode()",
       "file_type": "code",
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
-      "source_location": "L21",
+      "source_location": "L28",
       "id": "settings_page_server_generateuniqueinvitecode",
-      "community": 4,
+      "community": 3,
       "norm_label": "generateuniqueinvitecode()"
     },
     {
       "label": "load()",
       "file_type": "code",
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
-      "source_location": "L33",
+      "source_location": "L40",
       "id": "settings_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
+    },
+    {
+      "label": "page.server.test.ts",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
+      "source_location": "L1",
+      "id": "src_routes_child_id_settings_page_server_test_ts",
+      "community": 4,
+      "norm_label": "page.server.test.ts"
+    },
+    {
+      "label": "setup()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
+      "source_location": "L35",
+      "id": "settings_page_server_test_setup",
+      "community": 4,
+      "norm_label": "setup()"
     },
     {
       "label": "+page.svelte",
@@ -10638,7 +10638,7 @@
       "source_file": "src/routes/child/[id]/suggestions/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_suggestions_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10647,7 +10647,7 @@
       "source_file": "src/routes/child/[id]/suggestions/+page.server.ts",
       "source_location": "L9",
       "id": "suggestions_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10656,7 +10656,7 @@
       "source_file": "src/routes/child/[id]/suggestions/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_suggestions_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10665,7 +10665,7 @@
       "source_file": "src/routes/child/[id]/suggestions/page.server.test.ts",
       "source_location": "L21",
       "id": "suggestions_page_server_test_setup",
-      "community": 3,
+      "community": 4,
       "norm_label": "setup()"
     },
     {
@@ -10674,7 +10674,7 @@
       "source_file": "src/routes/child/[id]/suggestions/page.server.test.ts",
       "source_location": "L32",
       "id": "suggestions_page_server_test_loadfor",
-      "community": 3,
+      "community": 4,
       "norm_label": "loadfor()"
     },
     {
@@ -10683,7 +10683,7 @@
       "source_file": "src/routes/child/[id]/suggestions/page.server.test.ts",
       "source_location": "L43",
       "id": "suggestions_page_server_test_insertfood",
-      "community": 3,
+      "community": 4,
       "norm_label": "insertfood()"
     },
     {
@@ -10710,7 +10710,7 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_report_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10719,7 +10719,7 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L14",
       "id": "report_page_server_test_setup",
-      "community": 3,
+      "community": 4,
       "norm_label": "setup()"
     },
     {
@@ -10728,7 +10728,7 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L20",
       "id": "report_page_server_test_seedfood",
-      "community": 3,
+      "community": 4,
       "norm_label": "seedfood()"
     },
     {
@@ -10737,7 +10737,7 @@
       "source_file": "src/routes/child/[id]/report/page.server.test.ts",
       "source_location": "L38",
       "id": "report_page_server_test_logentry",
-      "community": 3,
+      "community": 4,
       "norm_label": "logentry()"
     },
     {
@@ -10782,7 +10782,7 @@
       "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_analytics_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10827,7 +10827,7 @@
       "source_file": "src/routes/child/new/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_child_new_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10836,7 +10836,7 @@
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_new_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10845,7 +10845,7 @@
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L15",
       "id": "new_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10872,7 +10872,7 @@
       "source_file": "src/routes/guide/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_guide_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10899,7 +10899,7 @@
       "source_file": "src/routes/join/[code]/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_join_code_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10908,7 +10908,7 @@
       "source_file": "src/routes/join/[code]/page.server.test.ts",
       "source_location": "L22",
       "id": "code_page_server_test_seedinvite",
-      "community": 3,
+      "community": 4,
       "norm_label": "seedinvite()"
     },
     {
@@ -10917,7 +10917,7 @@
       "source_file": "src/routes/join/[code]/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_join_code_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10926,7 +10926,7 @@
       "source_file": "src/routes/join/[code]/+page.server.ts",
       "source_location": "L15",
       "id": "code_page_server_findactiveinvitation",
-      "community": 4,
+      "community": 3,
       "norm_label": "findactiveinvitation()"
     },
     {
@@ -10935,7 +10935,7 @@
       "source_file": "src/routes/join/[code]/+page.server.ts",
       "source_location": "L37",
       "id": "code_page_server_userhasmembership",
-      "community": 4,
+      "community": 3,
       "norm_label": "userhasmembership()"
     },
     {
@@ -10944,7 +10944,7 @@
       "source_file": "src/routes/join/[code]/+page.server.ts",
       "source_location": "L53",
       "id": "code_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10962,7 +10962,7 @@
       "source_file": "src/routes/login/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_login_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -10971,7 +10971,7 @@
       "source_file": "src/routes/login/page.server.test.ts",
       "source_location": "L39",
       "id": "login_page_server_test_seedtestuser",
-      "community": 3,
+      "community": 4,
       "norm_label": "seedtestuser()"
     },
     {
@@ -10980,7 +10980,7 @@
       "source_file": "src/routes/login/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_login_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -10989,7 +10989,7 @@
       "source_file": "src/routes/login/+page.server.ts",
       "source_location": "L25",
       "id": "login_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -10998,7 +10998,7 @@
       "source_file": "src/routes/logout/server.test.ts",
       "source_location": "L1",
       "id": "src_routes_logout_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "server.test.ts"
     },
     {
@@ -11007,7 +11007,7 @@
       "source_file": "src/routes/logout/+server.ts",
       "source_location": "L1",
       "id": "src_routes_logout_server_ts",
-      "community": 10,
+      "community": 3,
       "norm_label": "+server.ts"
     },
     {
@@ -11016,7 +11016,7 @@
       "source_file": "src/routes/logout/+server.ts",
       "source_location": "L5",
       "id": "logout_server_post",
-      "community": 10,
+      "community": 3,
       "norm_label": "post()"
     },
     {
@@ -11079,7 +11079,7 @@
       "source_file": "src/routes/passkeys/authentication/options/server.test.ts",
       "source_location": "L1",
       "id": "src_routes_passkeys_authentication_options_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "server.test.ts"
     },
     {
@@ -11106,7 +11106,7 @@
       "source_file": "src/routes/passkeys/authentication/verify/server.test.ts",
       "source_location": "L1",
       "id": "src_routes_passkeys_authentication_verify_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "server.test.ts"
     },
     {
@@ -11115,7 +11115,7 @@
       "source_file": "src/routes/passkeys/authentication/verify/server.test.ts",
       "source_location": "L28",
       "id": "verify_server_test_seeduserandkey",
-      "community": 3,
+      "community": 4,
       "norm_label": "seeduserandkey()"
     },
     {
@@ -11124,7 +11124,7 @@
       "source_file": "src/routes/passkeys/registration/verify/server.test.ts",
       "source_location": "L39",
       "id": "verify_server_test_makereq",
-      "community": 3,
+      "community": 4,
       "norm_label": "makereq()"
     },
     {
@@ -11142,7 +11142,7 @@
       "source_file": "src/routes/passkeys/registration/options/server.test.ts",
       "source_location": "L1",
       "id": "src_routes_passkeys_registration_options_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "server.test.ts"
     },
     {
@@ -11151,7 +11151,7 @@
       "source_file": "src/routes/passkeys/registration/options/server.test.ts",
       "source_location": "L26",
       "id": "options_server_test_seed",
-      "community": 3,
+      "community": 4,
       "norm_label": "seed()"
     },
     {
@@ -11169,7 +11169,7 @@
       "source_file": "src/routes/passkeys/registration/verify/server.test.ts",
       "source_location": "L1",
       "id": "src_routes_passkeys_registration_verify_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "server.test.ts"
     },
     {
@@ -11178,7 +11178,7 @@
       "source_file": "src/routes/passkeys/registration/verify/server.test.ts",
       "source_location": "L25",
       "id": "verify_server_test_seeduser",
-      "community": 3,
+      "community": 4,
       "norm_label": "seeduser()"
     },
     {
@@ -11259,7 +11259,7 @@
       "source_file": "src/routes/signup/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_signup_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -11268,7 +11268,7 @@
       "source_file": "src/routes/signup/page.server.test.ts",
       "source_location": "L41",
       "id": "signup_page_server_test_form",
-      "community": 3,
+      "community": 4,
       "norm_label": "form()"
     },
     {
@@ -11277,7 +11277,7 @@
       "source_file": "src/routes/signup/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_signup_page_server_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "+page.server.ts"
     },
     {
@@ -11286,7 +11286,7 @@
       "source_file": "src/routes/signup/+page.server.ts",
       "source_location": "L47",
       "id": "signup_page_server_load",
-      "community": 4,
+      "community": 3,
       "norm_label": "load()"
     },
     {
@@ -11349,7 +11349,7 @@
       "source_file": "src/routes/sources/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_sources_page_server_test_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -11466,7 +11466,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L1",
       "id": "src_test_route_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "route.ts"
     },
     {
@@ -11475,7 +11475,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L11",
       "id": "test_route_makecookies",
-      "community": 3,
+      "community": 4,
       "norm_label": "makecookies()"
     },
     {
@@ -11484,7 +11484,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L37",
       "id": "test_route_makerouteevent",
-      "community": 3,
+      "community": 4,
       "norm_label": "makerouteevent()"
     },
     {
@@ -11493,7 +11493,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L73",
       "id": "test_route_captureflow",
-      "community": 3,
+      "community": 4,
       "norm_label": "captureflow()"
     },
     {
@@ -11502,7 +11502,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L95",
       "id": "test_route_seeduser",
-      "community": 3,
+      "community": 4,
       "norm_label": "seeduser()"
     },
     {
@@ -11511,7 +11511,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L115",
       "id": "test_route_seedchild",
-      "community": 3,
+      "community": 4,
       "norm_label": "seedchild()"
     },
     {
@@ -11520,7 +11520,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L129",
       "id": "test_route_seedmembership",
-      "community": 3,
+      "community": 4,
       "norm_label": "seedmembership()"
     },
     {
@@ -11529,7 +11529,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L147",
       "id": "test_route_safeuser",
-      "community": 3,
+      "community": 4,
       "norm_label": "safeuser()"
     },
     {
@@ -11538,7 +11538,7 @@
       "source_file": "src/test/route.ts",
       "source_location": "L167",
       "id": "test_route_callload",
-      "community": 3,
+      "community": 4,
       "norm_label": "callload()"
     },
     {
@@ -11547,7 +11547,7 @@
       "source_file": "src/test/db.ts",
       "source_location": "L1",
       "id": "src_test_db_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "db.ts"
     },
     {
@@ -11556,7 +11556,7 @@
       "source_file": "src/test/db.ts",
       "source_location": "L10",
       "id": "test_db_buildmem",
-      "community": 3,
+      "community": 4,
       "norm_label": "buildmem()"
     },
     {
@@ -11565,7 +11565,7 @@
       "source_file": "src/test/db.ts",
       "source_location": "L48",
       "id": "test_db_applymigrations",
-      "community": 3,
+      "community": 4,
       "norm_label": "applymigrations()"
     },
     {
@@ -11574,7 +11574,7 @@
       "source_file": "src/test/db.ts",
       "source_location": "L113",
       "id": "test_db_wrapclient",
-      "community": 3,
+      "community": 4,
       "norm_label": "wrapclient()"
     },
     {
@@ -11583,7 +11583,7 @@
       "source_file": "src/test/db.ts",
       "source_location": "L207",
       "id": "test_db_resettestdb",
-      "community": 3,
+      "community": 4,
       "norm_label": "resettestdb()"
     },
     {
@@ -13874,7 +13874,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 3,
       "norm_label": "allergens load test",
       "id": "allergens_page_server_test"
     },
@@ -17049,6 +17049,28 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_account_page_server_ts",
+      "target": "server_rate_limit_checkratelimit"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_routes_child_id_settings_page_server_ts",
+      "target": "server_rate_limit_checkratelimit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/routes/login/+page.server.ts",
       "source_location": "L14",
       "weight": 1.0,
@@ -17143,6 +17165,28 @@
       "confidence_score": 1.0,
       "source": "src_lib_server_cleanup_test_ts",
       "target": "server_rate_limit_clearallratelimits"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/page.server.test.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_account_page_server_test_ts",
+      "target": "server_rate_limit_clearallratelimits"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/settings/page.server.test.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "src_routes_child_id_settings_page_server_test_ts",
+      "target": "server_rate_limit_clearallratelimits",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -25360,9 +25404,9 @@
       "source_file": "src/lib/paraglide/messages.js",
       "source_location": "L724",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_paraglide_messages_js",
-      "target": "paraglide_messages_datelabeltoday",
-      "confidence_score": 1.0
+      "target": "paraglide_messages_datelabeltoday"
     },
     {
       "relation": "contains",
@@ -25370,9 +25414,9 @@
       "source_file": "src/lib/paraglide/messages.js",
       "source_location": "L746",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_paraglide_messages_js",
-      "target": "paraglide_messages_datelabelyesterday",
-      "confidence_score": 1.0
+      "target": "paraglide_messages_datelabelyesterday"
     },
     {
       "relation": "contains",
@@ -27730,9 +27774,9 @@
       "source_file": "src/lib/paraglide/messages/fr.js",
       "source_location": "L274",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_paraglide_messages_fr_js",
-      "target": "messages_fr_datelabeltoday",
-      "confidence_score": 1.0
+      "target": "messages_fr_datelabeltoday"
     },
     {
       "relation": "contains",
@@ -27740,9 +27784,9 @@
       "source_file": "src/lib/paraglide/messages/fr.js",
       "source_location": "L282",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_paraglide_messages_fr_js",
-      "target": "messages_fr_datelabelyesterday",
-      "confidence_score": 1.0
+      "target": "messages_fr_datelabelyesterday"
     },
     {
       "relation": "contains",
@@ -30100,9 +30144,9 @@
       "source_file": "src/lib/paraglide/messages/en.js",
       "source_location": "L274",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_paraglide_messages_en_js",
-      "target": "messages_en_datelabeltoday",
-      "confidence_score": 1.0
+      "target": "messages_en_datelabeltoday"
     },
     {
       "relation": "contains",
@@ -30110,9 +30154,9 @@
       "source_file": "src/lib/paraglide/messages/en.js",
       "source_location": "L282",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_paraglide_messages_en_js",
-      "target": "messages_en_datelabelyesterday",
-      "confidence_score": 1.0
+      "target": "messages_en_datelabelyesterday"
     },
     {
       "relation": "contains",
@@ -32314,6 +32358,22 @@
       "target": "routes_layout_handlesessionexpired"
     },
     {
+      "relation": "dynamic_import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/+page.svelte",
+      "confidence_score": 1.0,
+      "source": "src_routes_account_page_svelte",
+      "target": "browser"
+    },
+    {
+      "relation": "dynamic_import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/login/+page.svelte",
+      "confidence_score": 1.0,
+      "source": "browser",
+      "target": "src_routes_login_page_svelte"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/routes/account/+page.server.ts",
@@ -32386,22 +32446,6 @@
       "confidence_score": 1.0,
       "source": "src_routes_account_page_server_test_ts",
       "target": "account_page_server_test_seedkey"
-    },
-    {
-      "relation": "dynamic_import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/account/+page.svelte",
-      "confidence_score": 1.0,
-      "source": "src_routes_account_page_svelte",
-      "target": "browser"
-    },
-    {
-      "relation": "dynamic_import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/login/+page.svelte",
-      "confidence_score": 1.0,
-      "source": "browser",
-      "target": "src_routes_login_page_svelte"
     },
     {
       "relation": "contains",
@@ -33359,6 +33403,26 @@
       "target": "entryid_page_server_load"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_settings_page_server_ts",
+      "target": "settings_page_server_generateuniqueinvitecode"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_settings_page_server_ts",
+      "target": "settings_page_server_load"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -33466,26 +33530,6 @@
       "weight": 1.0,
       "source": "settings_page_server_test_setup",
       "target": "test_route_seedmembership"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_settings_page_server_ts",
-      "target": "settings_page_server_generateuniqueinvitecode"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/settings/+page.server.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_settings_page_server_ts",
-      "target": "settings_page_server_load"
     },
     {
       "relation": "contains",
@@ -38217,5 +38261,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "b7bd662124559f935b221e0dbe107bb70c0f69cb"
+  "built_at_commit": "c563171b10dc6a909b052678518e73f7e27e35e2"
 }

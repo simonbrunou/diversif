@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-09)
 
 ## Corpus Check
-- 275 files · ~376,423 words
+- 275 files · ~377,757 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1570 nodes · 2188 edges · 180 communities (125 shown, 55 thin omitted)
+- 1570 nodes · 2192 edges · 180 communities (125 shown, 55 thin omitted)
 - Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 390 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b7bd6621`
+- Built from commit: `c563171b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -157,16 +157,16 @@ Cohesion: 0.02
 Nodes (238): authAccountAppearanceDescription(), authAccountAppearanceSection(), authAccountBack(), authAccountCurrentPasswordLabel(), authAccountDataDescription(), authAccountDataExport(), authAccountDataSection(), authAccountDeleteConfirmLabel() (+230 more)
 
 ### Community 3 - "Page Loaders & Form Actions"
+Cohesion: 0.06
+Nodes (43): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), loadEntry() (+35 more)
+
+### Community 4 - "Test Fixtures & Setup Helpers"
 Cohesion: 0.08
 Nodes (25): seed(), loadFor(), setup(), setup(), loadFor(), setup(), setup(), setup() (+17 more)
 
-### Community 4 - "Test Fixtures & Setup Helpers"
-Cohesion: 0.06
-Nodes (36): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), loadEntry() (+28 more)
-
 ### Community 5 - "Branding, App Shell & PWA Manifest"
-Cohesion: 0.08
-Nodes (37): load(), POST(), createSession(), getDecoyHash(), invalidateAllUserSessions(), newToken(), verifyPassword(), verifyPasswordOrDecoy() (+29 more)
+Cohesion: 0.09
+Nodes (32): load(), POST(), createSession(), runCleanup(), startCleanupTimer(), stopCleanupTimer(), base64UrlToBuffer(), bufferToBase64Url() (+24 more)
 
 ### Community 6 - "Architecture Patterns & Conventions"
 Cohesion: 0.06
@@ -185,8 +185,8 @@ Cohesion: 0.09
 Nodes (15): clear(), deleteRow(), emit(), enqueue(), flush(), openDb(), postOne(), readAllOrdered() (+7 more)
 
 ### Community 10 - "Offline Log Queue (IndexedDB)"
-Cohesion: 0.11
-Nodes (15): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), POST(), enforceLanguageTag(), setLanguageTag(), invalidateSession() (+7 more)
+Cohesion: 0.12
+Nodes (13): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), enforceLanguageTag(), setLanguageTag(), listMembershipsForUser(), handle() (+5 more)
 
 ### Community 11 - "User Memory & Medical Audit"
 Cohesion: 0.19
@@ -323,9 +323,9 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 50`, `Offline Log Queue (IndexedDB)`, `Community 52`?**
   _High betweenness centrality (0.094) - this node is a cross-community bridge._
 - **Why does `setLanguageTag()` connect `Offline Log Queue (IndexedDB)` to `i18n Messages (auth.*)`?**
-  _High betweenness centrality (0.052) - this node is a cross-community bridge._
-- **Why does `validateSession()` connect `Page Loaders & Form Actions` to `Offline Log Queue (IndexedDB)`, `Branding, App Shell & PWA Manifest`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+- **Why does `isValidBirthDate()` connect `Page Loaders & Form Actions` to `Offline Log Queue (IndexedDB)`?**
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Are the 241 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `formatRelative()`) actually correct?**
   _`languageTag()` has 241 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**

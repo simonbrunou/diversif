@@ -5,12 +5,14 @@ import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { hashPassword, SESSION_COOKIE, validateSession, createSession } from '$lib/server/auth';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { passkeys, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {
   await resetTestDb();
+  _clearAllRateLimits();
 });
 
 async function seed() {
@@ -277,6 +279,29 @@ describe('account changePassword', () => {
     expect((opts as { httpOnly?: boolean }).httpOnly).toBe(true);
     expect(await validateSession(value as string)).not.toBeNull();
   });
+
+  it('rate-limits brute-force attempts on the currentPassword field', async () => {
+    const u = await seed();
+    // 5 wrong-password attempts are allowed, the 6th gets 429.
+    for (let i = 0; i < 5; i++) {
+      const event = makeRouteEvent({
+        user: safeUser(u),
+        formData: { currentPassword: 'wrong', newPassword: 'new-very-long-password-12+' }
+      });
+      await actions.changePassword!(
+        event as unknown as Parameters<NonNullable<typeof actions.changePassword>>[0]
+      );
+    }
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { currentPassword: 'wrong', newPassword: 'new-very-long-password-12+' }
+    });
+    const r = (await actions.changePassword!(
+      event as unknown as Parameters<NonNullable<typeof actions.changePassword>>[0]
+    )) as { status: number; data: { passwordErrorKey: string } };
+    expect(r.status).toBe(429);
+    expect(r.data.passwordErrorKey).toBe('errorsAuthRateLimited');
+  });
 });
 
 describe('account logoutEverywhere', () => {
@@ -387,5 +412,29 @@ describe('account deleteAccount', () => {
       (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]
     ).toBeUndefined();
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
+  });
+
+  it('rate-limits brute-force attempts on the currentPassword field', async () => {
+    const u = await seed();
+    // 5 wrong-password attempts allowed, the 6th gets 429.
+    for (let i = 0; i < 5; i++) {
+      const event = makeRouteEvent({
+        user: safeUser(u),
+        formData: { confirmEmail: 'p@example.com', currentPassword: 'wrong' }
+      });
+      await actions.deleteAccount!(
+        event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+      );
+    }
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { confirmEmail: 'p@example.com', currentPassword: 'wrong' }
+    });
+    const r = (await actions.deleteAccount!(
+      event as unknown as Parameters<NonNullable<typeof actions.deleteAccount>>[0]
+    )) as { status: number; data: { deleteErrorKey: string } };
+    expect(r.status).toBe(429);
+    expect(r.data.deleteErrorKey).toBe('errorsAuthRateLimited');
+    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 });
