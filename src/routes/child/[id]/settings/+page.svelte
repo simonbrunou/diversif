@@ -104,7 +104,9 @@
         <li class="flex items-center justify-between py-3">
           <div>
             <div class="font-medium">{m.displayName}</div>
-            <div class="text-xs text-muted-foreground">{m.email}</div>
+            {#if m.email}
+              <div class="text-xs text-muted-foreground">{m.email}</div>
+            {/if}
           </div>
           <div class="flex items-center gap-3">
             <span class="text-xs uppercase tracking-wider text-muted-foreground">
