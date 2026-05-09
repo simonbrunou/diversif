@@ -46,27 +46,42 @@ function buildMem(): IMemoryDb {
 }
 
 function applyMigrations(mem: IMemoryDb): void {
-  // pg-mem only models the initial schema for tests; later drizzle migrations
-  // (data backfills, partial unique indexes that pg-mem's wrapped-client
-  // semantics don't fully simulate) are enforced in production but skipped
-  // here. seedFoods + applySeedCorrections idempotently re-establish the same
-  // post-migration state in tests.
-  const initSql = readFileSync(path.resolve('./drizzle/0000_init.sql'), 'utf8');
+  // pg-mem only models the initial schema for tests plus migrations that pg-mem
+  // can execute; later drizzle migrations (data backfills, partial unique
+  // indexes that pg-mem's wrapped-client semantics don't fully simulate) are
+  // enforced in production but skipped here. seedFoods + applySeedCorrections
+  // idempotently re-establish the same post-migration state in tests.
+  const filenames = ['0000_init.sql', '0003_passkeys_transports_jsonb.sql'];
 
-  // Drizzle wraps each ADD CONSTRAINT in a DO $$ BEGIN ... EXCEPTION WHEN
-  // duplicate_object THEN null; END $$; block for idempotency. pg-mem doesn't
-  // execute EXCEPTION handlers, but the inner ALTER TABLE statement is plain
-  // SQL — strip the wrapper so pg-mem sees a single statement per FK.
-  const unwrapped = initSql.replace(
-    /DO \$\$ BEGIN\s*([\s\S]*?)\s*EXCEPTION\s+WHEN duplicate_object THEN null;\s*END \$\$;/g,
-    '$1'
-  );
+  for (const filename of filenames) {
+    const sqlText = readFileSync(path.resolve('./drizzle', filename), 'utf8');
 
-  for (const stmt of unwrapped
-    .split('--> statement-breakpoint')
-    .map((s) => s.trim())
-    .filter(Boolean)) {
-    mem.public.none(stmt);
+    // Drizzle wraps each ADD CONSTRAINT in a DO $$ BEGIN ... EXCEPTION WHEN
+    // duplicate_object THEN null; END $$; block for idempotency. pg-mem doesn't
+    // execute EXCEPTION handlers, but the inner ALTER TABLE statement is plain
+    // SQL — strip the wrapper so pg-mem sees a single statement per FK.
+    let unwrapped = sqlText.replace(
+      /DO \$\$ BEGIN\s*([\s\S]*?)\s*EXCEPTION\s+WHEN duplicate_object THEN null;\s*END \$\$;/g,
+      '$1'
+    );
+
+    // pg-mem doesn't parse `ALTER COLUMN … SET DATA TYPE … USING`. The test DB
+    // is empty when migrations run so the cast has no rows to act on; rewrite
+    // the type change to DROP+ADD which pg-mem accepts and is equivalent for
+    // a freshly-built test schema.
+    if (filename === '0003_passkeys_transports_jsonb.sql') {
+      unwrapped = `
+        ALTER TABLE "passkeys" DROP COLUMN "transports";
+        ALTER TABLE "passkeys" ADD COLUMN "transports" jsonb NOT NULL DEFAULT '[]'::jsonb;
+      `;
+    }
+
+    for (const stmt of unwrapped
+      .split('--> statement-breakpoint')
+      .map((s) => s.trim())
+      .filter(Boolean)) {
+      mem.public.none(stmt);
+    }
   }
 }
 

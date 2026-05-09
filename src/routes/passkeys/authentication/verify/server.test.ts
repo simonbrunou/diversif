@@ -42,7 +42,7 @@ async function seedUserAndKey() {
     userId: u.id,
     publicKey: 'cHVi',
     counter: 0,
-    transports: '[]',
+    transports: [],
     deviceType: 'singleDevice',
     backedUp: false,
     name: 'Test',

@@ -7,7 +7,6 @@ import {
   verifyAuthenticationResponse
 } from '@simplewebauthn/server';
 import type {
-  AuthenticatorTransportFuture,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
   RegistrationResponseJSON,
@@ -80,18 +79,6 @@ function base64UrlToBuffer(value: string): Uint8Array<ArrayBuffer> {
   const out = new Uint8Array(buf);
   out.set(src);
   return out;
-}
-
-function parseTransports(value: string): AuthenticatorTransportFuture[] {
-  try {
-    const parsed = JSON.parse(value);
-    if (Array.isArray(parsed)) {
-      return parsed.filter((t): t is AuthenticatorTransportFuture => typeof t === 'string');
-    }
-  } catch {
-    // ignore malformed values
-  }
-  return [];
 }
 
 export type StoredChallenge = {
@@ -199,7 +186,7 @@ export async function buildRegistrationOptions(opts: {
     attestationType: 'none',
     excludeCredentials: existing.map((c) => ({
       id: c.id,
-      transports: parseTransports(c.transports)
+      transports: c.transports
     })),
     authenticatorSelection: {
       // The login flow is username-less and does not send `allowCredentials`,
@@ -266,7 +253,6 @@ export async function finishRegistration(opts: {
   }
 
   const trimmedName = opts.name.trim().slice(0, 80) || 'Passkey';
-  const transportsJson = JSON.stringify(opts.response.response.transports ?? []);
 
   const inserted = await db
     .insert(passkeys)
@@ -275,7 +261,7 @@ export async function finishRegistration(opts: {
       userId: opts.userId,
       publicKey: bufferToBase64Url(credential.publicKey),
       counter: credential.counter,
-      transports: transportsJson,
+      transports: opts.response.response.transports ?? [],
       deviceType: credentialDeviceType,
       backedUp: credentialBackedUp,
       name: trimmedName,
@@ -326,7 +312,7 @@ export async function finishAuthentication(opts: {
         id: credential.id,
         publicKey: base64UrlToBuffer(credential.publicKey),
         counter: credential.counter,
-        transports: parseTransports(credential.transports)
+        transports: credential.transports
       },
       // Mirrors the registration choice — see finishRegistration above for
       // the full rationale.

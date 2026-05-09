@@ -5,11 +5,13 @@ import {
   integer,
   serial,
   boolean,
+  jsonb,
   timestamp,
   primaryKey,
   index,
   uniqueIndex
 } from 'drizzle-orm/pg-core';
+import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 
 export const users = pgTable(
   'users',
@@ -168,7 +170,10 @@ export const passkeys = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     publicKey: text('public_key').notNull(),
     counter: integer('counter').notNull().default(0),
-    transports: text('transports').notNull().default('[]'),
+    transports: jsonb('transports')
+      .$type<AuthenticatorTransportFuture[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     deviceType: text('device_type', { enum: ['singleDevice', 'multiDevice'] }).notNull(),
     backedUp: boolean('backed_up').notNull(),
     name: text('name').notNull(),

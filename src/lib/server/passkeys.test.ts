@@ -65,7 +65,7 @@ async function seedPasskey(userId: number, overrides: Partial<typeof passkeys.$i
         userId,
         publicKey: overrides.publicKey ?? 'cHVi', // base64url for "pub"
         counter: overrides.counter ?? 0,
-        transports: overrides.transports ?? '["internal"]',
+        transports: overrides.transports ?? ['internal'],
         deviceType: overrides.deviceType ?? 'singleDevice',
         backedUp: overrides.backedUp ?? false,
         name: overrides.name ?? 'Test Key',
@@ -265,7 +265,7 @@ describe('listPasskeys / findPasskey / deletePasskey / renamePasskey', () => {
 describe('buildRegistrationOptions', () => {
   it('passes the right RP context and excludes existing credentials', async () => {
     const u = await seedUser();
-    await seedPasskey(u.id, { id: 'existing', transports: '["usb","internal"]' });
+    await seedPasskey(u.id, { id: 'existing', transports: ['usb', 'internal'] });
 
     mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'ch' });
 
@@ -285,47 +285,10 @@ describe('buildRegistrationOptions', () => {
     expect(args.excludeCredentials).toEqual([{ id: 'existing', transports: ['usb', 'internal'] }]);
   });
 
-  it('handles malformed transports json gracefully', async () => {
-    const u = await seedUser();
-    await seedPasskey(u.id, { id: 'existing', transports: 'not-json' });
-    mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'ch' });
-    await buildRegistrationOptions({
-      userId: u.id,
-      email: u.email,
-      displayName: u.displayName,
-      rpID: 'example.com'
-    });
-    const args = mocks.generateRegistrationOptions.mock.calls[0][0];
-    expect(args.excludeCredentials[0].transports).toEqual([]);
-  });
-
-  it('drops non-string transport entries', async () => {
-    const u = await seedUser();
-    await seedPasskey(u.id, { id: 'existing', transports: '[1,"usb",null]' });
-    mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'ch' });
-    await buildRegistrationOptions({
-      userId: u.id,
-      email: u.email,
-      displayName: u.displayName,
-      rpID: 'example.com'
-    });
-    const args = mocks.generateRegistrationOptions.mock.calls[0][0];
-    expect(args.excludeCredentials[0].transports).toEqual(['usb']);
-  });
-
-  it('treats non-array json as empty', async () => {
-    const u = await seedUser();
-    await seedPasskey(u.id, { id: 'existing', transports: '"oops"' });
-    mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'ch' });
-    await buildRegistrationOptions({
-      userId: u.id,
-      email: u.email,
-      displayName: u.displayName,
-      rpID: 'example.com'
-    });
-    const args = mocks.generateRegistrationOptions.mock.calls[0][0];
-    expect(args.excludeCredentials[0].transports).toEqual([]);
-  });
+  // The defensive parseTransports() helper used to swallow malformed text-
+  // encoded JSON in the column; the column is now jsonb-typed and Postgres
+  // enforces the array shape at write time, so the malformed-input branches
+  // are unreachable from production code paths and no longer tested.
 });
 
 describe('buildAuthenticationOptions', () => {
@@ -379,7 +342,7 @@ describe('finishRegistration', () => {
     expect(result.passkey.backedUp).toBe(true);
     // Empty name falls back to "Passkey".
     expect(result.passkey.name).toBe('Passkey');
-    expect(result.passkey.transports).toBe('["internal"]');
+    expect(result.passkey.transports).toEqual(['internal']);
   });
 
   it('defaults transports to []', async () => {
@@ -406,7 +369,7 @@ describe('finishRegistration', () => {
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.passkey.transports).toBe('[]');
+    expect(result.passkey.transports).toEqual([]);
     expect(result.passkey.name).toBe('My Key');
   });
 
@@ -581,7 +544,7 @@ describe('finishAuthentication', () => {
 
   it('passes the stored transports to the verifier', async () => {
     const u = await seedUser();
-    await seedPasskey(u.id, { transports: '["usb"]' });
+    await seedPasskey(u.id, { transports: ['usb'] });
     mocks.verifyAuthenticationResponse.mockResolvedValue({
       verified: true,
       authenticationInfo: {

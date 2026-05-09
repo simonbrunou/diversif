@@ -130,7 +130,7 @@ export type ExportedUser = {
     name: string;
     deviceType: Passkey['deviceType'];
     backedUp: boolean;
-    transports: string;
+    transports: string[];
     createdAt: string;
     lastUsedAt: string | null;
   }>;
