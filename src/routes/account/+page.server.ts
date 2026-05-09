@@ -16,6 +16,7 @@ import { deletePasskey, listPasskeys, publicPasskey, renamePasskey } from '$lib/
 import { deleteUserAccount } from '$lib/server/gdpr';
 import { requireUser } from '$lib/server/guards';
 import { checkRateLimit } from '$lib/server/rate-limit';
+import { audit } from '$lib/server/audit';
 import type { Actions, PageServerLoad } from './$types';
 
 // Both actions take a currentPassword and run it through argon2id. Without a
@@ -89,6 +90,7 @@ export const actions: Actions = {
       maxAge: Math.floor(SESSION_DURATION_MS / 1000)
     });
 
+    audit({ type: 'account.password_changed', userId: user.id });
     return { passwordSuccessKey: 'errorsAccountPasswordSuccess' };
   },
 
@@ -96,6 +98,7 @@ export const actions: Actions = {
     const user = requireUser(locals);
     await invalidateAllUserSessions(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });
+    audit({ type: 'account.sessions_revoked', userId: user.id });
     throw localizedRedirect(locals.locale, 303, '/login');
   },
 
@@ -110,6 +113,7 @@ export const actions: Actions = {
     if (!(await renamePasskey(user.id, id, name))) {
       return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
     }
+    audit({ type: 'account.passkey_renamed', userId: user.id, passkeyId: id });
     return { passkeySuccessKey: 'errorsAccountPasskeyRenameSuccess' };
   },
 
@@ -123,6 +127,7 @@ export const actions: Actions = {
     if (!(await deletePasskey(user.id, id))) {
       return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
     }
+    audit({ type: 'account.passkey_deleted', userId: user.id, passkeyId: id });
     return { passkeySuccessKey: 'errorsAccountPasskeyDeleteSuccess' };
   },
 

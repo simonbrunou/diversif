@@ -8,6 +8,7 @@ import {
   rpIdFromOrigin
 } from '$lib/server/passkeys';
 import { requireUser } from '$lib/server/guards';
+import { audit } from '$lib/server/audit';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
@@ -49,5 +50,6 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
     return json({ ok: false, error: result.error }, { status: 400 });
   }
 
+  audit({ type: 'account.passkey_added', userId: user.id, passkeyId: result.passkey.id });
   return json({ ok: true, passkey: publicPasskey(result.passkey) });
 };

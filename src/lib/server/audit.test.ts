@@ -61,4 +61,26 @@ describe('audit', () => {
       limit: 50_000
     });
   });
+
+  it('emits credential lifecycle events with the userId (and passkeyId where relevant)', () => {
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    audit({ type: 'account.password_changed', userId: 11 });
+    audit({ type: 'account.passkey_added', userId: 11, passkeyId: 'pk-A' });
+    audit({ type: 'account.passkey_renamed', userId: 11, passkeyId: 'pk-A' });
+    audit({ type: 'account.passkey_deleted', userId: 11, passkeyId: 'pk-A' });
+    audit({ type: 'account.sessions_revoked', userId: 11 });
+
+    const parsed = spy.mock.calls.map((c) => JSON.parse(c[0] as string));
+    expect(parsed.map((p) => p.type)).toEqual([
+      'account.password_changed',
+      'account.passkey_added',
+      'account.passkey_renamed',
+      'account.passkey_deleted',
+      'account.sessions_revoked'
+    ]);
+    expect(parsed.every((p) => p.level === 'audit' && p.userId === 11)).toBe(true);
+    expect(parsed[1].passkeyId).toBe('pk-A');
+    expect(parsed[2].passkeyId).toBe('pk-A');
+    expect(parsed[3].passkeyId).toBe('pk-A');
+  });
 });

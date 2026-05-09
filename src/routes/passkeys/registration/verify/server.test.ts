@@ -4,6 +4,12 @@ import { captureFlow, makeRouteEvent, safeUser } from '../../../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
+const auditSpy = vi.fn();
+vi.mock('$lib/server/audit', async () => {
+  const actual = await vi.importActual<typeof import('$lib/server/audit')>('$lib/server/audit');
+  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
+});
+
 const mocks = vi.hoisted(() => ({
   generateRegistrationOptions: vi.fn(),
   verifyRegistrationResponse: vi.fn(),
@@ -20,6 +26,7 @@ import { PASSKEY_CHALLENGE_COOKIE, createChallenge } from '$lib/server/passkeys'
 beforeEach(async () => {
   await resetTestDb();
   mocks.verifyRegistrationResponse.mockReset();
+  auditSpy.mockClear();
 });
 
 async function seedUser() {
@@ -155,6 +162,11 @@ describe('POST /passkeys/registration/verify', () => {
     expect(stored?.userId).toBe(u.id);
     // Challenge cookie was cleared.
     expect(event.cookies.delete).toHaveBeenCalled();
+    expect(auditSpy).toHaveBeenCalledWith({
+      type: 'account.passkey_added',
+      userId: u.id,
+      passkeyId: 'new-cred'
+    });
   });
 
   it('returns 400 when verification fails', async () => {
@@ -170,6 +182,9 @@ describe('POST /passkeys/registration/verify', () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.ok).toBe(false);
+    // Failed verification must not emit an audit event for a passkey that
+    // never made it into the DB.
+    expect(auditSpy).not.toHaveBeenCalled();
   });
 
   it('removes the cookie on failure as well', async () => {

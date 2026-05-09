@@ -4,6 +4,12 @@ import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
+const auditSpy = vi.fn();
+vi.mock('$lib/server/audit', async () => {
+  const actual = await vi.importActual<typeof import('$lib/server/audit')>('$lib/server/audit');
+  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
+});
+
 import { hashPassword, SESSION_COOKIE, validateSession, createSession } from '$lib/server/auth';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { passkeys, users } from '$lib/server/db/schema';
@@ -13,6 +19,7 @@ import { load, actions } from './+page.server';
 beforeEach(async () => {
   await resetTestDb();
   _clearAllRateLimits();
+  auditSpy.mockClear();
 });
 
 async function seed() {
@@ -115,6 +122,11 @@ describe('account renamePasskey / deletePasskey', () => {
     expect(r.passkeySuccessKey).toBeTruthy();
     const fresh = (await testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).limit(1))[0];
     expect(fresh?.name).toBe('New Name');
+    expect(auditSpy).toHaveBeenCalledWith({
+      type: 'account.passkey_renamed',
+      userId: u.id,
+      passkeyId: 'p1'
+    });
   });
 
   it('deletePasskey fails with no id', async () => {
@@ -154,6 +166,11 @@ describe('account renamePasskey / deletePasskey', () => {
     expect(r.passkeySuccessKey).toBeTruthy();
     const fresh = (await testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).limit(1))[0];
     expect(fresh).toBeUndefined();
+    expect(auditSpy).toHaveBeenCalledWith({
+      type: 'account.passkey_deleted',
+      userId: u.id,
+      passkeyId: 'p1'
+    });
   });
 });
 
@@ -249,6 +266,7 @@ describe('account changePassword', () => {
     expect(r.passwordSuccessKey).toBeTruthy();
     const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
     expect(fresh?.passwordHash).not.toBe(u.passwordHash);
+    expect(auditSpy).toHaveBeenCalledWith({ type: 'account.password_changed', userId: u.id });
   });
 
   it('drops every existing session and issues a new one for this tab', async () => {
@@ -320,6 +338,7 @@ describe('account logoutEverywhere', () => {
     expect(await validateSession(a.id)).toBeNull();
     expect(await validateSession(b.id)).toBeNull();
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
+    expect(auditSpy).toHaveBeenCalledWith({ type: 'account.sessions_revoked', userId: u.id });
   });
 });
 
