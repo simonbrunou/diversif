@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { requireMembership } from '$lib/server/guards';
+import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import { CATEGORY_IDS } from '$lib/utils/categories';
 import { ALLERGENS } from '$lib/utils/allergens';
 import {
@@ -28,7 +28,8 @@ const schema = z
   });
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-  const childId = Number(params.id);
+  requireUser(locals);
+  const childId = parseChildIdParam(params);
   requireMembership(locals, childId);
 
   const list = await db
@@ -57,7 +58,8 @@ class LogActionAbort extends Error {
 
 export const actions: Actions = {
   default: async ({ request, params, locals }) => {
-    const childId = Number(params.id);
+    requireUser(locals);
+    const childId = parseChildIdParam(params);
     const { user } = requireMembership(locals, childId);
 
     const idempotencyKey = request.headers.get('Idempotency-Key');
