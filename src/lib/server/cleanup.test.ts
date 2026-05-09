@@ -4,7 +4,14 @@ import { testDb, resetTestDb } from '../../test/db';
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { runCleanup, startCleanupTimer, stopCleanupTimer } from './cleanup';
-import { invitations, sessions, users, webauthnChallenges, children } from './db/schema';
+import {
+  idempotencyKeys,
+  invitations,
+  sessions,
+  users,
+  webauthnChallenges,
+  children
+} from './db/schema';
 import { _clearAllRateLimits, checkRateLimit } from './rate-limit';
 
 beforeEach(async () => {
@@ -73,6 +80,7 @@ describe('runCleanup', () => {
       expiredSessions: 1,
       expiredInvitations: 1,
       expiredChallenges: 1,
+      expiredIdempotencyKeys: 0,
       evictedRateLimitBuckets: 0
     });
     expect(await testDb.select().from(sessions)).toHaveLength(1);
@@ -85,8 +93,24 @@ describe('runCleanup', () => {
       expiredSessions: 0,
       expiredInvitations: 0,
       expiredChallenges: 0,
+      expiredIdempotencyKeys: 0,
       evictedRateLimitBuckets: 0
     });
+  });
+
+  it('drops idempotency_keys older than 24h', async () => {
+    const { u } = await seedUserAndChild();
+    const stale = new Date(Date.now() - 25 * 60 * 60 * 1000);
+    const fresh = new Date(Date.now() - 60 * 1000);
+    await testDb.insert(idempotencyKeys).values([
+      { key: 'old', userId: u.id, scope: 'log:child:1', createdAt: stale, redirect: '/x' },
+      { key: 'new', userId: u.id, scope: 'log:child:1', createdAt: fresh, redirect: '/y' }
+    ]);
+
+    const result = await runCleanup();
+    expect(result.expiredIdempotencyKeys).toBe(1);
+    const remaining = await testDb.select().from(idempotencyKeys);
+    expect(remaining.map((r) => r.key)).toEqual(['new']);
   });
 
   it('evicts stale rate-limit buckets older than the longest auth window', async () => {

@@ -10,7 +10,6 @@ import { ALLERGENS } from '$lib/utils/allergens';
 import {
   IdempotencyInFlight,
   IdempotencyScopeMismatch,
-  pruneExpiredKeys,
   withIdempotencyKey
 } from '$lib/server/idempotency';
 import type { Actions, PageServerLoad } from './$types';
@@ -229,7 +228,9 @@ export const actions: Actions = {
             { key: idempotencyKey, userId: user.id, scope: `log:child:${childId}` },
             work
           );
-          await pruneExpiredKeys(tx);
+          // pruning of expired idempotency_keys runs in the periodic cleanup
+          // task, not here -- doing it inside the user transaction held row-
+          // level locks across every concurrent log POST and risked deadlocks.
           return result.redirect;
         }
         return (await work()).redirect;
