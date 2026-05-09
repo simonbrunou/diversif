@@ -30,6 +30,35 @@ export async function verifyPassword(hash: string, plain: string): Promise<boole
   }
 }
 
+// Lazy-initialised decoy hash. Built on first use so we don't pay argon's
+// cost during module import (it would slow every test that touches the auth
+// module). A single hash is reused for the lifetime of the process.
+let decoyHashPromise: Promise<string> | null = null;
+function getDecoyHash(): Promise<string> {
+  if (!decoyHashPromise) {
+    decoyHashPromise = hashPassword(`argon-decoy-${randomBytes(16).toString('hex')}`);
+  }
+  return decoyHashPromise;
+}
+
+/**
+ * Verify a password against a hash, or against a decoy hash if no real hash
+ * is available. The decoy path makes the wall-clock time of "user does not
+ * exist" indistinguishable from "user exists, password wrong" -- defeating
+ * the timing oracle that would otherwise let an unauthenticated visitor probe
+ * which emails are registered.
+ */
+export async function verifyPasswordOrDecoy(
+  hash: string | null | undefined,
+  plain: string
+): Promise<boolean> {
+  if (hash == null) {
+    await verifyPassword(await getDecoyHash(), plain);
+    return false;
+  }
+  return verifyPassword(hash, plain);
+}
+
 function newToken(): string {
   return randomBytes(32).toString('hex');
 }

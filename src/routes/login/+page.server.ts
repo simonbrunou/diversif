@@ -7,7 +7,7 @@ import {
   SESSION_DURATION_MS,
   createSession,
   findUserByEmail,
-  verifyPassword
+  verifyPasswordOrDecoy
 } from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
@@ -51,7 +51,10 @@ export const actions: Actions = {
 
     const { email, password } = parsed.data;
     const user = await findUserByEmail(email);
-    const valid = user ? await verifyPassword(user.passwordHash, password) : false;
+    // verifyPasswordOrDecoy keeps the wall-clock time identical between the
+    // "no such email" and "wrong password" branches so an unauthenticated
+    // visitor can't probe which addresses are registered via response timing.
+    const valid = await verifyPasswordOrDecoy(user?.passwordHash, password);
 
     if (!user || !valid) {
       return fail(400, {

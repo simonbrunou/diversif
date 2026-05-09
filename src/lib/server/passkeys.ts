@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { generateKeyPairSync, randomBytes, verify as cryptoVerify } from 'node:crypto';
 import { and, eq, lt } from 'drizzle-orm';
 import {
   generateRegistrationOptions,
@@ -19,6 +19,30 @@ import { passkeys, webauthnChallenges, type Passkey } from './db/schema';
 export const RP_NAME = 'Diversif';
 export const PASSKEY_CHALLENGE_COOKIE = 'wa_challenge';
 export const PASSKEY_CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+// Decoy ECDSA P-256 keypair (matches the curve simplewebauthn uses for ES256
+// passkeys) generated lazily at first use. The wall-clock cost of an ECDSA
+// verify on this curve is the dominant cost of finishAuthentication, so
+// running it on the missing-credential branch keeps the response timing
+// indistinguishable from a real "credential exists, signature wrong" answer.
+let decoyVerifyKey: ReturnType<typeof generateKeyPairSync>['publicKey'] | null = null;
+function timingDecoyVerify(): void {
+  if (!decoyVerifyKey) {
+    decoyVerifyKey = generateKeyPairSync('ec', { namedCurve: 'P-256' }).publicKey;
+  }
+  // Random data + random signature -> verify will return false. We don't care
+  // about the result; the goal is to make the wall-clock cost similar to a
+  // real verifyAuthenticationResponse call. crypto.verify throws on malformed
+  // signatures, which is fine and just as fast as a clean rejection.
+  /* v8 ignore start — node's crypto.verify throws on some malformed sigs
+     and returns false on others; either path satisfies the timing goal */
+  try {
+    cryptoVerify('sha256', randomBytes(32), decoyVerifyKey, randomBytes(64));
+  } catch {
+    /* expected on malformed sig */
+  }
+  /* v8 ignore stop */
+}
 
 export function rpIdFromOrigin(origin: string): string {
   try {
@@ -275,6 +299,11 @@ export async function finishAuthentication(opts: {
 }): Promise<AuthenticationResult> {
   const credential = await findPasskey(opts.response.id);
   if (!credential) {
+    // Run a decoy ECDSA verify so the response timing of "no such credential"
+    // matches "credential found, signature wrong" -- defeats the timing
+    // oracle that would otherwise tell an unauthenticated visitor whether a
+    // given credential id is registered.
+    timingDecoyVerify();
     return { ok: false, error: 'Clé inconnue.' };
   }
 
