@@ -7,10 +7,6 @@
     "mtime": 1777986940.3274472,
     "hash": "442ee6f3f950b33482963958f133b78c"
   },
-  "/home/sbrn/Projects/diversif/tailwind.config.ts": {
-    "mtime": 1778009833.1549847,
-    "hash": "df23f344ec2b237b9f1a0b16ba61dddd"
-  },
   "/home/sbrn/Projects/diversif/svelte.config.js": {
     "mtime": 1778113941.3858511,
     "hash": "639346566aeb3ae57da7055f8f41f979"
@@ -26,6 +22,10 @@
   "/home/sbrn/Projects/diversif/vite.config.ts": {
     "mtime": 1778271141.475896,
     "hash": "116d02e5889dd5eeb1c4eb9405d280ce"
+  },
+  "/home/sbrn/Projects/diversif/tailwind.config.ts": {
+    "mtime": 1778416314.14491,
+    "hash": "bff903174bc1365dac0744a11efbbd5a"
   },
   "/home/sbrn/Projects/diversif/drizzle/0000_init.sql": {
     "mtime": 1778271141.4708958,
@@ -351,69 +351,181 @@
     "mtime": 1778320282.8960764,
     "hash": "4b4c8920963849f54b2564b40769827a"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Badge.svelte": {
-    "mtime": 1777986940.329566,
-    "hash": "de7e25c05653400be7d2f4e50b120e6c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Badge.test.ts": {
-    "mtime": 1777986940.3297348,
-    "hash": "798802c097b96b49ca819540057a299d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.svelte": {
-    "mtime": 1777986940.3297348,
-    "hash": "b9804d7dd70a5a3cc67ac3fed1d58b03"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.test.ts": {
-    "mtime": 1777986940.3297348,
-    "hash": "fa3dabd3423ef96a56850070c76eb9a5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.svelte": {
-    "mtime": 1777986940.3297348,
-    "hash": "8b3b3a5fa375d1de55685d67877652d4"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.test.ts": {
-    "mtime": 1777986940.3297348,
-    "hash": "f84d910066e6eaab22a746dcd1404885"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Input.svelte": {
-    "mtime": 1777986940.3297348,
-    "hash": "57d020d3f805cf5c93b3a85d66c0effa"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Input.test.ts": {
     "mtime": 1777986940.3297348,
     "hash": "d6c6762ae75b8acff71cf51402fa385a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Label.svelte": {
-    "mtime": 1777986940.3297348,
-    "hash": "76df27674b9f1d72c196f91884da58a8"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Label.test.ts": {
     "mtime": 1777986940.3297348,
     "hash": "d0e939d772e2521a788dc9df7ba524fe"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Select.svelte": {
-    "mtime": 1777986940.3297348,
-    "hash": "4e03d19273bacae214ecc43b5926dfd7"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Select.test.ts": {
     "mtime": 1777986940.3297348,
     "hash": "78d3d690aa9d67569b9c167c8194736d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Textarea.svelte": {
-    "mtime": 1777986940.3297348,
-    "hash": "dec59b169568cb4dbbd5d9cde5e2c61a"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Textarea.test.ts": {
     "mtime": 1777986940.3297348,
     "hash": "29a31ea9f2ef02cbf5995c6475c74c11"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Dialog.svelte": {
-    "mtime": 1778065468.6470451,
-    "hash": "973964c435d409e037c54412f3873c1d"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Dialog.test.ts": {
     "mtime": 1778065468.6470451,
     "hash": "7a7d84b2d83cca23ad6f485728919285"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Avatar.svelte": {
+    "mtime": 1778416314.1429102,
+    "hash": "ed8358d7003f1aba0ccfc8d8481f81f9"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Avatar.test.ts": {
+    "mtime": 1778416314.1429102,
+    "hash": "4d993a907bef39686eabdec01a76a185"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Badge.svelte": {
+    "mtime": 1778416314.1429102,
+    "hash": "87371f51b879675e663f941dbb9986a3"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Badge.test.ts": {
+    "mtime": 1778416314.1429102,
+    "hash": "3dbcad365d7e4f42b7182382ec4cffa1"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.svelte": {
+    "mtime": 1778416314.1429102,
+    "hash": "714d3439ed612742378a1f2679db28a4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.test.ts": {
+    "mtime": 1778416314.1429102,
+    "hash": "129ead3f3b791e75729f71ebd1f197b2"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.svelte": {
+    "mtime": 1778416314.1429102,
+    "hash": "6854b90e354bd250e163358b643b07e3"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.test.ts": {
+    "mtime": 1778416314.1429102,
+    "hash": "71cc733eab2cf819dab43487efe922fa"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Checkbox.svelte": {
+    "mtime": 1778416314.1429102,
+    "hash": "b881bb082217bbb20f9bd0352f933c1e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Checkbox.test.ts": {
+    "mtime": 1778416314.1429102,
+    "hash": "f7a9aa792ae4c7dc487646c0ed856867"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Command.svelte": {
+    "mtime": 1778416314.1429102,
+    "hash": "cf95fd3a20434c4d712bb38242996c8d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Command.test.ts": {
+    "mtime": 1778416314.1429102,
+    "hash": "74b58147b8cd9c1571c2899b001ca6fe"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Dialog.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "6612a6e9f6cdbbf9ce0c796ace7cbff5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Drawer.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "d6207b893e481302c124c2c3d9435548"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Drawer.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "2773359b3fb57e6f20fb4d787d7d95d4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Input.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "848e99a6065c3bb33ccf62744decb735"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Label.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "adbf1f72d3ff86ee125889ac9493d932"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Popover.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "e56609ba85d4fd9a1f4456dcb8cc0501"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Popover.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "02d4edc2dced68e92dbd003b2c118852"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Progress.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "bbf24d263dbb606af864acae12d59222"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Progress.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "82cb3b3f43800adece249867a18831e7"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/ScrollArea.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "b8c473442b98ca5d9ea023f4c6cf35ad"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/ScrollArea.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "45655e31a6f9d2e302eb8e52909842b3"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Select.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "20ea8e758f3231a6b627118ca258fb06"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Separator.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "40f4eb58cc040cbf39d7bba2a2f48116"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Separator.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "acf8ea015feecbbdb0aef94ad07becd4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Sheet.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "41bdd23ddd646800854580b03d7bc76a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Sheet.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "9ec6e60c48e819ed4f01106c1bc7497a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Skeleton.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "30722059fafbbbd4f71ef08e47e3e935"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Skeleton.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "47a720e93965827ea02ef49cadc26825"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Switch.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "047b199618885813f95067be1ce0e33c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Switch.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "bcc2f96032a6ecbafc10a4ce783accef"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Tabs.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "211603c769da54758c50e56e567f3e0c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Tabs.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "1175497f4b585b1e373e770995a8041f"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Textarea.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "963c9f474a964bb3228386d43a861f17"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Toast.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "4b2c6f49a4457647e79624769b1b8928"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Toast.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "5197b91a8d1cf4f55a905fb1aa17cbe0"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Tooltip.svelte": {
+    "mtime": 1778416314.1439102,
+    "hash": "b377ec46b1cac28fe72785c1593f446e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Tooltip.test.ts": {
+    "mtime": 1778416314.1439102,
+    "hash": "593576ea7c72fd82a87f455be009e896"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1777986940.3297348,
@@ -516,11 +628,11 @@
     "hash": "8b7c5a1046571fdbd7fe5b724162af4c"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/shutdown.test.ts": {
-    "mtime": 1778394821.5131683,
+    "mtime": 1778395595.410308,
     "hash": "e1c6d8123f56fd0f4daacf4cb6b06811"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/shutdown.ts": {
-    "mtime": 1778395425.4860535,
+    "mtime": 1778395595.410308,
     "hash": "a4ca097716735e76ca2b469dbee6a159"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/errors.ts": {
@@ -544,7 +656,7 @@
     "hash": "62cab97a15bb0edd86f9411e4824df28"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/index.ts": {
-    "mtime": 1778395411.9141927,
+    "mtime": 1778395595.409308,
     "hash": "35e63094a3095e7ae2d03fed142e1693"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/guidance/reminders.test.ts": {
@@ -676,19 +788,19 @@
     "hash": "a65b10139574baa7f02810986cba9775"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1778395430.3839774,
+    "mtime": 1778411153.433151,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1778395430.3839774,
+    "mtime": 1778411153.433151,
     "hash": "9592c7894abf06e84d6b310a8ace1e2b"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1778395430.3839774,
+    "mtime": 1778411153.433151,
     "hash": "93483aaffa148fa70f9bdfa1d9df710e"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1778395430.3839774,
+    "mtime": 1778411153.433151,
     "hash": "17634d6c31fc28228092a73085602682"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
@@ -1120,8 +1232,8 @@
     "hash": "5038e8244ccf40de6d1027cf96fd4691"
   },
   "/home/sbrn/Projects/diversif/src/app.html": {
-    "mtime": 1778241181.8858995,
-    "hash": "59ea582846d2c69d791a0fe7185049e7"
+    "mtime": 1778416314.1429102,
+    "hash": "a0f1af51ac5aa0deca82ddda54193bd5"
   },
   "/home/sbrn/Projects/diversif/docs/medical-audit-2026-05-08.md": {
     "mtime": 1778228438.1926215,
@@ -1142,6 +1254,10 @@
   "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-07-pwa-offline-log-design.md": {
     "mtime": 1778157630.4956877,
     "hash": "944c5a30efec0b241e640d5352856919"
+  },
+  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-10-ui-ux-redesign-design.md": {
+    "mtime": 1778407329.5859659,
+    "hash": "bc1788bd1a9c02def4b688a18a1208fd"
   },
   "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-06-observability-sentry.md": {
     "mtime": 1778089710.4477434,
@@ -2020,20 +2136,20 @@
     "hash": "24f44a49ae59007336bdfb8a389efd8d"
   },
   "/home/sbrn/Projects/diversif/static/favicon.svg": {
-    "mtime": 1777986940.3345294,
-    "hash": "153afe870528e1656e89e938a4b939e1"
+    "mtime": 1778416314.1439102,
+    "hash": "b92000cca1f1f0f522177ec398593501"
   },
   "/home/sbrn/Projects/diversif/static/og-image.svg": {
-    "mtime": 1777986940.3346534,
-    "hash": "a59654b4da7890bdf940adb9c60c9229"
+    "mtime": 1778416314.14491,
+    "hash": "97775ce4a2dff36af8daff8cbaad45ba"
   },
   "/home/sbrn/Projects/diversif/static/icons/icon-192.png": {
-    "mtime": 1777986940.3346262,
-    "hash": "d451953c1832571543b657bc01041d11"
+    "mtime": 1778416314.1439102,
+    "hash": "8f99b0fbfb52a07ead9972ee40c26fcb"
   },
   "/home/sbrn/Projects/diversif/static/icons/icon-512.png": {
-    "mtime": 1777986940.3346534,
-    "hash": "9004a35bfb4afee02cb902977627d429"
+    "mtime": 1778416314.14491,
+    "hash": "a446729f5a29a7a5cab64d0071fb7d2a"
   },
   "/home/sbrn/Projects/diversif/coverage/favicon.png": {
     "mtime": 1778395449.9104676,
