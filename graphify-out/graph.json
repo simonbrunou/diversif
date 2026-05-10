@@ -1219,6 +1219,15 @@
       "norm_label": "#each()"
     },
     {
+      "label": "Seo.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/Seo.svelte",
+      "source_location": "L1",
+      "id": "src_lib_components_seo_svelte",
+      "community": 113,
+      "norm_label": "seo.svelte"
+    },
+    {
       "label": "LocaleSwitcher.svelte",
       "file_type": "code",
       "source_file": "src/lib/components/LocaleSwitcher.svelte",
@@ -1235,15 +1244,6 @@
       "id": "src_lib_components_localeswitcher_test_ts",
       "community": 70,
       "norm_label": "localeswitcher.test.ts"
-    },
-    {
-      "label": "Seo.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/Seo.svelte",
-      "source_location": "L1",
-      "id": "src_lib_components_seo_svelte",
-      "community": 113,
-      "norm_label": "seo.svelte"
     },
     {
       "label": "LandingClosingCta.test.ts",
@@ -38316,5 +38316,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "dab25865353720934f90c011aca0257b81166078"
+  "built_at_commit": "7fc295bbcc5b731cc6a5f5ff26f6a7d15da74fe4"
 }
