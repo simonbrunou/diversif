@@ -1,3 +1,21 @@
+// Coolify injects COOLIFY_URL=http://<deploy>.diversif.app at runtime, but
+// SvelteKit's CSRF check (and adapter-node's request reconstruction) reads
+// process.env.ORIGIN — a static value baked into the prod deploy. Override
+// ORIGIN with the per-deploy URL so PR previews self-configure their CSRF
+// origin without per-PR Coolify config.
+//
+// COOLIFY_URL arrives as http:// because Cloudflare terminates TLS in front
+// of the container; rewrite the scheme to https so cookies and CSRF stay
+// strict-origin-aware.
+//
+// Runs before the Sentry init below: env mutation has no side-effect on
+// Sentry, and we want adapter-node and any boot-time consumers to see the
+// corrected ORIGIN immediately.
+/* v8 ignore next 3 — module-load Coolify bootstrap; COOLIFY_URL is unset in tests by design */
+if (process.env.COOLIFY_URL) {
+  process.env.ORIGIN = process.env.COOLIFY_URL.replace(/^http:/, 'https:');
+}
+
 // Side-effect-only: must be the first import so Sentry is initialised
 // before any module that captures during its own init (e.g. $lib/server/db).
 import '$lib/sentry-init.server';
