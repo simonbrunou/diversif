@@ -40,7 +40,12 @@ describe('Button', () => {
 
   it('applies the variant class', () => {
     render(Button, { props: { variant: 'destructive', children: text('X') } });
-    expect(screen.getByRole('button').className).toContain('destructive');
+    expect(screen.getByRole('button').className).toContain('bg-severe');
+  });
+
+  it('applies a tile variant', () => {
+    render(Button, { props: { variant: 'tile-peach', children: text('X') } });
+    expect(screen.getByRole('button').className).toContain('bg-tile-peach');
   });
 
   it('applies the size class', () => {
