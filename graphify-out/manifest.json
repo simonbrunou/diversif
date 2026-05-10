@@ -67,6 +67,10 @@
     "mtime": 1778318359.570991,
     "hash": "9e6dbc574b6640258c73d2a164c0d223"
   },
+  "/home/sbrn/Projects/diversif/e2e/bento-shell.spec.ts": {
+    "mtime": 1778440436.4450386,
+    "hash": "4a5630900ff6b7fefd27501f7a13f708"
+  },
   "/home/sbrn/Projects/diversif/scripts/generate-icons.mjs": {
     "mtime": 1777986940.3284423,
     "hash": "43aa3a20aa2f2797aabc612a2d4e9862"
@@ -134,6 +138,14 @@
   "/home/sbrn/Projects/diversif/src/lib/seo.ts": {
     "mtime": 1778335572.8114936,
     "hash": "7f61a12bc63a7a3392c1212babdfc9bf"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/feature-flags.test.ts": {
+    "mtime": 1778440436.4460385,
+    "hash": "eab349b71776880613f42121dff753a6"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/feature-flags.ts": {
+    "mtime": 1778440436.4460385,
+    "hash": "6d043b68646a50702bf87a0250f5ffde"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.svelte": {
     "mtime": 1777986940.32866,
@@ -318,6 +330,54 @@
   "/home/sbrn/Projects/diversif/src/lib/components/LocaleSwitcher.test.ts": {
     "mtime": 1778354896.3157094,
     "hash": "5fdcc11e89aea1a9d399056d099909db"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AppShellBento.svelte": {
+    "mtime": 1778440436.4450386,
+    "hash": "eb5e970502b2f845a630d4752358f11f"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AppShellBento.test.ts": {
+    "mtime": 1778440436.4450386,
+    "hash": "d078908fa703ad02c3d14c39c53994f6"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/BottomNavBento.svelte": {
+    "mtime": 1778440436.4450386,
+    "hash": "0996cd129a9d602f9abbe19eb2894176"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/BottomNavBento.test.ts": {
+    "mtime": 1778440436.4450386,
+    "hash": "55ebe956c3d74406579e3bc51f2be266"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ChildHeaderPill.svelte": {
+    "mtime": 1778440436.4450386,
+    "hash": "3e38ba3f0de0e9020b6c4be944668185"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ChildHeaderPill.test.ts": {
+    "mtime": 1778440436.4450386,
+    "hash": "979ae8a599e73f0b685da5b9620d9b4c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ChildSwitcherDrawer.svelte": {
+    "mtime": 1778440436.4450386,
+    "hash": "a907640efbb1636f77b4306e87b455f2"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ChildSwitcherDrawer.test.ts": {
+    "mtime": 1778440436.4450386,
+    "hash": "24baf4f0422790ea8194be0e74429be2"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/FabLog.svelte": {
+    "mtime": 1778440436.4460385,
+    "hash": "41310cadf163e583fa695901a2403226"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/FabLog.test.ts": {
+    "mtime": 1778440436.4460385,
+    "hash": "8fcce133ef154c4a5b67064f9de48c4d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/LogSheet.svelte": {
+    "mtime": 1778440436.4460385,
+    "hash": "fbdd92ee636ebd06c692ea0110379302"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/LogSheet.test.ts": {
+    "mtime": 1778440436.4460385,
+    "hash": "8e0697e6a9357d34b8c49517408e6dc7"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCta.test.ts": {
     "mtime": 1777986940.329566,
@@ -764,12 +824,12 @@
     "hash": "e19e983d9c8799890c33ff3817c044d6"
   },
   "/home/sbrn/Projects/diversif/src/lib/utils/dates.test.ts": {
-    "mtime": 1778350514.719197,
-    "hash": "a3ce5c539c6fa8818e8b7d26449a5d1b"
+    "mtime": 1778440436.4460385,
+    "hash": "6f463156524561dd7e04c9f5e3ba3fff"
   },
   "/home/sbrn/Projects/diversif/src/lib/utils/dates.ts": {
-    "mtime": 1778350514.719197,
-    "hash": "76ee6e54243880b4ca93d1e68b227f64"
+    "mtime": 1778440436.4460385,
+    "hash": "7b8049ab0f6eb8d48a9578cf610616e1"
   },
   "/home/sbrn/Projects/diversif/src/lib/offline/uuid.test.ts": {
     "mtime": 1778175007.9050903,
@@ -788,19 +848,19 @@
     "hash": "a65b10139574baa7f02810986cba9775"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1778411153.433151,
+    "mtime": 1778417565.5159905,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1778411153.433151,
+    "mtime": 1778417565.5159905,
     "hash": "9592c7894abf06e84d6b310a8ace1e2b"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1778411153.433151,
+    "mtime": 1778417565.5159905,
     "hash": "93483aaffa148fa70f9bdfa1d9df710e"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1778411153.433151,
+    "mtime": 1778417565.5159905,
     "hash": "17634d6c31fc28228092a73085602682"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
@@ -811,25 +871,25 @@
     "mtime": 1778175007.9050903,
     "hash": "a611c0c8dec5e666461569ed12b76c96"
   },
-  "/home/sbrn/Projects/diversif/src/routes/layout.server.test.ts": {
-    "mtime": 1778271141.4748957,
-    "hash": "8a00fcf7d6bbc7ea0e9b0d77637d2c95"
-  },
   "/home/sbrn/Projects/diversif/src/routes/+page.server.ts": {
     "mtime": 1778319686.3093078,
     "hash": "1c5e8e2d596fa8d5feb4a02ffd7b20e2"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/+layout.server.ts": {
-    "mtime": 1778335165.3250468,
-    "hash": "a038556233906f382fea339830176e15"
   },
   "/home/sbrn/Projects/diversif/src/routes/+page.svelte": {
     "mtime": 1778335179.7318828,
     "hash": "89d9d2683dfebe58693d5a30bfcba3be"
   },
+  "/home/sbrn/Projects/diversif/src/routes/+layout.server.ts": {
+    "mtime": 1778440436.4460385,
+    "hash": "42097fed01c7d5a706c8ede672b11ab8"
+  },
   "/home/sbrn/Projects/diversif/src/routes/+layout.svelte": {
-    "mtime": 1778335572.8114936,
-    "hash": "f84066b9ea82a984c66d3a8dd35cddd4"
+    "mtime": 1778440436.4460385,
+    "hash": "4e067c72fc41d8f10a22f1273e4822b4"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/layout.server.test.ts": {
+    "mtime": 1778440436.4460385,
+    "hash": "6d0c955b44fb98da085374ce45652894"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/+page.svelte": {
     "mtime": 1778350514.719197,
@@ -871,10 +931,6 @@
     "mtime": 1778175007.9050903,
     "hash": "56fc68a16db83501684c57641e7060a0"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.svelte": {
-    "mtime": 1778209013.2980134,
-    "hash": "420eed54641a60b09f2b1fd96b845870"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.server.ts": {
     "mtime": 1778271141.4738958,
     "hash": "cf0f1f565f3b4a7964682ea6a251640f"
@@ -894,6 +950,10 @@
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.svelte": {
     "mtime": 1778350514.719197,
     "hash": "b886ccdad6209bd5a4aa24aeb86edfea"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.svelte": {
+    "mtime": 1778440436.4460385,
+    "hash": "5e455b7eba49351a153d5715e2b939bb"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/allergens/+page.svelte": {
     "mtime": 1778228438.1936216,
@@ -1274,6 +1334,10 @@
   "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-07-pwa-offline-log.md": {
     "mtime": 1778158973.834185,
     "hash": "ff8ad7e53ba7dca2f0e96d680e14e363"
+  },
+  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-10-phase3-app-shell.md": {
+    "mtime": 1778416733.0714219,
+    "hash": "66e2af0ba81f413d389d7f0581ac6c3c"
   },
   "/home/sbrn/Projects/diversif/docs/superpowers/runbooks/sentry-setup.md": {
     "mtime": 1778113941.3848512,
