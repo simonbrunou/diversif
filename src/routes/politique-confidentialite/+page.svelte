@@ -61,8 +61,8 @@
       </li>
       <li>
         <span class="font-medium">Mémoriser les conseils déjà fermés</span> (rappels et
-        astuces que vous avez écartés sur la fiche d'un enfant) : exécution du contrat,
-        afin d'éviter de les ré-afficher à chaque visite.
+        astuces que vous avez écartés sur la fiche d'un enfant) : intérêt légitime à
+        ne pas ré-afficher un élément d'interface déjà fermé (article 6.1.f RGPD).
       </li>
     </ul>
   </section>
@@ -120,6 +120,7 @@
       <li>Sessions : 30 jours ; renouvellement automatique en cas d'usage.</li>
       <li>Invitations : 7 jours (purgées automatiquement après expiration).</li>
       <li>Défis WebAuthn : 5 minutes (purgés automatiquement).</li>
+      <li>Conseils écartés : conservés tant que la fiche enfant correspondante existe ; supprimés en cascade lors de la suppression de l'enfant ou du compte parent.</li>
       <li>Suppression du compte : effectuée immédiatement, sans délai, à la demande de l'utilisateur via la page « Mon compte ».</li>
     </ul>
   </section>
