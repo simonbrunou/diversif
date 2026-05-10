@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-10)
 
 ## Corpus Check
-- 275 files · ~380,284 words
+- 277 files · ~383,914 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1571 nodes · 2202 edges · 179 communities (124 shown, 55 thin omitted)
-- Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 394 edges (avg confidence: 0.8)
+- 1579 nodes · 2214 edges · 179 communities (124 shown, 55 thin omitted)
+- Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 395 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d7f444e8`
+- Built from commit: `2f5c705d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -65,7 +65,7 @@
 - [[_COMMUNITY_Community 55|Community 55]]
 - [[_COMMUNITY_Community 56|Community 56]]
 - [[_COMMUNITY_Community 57|Community 57]]
-- [[_COMMUNITY_Community 83|Community 83]]
+- [[_COMMUNITY_Community 82|Community 82]]
 - [[_COMMUNITY_Community 84|Community 84]]
 - [[_COMMUNITY_Community 85|Community 85]]
 - [[_COMMUNITY_Community 86|Community 86]]
@@ -156,16 +156,16 @@ Cohesion: 0.02
 Nodes (238): authAccountAppearanceDescription(), authAccountAppearanceSection(), authAccountBack(), authAccountCurrentPasswordLabel(), authAccountDataDescription(), authAccountDataExport(), authAccountDataSection(), authAccountDeleteConfirmLabel() (+230 more)
 
 ### Community 3 - "Page Loaders & Form Actions"
-Cohesion: 0.06
-Nodes (35): seed(), loadFor(), setup(), setup(), loadFor(), setup(), setup(), setup() (+27 more)
+Cohesion: 0.07
+Nodes (30): seed(), loadFor(), setup(), setup(), loadFor(), setup(), setup(), setup() (+22 more)
 
 ### Community 4 - "Test Fixtures & Setup Helpers"
-Cohesion: 0.07
-Nodes (39): load(), GET(), POST(), audit(), runCleanup(), startCleanupTimer(), stopCleanupTimer(), deleteUserAccount() (+31 more)
+Cohesion: 0.06
+Nodes (37): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), loadEntry() (+29 more)
 
 ### Community 5 - "Branding, App Shell & PWA Manifest"
 Cohesion: 0.07
-Nodes (32): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), loadEntry() (+24 more)
+Nodes (39): load(), GET(), POST(), audit(), invalidateAllUserSessions(), runCleanup(), startCleanupTimer(), stopCleanupTimer() (+31 more)
 
 ### Community 6 - "Architecture Patterns & Conventions"
 Cohesion: 0.06
@@ -188,24 +188,24 @@ Cohesion: 0.11
 Nodes (16): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), POST(), enforceLanguageTag(), setLanguageTag(), invalidateSession() (+8 more)
 
 ### Community 11 - "User Memory & Medical Audit"
+Cohesion: 0.13
+Nodes (12): backupBeforeMigrate(), resolveBackupKeep(), ensureDir(), getDb(), resolveDbPath(), applySeedCorrections(), seedFoods(), drainPool() (+4 more)
+
+### Community 12 - "SEO / JSON-LD Library"
 Cohesion: 0.19
 Nodes (11): absoluteUrl(), articleJsonLd(), breadcrumbJsonLd(), faqPageJsonLd(), organizationJsonLd(), resolveOrigin(), webApplicationJsonLd(), websiteJsonLd() (+3 more)
 
-### Community 12 - "SEO / JSON-LD Library"
+### Community 13 - "UI Component Library"
 Cohesion: 0.13
 Nodes (8): $components/ui/Badge.svelte, $lib/utils/cn, Select.svelte UI component, Select component tests, $lib/content/sources, Textarea.svelte UI component, Textarea component tests, $lib/utils/theme
-
-### Community 13 - "UI Component Library"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 14 - "Account Export / Delete"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 15 - "DB Init, Backup & Seed"
-Cohesion: 0.21
-Nodes (7): backupBeforeMigrate(), resolveBackupKeep(), ensureDir(), getDb(), resolveDbPath(), applySeedCorrections(), seedFoods()
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 16 - "Allergens & Milestones"
 Cohesion: 0.21
@@ -316,11 +316,11 @@ Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer 
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 49`, `Offline Log Queue (IndexedDB)`, `Community 51`?**
-  _High betweenness centrality (0.094) - this node is a cross-community bridge._
-- **Why does `isValidBirthDate()` connect `Branding, App Shell & PWA Manifest` to `Offline Log Queue (IndexedDB)`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+  _High betweenness centrality (0.091) - this node is a cross-community bridge._
 - **Why does `setLanguageTag()` connect `Offline Log Queue (IndexedDB)` to `i18n Messages (auth.*)`?**
-  _High betweenness centrality (0.041) - this node is a cross-community bridge._
+  _High betweenness centrality (0.045) - this node is a cross-community bridge._
+- **Why does `isValidBirthDate()` connect `Test Fixtures & Setup Helpers` to `Offline Log Queue (IndexedDB)`?**
+  _High betweenness centrality (0.034) - this node is a cross-community bridge._
 - **Are the 241 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `formatRelative()`) actually correct?**
   _`languageTag()` has 241 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**
