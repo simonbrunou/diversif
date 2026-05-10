@@ -23,4 +23,19 @@ describe('Card', () => {
     const { container } = render(Card, { props: {} });
     expect(container.querySelector('div')).not.toBeNull();
   });
+
+  it('uses default variant when not specified', () => {
+    const { container } = render(Card, { props: { children: textSnippet('X') } });
+    expect(container.querySelector('div')?.className).toContain('bg-card');
+  });
+
+  it.each(['tile-peach', 'tile-mint', 'tile-butter', 'tile-sky', 'tile-lilac'] as const)(
+    'applies the %s variant',
+    (variant) => {
+      const { container } = render(Card, {
+        props: { variant, children: textSnippet('X') }
+      });
+      expect(container.querySelector('div')?.className).toContain(`bg-${variant}`);
+    }
+  );
 });
