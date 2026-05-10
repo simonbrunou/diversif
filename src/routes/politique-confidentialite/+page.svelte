@@ -25,7 +25,7 @@
   <section lang="fr" class="space-y-6">
     <header class="space-y-2">
       <h1 class="text-2xl font-semibold tracking-tight md:text-3xl">Politique de confidentialité</h1>
-      <p class="text-sm text-muted-foreground">Dernière mise à jour : 9 mai 2026.</p>
+      <p class="text-sm text-muted-foreground">Dernière mise à jour : 10 mai 2026.</p>
     </header>
 
   <section class="space-y-2">
@@ -59,6 +59,11 @@
         <span class="font-medium">Sécurité du compte</span> (sessions, clés d'accès WebAuthn,
         défis WebAuthn éphémères) : intérêt légitime à protéger les comptes.
       </li>
+      <li>
+        <span class="font-medium">Mémoriser les conseils déjà fermés</span> (rappels et
+        astuces que vous avez écartés sur la fiche d'un enfant) : exécution du contrat,
+        afin d'éviter de les ré-afficher à chaque visite.
+      </li>
     </ul>
   </section>
 
@@ -70,6 +75,7 @@
       <li>Journal d'aliments : aliment, date, observation (« RAS », « inconfort », « réaction »), notes libres.</li>
       <li>Sessions et clés d'accès : identifiants opaques, métadonnées WebAuthn (type d'appareil, transports, compteur de signature).</li>
       <li>Invitations : code à durée limitée, identifiants du créateur et de l'utilisateur ayant accepté.</li>
+      <li>Conseils écartés : identifiant du conseil fermé pour une fiche enfant, horodatage de fermeture.</li>
     </ul>
     <p class="text-sm">
       Aucun cookie de mesure d'audience, aucune adresse IP et aucun User-Agent ne sont
