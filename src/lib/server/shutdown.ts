@@ -16,7 +16,10 @@ type ShutdownOptions = {
   beforeExit?: () => void | Promise<void>;
   // Caps the pool drain. pool.end() waits for in-flight queries — fine in
   // theory, but a stuck statement_timeout-defying query would hold the
-  // process forever. 10s is generous (queries cap at 10s by pool config).
+  // process forever. 10s deliberately matches the pool's statement_timeout:
+  // a query started just before SIGTERM may still be running when the
+  // budget expires, in which case drainPool returns 'timeout' rather than
+  // 'drained' and the process exits cleanly anyway.
   timeoutMs?: number;
   exit?: (code: number) => void;
   log?: Logger;

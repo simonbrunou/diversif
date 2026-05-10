@@ -11,6 +11,7 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import * as schema from './schema';
 import { seedFoods } from './seed';
+import { registerShutdownHandlers } from '../shutdown';
 
 export type DB = NodePgDatabase<typeof schema>;
 
@@ -67,14 +68,19 @@ export { schema };
 export { pool };
 
 if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
-  void import('../cleanup').then(({ startCleanupTimer }) => startCleanupTimer());
-  void import('../shutdown').then(({ registerShutdownHandlers }) => {
-    registerShutdownHandlers({
-      pool,
-      beforeExit: async () => {
-        const { stopCleanupTimer } = await import('../cleanup');
-        stopCleanupTimer();
-      }
-    });
+  // Register the SIGTERM handler synchronously: a fire-and-forget dynamic
+  // import would lose the signal if SIGTERM arrived during the startup
+  // window before the .then() callback ran (e.g. Coolify replacing a
+  // revision within seconds of boot), defeating the entire purpose.
+  // Cleanup stays dynamic to avoid pulling its setInterval into test envs;
+  // beforeExit captures stopCleanupTimer once the module loads.
+  let stopCleanupTimer: (() => void) | null = null;
+  void import('../cleanup').then((mod) => {
+    stopCleanupTimer = mod.stopCleanupTimer;
+    mod.startCleanupTimer();
+  });
+  registerShutdownHandlers({
+    pool,
+    beforeExit: () => stopCleanupTimer?.()
   });
 }
