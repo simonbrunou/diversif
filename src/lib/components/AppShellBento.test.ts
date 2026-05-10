@@ -47,4 +47,9 @@ describe('AppShellBento', () => {
     expect(screen.queryByLabelText('Logger un aliment')).toBeNull();
     expect(screen.queryByLabelText('Navigation principale')).toBeNull();
   });
+
+  it('renders the desktop sidebar nav (always in DOM, hidden until lg via CSS)', () => {
+    const { container } = render(AppShellBento, { props: baseProps });
+    expect(container.querySelector('nav[aria-label="Navigation latérale"]')).not.toBeNull();
+  });
 });
