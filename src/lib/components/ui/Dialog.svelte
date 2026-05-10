@@ -102,7 +102,7 @@
       bind:this={panel}
       tabindex="-1"
       class={cn(
-        'w-full max-w-md rounded-lg border bg-card p-6 shadow-lg outline-none',
+        'w-full max-w-md rounded-hero border border-border bg-surface p-6 shadow-lifted outline-none transition-transform duration-slow ease-spring',
         className
       )}
     >
