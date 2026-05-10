@@ -1,13 +1,21 @@
 <script lang="ts" module>
-  export type BadgeVariant = 'default' | 'secondary' | 'outline' | 'ras' | 'inconfort' | 'reaction';
+  export type BadgeVariant =
+    | 'default'
+    | 'secondary'
+    | 'outline'
+    | 'ras'
+    | 'inconfort'
+    | 'reaction'
+    | 'severe';
 
   const VARIANTS: Record<BadgeVariant, string> = {
     default: 'bg-primary text-primary-foreground',
-    secondary: 'bg-secondary text-secondary-foreground',
-    outline: 'border border-input text-foreground',
-    ras: 'bg-reaction-ras/15 text-reaction-ras border border-reaction-ras/30',
-    inconfort: 'bg-reaction-inconfort/15 text-reaction-inconfort border border-reaction-inconfort/30',
-    reaction: 'bg-reaction-reaction/15 text-reaction-reaction border border-reaction-reaction/30'
+    secondary: 'bg-surface-2 text-foreground',
+    outline: 'border border-border text-foreground',
+    ras: 'bg-reaction-ras text-reaction-ras-foreground',
+    inconfort: 'bg-reaction-inconfort text-reaction-inconfort-foreground',
+    reaction: 'bg-reaction-reaction text-reaction-reaction-foreground',
+    severe: 'bg-severe text-severe-foreground'
   };
 </script>
 
@@ -24,7 +32,7 @@
 
 <span
   class={cn(
-    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+    'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold',
     VARIANTS[variant],
     className
   )}

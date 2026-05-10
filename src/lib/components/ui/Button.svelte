@@ -1,14 +1,28 @@
 <script lang="ts" module>
-  export type Variant = 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+  export type Variant =
+    | 'default'
+    | 'secondary'
+    | 'outline'
+    | 'ghost'
+    | 'destructive'
+    | 'tile-peach'
+    | 'tile-mint'
+    | 'tile-butter'
+    | 'tile-sky'
+    | 'tile-lilac';
   export type Size = 'default' | 'sm' | 'lg' | 'icon';
 
   const VARIANTS: Record<Variant, string> = {
-    default:
-      'bg-gradient-to-b from-primary to-primary/85 text-primary-foreground hover:from-primary/95 hover:to-primary/80 shadow-card',
-    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-    outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-    ghost: 'hover:bg-accent hover:text-accent-foreground',
-    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-card'
+    default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-card',
+    secondary: 'bg-surface-2 text-foreground hover:bg-surface-2/80',
+    outline: 'border border-input bg-surface hover:bg-surface-2 text-foreground',
+    ghost: 'hover:bg-surface-2 text-foreground',
+    destructive: 'bg-severe text-severe-foreground hover:bg-severe/90 shadow-card',
+    'tile-peach': 'bg-tile-peach text-tile-peach-foreground hover:bg-tile-peach/90',
+    'tile-mint': 'bg-tile-mint text-tile-mint-foreground hover:bg-tile-mint/90',
+    'tile-butter': 'bg-tile-butter text-tile-butter-foreground hover:bg-tile-butter/90',
+    'tile-sky': 'bg-tile-sky text-tile-sky-foreground hover:bg-tile-sky/90',
+    'tile-lilac': 'bg-tile-lilac text-tile-lilac-foreground hover:bg-tile-lilac/90'
   };
 
   const SIZES: Record<Size, string> = {
@@ -51,7 +65,7 @@
   }: Props = $props();
 
   const base =
-    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-colors duration-base ease-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
   const iconSize = $derived(size === 'lg' ? 18 : 16);
 </script>
 

@@ -17,7 +17,7 @@ describe('Badge', () => {
     expect(span?.className).toMatch(/bg-primary/);
   });
 
-  it.each(['secondary', 'outline', 'ras', 'inconfort', 'reaction'] as const)(
+  it.each(['secondary', 'outline', 'ras', 'inconfort', 'reaction', 'severe'] as const)(
     'applies variant %s',
     (variant) => {
       const { container } = render(Badge, {
@@ -27,6 +27,18 @@ describe('Badge', () => {
       expect(span?.className.length).toBeGreaterThan(0);
     }
   );
+
+  it.each([
+    ['ras', 'bg-reaction-ras'],
+    ['inconfort', 'bg-reaction-inconfort'],
+    ['reaction', 'bg-reaction-reaction'],
+    ['severe', 'bg-severe']
+  ] as const)('uses solid token bg for %s variant', (variant, expected) => {
+    const { container } = render(Badge, {
+      props: { variant, children: textSnippet('X') }
+    });
+    expect(container.querySelector('span')?.className).toContain(expected);
+  });
 
   it('appends additional classes via class prop', () => {
     const { container } = render(Badge, {

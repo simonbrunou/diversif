@@ -7,98 +7,196 @@
 
 @layer base {
   :root {
-    /* Catppuccin Latte — https://github.com/catppuccin/catppuccin
-       Pairs with Mocha (in .dark below). Primary is Catppuccin Green,
-       which is the closest match to the diversif sage brand inside the
-       palette and stays visually consistent across both themes. */
-    --background: 220 23% 95%; /* Base    #eff1f5 */
-    --foreground: 234 16% 35%; /* Text    #4c4f69 */
+    /* canvas + surfaces */
+    --canvas: 39 67% 97%; /* #fdfaf3 */
+    --background: var(--canvas); /* alias for legacy bg-background usage */
+    --foreground: 0 0% 10%;
+    --surface: 0 0% 100%; /* white cards */
+    --surface-2: 39 50% 91%; /* warm-50 — segmented tracks, raised tiles */
 
-    --card: 0 0% 100%; /* pure white for raised panels */
-    --card-foreground: 234 16% 35%;
-    --surface: 220 22% 92%; /* Mantle  #e6e9ef */
+    --card: var(--surface);
+    --card-foreground: var(--foreground);
+    --popover: var(--surface);
+    --popover-foreground: var(--foreground);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 234 16% 35%;
+    --ink: var(--foreground);
+    --ink-soft: 0 0% 32%;
+    --muted: var(--surface-2);
+    --muted-foreground: var(--ink-soft);
 
-    --primary: 109 58% 40%; /* Green   #40a02b */
+    --border: 39 36% 88%; /* warm-200 */
+    --input: var(--border);
+    --ring: 120 14% 49%; /* sage */
+
+    /* primary brand */
+    --primary: 120 14% 49%; /* sage #6b8e6b */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 21% 89%; /* Crust   #dce0e8 */
-    --secondary-foreground: 234 16% 35%;
+    /* secondary / accent neutrals */
+    --secondary: var(--surface-2);
+    --secondary-foreground: var(--foreground);
+    --accent: var(--surface-2);
+    --accent-foreground: var(--foreground);
 
-    --muted: 220 21% 89%; /* Crust */
-    --muted-foreground: 233 10% 47%; /* Subtext0 #6c6f85 */
+    /* tile palette */
+    --tile-peach: 27 100% 87%;
+    --tile-peach-foreground: 23 88% 22%;
+    --tile-butter: 47 100% 84%;
+    --tile-butter-foreground: 38 88% 23%;
+    --tile-mint: 142 35% 84%;
+    --tile-mint-foreground: 142 41% 21%;
+    --tile-sky: 213 100% 89%;
+    --tile-sky-foreground: 218 62% 26%;
+    --tile-lilac: 257 100% 92%;
+    --tile-lilac-foreground: 261 56% 27%;
 
-    --accent: 223 16% 83%; /* Surface0 #ccd0da */
-    --accent-foreground: 234 16% 35%;
+    /* status (cheer-everywhere — coral reserved for severe only) */
+    --success: var(--tile-mint);
+    --success-foreground: var(--tile-mint-foreground);
+    --warning: var(--tile-butter);
+    --warning-foreground: var(--tile-butter-foreground);
+    --info: var(--tile-sky);
+    --info-foreground: var(--tile-sky-foreground);
+    --severe: 14 100% 71%; /* coral #ff8a6b — appeler le 15 only */
+    --severe-foreground: 0 0% 100%;
+    --destructive: var(--severe);
+    --destructive-foreground: var(--severe-foreground);
 
-    --destructive: 347 87% 44%; /* Red     #d20f39 */
-    --destructive-foreground: 0 0% 100%;
+    /* reactions vocabulary (consumed by ReactionBadge / ReactionPicker) */
+    --reaction-ras: var(--tile-mint);
+    --reaction-ras-foreground: var(--tile-mint-foreground);
+    --reaction-inconfort: var(--tile-butter);
+    --reaction-inconfort-foreground: var(--tile-butter-foreground);
+    --reaction-reaction: 23 80% 86%; /* soft peach — between butter and severe */
+    --reaction-reaction-foreground: 23 88% 22%;
 
-    --border: 220 21% 89%; /* Crust */
-    --input: 220 21% 89%;
-    --ring: 109 58% 40%; /* Green */
+    /* celebrate (milestones) */
+    --celebrate: var(--tile-butter);
+    --celebrate-foreground: var(--tile-butter-foreground);
 
-    --radius: 1rem;
+    /* radius */
+    --radius: 0.875rem; /* 14px — lg */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.625rem;
+    --radius-lg: 0.875rem;
+    --radius-tile: 1.125rem;
+    --radius-hero: 1.5rem;
 
-    --reaction-ras: 109 58% 40%; /* Green   #40a02b */
-    --reaction-inconfort: 22 99% 52%; /* Peach   #fe640b */
-    --reaction-reaction: 347 87% 44%; /* Red     #d20f39 */
+    /* spacing */
+    --space-tile: 0.75rem;
 
-    --success: var(--reaction-ras);
-    --warning: var(--reaction-inconfort);
-    --info: 197 97% 46%; /* Sky     #04a5e5 */
+    /* shadows */
+    --shadow-sm: 0 1px 2px hsl(28 30% 20% / 0.06);
+    --shadow-card: 0 6px 14px -2px hsl(28 30% 20% / 0.1), 0 2px 4px -1px hsl(28 30% 20% / 0.05);
+    --shadow-soft: 0 8px 24px -8px hsl(28 50% 30% / 0.18);
+    --shadow-lifted: 0 18px 36px -10px hsl(28 50% 30% / 0.22);
+    --shadow-glow: 0 0 0 4px hsl(47 100% 84%), 0 8px 20px -4px hsl(40 90% 50% / 0.4);
 
-    --accent-peach: 22 99% 75%; /* Peach lifted to pastel for soft tints */
-    --accent-butter: 35 77% 78%; /* Yellow lifted */
-    --accent-sky: 197 80% 78%; /* Sky lifted */
-    --accent-mint: 170 50% 78%; /* Teal lifted */
-    --accent-lilac: 266 60% 82%; /* Mauve lifted */
+    /* motion */
+    --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --ease-celebrate: cubic-bezier(0.16, 1.6, 0.3, 1);
+    --dur-fast: 120ms;
+    --dur-base: 200ms;
+    --dur-slow: 360ms;
+    --dur-celebrate: 720ms;
 
-    --celebrate: 35 77% 60%; /* Yellow saturated */
-    --celebrate-foreground: 234 16% 20%;
-
-    --motion-soft: 220ms cubic-bezier(0.32, 0.72, 0, 1);
-    --motion-spring: 400ms cubic-bezier(0.34, 1.4, 0.64, 1);
+    /* legacy aliases (delete after Plan 2 completes) */
+    --motion-soft: var(--dur-base) var(--ease-soft);
+    --motion-spring: var(--dur-slow) var(--ease-spring);
+    --accent-peach: var(--tile-peach);
+    --accent-butter: var(--tile-butter);
+    --accent-mint: var(--tile-mint);
+    --accent-sky: var(--tile-sky);
+    --accent-lilac: var(--tile-lilac);
   }
 
   .dark {
-    /* Catppuccin Mocha — https://github.com/catppuccin/catppuccin
-       Surfaces use Base / Mantle / Surface0–2 (cool indigo) and the warm
-       Catppuccin accents (Peach, Yellow, Red, Mauve) provide the warmth
-       balance. Primary maps to Catppuccin Green — closest semantic match
-       to diversif's sage brand within the palette. */
-    --background: 240 21% 15%; /* Base    #1e1e2e */
-    --foreground: 226 64% 88%; /* Text    #cdd6f4 */
-    --card: 240 21% 12%; /* Mantle  #181825 */
-    --card-foreground: 226 64% 88%;
-    --surface: 237 16% 23%; /* Surface0 #313244 */
-    --popover: 240 21% 12%; /* Mantle */
-    --popover-foreground: 226 64% 88%;
-    --primary: 115 54% 76%; /* Green   #a6e3a1 */
-    --primary-foreground: 240 21% 12%; /* Mantle for contrast on Green */
-    --secondary: 234 13% 31%; /* Surface1 #45475a */
-    --secondary-foreground: 226 64% 88%;
-    --muted: 234 13% 31%; /* Surface1 */
-    --muted-foreground: 228 24% 72%; /* Subtext0 #a6adc8 */
-    --accent: 233 12% 39%; /* Surface2 #585b70 */
-    --accent-foreground: 226 64% 88%;
-    --destructive: 343 81% 75%; /* Red     #f38ba8 */
-    --destructive-foreground: 240 21% 12%;
-    --border: 234 13% 31%; /* Surface1 */
-    --input: 234 13% 31%;
-    --ring: 115 54% 76%; /* Green */
-    --info: 217 92% 76%; /* Blue    #89b4fa */
+    --canvas: 38 13% 8%; /* #15130f — warm near-black */
+    --background: var(--canvas);
+    --foreground: 39 67% 91%; /* warm cream text */
+    --surface: 38 12% 11%;
+    --surface-2: 38 13% 14%;
 
-    --accent-peach: 23 92% 75%; /* Peach   #fab387 */
-    --accent-butter: 41 86% 83%; /* Yellow  #f9e2af */
-    --accent-sky: 189 71% 73%; /* Sky     #89dceb */
-    --accent-mint: 170 57% 73%; /* Teal    #94e2d5 */
-    --accent-lilac: 267 84% 81%; /* Mauve   #cba6f7 */
+    --card: var(--surface);
+    --card-foreground: var(--foreground);
+    --popover: var(--surface);
+    --popover-foreground: var(--foreground);
 
-    --celebrate: 41 86% 83%; /* Yellow */
-    --celebrate-foreground: 240 21% 12%; /* Mantle */
+    --ink: var(--foreground);
+    --ink-soft: 39 20% 65%;
+    --muted: var(--surface-2);
+    --muted-foreground: var(--ink-soft);
+
+    --border: 38 10% 18%;
+    --input: var(--border);
+    --ring: 120 14% 60%;
+
+    --primary: 120 14% 60%; /* sage lifted slightly for dark */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: var(--surface-2);
+    --secondary-foreground: var(--foreground);
+    --accent: var(--surface-2);
+    --accent-foreground: var(--foreground);
+
+    /* tile palette (deep tints, fg flips to the 200) */
+    --tile-peach: 23 60% 18%;
+    --tile-peach-foreground: 27 100% 87%;
+    --tile-butter: 38 70% 19%;
+    --tile-butter-foreground: 47 100% 84%;
+    --tile-mint: 142 31% 17%;
+    --tile-mint-foreground: 142 35% 84%;
+    --tile-sky: 218 50% 20%;
+    --tile-sky-foreground: 213 100% 89%;
+    --tile-lilac: 261 40% 22%;
+    --tile-lilac-foreground: 257 100% 92%;
+
+    --success: var(--tile-mint);
+    --success-foreground: var(--tile-mint-foreground);
+    --warning: var(--tile-butter);
+    --warning-foreground: var(--tile-butter-foreground);
+    --info: var(--tile-sky);
+    --info-foreground: var(--tile-sky-foreground);
+    --severe: 14 100% 71%;
+    --severe-foreground: 0 0% 100%;
+    --destructive: var(--severe);
+    --destructive-foreground: var(--severe-foreground);
+
+    --reaction-ras: var(--tile-mint);
+    --reaction-ras-foreground: var(--tile-mint-foreground);
+    --reaction-inconfort: var(--tile-butter);
+    --reaction-inconfort-foreground: var(--tile-butter-foreground);
+    --reaction-reaction: 23 50% 22%;
+    --reaction-reaction-foreground: 27 100% 87%;
+
+    --celebrate: var(--tile-butter);
+    --celebrate-foreground: var(--tile-butter-foreground);
+
+    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.4);
+    --shadow-card: 0 6px 14px -2px hsl(0 0% 0% / 0.5), 0 2px 4px -1px hsl(0 0% 0% / 0.3);
+    --shadow-soft: 0 8px 24px -8px hsl(0 0% 0% / 0.5);
+    --shadow-lifted: 0 18px 36px -10px hsl(0 0% 0% / 0.6);
+    --shadow-glow: 0 0 0 4px hsl(38 70% 19%), 0 8px 20px -4px hsl(40 90% 50% / 0.5);
+
+    --accent-peach: var(--tile-peach);
+    --accent-butter: var(--tile-butter);
+    --accent-mint: var(--tile-mint);
+    --accent-sky: var(--tile-sky);
+    --accent-lilac: var(--tile-lilac);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root,
+    .dark {
+      --ease-soft: linear;
+      --ease-spring: linear;
+      --ease-celebrate: linear;
+      --dur-fast: 1ms;
+      --dur-base: 1ms;
+      --dur-slow: 1ms;
+      --dur-celebrate: 1ms;
+    }
   }
 
   * {
