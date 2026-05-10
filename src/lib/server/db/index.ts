@@ -68,4 +68,13 @@ export { pool };
 
 if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   void import('../cleanup').then(({ startCleanupTimer }) => startCleanupTimer());
+  void import('../shutdown').then(({ registerShutdownHandlers }) => {
+    registerShutdownHandlers({
+      pool,
+      beforeExit: async () => {
+        const { stopCleanupTimer } = await import('../cleanup');
+        stopCleanupTimer();
+      }
+    });
+  });
 }
