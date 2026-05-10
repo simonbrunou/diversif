@@ -59,4 +59,40 @@ test.describe('Bento shell — tab navigation', () => {
     await page.getByRole('link', { name: 'Profil' }).click();
     await expect(page).toHaveURL(/\/account/);
   });
+
+  test('FAB opens log sheet, food saves, sheet closes', async ({ page, context }) => {
+    // Sign up + create a child for this test.
+    const sevenMonthsAgo = new Date();
+    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
+    const childId = await signUpAndCreateChild(page, 'Mia', dateStr);
+
+    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+    await page.goto(`/child/${childId}`);
+
+    // Open the log sheet via the FAB.
+    await page.getByRole('button', { name: 'Logger un aliment' }).click();
+
+    // Sheet placeholder visible.
+    const placeholder = '🔍 chercher un aliment…';
+    await expect(page.getByPlaceholder(placeholder)).toBeVisible();
+
+    // Search for "poire" — Poire is in the seeded FOODS catalog.
+    await page.getByPlaceholder(placeholder).fill('poire');
+
+    // Click the matching list item. The Command primitive renders <li role="option">.
+    await page.getByRole('option', { name: /^Poire$/ }).click();
+
+    // Submit.
+    await page.getByRole('button', { name: 'Enregistrer' }).click();
+
+    // Toast confirms save.
+    await expect(page.getByText('Enregistré')).toBeVisible();
+
+    // Sheet closed (placeholder no longer visible).
+    await expect(page.getByPlaceholder(placeholder)).not.toBeVisible();
+
+    // Recent feed on /child/<id> shows the new entry.
+    await expect(page.getByText('Poire').first()).toBeVisible();
+  });
 });
