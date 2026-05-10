@@ -30,7 +30,14 @@ async function signUpAndCreateChild(page: Page, name: string, birthDate: string)
   return match[1];
 }
 
+// Force a sub-`lg:` viewport so the mobile chrome (BottomNavBento + FAB) is
+// rendered/visible. Playwright's default chromium project uses Desktop Chrome
+// (1280×720) which crosses the `lg:` breakpoint and switches to the desktop
+// left-rail variant — those elements (`Navigation latérale`, `+ Logger` text)
+// are tested separately. This block targets the mobile flow.
 test.describe('Bento shell — tab navigation', () => {
+  test.use({ viewport: { width: 414, height: 896 } });
+
   test('switches between the four tabs with bento=1 cookie', async ({ page, context }) => {
     // Sign up + create a child first (no bento cookie yet — the chrome will be the legacy layout).
     const sevenMonthsAgo = new Date();
