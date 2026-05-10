@@ -10,6 +10,7 @@
   import { applyTheme, getStoredTheme } from '$lib/utils/theme';
   import PublicHeader from '$lib/components/PublicHeader.svelte';
   import PublicFooter from '$lib/components/PublicFooter.svelte';
+  import AppShellBento from '$lib/components/AppShellBento.svelte';
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { organizationJsonLd, websiteJsonLd, SITE } from '$lib/seo';
   import type { LayoutData } from './$types';
@@ -38,6 +39,17 @@
   );
 
   const firstChildId = $derived(data.children[0]?.id ?? null);
+
+  const isAccountRoute = $derived(unprefixedPath.startsWith('/account'));
+
+  const bentoKids = $derived(
+    data.children.map((c) => ({
+      id: String(c.id),
+      name: c.name,
+      birthMonth: c.birthDate,
+      avatarSeed: '🌱'
+    }))
+  );
 
   // Keep paraglide's runtime locale and the <html lang> attribute in sync with
   // the URL on the client. SvelteKit's reroute strips the /en/ prefix from
@@ -115,7 +127,17 @@
 <a href="#main" class="skip-link">{m.chromeSkipToContent()}</a>
 
 <div class="safe-top flex min-h-dvh flex-col">
-  {#if isChildRoute}
+  {#if data.bento && (isChildRoute || isAccountRoute)}
+    <AppShellBento
+      user={data.user ? { email: data.user.email } : undefined}
+      kids={bentoKids}
+      currentChildId={data.currentChildId ?? undefined}
+      currentPath={unprefixedPath}
+      foods={data.foods}
+    >
+      {@render children()}
+    </AppShellBento>
+  {:else if isChildRoute}
     {@render children()}
   {:else if isPublicShell}
     <PublicHeader user={data.user} {firstChildId} />
