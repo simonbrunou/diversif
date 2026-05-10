@@ -1,32 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Diversif — Diversification alimentaire bébé : guide, suivi, partage parents">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Diversif — diversifier en confiance">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fafaf7"/>
-      <stop offset="1" stop-color="#e8efe5"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd9c0"/>
+      <stop offset="60%" stop-color="#ffeeb0"/>
+      <stop offset="100%" stop-color="#fdfaf3"/>
     </linearGradient>
-    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#6b8e6b"/>
-      <stop offset="1" stop-color="#3f5c40"/>
-    </linearGradient>
+    <clipPath id="mark">
+      <rect x="80" y="220" width="200" height="200" rx="44"/>
+    </clipPath>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <g transform="translate(80,90)">
-    <rect width="92" height="92" rx="20" fill="url(#brand)"/>
-    <path d="M46 22c-10 0-17 7-17 17 0 13 10 20 17 34 7-14 17-21 17-34 0-10-7-17-17-17zm0 8c5 0 9 4 9 9s-4 9-9 9-9-4-9-9 4-9 9-9z" fill="#fafaf7"/>
-    <text x="120" y="62" font-family="Inter,system-ui,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif" font-size="44" font-weight="700" fill="#1a221d">Diversif</text>
+  <g clip-path="url(#mark)">
+    <rect x="80" y="220" width="200" height="200" fill="#6b8e6b"/>
+    <path d="M280 220 L80 420 L280 420 Z" fill="#ffd9c0"/>
   </g>
-  <g transform="translate(80,260)">
-    <text font-family="Inter,system-ui,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif" font-size="64" font-weight="700" fill="#1a221d" letter-spacing="-1">
-      <tspan x="0" dy="0">Diversifier en confiance,</tspan>
-      <tspan x="0" dy="76">sources à l'appui.</tspan>
-    </text>
-    <text font-family="Inter,system-ui,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif" font-size="28" font-weight="500" fill="#3f4a40" y="200">
-      <tspan x="0">Guide, suivi des 12 allergènes, partage à deux parents.</tspan>
-      <tspan x="0" dy="42">4 mois → 3 ans · HCSP · Santé publique France · ESPGHAN.</tspan>
-    </text>
-  </g>
-  <g transform="translate(80,560)">
-    <rect width="280" height="44" rx="22" fill="#6b8e6b"/>
-    <text x="140" y="29" text-anchor="middle" font-family="Inter,system-ui,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif" font-size="18" font-weight="600" fill="#fafaf7">Open source · Self-hosted</text>
-  </g>
+  <text x="320" y="320" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="84" font-weight="500" fill="#1f3e1a">
+    Diversifier
+  </text>
+  <text x="320" y="412" font-family="Fraunces, Georgia, serif" font-style="italic" font-size="84" font-weight="500" fill="#1f3e1a">
+    en confiance.
+  </text>
+  <text x="80" y="560" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="500" fill="#3e2a14" letter-spacing="2">
+    Suivi quotidien · sourcé HCSP, ESPGHAN, EAT, LEAP
+  </text>
 </svg>
