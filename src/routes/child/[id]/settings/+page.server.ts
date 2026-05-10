@@ -27,8 +27,9 @@ const INVITE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
 // SELECT-then-INSERT would race: two concurrent createInvitation calls can
 // pass the SELECT and only the INSERT enforces invitations.code's PRIMARY
 // KEY. Skip the pre-check and let Postgres adjudicate via 23505; on the
-// astronomically rare collision (1/32^6 per attempt) retry with a fresh
-// code. Up to 5 attempts so the action never wedges if random has a bad day.
+// astronomically rare collision (each attempt has N/32^6 odds against the N
+// live codes already in the table) retry with a fresh code. Up to 5 attempts
+// so the action never wedges if random has a bad day.
 async function insertInviteWithUniqueCode(input: {
   childId: number;
   createdBy: number;
