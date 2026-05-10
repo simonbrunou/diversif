@@ -133,6 +133,12 @@ const config: Config = {
         lifted: 'var(--shadow-lifted)',
         glow: 'var(--shadow-glow)'
       },
+      ringOffsetColor: {
+        DEFAULT: 'hsl(var(--canvas) / <alpha-value>)',
+        background: 'hsl(var(--background) / <alpha-value>)',
+        canvas: 'hsl(var(--canvas) / <alpha-value>)',
+        surface: 'hsl(var(--surface) / <alpha-value>)'
+      },
       transitionTimingFunction: {
         soft: 'var(--ease-soft)',
         spring: 'var(--ease-spring)',
