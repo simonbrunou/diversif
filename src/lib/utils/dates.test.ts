@@ -5,7 +5,8 @@ import {
   formatDateTime,
   formatDateInputValue,
   parseDateTimeLocal,
-  isValidBirthDate
+  isValidBirthDate,
+  formatMonthsSince
 } from './dates';
 
 describe('isValidBirthDate', () => {
@@ -117,5 +118,20 @@ describe('parseDateTimeLocal', () => {
     const d = parseDateTimeLocal('2024-03-01T09:30');
     expect(d).toBeInstanceOf(Date);
     expect(Number.isNaN(d.getTime())).toBe(false);
+  });
+});
+
+describe('formatMonthsSince', () => {
+  it('returns months and days since the birth month (FR)', () => {
+    // birthMonth 2025-11-01, now 2026-05-10 → 6 months, 190 days
+    const result = formatMonthsSince('2025-11-01', new Date('2026-05-10T00:00:00Z'));
+    expect(result).toMatch(/^6 mois · J\+\d+$/);
+  });
+
+  it('returns English format when locale is en', () => {
+    setLanguageTag('en');
+    const result = formatMonthsSince('2025-11-01', new Date('2026-05-10T00:00:00Z'));
+    setLanguageTag(sourceLanguageTag);
+    expect(result).toMatch(/^6 mo · D\+\d+$/);
   });
 });
