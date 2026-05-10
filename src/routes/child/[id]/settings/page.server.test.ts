@@ -11,7 +11,15 @@ import {
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
+const generateInviteCodeRawSpy = vi.hoisted(() => vi.fn<() => string>());
+
+vi.mock('$lib/server/auth', async () => {
+  const actual = await vi.importActual<typeof import('$lib/server/auth')>('$lib/server/auth');
+  return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
+});
+
 import { hashPassword } from '$lib/server/auth';
+import { generateInviteCodeRaw as realGenerateInviteCodeRaw } from '$lib/utils/invites';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -30,6 +38,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   await resetTestDb();
   _clearAllRateLimits();
+  generateInviteCodeRawSpy.mockReset();
+  generateInviteCodeRawSpy.mockImplementation(realGenerateInviteCodeRaw);
 });
 
 async function setup(opts: { role?: 'owner' | 'member' } = {}) {
@@ -228,6 +238,60 @@ describe('settings createInvitation action', () => {
       await testDb.select().from(invitations).where(eq(invitations.code, r.code)).limit(1)
     )[0];
     expect(stored).toBeDefined();
+  });
+
+  it('returns the failure key after 5 colliding attempts', async () => {
+    const { u, c, m } = await setup();
+    // Pre-seed the only code the rng will offer; every attempt collides
+    // and the action falls through to the "couldn't generate unique" failure
+    // without wedging or hanging.
+    await testDb.insert(invitations).values({
+      code: 'BEBE-CCCCCC',
+      childId: c.id,
+      createdBy: u.id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 86_400_000),
+      usedAt: null,
+      usedBy: null
+    });
+    generateInviteCodeRawSpy.mockReturnValue('BEBE-CCCCCC');
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) }
+    });
+    const r = (await actions.createInvitation!(
+      event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(500);
+    expect(generateInviteCodeRawSpy).toHaveBeenCalledTimes(5);
+  });
+
+  it('retries on a 23505 collision and lands on the next generated code', async () => {
+    const { u, c, m } = await setup();
+    // Pre-seed the collision target so the first INSERT will hit
+    // invitations_pkey (code is the primary key) and raise 23505. The
+    // second attempt picks a fresh code and succeeds.
+    await testDb.insert(invitations).values({
+      code: 'BEBE-AAAAAA',
+      childId: c.id,
+      createdBy: u.id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 86_400_000),
+      usedAt: null,
+      usedBy: null
+    });
+    generateInviteCodeRawSpy.mockReturnValueOnce('BEBE-AAAAAA').mockReturnValueOnce('BEBE-BBBBBB');
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) }
+    });
+    const r = (await actions.createInvitation!(
+      event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
+    )) as { success: string; code: string };
+    expect(r.code).toBe('BEBE-BBBBBB');
+    expect(generateInviteCodeRawSpy).toHaveBeenCalledTimes(2);
   });
 });
 
