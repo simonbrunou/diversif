@@ -30,6 +30,19 @@ async function signUpAndCreateChild(page: Page, name: string, birthDate: string)
   return match[1];
 }
 
+// New accounts auto-open a 3-step welcome modal whose backdrop (Dialog.svelte
+// renders a `fixed inset-0 z-50` div) intercepts pointer events on the bento
+// chrome below. Dismissing it via the "Plus tard" form button posts to the
+// reminders endpoint and persists `showWelcomeDialog=false` for the session,
+// so subsequent navigations stay clean.
+async function dismissWelcomeIfPresent(page: Page): Promise<void> {
+  const dismiss = page.getByRole('button', { name: 'Plus tard' });
+  if (await dismiss.isVisible().catch(() => false)) {
+    await dismiss.click();
+    await expect(dismiss).not.toBeVisible();
+  }
+}
+
 // Force a sub-`lg:` viewport so the mobile chrome (BottomNavBento + FAB) is
 // rendered/visible. Playwright's default chromium project uses Desktop Chrome
 // (1280×720) which crosses the `lg:` breakpoint and switches to the desktop
@@ -50,6 +63,7 @@ test.describe('Bento shell — tab navigation', () => {
 
     // Reload to make the new shell render (the layout reads the cookie at SSR time).
     await page.goto(`/child/${childId}`);
+    await dismissWelcomeIfPresent(page);
 
     // Bento bottom nav rendered.
     await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible();
@@ -76,6 +90,7 @@ test.describe('Bento shell — tab navigation', () => {
 
     await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
     await page.goto(`/child/${childId}`);
+    await dismissWelcomeIfPresent(page);
 
     // Open the log sheet via the FAB.
     await page.getByRole('button', { name: 'Logger un aliment' }).click();
