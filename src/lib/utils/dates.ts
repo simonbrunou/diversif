@@ -51,6 +51,22 @@ export function parseDateTimeLocal(value: string): Date {
 }
 
 /**
+ * Returns a locale-aware age string: months elapsed + total days since
+ * birthMonth. E.g. "6 mois · J+190" (FR) or "6 mo · D+190" (EN).
+ */
+export function formatMonthsSince(birthMonth: string, now: Date = new Date()): string {
+  const locale = languageTag();
+  const birth = dayjs(birthMonth);
+  const today = dayjs(now);
+  const months = today.diff(birth, 'month');
+  const days = today.diff(birth, 'day');
+  if (locale === 'fr') {
+    return `${months} mois · J+${days}`;
+  }
+  return `${months} mo · D+${days}`;
+}
+
+/**
  * Returns true only for a real calendar date in YYYY-MM-DD form. Catches
  * shape errors (`2026-99-99`) and impossible days (`2024-02-30`) by
  * round-tripping through Date and re-encoding to ISO.

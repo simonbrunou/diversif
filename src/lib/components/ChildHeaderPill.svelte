@@ -1,0 +1,40 @@
+<script lang="ts">
+  import * as m from '$lib/paraglide/messages';
+  import { ChevronDown } from 'lucide-svelte';
+  import { formatMonthsSince } from '$lib/utils/dates';
+
+  type Child = {
+    id: string;
+    name: string;
+    birthMonth: string;
+    avatarSeed: string;
+  };
+
+  let {
+    child,
+    onSwitch
+  }: { child: Child; onSwitch: () => void } = $props();
+
+  const ageLabel = $derived(formatMonthsSince(child.birthMonth));
+</script>
+
+<button
+  type="button"
+  onclick={onSwitch}
+  class="mx-auto mb-3 flex w-full max-w-md items-center gap-3 rounded-tile border border-border/60 bg-canvas px-3 py-2 text-left transition-colors duration-base ease-soft hover:bg-surface-2"
+>
+  <span
+    class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-tile-peach to-tile-butter text-base"
+    aria-hidden="true"
+  >
+    {child.avatarSeed}
+  </span>
+  <span class="flex flex-col">
+    <span class="text-sm font-bold leading-tight">{child.name}</span>
+    <span class="text-xs text-ink-soft">{ageLabel}</span>
+  </span>
+  <span class="ml-auto flex items-center gap-1 text-xs text-primary">
+    {m.chromeHeaderChangeChild()}
+    <ChevronDown size={14} aria-hidden="true" />
+  </span>
+</button>

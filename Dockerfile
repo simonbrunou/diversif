@@ -19,6 +19,11 @@ COPY --from=builder --chown=node:node /app/build ./build
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/package.json ./package.json
 COPY --from=builder --chown=node:node /app/drizzle ./drizzle
+# Wrapper script copies COOLIFY_URL into ORIGIN before exec'ing node so
+# adapter-node sees the per-deploy hostname (it caches process.env.ORIGIN
+# at module init, so a JS-side override in hooks.server.ts runs too late).
+COPY --chown=node:node docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -34,4 +39,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/healthz | grep -q '"ok":true' || exit 1
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "build"]
+CMD ["/docker-entrypoint.sh"]

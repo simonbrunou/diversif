@@ -4,6 +4,7 @@ import { makeRouteEvent, safeUser, seedChild, seedMembership, seedUser } from '.
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
+import { foods } from '$lib/server/db/schema';
 import { load } from './+layout.server';
 
 beforeEach(async () => {
@@ -58,5 +59,64 @@ describe('+layout.server load', () => {
       }) as unknown as Parameters<typeof load>[0]
     );
     expect(out.children).toEqual([]);
+  });
+
+  it('returns bento=false and empty foods for a non-bento visitor', async () => {
+    const out = await load(
+      makeRouteEvent({ user: null, url: 'http://localhost/' }) as unknown as Parameters<
+        typeof load
+      >[0]
+    );
+    expect(out.bento).toBe(false);
+    expect(out.currentChildId).toBeNull();
+    expect(out.foods).toEqual([]);
+  });
+
+  it('flags bento=true via cookie override even without a user', async () => {
+    const event = makeRouteEvent({ user: null, url: 'http://localhost/' });
+    event.cookies.set('bento', '1');
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out.bento).toBe(true);
+    expect(out.foods).toEqual([]);
+  });
+
+  it('loads the foods catalog on a /child/:id path when bento is on', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id, name: 'Léo' });
+    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    await testDb.insert(foods).values([
+      { name: 'Poire', category: 'fruits', suggestedAgeMonths: 4 },
+      { name: 'Banane', category: 'fruits', suggestedAgeMonths: 4 }
+    ]);
+
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      url: `http://localhost/child/${c.id}`
+    });
+    event.cookies.set('bento', '1');
+
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out.bento).toBe(true);
+    expect(out.currentChildId).toBe(String(c.id));
+    expect(out.foods).toHaveLength(2);
+    expect(out.foods[0]).toEqual({ id: expect.any(String), label: expect.any(String) });
+  });
+
+  it('skips the foods query when path child id is non-numeric', async () => {
+    const event = makeRouteEvent({ url: 'http://localhost/child/abc' });
+    event.cookies.set('bento', '1');
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out.currentChildId).toBe('abc');
+    expect(out.foods).toEqual([]);
+  });
+
+  it('skips the foods query when bento is on but no user is logged in', async () => {
+    const event = makeRouteEvent({ user: null, url: 'http://localhost/child/5' });
+    event.cookies.set('bento', '1');
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out.bento).toBe(true);
+    expect(out.currentChildId).toBe('5');
+    expect(out.foods).toEqual([]);
   });
 });
