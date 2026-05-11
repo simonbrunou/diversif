@@ -50,18 +50,20 @@ One new table:
 
 ```sql
 CREATE TABLE symptoms (
-  id              UUID PRIMARY KEY,
-  food_entry_id   UUID NOT NULL REFERENCES food_entries(id) ON DELETE CASCADE,
-  child_id        UUID NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+  id              SERIAL PRIMARY KEY,
+  food_entry_id   INTEGER NOT NULL REFERENCES food_entries(id) ON DELETE CASCADE,
+  child_id        INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
   observed_at     TIMESTAMPTZ NOT NULL,
   label           TEXT NOT NULL,
   note            TEXT,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  created_by      UUID NOT NULL REFERENCES users(id)
+  created_by      INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 CREATE INDEX symptoms_food_entry_id_idx ON symptoms(food_entry_id);
 CREATE INDEX symptoms_child_id_observed_at_idx ON symptoms(child_id, observed_at DESC);
 ```
+
+Matches the existing serial-integer ID convention on `food_entries`, `children`, `users`. `created_by` is nullable + `ON DELETE SET NULL` to mirror `food_entries.logged_by`: when a co-parent is removed from a household, their symptom rows remain attached to the food entry but the author column becomes null.
 
 `child_id` is denormalized for the future "all reactions for this child" pediatrician export without join. `ON DELETE CASCADE` on both FKs so the RGPD account-delete sweep reaches symptoms automatically.
 
