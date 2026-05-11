@@ -134,6 +134,51 @@ describe('child/[id]/guide load — bento=true', () => {
     expect(out.tipDismissed).toBe(true);
   });
 
+  it('maps food entries into the recent list for the suggestion engine', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+
+    const { foodEntries, foods } = await import('$lib/server/db/schema');
+    const [pear] = await testDb
+      .insert(foods)
+      .values({
+        name: 'Poire',
+        category: 'fruits',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning();
+    await testDb.insert(foodEntries).values({
+      childId: c.id,
+      foodId: pear.id,
+      givenAt: new Date('2026-05-01T12:00:00Z'),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: u.id,
+      createdAt: new Date()
+    });
+
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'http://localhost/',
+      parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
+    });
+    (event.cookies as ReturnType<typeof import('../../../../test/route').makeCookies>).set(
+      'bento',
+      '1'
+    );
+
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out.bento).toBe(true);
+    if (!out.bento) throw new Error('Expected bento=true branch');
+    expect(Array.isArray(out.suggestions)).toBe(true);
+  });
+
   it('currentStageId reflects child age', async () => {
     const u = await seedUser();
     const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
