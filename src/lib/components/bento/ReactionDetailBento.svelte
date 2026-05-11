@@ -1,0 +1,71 @@
+<script lang="ts">
+  import ReassuranceHero from './ReassuranceHero.svelte';
+  import SymptomList from './SymptomList.svelte';
+  import AddSymptomSheet from './AddSymptomSheet.svelte';
+  import StayCoolCard from './StayCoolCard.svelte';
+  import SevereRail from './SevereRail.svelte';
+  import MonitorTimer from './MonitorTimer.svelte';
+  import * as m from '$lib/paraglide/messages';
+  import type { SymptomLabel } from '$lib/content/symptoms';
+  import { ChevronLeft } from 'lucide-svelte';
+
+  type SymptomEntry = { id: number; label: SymptomLabel; observedAt: string; note: string | null };
+
+  let {
+    childId,
+    entryId,
+    food,
+    nth,
+    date,
+    time,
+    symptoms,
+    printHref
+  }: {
+    childId: string;
+    entryId: number;
+    food: string;
+    nth: number;
+    date: string;
+    time: string;
+    symptoms: SymptomEntry[];
+    printHref: string;
+  } = $props();
+
+  let addOpen = $state(false);
+</script>
+
+<div class="flex flex-col">
+  <a
+    href={`/child/${childId}/foods`}
+    class="mb-2 inline-flex items-center gap-1 text-sm text-ink-soft"
+  >
+    <ChevronLeft size={16} aria-hidden="true" />
+    {m.reactionBackToCarnet()}
+  </a>
+  <h1 class="font-display text-2xl italic leading-tight">
+    {m.reactionTitle({ food })}
+  </h1>
+  <p class="mb-3 text-xs text-ink-soft">
+    {m.reactionSubtitle({ date, time, nth: String(nth) })}
+  </p>
+
+  <ReassuranceHero />
+  <SymptomList {symptoms} onAdd={() => (addOpen = true)} />
+  <StayCoolCard {childId} />
+  <SevereRail />
+  <MonitorTimer entryId={String(entryId)} />
+
+  <a
+    href={printHref}
+    target="_blank"
+    rel="noopener"
+    class="mb-3 inline-block w-full rounded-full border border-primary px-4 py-3 text-center text-sm font-bold text-primary shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+  >
+    {m.reactionExport()}
+  </a>
+</div>
+
+<AddSymptomSheet
+  bind:open={addOpen}
+  action={`/child/${childId}/foods/${entryId}`}
+/>

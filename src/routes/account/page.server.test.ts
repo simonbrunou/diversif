@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { testDb, resetTestDb } from '../../test/db';
-import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
+import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
@@ -15,6 +15,7 @@ import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { passkeys, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
+import { seedChild, seedMembership } from '../../test/route';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -66,6 +67,84 @@ describe('account load', () => {
     );
     expect(out.passkeys.length).toBe(1);
     expect(out.passkeys[0].id).toBe('p1');
+  });
+});
+
+describe('account load — bento branch', () => {
+  it('returns bento:false when cookie is absent', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({ user: safeUser(u) });
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out.bento).toBe(false);
+    // passkeys still returned in bento-off shape
+    expect(Array.isArray(out.passkeys)).toBe(true);
+  });
+
+  it('returns bento:true with children, locale, theme when bento=1 cookie is set', async () => {
+    const u = await seed();
+    // Create a second user to act as coparent
+    const coparent = await seedUser({ email: 'coparent@example.com', displayName: 'Coparent' });
+    const child = await seedChild({ name: 'Léa', birthDate: '2024-06-01', createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: child.id, role: 'owner' });
+    await seedMembership({ userId: coparent.id, childId: child.id, role: 'member' });
+
+    const event = makeRouteEvent({ user: safeUser(u) });
+    // Set bento=1 cookie
+    event.cookies.set('bento', '1', {});
+
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    if (!out.bento) throw new Error('expected bento:true');
+
+    expect(out.bento).toBe(true);
+    expect(Array.isArray(out.children)).toBe(true);
+    expect(out.children.length).toBe(1);
+    expect(out.children[0].name).toBe('Léa');
+    expect(out.children[0].id).toBe(String(child.id));
+    expect(typeof out.children[0].ageMonths).toBe('number');
+
+    // Coparent appears
+    expect(out.children[0].coparents.length).toBe(1);
+    expect(out.children[0].coparents[0].id).toBe(String(coparent.id));
+    expect(out.children[0].coparents[0].displayName).toBe('Coparent');
+    expect(out.children[0].coparents[0].role).toBe('member');
+
+    // locale defaults to 'fr'
+    expect(out.locale).toBe('fr');
+
+    // theme defaults to 'system' when no cookie
+    expect(out.theme).toBe('system');
+
+    // passkeys still returned
+    expect(Array.isArray(out.passkeys)).toBe(true);
+  });
+
+  it('picks up locale from locals', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({ user: safeUser(u), locale: 'en' });
+    event.cookies.set('bento', '1', {});
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    if (!out.bento) throw new Error('expected bento:true');
+    expect(out.locale).toBe('en');
+  });
+
+  it('reads a valid theme cookie', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({ user: safeUser(u) });
+    event.cookies.set('bento', '1', {});
+    event.cookies.set('theme', 'dark', {});
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    if (!out.bento) throw new Error('expected bento:true');
+    expect(out.theme).toBe('dark');
+  });
+
+  it('falls back theme to system for an invalid cookie value', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({ user: safeUser(u) });
+    event.cookies.set('bento', '1', {});
+    event.cookies.set('theme', 'purple', {});
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    if (!out.bento) throw new Error('expected bento:true');
+    expect(out.theme).toBe('system');
   });
 });
 

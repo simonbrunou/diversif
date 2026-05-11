@@ -51,7 +51,7 @@ function applyMigrations(mem: IMemoryDb): void {
   // indexes that pg-mem's wrapped-client semantics don't fully simulate) are
   // enforced in production but skipped here. seedFoods + applySeedCorrections
   // idempotently re-establish the same post-migration state in tests.
-  const filenames = ['0000_init.sql', '0003_passkeys_transports_jsonb.sql'];
+  const filenames = ['0000_init.sql', '0003_passkeys_transports_jsonb.sql', '0004_symptoms.sql'];
 
   for (const filename of filenames) {
     const sqlText = readFileSync(path.resolve('./drizzle', filename), 'utf8');
@@ -187,6 +187,7 @@ export const testDb: DB = drizzle(wrappedPool as any, { schema });
 
 const TRUNCATE_ORDER = [
   'tip_dismissals',
+  'symptoms',
   'food_entries',
   'invitations',
   'memberships',

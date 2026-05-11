@@ -215,6 +215,28 @@ export const idempotencyKeys = pgTable(
   })
 );
 
+export const symptoms = pgTable(
+  'symptoms',
+  {
+    id: serial('id').primaryKey(),
+    foodEntryId: integer('food_entry_id')
+      .notNull()
+      .references(() => foodEntries.id, { onDelete: 'cascade' }),
+    childId: integer('child_id')
+      .notNull()
+      .references(() => children.id, { onDelete: 'cascade' }),
+    observedAt: timestamp('observed_at', { withTimezone: true, mode: 'date' }).notNull(),
+    label: text('label').notNull(),
+    note: text('note'),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+    createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' })
+  },
+  (t) => ({
+    foodEntryIdx: index('symptoms_food_entry_id_idx').on(t.foodEntryId),
+    childObservedIdx: index('symptoms_child_id_observed_at_idx').on(t.childId, t.observedAt)
+  })
+);
+
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Child = typeof children.$inferSelect;
@@ -235,3 +257,5 @@ export type NewIdempotencyKey = typeof idempotencyKeys.$inferInsert;
 export type NewPasskey = typeof passkeys.$inferInsert;
 export type NewTipDismissal = typeof tipDismissals.$inferInsert;
 export type NewWebAuthnChallenge = typeof webauthnChallenges.$inferInsert;
+export type Symptom = typeof symptoms.$inferSelect;
+export type NewSymptom = typeof symptoms.$inferInsert;

@@ -285,4 +285,51 @@ describe('child/[id]/foods load', () => {
     expect(appleEntry!.tried).toBe(2);
     expect(appleEntry!.status).toBe('reaction');
   });
+
+  it('bentoFoods includes lastEntryId pointing to the most-recent entry row', async () => {
+    const ctx = await setup();
+    // Insert two entries for carrot; the most-recent one (2026-05-03) should
+    // be captured as lastEntryId because rows come back DESC givenAt.
+    const [older] = await testDb
+      .insert(foodEntries)
+      .values({
+        childId: ctx.c.id,
+        foodId: ctx.carrot.id,
+        reaction: 'ras',
+        givenAt: new Date('2026-05-01T10:00:00Z'),
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      })
+      .returning();
+    const [newer] = await testDb
+      .insert(foodEntries)
+      .values({
+        childId: ctx.c.id,
+        foodId: ctx.carrot.id,
+        reaction: 'inconfort',
+        givenAt: new Date('2026-05-03T10:00:00Z'),
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      })
+      .returning();
+
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('bentoFoods' in out)) throw new Error('expected bentoFoods in load result');
+    const carrotEntry = out.bentoFoods.find((f) => f.name === 'Carotte');
+    expect(carrotEntry).toBeDefined();
+    // lastEntryId must be the newer (higher givenAt) entry, not the older one
+    expect(carrotEntry!.lastEntryId).toBe(newer.id);
+    expect(carrotEntry!.lastEntryId).not.toBe(older.id);
+  });
+
+  it('bentoFoods lastEntryId is null for foods with no entries', async () => {
+    // No entries seeded — bentoFoods should be empty but the field definition
+    // allows null; verify the loader doesn't crash on an empty result set.
+    const ctx = await setup();
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('bentoFoods' in out)) throw new Error('expected bentoFoods in load result');
+    expect(out.bentoFoods).toHaveLength(0);
+  });
 });

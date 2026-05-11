@@ -12,7 +12,7 @@
     givenAt: number;
   };
 
-  let { entries }: { entries: Entry[] } = $props();
+  let { entries, childId }: { entries: Entry[]; childId: string } = $props();
 
   const visible = $derived(entries.slice(0, 5));
 
@@ -44,21 +44,45 @@
     <ul class="flex flex-col gap-2">
       {#each visible as entry, i (entry.id)}
         {@const Icon = ICON_BY_CATEGORY[entry.category] ?? Apple}
-        <li
-          class="flex animate-feed-item items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft"
-          style="--i: {i}"
-        >
-          <span class="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
-            <Icon size={18} aria-hidden="true" />
-          </span>
-          <span class="flex-1">
-            <p class="text-sm font-bold leading-tight">{entry.foodName}</p>
-            <p class="text-xs text-ink-soft">{formatRelative(entry.givenAt)}</p>
-          </span>
-          <span class="rounded-full bg-tile-mint px-2 py-0.5 text-xs font-semibold">
-            {reactionLabel(entry.reaction)}
-          </span>
-        </li>
+        {@const isNonRas = entry.reaction !== 'ras'}
+        {#if isNonRas}
+          <li
+            class="animate-feed-item"
+            style="--i: {i}"
+          >
+            <a
+              href="/child/{childId}/foods/{entry.id}"
+              class="flex items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft"
+            >
+              <span class="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
+                <Icon size={18} aria-hidden="true" />
+              </span>
+              <span class="flex-1">
+                <p class="text-sm font-bold leading-tight">{entry.foodName}</p>
+                <p class="text-xs text-ink-soft">{formatRelative(entry.givenAt)}</p>
+              </span>
+              <span class="rounded-full bg-tile-mint px-2 py-0.5 text-xs font-semibold">
+                {reactionLabel(entry.reaction)}
+              </span>
+            </a>
+          </li>
+        {:else}
+          <li
+            class="flex animate-feed-item items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft"
+            style="--i: {i}"
+          >
+            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
+              <Icon size={18} aria-hidden="true" />
+            </span>
+            <span class="flex-1">
+              <p class="text-sm font-bold leading-tight">{entry.foodName}</p>
+              <p class="text-xs text-ink-soft">{formatRelative(entry.givenAt)}</p>
+            </span>
+            <span class="rounded-full bg-tile-mint px-2 py-0.5 text-xs font-semibold">
+              {reactionLabel(entry.reaction)}
+            </span>
+          </li>
+        {/if}
       {/each}
     </ul>
   {/if}

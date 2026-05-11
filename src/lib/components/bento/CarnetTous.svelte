@@ -9,9 +9,10 @@
     category: string;
     tried: number;
     status: 'ras' | 'inconfort' | 'reaction' | 'todo';
+    lastEntryId?: number | null;
   };
 
-  let { foods }: { foods: Food[] } = $props();
+  let { foods, childId }: { foods: Food[]; childId?: string } = $props();
 
   let active = $state<string>('');
 
@@ -56,7 +57,7 @@
           {m.carnetTousEmpty()}
         </p>
       {:else}
-        <FoodCardGrid items={filtered} />
+        <FoodCardGrid items={filtered} {childId} />
       {/if}
     </div>
   {/key}

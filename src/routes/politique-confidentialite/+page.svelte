@@ -73,6 +73,7 @@
       <li>Compte parent : email, nom d'usage, mot de passe haché (Argon2id), horodatages d'acceptation des CGU et de la politique, horodatage de dernière connexion.</li>
       <li>Enfant : prénom et date de naissance.</li>
       <li>Journal d'aliments : aliment, date, observation (« RAS », « inconfort », « réaction »), notes libres.</li>
+      <li>Symptômes observés : libellé (rougeur, urticaire, eczéma, vomissement, etc.), heure d'observation, note libre. Supprimés en cascade lors de la suppression du compte ou de l'enfant.</li>
       <li>Sessions et clés d'accès : identifiants opaques, métadonnées WebAuthn (type d'appareil, transports, compteur de signature).</li>
       <li>Invitations : code à durée limitée, identifiants du créateur et de l'utilisateur ayant accepté.</li>
       <li>Conseils écartés : identifiant du conseil fermé pour une fiche enfant, horodatage de fermeture.</li>
