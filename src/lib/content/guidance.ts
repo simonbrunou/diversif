@@ -1023,5 +1023,39 @@ export function pickRotatingTip(tips: Tip[], seed: number): Tip | null {
   return tips[idx];
 }
 
+// ---------------------------------------------------------------------------
+// Bento helper
+// ---------------------------------------------------------------------------
+
+export type BentoStage = {
+  id: StageId;
+  title: string;
+  oneLiner: string;
+  principles: string[];
+  focus: string[];
+  textures: string;
+  milkTarget: string;
+  redFlags: string[];
+  sources: string[];
+};
+
+/**
+ * Returns all 4 canonical stages in the shape expected by DiscoverBento /
+ * StagesBentoGrid. Derives directly from STAGES — no new content authored.
+ */
+export function getAllStagesForBento(): BentoStage[] {
+  return STAGES.map((s) => ({
+    id: s.id,
+    title: s.title,
+    oneLiner: s.oneLiner,
+    principles: [...s.principles],
+    focus: [...s.focus],
+    textures: s.textures,
+    milkTarget: s.milkTarget,
+    redFlags: [...s.redFlags],
+    sources: [...s.sources]
+  }));
+}
+
 // Re-export for components that want the full list of source IDs.
 export { ALL_SOURCE_IDS };

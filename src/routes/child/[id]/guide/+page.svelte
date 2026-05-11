@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DiscoverBento from '$lib/components/bento/DiscoverBento.svelte';
   import Card from '$components/ui/Card.svelte';
   import Button from '$components/ui/Button.svelte';
   import StageBadge from '$lib/components/StageBadge.svelte';
@@ -10,12 +11,14 @@
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
   import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
   import { BookOpen, Compass, AlertTriangle } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
 
   const currentStage = $derived(getStageForAgeMonths(data.ageMonths));
+  const childId = $derived($page.params.id);
 
   const navSections = [
     { id: 'etape', label: 'Étape actuelle' },
@@ -23,6 +26,17 @@
   ] as const;
 </script>
 
+{#if data.bento}
+  <DiscoverBento
+    stages={data.stages}
+    activeStageId={data.currentStageId}
+    suggestions={data.suggestions}
+    todayTip={data.todayTip}
+    tipDismissed={data.tipDismissed}
+    onPickSuggestion={(food) => goto(`/child/${childId}?suggested=${food.id}`)}
+    onDismissTip={() => {}}
+  />
+{:else}
 <div class="container max-w-4xl space-y-8 py-6 md:py-8">
   <header class="space-y-2">
     <a
@@ -147,3 +161,4 @@
     <Button href={localizedHref(`/child/${data.child.id}`)} variant="ghost">← Retour au tableau</Button>
   </div>
 </div>
+{/if}
