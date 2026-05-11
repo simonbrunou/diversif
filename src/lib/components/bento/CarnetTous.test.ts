@@ -36,6 +36,6 @@ describe('CarnetTous', () => {
 
   it('renders the empty placeholder when foods is empty', () => {
     render(CarnetTous, { props: { foods: [] } });
-    expect(screen.getByText('Aucun aliment dans ce filtre')).toBeTruthy();
+    expect(screen.getByText('Aucun aliment ici')).toBeTruthy();
   });
 });

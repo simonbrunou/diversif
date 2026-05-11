@@ -20,11 +20,11 @@ describe('FoodCard', () => {
     expect(screen.getByText('3×')).toBeTruthy();
   });
 
-  it('renders à essayer meta when tried === 0', () => {
+  it('renders à découvrir meta when tried === 0', () => {
     render(FoodCard, {
       props: { name: 'Œuf', category: 'oeufs', tried: 0, status: 'todo' }
     });
-    expect(screen.getByText('à essayer')).toBeTruthy();
+    expect(screen.getByText('à découvrir')).toBeTruthy();
   });
 
   it('uses dashed border when tried === 0', () => {

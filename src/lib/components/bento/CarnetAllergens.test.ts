@@ -27,11 +27,11 @@ describe('CarnetAllergens', () => {
 
   it('renders empty placeholder when items is empty', () => {
     render(CarnetAllergens, { props: { items: [] } });
-    expect(screen.getByText(/Pas encore d'allergène/)).toBeTruthy();
+    expect(screen.getByText(/Aucun allergène/)).toBeTruthy();
   });
 
   it('renders the state per card', () => {
     render(CarnetAllergens, { props: { items } });
-    expect(screen.getAllByText(/à essayer/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/à découvrir/).length).toBeGreaterThan(0);
   });
 });

@@ -28,7 +28,7 @@
   function reactionLabel(r: Entry['reaction']): string {
     if (r === 'inconfort') return 'inconfort';
     if (r === 'reaction') return 'réaction';
-    return 'RAS';
+    return 'OK';
   }
 </script>
 

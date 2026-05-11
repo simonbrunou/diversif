@@ -21,7 +21,7 @@
   </div>
   {#if weeklyEntries.length > 0}
     <article class="rounded-tile bg-canvas p-4 shadow-soft">
-      <p class="mb-3 text-xs font-medium uppercase tracking-wider text-ink-soft">Cadence (7 jours)</p>
+      <p class="mb-3 text-xs font-medium uppercase tracking-wider text-ink-soft">Sur 7 jours</p>
       <div class="flex h-20 items-end gap-1">
         {#each weeklyEntries as count, i (i)}
           <div

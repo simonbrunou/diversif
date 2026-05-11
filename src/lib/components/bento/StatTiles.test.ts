@@ -25,13 +25,13 @@ describe('StatTiles', () => {
     render(StatTiles, {
       props: { foodsIntroduced: 0, weekCount: 0, streakCurrent: 5, streakRecord: 5 }
     });
-    expect(screen.getByText('record')).toBeTruthy();
+    expect(screen.getByText('meilleur score')).toBeTruthy();
   });
 
   it('hides the record indicator when current < record', () => {
     render(StatTiles, {
       props: { foodsIntroduced: 0, weekCount: 0, streakCurrent: 3, streakRecord: 5 }
     });
-    expect(screen.queryByText('record')).toBeNull();
+    expect(screen.queryByText('meilleur score')).toBeNull();
   });
 });

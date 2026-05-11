@@ -29,7 +29,7 @@ describe('AllergensSnapshot', () => {
 
   it('shows the state suffix for each pill', () => {
     render(AllergensSnapshot, { props: { items, foodsHref: '/child/1/foods?segment=allergens' } });
-    const pills = screen.getAllByText(/à essayer/);
+    const pills = screen.getAllByText(/à découvrir/);
     expect(pills.length).toBeGreaterThan(0);
   });
 });

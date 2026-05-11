@@ -11,7 +11,7 @@ describe('CarnetSegments', () => {
     expect(screen.getByText('Tous')).toBeTruthy();
     expect(screen.getByText('Catégories')).toBeTruthy();
     expect(screen.getByText('Allergènes')).toBeTruthy();
-    expect(screen.getByText('Stats')).toBeTruthy();
+    expect(screen.getByText('Bilan')).toBeTruthy();
   });
 
   it('marks the active segment with aria-current', () => {
@@ -25,7 +25,7 @@ describe('CarnetSegments', () => {
     expect(screen.getByText('Allergènes').closest('a')?.getAttribute('href')).toBe(
       '/child/abc/foods?segment=allergens'
     );
-    expect(screen.getByText('Stats').closest('a')?.getAttribute('href')).toBe(
+    expect(screen.getByText('Bilan').closest('a')?.getAttribute('href')).toBe(
       '/child/abc/foods?segment=stats'
     );
   });

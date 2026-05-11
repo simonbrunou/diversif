@@ -45,11 +45,11 @@ describe('RecentFeed', () => {
 
   it('renders the empty placeholder when entries is empty', () => {
     render(RecentFeed, { props: { entries: [] } });
-    expect(screen.getByText('Aucun log cette semaine')).toBeTruthy();
+    expect(screen.getByText('Rien cette semaine')).toBeTruthy();
   });
 
   it('renders the reaction pill text', () => {
     render(RecentFeed, { props: { entries } });
-    expect(screen.getAllByText('RAS').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('OK').length).toBeGreaterThan(0);
   });
 });

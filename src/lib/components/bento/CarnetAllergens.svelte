@@ -15,7 +15,7 @@
 
   function stateLabel(s: Item['state']): string {
     if (s === 'cleared') return m.aujourdhuiAllergensOk();
-    if (s === 'reaction') return 'réaction observée';
+    if (s === 'reaction') return 'réaction';
     return m.aujourdhuiAllergensTodo();
   }
 </script>
