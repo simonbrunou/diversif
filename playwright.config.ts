@@ -40,7 +40,11 @@ export default defineConfig({
     env: {
       NODE_ENV: 'production',
       DATABASE_URL:
-        process.env.E2E_DATABASE_URL ?? 'postgres://diversif:diversif@localhost:5432/diversif_e2e'
+        process.env.E2E_DATABASE_URL ?? 'postgres://diversif:diversif@localhost:5432/diversif_e2e',
+      // Marks this server as an end-to-end run so the signup throttle relaxes
+      // its 20/hr cap — a single Playwright suite legitimately creates dozens
+      // of accounts from one address, and we'd otherwise lock ourselves out.
+      E2E: '1'
     }
   }
 });

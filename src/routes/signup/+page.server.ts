@@ -23,7 +23,14 @@ import type { Actions, PageServerLoad } from './$types';
 // public Internet-facing operator MUST configure ADDRESS_HEADER for adapter-
 // node when behind a reverse proxy — otherwise the proxy IP looks like one
 // noisy client.
-const SIGNUP_LIMIT = { name: 'signup', limit: 20, windowMs: 60 * 60 * 1000 };
+const SIGNUP_LIMIT = {
+  name: 'signup',
+  // Playwright sets E2E=1 in its webServer env; the suite legitimately runs
+  // dozens of signups from one address in a few minutes, so the throttle
+  // relaxes there. Production traffic keeps the 20/hour ceiling.
+  limit: process.env.E2E === '1' ? 200 : 20,
+  windowMs: 60 * 60 * 1000
+};
 
 const schema = z.object({
   email: z.string().email('Email invalide'),
