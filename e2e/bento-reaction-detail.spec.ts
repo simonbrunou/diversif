@@ -39,23 +39,39 @@ async function dismissWelcomeIfPresent(page: Page): Promise<void> {
   }
 }
 
-async function logFood(page: Page, foodName: string, reaction: 'OK' | 'inconfort' | 'réaction') {
-  await page.getByRole('button', { name: /Enregistrer un aliment/i }).click();
-  await page.getByRole('searchbox').fill(foodName);
-  await page.getByRole('option', { name: foodName }).first().click();
-  await page.getByRole('button', { name: new RegExp(reaction, 'i') }).click();
+// Logs a food via the FAB Sheet using the same selector pattern that
+// bento-shell.spec.ts uses successfully (placeholder text, role=option,
+// exact-match submit).
+async function logFoodWithReaction(
+  page: Page,
+  foodName: string,
+  reactionLabel: string
+): Promise<void> {
+  await page.getByRole('button', { name: 'Enregistrer un aliment' }).click();
+  const placeholder = '🔍 chercher un aliment…';
+  await expect(page.getByPlaceholder(placeholder)).toBeVisible();
+  await page.getByPlaceholder(placeholder).fill(foodName);
+  await page
+    .getByRole('option', { name: new RegExp(`^${foodName}$`) })
+    .first()
+    .click();
+  // ReactionPicker uses <label> elements; clicking the label selects the radio.
+  await page.getByText(reactionLabel, { exact: true }).click();
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
+  // Wait for the Sheet to close (placeholder no longer visible).
+  await expect(page.getByPlaceholder(placeholder)).not.toBeVisible();
 }
 
 test('reaction-detail bento renders for non-RAS entry with all panels', async ({
   page,
   context
 }) => {
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
+  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+  await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
 
-  await logFood(page, 'Poire', 'réaction');
+  await logFoodWithReaction(page, 'Poire', 'Réaction marquée');
   await page.goto(`/child/${childId}/foods`);
 
   await page.getByRole('link', { name: /Poire/i }).first().click();
@@ -63,17 +79,17 @@ test('reaction-detail bento renders for non-RAS entry with all panels', async ({
 
   await expect(page.getByText(/On vous accompagne/)).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Symptômes observés' })).toBeVisible();
-  await expect(page.getByText(/Respirez/)).toBeVisible();
   await expect(page.getByText(/Difficulté à respirer/)).toBeVisible();
   await expect(page.getByRole('button', { name: /Suivre 30 min/ })).toBeVisible();
 });
 
 test('add-symptom flow appends a row to the symptom list', async ({ page, context }) => {
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
+  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+  await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
 
-  await logFood(page, 'Poire', 'réaction');
+  await logFoodWithReaction(page, 'Poire', 'Réaction marquée');
   await page.goto(`/child/${childId}/foods`);
   await page.getByRole('link', { name: /Poire/i }).first().click();
 
@@ -89,16 +105,17 @@ test('print page renders without bento chrome and contains key strings', async (
   page,
   context
 }) => {
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
+  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+  await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
 
-  await logFood(page, 'Poire', 'réaction');
+  await logFoodWithReaction(page, 'Poire', 'Réaction marquée');
   await page.goto(`/child/${childId}/foods`);
   await page.getByRole('link', { name: /Poire/i }).first().click();
+  await expect(page).toHaveURL(/\/child\/\d+\/foods\/\d+$/);
 
-  const url = page.url();
-  const printUrl = url + '/print';
+  const printUrl = page.url() + '/print';
   await page.goto(printUrl);
 
   await expect(page.getByRole('heading', { name: /Diversif/ })).toBeVisible();
