@@ -13,7 +13,7 @@
     role="status"
     class={cn(
       'mb-3 flex items-start gap-3 rounded-tile border border-border/40 bg-tile-butter px-3 py-2 shadow-soft',
-      first.severity === 'important' && 'bg-tile-coral text-tile-coral-foreground'
+      first.severity === 'important' && 'bg-tile-peach text-tile-peach-foreground'
     )}
   >
     <Bell size={16} class="mt-0.5 shrink-0" aria-hidden="true" />

@@ -12,7 +12,7 @@
 
 <a
   href={foodsHref}
-  class="mb-3 block rounded-tile bg-tile-sky p-4 shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01]"
+  class="mb-3 block rounded-tile bg-tile-sky p-4 shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01] active:scale-[0.99]"
 >
   <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">
     {m.aujourdhuiAllergensTitle()}

@@ -35,7 +35,9 @@
       {m.aujourdhuiStatsStreakDays({ days: String(streakCurrent) })}
     </p>
     {#if isRecord}
-      <p class="mt-2 text-xs font-semibold text-primary">{m.aujourdhuiStatsStreakRecord()}</p>
+      <p class="mt-2 text-xs font-semibold text-primary animate-record-pop">
+        {m.aujourdhuiStatsStreakRecord()}
+      </p>
     {/if}
   </article>
 </div>

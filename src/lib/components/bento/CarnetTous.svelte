@@ -26,7 +26,7 @@
       type="button"
       onclick={() => (active = '')}
       class={cn(
-        'rounded-full border px-3 py-1 text-xs font-semibold',
+        'rounded-full border px-3 py-1 text-xs font-semibold transition-transform duration-fast ease-soft active:scale-[0.97]',
         active === ''
           ? 'border-primary bg-primary text-primary-foreground'
           : 'border-border bg-canvas text-ink-soft'
@@ -39,7 +39,7 @@
         type="button"
         onclick={() => (active = cat)}
         class={cn(
-          'rounded-full border px-3 py-1 text-xs font-semibold',
+          'rounded-full border px-3 py-1 text-xs font-semibold transition-transform duration-fast ease-soft active:scale-[0.97]',
           active === cat
             ? 'border-primary bg-primary text-primary-foreground'
             : 'border-border bg-canvas text-ink-soft'
@@ -49,11 +49,15 @@
       </button>
     {/each}
   </div>
-  {#if filtered.length === 0}
-    <p class="rounded-tile border border-dashed border-border bg-canvas p-4 text-center text-sm text-ink-soft">
-      {m.carnetTousEmpty()}
-    </p>
-  {:else}
-    <FoodCardGrid items={filtered} />
-  {/if}
+  {#key active}
+    <div class="animate-fade-in-soft">
+      {#if filtered.length === 0}
+        <p class="rounded-tile border border-dashed border-border bg-canvas p-4 text-center text-sm text-ink-soft">
+          {m.carnetTousEmpty()}
+        </p>
+      {:else}
+        <FoodCardGrid items={filtered} />
+      {/if}
+    </div>
+  {/key}
 </div>
