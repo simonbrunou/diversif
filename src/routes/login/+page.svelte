@@ -2,7 +2,7 @@
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
-  import Card from '$components/ui/Card.svelte';
+  import BentoAuthLayout from '$lib/components/bento/BentoAuthLayout.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
   import { browser } from '$app/environment';
@@ -16,6 +16,7 @@
   let submitting = $state(false);
   let passkeyLoading = $state(false);
   let supported = $state(false);
+  let passwordRevealed = $state(false);
 
   $effect(() => {
     if (!browser) return;
@@ -58,13 +59,75 @@
 
 <Seo title={m.authLoginTitle()} path="/login" noindex alternateLocales={['en']} />
 
-<div class="container flex max-w-md flex-1 flex-col justify-center py-10">
-  <div class="text-center">
-    <h1 class="text-3xl font-semibold">{m.authLoginHeading()}</h1>
-    <p class="mt-2 text-sm text-muted-foreground">{m.authLoginSubheading()}</p>
-  </div>
+<BentoAuthLayout title={m.authLoginTitleBento()} subtitle="">
+  {#if supported}
+    <!-- Passkey-first variant: passkey is the primary CTA -->
+    <button
+      type="button"
+      disabled={passkeyLoading}
+      onclick={signInWithPasskey}
+      class="w-full rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft disabled:opacity-60"
+    >
+      {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeyPrimaryCta()}
+    </button>
 
-  <Card class="mt-8 p-6">
+    <button
+      type="button"
+      onclick={() => (passwordRevealed = !passwordRevealed)}
+      class="mt-3 block w-full text-center text-xs uppercase tracking-wider text-ink-soft"
+    >
+      {m.authLoginPasswordReveal()}
+    </button>
+
+    {#if passwordRevealed}
+      <form
+        method="POST"
+        class="mt-4 grid gap-4"
+        use:enhance={() => {
+          submitting = true;
+          return async ({ update }) => {
+            await update();
+            submitting = false;
+          };
+        }}
+      >
+        {#if form?.errorKey}
+          {@const k = form.errorKey as keyof typeof m}
+          <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            {(m[k] as (() => string) | undefined)?.() ?? /* v8 ignore next */ m.errorsGenericFallback()}
+          </div>
+        {/if}
+
+        <div class="grid gap-1.5">
+          <Label for="email">{m.authLoginEmailLabel()}</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email webauthn"
+            required
+            value={form?.email ?? ''}
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <Label for="password">{m.authLoginPasswordLabel()}</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password webauthn"
+            required
+          />
+        </div>
+
+        <Button type="submit" size="lg" loading={submitting}>
+          {submitting ? m.authLoginSubmitting() : m.authLoginSubmit()}
+        </Button>
+      </form>
+    {/if}
+  {:else}
+    <!-- Password-first variant: email+password primary, passkey as secondary -->
     <form
       method="POST"
       class="grid gap-4"
@@ -111,26 +174,17 @@
       </Button>
     </form>
 
-    {#if supported}
-      <div class="mt-4 flex items-center gap-2 text-xs uppercase text-muted-foreground">
-        <span class="h-px flex-1 bg-border"></span>
-        <span>{m.authLoginOrDivider()}</span>
-        <span class="h-px flex-1 bg-border"></span>
-      </div>
-      <Button
-        type="button"
-        size="lg"
-        variant="outline"
-        class="mt-4 w-full"
-        loading={passkeyLoading}
-        onclick={signInWithPasskey}
-      >
-        {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeyButton()}
-      </Button>
-    {/if}
-  </Card>
+    <button
+      type="button"
+      onclick={signInWithPasskey}
+      disabled={passkeyLoading}
+      class="mt-4 w-full rounded-full border border-dashed border-primary px-4 py-3 text-sm font-bold text-primary disabled:opacity-60"
+    >
+      {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeySecondary()}
+    </button>
+  {/if}
 
-  <p class="mt-6 text-center text-sm text-muted-foreground">
-    {m.authLoginNoAccount()} <a href={localizedHref('/signup')} class="font-medium text-primary hover:underline">{m.authLoginCreateAccount()}</a>
-  </p>
-</div>
+  <a href={localizedHref('/signup')} class="mt-4 block text-center text-sm text-primary underline">
+    {m.authLoginFooterSignup()}
+  </a>
+</BentoAuthLayout>
