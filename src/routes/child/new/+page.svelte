@@ -6,14 +6,7 @@
 
   let { data: _data, form }: { data: PageData; form: ActionData } = $props();
 
-  // Map the action's flat error string to OnboardingForm's per-field shape.
-  // Task 10 will refactor the action to return a proper `errors` object;
-  // until then we surface the error on the firstName field as a fallback.
-  const errors = $derived(
-    form?.error
-      ? { firstName: form.error }
-      : null
-  );
+  const errors = $derived(form?.errors ?? null);
 </script>
 
 <Seo title={m.onboardingTitle()} path="/child/new" noindex alternateLocales={['en']} />

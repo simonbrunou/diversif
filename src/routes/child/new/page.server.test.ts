@@ -4,7 +4,7 @@ import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../../test/r
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
-import { children, memberships } from '$lib/server/db/schema';
+import { children, memberships, invitations } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 
@@ -59,17 +59,20 @@ describe('child/new load', () => {
 });
 
 describe('child/new default action', () => {
-  it('fails on missing name', async () => {
+  it('fails on missing firstName', async () => {
     const u = await seedUser();
     const event = makeRouteEvent({
       user: safeUser(u),
-      formData: { name: '', birthDate: '2024-01-01' }
+      formData: { firstName: '', birthDate: '2024-01-01' }
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string; name: string; birthDate: string } };
+    )) as {
+      status: number;
+      data: { errors: { firstName?: string }; firstName: string; birthDate: string };
+    };
     expect(r.status).toBe(400);
-    expect(r.data.error).toBeTruthy();
+    expect(r.data.errors?.firstName).toBeTruthy();
     expect(r.data.birthDate).toBe('2024-01-01');
   });
 
@@ -77,11 +80,11 @@ describe('child/new default action', () => {
     const u = await seedUser();
     const event = makeRouteEvent({
       user: safeUser(u),
-      formData: { name: 'Bébé', birthDate: '2024-99-99' }
+      formData: { firstName: 'Bébé', birthDate: '2024-99-99' }
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errors: { birthDate?: string } } };
     expect(r.status).toBe(400);
   });
 
@@ -89,7 +92,7 @@ describe('child/new default action', () => {
     const u = await seedUser();
     const event = makeRouteEvent({
       user: safeUser(u),
-      formData: { name: '  Bébé  ', birthDate: '2024-01-01' }
+      formData: { firstName: '  Bébé  ', birthDate: '2024-01-01' }
     });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
@@ -107,5 +110,55 @@ describe('child/new default action', () => {
       .where(eq(memberships.childId, childRow!.id));
     expect(memb.length).toBe(1);
     expect(memb[0].role).toBe('owner');
+  });
+});
+
+describe('child/new action — invite-coparent flow', () => {
+  it('skips invitation when inviteCoparent is not set', async () => {
+    const u = await seedUser();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { firstName: 'Léo', birthDate: '2023-06-15' }
+    });
+    await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const rows = await testDb.select().from(invitations);
+    expect(rows.length).toBe(0);
+  });
+
+  it('creates an invitation when inviteCoparent=1 is sent', async () => {
+    const u = await seedUser();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { firstName: 'Léo', birthDate: '2023-06-15', inviteCoparent: '1' }
+    });
+    await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const childRow = (
+      await testDb.select().from(children).where(eq(children.name, 'Léo')).limit(1)
+    )[0];
+    expect(childRow).toBeDefined();
+    const inviteRows = await testDb
+      .select()
+      .from(invitations)
+      .where(eq(invitations.childId, childRow!.id));
+    expect(inviteRows.length).toBe(1);
+  });
+
+  it('redirect URL carries inviteCode when invite succeeds', async () => {
+    const u = await seedUser();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { firstName: 'Léo', birthDate: '2023-06-15', inviteCoparent: '1' }
+    });
+    const r = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') {
+      expect(r.location).toMatch(/\/child\/\d+\?inviteCode=.+/);
+    }
   });
 });
