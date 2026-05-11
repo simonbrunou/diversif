@@ -429,6 +429,24 @@ describe('child/[id] +page.server load', () => {
   });
 });
 
+describe('?/optInBento action', () => {
+  it('sets bento=1 cookie and 303 redirects back to /child/[id]', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    const m_row = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m_row],
+      params: { id: String(c.id) },
+      request: new Request('http://localhost/', { method: 'POST' })
+    });
+    await expect(
+      actions.optInBento(event as unknown as Parameters<typeof actions.optInBento>[0])
+    ).rejects.toMatchObject({ status: 303 });
+    expect(event.cookies.get('bento')).toBe('1');
+  });
+});
+
 describe('child/[id] dismissReminder action', () => {
   it('rejects empty key', async () => {
     const { u, c, m } = await setup();

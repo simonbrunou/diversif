@@ -1,5 +1,6 @@
 <script lang="ts">
   import AujourdhuiBento from '$lib/components/bento/AujourdhuiBento.svelte';
+  import BentoOptInBanner from '$lib/components/bento/BentoOptInBanner.svelte';
   import type { SuggestFood } from '$lib/utils/suggest';
   import { goto } from '$app/navigation';
   import Button from '$components/ui/Button.svelte';
@@ -177,6 +178,7 @@
     onLog={onLogFromHero}
   />
 {:else}
+<BentoOptInBanner childId={String(data.child.id)} />
 <div class="container max-w-3xl space-y-6 py-6 md:py-8">
   <section
     class="relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/10 via-accent/40 to-background p-6 shadow-card md:p-8"
