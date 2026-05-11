@@ -227,6 +227,12 @@ export const actions: Actions = {
       secure: process.env.NODE_ENV === 'production',
       maxAge: Math.floor(SESSION_DURATION_MS / 1000)
     });
+    cookies.set('bento', '1', {
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 365
+    });
 
     throw localizedRedirect(
       event.locals.locale,
