@@ -42,9 +42,12 @@
     </p>
   {:else}
     <ul class="flex flex-col gap-2">
-      {#each visible as entry (entry.id)}
+      {#each visible as entry, i (entry.id)}
         {@const Icon = ICON_BY_CATEGORY[entry.category] ?? Apple}
-        <li class="flex items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft">
+        <li
+          class="flex animate-feed-item items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft"
+          style="--i: {i}"
+        >
           <span class="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
             <Icon size={18} aria-hidden="true" />
           </span>
