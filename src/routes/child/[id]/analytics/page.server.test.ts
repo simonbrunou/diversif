@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { testDb, resetTestDb } from '../../../../test/db';
-import { makeRouteEvent, seedChild, seedUser } from '../../../../test/route';
+import { captureFlow, makeRouteEvent, seedChild, seedUser } from '../../../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
@@ -62,5 +62,30 @@ describe('child/[id]/analytics load', () => {
     expect(last.introductions).toBe(1);
     expect(last.reactions.ras).toBe(1);
     expect(last.cumulativeCategories).toBe(1);
+  });
+});
+
+describe('analytics load — bento redirect', () => {
+  it('redirects to /foods?segment=stats when bento is on', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    const event = makeRouteEvent({
+      parent: async () => ({ bento: true, child: { id: c.id, birthDate: c.birthDate } })
+    });
+    const r = await captureFlow(() => load(event as unknown as Parameters<typeof load>[0]));
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') {
+      expect(r.location).toBe(`/child/${c.id}/foods?segment=stats`);
+    }
+  });
+
+  it('falls through to legacy logic when bento is off', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    const event = makeRouteEvent({
+      parent: async () => ({ bento: false, child: { id: c.id, birthDate: c.birthDate } })
+    });
+    const r = await captureFlow(() => load(event as unknown as Parameters<typeof load>[0]));
+    expect(r.kind).not.toBe('redirect');
   });
 });

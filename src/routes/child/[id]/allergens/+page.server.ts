@@ -1,3 +1,4 @@
+import { redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, isNotNull } from 'drizzle-orm';
@@ -15,7 +16,13 @@ export type AllergenStatus = {
   count: number;
 };
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, parent }) => {
+  const parentData = await parent();
+  if (parentData.bento) {
+    const id = parseChildIdParam(params);
+    throw redirect(303, `/child/${id}/foods?segment=allergens`);
+  }
+
   requireUser(locals);
   const childId = parseChildIdParam(params);
   requireMembership(locals, childId);
