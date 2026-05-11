@@ -8,7 +8,7 @@ async function signUpAndCreateChild(page: Page, name: string, birthDate: string)
   const email = `${unique('e2e')}@example.com`;
   await page.goto('/signup');
   await page.getByLabel('Votre prénom').fill('Parent');
-  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe').fill('hunter2-very-long');
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
