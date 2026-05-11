@@ -28,6 +28,7 @@ const SIGNUP_LIMIT = {
   // Playwright sets E2E=1 in its webServer env; the suite legitimately runs
   // dozens of signups from one address in a few minutes, so the throttle
   // relaxes there. Production traffic keeps the 20/hour ceiling.
+  /* v8 ignore next — E2E branch covered by the Playwright suite */
   limit: process.env.E2E === '1' ? 200 : 20,
   windowMs: 60 * 60 * 1000
 };
