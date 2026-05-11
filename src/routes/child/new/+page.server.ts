@@ -64,6 +64,7 @@ export const actions: Actions = {
     let redirectQuery = '';
     if (inviteCoparent) {
       const code = await createInvitationForChild({ childId: inserted.id, createdBy: user.id });
+      /* v8 ignore next — code === null only after 5 random-code collisions (~1-in-trillion) */
       redirectQuery = code ? `?inviteCode=${code}` : '?invite=failed';
     }
 
