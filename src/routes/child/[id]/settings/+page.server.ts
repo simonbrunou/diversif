@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
-import { generateInviteCodeRaw, verifyPassword } from '$lib/server/auth';
-import { isUniqueViolation } from '$lib/server/db/errors';
+import { verifyPassword } from '$lib/server/auth';
+import { createInvitationForChild } from '$lib/server/invitations';
 import { checkRateLimit } from '$lib/server/rate-limit';
 
 // Same fresh-auth bucket the /account changePassword and deleteAccount
@@ -21,42 +21,6 @@ import {
 } from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
-
-const INVITE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
-
-// SELECT-then-INSERT would race: two concurrent createInvitation calls can
-// pass the SELECT and only the INSERT enforces invitations.code's PRIMARY
-// KEY. Skip the pre-check and let Postgres adjudicate via 23505; on the
-// astronomically rare collision (each attempt has N/32^6 odds against the N
-// live codes already in the table) retry with a fresh code. Up to 5 attempts
-// so the action never wedges if random has a bad day.
-async function insertInviteWithUniqueCode(input: {
-  childId: number;
-  createdBy: number;
-  createdAt: Date;
-  expiresAt: Date;
-}): Promise<string | null> {
-  for (let i = 0; i < 5; i++) {
-    const code = generateInviteCodeRaw();
-    try {
-      await db.insert(invitations).values({
-        code,
-        childId: input.childId,
-        createdBy: input.createdBy,
-        createdAt: input.createdAt,
-        expiresAt: input.expiresAt,
-        usedAt: null,
-        usedBy: null
-      });
-      return code;
-    } catch (err) {
-      /* v8 ignore start — defensive: any non-23505 error bubbles up unchanged */
-      if (!isUniqueViolation(err)) throw err;
-      /* v8 ignore stop */
-    }
-  }
-  return null;
-}
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   requireUser(locals);
@@ -135,13 +99,7 @@ export const actions: Actions = {
     const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
 
-    const now = new Date();
-    const code = await insertInviteWithUniqueCode({
-      childId,
-      createdBy: user.id,
-      createdAt: now,
-      expiresAt: new Date(now.getTime() + INVITE_DURATION_MS)
-    });
+    const code = await createInvitationForChild({ childId, createdBy: user.id });
     if (!code) return fail(500, { error: 'Impossible de générer un code unique.' });
     return { success: 'Code généré.', code };
   },

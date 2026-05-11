@@ -18,8 +18,19 @@ vi.mock('$lib/server/auth', async () => {
   return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
 });
 
+// The shared invitations helper imports generateInviteCodeRaw from
+// $lib/utils/invites directly. We intercept it here so the same spy that
+// controls the auth re-export also controls the shared module, giving the
+// createInvitation collision tests full control over code generation.
+// We use a ref-object (plain {}), safe to assign inside the hoisted factory.
+const _invitesRef = vi.hoisted(() => ({ real: null as null | (() => string) }));
+vi.mock('$lib/utils/invites', async () => {
+  const actual = await vi.importActual<typeof import('$lib/utils/invites')>('$lib/utils/invites');
+  _invitesRef.real = actual.generateInviteCodeRaw;
+  return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
+});
+
 import { hashPassword } from '$lib/server/auth';
-import { generateInviteCodeRaw as realGenerateInviteCodeRaw } from '$lib/utils/invites';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -39,7 +50,7 @@ beforeEach(async () => {
   await resetTestDb();
   _clearAllRateLimits();
   generateInviteCodeRawSpy.mockReset();
-  generateInviteCodeRawSpy.mockImplementation(realGenerateInviteCodeRaw);
+  generateInviteCodeRawSpy.mockImplementation(() => _invitesRef.real!());
 });
 
 async function setup(opts: { role?: 'owner' | 'member' } = {}) {
