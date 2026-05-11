@@ -148,3 +148,36 @@ describe('child/[id]/allergens load', () => {
     expect(oeuf.lastIntroAt).toBe(t2.getTime());
   });
 });
+
+describe('allergens load — bento redirect', () => {
+  it('redirects to /foods?segment=allergens when bento is on', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id, name: 'L' });
+    const mem = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [mem],
+      params: { id: String(c.id) },
+      parent: async () => ({ bento: true })
+    });
+    const r = await captureFlow(() => load(event as unknown as Parameters<typeof load>[0]));
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') {
+      expect(r.location).toBe(`/child/${c.id}/foods?segment=allergens`);
+    }
+  });
+
+  it('falls through to legacy logic when bento is off', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id, name: 'L' });
+    const mem = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [mem],
+      params: { id: String(c.id) },
+      parent: async () => ({ bento: false })
+    });
+    const r = await captureFlow(() => load(event as unknown as Parameters<typeof load>[0]));
+    expect(r.kind).not.toBe('redirect');
+  });
+});

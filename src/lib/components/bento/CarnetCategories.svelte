@@ -1,0 +1,50 @@
+<!-- src/lib/components/bento/CarnetCategories.svelte -->
+<script lang="ts">
+  import FoodCard from './FoodCard.svelte';
+  import * as m from '$lib/paraglide/messages';
+
+  type Food = {
+    id: number;
+    name: string;
+    category: string;
+    tried: number;
+    status: 'ras' | 'inconfort' | 'reaction' | 'todo';
+  };
+
+  let { foods }: { foods: Food[] } = $props();
+
+  const grouped = $derived(
+    foods.reduce<Record<string, Food[]>>((acc, f) => {
+      (acc[f.category] ??= []).push(f);
+      return acc;
+    }, {})
+  );
+
+  const categories = $derived(Object.keys(grouped).sort());
+</script>
+
+{#if categories.length === 0}
+  <p class="rounded-tile border border-dashed border-border bg-canvas p-4 text-center text-sm text-ink-soft">
+    {m.carnetCategoriesEmpty()}
+  </p>
+{:else}
+  <div class="flex flex-col gap-2">
+    {#each categories as cat (cat)}
+      <details
+        data-category={cat}
+        class="rounded-tile border border-border/40 bg-canvas p-3 shadow-soft"
+      >
+        <summary class="cursor-pointer text-sm font-semibold uppercase tracking-wider text-ink-soft">
+          {cat} ({grouped[cat].length})
+        </summary>
+        <div class="mt-3 flex gap-3 overflow-x-auto">
+          {#each grouped[cat] as f (f.id)}
+            <div class="min-w-[8rem]">
+              <FoodCard name={f.name} category={f.category} tried={f.tried} status={f.status} />
+            </div>
+          {/each}
+        </div>
+      </details>
+    {/each}
+  </div>
+{/if}

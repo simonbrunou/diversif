@@ -8,7 +8,7 @@ afterEach(() => cleanup());
 describe('FabLog', () => {
   it('renders a button with the expected aria-label', () => {
     render(FabLog, { props: { onclick: () => {} } });
-    expect(screen.getByRole('button').getAttribute('aria-label')).toBe('Logger un aliment');
+    expect(screen.getByRole('button').getAttribute('aria-label')).toBe('Enregistrer un aliment');
   });
 
   it('fires onclick when pressed', async () => {

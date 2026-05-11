@@ -1,4 +1,7 @@
 <script lang="ts">
+  import AujourdhuiBento from '$lib/components/bento/AujourdhuiBento.svelte';
+  import type { SuggestFood } from '$lib/utils/suggest';
+  import { goto } from '$app/navigation';
   import Button from '$components/ui/Button.svelte';
   import Card from '$components/ui/Card.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
@@ -117,6 +120,18 @@
 
   const days = $derived(mounted ? groupByDay(data.recent) : []);
 
+  function onLogFromHero(food: SuggestFood | null): void {
+    // Phase 4 deep-link fallback: AppShellBento's LogSheet wiring is a
+    // Phase 4.5 refinement. For now, route the click to the existing log
+    // route so users still land on a log form pre-filled (when foodId
+    // query supports it) or empty.
+    if (food) {
+      void goto(`/child/${data.child.id}/log?foodId=${food.id}`);
+    } else {
+      void goto(`/child/${data.child.id}/log`);
+    }
+  }
+
   const streakLabel = $derived(
     data.streak === 1
       ? m.dashboardStreakLabelOne({ days: data.streak })
@@ -148,6 +163,20 @@
   );
 </script>
 
+{#if data.bento}
+  <AujourdhuiBento
+    childId={String(data.child.id)}
+    childName={data.child.name}
+    recent={data.recent}
+    stats={data.stats}
+    streak={data.streak}
+    streakRecord={data.streak}
+    reminders={data.reminders ?? []}
+    starterFoods={data.starterFoods ?? []}
+    priorityAllergensTodo={[]}
+    onLog={onLogFromHero}
+  />
+{:else}
 <div class="container max-w-3xl space-y-6 py-6 md:py-8">
   <section
     class="relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/10 via-accent/40 to-background p-6 shadow-card md:p-8"
@@ -485,6 +514,7 @@
     </a>
   </div>
 </div>
+{/if}
 
 <WelcomeDialog
   bind:open={welcomeOpen}

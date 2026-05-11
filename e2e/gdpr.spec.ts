@@ -7,7 +7,7 @@ function unique(prefix: string): string {
 async function signUp(page: Page, email: string) {
   await page.goto('/signup');
   await page.getByLabel('Votre prénom').fill('RGPD Tester');
-  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe').fill('hunter2-very-long');
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
@@ -37,7 +37,7 @@ test.describe('signup consent gates', () => {
     const email = `${unique('blocked')}@example.com`;
     await page.goto('/signup');
     await page.getByLabel('Votre prénom').fill('Sans consentement');
-    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Adresse e-mail').fill(email);
     await page.getByLabel('Mot de passe').fill('hunter2-very-long');
     await page.getByRole('button', { name: /créer mon compte/i }).click();
     // Browsers block submission for unticked required checkboxes; URL stays on /signup.
@@ -51,7 +51,7 @@ test.describe('account deletion', () => {
     await signUp(page, email);
 
     await page.goto('/account');
-    await page.getByLabel(/Saisissez votre email/i).fill(email);
+    await page.getByLabel(/Saisissez votre adresse e-mail/i).fill(email);
     await page.getByLabel(/Confirmez avec votre mot de passe/i).fill('hunter2-very-long');
     await page.getByRole('button', { name: /Supprimer définitivement/i }).click();
     await expect(page).toHaveURL(/\/account\/deleted/);

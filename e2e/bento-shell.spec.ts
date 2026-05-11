@@ -10,7 +10,7 @@ async function signUpAndCreateChild(page: Page, name: string, birthDate: string)
   const email = `${unique('bento')}@example.com`;
   await page.goto('/signup');
   await page.getByLabel('Votre prénom').fill('Parent');
-  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe').fill('hunter2-very-long');
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
@@ -93,7 +93,7 @@ test.describe('Bento shell — tab navigation', () => {
     await dismissWelcomeIfPresent(page);
 
     // Open the log sheet via the FAB.
-    await page.getByRole('button', { name: 'Logger un aliment' }).click();
+    await page.getByRole('button', { name: 'Enregistrer un aliment' }).click();
 
     // Sheet placeholder visible.
     const placeholder = '🔍 chercher un aliment…';
@@ -105,8 +105,9 @@ test.describe('Bento shell — tab navigation', () => {
     // Click the matching list item. The Command primitive renders <li role="option">.
     await page.getByRole('option', { name: /^Poire$/ }).click();
 
-    // Submit.
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    // Submit. Use exact match so this doesn't collide with the HeroTile
+    // CTA ('Enregistrer Avocat') or the FAB ('Enregistrer un aliment').
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     // Toast confirms save.
     await expect(page.getByText('Enregistré')).toBeVisible();
@@ -116,5 +117,34 @@ test.describe('Bento shell — tab navigation', () => {
 
     // Recent feed on /child/<id> shows the new entry.
     await expect(page.getByText('Poire').first()).toBeVisible();
+  });
+
+  test('Carnet Allergènes segment is reachable via URL', async ({ page, context }) => {
+    const sevenMonthsAgo = new Date();
+    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
+    const childId = await signUpAndCreateChild(page, 'Sam', dateStr);
+
+    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+    await page.goto(`/child/${childId}/foods`);
+    await dismissWelcomeIfPresent(page);
+
+    // Click the Allergènes segment link.
+    await page.getByRole('link', { name: 'Allergènes' }).click();
+    await expect(page).toHaveURL(/\/child\/\d+\/foods\?segment=allergens/);
+  });
+
+  test('/allergens server-redirects to /foods?segment=allergens under bento', async ({
+    page,
+    context
+  }) => {
+    const sevenMonthsAgo = new Date();
+    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
+    const childId = await signUpAndCreateChild(page, 'Mo', dateStr);
+
+    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+    await page.goto(`/child/${childId}/allergens`);
+    await expect(page).toHaveURL(new RegExp(`/child/${childId}/foods\\?segment=allergens`));
   });
 });

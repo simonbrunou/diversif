@@ -32,7 +32,7 @@ describe('AppShellBento', () => {
 
   it('renders the FAB with the right aria-label', () => {
     render(AppShellBento, { props: baseProps });
-    expect(screen.getByLabelText('Logger un aliment')).toBeTruthy();
+    expect(screen.getByLabelText('Enregistrer un aliment')).toBeTruthy();
   });
 
   it('renders the child header pill with the current child name', () => {
@@ -44,7 +44,7 @@ describe('AppShellBento', () => {
     render(AppShellBento, {
       props: { ...baseProps, currentPath: '/login', currentChildId: undefined }
     });
-    expect(screen.queryByLabelText('Logger un aliment')).toBeNull();
+    expect(screen.queryByLabelText('Enregistrer un aliment')).toBeNull();
     expect(screen.queryByLabelText('Navigation principale')).toBeNull();
   });
 

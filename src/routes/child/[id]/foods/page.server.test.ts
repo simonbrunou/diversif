@@ -212,4 +212,77 @@ describe('child/[id]/foods load', () => {
     expect(out.entries).toHaveLength(1);
     expect(out.entries[0].loggedByName).toBe('Compte supprimé');
   });
+
+  it('aggregates duplicate food logs and tracks worst reaction', async () => {
+    const ctx = await setup();
+    // Three entries for the same food:
+    //   1st (givenAt 05-03): 'reaction' → seeded first in the map via the else branch
+    //   2nd (givenAt 05-02): 'inconfort' → hits if (existing), severity < existing.status → false arm of the > check
+    //   3rd (givenAt 05-01): 'ras'       → hits if (existing), severity < existing.status → false arm again
+    // The DESC orderBy means the most-recent row populates the map first, so subsequent
+    // rows always have lower severity and exercise the false-branch of the condition.
+    await testDb.insert(foodEntries).values([
+      {
+        childId: ctx.c.id,
+        foodId: ctx.carrot.id,
+        reaction: 'reaction',
+        givenAt: new Date('2026-05-03T10:00:00Z'),
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: ctx.c.id,
+        foodId: ctx.carrot.id,
+        reaction: 'inconfort',
+        givenAt: new Date('2026-05-02T10:00:00Z'),
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: ctx.c.id,
+        foodId: ctx.carrot.id,
+        reaction: 'ras',
+        givenAt: new Date('2026-05-01T10:00:00Z'),
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      }
+    ]);
+    // Apple covers the inverse branch: the loader iterates rows in DESC
+    // givenAt order, so the most-recent (ras) populates the map first. The
+    // older (reaction) entry then hits if (existing) AND severity > existing.status
+    // — TRUE arm of the severity check, escalating the stored status.
+    await testDb.insert(foodEntries).values([
+      {
+        childId: ctx.c.id,
+        foodId: ctx.apple.id,
+        reaction: 'ras',
+        givenAt: new Date('2026-05-04T10:00:00Z'),
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: ctx.c.id,
+        foodId: ctx.apple.id,
+        reaction: 'reaction',
+        givenAt: new Date('2026-05-03T08:00:00Z'),
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      }
+    ]);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('bentoFoods' in out)) throw new Error('expected bentoFoods in load result');
+    const carrotEntry = out.bentoFoods.find((f) => f.name === 'Carotte');
+    expect(carrotEntry).toBeDefined();
+    expect(carrotEntry!.tried).toBe(3);
+    expect(carrotEntry!.status).toBe('reaction');
+    const appleEntry = out.bentoFoods.find((f) => f.name === 'Pomme');
+    expect(appleEntry).toBeDefined();
+    expect(appleEntry!.tried).toBe(2);
+    expect(appleEntry!.status).toBe('reaction');
+  });
 });
