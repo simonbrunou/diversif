@@ -10,7 +10,8 @@ import {
   foodEntries,
   tipDismissals,
   passkeys,
-  webauthnChallenges
+  webauthnChallenges,
+  symptoms
 } from './schema';
 
 describe('schema exports', () => {
@@ -25,7 +26,8 @@ describe('schema exports', () => {
       foodEntries,
       tipDismissals,
       passkeys,
-      webauthnChallenges
+      webauthnChallenges,
+      symptoms
     ]) {
       expect(table).toBeDefined();
       expect(typeof table).toBe('object');
@@ -56,5 +58,30 @@ describe('schema exports', () => {
     const cfg = getTableConfig(passkeys);
     const idx = cfg.indexes.find((i) => i.config.name === 'passkeys_user_idx');
     expect(idx).toBeDefined();
+  });
+});
+
+describe('symptoms table', () => {
+  it('is defined and has the expected columns', () => {
+    expect(symptoms).toBeDefined();
+    const cfg = getTableConfig(symptoms);
+    const cols = cfg.columns.map((c) => c.name).sort();
+    expect(cols).toEqual([
+      'child_id',
+      'created_at',
+      'created_by',
+      'food_entry_id',
+      'id',
+      'label',
+      'note',
+      'observed_at'
+    ]);
+  });
+
+  it('indexes food_entry_id and (child_id, observed_at)', () => {
+    const cfg = getTableConfig(symptoms);
+    const idxNames = cfg.indexes.map((i) => i.config.name).sort();
+    expect(idxNames).toContain('symptoms_food_entry_id_idx');
+    expect(idxNames).toContain('symptoms_child_id_observed_at_idx');
   });
 });
