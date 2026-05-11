@@ -41,7 +41,10 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     if (ids.length === 0) {
       return {
         entries: [],
-        filters: { q, category, reaction, repeat }
+        filters: { q, category, reaction, repeat },
+        bentoFoods: [],
+        foodCount: 0,
+        categoryCount: 0
       };
     }
     conditions.push(inArray(foodEntries.foodId, ids));
@@ -73,6 +76,37 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     rows = rows.filter((r) => normalize(r.foodName).includes(nq));
   }
 
+  const foodMap = new Map<
+    number,
+    {
+      id: number;
+      name: string;
+      category: string;
+      tried: number;
+      status: 'ras' | 'inconfort' | 'reaction';
+    }
+  >();
+  const severity = { ras: 0, inconfort: 1, reaction: 2 } as const;
+  for (const r of rows) {
+    const reaction = r.reaction as 'ras' | 'inconfort' | 'reaction';
+    const existing = foodMap.get(r.foodId);
+    if (existing) {
+      existing.tried += 1;
+      if (severity[reaction] > severity[existing.status]) existing.status = reaction;
+    } else {
+      foodMap.set(r.foodId, {
+        id: r.foodId,
+        name: r.foodName,
+        category: r.category,
+        tried: 1,
+        status: reaction
+      });
+    }
+  }
+  const bentoFoods = Array.from(foodMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  const foodCount = bentoFoods.length;
+  const categoryCount = new Set(bentoFoods.map((f) => f.category)).size;
+
   return {
     entries: rows.map((r) => ({
       ...r,
@@ -80,6 +114,9 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
       givenAt:
         r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt)
     })),
-    filters: { q, category, reaction, repeat }
+    filters: { q, category, reaction, repeat },
+    bentoFoods,
+    foodCount,
+    categoryCount
   };
 };
