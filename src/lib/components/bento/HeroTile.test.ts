@@ -33,7 +33,7 @@ describe('HeroTile', () => {
         onLog
       }
     });
-    await fireEvent.click(screen.getByRole('button', { name: /Logger Poire/ }));
+    await fireEvent.click(screen.getByRole('button', { name: /Enregistrer Poire/ }));
     expect(onLog).toHaveBeenCalledWith({
       id: 1,
       name: 'Poire',
@@ -45,7 +45,7 @@ describe('HeroTile', () => {
   it('fires onLog with null in the empty-state CTA', async () => {
     const onLog = vi.fn();
     render(HeroTile, { props: { childName, suggestion: null, onLog } });
-    await fireEvent.click(screen.getByRole('button', { name: /\+ Logger/ }));
+    await fireEvent.click(screen.getByRole('button', { name: /\+ Enregistrer/ }));
     expect(onLog).toHaveBeenCalledWith(null);
   });
 });

@@ -93,7 +93,7 @@ test.describe('Bento shell — tab navigation', () => {
     await dismissWelcomeIfPresent(page);
 
     // Open the log sheet via the FAB.
-    await page.getByRole('button', { name: 'Logger un aliment' }).click();
+    await page.getByRole('button', { name: 'Enregistrer un aliment' }).click();
 
     // Sheet placeholder visible.
     const placeholder = '🔍 chercher un aliment…';
