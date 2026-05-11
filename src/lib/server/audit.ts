@@ -42,7 +42,14 @@ export type AuditEvent =
   // their account (e.g. after losing a device). Useful audit signal in a
   // breach-investigation context — the operator can see "X revoked all
   // sessions at T" alongside the surrounding error/access patterns.
-  | { type: 'account.sessions_revoked'; userId: number };
+  | { type: 'account.sessions_revoked'; userId: number }
+  | {
+      type: 'symptom.added';
+      userId: number;
+      childId: number;
+      entryId: number;
+      label: string;
+    };
 
 export function audit(event: AuditEvent): void {
   console.log(
