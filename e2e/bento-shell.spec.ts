@@ -117,4 +117,33 @@ test.describe('Bento shell — tab navigation', () => {
     // Recent feed on /child/<id> shows the new entry.
     await expect(page.getByText('Poire').first()).toBeVisible();
   });
+
+  test('Carnet Allergènes segment is reachable via URL', async ({ page, context }) => {
+    const sevenMonthsAgo = new Date();
+    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
+    const childId = await signUpAndCreateChild(page, 'Sam', dateStr);
+
+    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+    await page.goto(`/child/${childId}/foods`);
+    await dismissWelcomeIfPresent(page);
+
+    // Click the Allergènes segment link.
+    await page.getByRole('link', { name: 'Allergènes' }).click();
+    await expect(page).toHaveURL(/\/child\/\d+\/foods\?segment=allergens/);
+  });
+
+  test('/allergens server-redirects to /foods?segment=allergens under bento', async ({
+    page,
+    context
+  }) => {
+    const sevenMonthsAgo = new Date();
+    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
+    const childId = await signUpAndCreateChild(page, 'Mo', dateStr);
+
+    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+    await page.goto(`/child/${childId}/allergens`);
+    await expect(page).toHaveURL(new RegExp(`/child/${childId}/foods\\?segment=allergens`));
+  });
 });
