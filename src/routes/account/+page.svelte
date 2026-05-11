@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ProfilBento from '$lib/components/bento/ProfilBento.svelte';
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
@@ -110,6 +111,14 @@
   }
 </script>
 
+{#if data.bento}
+  <ProfilBento
+    children={data.children}
+    passkeyCount={data.passkeys.length}
+    locale={data.locale}
+    theme={data.theme}
+  />
+{:else}
 <div class="container max-w-2xl space-y-6 py-6">
   <header>
     <a href={localizedHref('/')} class="text-sm text-muted-foreground hover:underline">{m.authAccountBack()}</a>
@@ -315,3 +324,4 @@
     </div>
   </Card>
 </div>
+{/if}

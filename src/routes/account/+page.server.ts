@@ -1,9 +1,11 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
+import { children, memberships, users } from '$lib/server/db/schema';
+import { bentoEnabled } from '$lib/feature-flags';
+import { ageInMonths } from '$lib/utils/age';
 import {
   SESSION_COOKIE,
   SESSION_DURATION_MS,
@@ -28,10 +30,66 @@ import type { Actions, PageServerLoad } from './$types';
 // password-stuffing pointless.
 const FRESH_AUTH_LIMIT = { name: 'fresh-auth', limit: 5, windowMs: 5 * 60 * 1000 };
 
-export const load: PageServerLoad = async ({ locals }) => {
+const VALID_THEMES = new Set(['system', 'light', 'dark'] as const);
+
+export const load: PageServerLoad = async ({ locals, cookies }) => {
   const user = requireUser(locals);
+  const passkeys = (await listPasskeys(user.id)).map(publicPasskey);
+
+  const bento = bentoEnabled(user.email, cookies);
+  if (!bento) {
+    return { passkeys, bento: false as const };
+  }
+
+  // Load all children this user is a member of, with coparents for each.
+  const myMemberships = await db
+    .select({
+      childId: memberships.childId,
+      childName: children.name,
+      childBirthDate: children.birthDate
+    })
+    .from(memberships)
+    .innerJoin(children, eq(children.id, memberships.childId))
+    .where(eq(memberships.userId, user.id));
+
+  const childrenData = await Promise.all(
+    myMemberships.map(async (row) => {
+      const coparents = await db
+        .select({
+          id: users.id,
+          displayName: users.displayName,
+          role: memberships.role
+        })
+        .from(memberships)
+        .innerJoin(users, eq(users.id, memberships.userId))
+        .where(and(eq(memberships.childId, row.childId), ne(memberships.userId, user.id)));
+
+      return {
+        id: String(row.childId),
+        name: row.childName,
+        ageMonths: ageInMonths(row.childBirthDate),
+        coparents: coparents.map((c) => ({
+          id: String(c.id),
+          displayName: c.displayName,
+          role: c.role
+        }))
+      };
+    })
+  );
+
+  const locale = (locals.locale /* v8 ignore next */ ?? 'fr') as 'fr' | 'en';
+
+  const rawTheme = cookies.get('theme');
+  const theme: 'system' | 'light' | 'dark' = VALID_THEMES.has(rawTheme as 'system')
+    ? (rawTheme as 'system' | 'light' | 'dark')
+    : 'system';
+
   return {
-    passkeys: (await listPasskeys(user.id)).map(publicPasskey)
+    passkeys,
+    bento: true as const,
+    children: childrenData,
+    locale,
+    theme
   };
 };
 
