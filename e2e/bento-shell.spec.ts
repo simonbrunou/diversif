@@ -105,8 +105,9 @@ test.describe('Bento shell — tab navigation', () => {
     // Click the matching list item. The Command primitive renders <li role="option">.
     await page.getByRole('option', { name: /^Poire$/ }).click();
 
-    // Submit.
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    // Submit. Use exact match so this doesn't collide with the HeroTile
+    // CTA ('Enregistrer Avocat') or the FAB ('Enregistrer un aliment').
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     // Toast confirms save.
     await expect(page.getByText('Enregistré')).toBeVisible();
