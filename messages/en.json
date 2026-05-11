@@ -344,5 +344,43 @@
   "printSeverityWarn": "watch",
   "printSeveritySevere": "severe",
   "printFooterNote": "Document to present to the pediatrician",
-  "printGeneratedAt": "Generated on {date}"
+  "printGeneratedAt": "Generated on {date}",
+
+  "authSignupTitleBento": "Welcome",
+  "authSignupSubtitleBento": "Diversify with confidence, at your own pace.",
+  "authLoginTitleBento": "Welcome back",
+  "authLoginPasskeyPrimaryCta": "🔑 Continue with a passkey",
+  "authLoginPasswordReveal": "Or with password",
+  "authLoginPasskeySecondary": "🔑 With a passkey",
+  "authSignupFooterLogin": "I already have an account · Sign in",
+  "authLoginFooterSignup": "Don't have an account · Sign up",
+  "authSignupDivider": "or",
+  "authSignupPasskeyCta": "🔑 Continue with a passkey",
+
+  "onboardingTitle": "Baby.",
+  "onboardingSubtitle": "A few details to start the notebook.",
+  "onboardingFirstNameLabel": "First name",
+  "onboardingBirthDateLabel": "Date of birth",
+  "onboardingInviteSectionHeader": "Co-parent (optional)",
+  "onboardingInviteCheckbox": "Invite a co-parent now",
+  "onboardingInviteCaption": "Generate a shareable code — you can also do this later from Profile.",
+  "onboardingSubmit": "Get started",
+
+  "landingFeaturesTitle": "Why Diversif",
+  "landingTrustTitle": "Trust by design",
+  "landingTrustPillarNoTelemetry": "No telemetry",
+  "landingTrustPillarSources": "Cited scientific sources",
+  "landingTrustPillarOwnership": "Your data belongs to you",
+  "landingClosingCtaTitle": "Ready to start?",
+  "landingClosingCtaButton": "Create my account",
+
+  "optInBannerTitle": "The new design is ready.",
+  "optInBannerSubtitle": "Want to try it?",
+  "optInBannerCta": "Try the new design ✨",
+  "optInBannerDismissAria": "Dismiss panel",
+
+  "onboardingInviteCodeToastTitle": "Invitation code generated",
+  "onboardingInviteCodeToastBody": "Share this code with your co-parent.",
+  "onboardingInviteCodeCopy": "Copy",
+  "onboardingInviteFailedToast": "Code not generated. Try again from Profile."
 }
