@@ -22,7 +22,7 @@ async function signUpAndCreateChild(page: Page, name: string, birthDate: string)
 
   await page.getByLabel('Prénom').fill(name);
   await page.getByLabel('Date de naissance').fill(birthDate);
-  await page.getByRole('button', { name: 'Commencer' }).click();
+  await page.getByRole('button', { name: /^créer$/i }).click();
   await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
 
   const match = page.url().match(/\/child\/(\d+)/);

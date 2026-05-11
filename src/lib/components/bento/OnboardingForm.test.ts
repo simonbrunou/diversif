@@ -11,7 +11,7 @@ describe('OnboardingForm', () => {
     expect(screen.getByLabelText('Prénom')).toBeTruthy();
     expect(screen.getByLabelText('Date de naissance')).toBeTruthy();
     expect(screen.getByLabelText('Inviter un co-parent maintenant')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Commencer' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Créer' })).toBeTruthy();
   });
 
   it('renders inline errors when provided', () => {
