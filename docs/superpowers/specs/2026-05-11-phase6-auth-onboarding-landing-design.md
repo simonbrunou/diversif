@@ -64,7 +64,8 @@ Land the four remaining surfaces in bento, flip the feature flag default-on for 
 - `LandingFeaturesBento.svelte` — replaces `LandingFeatures.svelte` body. 4-tile cluster (mint / butter / sky / lilac).
 - `LandingTrustBento.svelte` — replaces `LandingTrust.svelte` body. 3 trust pillars on sky tile.
 - `LandingClosingCtaBento.svelte` — replaces `LandingClosingCta.svelte` body. Sage filled tile.
-- `OnboardingForm.svelte` — extracted from `/child/new` body, adds optional `coparentEmail` field.
+- `OnboardingForm.svelte` — extracted from `/child/new` body, adds optional `inviteCoparent` checkbox.
+- `src/lib/server/invitations.ts` (NEW module) — exports `createInvitationForChild({ childId, createdBy })` returning the new code or null on retry exhaustion. The existing settings action and the new onboarding action both consume this helper. Inserts the code via the same retry-on-23505 loop as the current inline logic in settings.
 
 Legal pages don't get extracted components — each is 50–180 lines, the restyle is inline.
 
@@ -72,7 +73,9 @@ Legal pages don't get extracted components — each is 50–180 lines, the resty
 
 Current `/child/new` action: validate prénom + birthDate, insert into `children`, insert membership (owner), 303 redirect to `/child/<id>`.
 
-Phase 6 addition: read optional `coparentEmail`. If present and matches the email zod schema, after child + membership creation, call the existing `createInvitation({ childId, email, invitedBy })` helper (same one used at `/child/[id]/settings#invite`). On invitation success, redirect to `/child/<id>?invited=1` so Aujourd'hui can surface a one-time toast. On invitation rate-limit or other failure, the child still exists — surface a non-fatal toast instead.
+Phase 6 addition: read optional `inviteCoparent` checkbox. When checked, after child + membership creation, call a shared `createInvitationForChild({ childId, createdBy })` helper (extracted from `/child/[id]/settings/+page.server.ts`'s existing `insertInviteWithUniqueCode` logic). On invitation success, redirect to `/child/<id>?inviteCode=<code>` so Aujourd'hui surfaces a one-time banner with the code and a "Copier" button. On invitation creation failure (5 unique-code attempts exhausted), the child is still created — redirect to `/child/<id>?invite=failed` for a non-fatal toast.
+
+The shared helper lives at `src/lib/server/invitations.ts` and is the single source of truth for invitation creation across `/child/new`, `/child/[id]/settings`, and any future caller.
 
 ### Opt-in form action
 
@@ -141,10 +144,10 @@ Single white card on cream canvas (no gradient — user is signed in, no marketi
 4. `Date de naissance` input — pinned to today as max, 18 months ago as practical min hint (no hard min)
 5. Visual hairline divider
 6. Section header — "Co-parent (optionnel)"
-7. `coparentEmail` input with caption: "On lui enverra un lien d'invitation. Vous pourrez aussi le faire plus tard depuis Profil."
+7. Checkbox `inviteCoparent` with caption: "Générer un code à partager — vous pourrez aussi le faire plus tard depuis Profil."
 8. Sage **Commencer** full-width CTA
 
-If `coparentEmail` is empty after trim → action skips the invitation step. If invalid email → zod surfaces a validation error inline. If rate-limited → child is created, redirect carries a `?invite=ratelimited` flag for the toast on Aujourd'hui.
+If `inviteCoparent` is unchecked → action skips the invitation step. If checked → action generates an invitation code via the shared helper; redirect carries `?inviteCode=<code>` for a one-time banner on Aujourd'hui. If code generation fails (5 unique-code retry attempts exhausted) → child is still created, redirect carries `?invite=failed`.
 
 ### `/` (landing) — bento restyle
 
@@ -221,13 +224,13 @@ validate form → create user (existing) → set bento=1 cookie → audit signup
 
 ```
 validate prénom + birthDate (existing)
-+ if coparentEmail present and valid:
-    insert child + membership (existing)
-    try createInvitation({ childId, email, invitedBy: user.id })
-    on success: 303 to /child/<id>?invited=1
-    on rate-limit: 303 to /child/<id>?invite=ratelimited
-+ else:
-    insert child + membership (existing) → 303 to /child/<id>
+insert child + membership (existing)
+if inviteCoparent checked:
+    code = await createInvitationForChild({ childId, createdBy: user.id })
+    if code: 303 to /child/<id>?inviteCode=<code>
+    else:    303 to /child/<id>?invite=failed
+else:
+    303 to /child/<id>
 ```
 
 **Opt-in action:**
