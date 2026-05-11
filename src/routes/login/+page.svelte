@@ -16,7 +16,6 @@
   let submitting = $state(false);
   let passkeyLoading = $state(false);
   let supported = $state(false);
-  let passwordRevealed = $state(false);
 
   $effect(() => {
     if (!browser) return;
@@ -61,7 +60,6 @@
 
 <BentoAuthLayout title={m.authLoginTitleBento()} subtitle="">
   {#if supported}
-    <!-- Passkey-first variant: passkey is the primary CTA -->
     <button
       type="button"
       disabled={passkeyLoading}
@@ -70,110 +68,58 @@
     >
       {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeyPrimaryCta()}
     </button>
-
-    <button
-      type="button"
-      onclick={() => (passwordRevealed = !passwordRevealed)}
-      class="mt-3 block w-full text-center text-xs uppercase tracking-wider text-ink-soft"
-    >
+    <div class="my-4 text-center text-xs uppercase tracking-wider text-ink-soft">
       {m.authLoginPasswordReveal()}
-    </button>
+    </div>
+  {/if}
 
-    {#if passwordRevealed}
-      <form
-        method="POST"
-        class="mt-4 grid gap-4"
-        use:enhance={() => {
-          submitting = true;
-          return async ({ update }) => {
-            await update();
-            submitting = false;
-          };
-        }}
-      >
-        {#if form?.errorKey}
-          {@const k = form.errorKey as keyof typeof m}
-          <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-            {(m[k] as (() => string) | undefined)?.() ?? /* v8 ignore next */ m.errorsGenericFallback()}
-          </div>
-        {/if}
-
-        <div class="grid gap-1.5">
-          <Label for="email">{m.authLoginEmailLabel()}</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autocomplete="email webauthn"
-            required
-            value={form?.email ?? ''}
-          />
-        </div>
-
-        <div class="grid gap-1.5">
-          <Label for="password">{m.authLoginPasswordLabel()}</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autocomplete="current-password webauthn"
-            required
-          />
-        </div>
-
-        <Button type="submit" size="lg" loading={submitting}>
-          {submitting ? m.authLoginSubmitting() : m.authLoginSubmit()}
-        </Button>
-      </form>
+  <form
+    method="POST"
+    class="grid gap-4"
+    use:enhance={() => {
+      submitting = true;
+      return async ({ update }) => {
+        await update();
+        submitting = false;
+      };
+    }}
+  >
+    {#if form?.errorKey}
+      {@const k = form.errorKey as keyof typeof m}
+      <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+        {(m[k] as (() => string) | undefined)?.() ?? /* v8 ignore next */ m.errorsGenericFallback()}
+      </div>
     {/if}
-  {:else}
-    <!-- Password-first variant: email+password primary, passkey as secondary -->
-    <form
-      method="POST"
-      class="grid gap-4"
-      use:enhance={() => {
-        submitting = true;
-        return async ({ update }) => {
-          await update();
-          submitting = false;
-        };
-      }}
-    >
-      {#if form?.errorKey}
-        {@const k = form.errorKey as keyof typeof m}
-        <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-          {(m[k] as (() => string) | undefined)?.() ?? /* v8 ignore next */ m.errorsGenericFallback()}
-        </div>
-      {/if}
 
-      <div class="grid gap-1.5">
-        <Label for="email">{m.authLoginEmailLabel()}</Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          autocomplete="email webauthn"
-          required
-          value={form?.email ?? ''}
-        />
-      </div>
+    <div class="grid gap-1.5">
+      <Label for="email">{m.authLoginEmailLabel()}</Label>
+      <Input
+        id="email"
+        name="email"
+        type="email"
+        autocomplete="email webauthn"
+        required
+        value={form?.email ?? ''}
+      />
+    </div>
 
-      <div class="grid gap-1.5">
-        <Label for="password">{m.authLoginPasswordLabel()}</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autocomplete="current-password webauthn"
-          required
-        />
-      </div>
+    <div class="grid gap-1.5">
+      <Label for="password">{m.authLoginPasswordLabel()}</Label>
+      <Input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password webauthn"
+        required
+      />
+    </div>
 
-      <Button type="submit" size="lg" loading={submitting}>
-        {submitting ? m.authLoginSubmitting() : m.authLoginSubmit()}
-      </Button>
-    </form>
+    <Button type="submit" size="lg" loading={submitting}>
+      {submitting ? m.authLoginSubmitting() : m.authLoginSubmit()}
+    </Button>
+  </form>
 
+  {#if !supported}
     <button
       type="button"
       onclick={signInWithPasskey}

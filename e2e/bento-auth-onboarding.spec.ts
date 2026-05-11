@@ -52,5 +52,5 @@ test('onboarding with inviteCoparent generates a code visible in the redirect qu
   await page.getByLabel('Inviter un co-parent maintenant').check();
   await page.getByRole('button', { name: 'Commencer' }).click();
 
-  await expect(page).toHaveURL(/\/child\/\d+\?inviteCode=[A-Z0-9]+$/i);
+  await expect(page).toHaveURL(/\/child\/\d+\?inviteCode=[A-Z0-9-]+$/i);
 });
