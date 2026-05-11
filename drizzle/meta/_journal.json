@@ -29,6 +29,13 @@
       "when": 1778330047609,
       "tag": "0003_passkeys_transports_jsonb",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778517167421,
+      "tag": "0004_symptoms",
+      "breakpoints": true
     }
   ]
 }
