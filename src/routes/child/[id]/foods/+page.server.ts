@@ -76,6 +76,11 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     rows = rows.filter((r) => normalize(r.foodName).includes(nq));
   }
 
+  // Build a map of foodId → max(entry id) for non-repeat lookups.
+  // The rows are already ordered DESC givenAt, so the first occurrence of
+  // each foodId in the loop is the most-recent row — capture its entry id.
+  const latestEntryIdByFood = new Map<number, number>();
+
   const foodMap = new Map<
     number,
     {
@@ -84,11 +89,16 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
       category: string;
       tried: number;
       status: 'ras' | 'inconfort' | 'reaction';
+      lastEntryId: number | null;
     }
   >();
   const severity = { ras: 0, inconfort: 1, reaction: 2 } as const;
   for (const r of rows) {
     const reaction = r.reaction as 'ras' | 'inconfort' | 'reaction';
+    // First occurrence per foodId (DESC givenAt) = most recent entry
+    if (!latestEntryIdByFood.has(r.foodId)) {
+      latestEntryIdByFood.set(r.foodId, r.id);
+    }
     const existing = foodMap.get(r.foodId);
     if (existing) {
       existing.tried += 1;
@@ -99,7 +109,8 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
         name: r.foodName,
         category: r.category,
         tried: 1,
-        status: reaction
+        status: reaction,
+        lastEntryId: latestEntryIdByFood.get(r.foodId) ?? null
       });
     }
   }

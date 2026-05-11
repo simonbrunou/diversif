@@ -169,7 +169,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     )
   );
 
-  const reminders = computeReminders({
+  const baseReminders = computeReminders({
     childId,
     ageMonths,
     childCreatedAt,
@@ -178,6 +178,35 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     dismissals,
     now: nowAtLoad.getTime()
   });
+
+  // Observation-window reminder: if there's a non-RAS entry within the last
+  // 48 hours, surface a "check the profile" reminder pointing directly to
+  // that entry's reaction-detail page. This lets the user quickly review
+  // notes and symptoms without hunting through the log.
+  const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
+  const latestNonRasEntry = entriesNormalized.find(
+    (e) => e.reaction !== 'ras' && nowAtLoad.getTime() - e.givenAt <= FORTY_EIGHT_HOURS_MS
+  );
+  const observationKey = latestNonRasEntry ? `observation-window:${latestNonRasEntry.id}` : null;
+  const observationReminder =
+    latestNonRasEntry && observationKey && !dismissals.has(observationKey)
+      ? {
+          key: observationKey,
+          severity: 'warn' as const,
+          title: `Surveiller « ${latestNonRasEntry.foodName} »`,
+          body: 'Une réaction a été notée il y a moins de 48 h. Consultez le profil pour noter les symptômes ou ajouter des observations.',
+          cta: {
+            label: 'Voir le profil',
+            href: `/child/${childId}/foods/${latestNonRasEntry.id}`
+          },
+          dismissable: true
+        }
+      : null;
+
+  // Prepend the observation reminder (highest priority) then cap total at 4.
+  const reminders = (
+    observationReminder ? [observationReminder, ...baseReminders] : baseReminders
+  ).slice(0, 4);
 
   // Welcome dialog: show only if not dismissed and the child has no entries
   // *all-time* — `entriesNormalized` only covers the last 90 days, so basing

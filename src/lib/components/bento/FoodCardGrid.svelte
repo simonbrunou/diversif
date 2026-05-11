@@ -7,13 +7,22 @@
     category: string;
     tried: number;
     status: 'ras' | 'inconfort' | 'reaction' | 'todo';
+    lastEntryId?: number | null;
   };
 
-  let { items }: { items: Item[] } = $props();
+  let { items, childId }: { items: Item[]; childId?: string } = $props();
 </script>
 
 <div class="grid grid-cols-2 gap-3">
   {#each items as item (item.id)}
-    <FoodCard name={item.name} category={item.category} tried={item.tried} status={item.status} />
+    <FoodCard
+      name={item.name}
+      category={item.category}
+      tried={item.tried}
+      status={item.status}
+      href={childId && item.lastEntryId != null
+        ? `/child/${childId}/foods/${item.lastEntryId}`
+        : undefined}
+    />
   {/each}
 </div>

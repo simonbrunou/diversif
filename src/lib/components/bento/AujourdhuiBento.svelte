@@ -93,5 +93,5 @@
     {streakRecord}
   />
   <AllergensSnapshot items={allergenPills} foodsHref={`/child/${childId}/foods?segment=allergens`} />
-  <RecentFeed entries={recent} />
+  <RecentFeed entries={recent} {childId} />
 </div>

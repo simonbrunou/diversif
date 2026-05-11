@@ -33,4 +33,56 @@ describe('FoodCard', () => {
     });
     expect(container.querySelector('article')?.className).toContain('border-dashed');
   });
+
+  it('renders as <a> when status is reaction and href is provided', () => {
+    const { container } = render(FoodCard, {
+      props: {
+        name: 'Poire',
+        category: 'fruits',
+        tried: 2,
+        status: 'reaction',
+        href: '/child/1/foods/42'
+      }
+    });
+    const link = container.querySelector('a');
+    expect(link).toBeTruthy();
+    expect(link?.getAttribute('href')).toBe('/child/1/foods/42');
+    expect(container.querySelector('article')).toBeNull();
+  });
+
+  it('renders as <a> when status is inconfort and href is provided', () => {
+    const { container } = render(FoodCard, {
+      props: {
+        name: 'Banane',
+        category: 'fruits',
+        tried: 1,
+        status: 'inconfort',
+        href: '/child/1/foods/7'
+      }
+    });
+    expect(container.querySelector('a')).toBeTruthy();
+    expect(container.querySelector('article')).toBeNull();
+  });
+
+  it('renders as <article> when status is non-RAS but href is not provided', () => {
+    const { container } = render(FoodCard, {
+      props: { name: 'Poire', category: 'fruits', tried: 2, status: 'reaction' }
+    });
+    expect(container.querySelector('article')).toBeTruthy();
+    expect(container.querySelector('a')).toBeNull();
+  });
+
+  it('renders as <article> for RAS status even if href is provided', () => {
+    const { container } = render(FoodCard, {
+      props: {
+        name: 'Poire',
+        category: 'fruits',
+        tried: 3,
+        status: 'ras',
+        href: '/child/1/foods/10'
+      }
+    });
+    expect(container.querySelector('article')).toBeTruthy();
+    expect(container.querySelector('a')).toBeNull();
+  });
 });

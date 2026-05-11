@@ -13,6 +13,7 @@
     category: string;
     tried: number;
     status: 'ras' | 'inconfort' | 'reaction' | 'todo';
+    lastEntryId?: number | null;
   };
 
   type AllergenItem = {
@@ -46,7 +47,7 @@
   <CarnetHeader {foodCount} {categoryCount} />
   <CarnetSegments {childId} {currentSegment} />
   {#if currentSegment === 'all'}
-    <CarnetTous {foods} />
+    <CarnetTous {foods} {childId} />
   {:else if currentSegment === 'categories'}
     <CarnetCategories {foods} />
   {:else if currentSegment === 'allergens'}

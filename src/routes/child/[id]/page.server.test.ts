@@ -341,6 +341,92 @@ describe('child/[id] +page.server load', () => {
     );
     expect(out.stats.allergens.reaction).toBe(1);
   });
+
+  it('surfaces an observation-window reminder with cta href when a non-RAS entry exists within 48 h', async () => {
+    const { u, c, m, food } = await setup();
+    const [entry] = await testDb
+      .insert(foodEntries)
+      .values({
+        childId: c.id,
+        foodId: food.id,
+        givenAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+        reaction: 'inconfort',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      })
+      .returning();
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        parent: async () => ({
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    const obsReminder = out.reminders.find((r) => r.key.startsWith('observation-window:'));
+    expect(obsReminder).toBeDefined();
+    expect(obsReminder!.cta?.href).toBe(`/child/${c.id}/foods/${entry.id}`);
+    expect(obsReminder!.severity).toBe('warn');
+  });
+
+  it('does not surface observation-window reminder when non-RAS entry is older than 48 h', async () => {
+    const { u, c, m, food } = await setup();
+    await testDb.insert(foodEntries).values({
+      childId: c.id,
+      foodId: food.id,
+      givenAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+      reaction: 'inconfort',
+      notes: null,
+      loggedBy: u.id,
+      createdAt: new Date()
+    });
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        parent: async () => ({
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    const obsReminder = out.reminders.find((r) => r.key.startsWith('observation-window:'));
+    expect(obsReminder).toBeUndefined();
+  });
+
+  it('does not surface observation-window reminder when all entries are RAS', async () => {
+    const { u, c, m } = await setup({ entries: 2 });
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        parent: async () => ({
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    const obsReminder = out.reminders.find((r) => r.key.startsWith('observation-window:'));
+    expect(obsReminder).toBeUndefined();
+  });
 });
 
 describe('child/[id] dismissReminder action', () => {
