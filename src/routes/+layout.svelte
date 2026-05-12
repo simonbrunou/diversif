@@ -114,6 +114,7 @@
   <meta name="application-name" content={SITE.name} />
   <meta name="apple-mobile-web-app-title" content={SITE.name} />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="generator" content="SvelteKit" />
