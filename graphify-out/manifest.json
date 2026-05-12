@@ -1267,13 +1267,13 @@
     "mtime": 1778569761.7543068,
     "hash": "03e56412da6433a8f17331daf4b19757"
   },
-  "/home/sbrn/Projects/diversif/src/routes/account/+page.svelte": {
-    "mtime": 1778569761.7543068,
-    "hash": "1afc5b940d167a132d62aa3fb10dff29"
-  },
   "/home/sbrn/Projects/diversif/src/routes/account/page.server.test.ts": {
     "mtime": 1778569761.7543068,
     "hash": "31a64887763d4a6babf4e0412f0c8888"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/account/+page.svelte": {
+    "mtime": 1778572333.6847596,
+    "hash": "fcc3e7bf1cb3777c41494ac3484a6ccc"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/deleted/+page.svelte": {
     "mtime": 1778175007.9050903,

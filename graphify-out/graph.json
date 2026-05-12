@@ -12820,24 +12820,6 @@
       "norm_label": "load()"
     },
     {
-      "label": "+page.svelte",
-      "file_type": "code",
-      "source_file": "src/routes/account/+page.svelte",
-      "source_location": "L1",
-      "id": "src_routes_account_page_svelte",
-      "community": 65,
-      "norm_label": "+page.svelte"
-    },
-    {
-      "label": "@simplewebauthn/browser",
-      "file_type": "code",
-      "source_file": "src/routes/login/+page.svelte",
-      "confidence": "EXTRACTED",
-      "id": "browser",
-      "community": 65,
-      "norm_label": "@simplewebauthn/browser"
-    },
-    {
       "label": "page.server.test.ts",
       "file_type": "code",
       "source_file": "src/routes/account/page.server.test.ts",
@@ -12863,6 +12845,24 @@
       "id": "account_page_server_test_seedkey",
       "community": 4,
       "norm_label": "seedkey()"
+    },
+    {
+      "label": "+page.svelte",
+      "file_type": "code",
+      "source_file": "src/routes/account/+page.svelte",
+      "source_location": "L1",
+      "id": "src_routes_account_page_svelte",
+      "community": 65,
+      "norm_label": "+page.svelte"
+    },
+    {
+      "label": "@simplewebauthn/browser",
+      "file_type": "code",
+      "source_file": "src/routes/login/+page.svelte",
+      "confidence": "EXTRACTED",
+      "id": "browser",
+      "community": 65,
+      "norm_label": "@simplewebauthn/browser"
     },
     {
       "label": "+page.svelte",
@@ -38970,22 +38970,6 @@
       "target": "lib_feature_flags_bentoenabled"
     },
     {
-      "relation": "dynamic_import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/account/+page.svelte",
-      "confidence_score": 1.0,
-      "source": "src_routes_account_page_svelte",
-      "target": "browser"
-    },
-    {
-      "relation": "dynamic_import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/login/+page.svelte",
-      "confidence_score": 1.0,
-      "source": "browser",
-      "target": "src_routes_login_page_svelte"
-    },
-    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -39081,6 +39065,22 @@
       "confidence_score": 1.0,
       "source": "src_routes_account_page_server_test_ts",
       "target": "account_page_server_test_seedkey"
+    },
+    {
+      "relation": "dynamic_import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/+page.svelte",
+      "confidence_score": 1.0,
+      "source": "src_routes_account_page_svelte",
+      "target": "browser"
+    },
+    {
+      "relation": "dynamic_import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/login/+page.svelte",
+      "confidence_score": 1.0,
+      "source": "browser",
+      "target": "src_routes_login_page_svelte"
     },
     {
       "relation": "contains",
@@ -45420,5 +45420,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "45b4ec31ad16b4b06a803f0fe0a7d4242188c47f"
+  "built_at_commit": "e8fd94772437e5908f1d7c8b63b043c8b7dc19fc"
 }
