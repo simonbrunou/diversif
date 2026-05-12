@@ -332,4 +332,184 @@ describe('child/[id]/foods load', () => {
     if (!('bentoFoods' in out)) throw new Error('expected bentoFoods in load result');
     expect(out.bentoFoods).toHaveLength(0);
   });
+
+  it('bentoAllergens reports todo + null lastTried when the child has no entries', async () => {
+    const ctx = await setup();
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('bentoAllergens' in out)) throw new Error('expected bentoAllergens in load result');
+    expect(out.bentoAllergens.length).toBeGreaterThanOrEqual(7);
+    for (const a of out.bentoAllergens) {
+      expect(a.state).toBe('todo');
+      expect(a.triedCount).toBe(0);
+      expect(a.lastTried).toBeNull();
+    }
+  });
+
+  it('bentoAllergens reports cleared for each priority allergen tried once with ras', async () => {
+    const ctx = await setup();
+    const { PRIORITY_INTRODUCTION_ALLERGENS } = await import('$lib/utils/allergens');
+    // Seed one food per priority allergen, each with a single 'ras' entry.
+    for (const id of PRIORITY_INTRODUCTION_ALLERGENS) {
+      const [food] = await testDb
+        .insert(foods)
+        .values({
+          name: `Food-${id}`,
+          category: 'autres',
+          isMajorAllergen: true,
+          allergenType: id,
+          suggestedAgeMonths: 6,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning();
+      await testDb.insert(foodEntries).values({
+        childId: ctx.c.id,
+        foodId: food.id,
+        givenAt: new Date('2026-05-10T10:00:00Z'),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      });
+    }
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('bentoAllergens' in out)) throw new Error('expected bentoAllergens in load result');
+    for (const id of PRIORITY_INTRODUCTION_ALLERGENS) {
+      const a = out.bentoAllergens.find((x) => x.id === id);
+      expect(a).toBeDefined();
+      expect(a!.state).toBe('cleared');
+      expect(a!.triedCount).toBe(1);
+      expect(a!.lastTried).toBe('10/05/26');
+    }
+  });
+
+  it('bentoAllergens flips state to reaction when any entry for that allergen reacted', async () => {
+    const ctx = await setup();
+    const [peanutFood] = await testDb
+      .insert(foods)
+      .values({
+        name: 'Arachide grillée',
+        category: 'autres',
+        isMajorAllergen: true,
+        allergenType: 'arachide',
+        suggestedAgeMonths: 6,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning();
+    // One ras entry plus one reaction entry — should escalate to 'reaction'.
+    await testDb.insert(foodEntries).values([
+      {
+        childId: ctx.c.id,
+        foodId: peanutFood.id,
+        givenAt: new Date('2026-05-08T10:00:00Z'),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: ctx.c.id,
+        foodId: peanutFood.id,
+        givenAt: new Date('2026-05-09T10:00:00Z'),
+        reaction: 'reaction',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      }
+    ]);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('bentoAllergens' in out)) throw new Error('expected bentoAllergens in load result');
+    const peanut = out.bentoAllergens.find((a) => a.id === 'arachide');
+    expect(peanut).toBeDefined();
+    expect(peanut!.state).toBe('reaction');
+    expect(peanut!.triedCount).toBe(2);
+    // lastTried tracks the most-recent givenAt, regardless of reaction severity.
+    expect(peanut!.lastTried).toBe('09/05/26');
+  });
+
+  it('weeklyEntries returns a 7-length array bucketed by day with today last', async () => {
+    const ctx = await setup();
+    // Seed 5 entries across the last 3 days:
+    //   - 2 today
+    //   - 2 yesterday
+    //   - 1 two days ago
+    // Also seed one entry 30 days ago to confirm out-of-window entries are excluded.
+    await ctx.log(ctx.carrot.id, 'ras', 0);
+    await ctx.log(ctx.carrot.id, 'ras', 0);
+    await ctx.log(ctx.apple.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'ras', 1);
+    await ctx.log(ctx.carrot.id, 'ras', 2);
+    await ctx.log(ctx.carrot.id, 'ras', 30);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('weeklyEntries' in out)) throw new Error('expected weeklyEntries in load result');
+    expect(out.weeklyEntries).toHaveLength(7);
+    expect(out.weeklyEntries.reduce((s, n) => s + n, 0)).toBe(5);
+    expect(out.weeklyEntries[6]).toBe(2); // today
+    expect(out.weeklyEntries[5]).toBe(2); // yesterday
+    expect(out.weeklyEntries[4]).toBe(1); // two days ago
+  });
+
+  it('repeat=1 early-return branch still emits bentoAllergens + weeklyEntries', async () => {
+    // Seed an entry that satisfies the allergen/weekly queries but make the
+    // repeat candidate query return zero — by recording 3 entries for the
+    // only food, the worst-<=1 / n-<=2 predicate excludes it, forcing the
+    // ids.length === 0 branch. The new fields must still populate.
+    const ctx = await setup();
+    const [milk] = await testDb
+      .insert(foods)
+      .values({
+        name: 'Lait infantile',
+        category: 'produits_laitiers',
+        isMajorAllergen: true,
+        allergenType: 'lait',
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning();
+    await testDb.insert(foodEntries).values([
+      {
+        childId: ctx.c.id,
+        foodId: milk.id,
+        givenAt: new Date(Date.now() - 1 * 86400_000),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: ctx.c.id,
+        foodId: milk.id,
+        givenAt: new Date(Date.now() - 2 * 86400_000),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      },
+      {
+        childId: ctx.c.id,
+        foodId: milk.id,
+        givenAt: new Date(Date.now() - 3 * 86400_000),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      }
+    ]);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
+    expect(out.entries).toEqual([]);
+    if (!('bentoAllergens' in out))
+      throw new Error('expected bentoAllergens in repeat-empty branch');
+    if (!('weeklyEntries' in out)) throw new Error('expected weeklyEntries in repeat-empty branch');
+    const lait = out.bentoAllergens.find((a) => a.id === 'lait');
+    expect(lait).toBeDefined();
+    expect(lait!.state).toBe('cleared');
+    expect(lait!.triedCount).toBe(3);
+    expect(out.weeklyEntries).toHaveLength(7);
+    expect(out.weeklyEntries.reduce((s, n) => s + n, 0)).toBe(3);
+  });
 });

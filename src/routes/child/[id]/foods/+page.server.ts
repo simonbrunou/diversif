@@ -1,8 +1,105 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
+import { ALLERGENS } from '$lib/utils/allergens';
 import type { PageServerLoad } from './$types';
+
+export type AllergenItem = {
+  id: string;
+  label: string;
+  triedCount: number;
+  lastTried: string | null;
+  state: 'cleared' | 'todo' | 'reaction';
+};
+
+function formatDDMMYY(d: Date): string {
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const yy = String(d.getUTCFullYear() % 100).padStart(2, '0');
+  return `${dd}/${mm}/${yy}`;
+}
+
+async function loadBentoAllergens(childId: number): Promise<AllergenItem[]> {
+  const rows = await db
+    .select({
+      allergenType: foods.allergenType,
+      givenAt: foodEntries.givenAt,
+      reaction: foodEntries.reaction
+    })
+    .from(foodEntries)
+    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)));
+
+  const byAllergen = new Map<string, { triedCount: number; latest: Date; hasReaction: boolean }>();
+  for (const r of rows) {
+    // SQL filters `allergenType IS NOT NULL`; the guard is a TS narrowing
+    // affordance and unreachable at runtime.
+    /* v8 ignore next */
+    if (!r.allergenType) continue;
+    const givenAt =
+      r.givenAt instanceof Date ? r.givenAt : /* v8 ignore next */ new Date(Number(r.givenAt));
+    const bucket = byAllergen.get(r.allergenType);
+    if (bucket) {
+      bucket.triedCount += 1;
+      if (givenAt.getTime() > bucket.latest.getTime()) bucket.latest = givenAt;
+      if (r.reaction === 'reaction') bucket.hasReaction = true;
+    } else {
+      byAllergen.set(r.allergenType, {
+        triedCount: 1,
+        latest: givenAt,
+        hasReaction: r.reaction === 'reaction'
+      });
+    }
+  }
+
+  return ALLERGENS.map((a) => {
+    const b = byAllergen.get(a.id);
+    if (!b) {
+      return { id: a.id, label: a.label, triedCount: 0, lastTried: null, state: 'todo' as const };
+    }
+    return {
+      id: a.id,
+      label: a.label,
+      triedCount: b.triedCount,
+      lastTried: formatDDMMYY(b.latest),
+      state: b.hasReaction ? ('reaction' as const) : ('cleared' as const)
+    };
+  });
+}
+
+async function loadWeeklyEntries(childId: number, now: Date = new Date()): Promise<number[]> {
+  // 7 daily buckets: oldest at index 0, today at index 6. Buckets are
+  // UTC calendar days starting 6 days ago at 00:00 UTC through end-of-day today.
+  const today = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0)
+  );
+  const start = new Date(today.getTime() - 6 * 86400_000);
+  const end = new Date(today.getTime() + 86400_000); // exclusive upper bound
+
+  const rows = await db
+    .select({ givenAt: foodEntries.givenAt })
+    .from(foodEntries)
+    .where(
+      and(
+        eq(foodEntries.childId, childId),
+        sql`${foodEntries.givenAt} >= ${start}`,
+        sql`${foodEntries.givenAt} < ${end}`
+      )
+    );
+
+  const buckets = [0, 0, 0, 0, 0, 0, 0];
+  for (const r of rows) {
+    const givenAt =
+      r.givenAt instanceof Date ? r.givenAt : /* v8 ignore next */ new Date(Number(r.givenAt));
+    const day = new Date(
+      Date.UTC(givenAt.getUTCFullYear(), givenAt.getUTCMonth(), givenAt.getUTCDate(), 0, 0, 0, 0)
+    );
+    const idx = Math.floor((day.getTime() - start.getTime()) / 86400_000);
+    if (idx >= 0 && idx < 7) buckets[idx] += 1;
+  }
+  return buckets;
+}
 
 export const load: PageServerLoad = async ({ params, url, locals }) => {
   requireUser(locals);
@@ -39,12 +136,18 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     const repeatRows = repeatResult.rows as Array<{ food_id: number }>;
     const ids = repeatRows.map((r) => Number(r.food_id));
     if (ids.length === 0) {
+      const [bentoAllergens, weeklyEntries] = await Promise.all([
+        loadBentoAllergens(childId),
+        loadWeeklyEntries(childId)
+      ]);
       return {
         entries: [],
         filters: { q, category, reaction, repeat },
         bentoFoods: [],
         foodCount: 0,
-        categoryCount: 0
+        categoryCount: 0,
+        bentoAllergens,
+        weeklyEntries
       };
     }
     conditions.push(inArray(foodEntries.foodId, ids));
@@ -112,6 +215,11 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const foodCount = bentoFoods.length;
   const categoryCount = new Set(bentoFoods.map((f) => f.category)).size;
 
+  const [bentoAllergens, weeklyEntries] = await Promise.all([
+    loadBentoAllergens(childId),
+    loadWeeklyEntries(childId)
+  ]);
+
   return {
     entries: rows.map((r) => ({
       ...r,
@@ -122,6 +230,8 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     filters: { q, category, reaction, repeat },
     bentoFoods,
     foodCount,
-    categoryCount
+    categoryCount,
+    bentoAllergens,
+    weeklyEntries
   };
 };
