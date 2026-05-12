@@ -4,6 +4,7 @@
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
   import ThemeToggle from '$components/ThemeToggle.svelte';
+  import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
   import LegalLinks from '$lib/components/LegalLinks.svelte';
   import { enhance } from '$app/forms';
   import { invalidateAll } from '$app/navigation';
@@ -236,6 +237,13 @@
     </h2>
     <p class="mb-3 text-sm text-ink-soft">{m.authAccountAppearanceDescription()}</p>
     <ThemeToggle />
+  </section>
+
+  <section id="locale" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.profilCompteLangue()}
+    </h2>
+    <LocaleSwitcher />
   </section>
 
   <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
