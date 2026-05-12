@@ -24,7 +24,7 @@
     {#if first.cta}
       <a
         href={first.cta.href}
-        class="self-center rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground"
+        class="inline-flex min-h-[44px] items-center self-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
       >
         {first.cta.label}
       </a>

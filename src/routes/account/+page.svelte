@@ -36,6 +36,7 @@
     };
   }
 
+  // Follow-up: render passkey button SSR to avoid first-paint flash
   $effect(() => {
     if (!browser) return;
     supported =
@@ -141,7 +142,7 @@
     </form>
   </section>
 
-  <section id="password" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+  <section id="password" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
     <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
       {m.authAccountPasswordSection()}
     </h2>
@@ -167,7 +168,7 @@
     </form>
   </section>
 
-  <section id="passkeys" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+  <section id="passkeys" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
     <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
       {m.authAccountPasskeysSection()}
     </h2>
@@ -231,7 +232,7 @@
     {/if}
   </section>
 
-  <section id="theme" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+  <section id="theme" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
     <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
       {m.authAccountAppearanceSection()}
     </h2>
@@ -239,7 +240,7 @@
     <ThemeToggle />
   </section>
 
-  <section id="locale" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+  <section id="locale" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
     <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
       {m.profilCompteLangue()}
     </h2>
@@ -277,7 +278,7 @@
     <Button href={localizedHref('/account/export')} variant="outline">{m.authAccountDataExport()}</Button>
   </section>
 
-  <section id="delete" class="rounded-tile bg-tile-butter px-4 py-3 shadow-soft">
+  <section id="delete" class="scroll-mt-20 rounded-tile bg-tile-butter px-4 py-3 shadow-soft">
     <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-destructive">
       {m.authAccountDeleteSection()}
     </h2>
