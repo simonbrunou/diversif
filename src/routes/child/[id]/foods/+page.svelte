@@ -15,18 +15,10 @@
     })()
   );
 
-  // Phase 4 placeholders. Phase 5 wires real allergen + stats data.
-  const bentoAllergens: Array<{
-    id: string;
-    label: string;
-    triedCount: number;
-    lastTried: string | null;
-    state: 'cleared' | 'todo' | 'reaction';
-  }> = [];
   const bentoStats = $derived({
     diversityScore: data.categoryCount,
     distinctFoods: data.foodCount,
-    weeklyEntries: [] as number[]
+    weeklyEntries: data.weeklyEntries ?? []
   });
 </script>
 
@@ -35,7 +27,7 @@
   foods={data.bentoFoods ?? []}
   foodCount={data.foodCount ?? 0}
   categoryCount={data.categoryCount ?? 0}
-  allergens={bentoAllergens}
+  allergens={data.bentoAllergens ?? []}
   stats={bentoStats}
   {currentSegment}
 />
