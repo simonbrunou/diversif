@@ -15,15 +15,15 @@
   let { form }: { form: ActionData } = $props();
   let submitting = $state(false);
   let passkeyLoading = $state(false);
-  let supported = $state(false);
+  let unsupported = $state(false);
 
-  // Follow-up: render passkey button SSR to avoid first-paint flash
   $effect(() => {
     if (!browser) return;
-    supported =
+    unsupported = !(
       typeof window !== 'undefined' &&
       typeof window.PublicKeyCredential === 'function' &&
-      typeof navigator.credentials?.get === 'function';
+      typeof navigator.credentials?.get === 'function'
+    );
   });
 
   async function signInWithPasskey() {
@@ -60,7 +60,7 @@
 <Seo title={m.authLoginTitle()} path="/login" noindex alternateLocales={['en']} />
 
 <BentoAuthLayout title={m.authLoginTitleBento()} subtitle="">
-  {#if supported}
+  {#if !unsupported}
     <button
       type="button"
       disabled={passkeyLoading}
@@ -120,7 +120,7 @@
     </Button>
   </form>
 
-  {#if !supported}
+  {#if unsupported}
     <button
       type="button"
       onclick={signInWithPasskey}
