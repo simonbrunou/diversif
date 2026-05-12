@@ -30,6 +30,14 @@ async function signUpAndCreateChild(page: Page, name: string, birthDate: string)
   return match[1];
 }
 
+async function dismissWelcomeIfPresent(page: Page): Promise<void> {
+  const dismiss = page.getByRole('button', { name: 'Plus tard' });
+  if (await dismiss.isVisible().catch(() => false)) {
+    await dismiss.click();
+    await expect(dismiss).not.toBeVisible();
+  }
+}
+
 test('legacy user sees opt-in banner; clicking CTA switches to bento', async ({
   page,
   context
@@ -39,6 +47,7 @@ test('legacy user sees opt-in banner; clicking CTA switches to bento', async ({
   // Force legacy: overwrite the bento cookie with 0
   await context.addCookies([{ name: 'bento', value: '0', url: BASE_URL }]);
   await page.goto(`/child/${childId}`);
+  await dismissWelcomeIfPresent(page);
 
   // Banner is visible in legacy branch
   await expect(page.getByText(/nouveau design est prêt/i)).toBeVisible();
@@ -58,6 +67,7 @@ test('dismissing the opt-in banner hides it without changing the design', async 
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await context.addCookies([{ name: 'bento', value: '0', url: BASE_URL }]);
   await page.goto(`/child/${childId}`);
+  await dismissWelcomeIfPresent(page);
 
   await page.getByRole('button', { name: 'Fermer le panneau' }).click();
   await expect(page.getByText(/nouveau design est prêt/i)).not.toBeVisible();
