@@ -1,6 +1,5 @@
 import { ageInMonths } from '$lib/utils/age';
 import { getStageForAgeMonths, getAllStagesForBento } from '$lib/content/guidance';
-import { bentoEnabled } from '$lib/feature-flags';
 import { db } from '$lib/server/db';
 import { foodEntries, foods, tipDismissals } from '$lib/server/db/schema';
 import { desc, eq, and } from 'drizzle-orm';
@@ -13,18 +12,12 @@ const TODAY_TIP = {
   body: "LEAP recommande l'introduction de l'œuf entre 4 et 11 mois."
 } as const;
 
-export const load: PageServerLoad = async ({ parent, locals, cookies }) => {
+export const load: PageServerLoad = async ({ parent, locals }) => {
   const { child } = await parent();
   const months = ageInMonths(child.birthDate);
   const currentStageId = getStageForAgeMonths(months).id;
 
-  const bento = bentoEnabled(locals.user?.email, cookies);
-
-  if (!bento) {
-    return { ageMonths: months, currentStageId, bento: false as const };
-  }
-
-  // Bento branch — fetch recent food entries for suggestions
+  // Fetch recent food entries for suggestions
   const recentRows = await db
     .select({
       foodId: foods.id,
@@ -72,7 +65,6 @@ export const load: PageServerLoad = async ({ parent, locals, cookies }) => {
   return {
     ageMonths: months,
     currentStageId,
-    bento: true as const,
     stages,
     suggestions,
     todayTip: TODAY_TIP,

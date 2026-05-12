@@ -16,50 +16,36 @@ beforeEach(async () => {
   await resetTestDb();
 });
 
-// ---------------------------------------------------------------------------
-// Legacy path (bento = false)
-// ---------------------------------------------------------------------------
-
-describe('child/[id]/guide load — legacy (bento=false)', () => {
+describe('child/[id]/guide load', () => {
   it('returns ageMonths and currentStageId for the child', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+
     const event = makeRouteEvent({
-      parent: async () => ({ child: { id: 1, birthDate: '2024-01-01' } })
+      user: safeUser(u),
+      parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
     expect(typeof out.ageMonths).toBe('number');
     expect(out.currentStageId).toMatch(/4-6|6-9|9-12|12-36/);
-    expect(out.bento).toBe(false);
   });
 
   it('returns 4-6 stage for a very young child', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
     const recent = new Date();
     const dateStr = `${recent.getFullYear()}-${String(recent.getMonth() + 1).padStart(2, '0')}-${String(recent.getDate()).padStart(2, '0')}`;
     const event = makeRouteEvent({
-      parent: async () => ({ child: { id: 1, birthDate: dateStr } })
+      user: safeUser(u),
+      parent: async () => ({ child: { id: c.id, birthDate: dateStr } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
     expect(out.currentStageId).toBe('4-6');
-    expect(out.bento).toBe(false);
   });
 
-  it('does not include bento-only fields when flag is off', async () => {
-    const event = makeRouteEvent({
-      parent: async () => ({ child: { id: 1, birthDate: '2024-01-01' } })
-    });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out).not.toHaveProperty('stages');
-    expect(out).not.toHaveProperty('suggestions');
-    expect(out).not.toHaveProperty('todayTip');
-    expect(out).not.toHaveProperty('tipDismissed');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Bento path (bento = true, via cookie)
-// ---------------------------------------------------------------------------
-
-describe('child/[id]/guide load — bento=true', () => {
-  it('returns stages, suggestions, todayTip and tipDismissed when flag is on', async () => {
+  it('returns stages, suggestions, todayTip and tipDismissed', async () => {
     const u = await seedUser();
     const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
     await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
@@ -69,16 +55,8 @@ describe('child/[id]/guide load — bento=true', () => {
       url: 'http://localhost/',
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    // Enable bento via cookie
-    (event.cookies as ReturnType<typeof import('../../../../test/route').makeCookies>).set(
-      'bento',
-      '1'
-    );
 
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.bento).toBe(true);
-
-    if (!out.bento) throw new Error('Expected bento=true branch');
 
     expect(Array.isArray(out.stages)).toBe(true);
     expect(out.stages).toHaveLength(4);
@@ -123,14 +101,8 @@ describe('child/[id]/guide load — bento=true', () => {
       url: 'http://localhost/',
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    (event.cookies as ReturnType<typeof import('../../../../test/route').makeCookies>).set(
-      'bento',
-      '1'
-    );
 
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.bento).toBe(true);
-    if (!out.bento) throw new Error('Expected bento=true branch');
     expect(out.tipDismissed).toBe(true);
   });
 
@@ -168,14 +140,8 @@ describe('child/[id]/guide load — bento=true', () => {
       url: 'http://localhost/',
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    (event.cookies as ReturnType<typeof import('../../../../test/route').makeCookies>).set(
-      'bento',
-      '1'
-    );
 
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.bento).toBe(true);
-    if (!out.bento) throw new Error('Expected bento=true branch');
     expect(Array.isArray(out.suggestions)).toBe(true);
   });
 
@@ -189,14 +155,8 @@ describe('child/[id]/guide load — bento=true', () => {
       url: 'http://localhost/',
       parent: async () => ({ child: { id: c.id, birthDate: '2022-01-01' } })
     });
-    (event.cookies as ReturnType<typeof import('../../../../test/route').makeCookies>).set(
-      'bento',
-      '1'
-    );
 
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.bento).toBe(true);
-    if (!out.bento) throw new Error('Expected bento=true branch');
     expect(out.currentStageId).toBe('12-36');
   });
 });

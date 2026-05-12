@@ -172,14 +172,6 @@ describe('signup default action', () => {
     expect(created).toBeDefined();
   });
 
-  it('sets bento=1 cookie on successful signup', async () => {
-    const event = makeRouteEvent({ formData: form() });
-    await captureFlow(() =>
-      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
-    );
-    expect(event.cookies.get('bento')).toBe('1');
-  });
-
   it('succeeds with valid invite — adds membership and redirects to /child/{id}', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const child = await seedChild({ createdBy: owner.id });

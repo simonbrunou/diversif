@@ -127,7 +127,7 @@
 <a href="#main" class="skip-link">{m.chromeSkipToContent()}</a>
 
 <div class="safe-top flex min-h-dvh flex-col">
-  {#if data.bento && (isChildRoute || isAccountRoute)}
+  {#if isChildRoute || isAccountRoute}
     <AppShellBento
       user={data.user ? { email: data.user.email } : undefined}
       kids={bentoKids}
@@ -137,8 +137,6 @@
     >
       {@render children()}
     </AppShellBento>
-  {:else if isChildRoute}
-    {@render children()}
   {:else if isPublicShell}
     <PublicHeader user={data.user} {firstChildId} />
     <main id="main" class="flex flex-1 flex-col">
