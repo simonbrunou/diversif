@@ -1,5 +1,6 @@
 <!-- src/lib/components/bento/CarnetAllergens.svelte -->
 <script lang="ts">
+  import { Sparkles } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
 
@@ -21,9 +22,12 @@
 </script>
 
 {#if items.length === 0}
-  <p class="rounded-tile border border-dashed border-border bg-canvas p-4 text-center text-sm text-ink-soft">
-    {m.carnetAllergensEmpty()}
-  </p>
+  <div class="flex flex-col items-center gap-3 rounded-tile border border-dashed border-border bg-canvas py-8">
+    <Sparkles class="h-6 w-6 text-ink-soft" aria-hidden="true" />
+    <p class="text-center text-sm text-ink-soft">
+      {m.carnetAllergensEmpty()}
+    </p>
+  </div>
 {:else}
   <ul class="flex flex-col gap-2">
     {#each items as item (item.id)}

@@ -17,11 +17,11 @@
   <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">
     {m.aujourdhuiAllergensTitle()}
   </p>
-  <ul class="mt-3 flex flex-wrap gap-2">
+  <ul class="-mb-1 mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1">
     {#each items as item (item.id)}
       <li
         class={cn(
-          'inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium',
+          'inline-flex shrink-0 snap-start items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium',
           item.state === 'ok'
             ? 'border-success/40 bg-canvas text-success'
             : 'border-border bg-canvas text-ink-soft'
