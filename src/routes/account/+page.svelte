@@ -19,7 +19,7 @@
 
   let passkeyName = $state('');
   let registering = $state(false);
-  let supported = $state(false);
+  let unsupported = $state(false);
   let confirmDeleteEmail = $state('');
   let confirmDeletePassword = $state('');
   let savingProfile = $state(false);
@@ -36,13 +36,13 @@
     };
   }
 
-  // Follow-up: render passkey button SSR to avoid first-paint flash
   $effect(() => {
     if (!browser) return;
-    supported =
+    unsupported = !(
       typeof window !== 'undefined' &&
       typeof window.PublicKeyCredential === 'function' &&
-      typeof navigator.credentials?.create === 'function';
+      typeof navigator.credentials?.create === 'function'
+    );
   });
 
   // Toast each form action result exactly once. Without this, any subsequent
@@ -208,7 +208,7 @@
       </ul>
     {/if}
 
-    {#if supported}
+    {#if !unsupported}
       <div class="mt-4 grid gap-3 border-t border-border pt-4">
         <div class="grid gap-1.5">
           <Label for="passkeyName">{m.authAccountPasskeyNewNameLabel()}</Label>
