@@ -70,17 +70,8 @@ describe('account load', () => {
   });
 });
 
-describe('account load — bento branch', () => {
-  it('returns bento:false when cookie is absent', async () => {
-    const u = await seed();
-    const event = makeRouteEvent({ user: safeUser(u) });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.bento).toBe(false);
-    // passkeys still returned in bento-off shape
-    expect(Array.isArray(out.passkeys)).toBe(true);
-  });
-
-  it('returns bento:true with children, locale, theme when bento=1 cookie is set', async () => {
+describe('account load — bento data', () => {
+  it('returns children, locale, theme alongside passkeys', async () => {
     const u = await seed();
     // Create a second user to act as coparent
     const coparent = await seedUser({ email: 'coparent@example.com', displayName: 'Coparent' });
@@ -89,13 +80,9 @@ describe('account load — bento branch', () => {
     await seedMembership({ userId: coparent.id, childId: child.id, role: 'member' });
 
     const event = makeRouteEvent({ user: safeUser(u) });
-    // Set bento=1 cookie
-    event.cookies.set('bento', '1', {});
 
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    if (!out.bento) throw new Error('expected bento:true');
 
-    expect(out.bento).toBe(true);
     expect(Array.isArray(out.children)).toBe(true);
     expect(out.children.length).toBe(1);
     expect(out.children[0].name).toBe('Léa');
@@ -121,29 +108,23 @@ describe('account load — bento branch', () => {
   it('picks up locale from locals', async () => {
     const u = await seed();
     const event = makeRouteEvent({ user: safeUser(u), locale: 'en' });
-    event.cookies.set('bento', '1', {});
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    if (!out.bento) throw new Error('expected bento:true');
     expect(out.locale).toBe('en');
   });
 
   it('reads a valid theme cookie', async () => {
     const u = await seed();
     const event = makeRouteEvent({ user: safeUser(u) });
-    event.cookies.set('bento', '1', {});
     event.cookies.set('theme', 'dark', {});
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    if (!out.bento) throw new Error('expected bento:true');
     expect(out.theme).toBe('dark');
   });
 
   it('falls back theme to system for an invalid cookie value', async () => {
     const u = await seed();
     const event = makeRouteEvent({ user: safeUser(u) });
-    event.cookies.set('bento', '1', {});
     event.cookies.set('theme', 'purple', {});
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    if (!out.bento) throw new Error('expected bento:true');
     expect(out.theme).toBe('system');
   });
 });

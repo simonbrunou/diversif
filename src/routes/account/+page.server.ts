@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { and, eq, ne } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, memberships, users } from '$lib/server/db/schema';
-import { bentoEnabled } from '$lib/feature-flags';
 import { ageInMonths } from '$lib/utils/age';
 import {
   SESSION_COOKIE,
@@ -35,11 +34,6 @@ const VALID_THEMES = new Set(['system', 'light', 'dark'] as const);
 export const load: PageServerLoad = async ({ locals, cookies }) => {
   const user = requireUser(locals);
   const passkeys = (await listPasskeys(user.id)).map(publicPasskey);
-
-  const bento = bentoEnabled(user.email, cookies);
-  if (!bento) {
-    return { passkeys, bento: false as const };
-  }
 
   // Load all children this user is a member of, with coparents for each.
   const myMemberships = await db
@@ -86,7 +80,6 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
 
   return {
     passkeys,
-    bento: true as const,
     children: childrenData,
     locale,
     theme
