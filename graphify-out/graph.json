@@ -283,42 +283,6 @@
       "norm_label": "unique()"
     },
     {
-      "label": "bento-shell.spec.ts",
-      "file_type": "code",
-      "source_file": "e2e/bento-shell.spec.ts",
-      "source_location": "L1",
-      "id": "e2e_bento_shell_spec_ts",
-      "community": 37,
-      "norm_label": "bento-shell.spec.ts"
-    },
-    {
-      "label": "unique()",
-      "file_type": "code",
-      "source_file": "e2e/bento-shell.spec.ts",
-      "source_location": "L5",
-      "id": "e2e_bento_shell_spec_unique",
-      "community": 37,
-      "norm_label": "unique()"
-    },
-    {
-      "label": "signUpAndCreateChild()",
-      "file_type": "code",
-      "source_file": "e2e/bento-shell.spec.ts",
-      "source_location": "L9",
-      "id": "e2e_bento_shell_spec_signupandcreatechild",
-      "community": 37,
-      "norm_label": "signupandcreatechild()"
-    },
-    {
-      "label": "dismissWelcomeIfPresent()",
-      "file_type": "code",
-      "source_file": "e2e/bento-shell.spec.ts",
-      "source_location": "L38",
-      "id": "e2e_bento_shell_spec_dismisswelcomeifpresent",
-      "community": 37,
-      "norm_label": "dismisswelcomeifpresent()"
-    },
-    {
       "label": "dashboard.spec.ts",
       "file_type": "code",
       "source_file": "e2e/dashboard.spec.ts",
@@ -409,123 +373,6 @@
       "norm_label": "signupandcreatechild()"
     },
     {
-      "label": "bento-discover.spec.ts",
-      "file_type": "code",
-      "source_file": "e2e/bento-discover.spec.ts",
-      "source_location": "L1",
-      "id": "e2e_bento_discover_spec_ts",
-      "community": 38,
-      "norm_label": "bento-discover.spec.ts"
-    },
-    {
-      "label": "unique()",
-      "file_type": "code",
-      "source_file": "e2e/bento-discover.spec.ts",
-      "source_location": "L7",
-      "id": "e2e_bento_discover_spec_unique",
-      "community": 38,
-      "norm_label": "unique()"
-    },
-    {
-      "label": "signUpAndCreateChild()",
-      "file_type": "code",
-      "source_file": "e2e/bento-discover.spec.ts",
-      "source_location": "L11",
-      "id": "e2e_bento_discover_spec_signupandcreatechild",
-      "community": 38,
-      "norm_label": "signupandcreatechild()"
-    },
-    {
-      "label": "dismissWelcomeIfPresent()",
-      "file_type": "code",
-      "source_file": "e2e/bento-discover.spec.ts",
-      "source_location": "L34",
-      "id": "e2e_bento_discover_spec_dismisswelcomeifpresent",
-      "community": 38,
-      "norm_label": "dismisswelcomeifpresent()"
-    },
-    {
-      "label": "bento-profil.spec.ts",
-      "file_type": "code",
-      "source_file": "e2e/bento-profil.spec.ts",
-      "source_location": "L1",
-      "id": "e2e_bento_profil_spec_ts",
-      "community": 39,
-      "norm_label": "bento-profil.spec.ts"
-    },
-    {
-      "label": "unique()",
-      "file_type": "code",
-      "source_file": "e2e/bento-profil.spec.ts",
-      "source_location": "L7",
-      "id": "e2e_bento_profil_spec_unique",
-      "community": 39,
-      "norm_label": "unique()"
-    },
-    {
-      "label": "signUpAndCreateChild()",
-      "file_type": "code",
-      "source_file": "e2e/bento-profil.spec.ts",
-      "source_location": "L11",
-      "id": "e2e_bento_profil_spec_signupandcreatechild",
-      "community": 39,
-      "norm_label": "signupandcreatechild()"
-    },
-    {
-      "label": "dismissWelcomeIfPresent()",
-      "file_type": "code",
-      "source_file": "e2e/bento-profil.spec.ts",
-      "source_location": "L34",
-      "id": "e2e_bento_profil_spec_dismisswelcomeifpresent",
-      "community": 39,
-      "norm_label": "dismisswelcomeifpresent()"
-    },
-    {
-      "label": "bento-reaction-detail.spec.ts",
-      "file_type": "code",
-      "source_file": "e2e/bento-reaction-detail.spec.ts",
-      "source_location": "L1",
-      "id": "e2e_bento_reaction_detail_spec_ts",
-      "community": 31,
-      "norm_label": "bento-reaction-detail.spec.ts"
-    },
-    {
-      "label": "unique()",
-      "file_type": "code",
-      "source_file": "e2e/bento-reaction-detail.spec.ts",
-      "source_location": "L7",
-      "id": "e2e_bento_reaction_detail_spec_unique",
-      "community": 31,
-      "norm_label": "unique()"
-    },
-    {
-      "label": "signUpAndCreateChild()",
-      "file_type": "code",
-      "source_file": "e2e/bento-reaction-detail.spec.ts",
-      "source_location": "L11",
-      "id": "e2e_bento_reaction_detail_spec_signupandcreatechild",
-      "community": 31,
-      "norm_label": "signupandcreatechild()"
-    },
-    {
-      "label": "dismissWelcomeIfPresent()",
-      "file_type": "code",
-      "source_file": "e2e/bento-reaction-detail.spec.ts",
-      "source_location": "L34",
-      "id": "e2e_bento_reaction_detail_spec_dismisswelcomeifpresent",
-      "community": 31,
-      "norm_label": "dismisswelcomeifpresent()"
-    },
-    {
-      "label": "logFoodWithReaction()",
-      "file_type": "code",
-      "source_file": "e2e/bento-reaction-detail.spec.ts",
-      "source_location": "L45",
-      "id": "e2e_bento_reaction_detail_spec_logfoodwithreaction",
-      "community": 31,
-      "norm_label": "logfoodwithreaction()"
-    },
-    {
       "label": "bento-auth-onboarding.spec.ts",
       "file_type": "code",
       "source_file": "e2e/bento-auth-onboarding.spec.ts",
@@ -553,39 +400,156 @@
       "norm_label": "signup()"
     },
     {
-      "label": "bento-optin-banner.spec.ts",
+      "label": "bento-discover.spec.ts",
       "file_type": "code",
-      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_file": "e2e/bento-discover.spec.ts",
       "source_location": "L1",
-      "id": "e2e_bento_optin_banner_spec_ts",
-      "community": 40,
-      "norm_label": "bento-optin-banner.spec.ts"
+      "id": "e2e_bento_discover_spec_ts",
+      "community": 37,
+      "norm_label": "bento-discover.spec.ts"
     },
     {
       "label": "unique()",
       "file_type": "code",
-      "source_file": "e2e/bento-optin-banner.spec.ts",
-      "source_location": "L7",
-      "id": "e2e_bento_optin_banner_spec_unique",
-      "community": 40,
+      "source_file": "e2e/bento-discover.spec.ts",
+      "source_location": "L5",
+      "id": "e2e_bento_discover_spec_unique",
+      "community": 37,
       "norm_label": "unique()"
     },
     {
       "label": "signUpAndCreateChild()",
       "file_type": "code",
-      "source_file": "e2e/bento-optin-banner.spec.ts",
-      "source_location": "L11",
-      "id": "e2e_bento_optin_banner_spec_signupandcreatechild",
-      "community": 40,
+      "source_file": "e2e/bento-discover.spec.ts",
+      "source_location": "L9",
+      "id": "e2e_bento_discover_spec_signupandcreatechild",
+      "community": 37,
       "norm_label": "signupandcreatechild()"
     },
     {
       "label": "dismissWelcomeIfPresent()",
       "file_type": "code",
-      "source_file": "e2e/bento-optin-banner.spec.ts",
-      "source_location": "L33",
-      "id": "e2e_bento_optin_banner_spec_dismisswelcomeifpresent",
-      "community": 40,
+      "source_file": "e2e/bento-discover.spec.ts",
+      "source_location": "L32",
+      "id": "e2e_bento_discover_spec_dismisswelcomeifpresent",
+      "community": 37,
+      "norm_label": "dismisswelcomeifpresent()"
+    },
+    {
+      "label": "bento-profil.spec.ts",
+      "file_type": "code",
+      "source_file": "e2e/bento-profil.spec.ts",
+      "source_location": "L1",
+      "id": "e2e_bento_profil_spec_ts",
+      "community": 38,
+      "norm_label": "bento-profil.spec.ts"
+    },
+    {
+      "label": "unique()",
+      "file_type": "code",
+      "source_file": "e2e/bento-profil.spec.ts",
+      "source_location": "L5",
+      "id": "e2e_bento_profil_spec_unique",
+      "community": 38,
+      "norm_label": "unique()"
+    },
+    {
+      "label": "signUpAndCreateChild()",
+      "file_type": "code",
+      "source_file": "e2e/bento-profil.spec.ts",
+      "source_location": "L9",
+      "id": "e2e_bento_profil_spec_signupandcreatechild",
+      "community": 38,
+      "norm_label": "signupandcreatechild()"
+    },
+    {
+      "label": "dismissWelcomeIfPresent()",
+      "file_type": "code",
+      "source_file": "e2e/bento-profil.spec.ts",
+      "source_location": "L32",
+      "id": "e2e_bento_profil_spec_dismisswelcomeifpresent",
+      "community": 38,
+      "norm_label": "dismisswelcomeifpresent()"
+    },
+    {
+      "label": "bento-reaction-detail.spec.ts",
+      "file_type": "code",
+      "source_file": "e2e/bento-reaction-detail.spec.ts",
+      "source_location": "L1",
+      "id": "e2e_bento_reaction_detail_spec_ts",
+      "community": 31,
+      "norm_label": "bento-reaction-detail.spec.ts"
+    },
+    {
+      "label": "unique()",
+      "file_type": "code",
+      "source_file": "e2e/bento-reaction-detail.spec.ts",
+      "source_location": "L5",
+      "id": "e2e_bento_reaction_detail_spec_unique",
+      "community": 31,
+      "norm_label": "unique()"
+    },
+    {
+      "label": "signUpAndCreateChild()",
+      "file_type": "code",
+      "source_file": "e2e/bento-reaction-detail.spec.ts",
+      "source_location": "L9",
+      "id": "e2e_bento_reaction_detail_spec_signupandcreatechild",
+      "community": 31,
+      "norm_label": "signupandcreatechild()"
+    },
+    {
+      "label": "dismissWelcomeIfPresent()",
+      "file_type": "code",
+      "source_file": "e2e/bento-reaction-detail.spec.ts",
+      "source_location": "L32",
+      "id": "e2e_bento_reaction_detail_spec_dismisswelcomeifpresent",
+      "community": 31,
+      "norm_label": "dismisswelcomeifpresent()"
+    },
+    {
+      "label": "logFoodWithReaction()",
+      "file_type": "code",
+      "source_file": "e2e/bento-reaction-detail.spec.ts",
+      "source_location": "L43",
+      "id": "e2e_bento_reaction_detail_spec_logfoodwithreaction",
+      "community": 31,
+      "norm_label": "logfoodwithreaction()"
+    },
+    {
+      "label": "bento-shell.spec.ts",
+      "file_type": "code",
+      "source_file": "e2e/bento-shell.spec.ts",
+      "source_location": "L1",
+      "id": "e2e_bento_shell_spec_ts",
+      "community": 39,
+      "norm_label": "bento-shell.spec.ts"
+    },
+    {
+      "label": "unique()",
+      "file_type": "code",
+      "source_file": "e2e/bento-shell.spec.ts",
+      "source_location": "L3",
+      "id": "e2e_bento_shell_spec_unique",
+      "community": 39,
+      "norm_label": "unique()"
+    },
+    {
+      "label": "signUpAndCreateChild()",
+      "file_type": "code",
+      "source_file": "e2e/bento-shell.spec.ts",
+      "source_location": "L7",
+      "id": "e2e_bento_shell_spec_signupandcreatechild",
+      "community": 39,
+      "norm_label": "signupandcreatechild()"
+    },
+    {
+      "label": "dismissWelcomeIfPresent()",
+      "file_type": "code",
+      "source_file": "e2e/bento-shell.spec.ts",
+      "source_location": "L36",
+      "id": "e2e_bento_shell_spec_dismisswelcomeifpresent",
+      "community": 39,
       "norm_label": "dismisswelcomeifpresent()"
     },
     {
@@ -994,33 +958,6 @@
       "norm_label": "faqpagejsonld()"
     },
     {
-      "label": "feature-flags.test.ts",
-      "file_type": "code",
-      "source_file": "src/lib/feature-flags.test.ts",
-      "source_location": "L1",
-      "id": "src_lib_feature_flags_test_ts",
-      "community": 8,
-      "norm_label": "feature-flags.test.ts"
-    },
-    {
-      "label": "feature-flags.ts",
-      "file_type": "code",
-      "source_file": "src/lib/feature-flags.ts",
-      "source_location": "L1",
-      "id": "src_lib_feature_flags_ts",
-      "community": 8,
-      "norm_label": "feature-flags.ts"
-    },
-    {
-      "label": "bentoEnabled()",
-      "file_type": "code",
-      "source_file": "src/lib/feature-flags.ts",
-      "source_location": "L3",
-      "id": "lib_feature_flags_bentoenabled",
-      "community": 8,
-      "norm_label": "bentoenabled()"
-    },
-    {
       "label": "AllergenInfoDialog.svelte",
       "file_type": "code",
       "source_file": "src/lib/components/AllergenInfoDialog.svelte",
@@ -1037,24 +974,6 @@
       "id": "src_lib_components_allergeninfodialog_test_ts",
       "community": 7,
       "norm_label": "allergeninfodialog.test.ts"
-    },
-    {
-      "label": "AppShell.test.ts",
-      "file_type": "code",
-      "source_file": "src/lib/components/AppShell.test.ts",
-      "source_location": "L1",
-      "id": "src_lib_components_appshell_test_ts",
-      "community": 7,
-      "norm_label": "appshell.test.ts"
-    },
-    {
-      "label": "BottomNav.test.ts",
-      "file_type": "code",
-      "source_file": "src/lib/components/BottomNav.test.ts",
-      "source_location": "L1",
-      "id": "src_lib_components_bottomnav_test_ts",
-      "community": 7,
-      "norm_label": "bottomnav.test.ts"
     },
     {
       "label": "EmptyState.svelte",
@@ -1318,30 +1237,12 @@
       "norm_label": "foodcombobox.svelte"
     },
     {
-      "label": "BottomNav.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/BottomNav.svelte",
-      "source_location": "L1",
-      "id": "src_lib_components_bottomnav_svelte",
-      "community": 7,
-      "norm_label": "bottomnav.svelte"
-    },
-    {
-      "label": "#each()",
-      "file_type": "code",
-      "source_file": "src/lib/components/BottomNav.svelte",
-      "source_location": "L21",
-      "id": "components_bottomnav_each",
-      "community": 7,
-      "norm_label": "#each()"
-    },
-    {
       "label": "InstallPrompt.svelte",
       "file_type": "code",
       "source_file": "src/lib/components/InstallPrompt.svelte",
       "source_location": "L1",
       "id": "src_lib_components_installprompt_svelte",
-      "community": 41,
+      "community": 40,
       "norm_label": "installprompt.svelte"
     },
     {
@@ -1350,7 +1251,7 @@
       "source_file": "src/lib/components/InstallPrompt.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_installprompt_test_ts",
-      "community": 41,
+      "community": 40,
       "norm_label": "installprompt.test.ts"
     },
     {
@@ -1359,7 +1260,7 @@
       "source_file": "src/lib/components/InstallPrompt.test.ts",
       "source_location": "L19",
       "id": "components_installprompt_test_setua",
-      "community": 41,
+      "community": 40,
       "norm_label": "setua()"
     },
     {
@@ -1368,7 +1269,7 @@
       "source_file": "src/lib/components/InstallPrompt.test.ts",
       "source_location": "L23",
       "id": "components_installprompt_test_setstandalone",
-      "community": 41,
+      "community": 40,
       "norm_label": "setstandalone()"
     },
     {
@@ -1424,24 +1325,6 @@
       "id": "src_lib_components_welcomedialog_svelte",
       "community": 84,
       "norm_label": "welcomedialog.svelte"
-    },
-    {
-      "label": "AppShell.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/AppShell.svelte",
-      "source_location": "L1",
-      "id": "src_lib_components_appshell_svelte",
-      "community": 7,
-      "norm_label": "appshell.svelte"
-    },
-    {
-      "label": "#each()",
-      "file_type": "code",
-      "source_file": "src/lib/components/AppShell.svelte",
-      "source_location": "L48",
-      "id": "components_appshell_each",
-      "community": 7,
-      "norm_label": "#each()"
     },
     {
       "label": "GuideStaticSections.svelte",
@@ -1629,7 +1512,7 @@
       "source_file": "src/lib/components/landing/LandingClosingCta.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingclosingcta_test_ts",
-      "community": 91,
+      "community": 90,
       "norm_label": "landingclosingcta.test.ts"
     },
     {
@@ -1665,7 +1548,7 @@
       "source_file": "src/lib/components/landing/LandingHero.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_landing_landinghero_test_ts",
-      "community": 92,
+      "community": 91,
       "norm_label": "landinghero.test.ts"
     },
     {
@@ -1674,7 +1557,7 @@
       "source_file": "src/lib/components/landing/LandingTrust.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingtrust_test_ts",
-      "community": 90,
+      "community": 92,
       "norm_label": "landingtrust.test.ts"
     },
     {
@@ -1683,7 +1566,7 @@
       "source_file": "src/lib/components/landing/LandingClosingCta.svelte",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingclosingcta_svelte",
-      "community": 91,
+      "community": 90,
       "norm_label": "landingclosingcta.svelte"
     },
     {
@@ -1692,7 +1575,7 @@
       "source_file": "src/lib/components/landing/LandingHero.svelte",
       "source_location": "L1",
       "id": "src_lib_components_landing_landinghero_svelte",
-      "community": 92,
+      "community": 91,
       "norm_label": "landinghero.svelte"
     },
     {
@@ -1701,7 +1584,7 @@
       "source_file": "src/lib/components/landing/LandingTrust.svelte",
       "source_location": "L1",
       "id": "src_lib_components_landing_landingtrust_svelte",
-      "community": 90,
+      "community": 92,
       "norm_label": "landingtrust.svelte"
     },
     {
@@ -1782,7 +1665,7 @@
       "source_file": "src/lib/components/ui/Input.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_input_test_ts",
-      "community": 100,
+      "community": 97,
       "norm_label": "input.test.ts"
     },
     {
@@ -1827,7 +1710,7 @@
       "source_file": "src/lib/components/ui/Avatar.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_avatar_svelte",
-      "community": 97,
+      "community": 98,
       "norm_label": "avatar.svelte"
     },
     {
@@ -1836,7 +1719,7 @@
       "source_file": "src/lib/components/ui/Avatar.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_avatar_test_ts",
-      "community": 97,
+      "community": 98,
       "norm_label": "avatar.test.ts"
     },
     {
@@ -1908,7 +1791,7 @@
       "source_file": "src/lib/components/ui/Checkbox.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_checkbox_svelte",
-      "community": 98,
+      "community": 99,
       "norm_label": "checkbox.svelte"
     },
     {
@@ -1917,7 +1800,7 @@
       "source_file": "src/lib/components/ui/Checkbox.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_checkbox_test_ts",
-      "community": 98,
+      "community": 99,
       "norm_label": "checkbox.test.ts"
     },
     {
@@ -1926,7 +1809,7 @@
       "source_file": "src/lib/components/ui/Command.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_command_svelte",
-      "community": 99,
+      "community": 100,
       "norm_label": "command.svelte"
     },
     {
@@ -1935,7 +1818,7 @@
       "source_file": "src/lib/components/ui/Command.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_command_test_ts",
-      "community": 99,
+      "community": 100,
       "norm_label": "command.test.ts"
     },
     {
@@ -1980,7 +1863,7 @@
       "source_file": "src/lib/components/ui/Input.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_input_svelte",
-      "community": 100,
+      "community": 97,
       "norm_label": "input.svelte"
     },
     {
@@ -2043,7 +1926,7 @@
       "source_file": "src/lib/components/ui/ScrollArea.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_scrollarea_svelte",
-      "community": 42,
+      "community": 41,
       "norm_label": "scrollarea.svelte"
     },
     {
@@ -2052,7 +1935,7 @@
       "source_file": "src/lib/components/ui/ScrollArea.svelte",
       "source_location": "L17",
       "id": "ui_scrollarea_children",
-      "community": 42,
+      "community": 41,
       "norm_label": "children()"
     },
     {
@@ -2061,7 +1944,7 @@
       "source_file": "src/lib/components/ui/ScrollArea.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_scrollarea_test_ts",
-      "community": 42,
+      "community": 41,
       "norm_label": "scrollarea.test.ts"
     },
     {
@@ -2070,7 +1953,7 @@
       "source_file": "src/lib/components/ui/ScrollArea.test.ts",
       "source_location": "L9",
       "id": "ui_scrollarea_test_text",
-      "community": 42,
+      "community": 41,
       "norm_label": "text()"
     },
     {
@@ -2277,7 +2160,7 @@
       "source_file": "src/lib/components/bento/AujourdhuiBento.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_aujourdhuibento_test_ts",
-      "community": 108,
+      "community": 116,
       "norm_label": "aujourdhuibento.test.ts"
     },
     {
@@ -2286,7 +2169,7 @@
       "source_file": "src/lib/components/bento/CarnetAllergens.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetallergens_svelte",
-      "community": 109,
+      "community": 108,
       "norm_label": "carnetallergens.svelte"
     },
     {
@@ -2295,7 +2178,7 @@
       "source_file": "src/lib/components/bento/CarnetAllergens.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetallergens_test_ts",
-      "community": 109,
+      "community": 108,
       "norm_label": "carnetallergens.test.ts"
     },
     {
@@ -2313,7 +2196,7 @@
       "source_file": "src/lib/components/bento/CarnetCategories.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetcategories_svelte",
-      "community": 110,
+      "community": 109,
       "norm_label": "carnetcategories.svelte"
     },
     {
@@ -2322,7 +2205,7 @@
       "source_file": "src/lib/components/bento/CarnetCategories.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetcategories_test_ts",
-      "community": 110,
+      "community": 109,
       "norm_label": "carnetcategories.test.ts"
     },
     {
@@ -2331,7 +2214,7 @@
       "source_file": "src/lib/components/bento/CarnetHeader.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetheader_svelte",
-      "community": 111,
+      "community": 110,
       "norm_label": "carnetheader.svelte"
     },
     {
@@ -2340,7 +2223,7 @@
       "source_file": "src/lib/components/bento/CarnetHeader.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetheader_test_ts",
-      "community": 111,
+      "community": 110,
       "norm_label": "carnetheader.test.ts"
     },
     {
@@ -2376,7 +2259,7 @@
       "source_file": "src/lib/components/bento/CarnetStats.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetstats_svelte",
-      "community": 112,
+      "community": 111,
       "norm_label": "carnetstats.svelte"
     },
     {
@@ -2385,7 +2268,7 @@
       "source_file": "src/lib/components/bento/CarnetStats.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetstats_test_ts",
-      "community": 112,
+      "community": 111,
       "norm_label": "carnetstats.test.ts"
     },
     {
@@ -2412,7 +2295,7 @@
       "source_file": "src/lib/components/bento/HeroTile.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_herotile_svelte",
-      "community": 113,
+      "community": 112,
       "norm_label": "herotile.svelte"
     },
     {
@@ -2421,7 +2304,7 @@
       "source_file": "src/lib/components/bento/HeroTile.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_herotile_test_ts",
-      "community": 113,
+      "community": 112,
       "norm_label": "herotile.test.ts"
     },
     {
@@ -2430,7 +2313,7 @@
       "source_file": "src/lib/components/bento/ReminderStrip.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_reminderstrip_svelte",
-      "community": 114,
+      "community": 113,
       "norm_label": "reminderstrip.svelte"
     },
     {
@@ -2439,7 +2322,7 @@
       "source_file": "src/lib/components/bento/ReminderStrip.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_reminderstrip_test_ts",
-      "community": 114,
+      "community": 113,
       "norm_label": "reminderstrip.test.ts"
     },
     {
@@ -2448,7 +2331,7 @@
       "source_file": "src/lib/components/bento/StatTiles.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_stattiles_svelte",
-      "community": 115,
+      "community": 114,
       "norm_label": "stattiles.svelte"
     },
     {
@@ -2457,7 +2340,7 @@
       "source_file": "src/lib/components/bento/StatTiles.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_stattiles_test_ts",
-      "community": 115,
+      "community": 114,
       "norm_label": "stattiles.test.ts"
     },
     {
@@ -2466,7 +2349,7 @@
       "source_file": "src/lib/components/bento/AddSymptomSheet.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_addsymptomsheet_svelte",
-      "community": 116,
+      "community": 115,
       "norm_label": "addsymptomsheet.svelte"
     },
     {
@@ -2475,7 +2358,7 @@
       "source_file": "src/lib/components/bento/AddSymptomSheet.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_addsymptomsheet_test_ts",
-      "community": 116,
+      "community": 115,
       "norm_label": "addsymptomsheet.test.ts"
     },
     {
@@ -2484,7 +2367,7 @@
       "source_file": "src/lib/components/bento/AujourdhuiBento.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_aujourdhuibento_svelte",
-      "community": 108,
+      "community": 116,
       "norm_label": "aujourdhuibento.svelte"
     },
     {
@@ -2938,30 +2821,12 @@
       "norm_label": "bentomark.test.ts"
     },
     {
-      "label": "BentoOptInBanner.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/bento/BentoOptInBanner.svelte",
-      "source_location": "L1",
-      "id": "src_lib_components_bento_bentooptinbanner_svelte",
-      "community": 142,
-      "norm_label": "bentooptinbanner.svelte"
-    },
-    {
-      "label": "BentoOptInBanner.test.ts",
-      "file_type": "code",
-      "source_file": "src/lib/components/bento/BentoOptInBanner.test.ts",
-      "source_location": "L1",
-      "id": "src_lib_components_bento_bentooptinbanner_test_ts",
-      "community": 142,
-      "norm_label": "bentooptinbanner.test.ts"
-    },
-    {
       "label": "OnboardingForm.svelte",
       "file_type": "code",
       "source_file": "src/lib/components/bento/OnboardingForm.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_onboardingform_svelte",
-      "community": 143,
+      "community": 142,
       "norm_label": "onboardingform.svelte"
     },
     {
@@ -2970,7 +2835,7 @@
       "source_file": "src/lib/components/bento/OnboardingForm.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_onboardingform_test_ts",
-      "community": 143,
+      "community": 142,
       "norm_label": "onboardingform.test.ts"
     },
     {
@@ -3429,7 +3294,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L21",
       "id": "server_auth_hashpassword",
-      "community": 4,
+      "community": 5,
       "norm_label": "hashpassword()"
     },
     {
@@ -4788,7 +4653,7 @@
       "source_file": "src/lib/utils/localized-href.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_localized_href_test_ts",
-      "community": 65,
+      "community": 64,
       "norm_label": "localized-href.test.ts"
     },
     {
@@ -4797,7 +4662,7 @@
       "source_file": "src/lib/utils/localized-href.ts",
       "source_location": "L1",
       "id": "src_lib_utils_localized_href_ts",
-      "community": 65,
+      "community": 64,
       "norm_label": "localized-href.ts"
     },
     {
@@ -4806,7 +4671,7 @@
       "source_file": "src/lib/utils/localized-href.ts",
       "source_location": "L9",
       "id": "utils_localized_href_localizedhref",
-      "community": 65,
+      "community": 64,
       "norm_label": "localizedhref()"
     },
     {
@@ -12847,6 +12712,15 @@
       "norm_label": "load()"
     },
     {
+      "label": "+page.svelte",
+      "file_type": "code",
+      "source_file": "src/routes/+page.svelte",
+      "source_location": "L1",
+      "id": "src_routes_page_svelte",
+      "community": 186,
+      "norm_label": "+page.svelte"
+    },
+    {
       "label": "+layout.server.ts",
       "file_type": "code",
       "source_file": "src/routes/+layout.server.ts",
@@ -12859,7 +12733,7 @@
       "label": "load()",
       "file_type": "code",
       "source_file": "src/routes/+layout.server.ts",
-      "source_location": "L9",
+      "source_location": "L8",
       "id": "routes_layout_server_load",
       "community": 8,
       "norm_label": "load()"
@@ -12928,15 +12802,6 @@
       "norm_label": "layout.server.test.ts"
     },
     {
-      "label": "+page.svelte",
-      "file_type": "code",
-      "source_file": "src/routes/+page.svelte",
-      "source_location": "L1",
-      "id": "src_routes_page_svelte",
-      "community": 186,
-      "norm_label": "+page.svelte"
-    },
-    {
       "label": "+page.server.ts",
       "file_type": "code",
       "source_file": "src/routes/account/+page.server.ts",
@@ -12949,7 +12814,7 @@
       "label": "load()",
       "file_type": "code",
       "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L35",
+      "source_location": "L34",
       "id": "account_page_server_load",
       "community": 5,
       "norm_label": "load()"
@@ -12960,7 +12825,7 @@
       "source_file": "src/routes/account/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_account_page_svelte",
-      "community": 66,
+      "community": 65,
       "norm_label": "+page.svelte"
     },
     {
@@ -12969,7 +12834,7 @@
       "source_file": "src/routes/login/+page.svelte",
       "confidence": "EXTRACTED",
       "id": "browser",
-      "community": 66,
+      "community": 65,
       "norm_label": "@simplewebauthn/browser"
     },
     {
@@ -12987,14 +12852,14 @@
       "source_file": "src/routes/account/page.server.test.ts",
       "source_location": "L26",
       "id": "account_page_server_test_seed",
-      "community": 4,
+      "community": 5,
       "norm_label": "seed()"
     },
     {
       "label": "seedKey()",
       "file_type": "code",
       "source_file": "src/routes/account/page.server.test.ts",
-      "source_location": "L152",
+      "source_location": "L133",
       "id": "account_page_server_test_seedkey",
       "community": 4,
       "norm_label": "seedkey()"
@@ -13056,8 +12921,8 @@
     {
       "label": "load()",
       "file_type": "code",
-      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
-      "source_location": "L19",
+      "source_file": "src/routes/allergens/+page.server.ts",
+      "source_location": "L3",
       "id": "allergens_page_server_load",
       "community": 3,
       "norm_label": "load()"
@@ -13077,7 +12942,7 @@
       "source_file": "src/routes/allergens/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_allergens_page_svelte",
-      "community": 144,
+      "community": 143,
       "norm_label": "+page.svelte"
     },
     {
@@ -13086,7 +12951,7 @@
       "source_file": "src/routes/allergens/+page.svelte",
       "source_location": "L101",
       "id": "allergens_page_each",
-      "community": 144,
+      "community": 143,
       "norm_label": "#each()"
     },
     {
@@ -13131,17 +12996,8 @@
       "source_file": "src/routes/child/[id]/+layout.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_layout_svelte",
-      "community": 145,
+      "community": 149,
       "norm_label": "+layout.svelte"
-    },
-    {
-      "label": "children()",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/+layout.svelte",
-      "source_location": "L16",
-      "id": "id_layout_children",
-      "community": 145,
-      "norm_label": "children()"
     },
     {
       "label": "+page.server.ts",
@@ -13189,60 +13045,6 @@
       "norm_label": "setup()"
     },
     {
-      "label": "+page.svelte",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/allergens/+page.svelte",
-      "source_location": "L1",
-      "id": "src_routes_child_id_allergens_page_svelte",
-      "community": 190,
-      "norm_label": "+page.svelte"
-    },
-    {
-      "label": "+page.server.ts",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
-      "source_location": "L1",
-      "id": "src_routes_child_id_allergens_page_server_ts",
-      "community": 3,
-      "norm_label": "+page.server.ts"
-    },
-    {
-      "label": "page.server.test.ts",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L1",
-      "id": "src_routes_child_id_allergens_page_server_test_ts",
-      "community": 4,
-      "norm_label": "page.server.test.ts"
-    },
-    {
-      "label": "setup()",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L22",
-      "id": "allergens_page_server_test_setup",
-      "community": 4,
-      "norm_label": "setup()"
-    },
-    {
-      "label": "loadFor()",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L29",
-      "id": "allergens_page_server_test_loadfor",
-      "community": 4,
-      "norm_label": "loadfor()"
-    },
-    {
-      "label": "+page.svelte",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/foods/+page.svelte",
-      "source_location": "L1",
-      "id": "src_routes_child_id_foods_page_svelte",
-      "community": 191,
-      "norm_label": "+page.svelte"
-    },
-    {
       "label": "+page.server.ts",
       "file_type": "code",
       "source_file": "src/routes/child/[id]/foods/+page.server.ts",
@@ -13288,6 +13090,15 @@
       "norm_label": "loadfor()"
     },
     {
+      "label": "+page.svelte",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/foods/+page.svelte",
+      "source_location": "L1",
+      "id": "src_routes_child_id_foods_page_svelte",
+      "community": 190,
+      "norm_label": "+page.svelte"
+    },
+    {
       "label": "+page.server.ts",
       "file_type": "code",
       "source_file": "src/routes/child/[id]/foods/[entryId]/+page.server.ts",
@@ -13329,7 +13140,7 @@
       "source_file": "src/routes/child/[id]/foods/[entryId]/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_foods_entryid_page_svelte",
-      "community": 192,
+      "community": 191,
       "norm_label": "+page.svelte"
     },
     {
@@ -13383,7 +13194,7 @@
       "source_file": "src/routes/child/[id]/foods/[entryId]/print/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_foods_entryid_print_page_svelte",
-      "community": 193,
+      "community": 192,
       "norm_label": "+page.svelte"
     },
     {
@@ -13428,7 +13239,7 @@
       "source_file": "src/routes/child/[id]/guide/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_guide_page_svelte",
-      "community": 194,
+      "community": 193,
       "norm_label": "+page.svelte"
     },
     {
@@ -13446,7 +13257,7 @@
       "source_file": "src/routes/child/[id]/log/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_log_page_svelte",
-      "community": 195,
+      "community": 194,
       "norm_label": "+page.svelte"
     },
     {
@@ -13509,7 +13320,7 @@
       "source_file": "src/routes/child/[id]/log/[entryId]/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_log_entryid_page_svelte",
-      "community": 196,
+      "community": 195,
       "norm_label": "+page.svelte"
     },
     {
@@ -13554,7 +13365,7 @@
       "source_file": "src/routes/child/[id]/settings/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_settings_page_svelte",
-      "community": 197,
+      "community": 196,
       "norm_label": "+page.svelte"
     },
     {
@@ -13671,7 +13482,7 @@
       "source_file": "src/routes/child/[id]/report/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_report_page_server_ts",
-      "community": 146,
+      "community": 144,
       "norm_label": "+page.server.ts"
     },
     {
@@ -13680,7 +13491,7 @@
       "source_file": "src/routes/child/[id]/report/+page.server.ts",
       "source_location": "L41",
       "id": "report_page_server_load",
-      "community": 146,
+      "community": 144,
       "norm_label": "load()"
     },
     {
@@ -13725,7 +13536,7 @@
       "source_file": "src/routes/child/[id]/report/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_report_page_svelte",
-      "community": 147,
+      "community": 145,
       "norm_label": "+page.svelte"
     },
     {
@@ -13734,62 +13545,8 @@
       "source_file": "src/routes/child/[id]/report/+page.svelte",
       "source_location": "L184",
       "id": "report_page_e",
-      "community": 147,
+      "community": 145,
       "norm_label": "e()"
-    },
-    {
-      "label": "+page.svelte",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
-      "source_location": "L1",
-      "id": "src_routes_child_id_analytics_page_svelte",
-      "community": 64,
-      "norm_label": "+page.svelte"
-    },
-    {
-      "label": "weekLabel()",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
-      "source_location": "L32",
-      "id": "analytics_page_weeklabel",
-      "community": 64,
-      "norm_label": "weeklabel()"
-    },
-    {
-      "label": "i()",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
-      "source_location": "L136",
-      "id": "analytics_page_i",
-      "community": 64,
-      "norm_label": "i()"
-    },
-    {
-      "label": "+page.server.ts",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
-      "source_location": "L1",
-      "id": "src_routes_child_id_analytics_page_server_ts",
-      "community": 11,
-      "norm_label": "+page.server.ts"
-    },
-    {
-      "label": "load()",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
-      "source_location": "L8",
-      "id": "analytics_page_server_load",
-      "community": 11,
-      "norm_label": "load()"
-    },
-    {
-      "label": "page.server.test.ts",
-      "file_type": "code",
-      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
-      "source_location": "L1",
-      "id": "src_routes_child_id_analytics_page_server_test_ts",
-      "community": 4,
-      "norm_label": "page.server.test.ts"
     },
     {
       "label": "+page.server.ts",
@@ -13815,7 +13572,7 @@
       "source_file": "src/routes/child/new/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_new_page_svelte",
-      "community": 198,
+      "community": 197,
       "norm_label": "+page.svelte"
     },
     {
@@ -13833,7 +13590,7 @@
       "source_file": "src/routes/cookies/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_cookies_page_svelte",
-      "community": 199,
+      "community": 198,
       "norm_label": "+page.svelte"
     },
     {
@@ -13860,7 +13617,7 @@
       "source_file": "src/routes/guide/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_guide_page_svelte",
-      "community": 200,
+      "community": 199,
       "norm_label": "+page.svelte"
     },
     {
@@ -13869,7 +13626,7 @@
       "source_file": "src/routes/join/[code]/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_join_code_page_svelte",
-      "community": 201,
+      "community": 200,
       "norm_label": "+page.svelte"
     },
     {
@@ -13941,7 +13698,7 @@
       "source_file": "src/routes/login/page.server.test.ts",
       "source_location": "L39",
       "id": "login_page_server_test_seedtestuser",
-      "community": 4,
+      "community": 5,
       "norm_label": "seedtestuser()"
     },
     {
@@ -13968,7 +13725,7 @@
       "source_file": "src/routes/login/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_login_page_svelte",
-      "community": 66,
+      "community": 65,
       "norm_label": "+page.svelte"
     },
     {
@@ -14022,7 +13779,7 @@
       "source_file": "src/routes/mentions-legales/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_mentions_legales_page_server_test_ts",
-      "community": 202,
+      "community": 201,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -14031,7 +13788,7 @@
       "source_file": "src/routes/mentions-legales/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_mentions_legales_page_svelte",
-      "community": 203,
+      "community": 202,
       "norm_label": "+page.svelte"
     },
     {
@@ -14184,7 +13941,7 @@
       "source_file": "src/routes/politique-confidentialite/page.server.test.ts",
       "source_location": "L1",
       "id": "src_routes_politique_confidentialite_page_server_test_ts",
-      "community": 204,
+      "community": 203,
       "norm_label": "page.server.test.ts"
     },
     {
@@ -14193,7 +13950,7 @@
       "source_file": "src/routes/politique-confidentialite/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_politique_confidentialite_page_svelte",
-      "community": 205,
+      "community": 204,
       "norm_label": "+page.svelte"
     },
     {
@@ -14224,6 +13981,15 @@
       "norm_label": "server.test.ts"
     },
     {
+      "label": "+page.svelte",
+      "file_type": "code",
+      "source_file": "src/routes/signup/+page.svelte",
+      "source_location": "L1",
+      "id": "src_routes_signup_page_svelte",
+      "community": 205,
+      "norm_label": "+page.svelte"
+    },
+    {
       "label": "+page.server.ts",
       "file_type": "code",
       "source_file": "src/routes/signup/+page.server.ts",
@@ -14240,15 +14006,6 @@
       "id": "signup_page_server_load",
       "community": 5,
       "norm_label": "load()"
-    },
-    {
-      "label": "+page.svelte",
-      "file_type": "code",
-      "source_file": "src/routes/signup/+page.svelte",
-      "source_location": "L1",
-      "id": "src_routes_signup_page_svelte",
-      "community": 206,
-      "norm_label": "+page.svelte"
     },
     {
       "label": "page.server.test.ts",
@@ -14310,7 +14067,7 @@
       "source_file": "src/routes/sources/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_sources_page_server_ts",
-      "community": 148,
+      "community": 146,
       "norm_label": "+page.server.ts"
     },
     {
@@ -14319,7 +14076,7 @@
       "source_file": "src/routes/sources/+page.server.ts",
       "source_location": "L3",
       "id": "sources_page_server_load",
-      "community": 148,
+      "community": 146,
       "norm_label": "load()"
     },
     {
@@ -14337,7 +14094,7 @@
       "source_file": "src/routes/sources/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_sources_page_svelte",
-      "community": 149,
+      "community": 147,
       "norm_label": "+page.svelte"
     },
     {
@@ -14346,7 +14103,7 @@
       "source_file": "src/routes/sources/+page.svelte",
       "source_location": "L72",
       "id": "sources_page_each",
-      "community": 149,
+      "community": 147,
       "norm_label": "#each()"
     },
     {
@@ -14355,7 +14112,7 @@
       "source_file": "src/routes/healthz/+server.ts",
       "source_location": "L1",
       "id": "src_routes_healthz_server_ts",
-      "community": 67,
+      "community": 66,
       "norm_label": "+server.ts"
     },
     {
@@ -14364,7 +14121,7 @@
       "source_file": "src/routes/healthz/+server.ts",
       "source_location": "L15",
       "id": "healthz_server_get",
-      "community": 67,
+      "community": 66,
       "norm_label": "get()"
     },
     {
@@ -14373,7 +14130,7 @@
       "source_file": "src/routes/healthz/server.test.ts",
       "source_location": "L1",
       "id": "src_routes_healthz_server_test_ts",
-      "community": 67,
+      "community": 66,
       "norm_label": "server.test.ts"
     },
     {
@@ -14382,7 +14139,7 @@
       "source_file": "src/routes/offline/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_offline_page_svelte",
-      "community": 207,
+      "community": 206,
       "norm_label": "+page.svelte"
     },
     {
@@ -14391,7 +14148,7 @@
       "source_file": "src/routes/offline/+page.ts",
       "source_location": "L1",
       "id": "src_routes_offline_page_ts",
-      "community": 208,
+      "community": 207,
       "norm_label": "+page.ts"
     },
     {
@@ -14571,7 +14328,7 @@
       "source_file": "static/theme-init.js",
       "source_location": "L1",
       "id": "static_theme_init_js",
-      "community": 209,
+      "community": 208,
       "norm_label": "theme-init.js"
     },
     {
@@ -15113,6 +14870,249 @@
       "id": "lcov_report_prettify_y",
       "community": 21,
       "norm_label": "y()"
+    },
+    {
+      "label": "bento-optin-banner.spec.ts",
+      "file_type": "code",
+      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_location": "L1",
+      "community": 42,
+      "norm_label": "bento-optin-banner.spec.ts",
+      "id": "e2e_bento_optin_banner_spec_ts"
+    },
+    {
+      "label": "unique()",
+      "file_type": "code",
+      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_location": "L7",
+      "community": 42,
+      "norm_label": "unique()",
+      "id": "e2e_bento_optin_banner_spec_unique"
+    },
+    {
+      "label": "signUpAndCreateChild()",
+      "file_type": "code",
+      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_location": "L11",
+      "community": 42,
+      "norm_label": "signupandcreatechild()",
+      "id": "e2e_bento_optin_banner_spec_signupandcreatechild"
+    },
+    {
+      "label": "dismissWelcomeIfPresent()",
+      "file_type": "code",
+      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_location": "L33",
+      "community": 42,
+      "norm_label": "dismisswelcomeifpresent()",
+      "id": "e2e_bento_optin_banner_spec_dismisswelcomeifpresent"
+    },
+    {
+      "label": "feature-flags.test.ts",
+      "file_type": "code",
+      "source_file": "src/lib/feature-flags.test.ts",
+      "source_location": "L1",
+      "community": 8,
+      "norm_label": "feature-flags.test.ts",
+      "id": "src_lib_feature_flags_test_ts"
+    },
+    {
+      "label": "feature-flags.ts",
+      "file_type": "code",
+      "source_file": "src/lib/feature-flags.ts",
+      "source_location": "L1",
+      "community": 8,
+      "norm_label": "feature-flags.ts",
+      "id": "src_lib_feature_flags_ts"
+    },
+    {
+      "label": "bentoEnabled()",
+      "file_type": "code",
+      "source_file": "src/lib/feature-flags.ts",
+      "source_location": "L3",
+      "community": 8,
+      "norm_label": "bentoenabled()",
+      "id": "lib_feature_flags_bentoenabled"
+    },
+    {
+      "label": "AppShell.test.ts",
+      "file_type": "code",
+      "source_file": "src/lib/components/AppShell.test.ts",
+      "source_location": "L1",
+      "community": 7,
+      "norm_label": "appshell.test.ts",
+      "id": "src_lib_components_appshell_test_ts"
+    },
+    {
+      "label": "BottomNav.test.ts",
+      "file_type": "code",
+      "source_file": "src/lib/components/BottomNav.test.ts",
+      "source_location": "L1",
+      "community": 7,
+      "norm_label": "bottomnav.test.ts",
+      "id": "src_lib_components_bottomnav_test_ts"
+    },
+    {
+      "label": "BottomNav.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/BottomNav.svelte",
+      "source_location": "L1",
+      "community": 7,
+      "norm_label": "bottomnav.svelte",
+      "id": "src_lib_components_bottomnav_svelte"
+    },
+    {
+      "label": "#each()",
+      "file_type": "code",
+      "source_file": "src/lib/components/BottomNav.svelte",
+      "source_location": "L21",
+      "community": 7,
+      "norm_label": "#each()",
+      "id": "components_bottomnav_each"
+    },
+    {
+      "label": "AppShell.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/AppShell.svelte",
+      "source_location": "L1",
+      "community": 7,
+      "norm_label": "appshell.svelte",
+      "id": "src_lib_components_appshell_svelte"
+    },
+    {
+      "label": "#each()",
+      "file_type": "code",
+      "source_file": "src/lib/components/AppShell.svelte",
+      "source_location": "L48",
+      "community": 7,
+      "norm_label": "#each()",
+      "id": "components_appshell_each"
+    },
+    {
+      "label": "BentoOptInBanner.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/bento/BentoOptInBanner.svelte",
+      "source_location": "L1",
+      "community": 148,
+      "norm_label": "bentooptinbanner.svelte",
+      "id": "src_lib_components_bento_bentooptinbanner_svelte"
+    },
+    {
+      "label": "BentoOptInBanner.test.ts",
+      "file_type": "code",
+      "source_file": "src/lib/components/bento/BentoOptInBanner.test.ts",
+      "source_location": "L1",
+      "community": 148,
+      "norm_label": "bentooptinbanner.test.ts",
+      "id": "src_lib_components_bento_bentooptinbanner_test_ts"
+    },
+    {
+      "label": "children()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/+layout.svelte",
+      "source_location": "L16",
+      "community": 149,
+      "norm_label": "children()",
+      "id": "id_layout_children"
+    },
+    {
+      "label": "+page.svelte",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/allergens/+page.svelte",
+      "source_location": "L1",
+      "community": 209,
+      "norm_label": "+page.svelte",
+      "id": "src_routes_child_id_allergens_page_svelte"
+    },
+    {
+      "label": "+page.server.ts",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
+      "source_location": "L1",
+      "community": 3,
+      "norm_label": "+page.server.ts",
+      "id": "src_routes_child_id_allergens_page_server_ts"
+    },
+    {
+      "label": "page.server.test.ts",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "page.server.test.ts",
+      "id": "src_routes_child_id_allergens_page_server_test_ts"
+    },
+    {
+      "label": "setup()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L22",
+      "community": 4,
+      "norm_label": "setup()",
+      "id": "allergens_page_server_test_setup"
+    },
+    {
+      "label": "loadFor()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L29",
+      "community": 4,
+      "norm_label": "loadfor()",
+      "id": "allergens_page_server_test_loadfor"
+    },
+    {
+      "label": "+page.svelte",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L1",
+      "community": 67,
+      "norm_label": "+page.svelte",
+      "id": "src_routes_child_id_analytics_page_svelte"
+    },
+    {
+      "label": "weekLabel()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L32",
+      "community": 67,
+      "norm_label": "weeklabel()",
+      "id": "analytics_page_weeklabel"
+    },
+    {
+      "label": "i()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L136",
+      "community": 67,
+      "norm_label": "i()",
+      "id": "analytics_page_i"
+    },
+    {
+      "label": "+page.server.ts",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
+      "source_location": "L1",
+      "community": 11,
+      "norm_label": "+page.server.ts",
+      "id": "src_routes_child_id_analytics_page_server_ts"
+    },
+    {
+      "label": "load()",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
+      "source_location": "L8",
+      "community": 11,
+      "norm_label": "load()",
+      "id": "analytics_page_server_load"
+    },
+    {
+      "label": "page.server.test.ts",
+      "file_type": "code",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "page.server.test.ts",
+      "id": "src_routes_child_id_analytics_page_server_test_ts"
     },
     {
       "label": "insertInviteWithUniqueCode()",
@@ -18242,47 +18242,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-shell.spec.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "e2e_bento_shell_spec_ts",
-      "target": "e2e_bento_shell_spec_unique"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-shell.spec.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "e2e_bento_shell_spec_ts",
-      "target": "e2e_bento_shell_spec_signupandcreatechild"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-shell.spec.ts",
-      "source_location": "L38",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "e2e_bento_shell_spec_ts",
-      "target": "e2e_bento_shell_spec_dismisswelcomeifpresent"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-shell.spec.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "e2e_bento_shell_spec_signupandcreatechild",
-      "target": "e2e_bento_shell_spec_unique"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "e2e/dashboard.spec.ts",
       "source_location": "L3",
       "weight": 1.0,
@@ -18382,6 +18341,26 @@
       "confidence_score": 1.0,
       "source": "e2e_offline_spec_ts",
       "target": "e2e_offline_spec_signupandcreatechild"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "e2e/bento-auth-onboarding.spec.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "e2e_bento_auth_onboarding_spec_ts",
+      "target": "e2e_bento_auth_onboarding_spec_unique"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "e2e/bento-auth-onboarding.spec.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "e2e_bento_auth_onboarding_spec_ts",
+      "target": "e2e_bento_auth_onboarding_spec_signup"
     },
     {
       "relation": "contains",
@@ -18519,63 +18498,43 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-auth-onboarding.spec.ts",
+      "source_file": "e2e/bento-shell.spec.ts",
       "source_location": "L5",
       "weight": 1.0,
-      "source": "e2e_bento_auth_onboarding_spec_ts",
-      "target": "e2e_bento_auth_onboarding_spec_unique",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "e2e_bento_shell_spec_ts",
+      "target": "e2e_bento_shell_spec_unique"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-auth-onboarding.spec.ts",
+      "source_file": "e2e/bento-shell.spec.ts",
       "source_location": "L9",
       "weight": 1.0,
-      "source": "e2e_bento_auth_onboarding_spec_ts",
-      "target": "e2e_bento_auth_onboarding_spec_signup",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "e2e_bento_shell_spec_ts",
+      "target": "e2e_bento_shell_spec_signupandcreatechild"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-optin-banner.spec.ts",
-      "source_location": "L7",
+      "source_file": "e2e/bento-shell.spec.ts",
+      "source_location": "L38",
       "weight": 1.0,
-      "source": "e2e_bento_optin_banner_spec_ts",
-      "target": "e2e_bento_optin_banner_spec_unique",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-optin-banner.spec.ts",
-      "source_location": "L11",
-      "weight": 1.0,
-      "source": "e2e_bento_optin_banner_spec_ts",
-      "target": "e2e_bento_optin_banner_spec_signupandcreatechild",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-optin-banner.spec.ts",
-      "source_location": "L33",
-      "weight": 1.0,
-      "source": "e2e_bento_optin_banner_spec_ts",
-      "target": "e2e_bento_optin_banner_spec_dismisswelcomeifpresent",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "e2e_bento_shell_spec_ts",
+      "target": "e2e_bento_shell_spec_dismisswelcomeifpresent"
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "e2e/bento-optin-banner.spec.ts",
-      "source_location": "L12",
+      "source_file": "e2e/bento-shell.spec.ts",
+      "source_location": "L10",
       "weight": 1.0,
-      "source": "e2e_bento_optin_banner_spec_signupandcreatechild",
-      "target": "e2e_bento_optin_banner_spec_unique",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "e2e_bento_shell_spec_signupandcreatechild",
+      "target": "e2e_bento_shell_spec_unique"
     },
     {
       "relation": "contains",
@@ -19321,93 +19280,6 @@
       "target": "sitemap_xml_server_get"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/feature-flags.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_feature_flags_test_ts",
-      "target": "lib_feature_flags_bentoenabled"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/feature-flags.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_feature_flags_ts",
-      "target": "lib_feature_flags_bentoenabled"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/+layout.server.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_layout_server_ts",
-      "target": "lib_feature_flags_bentoenabled"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_account_page_server_ts",
-      "target": "lib_feature_flags_bentoenabled"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/guide/+page.server.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_guide_page_server_ts",
-      "target": "lib_feature_flags_bentoenabled"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/routes/+layout.server.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "source": "routes_layout_server_load",
-      "target": "lib_feature_flags_bentoenabled"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L39",
-      "weight": 1.0,
-      "source": "account_page_server_load",
-      "target": "lib_feature_flags_bentoenabled"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/routes/child/[id]/guide/+page.server.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "guide_page_server_load",
-      "target": "lib_feature_flags_bentoenabled"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -19428,61 +19300,6 @@
       "confidence_score": 1.0,
       "source": "src_lib_components_allergeninfodialog_svelte",
       "target": "src_lib_components_guidestaticsections_svelte"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/AppShell.test.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_appshell_test_ts",
-      "target": "test_app_stubs_setpagepathname"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/AppShell.test.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_appshell_test_ts",
-      "target": "test_component_textsnippet"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/AppShell.test.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_appshell_test_ts",
-      "target": "src_lib_components_appshell_svelte"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/BottomNav.test.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_bottomnav_test_ts",
-      "target": "test_app_stubs_setpagepathname"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/BottomNav.test.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_bottomnav_test_ts",
-      "target": "src_lib_components_bottomnav_svelte"
     },
     {
       "relation": "imports_from",
@@ -19715,27 +19532,6 @@
       "target": "src_lib_components_reactionpicker_test_ts"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/BottomNav.svelte",
-      "source_location": "L21",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_bottomnav_svelte",
-      "target": "components_bottomnav_each"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/lib/components/BottomNav.svelte",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "components_bottomnav_each",
-      "target": "utils_nav_isnavitemactive"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -19776,27 +19572,6 @@
       "confidence_score": 1.0,
       "source": "src_lib_components_queuebadge_svelte",
       "target": "src_lib_components_queuebadge_test_ts"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/AppShell.svelte",
-      "source_location": "L48",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_appshell_svelte",
-      "target": "components_appshell_each"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/lib/components/AppShell.svelte",
-      "source_location": "L49",
-      "weight": 1.0,
-      "source": "components_appshell_each",
-      "target": "utils_nav_isnavitemactive"
     },
     {
       "relation": "imports_from",
@@ -20009,9 +19784,9 @@
       "source_file": "src/lib/components/landing/LandingClosingCtaBento.test.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_landing_landingclosingctabento_test_ts",
-      "target": "src_lib_components_landing_landingclosingctabento_svelte",
-      "confidence_score": 1.0
+      "target": "src_lib_components_landing_landingclosingctabento_svelte"
     },
     {
       "relation": "imports_from",
@@ -20020,9 +19795,9 @@
       "source_file": "src/lib/components/landing/LandingFeaturesBento.test.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_landing_landingfeaturesbento_test_ts",
-      "target": "src_lib_components_landing_landingfeaturesbento_svelte",
-      "confidence_score": 1.0
+      "target": "src_lib_components_landing_landingfeaturesbento_svelte"
     },
     {
       "relation": "imports_from",
@@ -20031,9 +19806,9 @@
       "source_file": "src/lib/components/landing/LandingHeroBento.test.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_landing_landingherobento_test_ts",
-      "target": "src_lib_components_landing_landingherobento_svelte",
-      "confidence_score": 1.0
+      "target": "src_lib_components_landing_landingherobento_svelte"
     },
     {
       "relation": "imports_from",
@@ -20042,9 +19817,9 @@
       "source_file": "src/lib/components/landing/LandingTrustBento.test.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_landing_landingtrustbento_test_ts",
-      "target": "src_lib_components_landing_landingtrustbento_svelte",
-      "confidence_score": 1.0
+      "target": "src_lib_components_landing_landingtrustbento_svelte"
     },
     {
       "relation": "imports_from",
@@ -20857,9 +20632,9 @@
       "source_file": "src/lib/components/bento/BentoAuthLayout.test.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_bento_bentoauthlayout_test_ts",
-      "target": "src_lib_components_bento_bentoauthlayout_svelte",
-      "confidence_score": 1.0
+      "target": "src_lib_components_bento_bentoauthlayout_svelte"
     },
     {
       "relation": "contains",
@@ -20867,9 +20642,9 @@
       "source_file": "src/lib/components/bento/BentoAuthLayout.test.ts",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_bento_bentoauthlayout_test_ts",
-      "target": "bento_bentoauthlayout_test_makesnippet",
-      "confidence_score": 1.0
+      "target": "bento_bentoauthlayout_test_makesnippet"
     },
     {
       "relation": "imports_from",
@@ -20878,20 +20653,9 @@
       "source_file": "src/lib/components/bento/BentoMark.test.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_bento_bentomark_test_ts",
-      "target": "src_lib_components_bento_bentomark_svelte",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/bento/BentoOptInBanner.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "source": "src_lib_components_bento_bentooptinbanner_test_ts",
-      "target": "src_lib_components_bento_bentooptinbanner_svelte",
-      "confidence_score": 1.0
+      "target": "src_lib_components_bento_bentomark_svelte"
     },
     {
       "relation": "imports_from",
@@ -20900,9 +20664,9 @@
       "source_file": "src/lib/components/bento/OnboardingForm.test.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_bento_onboardingform_test_ts",
-      "target": "src_lib_components_bento_onboardingform_svelte",
-      "confidence_score": 1.0
+      "target": "src_lib_components_bento_onboardingform_svelte"
     },
     {
       "relation": "imports",
@@ -22034,17 +21798,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "server_guards_parsechildidparam",
-      "target": "src_routes_child_id_allergens_page_server_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/routes/child/[id]/foods/+page.server.ts",
       "source_location": "L4",
       "weight": 1.0,
@@ -22123,17 +21876,6 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
-      "source_location": "L20",
-      "weight": 1.0,
-      "source": "server_guards_parsechildidparam",
-      "target": "allergens_page_server_load"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
       "source_file": "src/routes/child/[id]/foods/+page.server.ts",
       "source_location": "L9",
       "weight": 1.0,
@@ -22183,6 +21925,28 @@
       "weight": 1.0,
       "source": "server_guards_parsechildidparam",
       "target": "suggestions_page_server_load"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "server_guards_parsechildidparam",
+      "target": "src_routes_child_id_allergens_page_server_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "server_guards_parsechildidparam",
+      "target": "allergens_page_server_load"
     },
     {
       "relation": "calls",
@@ -22238,17 +22002,6 @@
       "confidence_score": 1.0,
       "source": "server_guards_requireuser",
       "target": "src_routes_child_id_page_server_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "server_guards_requireuser",
-      "target": "src_routes_child_id_allergens_page_server_ts"
     },
     {
       "relation": "imports",
@@ -22398,17 +22151,6 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "server_guards_requireuser",
-      "target": "allergens_page_server_load"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
       "source_file": "src/routes/child/[id]/foods/+page.server.ts",
       "source_location": "L8",
       "weight": 1.0,
@@ -22491,6 +22233,28 @@
       "weight": 1.0,
       "source": "server_guards_requireuser",
       "target": "verify_server_post"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "server_guards_requireuser",
+      "target": "src_routes_child_id_allergens_page_server_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "server_guards_requireuser",
+      "target": "allergens_page_server_load"
     },
     {
       "relation": "imports",
@@ -22579,17 +22343,6 @@
       "confidence_score": 1.0,
       "source": "server_guards_requiremembership",
       "target": "src_routes_child_id_page_server_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "server_guards_requiremembership",
-      "target": "src_routes_child_id_allergens_page_server_ts"
     },
     {
       "relation": "imports",
@@ -22695,17 +22448,6 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "server_guards_requiremembership",
-      "target": "allergens_page_server_load"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
       "source_file": "src/routes/child/[id]/foods/+page.server.ts",
       "source_location": "L10",
       "weight": 1.0,
@@ -22766,6 +22508,28 @@
       "weight": 1.0,
       "source": "server_guards_requiremembership",
       "target": "suggestions_page_server_load"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "server_guards_requiremembership",
+      "target": "src_routes_child_id_allergens_page_server_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/allergens/+page.server.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "server_guards_requiremembership",
+      "target": "allergens_page_server_load"
     },
     {
       "relation": "imports",
@@ -24871,9 +24635,9 @@
       "source_file": "src/lib/server/invitations.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_server_invitations_test_ts",
-      "target": "test_db_resettestdb",
-      "confidence_score": 1.0
+      "target": "test_db_resettestdb"
     },
     {
       "relation": "imports",
@@ -24882,9 +24646,9 @@
       "source_file": "src/lib/server/invitations.test.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_server_invitations_test_ts",
-      "target": "test_route_seedchild",
-      "confidence_score": 1.0
+      "target": "test_route_seedchild"
     },
     {
       "relation": "imports",
@@ -24893,9 +24657,9 @@
       "source_file": "src/lib/server/invitations.test.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_server_invitations_test_ts",
-      "target": "test_route_seeduser",
-      "confidence_score": 1.0
+      "target": "test_route_seeduser"
     },
     {
       "relation": "imports",
@@ -24904,9 +24668,9 @@
       "source_file": "src/lib/server/invitations.test.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_server_invitations_test_ts",
-      "target": "test_route_seedmembership",
-      "confidence_score": 1.0
+      "target": "test_route_seedmembership"
     },
     {
       "relation": "imports",
@@ -24915,9 +24679,9 @@
       "source_file": "src/lib/server/invitations.test.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_server_invitations_test_ts",
-      "target": "server_invitations_createinvitationforchild",
-      "confidence_score": 1.0
+      "target": "server_invitations_createinvitationforchild"
     },
     {
       "relation": "imports",
@@ -24926,9 +24690,9 @@
       "source_file": "src/lib/server/invitations.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_server_invitations_ts",
-      "target": "utils_invites_generateinvitecoderaw",
-      "confidence_score": 1.0
+      "target": "utils_invites_generateinvitecoderaw"
     },
     {
       "relation": "imports",
@@ -24937,9 +24701,9 @@
       "source_file": "src/lib/server/invitations.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_server_invitations_ts",
-      "target": "db_errors_isuniqueviolation",
-      "confidence_score": 1.0
+      "target": "db_errors_isuniqueviolation"
     },
     {
       "relation": "contains",
@@ -24947,9 +24711,9 @@
       "source_file": "src/lib/server/invitations.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_server_invitations_ts",
-      "target": "server_invitations_createinvitationforchild",
-      "confidence_score": 1.0
+      "target": "server_invitations_createinvitationforchild"
     },
     {
       "relation": "imports",
@@ -24958,9 +24722,9 @@
       "source_file": "src/routes/child/[id]/settings/+page.server.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_id_settings_page_server_ts",
-      "target": "server_invitations_createinvitationforchild",
-      "confidence_score": 1.0
+      "target": "server_invitations_createinvitationforchild"
     },
     {
       "relation": "imports",
@@ -24969,9 +24733,9 @@
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_routes_child_new_page_server_ts",
-      "target": "server_invitations_createinvitationforchild",
-      "confidence_score": 1.0
+      "target": "server_invitations_createinvitationforchild"
     },
     {
       "relation": "calls",
@@ -26271,6 +26035,28 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_lib_utils_nav_ts",
+      "target": "utils_nav_isnavitemactive"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/lib/components/BottomNav.svelte",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "components_bottomnav_each",
+      "target": "utils_nav_isnavitemactive"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/lib/components/AppShell.svelte",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "components_appshell_each",
       "target": "utils_nav_isnavitemactive"
     },
     {
@@ -39014,6 +38800,28 @@
       "target": "routes_layout_server_load"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/+layout.server.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_layout_server_ts",
+      "target": "lib_feature_flags_bentoenabled"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/+layout.server.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "routes_layout_server_load",
+      "target": "lib_feature_flags_bentoenabled"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/routes/+layout.svelte",
@@ -39138,6 +38946,28 @@
       "confidence_score": 1.0,
       "source": "src_routes_account_page_server_ts",
       "target": "account_page_server_load"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_account_page_server_ts",
+      "target": "lib_feature_flags_bentoenabled"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "account_page_server_load",
+      "target": "lib_feature_flags_bentoenabled"
     },
     {
       "relation": "dynamic_import",
@@ -39593,147 +39423,6 @@
       "weight": 1.0,
       "source": "id_page_server_test_setup",
       "target": "test_route_seedmembership"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "test_db_resettestdb"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "test_route_captureflow"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "test_route_makerouteevent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "test_route_safeuser"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "test_route_seedchild"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "test_route_seedmembership"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "test_route_seeduser"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L22",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "allergens_page_server_test_setup"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_allergens_page_server_test_ts",
-      "target": "allergens_page_server_test_loadfor"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "allergens_page_server_test_setup",
-      "target": "test_route_seedchild"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "allergens_page_server_test_setup",
-      "target": "test_route_seedmembership"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "source": "allergens_page_server_test_loadfor",
-      "target": "test_route_makerouteevent"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
-      "source_location": "L32",
-      "weight": 1.0,
-      "source": "allergens_page_server_test_loadfor",
-      "target": "test_route_safeuser"
     },
     {
       "relation": "contains",
@@ -40229,6 +39918,17 @@
       "target": "guide_page_server_load"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/guide/+page.server.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_guide_page_server_ts",
+      "target": "lib_feature_flags_bentoenabled"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/routes/guide/+page.server.ts",
@@ -40237,6 +39937,17 @@
       "confidence_score": 1.0,
       "source": "guide_page_server_load",
       "target": "src_routes_guide_page_server_ts"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/guide/+page.server.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "guide_page_server_load",
+      "target": "lib_feature_flags_bentoenabled"
     },
     {
       "relation": "imports",
@@ -40954,91 +40665,6 @@
       "confidence_score": 1.0,
       "source": "src_routes_child_id_report_page_svelte",
       "target": "report_page_e"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_analytics_page_svelte",
-      "target": "analytics_page_weeklabel"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
-      "source_location": "L137",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_analytics_page_svelte",
-      "target": "analytics_page_i"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_analytics_page_server_ts",
-      "target": "analytics_page_server_load"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_analytics_page_server_test_ts",
-      "target": "test_db_resettestdb"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_analytics_page_server_test_ts",
-      "target": "test_route_captureflow"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_analytics_page_server_test_ts",
-      "target": "test_route_makerouteevent"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_analytics_page_server_test_ts",
-      "target": "test_route_seedchild"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_routes_child_id_analytics_page_server_test_ts",
-      "target": "test_route_seeduser"
     },
     {
       "relation": "contains",
@@ -41936,6 +41562,28 @@
       "target": "test_app_stubs_setpagepathname"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/AppShell.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_appshell_test_ts",
+      "target": "test_app_stubs_setpagepathname"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/BottomNav.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_bottomnav_test_ts",
+      "target": "test_app_stubs_setpagepathname"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/test/component.ts",
@@ -41943,6 +41591,17 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_test_component_ts",
+      "target": "test_component_textsnippet"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/AppShell.test.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_appshell_test_ts",
       "target": "test_component_textsnippet"
     },
     {
@@ -42037,6 +41696,160 @@
       "target": "test_route_makerouteevent"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "test_route_makerouteevent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "allergens_page_server_test_loadfor",
+      "target": "test_route_makerouteevent"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
+      "target": "test_route_makerouteevent"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "test_route_captureflow"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
+      "target": "test_route_captureflow"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "test_route_seeduser"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
+      "target": "test_route_seeduser"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "test_route_seedchild"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "allergens_page_server_test_setup",
+      "target": "test_route_seedchild"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
+      "target": "test_route_seedchild"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "test_route_seedmembership"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "allergens_page_server_test_setup",
+      "target": "test_route_seedmembership"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "test_route_safeuser"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "allergens_page_server_test_loadfor",
+      "target": "test_route_safeuser"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/test/db.ts",
@@ -42074,6 +41887,28 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_test_db_ts",
+      "target": "test_db_resettestdb"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "test_db_resettestdb"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/page.server.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_test_ts",
       "target": "test_db_resettestdb"
     },
     {
@@ -43143,6 +42978,171 @@
       "confidence_score": 1.0,
       "source": "lcov_report_prettify_y",
       "target": "lcov_report_prettify_d"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "e2e_bento_optin_banner_spec_ts",
+      "target": "e2e_bento_optin_banner_spec_unique"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "e2e_bento_optin_banner_spec_ts",
+      "target": "e2e_bento_optin_banner_spec_signupandcreatechild"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "e2e_bento_optin_banner_spec_ts",
+      "target": "e2e_bento_optin_banner_spec_dismisswelcomeifpresent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "e2e/bento-optin-banner.spec.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "e2e_bento_optin_banner_spec_signupandcreatechild",
+      "target": "e2e_bento_optin_banner_spec_unique"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/feature-flags.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_feature_flags_test_ts",
+      "target": "lib_feature_flags_bentoenabled"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/feature-flags.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_feature_flags_ts",
+      "target": "lib_feature_flags_bentoenabled"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/AppShell.test.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_appshell_test_ts",
+      "target": "src_lib_components_appshell_svelte"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/BottomNav.test.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_bottomnav_test_ts",
+      "target": "src_lib_components_bottomnav_svelte"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/BottomNav.svelte",
+      "source_location": "L21",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_bottomnav_svelte",
+      "target": "components_bottomnav_each"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/AppShell.svelte",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_appshell_svelte",
+      "target": "components_appshell_each"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/bento/BentoOptInBanner.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_bento_bentooptinbanner_test_ts",
+      "target": "src_lib_components_bento_bentooptinbanner_svelte"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "allergens_page_server_test_setup"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/allergens/page.server.test.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_allergens_page_server_test_ts",
+      "target": "allergens_page_server_test_loadfor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_analytics_page_svelte",
+      "target": "analytics_page_weeklabel"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/+page.svelte",
+      "source_location": "L137",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_analytics_page_svelte",
+      "target": "analytics_page_i"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/child/[id]/analytics/+page.server.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_routes_child_id_analytics_page_server_ts",
+      "target": "analytics_page_server_load"
     },
     {
       "relation": "contains",
@@ -45420,5 +45420,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "66ec1c289fba94e30e996a1bfbf751ad90417431"
+  "built_at_commit": "45b4ec31ad16b4b06a803f0fe0a7d4242188c47f"
 }

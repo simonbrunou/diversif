@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-12)
 
 ## Corpus Check
-- 428 files · ~456,729 words
+- 413 files · ~452,032 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `66ec1c28`
+- Built from commit: `45b4ec31`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -53,7 +53,7 @@
 - [[_COMMUNITY_Community 37|Community 37]]
 - [[_COMMUNITY_Community 38|Community 38]]
 - [[_COMMUNITY_Community 39|Community 39]]
-- [[_COMMUNITY_Community 40|Community 40]]
+- [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_Community 44|Community 44]]
 - [[_COMMUNITY_Community 45|Community 45]]
 - [[_COMMUNITY_Community 46|Community 46]]
@@ -168,12 +168,12 @@ Cohesion: 0.06
 Nodes (41): load(), allergens load test, findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), countNthExposition(), insertSymptom() (+33 more)
 
 ### Community 4 - "Test Fixtures & Setup Helpers"
-Cohesion: 0.08
-Nodes (27): seed(), loadFor(), setup(), makeFormEvent(), setup(), loadFor(), setup(), setup() (+19 more)
+Cohesion: 0.09
+Nodes (24): loadFor(), setup(), makeFormEvent(), setup(), loadFor(), setup(), setup(), setup() (+16 more)
 
 ### Community 5 - "Branding, App Shell & PWA Manifest"
 Cohesion: 0.07
-Nodes (41): load(), load(), POST(), createSession(), findUserByEmail(), getDecoyHash(), invalidateAllUserSessions(), newToken() (+33 more)
+Nodes (44): load(), seed(), load(), seedTestUser(), POST(), createSession(), findUserByEmail(), getDecoyHash() (+36 more)
 
 ### Community 6 - "Architecture Patterns & Conventions"
 Cohesion: 0.06
@@ -331,15 +331,15 @@ Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 64`, `Community 65`, `Offline Log Queue (IndexedDB)`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
+- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 64`, `Offline Log Queue (IndexedDB)`, `Community 67`?**
+  _High betweenness centrality (0.076) - this node is a cross-community bridge._
 - **Why does `setLanguageTag()` connect `Offline Log Queue (IndexedDB)` to `i18n Messages (auth.*)`?**
-  _High betweenness centrality (0.034) - this node is a cross-community bridge._
-- **Why does `resetTestDb()` connect `Test Fixtures & Setup Helpers` to `Page Loaders & Form Actions`, `Branding, App Shell & PWA Manifest`, `User Memory & Medical Audit`, `SEO / JSON-LD Library`, `Account Export / Delete`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Why does `isValidBirthDate()` connect `Offline Log Queue (IndexedDB)` to `Page Loaders & Form Actions`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **Are the 282 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `formatRelative()`) actually correct?**
   _`languageTag()` has 282 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 5 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `loadFor()`) actually correct?**
+- **Are the 5 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `makeFormEvent()`) actually correct?**
   _`makeRouteEvent()` has 5 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 14 inferred relationships involving `requireUser()` (e.g. with `localizedRedirect()` and `load()`) actually correct?**
   _`requireUser()` has 14 INFERRED edges - model-reasoned connections that need verification._
