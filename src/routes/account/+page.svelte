@@ -3,8 +3,8 @@
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
-  import Card from '$components/ui/Card.svelte';
   import ThemeToggle from '$components/ThemeToggle.svelte';
+  import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
   import LegalLinks from '$lib/components/LegalLinks.svelte';
   import { enhance } from '$app/forms';
   import { invalidateAll } from '$app/navigation';
@@ -118,25 +118,15 @@
   theme={data.theme}
 />
 
-<!-- Drift follow-up: ProfilBento links to in-page anchors (#passkeys, #password,
-     #delete) that resolve to the legacy sections below. Until the delete-account
-     form, password-change form, and passkey registration/list move into ProfilBento,
-     these legacy cards stay rendered so the linked anchors keep working. -->
-<div class="container max-w-2xl space-y-6 py-6">
-  <header>
-    <a href={localizedHref('/')} class="text-sm text-muted-foreground hover:underline">{m.authAccountBack()}</a>
-    <h1 class="mt-2 text-xl font-semibold">{m.authAccountHeading()}</h1>
-    {#if data.user}
-      <p class="text-sm text-muted-foreground">{data.user.email}</p>
-    {/if}
-  </header>
-
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountProfileSection()}</h2>
+<div class="container max-w-2xl space-y-4 py-6">
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountProfileSection()}
+    </h2>
     <form
       method="POST"
       action="?/updateProfile"
-      class="mt-3 grid gap-3"
+      class="grid gap-3"
       use:enhance={trackSubmission((v) => (savingProfile = v))}
     >
       <div class="grid gap-1.5">
@@ -149,14 +139,16 @@
         </Button>
       </div>
     </form>
-  </Card>
+  </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountPasswordSection()}</h2>
+  <section id="password" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountPasswordSection()}
+    </h2>
     <form
       method="POST"
       action="?/changePassword"
-      class="mt-3 grid gap-3"
+      class="grid gap-3"
       use:enhance={trackSubmission((v) => (changingPassword = v))}
     >
       <div class="grid gap-1.5">
@@ -173,20 +165,22 @@
         </Button>
       </div>
     </form>
-  </Card>
+  </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountPasskeysSection()}</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+  <section id="passkeys" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountPasskeysSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">
       {m.authAccountPasskeysDescription()}
     </p>
 
     {#if data.passkeys.length === 0}
-      <p class="mt-3 text-sm text-muted-foreground">{m.authAccountPasskeysEmpty()}</p>
+      <p class="text-sm text-ink-soft">{m.authAccountPasskeysEmpty()}</p>
     {:else}
-      <ul class="mt-3 grid gap-2">
+      <ul class="grid gap-2">
         {#each data.passkeys as p (p.id)}
-          <li class="rounded-md border border-border p-3">
+          <li class="rounded-tile bg-canvas px-3 py-2 shadow-soft">
             <form method="POST" action="?/renamePasskey" class="flex flex-wrap items-center gap-2">
               <input type="hidden" name="id" value={p.id} />
               <Input
@@ -198,7 +192,7 @@
               />
               <Button type="submit" size="sm" variant="outline">{m.authAccountPasskeyRenameButton()}</Button>
             </form>
-            <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-soft">
               <span>
                 {m.authAccountPasskeyAddedOn()} {formatDate(p.createdAt)}{#if p.lastUsedAt} {m.authAccountPasskeyLastUsed()} {formatDate(p.lastUsedAt)}{/if}
                 {#if p.backedUp} {m.authAccountPasskeySynced()}{/if}
@@ -231,56 +225,69 @@
         </div>
       </div>
     {:else}
-      <p class="mt-4 text-sm text-muted-foreground">
+      <p class="mt-4 text-sm text-ink-soft">
         {m.authAccountPasskeyUnsupported()}
       </p>
     {/if}
-  </Card>
+  </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountAppearanceSection()}</h2>
-    <p class="mt-1 text-sm text-muted-foreground">{m.authAccountAppearanceDescription()}</p>
-    <div class="mt-3">
-      <ThemeToggle />
-    </div>
-  </Card>
+  <section id="theme" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountAppearanceSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">{m.authAccountAppearanceDescription()}</p>
+    <ThemeToggle />
+  </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountSessionsSection()}</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+  <section id="locale" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.profilCompteLangue()}
+    </h2>
+    <LocaleSwitcher />
+  </section>
+
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountSessionsSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">
       {m.authAccountSessionsDescription()}
     </p>
-    <form method="POST" action="?/logoutEverywhere" class="mt-3">
+    <form method="POST" action="?/logoutEverywhere">
       <Button type="submit" variant="outline">{m.authAccountLogoutEverywhere()}</Button>
     </form>
-  </Card>
+  </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountLogoutSection()}</h2>
-    <form method="POST" action="/logout" class="mt-3">
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountLogoutSection()}
+    </h2>
+    <form method="POST" action="/logout">
       <Button type="submit" variant="outline">{m.authAccountLogout()}</Button>
     </form>
-  </Card>
+  </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountDataSection()}</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountDataSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">
       {m.authAccountDataDescription()}
     </p>
-    <div class="mt-3">
-      <Button href={localizedHref('/account/export')} variant="outline">{m.authAccountDataExport()}</Button>
-    </div>
-  </Card>
+    <Button href={localizedHref('/account/export')} variant="outline">{m.authAccountDataExport()}</Button>
+  </section>
 
-  <Card class="p-4 border-destructive/30">
-    <h2 class="text-base font-semibold text-destructive">{m.authAccountDeleteSection()}</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+  <section id="delete" class="rounded-tile bg-tile-butter px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-destructive">
+      {m.authAccountDeleteSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">
       {m.authAccountDeleteDescription()}
     </p>
     <form
       method="POST"
       action="?/deleteAccount"
-      class="mt-3 grid gap-3"
+      class="grid gap-3"
       use:enhance={trackSubmission((v) => (deletingAccount = v))}
     >
       <div class="grid gap-1.5">
@@ -318,12 +325,12 @@
         </Button>
       </div>
     </form>
-  </Card>
+  </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountLegalSection()}</h2>
-    <div class="mt-3">
-      <LegalLinks />
-    </div>
-  </Card>
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountLegalSection()}
+    </h2>
+    <LegalLinks />
+  </section>
 </div>
