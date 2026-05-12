@@ -2,6 +2,7 @@
   import * as m from '$lib/paraglide/messages';
   import { formatRelative } from '$lib/utils/dates';
   import { Apple, Beef, Wheat, Milk, Egg, Salad } from 'lucide-svelte';
+  import { cn } from '$lib/utils/cn';
 
   type Entry = {
     id: number;
@@ -29,6 +30,12 @@
     if (r === 'inconfort') return 'inconfort';
     if (r === 'reaction') return 'réaction';
     return 'OK';
+  }
+
+  function reactionPillClass(r: Entry['reaction']): string {
+    if (r === 'inconfort') return 'bg-tile-butter';
+    if (r === 'reaction') return 'bg-tile-coral text-tile-coral-foreground';
+    return 'bg-tile-mint';
   }
 </script>
 
@@ -61,7 +68,12 @@
                 <p class="text-sm font-bold leading-tight">{entry.foodName}</p>
                 <p class="text-xs text-ink-soft">{formatRelative(entry.givenAt)}</p>
               </span>
-              <span class="rounded-full bg-tile-mint px-2 py-0.5 text-xs font-semibold">
+              <span
+                class={cn(
+                  'rounded-full px-2 py-0.5 text-xs font-semibold',
+                  reactionPillClass(entry.reaction)
+                )}
+              >
                 {reactionLabel(entry.reaction)}
               </span>
             </a>
@@ -78,7 +90,12 @@
               <p class="text-sm font-bold leading-tight">{entry.foodName}</p>
               <p class="text-xs text-ink-soft">{formatRelative(entry.givenAt)}</p>
             </span>
-            <span class="rounded-full bg-tile-mint px-2 py-0.5 text-xs font-semibold">
+            <span
+              class={cn(
+                'rounded-full px-2 py-0.5 text-xs font-semibold',
+                reactionPillClass(entry.reaction)
+              )}
+            >
               {reactionLabel(entry.reaction)}
             </span>
           </li>
