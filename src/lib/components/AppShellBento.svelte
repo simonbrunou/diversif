@@ -32,6 +32,12 @@
   const inChildArea = $derived(!!currentChildId && currentPath.startsWith('/child/'));
   const showChrome = $derived(inChildArea || currentPath === '/account');
   const currentChild = $derived(kids.find((k) => k.id === currentChildId));
+  // On /account there's no currentChildId in the URL, but the user still
+  // expects the nav + FAB. Fall back to the first kid so tab links and the
+  // log sheet have a target. ChildHeaderPill keeps using `currentChild` so
+  // the pill stays hidden on /account.
+  const navChildId = $derived(currentChildId ?? kids[0]?.id);
+  const navChild = $derived(kids.find((k) => k.id === navChildId));
 </script>
 
 <div class="grid min-h-screen lg:grid-cols-[220px_1fr]">
@@ -69,21 +75,24 @@
       {#if children}{@render children()}{/if}
     </main>
 
-    {#if showChrome && currentChildId}
-      <!-- Mobile bottom nav + FAB (hidden on desktop) -->
+    {#if showChrome && navChildId}
+      <!-- Mobile bottom nav + FAB (hidden on desktop). FAB is centered
+           vertically on the nav's center (bottom-[calc(0.625rem+safe)] puts
+           its 60px circle around the nav's center at 40px+safe), filling the
+           `w-16` spacer slot in BottomNavBento between tabs 2 and 3. -->
       <div class="lg:hidden">
-        <BottomNavBento {currentChildId} {currentPath} />
-        <div class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
+        <BottomNavBento currentChildId={navChildId} {currentPath} />
+        <div class="fixed bottom-[calc(0.625rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
           <FabLog onclick={() => (logOpen = true)} />
         </div>
       </div>
 
       <!-- Shared overlays -->
-      <ChildSwitcherDrawer bind:open={switcherOpen} {kids} {currentChildId} />
+      <ChildSwitcherDrawer bind:open={switcherOpen} {kids} currentChildId={navChildId} />
       <LogSheet
         bind:open={logOpen}
-        childId={currentChildId}
-        childName={currentChild?.name ?? ''}
+        childId={navChildId}
+        childName={navChild?.name ?? ''}
         {foods}
       />
     {/if}
