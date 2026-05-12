@@ -60,7 +60,7 @@
   </nav>
 
   <!-- Main content area (mobile + desktop right column) -->
-  <div class="mx-auto w-full max-w-md px-3 pb-20 pt-3 lg:max-w-3xl lg:pb-3" data-variant="responsive">
+  <div class="mx-auto w-full max-w-md px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-3 lg:max-w-3xl lg:pb-3" data-variant="responsive">
     {#if showChrome && currentChild}
       <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
     {/if}
@@ -73,7 +73,7 @@
       <!-- Mobile bottom nav + FAB (hidden on desktop) -->
       <div class="lg:hidden">
         <BottomNavBento {currentChildId} {currentPath} />
-        <div class="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
+        <div class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
           <FabLog onclick={() => (logOpen = true)} />
         </div>
       </div>
