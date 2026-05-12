@@ -111,14 +111,17 @@
   }
 </script>
 
-{#if data.bento}
-  <ProfilBento
-    children={data.children}
-    passkeyCount={data.passkeys.length}
-    locale={data.locale}
-    theme={data.theme}
-  />
-{:else}
+<ProfilBento
+  children={data.children}
+  passkeyCount={data.passkeys.length}
+  locale={data.locale}
+  theme={data.theme}
+/>
+
+<!-- Drift follow-up: ProfilBento links to in-page anchors (#passkeys, #password,
+     #delete) that resolve to the legacy sections below. Until the delete-account
+     form, password-change form, and passkey registration/list move into ProfilBento,
+     these legacy cards stay rendered so the linked anchors keep working. -->
 <div class="container max-w-2xl space-y-6 py-6">
   <header>
     <a href={localizedHref('/')} class="text-sm text-muted-foreground hover:underline">{m.authAccountBack()}</a>
@@ -324,4 +327,3 @@
     </div>
   </Card>
 </div>
-{/if}
