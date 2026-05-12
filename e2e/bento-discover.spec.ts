@@ -2,8 +2,6 @@ import { test, expect, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 414, height: 896 } });
 
-const BASE_URL = `http://localhost:${process.env.PORT ?? '4173'}`;
-
 function unique(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
@@ -39,8 +37,7 @@ async function dismissWelcomeIfPresent(page: Page): Promise<void> {
   }
 }
 
-test('Découvrir bento renders all four sections', async ({ page, context }) => {
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+test('Découvrir bento renders all four sections', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 
@@ -50,8 +47,7 @@ test('Découvrir bento renders all four sections', async ({ page, context }) => 
   await expect(page.getByText('Sources scientifiques')).toBeVisible();
 });
 
-test('tapping a stage tile opens the StageDetailSheet', async ({ page, context }) => {
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+test('tapping a stage tile opens the StageDetailSheet', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 

@@ -2,8 +2,6 @@ import { test, expect, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 414, height: 896 } });
 
-const BASE_URL = `http://localhost:${process.env.PORT ?? '4173'}`;
-
 function unique(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
@@ -62,12 +60,8 @@ async function logFoodWithReaction(
   await expect(page.getByPlaceholder(placeholder)).not.toBeVisible();
 }
 
-test('reaction-detail bento renders for non-RAS entry with all panels', async ({
-  page,
-  context
-}) => {
+test('reaction-detail bento renders for non-RAS entry with all panels', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
   await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
 
@@ -83,9 +77,8 @@ test('reaction-detail bento renders for non-RAS entry with all panels', async ({
   await expect(page.getByRole('button', { name: /Suivre 30 min/ })).toBeVisible();
 });
 
-test('add-symptom flow appends a row to the symptom list', async ({ page, context }) => {
+test('add-symptom flow appends a row to the symptom list', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
   await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
 
@@ -101,12 +94,8 @@ test('add-symptom flow appends a row to the symptom list', async ({ page, contex
   await expect(page.getByText('Rougeur', { exact: true })).toBeVisible();
 });
 
-test('print page renders without bento chrome and contains key strings', async ({
-  page,
-  context
-}) => {
+test('print page renders without bento chrome and contains key strings', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
   await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
 

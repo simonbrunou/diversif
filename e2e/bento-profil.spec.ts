@@ -2,8 +2,6 @@ import { test, expect, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 414, height: 896 } });
 
-const BASE_URL = `http://localhost:${process.env.PORT ?? '4173'}`;
-
 function unique(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
@@ -39,8 +37,7 @@ async function dismissWelcomeIfPresent(page: Page): Promise<void> {
   }
 }
 
-test('Profil bento renders all five sections', async ({ page, context }) => {
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+test('Profil bento renders all five sections', async ({ page }) => {
   await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 
@@ -51,8 +48,7 @@ test('Profil bento renders all five sections', async ({ page, context }) => {
   await expect(page.getByRole('heading', { name: 'Légal' })).toBeVisible();
 });
 
-test('Profil shows the seeded child name', async ({ page, context }) => {
-  await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
+test('Profil shows the seeded child name', async ({ page }) => {
   await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 

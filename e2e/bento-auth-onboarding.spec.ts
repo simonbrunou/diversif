@@ -18,13 +18,9 @@ async function signUp(page: Page, email: string): Promise<void> {
   await expect(page).toHaveURL(/\/child\/new/);
 }
 
-test("signup sets bento cookie and lands on bento Aujourd'hui", async ({ page, context }) => {
+test("signup lands on bento Aujourd'hui", async ({ page }) => {
   const email = `${unique('phase6')}@example.com`;
   await signUp(page, email);
-
-  // Bento cookie should have been set by the signup action
-  const cookies = await context.cookies();
-  expect(cookies.find((c) => c.name === 'bento')?.value).toBe('1');
 
   // Onboarding form renders the bento variant
   await expect(page.getByLabel('Prénom')).toBeVisible();

@@ -1,7 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const BASE_URL = `http://localhost:${process.env.PORT ?? '4173'}`;
-
 function unique(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
@@ -51,17 +49,12 @@ async function dismissWelcomeIfPresent(page: Page): Promise<void> {
 test.describe('Bento shell — tab navigation', () => {
   test.use({ viewport: { width: 414, height: 896 } });
 
-  test('switches between the four tabs with bento=1 cookie', async ({ page, context }) => {
-    // Sign up + create a child first (no bento cookie yet — the chrome will be the legacy layout).
+  test('switches between the four tabs', async ({ page }) => {
     const sevenMonthsAgo = new Date();
     sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
     const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
     const childId = await signUpAndCreateChild(page, 'Lulu', dateStr);
 
-    // Now opt into the bento shell via cookie override.
-    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
-
-    // Reload to make the new shell render (the layout reads the cookie at SSR time).
     await page.goto(`/child/${childId}`);
     await dismissWelcomeIfPresent(page);
 
@@ -81,14 +74,13 @@ test.describe('Bento shell — tab navigation', () => {
     await expect(page).toHaveURL(/\/account/);
   });
 
-  test('FAB opens log sheet, food saves, sheet closes', async ({ page, context }) => {
+  test('FAB opens log sheet, food saves, sheet closes', async ({ page }) => {
     // Sign up + create a child for this test.
     const sevenMonthsAgo = new Date();
     sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
     const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
     const childId = await signUpAndCreateChild(page, 'Mia', dateStr);
 
-    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
     await page.goto(`/child/${childId}`);
     await dismissWelcomeIfPresent(page);
 
@@ -119,32 +111,17 @@ test.describe('Bento shell — tab navigation', () => {
     await expect(page.getByText('Poire').first()).toBeVisible();
   });
 
-  test('Carnet Allergènes segment is reachable via URL', async ({ page, context }) => {
+  test('Carnet Allergènes segment is reachable via URL', async ({ page }) => {
     const sevenMonthsAgo = new Date();
     sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
     const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
     const childId = await signUpAndCreateChild(page, 'Sam', dateStr);
 
-    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
     await page.goto(`/child/${childId}/foods`);
     await dismissWelcomeIfPresent(page);
 
     // Click the Allergènes segment link.
     await page.getByRole('link', { name: 'Allergènes' }).click();
     await expect(page).toHaveURL(/\/child\/\d+\/foods\?segment=allergens/);
-  });
-
-  test('/allergens server-redirects to /foods?segment=allergens under bento', async ({
-    page,
-    context
-  }) => {
-    const sevenMonthsAgo = new Date();
-    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
-    const childId = await signUpAndCreateChild(page, 'Mo', dateStr);
-
-    await context.addCookies([{ name: 'bento', value: '1', url: BASE_URL }]);
-    await page.goto(`/child/${childId}/allergens`);
-    await expect(page).toHaveURL(new RegExp(`/child/${childId}/foods\\?segment=allergens`));
   });
 });
