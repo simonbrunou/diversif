@@ -54,7 +54,7 @@
 
 <nav
   aria-label={m.chromeBottomNavLabel()}
-  class="fixed bottom-3 left-3 right-3 z-30 flex h-14 items-center rounded-full border border-border/40 bg-surface/95 px-2 shadow-soft backdrop-blur"
+  class="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 right-3 z-30 flex h-14 items-center rounded-full border border-border/40 bg-surface/95 px-2 shadow-soft backdrop-blur"
 >
   {#each TABS as tab, i (tab.labelKey)}
     {@const active = tab.matcher(currentPath)}
@@ -62,8 +62,8 @@
       href={tab.href(currentChildId)}
       aria-current={active ? 'page' : undefined}
       class={cn(
-        'flex flex-1 flex-col items-center gap-0.5 text-[10px] font-medium transition-colors duration-base ease-soft',
-        active ? 'text-primary' : 'text-ink-soft hover:text-foreground'
+        'flex flex-1 flex-col items-center gap-0.5 text-[11px] font-medium transition-colors duration-base ease-soft',
+        active ? 'text-primary' : 'text-foreground/70 hover:text-foreground'
       )}
     >
       <tab.icon size={18} aria-hidden="true" />

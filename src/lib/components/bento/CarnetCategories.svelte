@@ -37,12 +37,18 @@
         <summary class="cursor-pointer text-sm font-semibold uppercase tracking-wider text-ink-soft">
           {cat} ({grouped[cat].length})
         </summary>
-        <div class="mt-3 flex gap-3 overflow-x-auto">
-          {#each grouped[cat] as f (f.id)}
-            <div class="min-w-[8rem]">
-              <FoodCard name={f.name} category={f.category} tried={f.tried} status={f.status} />
-            </div>
-          {/each}
+        <div class="relative">
+          <div class="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto">
+            {#each grouped[cat] as f (f.id)}
+              <div class="min-w-[8rem] shrink-0 snap-start">
+                <FoodCard name={f.name} category={f.category} tried={f.tried} status={f.status} />
+              </div>
+            {/each}
+          </div>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-canvas to-transparent"
+            aria-hidden="true"
+          ></div>
         </div>
       </details>
     {/each}

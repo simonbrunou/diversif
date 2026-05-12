@@ -42,7 +42,7 @@
         await update();
       };
     }}
-    class="flex flex-col gap-3"
+    class="flex max-h-[80vh] flex-col gap-3 overflow-y-auto"
   >
     <Command
       {items}
@@ -55,7 +55,7 @@
     <button
       type="submit"
       disabled={!selectedFood}
-      class="mt-2 w-full rounded-tile bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft transition-colors duration-base ease-soft disabled:opacity-50"
+      class="mt-2 w-full scroll-mb-[50vh] rounded-tile bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft transition-colors duration-base ease-soft disabled:opacity-50"
     >
       {m.chromeLogSheetSave()}
     </button>

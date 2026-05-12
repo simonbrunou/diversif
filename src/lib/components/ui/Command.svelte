@@ -51,8 +51,11 @@
         query = (e.target as HTMLInputElement).value;
       }}
       {placeholder}
-      class="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-ink-soft"
+      class="flex-1 scroll-mb-[50vh] bg-transparent text-sm text-foreground outline-none placeholder:text-ink-soft"
       autocomplete="off"
+      autocapitalize="off"
+      inputmode="search"
+      enterkeyhint="search"
     />
   </div>
   <ul role="listbox" class="max-h-64 overflow-y-auto p-1">

@@ -10,7 +10,7 @@
 <a
   {href}
   aria-label={m.profilChildrenChevronAria({ name: child.name })}
-  class="mb-2 flex items-center gap-3 rounded-tile bg-tile-peach px-4 py-3 shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01] active:scale-[0.99]"
+  class="mb-2 flex items-center gap-3 rounded-tile bg-tile-peach px-4 py-3 shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01] active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
 >
   <span class="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-base font-bold">
     {child.name.charAt(0)}

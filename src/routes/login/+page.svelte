@@ -17,6 +17,7 @@
   let passkeyLoading = $state(false);
   let supported = $state(false);
 
+  // Follow-up: render passkey button SSR to avoid first-paint flash
   $effect(() => {
     if (!browser) return;
     supported =

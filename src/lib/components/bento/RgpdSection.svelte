@@ -9,14 +9,14 @@
   </h2>
   <a
     href="/account/export"
-    class="mb-2 flex items-center gap-3 rounded-tile bg-tile-peach px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+    class="mb-2 flex items-center gap-3 rounded-tile bg-tile-peach px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
   >
     <Download size={18} class="text-tile-peach-foreground" aria-hidden="true" />
     <span class="flex-1 text-sm font-bold">{m.profilRgpdExport()}</span>
   </a>
   <a
     href="/account#delete"
-    class="flex items-center gap-3 rounded-tile bg-tile-butter px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+    class="flex items-center gap-3 rounded-tile bg-tile-butter px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
   >
     <Trash2 size={18} class="text-tile-butter-foreground" aria-hidden="true" />
     <span class="flex-1 text-sm font-bold">{m.profilRgpdDelete()}</span>

@@ -28,7 +28,7 @@
             class="flex w-full items-center justify-between rounded-tile bg-tile-lilac px-4 py-3 text-left shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01] active:scale-[0.99]"
           >
             <span class="font-bold">{s.food.name}</span>
-            <span class="rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-ink-soft">
+            <span class="rounded-full bg-canvas px-2 py-0.5 text-xs font-semibold text-ink-soft">
               {reasonLabel(s.reason)}
             </span>
           </button>

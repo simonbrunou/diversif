@@ -34,7 +34,7 @@
   {/if}
   <a
     href={inviteHref}
-    class="mt-2 flex items-center gap-2 rounded-tile border border-dashed border-border bg-canvas px-3 py-2 text-sm font-semibold text-ink-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+    class="mt-2 flex items-center gap-2 rounded-tile border border-dashed border-border bg-canvas px-3 py-2 text-sm font-semibold text-ink-soft transition-transform duration-base ease-soft active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
   >
     <UserPlus size={16} aria-hidden="true" />
     {m.profilCoparentsInvite()}

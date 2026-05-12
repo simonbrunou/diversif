@@ -55,7 +55,7 @@
       <li>
         <a
           href={row.href}
-          class="flex items-center gap-3 rounded-tile bg-surface px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+          class="flex items-center gap-3 rounded-tile bg-surface px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
         >
           <row.icon size={18} class="text-ink-soft" aria-hidden="true" />
           <span class="flex-1 text-sm font-bold">{row.label}</span>
