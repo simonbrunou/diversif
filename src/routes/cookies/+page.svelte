@@ -11,13 +11,13 @@
   alternateLocales={['en']}
 />
 
-<div class="container max-w-3xl space-y-6 py-8 md:py-12">
+<div class="mx-auto max-w-3xl px-6 py-10 text-ink sm:px-10">
   <header class="space-y-2">
-    <h1 class="text-2xl font-semibold tracking-tight md:text-3xl">{m.legalCookiesTitle()}</h1>
-    <p class="text-sm text-muted-foreground">{m.legalCookiesUpdated()}</p>
+    <h1 class="font-display text-3xl italic">{m.legalCookiesTitle()}</h1>
+    <p class="text-sm leading-relaxed">{m.legalCookiesUpdated()}</p>
   </header>
 
-  <p class="text-sm">
+  <p class="text-sm leading-relaxed">
     {m.legalCookiesDisclaimer()}
   </p>
 
@@ -48,7 +48,7 @@
     </table>
   </div>
 
-  <p class="text-sm">
+  <p class="text-sm leading-relaxed">
     {m.legalCookiesFooterBefore()} <span class="font-mono">session</span> {m.legalCookiesFooterAfter()}
   </p>
 </div>

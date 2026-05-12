@@ -46,10 +46,14 @@ test.describe('signup consent gates', () => {
 });
 
 test.describe('account deletion', () => {
-  test('user can delete their account and the email is reusable', async ({ page }) => {
+  test('user can delete their account and the email is reusable', async ({ page, context }) => {
     const email = `${unique('rgpd')}@example.com`;
     await signUp(page, email);
 
+    // Signup now sets bento=1; the bento /account variant doesn't expose the
+    // delete form, so flip back to legacy for this regression.
+    const url = new URL(page.url());
+    await context.addCookies([{ name: 'bento', value: '0', url: url.origin }]);
     await page.goto('/account');
     await page.getByLabel(/Saisissez votre adresse e-mail/i).fill(email);
     await page.getByLabel(/Confirmez avec votre mot de passe/i).fill('hunter2-very-long');

@@ -344,5 +344,43 @@
   "printSeverityWarn": "à surveiller",
   "printSeveritySevere": "sévère",
   "printFooterNote": "Document à présenter au pédiatre",
-  "printGeneratedAt": "Généré le {date}"
+  "printGeneratedAt": "Généré le {date}",
+
+  "authSignupTitleBento": "Bienvenue",
+  "authSignupSubtitleBento": "Diversifiez en confiance, à votre rythme.",
+  "authLoginTitleBento": "Bienvenue de retour",
+  "authLoginPasskeyPrimaryCta": "🔑 Continuer avec une passkey",
+  "authLoginPasswordReveal": "Ou avec mot de passe",
+  "authLoginPasskeySecondary": "🔑 Avec une passkey",
+  "authSignupFooterLogin": "J'ai déjà un compte · Se connecter",
+  "authLoginFooterSignup": "Pas encore de compte · S'inscrire",
+  "authSignupDivider": "ou",
+  "authSignupPasskeyCta": "🔑 Continuer avec une passkey",
+
+  "onboardingTitle": "Bébé.",
+  "onboardingSubtitle": "Quelques infos pour commencer le carnet.",
+  "onboardingFirstNameLabel": "Prénom",
+  "onboardingBirthDateLabel": "Date de naissance",
+  "onboardingInviteSectionHeader": "Co-parent (optionnel)",
+  "onboardingInviteCheckbox": "Inviter un co-parent maintenant",
+  "onboardingInviteCaption": "Générer un code à partager — vous pourrez aussi le faire plus tard depuis Profil.",
+  "onboardingSubmit": "Créer",
+
+  "landingFeaturesTitle": "Pourquoi Diversif",
+  "landingTrustTitle": "De la confiance, par construction",
+  "landingTrustPillarNoTelemetry": "Sans télémétrie",
+  "landingTrustPillarSources": "Sources scientifiques citées",
+  "landingTrustPillarOwnership": "Vos données vous appartiennent",
+  "landingClosingCtaTitle": "Prêt à commencer ?",
+  "landingClosingCtaButton": "Créer mon compte",
+
+  "optInBannerTitle": "Le nouveau design est prêt.",
+  "optInBannerSubtitle": "Voulez-vous l'essayer ?",
+  "optInBannerCta": "Essayer le nouveau design ✨",
+  "optInBannerDismissAria": "Fermer le panneau",
+
+  "onboardingInviteCodeToastTitle": "Code d'invitation généré",
+  "onboardingInviteCodeToastBody": "Partagez ce code avec votre co-parent.",
+  "onboardingInviteCodeCopy": "Copier",
+  "onboardingInviteFailedToast": "Code non généré. Réessayez depuis Profil."
 }

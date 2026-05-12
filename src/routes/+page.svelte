@@ -1,10 +1,10 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import Button from '$components/ui/Button.svelte';
-  import LandingHero from '$lib/components/landing/LandingHero.svelte';
-  import LandingFeatures from '$lib/components/landing/LandingFeatures.svelte';
-  import LandingTrust from '$lib/components/landing/LandingTrust.svelte';
-  import LandingClosingCta from '$lib/components/landing/LandingClosingCta.svelte';
+  import LandingHeroBento from '$lib/components/landing/LandingHeroBento.svelte';
+  import LandingFeaturesBento from '$lib/components/landing/LandingFeaturesBento.svelte';
+  import LandingTrustBento from '$lib/components/landing/LandingTrustBento.svelte';
+  import LandingClosingCtaBento from '$lib/components/landing/LandingClosingCtaBento.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { SITE, faqPageJsonLd, webApplicationJsonLd } from '$lib/seo';
@@ -65,8 +65,8 @@
       </aside>
     </div>
   {/if}
-  <LandingHero />
-  <LandingFeatures />
+  <LandingHeroBento child={null} />
+  <LandingFeaturesBento />
 
   <section class="container max-w-4xl pb-4 text-center">
     <p class="text-sm text-muted-foreground">Le guide complet, accessible sans compte.</p>
@@ -84,8 +84,8 @@
     </ul>
   </section>
 
-  <LandingTrust />
-  <LandingClosingCta />
+  <LandingTrustBento />
+  <LandingClosingCtaBento />
 {:else}
   <div class="container max-w-2xl py-10">
     <h1 class="text-2xl font-semibold">Choisir un enfant</h1>
