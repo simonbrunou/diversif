@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { desc, eq, sql, and, isNotNull } from 'drizzle-orm';
@@ -237,18 +237,6 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 };
 
 export const actions: Actions = {
-  optInBento: async ({ cookies, params, locals }) => {
-    requireUser(locals);
-    const childId = parseChildIdParam(params);
-    requireMembership(locals, childId);
-    cookies.set('bento', '1', {
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 365
-    });
-    throw redirect(303, `/child/${childId}`);
-  },
   dismissReminder: async ({ request, params, locals }) => {
     requireUser(locals);
     const childId = parseChildIdParam(params);
