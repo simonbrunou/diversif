@@ -41,7 +41,7 @@
       {#if reminder.cta}
         <a
           href={reminder.cta.href}
-          class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+          class="inline-flex items-center gap-1 text-sm font-medium text-primary-strong hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
         >
           {reminder.cta.label}
           <ChevronRight size={14} aria-hidden="true" />

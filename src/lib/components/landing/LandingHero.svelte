@@ -20,7 +20,7 @@
   ></div>
 
   <div class="container relative max-w-4xl py-12 text-center md:py-20">
-    <p class="text-xs font-semibold uppercase tracking-wider text-primary">
+    <p class="text-xs font-semibold uppercase tracking-wider text-primary-strong">
       Diversification alimentaire de 4 mois à 3 ans
     </p>
     <h1 class="mt-3 text-3xl font-semibold leading-tight md:text-5xl">

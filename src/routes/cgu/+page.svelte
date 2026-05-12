@@ -83,7 +83,7 @@
     <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">7. Données personnelles</h2>
     <p class="text-sm leading-relaxed">
       Le traitement des données personnelles est décrit sur la page
-      <a class="text-primary underline" href={localizedHref('/politique-confidentialite')}>Politique de confidentialité</a>.
+      <a class="text-primary-strong underline" href={localizedHref('/politique-confidentialite')}>Politique de confidentialité</a>.
       L'utilisateur peut à tout moment exporter ou supprimer ses données depuis « Mon compte ».
     </p>
   </section>

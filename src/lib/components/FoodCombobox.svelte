@@ -152,7 +152,7 @@
 
     <button
       type="button"
-      class="text-left text-sm text-primary hover:underline"
+      class="text-left text-sm text-primary-strong hover:underline"
       onclick={openCustom}
     >
       + Ajouter un aliment hors catalogue

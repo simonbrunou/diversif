@@ -58,7 +58,7 @@
     <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
       {m.profilLegalTitle()}
     </h2>
-    <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-primary">
+    <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-primary-strong">
       <li><a href="/cgu" class="underline">CGU</a></li>
       <li><a href="/mentions-legales" class="underline">Mentions légales</a></li>
       <li><a href="/politique-confidentialite" class="underline">Politique de confidentialité</a></li>

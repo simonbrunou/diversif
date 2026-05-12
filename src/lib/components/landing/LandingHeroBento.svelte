@@ -32,7 +32,7 @@
         </a>
         <a
           href={localizedHref('/login')}
-          class="text-sm font-semibold text-primary underline"
+          class="text-sm font-semibold text-primary-strong underline"
         >
           Se connecter
         </a>

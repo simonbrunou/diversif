@@ -35,6 +35,12 @@
        8.3:1 dark and matches the warm muted palette better than the prior
        white-on-sage. */
     --primary-foreground: 0 0% 10%;
+    /* Darker sage for use as text color on light backgrounds. --primary at 49%
+       lightness fails 4.5:1 on white (3.89) and on bg-tile-peach (2.82). 32%
+       lightness gives 7.5:1 on white and 6.0:1 on peach. Only consumed by
+       `text-primary-strong`; `bg-primary` / focus ring / icon usage keep using
+       --primary so the brand mark color is unchanged. */
+    --primary-strong: 120 18% 32%;
 
     /* secondary / accent neutrals */
     --secondary: var(--surface-2);
@@ -138,6 +144,9 @@
 
     --primary: 120 14% 60%; /* sage lifted slightly for dark */
     --primary-foreground: 0 0% 10%;
+    /* Dark mode: sage at 60% already gives 7.3:1 against the warm-near-black
+       canvas, so --primary-strong matches --primary here. */
+    --primary-strong: 120 14% 60%;
 
     --secondary: var(--surface-2);
     --secondary-foreground: var(--foreground);

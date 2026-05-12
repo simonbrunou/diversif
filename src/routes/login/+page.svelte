@@ -125,13 +125,13 @@
       type="button"
       onclick={signInWithPasskey}
       disabled={passkeyLoading}
-      class="mt-4 w-full rounded-full border border-dashed border-primary px-4 py-3 text-sm font-bold text-primary disabled:opacity-60"
+      class="mt-4 w-full rounded-full border border-dashed border-primary px-4 py-3 text-sm font-bold text-primary-strong disabled:opacity-60"
     >
       {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeySecondary()}
     </button>
   {/if}
 
-  <a href={localizedHref('/signup')} class="mt-4 block text-center text-sm text-primary underline">
+  <a href={localizedHref('/signup')} class="mt-4 block text-center text-sm text-primary-strong underline">
     {m.authLoginFooterSignup()}
   </a>
 </BentoAuthLayout>

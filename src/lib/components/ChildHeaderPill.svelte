@@ -33,7 +33,7 @@
     <span class="text-sm font-bold leading-tight">{child.name}</span>
     <span class="text-xs text-ink-soft">{ageLabel}</span>
   </span>
-  <span class="ml-auto flex items-center gap-1 text-xs text-primary">
+  <span class="ml-auto flex items-center gap-1 text-xs text-primary-strong">
     {m.chromeHeaderChangeChild()}
     <ChevronDown size={14} aria-hidden="true" />
   </span>

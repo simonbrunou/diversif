@@ -55,7 +55,7 @@
 
   <section lang="fr" class="space-y-8">
     <header class="space-y-2">
-      <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-primary/80">
+      <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-primary-strong/80">
         <Library size={14} aria-hidden="true" />
         Sources
       </div>

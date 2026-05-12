@@ -34,7 +34,7 @@
     <p class="text-sm leading-relaxed">
       <span class="font-medium">{legal.controllerName}</span><br />
       Adresse : {legal.controllerAddress}<br />
-      Contact : <a class="text-primary underline" href={`mailto:${legal.controllerEmail}`}>{legal.controllerEmail}</a>
+      Contact : <a class="text-primary-strong underline" href={`mailto:${legal.controllerEmail}`}>{legal.controllerEmail}</a>
     </p>
     <p class="text-sm leading-relaxed">Directeur de la publication : {legal.publicationDirector}</p>
   </section>
@@ -51,7 +51,7 @@
     <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">Propriété intellectuelle</h2>
     <p class="text-sm leading-relaxed">
       Le code source de Diversif est publié sous licence libre sur
-      <a class="text-primary underline" href="https://github.com/simonbrunou/diversif" target="_blank" rel="noopener noreferrer">GitHub</a>.
+      <a class="text-primary-strong underline" href="https://github.com/simonbrunou/diversif" target="_blank" rel="noopener noreferrer">GitHub</a>.
       Les contenus rédactionnels (guides, fiches allergènes, sources) sont mis à disposition pour un
       usage personnel et familial. Toute reproduction commerciale est interdite sans accord préalable.
     </p>
@@ -71,7 +71,7 @@
       <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">Données personnelles</h2>
       <p class="text-sm leading-relaxed">
         Le traitement des données personnelles est décrit sur la page
-        <a class="text-primary underline" href={localizedHref('/politique-confidentialite')}>Politique de confidentialité</a>.
+        <a class="text-primary-strong underline" href={localizedHref('/politique-confidentialite')}>Politique de confidentialité</a>.
       </p>
     </section>
   </section>
