@@ -20,7 +20,16 @@ const config = {
       mode: 'hash',
       directives: {
         'default-src': ['self'],
-        'script-src': ['self'],
+        // SvelteKit's hash mode only hashes scripts that SvelteKit itself
+        // emits during render (hydration boot, route data). Static <script>
+        // blocks in src/app.html are NOT scanned, so they need explicit
+        // hashes here or they get silently blocked. The hash below covers
+        // the anti-FOIT theme-init script in src/app.html — if you edit
+        // that script, recompute with:
+        //   python3 -c "import re,hashlib,base64; \
+        //     b=re.search(r'<script>(.*?)</script>',open('src/app.html').read(),re.DOTALL).group(1); \
+        //     print(base64.b64encode(hashlib.sha256(b.encode()).digest()).decode())"
+        'script-src': ['self', 'sha256-GqV1bi71LSFwJEB0v4isQY6KFrlnWV2dqeHM79pt0cE='],
         'style-src': ['self', 'unsafe-inline'],
         'img-src': ['self', 'data:'],
         'font-src': ['self', 'data:'],

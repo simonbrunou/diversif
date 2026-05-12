@@ -25,9 +25,11 @@
     <title>Diversif — Diversification alimentaire bébé</title>
     %sveltekit.head%
     <!-- Inlined (was static/theme-init.js) to drop one render-blocking request
-         on the LCP critical path. Loaded AFTER %sveltekit.head% so SvelteKit's
-         hash-mode CSP picks it up. Sync script in <head> runs before <body> is
-         parsed, avoiding a theme flash. -->
+         on the LCP critical path. Sync script in <head> runs before <body> is
+         parsed, avoiding a theme flash. SvelteKit's hash-mode CSP does NOT
+         scan static app.html scripts — this block's hash is hardcoded in
+         svelte.config.js `script-src`. If you edit it, recompute per the
+         instructions in svelte.config.js or the script silently fails. -->
     <script>
       (function () {
         try {
