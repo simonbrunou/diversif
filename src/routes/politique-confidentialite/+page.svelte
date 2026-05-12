@@ -32,7 +32,7 @@
     <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">1. Responsable de traitement</h2>
     <p class="text-sm leading-relaxed">
       {legal.controllerName}, joignable à
-      <a class="text-primary underline" href={`mailto:${legal.controllerEmail}`}>{legal.controllerEmail}</a>.
+      <a class="text-primary-strong underline" href={`mailto:${legal.controllerEmail}`}>{legal.controllerEmail}</a>.
       Adresse postale : {legal.controllerAddress}.
     </p>
   </section>
@@ -109,7 +109,7 @@
         aucun cookie ni en-tête ne sont transmis. Base légale : intérêt légitime à corriger les
         pannes (article 6.1.f RGPD). Données hébergées en Union européenne (région Francfort).
         Durée de conservation : 90 jours. Lien :
-        <a class="text-primary underline" href="https://sentry.io/legal/dpa/" target="_blank" rel="noopener noreferrer">accord de traitement (DPA)</a>.
+        <a class="text-primary-strong underline" href="https://sentry.io/legal/dpa/" target="_blank" rel="noopener noreferrer">accord de traitement (DPA)</a>.
       </li>
     </ul>
   </section>
@@ -136,11 +136,11 @@
       <li><span class="font-medium">Accès et portabilité</span> : depuis « Mon compte », exportez vos données au format JSON.</li>
       <li><span class="font-medium">Rectification</span> : depuis « Mon compte » et la fiche de l'enfant.</li>
       <li><span class="font-medium">Effacement</span> : depuis « Mon compte », bouton « Supprimer mon compte ».</li>
-      <li><span class="font-medium">Toute autre demande</span> : par e-mail à <a class="text-primary underline" href={`mailto:${legal.controllerEmail}`}>{legal.controllerEmail}</a>.</li>
+      <li><span class="font-medium">Toute autre demande</span> : par e-mail à <a class="text-primary-strong underline" href={`mailto:${legal.controllerEmail}`}>{legal.controllerEmail}</a>.</li>
     </ul>
     <p class="text-sm leading-relaxed">
       Vous pouvez à tout moment introduire une réclamation auprès de la
-      <a class="text-primary underline" href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener noreferrer">CNIL</a>.
+      <a class="text-primary-strong underline" href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener noreferrer">CNIL</a>.
     </p>
   </section>
 

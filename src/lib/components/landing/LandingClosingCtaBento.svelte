@@ -8,7 +8,7 @@
     <h2 class="font-display text-2xl italic">{m.landingClosingCtaTitle()}</h2>
     <a
       href={localizedHref('/signup')}
-      class="mt-6 inline-block rounded-full bg-surface px-6 py-3 text-sm font-bold text-primary shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+      class="mt-6 inline-block rounded-full bg-surface px-6 py-3 text-sm font-bold text-primary-strong shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
     >
       {m.landingClosingCtaButton()}
     </a>

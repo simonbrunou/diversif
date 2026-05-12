@@ -14,7 +14,7 @@
     },
     important: {
       wrapper: 'border-primary/40 bg-accent',
-      eyebrow: 'text-primary',
+      eyebrow: 'text-primary-strong',
       iconBg: 'bg-primary text-primary-foreground'
     },
     celebrate: {

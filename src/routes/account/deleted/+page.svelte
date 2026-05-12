@@ -12,6 +12,6 @@
     {m.authDeletedBody()}
   </p>
   <p class="mt-6 text-sm">
-    <a href={localizedHref('/')} class="font-medium text-primary hover:underline">{m.authDeletedBackHome()}</a>
+    <a href={localizedHref('/')} class="font-medium text-primary-strong hover:underline">{m.authDeletedBackHome()}</a>
   </p>
 </div>

@@ -10,7 +10,7 @@
   <p class="mt-1 text-sm text-tile-mint-foreground">{m.reactionStayCoolBody()}</p>
   <a
     href={`/child/${childId}/guide#reactions`}
-    class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary"
+    class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary-strong"
   >
     {m.reactionStayCoolLink()}
     <ChevronRight size={14} aria-hidden="true" />

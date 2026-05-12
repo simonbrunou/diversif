@@ -63,7 +63,7 @@
       aria-current={active ? 'page' : undefined}
       class={cn(
         'flex flex-1 flex-col items-center gap-0.5 text-[11px] font-medium transition-colors duration-base ease-soft',
-        active ? 'text-primary' : 'text-foreground/70 hover:text-foreground'
+        active ? 'text-primary-strong' : 'text-foreground/70 hover:text-foreground'
       )}
     >
       <tab.icon size={18} aria-hidden="true" />

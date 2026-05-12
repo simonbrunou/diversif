@@ -27,7 +27,7 @@
     <p class="mt-6 text-sm">
       <a
         href={localizedHref('/sources')}
-        class="font-medium text-primary underline-offset-4 hover:underline"
+        class="font-medium text-primary-strong underline-offset-4 hover:underline"
       >
         Voir toutes les sources →
       </a>

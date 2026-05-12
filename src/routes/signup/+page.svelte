@@ -111,12 +111,12 @@
 
   <a
     href={localizedHref('/passkeys/registration/options')}
-    class="mt-4 block w-full rounded-full border border-dashed border-primary px-4 py-3 text-center text-sm font-bold text-primary"
+    class="mt-4 block w-full rounded-full border border-dashed border-primary px-4 py-3 text-center text-sm font-bold text-primary-strong"
   >
     {m.authSignupPasskeyCta()}
   </a>
 
-  <a href={localizedHref('/login')} class="mt-4 block text-center text-sm text-primary underline">
+  <a href={localizedHref('/login')} class="mt-4 block text-center text-sm text-primary-strong underline">
     {m.authSignupFooterLogin()}
   </a>
 </BentoAuthLayout>

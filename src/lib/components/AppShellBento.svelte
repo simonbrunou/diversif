@@ -49,7 +49,7 @@
           aria-current={active ? 'page' : undefined}
           class={cn(
             'flex items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium transition-colors',
-            active ? 'bg-surface-2 text-primary' : 'text-ink-soft hover:bg-surface-2 hover:text-foreground'
+            active ? 'bg-surface-2 text-primary-strong' : 'text-ink-soft hover:bg-surface-2 hover:text-foreground'
           )}
         >
           <tab.icon size={18} aria-hidden="true" />
