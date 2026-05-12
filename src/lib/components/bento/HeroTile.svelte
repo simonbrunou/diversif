@@ -12,6 +12,19 @@
     suggestion: SuggestFood | null;
     onLog: (food: SuggestFood | null) => void;
   } = $props();
+
+  // Debounce the CTA after each suggestion change to swallow stray taps
+  // landing on the just-rendered tile (the suggestion can change mid-tap
+  // and the captured value would be stale).
+  let pending = $state(false);
+  let pendingTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => {
+    void suggestion?.id;
+    pending = true;
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(() => (pending = false), 200);
+    return () => clearTimeout(pendingTimer);
+  });
 </script>
 
 <section
@@ -27,7 +40,9 @@
         <button
           type="button"
           onclick={() => onLog(suggestion)}
+          disabled={pending}
           class="mt-4 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-soft"
+          class:opacity-60={pending}
         >
           {m.aujourdhuiHeroSuggestionCta({ food: suggestion.name })}
         </button>
@@ -39,7 +54,9 @@
         <button
           type="button"
           onclick={() => onLog(null)}
+          disabled={pending}
           class="mt-4 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-soft"
+          class:opacity-60={pending}
         >
           {m.aujourdhuiHeroEmptyCta()}
         </button>
