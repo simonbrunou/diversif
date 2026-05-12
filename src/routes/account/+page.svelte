@@ -3,7 +3,6 @@
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
-  import Card from '$components/ui/Card.svelte';
   import ThemeToggle from '$components/ThemeToggle.svelte';
   import LegalLinks from '$lib/components/LegalLinks.svelte';
   import { enhance } from '$app/forms';
@@ -118,13 +117,15 @@
   theme={data.theme}
 />
 
-<div class="container max-w-2xl space-y-6 py-6">
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountProfileSection()}</h2>
+<div class="container max-w-2xl space-y-4 py-6">
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountProfileSection()}
+    </h2>
     <form
       method="POST"
       action="?/updateProfile"
-      class="mt-3 grid gap-3"
+      class="grid gap-3"
       use:enhance={trackSubmission((v) => (savingProfile = v))}
     >
       <div class="grid gap-1.5">
@@ -137,189 +138,191 @@
         </Button>
       </div>
     </form>
-  </Card>
+  </section>
 
-  <section id="password">
-    <Card class="p-4">
-      <h2 class="text-base font-semibold">{m.authAccountPasswordSection()}</h2>
-      <form
-        method="POST"
-        action="?/changePassword"
-        class="mt-3 grid gap-3"
-        use:enhance={trackSubmission((v) => (changingPassword = v))}
-      >
+  <section id="password" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountPasswordSection()}
+    </h2>
+    <form
+      method="POST"
+      action="?/changePassword"
+      class="grid gap-3"
+      use:enhance={trackSubmission((v) => (changingPassword = v))}
+    >
+      <div class="grid gap-1.5">
+        <Label for="currentPassword">{m.authAccountCurrentPasswordLabel()}</Label>
+        <Input id="currentPassword" name="currentPassword" type="password" required autocomplete="current-password" />
+      </div>
+      <div class="grid gap-1.5">
+        <Label for="newPassword">{m.authAccountNewPasswordLabel()}</Label>
+        <Input id="newPassword" name="newPassword" type="password" required minlength={12} autocomplete="new-password" />
+      </div>
+      <div>
+        <Button type="submit" loading={changingPassword}>
+          {changingPassword ? m.authAccountPasswordChanging() : m.authAccountPasswordChange()}
+        </Button>
+      </div>
+    </form>
+  </section>
+
+  <section id="passkeys" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountPasskeysSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">
+      {m.authAccountPasskeysDescription()}
+    </p>
+
+    {#if data.passkeys.length === 0}
+      <p class="text-sm text-ink-soft">{m.authAccountPasskeysEmpty()}</p>
+    {:else}
+      <ul class="grid gap-2">
+        {#each data.passkeys as p (p.id)}
+          <li class="rounded-tile bg-canvas px-3 py-2 shadow-soft">
+            <form method="POST" action="?/renamePasskey" class="flex flex-wrap items-center gap-2">
+              <input type="hidden" name="id" value={p.id} />
+              <Input
+                name="name"
+                value={p.name}
+                maxlength={80}
+                class="w-full sm:flex-1"
+                aria-label={m.authAccountPasskeyNameLabel()}
+              />
+              <Button type="submit" size="sm" variant="outline">{m.authAccountPasskeyRenameButton()}</Button>
+            </form>
+            <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-soft">
+              <span>
+                {m.authAccountPasskeyAddedOn()} {formatDate(p.createdAt)}{#if p.lastUsedAt} {m.authAccountPasskeyLastUsed()} {formatDate(p.lastUsedAt)}{/if}
+                {#if p.backedUp} {m.authAccountPasskeySynced()}{/if}
+              </span>
+              <form method="POST" action="?/deletePasskey">
+                <input type="hidden" name="id" value={p.id} />
+                <Button type="submit" size="sm" variant="destructive">{m.authAccountPasskeyDeleteButton()}</Button>
+              </form>
+            </div>
+          </li>
+        {/each}
+      </ul>
+    {/if}
+
+    {#if supported}
+      <div class="mt-4 grid gap-3 border-t border-border pt-4">
         <div class="grid gap-1.5">
-          <Label for="currentPassword">{m.authAccountCurrentPasswordLabel()}</Label>
-          <Input id="currentPassword" name="currentPassword" type="password" required autocomplete="current-password" />
-        </div>
-        <div class="grid gap-1.5">
-          <Label for="newPassword">{m.authAccountNewPasswordLabel()}</Label>
-          <Input id="newPassword" name="newPassword" type="password" required minlength={12} autocomplete="new-password" />
+          <Label for="passkeyName">{m.authAccountPasskeyNewNameLabel()}</Label>
+          <Input
+            id="passkeyName"
+            placeholder="iPhone, MacBook…"
+            maxlength={80}
+            bind:value={passkeyName}
+          />
         </div>
         <div>
-          <Button type="submit" loading={changingPassword}>
-            {changingPassword ? m.authAccountPasswordChanging() : m.authAccountPasswordChange()}
+          <Button type="button" onclick={registerPasskey} loading={registering}>
+            {registering ? m.authAccountPasskeyAdding() : m.authAccountPasskeyAdd()}
           </Button>
         </div>
-      </form>
-    </Card>
-  </section>
-
-  <section id="passkeys">
-    <Card class="p-4">
-      <h2 class="text-base font-semibold">{m.authAccountPasskeysSection()}</h2>
-      <p class="mt-1 text-sm text-muted-foreground">
-        {m.authAccountPasskeysDescription()}
-      </p>
-
-      {#if data.passkeys.length === 0}
-        <p class="mt-3 text-sm text-muted-foreground">{m.authAccountPasskeysEmpty()}</p>
-      {:else}
-        <ul class="mt-3 grid gap-2">
-          {#each data.passkeys as p (p.id)}
-            <li class="rounded-md border border-border p-3">
-              <form method="POST" action="?/renamePasskey" class="flex flex-wrap items-center gap-2">
-                <input type="hidden" name="id" value={p.id} />
-                <Input
-                  name="name"
-                  value={p.name}
-                  maxlength={80}
-                  class="w-full sm:flex-1"
-                  aria-label={m.authAccountPasskeyNameLabel()}
-                />
-                <Button type="submit" size="sm" variant="outline">{m.authAccountPasskeyRenameButton()}</Button>
-              </form>
-              <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                <span>
-                  {m.authAccountPasskeyAddedOn()} {formatDate(p.createdAt)}{#if p.lastUsedAt} {m.authAccountPasskeyLastUsed()} {formatDate(p.lastUsedAt)}{/if}
-                  {#if p.backedUp} {m.authAccountPasskeySynced()}{/if}
-                </span>
-                <form method="POST" action="?/deletePasskey">
-                  <input type="hidden" name="id" value={p.id} />
-                  <Button type="submit" size="sm" variant="destructive">{m.authAccountPasskeyDeleteButton()}</Button>
-                </form>
-              </div>
-            </li>
-          {/each}
-        </ul>
-      {/if}
-
-      {#if supported}
-        <div class="mt-4 grid gap-3 border-t border-border pt-4">
-          <div class="grid gap-1.5">
-            <Label for="passkeyName">{m.authAccountPasskeyNewNameLabel()}</Label>
-            <Input
-              id="passkeyName"
-              placeholder="iPhone, MacBook…"
-              maxlength={80}
-              bind:value={passkeyName}
-            />
-          </div>
-          <div>
-            <Button type="button" onclick={registerPasskey} loading={registering}>
-              {registering ? m.authAccountPasskeyAdding() : m.authAccountPasskeyAdd()}
-            </Button>
-          </div>
-        </div>
-      {:else}
-        <p class="mt-4 text-sm text-muted-foreground">
-          {m.authAccountPasskeyUnsupported()}
-        </p>
-      {/if}
-    </Card>
-  </section>
-
-  <section id="theme">
-    <Card class="p-4">
-      <h2 class="text-base font-semibold">{m.authAccountAppearanceSection()}</h2>
-      <p class="mt-1 text-sm text-muted-foreground">{m.authAccountAppearanceDescription()}</p>
-      <div class="mt-3">
-        <ThemeToggle />
       </div>
-    </Card>
+    {:else}
+      <p class="mt-4 text-sm text-ink-soft">
+        {m.authAccountPasskeyUnsupported()}
+      </p>
+    {/if}
   </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountSessionsSection()}</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+  <section id="theme" class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountAppearanceSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">{m.authAccountAppearanceDescription()}</p>
+    <ThemeToggle />
+  </section>
+
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountSessionsSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">
       {m.authAccountSessionsDescription()}
     </p>
-    <form method="POST" action="?/logoutEverywhere" class="mt-3">
+    <form method="POST" action="?/logoutEverywhere">
       <Button type="submit" variant="outline">{m.authAccountLogoutEverywhere()}</Button>
     </form>
-  </Card>
-
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountLogoutSection()}</h2>
-    <form method="POST" action="/logout" class="mt-3">
-      <Button type="submit" variant="outline">{m.authAccountLogout()}</Button>
-    </form>
-  </Card>
-
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountDataSection()}</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
-      {m.authAccountDataDescription()}
-    </p>
-    <div class="mt-3">
-      <Button href={localizedHref('/account/export')} variant="outline">{m.authAccountDataExport()}</Button>
-    </div>
-  </Card>
-
-  <section id="delete">
-    <Card class="p-4 border-destructive/30">
-      <h2 class="text-base font-semibold text-destructive">{m.authAccountDeleteSection()}</h2>
-      <p class="mt-1 text-sm text-muted-foreground">
-        {m.authAccountDeleteDescription()}
-      </p>
-      <form
-        method="POST"
-        action="?/deleteAccount"
-        class="mt-3 grid gap-3"
-        use:enhance={trackSubmission((v) => (deletingAccount = v))}
-      >
-        <div class="grid gap-1.5">
-          <Label for="confirmEmail">{m.authAccountDeleteConfirmLabel()}</Label>
-          <Input
-            id="confirmEmail"
-            name="confirmEmail"
-            type="email"
-            autocomplete="off"
-            bind:value={confirmDeleteEmail}
-            placeholder={data.user?.email ?? ''}
-            required
-          />
-        </div>
-        <div class="grid gap-1.5">
-          <Label for="deletePassword">{m.authAccountDeletePasswordLabel()}</Label>
-          <Input
-            id="deletePassword"
-            name="currentPassword"
-            type="password"
-            autocomplete="current-password"
-            bind:value={confirmDeletePassword}
-            required
-          />
-        </div>
-        <div>
-          <Button
-            type="submit"
-            variant="destructive"
-            loading={deletingAccount}
-            disabled={confirmDeleteEmail.trim().toLowerCase() !== (data.user?.email ?? '') ||
-              confirmDeletePassword.length === 0}
-          >
-            {deletingAccount ? m.authAccountDeleteSubmitting() : m.authAccountDeleteSubmit()}
-          </Button>
-        </div>
-      </form>
-    </Card>
   </section>
 
-  <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.authAccountLegalSection()}</h2>
-    <div class="mt-3">
-      <LegalLinks />
-    </div>
-  </Card>
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountLogoutSection()}
+    </h2>
+    <form method="POST" action="/logout">
+      <Button type="submit" variant="outline">{m.authAccountLogout()}</Button>
+    </form>
+  </section>
+
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountDataSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">
+      {m.authAccountDataDescription()}
+    </p>
+    <Button href={localizedHref('/account/export')} variant="outline">{m.authAccountDataExport()}</Button>
+  </section>
+
+  <section id="delete" class="rounded-tile bg-tile-butter px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-destructive">
+      {m.authAccountDeleteSection()}
+    </h2>
+    <p class="mb-3 text-sm text-ink-soft">
+      {m.authAccountDeleteDescription()}
+    </p>
+    <form
+      method="POST"
+      action="?/deleteAccount"
+      class="grid gap-3"
+      use:enhance={trackSubmission((v) => (deletingAccount = v))}
+    >
+      <div class="grid gap-1.5">
+        <Label for="confirmEmail">{m.authAccountDeleteConfirmLabel()}</Label>
+        <Input
+          id="confirmEmail"
+          name="confirmEmail"
+          type="email"
+          autocomplete="off"
+          bind:value={confirmDeleteEmail}
+          placeholder={data.user?.email ?? ''}
+          required
+        />
+      </div>
+      <div class="grid gap-1.5">
+        <Label for="deletePassword">{m.authAccountDeletePasswordLabel()}</Label>
+        <Input
+          id="deletePassword"
+          name="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          bind:value={confirmDeletePassword}
+          required
+        />
+      </div>
+      <div>
+        <Button
+          type="submit"
+          variant="destructive"
+          loading={deletingAccount}
+          disabled={confirmDeleteEmail.trim().toLowerCase() !== (data.user?.email ?? '') ||
+            confirmDeletePassword.length === 0}
+        >
+          {deletingAccount ? m.authAccountDeleteSubmitting() : m.authAccountDeleteSubmit()}
+        </Button>
+      </div>
+    </form>
+  </section>
+
+  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
+      {m.authAccountLegalSection()}
+    </h2>
+    <LegalLinks />
+  </section>
 </div>
