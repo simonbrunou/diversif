@@ -4,9 +4,8 @@ import { inArray, or, isNull, eq } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { ChildSummary } from '$lib/types';
 import { resolveOrigin } from '$lib/seo';
-import { bentoEnabled } from '$lib/feature-flags';
 
-export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
+export const load: LayoutServerLoad = async ({ locals, url }) => {
   let childList: ChildSummary[] = [];
   if (locals.user && locals.memberships.length > 0) {
     const childIds = locals.memberships.map((m) => m.childId);
@@ -26,14 +25,12 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
       .filter((x): x is ChildSummary => x !== null);
   }
 
-  const bento = bentoEnabled(locals.user?.email, cookies);
-
   const childMatch = url.pathname.match(/^\/child\/([^/]+)/);
   const currentChildIdStr = childMatch ? childMatch[1] : null;
   const currentChildIdNum = currentChildIdStr ? Number(currentChildIdStr) : null;
 
-  let bentoFoods: { id: string; label: string }[] = [];
-  if (bento && currentChildIdNum && !Number.isNaN(currentChildIdNum) && locals.user) {
+  let foods: { id: string; label: string }[] = [];
+  if (currentChildIdNum && !Number.isNaN(currentChildIdNum) && locals.user) {
     const rows = await db
       .select({ id: foodsTable.id, name: foodsTable.name })
       .from(foodsTable)
@@ -41,15 +38,14 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
         or(isNull(foodsTable.customForChildId), eq(foodsTable.customForChildId, currentChildIdNum))
       )
       .orderBy(foodsTable.name);
-    bentoFoods = rows.map((r) => ({ id: String(r.id), label: r.name }));
+    foods = rows.map((r) => ({ id: String(r.id), label: r.name }));
   }
 
   return {
     user: locals.user,
     children: childList,
     siteUrl: resolveOrigin(url),
-    bento,
     currentChildId: currentChildIdStr,
-    foods: bentoFoods
+    foods
   };
 };
