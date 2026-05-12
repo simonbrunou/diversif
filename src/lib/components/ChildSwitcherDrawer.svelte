@@ -25,7 +25,7 @@
           aria-current={child.id === currentChildId ? 'page' : undefined}
           onclick={() => (open = false)}
         >
-          <span class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-tile-peach to-tile-butter">
+          <span class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-tile-peach to-tile-butter">
             {child.avatarSeed}
           </span>
           <span class="flex-1 font-bold">{child.name}</span>
@@ -41,7 +41,7 @@
         class="flex items-center gap-3 rounded-tile border border-dashed border-border bg-canvas px-3 py-2 text-ink-soft hover:bg-surface-2"
         onclick={() => (open = false)}
       >
-        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
+        <span class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-2">
           <Plus size={16} aria-hidden="true" />
         </span>
         <span class="font-semibold">{m.chromeChildSwitcherAdd()}</span>
