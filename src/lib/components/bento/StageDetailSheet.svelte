@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Sheet from '../ui/Sheet.svelte';
+  import Modal from '../ui/Modal.svelte';
 
   type Stage = {
     id: string;
@@ -19,7 +19,7 @@
   }: { open: boolean; stage: Stage } = $props();
 </script>
 
-<Sheet bind:open title={stage.title} side="bottom">
+<Modal bind:open title={stage.title} side="bottom">
   <div class="max-h-[70vh] overflow-y-auto">
     <p class="text-sm text-ink-soft">{stage.oneLiner}</p>
 
@@ -63,4 +63,4 @@
       </section>
     {/if}
   </div>
-</Sheet>
+</Modal>

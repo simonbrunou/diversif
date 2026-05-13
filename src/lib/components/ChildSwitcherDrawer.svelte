@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Drawer from './ui/Drawer.svelte';
+  import Modal from './ui/Modal.svelte';
   import * as m from '$lib/paraglide/messages';
   import { Plus, Check } from 'lucide-svelte';
 
@@ -12,10 +12,7 @@
   }: { open: boolean; kids: Child[]; currentChildId: string } = $props();
 </script>
 
-<Drawer bind:open side="right">
-  <h2 class="text-xs font-semibold uppercase tracking-wider text-ink-soft">
-    {m.chromeChildSwitcherTitle()}
-  </h2>
+<Modal bind:open side="right" title={m.chromeChildSwitcherTitle()}>
   <ul class="mt-3 flex flex-col gap-2">
     {#each kids as child (child.id)}
       <li>
@@ -48,4 +45,4 @@
       </a>
     </li>
   </ul>
-</Drawer>
+</Modal>

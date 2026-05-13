@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Dialog from '$components/ui/Dialog.svelte';
+  import Modal from '$components/ui/Modal.svelte';
   import Button from '$components/ui/Button.svelte';
   import Badge from '$components/ui/Badge.svelte';
   import SourceCitation from './SourceCitation.svelte';
@@ -26,9 +26,10 @@
   }
 </script>
 
-<Dialog
+<Modal
   open={open}
   onclose={close}
+  side="center"
   title={label ? m.allergenDialogTitle({ label }) : ''}
   class="max-w-lg"
 >
@@ -98,4 +99,4 @@
   {#snippet footer()}
     <Button variant="outline" onclick={close}>{m.allergenDialogClose()}</Button>
   {/snippet}
-</Dialog>
+</Modal>
