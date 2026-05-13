@@ -21,7 +21,7 @@ describe('CarnetTous', () => {
 
   it('filters by category when a category pill is clicked', async () => {
     render(CarnetTous, { props: { foods } });
-    await fireEvent.click(screen.getByRole('button', { name: 'fruits' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Fruits' }));
     expect(screen.getByText('Poire')).toBeTruthy();
     expect(screen.queryByText('Carotte')).toBeNull();
     expect(screen.queryByText('Œuf')).toBeNull();
@@ -29,7 +29,7 @@ describe('CarnetTous', () => {
 
   it('restores all foods when the tout pill is clicked', async () => {
     render(CarnetTous, { props: { foods } });
-    await fireEvent.click(screen.getByRole('button', { name: 'fruits' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Fruits' }));
     await fireEvent.click(screen.getByRole('button', { name: 'tout' }));
     expect(screen.getByText('Carotte')).toBeTruthy();
   });

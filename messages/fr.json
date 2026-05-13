@@ -24,7 +24,7 @@
   "chromePublicHeaderMenuClose": "Fermer le menu",
   "chromePublicHeaderMenuOpen": "Ouvrir le menu",
   "chromePublicHeaderMyAccount": "Mon compte",
-  "chromePublicHeaderMyDashboard": "Mon tableau",
+  "chromePublicHeaderMyDashboard": "Mon carnet",
   "chromePublicHeaderNavAllergens": "Allergènes",
   "chromePublicHeaderNavGuide": "Guide",
   "chromePublicHeaderNavHome": "Accueil",
@@ -387,5 +387,50 @@
   "onboardingInviteCodeToastTitle": "Code d'invitation généré",
   "onboardingInviteCodeToastBody": "Partagez ce code avec votre co-parent.",
   "onboardingInviteCodeCopy": "Copier",
-  "onboardingInviteFailedToast": "Code non généré. Réessayez depuis Profil."
+  "onboardingInviteFailedToast": "Code non généré. Réessayez depuis Profil.",
+
+  "allergenDialogTitle": "Allergène : {label}",
+  "allergenDialogBadgeFromMonths": "Dès {months} mois",
+  "allergenDialogSeverityMajor": "Allergène majeur",
+  "allergenDialogWhyEarlyTitle": "Pourquoi tôt ?",
+  "allergenDialogHowToOfferTitle": "Comment l'introduire",
+  "allergenDialogFirstSignsTitle": "Premiers signes à surveiller",
+  "allergenDialogSevereSignsTitle": "Signes sévères, appeler le 15",
+  "allergenDialogSourcesTitle": "Sources",
+  "allergenDialogClose": "Fermer",
+
+  "landingHeroTitle": "Diversifier en confiance, à votre rythme.",
+  "landingHeroBody": "Un carnet calme pour suivre l'introduction des aliments, à deux parents si vous voulez. Sans télémétrie, avec des sources scientifiques citées.",
+  "landingHeroCtaCreateAccount": "Créer mon compte",
+  "landingHeroCtaLogin": "Se connecter",
+  "landingHeroCtaContinue": "Continuer avec {name}",
+
+  "landingFeatureCarnetTitle": "Carnet d'aliments",
+  "landingFeatureCarnetBody": "Notez chaque essai en 4 taps, suivez ce qui a été tenté et ce qui reste à découvrir.",
+  "landingFeatureAllergensTitle": "Allergènes prioritaires",
+  "landingFeatureAllergensBody": "14 allergènes suivis selon les recommandations HCSP, LEAP et EAT.",
+  "landingFeatureCoparentsTitle": "Co-parents",
+  "landingFeatureCoparentsBody": "Partagez le suivi avec votre partenaire ou un proche, sans copier-coller.",
+  "landingFeatureGuideTitle": "Guide par étape",
+  "landingFeatureGuideBody": "Conseils contextualisés selon l'âge, toujours avec leurs sources citées.",
+
+  "kidPickerTitle": "Choisir un enfant",
+  "kidPickerSubtitle": "Sélectionnez l'enfant à suivre.",
+  "kidPickerRoleOwner": "Créateur",
+  "kidPickerRoleMember": "Membre",
+  "kidPickerAddChild": "+ Ajouter un enfant",
+  "kidPickerGuideChipNoAccount": "Le guide complet, accessible sans compte.",
+  "kidPickerGuideChipRules": "10 règles d'or",
+  "kidPickerGuideChipStages": "4 étapes",
+  "kidPickerGuideChipAllergens": "12 allergènes",
+
+  "reactionsLabelRas": "OK",
+  "reactionsLabelInconfort": "inconfort",
+  "reactionsLabelReaction": "réaction",
+
+  "carnetSegmentsAriaLabel": "Sections du carnet",
+
+  "errorsAccountPasskeyRegisterStartFailed": "Impossible de démarrer l'enregistrement.",
+  "errorsAccountPasskeyRegisterFailed": "Enregistrement échoué.",
+  "errorsAccountPasskeyGenericError": "Erreur"
 }

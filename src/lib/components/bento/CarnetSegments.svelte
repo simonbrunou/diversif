@@ -26,7 +26,7 @@
 </script>
 
 <nav
-  aria-label="Sections du carnet"
+  aria-label={m.carnetSegmentsAriaLabel()}
   class="mb-3 flex gap-1 rounded-full border border-border/40 bg-canvas p-1"
 >
   {#each SEGMENTS as seg (seg.id)}

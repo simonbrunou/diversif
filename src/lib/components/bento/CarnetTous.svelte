@@ -2,6 +2,7 @@
   import FoodCardGrid from './FoodCardGrid.svelte';
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
+  import { getCategoryLabel } from '$lib/utils/categories';
 
   type Food = {
     id: number;
@@ -46,7 +47,7 @@
             : 'border-border bg-canvas text-ink-soft'
         )}
       >
-        {cat}
+        {getCategoryLabel(cat)}
       </button>
     {/each}
   </div>
