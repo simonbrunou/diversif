@@ -20,19 +20,11 @@
     id,
     'aria-label': ariaLabel
   }: Props = $props();
-
-  // bits-ui v2 uses separate `indeterminate` prop
-  const isIndeterminate = $derived(checked === 'indeterminate');
-  const isChecked = $derived(checked === true);
 </script>
 
 <CheckboxPrimitive.Root
-  checked={isChecked}
-  indeterminate={isIndeterminate}
-  onCheckedChange={(v) => {
-    checked = v;
-    onCheckedChange?.(v);
-  }}
+  bind:checked
+  onCheckedChange={(v) => onCheckedChange?.(v)}
   {disabled}
   {id}
   aria-label={ariaLabel}
@@ -41,9 +33,9 @@
     className
   )}
 >
-  {#if isIndeterminate}
+  {#if checked === 'indeterminate'}
     <Minus class="h-3.5 w-3.5" />
-  {:else if isChecked}
+  {:else if checked === true}
     <Check class="h-3.5 w-3.5" />
   {/if}
 </CheckboxPrimitive.Root>
