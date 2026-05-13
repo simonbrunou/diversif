@@ -11,7 +11,7 @@
   }: { childName: string; coparents: Coparent[]; inviteHref: string } = $props();
 </script>
 
-<section class="mb-3" aria-label={`${m.profilCoparentsTitle()} — ${childName}`}>
+<section class="mb-3" aria-label={`${m.profilCoparentsTitle()} : ${childName}`}>
   <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
     {m.profilCoparentsTitle()} · {childName}
   </h2>
