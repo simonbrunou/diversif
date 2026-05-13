@@ -20,11 +20,24 @@
     id,
     'aria-label': ariaLabel
   }: Props = $props();
+
+  const isIndeterminate = $derived(checked === 'indeterminate');
+  const isChecked = $derived(checked === true);
 </script>
 
 <CheckboxPrimitive.Root
-  bind:checked
-  onCheckedChange={(v) => onCheckedChange?.(v)}
+  checked={isChecked}
+  indeterminate={isIndeterminate}
+  onCheckedChange={(v) => {
+    checked = v;
+    onCheckedChange?.(v);
+  }}
+  onIndeterminateChange={(v) => {
+    if (v) {
+      checked = 'indeterminate';
+      onCheckedChange?.('indeterminate');
+    }
+  }}
   {disabled}
   {id}
   aria-label={ariaLabel}
@@ -33,9 +46,9 @@
     className
   )}
 >
-  {#if checked === 'indeterminate'}
+  {#if isIndeterminate}
     <Minus class="h-3.5 w-3.5" />
-  {:else if checked === true}
+  {:else if isChecked}
     <Check class="h-3.5 w-3.5" />
   {/if}
 </CheckboxPrimitive.Root>

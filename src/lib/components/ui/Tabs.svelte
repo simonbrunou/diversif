@@ -14,7 +14,7 @@
 
   type Props = {
     value: string;
-    onValueChange?: (value: string | undefined) => void;
+    onValueChange?: (value: string) => void;
     items: TabItem[];
     class?: string;
   };
