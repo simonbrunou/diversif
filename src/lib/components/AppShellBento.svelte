@@ -71,7 +71,7 @@
       <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
     {/if}
 
-    <main class="flex-1">
+    <main id="main" class="flex-1">
       {#if children}{@render children()}{/if}
     </main>
 
@@ -98,14 +98,14 @@
     {/if}
   </div>
 
-  <!-- Desktop top-right Logger button -->
+  <!-- Desktop top-right log button -->
   {#if showChrome && currentChildId}
     <button
       type="button"
       onclick={() => (logOpen = true)}
       class="fixed right-4 top-4 z-30 hidden rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-soft lg:flex lg:items-center lg:gap-1"
     >
-      + Logger
+      + {m.chromeFabLog()}
     </button>
   {/if}
 </div>

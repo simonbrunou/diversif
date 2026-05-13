@@ -14,7 +14,7 @@
     important: 'border-primary/40 bg-accent'
   };
   const ICON_STYLES: Record<Reminder['severity'], string> = {
-    info: 'bg-primary/15 text-primary',
+    info: 'bg-primary/15 text-primary-strong',
     warn: 'bg-reaction-inconfort/20 text-reaction-inconfort',
     important: 'bg-primary text-primary-foreground'
   };

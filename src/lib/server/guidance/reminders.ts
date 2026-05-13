@@ -214,7 +214,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       severity: 'info',
       title: `Reproposez « ${c.foodName} »`,
       body: "L'acceptation gustative se construit avec la répétition — jusqu'à 10 fois pour certains aliments. C'est aussi vrai pour entretenir la tolérance aux allergènes.",
-      cta: { label: 'Logguer cet aliment', href: `${childPath}/log?foodId=${c.foodId}` },
+      cta: { label: 'Enregistrer cet aliment', href: `${childPath}/log?foodId=${c.foodId}` },
       sources: ['spf-pnns-guide'],
       dismissable: true
     });
