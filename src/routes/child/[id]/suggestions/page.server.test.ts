@@ -171,10 +171,10 @@ describe('child/[id]/suggestions load', () => {
 
     const out = await loadFor(ctx);
 
-    // peanut already introduced — should not appear at all
+    // peanut already introduced : should not appear at all
     expect(out.priorityAllergens.find((f) => f.id === peanut.id)).toBeUndefined();
     expect(out.others.find((f) => f.id === peanut.id)).toBeUndefined();
-    // egg still in priority — its allergen "oeuf" not yet introduced
+    // egg still in priority : its allergen "oeuf" not yet introduced
     expect(out.priorityAllergens.find((f) => f.id === egg.id)).toBeDefined();
   });
 

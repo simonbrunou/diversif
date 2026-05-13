@@ -97,7 +97,7 @@ describe('computeReminders', () => {
 
     it('uses earliest occurrence per food as the first-intro timestamp', () => {
       // Same food (id=1) introduced 200 d ago, re-logged 2 d ago. The food is
-      // not new — stale-diversity must look at the earliest log per food, not
+      // not new : stale-diversity must look at the earliest log per food, not
       // the latest, so the newest *first* intro across all foods is 200 d.
       const oldIntro = entry({ id: 1, foodId: 1, givenAt: NOW - 200 * DAY });
       const recentLog = entry({ id: 2, foodId: 1, givenAt: NOW - 2 * DAY });
@@ -155,7 +155,7 @@ describe('computeReminders', () => {
 
     it('still fires when only a log-completeness allergen was introduced', () => {
       // Logging céleri/moutarde/crustacés/mollusques/soja shouldn't suppress
-      // the LEAP/EAT high-risk-window framing — those allergens weren't
+      // the LEAP/EAT high-risk-window framing : those allergens weren't
       // covered by either trial. The gate must check the priority subset,
       // not the full ALLERGENS set.
       const out = computeReminders(
@@ -278,7 +278,7 @@ describe('computeReminders', () => {
 
   describe('default now', () => {
     it('falls back to Date.now() when input.now is omitted', () => {
-      // Don't include `now` in the input — exercise the `?? Date.now()` branch.
+      // Don't include `now` in the input : exercise the `?? Date.now()` branch.
       const out = computeReminders({
         childId: 1,
         ageMonths: 8,
@@ -296,7 +296,7 @@ describe('computeReminders', () => {
       // Caller pins `now` ≥ 4 months past childCreatedAt and tells us the
       // child is exactly 5 months old. The 4-11 month allergen window must
       // fire regardless of the wall clock the engine would have read by
-      // default — proving the dashboard load can pin a single instant
+      // default : proving the dashboard load can pin a single instant
       // through ageInMonths and computeReminders without drift.
       const pinnedNow = new Date('2026-05-06T12:00:00Z').getTime();
       const out = computeReminders({

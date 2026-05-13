@@ -24,7 +24,7 @@ import { setLanguageTag, type AvailableLanguageTag } from '$lib/paraglide/runtim
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   const errorId = randomBytes(4).toString('hex');
   const err = error as Error;
-  // The Sentry event already drops user.id and scrubs the URL — this stderr
+  // The Sentry event already drops user.id and scrubs the URL : this stderr
   // line is the operator-side trail. Apply the same path scrub so child/food
   // IDs and other dynamic segments don't end up in the deployment platform's
   // log aggregator. The event.route?.id pattern (e.g. /child/[id]/log) is a
@@ -62,7 +62,7 @@ const PERMISSIONS_POLICY =
   'geolocation=(), camera=(), microphone=(), usb=(), payment=(), interest-cohort=()';
 
 /**
- * Resolve the request's locale from the ORIGINAL URL — `event.request.url` is
+ * Resolve the request's locale from the ORIGINAL URL : `event.request.url` is
  * the path the browser actually requested, before SvelteKit's `reroute` (in
  * src/hooks.ts) strips the `/en/` prefix. Using `event.url` here would always
  * see the rerouted path and wrongly default to FR.
@@ -112,7 +112,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   // where the upstream handle reads event.url AFTER reroute has stripped the
   // /en prefix and so always sees 'fr'. Run on every chunk: the placeholder
   // sits in the opening <html> tag, which can land in any chunk when SvelteKit
-  // streams a response — gating on `done` would leak `%paraglide.lang%` to the
+  // streams a response : gating on `done` would leak `%paraglide.lang%` to the
   // client whenever the head is flushed before the closing chunk.
   const response = await resolve(event, {
     transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)

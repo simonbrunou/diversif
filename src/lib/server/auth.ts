@@ -42,7 +42,7 @@ function getDecoyHash(): Promise<string> {
   }
   return decoyHashPromise;
 }
-/* v8 ignore next 3 — module-load warming, skipped in tests by design */
+/* v8 ignore next 3 : module-load warming, skipped in tests by design */
 if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   void getDecoyHash();
 }

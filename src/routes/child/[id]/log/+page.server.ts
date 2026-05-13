@@ -135,7 +135,7 @@ export const actions: Actions = {
           }
 
           // Snapshot pre-insert state so we can detect milestones after the
-          // insert. Cast counts to int — node-postgres returns BIGINT as a
+          // insert. Cast counts to int : node-postgres returns BIGINT as a
           // string by default, which would make every `=== 0` comparison
           // below false and silently disable the first-food / first-allergen
           // / all-allergens redirects.

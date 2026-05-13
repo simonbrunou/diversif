@@ -15,7 +15,7 @@ const schema = z.object({
 
 export const load: PageServerLoad = async ({ locals, parent }) => {
   requireUser(locals);
-  // True only when the user owns no child yet — lets the page render a
+  // True only when the user owns no child yet : lets the page render a
   // warmer "welcome aboard" header instead of the utilitarian "Ajouter
   // un enfant". Co-parents who only have member memberships still get
   // the warm greeting the first time they create their own child.
@@ -64,7 +64,7 @@ export const actions: Actions = {
     let redirectQuery = '';
     if (inviteCoparent) {
       const code = await createInvitationForChild({ childId: inserted.id, createdBy: user.id });
-      /* v8 ignore next — code === null only after 5 random-code collisions (~1-in-trillion) */
+      /* v8 ignore next : code === null only after 5 random-code collisions (~1-in-trillion) */
       redirectQuery = code ? `?inviteCode=${code}` : '?invite=failed';
     }
 

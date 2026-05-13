@@ -134,7 +134,7 @@ describe('withIdempotencyKey', () => {
 
   it('rethrows non-PK errors from the savepoint INSERT', async () => {
     // Trigger a FK violation (23503) by passing a userId that doesn't exist.
-    // The savepoint INSERT fails — isUniqueViolation rejects 23503, so
+    // The savepoint INSERT fails : isUniqueViolation rejects 23503, so
     // withIdempotencyKey re-throws instead of treating it as a race.
     const doWork = vi.fn();
     await expect(

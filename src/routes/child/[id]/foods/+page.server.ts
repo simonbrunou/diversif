@@ -180,7 +180,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   }
 
   // Rows are ordered DESC givenAt, so the first occurrence of each foodId is
-  // the most recent entry — capture its id as `lastEntryId` so non-RAS food
+  // the most recent entry : capture its id as `lastEntryId` so non-RAS food
   // cards can link to the reaction-detail page.
   const foodMap = new Map<
     number,

@@ -253,7 +253,7 @@ describe('child/[id]/foods load', () => {
     // Apple covers the inverse branch: the loader iterates rows in DESC
     // givenAt order, so the most-recent (ras) populates the map first. The
     // older (reaction) entry then hits if (existing) AND severity > existing.status
-    // — TRUE arm of the severity check, escalating the stored status.
+    // : TRUE arm of the severity check, escalating the stored status.
     await testDb.insert(foodEntries).values([
       {
         childId: ctx.c.id,
@@ -325,7 +325,7 @@ describe('child/[id]/foods load', () => {
   });
 
   it('bentoFoods lastEntryId is null for foods with no entries', async () => {
-    // No entries seeded — bentoFoods should be empty but the field definition
+    // No entries seeded : bentoFoods should be empty but the field definition
     // allows null; verify the loader doesn't crash on an empty result set.
     const ctx = await setup();
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
@@ -399,7 +399,7 @@ describe('child/[id]/foods load', () => {
         customForChildId: null
       })
       .returning();
-    // One ras entry plus one reaction entry — should escalate to 'reaction'.
+    // One ras entry plus one reaction entry : should escalate to 'reaction'.
     await testDb.insert(foodEntries).values([
       {
         childId: ctx.c.id,
@@ -454,7 +454,7 @@ describe('child/[id]/foods load', () => {
 
   it('repeat=1 early-return branch still emits bentoAllergens + weeklyEntries', async () => {
     // Seed an entry that satisfies the allergen/weekly queries but make the
-    // repeat candidate query return zero — by recording 3 entries for the
+    // repeat candidate query return zero : by recording 3 entries for the
     // only food, the worst-<=1 / n-<=2 predicate excludes it, forcing the
     // ids.length === 0 branch. The new fields must still populate.
     const ctx = await setup();

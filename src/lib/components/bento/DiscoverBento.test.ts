@@ -88,7 +88,7 @@ describe('DiscoverBento', () => {
   it('opens the StageDetailSheet when a stage tile is tapped', async () => {
     render(DiscoverBento, { props: baseProps });
     await fireEvent.click(screen.getByText('9 à 12 mois'));
-    // After tap, the Sheet is open — "Cuillère" appears in both the grid tile oneLiner and the
+    // After tap, the Sheet is open : "Cuillère" appears in both the grid tile oneLiner and the
     // Sheet oneLiner, so use getAllByText and assert at least two occurrences (grid + sheet).
     expect(screen.getAllByText('Cuillère').length).toBeGreaterThanOrEqual(2);
   });

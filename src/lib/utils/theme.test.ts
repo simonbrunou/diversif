@@ -45,7 +45,7 @@ function makeBrowserGlobals(opts: { stored: Stored; prefersDark: boolean }) {
   return { store, localStorage, matchMedia, document, classList };
 }
 
-describe('theme — non-browser fallbacks', () => {
+describe('theme : non-browser fallbacks', () => {
   beforeEach(() => {
     browserState.browser = false;
   });
@@ -68,7 +68,7 @@ describe('theme — non-browser fallbacks', () => {
   });
 });
 
-describe('theme — browser behavior', () => {
+describe('theme : browser behavior', () => {
   let env: ReturnType<typeof makeBrowserGlobals>;
 
   beforeEach(() => {

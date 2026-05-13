@@ -21,14 +21,14 @@ import type { Actions, PageServerLoad } from './$types';
 // (corporate proxies, family households, CI runs) while still keeping a
 // scripted abuser firmly throttled. The bucket is keyed by client IP so the
 // public Internet-facing operator MUST configure ADDRESS_HEADER for adapter-
-// node when behind a reverse proxy — otherwise the proxy IP looks like one
+// node when behind a reverse proxy : otherwise the proxy IP looks like one
 // noisy client.
 const SIGNUP_LIMIT = {
   name: 'signup',
   // Playwright sets E2E=1 in its webServer env; the suite legitimately runs
   // dozens of signups from one address in a few minutes, so the throttle
   // relaxes there. Production traffic keeps the 20/hour ceiling.
-  /* v8 ignore next — E2E branch covered by the Playwright suite */
+  /* v8 ignore next : E2E branch covered by the Playwright suite */
   limit: process.env.E2E === '1' ? 200 : 20,
   windowMs: 60 * 60 * 1000
 };
@@ -133,7 +133,7 @@ export const actions: Actions = {
     }
 
     if (await findUserByEmail(lowerEmail)) {
-      // Generic message — the previous "compte existe déjà" wording let an
+      // Generic message : the previous "compte existe déjà" wording let an
       // attacker enumerate registered addresses by attempting to sign up.
       // The new copy gently nudges existing users towards /login without
       // confirming whether the address is on file. A residual leak still
@@ -190,7 +190,7 @@ export const actions: Actions = {
             .update(invitations)
             .set({ usedAt: now, usedBy: id })
             .where(and(eq(invitations.code, inviteCode), isNull(invitations.usedAt)));
-          /* v8 ignore next — node-postgres always populates rowCount for UPDATE */
+          /* v8 ignore next : node-postgres always populates rowCount for UPDATE */
           if ((result.rowCount ?? 0) === 0) throw new InviteRace();
           await tx.insert(memberships).values({
             userId: id,

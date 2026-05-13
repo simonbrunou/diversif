@@ -151,7 +151,7 @@ describe('chooseSuggestedFoods (plural)', () => {
 
   it('fills remaining slots from fallback diversify when count not met after diversify+recent passes', () => {
     const now = Date.parse('2026-05-01T12:00:00Z');
-    // Two foods in same category as recent — diversify loop skips them, recent loop skips them (not stale)
+    // Two foods in same category as recent : diversify loop skips them, recent loop skips them (not stale)
     // fallback loop should pick them up
     const foods: SuggestFood[] = [
       { id: 1, name: 'Poire', category: 'fruits', allergenType: null },

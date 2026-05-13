@@ -29,7 +29,7 @@ function timingDecoyVerify(): void {
   if (!decoyVerifyKey) {
     decoyVerifyKey = generateKeyPairSync('ec', { namedCurve: 'P-256' }).publicKey;
   }
-  /* v8 ignore start — node's crypto.verify throws on some malformed sigs
+  /* v8 ignore start : node's crypto.verify throws on some malformed sigs
      and returns false on others; either path satisfies the timing goal */
   try {
     cryptoVerify('sha256', randomBytes(32), decoyVerifyKey, randomBytes(64));
@@ -38,7 +38,7 @@ function timingDecoyVerify(): void {
   }
   /* v8 ignore stop */
 }
-/* v8 ignore next 3 — module-load warming, skipped in tests by design */
+/* v8 ignore next 3 : module-load warming, skipped in tests by design */
 if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   timingDecoyVerify();
 }
@@ -116,7 +116,7 @@ export async function consumeChallenge(
   if (!token) return null;
   // Atomic single-use consume: DELETE … RETURNING is the one operation, so two
   // concurrent verifies with the same token can never both walk away with a
-  // valid challenge — exactly one request receives a row, the other gets none.
+  // valid challenge : exactly one request receives a row, the other gets none.
   // We DELETE on the bare token (mirrors prior "always remove if it exists,
   // even if expired" behaviour) and post-filter purpose / expiry in JS.
   const rows = await db
@@ -148,7 +148,7 @@ export async function deletePasskey(userId: number, credentialId: string): Promi
   const result = await db
     .delete(passkeys)
     .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
-  /* v8 ignore next — node-postgres always populates rowCount for DELETE */
+  /* v8 ignore next : node-postgres always populates rowCount for DELETE */
   return (result.rowCount ?? 0) > 0;
 }
 
@@ -163,7 +163,7 @@ export async function renamePasskey(
     .update(passkeys)
     .set({ name: trimmed.slice(0, 80) })
     .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
-  /* v8 ignore next — node-postgres always populates rowCount for UPDATE */
+  /* v8 ignore next : node-postgres always populates rowCount for UPDATE */
   return (result.rowCount ?? 0) > 0;
 }
 
@@ -174,7 +174,7 @@ export async function buildRegistrationOptions(opts: {
   rpID: string;
 }): Promise<PublicKeyCredentialCreationOptionsJSON> {
   const existing = await listPasskeys(opts.userId);
-  // The WebAuthn user handle should be a stable, opaque identifier — we use
+  // The WebAuthn user handle should be a stable, opaque identifier : we use
   // the numeric user id encoded as bytes.
   const userIdBytes = new TextEncoder().encode(String(opts.userId));
   return generateRegistrationOptions({
@@ -231,7 +231,7 @@ export async function finishRegistration(opts: {
       // hardware authenticators that don't surface a PIN/biometric (e.g.
       // basic security keys) can still be used. Passkeys with platform
       // biometrics will perform UV anyway. The trade-off: a stolen unlocked
-      // device could authenticate without a re-prompt — which is the same
+      // device could authenticate without a re-prompt : which is the same
       // threat model as a stolen unlocked browser session, since we already
       // gate sensitive flows (account deletion, password change) behind
       // their own confirmation steps.
@@ -314,7 +314,7 @@ export async function finishAuthentication(opts: {
         counter: credential.counter,
         transports: credential.transports
       },
-      // Mirrors the registration choice — see finishRegistration above for
+      // Mirrors the registration choice : see finishRegistration above for
       // the full rationale.
       requireUserVerification: false
     });

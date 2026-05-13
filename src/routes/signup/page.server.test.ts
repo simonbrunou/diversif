@@ -121,7 +121,7 @@ describe('signup default action', () => {
     const r2 = (await actions.default!(
       ev2 as unknown as Parameters<NonNullable<typeof actions.default>>[0]
     )) as { status: number; data: { errorKey: string } };
-    // Both must respond with the invite error — varying only the email
+    // Both must respond with the invite error : varying only the email
     // must not reveal whether the address is on file.
     expect(r1.status).toBe(400);
     expect(r2.status).toBe(400);
@@ -157,7 +157,7 @@ describe('signup default action', () => {
     expect(r.data.errorKey).toBe('errorsAuthInvalidInviteExpired');
   });
 
-  it('succeeds without invite — sets cookie + redirects /', async () => {
+  it('succeeds without invite : sets cookie + redirects /', async () => {
     const event = makeRouteEvent({ formData: form() });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
@@ -172,7 +172,7 @@ describe('signup default action', () => {
     expect(created).toBeDefined();
   });
 
-  it('succeeds with valid invite — adds membership and redirects to /child/{id}', async () => {
+  it('succeeds with valid invite : adds membership and redirects to /child/{id}', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const child = await seedChild({ createdBy: owner.id });
     await testDb.insert(invitations).values({
@@ -260,7 +260,7 @@ describe('signup default action', () => {
       expect(r.status).toBe(400);
       expect(r.data.errorKey).toBe('errorsAuthSignupImpossible');
 
-      // Only one row exists for the email — the planted one.
+      // Only one row exists for the email : the planted one.
       const rows = await testDb.select().from(users).where(eq(users.email, 'new@example.com'));
       expect(rows).toHaveLength(1);
     } finally {

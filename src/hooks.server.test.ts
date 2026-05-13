@@ -320,7 +320,7 @@ describe('handleError', () => {
         message: 'Internal Error'
       } as unknown as Parameters<typeof handleError>[0]);
       const payload = JSON.parse(spy.mock.calls[0][1] as string);
-      // When route.id is set, it's the canonical scrubbed form — no need to
+      // When route.id is set, it's the canonical scrubbed form : no need to
       // run the segment heuristics over the raw pathname.
       expect(payload.path).toBe('/child/[id]/log/[entryId]');
     } finally {

@@ -127,7 +127,7 @@ export function organizationJsonLd(origin: string) {
 
 // inLanguage on every type is hardcoded to SITE.lang ('fr'). The /en/ URLs
 // only translate chrome (header, footer, skip link, FR-only banner); the
-// substantive page bodies — articles, FAQ Q/A, landing copy — remain in
+// substantive page bodies : articles, FAQ Q/A, landing copy : remain in
 // French. Per schema.org and Google's guidance, inLanguage describes the
 // content's actual language, not the URL prefix, so 'fr' is the correct
 // signal even on /en/ pages until the bodies themselves get translated.

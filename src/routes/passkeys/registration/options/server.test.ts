@@ -114,7 +114,7 @@ describe('POST /passkeys/registration/options', () => {
       await POST(event as unknown as Parameters<typeof POST>[0]);
       // Without normalization the rpID would still be the hostname, but the
       // expectedOrigin used during verify would carry the trailing slash and
-      // never match what the browser sends — regression-guard the helper here.
+      // never match what the browser sends : regression-guard the helper here.
       expect(mocks.generateRegistrationOptions.mock.calls[0][0].rpID).toBe('from-env.test');
     } finally {
       if (orig === undefined) delete process.env.ORIGIN;

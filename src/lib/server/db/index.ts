@@ -25,10 +25,10 @@ function resolveDatabaseUrl(): string {
 
 function resolvePoolMax(): number {
   const raw = process.env.PGPOOL_MAX;
-  /* v8 ignore next — defensive for invalid env input, no test env sets PGPOOL_MAX */
+  /* v8 ignore next : defensive for invalid env input, no test env sets PGPOOL_MAX */
   if (!raw) return 10;
   const n = Number(raw);
-  /* v8 ignore next — defensive for invalid env input */
+  /* v8 ignore next : defensive for invalid env input */
   if (!Number.isInteger(n) || n <= 0) return 10;
   return n;
 }

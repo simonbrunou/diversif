@@ -19,7 +19,7 @@ describe('ReminderStrip', () => {
             key: 'r1',
             severity: 'warn',
             title: 'Surveiller la réaction',
-            body: 'Réaction observée il y a 30 min — encore 30 min à surveiller.',
+            body: 'Réaction observée il y a 30 min : encore 30 min à surveiller.',
             dismissable: true
           }
         ]

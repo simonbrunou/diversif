@@ -6,7 +6,7 @@ export const prerender = true;
 type Entry = { path: string; changefreq: string; priority: string; lastmod: string };
 
 // Stable per-page content update dates. Bump the appropriate entry whenever the
-// page's user-visible content meaningfully changes — never use "today" at
+// page's user-visible content meaningfully changes : never use "today" at
 // response time, since a rolling `lastmod` makes crawlers distrust the signal
 // and triggers unnecessary recrawls of pages that haven't actually changed.
 const LANDING_LASTMOD = '2026-05-03';

@@ -150,7 +150,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
   }
 
   // 5. High-risk window 4-11 mo with no priority allergen introduced.
-  // Note: gates on the priority subset, not the full ALLERGENS set —
+  // Note: gates on the priority subset, not the full ALLERGENS set:
   // logging a log-completeness allergen (céleri, moutarde, crustacés,
   // mollusques) or soja shouldn't suppress the LEAP/EAT framing, since
   // those weren't covered by either trial.

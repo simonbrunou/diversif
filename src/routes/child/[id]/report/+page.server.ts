@@ -109,7 +109,7 @@ export const load: PageServerLoad = async ({ parent }) => {
     .map(([id, list]) => ({ id, foods: list }));
 
   // Per-allergen summary: introduced / worst / counts. Derived from `entries`
-  // in memory rather than a second SQL scan — `entries` already contains
+  // in memory rather than a second SQL scan : `entries` already contains
   // exactly the columns we need (allergenType, reaction, givenAt) because the
   // primary query above joins on the food catalog.
   const allergenAggMap = new Map<
@@ -159,7 +159,7 @@ export const load: PageServerLoad = async ({ parent }) => {
   });
 
   // Notable reactions for the timeline section: every inconfort/réaction
-  // entry, oldest first. We deliberately don't cap — this section exists so
+  // entry, oldest first. We deliberately don't cap : this section exists so
   // the pediatrician sees the full reaction history, and silently dropping
   // older entries would defeat the report's purpose.
   const notable = entries.filter((e) => e.reaction !== 'ras');

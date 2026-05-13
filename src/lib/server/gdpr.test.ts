@@ -298,7 +298,7 @@ describe('exportUserData', () => {
     });
 
     // Stamp lastExportAt so the assertion below isn't testing only the null
-    // path — every export operation flips this field on the users row, so a
+    // path : every export operation flips this field on the users row, so a
     // returning user's archive should reflect their previous export.
     await testDb
       .update(users)
@@ -350,7 +350,7 @@ describe('exportUserData', () => {
     const childOfAccepted = await insertChild('Léo', accepted.id);
     await insertMembership(accepted.id, childOfAccepted.id, 'owner');
 
-    // Invite #1 — sent by `inviter`, never used
+    // Invite #1 : sent by `inviter`, never used
     await testDb.insert(invitations).values({
       code: 'INV-SENT',
       childId: c.id,
@@ -360,7 +360,7 @@ describe('exportUserData', () => {
       usedAt: null,
       usedBy: null
     });
-    // Invite #2 — sent by someone else, accepted by `accepted`
+    // Invite #2 : sent by someone else, accepted by `accepted`
     await testDb.insert(invitations).values({
       code: 'INV-ACCEPTED',
       childId: childOfAccepted.id,
@@ -375,7 +375,7 @@ describe('exportUserData', () => {
     expect(senderOut.invitations).toHaveLength(2);
     // Ordered by createdAt: INV-SENT first (2026-05-01), INV-ACCEPTED second
     // (2026-05-02). Identify by usedAt rather than code (code is intentionally
-    // absent from the export — see ExportedUser.invitations docstring).
+    // absent from the export : see ExportedUser.invitations docstring).
     expect(senderOut.invitations[0]).toMatchObject({ relationship: 'sent', usedAt: null });
     expect(senderOut.invitations[1].relationship).toBe('sent');
     expect(senderOut.invitations[1].usedAt).not.toBeNull();
@@ -396,7 +396,7 @@ describe('exportUserData', () => {
     const u = await insertUser('dismisser@example.com');
     const c = await insertChild('Bébé', u.id);
     await insertMembership(u.id, c.id, 'owner');
-    // Other user's dismissal — must not leak.
+    // Other user's dismissal : must not leak.
     const other = await insertUser('other@example.com');
     const otherChild = await insertChild('Léo', other.id);
     await insertMembership(other.id, otherChild.id, 'owner');

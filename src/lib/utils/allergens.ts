@@ -3,7 +3,7 @@
 // food labelling) minus two:
 //   - lupin: rarely encountered in unprocessed home cooking.
 //   - sulphites: a preservative, not a food group; mostly in dried
-//     fruit and wine — out of scope for infant diversification.
+//     fruit and wine : out of scope for infant diversification.
 //
 // HCSP 2020 (avis du 30/06/2020) specifically names produits laitiers,
 // œuf, arachide, fruits à coque and gluten as introduction priorities
@@ -40,7 +40,7 @@ export type AllergenId = (typeof ALLERGENS)[number]['id'];
 //   - soja: HCSP 2020 + ANSES discourage soja products before 3 ans
 //     (phyto-œstrogènes).
 //   - céleri, moutarde, crustacés, mollusques: tracked in `ALLERGENS` for
-//     log completeness against EU 1169/2011 only — no early-introduction
+//     log completeness against EU 1169/2011 only : no early-introduction
 //     trial covered them, so prompting parents to introduce them with
 //     LEAP/EAT/ESPGHAN copy would misattribute the evidence.
 export const PRIORITY_INTRODUCTION_ALLERGENS = [

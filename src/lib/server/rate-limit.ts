@@ -40,7 +40,7 @@ function bucketKey(name: string, key: string): string {
  * `false` and `retryAfterSeconds` reports how long until the oldest hit
  * leaves the window.
  *
- * The hit is recorded *even when blocked* — that's intentional. A flood of
+ * The hit is recorded *even when blocked* : that's intentional. A flood of
  * requests should keep the window saturated and continue to be rejected; if
  * we only counted successful checks, an attacker could keep hammering once
  * the window started rolling forward.
@@ -75,7 +75,7 @@ export function checkRateLimit(opts: RateLimitOptions, key: string): RateLimitRe
   const overLimit = bucket.hits.length > opts.limit;
   const allowed = !overLimit;
   const remaining = Math.max(0, opts.limit - bucket.hits.length);
-  // Time until the oldest in-window hit ages out — gives the caller a usable
+  // Time until the oldest in-window hit ages out : gives the caller a usable
   // Retry-After even when we just hit the cap on this very call. We always
   // push `now` above so `bucket.hits` is never empty here; the fallback is
   // defensive against future refactors and isn't reachable today.
@@ -95,7 +95,7 @@ export function resetRateLimit(name: string, key: string): void {
 
 /**
  * Evict buckets whose newest hit is older than `maxAgeMs`. Caps memory growth
- * for high-cardinality traffic — without this, every distinct client IP that
+ * for high-cardinality traffic : without this, every distinct client IP that
  * ever hits an auth endpoint stays in the map for the lifetime of the
  * process. Wired into the periodic cleanup task in `./cleanup.ts`. Safe to
  * call from anywhere; no I/O, just an in-memory walk.

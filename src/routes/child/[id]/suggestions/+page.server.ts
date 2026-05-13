@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   // Only surface "Allergènes à introduire" prompts for the priority subset
   // (LEAP/EAT/ESPGHAN-supported). Soja and the EU-1169-only allergens
   // (céleri, moutarde, crustacés, mollusques) are intentionally excluded
-  // — see PRIORITY_INTRODUCTION_ALLERGENS for the reasoning.
+  // : see PRIORITY_INTRODUCTION_ALLERGENS for the reasoning.
   const allergenSet = new Set<string>(
     PRIORITY_INTRODUCTION_ALLERGENS.filter((id) => !introducedAllergenSet.has(id))
   );
