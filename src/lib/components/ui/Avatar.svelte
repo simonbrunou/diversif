@@ -21,7 +21,7 @@
 
 <AvatarPrimitive.Root
   class={cn(
-    'relative flex shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-tile-peach to-tile-butter ring-2 ring-surface',
+    'bg-avatar-tile relative flex shrink-0 overflow-hidden rounded-full ring-2 ring-surface',
     sizes[size],
     className
   )}
