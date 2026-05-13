@@ -34,7 +34,7 @@
 </script>
 
 <Seo
-  title="Sources et références — diversification alimentaire bébé · Diversif"
+  title="Sources et références : diversification alimentaire bébé · Diversif"
   description="Les 10 sources qui font autorité derrière Diversif : HCSP, Santé publique France, ANSES, ESPGHAN, OMS, Société Française de Pédiatrie, études LEAP et EAT."
   path="/sources"
 />
@@ -62,7 +62,7 @@
       <h1 class="text-2xl font-semibold leading-tight md:text-3xl">Sources et références</h1>
       <p class="max-w-2xl text-sm text-muted-foreground">
         Toutes les recommandations affichées dans Diversif s'appuient sur des sources publiques et
-        vérifiables — institutionnelles (HCSP, Santé publique France, ANSES, OMS), sociétés savantes
+        vérifiables : institutionnelles (HCSP, Santé publique France, ANSES, OMS), sociétés savantes
         (ESPGHAN, Société Française de Pédiatrie) et études cliniques de référence (LEAP, EAT). En
         cas de doute, consultez votre pédiatre.
       </p>

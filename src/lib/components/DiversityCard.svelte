@@ -24,7 +24,7 @@
     if (totalCategories > 0 && categoriesCovered >= totalCategories) {
       return {
         tone: 'celebrate',
-        text: 'Toutes les familles couvertes — diversité au top.'
+        text: 'Toutes les familles couvertes : diversité au top.'
       };
     }
     const seventyPct = Math.ceil(totalCategories * 0.7);
@@ -38,11 +38,11 @@
     if (categoriesCovered >= 3) {
       return {
         tone: 'info',
-        text: `${categoriesCovered} groupes couverts — joli début.`
+        text: `${categoriesCovered} groupes couverts : joli début.`
       };
     }
     if (lastNewFoodAt == null) {
-      return { tone: 'muted', text: 'Aucun aliment encore — à votre rythme.' };
+      return { tone: 'muted', text: 'Aucun aliment encore. À votre rythme.' };
     }
     const daysSinceNew = Math.floor((Date.now() - lastNewFoodAt) / (24 * 60 * 60 * 1000));
     if (daysSinceNew > 14) {
@@ -50,7 +50,7 @@
     }
     return {
       tone: 'muted',
-      text: 'L’acceptation gustative se construit avec la répétition — un aliment refusé peut être reproposé jusqu’à 10 fois.'
+      text: 'L’acceptation gustative se construit avec la répétition : un aliment refusé peut être reproposé jusqu’à 10 fois.'
     };
   });
 </script>

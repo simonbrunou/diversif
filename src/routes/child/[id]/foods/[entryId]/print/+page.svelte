@@ -40,7 +40,7 @@
   <p>{m.printChildHeader({ name: data.childName, months: String(data.months) })}</p>
 
   <h2>{m.printFoodSection()}</h2>
-  <p>{data.foodName} — {data.givenAt} ({data.reaction})</p>
+  <p>{data.foodName} : {data.givenAt} ({data.reaction})</p>
 
   <h2>{m.printSymptomsSection()}</h2>
   {#if data.symptoms.length === 0}

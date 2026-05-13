@@ -1,6 +1,6 @@
 // Pure derivation engine: given the child's data + dismissals, produce the
 // list of reminders the dashboard should currently surface. No DB calls here
-// — the caller passes plain data — to keep this trivially testable.
+// : the caller passes plain data : to keep this trivially testable.
 
 import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import type { CategoryId } from '$lib/utils/categories';
@@ -24,7 +24,7 @@ export type ReminderInput = {
   childId: number;
   ageMonths: number;
   childCreatedAt: number;
-  entries: EnrichedEntry[]; // full history, recent first — first-intro and exposure-count rules need it
+  entries: EnrichedEntry[]; // full history, recent first : first-intro and exposure-count rules need it
   introducedAllergens: Set<AllergenId>;
   dismissals: Set<string>; // already-honored TTLs by caller
   now?: number;
@@ -50,7 +50,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
   const childAgeDays = Math.floor((now - input.childCreatedAt) / DAY_MS);
   const childPath = `/child/${input.childId}`;
 
-  // 1. Welcome — child created < 7 days ago AND 0 entries
+  // 1. Welcome : child created < 7 days ago AND 0 entries
   if (input.entries.length === 0 && childAgeDays < 7) {
     push(out, input.dismissals, {
       key: 'welcome',
@@ -74,21 +74,21 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     {
       months: 6,
       key: 'stage-transition:6m',
-      title: 'Bébé a 6 mois — place aux protéines',
+      title: 'Bébé a 6 mois : place aux protéines',
       body: "C'est le moment d'introduire viande, poisson, œuf bien cuit et légumineuses pour le fer. Si ce n'est pas fait, c'est aussi la fenêtre clé pour les allergènes (œuf, arachide, gluten…).",
       sources: ['hcsp-2020', 'espghan-2017']
     },
     {
       months: 9,
       key: 'stage-transition:9m',
-      title: 'Bébé a 9 mois — premiers morceaux',
+      title: 'Bébé a 9 mois : premiers morceaux',
       body: "Bébé pince entre pouce et index. Proposez des bâtonnets de légumes cuits, des lamelles d'avocat, des pâtes bien cuites. Toujours sous surveillance.",
       sources: ['spf-pnns-guide']
     },
     {
       months: 12,
       key: 'stage-transition:12m',
-      title: 'Bébé a 1 an — repas familiaux adaptés',
+      title: 'Bébé a 1 an : repas familiaux adaptés',
       body: 'Bébé partage progressivement les repas familiaux, en versions adaptées : moins salées, moins sucrées, morceaux découpés. Le lait reste à ~500 mL/jour.',
       sources: ['spf-pnns-guide', 'hcsp-2020']
     }
@@ -107,7 +107,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     }
   }
 
-  // 3. Stale diversity — no *new* food in 14 days (and child has any entries)
+  // 3. Stale diversity : no *new* food in 14 days (and child has any entries)
   if (input.entries.length > 0 && input.ageMonths >= 4) {
     // newest occurrence per food
     const firstByFood = new Map<number, number>();
@@ -133,7 +133,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     }
   }
 
-  // 4. Pending allergens — age >= 6 mo and allergen not yet introduced
+  // 4. Pending allergens : age >= 6 mo and allergen not yet introduced
   if (input.ageMonths >= 6) {
     const missing = ALLERGEN_PRIORITY.filter((id) => !input.introducedAllergens.has(id));
     for (const id of missing.slice(0, 3)) {
@@ -167,14 +167,14 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       key: 'high-risk-window',
       severity: 'warn',
       title: 'Fenêtre 4–11 mois pour les allergènes',
-      body: "C'est la période-clé pour introduire arachide, œuf, lait, gluten… Reculer ne protège pas — au contraire (LEAP, EAT).",
+      body: "C'est la période-clé pour introduire arachide, œuf, lait, gluten… Reculer ne protège pas : au contraire (LEAP, EAT).",
       cta: { label: 'Lire le guide', href: `${childPath}/guide#allergenes` },
       sources: ['leap-2015', 'eat-2016'],
       dismissable: true
     });
   }
 
-  // 6. Repeat exposure — food given 1× with reaction ras|inconfort, > 3 days ago
+  // 6. Repeat exposure : food given 1× with reaction ras|inconfort, > 3 days ago
   type RepeatCandidate = { foodId: number; foodName: string; lastGivenAt: number; count: number };
   const perFood = new Map<
     number,
@@ -213,14 +213,14 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       key: `repeat-exposure:${c.foodId}`,
       severity: 'info',
       title: `Reproposez « ${c.foodName} »`,
-      body: "L'acceptation gustative se construit avec la répétition — jusqu'à 10 fois pour certains aliments. C'est aussi vrai pour entretenir la tolérance aux allergènes.",
+      body: "L'acceptation gustative se construit avec la répétition : jusqu'à 10 fois pour certains aliments. C'est aussi vrai pour entretenir la tolérance aux allergènes.",
       cta: { label: 'Enregistrer cet aliment', href: `${childPath}/log?foodId=${c.foodId}` },
       sources: ['spf-pnns-guide'],
       dismissable: true
     });
   }
 
-  // 7. Category imbalance — last 14 days dominated by 1 category > 60 %
+  // 7. Category imbalance : last 14 days dominated by 1 category > 60 %
   if (input.entries.length >= 5) {
     const since = now - 14 * DAY_MS;
     const last14 = input.entries.filter((e) => e.givenAt >= since);
