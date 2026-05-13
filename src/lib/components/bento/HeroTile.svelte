@@ -41,7 +41,7 @@
           type="button"
           onclick={() => onLog(suggestion)}
           disabled={pending}
-          class="mt-4 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-soft"
+          class="mt-4 inline-flex min-h-11 items-center rounded-full border border-primary/50 bg-surface px-4 text-sm font-semibold text-primary-strong transition-colors hover:bg-surface-2"
           class:opacity-60={pending}
         >
           {m.aujourdhuiHeroSuggestionCta({ food: suggestion.name })}
@@ -55,7 +55,7 @@
           type="button"
           onclick={() => onLog(null)}
           disabled={pending}
-          class="mt-4 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-soft"
+          class="mt-4 inline-flex min-h-11 items-center rounded-full border border-primary/50 bg-surface px-4 text-sm font-semibold text-primary-strong transition-colors hover:bg-surface-2"
           class:opacity-60={pending}
         >
           {m.aujourdhuiHeroEmptyCta()}
