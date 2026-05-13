@@ -18,7 +18,7 @@ import type { Actions, PageServerLoad } from './$types';
 const LOGIN_LIMIT = { name: 'login', limit: 10, windowMs: 5 * 60 * 1000 };
 
 const schema = z.object({
-  email: z.string().email('Email invalide'),
+  email: z.string().email('Adresse e-mail invalide'),
   password: z.string().min(1, 'Mot de passe requis')
 });
 

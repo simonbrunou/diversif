@@ -34,7 +34,7 @@ const SIGNUP_LIMIT = {
 };
 
 const schema = z.object({
-  email: z.string().email('Email invalide'),
+  email: z.string().email('Adresse e-mail invalide'),
   password: z.string().min(12, 'Mot de passe trop court (12 caractères minimum)'),
   displayName: z.string().min(1, 'Nom requis').max(80),
   inviteCode: z

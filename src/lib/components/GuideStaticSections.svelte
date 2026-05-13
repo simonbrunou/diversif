@@ -332,7 +332,7 @@
   </div>
   <Card class="border-reaction-reaction/40 bg-reaction-reaction/10 p-4">
     <div class="flex items-center gap-3">
-      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-reaction-reaction text-white">
+      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-reaction-reaction text-reaction-reaction-foreground">
         <Phone size={18} aria-hidden="true" />
       </div>
       <div>
