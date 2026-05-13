@@ -1,7 +1,7 @@
 <!-- src/lib/components/bento/ReminderStrip.svelte -->
 <script lang="ts">
   import type { Reminder } from '$lib/server/guidance/reminders';
-  import { Bell } from 'lucide-svelte';
+  import { Bell, ChevronRight } from 'lucide-svelte';
   import { cn } from '$lib/utils/cn';
 
   let { reminders }: { reminders: Reminder[] } = $props();
@@ -20,14 +20,15 @@
     <div class="flex-1">
       <p class="text-sm font-bold leading-tight">{first.title}</p>
       <p class="text-xs text-ink-soft">{first.body}</p>
+      {#if first.cta}
+        <a
+          href={first.cta.href}
+          class="mt-1 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-primary-strong hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+        >
+          {first.cta.label}
+          <ChevronRight size={14} aria-hidden="true" />
+        </a>
+      {/if}
     </div>
-    {#if first.cta}
-      <a
-        href={first.cta.href}
-        class="inline-flex min-h-[44px] items-center self-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-      >
-        {first.cta.label}
-      </a>
-    {/if}
   </div>
 {/if}
