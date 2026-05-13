@@ -44,7 +44,7 @@
 
 {#if data.kind === 'landing'}
   <Seo
-    title="Diversif — Diversification alimentaire bébé : guide, suivi, partage parents"
+    title="Diversif : Diversification alimentaire bébé : guide, suivi, partage parents"
     description={SITE.description}
     path="/"
   />

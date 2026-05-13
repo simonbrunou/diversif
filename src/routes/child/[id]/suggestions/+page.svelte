@@ -49,7 +49,7 @@
     tone="info"
     icon={Lightbulb}
     eyebrow="Bon à savoir"
-    body="Ces suggestions excluent les aliments déjà loggués et privilégient en haut les allergènes pas encore introduits. Reproposez un nouvel aliment jusqu'à 10 fois pour qu'il soit accepté — l'acceptation gustative se construit avec la répétition."
+    body="Ces suggestions excluent les aliments déjà loggués et privilégient en haut les allergènes pas encore introduits. Reproposez un nouvel aliment jusqu'à 10 fois pour qu'il soit accepté : l'acceptation gustative se construit avec la répétition."
     sources={['spf-pnns-guide']}
   />
 

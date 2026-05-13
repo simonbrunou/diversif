@@ -103,7 +103,7 @@
     <ul class="list-disc space-y-1 pl-5 text-sm leading-relaxed">
       <li>
         <span class="font-medium">Sentry GmbH</span> (entité européenne de Functional Software,
-        Inc., siège social à Berlin, Allemagne) — collecte des erreurs techniques produites
+        Inc., siège social à Berlin, Allemagne) : collecte des erreurs techniques produites
         par l'application (trace d'exécution, route SvelteKit anonymisée, identifiant d'erreur
         opaque). Aucun identifiant utilisateur, aucune adresse e-mail, aucun corps de requête,
         aucun cookie ni en-tête ne sont transmis. Base légale : intérêt légitime à corriger les

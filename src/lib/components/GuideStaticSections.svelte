@@ -271,7 +271,7 @@
     </h3>
     <ul class="mt-2 grid gap-1 text-sm text-foreground/90 sm:grid-cols-2">
       {#each CHOKING_HAZARDS as c, i (i)}
-        <li><strong>{c.food}</strong> — {c.rule}</li>
+        <li><strong>{c.food}</strong> : {c.rule}</li>
       {/each}
     </ul>
     <p class="mt-3 text-xs text-muted-foreground">
@@ -392,7 +392,7 @@
   <Card class="p-4">
     <p class="text-sm text-foreground/90">
       Toutes les recommandations affichées dans Diversif s'appuient sur des sources publiques
-      et vérifiables — institutionnelles (HCSP, Santé publique France, ANSES, OMS), sociétés
+      et vérifiables : institutionnelles (HCSP, Santé publique France, ANSES, OMS), sociétés
       savantes (ESPGHAN, Société Française de Pédiatrie) et études cliniques de référence
       (LEAP, EAT). En cas de doute, consultez votre pédiatre.
     </p>
