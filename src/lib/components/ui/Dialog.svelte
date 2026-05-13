@@ -95,7 +95,7 @@
     aria-labelledby={title ? titleId : undefined}
     aria-label={title ? undefined : 'Dialogue'}
     tabindex="-1"
-    class="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
+    class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm sm:items-center"
     onmousedown={handleBackdrop}
   >
     <div
