@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
   import LocaleSwitcher from './LocaleSwitcher.svelte';
+  import SharedTopBar from './SharedTopBar.svelte';
   import { page } from '$app/stores';
   import type { SafeUser } from '$lib/types';
   import { Menu, X } from 'lucide-svelte';
@@ -31,13 +32,8 @@
   }
 </script>
 
-<header class="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
-  <div class="container flex h-14 items-center justify-between gap-4 md:h-16">
-    <a href={localizedHref('/')} class="inline-flex items-center gap-2 font-semibold text-foreground">
-      <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
-      <span>{m.chromePublicHeaderBrand()}</span>
-    </a>
-
+<SharedTopBar>
+  {#snippet children()}
     <nav aria-label={m.chromePublicHeaderNavLabel()} class="hidden md:block">
       <ul class="flex items-center gap-1 text-sm">
         {#each navLinks as l (l.href)}
@@ -79,35 +75,37 @@
         <Menu size={20} aria-hidden="true" />
       {/if}
     </button>
-  </div>
+  {/snippet}
 
-  {#if mobileOpen}
-    <div id="public-mobile-nav" class="border-t bg-background md:hidden">
-      <div class="container space-y-1 py-3">
-        <ul class="grid gap-1 text-sm">
-          {#each navLinks as l (l.href)}
-            <li>
-              <a
-                href={l.href}
-                aria-current={isActive(l.href) ? 'page' : undefined}
-                onclick={() => (mobileOpen = false)}
-                class="block rounded-md px-3 py-2 font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground"
-              >
-                {l.label}
-              </a>
-            </li>
-          {/each}
-        </ul>
-        <div class="flex flex-wrap gap-2 pt-2">
-          {#if user}
-            <Button href={dashboardHref} variant="outline" size="sm">{m.chromePublicHeaderMyDashboard()}</Button>
-            <Button href={localizedHref('/account')} variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
-          {:else}
-            <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
-            <Button href={localizedHref('/signup')} size="sm">{m.chromePublicHeaderNavSignup()}</Button>
-          {/if}
+  {#snippet below()}
+    {#if mobileOpen}
+      <div id="public-mobile-nav" class="border-t bg-background md:hidden">
+        <div class="container space-y-1 py-3">
+          <ul class="grid gap-1 text-sm">
+            {#each navLinks as l (l.href)}
+              <li>
+                <a
+                  href={l.href}
+                  aria-current={isActive(l.href) ? 'page' : undefined}
+                  onclick={() => (mobileOpen = false)}
+                  class="block rounded-md px-3 py-2 font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:text-foreground"
+                >
+                  {l.label}
+                </a>
+              </li>
+            {/each}
+          </ul>
+          <div class="flex flex-wrap gap-2 pt-2">
+            {#if user}
+              <Button href={dashboardHref} variant="outline" size="sm">{m.chromePublicHeaderMyDashboard()}</Button>
+              <Button href={localizedHref('/account')} variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
+            {:else}
+              <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
+              <Button href={localizedHref('/signup')} size="sm">{m.chromePublicHeaderNavSignup()}</Button>
+            {/if}
+          </div>
         </div>
       </div>
-    </div>
-  {/if}
-</header>
+    {/if}
+  {/snippet}
+</SharedTopBar>

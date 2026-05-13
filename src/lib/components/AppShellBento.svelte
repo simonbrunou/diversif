@@ -5,6 +5,7 @@
   import ChildHeaderPill from './ChildHeaderPill.svelte';
   import ChildSwitcherDrawer from './ChildSwitcherDrawer.svelte';
   import LogSheet from './LogSheet.svelte';
+  import SharedTopBar from './SharedTopBar.svelte';
   import { cn } from '$lib/utils/cn';
   import * as m from '$lib/paraglide/messages';
 
@@ -66,21 +67,11 @@
   </nav>
 
   <div class="flex flex-col">
-    <!-- Mobile brand strip : bridges the visual gap to PublicHeader.
-         Same h-14, border-b, backdrop-blur signature so the chrome
-         doesn't fully swap when moving between marketing and app. -->
-    <header
-      class="sticky top-0 z-30 flex h-14 items-center border-b border-border bg-background/85 px-3 backdrop-blur lg:hidden"
-    >
-      <a
-        href="/"
-        class="inline-flex items-center gap-2 font-semibold text-foreground"
-        aria-label={m.chromePublicHeaderBrand()}
-      >
-        <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
-        <span>{m.chromePublicHeaderBrand()}</span>
-      </a>
-    </header>
+    <!-- Mobile brand strip via the shared component, so the chrome
+         signature matches PublicHeader exactly across the marketing
+         to app boundary. Hidden on lg: the left rail carries the brand
+         on desktop. -->
+    <SharedTopBar class="lg:hidden" />
 
     <!-- Main content area (mobile + desktop right column) -->
     <div class="mx-auto w-full max-w-md px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-3 lg:max-w-3xl lg:pb-3" data-variant="responsive">
