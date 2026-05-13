@@ -78,7 +78,7 @@
           }
           toast.success(m.offlineQueuedToast());
           submitting = false;
-          // The entry is durably queued. Navigation is best-effort — if the dashboard
+          // The entry is durably queued. Navigation is best-effort : if the dashboard
           // route isn't cached and we're truly offline, goto() may reject; the queued
           // row still syncs when we're back online.
           await goto(`/child/${data.child.id}`).catch(() => {
@@ -116,16 +116,16 @@
         </summary>
         <ul class="mt-2 space-y-1.5 pl-4 text-muted-foreground">
           <li>
-            <strong class="text-reaction-ras">Tout va bien</strong> — bébé a bien toléré, aucun
+            <strong class="text-reaction-ras">Tout va bien</strong> : bébé a bien toléré, aucun
             signe particulier.
           </li>
           <li>
-            <strong class="text-reaction-inconfort">Petit inconfort</strong> — gêne digestive ou
+            <strong class="text-reaction-inconfort">Petit inconfort</strong> : gêne digestive ou
             cutanée légère (régurgitation, selles molles, rougeurs autour de la bouche). Reproposez
             à distance et observez.
           </li>
           <li>
-            <strong class="text-reaction-reaction">Réaction marquée</strong> — urticaire, œdème,
+            <strong class="text-reaction-reaction">Réaction marquée</strong> : urticaire, œdème,
             vomissements, gêne respiratoire. <strong>Arrêtez tout de suite</strong> et consultez.
             En cas de gêne respiratoire ou d'œdème de la gorge, appelez le 15.
           </li>

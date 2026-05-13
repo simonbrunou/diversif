@@ -38,7 +38,7 @@
 </script>
 
 <svelte:head>
-  <title>Récap pédiatrique — {data.child.name} · Diversif</title>
+  <title>Récap pédiatrique : {data.child.name} · Diversif</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -214,7 +214,7 @@
   <!-- Footer -->
   <footer class="space-y-1 border-t pt-3 text-[11px] text-muted-foreground print:border-black/20">
     <p>
-      Édité depuis Diversif — application de suivi de la diversification alimentaire. Ce récap
+      Édité depuis Diversif : application de suivi de la diversification alimentaire. Ce récap
       n'est pas un avis médical : présentez-le à votre pédiatre ou médecin pour discussion.
     </p>
     <p>
