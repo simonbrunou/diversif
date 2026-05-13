@@ -28,7 +28,7 @@
       type="button"
       onclick={() => (active = '')}
       class={cn(
-        'whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold transition-transform duration-fast ease-soft active:scale-[0.97]',
+        'inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-transform duration-fast ease-soft active:scale-[0.97]',
         active === ''
           ? 'border-primary bg-primary text-primary-foreground'
           : 'border-border bg-canvas text-ink-soft'
@@ -41,7 +41,7 @@
         type="button"
         onclick={() => (active = cat)}
         class={cn(
-          'whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold transition-transform duration-fast ease-soft active:scale-[0.97]',
+          'inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-transform duration-fast ease-soft active:scale-[0.97]',
           active === cat
             ? 'border-primary bg-primary text-primary-foreground'
             : 'border-border bg-canvas text-ink-soft'

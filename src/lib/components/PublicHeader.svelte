@@ -67,7 +67,7 @@
 
     <button
       type="button"
-      class="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+      class="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
       aria-expanded={mobileOpen}
       aria-controls="public-mobile-nav"
       aria-label={mobileOpen ? m.chromePublicHeaderMenuClose() : m.chromePublicHeaderMenuOpen()}
