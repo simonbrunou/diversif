@@ -14,6 +14,7 @@ import {
   Wheat,
   type Icon as LucideIcon
 } from 'lucide-svelte';
+import * as m from '$lib/paraglide/messages';
 
 export type CategoryColor = 'mint' | 'peach' | 'butter' | 'sky' | 'lilac' | 'primary';
 
@@ -41,8 +42,28 @@ export type CategoryId = (typeof CATEGORIES)[number]['id'];
 
 export const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as readonly string[];
 
+// Category labels go through paraglide so the EN locale gets English names.
+// All registered categories have a resolver; an unknown id falls back to the
+// id string itself, matching the prior behavior. Adding a new category to
+// CATEGORIES without adding a resolver here will surface the id at runtime,
+// which is the desired loud failure.
+const CATEGORY_LABEL_RESOLVERS: Record<string, () => string> = {
+  legumes: m.categoryLegumes,
+  fruits: m.categoryFruits,
+  feculents: m.categoryFeculents,
+  legumineuses: m.categoryLegumineuses,
+  viandes: m.categoryViandes,
+  poissons: m.categoryPoissons,
+  oeufs: m.categoryOeufs,
+  produits_laitiers: m.categoryProduitsLaitiers,
+  allergenes: m.categoryAllergenes,
+  matieres_grasses: m.categoryMatieresGrasses,
+  aromates: m.categoryAromates,
+  autre: m.categoryAutre
+};
+
 export function getCategoryLabel(id: string): string {
-  return CATEGORIES.find((c) => c.id === id)?.label ?? id;
+  return CATEGORY_LABEL_RESOLVERS[id]?.() ?? id;
 }
 
 export function getCategoryColor(id: string): CategoryColor {
