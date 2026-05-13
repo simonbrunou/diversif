@@ -81,7 +81,7 @@
     try {
       const { startRegistration } = await import('@simplewebauthn/browser');
       const optsRes = await fetch('/passkeys/registration/options', { method: 'POST' });
-      if (!optsRes.ok) throw new Error(`Impossible de démarrer l'enregistrement.`);
+      if (!optsRes.ok) throw new Error(m.errorsAccountPasskeyRegisterStartFailed());
       const optsJSON = await optsRes.json();
       const attResp = await startRegistration({ optionsJSON: optsJSON });
       const verifyRes = await fetch('/passkeys/registration/verify', {
@@ -94,14 +94,14 @@
       });
       const data = await verifyRes.json().catch(() => ({}));
       if (!verifyRes.ok || !data?.ok) {
-        toast.error(data?.error ?? 'Enregistrement échoué.');
+        toast.error(data?.error ?? m.errorsAccountPasskeyRegisterFailed());
         return;
       }
       passkeyName = '';
       toast.success(m.authAccountPasskeyRegisterSuccess());
       await invalidateAll();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur';
+      const message = err instanceof Error ? err.message : m.errorsAccountPasskeyGenericError();
       // User cancellation surfaces as a NotAllowedError. Stay quiet for it.
       if (!/NotAllowedError|cancel/i.test(message)) {
         toast.error(message);

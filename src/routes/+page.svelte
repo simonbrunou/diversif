@@ -51,7 +51,7 @@
   <JsonLd data={webApplicationJsonLd(siteUrl)} />
   <JsonLd data={faqPageJsonLd(landingFaq)} />
 {:else}
-  <Seo title={`Choisir un enfant · ${SITE.name}`} path="/" noindex />
+  <Seo title={`${m.kidPickerTitle()} · ${SITE.name}`} path="/" noindex />
 {/if}
 
 {#if data.kind === 'landing'}
@@ -69,9 +69,9 @@
   <LandingFeaturesBento />
 
   <section class="container max-w-4xl pb-4 text-center">
-    <p class="text-sm text-muted-foreground">Le guide complet, accessible sans compte.</p>
+    <p class="text-sm text-muted-foreground">{m.kidPickerGuideChipNoAccount()}</p>
     <ul class="mt-3 flex flex-wrap justify-center gap-2">
-      {#each [{ href: '/guide#regles', label: "10 règles d'or" }, { href: '/guide#etapes', label: '4 étapes' }, { href: '/guide#allergenes', label: '12 allergènes' }] as chip (chip.href)}
+      {#each [{ href: '/guide#regles', label: m.kidPickerGuideChipRules() }, { href: '/guide#etapes', label: m.kidPickerGuideChipStages() }, { href: '/guide#allergenes', label: m.kidPickerGuideChipAllergens() }] as chip (chip.href)}
         <li>
           <a
             href={localizedHref(chip.href)}
@@ -88,8 +88,8 @@
   <LandingClosingCtaBento />
 {:else}
   <div class="container max-w-2xl py-10">
-    <h1 class="text-2xl font-semibold">Choisir un enfant</h1>
-    <p class="mt-2 text-sm text-muted-foreground">Sélectionnez l'enfant à suivre.</p>
+    <h1 class="text-2xl font-semibold">{m.kidPickerTitle()}</h1>
+    <p class="mt-2 text-sm text-muted-foreground">{m.kidPickerSubtitle()}</p>
 
     <div class="mt-6 grid gap-3">
       {#each data.children as child (child.id)}
@@ -101,7 +101,7 @@
                 <div class="text-sm text-muted-foreground">{formatAge(child.birthDate)}</div>
               </div>
               <span class="text-xs text-muted-foreground">
-                {child.role === 'owner' ? 'Créateur' : 'Membre'}
+                {child.role === 'owner' ? m.kidPickerRoleOwner() : m.kidPickerRoleMember()}
               </span>
             </div>
           </Card>
@@ -110,7 +110,7 @@
     </div>
 
     <div class="mt-6">
-      <Button href={localizedHref('/child/new')} variant="outline">+ Ajouter un enfant</Button>
+      <Button href={localizedHref('/child/new')} variant="outline">{m.kidPickerAddChild()}</Button>
     </div>
   </div>
 {/if}

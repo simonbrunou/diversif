@@ -24,7 +24,7 @@
   class="mx-auto mb-3 flex w-full max-w-md items-center gap-3 rounded-tile border border-border/60 bg-canvas px-3 py-2 text-left transition-colors duration-base ease-soft hover:bg-surface-2"
 >
   <span
-    class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-tile-peach to-tile-butter text-base"
+    class="bg-avatar-tile flex h-9 w-9 items-center justify-center rounded-full text-base"
     aria-hidden="true"
   >
     {child.avatarSeed}

@@ -24,7 +24,7 @@
   "chromePublicHeaderMenuClose": "Close menu",
   "chromePublicHeaderMenuOpen": "Open menu",
   "chromePublicHeaderMyAccount": "My account",
-  "chromePublicHeaderMyDashboard": "My dashboard",
+  "chromePublicHeaderMyDashboard": "My notebook",
   "chromePublicHeaderNavAllergens": "Allergens",
   "chromePublicHeaderNavGuide": "Guide",
   "chromePublicHeaderNavHome": "Home",
@@ -387,5 +387,50 @@
   "onboardingInviteCodeToastTitle": "Invitation code generated",
   "onboardingInviteCodeToastBody": "Share this code with your co-parent.",
   "onboardingInviteCodeCopy": "Copy",
-  "onboardingInviteFailedToast": "Code not generated. Try again from Profile."
+  "onboardingInviteFailedToast": "Code not generated. Try again from Profile.",
+
+  "allergenDialogTitle": "Allergen: {label}",
+  "allergenDialogBadgeFromMonths": "From {months} months",
+  "allergenDialogSeverityMajor": "Major allergen",
+  "allergenDialogWhyEarlyTitle": "Why early?",
+  "allergenDialogHowToOfferTitle": "How to offer it",
+  "allergenDialogFirstSignsTitle": "Early signs to watch",
+  "allergenDialogSevereSignsTitle": "Severe signs, call emergency services",
+  "allergenDialogSourcesTitle": "Sources",
+  "allergenDialogClose": "Close",
+
+  "landingHeroTitle": "Weaning with confidence, at your own pace.",
+  "landingHeroBody": "A calm notebook to track food introduction, with both parents if you wish. No telemetry, with cited scientific sources.",
+  "landingHeroCtaCreateAccount": "Create my account",
+  "landingHeroCtaLogin": "Log in",
+  "landingHeroCtaContinue": "Continue with {name}",
+
+  "landingFeatureCarnetTitle": "Food notebook",
+  "landingFeatureCarnetBody": "Log each try in 4 taps, track what has been tried and what is left to discover.",
+  "landingFeatureAllergensTitle": "Priority allergens",
+  "landingFeatureAllergensBody": "14 allergens tracked according to HCSP, LEAP, and EAT recommendations.",
+  "landingFeatureCoparentsTitle": "Co-parents",
+  "landingFeatureCoparentsBody": "Share tracking with your partner or a relative, without copy-paste.",
+  "landingFeatureGuideTitle": "Step-by-step guide",
+  "landingFeatureGuideBody": "Age-aware guidance, always with cited sources.",
+
+  "kidPickerTitle": "Choose a child",
+  "kidPickerSubtitle": "Select the child to track.",
+  "kidPickerRoleOwner": "Owner",
+  "kidPickerRoleMember": "Member",
+  "kidPickerAddChild": "+ Add a child",
+  "kidPickerGuideChipNoAccount": "The full guide, accessible without an account.",
+  "kidPickerGuideChipRules": "10 golden rules",
+  "kidPickerGuideChipStages": "4 stages",
+  "kidPickerGuideChipAllergens": "12 allergens",
+
+  "reactionsLabelRas": "OK",
+  "reactionsLabelInconfort": "discomfort",
+  "reactionsLabelReaction": "reaction",
+
+  "carnetSegmentsAriaLabel": "Notebook sections",
+
+  "errorsAccountPasskeyRegisterStartFailed": "Could not start registration.",
+  "errorsAccountPasskeyRegisterFailed": "Registration failed.",
+  "errorsAccountPasskeyGenericError": "Error"
 }

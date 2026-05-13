@@ -27,9 +27,9 @@
   };
 
   function reactionLabel(r: Entry['reaction']): string {
-    if (r === 'inconfort') return 'inconfort';
-    if (r === 'reaction') return 'réaction';
-    return 'OK';
+    if (r === 'inconfort') return m.reactionsLabelInconfort();
+    if (r === 'reaction') return m.reactionsLabelReaction();
+    return m.reactionsLabelRas();
   }
 
   function reactionPillClass(r: Entry['reaction']): string {

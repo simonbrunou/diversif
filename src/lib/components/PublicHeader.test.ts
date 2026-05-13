@@ -30,7 +30,7 @@ describe('PublicHeader', () => {
     const { container } = render(PublicHeader, {
       props: { user, firstChildId: 7 }
     });
-    expect(container.textContent).toContain('Mon tableau');
+    expect(container.textContent).toContain('Mon carnet');
     expect(container.textContent).toContain('Mon compte');
   });
 
@@ -40,7 +40,7 @@ describe('PublicHeader', () => {
       props: { user, firstChildId: null }
     });
     const dashLink = Array.from(container.querySelectorAll('a')).find((a) =>
-      a.textContent?.includes('Mon tableau')
+      a.textContent?.includes('Mon carnet')
     );
     expect(dashLink?.getAttribute('href')).toBe('/');
   });
@@ -105,6 +105,6 @@ describe('PublicHeader', () => {
     });
     await fireEvent.click(container.querySelector('button[aria-controls="public-mobile-nav"]')!);
     const mobile = container.querySelector('#public-mobile-nav')!;
-    expect(mobile.textContent).toContain('Mon tableau');
+    expect(mobile.textContent).toContain('Mon carnet');
   });
 });
