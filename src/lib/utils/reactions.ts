@@ -16,7 +16,7 @@ export const REACTIONS = [
   {
     id: 'reaction',
     label: 'Réaction marquée',
-    description: 'Signes nets — arrêter et consulter un médecin.',
+    description: 'Signes nets : arrêter et consulter un médecin.',
     icon: OctagonAlert
   }
 ] as const satisfies ReadonlyArray<{

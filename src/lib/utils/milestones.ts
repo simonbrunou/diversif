@@ -46,7 +46,7 @@ export function celebrate(toast: typeof Toast, milestone: MilestoneKind): void {
   switch (milestone.kind) {
     case 'all-allergens':
       toast.success(
-        `Les ${ALLERGENS.length} allergènes prioritaires sont introduits — formidable !`,
+        `Les ${ALLERGENS.length} allergènes prioritaires sont introduits : formidable !`,
         {
           description: 'Maintenez une exposition régulière pour consolider la tolérance.',
           class: TOAST_CLASS
@@ -54,31 +54,31 @@ export function celebrate(toast: typeof Toast, milestone: MilestoneKind): void {
       );
       return;
     case 'first-food':
-      toast.success('Premier repas noté — c’est parti !', {
+      toast.success('Premier repas noté : c’est parti !', {
         description: 'Le carnet vit maintenant au rythme de bébé.',
         class: TOAST_CLASS
       });
       return;
     case 'first-allergen':
-      toast.success(`${getAllergenLabel(milestone.allergenType)} introduit·e — étape clé !`, {
+      toast.success(`${getAllergenLabel(milestone.allergenType)} introduit·e : étape clé !`, {
         description: 'Continuez à reproposer pour consolider la tolérance.',
         class: TOAST_CLASS
       });
       return;
     case 'category-milestone':
       if (milestone.covered >= milestone.total) {
-        toast.success('Toutes les familles couvertes — diversité au top !', {
+        toast.success('Toutes les familles couvertes : diversité au top !', {
           class: TOAST_CLASS
         });
       } else {
-        toast.success(`${milestone.covered} groupes couverts — superbe !`, {
+        toast.success(`${milestone.covered} groupes couverts : superbe !`, {
           description: `Plus que ${milestone.total - milestone.covered} pour faire le tour.`,
           class: TOAST_CLASS
         });
       }
       return;
     case 'generic':
-      toast.success('C’est noté — bon repas.');
+      toast.success('C’est noté : bon repas.');
       return;
   }
 }
