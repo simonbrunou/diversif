@@ -37,8 +37,8 @@ export const STAGES = [
       "On lance la diversification entre 4 mois révolus et 6 mois, dès que bébé tient sa tête, s'intéresse au repas et ouvre la bouche.",
     principles: [
       'Une nouvelle saveur à la fois, en petite quantité (cuillères), au moment du repas familial.',
-      'Tous les groupes peuvent être proposés, y compris les allergènes — gluten, œuf, arachide en purée, lait sous forme de yaourt/fromage.',
-      "Le lait (maternel ou infantile) reste l'aliment principal — environ 600–800 mL/jour.",
+      'Tous les groupes peuvent être proposés, y compris les allergènes : gluten, œuf, arachide en purée, lait sous forme de yaourt/fromage.',
+      "Le lait (maternel ou infantile) reste l'aliment principal : environ 600–800 mL/jour.",
       'Ne pas saler, ne pas sucrer, ajouter une cuillère de matière grasse aux préparations maison.'
     ],
     focus: [
@@ -65,7 +65,7 @@ export const STAGES = [
     principles: [
       'Tous les groupes en routine : légumes, fruits, féculents, légumineuses, viande, poisson, œuf, produits laitiers, allergènes.',
       'Augmenter progressivement la quantité ; passer à 4 repas (matin, midi, goûter, soir).',
-      "Continuer à proposer un aliment refusé jusqu'à ~10 fois — l'acceptation gustative se construit.",
+      "Continuer à proposer un aliment refusé jusqu'à ~10 fois : l'acceptation gustative se construit.",
       "Toujours ajouter des matières grasses crues à la fin de la cuisson (huile de colza, huile de noix, huile d'olive ; beurre en petite quantité possible)."
     ],
     focus: [
@@ -80,7 +80,7 @@ export const STAGES = [
     redFlags: [
       'Pas de lait de vache liquide en boisson principale avant 1 an (yaourts/fromages OK).',
       'Pas de miel.',
-      'Pas de fruits à coque entiers (étouffement) — uniquement en purée fine.'
+      'Pas de fruits à coque entiers (étouffement) : uniquement en purée fine.'
     ],
     sources: ['spf-pnns-guide', 'hcsp-2020', 'espghan-2017']
   },
@@ -100,13 +100,13 @@ export const STAGES = [
     focus: [
       'Variété de céréales et féculents (riz, pâtes, semoule, polenta, sarrasin, quinoa, pomme de terre).',
       'Fromages variés (à pâte pressée cuite type comté, emmental ; pâtes molles type camembert pasteurisé).',
-      "Continuer l'exposition régulière aux allergènes déjà introduits — la tolérance s'entretient."
+      "Continuer l'exposition régulière aux allergènes déjà introduits : la tolérance s'entretient."
     ],
     textures:
       'Petits morceaux fondants ; finger foods (bâtonnets, lamelles). Toujours sous surveillance.',
     milkTarget: "~500 mL/jour de lait 2ᵉ âge ou poursuite de l'allaitement.",
     redFlags: [
-      "Pas d'aliments durs et ronds (raisins entiers, tomates cerises entières, saucisses rondes, carotte crue) — découper.",
+      "Pas d'aliments durs et ronds (raisins entiers, tomates cerises entières, saucisses rondes, carotte crue) : découper.",
       'Toujours assis, toujours surveillé pendant les repas.'
     ],
     sources: ['spf-pnns-guide', 'hcsp-2020']
@@ -122,7 +122,7 @@ export const STAGES = [
       'Repas familiaux adaptés : moins de sel, pas de sucre ajouté, gras de qualité.',
       'Maintenir la variété : un aliment de chaque groupe à chaque repas idéalement.',
       "Lait de croissance ou poursuite de l'allaitement, ou ≥ 500 mL d'équivalents laitiers.",
-      'Continuer à proposer les aliments refusés — la fenêtre néophobique (~18–24 mois) est normale.'
+      'Continuer à proposer les aliments refusés : la fenêtre néophobique (~18–24 mois) est normale.'
     ],
     focus: [
       'Poisson 2 fois par semaine dont un gras.',
@@ -162,7 +162,7 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
   {
     id: 'allergens-early',
     title: 'Introduire les allergènes tôt et sans tarder',
-    body: "Dès que la diversification est lancée, proposer œuf bien cuit, arachide (en purée fine), lait (yaourt/fromage), gluten, poisson, fruits à coque (en purée), sésame. L'introduction précoce réduit le risque d'allergie alimentaire (LEAP, EAT). Le soja n'entre pas dans cette liste — HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans.",
+    body: "Dès que la diversification est lancée, proposer œuf bien cuit, arachide (en purée fine), lait (yaourt/fromage), gluten, poisson, fruits à coque (en purée), sésame. L'introduction précoce réduit le risque d'allergie alimentaire (LEAP, EAT). Le soja n'entre pas dans cette liste : HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans.",
     sources: ['leap-2015', 'eat-2016', 'espghan-2017', 'hcsp-2020']
   },
   {
@@ -180,7 +180,7 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
   {
     id: 'no-added-sugar',
     title: 'Pas de sucre ajouté',
-    body: "Retarder le plus longtemps possible les produits sucrés (biscuits, gâteaux, jus, sodas). Goûter les aliments tels qu'ils sont — bébé apprécie naturellement les vrais goûts.",
+    body: "Retarder le plus longtemps possible les produits sucrés (biscuits, gâteaux, jus, sodas). Goûter les aliments tels qu'ils sont : bébé apprécie naturellement les vrais goûts.",
     sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   {
@@ -290,7 +290,7 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
       "Petites plaques d'urticaire"
     ],
     severeSigns: [
-      "Vomissements en jet répétés (suspicion de SEIPA — syndrome d'entérocolite induit)",
+      "Vomissements en jet répétés (suspicion de SEIPA : syndrome d'entérocolite induit)",
       'Œdème, gêne respiratoire, urticaire généralisée'
     ],
     whatToDo:
@@ -300,7 +300,7 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
   gluten: {
     id: 'gluten',
     recommendedAgeMonths: 6,
-    why: "Le gluten s'introduit entre 4 et 12 mois. Éviter de très grandes quantités d'emblée — introduire progressivement.",
+    why: "Le gluten s'introduit entre 4 et 12 mois. Éviter de très grandes quantités d'emblée : introduire progressivement.",
     howToOffer: [
       'Petites quantités de blé : pâtes bien cuites, semoule fine, pain, biscottes ramollies.',
       "L'allaitement au moment de l'introduction du gluten ne protège pas spécifiquement de la maladie cœliaque (donnée mise à jour ESPGHAN).",
@@ -313,16 +313,16 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     ],
     severeSigns: ['Stagnation pondérale persistante avec signes digestifs'],
     whatToDo:
-      'Devant une cassure pondérale ou des troubles digestifs persistants après introduction du gluten, consulter — la maladie cœliaque se diagnostique par sérologie sous régime gluten.',
+      'Devant une cassure pondérale ou des troubles digestifs persistants après introduction du gluten, consulter : la maladie cœliaque se diagnostique par sérologie sous régime gluten.',
     sources: ['espghan-2017', 'hcsp-2020']
   },
   fruits_a_coque: {
     id: 'fruits_a_coque',
     recommendedAgeMonths: 6,
-    why: 'Les fruits à coque (amande, noisette, noix de cajou, noix) sont des allergènes majeurs. Introduction précoce recommandée — uniquement en purée fine.',
+    why: 'Les fruits à coque (amande, noisette, noix de cajou, noix) sont des allergènes majeurs. Introduction précoce recommandée : uniquement en purée fine.',
     howToOffer: [
       "Purée d'amande / de noisette / de cajou (rayon bio ou allégés sans sucre), diluée dans une purée ou un yaourt.",
-      '**Jamais** de fruit à coque entier avant 5 ans (étouffement) — toujours sous forme de purée fine.'
+      '**Jamais** de fruit à coque entier avant 5 ans (étouffement) : toujours sous forme de purée fine.'
     ],
     firstSigns: ['Rougeurs', 'Démangeaisons buccales', 'Urticaire localisée'],
     severeSigns: ['Œdème, gêne respiratoire, urticaire généralisée'],
@@ -361,8 +361,8 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     recommendedAgeMonths: 6,
     why: 'Le poisson est riche en oméga-3 (DHA), essentiel au développement cérébral. À proposer 2 fois par semaine, dont un poisson gras.',
     howToOffer: [
-      'Cabillaud, sole, merlu, saumon, sardine, maquereau, truite — bien cuits, sans arêtes.',
-      'Varier les espèces. Limiter les gros prédateurs (espadon, requin, marlin) — méthylmercure.',
+      'Cabillaud, sole, merlu, saumon, sardine, maquereau, truite : bien cuits, sans arêtes.',
+      'Varier les espèces. Limiter les gros prédateurs (espadon, requin, marlin) : méthylmercure.',
       'Privilégier les petits poissons gras (sardine, maquereau) plutôt que le thon.'
     ],
     firstSigns: ['Rougeurs autour de la bouche', 'Urticaire'],
@@ -373,7 +373,7 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
   crustace: {
     id: 'crustace',
     recommendedAgeMonths: 12,
-    why: 'Les crustacés peuvent être introduits dès la fin de la 1ʳᵉ année — sans urgence, sous formes adaptées.',
+    why: 'Les crustacés peuvent être introduits dès la fin de la 1ʳᵉ année : sans urgence, sous formes adaptées.',
     howToOffer: [
       'Petits morceaux de crevette, langoustine, crabe bien cuits.',
       "Bien vérifier l'absence de coquille / fragments durs."
@@ -663,7 +663,7 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
     name: 'Boissons végétales (amande, riz, avoine, soja)',
     until: 'Ne remplacent pas le lait < 3 ans',
     reason:
-      'Apports en protéines, calcium, lipides essentiels insuffisants pour un nourrisson — même enrichies.',
+      'Apports en protéines, calcium, lipides essentiels insuffisants pour un nourrisson : même enrichies.',
     sources: ['anses-nourrisson']
   },
   {
@@ -715,7 +715,7 @@ export const CHOKING_HAZARDS: readonly ChokingHazard[] = [
   { food: 'Pop-corn', rule: 'Pas avant 5 ans.' },
   {
     food: 'Cuillère de beurre de cacahuète pure',
-    rule: 'Diluer dans une purée — peut coller au palais.'
+    rule: 'Diluer dans une purée : peut coller au palais.'
   },
   { food: 'Gros morceaux de viande', rule: 'Hacher ou couper en petits morceaux fondants.' },
   { food: 'Olive entière, cerise avec noyau', rule: 'Dénoyauter et couper.' }
@@ -743,7 +743,7 @@ export const REACTION_GUIDANCE: readonly ReactionGuidance[] = [
       'Inconfort transitoire (gaz, ronchonnements)'
     ],
     whatToDo:
-      "Noter l'aliment et le contexte. Ne pas conclure trop vite — réintroduire à distance, en petite quantité, sur un repas sans nouveauté. Si récidive systématique, en parler au pédiatre."
+      "Noter l'aliment et le contexte. Ne pas conclure trop vite : réintroduire à distance, en petite quantité, sur un repas sans nouveauté. Si récidive systématique, en parler au pédiatre."
   },
   {
     level: 'reaction',
@@ -815,7 +815,7 @@ export type Tip = {
 export const TIPS: readonly Tip[] = [
   {
     id: 'repeat-10',
-    body: "Reproposez un aliment refusé jusqu'à 10 fois — l'acceptation gustative se construit avec la répétition, sans forcer.",
+    body: "Reproposez un aliment refusé jusqu'à 10 fois : l'acceptation gustative se construit avec la répétition, sans forcer.",
     sources: ['spf-pnns-guide']
   },
   {
@@ -853,7 +853,7 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'peanut-form',
-    body: 'Beurre de cacahuète lisse dilué dans une purée ou un yaourt — jamais de cacahuète entière avant 5 ans.',
+    body: 'Beurre de cacahuète lisse dilué dans une purée ou un yaourt : jamais de cacahuète entière avant 5 ans.',
     allergens: ['arachide'],
     sources: ['leap-2015']
   },
@@ -865,7 +865,7 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'no-honey',
-    body: 'Pas de miel avant 12 mois — risque de botulisme infantile.',
+    body: 'Pas de miel avant 12 mois : risque de botulisme infantile.',
     stages: ['4-6', '6-9', '9-12'],
     sources: ['who-cf']
   },
@@ -888,12 +888,12 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'sit-up',
-    body: 'Bébé mange assis bien droit, dans une chaise haute adaptée — jamais en voiture, en poussette ou allongé.',
+    body: 'Bébé mange assis bien droit, dans une chaise haute adaptée : jamais en voiture, en poussette ou allongé.',
     sources: ['sfp-dme']
   },
   {
     id: 'choking-cut',
-    body: 'Coupez raisins et tomates cerises en 4 dans la longueur, et la saucisse en lamelles — pas en rondelles.',
+    body: 'Coupez raisins et tomates cerises en 4 dans la longueur, et la saucisse en lamelles : pas en rondelles.',
     stages: ['9-12', '12-36'],
     sources: ['spf-pnns-guide']
   },
@@ -921,7 +921,7 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'gluten-progressive',
-    body: "Le gluten s'introduit entre 4 et 12 mois, en quantités progressives — pas une grosse portion d'emblée.",
+    body: "Le gluten s'introduit entre 4 et 12 mois, en quantités progressives : pas une grosse portion d'emblée.",
     allergens: ['gluten'],
     sources: ['espghan-2017']
   },
@@ -937,7 +937,7 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'neophobia',
-    body: 'Vers 18–24 mois : la néophobie alimentaire est normale. Continuez à proposer sans forcer — ça passe.',
+    body: 'Vers 18–24 mois : la néophobie alimentaire est normale. Continuez à proposer sans forcer : ça passe.',
     stages: ['12-36'],
     sources: ['spf-pnns-guide']
   },
@@ -966,13 +966,13 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'no-cow-milk',
-    body: 'Le lait de vache liquide ne remplace pas le lait infantile avant 1 an — apport en fer insuffisant.',
+    body: 'Le lait de vache liquide ne remplace pas le lait infantile avant 1 an : apport en fer insuffisant.',
     allergens: ['lait'],
     sources: ['hcsp-2020']
   },
   {
     id: 'mercury-fish',
-    body: 'Limitez les gros poissons prédateurs (espadon, requin, marlin) — méthylmercure. Privilégiez sardine, maquereau, saumon.',
+    body: 'Limitez les gros poissons prédateurs (espadon, requin, marlin) : méthylmercure. Privilégiez sardine, maquereau, saumon.',
     categories: ['poissons'],
     sources: ['anses-nourrisson']
   }
@@ -1013,7 +1013,7 @@ export function getTipsFor(ctx: TipContext): Tip[] {
 }
 
 /**
- * Deterministic daily-rotating tip picker — same parents on the same day see
+ * Deterministic daily-rotating tip picker : same parents on the same day see
  * the same tip. Stable across reloads, refreshes once per day.
  */
 export function pickRotatingTip(tips: Tip[], seed: number): Tip | null {
@@ -1041,7 +1041,7 @@ export type BentoStage = {
 
 /**
  * Returns all 4 canonical stages in the shape expected by DiscoverBento /
- * StagesBentoGrid. Derives directly from STAGES — no new content authored.
+ * StagesBentoGrid. Derives directly from STAGES : no new content authored.
  */
 export function getAllStagesForBento(): BentoStage[] {
   return STAGES.map((s) => ({

@@ -58,51 +58,44 @@ export type CategoryClasses = {
   ring: string;
   text: string;
   dot: string;
-  borderLeft: string;
 };
 
 const CLASS_MAP: Record<CategoryColor, CategoryClasses> = {
   mint: {
     tint: 'bg-accent-mint/30 dark:bg-accent-mint/20',
     ring: 'ring-1 ring-accent-mint/40 dark:ring-accent-mint/30',
-    text: 'text-[hsl(155_45%_22%)] dark:text-accent-mint',
-    dot: 'bg-accent-mint',
-    borderLeft: 'border-l-accent-mint'
+    text: 'text-tile-mint-foreground',
+    dot: 'bg-accent-mint'
   },
   peach: {
     tint: 'bg-accent-peach/30 dark:bg-accent-peach/20',
     ring: 'ring-1 ring-accent-peach/40 dark:ring-accent-peach/30',
-    text: 'text-[hsl(20_60%_28%)] dark:text-accent-peach',
-    dot: 'bg-accent-peach',
-    borderLeft: 'border-l-accent-peach'
+    text: 'text-tile-peach-foreground',
+    dot: 'bg-accent-peach'
   },
   butter: {
     tint: 'bg-accent-butter/40 dark:bg-accent-butter/20',
     ring: 'ring-1 ring-accent-butter/50 dark:ring-accent-butter/30',
-    text: 'text-[hsl(35_70%_24%)] dark:text-accent-butter',
-    dot: 'bg-accent-butter',
-    borderLeft: 'border-l-accent-butter'
+    text: 'text-tile-butter-foreground',
+    dot: 'bg-accent-butter'
   },
   sky: {
     tint: 'bg-accent-sky/30 dark:bg-accent-sky/20',
     ring: 'ring-1 ring-accent-sky/40 dark:ring-accent-sky/30',
-    text: 'text-[hsl(200_55%_28%)] dark:text-accent-sky',
-    dot: 'bg-accent-sky',
-    borderLeft: 'border-l-accent-sky'
+    text: 'text-tile-sky-foreground',
+    dot: 'bg-accent-sky'
   },
   lilac: {
     tint: 'bg-accent-lilac/30 dark:bg-accent-lilac/20',
     ring: 'ring-1 ring-accent-lilac/40 dark:ring-accent-lilac/30',
-    text: 'text-[hsl(280_35%_32%)] dark:text-accent-lilac',
-    dot: 'bg-accent-lilac',
-    borderLeft: 'border-l-accent-lilac'
+    text: 'text-tile-lilac-foreground',
+    dot: 'bg-accent-lilac'
   },
   primary: {
     tint: 'bg-primary/10',
     ring: 'ring-1 ring-primary/30',
-    text: 'text-primary',
-    dot: 'bg-primary',
-    borderLeft: 'border-l-primary'
+    text: 'text-primary-strong',
+    dot: 'bg-primary'
   }
 };
 

@@ -47,7 +47,7 @@ test('queues a log submission while offline', async ({ page }) => {
   await page.getByRole('button', { name: /noter ce repas/i }).click();
 
   await expect(
-    page.getByText('Enregistré hors-ligne — sera synchronisé.', { exact: false })
+    page.getByText('Enregistré hors-ligne, sera synchronisé.', { exact: false })
   ).toBeVisible({ timeout: 8000 });
 
   // After the queued toast, the page navigates back to the child dashboard.
