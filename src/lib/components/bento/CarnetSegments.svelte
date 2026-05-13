@@ -38,7 +38,7 @@
       data-sveltekit-keepfocus
       data-sveltekit-replacestate
       class={cn(
-        'flex-1 rounded-full px-3 py-1.5 text-center text-xs font-semibold transition-colors duration-base ease-soft active:scale-[0.97]',
+        'flex min-h-11 flex-1 items-center justify-center rounded-full px-3 text-center text-xs font-semibold transition-colors duration-base ease-soft active:scale-[0.97]',
         active ? 'bg-primary text-primary-foreground' : 'text-ink-soft hover:text-foreground'
       )}
     >
