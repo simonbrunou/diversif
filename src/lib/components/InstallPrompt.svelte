@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import * as m from '$lib/paraglide/messages';
+	import Modal from './ui/Modal.svelte';
+	import Button from './ui/Button.svelte';
 
 	type BIPEvent = Event & {
 		prompt: () => Promise<void>;
@@ -77,15 +79,17 @@
 	</button>
 {/if}
 
-{#if modalOpen}
-	<div class="install-modal" role="dialog" aria-modal="true">
-		<h2>{m.installIosInstructionsTitle()}</h2>
-		<p>{m.installIosInstructionsBody()}</p>
-		<button type="button" onclick={dismissModal}>
-			{m.installIosInstructionsDismiss()}
-		</button>
-	</div>
-{/if}
+<Modal
+	bind:open={modalOpen}
+	side="center"
+	title={m.installIosInstructionsTitle()}
+	description={m.installIosInstructionsBody()}
+	onclose={dismissModal}
+>
+	{#snippet footer()}
+		<Button onclick={dismissModal}>{m.installIosInstructionsDismiss()}</Button>
+	{/snippet}
+</Modal>
 
 <style>
 	.install-cta {
@@ -94,17 +98,5 @@
 		background: hsl(var(--primary));
 		color: hsl(var(--primary-foreground));
 		font-size: 0.875rem;
-	}
-	.install-modal {
-		position: fixed;
-		inset: 0;
-		margin: auto;
-		width: min(20rem, calc(100% - 2rem));
-		height: fit-content;
-		background: hsl(var(--background));
-		border: 1px solid hsl(var(--border));
-		border-radius: 0.5rem;
-		padding: 1rem;
-		z-index: 50;
 	}
 </style>

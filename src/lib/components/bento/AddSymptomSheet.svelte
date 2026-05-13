@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Sheet from '../ui/Sheet.svelte';
+  import Modal from '../ui/Modal.svelte';
   import * as m from '$lib/paraglide/messages';
   import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 
@@ -31,7 +31,7 @@
   }
 </script>
 
-<Sheet bind:open title={m.addSymptomTitle()} side="bottom">
+<Modal bind:open title={m.addSymptomTitle()} side="bottom">
   <form method="POST" action={`${action}?/addSymptom`}>
     <fieldset>
       <legend class="text-xs font-semibold uppercase tracking-wider text-ink-soft">
@@ -95,4 +95,4 @@
       {m.addSymptomSubmit()}
     </button>
   </form>
-</Sheet>
+</Modal>

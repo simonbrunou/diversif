@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Dialog from '$components/ui/Dialog.svelte';
+  import Modal from '$components/ui/Modal.svelte';
   import Button from '$components/ui/Button.svelte';
   import { enhance } from '$app/forms';
   import { Heart, Sparkles, BookOpen } from 'lucide-svelte';
@@ -24,7 +24,7 @@
   }
 </script>
 
-<Dialog bind:open onclose={close} class="max-w-md">
+<Modal bind:open onclose={close} side="center" class="max-w-md">
   <div class="space-y-3 text-sm">
     {#if step === 0}
       <div class="flex items-center gap-2">
@@ -82,4 +82,4 @@
       <Button href={localizedHref(`/child/${childId}/guide`)}>{m.dialogsWelcomeButtonOpenGuide()}</Button>
     {/if}
   {/snippet}
-</Dialog>
+</Modal>

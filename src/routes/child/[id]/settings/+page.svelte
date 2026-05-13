@@ -3,7 +3,7 @@
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
   import Card from '$components/ui/Card.svelte';
-  import Dialog from '$components/ui/Dialog.svelte';
+  import Modal from '$components/ui/Modal.svelte';
   import { enhance } from '$app/forms';
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
@@ -199,8 +199,9 @@
   </Card>
 </div>
 
-<Dialog
+<Modal
   bind:open={deleteOpen}
+  side="center"
   title="Supprimer {data.child.name} ?"
   description="Saisissez exactement « {data.child.name} » pour confirmer."
 >
@@ -234,9 +235,9 @@
       </Button>
     </div>
   </form>
-</Dialog>
+</Modal>
 
-<Dialog bind:open={leaveOpen} title="Quitter ce suivi ?" description="Vous perdrez l’accès aux logs.">
+<Modal bind:open={leaveOpen} side="center" title="Quitter ce suivi ?" description="Vous perdrez l’accès aux logs.">
   <form
     method="POST"
     action="?/leaveChild"
@@ -249,4 +250,4 @@
       </Button>
     </div>
   </form>
-</Dialog>
+</Modal>
