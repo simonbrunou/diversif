@@ -2,6 +2,7 @@
   import type { Stage, StageId } from '$lib/content/guidance';
   import { Baby } from 'lucide-svelte';
   import { cn } from '$lib/utils/cn';
+  import * as m from '$lib/paraglide/messages';
 
   let { stage, class: className = '' }: { stage: Stage; class?: string } = $props();
 
@@ -22,5 +23,5 @@
   )}
 >
   <Baby size={14} aria-hidden="true" />
-  Étape {stage.id} mois
+  {m.stageBadgeLabel({ stage: stage.id })}
 </span>

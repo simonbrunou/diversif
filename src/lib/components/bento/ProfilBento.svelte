@@ -59,10 +59,10 @@
       {m.profilLegalTitle()}
     </h2>
     <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-primary-strong">
-      <li><a href="/cgu" class="underline">CGU</a></li>
-      <li><a href="/mentions-legales" class="underline">Mentions légales</a></li>
-      <li><a href="/politique-confidentialite" class="underline">Politique de confidentialité</a></li>
-      <li><a href="/cookies" class="underline">Cookies</a></li>
+      <li><a href="/cgu" class="underline">{m.chromePublicFooterCGU()}</a></li>
+      <li><a href="/mentions-legales" class="underline">{m.chromeLegalLinksMentionsLegales()}</a></li>
+      <li><a href="/politique-confidentialite" class="underline">{m.chromeLegalLinksPolitiqueConfidentialite()}</a></li>
+      <li><a href="/cookies" class="underline">{m.chromeLegalLinksCookies()}</a></li>
     </ul>
   </section>
 </div>

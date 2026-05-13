@@ -18,28 +18,28 @@
 
   const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
 
-  const landingFaq = [
+  const landingFaq = $derived([
     {
-      q: 'Quand commencer la diversification alimentaire de mon bébé ?',
-      a: "Les recommandations françaises (HCSP 2020, Santé publique France) et européennes (ESPGHAN 2017) convergent : la diversification se commence entre 4 et 6 mois révolus, jamais avant 4 mois (17 semaines), idéalement avant 6 mois pour profiter de la fenêtre d'introduction des allergènes."
+      q: m.landingFaqQ1(),
+      a: m.landingFaqA1()
     },
     {
-      q: 'Quels allergènes sont à introduire tôt ?',
-      a: "HCSP 2020 et les études LEAP (2015) et EAT (2016) recommandent une introduction précoce (dès 4–6 mois) pour : œuf, arachide, lait de vache, gluten (blé), poisson, fruits à coque (en purée), sésame. L'app trace 12 allergènes au total (référence : règlement UE 1169/2011 d'étiquetage, moins lupin et sulfites) ; les autres (crustacés, mollusques, céleri, moutarde) sont suivis pour la complétude du carnet. Le soja n'est pas dans la liste à introduire tôt : HCSP et ANSES déconseillent les produits à base de soja avant 3 ans."
+      q: m.landingFaqQ2(),
+      a: m.landingFaqA2()
     },
     {
-      q: 'Faut-il choisir entre purées et DME (diversification menée par l\'enfant) ?',
-      a: "Non. La Société Française de Pédiatrie reconnaît la DME, les purées classiques et l'approche mixte comme valides. L'important est d'adapter la texture à l'âge, surveiller les signes d'étouffement et proposer une alimentation variée."
+      q: m.landingFaqQ3(),
+      a: m.landingFaqA3()
     },
     {
-      q: 'Quels aliments éviter avant 1 an et avant 3 ans ?',
-      a: "Avant 1 an : miel (botulisme), lait de vache nature en boisson, sel ajouté, sucre ajouté, jus de fruits. Avant 3 ans : aliments crus à risque (œufs crus, viandes/poissons crus), aliments durs et ronds (cacahuètes, raisins entiers), boissons sucrées et édulcorées."
+      q: m.landingFaqQ4(),
+      a: m.landingFaqA4()
     },
     {
-      q: 'Diversif est-il gratuit et sans publicité ?',
-      a: 'Oui. Diversif est open source, self-hosted, gratuit et sans publicité. Vos données restent sur votre propre serveur ou hébergeur.'
+      q: m.landingFaqQ5(),
+      a: m.landingFaqA5()
     }
-  ];
+  ]);
 </script>
 
 {#if data.kind === 'landing'}

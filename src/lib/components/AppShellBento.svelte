@@ -44,7 +44,7 @@
 <div class="grid min-h-screen lg:grid-cols-[220px_1fr]">
   <!-- Desktop left rail sidebar -->
   <nav
-    aria-label="Navigation latérale"
+    aria-label={m.chromeLateralNavLabel()}
     class="hidden lg:flex lg:flex-col lg:gap-2 lg:border-r lg:border-border lg:bg-surface lg:p-4"
   >
     <span class="mb-4 font-display text-2xl italic">diversif</span>
@@ -80,6 +80,15 @@
       {/if}
 
       <main id="main" class="flex-1">
+        <!-- Screen-reader anchor: every app-shell route lands here, and the
+             bento sub-pages start at h2, so AT users need an h1 above to
+             know where they are. Visually hidden — ChildHeaderPill and
+             page hero copy carry the visual heading. -->
+        {#if currentPath === '/account'}
+          <h1 class="sr-only">{m.authAccountHeading()}</h1>
+        {:else if currentChild}
+          <h1 class="sr-only">{currentChild.name}</h1>
+        {/if}
         {#if children}{@render children()}{/if}
       </main>
 

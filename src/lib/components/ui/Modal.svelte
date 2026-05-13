@@ -6,6 +6,7 @@
   import type { Snippet } from 'svelte';
   import { Dialog as DialogPrimitive } from 'bits-ui';
   import { cn } from '$lib/utils/cn';
+  import * as m from '$lib/paraglide/messages';
 
   type Props = {
     open?: boolean;
@@ -71,7 +72,7 @@
       {:else}
         <!-- bits-ui requires a Title for AT; render a hidden one when the
              caller doesn't provide a visible heading. -->
-        <DialogPrimitive.Title class="sr-only">Dialogue</DialogPrimitive.Title>
+        <DialogPrimitive.Title class="sr-only">{m.modalDialogFallbackTitle()}</DialogPrimitive.Title>
       {/if}
       {#if description}
         <DialogPrimitive.Description class="text-sm text-ink-soft">
