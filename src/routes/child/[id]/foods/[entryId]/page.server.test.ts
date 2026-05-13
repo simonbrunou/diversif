@@ -138,7 +138,7 @@ describe('reaction-detail loader', () => {
         locale: 'en'
       }) as unknown as Parameters<typeof load>[0]
     );
-    // just assert the strings are non-empty — locale formatting is runtime-dependent
+    // just assert the strings are non-empty : locale formatting is runtime-dependent
     expect(typeof data.date).toBe('string');
     expect(data.date.length).toBeGreaterThan(0);
   });

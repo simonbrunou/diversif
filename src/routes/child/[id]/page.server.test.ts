@@ -245,7 +245,7 @@ describe('child/[id] +page.server load', () => {
         })
         .returning()
     )[0];
-    // Two entries: ras then inconfort — worst should be inconfort.
+    // Two entries: ras then inconfort : worst should be inconfort.
     await testDb.insert(foodEntries).values([
       {
         childId: c.id,

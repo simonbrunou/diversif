@@ -25,7 +25,7 @@ export async function createInvitationForChild(input: {
       });
       return code;
     } catch (err) {
-      /* v8 ignore start — defensive: any non-23505 error bubbles up unchanged */
+      /* v8 ignore start : defensive: any non-23505 error bubbles up unchanged */
       if (!isUniqueViolation(err)) throw err;
       /* v8 ignore stop */
     }

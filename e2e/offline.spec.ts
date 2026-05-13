@@ -37,7 +37,7 @@ test('queues a log submission while offline', async ({ page }) => {
   await expect(page.locator('input[name="foodId"]')).toBeAttached({ timeout: 3000 });
 
   // Patch navigator.onLine to false. context.setOffline drops connections at
-  // the network layer, but our offline path is gated on the JS property —
+  // the network layer, but our offline path is gated on the JS property:
   // patching it directly keeps the page alive so use:enhance can cancel()
   // and route through the queue.
   await page.evaluate(() => {
@@ -54,7 +54,7 @@ test('queues a log submission while offline', async ({ page }) => {
   await expect(page).toHaveURL(/\/child\/\d+$/, { timeout: 8000 });
 
   // Verify the row was written to IDB. This is the durability contract that
-  // matters for the offline UX — the entry survives until flush picks it up.
+  // matters for the offline UX : the entry survives until flush picks it up.
   const dbCount = await page.evaluate(async () => {
     const dbReq = indexedDB.open('diversif-offline');
     const db = await new Promise<IDBDatabase>((resolve, reject) => {

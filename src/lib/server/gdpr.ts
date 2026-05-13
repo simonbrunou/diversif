@@ -87,7 +87,7 @@ export async function deleteUserAccount(userId: number): Promise<DeletionSummary
 
     // Explicitly drop every live session before the user row goes away.
     // The sessions FK has ON DELETE CASCADE so Postgres would do this for us,
-    // but the explicit delete documents the intent — future moves of the
+    // but the explicit delete documents the intent : future moves of the
     // session store (Redis, etc.) would silently lose revocation otherwise.
     await tx.delete(sessions).where(eq(sessions.userId, userId));
 
@@ -145,7 +145,7 @@ export type ExportedUser = {
   // accepted to join a shared child (relationship: 'accepted'). Personal
   // data per RGPD article 15.
   //
-  // The invitation `code` itself is deliberately omitted — it's a bearer
+  // The invitation `code` itself is deliberately omitted : it's a bearer
   // token, structurally identical to a session id (matched by exact-string
   // lookup at the join endpoint, redeemable by anyone who possesses it
   // until expiry). Including it in a downloadable archive lets a leaked or
@@ -171,7 +171,7 @@ export type ExportedUser = {
 // Hard ceiling on the number of food entries we'll serialise in a single
 // export. The endpoint synchronously buffers the whole JSON payload in memory;
 // without a guard rail, a pathologically-long log could OOM the process or
-// blow past upstream proxy response limits. We do NOT silently truncate — if
+// blow past upstream proxy response limits. We do NOT silently truncate : if
 // the count is over this, exportUserData throws ExportTooLargeError so the
 // caller can surface an actionable error rather than handing the user an
 // incomplete archive (which would breach RGPD article 15).
@@ -240,7 +240,7 @@ export async function exportUserData(
     const countRes = await db.execute<{ count: string }>(
       sql`SELECT COUNT(*)::text as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
     );
-    /* v8 ignore next — pg COUNT(*) always returns a single row */
+    /* v8 ignore next : pg COUNT(*) always returns a single row */
     const total = Number(countRes.rows[0]?.count ?? 0);
     if (total > entryLimit) {
       audit({
@@ -278,7 +278,7 @@ export async function exportUserData(
 
   // Invitations the user generated OR consumed. The `relationship` field
   // disambiguates the two so the same code (sent and later used by the
-  // same user) shows up twice — that's the right semantic.
+  // same user) shows up twice : that's the right semantic.
   const userInvitations = await db
     .select({
       childId: invitations.childId,

@@ -19,7 +19,7 @@ Sentry.init({
   // to our isomorphic `ScrubbableEvent.breadcrumbs` (we keep the
   // `[key: string]: unknown` on our type so we can clone breadcrumb data
   // with `{ ...b, data }`). Drop this suppression if either type tightens
-  // — it'll fail loudly via @ts-expect-error.
+  // : it'll fail loudly via @ts-expect-error.
   beforeSend: scrubEvent,
   beforeBreadcrumb: filterIncomingBreadcrumb
 });

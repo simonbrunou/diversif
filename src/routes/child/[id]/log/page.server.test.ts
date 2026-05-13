@@ -383,7 +383,7 @@ describe('child/[id]/log default action', () => {
     // notes match the sentinel string. The action's transaction routes both
     // the custom-food insert and the entry insert through the same pool, so
     // when the entry insert raises a constraint violation, the surrounding
-    // transaction rolls back — exactly what we want to verify.
+    // transaction rolls back : exactly what we want to verify.
     await testDb.execute(
       sql`ALTER TABLE food_entries ADD CONSTRAINT tmp_abort_entry CHECK (notes <> '__simulated_fail__')`
     );
@@ -422,7 +422,7 @@ describe('child/[id]/log default action', () => {
 });
 
 describe('Idempotency-Key', () => {
-  it('same key replay — only one food_entries row, both calls redirect to same location', async () => {
+  it('same key replay : only one food_entries row, both calls redirect to same location', async () => {
     const { u, c, m, food } = await setup();
     const formData = {
       foodId: String(food.id),
@@ -469,7 +469,7 @@ describe('Idempotency-Key', () => {
     expect(Number(count)).toBe(1);
   });
 
-  it('different keys, same form — two food_entries rows', async () => {
+  it('different keys, same form : two food_entries rows', async () => {
     const { u, c, m, food } = await setup();
     const formData = {
       foodId: String(food.id),
@@ -513,7 +513,7 @@ describe('Idempotency-Key', () => {
     expect(Number(count)).toBe(2);
   });
 
-  it('invalid Idempotency-Key (length 101) — returns 400', async () => {
+  it('invalid Idempotency-Key (length 101) : returns 400', async () => {
     const { u, c, m, food } = await setup();
     const r = await captureFlow(() =>
       actions.default!(
@@ -536,7 +536,7 @@ describe('Idempotency-Key', () => {
     }
   });
 
-  it('same key for different scope — second call returns 409', async () => {
+  it('same key for different scope : second call returns 409', async () => {
     const { u, food } = await setup();
     const childA = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
     const childB = await seedChild({ createdBy: u.id, birthDate: '2024-02-01' });
@@ -579,7 +579,7 @@ describe('Idempotency-Key', () => {
     }
   });
 
-  it('no header — existing behaviour — two calls produce two food_entries rows', async () => {
+  it('no header : existing behaviour : two calls produce two food_entries rows', async () => {
     const { u, c, m, food } = await setup();
     const formData = {
       foodId: String(food.id),

@@ -19,7 +19,7 @@
 
   const siteUrl = $derived(data.siteUrl ?? SITE.defaultOrigin);
 
-  // Strip the /en locale prefix once before route classification — the visible
+  // Strip the /en locale prefix once before route classification : the visible
   // URL keeps the prefix, but reroute makes the underlying SvelteKit route the
   // same as the FR variant, so shell predicates have to match the unprefixed
   // form to keep `/en/login` etc. on the auth layout instead of the public shell.

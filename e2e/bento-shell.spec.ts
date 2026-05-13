@@ -44,9 +44,9 @@ async function dismissWelcomeIfPresent(page: Page): Promise<void> {
 // Force a sub-`lg:` viewport so the mobile chrome (BottomNavBento + FAB) is
 // rendered/visible. Playwright's default chromium project uses Desktop Chrome
 // (1280×720) which crosses the `lg:` breakpoint and switches to the desktop
-// left-rail variant — those elements (`Navigation latérale`, `+ Logger` text)
+// left-rail variant : those elements (`Navigation latérale`, `+ Logger` text)
 // are tested separately. This block targets the mobile flow.
-test.describe('Bento shell — tab navigation', () => {
+test.describe('Bento shell : tab navigation', () => {
   test.use({ viewport: { width: 414, height: 896 } });
 
   test('switches between the four tabs', async ({ page }) => {
@@ -91,7 +91,7 @@ test.describe('Bento shell — tab navigation', () => {
     const placeholder = '🔍 chercher un aliment…';
     await expect(page.getByPlaceholder(placeholder)).toBeVisible();
 
-    // Search for "poire" — Poire is in the seeded FOODS catalog.
+    // Search for "poire" : Poire is in the seeded FOODS catalog.
     await page.getByPlaceholder(placeholder).fill('poire');
 
     // Click the matching list item. The Command primitive renders <li role="option">.

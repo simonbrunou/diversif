@@ -69,7 +69,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
         .from(foodEntries)
         .where(eq(foodEntries.childId, childId))
         .limit(1)
-    )[0]?.count /* v8 ignore next — COUNT() always returns a row */ ?? 0
+    )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
   );
 
   const weekCount = Number(
@@ -81,7 +81,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
           and(eq(foodEntries.childId, childId), sql`${foodEntries.givenAt} >= ${sevenDaysAgo}`)
         )
         .limit(1)
-    )[0]?.count /* v8 ignore next — COUNT() always returns a row */ ?? 0
+    )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
   );
 
   const allergenRows = await db
@@ -95,7 +95,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
   const worstByAllergen = new Map<string, 'ras' | 'inconfort' | 'reaction'>();
   for (const r of allergenRows) {
-    /* v8 ignore next — query already filters allergenType IS NOT NULL */
+    /* v8 ignore next : query already filters allergenType IS NOT NULL */
     if (!r.allergenType) continue;
     const cur = worstByAllergen.get(r.allergenType);
     const next = r.reaction as 'ras' | 'inconfort' | 'reaction';
@@ -158,7 +158,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
   const ageMonths = ageInMonths(child.birthDate, nowAtLoad);
 
-  // Suggest a tiny starter list ONLY when the child has zero entries — once
+  // Suggest a tiny starter list ONLY when the child has zero entries : once
   // any food is logged, the dashboard's full "recent" feed takes over.
   const starterFoods = distinctFoods === 0 ? await loadStarterFoods(ageMonths, 4) : [];
 
@@ -209,7 +209,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   ).slice(0, 4);
 
   // Welcome dialog: show only if not dismissed and the child has no entries
-  // *all-time* — `entriesNormalized` only covers the last 90 days, so basing
+  // *all-time* : `entriesNormalized` only covers the last 90 days, so basing
   // this on that set would re-trigger onboarding for older children that
   // simply went silent for a quarter.
   const showWelcomeDialog = !dismissals.has('welcome-dialog') && distinctFoods === 0;

@@ -462,7 +462,7 @@ describe('queue', () => {
   it('tx rejects when IDBTransaction fires onerror (covers transaction.onerror)', async () => {
     // Cover the transaction.onerror path in tx() by forcing the transaction to abort.
     // We intercept db.transaction to get the real transaction, then call abort() on it
-    // asynchronously — fake-indexeddb fires onerror on abort when there is no pending
+    // asynchronously : fake-indexeddb fires onerror on abort when there is no pending
     // request suppressing it.
     const realOpen = globalThis.indexedDB.open.bind(globalThis.indexedDB);
 
@@ -473,7 +473,7 @@ describe('queue', () => {
         const realTxFn = db.transaction.bind(db);
         vi.spyOn(db, 'transaction').mockImplementationOnce((...txArgs) => {
           const realTransaction = realTxFn(...(txArgs as Parameters<typeof realTxFn>));
-          // Abort the transaction after one microtask — this causes transaction.onerror
+          // Abort the transaction after one microtask : this causes transaction.onerror
           // (or transaction.onabort) to fire on the transaction object.
           Promise.resolve().then(() => {
             try {

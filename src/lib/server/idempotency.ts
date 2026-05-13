@@ -27,7 +27,7 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
  *
  * Concurrency: a plain SELECT-then-INSERT would let two concurrent first-time requests both
  * pass the SELECT and race on the INSERT, with the loser getting a 23505 duplicate-key
- * error instead of the in-flight/replay path. Use a savepoint-wrapped INSERT — if it raises
+ * error instead of the in-flight/replay path. Use a savepoint-wrapped INSERT : if it raises
  * 23505, the savepoint rolls back so the outer transaction is still alive, and we re-read
  * the existing row to decide replay/in-flight/scope-mismatch.
  */
@@ -59,7 +59,7 @@ export async function withIdempotencyKey<T extends { redirect: string }>(
       .where(eq(idempotencyKeys.key, args.key))
       .limit(1);
     const existing = existingRows[0];
-    /* v8 ignore next 3 — present by construction: 23505 only fires when a row exists */
+    /* v8 ignore next 3 : present by construction: 23505 only fires when a row exists */
     if (!existing) {
       throw new Error(`idempotency key ${args.key} vanished after conflict`);
     }
@@ -88,6 +88,6 @@ export async function pruneExpiredKeys(
 ): Promise<number> {
   const cutoff = new Date(Date.now() - olderThanMs);
   const result = await tx.delete(idempotencyKeys).where(lt(idempotencyKeys.createdAt, cutoff));
-  /* v8 ignore next — node-postgres always populates rowCount for DELETE */
+  /* v8 ignore next : node-postgres always populates rowCount for DELETE */
   return result.rowCount ?? 0;
 }

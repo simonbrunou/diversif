@@ -113,7 +113,7 @@ describe('child/new default action', () => {
   });
 });
 
-describe('child/new action — invite-coparent flow', () => {
+describe('child/new action : invite-coparent flow', () => {
   it('skips invitation when inviteCoparent is not set', async () => {
     const u = await seedUser();
     const event = makeRouteEvent({

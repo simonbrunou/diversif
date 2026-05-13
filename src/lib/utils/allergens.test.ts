@@ -10,7 +10,7 @@ describe('ALLERGENS', () => {
 
   // The literal "12" appears in static SEO copy, page titles, article bodies,
   // toasts, FAQ answers and paraglide messages. If you grow or shrink
-  // ALLERGENS, this test fails first — sweep these consumers before updating
+  // ALLERGENS, this test fails first : sweep these consumers before updating
   // the expected count:
   //   - src/lib/seo.ts (description meta)
   //   - src/lib/components/landing/LandingFeatures.svelte

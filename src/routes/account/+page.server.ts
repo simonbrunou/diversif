@@ -22,7 +22,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 // Both actions take a currentPassword and run it through argon2id. Without a
 // cap, a stolen session cookie can brute-force the password field at full
-// speed — the KDF cost is the only brake. Key on user.id (not IP) because
+// speed : the KDF cost is the only brake. Key on user.id (not IP) because
 // the legitimate user is necessarily authenticated, and the threat is a
 // stolen session that may move across IPs. 5 attempts per 5 minutes is
 // generous for a real user fat-fingering and tight enough to make

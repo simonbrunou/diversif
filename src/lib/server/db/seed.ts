@@ -156,7 +156,7 @@ export async function seedFoods(db: NodePgDatabase<typeof schema>): Promise<void
     const existing = await tx.execute<{ count: string }>(
       sql`SELECT COUNT(*)::text as count FROM foods`
     );
-    /* v8 ignore next — pg COUNT(*) always returns a single row */
+    /* v8 ignore next : pg COUNT(*) always returns a single row */
     const count = Number(existing.rows[0]?.count ?? 0);
 
     if (count === 0) {

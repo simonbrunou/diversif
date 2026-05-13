@@ -67,7 +67,7 @@ export async function loadDiversityMetrics(
         WHERE ${foodEntries.childId} = ${childId}
           AND ${foods.category} != 'autre'`
   );
-  /* v8 ignore next — pg COUNT(*) always returns a single row */
+  /* v8 ignore next : pg COUNT(*) always returns a single row */
   const distinctCategories = Number(distinctRes.rows[0]?.count ?? 0);
 
   // For each food, take the timestamp of its FIRST appearance (introduction).
@@ -88,7 +88,7 @@ export async function loadDiversityMetrics(
     lastNewFoodRow?.given_at != null ? new Date(lastNewFoodRow.given_at).getTime() : null;
 
   // Foods given 1–2 times whose worst reaction is 'ras' or 'inconfort'.
-  // Filter via a wrapping WHERE rather than HAVING — pg-mem can't traverse a
+  // Filter via a wrapping WHERE rather than HAVING : pg-mem can't traverse a
   // HAVING clause that contains MAX(CASE ... END), and the rewrite is also
   // friendlier to query planners.
   const repeatRes = await db.execute<{ food_id: number; n: number; worst: number }>(
@@ -124,7 +124,7 @@ export type RepeatCandidate = {
 };
 
 export async function loadRepeatCandidates(childId: number, limit = 5): Promise<RepeatCandidate[]> {
-  // Same wrapping-WHERE shape as loadDiversityMetrics' repeat query — see
+  // Same wrapping-WHERE shape as loadDiversityMetrics' repeat query : see
   // comment there for why we don't use HAVING.
   const res = await db.execute<{
     food_id: number;
@@ -183,7 +183,7 @@ export async function loadWeeklyRecap(
         WHERE ${foodEntries.childId} = ${childId}
           AND ${foodEntries.givenAt} >= ${since}`
   );
-  /* v8 ignore next — pg COUNT(*) always returns a single row */
+  /* v8 ignore next : pg COUNT(*) always returns a single row */
   const entries = Number(entriesRes.rows[0]?.count ?? 0);
 
   // First-ever appearance per food, kept only if that first appearance is in
@@ -197,7 +197,7 @@ export async function loadWeeklyRecap(
         ) firsts
         WHERE first_at >= ${since}`
   );
-  /* v8 ignore next — pg COUNT(*) always returns a single row */
+  /* v8 ignore next : pg COUNT(*) always returns a single row */
   const newFoods = Number(newFoodsRes.rows[0]?.count ?? 0);
 
   // First-ever appearance per allergenType, restricted to non-null allergens.
@@ -212,7 +212,7 @@ export async function loadWeeklyRecap(
         ) firsts
         WHERE first_at >= ${since}`
   );
-  /* v8 ignore next — pg COUNT(*) always returns a single row */
+  /* v8 ignore next : pg COUNT(*) always returns a single row */
   const newAllergens = Number(newAllergensRes.rows[0]?.count ?? 0);
 
   return { entries, newFoods, newAllergens };
@@ -220,7 +220,7 @@ export async function loadWeeklyRecap(
 
 export async function loadStreak(childId: number, now: Date = new Date()): Promise<number> {
   // We bucket by UTC day on purpose. Most parents are within UTC±2 (Europe),
-  // and a UTC-day boundary differs from local-day by at most ~2 hours — well
+  // and a UTC-day boundary differs from local-day by at most ~2 hours : well
   // outside the normal awake window for logging baby meals (basically nobody
   // logs lunch at 02:00 local). The cost of UTC-bucketing is a theoretical
   // off-by-one for someone logging right around midnight in a far-east
@@ -379,7 +379,7 @@ export async function loadAnalyticsBuckets(
   const horizon = new Date(horizonMs);
 
   // Per-food first-introduction timestamps + category. One row per distinct
-  // food the child has ever eaten — typically 50-200 rows even for an
+  // food the child has ever eaten : typically 50-200 rows even for an
   // active child. Powers BOTH "introductions in bucket" (first_at in window)
   // and "cumulative categories through bucket end" (categories whose first
   // intro was before window end). We need history older than horizonMs for

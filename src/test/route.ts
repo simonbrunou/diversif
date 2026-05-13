@@ -65,7 +65,7 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
 }
 
 /**
- * Run a SvelteKit-style action and capture its outcome — either:
+ * Run a SvelteKit-style action and capture its outcome : either:
  *  - a `redirect`: returns `{ kind: 'redirect', status, location }`
  *  - an `error`:   returns `{ kind: 'error', status, message }`
  *  - a regular return value (incl. `fail()`): returns `{ kind: 'return', value }`

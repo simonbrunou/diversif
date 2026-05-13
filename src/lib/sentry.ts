@@ -53,7 +53,7 @@ export function scrubPathname(pathname: string, routeId: string | null = null): 
 function scrubUrlString(raw: string, routeId: string | null = null): string {
   try {
     if (raw.startsWith('/')) {
-      // Relative URL — just rewrite the pathname.
+      // Relative URL : just rewrite the pathname.
       const [path] = raw.split('?', 1);
       return scrubPathname(path, routeId);
     }
@@ -70,9 +70,9 @@ function scrubUrlString(raw: string, routeId: string | null = null): string {
  * Drop breadcrumbs that the SDK auto-collects but we don't want sent to
  * Sentry under the strict-PII contract:
  *
- * - `ui.click` / `ui.input` — DOM events may capture user input via target
+ * - `ui.click` / `ui.input` : DOM events may capture user input via target
  *   attributes (e.g. value="user@example.com" on a form input).
- * - `console` — our handleError emits a structured JSON `[diversif:error]`
+ * - `console` : our handleError emits a structured JSON `[diversif:error]`
  *   log line via console.error before Sentry.captureException; the SDK would
  *   attach that JSON (containing userId, raw path, msg, stack) as a
  *   breadcrumb on subsequent events, bypassing the rest of scrubEvent.

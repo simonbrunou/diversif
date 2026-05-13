@@ -83,7 +83,7 @@ describe('settings load', () => {
         usedBy: null
       },
       {
-        // Expired — should be excluded.
+        // Expired : should be excluded.
         code: 'BEBE-BBBBBB',
         childId: c.id,
         createdBy: u.id,
@@ -93,7 +93,7 @@ describe('settings load', () => {
         usedBy: null
       },
       {
-        // Used — should be excluded.
+        // Used : should be excluded.
         code: 'BEBE-CCCCCC',
         childId: c.id,
         createdBy: u.id,
@@ -170,7 +170,7 @@ describe('settings load', () => {
 });
 
 describe('settings updateChild action', () => {
-  it('owner-only — fails for member', async () => {
+  it('owner-only : fails for member', async () => {
     const { u, c, m } = await setup({ role: 'member' });
     const event = makeRouteEvent({
       user: safeUser(u),

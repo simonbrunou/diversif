@@ -11,7 +11,7 @@ export type Source = {
 export const SOURCES = {
   'spf-pnns-guide': {
     label:
-      'Pas à pas, votre enfant mange comme un grand — Le petit guide de la diversification alimentaire',
+      'Pas à pas, votre enfant mange comme un grand : Le petit guide de la diversification alimentaire',
     org: 'Santé publique France / PNNS',
     year: 2021,
     url: 'https://www.mangerbouger.fr/content/show/1500/file/Brochure-SPF-Mangerbougerfr.pdf'
@@ -29,7 +29,7 @@ export const SOURCES = {
     url: 'https://www.hcsp.fr/Explore.cgi/Telecharger?NomFichier=hcspa20200630_rvisidesreprealimepourlesenfan.pdf'
   },
   '1000-jours': {
-    label: "1000 premiers jours — l'alimentation de 4 à 6 mois",
+    label: "1000 premiers jours : l'alimentation de 4 à 6 mois",
     org: 'Gouvernement français',
     year: 2023,
     url: 'https://www.1000-premiers-jours.fr/fr/lalimentation-de-4-6-mois-le-debut-de-la-diversification'
@@ -53,7 +53,7 @@ export const SOURCES = {
     url: 'https://www.nejm.org/doi/full/10.1056/NEJMoa1514210'
   },
   'sfp-dme': {
-    label: "La diversification alimentaire menée par l'enfant — position du Comité de nutrition",
+    label: "La diversification alimentaire menée par l'enfant : position du Comité de nutrition",
     org: 'Société Française de Pédiatrie (Bocquet et al.)',
     year: 2022,
     url: 'https://www.sfpediatrie.com/sites/www.sfpediatrie.com/files/medias/documents/dme_perfectionnement_bocquet_et_al.pdf'

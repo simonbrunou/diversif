@@ -70,7 +70,7 @@ describe('account load', () => {
   });
 });
 
-describe('account load — bento data', () => {
+describe('account load : bento data', () => {
   it('returns children, locale, theme alongside passkeys', async () => {
     const u = await seed();
     // Create a second user to act as coparent

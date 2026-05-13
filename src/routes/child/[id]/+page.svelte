@@ -10,7 +10,7 @@
 
   let { data }: { data: PageData } = $props();
 
-  // Initial state only — once the user closes the dialog (or any other form
+  // Initial state only : once the user closes the dialog (or any other form
   // action runs and re-fires `data`), we must NOT re-open the welcome modal.
   // Server-side dismissal flows through `data.showWelcomeDialog === false` on
   // the next full navigation and re-initializes us correctly. Capturing the

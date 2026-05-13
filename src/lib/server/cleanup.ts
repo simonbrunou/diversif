@@ -28,7 +28,7 @@ export async function runCleanup(now: Date = new Date()): Promise<CleanupResult>
   const k = await pruneExpiredKeys(db);
   const evicted = evictExpiredRateLimits(RATE_LIMIT_MAX_AGE_MS, now.getTime());
   return {
-    /* v8 ignore next 3 — node-postgres always populates rowCount for DELETE */
+    /* v8 ignore next 3 : node-postgres always populates rowCount for DELETE */
     expiredSessions: s.rowCount ?? 0,
     expiredInvitations: i.rowCount ?? 0,
     expiredChallenges: c.rowCount ?? 0,

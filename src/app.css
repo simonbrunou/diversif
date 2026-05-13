@@ -12,7 +12,7 @@
     --background: var(--canvas); /* alias for legacy bg-background usage */
     --foreground: 0 0% 10%;
     --surface: 0 0% 100%; /* white cards */
-    --surface-2: 39 50% 91%; /* warm-50 — segmented tracks, raised tiles */
+    --surface-2: 39 50% 91%; /* warm-50 : segmented tracks, raised tiles */
 
     --card: var(--surface);
     --card-foreground: var(--foreground);
@@ -60,14 +60,14 @@
     --tile-lilac: 257 100% 92%;
     --tile-lilac-foreground: 261 56% 27%;
 
-    /* status (cheer-everywhere — coral reserved for severe only) */
+    /* status (cheer-everywhere : coral reserved for severe only) */
     --success: var(--tile-mint);
     --success-foreground: var(--tile-mint-foreground);
     --warning: var(--tile-butter);
     --warning-foreground: var(--tile-butter-foreground);
     --info: var(--tile-sky);
     --info-foreground: var(--tile-sky-foreground);
-    --severe: 14 100% 71%; /* coral #ff8a6b — appeler le 15 only */
+    --severe: 14 100% 71%; /* coral #ff8a6b : appeler le 15 only */
     --severe-foreground: 0 0% 100%;
     --destructive: var(--severe);
     --destructive-foreground: var(--severe-foreground);
@@ -77,7 +77,7 @@
     --reaction-ras-foreground: var(--tile-mint-foreground);
     --reaction-inconfort: var(--tile-butter);
     --reaction-inconfort-foreground: var(--tile-butter-foreground);
-    --reaction-reaction: 23 80% 86%; /* soft peach — between butter and severe */
+    --reaction-reaction: 23 80% 86%; /* soft peach : between butter and severe */
     --reaction-reaction-foreground: 23 88% 22%;
 
     /* celebrate (milestones) */
@@ -85,7 +85,7 @@
     --celebrate-foreground: var(--tile-butter-foreground);
 
     /* radius */
-    --radius: 0.875rem; /* 14px — lg */
+    --radius: 0.875rem; /* 14px : lg */
     --radius-sm: 0.375rem;
     --radius-md: 0.625rem;
     --radius-lg: 0.875rem;
@@ -122,7 +122,7 @@
   }
 
   .dark {
-    --canvas: 38 13% 8%; /* #15130f — warm near-black */
+    --canvas: 38 13% 8%; /* #15130f : warm near-black */
     --background: var(--canvas);
     --foreground: 39 67% 91%; /* warm cream text */
     --surface: 38 12% 11%;
@@ -236,7 +236,7 @@
   }
 
   /* iOS Safari gives native date/time inputs an intrinsic min-width and centers
-     their text — left-align them and let them shrink to the container. */
+     their text : left-align them and let them shrink to the container. */
   input[type='date'],
   input[type='datetime-local'],
   input[type='time'] {

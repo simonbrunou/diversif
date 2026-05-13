@@ -59,7 +59,7 @@ function applyMigrations(mem: IMemoryDb): void {
     // Drizzle wraps each ADD CONSTRAINT in a DO $$ BEGIN ... EXCEPTION WHEN
     // duplicate_object THEN null; END $$; block for idempotency. pg-mem doesn't
     // execute EXCEPTION handlers, but the inner ALTER TABLE statement is plain
-    // SQL — strip the wrapper so pg-mem sees a single statement per FK.
+    // SQL : strip the wrapper so pg-mem sees a single statement per FK.
     let unwrapped = sqlText.replace(
       /DO \$\$ BEGIN\s*([\s\S]*?)\s*EXCEPTION\s+WHEN duplicate_object THEN null;\s*END \$\$;/g,
       '$1'
@@ -93,18 +93,18 @@ const memPool = new Pool();
 
 // Drizzle's node-postgres session passes config flags pg-mem rejects:
 // - `types.getTypeParser` (drizzle wants raw strings to parse itself; pg-mem
-//   already returns native JS values — Dates, booleans — that drizzle's column
+//   already returns native JS values : Dates, booleans : that drizzle's column
 //   mappers accept verbatim, so we drop the parser).
 // - `rowMode: 'array'` (drizzle expects rows as positional arrays for
 //   `mapResultRow`; pg-mem only emits object rows). We strip the flag, then
-//   convert each row via `Object.values()` after the query — pg-mem fills
+//   convert each row via `Object.values()` after the query : pg-mem fills
 //   row objects in SELECT-column order, which is what drizzle expects.
 type PgQueryConfig = {
   types?: unknown;
   rowMode?: unknown;
 } & Record<string, unknown>;
 
-// pg-mem's emulated Pool ignores BEGIN/ROLLBACK semantically — a transaction
+// pg-mem's emulated Pool ignores BEGIN/ROLLBACK semantically : a transaction
 // rollback would leave inserted rows behind, breaking any test that exercises
 // transactional behaviour. Emulate per-client transactions by snapshotting the
 // whole memory db on BEGIN and restoring on ROLLBACK. SAVEPOINT-based nested
@@ -202,7 +202,7 @@ const TRUNCATE_ORDER = [
 
 // Tests share a process-global handle, so resets must be ordered to honor
 // foreign-key constraints. DELETE in dependency order avoids the need to
-// disable fk enforcement. Sequences keep advancing across tests — that's
+// disable fk enforcement. Sequences keep advancing across tests : that's
 // fine for behaviour, and pg-mem's sequence naming differs from real pg
 // enough that ALTER SEQUENCE … RESTART would fail.
 export async function resetTestDb(): Promise<void> {

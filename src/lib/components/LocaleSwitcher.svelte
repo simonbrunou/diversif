@@ -9,14 +9,14 @@
 
   // resolveRoute expects the canonical (unprefixed) path. The visible
   // pathname carries the /en prefix on English pages, so pass it through
-  // and resolveRoute would treat /en/login as the route — producing
+  // and resolveRoute would treat /en/login as the route : producing
   // /en/login for FR (no flip) and /en/en/login for EN (doubled prefix).
   const canonicalPath = $derived(page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/');
 
   // page.url.search / .hash are only inert during the build-time prerender
-  // pass (where SvelteKit forbids dynamic URL access — the prerender URL has
+  // pass (where SvelteKit forbids dynamic URL access : the prerender URL has
   // no query/hash anyway). Per-request SSR can read them just fine, so guard
-  // on `building` rather than `browser` — gating on `browser` would drop the
+  // on `building` rather than `browser` : gating on `browser` would drop the
   // query/hash on the SSR'd HTML for routes like /child/[id]/log?date=…, and
   // a user clicking the switcher before hydration would lose the param.
   const urlSuffix = $derived(building ? '' : page.url.search + page.url.hash);

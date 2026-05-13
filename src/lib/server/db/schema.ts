@@ -126,7 +126,7 @@ export const foodEntries = pgTable(
     childId: integer('child_id')
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
-    // Restrict — historical entries are the source-of-truth for what was
+    // Restrict : historical entries are the source-of-truth for what was
     // actually fed to the child. Deleting a catalog row out from under them
     // would silently rewrite history. Custom foods that are no longer wanted
     // should be archived/hidden, not hard-deleted.

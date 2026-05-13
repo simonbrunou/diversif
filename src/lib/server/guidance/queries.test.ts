@@ -181,7 +181,7 @@ describe('loadDiversityMetrics', () => {
     const carrot = await seedFood({ name: 'Carotte', category: 'legumes' });
     const apple = await seedFood({ name: 'Pomme', category: 'fruits' });
     // Carrot first-introduced earlier; apple first-introduced later, then re-logged
-    // even later (later re-log must NOT pull lastNewFoodAt forward — only first
+    // even later (later re-log must NOT pull lastNewFoodAt forward : only first
     // introductions count).
     const carrotFirst = new Date('2024-05-01T10:00:00Z');
     const appleFirst = new Date('2024-05-10T10:00:00Z');
@@ -303,7 +303,7 @@ describe('loadDismissals / dismissReminder', () => {
     expect(rows.length).toBe(1);
   });
 
-  it('honors TTL — info reminders expire after 30 days', async () => {
+  it('honors TTL : info reminders expire after 30 days', async () => {
     const { user, child } = await seedUserAndChild();
     const longAgo = new Date(Date.now() - 31 * DAY_MS);
     await testDb.insert(tipDismissals).values({
@@ -315,7 +315,7 @@ describe('loadDismissals / dismissReminder', () => {
     expect((await loadDismissals(user.id, child.id)).has('stale-diversity')).toBe(false);
   });
 
-  it('honors TTL — warn reminders expire after 90 days', async () => {
+  it('honors TTL : warn reminders expire after 90 days', async () => {
     const { user, child } = await seedUserAndChild();
     const longAgo = new Date(Date.now() - 91 * DAY_MS);
     await testDb.insert(tipDismissals).values({
@@ -615,7 +615,7 @@ describe('loadAnalyticsBuckets', () => {
 
   it('cumulative categories include foods first introduced BEFORE the horizon', async () => {
     const { user, child } = await seedUserAndChild();
-    // Two foods, both first introduced more than 4 weeks before "now" — i.e.
+    // Two foods, both first introduced more than 4 weeks before "now" : i.e.
     // outside the chart's horizon. Reactions for those entries shouldn't
     // influence the visible buckets, but their categories must still appear
     // in the cumulative count of every bucket.
@@ -654,7 +654,7 @@ describe('loadAnalyticsBuckets', () => {
     const weeks = 4;
     const now = new Date('2024-06-10T12:00:00Z');
     const horizonMs = now.getTime() - weeks * 7 * 24 * 60 * 60 * 1000;
-    // Entry at exactly horizonMs — should land in bucket 0 (the oldest visible
+    // Entry at exactly horizonMs : should land in bucket 0 (the oldest visible
     // bucket) and contribute to its reaction count, never to a non-existent
     // earlier bucket.
     await logEntry({

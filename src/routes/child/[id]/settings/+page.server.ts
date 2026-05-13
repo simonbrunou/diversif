@@ -9,7 +9,7 @@ import { createInvitationForChild } from '$lib/server/invitations';
 import { checkRateLimit } from '$lib/server/rate-limit';
 
 // Same fresh-auth bucket the /account changePassword and deleteAccount
-// actions use — sharing the budget across all currentPassword-gated
+// actions use : sharing the budget across all currentPassword-gated
 // surfaces is intentional, the threat model is identical (a session
 // cookie attacker brute-forcing the password against argon2id).
 const FRESH_AUTH_LIMIT = { name: 'fresh-auth', limit: 5, windowMs: 5 * 60 * 1000 };
@@ -51,7 +51,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     );
 
   // Owners need email to identify which co-parent to remove from the roster
-  // (administrative use). Non-owner members get displayName only — exposing
+  // (administrative use). Non-owner members get displayName only : exposing
   // every co-parent's email to every newly-joined member is a PII leak with
   // no operational need.
   const isOwner = membership.role === 'owner';

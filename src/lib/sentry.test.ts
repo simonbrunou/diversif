@@ -97,7 +97,7 @@ describe('scrubEvent', () => {
   it('returns null on a malformed input rather than throwing', () => {
     // @ts-expect-error deliberately broken
     expect(scrubEvent(null)).toBeNull();
-    // Malformed URL — scrubEvent must not throw; it returns the mutated event.
+    // Malformed URL : scrubEvent must not throw; it returns the mutated event.
     expect(() => scrubEvent({ request: { url: 'not a url' } })).not.toThrow();
   });
 

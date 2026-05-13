@@ -7,7 +7,7 @@ import ThemeToggle from './ThemeToggle.svelte';
 
 describe('ThemeToggle', () => {
   beforeEach(() => {
-    // Browser-mode test — provide localStorage + matchMedia stubs.
+    // Browser-mode test : provide localStorage + matchMedia stubs.
     const store = new Map<string, string>();
     vi.stubGlobal('localStorage', {
       getItem: (k: string) => store.get(k) ?? null,

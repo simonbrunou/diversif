@@ -109,7 +109,7 @@ describe('registerShutdownHandlers', () => {
 
   it('is idempotent across re-registration', async () => {
     const { proc, pool, exit } = makeHarness();
-    // A second register call must not stack listeners — otherwise SIGTERM
+    // A second register call must not stack listeners : otherwise SIGTERM
     // would trigger two pool drains and two exit calls under shared state.
     registerShutdownHandlers({
       pool: { end: vi.fn() },

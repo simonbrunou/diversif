@@ -51,7 +51,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     count: 5
   });
 
-  // Tip dismissal — check against tip_dismissals using reminderKey column
+  // Tip dismissal : check against tip_dismissals using reminderKey column
   const dismissed = await db
     .select()
     .from(tipDismissals)

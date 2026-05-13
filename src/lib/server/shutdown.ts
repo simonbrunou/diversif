@@ -1,6 +1,6 @@
 // Adapter-node closes the HTTP server on SIGTERM but leaves the pg pool
 // holding open connections. Postgres then sees the client vanish and may
-// log "unexpected EOF" or — worse — keep the backend alive long enough to
+// log "unexpected EOF" or : worse : keep the backend alive long enough to
 // affect a follow-up deploy (e.g. another instance hitting connection
 // limits). Drain the pool ourselves before letting the process exit.
 
@@ -14,7 +14,7 @@ type ShutdownOptions = {
   // timer, idempotency-key purge); errors are logged and swallowed so a
   // broken cleanup never blocks the pool drain.
   beforeExit?: () => void | Promise<void>;
-  // Caps the pool drain. pool.end() waits for in-flight queries — fine in
+  // Caps the pool drain. pool.end() waits for in-flight queries : fine in
   // theory, but a stuck statement_timeout-defying query would hold the
   // process forever. 10s deliberately matches the pool's statement_timeout:
   // a query started just before SIGTERM may still be running when the

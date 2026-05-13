@@ -190,7 +190,7 @@ describe('challenges', () => {
     expect(PASSKEY_CHALLENGE_TTL_MS).toBeGreaterThan(0);
   });
 
-  it('atomically consumes a challenge — concurrent verifies cannot both succeed', async () => {
+  it('atomically consumes a challenge : concurrent verifies cannot both succeed', async () => {
     const c = await createChallenge({ challenge: 'x', purpose: 'registration', userId: null });
 
     const [first, second] = await Promise.all([

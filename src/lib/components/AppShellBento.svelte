@@ -66,7 +66,7 @@
   </nav>
 
   <div class="flex flex-col">
-    <!-- Mobile brand strip — bridges the visual gap to PublicHeader.
+    <!-- Mobile brand strip : bridges the visual gap to PublicHeader.
          Same h-14, border-b, backdrop-blur signature so the chrome
          doesn't fully swap when moving between marketing and app. -->
     <header

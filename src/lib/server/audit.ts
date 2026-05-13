@@ -1,7 +1,7 @@
 // Structured audit log for sensitive account operations. Emitted as a single
 // JSON line to stdout so the deployment platform's log aggregator captures it
 // durably alongside application logs. Deliberately no email, IP or other
-// directly-identifying PII — the numeric user id is enough to reconstruct
+// directly-identifying PII : the numeric user id is enough to reconstruct
 // who did what (correlate with the users row by id, which the operator
 // already has access to anyway).
 //
@@ -31,7 +31,7 @@ export type AuditEvent =
     }
   // Credential lifecycle events. RGPD article 32 (security of processing)
   // and article 33 (breach notification) both expect the controller to
-  // reconstruct the timeline of credential changes — what happened, to
+  // reconstruct the timeline of credential changes : what happened, to
   // whom, and when. We log these on success only; a failed verifyPassword
   // already shows up in the rate-limit + stderr trail.
   | { type: 'account.password_changed'; userId: number }
@@ -40,7 +40,7 @@ export type AuditEvent =
   | { type: 'account.passkey_renamed'; userId: number; passkeyId: string }
   // logoutEverywhere: the user explicitly revoked every live session for
   // their account (e.g. after losing a device). Useful audit signal in a
-  // breach-investigation context — the operator can see "X revoked all
+  // breach-investigation context : the operator can see "X revoked all
   // sessions at T" alongside the surrounding error/access patterns.
   | { type: 'account.sessions_revoked'; userId: number }
   | {
