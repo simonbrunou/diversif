@@ -100,10 +100,10 @@
 
   <p
     class={cn(
-      'mt-3 flex items-start gap-2 border-l-2 py-0.5 pl-2.5 text-[11px] leading-relaxed',
-      contextual.tone === 'celebrate' && 'border-celebrate text-celebrate-foreground',
-      contextual.tone === 'info' && 'border-primary/50 text-foreground/80',
-      contextual.tone === 'muted' && 'border-transparent text-muted-foreground'
+      'mt-3 flex items-start gap-2 text-[11px] leading-relaxed',
+      contextual.tone === 'celebrate' && 'text-celebrate-foreground',
+      contextual.tone === 'info' && 'text-foreground/80',
+      contextual.tone === 'muted' && 'text-muted-foreground'
     )}
   >
     {#if contextual.tone === 'celebrate'}
