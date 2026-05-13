@@ -2,6 +2,7 @@
   import { AlertTriangle, Info, Sparkles, X, ChevronRight } from 'lucide-svelte';
   import { enhance } from '$app/forms';
   import { cn } from '$lib/utils/cn';
+  import * as m from '$lib/paraglide/messages';
   import SourceCitation from './SourceCitation.svelte';
   import type { Reminder } from '$lib/server/guidance/reminders';
 
@@ -9,7 +10,7 @@
 
   const ICONS = { info: Sparkles, warn: AlertTriangle, important: AlertTriangle } as const;
   const STYLES: Record<Reminder['severity'], string> = {
-    info: 'border-primary/20 bg-primary/5',
+    info: 'border-primary/30 bg-primary/10',
     warn: 'border-reaction-inconfort/40 bg-reaction-inconfort/10',
     important: 'border-primary/40 bg-accent'
   };
@@ -59,8 +60,8 @@
       <button
         type="submit"
         class="rounded-full p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Masquer ce rappel"
-        title="Masquer"
+        aria-label={m.reminderDismissLabel()}
+        title={m.reminderDismissTitle()}
       >
         <Info size={0} class="hidden" />
         <X size={16} aria-hidden="true" />

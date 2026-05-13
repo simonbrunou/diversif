@@ -37,7 +37,9 @@ describe('AppShellBento', () => {
 
   it('renders the child header pill with the current child name', () => {
     render(AppShellBento, { props: baseProps });
-    expect(screen.getByText('Léo')).toBeTruthy();
+    // sr-only <h1> echoes the name for screen readers, so the visible pill text
+    // and the announcement node both match "Léo".
+    expect(screen.getAllByText('Léo').length).toBeGreaterThan(0);
   });
 
   it('does not render the FAB or tab bar on auth/landing routes', () => {

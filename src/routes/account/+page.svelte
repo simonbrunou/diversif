@@ -219,7 +219,7 @@
             <Label for="passkeyName">{m.authAccountPasskeyNewNameLabel()}</Label>
             <Input
               id="passkeyName"
-              placeholder="iPhone, MacBook…"
+              placeholder={m.authAccountPasskeyNamePlaceholder()}
               maxlength={80}
               bind:value={passkeyName}
             />

@@ -21,7 +21,6 @@
     'aria-label': ariaLabel
   }: Props = $props();
 
-  // bits-ui v2 uses separate `indeterminate` prop
   const isIndeterminate = $derived(checked === 'indeterminate');
   const isChecked = $derived(checked === true);
 </script>
@@ -32,6 +31,12 @@
   onCheckedChange={(v) => {
     checked = v;
     onCheckedChange?.(v);
+  }}
+  onIndeterminateChange={(v) => {
+    if (v) {
+      checked = 'indeterminate';
+      onCheckedChange?.('indeterminate');
+    }
   }}
   {disabled}
   {id}

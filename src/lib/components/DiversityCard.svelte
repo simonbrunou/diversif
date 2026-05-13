@@ -2,6 +2,7 @@
   import Card from '$components/ui/Card.svelte';
   import { Layers, Clock, RotateCcw, Sparkles, Lightbulb } from 'lucide-svelte';
   import { cn } from '$lib/utils/cn';
+  import * as m from '$lib/paraglide/messages';
   import type { DiversityMetrics } from '$lib/server/guidance/queries';
 
   let { metrics }: { metrics: DiversityMetrics } = $props();
@@ -9,9 +10,9 @@
   const lastNewLabel = $derived.by(() => {
     if (!metrics.lastNewFoodAt) return '—';
     const days = Math.floor((Date.now() - metrics.lastNewFoodAt) / (24 * 60 * 60 * 1000));
-    if (days <= 0) return "aujourd'hui";
-    if (days === 1) return 'hier';
-    return `il y a ${days} j`;
+    if (days <= 0) return m.diversityCardLastNewToday();
+    if (days === 1) return m.diversityCardLastNewYesterday();
+    return m.diversityCardLastNewDays({ days: String(days) });
   });
 
   type ContextualMessage = {
@@ -24,7 +25,7 @@
     if (totalCategories > 0 && categoriesCovered >= totalCategories) {
       return {
         tone: 'celebrate',
-        text: 'Toutes les familles couvertes : diversité au top.'
+        text: m.diversityCardContextualAllCovered()
       };
     }
     const seventyPct = Math.ceil(totalCategories * 0.7);
@@ -32,25 +33,28 @@
       const remaining = totalCategories - categoriesCovered;
       return {
         tone: 'info',
-        text: `Plus que ${remaining} groupe${remaining > 1 ? 's' : ''} pour faire le tour.`
+        text: m.diversityCardContextualNearlyThere({
+          remaining: String(remaining),
+          plural: remaining > 1 ? 's' : ''
+        })
       };
     }
     if (categoriesCovered >= 3) {
       return {
         tone: 'info',
-        text: `${categoriesCovered} groupes couverts : joli début.`
+        text: m.diversityCardContextualGoodStart({ count: String(categoriesCovered) })
       };
     }
     if (lastNewFoodAt == null) {
-      return { tone: 'muted', text: 'Aucun aliment encore. À votre rythme.' };
+      return { tone: 'muted', text: m.diversityCardContextualNoneYet() };
     }
     const daysSinceNew = Math.floor((Date.now() - lastNewFoodAt) / (24 * 60 * 60 * 1000));
     if (daysSinceNew > 14) {
-      return { tone: 'info', text: 'Une nouveauté cette semaine ?' };
+      return { tone: 'info', text: m.diversityCardContextualWeekly() };
     }
     return {
       tone: 'muted',
-      text: 'L’acceptation gustative se construit avec la répétition : un aliment refusé peut être reproposé jusqu’à 10 fois.'
+      text: m.diversityCardContextualRepetition()
     };
   });
 </script>
@@ -58,19 +62,21 @@
 <Card class="p-4 md:p-5">
   <div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
     <Layers size={14} aria-hidden="true" />
-    Diversité
+    {m.diversityCardLabel()}
   </div>
 
   <dl class="mt-3 grid grid-cols-3 gap-3">
     <div>
-      <dt class="text-[11px] uppercase tracking-wider text-muted-foreground">Catégories</dt>
+      <dt class="text-[11px] uppercase tracking-wider text-muted-foreground">
+        {m.diversityCardCategoriesLabel()}
+      </dt>
       <dd class="mt-1 font-display text-2xl font-semibold leading-none tabular-nums">
         {metrics.categoriesCovered}
         <span class="font-sans text-base font-normal text-muted-foreground"
           >/ {metrics.totalCategories}</span
         >
       </dd>
-      <p class="mt-1 text-[11px] text-muted-foreground">groupes couverts</p>
+      <p class="mt-1 text-[11px] text-muted-foreground">{m.diversityCardCategoriesCaption()}</p>
     </div>
 
     <div>
@@ -78,10 +84,10 @@
         class="flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground"
       >
         <Clock size={11} aria-hidden="true" />
-        Nouveauté
+        {m.diversityCardNewLabel()}
       </dt>
       <dd class="mt-1 truncate font-display text-2xl font-semibold leading-none">{lastNewLabel}</dd>
-      <p class="mt-1 text-[11px] text-muted-foreground">dernier nouvel aliment</p>
+      <p class="mt-1 text-[11px] text-muted-foreground">{m.diversityCardNewCaption()}</p>
     </div>
 
     <div>
@@ -89,12 +95,12 @@
         class="flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground"
       >
         <RotateCcw size={11} aria-hidden="true" />
-        À reproposer
+        {m.diversityCardRepeatLabel()}
       </dt>
       <dd class="mt-1 font-display text-2xl font-semibold leading-none tabular-nums">
         {metrics.repeatExposureCount}
       </dd>
-      <p class="mt-1 text-[11px] text-muted-foreground">testés &lt; 3 fois</p>
+      <p class="mt-1 text-[11px] text-muted-foreground">{m.diversityCardRepeatCaption()}</p>
     </div>
   </dl>
 
