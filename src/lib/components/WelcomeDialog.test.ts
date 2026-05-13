@@ -44,12 +44,12 @@ describe('WelcomeDialog', () => {
   });
 
   it('renders the welcome-dialog dismiss form', () => {
-    const { container } = render(WelcomeDialog, {
+    render(WelcomeDialog, {
       props: { open: true, childId: 1, formAction: '?/dismissReminder' }
     });
-    const form = container.querySelector('form');
+    const form = document.querySelector('form');
     expect(form?.getAttribute('action')).toBe('?/dismissReminder');
-    expect(container.querySelector('input[name="reminderKey"]')?.getAttribute('value')).toBe(
+    expect(document.querySelector('input[name="reminderKey"]')?.getAttribute('value')).toBe(
       'welcome-dialog'
     );
   });

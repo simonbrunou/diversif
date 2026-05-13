@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Sheet from './ui/Sheet.svelte';
+  import Modal from './ui/Modal.svelte';
   import Command, { type CommandItem } from './ui/Command.svelte';
   import ReactionPicker from './ReactionPicker.svelte';
   import { toast } from './ui/Toast.svelte';
@@ -27,7 +27,7 @@
   );
 </script>
 
-<Sheet bind:open title={m.chromeLogSheetTitle({ name: childName })} side="bottom">
+<Modal bind:open title={m.chromeLogSheetTitle({ name: childName })} side="bottom">
   <form
     method="POST"
     action={`/child/${childId}/log`}
@@ -60,4 +60,4 @@
       {m.chromeLogSheetSave()}
     </button>
   </form>
-</Sheet>
+</Modal>
