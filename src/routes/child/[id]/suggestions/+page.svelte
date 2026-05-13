@@ -6,7 +6,8 @@
   import {
     CATEGORIES,
     getCategoryClasses,
-    getCategoryIcon
+    getCategoryIcon,
+    getCategoryLabel
   } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
   import { cn } from '$lib/utils/cn';
@@ -26,7 +27,7 @@
       if (!groups.has(f.category)) groups.set(f.category, []);
       groups.get(f.category)!.push(f);
     }
-    return CATEGORIES.map((c) => ({ id: c.id, label: c.label, items: groups.get(c.id) ?? [] })).filter(
+    return CATEGORIES.map((c) => ({ id: c.id, label: getCategoryLabel(c.id), items: groups.get(c.id) ?? [] })).filter(
       (g) => g.items.length > 0
     );
   }
