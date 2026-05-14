@@ -52,8 +52,10 @@ async function logFoodWithReaction(
     .getByRole('button', { name: new RegExp(`^${foodName}`) })
     .first()
     .click();
-  // ReactionPicker uses <label> elements; clicking the label selects the radio.
-  await page.getByText(reactionLabel, { exact: true }).click();
+  // ReactionPicker uses <label> elements; scope to the fieldset because the
+  // severity-helper <details> panel below it echoes the same labels in <strong>
+  // tags ("Comment choisir ?" copy on /log).
+  await page.locator('fieldset').getByText(reactionLabel, { exact: true }).click();
   await page.getByRole('button', { name: 'Noter ce repas' }).click();
   // Server redirects back to /child/<id> after a successful log.
   await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
