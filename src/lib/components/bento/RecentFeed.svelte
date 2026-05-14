@@ -1,4 +1,5 @@
 <script lang="ts">
+  import EmptyHint from '$components/ui/EmptyHint.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { formatRelative } from '$lib/utils/dates';
@@ -43,9 +44,7 @@
 <section class="mb-3">
   <SectionHeader>{m.aujourdhuiRecentTitle()}</SectionHeader>
   {#if visible.length === 0}
-    <p class="rounded-tile border border-dashed border-border bg-canvas p-4 text-center text-sm text-ink-soft">
-      {m.aujourdhuiRecentEmpty()}
-    </p>
+    <EmptyHint class="p-4">{m.aujourdhuiRecentEmpty()}</EmptyHint>
   {:else}
     <ul class="flex flex-col gap-2">
       {#each visible as entry, i (entry.id)}

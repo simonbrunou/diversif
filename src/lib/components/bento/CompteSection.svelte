@@ -1,4 +1,5 @@
 <script lang="ts">
+  import LinkRow from '$components/ui/LinkRow.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { ChevronRight, KeyRound, Languages, Moon, Lock } from 'lucide-svelte';
@@ -52,17 +53,14 @@
   <ul class="flex flex-col gap-2">
     {#each rows as row (row.key)}
       <li>
-        <a
-          href={row.href}
-          class="flex items-center gap-3 rounded-tile bg-surface px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
-        >
+        <LinkRow href={row.href}>
           <row.icon size={18} class="text-ink-soft" aria-hidden="true" />
           <span class="flex-1 text-sm font-bold">{row.label}</span>
           {#if row.meta}
             <span class="text-xs text-ink-soft">{row.meta}</span>
           {/if}
           <ChevronRight size={16} class="text-ink-soft" aria-hidden="true" />
-        </a>
+        </LinkRow>
       </li>
     {/each}
   </ul>

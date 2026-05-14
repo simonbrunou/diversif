@@ -1,4 +1,5 @@
 <script lang="ts">
+  import LinkRow from '$components/ui/LinkRow.svelte';
   import * as m from '$lib/paraglide/messages';
   import { ChevronRight } from 'lucide-svelte';
 
@@ -7,10 +8,12 @@
   let { child, href }: { child: Child; href: string } = $props();
 </script>
 
-<a
+<LinkRow
   {href}
+  variant="tile-peach"
+  lift
   aria-label={m.profilChildrenChevronAria({ name: child.name })}
-  class="mb-2 flex items-center gap-3 rounded-tile bg-tile-peach px-4 py-3 shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01] active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"
+  class="mb-2 px-4"
 >
   <span class="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-base font-bold">
     {child.name.charAt(0)}
@@ -20,4 +23,4 @@
     <p class="text-xs text-ink-soft">{child.ageMonths} mois</p>
   </span>
   <ChevronRight size={18} class="text-ink-soft" aria-hidden="true" />
-</a>
+</LinkRow>

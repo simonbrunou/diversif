@@ -72,7 +72,7 @@
     --destructive: var(--severe);
     --destructive-foreground: var(--severe-foreground);
 
-    /* reactions vocabulary (consumed by ReactionBadge / ReactionPicker) */
+    /* reactions vocabulary (consumed by ReactionPicker) */
     --reaction-ras: var(--tile-mint);
     --reaction-ras-foreground: var(--tile-mint-foreground);
     --reaction-inconfort: var(--tile-butter);

@@ -1,5 +1,6 @@
 <script lang="ts">
   import Modal from '../ui/Modal.svelte';
+  import Label from '$components/ui/Label.svelte';
   import * as m from '$lib/paraglide/messages';
   import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 
@@ -58,12 +59,7 @@
       </div>
     </fieldset>
 
-    <label
-      class="mt-4 block text-xs font-semibold uppercase tracking-wider text-ink-soft"
-      for="symptom-note"
-    >
-      {m.addSymptomNote()}
-    </label>
+    <Label for="symptom-note" class="mt-4 block">{m.addSymptomNote()}</Label>
     <textarea
       id="symptom-note"
       name="note"
@@ -74,12 +70,7 @@
       rows="3"
     ></textarea>
 
-    <label
-      class="mt-4 block text-xs font-semibold uppercase tracking-wider text-ink-soft"
-      for="symptom-observed-at"
-    >
-      {m.addSymptomObservedAt()}
-    </label>
+    <Label for="symptom-observed-at" class="mt-4 block">{m.addSymptomObservedAt()}</Label>
     <input
       id="symptom-observed-at"
       type="time"
