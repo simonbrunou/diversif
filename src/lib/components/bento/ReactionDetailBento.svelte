@@ -6,10 +6,8 @@
   import SevereRail from './SevereRail.svelte';
   import MonitorTimer from './MonitorTimer.svelte';
   import * as m from '$lib/paraglide/messages';
-  import type { SymptomLabel } from '$lib/content/symptoms';
+  import type { SymptomEntry } from '$lib/types';
   import { ChevronLeft } from 'lucide-svelte';
-
-  type SymptomEntry = { id: number; label: SymptomLabel; observedAt: string; note: string | null };
 
   let {
     childId,

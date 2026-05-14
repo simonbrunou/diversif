@@ -1,4 +1,5 @@
 import type { User, Membership } from './server/db/schema';
+import type { SymptomLabel } from './content/symptoms';
 
 export type SafeUser = Omit<User, 'passwordHash'>;
 export type { Membership };
@@ -10,13 +11,18 @@ export type ChildSummary = {
   role: 'owner' | 'member';
 };
 
-export type DashboardEntry = {
+export type RecentEntry = {
   id: number;
-  givenAt: number;
-  reaction: 'ras' | 'inconfort' | 'reaction';
-  notes: string | null;
   foodId: number;
   foodName: string;
   category: string;
-  loggedByName: string;
+  reaction: 'ras' | 'inconfort' | 'reaction';
+  givenAt: number;
+};
+
+export type SymptomEntry = {
+  id: number;
+  label: SymptomLabel;
+  observedAt: string;
+  note: string | null;
 };

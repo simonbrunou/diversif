@@ -4,9 +4,7 @@
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { Plus } from 'lucide-svelte';
-  import type { SymptomLabel } from '$lib/content/symptoms';
-
-  type SymptomEntry = { id: number; label: SymptomLabel; observedAt: string; note: string | null };
+  import type { SymptomEntry } from '$lib/types';
 
   let {
     symptoms,

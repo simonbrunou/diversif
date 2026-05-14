@@ -6,6 +6,7 @@
   import RecentFeed from './RecentFeed.svelte';
   import type { SuggestFood } from '$lib/utils/suggest';
   import type { Reminder } from '$lib/server/guidance/reminders';
+  import type { RecentEntry } from '$lib/types';
 
   type Stats = {
     foodsIntroduced: number;
@@ -17,15 +18,6 @@
       inconfort: number;
       reaction: number;
     };
-  };
-
-  type RecentEntry = {
-    id: number;
-    foodId: number;
-    foodName: string;
-    category: string;
-    reaction: 'ras' | 'inconfort' | 'reaction';
-    givenAt: number;
   };
 
   let {
