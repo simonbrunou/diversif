@@ -10,7 +10,7 @@ test.describe('signup → onboarding', () => {
     await page.goto('/signup');
     await page.getByLabel('Votre prénom').fill('Test Parent');
     await page.getByLabel('Adresse e-mail').fill(email);
-    await page.getByLabel('Mot de passe').fill('hunter2-very-long');
+    await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
     await page.getByLabel(/au moins 15 ans/i).check();
     await page.getByLabel(/conditions générales/i).check();
     await page.getByLabel(/politique de confidentialité/i).check();
@@ -21,7 +21,7 @@ test.describe('signup → onboarding', () => {
   test('rejects invalid login', async ({ page }) => {
     await page.goto('/login');
     await page.getByLabel('Adresse e-mail').fill('nobody-12345@example.com');
-    await page.getByLabel('Mot de passe').fill('wrong-pass');
+    await page.getByLabel('Mot de passe', { exact: true }).fill('wrong-pass');
     await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
     await expect(page.locator('body')).toContainText(/incorrect/i);
   });

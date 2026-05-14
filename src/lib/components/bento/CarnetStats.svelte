@@ -1,14 +1,45 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { languageTag } from '$lib/paraglide/runtime';
 
   let {
     diversityScore,
     distinctFoods,
-    weeklyEntries
-  }: { diversityScore: number; distinctFoods: number; weeklyEntries: number[] } = $props();
+    weeklyEntries,
+    anchorUtc
+  }: {
+    diversityScore: number;
+    distinctFoods: number;
+    weeklyEntries: number[];
+    anchorUtc?: number;
+  } = $props();
 
   const max = $derived(weeklyEntries.length === 0 ? 1 : Math.max(1, ...weeklyEntries));
+
+  // Single-letter weekday in the active locale, one per bucket. The server
+  // (loadWeeklyEntries) buckets by UTC calendar day with the last bucket
+  // pinned to `anchorUtc` (UTC midnight of "today" at request time). Format
+  // the labels off that same anchor so the bars and their labels describe
+  // the same UTC dates even when the page hydrates after a UTC midnight
+  // rollover — otherwise labels would shift one day while the bars stayed
+  // put, and SSR/CSR would diverge.
+  const dayLabels = $derived.by(() => {
+    const fmt = new Intl.DateTimeFormat(languageTag(), {
+      weekday: 'narrow',
+      timeZone: 'UTC'
+    });
+    // Fallback: standalone use without an anchor (isolated tests, future
+    // consumers). The current UTC date still produces sensible labels, just
+    // with the original drift risk.
+    const now = new Date();
+    const todayUTC =
+      anchorUtc ?? Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    return Array.from({ length: weeklyEntries.length }, (_, i) => {
+      const d = new Date(todayUTC - (weeklyEntries.length - 1 - i) * 86400_000);
+      return fmt.format(d);
+    });
+  });
 
   function logsLabel(count: number): string {
     return count === 1 ? m.carnetStatsLogsOne() : m.carnetStatsLogsOther({ count: String(count) });
@@ -37,6 +68,11 @@
             style={`height: ${Math.max(2, (count / max) * 100)}%`}
             aria-label={logsLabel(count)}
           ></div>
+        {/each}
+      </div>
+      <div class="mt-1 flex gap-1 text-[10px] uppercase text-ink-soft">
+        {#each weeklyEntries as _, i (i)}
+          <span data-day class="flex-1 text-center">{dayLabels[i]}</span>
         {/each}
       </div>
     </article>

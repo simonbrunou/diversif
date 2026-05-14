@@ -12,7 +12,7 @@ async function signUp(
   await page.goto(url);
   await page.getByLabel('Votre prénom').fill(opts.displayName);
   await page.getByLabel('Adresse e-mail').fill(opts.email);
-  await page.getByLabel('Mot de passe').fill('hunter2-very-long');
+  await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
   await page.getByLabel(/politique de confidentialité/i).check();

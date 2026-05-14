@@ -68,14 +68,18 @@ async function loadBentoAllergens(childId: number): Promise<AllergenItem[]> {
   });
 }
 
-async function loadWeeklyEntries(childId: number, now: Date = new Date()): Promise<number[]> {
+async function loadWeeklyEntries(
+  childId: number,
+  now: Date = new Date()
+): Promise<{ counts: number[]; anchorUtc: number }> {
   // 7 daily buckets: oldest at index 0, today at index 6. Buckets are
   // UTC calendar days starting 6 days ago at 00:00 UTC through end-of-day today.
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0)
-  );
-  const start = new Date(today.getTime() - 6 * 86400_000);
-  const end = new Date(today.getTime() + 86400_000); // exclusive upper bound
+  // anchorUtc pins the "today" the buckets were computed against so the client
+  // can label each bar against the same UTC date (and not drift if hydration
+  // crosses a UTC midnight relative to render).
+  const anchorUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0);
+  const start = new Date(anchorUtc - 6 * 86400_000);
+  const end = new Date(anchorUtc + 86400_000); // exclusive upper bound
 
   const rows = await db
     .select({ givenAt: foodEntries.givenAt })
@@ -88,17 +92,23 @@ async function loadWeeklyEntries(childId: number, now: Date = new Date()): Promi
       )
     );
 
-  const buckets = [0, 0, 0, 0, 0, 0, 0];
+  const counts = [0, 0, 0, 0, 0, 0, 0];
   for (const r of rows) {
     const givenAt =
       r.givenAt instanceof Date ? r.givenAt : /* v8 ignore next */ new Date(Number(r.givenAt));
-    const day = new Date(
-      Date.UTC(givenAt.getUTCFullYear(), givenAt.getUTCMonth(), givenAt.getUTCDate(), 0, 0, 0, 0)
+    const day = Date.UTC(
+      givenAt.getUTCFullYear(),
+      givenAt.getUTCMonth(),
+      givenAt.getUTCDate(),
+      0,
+      0,
+      0,
+      0
     );
-    const idx = Math.floor((day.getTime() - start.getTime()) / 86400_000);
-    if (idx >= 0 && idx < 7) buckets[idx] += 1;
+    const idx = Math.floor((day - start.getTime()) / 86400_000);
+    if (idx >= 0 && idx < 7) counts[idx] += 1;
   }
-  return buckets;
+  return { counts, anchorUtc };
 }
 
 export const load: PageServerLoad = async ({ params, url, locals }) => {

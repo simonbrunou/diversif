@@ -18,7 +18,7 @@
   const bentoStats = $derived({
     diversityScore: data.categoryCount,
     distinctFoods: data.foodCount,
-    weeklyEntries: data.weeklyEntries ?? []
+    weeklyEntries: data.weeklyEntries ?? { counts: [], anchorUtc: 0 }
   });
 </script>
 

@@ -2,7 +2,7 @@
   import Modal from '../ui/Modal.svelte';
   import Label from '$components/ui/Label.svelte';
   import * as m from '$lib/paraglide/messages';
-  import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
+  import { SYMPTOM_LABELS, severityOf, type SymptomLabel } from '$lib/content/symptoms';
 
   let {
     open = $bindable(false),
@@ -12,6 +12,17 @@
   let selected = $state<SymptomLabel | null>(null);
   let note = $state('');
   let observedAt = $state(new Date().toTimeString().slice(0, 5));
+
+  // The sheet stays mounted across opens (only `open` toggles), so reset every
+  // form field when it re-opens. Otherwise a dismissed-without-submit selection
+  // would persist and bypass the "no preselect" safeguard on the next open.
+  $effect(() => {
+    if (open) {
+      selected = null;
+      note = '';
+      observedAt = new Date().toTimeString().slice(0, 5);
+    }
+  });
 
   function labelText(l: SymptomLabel): string {
     const key = `symptomsLabel${l
@@ -33,23 +44,33 @@
 </script>
 
 <Modal bind:open title={m.addSymptomTitle()} side="bottom">
-  <form method="POST" action={`${action}?/addSymptom`}>
+  <form
+    method="POST"
+    action={`${action}?/addSymptom`}
+    onsubmit={(e) => {
+      if (selected === null) e.preventDefault();
+    }}
+  >
     <fieldset>
       <legend class="text-xs font-semibold uppercase tracking-wider text-ink-soft">
         {m.addSymptomLabel()}
       </legend>
       <div class="mt-2 grid grid-cols-2 gap-2">
         {#each SYMPTOM_LABELS as label (label)}
+          {@const isSelected = selected === label}
+          {@const isSevere = severityOf(label) === 'severe'}
           <label
-            class="flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold {selected === label
+            class="flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold {isSelected
               ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-canvas text-ink-soft'}"
+              : isSevere
+                ? 'border-destructive/40 bg-canvas text-destructive'
+                : 'border-border bg-canvas text-ink-soft'}"
           >
             <input
               type="radio"
               name="label"
               value={label}
-              checked={selected === label}
+              checked={isSelected}
               onchange={() => (selected = label)}
               class="sr-only"
             />
