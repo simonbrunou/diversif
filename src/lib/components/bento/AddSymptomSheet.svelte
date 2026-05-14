@@ -33,7 +33,13 @@
 </script>
 
 <Modal bind:open title={m.addSymptomTitle()} side="bottom">
-  <form method="POST" action={`${action}?/addSymptom`}>
+  <form
+    method="POST"
+    action={`${action}?/addSymptom`}
+    onsubmit={(e) => {
+      if (selected === null) e.preventDefault();
+    }}
+  >
     <fieldset>
       <legend class="text-xs font-semibold uppercase tracking-wider text-ink-soft">
         {m.addSymptomLabel()}
