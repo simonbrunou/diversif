@@ -11,7 +11,9 @@
 
   const max = $derived(weeklyEntries.length === 0 ? 1 : Math.max(1, ...weeklyEntries));
 
-  // i=0 is 6 days ago, i=6 is today. Single-letter weekday in active locale.
+  // Single-letter weekday in the active locale, one per bucket. The server
+  // always emits 7 buckets (loadWeeklyEntries) so i=0 → 6 days ago, i=6 → today;
+  // the offset formula uses .length to stay correct if that ever changes.
   const dayLabels = $derived.by(() => {
     const fmt = new Intl.DateTimeFormat(languageTag(), { weekday: 'narrow' });
     const today = new Date();

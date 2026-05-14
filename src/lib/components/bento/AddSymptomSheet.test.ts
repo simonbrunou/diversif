@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/svelte';
+import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import AddSymptomSheet from './AddSymptomSheet.svelte';
 
 afterEach(async () => {
@@ -61,5 +61,13 @@ describe('AddSymptomSheet', () => {
     expect(severe?.className).toContain('border-destructive/40');
     expect(severe?.className).toContain('text-destructive');
     expect(mild?.className).not.toContain('border-destructive');
+  });
+
+  it('blocks submit (e.g. Enter key) while no symptom is picked', async () => {
+    render(AddSymptomSheet, { props: { open: true, action: '/child/abc/foods/1' } });
+    const form = screen.getByRole('button', { name: 'Enregistrer le symptôme' }).closest('form')!;
+    const event = await fireEvent.submit(form);
+    // fireEvent.submit returns false when a listener called preventDefault.
+    expect(event).toBe(false);
   });
 });
