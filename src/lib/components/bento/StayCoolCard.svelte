@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { ChevronRight } from 'lucide-svelte';
 
   let { childId }: { childId: string } = $props();
@@ -10,7 +11,7 @@
   <p class="text-base font-bold leading-tight">{m.reactionStayCoolTitle()}</p>
   <p class="mt-1 text-sm text-tile-mint-foreground">{m.reactionStayCoolBody()}</p>
   <a
-    href={`/child/${childId}/guide#reactions`}
+    href={localizedHref(`/child/${childId}/guide#reactions`)}
     class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary-strong"
   >
     {m.reactionStayCoolLink()}

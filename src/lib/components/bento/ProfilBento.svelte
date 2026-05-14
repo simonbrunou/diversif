@@ -5,6 +5,7 @@
   import RgpdSection from './RgpdSection.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { Plus } from 'lucide-svelte';
 
   type ChildWithCoparents = {
@@ -31,10 +32,10 @@
   <section class="mb-3">
     <SectionHeader>{m.profilChildrenTitle()}</SectionHeader>
     {#each children as child (child.id)}
-      <ChildCardRow {child} href={`/child/${child.id}/settings`} />
+      <ChildCardRow {child} href={localizedHref(`/child/${child.id}/settings`)} />
     {/each}
     <a
-      href="/account#add-child"
+      href={localizedHref('/account#add-child')}
       class="flex items-center gap-2 rounded-tile border border-dashed border-border bg-canvas px-4 py-3 text-sm font-semibold text-ink-soft transition-transform duration-base ease-soft active:scale-[0.99]"
     >
       <Plus size={18} aria-hidden="true" />
@@ -46,7 +47,7 @@
     <CoparentsSection
       childName={child.name}
       coparents={child.coparents}
-      inviteHref={`/child/${child.id}/settings#invite`}
+      inviteHref={localizedHref(`/child/${child.id}/settings#invite`)}
     />
   {/each}
 
@@ -56,10 +57,10 @@
   <section class="mb-3">
     <SectionHeader>{m.profilLegalTitle()}</SectionHeader>
     <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-primary-strong">
-      <li><a href="/cgu" class="underline">{m.chromePublicFooterCGU()}</a></li>
-      <li><a href="/mentions-legales" class="underline">{m.chromeLegalLinksMentionsLegales()}</a></li>
-      <li><a href="/politique-confidentialite" class="underline">{m.chromeLegalLinksPolitiqueConfidentialite()}</a></li>
-      <li><a href="/cookies" class="underline">{m.chromeLegalLinksCookies()}</a></li>
+      <li><a href={localizedHref('/cgu')} class="underline">{m.chromePublicFooterCGU()}</a></li>
+      <li><a href={localizedHref('/mentions-legales')} class="underline">{m.chromeLegalLinksMentionsLegales()}</a></li>
+      <li><a href={localizedHref('/politique-confidentialite')} class="underline">{m.chromeLegalLinksPolitiqueConfidentialite()}</a></li>
+      <li><a href={localizedHref('/cookies')} class="underline">{m.chromeLegalLinksCookies()}</a></li>
     </ul>
   </section>
 </div>
