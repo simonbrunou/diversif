@@ -6,6 +6,7 @@
   import ThemeToggle from '$components/ThemeToggle.svelte';
   import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
   import LegalLinks from '$lib/components/LegalLinks.svelte';
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import { enhance } from '$app/forms';
   import { invalidateAll } from '$app/navigation';
   import { browser } from '$app/environment';
@@ -126,9 +127,7 @@
     </h2>
 
     <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-        {m.authAccountProfileSection()}
-      </h3>
+      <SectionHeader as="h3">{m.authAccountProfileSection()}</SectionHeader>
       <form
         method="POST"
         action="?/updateProfile"
@@ -148,9 +147,7 @@
     </section>
 
     <section id="password" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-        {m.authAccountPasswordSection()}
-      </h3>
+      <SectionHeader as="h3">{m.authAccountPasswordSection()}</SectionHeader>
       <form
         method="POST"
         action="?/changePassword"
@@ -174,9 +171,7 @@
     </section>
 
     <section id="passkeys" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-        {m.authAccountPasskeysSection()}
-      </h3>
+      <SectionHeader as="h3">{m.authAccountPasskeysSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">
         {m.authAccountPasskeysDescription()}
       </p>
@@ -244,17 +239,13 @@
     </h2>
 
     <section id="theme" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-        {m.authAccountAppearanceSection()}
-      </h3>
+      <SectionHeader as="h3">{m.authAccountAppearanceSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">{m.authAccountAppearanceDescription()}</p>
       <ThemeToggle />
     </section>
 
     <section id="locale" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-        {m.profilCompteLangue()}
-      </h3>
+      <SectionHeader as="h3">{m.profilCompteLangue()}</SectionHeader>
       <LocaleSwitcher />
     </section>
   </section>
@@ -265,9 +256,7 @@
     </h2>
 
     <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-        {m.authAccountSessionsSection()}
-      </h3>
+      <SectionHeader as="h3">{m.authAccountSessionsSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">
         {m.authAccountSessionsDescription()}
       </p>
@@ -277,9 +266,7 @@
     </section>
 
     <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-        {m.authAccountLogoutSection()}
-      </h3>
+      <SectionHeader as="h3">{m.authAccountLogoutSection()}</SectionHeader>
       <form method="POST" action="/logout">
         <Button type="submit" variant="outline">{m.authAccountLogout()}</Button>
       </form>
@@ -292,9 +279,7 @@
     </h2>
 
     <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-        {m.authAccountDataSection()}
-      </h3>
+      <SectionHeader as="h3">{m.authAccountDataSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">
         {m.authAccountDataDescription()}
       </p>
@@ -302,9 +287,7 @@
     </section>
 
     <section id="delete" class="scroll-mt-20 rounded-tile bg-tile-butter px-4 py-3 shadow-soft">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-destructive">
-        {m.authAccountDeleteSection()}
-      </h3>
+      <SectionHeader as="h3" tone="destructive">{m.authAccountDeleteSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">
         {m.authAccountDeleteDescription()}
       </p>
@@ -353,9 +336,7 @@
   </section>
 
   <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
-    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-      {m.authAccountLegalSection()}
-    </h2>
+    <SectionHeader>{m.authAccountLegalSection()}</SectionHeader>
     <LegalLinks />
   </section>
 </div>

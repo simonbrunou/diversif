@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
 
   const SOURCES = [
@@ -10,10 +11,8 @@
   ] as const;
 </script>
 
-<section class="mb-3" aria-label={m.decouvrirSourcesTitle()}>
-  <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-    {m.decouvrirSourcesTitle()}
-  </h2>
+<section class="mb-3">
+  <SectionHeader>{m.decouvrirSourcesTitle()}</SectionHeader>
   <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
     {#each SOURCES as src (src.key)}
       <a

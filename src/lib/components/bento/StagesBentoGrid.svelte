@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
 
@@ -11,10 +12,8 @@
   }: { stages: Stage[]; activeStageId: string; onOpen: (id: string) => void } = $props();
 </script>
 
-<section class="mb-3" aria-label={m.decouvrirStagesTitle()}>
-  <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-    {m.decouvrirStagesTitle()}
-  </h2>
+<section class="mb-3">
+  <SectionHeader>{m.decouvrirStagesTitle()}</SectionHeader>
   <div class="grid grid-cols-2 gap-3">
     {#each stages as stage (stage.id)}
       {@const active = stage.id === activeStageId}

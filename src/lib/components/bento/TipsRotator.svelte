@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
 
   type Tip = { id: string; title: string; body: string };
@@ -11,10 +12,8 @@
 </script>
 
 {#if tip && !dismissed}
-  <section class="mb-3" aria-label={m.decouvrirTipsTitle()}>
-    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-      {m.decouvrirTipsTitle()}
-    </h2>
+  <section class="mb-3">
+    <SectionHeader>{m.decouvrirTipsTitle()}</SectionHeader>
     <article class="rounded-tile bg-tile-butter p-4 shadow-soft">
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1">

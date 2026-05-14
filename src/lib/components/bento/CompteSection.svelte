@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { ChevronRight, KeyRound, Languages, Moon, Lock } from 'lucide-svelte';
 
@@ -46,10 +47,8 @@
   ]);
 </script>
 
-<section class="mb-3" aria-label={m.profilCompteTitle()}>
-  <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-    {m.profilCompteTitle()}
-  </h2>
+<section class="mb-3">
+  <SectionHeader>{m.profilCompteTitle()}</SectionHeader>
   <ul class="flex flex-col gap-2">
     {#each rows as row (row.key)}
       <li>
