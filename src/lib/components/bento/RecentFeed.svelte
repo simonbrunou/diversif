@@ -5,6 +5,7 @@
   import { formatRelative } from '$lib/utils/dates';
   import { getCategoryIcon } from '$lib/utils/categories';
   import { cn } from '$lib/utils/cn';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { RecentEntry } from '$lib/types';
 
   let { entries, childId }: { entries: RecentEntry[]; childId: string } = $props();
@@ -52,7 +53,7 @@
       {#each visible as entry, i (entry.id)}
         <li class="animate-feed-item" style="--i: {i}">
           <a
-            href="/child/{childId}/foods/{entry.id}"
+            href={localizedHref(`/child/${childId}/foods/${entry.id}`)}
             class="flex items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft"
           >
             {@render entryBody(entry)}
