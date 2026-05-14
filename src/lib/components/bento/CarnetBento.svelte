@@ -38,7 +38,11 @@
     foodCount: number;
     categoryCount: number;
     allergens: AllergenItem[];
-    stats: { diversityScore: number; distinctFoods: number; weeklyEntries: number[] };
+    stats: {
+      diversityScore: number;
+      distinctFoods: number;
+      weeklyEntries: { counts: number[]; anchorUtc: number };
+    };
     currentSegment: Segment;
   } = $props();
 </script>
@@ -56,7 +60,8 @@
     <CarnetStats
       diversityScore={stats.diversityScore}
       distinctFoods={stats.distinctFoods}
-      weeklyEntries={stats.weeklyEntries}
+      weeklyEntries={stats.weeklyEntries.counts}
+      anchorUtc={stats.weeklyEntries.anchorUtc}
     />
   {/if}
 </div>

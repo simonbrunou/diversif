@@ -445,11 +445,16 @@ describe('child/[id]/foods load', () => {
     await ctx.log(ctx.carrot.id, 'ras', 30);
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
     if (!('weeklyEntries' in out)) throw new Error('expected weeklyEntries in load result');
-    expect(out.weeklyEntries).toHaveLength(7);
-    expect(out.weeklyEntries.reduce((s, n) => s + n, 0)).toBe(5);
-    expect(out.weeklyEntries[6]).toBe(2); // today
-    expect(out.weeklyEntries[5]).toBe(2); // yesterday
-    expect(out.weeklyEntries[4]).toBe(1); // two days ago
+    expect(out.weeklyEntries.counts).toHaveLength(7);
+    expect(out.weeklyEntries.counts.reduce((s, n) => s + n, 0)).toBe(5);
+    expect(out.weeklyEntries.counts[6]).toBe(2); // today
+    expect(out.weeklyEntries.counts[5]).toBe(2); // yesterday
+    expect(out.weeklyEntries.counts[4]).toBe(1); // two days ago
+    // anchorUtc pins the bucketing to a UTC midnight at request time.
+    const now = new Date();
+    expect(out.weeklyEntries.anchorUtc).toBe(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    );
   });
 
   it('repeat=1 early-return branch still emits bentoAllergens + weeklyEntries', async () => {
@@ -509,7 +514,7 @@ describe('child/[id]/foods load', () => {
     expect(lait).toBeDefined();
     expect(lait!.state).toBe('cleared');
     expect(lait!.triedCount).toBe(3);
-    expect(out.weeklyEntries).toHaveLength(7);
-    expect(out.weeklyEntries.reduce((s, n) => s + n, 0)).toBe(3);
+    expect(out.weeklyEntries.counts).toHaveLength(7);
+    expect(out.weeklyEntries.counts.reduce((s, n) => s + n, 0)).toBe(3);
   });
 });

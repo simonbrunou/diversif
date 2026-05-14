@@ -37,4 +37,22 @@ describe('CarnetStats', () => {
       expect(el.textContent?.trim().length).toBeGreaterThan(0);
     }
   });
+
+  it('anchors labels to anchorUtc when provided (no drift across hydration)', () => {
+    // 2026-05-14 was a Thursday in UTC. With anchorUtc pinned to that day,
+    // the last bucket must always read "J" (jeudi narrow) regardless of the
+    // host clock.
+    const anchor = Date.UTC(2026, 4, 14);
+    const { container } = render(CarnetStats, {
+      props: {
+        diversityScore: 7,
+        distinctFoods: 23,
+        weeklyEntries: [0, 0, 0, 0, 0, 0, 1],
+        anchorUtc: anchor
+      }
+    });
+    const labels = container.querySelectorAll('[data-day]');
+    expect(labels.length).toBe(7);
+    expect(labels[6].textContent?.trim()).toBe('J');
+  });
 });

@@ -14,7 +14,11 @@ describe('CarnetBento', () => {
     allergens: [
       { id: 'oeuf', label: 'Œuf', triedCount: 0, lastTried: null, state: 'todo' as const }
     ],
-    stats: { diversityScore: 1, distinctFoods: 1, weeklyEntries: [1, 0, 0, 0, 0, 0, 0] },
+    stats: {
+      diversityScore: 1,
+      distinctFoods: 1,
+      weeklyEntries: { counts: [1, 0, 0, 0, 0, 0, 0], anchorUtc: Date.UTC(2026, 4, 14) }
+    },
     currentSegment: 'all' as const
   };
 
