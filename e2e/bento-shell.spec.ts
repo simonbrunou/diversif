@@ -1,45 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-function unique(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-}
-
-async function signUpAndCreateChild(page: Page, name: string, birthDate: string): Promise<string> {
-  const email = `${unique('bento')}@example.com`;
-  await page.goto('/signup');
-  await page.getByLabel('Votre prénom').fill('Parent');
-  await page.getByLabel('Adresse e-mail').fill(email);
-  await page.getByLabel('Mot de passe').fill('hunter2-very-long');
-  await page.getByLabel(/au moins 15 ans/i).check();
-  await page.getByLabel(/conditions générales/i).check();
-  await page.getByLabel(/politique de confidentialité/i).check();
-  await page.getByRole('button', { name: /créer mon compte/i }).click();
-  await expect(page).toHaveURL(/\/child\/new/);
-
-  await page.getByLabel('Prénom').fill(name);
-  await page.getByLabel('Date de naissance').fill(birthDate);
-  await page.getByRole('button', { name: /^créer$/i }).click();
-  await expect(page).toHaveURL(/\/child\/\d+$/);
-
-  // Capture the child ID from the resulting URL
-  const url = page.url();
-  const match = url.match(/\/child\/(\d+)$/);
-  if (!match) throw new Error(`Expected /child/<id> URL, got ${url}`);
-  return match[1];
-}
-
-// New accounts auto-open a 3-step welcome modal whose backdrop (Dialog.svelte
-// renders a `fixed inset-0 z-50` div) intercepts pointer events on the bento
-// chrome below. Dismissing it via the "Plus tard" form button posts to the
-// reminders endpoint and persists `showWelcomeDialog=false` for the session,
-// so subsequent navigations stay clean.
-async function dismissWelcomeIfPresent(page: Page): Promise<void> {
-  const dismiss = page.getByRole('button', { name: 'Plus tard' });
-  if (await dismiss.isVisible().catch(() => false)) {
-    await dismiss.click();
-    await expect(dismiss).not.toBeVisible();
-  }
-}
+import { test, expect } from '@playwright/test';
+import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 // Force a sub-`lg:` viewport so the mobile chrome (BottomNavBento + FAB) is
 // rendered/visible. Playwright's default chromium project uses Desktop Chrome
