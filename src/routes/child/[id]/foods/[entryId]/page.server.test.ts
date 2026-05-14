@@ -179,6 +179,20 @@ describe('reaction-detail loader', () => {
       )
     ).rejects.toMatchObject({ status: 404 });
   });
+
+  it.each(['not-a-number', '0'])('throws 404 for invalid entry id %s', async (entryId) => {
+    const ctx = await setup();
+    await expect(
+      load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    ).rejects.toMatchObject({ status: 404 });
+  });
 });
 
 describe('addSymptom action', () => {

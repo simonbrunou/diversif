@@ -10,7 +10,7 @@ import { audit } from '$lib/server/audit';
 import type { Actions, PageServerLoad } from './$types';
 
 function parseEntryIdParam(raw: string | undefined): number {
-  const n = raw === undefined ? NaN : Number(raw);
+  const n = Number(raw);
   if (!Number.isInteger(n) || n <= 0) throw error(404, 'Food entry not found');
   return n;
 }
