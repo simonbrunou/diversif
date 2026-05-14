@@ -72,7 +72,7 @@ describe('FoodCard', () => {
     expect(container.querySelector('a')).toBeNull();
   });
 
-  it('renders as <article> for RAS status even if href is provided', () => {
+  it('renders as <a> for RAS status when href is provided (late-reaction reachable)', () => {
     const { container } = render(FoodCard, {
       props: {
         name: 'Poire',
@@ -80,6 +80,22 @@ describe('FoodCard', () => {
         tried: 3,
         status: 'ras',
         href: '/child/1/foods/10'
+      }
+    });
+    const link = container.querySelector('a');
+    expect(link).toBeTruthy();
+    expect(link?.getAttribute('href')).toBe('/child/1/foods/10');
+    expect(container.querySelector('article')).toBeNull();
+  });
+
+  it('renders as <article> when tried === 0 even if href is provided', () => {
+    const { container } = render(FoodCard, {
+      props: {
+        name: 'Œuf',
+        category: 'oeufs',
+        tried: 0,
+        status: 'todo',
+        href: '/child/1/foods/1'
       }
     });
     expect(container.querySelector('article')).toBeTruthy();

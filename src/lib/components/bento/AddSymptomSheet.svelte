@@ -2,7 +2,7 @@
   import Modal from '../ui/Modal.svelte';
   import Label from '$components/ui/Label.svelte';
   import * as m from '$lib/paraglide/messages';
-  import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
+  import { SYMPTOM_LABELS, severityOf, type SymptomLabel } from '$lib/content/symptoms';
 
   let {
     open = $bindable(false),
@@ -40,16 +40,20 @@
       </legend>
       <div class="mt-2 grid grid-cols-2 gap-2">
         {#each SYMPTOM_LABELS as label (label)}
+          {@const isSelected = selected === label}
+          {@const isSevere = severityOf(label) === 'severe'}
           <label
-            class="flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold {selected === label
+            class="flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold {isSelected
               ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-canvas text-ink-soft'}"
+              : isSevere
+                ? 'border-destructive/40 bg-canvas text-destructive'
+                : 'border-border bg-canvas text-ink-soft'}"
           >
             <input
               type="radio"
               name="label"
               value={label}
-              checked={selected === label}
+              checked={isSelected}
               onchange={() => (selected = label)}
               class="sr-only"
             />

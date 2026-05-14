@@ -133,6 +133,8 @@
   "authSignupEmailLabel": "Email",
   "authSignupPasswordLabel": "Password",
   "authSignupPasswordHint": "Minimum 12 characters.",
+  "authSignupPasswordShow": "Show password",
+  "authSignupPasswordHide": "Hide password",
   "authSignupInviteCodeLabel": "Invitation code (optional)",
   "authSignupAge15": "I confirm I am at least 15 years old.",
   "authSignupAcceptTosPrefix": "I accept the",

@@ -12,7 +12,7 @@
   }: { name: string; category: string; tried: number; status: Status; href?: string } = $props();
 
   const isUntried = $derived(tried === 0);
-  const isLinkable = $derived((status === 'inconfort' || status === 'reaction') && !!href);
+  const isLinkable = $derived(!isUntried && !!href);
   const baseClass = $derived(
     cn(
       'flex flex-col gap-1 rounded-tile bg-canvas p-3 shadow-soft',

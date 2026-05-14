@@ -5,12 +5,14 @@
   import BentoAuthLayout from '$lib/components/bento/BentoAuthLayout.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
+  import { Eye, EyeOff } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let submitting = $state(false);
+  let showPassword = $state(false);
 </script>
 
 <Seo title={m.authSignupTitle()} path="/signup" noindex alternateLocales={['en']} />
@@ -63,7 +65,30 @@
 
     <div class="grid gap-1.5">
       <Label for="password">{m.authSignupPasswordLabel()}</Label>
-      <Input id="password" name="password" type="password" autocomplete="new-password" required minlength={12} />
+      <div class="relative">
+        <Input
+          id="password"
+          name="password"
+          type={showPassword ? 'text' : 'password'}
+          autocomplete="new-password"
+          required
+          minlength={12}
+          class="pr-12"
+        />
+        <button
+          type="button"
+          onclick={() => (showPassword = !showPassword)}
+          aria-label={showPassword ? m.authSignupPasswordHide() : m.authSignupPasswordShow()}
+          aria-pressed={showPassword}
+          class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-2 text-ink-soft hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          {#if showPassword}
+            <EyeOff size={18} aria-hidden="true" />
+          {:else}
+            <Eye size={18} aria-hidden="true" />
+          {/if}
+        </button>
+      </div>
       <p class="text-xs text-muted-foreground">{m.authSignupPasswordHint()}</p>
     </div>
 

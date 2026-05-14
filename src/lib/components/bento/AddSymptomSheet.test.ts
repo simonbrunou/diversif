@@ -53,4 +53,13 @@ describe('AddSymptomSheet', () => {
     }) as HTMLButtonElement;
     expect(submit.disabled).toBe(true);
   });
+
+  it('tints severe symptom chips when unselected', () => {
+    render(AddSymptomSheet, { props: { open: true, action: '/child/abc/foods/1' } });
+    const severe = screen.getByText('Détresse respiratoire').closest('label');
+    const mild = screen.getByText('Rougeur').closest('label');
+    expect(severe?.className).toContain('border-destructive/40');
+    expect(severe?.className).toContain('text-destructive');
+    expect(mild?.className).not.toContain('border-destructive');
+  });
 });
