@@ -13,6 +13,17 @@
   let note = $state('');
   let observedAt = $state(new Date().toTimeString().slice(0, 5));
 
+  // The sheet stays mounted across opens (only `open` toggles), so reset every
+  // form field when it re-opens. Otherwise a dismissed-without-submit selection
+  // would persist and bypass the "no preselect" safeguard on the next open.
+  $effect(() => {
+    if (open) {
+      selected = null;
+      note = '';
+      observedAt = new Date().toTimeString().slice(0, 5);
+    }
+  });
+
   function labelText(l: SymptomLabel): string {
     const key = `symptomsLabel${l
       .split('-')

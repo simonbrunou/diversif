@@ -8,7 +8,7 @@ async function signUp(page: Page, email: string) {
   await page.goto('/signup');
   await page.getByLabel('Votre prénom').fill('RGPD Tester');
   await page.getByLabel('Adresse e-mail').fill(email);
-  await page.getByLabel('Mot de passe').fill('hunter2-very-long');
+  await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
   await page.getByLabel(/politique de confidentialité/i).check();
@@ -38,7 +38,7 @@ test.describe('signup consent gates', () => {
     await page.goto('/signup');
     await page.getByLabel('Votre prénom').fill('Sans consentement');
     await page.getByLabel('Adresse e-mail').fill(email);
-    await page.getByLabel('Mot de passe').fill('hunter2-very-long');
+    await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
     await page.getByRole('button', { name: /créer mon compte/i }).click();
     // Browsers block submission for unticked required checkboxes; URL stays on /signup.
     await expect(page).toHaveURL(/\/signup/);
