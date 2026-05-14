@@ -49,6 +49,15 @@ export type AuditEvent =
       childId: number;
       entryId: number;
       label: string;
+    }
+  | {
+      type: 'food_entry.reaction_promoted';
+      userId: number;
+      childId: number;
+      entryId: number;
+      from: 'ras';
+      to: 'inconfort' | 'reaction';
+      triggeredBy: number; // symptom id
     };
 
 export function audit(event: AuditEvent): void {
