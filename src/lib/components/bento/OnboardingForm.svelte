@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Label from '$components/ui/Label.svelte';
   import * as m from '$lib/paraglide/messages';
 
   type Errors = { firstName?: string; birthDate?: string } | null;
@@ -9,9 +10,7 @@
   <h1 class="font-display text-3xl italic">{m.onboardingTitle()}</h1>
   <p class="mt-1 text-sm text-ink-soft">{m.onboardingSubtitle()}</p>
 
-  <label class="mt-6 block text-xs font-semibold uppercase tracking-wider text-ink-soft" for="firstName">
-    {m.onboardingFirstNameLabel()}
-  </label>
+  <Label for="firstName" class="mt-6 block">{m.onboardingFirstNameLabel()}</Label>
   <input
     id="firstName"
     name="firstName"
@@ -23,9 +22,7 @@
     <p class="mt-1 text-xs text-severe">{errors.firstName}</p>
   {/if}
 
-  <label class="mt-4 block text-xs font-semibold uppercase tracking-wider text-ink-soft" for="birthDate">
-    {m.onboardingBirthDateLabel()}
-  </label>
+  <Label for="birthDate" class="mt-4 block">{m.onboardingBirthDateLabel()}</Label>
   <input
     id="birthDate"
     name="birthDate"
