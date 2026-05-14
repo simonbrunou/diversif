@@ -46,6 +46,12 @@ async function dismissWelcomeIfPresent(page: Page): Promise<void> {
 // (1280×720) which crosses the `lg:` breakpoint and switches to the desktop
 // left-rail variant : those elements (`Navigation latérale`, `+ Logger` text)
 // are tested separately. This block targets the mobile flow.
+//
+// The FAB navigates to the full `/log` page (rather than opening an inline
+// bottom sheet) so users get the complete logging form — FoodCombobox with
+// category filters, datetime picker, ReactionPicker with severity helper,
+// and the stage-rotating tip card. The HeroTile suggestion CTA uses the
+// same destination.
 test.describe('Bento shell : tab navigation', () => {
   test.use({ viewport: { width: 414, height: 896 } });
 
@@ -74,8 +80,9 @@ test.describe('Bento shell : tab navigation', () => {
     await expect(page).toHaveURL(/\/account/);
   });
 
-  test('FAB opens log sheet, food saves, sheet closes', async ({ page }) => {
-    // Sign up + create a child for this test.
+  test('FAB navigates to log page, food saves, returns to home with the entry', async ({
+    page
+  }) => {
     const sevenMonthsAgo = new Date();
     sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
     const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
@@ -84,30 +91,23 @@ test.describe('Bento shell : tab navigation', () => {
     await page.goto(`/child/${childId}`);
     await dismissWelcomeIfPresent(page);
 
-    // Open the log sheet via the FAB.
+    // FAB navigates to the full /log page rather than opening a sheet.
     await page.getByRole('button', { name: 'Enregistrer un aliment' }).click();
+    await expect(page).toHaveURL(/\/child\/\d+\/log$/);
+    await expect(page.getByRole('heading', { name: 'Noter un repas' })).toBeVisible();
 
-    // Sheet placeholder visible.
-    const placeholder = '🔍 chercher un aliment…';
-    await expect(page.getByPlaceholder(placeholder)).toBeVisible();
+    // FoodCombobox search.
+    await page.getByPlaceholder('Rechercher un aliment…').fill('poire');
+    // The combobox renders selectable foods as <button> rows, not role=option.
+    await page
+      .getByRole('button', { name: /^Poire/ })
+      .first()
+      .click();
 
-    // Search for "poire" : Poire is in the seeded FOODS catalog.
-    await page.getByPlaceholder(placeholder).fill('poire');
+    await page.getByRole('button', { name: 'Noter ce repas' }).click();
 
-    // Click the matching list item. The Command primitive renders <li role="option">.
-    await page.getByRole('option', { name: /^Poire$/ }).click();
-
-    // Submit. Use exact match so this doesn't collide with the HeroTile
-    // CTA ('Enregistrer Avocat') or the FAB ('Enregistrer un aliment').
-    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
-
-    // Toast confirms save.
-    await expect(page.getByText('Enregistré')).toBeVisible();
-
-    // Sheet closed (placeholder no longer visible).
-    await expect(page.getByPlaceholder(placeholder)).not.toBeVisible();
-
-    // Recent feed on /child/<id> shows the new entry.
+    // Server redirects back to /child/<id>; recent feed surfaces the new entry.
+    await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
     await expect(page.getByText('Poire').first()).toBeVisible();
   });
 
