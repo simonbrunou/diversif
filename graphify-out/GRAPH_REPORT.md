@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-14)
 
 ## Corpus Check
-- 369 files · ~476,045 words
+- 370 files · ~485,289 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2447 nodes · 3321 edges · 255 communities (197 shown, 58 thin omitted)
+- 2478 nodes · 3372 edges · 259 communities (200 shown, 59 thin omitted)
 - Extraction: 81% EXTRACTED · 19% INFERRED · 0% AMBIGUOUS · INFERRED: 626 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `bd218efb`
+- Built from commit: `588f2bd0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -37,7 +37,7 @@
 - [[_COMMUNITY_Diversification Guidance & Stages|Diversification Guidance & Stages]]
 - [[_COMMUNITY_UI Primitives & LEAPEAT Cards|UI Primitives & LEAP/EAT Cards]]
 - [[_COMMUNITY_Migration Tests|Migration Tests]]
-- [[_COMMUNITY_Food Categories|Food Categories]]
+- [[_COMMUNITY_Reaction Reports & Reminders|Reaction Reports & Reminders]]
 - [[_COMMUNITY_Idempotency Primitive|Idempotency Primitive]]
 - [[_COMMUNITY_Auth Guards & Sessions|Auth Guards & Sessions]]
 - [[_COMMUNITY_Reactions Vocabulary|Reactions Vocabulary]]
@@ -57,27 +57,27 @@
 - [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_Community 43|Community 43]]
 - [[_COMMUNITY_Community 44|Community 44]]
-- [[_COMMUNITY_Community 47|Community 47]]
+- [[_COMMUNITY_Community 45|Community 45]]
+- [[_COMMUNITY_Community 46|Community 46]]
 - [[_COMMUNITY_Community 49|Community 49]]
-- [[_COMMUNITY_Community 50|Community 50]]
 - [[_COMMUNITY_Community 51|Community 51]]
 - [[_COMMUNITY_Community 52|Community 52]]
+- [[_COMMUNITY_Community 53|Community 53]]
 - [[_COMMUNITY_Community 54|Community 54]]
-- [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 56|Community 56]]
 - [[_COMMUNITY_Community 59|Community 59]]
 - [[_COMMUNITY_Community 60|Community 60]]
 - [[_COMMUNITY_Community 61|Community 61]]
 - [[_COMMUNITY_Community 62|Community 62]]
 - [[_COMMUNITY_Community 63|Community 63]]
-- [[_COMMUNITY_Community 71|Community 71]]
-- [[_COMMUNITY_Community 72|Community 72]]
-- [[_COMMUNITY_Community 73|Community 73]]
+- [[_COMMUNITY_Community 64|Community 64]]
+- [[_COMMUNITY_Community 65|Community 65]]
 - [[_COMMUNITY_Community 74|Community 74]]
 - [[_COMMUNITY_Community 75|Community 75]]
 - [[_COMMUNITY_Community 76|Community 76]]
-- [[_COMMUNITY_Community 157|Community 157]]
+- [[_COMMUNITY_Community 77|Community 77]]
+- [[_COMMUNITY_Community 78|Community 78]]
 - [[_COMMUNITY_Community 159|Community 159]]
-- [[_COMMUNITY_Community 160|Community 160]]
 - [[_COMMUNITY_Community 161|Community 161]]
 - [[_COMMUNITY_Community 162|Community 162]]
 - [[_COMMUNITY_Community 163|Community 163]]
@@ -87,17 +87,15 @@
 - [[_COMMUNITY_Community 167|Community 167]]
 - [[_COMMUNITY_Community 168|Community 168]]
 - [[_COMMUNITY_Community 169|Community 169]]
-- [[_COMMUNITY_Community 216|Community 216]]
-- [[_COMMUNITY_Community 217|Community 217]]
-- [[_COMMUNITY_Community 218|Community 218]]
-- [[_COMMUNITY_Community 219|Community 219]]
+- [[_COMMUNITY_Community 170|Community 170]]
+- [[_COMMUNITY_Community 171|Community 171]]
 - [[_COMMUNITY_Community 220|Community 220]]
 - [[_COMMUNITY_Community 221|Community 221]]
 - [[_COMMUNITY_Community 222|Community 222]]
-- [[_COMMUNITY_Community 230|Community 230]]
-- [[_COMMUNITY_Community 231|Community 231]]
-- [[_COMMUNITY_Community 232|Community 232]]
-- [[_COMMUNITY_Community 233|Community 233]]
+- [[_COMMUNITY_Community 223|Community 223]]
+- [[_COMMUNITY_Community 224|Community 224]]
+- [[_COMMUNITY_Community 225|Community 225]]
+- [[_COMMUNITY_Community 226|Community 226]]
 - [[_COMMUNITY_Community 234|Community 234]]
 - [[_COMMUNITY_Community 235|Community 235]]
 - [[_COMMUNITY_Community 236|Community 236]]
@@ -119,6 +117,10 @@
 - [[_COMMUNITY_Community 252|Community 252]]
 - [[_COMMUNITY_Community 253|Community 253]]
 - [[_COMMUNITY_Community 254|Community 254]]
+- [[_COMMUNITY_Community 255|Community 255]]
+- [[_COMMUNITY_Community 256|Community 256]]
+- [[_COMMUNITY_Community 257|Community 257]]
+- [[_COMMUNITY_Community 258|Community 258]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `languageTag()` - 462 edges
@@ -159,7 +161,7 @@
 - **Dependabot remediation via overrides + targeted bumps** — project_dependabot_followup_pr26_vite, project_dependabot_followup_pr43_overrides, project_dependabot_followup_pr50_overrides, project_dependabot_followup_overrides_pattern [EXTRACTED 1.00]
 - **Diversif test infra: resetTestDb + hashPassword fan-out** — query_20260505_135209_resettestdb_bridge, query_20260505_140943_hashpassword_fanout, project_stack_tests, project_stack_auth [INFERRED 0.85]
 
-## Communities (255 total, 58 thin omitted)
+## Communities (259 total, 59 thin omitted)
 
 ### Community 0 - "i18n Messages (auth.*)"
 Cohesion: 0.01
@@ -167,11 +169,11 @@ Nodes (452): addSymptomLabel(), addSymptomNote(), addSymptomNotePlaceholder(), a
 
 ### Community 3 - "Page Loaders & Form Actions"
 Cohesion: 0.06
-Nodes (45): load(), GET(), load(), POST(), audit(), createSession(), findUserByEmail(), getDecoyHash() (+37 more)
+Nodes (39): seed(), loadFor(), setup(), makeFormEvent(), setup(), loadFor(), setup(), setup() (+31 more)
 
 ### Community 4 - "Test Fixtures & Setup Helpers"
-Cohesion: 0.08
-Nodes (27): seed(), loadFor(), setup(), makeFormEvent(), setup(), loadFor(), setup(), setup() (+19 more)
+Cohesion: 0.07
+Nodes (39): load(), GET(), POST(), audit(), invalidateAllUserSessions(), runCleanup(), startCleanupTimer(), stopCleanupTimer() (+31 more)
 
 ### Community 5 - "Branding, App Shell & PWA Manifest"
 Cohesion: 0.06
@@ -186,28 +188,28 @@ Cohesion: 0.09
 Nodes (15): clear(), deleteRow(), emit(), enqueue(), flush(), openDb(), postOne(), readAllOrdered() (+7 more)
 
 ### Community 8 - "UI Components & Tests"
-Cohesion: 0.11
-Nodes (18): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), POST(), enforceLanguageTag(), setLanguageTag(), invalidateSession() (+10 more)
-
-### Community 9 - "WebAuthn / Passkeys"
 Cohesion: 0.1
 Nodes (14): signUpAndCreateChild(), unique(), signUpAndCreateChild(), unique(), signUpAndCreateChild(), unique(), signUpAndCreateChild(), unique() (+6 more)
 
-### Community 10 - "Offline Log Queue (IndexedDB)"
-Cohesion: 0.18
-Nodes (13): load(), allergens load test, load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), load() (+5 more)
+### Community 9 - "WebAuthn / Passkeys"
+Cohesion: 0.13
+Nodes (21): escapePatternText(), findPlaceholderClosingIndex(), flatten(), isBuffer(), parseBundle(), parseDeclaration(), parseMarkupBody(), parseMarkupPlaceholder() (+13 more)
 
-### Community 12 - "SEO / JSON-LD Library"
+### Community 10 - "Offline Log Queue (IndexedDB)"
+Cohesion: 0.2
+Nodes (13): load(), allergens load test, load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), parseChildIdParam() (+5 more)
+
+### Community 11 - "User Memory & Medical Audit"
+Cohesion: 0.13
+Nodes (12): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), enforceLanguageTag(), setLanguageTag(), formatDateInputValue(), formatDateTime() (+4 more)
+
+### Community 13 - "UI Component Library"
 Cohesion: 0.13
 Nodes (12): backupBeforeMigrate(), resolveBackupKeep(), ensureDir(), getDb(), resolveDbPath(), applySeedCorrections(), seedFoods(), drainPool() (+4 more)
 
-### Community 13 - "UI Component Library"
+### Community 14 - "Account Export / Delete"
 Cohesion: 0.19
 Nodes (13): load(), dismissReminder(), loadAnalyticsBuckets(), loadCoparentActivity(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadRepeatCandidates() (+5 more)
-
-### Community 14 - "Account Export / Delete"
-Cohesion: 0.17
-Nodes (11): countNthExposition(), insertSymptom(), listSymptomsByEntry(), formatDate(), formatTime(), load(), loadEntry(), parseEntryId() (+3 more)
 
 ### Community 15 - "DB Init, Backup & Seed"
 Cohesion: 0.13
@@ -215,150 +217,154 @@ Nodes (8): $components/ui/Badge.svelte, $lib/utils/cn, Select.svelte UI componen
 
 ### Community 16 - "Allergens & Milestones"
 Cohesion: 0.21
-Nodes (8): LogActionAbort, runCleanup(), startCleanupTimer(), stopCleanupTimer(), IdempotencyInFlight, IdempotencyScopeMismatch, pruneExpiredKeys(), withIdempotencyKey()
+Nodes (9): findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), createInvitationForChild(), generateUniqueInviteCode(), insertInviteWithUniqueCode(), generateInviteCodeRaw() (+1 more)
 
-### Community 18 - "Legal Pages"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
+### Community 17 - "Sentry Observability"
+Cohesion: 0.24
+Nodes (11): countNthExposition(), insertSymptom(), listSymptomsByEntry(), formatDate(), formatTime(), load(), loadEntry(), loadEntryForChild() (+3 more)
 
 ### Community 19 - "Invitations & Memberships"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 20 - "SEO Source-of-Truth Config"
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
+
+### Community 21 - "Diversification Guidance & Stages"
 Cohesion: 0.21
 Nodes (14): 12 allergens misattributed to HCSP (actually EU 1169/2011), Medical-content audit 2026-05-08, Egg portion contradiction between guidance.ts:73 and :240, Three parallel agents methodology (PR-diff, age, quantity), Walnut oil mistranslated as 'noix de beurre' (knob of butter), oeuf-cru wrong age cliff (12mo vs 3 ans), Soja: ESPGHAN-permissive vs HCSP/ANSES-conservative, ANSES NUT2017SA0145 0–3 ans nutrition (+6 more)
 
-### Community 21 - "Diversification Guidance & Stages"
-Cohesion: 0.26
-Nodes (7): isUniqueViolation(), createInvitationForChild(), generateUniqueInviteCode(), insertInviteWithUniqueCode(), load(), generateInviteCodeRaw(), isValidInviteCodeFormat()
-
 ### Community 22 - "UI Primitives & LEAP/EAT Cards"
+Cohesion: 0.21
+Nodes (6): load(), load(), load(), requireGuest(), localizedRedirect(), load()
+
+### Community 23 - "Migration Tests"
 Cohesion: 0.22
 Nodes (4): logHref(), getAllergenLabel(), celebrate(), pickMilestoneFromQuery()
 
-### Community 23 - "Migration Tests"
-Cohesion: 0.35
-Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
-
-### Community 24 - "Food Categories"
+### Community 25 - "Reaction Reports & Reminders"
 Cohesion: 0.35
 Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 26 - "Idempotency Primitive"
-Cohesion: 0.29
-Nodes (5): findActiveInvitation(), load(), userHasMembership(), load(), localizedRedirect()
+Cohesion: 0.35
+Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 27 - "Auth Guards & Sessions"
 Cohesion: 0.33
-Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
+Nodes (5): LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, pruneExpiredKeys(), withIdempotencyKey()
 
 ### Community 28 - "Reactions Vocabulary"
 Cohesion: 0.33
-Nodes (9): absoluteUrl, articleJsonLd, breadcrumbJsonLd, Centralised SEO/JSON-LD source-of-truth pattern, organizationJsonLd, resolveOrigin, SITE config (centralised SEO), webApplicationJsonLd (+1 more)
+Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
 
 ### Community 29 - "Diversity Metrics"
 Cohesion: 0.33
-Nodes (9): PWA manifest + apple-touch-icon links, app.html SvelteKit shell with paraglide lang, theme-init.js sync script (avoid theme flash), Brand color #6b8e6b (sage green), Favicon: green pin/leaf brand mark, PWA icon 192x192 (green disc), PWA icon 512x512 (green disc), OG image: Diversifier en confiance hero (+1 more)
+Nodes (9): absoluteUrl, articleJsonLd, breadcrumbJsonLd, Centralised SEO/JSON-LD source-of-truth pattern, organizationJsonLd, resolveOrigin, SITE config (centralised SEO), webApplicationJsonLd (+1 more)
 
 ### Community 30 - "Reminders Engine"
-Cohesion: 0.5
-Nodes (6): clearTimer(), formatRemaining(), keyFor(), loadTimer(), remainingMs(), saveTimer()
+Cohesion: 0.33
+Nodes (9): PWA manifest + apple-touch-icon links, app.html SvelteKit shell with paraglide lang, theme-init.js sync script (avoid theme flash), Brand color #6b8e6b (sage green), Favicon: green pin/leaf brand mark, PWA icon 192x192 (green disc), PWA icon 512x512 (green disc), OG image: Diversifier en confiance hero (+1 more)
 
 ### Community 31 - "Community 31"
 Cohesion: 0.36
 Nodes (5): categoryLabel(), computeReminders(), push(), input(), isolated()
 
-### Community 33 - "Community 33"
+### Community 32 - "Community 32"
+Cohesion: 0.5
+Nodes (6): clearTimer(), formatRemaining(), keyFor(), loadTimer(), remainingMs(), saveTimer()
+
+### Community 34 - "Community 34"
 Cohesion: 0.33
 Nodes (3): #each(), getChildNavItems(), isNavItemActive()
 
-### Community 35 - "Community 35"
+### Community 36 - "Community 36"
 Cohesion: 0.6
 Nodes (4): getCategoryClasses(), getCategoryColor(), getCategoryIcon(), getCategoryLabel()
 
-### Community 36 - "Community 36"
+### Community 37 - "Community 37"
 Cohesion: 0.47
 Nodes (3): applyMigrationFile(), buildDbAt0006(), markMigrationsApplied()
 
-### Community 37 - "Community 37"
+### Community 38 - "Community 38"
 Cohesion: 0.4
 Nodes (6): Passkey Auth Options POST, Passkey Auth Options test, Passkey Auth Verify POST, Passkey Registration Options POST, Passkey Registration Verify POST, Why we don't reset rate-limit bucket on success
 
-### Community 38 - "Community 38"
+### Community 39 - "Community 39"
 Cohesion: 0.6
 Nodes (3): signUp(), signUpOwnerAndCreateChild(), unique()
-
-### Community 39 - "Community 39"
-Cohesion: 0.7
-Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
 ### Community 40 - "Community 40"
 Cohesion: 0.7
 Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
 ### Community 41 - "Community 41"
-Cohesion: 0.4
-Nodes (5): Periodic cleanup of expired rows, Cleanup tests, Rate-limit subsystem (referenced), Rate-limit tests, Drop rate-limit buckets older than 1h auth window
+Cohesion: 0.7
+Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
 ### Community 42 - "Community 42"
 Cohesion: 0.4
-Nodes (5): server/cleanup.ts (periodic cleanup), checkRateLimit, clientKey, evictExpiredRateLimits, resetRateLimit
+Nodes (5): Periodic cleanup of expired rows, Cleanup tests, Rate-limit subsystem (referenced), Rate-limit tests, Drop rate-limit buckets older than 1h auth window
 
 ### Community 43 - "Community 43"
 Cohesion: 0.4
+Nodes (5): server/cleanup.ts (periodic cleanup), checkRateLimit, clientKey, evictExpiredRateLimits, resetRateLimit
+
+### Community 44 - "Community 44"
+Cohesion: 0.4
 Nodes (5): generateInviteCodeRaw, isValidInviteCodeFormat, src/lib/utils/invites.test.ts, Invite codes bumped from 4 to 6 chars for entropy, Accept legacy 4-char codes during 7-day TTL rollout
 
-### Community 49 - "Community 49"
+### Community 51 - "Community 51"
 Cohesion: 0.67
 Nodes (4): applyTheme, getStoredTheme, resolveTheme, src/lib/utils/theme.test.ts
 
-### Community 50 - "Community 50"
+### Community 52 - "Community 52"
 Cohesion: 0.5
 Nodes (4): src/routes/+layout.server.ts, src/routes/layout.server.test.ts, src/routes/+page.server.ts, src/routes/page.server.test.ts
 
-### Community 51 - "Community 51"
+### Community 53 - "Community 53"
 Cohesion: 0.5
 Nodes (4): Refuse oversize export instead of truncating (Article 15), GET /account/export, account export GET tests, Atomic throttle prevents concurrent exports
 
-### Community 52 - "Community 52"
+### Community 54 - "Community 54"
 Cohesion: 0.5
 Nodes (4): mentions-legales +page.server.ts, mentions-legales page.server.test.ts, politique-confidentialite +page.server.ts, politique-confidentialite page.server.test.ts
 
-### Community 72 - "Community 72"
+### Community 74 - "Community 74"
 Cohesion: 0.67
 Nodes (3): EAT 2016 trial, ESPGHAN Complementary Feeding 2017, LEAP 2015 trial
 
-### Community 73 - "Community 73"
+### Community 75 - "Community 75"
 Cohesion: 0.67
 Nodes (3): getChildNavItems, isNavItemActive, src/lib/utils/nav.test.ts
 
-### Community 74 - "Community 74"
+### Community 76 - "Community 76"
 Cohesion: 1.0
 Nodes (3): fuzzyMatch, normalize, src/lib/utils/search.test.ts
 
-### Community 75 - "Community 75"
+### Community 77 - "Community 77"
 Cohesion: 0.67
 Nodes (3): join/[code] +page.server.ts, join/[code] page.server.test.ts, GET only inspects state; POST consumes one-shot invite to avoid prefetch consumption
 
-### Community 76 - "Community 76"
+### Community 78 - "Community 78"
 Cohesion: 0.67
 Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer graphify query/path/explain over grep, Graphify usage rules for Claude
 
 ## Knowledge Gaps
 - **113 isolated node(s):** `resolveOrigin`, `breadcrumbJsonLd`, `faqPageJsonLd`, `Centralised SEO/JSON-LD source-of-truth pattern`, `$lib/seo` (+108 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **58 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **59 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `UI Components & Tests`, `User Memory & Medical Audit`, `Community 71`?**
-  _High betweenness centrality (0.053) - this node is a cross-community bridge._
-- **Why does `setLanguageTag()` connect `UI Components & Tests` to `i18n Messages (auth.*)`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
-- **Why does `resetTestDb()` connect `Test Fixtures & Setup Helpers` to `Page Loaders & Form Actions`, `SEO / JSON-LD Library`, `UI Component Library`, `Account Export / Delete`, `Allergens & Milestones`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `User Memory & Medical Audit`, `SEO / JSON-LD Library`, `Community 63`?**
+  _High betweenness centrality (0.070) - this node is a cross-community bridge._
+- **Why does `isValidBirthDate()` connect `User Memory & Medical Audit` to `Offline Log Queue (IndexedDB)`, `UI Primitives & LEAP/EAT Cards`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+- **Why does `setLanguageTag()` connect `User Memory & Medical Audit` to `i18n Messages (auth.*)`, `Page Loaders & Form Actions`?**
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
 - **Are the 456 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `formatRelative()`) actually correct?**
   _`languageTag()` has 456 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 5 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `makeFormEvent()`) actually correct?**
