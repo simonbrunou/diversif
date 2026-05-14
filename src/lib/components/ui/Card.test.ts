@@ -38,4 +38,34 @@ describe('Card', () => {
       expect(container.querySelector('div')?.className).toContain(`bg-${variant}`);
     }
   );
+
+  it('applies the surface variant', () => {
+    const { container } = render(Card, {
+      props: { variant: 'surface', children: textSnippet('X') }
+    });
+    expect(container.querySelector('div')?.className).toContain('bg-surface');
+    expect(container.querySelector('div')?.className).toContain('shadow-soft');
+  });
+
+  it('renders as <section> when as="section"', () => {
+    const { container } = render(Card, {
+      props: { as: 'section', children: textSnippet('X') }
+    });
+    expect(container.querySelector('section')).not.toBeNull();
+    expect(container.querySelector('div')).toBeNull();
+  });
+
+  it('renders as <article> when as="article"', () => {
+    const { container } = render(Card, {
+      props: { as: 'article', children: textSnippet('X') }
+    });
+    expect(container.querySelector('article')).not.toBeNull();
+  });
+
+  it('forwards aria-label to the rendered element', () => {
+    const { container } = render(Card, {
+      props: { as: 'section', 'aria-label': 'Stats', children: textSnippet('X') }
+    });
+    expect(container.querySelector('section')?.getAttribute('aria-label')).toBe('Stats');
+  });
 });

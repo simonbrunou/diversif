@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Card from '$components/ui/Card.svelte';
   import * as m from '$lib/paraglide/messages';
 
   let {
@@ -16,14 +17,14 @@
 
 <div class="flex flex-col gap-3">
   <div class="grid grid-cols-2 gap-3">
-    <article class="rounded-tile bg-tile-mint p-4 shadow-soft" aria-label={m.carnetStatsDiversity()}>
+    <Card as="article" variant="tile-mint" class="p-4" aria-label={m.carnetStatsDiversity()}>
       <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsDiversity()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{diversityScore}</p>
-    </article>
-    <article class="rounded-tile bg-tile-butter p-4 shadow-soft" aria-label={m.carnetStatsFoods()}>
+    </Card>
+    <Card as="article" variant="tile-butter" class="p-4" aria-label={m.carnetStatsFoods()}>
       <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsFoods()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{distinctFoods}</p>
-    </article>
+    </Card>
   </div>
   {#if weeklyEntries.length > 0}
     <article class="rounded-tile bg-canvas p-4 shadow-soft">

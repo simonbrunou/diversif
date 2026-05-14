@@ -1,5 +1,6 @@
 <!-- src/lib/components/bento/StatTiles.svelte -->
 <script lang="ts">
+  import Card from '$components/ui/Card.svelte';
   import * as m from '$lib/paraglide/messages';
 
   let {
@@ -18,7 +19,7 @@
 </script>
 
 <div class="mb-3 grid grid-cols-2 gap-3">
-  <article class="rounded-tile bg-tile-mint p-4 shadow-soft" aria-label={m.aujourdhuiStatsAliments()}>
+  <Card as="article" variant="tile-mint" class="p-4" aria-label={m.aujourdhuiStatsAliments()}>
     <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">
       {m.aujourdhuiStatsAliments()}
     </p>
@@ -26,8 +27,8 @@
     <p class="mt-2 text-xs text-ink-soft">
       {m.aujourdhuiStatsAlimentsDelta({ count: String(weekCount) })}
     </p>
-  </article>
-  <article class="rounded-tile bg-tile-butter p-4 shadow-soft" aria-label={m.aujourdhuiStatsStreak()}>
+  </Card>
+  <Card as="article" variant="tile-butter" class="p-4" aria-label={m.aujourdhuiStatsStreak()}>
     <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">
       {m.aujourdhuiStatsStreak()}
     </p>
@@ -39,5 +40,5 @@
         {m.aujourdhuiStatsStreakRecord()}
       </p>
     {/if}
-  </article>
+  </Card>
 </div>

@@ -1,11 +1,12 @@
 <script lang="ts">
+  import Card from '$components/ui/Card.svelte';
   import * as m from '$lib/paraglide/messages';
   import { ChevronRight } from 'lucide-svelte';
 
   let { childId }: { childId: string } = $props();
 </script>
 
-<section class="mb-3 rounded-tile bg-tile-mint p-4 shadow-soft">
+<Card as="section" variant="tile-mint" class="mb-3 p-4">
   <p class="text-base font-bold leading-tight">{m.reactionStayCoolTitle()}</p>
   <p class="mt-1 text-sm text-tile-mint-foreground">{m.reactionStayCoolBody()}</p>
   <a
@@ -15,4 +16,4 @@
     {m.reactionStayCoolLink()}
     <ChevronRight size={14} aria-hidden="true" />
   </a>
-</section>
+</Card>

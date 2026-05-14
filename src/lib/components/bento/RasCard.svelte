@@ -1,11 +1,12 @@
 <script lang="ts">
+  import Card from '$components/ui/Card.svelte';
   import * as m from '$lib/paraglide/messages';
 
   let { nth }: { nth: number } = $props();
 </script>
 
-<section class="mb-3 rounded-tile bg-tile-mint p-4 shadow-soft">
+<Card as="section" variant="tile-mint" class="mb-3 p-4">
   <p class="text-sm font-semibold text-tile-mint-foreground">
     {m.reactionRasMessage({ nth: String(nth) })}
   </p>
-</section>
+</Card>
