@@ -1,26 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-function unique(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-}
-
-async function signUpAndCreateChild(page: Page, name: string, birthDate: string) {
-  const email = `${unique('e2e')}@example.com`;
-  await page.goto('/signup');
-  await page.getByLabel('Votre prénom').fill('Parent');
-  await page.getByLabel('Adresse e-mail').fill(email);
-  await page.getByLabel('Mot de passe').fill('hunter2-very-long');
-  await page.getByLabel(/au moins 15 ans/i).check();
-  await page.getByLabel(/conditions générales/i).check();
-  await page.getByLabel(/politique de confidentialité/i).check();
-  await page.getByRole('button', { name: /créer mon compte/i }).click();
-  await expect(page).toHaveURL(/\/child\/new/);
-
-  await page.getByLabel('Prénom').fill(name);
-  await page.getByLabel('Date de naissance').fill(birthDate);
-  await page.getByRole('button', { name: /^créer$/i }).click();
-  await expect(page).toHaveURL(/\/child\/\d+$/);
-}
+import { test, expect } from '@playwright/test';
+import { signUpAndCreateChild } from './_helpers';
 
 test.describe('child dashboard golden path', () => {
   test('signup → create child → reach dashboard', async ({ page }) => {
