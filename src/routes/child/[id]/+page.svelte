@@ -1,7 +1,5 @@
 <script lang="ts">
   import AujourdhuiBento from '$lib/components/bento/AujourdhuiBento.svelte';
-  import type { SuggestFood } from '$lib/utils/suggest';
-  import { goto } from '$app/navigation';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
@@ -38,31 +36,16 @@
     }
     history.replaceState({}, '', url);
   });
-
-  function onLogFromHero(food: SuggestFood | null): void {
-    if (food) {
-      void goto(`/child/${data.child.id}/log?foodId=${food.id}`);
-    } else {
-      void goto(`/child/${data.child.id}/log`);
-    }
-  }
 </script>
 
 <AujourdhuiBento
   childId={String(data.child.id)}
-  childName={data.child.name}
   recent={data.recent}
   stats={data.stats}
   streak={data.streak}
   streakRecord={data.streak}
   reminders={data.reminders ?? []}
-  starterFoods={data.starterFoods ?? []}
   priorityAllergensTodo={[]}
-  onLog={onLogFromHero}
 />
 
-<WelcomeDialog
-  bind:open={welcomeOpen}
-  childId={data.child.id}
-  formAction="?/dismissReminder"
-/>
+<WelcomeDialog bind:open={welcomeOpen} childId={data.child.id} formAction="?/dismissReminder" />

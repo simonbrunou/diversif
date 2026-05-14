@@ -142,8 +142,6 @@ describe('child/[id] +page.server load', () => {
     expect(out.stats.foodsIntroduced).toBe(0);
     expect(out.stats.weekCount).toBe(0);
     expect(out.showWelcomeDialog).toBe(true);
-    expect(out.starterFoods.length).toBeGreaterThan(0);
-    expect(out.starterFoods[0]).toMatchObject({ name: 'Carotte', category: 'legumes' });
   });
 
   it('returns dashboard data with entries and hides welcome dialog', async () => {
@@ -166,34 +164,6 @@ describe('child/[id] +page.server load', () => {
     expect(out.recent.length).toBe(3);
     expect(out.stats.foodsIntroduced).toBe(1);
     expect(out.showWelcomeDialog).toBe(false);
-    expect(out.starterFoods).toEqual([]);
-  });
-
-  it('keeps starterFoods populated even after the welcome dialog is dismissed', async () => {
-    const { u, c, m } = await setup();
-    await testDb.insert(tipDismissals).values({
-      userId: u.id,
-      childId: c.id,
-      reminderKey: 'welcome-dialog',
-      dismissedAt: new Date()
-    });
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
-    );
-    expect(out.showWelcomeDialog).toBe(false);
-    expect(out.starterFoods.length).toBeGreaterThan(0);
   });
 
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {

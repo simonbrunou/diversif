@@ -3,7 +3,7 @@
 
 import { db } from '$lib/server/db';
 import { foodEntries, foods, tipDismissals, users } from '$lib/server/db/schema';
-import { and, asc, desc, eq, gte, lte, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, ne, sql } from 'drizzle-orm';
 import type { CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 
@@ -258,47 +258,6 @@ export async function loadStreak(childId: number, now: Date = new Date()): Promi
     }
   }
   return streak;
-}
-
-export type StarterFood = {
-  id: number;
-  name: string;
-  category: CategoryId;
-  suggestedAgeMonths: number;
-  allergenType: string | null;
-};
-
-/**
- * A small set of catalog foods to suggest to a brand-new dashboard before
- * any entries exist. Picks age-appropriate (suggestedAgeMonths <= floor)
- * non-custom foods, preferring earliest-recommended first. The age floor
- * is clamped to at least 4 so a "before 4 months" misconfiguration still
- * surfaces a sensible starter set.
- */
-export async function loadStarterFoods(
-  ageMonths: number,
-  limit: number = 4
-): Promise<StarterFood[]> {
-  const effectiveAge = Math.max(4, ageMonths);
-  const rows = await db
-    .select({
-      id: foods.id,
-      name: foods.name,
-      category: foods.category,
-      suggestedAgeMonths: foods.suggestedAgeMonths,
-      allergenType: foods.allergenType
-    })
-    .from(foods)
-    .where(and(eq(foods.isCustom, false), lte(foods.suggestedAgeMonths, effectiveAge)))
-    .orderBy(asc(foods.suggestedAgeMonths), asc(foods.name))
-    .limit(limit);
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    category: r.category as CategoryId,
-    suggestedAgeMonths: r.suggestedAgeMonths,
-    allergenType: r.allergenType
-  }));
 }
 
 export type CoparentEntry = {

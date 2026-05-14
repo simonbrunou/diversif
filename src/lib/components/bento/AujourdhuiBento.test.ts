@@ -8,7 +8,6 @@ afterEach(() => cleanup());
 describe('AujourdhuiBento', () => {
   const baseProps = {
     childId: 'abc',
-    childName: 'Léo',
     recent: [],
     stats: {
       foodsIntroduced: 5,
@@ -18,15 +17,8 @@ describe('AujourdhuiBento', () => {
     streak: 3,
     streakRecord: 5,
     reminders: [],
-    starterFoods: [],
-    priorityAllergensTodo: [],
-    onLog: () => {}
+    priorityAllergensTodo: []
   };
-
-  it('renders the hero tile', () => {
-    render(AujourdhuiBento, { props: baseProps });
-    expect(screen.getByText(/Bienvenue Léo/)).toBeTruthy();
-  });
 
   it('renders StatTiles with the loader stats', () => {
     render(AujourdhuiBento, { props: baseProps });

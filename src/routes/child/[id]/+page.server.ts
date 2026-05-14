@@ -10,7 +10,6 @@ import {
   loadCoparentActivity,
   loadDiversityMetrics,
   loadDismissals,
-  loadStarterFoods,
   loadStreak,
   loadWeeklyRecap,
   dismissReminder,
@@ -158,10 +157,6 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
   const ageMonths = ageInMonths(child.birthDate, nowAtLoad);
 
-  // Suggest a tiny starter list ONLY when the child has zero entries : once
-  // any food is logged, the dashboard's full "recent" feed takes over.
-  const starterFoods = distinctFoods === 0 ? await loadStarterFoods(ageMonths, 4) : [];
-
   const dismissals = await loadDismissals(user.id, childId);
   const introducedAllergenIds = new Set(
     Array.from(worstByAllergen.keys()).filter((id): id is AllergenId =>
@@ -230,7 +225,6 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     streak,
     weeklyRecap,
     coparentActivity,
-    starterFoods,
     reminders,
     showWelcomeDialog
   };
