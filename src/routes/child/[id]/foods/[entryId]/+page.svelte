@@ -15,7 +15,7 @@
 {#if data.isRas}
   <div class="flex flex-col">
     <a
-      href={`/child/${data.childId}/foods`}
+      href={localizedHref(`/child/${data.childId}/foods`)}
       class="mb-2 inline-flex items-center gap-1 text-sm text-ink-soft"
     >
       <ChevronLeft size={16} aria-hidden="true" />
@@ -51,6 +51,6 @@
     date={data.date}
     time={data.time}
     symptoms={data.symptoms}
-    printHref={`/child/${data.childId}/foods/${data.entryId}/print`}
+    printHref={localizedHref(`/child/${data.childId}/foods/${data.entryId}/print`)}
   />
 {/if}
