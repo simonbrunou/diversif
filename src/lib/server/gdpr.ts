@@ -292,6 +292,23 @@ export async function exportUserData(
     .where(or(eq(invitations.createdBy, userId), eq(invitations.usedBy, userId)))
     .orderBy(asc(invitations.createdAt));
 
+  const exportedInvitations = userInvitations.flatMap((inv) => {
+    const base = {
+      childId: inv.childId,
+      createdAt: isoOrThrow(inv.createdAt),
+      expiresAt: isoOrThrow(inv.expiresAt),
+      usedAt: isoOrNull(inv.usedAt)
+    };
+    const rows: ExportedUser['invitations'] = [];
+    if (inv.createdBy === userId) {
+      rows.push({ ...base, relationship: 'sent' });
+    }
+    if (inv.usedBy === userId) {
+      rows.push({ ...base, relationship: 'accepted' });
+    }
+    return rows;
+  });
+
   const userTipDismissals =
     childIds.length === 0
       ? []
@@ -365,13 +382,7 @@ export async function exportUserData(
       createdAt: isoOrThrow(p.createdAt),
       lastUsedAt: isoOrNull(p.lastUsedAt)
     })),
-    invitations: userInvitations.map((inv) => ({
-      childId: inv.childId,
-      relationship: inv.createdBy === userId ? ('sent' as const) : ('accepted' as const),
-      createdAt: isoOrThrow(inv.createdAt),
-      expiresAt: isoOrThrow(inv.expiresAt),
-      usedAt: isoOrNull(inv.usedAt)
-    })),
+    invitations: exportedInvitations,
     tipDismissals: userTipDismissals.map((t) => ({
       childId: t.childId,
       reminderKey: t.reminderKey,
