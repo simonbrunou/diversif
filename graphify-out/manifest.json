@@ -247,10 +247,6 @@
     "mtime": 1778708530.6761818,
     "hash": "554c11e55a411328d60321549f106d6b"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/BottomNavBento.svelte": {
-    "mtime": 1778708530.6768394,
-    "hash": "66b6444347cf6d68a62d09ede1c76602"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/FoodCombobox.svelte": {
     "mtime": 1778708530.6775334,
     "hash": "d409b59c0d17dbd887fe11fe2549c733"
@@ -330,6 +326,10 @@
   "/home/sbrn/Projects/diversif/src/lib/components/ChildSwitcherDrawer.svelte": {
     "mtime": 1778789119.944745,
     "hash": "ceb5ad86a7bccc22cc50d1981bb5c5d2"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/BottomNavBento.svelte": {
+    "mtime": 1778789515.250355,
+    "hash": "ca70c80bd6c416b6b202d56eb18ad6fd"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCtaBento.test.ts": {
     "mtime": 1778708530.7503636,
@@ -482,10 +482,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/DiscoverBento.svelte": {
     "mtime": 1778708530.7877176,
     "hash": "2a4f2be339a22a2044b7ab783e956a2d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCardGrid.svelte": {
-    "mtime": 1778708530.7903051,
-    "hash": "2395d60aed314fbb58b0531da7f4e54c"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/MonitorTimer.svelte": {
     "mtime": 1778708530.7909014,
@@ -643,10 +639,6 @@
     "mtime": 1778746160.1046972,
     "hash": "a6e3774c814aa73023d645d4c1e213b2"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AujourdhuiBento.svelte": {
-    "mtime": 1778749318.2509196,
-    "hash": "305c6e36dc6503f845ad0b4252fac511"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.svelte": {
     "mtime": 1778749318.2519195,
     "hash": "2a08cecf22dd7ac9f8a29af58f9a8fee"
@@ -666,10 +658,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetTous.test.ts": {
     "mtime": 1778788470.5228438,
     "hash": "093484d5bf5d7e4762e1b7a1dec5883a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.svelte": {
-    "mtime": 1778788470.5228438,
-    "hash": "b475b1336916a13fcd7c98bc3bd87dec"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.test.ts": {
     "mtime": 1778788470.5228438,
@@ -746,6 +734,18 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/StayCoolCard.svelte": {
     "mtime": 1778789198.2638779,
     "hash": "04c9625c4d4470c6a8ba4d5f77ded96e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.svelte": {
+    "mtime": 1778789498.834538,
+    "hash": "b4d5578d23a025e6a60c44cedbe1408e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/AujourdhuiBento.svelte": {
+    "mtime": 1778789550.0339677,
+    "hash": "1f40e5a7392ed26be9304e7c36967582"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCardGrid.svelte": {
+    "mtime": 1778789555.0559118,
+    "hash": "30262155ce3c44b42b1e9a1abd93a0f2"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
@@ -1040,19 +1040,19 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1778789236.2425985,
+    "mtime": 1778789603.67237,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1778789236.2425985,
+    "mtime": 1778789603.67237,
     "hash": "25bf27081b36b20b060a56ee2d9e864b"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1778789236.2425985,
+    "mtime": 1778789603.67237,
     "hash": "b403c8d52afba18155a1e3168aa5ed80"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1778789236.2425985,
+    "mtime": 1778789603.67237,
     "hash": "3c883cf3cce353bd2c719a9be15a61f0"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
