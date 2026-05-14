@@ -471,10 +471,6 @@
     "mtime": 1778708530.7810085,
     "hash": "1aa2c22edb063ea4abe607ecd60396c3"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetStats.test.ts": {
-    "mtime": 1778708530.7816036,
-    "hash": "8c596d217fb1625f7f0305f3d1b2e826"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCardGrid.test.ts": {
     "mtime": 1778708530.7822635,
     "hash": "989bcc1e297732728816082727a227bf"
@@ -494,10 +490,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/DiscoverBento.svelte": {
     "mtime": 1778708530.7877176,
     "hash": "2a4f2be339a22a2044b7ab783e956a2d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCard.test.ts": {
-    "mtime": 1778708530.7897043,
-    "hash": "2ec47b9d480799efffdf2637f6e64380"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCardGrid.svelte": {
     "mtime": 1778708530.7903051,
@@ -647,10 +639,6 @@
     "mtime": 1778742331.634663,
     "hash": "f43ea983bd40850d880942e0f74bb0dc"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetStats.svelte": {
-    "mtime": 1778742957.4095016,
-    "hash": "e1357f35f45664e59383c77bbb09f338"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/RasCard.svelte": {
     "mtime": 1778742957.4095016,
     "hash": "e42bd8e11a06107d64aac91a9a81838f"
@@ -691,10 +679,6 @@
     "mtime": 1778749318.2509196,
     "hash": "305c6e36dc6503f845ad0b4252fac511"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCard.svelte": {
-    "mtime": 1778749318.2509196,
-    "hash": "0fd8853ca1e2ff4a9fe60e1778584eaa"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.svelte": {
     "mtime": 1778749318.2519195,
     "hash": "66ca590c0846b886af7528ca79ee5588"
@@ -727,14 +711,6 @@
     "mtime": 1778780433.2480066,
     "hash": "3aac35498750eb80ee0122f98af115ee"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.svelte": {
-    "mtime": 1778780446.5848572,
-    "hash": "a1376a1cd730c4639a3201e148c9726a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.test.ts": {
-    "mtime": 1778780456.9967408,
-    "hash": "fd92d73dc42bdfc2eed56c1f0e75a1fa"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.svelte": {
     "mtime": 1778780474.0595496,
     "hash": "b475b1336916a13fcd7c98bc3bd87dec"
@@ -746,6 +722,30 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetTous.test.ts": {
     "mtime": 1778780528.7129369,
     "hash": "093484d5bf5d7e4762e1b7a1dec5883a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCard.svelte": {
+    "mtime": 1778780786.0350416,
+    "hash": "27507b27b6c931328d00dbf0242f503b"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCard.test.ts": {
+    "mtime": 1778780791.1789834,
+    "hash": "2a831d5117f9830cc47d6b9ea9526a3c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.svelte": {
+    "mtime": 1778780821.8396375,
+    "hash": "473b9b23e1fb1facaae420dd33e87f74"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.test.ts": {
+    "mtime": 1778780830.9015353,
+    "hash": "3b426a28c18e45c9c15a00b508333c46"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetStats.svelte": {
+    "mtime": 1778780916.7165663,
+    "hash": "97e4ea0c1aabe960027e78e047f72c27"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetStats.test.ts": {
+    "mtime": 1778780920.6495218,
+    "hash": "6803e513fe6cb7acc41d83c80aa675d1"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
@@ -1040,20 +1040,20 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1778780608.6320393,
+    "mtime": 1778781027.974483,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1778780608.6320393,
-    "hash": "7e1415dbb1058c98a5be847614b74ad4"
+    "mtime": 1778781027.974483,
+    "hash": "25bf27081b36b20b060a56ee2d9e864b"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1778780608.6320393,
-    "hash": "30ca287a722c28720e087f195390aab1"
+    "mtime": 1778781027.974483,
+    "hash": "b403c8d52afba18155a1e3168aa5ed80"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1778780608.6320393,
-    "hash": "43e99884c660748528c37fafd610fd3b"
+    "mtime": 1778781027.974483,
+    "hash": "3c883cf3cce353bd2c719a9be15a61f0"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
     "mtime": 1778708530.647732,
@@ -1379,10 +1379,6 @@
     "mtime": 1778708530.7425423,
     "hash": "fcd41ea44ab4c9ad23bc7e470a5d086d"
   },
-  "/home/sbrn/Projects/diversif/src/routes/signup/+page.svelte": {
-    "mtime": 1778708530.7438958,
-    "hash": "536f6bac492a43dcc9879f2be6d007d2"
-  },
   "/home/sbrn/Projects/diversif/src/routes/signup/+page.server.ts": {
     "mtime": 1778710035.2764356,
     "hash": "9a64c404a45f83b44e9391525893986a"
@@ -1390,6 +1386,10 @@
   "/home/sbrn/Projects/diversif/src/routes/signup/page.server.test.ts": {
     "mtime": 1778710035.2764356,
     "hash": "61a6e72bad7494d79aa2575433a2c451"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/signup/+page.svelte": {
+    "mtime": 1778780974.0949178,
+    "hash": "e92e2ea010853c7148d4065b558c2357"
   },
   "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/server.test.ts": {
     "mtime": 1778708530.7456532,
