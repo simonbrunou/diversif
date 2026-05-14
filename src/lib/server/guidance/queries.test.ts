@@ -12,7 +12,6 @@ import {
   loadWeeklyRecap,
   loadAnalyticsBuckets,
   loadCoparentActivity,
-  loadStarterFoods,
   dismissReminder
 } from './queries';
 import { children, foods, foodEntries, users, tipDismissals } from '../db/schema';
@@ -791,104 +790,5 @@ describe('loadCoparentActivity', () => {
       });
     }
     expect(await loadCoparentActivity(child.id, user.id, 7, 3)).toHaveLength(3);
-  });
-});
-
-describe('loadStarterFoods', () => {
-  async function seedStarter(opts: {
-    name: string;
-    category: string;
-    suggestedAgeMonths: number;
-    isCustom?: boolean;
-    allergen?: string | null;
-  }) {
-    return (
-      await testDb
-        .insert(foods)
-        .values({
-          name: opts.name,
-          category: opts.category,
-          isMajorAllergen: opts.allergen != null,
-          allergenType: opts.allergen ?? null,
-          suggestedAgeMonths: opts.suggestedAgeMonths,
-          notes: null,
-          isCustom: opts.isCustom ?? false,
-          customForChildId: null
-        })
-        .returning()
-    )[0];
-  }
-
-  it('returns an empty list when the catalog is empty', async () => {
-    expect(await loadStarterFoods(6)).toEqual([]);
-  });
-
-  it('excludes foods whose suggested age is above the requested age', async () => {
-    await seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
-    await seedStarter({ name: 'Tomate', category: 'legumes', suggestedAgeMonths: 8 });
-    const out = await loadStarterFoods(5);
-    expect(out.map((f) => f.name)).toEqual(['Carotte']);
-  });
-
-  it('clamps ages below 4 months up to 4 so the starter set is never empty', async () => {
-    await seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
-    await seedStarter({ name: 'Pomme', category: 'fruits', suggestedAgeMonths: 5 });
-    const out = await loadStarterFoods(0);
-    expect(out.map((f) => f.name)).toEqual(['Carotte']);
-  });
-
-  it('includes 4-month foods when the requested age is exactly 4 (boundary)', async () => {
-    await seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
-    await seedStarter({ name: 'Tomate', category: 'legumes', suggestedAgeMonths: 5 });
-    const out = await loadStarterFoods(4);
-    expect(out.map((f) => f.name)).toEqual(['Carotte']);
-  });
-
-  it('excludes custom foods', async () => {
-    await seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
-    await seedStarter({
-      name: 'Recette maison',
-      category: 'legumes',
-      suggestedAgeMonths: 4,
-      isCustom: true
-    });
-    const out = await loadStarterFoods(6);
-    expect(out.map((f) => f.name)).toEqual(['Carotte']);
-  });
-
-  it('orders by suggested age ascending, then name ascending, and honors the limit', async () => {
-    await seedStarter({ name: 'Banane', category: 'fruits', suggestedAgeMonths: 6 });
-    await seedStarter({ name: 'Pomme', category: 'fruits', suggestedAgeMonths: 4 });
-    await seedStarter({ name: 'Carotte', category: 'legumes', suggestedAgeMonths: 4 });
-    await seedStarter({ name: 'Courgette', category: 'legumes', suggestedAgeMonths: 5 });
-    await seedStarter({ name: 'Poire', category: 'fruits', suggestedAgeMonths: 4 });
-
-    const out = await loadStarterFoods(8, 3);
-    expect(out.map((f) => f.name)).toEqual(['Carotte', 'Poire', 'Pomme']);
-    expect(out.map((f) => f.suggestedAgeMonths)).toEqual([4, 4, 4]);
-  });
-
-  it('exposes category and allergen alongside the catalog row', async () => {
-    await seedStarter({
-      name: 'Œuf',
-      category: 'proteines',
-      suggestedAgeMonths: 6,
-      allergen: 'oeuf'
-    });
-    const [first] = await loadStarterFoods(6);
-    expect(first).toMatchObject({
-      name: 'Œuf',
-      category: 'proteines',
-      suggestedAgeMonths: 6,
-      allergenType: 'oeuf'
-    });
-    expect(typeof first.id).toBe('number');
-  });
-
-  it('defaults the limit to 4 when none is provided', async () => {
-    for (let i = 0; i < 6; i++) {
-      await seedStarter({ name: `Food${i}`, category: 'legumes', suggestedAgeMonths: 4 });
-    }
-    expect(await loadStarterFoods(6)).toHaveLength(4);
   });
 });
