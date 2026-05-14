@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { languageTag } from '$lib/paraglide/runtime';
 
   let {
     diversityScore,
@@ -9,6 +10,17 @@
   }: { diversityScore: number; distinctFoods: number; weeklyEntries: number[] } = $props();
 
   const max = $derived(weeklyEntries.length === 0 ? 1 : Math.max(1, ...weeklyEntries));
+
+  // i=0 is 6 days ago, i=6 is today. Single-letter weekday in active locale.
+  const dayLabels = $derived.by(() => {
+    const fmt = new Intl.DateTimeFormat(languageTag(), { weekday: 'narrow' });
+    const today = new Date();
+    return Array.from({ length: weeklyEntries.length }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (weeklyEntries.length - 1 - i));
+      return fmt.format(d);
+    });
+  });
 
   function logsLabel(count: number): string {
     return count === 1 ? m.carnetStatsLogsOne() : m.carnetStatsLogsOther({ count: String(count) });
@@ -37,6 +49,11 @@
             style={`height: ${Math.max(2, (count / max) * 100)}%`}
             aria-label={logsLabel(count)}
           ></div>
+        {/each}
+      </div>
+      <div class="mt-1 flex gap-1 text-[10px] uppercase text-ink-soft">
+        {#each weeklyEntries as _, i (i)}
+          <span data-day class="flex-1 text-center">{dayLabels[i]}</span>
         {/each}
       </div>
     </article>
