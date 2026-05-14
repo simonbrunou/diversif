@@ -1,5 +1,6 @@
 <script lang="ts" module>
   import { Calendar, BookText, Sparkles, User } from 'lucide-svelte';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   type Tab = {
     href: (childId: string) => string;
@@ -10,25 +11,25 @@
 
   export const TABS: Tab[] = [
     {
-      href: (id) => `/child/${id}`,
+      href: (id) => localizedHref(`/child/${id}`),
       labelKey: 'chromeTabsAujourdhui',
       matcher: (p) => /^\/child\/[^/]+$/.test(p),
       icon: Calendar
     },
     {
-      href: (id) => `/child/${id}/foods`,
+      href: (id) => localizedHref(`/child/${id}/foods`),
       labelKey: 'chromeTabsCarnet',
       matcher: (p) => /^\/child\/[^/]+\/(foods|allergens|analytics)/.test(p),
       icon: BookText
     },
     {
-      href: (id) => `/child/${id}/guide`,
+      href: (id) => localizedHref(`/child/${id}/guide`),
       labelKey: 'chromeTabsDecouvrir',
       matcher: (p) => /^\/child\/[^/]+\/(guide|suggestions)/.test(p) || p === '/sources',
       icon: Sparkles
     },
     {
-      href: () => `/account`,
+      href: () => localizedHref('/account'),
       labelKey: 'chromeTabsProfil',
       matcher: (p) =>
         p.startsWith('/account') ||

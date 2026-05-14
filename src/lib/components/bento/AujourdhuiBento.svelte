@@ -7,6 +7,7 @@
   import type { SuggestFood } from '$lib/utils/suggest';
   import type { Reminder } from '$lib/server/guidance/reminders';
   import type { RecentEntry } from '$lib/types';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   type Stats = {
     foodsIntroduced: number;
@@ -62,6 +63,9 @@
     streakCurrent={streak}
     {streakRecord}
   />
-  <AllergensSnapshot items={allergenPills} foodsHref={`/child/${childId}/foods?segment=allergens`} />
+  <AllergensSnapshot
+    items={allergenPills}
+    foodsHref={localizedHref(`/child/${childId}/foods?segment=allergens`)}
+  />
   <RecentFeed entries={recent} {childId} />
 </div>

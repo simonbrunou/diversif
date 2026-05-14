@@ -2,6 +2,7 @@
   import LinkRow from '$components/ui/LinkRow.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { ChevronRight, KeyRound, Languages, Moon, Lock } from 'lucide-svelte';
 
   let {
@@ -30,28 +31,28 @@
       icon: KeyRound,
       label: m.profilComptePasskeys(),
       meta: passkeyMeta,
-      href: '/account#passkeys'
+      href: localizedHref('/account#passkeys')
     },
     {
       key: 'langue',
       icon: Languages,
       label: m.profilCompteLangue(),
       meta: locale.toUpperCase(),
-      href: '/account#locale'
+      href: localizedHref('/account#locale')
     },
     {
       key: 'theme',
       icon: Moon,
       label: m.profilCompteTheme(),
       meta: themeMeta,
-      href: '/account#theme'
+      href: localizedHref('/account#theme')
     },
     {
       key: 'password',
       icon: Lock,
       label: m.profilComptePassword(),
       meta: '',
-      href: '/account#password'
+      href: localizedHref('/account#password')
     }
   ]);
 </script>
