@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-14)
 
 ## Corpus Check
-- 370 files · ~490,974 words
+- 370 files · ~491,061 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2514 nodes · 3423 edges · 257 communities (200 shown, 57 thin omitted)
+- 2514 nodes · 3423 edges · 258 communities (201 shown, 57 thin omitted)
 - Extraction: 81% EXTRACTED · 19% INFERRED · 0% AMBIGUOUS · INFERRED: 639 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1a382b78`
+- Built from commit: `c1d64c93`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -70,13 +70,12 @@
 - [[_COMMUNITY_Community 61|Community 61]]
 - [[_COMMUNITY_Community 62|Community 62]]
 - [[_COMMUNITY_Community 63|Community 63]]
+- [[_COMMUNITY_Community 72|Community 72]]
 - [[_COMMUNITY_Community 73|Community 73]]
 - [[_COMMUNITY_Community 74|Community 74]]
 - [[_COMMUNITY_Community 75|Community 75]]
 - [[_COMMUNITY_Community 76|Community 76]]
 - [[_COMMUNITY_Community 77|Community 77]]
-- [[_COMMUNITY_Community 78|Community 78]]
-- [[_COMMUNITY_Community 158|Community 158]]
 - [[_COMMUNITY_Community 159|Community 159]]
 - [[_COMMUNITY_Community 160|Community 160]]
 - [[_COMMUNITY_Community 161|Community 161]]
@@ -88,14 +87,14 @@
 - [[_COMMUNITY_Community 167|Community 167]]
 - [[_COMMUNITY_Community 168|Community 168]]
 - [[_COMMUNITY_Community 169|Community 169]]
-- [[_COMMUNITY_Community 218|Community 218]]
+- [[_COMMUNITY_Community 170|Community 170]]
 - [[_COMMUNITY_Community 219|Community 219]]
 - [[_COMMUNITY_Community 220|Community 220]]
 - [[_COMMUNITY_Community 221|Community 221]]
 - [[_COMMUNITY_Community 222|Community 222]]
 - [[_COMMUNITY_Community 223|Community 223]]
 - [[_COMMUNITY_Community 224|Community 224]]
-- [[_COMMUNITY_Community 232|Community 232]]
+- [[_COMMUNITY_Community 225|Community 225]]
 - [[_COMMUNITY_Community 233|Community 233]]
 - [[_COMMUNITY_Community 234|Community 234]]
 - [[_COMMUNITY_Community 235|Community 235]]
@@ -120,6 +119,7 @@
 - [[_COMMUNITY_Community 254|Community 254]]
 - [[_COMMUNITY_Community 255|Community 255]]
 - [[_COMMUNITY_Community 256|Community 256]]
+- [[_COMMUNITY_Community 257|Community 257]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `languageTag()` - 474 edges
@@ -160,7 +160,7 @@
 - **Dependabot remediation via overrides + targeted bumps** — project_dependabot_followup_pr26_vite, project_dependabot_followup_pr43_overrides, project_dependabot_followup_pr50_overrides, project_dependabot_followup_overrides_pattern [EXTRACTED 1.00]
 - **Diversif test infra: resetTestDb + hashPassword fan-out** — query_20260505_135209_resettestdb_bridge, query_20260505_140943_hashpassword_fanout, project_stack_tests, project_stack_auth [INFERRED 0.85]
 
-## Communities (257 total, 57 thin omitted)
+## Communities (258 total, 57 thin omitted)
 
 ### Community 0 - "i18n Messages (auth.*)"
 Cohesion: 0.01
@@ -214,7 +214,7 @@ Nodes (13): load(), dismissReminder(), loadAnalyticsBuckets(), loadCoparentActiv
 Cohesion: 0.13
 Nodes (8): $components/ui/Badge.svelte, $lib/utils/cn, Select.svelte UI component, Select component tests, $lib/content/sources, Textarea.svelte UI component, Textarea component tests, $lib/utils/theme
 
-### Community 17 - "Sentry Observability"
+### Community 16 - "Allergens & Milestones"
 Cohesion: 0.22
 Nodes (10): severityOf(), countNthExposition(), insertSymptom(), formatDate(), formatTime(), load(), loadEntry(), loadEntryForChild() (+2 more)
 
@@ -334,23 +334,23 @@ Nodes (4): Refuse oversize export instead of truncating (Article 15), GET /accou
 Cohesion: 0.5
 Nodes (4): mentions-legales +page.server.ts, mentions-legales page.server.test.ts, politique-confidentialite +page.server.ts, politique-confidentialite page.server.test.ts
 
-### Community 74 - "Community 74"
+### Community 73 - "Community 73"
 Cohesion: 0.67
 Nodes (3): EAT 2016 trial, ESPGHAN Complementary Feeding 2017, LEAP 2015 trial
 
-### Community 75 - "Community 75"
+### Community 74 - "Community 74"
 Cohesion: 0.67
 Nodes (3): getChildNavItems, isNavItemActive, src/lib/utils/nav.test.ts
 
-### Community 76 - "Community 76"
+### Community 75 - "Community 75"
 Cohesion: 1.0
 Nodes (3): fuzzyMatch, normalize, src/lib/utils/search.test.ts
 
-### Community 77 - "Community 77"
+### Community 76 - "Community 76"
 Cohesion: 0.67
 Nodes (3): join/[code] +page.server.ts, join/[code] page.server.test.ts, GET only inspects state; POST consumes one-shot invite to avoid prefetch consumption
 
-### Community 78 - "Community 78"
+### Community 77 - "Community 77"
 Cohesion: 0.67
 Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer graphify query/path/explain over grep, Graphify usage rules for Claude
 
@@ -362,7 +362,7 @@ Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 73`, `User Memory & Medical Audit`, `SEO / JSON-LD Library`?**
+- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 72`, `User Memory & Medical Audit`, `SEO / JSON-LD Library`?**
   _High betweenness centrality (0.063) - this node is a cross-community bridge._
 - **Why does `isValidBirthDate()` connect `User Memory & Medical Audit` to `Offline Log Queue (IndexedDB)`, `UI Primitives & LEAP/EAT Cards`?**
   _High betweenness centrality (0.023) - this node is a cross-community bridge._
