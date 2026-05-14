@@ -21,13 +21,6 @@ export interface InsertSymptomResult {
 }
 
 export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSymptomResult> {
-  const promotedTo: 'inconfort' | 'reaction' | null =
-    input.currentReaction === 'ras'
-      ? severityOf(input.label) === 'severe'
-        ? 'reaction'
-        : 'inconfort'
-      : null;
-
   return await db.transaction(async (tx) => {
     const [row] = await tx
       .insert(symptoms)
@@ -41,11 +34,21 @@ export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSy
       })
       .returning({ id: symptoms.id });
 
-    if (promotedTo) {
-      await tx
+    let promotedTo: 'inconfort' | 'reaction' | null = null;
+    if (input.currentReaction === 'ras') {
+      const target = severityOf(input.label) === 'severe' ? 'reaction' : 'inconfort';
+      const updated = await tx
         .update(foodEntries)
-        .set({ reaction: promotedTo })
-        .where(eq(foodEntries.id, input.foodEntryId));
+        .set({ reaction: target })
+        .where(
+          and(
+            eq(foodEntries.id, input.foodEntryId),
+            eq(foodEntries.childId, input.childId),
+            eq(foodEntries.reaction, 'ras')
+          )
+        )
+        .returning({ id: foodEntries.id });
+      if (updated.length > 0) promotedTo = target;
     }
 
     return { symptomId: row.id, promotedTo };
