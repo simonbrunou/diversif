@@ -227,4 +227,35 @@ describe('addSymptom action', () => {
     const rows = await testDb.select().from(symptoms);
     expect(rows[0].note).toBeNull();
   });
+
+  it('rejects symptom creation when the entry belongs to another child', async () => {
+    const ctx = await setup();
+    const otherUser = await seedUser({ email: 'other-parent@example.com' });
+    const otherChild = await seedChild({ createdBy: otherUser.id, name: 'Noé' });
+    const [otherEntry] = await testDb
+      .insert(foodEntries)
+      .values({
+        childId: otherChild.id,
+        foodId: ctx.pear.id,
+        givenAt: new Date(),
+        reaction: 'reaction',
+        notes: null,
+        loggedBy: otherUser.id,
+        createdAt: new Date()
+      })
+      .returning();
+
+    await expect(
+      actions.addSymptom(
+        makeFormEvent(ctx, otherEntry.id, {
+          label: 'rougeur',
+          note: 'cross-child write attempt',
+          observedAt: '11:42'
+        })
+      )
+    ).rejects.toMatchObject({ status: 404 });
+
+    const rows = await testDb.select().from(symptoms);
+    expect(rows).toHaveLength(0);
+  });
 });
