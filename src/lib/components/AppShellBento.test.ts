@@ -16,7 +16,6 @@ describe('AppShellBento', () => {
     kids: [{ id: 'a', name: 'Léo', birthMonth: '2025-11-01', avatarSeed: '🌱' }],
     currentChildId: 'a',
     currentPath: '/child/a',
-    foods: [{ id: 'pear', label: 'Poire' }],
     children: textSnippet('PAGE')
   };
 

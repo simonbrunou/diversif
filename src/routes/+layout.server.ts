@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
-import { children, foods as foodsTable } from '$lib/server/db/schema';
-import { inArray, or, isNull, eq } from 'drizzle-orm';
+import { children } from '$lib/server/db/schema';
+import { inArray } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { ChildSummary } from '$lib/types';
 import { resolveOrigin } from '$lib/seo';
@@ -27,25 +27,11 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 
   const childMatch = url.pathname.match(/^\/child\/([^/]+)/);
   const currentChildIdStr = childMatch ? childMatch[1] : null;
-  const currentChildIdNum = currentChildIdStr ? Number(currentChildIdStr) : null;
-
-  let foods: { id: string; label: string }[] = [];
-  if (currentChildIdNum && !Number.isNaN(currentChildIdNum) && locals.user) {
-    const rows = await db
-      .select({ id: foodsTable.id, name: foodsTable.name })
-      .from(foodsTable)
-      .where(
-        or(isNull(foodsTable.customForChildId), eq(foodsTable.customForChildId, currentChildIdNum))
-      )
-      .orderBy(foodsTable.name);
-    foods = rows.map((r) => ({ id: String(r.id), label: r.name }));
-  }
 
   return {
     user: locals.user,
     children: childList,
     siteUrl: resolveOrigin(url),
-    currentChildId: currentChildIdStr,
-    foods
+    currentChildId: currentChildIdStr
   };
 };

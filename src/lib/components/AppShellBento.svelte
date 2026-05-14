@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { goto } from '$app/navigation';
   import BottomNavBento, { TABS } from './BottomNavBento.svelte';
   import FabLog from './FabLog.svelte';
   import ChildHeaderPill from './ChildHeaderPill.svelte';
   import ChildSwitcherDrawer from './ChildSwitcherDrawer.svelte';
-  import LogSheet from './LogSheet.svelte';
   import SharedTopBar from './SharedTopBar.svelte';
   import { cn } from '$lib/utils/cn';
   import * as m from '$lib/paraglide/messages';
@@ -16,29 +16,30 @@
     kids,
     currentChildId,
     currentPath,
-    foods,
     children
   }: {
     user?: { email: string };
     kids: Child[];
     currentChildId?: string;
     currentPath: string;
-    foods: { id: string; label: string }[];
     children?: Snippet;
   } = $props();
 
-  let logOpen = $state(false);
   let switcherOpen = $state(false);
 
   const inChildArea = $derived(!!currentChildId && currentPath.startsWith('/child/'));
   const showChrome = $derived(inChildArea || currentPath === '/account');
   const currentChild = $derived(kids.find((k) => k.id === currentChildId));
   // On /account there's no currentChildId in the URL, but the user still
-  // expects the nav + FAB. Fall back to the first kid so tab links and the
-  // log sheet have a target. ChildHeaderPill keeps using `currentChild` so
-  // the pill stays hidden on /account.
+  // expects the nav + log entry. Fall back to the first kid so tab links
+  // and the log button have a target. ChildHeaderPill keeps using
+  // `currentChild` so the pill stays hidden on /account.
   const navChildId = $derived(currentChildId ?? kids[0]?.id);
-  const navChild = $derived(kids.find((k) => k.id === navChildId));
+
+  function openLog(): void {
+    if (!navChildId) return;
+    void goto(`/child/${navChildId}/log`);
+  }
 </script>
 
 <div class="grid min-h-screen lg:grid-cols-[220px_1fr]">
@@ -100,18 +101,11 @@
         <div class="lg:hidden">
           <BottomNavBento currentChildId={navChildId} {currentPath} />
           <div class="fixed bottom-[calc(0.625rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
-            <FabLog onclick={() => (logOpen = true)} />
+            <FabLog onclick={openLog} />
           </div>
         </div>
 
-        <!-- Shared overlays -->
         <ChildSwitcherDrawer bind:open={switcherOpen} {kids} currentChildId={navChildId} />
-        <LogSheet
-          bind:open={logOpen}
-          childId={navChildId}
-          childName={navChild?.name ?? ''}
-          {foods}
-        />
       {/if}
     </div>
   </div>
@@ -120,7 +114,7 @@
   {#if showChrome && currentChildId}
     <button
       type="button"
-      onclick={() => (logOpen = true)}
+      onclick={openLog}
       class="fixed right-4 top-4 z-30 hidden rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-soft lg:flex lg:items-center lg:gap-1"
     >
       + {m.chromeFabLog()}

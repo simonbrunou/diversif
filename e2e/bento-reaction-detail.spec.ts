@@ -37,27 +37,28 @@ async function dismissWelcomeIfPresent(page: Page): Promise<void> {
   }
 }
 
-// Logs a food via the FAB Sheet using the same selector pattern that
-// bento-shell.spec.ts uses successfully (placeholder text, role=option,
-// exact-match submit).
+// Logs a food via the full /log page. The FAB now navigates there instead
+// of opening an inline bottom sheet, so we drive the same FoodCombobox +
+// ReactionPicker + submit flow that the HeroTile suggestion CTA uses.
 async function logFoodWithReaction(
   page: Page,
   foodName: string,
   reactionLabel: string
 ): Promise<void> {
   await page.getByRole('button', { name: 'Enregistrer un aliment' }).click();
-  const placeholder = '🔍 chercher un aliment…';
-  await expect(page.getByPlaceholder(placeholder)).toBeVisible();
-  await page.getByPlaceholder(placeholder).fill(foodName);
+  await expect(page).toHaveURL(/\/child\/\d+\/log$/);
+  await page.getByPlaceholder('Rechercher un aliment…').fill(foodName);
   await page
-    .getByRole('option', { name: new RegExp(`^${foodName}$`) })
+    .getByRole('button', { name: new RegExp(`^${foodName}`) })
     .first()
     .click();
-  // ReactionPicker uses <label> elements; clicking the label selects the radio.
-  await page.getByText(reactionLabel, { exact: true }).click();
-  await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
-  // Wait for the Sheet to close (placeholder no longer visible).
-  await expect(page.getByPlaceholder(placeholder)).not.toBeVisible();
+  // ReactionPicker uses <label> elements; scope to the fieldset because the
+  // severity-helper <details> panel below it echoes the same labels in <strong>
+  // tags ("Comment choisir ?" copy on /log).
+  await page.locator('fieldset').getByText(reactionLabel, { exact: true }).click();
+  await page.getByRole('button', { name: 'Noter ce repas' }).click();
+  // Server redirects back to /child/<id> after a successful log.
+  await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
 }
 
 test('reaction-detail bento renders for non-RAS entry with all panels', async ({ page }) => {

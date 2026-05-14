@@ -4,7 +4,6 @@ import { makeRouteEvent, safeUser, seedChild, seedMembership, seedUser } from '.
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
-import { foods } from '$lib/server/db/schema';
 import { load } from './+layout.server';
 
 beforeEach(async () => {
@@ -61,24 +60,19 @@ describe('+layout.server load', () => {
     expect(out.children).toEqual([]);
   });
 
-  it('returns empty foods and null currentChildId on a non-child path', async () => {
+  it('returns null currentChildId on a non-child path', async () => {
     const out = await load(
       makeRouteEvent({ user: null, url: 'http://localhost/' }) as unknown as Parameters<
         typeof load
       >[0]
     );
     expect(out.currentChildId).toBeNull();
-    expect(out.foods).toEqual([]);
   });
 
-  it('loads the foods catalog on a /child/:id path for a logged-in user', async () => {
+  it('extracts currentChildId from a /child/:id path', async () => {
     const u = await seedUser();
     const c = await seedChild({ createdBy: u.id, name: 'Léo' });
     const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    await testDb.insert(foods).values([
-      { name: 'Poire', category: 'fruits', suggestedAgeMonths: 4 },
-      { name: 'Banane', category: 'fruits', suggestedAgeMonths: 4 }
-    ]);
 
     const event = makeRouteEvent({
       user: safeUser(u),
@@ -88,21 +82,5 @@ describe('+layout.server load', () => {
 
     const out = await load(event as unknown as Parameters<typeof load>[0]);
     expect(out.currentChildId).toBe(String(c.id));
-    expect(out.foods).toHaveLength(2);
-    expect(out.foods[0]).toEqual({ id: expect.any(String), label: expect.any(String) });
-  });
-
-  it('skips the foods query when path child id is non-numeric', async () => {
-    const event = makeRouteEvent({ url: 'http://localhost/child/abc' });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.currentChildId).toBe('abc');
-    expect(out.foods).toEqual([]);
-  });
-
-  it('skips the foods query when no user is logged in even on a child path', async () => {
-    const event = makeRouteEvent({ user: null, url: 'http://localhost/child/5' });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.currentChildId).toBe('5');
-    expect(out.foods).toEqual([]);
   });
 });

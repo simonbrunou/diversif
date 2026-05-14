@@ -134,7 +134,6 @@
       kids={bentoKids}
       currentChildId={data.currentChildId ?? undefined}
       currentPath={unprefixedPath}
-      foods={data.foods}
     >
       {@render children()}
     </AppShellBento>

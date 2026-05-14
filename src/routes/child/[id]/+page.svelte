@@ -40,10 +40,6 @@
   });
 
   function onLogFromHero(food: SuggestFood | null): void {
-    // Phase 4 deep-link fallback: AppShellBento's LogSheet wiring is a
-    // Phase 4.5 refinement. For now, route the click to the existing log
-    // route so users still land on a log form pre-filled (when foodId
-    // query supports it) or empty.
     if (food) {
       void goto(`/child/${data.child.id}/log?foodId=${food.id}`);
     } else {
