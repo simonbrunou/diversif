@@ -263,6 +263,7 @@
   "reactionTitle": "Réaction · {food}",
   "reactionSubtitle": "{date} · {time} · {nth} exposition",
   "reactionRasMessage": "Aliment introduit · {nth} exposition · OK · rien à signaler.",
+  "lateReactionButton": "Signaler une réaction tardive",
   "reactionSymptomsTitle": "Symptômes observés",
   "reactionSymptomsEmpty": "Aucun symptôme enregistré pour l'instant.",
   "reactionSymptomsAdd": "Ajouter un symptôme",
