@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-14)
 
 ## Corpus Check
-- 370 files · ~489,179 words
+- 370 files · ~489,293 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `31b6c87d`
+- Built from commit: `969d3923`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -70,12 +70,12 @@
 - [[_COMMUNITY_Community 61|Community 61]]
 - [[_COMMUNITY_Community 62|Community 62]]
 - [[_COMMUNITY_Community 63|Community 63]]
+- [[_COMMUNITY_Community 71|Community 71]]
 - [[_COMMUNITY_Community 72|Community 72]]
 - [[_COMMUNITY_Community 73|Community 73]]
 - [[_COMMUNITY_Community 74|Community 74]]
 - [[_COMMUNITY_Community 75|Community 75]]
 - [[_COMMUNITY_Community 76|Community 76]]
-- [[_COMMUNITY_Community 77|Community 77]]
 - [[_COMMUNITY_Community 158|Community 158]]
 - [[_COMMUNITY_Community 160|Community 160]]
 - [[_COMMUNITY_Community 161|Community 161]]
@@ -200,7 +200,7 @@ Nodes (21): escapePatternText(), findPlaceholderClosingIndex(), flatten(), isBuf
 
 ### Community 11 - "User Memory & Medical Audit"
 Cohesion: 0.18
-Nodes (13): load(), allergens load test, load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), parseChildIdParam() (+5 more)
+Nodes (12): load(), allergens load test, load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), parseChildIdParam() (+4 more)
 
 ### Community 13 - "UI Component Library"
 Cohesion: 0.13
@@ -214,7 +214,7 @@ Nodes (13): load(), dismissReminder(), loadAnalyticsBuckets(), loadCoparentActiv
 Cohesion: 0.13
 Nodes (8): $components/ui/Badge.svelte, $lib/utils/cn, Select.svelte UI component, Select component tests, $lib/content/sources, Textarea.svelte UI component, Textarea component tests, $lib/utils/theme
 
-### Community 16 - "Allergens & Milestones"
+### Community 17 - "Sentry Observability"
 Cohesion: 0.22
 Nodes (10): severityOf(), countNthExposition(), insertSymptom(), formatDate(), formatTime(), load(), loadEntry(), loadEntryForChild() (+2 more)
 
@@ -231,8 +231,8 @@ Cohesion: 0.21
 Nodes (14): 12 allergens misattributed to HCSP (actually EU 1169/2011), Medical-content audit 2026-05-08, Egg portion contradiction between guidance.ts:73 and :240, Three parallel agents methodology (PR-diff, age, quantity), Walnut oil mistranslated as 'noix de beurre' (knob of butter), oeuf-cru wrong age cliff (12mo vs 3 ans), Soja: ESPGHAN-permissive vs HCSP/ANSES-conservative, ANSES NUT2017SA0145 0–3 ans nutrition (+6 more)
 
 ### Community 21 - "Diversification Guidance & Stages"
-Cohesion: 0.29
-Nodes (6): isUniqueViolation(), createInvitationForChild(), generateUniqueInviteCode(), insertInviteWithUniqueCode(), generateInviteCodeRaw(), isValidInviteCodeFormat()
+Cohesion: 0.26
+Nodes (7): isUniqueViolation(), createInvitationForChild(), generateUniqueInviteCode(), insertInviteWithUniqueCode(), load(), generateInviteCodeRaw(), isValidInviteCodeFormat()
 
 ### Community 22 - "UI Primitives & LEAP/EAT Cards"
 Cohesion: 0.22
@@ -248,29 +248,29 @@ Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 26 - "Idempotency Primitive"
 Cohesion: 0.29
-Nodes (5): findActiveInvitation(), load(), userHasMembership(), load(), localizedRedirect()
+Nodes (5): load(), LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, withIdempotencyKey()
 
 ### Community 27 - "Auth Guards & Sessions"
 Cohesion: 0.29
-Nodes (5): load(), LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, withIdempotencyKey()
+Nodes (5): findActiveInvitation(), load(), userHasMembership(), load(), localizedRedirect()
 
 ### Community 28 - "Reactions Vocabulary"
 Cohesion: 0.33
 Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
 
-### Community 29 - "Diversity Metrics"
+### Community 30 - "Reminders Engine"
 Cohesion: 0.33
 Nodes (9): absoluteUrl, articleJsonLd, breadcrumbJsonLd, Centralised SEO/JSON-LD source-of-truth pattern, organizationJsonLd, resolveOrigin, SITE config (centralised SEO), webApplicationJsonLd (+1 more)
 
-### Community 30 - "Reminders Engine"
+### Community 31 - "Community 31"
 Cohesion: 0.33
 Nodes (9): PWA manifest + apple-touch-icon links, app.html SvelteKit shell with paraglide lang, theme-init.js sync script (avoid theme flash), Brand color #6b8e6b (sage green), Favicon: green pin/leaf brand mark, PWA icon 192x192 (green disc), PWA icon 512x512 (green disc), OG image: Diversifier en confiance hero (+1 more)
 
-### Community 31 - "Community 31"
+### Community 32 - "Community 32"
 Cohesion: 0.36
 Nodes (5): categoryLabel(), computeReminders(), push(), input(), isolated()
 
-### Community 32 - "Community 32"
+### Community 33 - "Community 33"
 Cohesion: 0.5
 Nodes (6): clearTimer(), formatRemaining(), keyFor(), loadTimer(), remainingMs(), saveTimer()
 
@@ -278,13 +278,13 @@ Nodes (6): clearTimer(), formatRemaining(), keyFor(), loadTimer(), remainingMs()
 Cohesion: 0.48
 Nodes (4): listSymptomsByEntry(), load(), ageInMonths(), formatAge()
 
-### Community 35 - "Community 35"
-Cohesion: 0.33
-Nodes (3): #each(), getChildNavItems(), isNavItemActive()
-
-### Community 37 - "Community 37"
+### Community 36 - "Community 36"
 Cohesion: 0.6
 Nodes (4): getCategoryClasses(), getCategoryColor(), getCategoryIcon(), getCategoryLabel()
+
+### Community 37 - "Community 37"
+Cohesion: 0.4
+Nodes (3): #each(), getChildNavItems(), isNavItemActive()
 
 ### Community 38 - "Community 38"
 Cohesion: 0.47
@@ -334,23 +334,23 @@ Nodes (4): Refuse oversize export instead of truncating (Article 15), GET /accou
 Cohesion: 0.5
 Nodes (4): mentions-legales +page.server.ts, mentions-legales page.server.test.ts, politique-confidentialite +page.server.ts, politique-confidentialite page.server.test.ts
 
-### Community 73 - "Community 73"
+### Community 72 - "Community 72"
 Cohesion: 0.67
 Nodes (3): EAT 2016 trial, ESPGHAN Complementary Feeding 2017, LEAP 2015 trial
 
-### Community 74 - "Community 74"
+### Community 73 - "Community 73"
 Cohesion: 0.67
 Nodes (3): getChildNavItems, isNavItemActive, src/lib/utils/nav.test.ts
 
-### Community 75 - "Community 75"
+### Community 74 - "Community 74"
 Cohesion: 1.0
 Nodes (3): fuzzyMatch, normalize, src/lib/utils/search.test.ts
 
-### Community 76 - "Community 76"
+### Community 75 - "Community 75"
 Cohesion: 0.67
 Nodes (3): join/[code] +page.server.ts, join/[code] page.server.test.ts, GET only inspects state; POST consumes one-shot invite to avoid prefetch consumption
 
-### Community 77 - "Community 77"
+### Community 76 - "Community 76"
 Cohesion: 0.67
 Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer graphify query/path/explain over grep, Graphify usage rules for Claude
 
@@ -362,7 +362,7 @@ Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `UI Components & Tests`, `Community 72`, `SEO / JSON-LD Library`?**
+- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `UI Components & Tests`, `SEO / JSON-LD Library`, `Community 71`?**
   _High betweenness centrality (0.069) - this node is a cross-community bridge._
 - **Why does `setLanguageTag()` connect `UI Components & Tests` to `i18n Messages (auth.*)`?**
   _High betweenness centrality (0.026) - this node is a cross-community bridge._
