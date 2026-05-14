@@ -103,7 +103,8 @@ describe('symptoms queries', () => {
       observedAt: new Date('2026-05-01T11:42:00Z'),
       label: 'rougeur',
       note: 'joue gauche',
-      createdBy: u.id
+      createdBy: u.id,
+      currentReaction: 'reaction'
     });
     const list = await listSymptomsByEntry(entry.id);
     expect(list).toHaveLength(1);
@@ -127,7 +128,8 @@ describe('symptoms queries', () => {
       observedAt: new Date('2026-05-01T11:42:00Z'),
       label: 'rougeur',
       note: null,
-      createdBy: u.id
+      createdBy: u.id,
+      currentReaction: 'reaction'
     });
     const list = await listSymptomsByEntry(entry.id);
     expect(list[0].note).toBeNull();

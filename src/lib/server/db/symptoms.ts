@@ -1,7 +1,56 @@
 import { and, asc, eq, lte, sql } from 'drizzle-orm';
 import { db } from './index';
 import { foodEntries, symptoms } from './schema';
-import type { SymptomLabel } from '$lib/content/symptoms';
+import { severityOf, type SymptomLabel } from '$lib/content/symptoms';
+
+export type ReactionLevel = 'ras' | 'inconfort' | 'reaction';
+
+export interface InsertSymptomInput {
+  foodEntryId: number;
+  childId: number;
+  observedAt: Date;
+  label: SymptomLabel;
+  note: string | null;
+  createdBy: number;
+  currentReaction: ReactionLevel;
+}
+
+export interface InsertSymptomResult {
+  symptomId: number;
+  promotedTo: 'inconfort' | 'reaction' | null;
+}
+
+export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSymptomResult> {
+  const promotedTo: 'inconfort' | 'reaction' | null =
+    input.currentReaction === 'ras'
+      ? severityOf(input.label) === 'severe'
+        ? 'reaction'
+        : 'inconfort'
+      : null;
+
+  return await db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(symptoms)
+      .values({
+        foodEntryId: input.foodEntryId,
+        childId: input.childId,
+        observedAt: input.observedAt,
+        label: input.label,
+        note: input.note,
+        createdBy: input.createdBy
+      })
+      .returning({ id: symptoms.id });
+
+    if (promotedTo) {
+      await tx
+        .update(foodEntries)
+        .set({ reaction: promotedTo })
+        .where(eq(foodEntries.id, input.foodEntryId));
+    }
+
+    return { symptomId: row.id, promotedTo };
+  });
+}
 
 export async function listSymptomsByEntry(foodEntryId: number) {
   const rows = await db
@@ -15,24 +64,6 @@ export async function listSymptomsByEntry(foodEntryId: number) {
     observedAt: r.observedAt,
     note: r.note
   }));
-}
-
-export async function insertSymptom(input: {
-  foodEntryId: number;
-  childId: number;
-  observedAt: Date;
-  label: SymptomLabel;
-  note: string | null;
-  createdBy: number;
-}): Promise<void> {
-  await db.insert(symptoms).values({
-    foodEntryId: input.foodEntryId,
-    childId: input.childId,
-    observedAt: input.observedAt,
-    label: input.label,
-    note: input.note,
-    createdBy: input.createdBy
-  });
 }
 
 export async function countNthExposition(foodEntryId: number): Promise<number> {

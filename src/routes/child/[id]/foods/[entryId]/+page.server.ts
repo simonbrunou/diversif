@@ -3,7 +3,12 @@ import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { listSymptomsByEntry, insertSymptom, countNthExposition } from '$lib/server/db/symptoms';
+import {
+  listSymptomsByEntry,
+  insertSymptom,
+  countNthExposition,
+  type ReactionLevel
+} from '$lib/server/db/symptoms';
 import { parseChildIdParam, requireMembership } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
@@ -81,19 +86,20 @@ export const actions: Actions = {
     if (!parsed.success) {
       return fail(400, { error: 'invalid-input' });
     }
-    await loadEntryForChild(entryId, childId);
+    const entry = await loadEntryForChild(entryId, childId);
 
     const [hh, mm] = parsed.data.observedAt.split(':').map(Number);
     const observedAt = new Date();
     observedAt.setHours(hh, mm, 0, 0);
 
-    await insertSymptom({
+    const result = await insertSymptom({
       foodEntryId: entryId,
       childId,
       observedAt,
       label: parsed.data.label,
       note: parsed.data.note.trim() || null,
-      createdBy: user.id
+      createdBy: user.id,
+      currentReaction: entry.reaction as ReactionLevel
     });
 
     audit({
@@ -103,6 +109,19 @@ export const actions: Actions = {
       entryId,
       label: parsed.data.label
     });
+
+    if (result.promotedTo) {
+      audit({
+        type: 'food_entry.reaction_promoted',
+        userId: user.id,
+        childId,
+        entryId,
+        from: 'ras',
+        to: result.promotedTo,
+        triggeredBy: result.symptomId
+      });
+    }
+
     return { success: true };
   }
 };
