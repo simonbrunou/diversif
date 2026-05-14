@@ -51,26 +51,6 @@
     "mtime": 1778708530.6362705,
     "hash": "6da77b6accdd9076b9d617b50ec672f3"
   },
-  "/home/sbrn/Projects/diversif/e2e/auth.spec.ts": {
-    "mtime": 1778708530.6368942,
-    "hash": "4962c43f795a128a9f45dc6df8104a44"
-  },
-  "/home/sbrn/Projects/diversif/e2e/membership.spec.ts": {
-    "mtime": 1778708530.638016,
-    "hash": "552d278356a0b7c6d7f50311e456de8d"
-  },
-  "/home/sbrn/Projects/diversif/e2e/gdpr.spec.ts": {
-    "mtime": 1778708530.6416676,
-    "hash": "79af172b453ce84e93716fe039a7c9af"
-  },
-  "/home/sbrn/Projects/diversif/e2e/offline.spec.ts": {
-    "mtime": 1778710035.2684357,
-    "hash": "1a06500c10a7bd72a0ae9e0c8e13d7de"
-  },
-  "/home/sbrn/Projects/diversif/e2e/_helpers.ts": {
-    "mtime": 1778744614.7976894,
-    "hash": "6f4f2914f3c840b1b7395437752bd5f7"
-  },
   "/home/sbrn/Projects/diversif/e2e/bento-auth-onboarding.spec.ts": {
     "mtime": 1778744614.7976894,
     "hash": "eff4fb193f40e92fd24108498236c10b"
@@ -94,6 +74,26 @@
   "/home/sbrn/Projects/diversif/e2e/dashboard.spec.ts": {
     "mtime": 1778744614.7986896,
     "hash": "5add86ef62e9447f426c575f48c97a9e"
+  },
+  "/home/sbrn/Projects/diversif/e2e/gdpr.spec.ts": {
+    "mtime": 1778785649.6374674,
+    "hash": "e9b0c1c76161391ba1b49caa2fbcbd0a"
+  },
+  "/home/sbrn/Projects/diversif/e2e/offline.spec.ts": {
+    "mtime": 1778785649.637568,
+    "hash": "ab5ddc3d32d2c184ee1735c513675bba"
+  },
+  "/home/sbrn/Projects/diversif/e2e/_helpers.ts": {
+    "mtime": 1778785649.6376524,
+    "hash": "e8a446d9c9bbc2810c16977b76cea4aa"
+  },
+  "/home/sbrn/Projects/diversif/e2e/auth.spec.ts": {
+    "mtime": 1778785649.6377273,
+    "hash": "a8301233947472bda6af8b71fd6d933d"
+  },
+  "/home/sbrn/Projects/diversif/e2e/membership.spec.ts": {
+    "mtime": 1778785649.6378064,
+    "hash": "f2fbb05673b53acea55cd230418de74a"
   },
   "/home/sbrn/Projects/diversif/scripts/generate-icons.mjs": {
     "mtime": 1777986940.3284423,
@@ -523,10 +523,6 @@
     "mtime": 1778708530.7952106,
     "hash": "75186bd7c9dcc012e40f21ef92668b6d"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.test.ts": {
-    "mtime": 1778708530.795859,
-    "hash": "c814ac3516fb9fabe76bf16aabfb9864"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/RgpdSection.test.ts": {
     "mtime": 1778708530.7964377,
     "hash": "3ebb0fa36c6f7b7bd2cf8bd95488105b"
@@ -679,14 +675,6 @@
     "mtime": 1778749318.2509196,
     "hash": "305c6e36dc6503f845ad0b4252fac511"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.svelte": {
-    "mtime": 1778749318.2519195,
-    "hash": "66ca590c0846b886af7528ca79ee5588"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.svelte": {
-    "mtime": 1778749318.2519195,
-    "hash": "bc172f8fa976e84bb9ab2de98e3189f5"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.svelte": {
     "mtime": 1778749318.2519195,
     "hash": "2a08cecf22dd7ac9f8a29af58f9a8fee"
@@ -695,57 +683,69 @@
     "mtime": 1778764306.1887553,
     "hash": "bada319cd1d148489704d3499275d12d"
   },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.test.ts": {
+    "mtime": 1778785605.7974317,
+    "hash": "ac2081d2fca6cb9fcfe7174f0715277a"
+  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetHeader.svelte": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7974317,
     "hash": "27bca8071881215ad3ec0c179c4f39d9"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetHeader.test.ts": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7974317,
     "hash": "3aac35498750eb80ee0122f98af115ee"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetStats.test.ts": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7974317,
     "hash": "6803e513fe6cb7acc41d83c80aa675d1"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetTous.test.ts": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7974317,
     "hash": "093484d5bf5d7e4762e1b7a1dec5883a"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.svelte": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7974317,
     "hash": "b475b1336916a13fcd7c98bc3bd87dec"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.test.ts": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7974317,
     "hash": "8fd0d26de9273e92a553a26d4b7a62ad"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCard.svelte": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7974317,
     "hash": "27507b27b6c931328d00dbf0242f503b"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCard.test.ts": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7974317,
     "hash": "2a831d5117f9830cc47d6b9ea9526a3c"
   },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.svelte": {
+    "mtime": 1778785605.7974317,
+    "hash": "66ca590c0846b886af7528ca79ee5588"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.svelte": {
+    "mtime": 1778785605.7974317,
+    "hash": "bc172f8fa976e84bb9ab2de98e3189f5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.test.ts": {
+    "mtime": 1778785605.7974317,
+    "hash": "c814ac3516fb9fabe76bf16aabfb9864"
+  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/StatTiles.svelte": {
-    "mtime": 1778783425.4135642,
+    "mtime": 1778785605.7984316,
     "hash": "89bc27d540e6bfbf95e259121e77716d"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/StatTiles.test.ts": {
-    "mtime": 1778783425.4145644,
+    "mtime": 1778785605.7984316,
     "hash": "b8176e439af6f2655eceb8b7f563b03b"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.svelte": {
-    "mtime": 1778783431.3544977,
-    "hash": "c0f393ec7e13ae1037f4cc01b00d1cef"
+    "mtime": 1778785622.1632493,
+    "hash": "f416d5f339ffa5a8a79e0b234a5b456e"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetStats.svelte": {
-    "mtime": 1778783446.6063268,
-    "hash": "fe7a9f9d2f3749a1933342ae1a666181"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.test.ts": {
-    "mtime": 1778783462.1621528,
-    "hash": "ac2081d2fca6cb9fcfe7174f0715277a"
+    "mtime": 1778785642.002028,
+    "hash": "c9339e217cba4f24a231940a753c0e46"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
@@ -1016,11 +1016,11 @@
     "hash": "26ee29b25a1d34f6503a0161165fbf77"
   },
   "/home/sbrn/Projects/diversif/src/lib/utils/dates.test.ts": {
-    "mtime": 1778783425.4145644,
+    "mtime": 1778785605.7984316,
     "hash": "58f70c235af28b17aae73ed4bbec115e"
   },
   "/home/sbrn/Projects/diversif/src/lib/utils/dates.ts": {
-    "mtime": 1778783425.4145644,
+    "mtime": 1778785605.7984316,
     "hash": "29c8674ad50a9989ea340c3fe299870d"
   },
   "/home/sbrn/Projects/diversif/src/lib/offline/uuid.test.ts": {
@@ -1040,19 +1040,19 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1778783511.4196007,
+    "mtime": 1778785683.488897,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1778783511.4196007,
+    "mtime": 1778785683.488897,
     "hash": "25bf27081b36b20b060a56ee2d9e864b"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1778783511.4196007,
+    "mtime": 1778785683.488897,
     "hash": "b403c8d52afba18155a1e3168aa5ed80"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1778783511.4196007,
+    "mtime": 1778785683.488897,
     "hash": "3c883cf3cce353bd2c719a9be15a61f0"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
@@ -1163,13 +1163,13 @@
     "mtime": 1778770804.9577026,
     "hash": "475aa3b33e7e60f96237810324004956"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.svelte": {
-    "mtime": 1778770804.9577026,
-    "hash": "bb09889a423342a68c6c5cfa851693b8"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/page.server.test.ts": {
     "mtime": 1778770804.9577026,
     "hash": "ad07cebae5888f1d1e86f66dab1e7261"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.svelte": {
+    "mtime": 1778785605.7984316,
+    "hash": "bb09889a423342a68c6c5cfa851693b8"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/print/+page.server.ts": {
     "mtime": 1778708530.8634539,
@@ -1388,7 +1388,7 @@
     "hash": "61a6e72bad7494d79aa2575433a2c451"
   },
   "/home/sbrn/Projects/diversif/src/routes/signup/+page.svelte": {
-    "mtime": 1778783425.4145644,
+    "mtime": 1778785605.7984316,
     "hash": "e92e2ea010853c7148d4065b558c2357"
   },
   "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/server.test.ts": {
