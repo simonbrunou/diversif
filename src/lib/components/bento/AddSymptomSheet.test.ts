@@ -43,4 +43,14 @@ describe('AddSymptomSheet', () => {
     expect(form?.getAttribute('action')).toBe('/child/abc/foods/1?/addSymptom');
     expect(form?.getAttribute('method')).toBe('POST');
   });
+
+  it('preselects no symptom and disables submit until one is picked', () => {
+    render(AddSymptomSheet, { props: { open: true, action: '/child/abc/foods/1' } });
+    const radios = screen.getAllByRole('radio') as HTMLInputElement[];
+    expect(radios.every((r) => !r.checked)).toBe(true);
+    const submit = screen.getByRole('button', {
+      name: 'Enregistrer le symptôme'
+    }) as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
+  });
 });

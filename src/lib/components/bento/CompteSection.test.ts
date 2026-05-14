@@ -29,4 +29,15 @@ describe('CompteSection', () => {
     render(CompteSection, { props: { ...baseProps, passkeyCount: 1 } });
     expect(screen.getByText('1 appareil')).toBeTruthy();
   });
+
+  it('translates the theme meta to French for each value', () => {
+    render(CompteSection, { props: { ...baseProps, theme: 'system' } });
+    expect(screen.getByText('Auto')).toBeTruthy();
+    cleanup();
+    render(CompteSection, { props: { ...baseProps, theme: 'light' } });
+    expect(screen.getByText('Clair')).toBeTruthy();
+    cleanup();
+    render(CompteSection, { props: { ...baseProps, theme: 'dark' } });
+    expect(screen.getByText('Sombre')).toBeTruthy();
+  });
 });

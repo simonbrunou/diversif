@@ -9,7 +9,7 @@
     action
   }: { open: boolean; action: string } = $props();
 
-  let selected = $state<SymptomLabel>('rougeur');
+  let selected = $state<SymptomLabel | null>(null);
   let note = $state('');
   let observedAt = $state(new Date().toTimeString().slice(0, 5));
 
@@ -81,7 +81,8 @@
 
     <button
       type="submit"
-      class="mt-5 w-full rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+      disabled={selected === null}
+      class="mt-5 w-full rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-primary/40 disabled:active:scale-100"
     >
       {m.addSymptomSubmit()}
     </button>
