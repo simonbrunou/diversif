@@ -6,6 +6,7 @@
   import SevereRail from './SevereRail.svelte';
   import MonitorTimer from './MonitorTimer.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { SymptomEntry } from '$lib/types';
   import { ChevronLeft } from 'lucide-svelte';
 
@@ -34,7 +35,7 @@
 
 <div class="flex flex-col">
   <a
-    href={`/child/${childId}/foods`}
+    href={localizedHref(`/child/${childId}/foods`)}
     class="mb-2 inline-flex items-center gap-1 text-sm text-ink-soft"
   >
     <ChevronLeft size={16} aria-hidden="true" />
@@ -65,5 +66,5 @@
 
 <AddSymptomSheet
   bind:open={addOpen}
-  action={`/child/${childId}/foods/${entryId}`}
+  action={localizedHref(`/child/${childId}/foods/${entryId}`)}
 />
