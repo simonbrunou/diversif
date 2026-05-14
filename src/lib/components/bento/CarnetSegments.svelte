@@ -18,6 +18,7 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   let {
     childId,
@@ -32,7 +33,7 @@
   {#each SEGMENTS as seg (seg.id)}
     {@const active = seg.id === currentSegment}
     <a
-      href={`/child/${childId}/foods${seg.query}`}
+      href={localizedHref(`/child/${childId}/foods${seg.query}`)}
       aria-current={active ? 'page' : undefined}
       data-sveltekit-noscroll
       data-sveltekit-keepfocus

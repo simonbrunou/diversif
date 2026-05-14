@@ -1,6 +1,7 @@
 <script lang="ts">
   import Modal from './ui/Modal.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { Plus, Check } from 'lucide-svelte';
 
   type Child = { id: string; name: string; birthMonth: string; avatarSeed: string };
@@ -17,7 +18,7 @@
     {#each kids as child (child.id)}
       <li>
         <a
-          href={`/child/${child.id}`}
+          href={localizedHref(`/child/${child.id}`)}
           class="flex items-center gap-3 rounded-tile border border-border/60 bg-canvas px-3 py-2 hover:bg-surface-2"
           aria-current={child.id === currentChildId ? 'page' : undefined}
           onclick={() => (open = false)}
@@ -34,7 +35,7 @@
     {/each}
     <li>
       <a
-        href="/child/new"
+        href={localizedHref('/child/new')}
         class="flex items-center gap-3 rounded-tile border border-dashed border-border bg-canvas px-3 py-2 text-ink-soft hover:bg-surface-2"
         onclick={() => (open = false)}
       >

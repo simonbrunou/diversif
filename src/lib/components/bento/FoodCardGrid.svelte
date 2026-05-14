@@ -1,5 +1,6 @@
 <script lang="ts">
   import FoodCard from './FoodCard.svelte';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   type Item = {
     id: number;
@@ -21,7 +22,7 @@
       tried={item.tried}
       status={item.status}
       href={childId && item.lastEntryId != null
-        ? `/child/${childId}/foods/${item.lastEntryId}`
+        ? localizedHref(`/child/${childId}/foods/${item.lastEntryId}`)
         : undefined}
     />
   {/each}
