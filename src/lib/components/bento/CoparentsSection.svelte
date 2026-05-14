@@ -1,4 +1,5 @@
 <script lang="ts">
+  import EmptyHint from '$components/ui/EmptyHint.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { UserPlus } from 'lucide-svelte';
@@ -15,9 +16,7 @@
 <section class="mb-3">
   <SectionHeader>{m.profilCoparentsTitle()} · {childName}</SectionHeader>
   {#if coparents.length === 0}
-    <p class="rounded-tile border border-dashed border-border bg-canvas p-3 text-center text-sm text-ink-soft">
-      {m.profilCoparentsEmpty()}
-    </p>
+    <EmptyHint>{m.profilCoparentsEmpty()}</EmptyHint>
   {:else}
     <ul class="flex flex-col gap-2">
       {#each coparents as cp (cp.id)}

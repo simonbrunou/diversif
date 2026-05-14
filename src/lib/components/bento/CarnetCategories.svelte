@@ -1,6 +1,7 @@
 <!-- src/lib/components/bento/CarnetCategories.svelte -->
 <script lang="ts">
   import FoodCard from './FoodCard.svelte';
+  import EmptyHint from '$components/ui/EmptyHint.svelte';
   import * as m from '$lib/paraglide/messages';
 
   type Food = {
@@ -24,9 +25,7 @@
 </script>
 
 {#if categories.length === 0}
-  <p class="rounded-tile border border-dashed border-border bg-canvas p-4 text-center text-sm text-ink-soft">
-    {m.carnetCategoriesEmpty()}
-  </p>
+  <EmptyHint class="p-4">{m.carnetCategoriesEmpty()}</EmptyHint>
 {:else}
   <div class="flex flex-col gap-2">
     {#each categories as cat (cat)}
