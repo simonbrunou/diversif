@@ -3,9 +3,9 @@
   "sourceLanguageTag": "fr",
   "languageTags": ["fr", "en"],
   "modules": [
-    "./node_modules/@inlang/message-lint-rule-empty-pattern/dist/index.js",
-    "./node_modules/@inlang/message-lint-rule-missing-translation/dist/index.js",
-    "./node_modules/@inlang/plugin-message-format/dist/index.js"
+    "./project.inlang/modules/message-lint-rule-empty-pattern.js",
+    "./project.inlang/modules/message-lint-rule-missing-translation.js",
+    "./project.inlang/modules/plugin-message-format.js"
   ],
   "plugin.inlang.messageFormat": {
     "pathPattern": "./messages/{languageTag}.json"
