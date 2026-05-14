@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { formatRelative } from '$lib/utils/dates';
   import { Apple, Beef, Wheat, Milk, Egg, Salad } from 'lucide-svelte';
@@ -40,9 +41,7 @@
 </script>
 
 <section class="mb-3">
-  <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-    {m.aujourdhuiRecentTitle()}
-  </h2>
+  <SectionHeader>{m.aujourdhuiRecentTitle()}</SectionHeader>
   {#if visible.length === 0}
     <p class="rounded-tile border border-dashed border-border bg-canvas p-4 text-center text-sm text-ink-soft">
       {m.aujourdhuiRecentEmpty()}

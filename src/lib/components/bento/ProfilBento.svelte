@@ -3,6 +3,7 @@
   import CoparentsSection from './CoparentsSection.svelte';
   import CompteSection from './CompteSection.svelte';
   import RgpdSection from './RgpdSection.svelte';
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { Plus } from 'lucide-svelte';
 
@@ -27,10 +28,8 @@
 </script>
 
 <div class="flex flex-col">
-  <section class="mb-3" aria-label={m.profilChildrenTitle()}>
-    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-      {m.profilChildrenTitle()}
-    </h2>
+  <section class="mb-3">
+    <SectionHeader>{m.profilChildrenTitle()}</SectionHeader>
     {#each children as child (child.id)}
       <ChildCardRow {child} href={`/child/${child.id}/settings`} />
     {/each}
@@ -54,10 +53,8 @@
   <CompteSection {passkeyCount} {locale} {theme} />
   <RgpdSection />
 
-  <section class="mb-3" aria-label={m.profilLegalTitle()}>
-    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-      {m.profilLegalTitle()}
-    </h2>
+  <section class="mb-3">
+    <SectionHeader>{m.profilLegalTitle()}</SectionHeader>
     <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-primary-strong">
       <li><a href="/cgu" class="underline">{m.chromePublicFooterCGU()}</a></li>
       <li><a href="/mentions-legales" class="underline">{m.chromeLegalLinksMentionsLegales()}</a></li>

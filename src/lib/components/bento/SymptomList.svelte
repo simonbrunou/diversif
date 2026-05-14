@@ -1,5 +1,6 @@
 <script lang="ts">
   import SymptomRow from './SymptomRow.svelte';
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { Plus } from 'lucide-svelte';
   import type { SymptomLabel } from '$lib/content/symptoms';
@@ -12,10 +13,8 @@
   }: { symptoms: SymptomEntry[]; onAdd: () => void } = $props();
 </script>
 
-<section class="mb-3" aria-label={m.reactionSymptomsTitle()}>
-  <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-    {m.reactionSymptomsTitle()}
-  </h2>
+<section class="mb-3">
+  <SectionHeader>{m.reactionSymptomsTitle()}</SectionHeader>
   {#if symptoms.length === 0}
     <p class="mb-2 rounded-tile border border-dashed border-border bg-canvas p-3 text-center text-sm text-ink-soft">
       {m.reactionSymptomsEmpty()}

@@ -1,12 +1,11 @@
 <script lang="ts">
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { Download, Trash2 } from 'lucide-svelte';
 </script>
 
-<section class="mb-3" aria-label={m.profilRgpdTitle()}>
-  <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-    {m.profilRgpdTitle()}
-  </h2>
+<section class="mb-3">
+  <SectionHeader>{m.profilRgpdTitle()}</SectionHeader>
   <a
     href="/account/export"
     class="mb-2 flex items-center gap-3 rounded-tile bg-tile-peach px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none"

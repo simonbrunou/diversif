@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
 
@@ -15,10 +16,8 @@
 </script>
 
 {#if suggestions.length > 0}
-  <section class="mb-3" aria-label={m.decouvrirSuggestionsTitle()}>
-    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-soft">
-      {m.decouvrirSuggestionsTitle()}
-    </h2>
+  <section class="mb-3">
+    <SectionHeader>{m.decouvrirSuggestionsTitle()}</SectionHeader>
     <ul class="flex flex-col gap-2">
       {#each suggestions as s (s.food.id)}
         <li>
