@@ -33,7 +33,8 @@ export default ts.config(
       'playwright-report/',
       'test-results/',
       '.e2e-data/',
-      'static/'
+      'static/',
+      'project.inlang/modules/'
     ]
   },
   {

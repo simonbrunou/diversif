@@ -4,7 +4,13 @@ import { render, screen, cleanup } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import Modal from './Modal.svelte';
 
-afterEach(() => cleanup());
+afterEach(async () => {
+  cleanup();
+  // bits-ui releases its body-scroll lock on a short timeout. Let that cleanup
+  // run while happy-dom's document still exists so it cannot fire after the
+  // test environment has been torn down.
+  await new Promise((resolve) => setTimeout(resolve, 50));
+});
 
 const text = (s: string) => createRawSnippet(() => ({ render: () => `<span>${s}</span>` }));
 

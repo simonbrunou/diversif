@@ -392,6 +392,42 @@ describe('exportUserData', () => {
     expect(serialized).not.toContain('INV-ACCEPTED');
   });
 
+  it('exports both invitation relationships when the same user sent and accepted a code', async () => {
+    const user = await insertUser('self-invite@example.com');
+    const child = await insertChild('Léo', user.id);
+    await insertMembership(user.id, child.id, 'owner');
+
+    await testDb.insert(invitations).values({
+      code: 'INV-SELF',
+      childId: child.id,
+      createdBy: user.id,
+      createdAt: new Date('2026-05-04'),
+      expiresAt: new Date('2026-05-11'),
+      usedAt: new Date('2026-05-05'),
+      usedBy: user.id
+    });
+
+    const out = await exportUserData(user.id);
+
+    expect(out.invitations).toEqual([
+      {
+        childId: child.id,
+        relationship: 'sent',
+        createdAt: new Date('2026-05-04').toISOString(),
+        expiresAt: new Date('2026-05-11').toISOString(),
+        usedAt: new Date('2026-05-05').toISOString()
+      },
+      {
+        childId: child.id,
+        relationship: 'accepted',
+        createdAt: new Date('2026-05-04').toISOString(),
+        expiresAt: new Date('2026-05-11').toISOString(),
+        usedAt: new Date('2026-05-05').toISOString()
+      }
+    ]);
+    expect(JSON.stringify(out)).not.toContain('INV-SELF');
+  });
+
   it('exports tipDismissals scoped to the user and their children', async () => {
     const u = await insertUser('dismisser@example.com');
     const c = await insertChild('Bébé', u.id);
