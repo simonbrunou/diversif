@@ -3,12 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import {
-  listSymptomsByEntry,
-  insertSymptom,
-  countNthExposition,
-  type ReactionLevel
-} from '$lib/server/db/symptoms';
+import { listSymptomsByEntry, insertSymptom, countNthExposition } from '$lib/server/db/symptoms';
 import { parseChildIdParam, requireMembership } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
@@ -99,7 +94,7 @@ export const actions: Actions = {
       label: parsed.data.label,
       note: parsed.data.note.trim() || null,
       createdBy: user.id,
-      currentReaction: entry.reaction as ReactionLevel
+      currentReaction: entry.reaction
     });
 
     audit({
