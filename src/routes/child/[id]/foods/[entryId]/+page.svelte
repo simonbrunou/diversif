@@ -4,6 +4,7 @@
   import AddSymptomSheet from '$lib/components/bento/AddSymptomSheet.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import { ChevronLeft } from 'lucide-svelte';
   import type { PageData } from './$types';
 
@@ -38,7 +39,7 @@
 
     <AddSymptomSheet
       bind:open={lateReactionOpen}
-      action={`/child/${data.childId}/foods/${data.entryId}`}
+      action={localizedHref(`/child/${data.childId}/foods/${data.entryId}`)}
     />
   </div>
 {:else}

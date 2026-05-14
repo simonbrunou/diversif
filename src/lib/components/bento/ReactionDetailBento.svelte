@@ -6,6 +6,7 @@
   import SevereRail from './SevereRail.svelte';
   import MonitorTimer from './MonitorTimer.svelte';
   import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { SymptomEntry } from '$lib/types';
   import { ChevronLeft } from 'lucide-svelte';
 
@@ -65,5 +66,5 @@
 
 <AddSymptomSheet
   bind:open={addOpen}
-  action={`/child/${childId}/foods/${entryId}`}
+  action={localizedHref(`/child/${childId}/foods/${entryId}`)}
 />

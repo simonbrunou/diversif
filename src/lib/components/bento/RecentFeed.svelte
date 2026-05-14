@@ -51,20 +51,12 @@
     <ul class="flex flex-col gap-2">
       {#each visible as entry, i (entry.id)}
         <li class="animate-feed-item" style="--i: {i}">
-          {#if entry.reaction !== 'ras'}
-            <a
-              href="/child/{childId}/foods/{entry.id}"
-              class="flex items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft"
-            >
-              {@render entryBody(entry)}
-            </a>
-          {:else}
-            <div
-              class="flex items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft"
-            >
-              {@render entryBody(entry)}
-            </div>
-          {/if}
+          <a
+            href="/child/{childId}/foods/{entry.id}"
+            class="flex items-center gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-2 shadow-soft"
+          >
+            {@render entryBody(entry)}
+          </a>
         </li>
       {/each}
     </ul>

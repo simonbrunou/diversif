@@ -53,8 +53,8 @@ describe('RecentFeed', () => {
     expect(screen.getAllByText('OK').length).toBeGreaterThan(0);
   });
 
-  it('wraps non-RAS entries in a link to the food entry detail page', () => {
-    const nonRasEntries = [
+  it('wraps every entry in a link to the food entry detail page', () => {
+    const mixed = [
       {
         id: 99,
         foodId: 20,
@@ -72,40 +72,18 @@ describe('RecentFeed', () => {
         givenAt: Date.now() - 4000
       }
     ];
-    const { container } = render(RecentFeed, { props: { entries: nonRasEntries, childId: '7' } });
+    const { container } = render(RecentFeed, { props: { entries: mixed, childId: '7' } });
     const links = container.querySelectorAll('a');
     expect(links.length).toBe(2);
     expect(links[0].getAttribute('href')).toBe('/child/7/foods/99');
     expect(links[1].getAttribute('href')).toBe('/child/7/foods/100');
   });
 
-  it('does not wrap RAS entries in a link', () => {
+  it('also wraps RAS entries in a link (late-reaction reachable)', () => {
     const { container } = render(RecentFeed, { props: { entries, childId: '5' } });
-    expect(container.querySelectorAll('a').length).toBe(0);
-  });
-
-  it('only wraps non-RAS entries when mixed', () => {
-    const mixed = [
-      {
-        id: 1,
-        foodId: 10,
-        foodName: 'Poire',
-        category: 'fruits' as const,
-        reaction: 'ras' as const,
-        givenAt: Date.now() - 1000
-      },
-      {
-        id: 2,
-        foodId: 11,
-        foodName: 'Kiwi',
-        category: 'fruits' as const,
-        reaction: 'reaction' as const,
-        givenAt: Date.now() - 2000
-      }
-    ];
-    const { container } = render(RecentFeed, { props: { entries: mixed, childId: '3' } });
     const links = container.querySelectorAll('a');
-    expect(links.length).toBe(1);
-    expect(links[0].getAttribute('href')).toBe('/child/3/foods/2');
+    expect(links.length).toBe(2);
+    expect(links[0].getAttribute('href')).toBe('/child/5/foods/1');
+    expect(links[1].getAttribute('href')).toBe('/child/5/foods/2');
   });
 });
