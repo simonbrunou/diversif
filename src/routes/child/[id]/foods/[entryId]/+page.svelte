@@ -1,11 +1,14 @@
 <script lang="ts">
   import ReactionDetailBento from '$lib/components/bento/ReactionDetailBento.svelte';
   import RasCard from '$lib/components/bento/RasCard.svelte';
+  import AddSymptomSheet from '$lib/components/bento/AddSymptomSheet.svelte';
+  import Button from '$lib/components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
   import { ChevronLeft } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
+  let lateReactionOpen = $state(false);
 </script>
 
 {#if data.isRas}
@@ -24,6 +27,19 @@
       {m.reactionSubtitle({ date: data.date, time: data.time, nth: String(data.nth) })}
     </p>
     <RasCard nth={data.nth} />
+    <Button
+      variant="secondary"
+      size="sm"
+      class="mt-3 self-start"
+      onclick={() => (lateReactionOpen = true)}
+    >
+      {m.lateReactionButton()}
+    </Button>
+
+    <AddSymptomSheet
+      bind:open={lateReactionOpen}
+      action={`/child/${data.childId}/foods/${data.entryId}`}
+    />
   </div>
 {:else}
   <ReactionDetailBento

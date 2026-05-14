@@ -263,6 +263,7 @@
   "reactionTitle": "Reaction · {food}",
   "reactionSubtitle": "{date} · {time} · {nth} exposure",
   "reactionRasMessage": "Food introduced · {nth} exposure · OK · nothing to report.",
+  "lateReactionButton": "Report a late reaction",
   "reactionSymptomsTitle": "Symptoms observed",
   "reactionSymptomsEmpty": "No symptoms logged yet.",
   "reactionSymptomsAdd": "Add a symptom",

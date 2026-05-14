@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../../../test/db';
 import {
   makeRouteEvent,
@@ -9,6 +10,9 @@ import {
 } from '../../../../../test/route';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
+vi.mock('$lib/server/audit', () => ({ audit: vi.fn() }));
+
+import { audit } from '$lib/server/audit';
 
 import { foodEntries, foods, symptoms } from '$lib/server/db/schema';
 import { load, actions } from './+page.server';
@@ -196,6 +200,10 @@ describe('reaction-detail loader', () => {
 });
 
 describe('addSymptom action', () => {
+  beforeEach(() => {
+    vi.mocked(audit).mockClear();
+  });
+
   function makeFormEvent(
     ctx: Awaited<ReturnType<typeof setup>>,
     entryId: number,
@@ -271,5 +279,68 @@ describe('addSymptom action', () => {
 
     const rows = await testDb.select().from(symptoms);
     expect(rows).toHaveLength(0);
+  });
+
+  it('promotes ras entry to inconfort when symptom is mild and emits audit', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('ras');
+    const result = await actions.addSymptom(
+      makeFormEvent(ctx, entry.id, { label: 'rougeur', note: '', observedAt: '11:42' })
+    );
+    expect(result).toEqual({ success: true });
+
+    const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
+    expect(row.reaction).toBe('inconfort');
+
+    const promotedCall = vi
+      .mocked(audit)
+      .mock.calls.find((c) => c[0].type === 'food_entry.reaction_promoted')?.[0];
+    expect(promotedCall).toMatchObject({ from: 'ras', to: 'inconfort', entryId: entry.id });
+  });
+
+  it('promotes ras entry to reaction when symptom is severe', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('ras');
+    await actions.addSymptom(
+      makeFormEvent(ctx, entry.id, {
+        label: 'detresse-respiratoire',
+        note: '',
+        observedAt: '11:42'
+      })
+    );
+    const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
+    expect(row.reaction).toBe('reaction');
+    const promotedCall = vi
+      .mocked(audit)
+      .mock.calls.find((c) => c[0].type === 'food_entry.reaction_promoted')?.[0];
+    expect(promotedCall).toMatchObject({ from: 'ras', to: 'reaction' });
+  });
+
+  it('does not promote an inconfort entry on additional symptoms', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('inconfort');
+    await actions.addSymptom(
+      makeFormEvent(ctx, entry.id, {
+        label: 'detresse-respiratoire',
+        note: '',
+        observedAt: '11:42'
+      })
+    );
+    const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
+    expect(row.reaction).toBe('inconfort');
+    const calls = vi.mocked(audit).mock.calls.map((c) => c[0].type);
+    expect(calls).not.toContain('food_entry.reaction_promoted');
+  });
+
+  it('does not promote a reaction entry on additional symptoms', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('reaction');
+    await actions.addSymptom(
+      makeFormEvent(ctx, entry.id, { label: 'urticaire', note: '', observedAt: '11:42' })
+    );
+    const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
+    expect(row.reaction).toBe('reaction');
+    const calls = vi.mocked(audit).mock.calls.map((c) => c[0].type);
+    expect(calls).not.toContain('food_entry.reaction_promoted');
   });
 });

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../test/db';
 import { seedUser, seedChild, seedMembership } from '../../../test/route';
 
@@ -103,7 +104,8 @@ describe('symptoms queries', () => {
       observedAt: new Date('2026-05-01T11:42:00Z'),
       label: 'rougeur',
       note: 'joue gauche',
-      createdBy: u.id
+      createdBy: u.id,
+      currentReaction: 'reaction'
     });
     const list = await listSymptomsByEntry(entry.id);
     expect(list).toHaveLength(1);
@@ -127,7 +129,8 @@ describe('symptoms queries', () => {
       observedAt: new Date('2026-05-01T11:42:00Z'),
       label: 'rougeur',
       note: null,
-      createdBy: u.id
+      createdBy: u.id,
+      currentReaction: 'reaction'
     });
     const list = await listSymptomsByEntry(entry.id);
     expect(list[0].note).toBeNull();
@@ -166,5 +169,30 @@ describe('symptoms queries', () => {
 
   it('countNthExposition returns 0 for unknown entry id', async () => {
     expect(await countNthExposition(99999)).toBe(0);
+  });
+
+  it('insertSymptom does not promote when entry has already been promoted concurrently', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const food = await seedFood('Poire');
+    const entry = await seedFoodEntry({
+      childId: c.id,
+      foodId: food.id,
+      reaction: 'reaction',
+      loggedBy: u.id
+    });
+    const result = await insertSymptom({
+      foodEntryId: entry.id,
+      childId: c.id,
+      observedAt: new Date('2026-05-01T11:42:00Z'),
+      label: 'urticaire',
+      note: null,
+      createdBy: u.id,
+      currentReaction: 'ras'
+    });
+    expect(result.promotedTo).toBeNull();
+    const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
+    expect(row.reaction).toBe('reaction');
   });
 });
