@@ -12,14 +12,19 @@
   const max = $derived(weeklyEntries.length === 0 ? 1 : Math.max(1, ...weeklyEntries));
 
   // Single-letter weekday in the active locale, one per bucket. The server
-  // always emits 7 buckets (loadWeeklyEntries) so i=0 → 6 days ago, i=6 → today;
-  // the offset formula uses .length to stay correct if that ever changes.
+  // (loadWeeklyEntries) buckets by UTC calendar day with today at index
+  // length-1, so we compute and format the labels in UTC too — otherwise
+  // users near UTC midnight in a non-UTC time zone would see the last bar
+  // labelled for the wrong weekday and risk an SSR/CSR hydration mismatch.
   const dayLabels = $derived.by(() => {
-    const fmt = new Intl.DateTimeFormat(languageTag(), { weekday: 'narrow' });
-    const today = new Date();
+    const fmt = new Intl.DateTimeFormat(languageTag(), {
+      weekday: 'narrow',
+      timeZone: 'UTC'
+    });
+    const now = new Date();
+    const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
     return Array.from({ length: weeklyEntries.length }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (weeklyEntries.length - 1 - i));
+      const d = new Date(todayUTC - (weeklyEntries.length - 1 - i) * 86400_000);
       return fmt.format(d);
     });
   });

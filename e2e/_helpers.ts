@@ -13,7 +13,7 @@ export async function signUp(page: Page, emailPrefix = 'bento'): Promise<string>
   await page.goto('/signup');
   await page.getByLabel('Votre prénom').fill('Parent');
   await page.getByLabel('Adresse e-mail').fill(email);
-  await page.getByLabel('Mot de passe').fill('hunter2-very-long');
+  await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
   await page.getByLabel(/politique de confidentialité/i).check();
