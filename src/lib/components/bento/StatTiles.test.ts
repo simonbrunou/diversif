@@ -21,6 +21,21 @@ describe('StatTiles', () => {
     expect(screen.getByText('7 jours')).toBeTruthy();
   });
 
+  it('pluralizes the streak to singular at 1', () => {
+    render(StatTiles, {
+      props: { foodsIntroduced: 0, weekCount: 0, streakCurrent: 1, streakRecord: 3 }
+    });
+    expect(screen.getByText('1 jour')).toBeTruthy();
+    expect(screen.queryByText('1 jours')).toBeNull();
+  });
+
+  it('hides the week delta when weekCount is 0', () => {
+    render(StatTiles, {
+      props: { foodsIntroduced: 0, weekCount: 0, streakCurrent: 0, streakRecord: 0 }
+    });
+    expect(screen.queryByText('+0 cette semaine')).toBeNull();
+  });
+
   it('shows the record indicator when current === record', () => {
     render(StatTiles, {
       props: { foodsIntroduced: 0, weekCount: 0, streakCurrent: 5, streakRecord: 5 }

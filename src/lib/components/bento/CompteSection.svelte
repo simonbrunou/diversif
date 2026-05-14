@@ -16,6 +16,14 @@
       : m.profilComptePasskeysDevicesPlural({ count: String(passkeyCount) })
   );
 
+  const themeMeta = $derived(
+    theme === 'light'
+      ? m.profilCompteThemeValueLight()
+      : theme === 'dark'
+        ? m.profilCompteThemeValueDark()
+        : m.profilCompteThemeValueSystem()
+  );
+
   const rows = $derived([
     {
       key: 'passkeys',
@@ -35,7 +43,7 @@
       key: 'theme',
       icon: Moon,
       label: m.profilCompteTheme(),
-      meta: theme,
+      meta: themeMeta,
       href: '/account#theme'
     },
     {

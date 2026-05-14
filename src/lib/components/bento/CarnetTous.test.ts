@@ -27,10 +27,10 @@ describe('CarnetTous', () => {
     expect(screen.queryByText('Œuf')).toBeNull();
   });
 
-  it('restores all foods when the tout pill is clicked', async () => {
+  it('restores all foods when the Tout pill is clicked', async () => {
     render(CarnetTous, { props: { foods } });
     await fireEvent.click(screen.getByRole('button', { name: 'Fruits' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'tout' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Tout' }));
     expect(screen.getByText('Carotte')).toBeTruthy();
   });
 

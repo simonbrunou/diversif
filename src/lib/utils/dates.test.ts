@@ -122,16 +122,16 @@ describe('parseDateTimeLocal', () => {
 });
 
 describe('formatMonthsSince', () => {
-  it('returns months and days since the birth month (FR)', () => {
-    // birthMonth 2025-11-01, now 2026-05-10 → 6 months, 190 days
+  it('returns months since the birth month (FR)', () => {
+    // birthMonth 2025-11-01, now 2026-05-10 → 6 months
     const result = formatMonthsSince('2025-11-01', new Date('2026-05-10T00:00:00Z'));
-    expect(result).toMatch(/^6 mois · J\+\d+$/);
+    expect(result).toBe('6 mois');
   });
 
   it('returns English format when locale is en', () => {
     setLanguageTag('en');
     const result = formatMonthsSince('2025-11-01', new Date('2026-05-10T00:00:00Z'));
     setLanguageTag(sourceLanguageTag);
-    expect(result).toMatch(/^6 mo · D\+\d+$/);
+    expect(result).toBe('6 mo');
   });
 });
