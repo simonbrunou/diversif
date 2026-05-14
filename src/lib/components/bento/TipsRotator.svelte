@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Card from '$components/ui/Card.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
 
@@ -14,7 +15,7 @@
 {#if tip && !dismissed}
   <section class="mb-3">
     <SectionHeader>{m.decouvrirTipsTitle()}</SectionHeader>
-    <article class="rounded-tile bg-tile-butter p-4 shadow-soft">
+    <Card as="article" variant="tile-butter" class="p-4">
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1">
           <p class="text-base font-bold leading-tight">{tip.title}</p>
@@ -28,6 +29,6 @@
           {m.decouvrirTipDismiss()}
         </button>
       </div>
-    </article>
+    </Card>
   </section>
 {/if}

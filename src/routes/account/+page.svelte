@@ -6,6 +6,7 @@
   import ThemeToggle from '$components/ThemeToggle.svelte';
   import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
   import LegalLinks from '$lib/components/LegalLinks.svelte';
+  import Card from '$components/ui/Card.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import { enhance } from '$app/forms';
   import { invalidateAll } from '$app/navigation';
@@ -126,7 +127,7 @@
       {m.authAccountGroupIdentity()}
     </h2>
 
-    <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <Card as="section" variant="surface" class="px-4 py-3">
       <SectionHeader as="h3">{m.authAccountProfileSection()}</SectionHeader>
       <form
         method="POST"
@@ -144,9 +145,9 @@
           </Button>
         </div>
       </form>
-    </section>
+    </Card>
 
-    <section id="password" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <Card as="section" id="password" variant="surface" class="scroll-mt-20 px-4 py-3">
       <SectionHeader as="h3">{m.authAccountPasswordSection()}</SectionHeader>
       <form
         method="POST"
@@ -168,9 +169,9 @@
           </Button>
         </div>
       </form>
-    </section>
+    </Card>
 
-    <section id="passkeys" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <Card as="section" id="passkeys" variant="surface" class="scroll-mt-20 px-4 py-3">
       <SectionHeader as="h3">{m.authAccountPasskeysSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">
         {m.authAccountPasskeysDescription()}
@@ -230,7 +231,7 @@
           {m.authAccountPasskeyUnsupported()}
         </p>
       {/if}
-    </section>
+    </Card>
   </section>
 
   <section aria-labelledby="group-preferences" class="space-y-3">
@@ -238,16 +239,16 @@
       {m.authAccountGroupPreferences()}
     </h2>
 
-    <section id="theme" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <Card as="section" id="theme" variant="surface" class="scroll-mt-20 px-4 py-3">
       <SectionHeader as="h3">{m.authAccountAppearanceSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">{m.authAccountAppearanceDescription()}</p>
       <ThemeToggle />
-    </section>
+    </Card>
 
-    <section id="locale" class="scroll-mt-20 rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <Card as="section" id="locale" variant="surface" class="scroll-mt-20 px-4 py-3">
       <SectionHeader as="h3">{m.profilCompteLangue()}</SectionHeader>
       <LocaleSwitcher />
-    </section>
+    </Card>
   </section>
 
   <section aria-labelledby="group-sessions" class="space-y-3">
@@ -255,7 +256,7 @@
       {m.authAccountGroupSessions()}
     </h2>
 
-    <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <Card as="section" variant="surface" class="px-4 py-3">
       <SectionHeader as="h3">{m.authAccountSessionsSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">
         {m.authAccountSessionsDescription()}
@@ -263,14 +264,14 @@
       <form method="POST" action="?/logoutEverywhere">
         <Button type="submit" variant="outline">{m.authAccountLogoutEverywhere()}</Button>
       </form>
-    </section>
+    </Card>
 
-    <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <Card as="section" variant="surface" class="px-4 py-3">
       <SectionHeader as="h3">{m.authAccountLogoutSection()}</SectionHeader>
       <form method="POST" action="/logout">
         <Button type="submit" variant="outline">{m.authAccountLogout()}</Button>
       </form>
-    </section>
+    </Card>
   </section>
 
   <section aria-labelledby="group-data" class="space-y-3">
@@ -278,15 +279,15 @@
       {m.authAccountGroupData()}
     </h2>
 
-    <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+    <Card as="section" variant="surface" class="px-4 py-3">
       <SectionHeader as="h3">{m.authAccountDataSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">
         {m.authAccountDataDescription()}
       </p>
       <Button href={localizedHref('/account/export')} variant="outline">{m.authAccountDataExport()}</Button>
-    </section>
+    </Card>
 
-    <section id="delete" class="scroll-mt-20 rounded-tile bg-tile-butter px-4 py-3 shadow-soft">
+    <Card as="section" id="delete" variant="tile-butter" class="scroll-mt-20 px-4 py-3">
       <SectionHeader as="h3" tone="destructive">{m.authAccountDeleteSection()}</SectionHeader>
       <p class="mb-3 text-sm text-ink-soft">
         {m.authAccountDeleteDescription()}
@@ -332,11 +333,11 @@
           </Button>
         </div>
       </form>
-    </section>
+    </Card>
   </section>
 
-  <section class="rounded-tile bg-surface px-4 py-3 shadow-soft">
+  <Card as="section" variant="surface" class="px-4 py-3">
     <SectionHeader>{m.authAccountLegalSection()}</SectionHeader>
     <LegalLinks />
-  </section>
+  </Card>
 </div>
