@@ -4,17 +4,18 @@ import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { listSymptomsByEntry, insertSymptom, countNthExposition } from '$lib/server/db/symptoms';
-import { requireMembership } from '$lib/server/guards';
+import { parseChildIdParam, requireMembership } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
-  const childId = Number(params.id);
-  const entryId = Number(params.entryId);
-  const { user } = requireMembership(locals, childId);
-  void user;
+function parseEntryIdParam(raw: string | undefined): number {
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n <= 0) throw error(404, 'Food entry not found');
+  return n;
+}
 
+async function loadEntryForChild(entryId: number, childId: number) {
   const row = (
     await db
       .select({
@@ -31,6 +32,16 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       .limit(1)
   )[0];
   if (!row) throw error(404, 'Food entry not found');
+  return row;
+}
+
+export const load: PageServerLoad = async ({ locals, params }) => {
+  const childId = parseChildIdParam(params);
+  const entryId = parseEntryIdParam(params.entryId);
+  const { user } = requireMembership(locals, childId);
+  void user;
+
+  const row = await loadEntryForChild(entryId, childId);
 
   const locale = (locals.locale ?? 'fr') as 'fr' | 'en';
   const sList = (await listSymptomsByEntry(entryId)).map((s) => ({
@@ -61,8 +72,8 @@ const addSchema = z.object({
 
 export const actions: Actions = {
   addSymptom: async ({ locals, params, request }) => {
-    const childId = Number(params.id);
-    const entryId = Number(params.entryId);
+    const childId = parseChildIdParam(params);
+    const entryId = parseEntryIdParam(params.entryId);
     const { user } = requireMembership(locals, childId);
 
     const raw = Object.fromEntries(await request.formData());
@@ -70,6 +81,8 @@ export const actions: Actions = {
     if (!parsed.success) {
       return fail(400, { error: 'invalid-input' });
     }
+    await loadEntryForChild(entryId, childId);
+
     const [hh, mm] = parsed.data.observedAt.split(':').map(Number);
     const observedAt = new Date();
     observedAt.setHours(hh, mm, 0, 0);
