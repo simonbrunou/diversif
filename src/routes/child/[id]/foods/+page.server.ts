@@ -221,6 +221,8 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   // Rows are ordered DESC givenAt, so the first occurrence of each foodId is
   // the most recent entry : capture its id as `lastEntryId` so non-RAS food
   // cards can link to the reaction-detail page.
+  // Note: when a `?reaction=` filter is active, `lastEntryId` and `lastTexture`
+  // reflect the most recent entry within the filter, not the absolute latest.
   const foodMap = new Map<
     number,
     {

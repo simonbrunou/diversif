@@ -50,6 +50,7 @@
   <p class="mb-3 text-xs text-ink-soft">
     {m.reactionSubtitle({ date, time, nth: String(nth) })}
   </p>
+  <!-- Row treatment for labelled-detail contexts; feed/list chips use uppercase tracking-wide instead. -->
   {#if texture}
     <p class="mb-3 text-xs text-ink-soft">
       <span class="text-muted-foreground">Texture</span>
