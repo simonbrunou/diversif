@@ -69,8 +69,7 @@ docker compose exec postgres pg_dump -U diversif diversif > diversif-$(date +%F)
 - `/login`, `/signup`, `/logout`, `/join/[code]`
 - `/child/new`, `/child/[id]` (dashboard)
 - `/child/[id]/log` — log a food
-- `/child/[id]/foods` — full history with filters
-- `/child/[id]/allergens` — allergen exposure status
+- `/child/[id]/foods` — full history with filters (allergens, categories, stats segments)
 - `/child/[id]/suggestions` — what to introduce next
 - `/child/[id]/settings` — child info, members, invitations, danger zone
 - `/account` — profile, password, logout everywhere
