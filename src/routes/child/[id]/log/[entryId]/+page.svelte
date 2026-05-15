@@ -10,6 +10,7 @@
   import type { TextureKey } from '$lib/utils/textures';
   import { enhance } from '$app/forms';
   import { Trash2 } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -74,7 +75,7 @@
     </div>
 
     <div class="grid gap-1.5">
-      <Label>Texture (facultatif)</Label>
+      <Label>{m.textureLabel()}</Label>
       <TexturePicker
         name="texture"
         bind:value={texture}

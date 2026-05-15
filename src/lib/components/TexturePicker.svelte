@@ -2,6 +2,7 @@
   import { Check, X } from 'lucide-svelte';
   import { TEXTURE_VALUES, type TextureKey, getTextureLabel } from '$lib/utils/textures';
   import { cn } from '$lib/utils/cn';
+  import * as m from '$lib/paraglide/messages';
 
   let {
     name,
@@ -65,7 +66,7 @@
 </script>
 
 <fieldset class="grid grid-cols-3 gap-2 sm:grid-cols-6">
-  <legend class="sr-only">Texture</legend>
+  <legend class="sr-only">{m.textureLegend()}</legend>
   {#each TEXTURE_VALUES as k (k)}
     {@const active = value === k}
     {@const s = TILE[k]}
@@ -105,7 +106,7 @@
 
 {#if pristine && ageMonths != null}
   <p class="mt-1 text-[11px] text-muted-foreground">
-    par défaut pour {Math.floor(ageMonths)} mois — modifiable
+    {m.textureDefaultHint({ ageMonths: String(Math.floor(ageMonths)) })}
   </p>
 {/if}
 
@@ -114,8 +115,8 @@
   onclick={onClear}
   disabled={value == null}
   class="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40"
-  aria-label="Effacer la texture"
+  aria-label={m.textureClearAria()}
 >
   <X size={11} />
-  Effacer
+  {m.textureClear()}
 </button>

@@ -30,7 +30,7 @@
     </p>
     {#if data.texture}
       <p class="mb-3 text-xs text-ink-soft">
-        <span class="text-muted-foreground">Texture</span>
+        <span class="text-muted-foreground">{m.textureDetailRowLabel()}</span>
         · <span class="font-medium">{getTextureLabel(data.texture)}</span>
       </p>
     {/if}

@@ -1,3 +1,5 @@
+import * as m from '$lib/paraglide/messages';
+
 export const TEXTURE_VALUES = [
   'lisse',
   'moulinee',
@@ -9,17 +11,17 @@ export const TEXTURE_VALUES = [
 
 export type TextureKey = (typeof TEXTURE_VALUES)[number];
 
-const LABELS: Record<TextureKey, string> = {
-  lisse: 'Lisse',
-  moulinee: 'Moulinée',
-  ecrasee: 'Écrasée',
-  'petits-morceaux': 'Petits morceaux',
-  morceaux: 'Morceaux',
-  finger: 'Finger food'
+const LABEL_FNS: Record<TextureKey, () => string> = {
+  lisse: m.textureLisse,
+  moulinee: m.textureMoulinee,
+  ecrasee: m.textureEcrasee,
+  'petits-morceaux': m.texturePetitsMorceaux,
+  morceaux: m.textureMorceaux,
+  finger: m.textureFinger
 };
 
 export function getTextureLabel(key: TextureKey): string {
-  return LABELS[key];
+  return LABEL_FNS[key]();
 }
 
 export function isTextureKey(value: unknown): value is TextureKey {

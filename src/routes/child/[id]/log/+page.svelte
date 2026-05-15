@@ -139,7 +139,7 @@
     </div>
 
     <div class="grid gap-1.5">
-      <Label>Texture (facultatif)</Label>
+      <Label>{m.textureLabel()}</Label>
       <TexturePicker
         name="texture"
         bind:value={texture}
