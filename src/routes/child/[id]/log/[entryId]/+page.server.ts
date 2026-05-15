@@ -6,6 +6,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import { CATEGORY_IDS } from '$lib/utils/categories';
+import { TEXTURE_VALUES } from '$lib/utils/textures';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z
@@ -15,6 +16,7 @@ const schema = z
     'customFood.category': z.string().optional(),
     givenAt: z.string().min(1, 'Date requise'),
     reaction: z.enum(['ras', 'inconfort', 'reaction']),
+    texture: z.union([z.enum(TEXTURE_VALUES), z.literal('')]).optional(),
     notes: z.string().max(2000).optional()
   })
   .refine((d) => !!d.foodId || !!d['customFood.name'], {
@@ -70,6 +72,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
       foodId: entry.foodId,
       givenAt: givenAt.getTime(),
       reaction: entry.reaction,
+      texture: entry.texture ?? null,
       notes: entry.notes
     },
     from
@@ -143,12 +146,20 @@ export const actions: Actions = {
       return fail(400, { error: 'Date invalide.' });
     }
 
+    const textureValue =
+      parsed.data.texture === undefined
+        ? null
+        : parsed.data.texture === ''
+          ? null
+          : parsed.data.texture;
+
     await db
       .update(foodEntries)
       .set({
         foodId,
         givenAt: givenAtDate,
         reaction: parsed.data.reaction,
+        texture: textureValue,
         notes: parsed.data.notes?.trim() || null
       })
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));

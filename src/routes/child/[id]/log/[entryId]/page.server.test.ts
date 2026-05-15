@@ -297,6 +297,64 @@ describe('child/[id]/log/[entryId] update action', () => {
   });
 });
 
+describe('child/[id]/log/[entryId] texture edit', () => {
+  it('updates texture on edit submit', async () => {
+    const { u, c, m, entry, food } = await setup();
+    // seed the entry with an initial texture
+    await testDb.update(foodEntries).set({ texture: 'lisse' }).where(eq(foodEntries.id, entry.id));
+
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2024-06-02T10:00',
+        reaction: 'ras',
+        notes: '',
+        texture: 'ecrasee'
+      }
+    });
+    await captureFlow(() =>
+      actions.update!(event as unknown as Parameters<NonNullable<typeof actions.update>>[0])
+    );
+    const [row] = await testDb
+      .select()
+      .from(foodEntries)
+      .where(eq(foodEntries.id, entry.id))
+      .limit(1);
+    expect(row.texture).toBe('ecrasee');
+  });
+
+  it('clears texture when form submits empty string', async () => {
+    const { u, c, m, entry, food } = await setup();
+    // seed the entry with an initial texture
+    await testDb.update(foodEntries).set({ texture: 'lisse' }).where(eq(foodEntries.id, entry.id));
+
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2024-06-02T10:00',
+        reaction: 'ras',
+        notes: '',
+        texture: ''
+      }
+    });
+    await captureFlow(() =>
+      actions.update!(event as unknown as Parameters<NonNullable<typeof actions.update>>[0])
+    );
+    const [row] = await testDb
+      .select()
+      .from(foodEntries)
+      .where(eq(foodEntries.id, entry.id))
+      .limit(1);
+    expect(row.texture).toBeNull();
+  });
+});
+
 describe('child/[id]/log/[entryId] delete action', () => {
   it('deletes the entry and redirects to /foods by default', async () => {
     const { u, c, m, entry } = await setup();
