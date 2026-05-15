@@ -402,5 +402,7 @@
   "errorsAccountPasskeyGenericError": "Error",
   "reportStageHeading": "Diversification stage",
   "reportStageExpectedTextures": "Expected textures",
-  "reportStageMostAdvancedTexture": "Most advanced texture logged"
+  "reportStageMostAdvancedTexture": "Most advanced texture logged",
+  "reportTextureDistributionHeading": "Textures over 30 days",
+  "reportTextureDistributionEmpty": "No texture logged in this period."
 }

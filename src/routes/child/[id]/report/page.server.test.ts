@@ -350,4 +350,88 @@ describe('child/[id]/report load', () => {
     const data = await load(event as unknown as Parameters<typeof load>[0]);
     expect(data.mostAdvancedTexture).toBeNull();
   });
+
+  it('returns a 30-day texture distribution with counts per key and total', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    await ctx.testDb.insert(foodEntries).values([
+      // within 30-day window
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 1 * day),
+        reaction: 'ras',
+        texture: 'lisse',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 2 * day),
+        reaction: 'ras',
+        texture: 'lisse',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 3 * day),
+        reaction: 'ras',
+        texture: 'ecrasee',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 4 * day),
+        reaction: 'ras',
+        texture: null,
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      // outside window
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 60 * day),
+        reaction: 'ras',
+        texture: 'morceaux',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      }
+    ]);
+    const event = makeRouteEvent({
+      params: { id: String(ctx.childId) },
+      locals: ctx.locals,
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.textureDistribution.totalWithTexture).toBe(3);
+    expect(data.textureDistribution.counts.lisse).toBe(2);
+    expect(data.textureDistribution.counts.ecrasee).toBe(1);
+    expect(data.textureDistribution.counts.morceaux).toBe(0); // outside window
+    expect(data.textureDistribution.counts.moulinee).toBe(0);
+    expect(data.textureDistribution.counts['petits-morceaux']).toBe(0);
+    expect(data.textureDistribution.counts.finger).toBe(0);
+  });
+
+  it('returns zero totals when no textures logged in the last 30 days', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    const event = makeRouteEvent({
+      params: { id: String(ctx.childId) },
+      locals: ctx.locals,
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.textureDistribution.totalWithTexture).toBe(0);
+    for (const k of Object.keys(data.textureDistribution.counts)) {
+      expect(
+        data.textureDistribution.counts[k as keyof typeof data.textureDistribution.counts]
+      ).toBe(0);
+    }
+  });
 });

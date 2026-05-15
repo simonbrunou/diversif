@@ -402,5 +402,7 @@
   "errorsAccountPasskeyGenericError": "Erreur",
   "reportStageHeading": "Étape de diversification",
   "reportStageExpectedTextures": "Textures attendues",
-  "reportStageMostAdvancedTexture": "Texture la plus avancée enregistrée"
+  "reportStageMostAdvancedTexture": "Texture la plus avancée enregistrée",
+  "reportTextureDistributionHeading": "Textures sur 30 jours",
+  "reportTextureDistributionEmpty": "Aucune texture enregistrée sur la période."
 }

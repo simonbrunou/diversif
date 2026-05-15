@@ -188,6 +188,28 @@ export const load: PageServerLoad = async ({ parent }) => {
   const mostAdvancedTexture: TextureKey | null =
     mostAdvancedIdx >= 0 ? TEXTURE_VALUES[mostAdvancedIdx] : null;
 
+  // 30-day texture distribution: count each texture key logged in the window.
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - THIRTY_DAYS_MS;
+
+  const counts: Record<TextureKey, number> = {
+    lisse: 0,
+    moulinee: 0,
+    ecrasee: 0,
+    'petits-morceaux': 0,
+    morceaux: 0,
+    finger: 0
+  };
+  let totalWithTexture = 0;
+  for (const e of entries) {
+    if (e.givenAt < cutoff) continue;
+    if (!isTextureKey(e.texture)) continue;
+    counts[e.texture] += 1;
+    totalWithTexture += 1;
+  }
+
+  const textureDistribution = { counts, totalWithTexture };
+
   // Current diversification stage derived from child age at report time.
   const stage: Stage = getStageForAgeMonths(ageInMonths(child.birthDate));
 
@@ -195,6 +217,7 @@ export const load: PageServerLoad = async ({ parent }) => {
     generatedAt: Date.now(),
     stage,
     mostAdvancedTexture,
+    textureDistribution,
     totals: {
       foods: byFood.size,
       entries: entries.length,
