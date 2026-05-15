@@ -38,6 +38,9 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // the others (soja, céleri, moutarde, crustacés, mollusques) are excluded.
 const ALLERGEN_PRIORITY: readonly AllergenId[] = PRIORITY_INTRODUCTION_ALLERGENS;
 
+const MAINTAIN_THRESHOLD_DAYS = 4;
+const MAINTAIN_CARD_CAP = 2;
+
 const ALLERGEN_LABELS: Record<AllergenId, string> = Object.fromEntries(
   ALLERGENS.map((a) => [a.id, a.label])
 ) as Record<AllergenId, string>;
@@ -268,9 +271,53 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     }
   }
 
-  // Sort by severity, cap to top 4 to avoid noise
+  // 9. Maintain priority allergens: once a priority allergen has been
+  // introduced, surface a calm nudge if more than four days have passed
+  // since the last exposure. Anchored to the LEAP/ESPGHAN target of
+  // 2-3 times per week. Reaction-bearing allergens are suppressed here so
+  // we never compete with the reaction surfaces.
+  if (input.ageMonths >= 4) {
+    type MaintainCandidate = { id: AllergenId; daysSince: number; lastAt: number };
+    const lastByAllergen = new Map<AllergenId, number>();
+    const hasReactionByAllergen = new Map<AllergenId, boolean>();
+    for (const e of input.entries) {
+      if (!e.allergenType) continue;
+      const aid = e.allergenType as AllergenId;
+      if (!ALLERGEN_PRIORITY.includes(aid)) continue;
+      const cur = lastByAllergen.get(aid);
+      if (cur == null || e.givenAt > cur) lastByAllergen.set(aid, e.givenAt);
+      if (e.reaction === 'reaction') hasReactionByAllergen.set(aid, true);
+    }
+    const candidates: MaintainCandidate[] = [];
+    for (const id of ALLERGEN_PRIORITY) {
+      if (!input.introducedAllergens.has(id)) continue;
+      if (hasReactionByAllergen.get(id)) continue;
+      const lastAt = lastByAllergen.get(id);
+      if (lastAt == null) continue; // introduced but no allergenType-tagged entry in window
+      const daysSince = Math.max(0, Math.floor((now - lastAt) / DAY_MS));
+      if (daysSince > MAINTAIN_THRESHOLD_DAYS) {
+        candidates.push({ id, daysSince, lastAt });
+      }
+    }
+    // Sort oldest exposure first (largest daysSince first), cap to MAINTAIN_CARD_CAP.
+    candidates.sort((a, b) => b.daysSince - a.daysSince);
+    for (const c of candidates.slice(0, MAINTAIN_CARD_CAP)) {
+      const label = ALLERGEN_LABELS[c.id];
+      push(out, input.dismissals, {
+        key: `maintain-allergen:${c.id}`,
+        severity: 'info',
+        title: `Reproposez « ${label} »`,
+        body: `Bébé n'a pas eu ${label.toLowerCase()} depuis ${c.daysSince} jours. L'idéal est d'en reproposer 2 à 3 fois par semaine pour entretenir la tolérance.`,
+        cta: { label: 'Voir les suggestions', href: `${childPath}/suggestions?allergen=${c.id}` },
+        sources: ['leap-2015', 'espghan-2017', 'anses-nourrisson'],
+        dismissable: true
+      });
+    }
+  }
+
+  // Sort by severity, cap to top 6 to avoid noise
   out.sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]);
-  return out.slice(0, 4);
+  return out.slice(0, 6);
 }
 
 function push(out: Reminder[], dismissals: Set<string>, r: Reminder): void {

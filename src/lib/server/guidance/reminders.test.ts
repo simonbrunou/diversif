@@ -345,4 +345,117 @@ describe('computeReminders', () => {
       expect(r!.body).toContain('mystery_group');
     });
   });
+
+  describe('maintain-allergen', () => {
+    // Helper: build an entry for an allergen-bearing food. The reminders engine
+    // sees EnrichedEntry.allergenType and uses it to identify allergen logs.
+    function allergenEntry(
+      allergen: AllergenId,
+      daysAgo: number,
+      overrides: Partial<EnrichedEntry> = {}
+    ): EnrichedEntry {
+      return entry({
+        foodName: allergen,
+        allergenType: allergen,
+        givenAt: NOW - daysAgo * DAY,
+        reaction: 'ras',
+        ...overrides
+      });
+    }
+
+    it('does not fire when the last exposure is within 4 days', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 3)]
+        })
+      );
+      expect(out.find((r) => r.key === 'maintain-allergen:oeuf')).toBeUndefined();
+    });
+
+    it('fires when the last exposure is older than 4 days', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 5)]
+        })
+      );
+      const card = out.find((r) => r.key === 'maintain-allergen:oeuf');
+      expect(card).toBeDefined();
+      expect(card?.severity).toBe('info');
+    });
+
+    it('caps at 2 cards sorted oldest-exposure-first', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf', 'arachide', 'lait']),
+          entries: [
+            allergenEntry('oeuf', 6),
+            allergenEntry('arachide', 9),
+            allergenEntry('lait', 7)
+          ]
+        })
+      );
+      const keys = out.filter((r) => r.key.startsWith('maintain-allergen:')).map((r) => r.key);
+      expect(keys).toEqual(['maintain-allergen:arachide', 'maintain-allergen:lait']);
+    });
+
+    it('does not fire for non-priority allergens (céleri)', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['celeri']),
+          entries: [allergenEntry('celeri', 30)]
+        })
+      );
+      expect(out.find((r) => r.key.startsWith('maintain-allergen:'))).toBeUndefined();
+    });
+
+    it('does not fire if the priority allergen was never introduced', () => {
+      // No entries at all → introducedAllergens cannot include the allergen.
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(), // override the isolated()
+          entries: []
+        })
+      );
+      expect(out.find((r) => r.key.startsWith('maintain-allergen:'))).toBeUndefined();
+    });
+
+    it('respects dismissal of maintain-allergen:<id>', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 7)],
+          dismissals: new Set<string>(['maintain-allergen:oeuf'])
+        })
+      );
+      expect(out.find((r) => r.key === 'maintain-allergen:oeuf')).toBeUndefined();
+    });
+
+    it('lets reaction-state allergens still surface their pending-reaction context, but does not also emit a maintain card', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 8, { reaction: 'reaction' })]
+        })
+      );
+      expect(out.find((r) => r.key === 'maintain-allergen:oeuf')).toBeUndefined();
+    });
+
+    it('sorts maintain cards below important + warn severity in the final list', () => {
+      const out = computeReminders(
+        input({
+          ageMonths: 6, // triggers stage-transition:6m (important)
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 6)]
+        })
+      );
+      const idxImportant = out.findIndex((r) => r.key === 'stage-transition:6m');
+      const idxMaintain = out.findIndex((r) => r.key === 'maintain-allergen:oeuf');
+      expect(idxImportant).toBeGreaterThanOrEqual(0);
+      if (idxMaintain >= 0) {
+        expect(idxMaintain).toBeGreaterThan(idxImportant);
+      }
+    });
+  });
 });
