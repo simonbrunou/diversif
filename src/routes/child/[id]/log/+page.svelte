@@ -5,7 +5,9 @@
   import Textarea from '$components/ui/Textarea.svelte';
   import FoodCombobox from '$lib/components/FoodCombobox.svelte';
   import ReactionPicker from '$lib/components/ReactionPicker.svelte';
+  import TexturePicker from '$lib/components/TexturePicker.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
+  import { defaultTextureForAgeMonths, type TextureKey } from '$lib/utils/textures';
   import { formatDateInputValue } from '$lib/utils/dates';
   import { ageInMonths } from '$lib/utils/age';
   import { getTipsFor, pickRotatingTip } from '$lib/content/guidance';
@@ -27,6 +29,10 @@
 
   let givenAt = $state(formatDateInputValue());
   let reaction = $state<'ras' | 'inconfort' | 'reaction'>('ras');
+  let texture = $state<TextureKey | null>(
+    (() => defaultTextureForAgeMonths(ageInMonths(data.child.birthDate)))()
+  );
+  let texturePristine = $state(true);
   let submitting = $state(false);
 
   const initialFoodId = (() => {
@@ -131,6 +137,16 @@
           </li>
         </ul>
       </details>
+    </div>
+
+    <div class="grid gap-1.5">
+      <Label>Texture (facultatif)</Label>
+      <TexturePicker
+        name="texture"
+        bind:value={texture}
+        bind:pristine={texturePristine}
+        ageMonths={ageInMonths(data.child.birthDate)}
+      />
     </div>
 
     <div class="grid gap-1.5">
