@@ -230,11 +230,11 @@
     const scrollable = findScrollable(target, root);
     activeScrollable = scrollable;
 
-    if (isTouch && scrollable && scrollable.scrollTop > 0) {
-      // Defer to scroll first — we drive scrollTop ourselves (because
-      // Content has touch-action: none to keep the browser from
-      // claiming the pan), and only switch to the drag gesture once
-      // the scrollable has been pulled to the top.
+    if (isTouch && scrollable) {
+      // We own scroll for the whole press (Content has touch-action: none).
+      // 'scroll' mode drives scrollTop in either direction; if a downward
+      // drag pins scrollTop to 0 and the finger keeps pulling, the move
+      // handler hands off to the drag-to-dismiss gesture.
       gestureMode = 'scroll';
     } else {
       gestureMode = 'pending';
@@ -252,8 +252,11 @@
 
     if (gestureMode === 'scroll') {
       // Content has touch-action: none, so native scroll is off — drive
-      // the scrollable manually. Once it pulls to the top and the finger
-      // is still moving down, hand off to the drag gesture.
+      // the scrollable manually in both directions. The setter clamps to
+      // [0, scrollHeight - clientHeight], so an extra downward pull at
+      // the top (or an extra upward pull at the bottom) just stays put.
+      // Once scrollTop is pinned at 0 and the finger is still pulling
+      // down, hand off to the drag-to-dismiss gesture.
       if (activeScrollable) {
         activeScrollable.scrollTop -= incrementalDy;
         if (activeScrollable.scrollTop <= 0 && currentY > startY) {
