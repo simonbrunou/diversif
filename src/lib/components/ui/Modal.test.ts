@@ -35,6 +35,44 @@ describe('Modal', () => {
     expect(document.querySelector('[data-sheet-grabber]')).toBeNull();
   });
 
+  function mockMatchMedia(matches: boolean) {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false
+    })) as typeof window.matchMedia;
+    return () => {
+      window.matchMedia = original;
+    };
+  }
+
+  it('resolves side="auto" to bottom when (min-width: 768px) does not match', () => {
+    const restore = mockMatchMedia(false);
+    try {
+      render(Modal, { props: { open: true, side: 'auto', children: text('x') } });
+      expect(document.querySelector('[data-sheet-grabber]')).not.toBeNull();
+    } finally {
+      restore();
+    }
+  });
+
+  it('resolves side="auto" to center when (min-width: 768px) matches', () => {
+    const restore = mockMatchMedia(true);
+    try {
+      render(Modal, { props: { open: true, side: 'auto', children: text('x') } });
+      // No grabber at desktop sizes — the center variant renders instead.
+      expect(document.querySelector('[data-sheet-grabber]')).toBeNull();
+    } finally {
+      restore();
+    }
+  });
+
   it('renders with role=dialog', () => {
     render(Modal, { props: { open: true, children: text('x') } });
     expect(screen.getByRole('dialog')).toBeTruthy();

@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-15)
 
 ## Corpus Check
-- 370 files · ~493,674 words
+- 370 files · ~493,944 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1927 nodes · 2774 edges · 150 communities (141 shown, 9 thin omitted)
+- 1929 nodes · 2776 edges · 150 communities (141 shown, 9 thin omitted)
 - Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 508 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `302b8a38`
+- Built from commit: `6fecc401`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -87,23 +87,23 @@ Nodes (386): addSymptomLabel(), addSymptomNote(), addSymptomNotePlaceholder(), a
 
 ### Community 3 - "Page Loaders & Form Actions"
 Cohesion: 0.07
-Nodes (30): seed(), makeFormEvent(), setup(), loadFor(), setup(), setup(), setup(), seedTestUser() (+22 more)
+Nodes (31): seed(), makeFormEvent(), setup(), loadFor(), setup(), setup(), setup(), seedTestUser() (+23 more)
 
 ### Community 4 - "Test Fixtures & Setup Helpers"
 Cohesion: 0.07
-Nodes (39): load(), GET(), POST(), audit(), invalidateAllUserSessions(), runCleanup(), startCleanupTimer(), stopCleanupTimer() (+31 more)
+Nodes (38): load(), GET(), POST(), audit(), runCleanup(), startCleanupTimer(), stopCleanupTimer(), deleteUserAccount() (+30 more)
 
 ### Community 5 - "Branding, App Shell & PWA Manifest"
 Cohesion: 0.09
 Nodes (15): clear(), deleteRow(), emit(), enqueue(), flush(), openDb(), postOne(), readAllOrdered() (+7 more)
 
 ### Community 7 - "Auth Routes & i18n Routing"
-Cohesion: 0.11
-Nodes (18): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), POST(), enforceLanguageTag(), setLanguageTag(), invalidateSession() (+10 more)
+Cohesion: 0.08
+Nodes (13): findScrollable(), handleOpenChange(), isInteractive(), onSheetPointerCancel(), onSheetPointerDown(), onSheetPointerMove(), onSheetPointerUp(), resetGesture() (+5 more)
 
 ### Community 8 - "UI Components & Tests"
-Cohesion: 0.09
-Nodes (13): findScrollable(), handleOpenChange(), isInteractive(), onSheetPointerCancel(), onSheetPointerDown(), onSheetPointerMove(), onSheetPointerUp(), resetGesture() (+5 more)
+Cohesion: 0.11
+Nodes (18): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), POST(), enforceLanguageTag(), setLanguageTag(), invalidateSession() (+10 more)
 
 ### Community 9 - "WebAuthn / Passkeys"
 Cohesion: 0.13
@@ -208,11 +208,11 @@ Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `languageTag()` connect `i18n Messages (auth.*)` to `UI Components & Tests`, `Auth Routes & i18n Routing`?**
-  _High betweenness centrality (0.109) - this node is a cross-community bridge._
-- **Why does `setLanguageTag()` connect `Auth Routes & i18n Routing` to `i18n Messages (auth.*)`?**
-  _High betweenness centrality (0.048) - this node is a cross-community bridge._
-- **Why does `validateSession()` connect `Page Loaders & Form Actions` to `Auth Routes & i18n Routing`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+  _High betweenness centrality (0.108) - this node is a cross-community bridge._
+- **Why does `setLanguageTag()` connect `UI Components & Tests` to `i18n Messages (auth.*)`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Why does `validateSession()` connect `Page Loaders & Form Actions` to `UI Components & Tests`?**
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **Are the 389 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `formatRelative()`) actually correct?**
   _`languageTag()` has 389 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `makeFormEvent()`) actually correct?**

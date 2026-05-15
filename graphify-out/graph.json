@@ -387,7 +387,7 @@
       "source_file": "src/hooks.client.ts",
       "source_location": "L1",
       "id": "src_hooks_client_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "hooks.client.ts"
     },
     {
@@ -396,7 +396,7 @@
       "source_file": "src/hooks.client.ts",
       "source_location": "L36",
       "id": "src_hooks_client_handleerror",
-      "community": 7,
+      "community": 8,
       "norm_label": "handleerror()"
     },
     {
@@ -459,7 +459,7 @@
       "source_file": "src/hooks.server.ts",
       "source_location": "L1",
       "id": "src_hooks_server_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "hooks.server.ts"
     },
     {
@@ -468,7 +468,7 @@
       "source_file": "src/hooks.server.ts",
       "source_location": "L24",
       "id": "src_hooks_server_handleerror",
-      "community": 7,
+      "community": 8,
       "norm_label": "handleerror()"
     },
     {
@@ -477,7 +477,7 @@
       "source_file": "src/hooks.server.ts",
       "source_location": "L70",
       "id": "src_hooks_server_resolvelocalefromrequest",
-      "community": 7,
+      "community": 8,
       "norm_label": "resolvelocalefromrequest()"
     },
     {
@@ -486,7 +486,7 @@
       "source_file": "src/hooks.server.ts",
       "source_location": "L75",
       "id": "src_hooks_server_handle",
-      "community": 7,
+      "community": 8,
       "norm_label": "handle()"
     },
     {
@@ -513,7 +513,7 @@
       "source_file": "src/lib/sentry-init.server.ts",
       "source_location": "L1",
       "id": "src_lib_sentry_init_server_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "sentry-init.server.ts"
     },
     {
@@ -522,7 +522,7 @@
       "source_file": "src/lib/sentry.test.ts",
       "source_location": "L1",
       "id": "src_lib_sentry_test_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "sentry.test.ts"
     },
     {
@@ -531,7 +531,7 @@
       "source_file": "src/lib/sentry.test.ts",
       "source_location": "L32",
       "id": "lib_sentry_test_baseevent",
-      "community": 7,
+      "community": 8,
       "norm_label": "baseevent()"
     },
     {
@@ -540,7 +540,7 @@
       "source_file": "src/lib/sentry.ts",
       "source_location": "L1",
       "id": "src_lib_sentry_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "sentry.ts"
     },
     {
@@ -549,7 +549,7 @@
       "source_file": "src/lib/sentry.ts",
       "source_location": "L43",
       "id": "lib_sentry_scrubpathname",
-      "community": 7,
+      "community": 8,
       "norm_label": "scrubpathname()"
     },
     {
@@ -558,7 +558,7 @@
       "source_file": "src/lib/sentry.ts",
       "source_location": "L53",
       "id": "lib_sentry_scruburlstring",
-      "community": 7,
+      "community": 8,
       "norm_label": "scruburlstring()"
     },
     {
@@ -567,7 +567,7 @@
       "source_file": "src/lib/sentry.ts",
       "source_location": "L84",
       "id": "lib_sentry_filterincomingbreadcrumb",
-      "community": 7,
+      "community": 8,
       "norm_label": "filterincomingbreadcrumb()"
     },
     {
@@ -576,7 +576,7 @@
       "source_file": "src/lib/sentry.ts",
       "source_location": "L90",
       "id": "lib_sentry_scrubevent",
-      "community": 7,
+      "community": 8,
       "norm_label": "scrubevent()"
     },
     {
@@ -828,7 +828,7 @@
       "source_file": "src/lib/components/BottomNavBento.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bottomnavbento_test_ts",
-      "community": 8,
+      "community": 7,
       "norm_label": "bottomnavbento.test.ts"
     },
     {
@@ -837,7 +837,7 @@
       "source_file": "src/lib/components/BottomNavBento.test.ts",
       "source_location": "L9",
       "id": "components_bottomnavbento_test_makeprops",
-      "community": 8,
+      "community": 7,
       "norm_label": "makeprops()"
     },
     {
@@ -954,7 +954,7 @@
       "source_file": "src/lib/components/SharedTopBar.svelte",
       "source_location": "L1",
       "id": "src_lib_components_sharedtopbar_svelte",
-      "community": 8,
+      "community": 7,
       "norm_label": "sharedtopbar.svelte"
     },
     {
@@ -963,7 +963,7 @@
       "source_file": "src/lib/components/SharedTopBar.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_sharedtopbar_test_ts",
-      "community": 8,
+      "community": 7,
       "norm_label": "sharedtopbar.test.ts"
     },
     {
@@ -972,7 +972,7 @@
       "source_file": "src/lib/components/SharedTopBar.test.ts",
       "source_location": "L10",
       "id": "components_sharedtopbar_test_text",
-      "community": 8,
+      "community": 7,
       "norm_label": "text()"
     },
     {
@@ -1062,7 +1062,7 @@
       "source_file": "src/lib/components/BottomNavBento.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bottomnavbento_svelte",
-      "community": 8,
+      "community": 7,
       "norm_label": "bottomnavbento.svelte"
     },
     {
@@ -1071,7 +1071,7 @@
       "source_file": "src/lib/components/BottomNavBento.svelte",
       "source_location": "L60",
       "id": "components_bottomnavbento_i",
-      "community": 8,
+      "community": 7,
       "norm_label": "i()"
     },
     {
@@ -1359,79 +1359,88 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_modal_svelte",
-      "community": 8,
+      "community": 7,
       "norm_label": "modal.svelte"
+    },
+    {
+      "label": "onChange()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L47",
+      "id": "ui_modal_onchange",
+      "community": 7,
+      "norm_label": "onchange()"
     },
     {
       "label": "handleOpenChange()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L53",
+      "source_location": "L77",
       "id": "ui_modal_handleopenchange",
-      "community": 8,
+      "community": 7,
       "norm_label": "handleopenchange()"
     },
     {
       "label": "resetGesture()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L104",
+      "source_location": "L128",
       "id": "ui_modal_resetgesture",
-      "community": 8,
+      "community": 7,
       "norm_label": "resetgesture()"
     },
     {
       "label": "isInteractive()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L152",
+      "source_location": "L176",
       "id": "ui_modal_isinteractive",
-      "community": 8,
+      "community": 7,
       "norm_label": "isinteractive()"
     },
     {
       "label": "findScrollable()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L174",
+      "source_location": "L198",
       "id": "ui_modal_findscrollable",
-      "community": 8,
+      "community": 7,
       "norm_label": "findscrollable()"
     },
     {
       "label": "onSheetPointerDown()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L191",
+      "source_location": "L215",
       "id": "ui_modal_onsheetpointerdown",
-      "community": 8,
+      "community": 7,
       "norm_label": "onsheetpointerdown()"
     },
     {
       "label": "onSheetPointerMove()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L244",
+      "source_location": "L268",
       "id": "ui_modal_onsheetpointermove",
-      "community": 8,
+      "community": 7,
       "norm_label": "onsheetpointermove()"
     },
     {
       "label": "onSheetPointerUp()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L296",
+      "source_location": "L320",
       "id": "ui_modal_onsheetpointerup",
-      "community": 8,
+      "community": 7,
       "norm_label": "onsheetpointerup()"
     },
     {
       "label": "onSheetPointerCancel()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L338",
+      "source_location": "L362",
       "id": "ui_modal_onsheetpointercancel",
-      "community": 8,
+      "community": 7,
       "norm_label": "onsheetpointercancel()"
     },
     {
@@ -1440,7 +1449,7 @@
       "source_file": "src/lib/components/ui/Modal.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_modal_test_ts",
-      "community": 8,
+      "community": 7,
       "norm_label": "modal.test.ts"
     },
     {
@@ -1449,34 +1458,43 @@
       "source_file": "src/lib/components/ui/Modal.test.ts",
       "source_location": "L15",
       "id": "ui_modal_test_text",
-      "community": 8,
+      "community": 7,
       "norm_label": "text()"
+    },
+    {
+      "label": "mockMatchMedia()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L38",
+      "id": "ui_modal_test_mockmatchmedia",
+      "community": 7,
+      "norm_label": "mockmatchmedia()"
     },
     {
       "label": "getSheetTargets()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L60",
+      "source_location": "L98",
       "id": "ui_modal_test_getsheettargets",
-      "community": 8,
+      "community": 7,
       "norm_label": "getsheettargets()"
     },
     {
       "label": "dragSheet()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L68",
+      "source_location": "L106",
       "id": "ui_modal_test_dragsheet",
-      "community": 8,
+      "community": 7,
       "norm_label": "dragsheet()"
     },
     {
       "label": "fire()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L144",
+      "source_location": "L182",
       "id": "ui_modal_test_fire",
-      "community": 8,
+      "community": 7,
       "norm_label": "fire()"
     },
     {
@@ -1485,7 +1503,7 @@
       "source_file": "src/lib/components/bento/AllergensSnapshot.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_allergenssnapshot_test_ts",
-      "community": 62,
+      "community": 73,
       "norm_label": "allergenssnapshot.test.ts"
     },
     {
@@ -1494,7 +1512,7 @@
       "source_file": "src/lib/components/bento/CarnetAllergens.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetallergens_test_ts",
-      "community": 63,
+      "community": 62,
       "norm_label": "carnetallergens.test.ts"
     },
     {
@@ -1503,7 +1521,7 @@
       "source_file": "src/lib/components/bento/CarnetCategories.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetcategories_test_ts",
-      "community": 80,
+      "community": 78,
       "norm_label": "carnetcategories.test.ts"
     },
     {
@@ -1512,7 +1530,7 @@
       "source_file": "src/lib/components/bento/CarnetSegments.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetsegments_test_ts",
-      "community": 8,
+      "community": 7,
       "norm_label": "carnetsegments.test.ts"
     },
     {
@@ -1521,7 +1539,7 @@
       "source_file": "src/lib/components/bento/FoodCardGrid.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_foodcardgrid_test_ts",
-      "community": 64,
+      "community": 91,
       "norm_label": "foodcardgrid.test.ts"
     },
     {
@@ -1530,7 +1548,7 @@
       "source_file": "src/lib/components/bento/ChildCardRow.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_childcardrow_test_ts",
-      "community": 81,
+      "community": 79,
       "norm_label": "childcardrow.test.ts"
     },
     {
@@ -1539,7 +1557,7 @@
       "source_file": "src/lib/components/bento/CoparentsSection.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_coparentssection_test_ts",
-      "community": 82,
+      "community": 80,
       "norm_label": "coparentssection.test.ts"
     },
     {
@@ -1548,7 +1566,7 @@
       "source_file": "src/lib/components/bento/DiscoverBento.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_discoverbento_svelte",
-      "community": 65,
+      "community": 63,
       "norm_label": "discoverbento.svelte"
     },
     {
@@ -1557,7 +1575,7 @@
       "source_file": "src/lib/components/bento/MonitorTimer.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_monitortimer_svelte",
-      "community": 66,
+      "community": 64,
       "norm_label": "monitortimer.svelte"
     },
     {
@@ -1566,7 +1584,7 @@
       "source_file": "src/lib/components/bento/MonitorTimer.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_monitortimer_test_ts",
-      "community": 66,
+      "community": 64,
       "norm_label": "monitortimer.test.ts"
     },
     {
@@ -1575,7 +1593,7 @@
       "source_file": "src/lib/components/bento/ProfilBento.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_profilbento_test_ts",
-      "community": 67,
+      "community": 92,
       "norm_label": "profilbento.test.ts"
     },
     {
@@ -1584,7 +1602,7 @@
       "source_file": "src/lib/components/bento/RasCard.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_rascard_test_ts",
-      "community": 79,
+      "community": 65,
       "norm_label": "rascard.test.ts"
     },
     {
@@ -1593,7 +1611,7 @@
       "source_file": "src/lib/components/bento/ReactionDetailBento.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_reactiondetailbento_test_ts",
-      "community": 89,
+      "community": 85,
       "norm_label": "reactiondetailbento.test.ts"
     },
     {
@@ -1602,7 +1620,7 @@
       "source_file": "src/lib/components/bento/ReassuranceHero.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_reassurancehero_svelte",
-      "community": 68,
+      "community": 66,
       "norm_label": "reassurancehero.svelte"
     },
     {
@@ -1611,7 +1629,7 @@
       "source_file": "src/lib/components/bento/ReassuranceHero.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_reassurancehero_test_ts",
-      "community": 68,
+      "community": 66,
       "norm_label": "reassurancehero.test.ts"
     },
     {
@@ -1620,7 +1638,7 @@
       "source_file": "src/lib/components/bento/RgpdSection.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_rgpdsection_test_ts",
-      "community": 95,
+      "community": 93,
       "norm_label": "rgpdsection.test.ts"
     },
     {
@@ -1629,7 +1647,7 @@
       "source_file": "src/lib/components/bento/SevereRail.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_severerail_svelte",
-      "community": 69,
+      "community": 67,
       "norm_label": "severerail.svelte"
     },
     {
@@ -1638,7 +1656,7 @@
       "source_file": "src/lib/components/bento/SevereRail.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_severerail_test_ts",
-      "community": 69,
+      "community": 67,
       "norm_label": "severerail.test.ts"
     },
     {
@@ -1647,7 +1665,7 @@
       "source_file": "src/lib/components/bento/SourcesCluster.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_sourcescluster_test_ts",
-      "community": 70,
+      "community": 94,
       "norm_label": "sourcescluster.test.ts"
     },
     {
@@ -1656,7 +1674,7 @@
       "source_file": "src/lib/components/bento/StagesBentoGrid.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_stagesbentogrid_test_ts",
-      "community": 71,
+      "community": 75,
       "norm_label": "stagesbentogrid.test.ts"
     },
     {
@@ -1665,7 +1683,7 @@
       "source_file": "src/lib/components/bento/StayCoolCard.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_staycoolcard_test_ts",
-      "community": 96,
+      "community": 68,
       "norm_label": "staycoolcard.test.ts"
     },
     {
@@ -1674,7 +1692,7 @@
       "source_file": "src/lib/components/bento/SuggestionFeed.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_suggestionfeed_test_ts",
-      "community": 78,
+      "community": 76,
       "norm_label": "suggestionfeed.test.ts"
     },
     {
@@ -1683,7 +1701,7 @@
       "source_file": "src/lib/components/bento/SymptomList.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_symptomlist_test_ts",
-      "community": 85,
+      "community": 69,
       "norm_label": "symptomlist.test.ts"
     },
     {
@@ -1692,7 +1710,7 @@
       "source_file": "src/lib/components/bento/SymptomRow.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_symptomrow_svelte",
-      "community": 72,
+      "community": 70,
       "norm_label": "symptomrow.svelte"
     },
     {
@@ -1701,7 +1719,7 @@
       "source_file": "src/lib/components/bento/SymptomRow.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_symptomrow_test_ts",
-      "community": 72,
+      "community": 70,
       "norm_label": "symptomrow.test.ts"
     },
     {
@@ -1710,7 +1728,7 @@
       "source_file": "src/lib/components/bento/TipsRotator.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_tipsrotator_test_ts",
-      "community": 73,
+      "community": 77,
       "norm_label": "tipsrotator.test.ts"
     },
     {
@@ -1737,7 +1755,7 @@
       "source_file": "src/lib/components/bento/BentoMark.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_bentomark_svelte",
-      "community": 74,
+      "community": 71,
       "norm_label": "bentomark.svelte"
     },
     {
@@ -1746,7 +1764,7 @@
       "source_file": "src/lib/components/bento/BentoMark.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_bentomark_test_ts",
-      "community": 74,
+      "community": 71,
       "norm_label": "bentomark.test.ts"
     },
     {
@@ -1755,7 +1773,7 @@
       "source_file": "src/lib/components/bento/OnboardingForm.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_onboardingform_test_ts",
-      "community": 83,
+      "community": 72,
       "norm_label": "onboardingform.test.ts"
     },
     {
@@ -1764,7 +1782,7 @@
       "source_file": "src/lib/components/bento/AllergensSnapshot.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_allergenssnapshot_svelte",
-      "community": 62,
+      "community": 73,
       "norm_label": "allergenssnapshot.svelte"
     },
     {
@@ -1773,7 +1791,7 @@
       "source_file": "src/lib/components/bento/CarnetAllergens.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetallergens_svelte",
-      "community": 63,
+      "community": 62,
       "norm_label": "carnetallergens.svelte"
     },
     {
@@ -1791,7 +1809,7 @@
       "source_file": "src/lib/components/bento/CarnetTous.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnettous_svelte",
-      "community": 75,
+      "community": 83,
       "norm_label": "carnettous.svelte"
     },
     {
@@ -1800,7 +1818,7 @@
       "source_file": "src/lib/components/bento/DiscoverBento.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_discoverbento_test_ts",
-      "community": 65,
+      "community": 63,
       "norm_label": "discoverbento.test.ts"
     },
     {
@@ -1809,7 +1827,7 @@
       "source_file": "src/lib/components/bento/ReminderStrip.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_reminderstrip_svelte",
-      "community": 76,
+      "community": 74,
       "norm_label": "reminderstrip.svelte"
     },
     {
@@ -1818,17 +1836,8 @@
       "source_file": "src/lib/components/bento/ReminderStrip.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_reminderstrip_test_ts",
-      "community": 76,
+      "community": 74,
       "norm_label": "reminderstrip.test.ts"
-    },
-    {
-      "label": "StageDetailSheet.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/bento/StageDetailSheet.svelte",
-      "source_location": "L1",
-      "id": "src_lib_components_bento_stagedetailsheet_svelte",
-      "community": 77,
-      "norm_label": "stagedetailsheet.svelte"
     },
     {
       "label": "StagesBentoGrid.svelte",
@@ -1836,7 +1845,7 @@
       "source_file": "src/lib/components/bento/StagesBentoGrid.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_stagesbentogrid_svelte",
-      "community": 71,
+      "community": 75,
       "norm_label": "stagesbentogrid.svelte"
     },
     {
@@ -1845,7 +1854,7 @@
       "source_file": "src/lib/components/bento/SuggestionFeed.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_suggestionfeed_svelte",
-      "community": 78,
+      "community": 76,
       "norm_label": "suggestionfeed.svelte"
     },
     {
@@ -1854,7 +1863,7 @@
       "source_file": "src/lib/components/bento/RasCard.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_rascard_svelte",
-      "community": 79,
+      "community": 65,
       "norm_label": "rascard.svelte"
     },
     {
@@ -1863,7 +1872,7 @@
       "source_file": "src/lib/components/bento/TipsRotator.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_tipsrotator_svelte",
-      "community": 73,
+      "community": 77,
       "norm_label": "tipsrotator.svelte"
     },
     {
@@ -1872,7 +1881,7 @@
       "source_file": "src/lib/components/bento/CarnetCategories.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetcategories_svelte",
-      "community": 80,
+      "community": 78,
       "norm_label": "carnetcategories.svelte"
     },
     {
@@ -1881,7 +1890,7 @@
       "source_file": "src/lib/components/bento/ChildCardRow.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_childcardrow_svelte",
-      "community": 81,
+      "community": 79,
       "norm_label": "childcardrow.svelte"
     },
     {
@@ -1890,7 +1899,7 @@
       "source_file": "src/lib/components/bento/CoparentsSection.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_coparentssection_svelte",
-      "community": 82,
+      "community": 80,
       "norm_label": "coparentssection.svelte"
     },
     {
@@ -1899,7 +1908,7 @@
       "source_file": "src/lib/components/bento/OnboardingForm.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_onboardingform_svelte",
-      "community": 83,
+      "community": 72,
       "norm_label": "onboardingform.svelte"
     },
     {
@@ -1908,7 +1917,7 @@
       "source_file": "src/lib/components/bento/AujourdhuiBento.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_aujourdhuibento_test_ts",
-      "community": 84,
+      "community": 81,
       "norm_label": "aujourdhuibento.test.ts"
     },
     {
@@ -1917,7 +1926,7 @@
       "source_file": "src/lib/components/bento/SymptomList.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_symptomlist_svelte",
-      "community": 85,
+      "community": 69,
       "norm_label": "symptomlist.svelte"
     },
     {
@@ -1926,7 +1935,7 @@
       "source_file": "src/lib/components/bento/StageDetailSheet.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_stagedetailsheet_test_ts",
-      "community": 77,
+      "community": 96,
       "norm_label": "stagedetailsheet.test.ts"
     },
     {
@@ -1935,7 +1944,7 @@
       "source_file": "src/lib/components/bento/CarnetHeader.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetheader_svelte",
-      "community": 86,
+      "community": 82,
       "norm_label": "carnetheader.svelte"
     },
     {
@@ -1944,7 +1953,7 @@
       "source_file": "src/lib/components/bento/CarnetHeader.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetheader_test_ts",
-      "community": 86,
+      "community": 82,
       "norm_label": "carnetheader.test.ts"
     },
     {
@@ -1953,7 +1962,7 @@
       "source_file": "src/lib/components/bento/CarnetTous.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnettous_test_ts",
-      "community": 75,
+      "community": 83,
       "norm_label": "carnettous.test.ts"
     },
     {
@@ -1962,7 +1971,7 @@
       "source_file": "src/lib/components/bento/CompteSection.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_comptesection_test_ts",
-      "community": 87,
+      "community": 90,
       "norm_label": "comptesection.test.ts"
     },
     {
@@ -1971,7 +1980,7 @@
       "source_file": "src/lib/components/bento/StatTiles.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_stattiles_svelte",
-      "community": 88,
+      "community": 84,
       "norm_label": "stattiles.svelte"
     },
     {
@@ -1980,7 +1989,7 @@
       "source_file": "src/lib/components/bento/StatTiles.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_stattiles_test_ts",
-      "community": 88,
+      "community": 84,
       "norm_label": "stattiles.test.ts"
     },
     {
@@ -1989,7 +1998,7 @@
       "source_file": "src/lib/components/bento/ReactionDetailBento.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_reactiondetailbento_svelte",
-      "community": 89,
+      "community": 85,
       "norm_label": "reactiondetailbento.svelte"
     },
     {
@@ -1998,7 +2007,7 @@
       "source_file": "src/lib/components/bento/RecentFeed.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_recentfeed_svelte",
-      "community": 90,
+      "community": 86,
       "norm_label": "recentfeed.svelte"
     },
     {
@@ -2007,7 +2016,7 @@
       "source_file": "src/lib/components/bento/RecentFeed.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_recentfeed_test_ts",
-      "community": 90,
+      "community": 86,
       "norm_label": "recentfeed.test.ts"
     },
     {
@@ -2016,7 +2025,7 @@
       "source_file": "src/lib/components/bento/AddSymptomSheet.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_addsymptomsheet_test_ts",
-      "community": 91,
+      "community": 95,
       "norm_label": "addsymptomsheet.test.ts"
     },
     {
@@ -2025,7 +2034,7 @@
       "source_file": "src/lib/components/bento/CarnetBento.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetbento_svelte",
-      "community": 92,
+      "community": 87,
       "norm_label": "carnetbento.svelte"
     },
     {
@@ -2034,7 +2043,7 @@
       "source_file": "src/lib/components/bento/CarnetBento.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetbento_test_ts",
-      "community": 92,
+      "community": 87,
       "norm_label": "carnetbento.test.ts"
     },
     {
@@ -2043,7 +2052,7 @@
       "source_file": "src/lib/components/bento/CarnetStats.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetstats_svelte",
-      "community": 93,
+      "community": 88,
       "norm_label": "carnetstats.svelte"
     },
     {
@@ -2052,7 +2061,7 @@
       "source_file": "src/lib/components/bento/CarnetStats.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetstats_test_ts",
-      "community": 93,
+      "community": 88,
       "norm_label": "carnetstats.test.ts"
     },
     {
@@ -2061,7 +2070,7 @@
       "source_file": "src/lib/components/bento/FoodCard.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_foodcard_svelte",
-      "community": 94,
+      "community": 89,
       "norm_label": "foodcard.svelte"
     },
     {
@@ -2070,7 +2079,7 @@
       "source_file": "src/lib/components/bento/FoodCard.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_bento_foodcard_test_ts",
-      "community": 94,
+      "community": 89,
       "norm_label": "foodcard.test.ts"
     },
     {
@@ -2079,7 +2088,7 @@
       "source_file": "src/lib/components/bento/AujourdhuiBento.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_aujourdhuibento_svelte",
-      "community": 84,
+      "community": 81,
       "norm_label": "aujourdhuibento.svelte"
     },
     {
@@ -2088,7 +2097,7 @@
       "source_file": "src/lib/components/bento/CarnetSegments.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_carnetsegments_svelte",
-      "community": 8,
+      "community": 7,
       "norm_label": "carnetsegments.svelte"
     },
     {
@@ -2097,7 +2106,7 @@
       "source_file": "src/lib/components/bento/CarnetSegments.svelte",
       "source_location": "L33",
       "id": "bento_carnetsegments_each",
-      "community": 8,
+      "community": 7,
       "norm_label": "#each()"
     },
     {
@@ -2106,7 +2115,7 @@
       "source_file": "src/lib/components/bento/CompteSection.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_comptesection_svelte",
-      "community": 87,
+      "community": 90,
       "norm_label": "comptesection.svelte"
     },
     {
@@ -2115,7 +2124,7 @@
       "source_file": "src/lib/components/bento/FoodCardGrid.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_foodcardgrid_svelte",
-      "community": 64,
+      "community": 91,
       "norm_label": "foodcardgrid.svelte"
     },
     {
@@ -2124,7 +2133,7 @@
       "source_file": "src/lib/components/bento/ProfilBento.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_profilbento_svelte",
-      "community": 67,
+      "community": 92,
       "norm_label": "profilbento.svelte"
     },
     {
@@ -2133,7 +2142,7 @@
       "source_file": "src/lib/components/bento/RgpdSection.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_rgpdsection_svelte",
-      "community": 95,
+      "community": 93,
       "norm_label": "rgpdsection.svelte"
     },
     {
@@ -2142,7 +2151,7 @@
       "source_file": "src/lib/components/bento/SourcesCluster.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_sourcescluster_svelte",
-      "community": 70,
+      "community": 94,
       "norm_label": "sourcescluster.svelte"
     },
     {
@@ -2151,7 +2160,7 @@
       "source_file": "src/lib/components/bento/StayCoolCard.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_staycoolcard_svelte",
-      "community": 96,
+      "community": 68,
       "norm_label": "staycoolcard.svelte"
     },
     {
@@ -2160,8 +2169,17 @@
       "source_file": "src/lib/components/bento/AddSymptomSheet.svelte",
       "source_location": "L1",
       "id": "src_lib_components_bento_addsymptomsheet_svelte",
-      "community": 91,
+      "community": 95,
       "norm_label": "addsymptomsheet.svelte"
+    },
+    {
+      "label": "StageDetailSheet.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/bento/StageDetailSheet.svelte",
+      "source_location": "L1",
+      "id": "src_lib_components_bento_stagedetailsheet_svelte",
+      "community": 96,
+      "norm_label": "stagedetailsheet.svelte"
     },
     {
       "label": "guidance.test.ts",
@@ -2592,7 +2610,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L137",
       "id": "server_auth_invalidatesession",
-      "community": 7,
+      "community": 8,
       "norm_label": "invalidatesession()"
     },
     {
@@ -2601,7 +2619,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L142",
       "id": "server_auth_invalidateallusersessions",
-      "community": 4,
+      "community": 3,
       "norm_label": "invalidateallusersessions()"
     },
     {
@@ -2610,7 +2628,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L146",
       "id": "server_auth_listmembershipsforuser",
-      "community": 7,
+      "community": 8,
       "norm_label": "listmembershipsforuser()"
     },
     {
@@ -3654,7 +3672,7 @@
       "source_file": "src/lib/utils/cn.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_cn_test_ts",
-      "community": 8,
+      "community": 7,
       "norm_label": "cn.test.ts"
     },
     {
@@ -3663,7 +3681,7 @@
       "source_file": "src/lib/utils/cn.ts",
       "source_location": "L1",
       "id": "src_lib_utils_cn_ts",
-      "community": 8,
+      "community": 7,
       "norm_label": "cn.ts"
     },
     {
@@ -3672,7 +3690,7 @@
       "source_file": "src/lib/utils/cn.ts",
       "source_location": "L4",
       "id": "utils_cn_cn",
-      "community": 8,
+      "community": 7,
       "norm_label": "cn()"
     },
     {
@@ -3834,7 +3852,7 @@
       "source_file": "src/lib/utils/localized-href.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_localized_href_test_ts",
-      "community": 8,
+      "community": 7,
       "norm_label": "localized-href.test.ts"
     },
     {
@@ -3843,7 +3861,7 @@
       "source_file": "src/lib/utils/localized-href.ts",
       "source_location": "L1",
       "id": "src_lib_utils_localized_href_ts",
-      "community": 8,
+      "community": 7,
       "norm_label": "localized-href.ts"
     },
     {
@@ -3852,7 +3870,7 @@
       "source_file": "src/lib/utils/localized-href.ts",
       "source_location": "L9",
       "id": "utils_localized_href_localizedhref",
-      "community": 8,
+      "community": 7,
       "norm_label": "localizedhref()"
     },
     {
@@ -4104,7 +4122,7 @@
       "source_file": "src/lib/utils/dates.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_dates_test_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "dates.test.ts"
     },
     {
@@ -4113,7 +4131,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L1",
       "id": "src_lib_utils_dates_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "dates.ts"
     },
     {
@@ -4122,7 +4140,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L21",
       "id": "utils_dates_formatrelative",
-      "community": 7,
+      "community": 8,
       "norm_label": "formatrelative()"
     },
     {
@@ -4131,7 +4149,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L40",
       "id": "utils_dates_formatdatetime",
-      "community": 7,
+      "community": 8,
       "norm_label": "formatdatetime()"
     },
     {
@@ -4140,7 +4158,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L44",
       "id": "utils_dates_formatdateinputvalue",
-      "community": 7,
+      "community": 8,
       "norm_label": "formatdateinputvalue()"
     },
     {
@@ -4149,7 +4167,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L49",
       "id": "utils_dates_parsedatetimelocal",
-      "community": 7,
+      "community": 8,
       "norm_label": "parsedatetimelocal()"
     },
     {
@@ -4158,7 +4176,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L57",
       "id": "utils_dates_formatmonthssince",
-      "community": 7,
+      "community": 8,
       "norm_label": "formatmonthssince()"
     },
     {
@@ -4167,7 +4185,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L68",
       "id": "utils_dates_isvalidbirthdate",
-      "community": 7,
+      "community": 8,
       "norm_label": "isvalidbirthdate()"
     },
     {
@@ -4383,7 +4401,7 @@
       "source_file": "src/lib/paraglide/runtime.js",
       "source_location": "L1",
       "id": "src_lib_paraglide_runtime_js",
-      "community": 7,
+      "community": 8,
       "norm_label": "runtime.js"
     },
     {
@@ -4401,7 +4419,7 @@
       "source_file": "src/lib/paraglide/runtime.js",
       "source_location": "L58",
       "id": "paraglide_runtime_setlanguagetag",
-      "community": 7,
+      "community": 8,
       "norm_label": "setlanguagetag()"
     },
     {
@@ -4410,7 +4428,7 @@
       "source_file": "src/lib/paraglide/runtime.js",
       "source_location": "L75",
       "id": "paraglide_runtime_enforcelanguagetag",
-      "community": 7,
+      "community": 8,
       "norm_label": "enforcelanguagetag()"
     },
     {
@@ -4419,7 +4437,7 @@
       "source_file": "src/lib/paraglide/runtime.js",
       "source_location": "L111",
       "id": "paraglide_runtime_onsetlanguagetag",
-      "community": 7,
+      "community": 8,
       "norm_label": "onsetlanguagetag()"
     },
     {
@@ -4428,7 +4446,7 @@
       "source_file": "src/lib/paraglide/runtime.js",
       "source_location": "L128",
       "id": "paraglide_runtime_isavailablelanguagetag",
-      "community": 7,
+      "community": 8,
       "norm_label": "isavailablelanguagetag()"
     },
     {
@@ -15966,7 +15984,7 @@
       "source_file": "src/routes/logout/+server.ts",
       "source_location": "L1",
       "id": "src_routes_logout_server_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "+server.ts"
     },
     {
@@ -15975,7 +15993,7 @@
       "source_file": "src/routes/logout/+server.ts",
       "source_location": "L5",
       "id": "logout_server_post",
-      "community": 7,
+      "community": 8,
       "norm_label": "post()"
     },
     {
@@ -18991,6 +19009,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "src_lib_components_ui_modal_svelte",
+      "target": "ui_modal_onchange",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L53",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -19153,6 +19181,16 @@
       "confidence_score": 1.0,
       "source": "src_lib_components_ui_modal_test_ts",
       "target": "ui_modal_test_text"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_mockmatchmedia",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -19517,23 +19555,23 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/bento/StageDetailSheet.test.ts",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_bento_stagedetailsheet_test_ts",
-      "target": "src_lib_components_bento_stagedetailsheet_svelte"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/lib/components/bento/AujourdhuiBento.test.ts",
       "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_lib_components_bento_aujourdhuibento_test_ts",
       "target": "src_lib_components_bento_aujourdhuibento_svelte"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/bento/StageDetailSheet.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_bento_stagedetailsheet_test_ts",
+      "target": "src_lib_components_bento_stagedetailsheet_svelte"
     },
     {
       "relation": "imports_from",
@@ -46291,5 +46329,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "302b8a38f9dbd2ba59afca3bda11599f084d586a"
+  "built_at_commit": "6fecc401774384a63c98a5ebc39dd1aca0b5f7db"
 }

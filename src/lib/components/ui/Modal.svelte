@@ -1,5 +1,8 @@
 <script lang="ts" module>
-  export type ModalSide = 'top' | 'right' | 'bottom' | 'left' | 'center';
+  // 'auto' = bottom sheet on mobile, center modal on md+ viewports. Use for
+  // forms / longer detail content; keep `center` for alerts and brief intro
+  // dialogs that should look the same on every viewport.
+  export type ModalSide = 'top' | 'right' | 'bottom' | 'left' | 'center' | 'auto';
 </script>
 
 <script lang="ts">
@@ -32,7 +35,28 @@
     onclose
   }: Props = $props();
 
-  const sideClasses: Record<ModalSide, string> = {
+  // Resolve `side="auto"` against the viewport. Tailwind's `md` breakpoint
+  // is 768px; below that we render the bottom sheet (with drag-to-dismiss
+  // and inner-scroll handling), at md+ we render a center modal.
+  let isDesktop = $state(false);
+
+  $effect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(min-width: 768px)');
+    isDesktop = mq.matches;
+    const onChange = (e: MediaQueryListEvent) => {
+      isDesktop = e.matches;
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  });
+
+  type ResolvedSide = Exclude<ModalSide, 'auto'>;
+  const resolvedSide = $derived<ResolvedSide>(
+    side === 'auto' ? (isDesktop ? 'center' : 'bottom') : side
+  );
+
+  const sideClasses: Record<ResolvedSide, string> = {
     top: 'inset-x-0 top-0 max-h-[92dvh] rounded-b-hero data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
     right:
       'inset-y-0 right-0 flex h-full w-3/4 max-w-xs flex-col data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
@@ -88,7 +112,7 @@
   let releaseTimer: ReturnType<typeof setTimeout> | null = null;
 
   const sheetStyle = $derived.by(() => {
-    if (side !== 'bottom') return undefined;
+    if (resolvedSide !== 'bottom') return undefined;
     if (!dragging && !releasing) return undefined;
     // During drag and during dismiss-from-drag, no inline transition:
     // the finger drives the transform in the first case, and the
@@ -189,7 +213,7 @@
   }
 
   function onSheetPointerDown(e: PointerEvent) {
-    if (side !== 'bottom') return;
+    if (resolvedSide !== 'bottom') return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     // Ignore additional pointers while a gesture is already in flight
     // (e.g. a thumb landing during a one-finger drag). Setting capture
@@ -242,7 +266,7 @@
   }
 
   function onSheetPointerMove(e: PointerEvent) {
-    if (side !== 'bottom') return;
+    if (resolvedSide !== 'bottom') return;
     if (gestureMode === 'idle') return;
     if (e.pointerId !== activePointerId) return;
 
@@ -294,7 +318,7 @@
   }
 
   function onSheetPointerUp(e: PointerEvent) {
-    if (side !== 'bottom') return;
+    if (resolvedSide !== 'bottom') return;
     if (e.pointerId !== activePointerId) return;
 
     const wasDragging = gestureMode === 'drag';
@@ -336,7 +360,7 @@
   }
 
   function onSheetPointerCancel(e: PointerEvent) {
-    if (side !== 'bottom') return;
+    if (resolvedSide !== 'bottom') return;
     if (e.pointerId !== activePointerId) return;
 
     const wasDragging = gestureMode === 'drag';
@@ -369,8 +393,8 @@
         // (which would dispatch pointercancel mid-drag and snap the
         // sheet back). Inner scroll for scrollable descendants is
         // driven manually in onSheetPointerMove's 'scroll' branch.
-        side === 'bottom' && 'touch-none',
-        sideClasses[side],
+        resolvedSide === 'bottom' && 'touch-none',
+        sideClasses[resolvedSide],
         className
       )}
       style={sheetStyle}
@@ -379,7 +403,7 @@
       onpointerup={onSheetPointerUp}
       onpointercancel={onSheetPointerCancel}
     >
-      {#if side === 'bottom'}
+      {#if resolvedSide === 'bottom'}
         <div
           class="-mt-2 mb-1 flex cursor-grab justify-center py-2 active:cursor-grabbing"
           role="presentation"
