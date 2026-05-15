@@ -344,3 +344,45 @@ describe('addSymptom action', () => {
     expect(calls).not.toContain('food_entry.reaction_promoted');
   });
 });
+
+describe('texture in entry-detail loader', () => {
+  it('returns texture in the entry payload when set', async () => {
+    const ctx = await setup();
+    const [entry] = await testDb
+      .insert(foodEntries)
+      .values({
+        childId: ctx.c.id,
+        foodId: ctx.pear.id,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'ecrasee',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date()
+      })
+      .returning();
+    const data = await load(
+      makeRouteEvent({
+        user: safeUser(ctx.u),
+        memberships: [ctx.m],
+        params: { id: String(ctx.c.id), entryId: String(entry.id) },
+        url: 'http://localhost/'
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(data.texture).toBe('ecrasee');
+  });
+
+  it('returns null texture when not set', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('ras');
+    const data = await load(
+      makeRouteEvent({
+        user: safeUser(ctx.u),
+        memberships: [ctx.m],
+        params: { id: String(ctx.c.id), entryId: String(entry.id) },
+        url: 'http://localhost/'
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(data.texture).toBeNull();
+  });
+});

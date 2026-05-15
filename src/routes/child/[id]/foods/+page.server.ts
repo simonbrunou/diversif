@@ -3,6 +3,7 @@ import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import type { TextureKey } from '$lib/utils/textures';
 import type { PageServerLoad } from './$types';
 
 export type AllergenItem = {
@@ -195,6 +196,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
       id: foodEntries.id,
       givenAt: foodEntries.givenAt,
       reaction: foodEntries.reaction,
+      texture: foodEntries.texture,
       notes: foodEntries.notes,
       foodId: foods.id,
       foodName: foods.name,
@@ -228,6 +230,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
       tried: number;
       status: 'ras' | 'inconfort' | 'reaction';
       lastEntryId: number;
+      lastTexture: TextureKey | null;
     }
   >();
   const severity = { ras: 0, inconfort: 1, reaction: 2 } as const;
@@ -244,7 +247,8 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
         category: r.category,
         tried: 1,
         status: reaction,
-        lastEntryId: r.id
+        lastEntryId: r.id,
+        lastTexture: r.texture ?? null
       });
     }
   }

@@ -6,6 +6,7 @@
   import CarnetCategories from './CarnetCategories.svelte';
   import CarnetAllergens from './CarnetAllergens.svelte';
   import CarnetStats from './CarnetStats.svelte';
+  import type { TextureKey } from '$lib/utils/textures';
 
   type Food = {
     id: number;
@@ -14,6 +15,7 @@
     tried: number;
     status: 'ras' | 'inconfort' | 'reaction' | 'todo';
     lastEntryId?: number | null;
+    lastTexture?: TextureKey | null;
   };
 
   type AllergenItem = {

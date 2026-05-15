@@ -1,6 +1,7 @@
 <script lang="ts">
   import FoodCard from './FoodCard.svelte';
   import { localizedHref } from '$lib/utils/localized-href';
+  import type { TextureKey } from '$lib/utils/textures';
 
   type Item = {
     id: number;
@@ -9,6 +10,7 @@
     tried: number;
     status: 'ras' | 'inconfort' | 'reaction' | 'todo';
     lastEntryId?: number | null;
+    lastTexture?: TextureKey | null;
   };
 
   let { items, childId }: { items: Item[]; childId?: string } = $props();
@@ -21,6 +23,7 @@
       category={item.category}
       tried={item.tried}
       status={item.status}
+      texture={item.lastTexture ?? null}
       href={childId && item.lastEntryId != null
         ? localizedHref(`/child/${childId}/foods/${item.lastEntryId}`)
         : undefined}

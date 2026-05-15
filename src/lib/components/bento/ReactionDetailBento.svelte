@@ -7,6 +7,7 @@
   import MonitorTimer from './MonitorTimer.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
+  import { getTextureLabel, type TextureKey } from '$lib/utils/textures';
   import type { SymptomEntry } from '$lib/types';
   import { ChevronLeft } from 'lucide-svelte';
 
@@ -17,6 +18,7 @@
     nth,
     date,
     time,
+    texture = null,
     symptoms,
     printHref
   }: {
@@ -26,6 +28,7 @@
     nth: number;
     date: string;
     time: string;
+    texture?: TextureKey | null;
     symptoms: SymptomEntry[];
     printHref: string;
   } = $props();
@@ -47,6 +50,12 @@
   <p class="mb-3 text-xs text-ink-soft">
     {m.reactionSubtitle({ date, time, nth: String(nth) })}
   </p>
+  {#if texture}
+    <p class="mb-3 text-xs text-ink-soft">
+      <span class="text-muted-foreground">Texture</span>
+      · <span class="font-medium">{getTextureLabel(texture)}</span>
+    </p>
+  {/if}
 
   <ReassuranceHero />
   <SymptomList {symptoms} onAdd={() => (addOpen = true)} />
