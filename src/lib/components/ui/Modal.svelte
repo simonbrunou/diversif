@@ -58,6 +58,10 @@
 
   const DRAG_THRESHOLD_PX = 100;
   const DRAG_VELOCITY_THRESHOLD = 0.5;
+  // Minimum downward movement before a pointer-down on the sheet body
+  // commits to a drag gesture (so a tap or short flick doesn't drag the
+  // sheet a few pixels and snap back).
+  const DRAG_TRIGGER_PX = 8;
   const SNAP_TRANSITION_MS = 220;
   const SNAP_RESET_MS = 240;
   // tailwindcss-animate exit runs at duration-slow (--dur-slow = 360ms).
@@ -70,8 +74,16 @@
   let dragging = $state(false);
   let releasing = $state(false);
   let dismissingFromDrag = $state(false);
+  // 'pending' = pointer is down but the user hasn't moved past the trigger
+  // distance yet; 'scroll' = the press started on a scrolled-down content
+  // area, so the browser is panning natively (we wait for scrollTop to
+  // reach 0 before claiming the gesture); 'drag' = we own the gesture and
+  // are translating the sheet by inline transform.
+  let gestureMode: 'idle' | 'pending' | 'scroll' | 'drag' = 'idle';
   let startY = 0;
   let startTime = 0;
+  let activeScrollable: HTMLElement | null = null;
+  let activePointerId: number | null = null;
   let releaseTimer: ReturnType<typeof setTimeout> | null = null;
 
   const sheetStyle = $derived.by(() => {
@@ -87,6 +99,12 @@
         : `transform ${SNAP_TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
     return `transform: translateY(${dragY}px); transition: ${transition};`;
   });
+
+  function resetGesture() {
+    gestureMode = 'idle';
+    activeScrollable = null;
+    activePointerId = null;
+  }
 
   // Cancel a pending timer and reset drag state whenever `open` changes.
   // On reopen, this wipes any stale styles left over from the previous
@@ -105,6 +123,7 @@
       dragging = false;
       releasing = false;
       dismissingFromDrag = false;
+      resetGesture();
     } else if (!dismissingFromDrag) {
       if (releaseTimer) {
         clearTimeout(releaseTimer);
@@ -113,51 +132,139 @@
       dragY = 0;
       dragging = false;
       releasing = false;
+      resetGesture();
     }
   });
 
-  function onGrabberPointerDown(e: PointerEvent) {
+  function isInteractive(target: Element | null, root: HTMLElement): boolean {
+    let node: Element | null = target;
+    while (node && node !== root) {
+      const tag = node.tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        tag === 'BUTTON' ||
+        tag === 'A' ||
+        tag === 'LABEL'
+      )
+        return true;
+      if (node instanceof HTMLElement && node.isContentEditable) return true;
+      const role = node.getAttribute('role');
+      if (role === 'button' || role === 'link' || role === 'menuitem' || role === 'tab')
+        return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function findScrollable(target: Element | null, root: HTMLElement): HTMLElement | null {
+    let el: Element | null = target;
+    while (el && el !== root) {
+      if (el instanceof HTMLElement) {
+        const style = getComputedStyle(el);
+        if (
+          (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+          el.scrollHeight > el.clientHeight
+        ) {
+          return el;
+        }
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  function onSheetPointerDown(e: PointerEvent) {
+    if (side !== 'bottom') return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+    const root = e.currentTarget as HTMLElement;
+    const target = e.target as Element;
+
+    // Don't intercept clicks/taps on form controls or other interactive
+    // elements — they need to receive the pointerdown unmolested.
+    if (isInteractive(target, root)) return;
+
     if (releaseTimer) {
       clearTimeout(releaseTimer);
       releaseTimer = null;
     }
+
     startY = e.clientY;
     startTime = performance.now();
-    dragging = true;
-    releasing = false;
-    dismissingFromDrag = false;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    activePointerId = e.pointerId;
+
+    const isTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
+    const scrollable = findScrollable(target, root);
+    activeScrollable = scrollable;
+
+    if (isTouch && scrollable && scrollable.scrollTop > 0) {
+      // Native scroll first — we only own the gesture once scroll reaches the
+      // top and the user keeps pulling down.
+      gestureMode = 'scroll';
+    } else {
+      gestureMode = 'pending';
+    }
   }
 
-  function onGrabberPointerMove(e: PointerEvent) {
-    if (!dragging) return;
-    dragY = Math.max(0, e.clientY - startY);
+  function onSheetPointerMove(e: PointerEvent) {
+    if (side !== 'bottom') return;
+    if (gestureMode === 'idle') return;
+    if (e.pointerId !== activePointerId) return;
+
+    if (gestureMode === 'scroll') {
+      // Watch for the scrollable hitting the top while the finger is still
+      // moving down — that's the iOS handoff point from scroll to dismiss.
+      if (activeScrollable && activeScrollable.scrollTop <= 0 && e.clientY > startY) {
+        gestureMode = 'pending';
+        startY = e.clientY;
+        startTime = performance.now();
+      }
+      return;
+    }
+
+    const dy = e.clientY - startY;
+
+    if (gestureMode === 'pending') {
+      if (dy >= DRAG_TRIGGER_PX) {
+        gestureMode = 'drag';
+        dragging = true;
+        try {
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        } catch {
+          /* happy-dom and some environments throw — ignore */
+        }
+      } else if (dy <= -DRAG_TRIGGER_PX) {
+        // Upward movement before drag was committed: not our gesture.
+        resetGesture();
+        return;
+      } else {
+        return;
+      }
+    }
+
+    if (gestureMode === 'drag') {
+      dragY = Math.max(0, dy);
+      // Stop iOS Safari from rubber-banding the viewport during our drag.
+      if (e.cancelable) e.preventDefault();
+    }
   }
 
-  function onGrabberPointerCancel() {
-    // A system gesture interrupted the drag (notch swipe, app backgrounding,
-    // etc.). The user did not deliberately complete the swipe, so snap back
-    // even if the drag had already crossed the dismiss threshold.
-    if (!dragging) return;
-    dragging = false;
-    if (dragY === 0) return;
-    dragY = 0;
-    releasing = true;
-    releaseTimer = setTimeout(() => {
-      releaseTimer = null;
-      releasing = false;
-    }, SNAP_RESET_MS);
-  }
+  function onSheetPointerUp(e: PointerEvent) {
+    if (side !== 'bottom') return;
+    if (e.pointerId !== activePointerId) return;
 
-  function onGrabberPointerUp(e: PointerEvent) {
-    if (!dragging) return;
+    const wasDragging = gestureMode === 'drag';
+    resetGesture();
+
+    if (!wasDragging) return;
+
     const delta = e.clientY - startY;
     const duration = performance.now() - startTime;
     const velocity = delta / Math.max(duration, 1);
     dragging = false;
 
-    // Tap or upward drag: dragY is already 0, no animation needed.
     if (dragY === 0) return;
 
     if (delta >= DRAG_THRESHOLD_PX || velocity >= DRAG_VELOCITY_THRESHOLD) {
@@ -185,6 +292,27 @@
       }, SNAP_RESET_MS);
     }
   }
+
+  function onSheetPointerCancel(e: PointerEvent) {
+    if (side !== 'bottom') return;
+    if (e.pointerId !== activePointerId) return;
+
+    const wasDragging = gestureMode === 'drag';
+    resetGesture();
+
+    // A system gesture interrupted the drag (notch swipe, app backgrounding,
+    // etc.). The user did not deliberately complete the swipe, so snap back
+    // even if the drag had already crossed the dismiss threshold.
+    if (!wasDragging) return;
+    dragging = false;
+    if (dragY === 0) return;
+    dragY = 0;
+    releasing = true;
+    releaseTimer = setTimeout(() => {
+      releaseTimer = null;
+      releasing = false;
+    }, SNAP_RESET_MS);
+  }
 </script>
 
 <DialogPrimitive.Root bind:open onOpenChange={handleOpenChange}>
@@ -199,16 +327,13 @@
         className
       )}
       style={sheetStyle}
+      onpointerdown={onSheetPointerDown}
+      onpointermove={onSheetPointerMove}
+      onpointerup={onSheetPointerUp}
+      onpointercancel={onSheetPointerCancel}
     >
       {#if side === 'bottom'}
-        <div
-          class="-mt-2 mb-1 flex touch-none cursor-grab justify-center py-2 active:cursor-grabbing"
-          role="presentation"
-          onpointerdown={onGrabberPointerDown}
-          onpointermove={onGrabberPointerMove}
-          onpointerup={onGrabberPointerUp}
-          onpointercancel={onGrabberPointerCancel}
-        >
+        <div class="-mt-2 mb-1 flex justify-center py-2" role="presentation">
           <span data-sheet-grabber class="h-1 w-9 rounded-full bg-border"></span>
         </div>
       {/if}
