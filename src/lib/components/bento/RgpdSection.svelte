@@ -12,7 +12,7 @@
     <Download size={18} class="text-tile-peach-foreground" aria-hidden="true" />
     <span class="flex-1 text-sm font-bold">{m.profilRgpdExport()}</span>
   </LinkRow>
-  <LinkRow href={localizedHref('/account#delete')} variant="tile-butter">
+  <LinkRow href={localizedHref('/account/delete')} variant="tile-butter">
     <Trash2 size={18} class="text-tile-butter-foreground" aria-hidden="true" />
     <span class="flex-1 text-sm font-bold">{m.profilRgpdDelete()}</span>
   </LinkRow>

@@ -9,8 +9,8 @@ test('Profil bento renders all five sections', async ({ page }) => {
 
   await page.goto('/account');
   await expect(page.getByRole('heading', { name: 'Vos enfants' })).toBeVisible();
-  // exact: true to skip the retained legacy /account headings ("Mon compte",
-  // "Supprimer mon compte") that share the prefix.
+  // exact: true to disambiguate from the sr-only "Mon compte" h1 the shell
+  // emits on /account for screen readers.
   await expect(page.getByRole('heading', { name: 'Compte', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Vos données (RGPD)' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Légal' })).toBeVisible();

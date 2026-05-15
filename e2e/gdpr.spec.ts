@@ -50,7 +50,7 @@ test.describe('account deletion', () => {
     const email = `${unique('rgpd')}@example.com`;
     await signUp(page, email);
 
-    await page.goto('/account');
+    await page.goto('/account/delete');
     await page.getByLabel(/Saisissez votre adresse e-mail/i).fill(email);
     await page.getByLabel(/Confirmez avec votre mot de passe/i).fill('hunter2-very-long');
     await page.getByRole('button', { name: /Supprimer définitivement/i }).click();

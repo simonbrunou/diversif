@@ -3,7 +3,7 @@
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
-  import { ChevronRight, KeyRound, Languages, Moon, Lock } from 'lucide-svelte';
+  import { ChevronRight, KeyRound, Languages, Lock, LogOut, Moon, User } from 'lucide-svelte';
 
   let {
     passkeyCount,
@@ -27,32 +27,46 @@
 
   const rows = $derived([
     {
+      key: 'profile',
+      icon: User,
+      label: m.profilCompteProfile(),
+      meta: '',
+      href: localizedHref('/account/profile')
+    },
+    {
       key: 'passkeys',
       icon: KeyRound,
       label: m.profilComptePasskeys(),
       meta: passkeyMeta,
-      href: localizedHref('/account#passkeys')
-    },
-    {
-      key: 'langue',
-      icon: Languages,
-      label: m.profilCompteLangue(),
-      meta: locale.toUpperCase(),
-      href: localizedHref('/account#locale')
-    },
-    {
-      key: 'theme',
-      icon: Moon,
-      label: m.profilCompteTheme(),
-      meta: themeMeta,
-      href: localizedHref('/account#theme')
+      href: localizedHref('/account/passkeys')
     },
     {
       key: 'password',
       icon: Lock,
       label: m.profilComptePassword(),
       meta: '',
-      href: localizedHref('/account#password')
+      href: localizedHref('/account/password')
+    },
+    {
+      key: 'langue',
+      icon: Languages,
+      label: m.profilCompteLangue(),
+      meta: locale.toUpperCase(),
+      href: localizedHref('/account/locale')
+    },
+    {
+      key: 'theme',
+      icon: Moon,
+      label: m.profilCompteTheme(),
+      meta: themeMeta,
+      href: localizedHref('/account/theme')
+    },
+    {
+      key: 'sessions',
+      icon: LogOut,
+      label: m.profilCompteSessions(),
+      meta: '',
+      href: localizedHref('/account/sessions')
     }
   ]);
 </script>

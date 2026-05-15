@@ -1,0 +1,81 @@
+<script lang="ts">
+  import BackHeader from '$components/ui/BackHeader.svelte';
+  import Button from '$components/ui/Button.svelte';
+  import Card from '$components/ui/Card.svelte';
+  import Input from '$components/ui/Input.svelte';
+  import Label from '$components/ui/Label.svelte';
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
+  import { enhance } from '$app/forms';
+  import { toast } from 'svelte-sonner';
+  import * as m from '$lib/paraglide/messages';
+  import type { ActionData, PageData } from './$types';
+
+  let { data, form }: { data: PageData; form: ActionData } = $props();
+  let confirmDeleteEmail = $state('');
+  let confirmDeletePassword = $state('');
+  let deletingAccount = $state(false);
+
+  function trackSubmission() {
+    deletingAccount = true;
+    return async ({ update }: { update: () => Promise<void> }) => {
+      await update();
+      deletingAccount = false;
+    };
+  }
+
+  function resolveKey(key: string): string {
+    const fn = m[key as keyof typeof m] as (() => string) | undefined;
+    return fn?.() ?? /* v8 ignore next */ m.errorsGenericFallback();
+  }
+
+  let lastFormSeen: typeof form;
+  $effect(() => {
+    if (form === lastFormSeen) return;
+    lastFormSeen = form;
+    if (!form) return;
+    if (form.deleteErrorKey) toast.error(resolveKey(form.deleteErrorKey));
+  });
+</script>
+
+<BackHeader title={m.authAccountDeleteSection()} />
+
+<Card as="section" variant="tile-butter" class="px-4 py-3">
+  <SectionHeader as="h2" tone="destructive">{m.authAccountDeleteSection()}</SectionHeader>
+  <p class="mb-3 text-sm text-ink-soft">{m.authAccountDeleteDescription()}</p>
+  <form method="POST" class="grid gap-3" use:enhance={trackSubmission}>
+    <div class="grid gap-1.5">
+      <Label for="confirmEmail">{m.authAccountDeleteConfirmLabel()}</Label>
+      <Input
+        id="confirmEmail"
+        name="confirmEmail"
+        type="email"
+        autocomplete="off"
+        bind:value={confirmDeleteEmail}
+        placeholder={data.user?.email ?? ''}
+        required
+      />
+    </div>
+    <div class="grid gap-1.5">
+      <Label for="deletePassword">{m.authAccountDeletePasswordLabel()}</Label>
+      <Input
+        id="deletePassword"
+        name="currentPassword"
+        type="password"
+        autocomplete="current-password"
+        bind:value={confirmDeletePassword}
+        required
+      />
+    </div>
+    <div>
+      <Button
+        type="submit"
+        variant="destructive"
+        loading={deletingAccount}
+        disabled={confirmDeleteEmail.trim().toLowerCase() !== (data.user?.email ?? '') ||
+          confirmDeletePassword.length === 0}
+      >
+        {deletingAccount ? m.authAccountDeleteSubmitting() : m.authAccountDeleteSubmit()}
+      </Button>
+    </div>
+  </form>
+</Card>

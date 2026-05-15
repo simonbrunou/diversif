@@ -29,11 +29,12 @@ describe('ProfilBento', () => {
     expect(screen.getByText('Légal')).toBeTruthy();
   });
 
-  it('renders the add-child row even with no children', () => {
+  it('renders the add-child row pointing at /child/new', () => {
     render(ProfilBento, {
       props: { children: [], passkeyCount: 0, locale: 'fr' as const, theme: 'system' as const }
     });
-    expect(screen.getByText('Ajouter un enfant')).toBeTruthy();
+    const link = screen.getByText('Ajouter un enfant').closest('a');
+    expect(link?.getAttribute('href')).toBe('/child/new');
   });
 
   it('renders all four legal links', () => {

@@ -12,9 +12,9 @@ describe('RgpdSection', () => {
     expect(exp?.getAttribute('href')).toBe('/account/export');
   });
 
-  it('renders the delete row linking to /account#delete', () => {
+  it('renders the delete row linking to /account/delete', () => {
     render(RgpdSection, {});
     const del = screen.getByText('Supprimer mon compte').closest('a');
-    expect(del?.getAttribute('href')).toBe('/account#delete');
+    expect(del?.getAttribute('href')).toBe('/account/delete');
   });
 });

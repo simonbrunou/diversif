@@ -12,12 +12,30 @@ describe('CompteSection', () => {
     theme: 'system' as const
   };
 
-  it('renders the four rows', () => {
+  it('renders every account row', () => {
     render(CompteSection, { props: baseProps });
+    expect(screen.getByText('Profil')).toBeTruthy();
     expect(screen.getByText("Clés d'accès")).toBeTruthy();
+    expect(screen.getByText('Mot de passe')).toBeTruthy();
     expect(screen.getByText('Langue')).toBeTruthy();
     expect(screen.getByText('Thème')).toBeTruthy();
-    expect(screen.getByText('Mot de passe')).toBeTruthy();
+    expect(screen.getByText('Sessions')).toBeTruthy();
+  });
+
+  it('points each row at its dedicated sub-route', () => {
+    render(CompteSection, { props: baseProps });
+    expect(screen.getByText('Profil').closest('a')?.getAttribute('href')).toBe('/account/profile');
+    expect(screen.getByText("Clés d'accès").closest('a')?.getAttribute('href')).toBe(
+      '/account/passkeys'
+    );
+    expect(screen.getByText('Mot de passe').closest('a')?.getAttribute('href')).toBe(
+      '/account/password'
+    );
+    expect(screen.getByText('Langue').closest('a')?.getAttribute('href')).toBe('/account/locale');
+    expect(screen.getByText('Thème').closest('a')?.getAttribute('href')).toBe('/account/theme');
+    expect(screen.getByText('Sessions').closest('a')?.getAttribute('href')).toBe(
+      '/account/sessions'
+    );
   });
 
   it('renders the passkey device count in plural', () => {
