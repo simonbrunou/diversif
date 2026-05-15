@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import * as m from '$lib/paraglide/messages';
-import {
-  TEXTURE_VALUES,
-  defaultTextureForAgeMonths,
-  getTextureLabel,
-  isTextureKey
-} from './textures';
+import { TEXTURE_VALUES, defaultTextureForAgeMonths, isTextureKey } from './textures';
 
 describe('textures', () => {
   it('TEXTURE_VALUES is the 6 known keys in progression order, finger last', () => {
@@ -44,16 +38,5 @@ describe('textures', () => {
     for (let m = 0; m <= 48; m += 0.5) {
       expect(defaultTextureForAgeMonths(m)).not.toBe('finger');
     }
-  });
-
-  it('getTextureLabel returns the label for every key, in progression order', () => {
-    expect(TEXTURE_VALUES.map(getTextureLabel)).toEqual([
-      m.textureLisse(),
-      m.textureMoulinee(),
-      m.textureEcrasee(),
-      m.texturePetitsMorceaux(),
-      m.textureMorceaux(),
-      m.textureFinger()
-    ]);
   });
 });

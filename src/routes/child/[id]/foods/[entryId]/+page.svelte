@@ -5,7 +5,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
-  import { getTextureLabel } from '$lib/utils/textures';
+  import { getTextureLabel } from '$lib/utils/texture-labels';
   import { ChevronLeft } from 'lucide-svelte';
   import type { PageData } from './$types';
 

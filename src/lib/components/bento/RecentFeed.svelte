@@ -7,7 +7,7 @@
   import { cn } from '$lib/utils/cn';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { RecentEntry } from '$lib/types';
-  import { getTextureLabel } from '$lib/utils/textures';
+  import { getTextureLabel } from '$lib/utils/texture-labels';
 
   let { entries, childId }: { entries: RecentEntry[]; childId: string } = $props();
 

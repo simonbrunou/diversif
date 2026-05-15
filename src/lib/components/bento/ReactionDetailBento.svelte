@@ -7,7 +7,8 @@
   import MonitorTimer from './MonitorTimer.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
-  import { getTextureLabel, type TextureKey } from '$lib/utils/textures';
+  import { type TextureKey } from '$lib/utils/textures';
+  import { getTextureLabel } from '$lib/utils/texture-labels';
   import type { SymptomEntry } from '$lib/types';
   import { ChevronLeft } from 'lucide-svelte';
 
