@@ -2,6 +2,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import RecentFeed from './RecentFeed.svelte';
+import * as m from '$lib/paraglide/messages';
 
 afterEach(() => cleanup());
 
@@ -114,7 +115,7 @@ describe('RecentFeed', () => {
       }
     ];
     render(RecentFeed, { props: { entries: withTexture, childId: '5' } });
-    expect(screen.getByText(/Écrasée/i)).toBeTruthy();
-    expect(screen.queryByText(/Lisse/i)).toBeNull();
+    expect(screen.getByText(new RegExp(m.textureEcrasee(), 'i'))).toBeTruthy();
+    expect(screen.queryByText(new RegExp(m.textureLisse(), 'i'))).toBeNull();
   });
 });
