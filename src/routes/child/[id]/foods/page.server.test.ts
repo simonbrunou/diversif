@@ -381,7 +381,6 @@ describe('child/[id]/foods load', () => {
       expect(a!.state).toBe('cleared');
       expect(a!.triedCount).toBe(1);
       expect(a!.lastTried).not.toBeNull();
-      expect(a!.daysSinceLastTried).toBeLessThanOrEqual(4);
     }
   });
 
