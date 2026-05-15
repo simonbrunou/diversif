@@ -167,7 +167,9 @@ export const load: PageServerLoad = async ({ parent }) => {
       lastGivenAt: agg.last
     };
   }).sort((x, y) => {
-    if (x.isPriority !== y.isPriority) return x.isPriority ? -1 : 1;
+    // Priority allergens first; within each group sort alphabetically (FR).
+    const p = Number(!x.isPriority) - Number(!y.isPriority);
+    if (p !== 0) return p;
     return x.label.localeCompare(y.label, 'fr');
   });
 
