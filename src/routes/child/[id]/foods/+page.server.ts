@@ -2,7 +2,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
-import { ALLERGENS } from '$lib/utils/allergens';
+import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 import type { PageServerLoad } from './$types';
 
 export type AllergenItem = {
@@ -10,8 +10,13 @@ export type AllergenItem = {
   label: string;
   triedCount: number;
   lastTried: string | null;
-  state: 'cleared' | 'todo' | 'reaction';
+  daysSinceLastTried: number | null;
+  state: 'cleared' | 'todo' | 'reaction' | 'fading';
 };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const FADING_THRESHOLD_DAYS = 4;
+const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 function formatDDMMYY(d: Date): string {
   const dd = String(d.getUTCDate()).padStart(2, '0');
@@ -20,7 +25,10 @@ function formatDDMMYY(d: Date): string {
   return `${dd}/${mm}/${yy}`;
 }
 
-async function loadBentoAllergens(childId: number): Promise<AllergenItem[]> {
+async function loadBentoAllergens(
+  childId: number,
+  now: Date = new Date()
+): Promise<AllergenItem[]> {
   const rows = await db
     .select({
       allergenType: foods.allergenType,
@@ -56,14 +64,32 @@ async function loadBentoAllergens(childId: number): Promise<AllergenItem[]> {
   return ALLERGENS.map((a) => {
     const b = byAllergen.get(a.id);
     if (!b) {
-      return { id: a.id, label: a.label, triedCount: 0, lastTried: null, state: 'todo' as const };
+      return {
+        id: a.id,
+        label: a.label,
+        triedCount: 0,
+        lastTried: null,
+        daysSinceLastTried: null,
+        state: 'todo' as const
+      };
+    }
+    const daysSince = Math.max(0, Math.floor((now.getTime() - b.latest.getTime()) / DAY_MS));
+    const isPriority = PRIORITY_SET.has(a.id);
+    let state: AllergenItem['state'];
+    if (b.hasReaction) {
+      state = 'reaction';
+    } else if (isPriority && daysSince > FADING_THRESHOLD_DAYS) {
+      state = 'fading';
+    } else {
+      state = 'cleared';
     }
     return {
       id: a.id,
       label: a.label,
       triedCount: b.triedCount,
       lastTried: formatDDMMYY(b.latest),
-      state: b.hasReaction ? ('reaction' as const) : ('cleared' as const)
+      daysSinceLastTried: daysSince,
+      state
     };
   });
 }
