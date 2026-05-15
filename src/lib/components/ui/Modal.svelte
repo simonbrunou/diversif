@@ -51,8 +51,8 @@
 
   const DRAG_THRESHOLD_PX = 100;
   const DRAG_VELOCITY_THRESHOLD = 0.5;
-  const SNAP_TRANSITION_MS = 220;
-  const SNAP_RESET_MS = 240;
+  const TRANSITION_MS = 220;
+  const RESET_MS = 240;
 
   let dragY = $state(0);
   let dragging = $state(false);
@@ -67,26 +67,36 @@
     if (!dragging && !releasing) return undefined;
     const transition = dragging
       ? 'none'
-      : `transform ${SNAP_TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+      : `transform ${TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
     return `transform: translateY(${dragY}px); transition: ${transition};`;
   });
 
-  // Cancel a pending snap-back and reset drag state when the sheet closes
-  // externally (Escape, overlay click, parent setter). Without this, the
-  // setTimeout could mutate state on a torn-down instance or leave stale
-  // styles applied to the next open. Skip during dismiss-from-drag — that
-  // path owns its own cleanup so the exit animation keeps the released
-  // position rather than snapping back to 0.
+  // Cancel a pending timer and reset drag state whenever `open` changes.
+  // On reopen, this wipes any stale styles left over from the previous
+  // dismiss (the dismiss path keeps the inline transform applied until
+  // bits-ui unmounts the content, so cleanup has to happen on the next
+  // open). On external close (Escape, overlay click, parent setter),
+  // it cancels a snap-back-in-flight; skip during dismiss-from-drag so
+  // the off-screen slide can finish before bits-ui tears the sheet down.
   $effect(() => {
-    if (open) return;
-    if (dismissingFromDrag) return;
-    if (releaseTimer) {
-      clearTimeout(releaseTimer);
-      releaseTimer = null;
+    if (open) {
+      if (releaseTimer) {
+        clearTimeout(releaseTimer);
+        releaseTimer = null;
+      }
+      dragY = 0;
+      dragging = false;
+      releasing = false;
+      dismissingFromDrag = false;
+    } else if (!dismissingFromDrag) {
+      if (releaseTimer) {
+        clearTimeout(releaseTimer);
+        releaseTimer = null;
+      }
+      dragY = 0;
+      dragging = false;
+      releasing = false;
     }
-    dragY = 0;
-    dragging = false;
-    releasing = false;
   });
 
   function onGrabberPointerDown(e: PointerEvent) {
@@ -119,25 +129,26 @@
     if (dragY === 0) return;
 
     if (delta >= DRAG_THRESHOLD_PX || velocity >= DRAG_VELOCITY_THRESHOLD) {
-      // Dismiss: keep the inline transform applied so the bits-ui exit
-      // keyframe interpolates from the released drag position (no
-      // rubber-band snap to 0 before the slide-out runs).
+      // Dismiss: animate the sheet off-screen with our own transition,
+      // then unmount via bits-ui. The project doesn't ship
+      // tailwindcss-animate, so the `slide-out-to-bottom` class is a
+      // no-op and bits-ui tears down the content immediately when
+      // `open` becomes false. Without this self-animation the sheet
+      // would either teleport away or snap back to translateY(0).
       dismissingFromDrag = true;
       releasing = true;
-      handleOpenChange(false);
+      dragY = typeof window === 'undefined' ? 800 : window.innerHeight;
       releaseTimer = setTimeout(() => {
-        dragY = 0;
-        releasing = false;
-        dismissingFromDrag = false;
         releaseTimer = null;
-      }, SNAP_RESET_MS);
+        handleOpenChange(false);
+      }, TRANSITION_MS);
     } else {
       dragY = 0;
       releasing = true;
       releaseTimer = setTimeout(() => {
-        releasing = false;
         releaseTimer = null;
-      }, SNAP_RESET_MS);
+        releasing = false;
+      }, RESET_MS);
     }
   }
 </script>

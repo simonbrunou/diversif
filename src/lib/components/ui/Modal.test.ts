@@ -85,6 +85,9 @@ describe('Modal', () => {
       }
     });
     await dragGrabber(200);
+    // The dismiss animates the sheet off-screen for TRANSITION_MS (220) before
+    // it calls handleOpenChange — wait long enough for the timer to fire.
+    await new Promise((r) => setTimeout(r, 260));
     expect(lastOpen).toBe(false);
   });
 
