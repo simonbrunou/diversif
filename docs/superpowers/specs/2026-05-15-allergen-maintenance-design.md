@@ -29,7 +29,7 @@ After a priority allergen has been logged at least once, surface a calm maintena
 
 Two existing surfaces are extended:
 
-1. **`/foods` bento — `AllergenItem.state`** gains a fourth value `'fading'`. The tile renders with a butter-200 background, label "À reproposer", caption "{days} j" where `days` is the days since `lastTried`. Reaction trumps fading: a priority allergen that has both `hasReaction` and a stale `lastTried` keeps `'reaction'`.
+1. **`/foods` bento — `AllergenItem.state`** gains a fourth value `'fading'`. The tile renders with a peach-200 background, label "À reproposer", caption "{days} j" where `days` is the days since `lastTried`. Reaction trumps fading: a priority allergen that has both `hasReaction` and a stale `lastTried` keeps `'reaction'`.
 2. **Dashboard reminders rail** receives `maintain-allergen:<id>` cards, severity `info`, capped at 2, sorted oldest-exposure-first. Mirrors how rule 4 + bento `'todo'` already work as a pair.
 
 ## Threshold
@@ -93,7 +93,7 @@ Maintenance reminders sit at `severity: 'info'`, so they sort below the existing
 ### `src/routes/child/[id]/foods/+page.svelte`
 
 - Add a render branch for `state === 'fading'`.
-- Tile background: `--tile-butter-200` (`#ffeeb0`). Label: "À reproposer". Caption: "{days} j" using the existing `lastTried` formatter.
+- List-item background: `bg-tile-peach/20` (mirrors how `'reaction'` uses `bg-tile-coral/20`). Pill background: `bg-tile-peach` (`#ffd9c0`). Pill label: "À reproposer". Caption substitutes the lastTried date with "{days} j" — i.e. "1× · 5 j" instead of "1× · 2026-04-15" when fading. Butter is already taken by `'todo'`; peach is the calm-attention slot.
 - The other three states keep their current visual treatment.
 
 ### `src/lib/content/sources.ts`
@@ -151,7 +151,7 @@ No new audit event. Dismissals already flow through the existing reminder-dismis
 
 `src/routes/child/[id]/foods/+page.svelte` (smoke / snapshot):
 
-- a `'fading'` allergen item renders the "À reproposer" label and the "{N} j" caption against the butter-200 background.
+- a `'fading'` allergen item renders the "À reproposer" label and the "{N} j" caption against the peach-200 background.
 
 ## Sources
 
@@ -161,7 +161,8 @@ No new audit event. Dismissals already flow through the existing reminder-dismis
 - Santé publique France / PNNS, _Le guide de l'alimentation des enfants de 0 à 3 ans_, 2021.
 - AFPA, _Nouvelles recommandations du PNNS sur la diversification alimentaire_, Perfectionnement en Pédiatrie 2022.
 
-## Open detail to resolve at plan time
+## Resolved during plan exploration
 
-- Confirm `EnrichedEntry.allergenType` exists in `src/lib/server/guidance/queries.ts`. If not, widen the projection (one-line change to the SELECT + the type).
-- Confirm the source row for ANSES 2019 / PNNS 2021 already exists in `src/lib/content/sources.ts`. If not, add it as a new entry (citation only, no quoted content — the app cites, does not author).
+- `EnrichedEntry.allergenType: string | null` already exists in `src/lib/server/guidance/queries.ts:17` and is already projected by `loadRecentEntries`. No widening needed.
+- `anses-nourrisson` source row already exists in `src/lib/content/sources.ts:67`. No new source needed.
+- `AllergenItem` type is duplicated in three places: `src/routes/child/[id]/foods/+page.server.ts:8`, `src/lib/components/bento/CarnetBento.svelte:19`, and `src/lib/components/bento/CarnetAllergens.svelte:7` (named `Item` there). All three need the `'fading'` widening.
