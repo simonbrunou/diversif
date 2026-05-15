@@ -45,9 +45,14 @@ describe('textures', () => {
     }
   });
 
-  it('getTextureLabel returns the FR label', () => {
-    expect(getTextureLabel('lisse')).toBe('Lisse');
-    expect(getTextureLabel('petits-morceaux')).toBe('Petits morceaux');
-    expect(getTextureLabel('finger')).toBe('Finger food');
+  it('getTextureLabel returns the FR label for every key, in progression order', () => {
+    expect(TEXTURE_VALUES.map(getTextureLabel)).toEqual([
+      'Lisse',
+      'Moulinée',
+      'Écrasée',
+      'Petits morceaux',
+      'Morceaux',
+      'Finger food'
+    ]);
   });
 });
