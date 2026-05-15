@@ -1,14 +1,16 @@
 <!--
-  Sticky in-app back header for sub-screens. Pressing the arrow prefers
-  history.back() when there is a referrer (so the user lands on the actual
-  page they came from, scrolled to the row they tapped); otherwise it
-  navigates to the localized fallback. The fallback is what makes the
-  control survive direct hits or fresh tabs.
+  Sticky in-app back header for sub-screens. The arrow prefers
+  history.back() when the user reached this page via an in-app navigation
+  (so they land on the page they came from, scrolled to the row they
+  tapped); on a cold entry it navigates to the localized fallback so a
+  direct URL hit, a bookmark, or a tab with unrelated prior history
+  doesn't strand the user off-site. window.history.length isn't a
+  referrer signal — afterNavigate's `from` is, so we listen for it.
 -->
 <script lang="ts">
   import { ArrowLeft } from 'lucide-svelte';
   import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
+  import { afterNavigate, goto } from '$app/navigation';
   import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
 
@@ -17,8 +19,17 @@
     fallback = '/account'
   }: { title?: string; fallback?: string } = $props();
 
+  // afterNavigate fires once on initial hydration with from === null, and
+  // again with a non-null from for every client-side navigation that
+  // followed. So this flag is true iff the user reached the current page
+  // by navigating from another page in the same SvelteKit session.
+  let arrivedInApp = $state(false);
+  afterNavigate((nav) => {
+    if (nav.from) arrivedInApp = true;
+  });
+
   function back() {
-    if (browser && window.history.length > 1) {
+    if (browser && arrivedInApp) {
       history.back();
       return;
     }
