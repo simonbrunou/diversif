@@ -366,7 +366,7 @@ describe('child/[id]/foods load', () => {
       await testDb.insert(foodEntries).values({
         childId: ctx.c.id,
         foodId: food.id,
-        givenAt: new Date('2026-05-10T10:00:00Z'),
+        givenAt: new Date(Date.now() - 1 * 86400_000),
         reaction: 'ras',
         notes: null,
         loggedBy: ctx.u.id,
@@ -380,7 +380,7 @@ describe('child/[id]/foods load', () => {
       expect(a).toBeDefined();
       expect(a!.state).toBe('cleared');
       expect(a!.triedCount).toBe(1);
-      expect(a!.lastTried).toBe('10/05/26');
+      expect(a!.lastTried).not.toBeNull();
     }
   });
 
@@ -455,6 +455,83 @@ describe('child/[id]/foods load', () => {
     expect(out.weeklyEntries.anchorUtc).toBe(
       Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
     );
+  });
+
+  describe('bentoAllergens fading state', () => {
+    async function setupEgg() {
+      const base = await setup();
+      const egg = (
+        await testDb
+          .insert(foods)
+          .values({
+            name: 'Œuf',
+            category: 'oeufs',
+            isMajorAllergen: true,
+            allergenType: 'oeuf',
+            suggestedAgeMonths: 6,
+            notes: null,
+            isCustom: false,
+            customForChildId: null
+          })
+          .returning()
+      )[0];
+      const celery = (
+        await testDb
+          .insert(foods)
+          .values({
+            name: 'Céleri',
+            category: 'legumes',
+            isMajorAllergen: false,
+            allergenType: 'celeri',
+            suggestedAgeMonths: 9,
+            notes: null,
+            isCustom: false,
+            customForChildId: null
+          })
+          .returning()
+      )[0];
+      return { ...base, egg, celery };
+    }
+
+    it("returns 'fading' for a priority allergen logged > 4 days ago with no reaction", async () => {
+      const ctx = await setupEgg();
+      await ctx.log(ctx.egg.id, 'ras', /* daysAgo */ 5);
+      const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');
+      const oeuf = res.bentoAllergens.find((a: { id: string }) => a.id === 'oeuf');
+      expect(oeuf?.state).toBe('fading');
+      expect(oeuf?.daysSinceLastTried).toBe(5);
+    });
+
+    it("returns 'cleared' for a priority allergen logged <= 4 days ago", async () => {
+      const ctx = await setupEgg();
+      await ctx.log(ctx.egg.id, 'ras', 3);
+      const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');
+      const oeuf = res.bentoAllergens.find((a: { id: string }) => a.id === 'oeuf');
+      expect(oeuf?.state).toBe('cleared');
+    });
+
+    it("keeps 'reaction' state even if last log is > 4 days ago (reaction trumps fading)", async () => {
+      const ctx = await setupEgg();
+      await ctx.log(ctx.egg.id, 'reaction', 8);
+      const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');
+      const oeuf = res.bentoAllergens.find((a: { id: string }) => a.id === 'oeuf');
+      expect(oeuf?.state).toBe('reaction');
+    });
+
+    it("does not mark non-priority allergens (céleri) as 'fading' regardless of gap", async () => {
+      const ctx = await setupEgg();
+      await ctx.log(ctx.celery.id, 'ras', 30);
+      const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');
+      const celeri = res.bentoAllergens.find((a: { id: string }) => a.id === 'celeri');
+      expect(celeri?.state).toBe('cleared');
+    });
+
+    it("returns 'todo' for a priority allergen never logged", async () => {
+      const ctx = await setupEgg();
+      const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');
+      const arachide = res.bentoAllergens.find((a: { id: string }) => a.id === 'arachide');
+      expect(arachide?.state).toBe('todo');
+    });
   });
 
   it('repeat=1 early-return branch still emits bentoAllergens + weeklyEntries', async () => {

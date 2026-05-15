@@ -345,4 +345,143 @@ describe('computeReminders', () => {
       expect(r!.body).toContain('mystery_group');
     });
   });
+
+  describe('maintain-allergen', () => {
+    // Helper: build an entry for an allergen-bearing food. The reminders engine
+    // sees EnrichedEntry.allergenType and uses it to identify allergen logs.
+    function allergenEntry(
+      allergen: AllergenId,
+      daysAgo: number,
+      overrides: Partial<EnrichedEntry> = {}
+    ): EnrichedEntry {
+      return entry({
+        foodName: allergen,
+        allergenType: allergen,
+        givenAt: NOW - daysAgo * DAY,
+        reaction: 'ras',
+        ...overrides
+      });
+    }
+
+    it('does not fire when the last exposure is within 4 days', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 3)]
+        })
+      );
+      expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
+    });
+
+    it('fires when the last exposure is older than 4 days', () => {
+      // Use isolated() default (ALL_ALLERGENS) so rule 4 / rule 6 noise does not
+      // crowd out the info-severity maintain card under the 4-card cap.
+      const out = computeReminders(
+        isolated({
+          entries: [allergenEntry('oeuf', 5)]
+        })
+      );
+      const card = out.find((r) => r.key.startsWith('maintain-allergen:oeuf'));
+      expect(card).toBeDefined();
+      expect(card?.severity).toBe('info');
+    });
+
+    it('caps at 2 cards sorted oldest-exposure-first', () => {
+      // Use isolated() default (ALL_ALLERGENS) so rule 4 pending-allergen does
+      // not fire for the other priority allergens and crowd the rail.
+      const out = computeReminders(
+        isolated({
+          entries: [
+            allergenEntry('oeuf', 6),
+            allergenEntry('arachide', 9),
+            allergenEntry('lait', 7)
+          ]
+        })
+      );
+      const cards = out.filter((r) => r.key.startsWith('maintain-allergen:'));
+      expect(cards.length).toBe(2);
+      expect(cards[0].key.startsWith('maintain-allergen:arachide')).toBe(true);
+      expect(cards[1].key.startsWith('maintain-allergen:lait')).toBe(true);
+    });
+
+    it('does not fire for non-priority allergens (céleri)', () => {
+      // Céleri is tracked in ALLERGENS (EU 1169/2011 labelling) but excluded
+      // from PRIORITY_INTRODUCTION_ALLERGENS because no early-introduction
+      // trial (LEAP, EAT, ESPGHAN) covered it. The maintain rule must respect
+      // that boundary.
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['celeri']),
+          entries: [allergenEntry('celeri', 30)]
+        })
+      );
+      expect(out.find((r) => r.key.startsWith('maintain-allergen:'))).toBeUndefined();
+    });
+
+    it('does not fire if the priority allergen was never introduced', () => {
+      // No entries at all → introducedAllergens cannot include the allergen.
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(), // override the isolated()
+          entries: []
+        })
+      );
+      expect(out.find((r) => r.key.startsWith('maintain-allergen:'))).toBeUndefined();
+    });
+
+    it('respects dismissal of the current stale cycle, but allows future cycles to surface', () => {
+      const DAY_MS_LOCAL = 24 * 60 * 60 * 1000;
+      const sevenDaysAgo = NOW - 7 * DAY;
+      const dismissedBucket = Math.floor(sevenDaysAgo / DAY_MS_LOCAL);
+      const dismissedKey = `maintain-allergen:oeuf:${dismissedBucket}`;
+
+      // Dismissed for this exposure → no card
+      const out1 = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 7)],
+          dismissals: new Set<string>([dismissedKey])
+        })
+      );
+      expect(out1.find((r) => r.key === dismissedKey)).toBeUndefined();
+
+      // Same allergen, FRESH exposure 5 days ago → new bucket → not suppressed by the old dismissal
+      const out2 = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 5)],
+          dismissals: new Set<string>([dismissedKey])
+        })
+      );
+      expect(out2.find((r) => r.key.startsWith('maintain-allergen:oeuf:'))).toBeDefined();
+    });
+
+    it('lets reaction-state allergens still surface their pending-reaction context, but does not also emit a maintain card', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 8, { reaction: 'reaction' })]
+        })
+      );
+      expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
+    });
+
+    it('is displaced by higher-severity cards under the 4-card cap', () => {
+      // At 6 months with only oeuf introduced, rule 4 emits 3 warn pending-allergen
+      // cards for the other 6 priority allergens and rule 2 emits an important
+      // stage-transition card. That fills the 4-card cap before the info-severity
+      // maintain card gets a slot — by design (PRODUCT.md: maintenance never
+      // displaces stage transitions or pending-allergen warnings).
+      const out = computeReminders(
+        input({
+          ageMonths: 6,
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 6)]
+        })
+      );
+      expect(out.find((r) => r.key === 'stage-transition:6m')).toBeDefined();
+      expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
+      expect(out.length).toBeLessThanOrEqual(4);
+    });
+  });
 });

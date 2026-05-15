@@ -21,7 +21,8 @@
     label: string;
     triedCount: number;
     lastTried: string | null;
-    state: 'cleared' | 'todo' | 'reaction';
+    daysSinceLastTried: number | null;
+    state: 'cleared' | 'todo' | 'reaction' | 'fading';
   };
 
   let {
