@@ -12,10 +12,39 @@ beforeEach(async () => {
   await resetTestDb();
 });
 
-async function setup() {
+async function setup(opts: { ageMonths?: number } = {}) {
   const u = await seedUser();
-  const c = await seedChild({ createdBy: u.id });
-  return { u, c };
+  let birthDate = '2024-01-01';
+  if (opts.ageMonths != null) {
+    const now = new Date();
+    const birth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - opts.ageMonths, now.getUTCDate())
+    );
+    birthDate = birth.toISOString().slice(0, 10);
+  }
+  const c = await seedChild({ createdBy: u.id, birthDate });
+  // Provide childId and foodId helpers for test convenience
+  const food = await testDb
+    .insert(foods)
+    .values({
+      name: '_setup_food',
+      category: 'legumes',
+      isMajorAllergen: false,
+      allergenType: null,
+      suggestedAgeMonths: 6,
+      notes: null,
+      isCustom: false,
+      customForChildId: null
+    })
+    .returning();
+  return {
+    u,
+    c,
+    childId: c.id,
+    foodId: food[0].id,
+    testDb,
+    locals: { user: u, memberships: [], sessionId: 'sess-id', locale: 'fr' as const }
+  };
 }
 
 async function seedFood(name: string, category: string, allergen: string | null = null) {
@@ -262,5 +291,63 @@ describe('child/[id]/report load', () => {
         (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(row.id)
       );
     }
+  });
+
+  it('returns the current diversification stage based on child age', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    const event = makeRouteEvent({
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.stage.id).toBe('9-12');
+    expect(data.stage.title).toBeTruthy();
+    expect(data.stage.textures).toBeTruthy();
+  });
+
+  it('returns the most-advanced non-finger texture logged', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    await testDb.insert(foodEntries).values([
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'lisse',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'ecrasee',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'finger',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      }
+    ]);
+    const event = makeRouteEvent({
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.mostAdvancedTexture).toBe('ecrasee'); // finger is parallel/opt-in — excluded
+  });
+
+  it('returns null mostAdvancedTexture when no texture is logged', async () => {
+    const ctx = await setup({ ageMonths: 7 });
+    const event = makeRouteEvent({
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.mostAdvancedTexture).toBeNull();
   });
 });

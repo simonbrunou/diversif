@@ -399,5 +399,8 @@
   "carnetSegmentsAriaLabel": "Notebook sections",
   "errorsAccountPasskeyRegisterStartFailed": "Could not start registration.",
   "errorsAccountPasskeyRegisterFailed": "Registration failed.",
-  "errorsAccountPasskeyGenericError": "Error"
+  "errorsAccountPasskeyGenericError": "Error",
+  "reportStageHeading": "Diversification stage",
+  "reportStageExpectedTextures": "Expected textures",
+  "reportStageMostAdvancedTexture": "Most advanced texture logged"
 }

@@ -399,5 +399,8 @@
   "carnetSegmentsAriaLabel": "Sections du carnet",
   "errorsAccountPasskeyRegisterStartFailed": "Impossible de démarrer l'enregistrement.",
   "errorsAccountPasskeyRegisterFailed": "Enregistrement échoué.",
-  "errorsAccountPasskeyGenericError": "Erreur"
+  "errorsAccountPasskeyGenericError": "Erreur",
+  "reportStageHeading": "Étape de diversification",
+  "reportStageExpectedTextures": "Textures attendues",
+  "reportStageMostAdvancedTexture": "Texture la plus avancée enregistrée"
 }

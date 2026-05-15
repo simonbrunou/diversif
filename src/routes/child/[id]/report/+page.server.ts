@@ -4,6 +4,9 @@ import { asc, eq } from 'drizzle-orm';
 import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
+import { ageInMonths } from '$lib/utils/age';
+import { getStageForAgeMonths, type Stage } from '$lib/content/guidance';
+import { TEXTURE_VALUES, type TextureKey, isTextureKey } from '$lib/utils/textures';
 import type { PageServerLoad } from './$types';
 
 export type ReportEntry = {
@@ -15,6 +18,7 @@ export type ReportEntry = {
   reaction: ReactionId;
   givenAt: number;
   notes: string | null;
+  texture: TextureKey | null;
 };
 
 export type ReportFood = {
@@ -53,7 +57,8 @@ export const load: PageServerLoad = async ({ parent }) => {
       allergenType: foods.allergenType,
       reaction: foodEntries.reaction,
       givenAt: foodEntries.givenAt,
-      notes: foodEntries.notes
+      notes: foodEntries.notes,
+      texture: foodEntries.texture
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
@@ -69,7 +74,8 @@ export const load: PageServerLoad = async ({ parent }) => {
     reaction: r.reaction as ReactionId,
     givenAt:
       r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt),
-    notes: r.notes
+    notes: r.notes,
+    texture: isTextureKey(r.texture) ? r.texture : null
   }));
 
   const reactionRank: Record<ReactionId, number> = { ras: 0, inconfort: 1, reaction: 2 };
@@ -171,8 +177,24 @@ export const load: PageServerLoad = async ({ parent }) => {
   // older entries would defeat the report's purpose.
   const notable = entries.filter((e) => e.reaction !== 'ras');
 
+  // Most advanced texture in the progression (finger excluded: parallel/opt-in).
+  let mostAdvancedIdx = -1;
+  for (const e of entries) {
+    if (!isTextureKey(e.texture)) continue;
+    if (e.texture === 'finger') continue;
+    const idx = TEXTURE_VALUES.indexOf(e.texture);
+    if (idx > mostAdvancedIdx) mostAdvancedIdx = idx;
+  }
+  const mostAdvancedTexture: TextureKey | null =
+    mostAdvancedIdx >= 0 ? TEXTURE_VALUES[mostAdvancedIdx] : null;
+
+  // Current diversification stage derived from child age at report time.
+  const stage: Stage = getStageForAgeMonths(ageInMonths(child.birthDate));
+
   return {
     generatedAt: Date.now(),
+    stage,
+    mostAdvancedTexture,
     totals: {
       foods: byFood.size,
       entries: entries.length,

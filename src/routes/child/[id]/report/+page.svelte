@@ -3,9 +3,10 @@
   import CategoryTag from '$lib/components/CategoryTag.svelte';
   import { getCategoryLabel } from '$lib/utils/categories';
   import { getReactionLabel } from '$lib/utils/reactions';
-  import { formatAge, ageInMonths } from '$lib/utils/age';
-  import { getStageForAgeMonths } from '$lib/content/guidance';
+  import { formatAge } from '$lib/utils/age';
   import { localizedHref } from '$lib/utils/localized-href';
+  import { getTextureLabel } from '$lib/utils/texture-labels';
+  import * as m from '$lib/paraglide/messages';
   import { Printer, CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
@@ -13,8 +14,6 @@
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
-
-  const stage = $derived(getStageForAgeMonths(ageInMonths(data.child.birthDate)));
 
   function printPage() {
     if (typeof window !== 'undefined') window.print();
@@ -66,7 +65,7 @@
       {data.child.name}
     </h1>
     <p class="text-sm text-muted-foreground">
-      {formatAge(data.child.birthDate)} · {stage.title}
+      {formatAge(data.child.birthDate)} · {data.stage.title}
     </p>
   </header>
 
@@ -104,6 +103,22 @@
       </div>
       <div class="mt-1 text-[11px] text-muted-foreground">prioritaires testés</div>
     </div>
+  </section>
+
+  <!-- Stage status -->
+  <section class="space-y-2 rounded-lg border bg-card p-4">
+    <h2 class="text-lg font-semibold">{m.reportStageHeading()}</h2>
+    <p class="text-sm text-muted-foreground">{data.stage.title}</p>
+    <p class="text-sm">{data.stage.oneLiner}</p>
+    <p class="text-sm">
+      <span class="text-muted-foreground">{m.reportStageExpectedTextures()} : </span>{data.stage.textures}
+    </p>
+    {#if data.mostAdvancedTexture}
+      <p class="text-sm">
+        <span class="text-muted-foreground">{m.reportStageMostAdvancedTexture()} : </span>
+        {getTextureLabel(data.mostAdvancedTexture)}
+      </p>
+    {/if}
   </section>
 
   <!-- Allergens grid -->
