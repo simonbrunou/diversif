@@ -19,7 +19,7 @@
   }: { open: boolean; stage: Stage } = $props();
 </script>
 
-<Modal bind:open title={stage.title} side="bottom">
+<Modal bind:open title={stage.title} side="auto">
   <div class="max-h-[70vh] overflow-y-auto">
     <p class="text-sm text-ink-soft">{stage.oneLiner}</p>
 
