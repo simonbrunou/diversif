@@ -1,4 +1,4 @@
-import * as m from '$lib/paraglide/messages';
+import * as m from '../paraglide/messages';
 
 export const TEXTURE_VALUES = [
   'lisse',
