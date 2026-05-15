@@ -10,6 +10,7 @@ export type AllergenItem = {
   label: string;
   triedCount: number;
   lastTried: string | null;
+  /** Days since the most recent log. Null only when the allergen has never been logged ('todo'). Consumed by the 'fading' caption; populated for other states for symmetry but not surfaced. */
   daysSinceLastTried: number | null;
   state: 'cleared' | 'todo' | 'reaction' | 'fading';
 };

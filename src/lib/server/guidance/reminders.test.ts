@@ -403,6 +403,10 @@ describe('computeReminders', () => {
     });
 
     it('does not fire for non-priority allergens (céleri)', () => {
+      // Céleri is tracked in ALLERGENS (EU 1169/2011 labelling) but excluded
+      // from PRIORITY_INTRODUCTION_ALLERGENS because no early-introduction
+      // trial (LEAP, EAT, ESPGHAN) covered it. The maintain rule must respect
+      // that boundary.
       const out = computeReminders(
         isolated({
           introducedAllergens: new Set<AllergenId>(['celeri']),
