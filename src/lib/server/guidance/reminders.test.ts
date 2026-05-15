@@ -444,20 +444,22 @@ describe('computeReminders', () => {
       expect(out.find((r) => r.key === 'maintain-allergen:oeuf')).toBeUndefined();
     });
 
-    it('sorts maintain cards below important + warn severity in the final list', () => {
+    it('is displaced by higher-severity cards under the 4-card cap', () => {
+      // At 6 months with only oeuf introduced, rule 4 emits 3 warn pending-allergen
+      // cards for the other 6 priority allergens and rule 2 emits an important
+      // stage-transition card. That fills the 4-card cap before the info-severity
+      // maintain card gets a slot — by design (PRODUCT.md: maintenance never
+      // displaces stage transitions or pending-allergen warnings).
       const out = computeReminders(
         input({
-          ageMonths: 6, // triggers stage-transition:6m (important)
+          ageMonths: 6,
           introducedAllergens: new Set<AllergenId>(['oeuf']),
           entries: [allergenEntry('oeuf', 6)]
         })
       );
-      const idxImportant = out.findIndex((r) => r.key === 'stage-transition:6m');
-      const idxMaintain = out.findIndex((r) => r.key === 'maintain-allergen:oeuf');
-      expect(idxImportant).toBeGreaterThanOrEqual(0);
-      if (idxMaintain >= 0) {
-        expect(idxMaintain).toBeGreaterThan(idxImportant);
-      }
+      expect(out.find((r) => r.key === 'stage-transition:6m')).toBeDefined();
+      expect(out.find((r) => r.key === 'maintain-allergen:oeuf')).toBeUndefined();
+      expect(out.length).toBeLessThanOrEqual(4);
     });
   });
 });
