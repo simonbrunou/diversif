@@ -51,7 +51,12 @@ function applyMigrations(mem: IMemoryDb): void {
   // indexes that pg-mem's wrapped-client semantics don't fully simulate) are
   // enforced in production but skipped here. seedFoods + applySeedCorrections
   // idempotently re-establish the same post-migration state in tests.
-  const filenames = ['0000_init.sql', '0003_passkeys_transports_jsonb.sql', '0004_symptoms.sql'];
+  const filenames = [
+    '0000_init.sql',
+    '0003_passkeys_transports_jsonb.sql',
+    '0004_symptoms.sql',
+    '0005_food_entry_texture.sql'
+  ];
 
   for (const filename of filenames) {
     const sqlText = readFileSync(path.resolve('./drizzle', filename), 'utf8');
@@ -73,6 +78,20 @@ function applyMigrations(mem: IMemoryDb): void {
       unwrapped = `
         ALTER TABLE "passkeys" DROP COLUMN "transports";
         ALTER TABLE "passkeys" ADD COLUMN "transports" jsonb NOT NULL DEFAULT '[]'::jsonb;
+      `;
+    }
+
+    // pg-mem has two bugs with this migration:
+    // 1. Inline CHECK on ADD COLUMN triggers a "Corrupted alias" internal error.
+    //    Split into ADD COLUMN + a separate ADD CONSTRAINT.
+    // 2. pg-mem evaluates CHECK(col IN (...)) as FALSE for NULL instead of
+    //    NULL (the SQL-standard behaviour), rejecting valid nullable inserts.
+    //    Use IS NULL OR ... so pg-mem skips the IN check for null values.
+    if (filename === '0005_food_entry_texture.sql') {
+      unwrapped = `
+        ALTER TABLE food_entries ADD COLUMN texture TEXT;
+        ALTER TABLE food_entries ADD CONSTRAINT food_entries_texture_check
+          CHECK (texture IS NULL OR texture IN ('lisse', 'moulinee', 'ecrasee', 'petits-morceaux', 'morceaux', 'finger'));
       `;
     }
 
