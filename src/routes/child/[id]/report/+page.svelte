@@ -38,7 +38,7 @@
 </script>
 
 <svelte:head>
-  <title>Récap pédiatrique : {data.child.name} · Diversif</title>
+  <title>{m.reportHandoffTitle()} : {data.child.name} · Diversif</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -260,6 +260,11 @@
       2017, études LEAP (2015) et EAT (2016).
     </p>
   </footer>
+
+  <!-- Print-only date stamp -->
+  <p class="mt-4 hidden text-center text-xs text-muted-foreground print:block">
+    {m.reportPrintedOn({ date: new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(data.generatedAt)) })}
+  </p>
 </div>
 
 <style>
@@ -272,10 +277,19 @@
     :global(body) {
       background: #fff !important;
       color: #000 !important;
+      font-size: 11pt;
     }
     :global(a) {
       color: inherit !important;
       text-decoration: none !important;
+    }
+    /* Hide all app chrome (top bar, sidebar, bottom nav, FAB, desktop log btn) */
+    :global([data-no-print]) {
+      display: none !important;
+    }
+    section {
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
   }
 </style>

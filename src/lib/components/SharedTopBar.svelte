@@ -22,6 +22,7 @@
 </script>
 
 <header
+  data-no-print
   class={cn(
     'sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur',
     className
