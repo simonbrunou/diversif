@@ -14,7 +14,7 @@ The reminder engine has a generic "Reproposez « X »" card (rule 6) for taste-a
 
 ## Goal
 
-After a priority allergen has been logged at least once, surface a calm maintenance nudge once seven days have passed without re-exposure, so the caregiver keeps the allergen in rotation.
+After a priority allergen has been logged at least once, surface a calm maintenance nudge once four days have passed without re-exposure, so the caregiver keeps the allergen in rotation at the evidence-based 2–3×/semaine target.
 
 ## Non-goals
 
@@ -34,9 +34,9 @@ Two existing surfaces are extended:
 
 ## Threshold
 
-**Seven days** since last exposure. Maps to ANSES's qualitative "régulièrement" and the lower bound of ESPGHAN's ~2 g/semaine target. Body text quotes the LEAP / ESPGHAN "2 à 3 fois par semaine" as the _ideal_, so caregivers see the ambitious target without being guilt-tripped at the threshold.
+**Four days** since last exposure. Maps to the lower bound of the LEAP / ESPGHAN "2 à 3 fois par semaine" target: missing four days means the child has fallen below 2×/semaine. Body text quotes the same 2–3×/semaine framing so the caregiver sees the target the threshold is derived from.
 
-Per PRODUCT.md ("Régularité as a fact, never a guilt trip"), a tighter 3 or 4-day window would fire on normal weekend gaps and shift tone toward urgency. Seven days is a deliberate calm.
+A 7-day floor was the first instinct (matches ANSES's qualitative "régulièrement"), but it only catches a child who has skipped a full week — it does not protect the actual 2–3× target. Calm tone is not produced by lax timing; it lives in the copy and in `severity: 'info'`. The reminder reads "Bébé n'a pas eu œuf depuis 4 jours, l'idéal est…", not "En retard !". A tighter 3-day floor would match LEAP's literal 3×/semaine for peanut but would fire on routine Friday-to-Monday gaps for the other six allergens, so 4 days is the calmer evidence-aligned choice.
 
 ## Reminder card shape
 
@@ -63,14 +63,14 @@ food_entries × foods.allergen_type ──▶ loadBentoAllergens(childId, now?)
      no bucket                                → 'todo'
      hasReaction                              → 'reaction'
      id ∈ PRIORITY_INTRODUCTION_ALLERGENS
-       AND daysSince(lastTried) > 7           → 'fading'   (NEW)
+       AND daysSince(lastTried) > 4           → 'fading'   (NEW)
      else                                     → 'cleared'
 
 ReminderInput.entries ──▶ computeReminders(input)
    rule 9 maintain-allergen (NEW):
      for id in PRIORITY_INTRODUCTION_ALLERGENS
        where id ∈ introducedAllergens
-       and daysSinceLastExposure(id) > 7
+       and daysSinceLastExposure(id) > 4
      emit Reminder, sort oldest first, slice(0, 2)
 ```
 
@@ -88,7 +88,7 @@ Maintenance reminders sit at `severity: 'info'`, so they sort below the existing
 
 - Extend `AllergenItem.state` union with `'fading'`.
 - `loadBentoAllergens` takes an optional `now?: Date` for deterministic tests (mirrors `loadWeeklyEntries`).
-- Compute the `'fading'` branch inside the final `ALLERGENS.map(...)` reducer. `'fading'` requires `b.triedCount >= 1`, `!b.hasReaction`, `a.id ∈ PRIORITY_INTRODUCTION_ALLERGENS`, and `daysSince(b.latest) > 7`.
+- Compute the `'fading'` branch inside the final `ALLERGENS.map(...)` reducer. `'fading'` requires `b.triedCount >= 1`, `!b.hasReaction`, `a.id ∈ PRIORITY_INTRODUCTION_ALLERGENS`, and `daysSince(b.latest) > 4`.
 
 ### `src/routes/child/[id]/foods/+page.svelte`
 
@@ -133,18 +133,18 @@ No new audit event. Dismissals already flow through the existing reminder-dismis
 
 `src/lib/server/guidance/reminders.test.ts`:
 
-- priority allergen introduced 6 d ago → no maintain card
-- priority allergen introduced 8 d ago → 1 maintain card
-- three priority allergens slipping by 9 / 10 / 12 d → 2 cards, sorted oldest first (12 d card first, 10 d card second, 9 d card dropped)
+- priority allergen last logged 3 d ago → no maintain card
+- priority allergen last logged 5 d ago → 1 maintain card
+- three priority allergens slipping by 6 / 7 / 9 d → 2 cards, sorted oldest first (9 d card first, 7 d card second, 6 d card dropped)
 - non-priority allergen (céleri) slipping 30 d → no maintain card
-- priority allergen with `reaction` history and lastTried 14 d ago → no maintain card (reaction wins, surfaced elsewhere)
+- priority allergen with `reaction` history and lastTried 8 d ago → no maintain card (reaction wins, surfaced elsewhere)
 - dismissed `maintain-allergen:oeuf` → no card for `oeuf` but other slips still surface
 - maintain reminders never push above the 4-card cap, and never displace `important` / `warn` cards
 
 `src/routes/child/[id]/foods/+page.server.test.ts` (or sibling unit test on the helper):
 
-- priority allergen with `lastTried` 8 d ago, no reaction → state `'fading'`
-- priority allergen with `lastTried` 8 d ago, with reaction → state `'reaction'`
+- priority allergen with `lastTried` 5 d ago, no reaction → state `'fading'`
+- priority allergen with `lastTried` 5 d ago, with reaction → state `'reaction'`
 - non-priority allergen with `lastTried` 30 d ago → state `'cleared'`
 - priority allergen never logged → state `'todo'`
 - `now` is injectable for deterministic dates
