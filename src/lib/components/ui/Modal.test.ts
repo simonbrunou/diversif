@@ -57,22 +57,29 @@ describe('Modal', () => {
     expect(screen.getByText('actions')).toBeTruthy();
   });
 
-  async function dragGrabber(deltaY: number, holdMs = 250) {
-    const grabber = document.querySelector('[data-sheet-grabber]')?.parentElement as HTMLElement;
+  function getSheetTargets() {
+    const sheet = screen.getByRole('dialog') as HTMLElement;
+    const grabber = document.querySelector('[data-sheet-grabber]') as HTMLElement;
     // happy-dom does not implement setPointerCapture; stub it.
-    (grabber as unknown as { setPointerCapture: (id: number) => void }).setPointerCapture =
-      () => {};
+    (sheet as unknown as { setPointerCapture: (id: number) => void }).setPointerCapture = () => {};
+    return { sheet, grabber };
+  }
+
+  async function dragSheet(deltaY: number, holdMs = 250, fromTarget?: HTMLElement) {
+    const { sheet, grabber } = getSheetTargets();
+    const target = fromTarget ?? grabber;
     const fire = (type: string, clientY: number) =>
-      grabber.dispatchEvent(
+      target.dispatchEvent(
         new PointerEvent(type, { clientY, pointerType: 'touch', button: 0, bubbles: true })
       );
     fire('pointerdown', 0);
     fire('pointermove', deltaY);
     await new Promise((r) => setTimeout(r, holdMs));
     fire('pointerup', deltaY);
+    return { sheet };
   }
 
-  it('closes a bottom sheet when the grabber is dragged past the threshold', async () => {
+  it('closes a bottom sheet when dragged past the threshold from the header', async () => {
     let lastOpen: boolean | undefined;
     render(Modal, {
       props: {
@@ -84,11 +91,11 @@ describe('Modal', () => {
         children: text('x')
       }
     });
-    await dragGrabber(200);
+    await dragSheet(200);
     expect(lastOpen).toBe(false);
   });
 
-  it('keeps a bottom sheet open when the grabber is released below the threshold', async () => {
+  it('keeps a bottom sheet open when released below the threshold', async () => {
     let lastOpen: boolean | undefined;
     render(Modal, {
       props: {
@@ -100,11 +107,11 @@ describe('Modal', () => {
         children: text('x')
       }
     });
-    await dragGrabber(40);
+    await dragSheet(40);
     expect(lastOpen).toBeUndefined();
   });
 
-  it('does not close a bottom sheet on a bare tap (no drag) of the grabber', async () => {
+  it('does not close a bottom sheet on a bare tap (no drag) of the header', async () => {
     let lastOpen: boolean | undefined;
     render(Modal, {
       props: {
@@ -116,7 +123,7 @@ describe('Modal', () => {
         children: text('x')
       }
     });
-    await dragGrabber(0);
+    await dragSheet(0);
     expect(lastOpen).toBeUndefined();
   });
 
@@ -133,9 +140,7 @@ describe('Modal', () => {
       }
     });
 
-    const grabber = document.querySelector('[data-sheet-grabber]')?.parentElement as HTMLElement;
-    (grabber as unknown as { setPointerCapture: (id: number) => void }).setPointerCapture =
-      () => {};
+    const { grabber } = getSheetTargets();
     const fire = (type: string, clientY: number) =>
       grabber.dispatchEvent(
         new PointerEvent(type, { clientY, pointerType: 'touch', button: 0, bubbles: true })
@@ -145,6 +150,138 @@ describe('Modal', () => {
     fire('pointermove', 200);
     fire('pointercancel', 200);
 
+    expect(lastOpen).toBeUndefined();
+  });
+
+  it('scrolls the inner content downward when the press starts at scrollTop=0 and moves up', async () => {
+    let lastOpen: boolean | undefined;
+    const scrollSnippet = createRawSnippet(() => ({
+      render: () =>
+        `<div data-testid="scroll-area-top" style="overflow-y: auto; max-height: 100px;"><div style="height: 400px;">tall</div></div>`
+    }));
+    render(Modal, {
+      props: {
+        open: true,
+        side: 'bottom',
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: scrollSnippet
+      }
+    });
+    const area = document.querySelector('[data-testid="scroll-area-top"]') as HTMLElement;
+    let scrollTop = 0;
+    Object.defineProperty(area, 'scrollTop', {
+      configurable: true,
+      get: () => scrollTop,
+      set: (v: number) => {
+        scrollTop = Math.max(0, Math.min(300, v));
+      }
+    });
+    Object.defineProperty(area, 'scrollHeight', { configurable: true, value: 400 });
+    Object.defineProperty(area, 'clientHeight', { configurable: true, value: 100 });
+
+    const fire = (type: string, clientY: number) =>
+      area.dispatchEvent(
+        new PointerEvent(type, { clientY, pointerType: 'touch', button: 0, bubbles: true })
+      );
+    fire('pointerdown', 100);
+    fire('pointermove', 60); // finger moved up 40px → scroll DOWN 40px
+    await new Promise((r) => setTimeout(r, 250));
+    fire('pointerup', 60);
+
+    expect(scrollTop).toBe(40);
+    expect(lastOpen).toBeUndefined();
+  });
+
+  it('scrolls the inner content (does not dismiss) when the press starts on a scrolled-down area', async () => {
+    let lastOpen: boolean | undefined;
+    const scrollSnippet = createRawSnippet(() => ({
+      render: () =>
+        `<div data-testid="scroll-area" style="overflow-y: auto; max-height: 100px;"><div style="height: 400px;">tall</div></div>`
+    }));
+    render(Modal, {
+      props: {
+        open: true,
+        side: 'bottom',
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: scrollSnippet
+      }
+    });
+    const area = document.querySelector('[data-testid="scroll-area"]') as HTMLElement;
+    // happy-dom doesn't truly scroll. Back scrollTop with a getter/setter so
+    // the component's manual-scroll code can both read and write it.
+    let scrollTop = 50;
+    Object.defineProperty(area, 'scrollTop', {
+      configurable: true,
+      get: () => scrollTop,
+      set: (v: number) => {
+        scrollTop = Math.max(0, v);
+      }
+    });
+    Object.defineProperty(area, 'scrollHeight', { configurable: true, value: 400 });
+    Object.defineProperty(area, 'clientHeight', { configurable: true, value: 100 });
+
+    const fire = (type: string, clientY: number) =>
+      area.dispatchEvent(
+        new PointerEvent(type, { clientY, pointerType: 'touch', button: 0, bubbles: true })
+      );
+    fire('pointerdown', 0);
+    fire('pointermove', 30);
+    await new Promise((r) => setTimeout(r, 250));
+    fire('pointerup', 30);
+
+    // Dragging the finger down 30px should pull scrollTop down by 30 (from 50 to 20).
+    expect(scrollTop).toBe(20);
+    // The sheet itself should not have dismissed.
+    expect(lastOpen).toBeUndefined();
+  });
+
+  it('lets a tap on an interactive child element pass through without dragging', async () => {
+    let lastOpen: boolean | undefined;
+    const buttonSnippet = createRawSnippet(() => ({
+      render: () => `<button type="button" data-testid="inner-btn">Tap me</button>`
+    }));
+    render(Modal, {
+      props: {
+        open: true,
+        side: 'bottom',
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: buttonSnippet
+      }
+    });
+    const button = document.querySelector('[data-testid="inner-btn"]') as HTMLElement;
+    // Even a deliberate downward gesture starting on the button should not
+    // hijack the click into a dismiss.
+    button.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        clientY: 0,
+        pointerType: 'touch',
+        button: 0,
+        bubbles: true
+      })
+    );
+    button.dispatchEvent(
+      new PointerEvent('pointermove', {
+        clientY: 200,
+        pointerType: 'touch',
+        button: 0,
+        bubbles: true
+      })
+    );
+    button.dispatchEvent(
+      new PointerEvent('pointerup', {
+        clientY: 200,
+        pointerType: 'touch',
+        button: 0,
+        bubbles: true
+      })
+    );
+    await new Promise((r) => setTimeout(r, 0));
     expect(lastOpen).toBeUndefined();
   });
 });
