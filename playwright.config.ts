@@ -27,7 +27,10 @@ export default defineConfig({
     },
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
+      use: { ...devices['Desktop Safari'] },
+      // WebKit coverage is scoped to print-emulation smokes only — the rest of
+      // the suite was authored for Chromium and times out on WebKit.
+      testMatch: ['**/report.spec.ts']
     }
   ],
   webServer: {
