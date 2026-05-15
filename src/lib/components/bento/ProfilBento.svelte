@@ -35,7 +35,7 @@
       <ChildCardRow {child} href={localizedHref(`/child/${child.id}/settings`)} />
     {/each}
     <a
-      href={localizedHref('/account#add-child')}
+      href={localizedHref('/child/new')}
       class="flex items-center gap-2 rounded-tile border border-dashed border-border bg-canvas px-4 py-3 text-sm font-semibold text-ink-soft transition-transform duration-base ease-soft active:scale-[0.99]"
     >
       <Plus size={18} aria-hidden="true" />

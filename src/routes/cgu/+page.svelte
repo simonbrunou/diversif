@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BackHeader from '$components/ui/BackHeader.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import * as m from '$lib/paraglide/messages';
   import { page } from '$app/stores';
@@ -12,7 +13,8 @@
   noindex
 />
 
-<div class="mx-auto max-w-3xl px-6 py-10 text-ink sm:px-10">
+<div class="mx-auto max-w-3xl px-6 py-6 text-ink sm:px-10">
+  <BackHeader fallback="/" />
   {#if $page.url.pathname.startsWith('/en')}
     <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
       {m.commonFrOnlyBannerLegal()}

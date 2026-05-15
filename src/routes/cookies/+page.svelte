@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BackHeader from '$components/ui/BackHeader.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import * as m from '$lib/paraglide/messages';
 </script>
@@ -11,7 +12,8 @@
   alternateLocales={['en']}
 />
 
-<div class="mx-auto max-w-3xl px-6 py-10 text-ink sm:px-10">
+<div class="mx-auto max-w-3xl px-6 py-6 text-ink sm:px-10">
+  <BackHeader fallback="/" />
   <header class="space-y-2">
     <h1 class="font-display text-3xl italic">{m.legalCookiesTitle()}</h1>
     <p class="text-sm leading-relaxed">{m.legalCookiesUpdated()}</p>

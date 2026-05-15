@@ -1,5 +1,6 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
+  "chromeBack": "Retour",
   "chromeBottomNavLabel": "Navigation principale",
   "chromeLateralNavLabel": "Navigation latérale",
   "chromeLocaleSwitcherLabel": "Choix de la langue",
@@ -279,6 +280,8 @@
   "profilCompteThemeValueLight": "Clair",
   "profilCompteThemeValueDark": "Sombre",
   "profilComptePassword": "Mot de passe",
+  "profilCompteProfile": "Profil",
+  "profilCompteSessions": "Sessions",
   "profilRgpdTitle": "Vos données (RGPD)",
   "profilRgpdExport": "Exporter mes données",
   "profilRgpdDelete": "Supprimer mon compte",
