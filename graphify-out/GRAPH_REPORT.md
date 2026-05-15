@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-15)
 
 ## Corpus Check
-- 370 files · ~493,450 words
+- 370 files · ~493,489 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `86a953cd`
+- Built from commit: `fae9c08f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -122,12 +122,12 @@ Cohesion: 0.24
 Nodes (11): dismissReminder(), loadAnalyticsBuckets(), loadCoparentActivity(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadRepeatCandidates(), loadStreak() (+3 more)
 
 ### Community 13 - "UI Component Library"
-Cohesion: 0.2
-Nodes (9): findActiveInvitation(), load(), userHasMembership(), load(), load(), findUserByEmail(), requireGuest(), localizedRedirect() (+1 more)
-
-### Community 14 - "Account Export / Delete"
 Cohesion: 0.18
 Nodes (7): applySeedCorrections(), seedFoods(), drainPool(), registerShutdownHandlers(), _resetShutdownState(), makeHarness(), makeProc()
+
+### Community 14 - "Account Export / Delete"
+Cohesion: 0.2
+Nodes (8): findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), load(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
 
 ### Community 15 - "DB Init, Backup & Seed"
 Cohesion: 0.21
@@ -150,12 +150,12 @@ Cohesion: 0.27
 Nodes (6): getAllStagesForBento(), getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), load(), chooseSuggestedFoods()
 
 ### Community 20 - "SEO Source-of-Truth Config"
-Cohesion: 0.22
-Nodes (4): logHref(), getAllergenLabel(), celebrate(), pickMilestoneFromQuery()
+Cohesion: 0.26
+Nodes (6): load(), load(), findUserByEmail(), requireGuest(), localizedRedirect(), load()
 
 ### Community 21 - "Diversification Guidance & Stages"
-Cohesion: 0.25
-Nodes (5): isUniqueViolation(), load(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
+Cohesion: 0.22
+Nodes (4): logHref(), getAllergenLabel(), celebrate(), pickMilestoneFromQuery()
 
 ### Community 22 - "UI Primitives & LEAP/EAT Cards"
 Cohesion: 0.35

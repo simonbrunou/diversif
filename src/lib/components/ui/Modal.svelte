@@ -216,6 +216,16 @@
     activePointerId = e.pointerId;
     dismissingFromDrag = false;
 
+    // Capture immediately so we still receive pointermove/up if the user
+    // drags or releases outside the sheet bounds (without this, a mouse
+    // press released off-sheet before the 8px threshold would never
+    // deliver pointerup, leaving gestureMode stuck on 'pending').
+    try {
+      root.setPointerCapture(e.pointerId);
+    } catch {
+      /* happy-dom and some environments throw — ignore */
+    }
+
     const isTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
     const scrollable = findScrollable(target, root);
     activeScrollable = scrollable;
@@ -266,11 +276,6 @@
       if (dy >= DRAG_TRIGGER_PX) {
         gestureMode = 'drag';
         dragging = true;
-        try {
-          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-        } catch {
-          /* happy-dom and some environments throw — ignore */
-        }
       } else if (dy <= -DRAG_TRIGGER_PX) {
         // Upward movement before drag was committed: not our gesture.
         resetGesture();

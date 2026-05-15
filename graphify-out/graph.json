@@ -1354,6 +1354,51 @@
       "norm_label": "linkrow.test.ts"
     },
     {
+      "label": "Modal.test.ts",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L1",
+      "id": "src_lib_components_ui_modal_test_ts",
+      "community": 8,
+      "norm_label": "modal.test.ts"
+    },
+    {
+      "label": "text()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L15",
+      "id": "ui_modal_test_text",
+      "community": 8,
+      "norm_label": "text()"
+    },
+    {
+      "label": "getSheetTargets()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L60",
+      "id": "ui_modal_test_getsheettargets",
+      "community": 8,
+      "norm_label": "getsheettargets()"
+    },
+    {
+      "label": "dragSheet()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L68",
+      "id": "ui_modal_test_dragsheet",
+      "community": 8,
+      "norm_label": "dragsheet()"
+    },
+    {
+      "label": "fire()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L144",
+      "id": "ui_modal_test_fire",
+      "community": 8,
+      "norm_label": "fire()"
+    },
+    {
       "label": "Modal.svelte",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
@@ -1411,7 +1456,7 @@
       "label": "onSheetPointerMove()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L234",
+      "source_location": "L244",
       "id": "ui_modal_onsheetpointermove",
       "community": 8,
       "norm_label": "onsheetpointermove()"
@@ -1420,7 +1465,7 @@
       "label": "onSheetPointerUp()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L288",
+      "source_location": "L293",
       "id": "ui_modal_onsheetpointerup",
       "community": 8,
       "norm_label": "onsheetpointerup()"
@@ -1429,55 +1474,10 @@
       "label": "onSheetPointerCancel()",
       "file_type": "code",
       "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L330",
+      "source_location": "L335",
       "id": "ui_modal_onsheetpointercancel",
       "community": 8,
       "norm_label": "onsheetpointercancel()"
-    },
-    {
-      "label": "Modal.test.ts",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L1",
-      "id": "src_lib_components_ui_modal_test_ts",
-      "community": 8,
-      "norm_label": "modal.test.ts"
-    },
-    {
-      "label": "text()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L15",
-      "id": "ui_modal_test_text",
-      "community": 8,
-      "norm_label": "text()"
-    },
-    {
-      "label": "getSheetTargets()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L60",
-      "id": "ui_modal_test_getsheettargets",
-      "community": 8,
-      "norm_label": "getsheettargets()"
-    },
-    {
-      "label": "dragSheet()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L68",
-      "id": "ui_modal_test_dragsheet",
-      "community": 8,
-      "norm_label": "dragsheet()"
-    },
-    {
-      "label": "fire()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L144",
-      "id": "ui_modal_test_fire",
-      "community": 8,
-      "norm_label": "fire()"
     },
     {
       "label": "AllergensSnapshot.test.ts",
@@ -2412,7 +2412,7 @@
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L19",
       "id": "server_guards_requireguest",
-      "community": 13,
+      "community": 20,
       "norm_label": "requireguest()"
     },
     {
@@ -2439,7 +2439,7 @@
       "source_file": "src/lib/server/redirect.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_redirect_test_ts",
-      "community": 13,
+      "community": 20,
       "norm_label": "redirect.test.ts"
     },
     {
@@ -2448,7 +2448,7 @@
       "source_file": "src/lib/server/redirect.test.ts",
       "source_location": "L4",
       "id": "server_redirect_test_captureredirect",
-      "community": 13,
+      "community": 20,
       "norm_label": "captureredirect()"
     },
     {
@@ -2457,7 +2457,7 @@
       "source_file": "src/lib/server/redirect.ts",
       "source_location": "L1",
       "id": "src_lib_server_redirect_ts",
-      "community": 13,
+      "community": 20,
       "norm_label": "redirect.ts"
     },
     {
@@ -2466,7 +2466,7 @@
       "source_file": "src/lib/server/redirect.ts",
       "source_location": "L17",
       "id": "server_redirect_localizedredirect",
-      "community": 13,
+      "community": 20,
       "norm_label": "localizedredirect()"
     },
     {
@@ -2475,7 +2475,7 @@
       "source_file": "src/lib/server/auth.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_auth_test_ts",
-      "community": 21,
+      "community": 14,
       "norm_label": "auth.test.ts"
     },
     {
@@ -2619,7 +2619,7 @@
       "source_file": "src/lib/server/auth.ts",
       "source_location": "L150",
       "id": "server_auth_finduserbyemail",
-      "community": 13,
+      "community": 20,
       "norm_label": "finduserbyemail()"
     },
     {
@@ -2727,7 +2727,7 @@
       "source_file": "src/lib/server/invitations.ts",
       "source_location": "L1",
       "id": "src_lib_server_invitations_ts",
-      "community": 21,
+      "community": 14,
       "norm_label": "invitations.ts"
     },
     {
@@ -2736,7 +2736,7 @@
       "source_file": "src/lib/server/invitations.ts",
       "source_location": "L8",
       "id": "server_invitations_createinvitationforchild",
-      "community": 21,
+      "community": 14,
       "norm_label": "createinvitationforchild()"
     },
     {
@@ -3033,7 +3033,7 @@
       "source_file": "src/lib/server/shutdown.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_shutdown_test_ts",
-      "community": 14,
+      "community": 13,
       "norm_label": "shutdown.test.ts"
     },
     {
@@ -3042,7 +3042,7 @@
       "source_file": "src/lib/server/shutdown.test.ts",
       "source_location": "L35",
       "id": "server_shutdown_test_makeproc",
-      "community": 14,
+      "community": 13,
       "norm_label": "makeproc()"
     },
     {
@@ -3051,7 +3051,7 @@
       "source_file": "src/lib/server/shutdown.test.ts",
       "source_location": "L40",
       "id": "server_shutdown_test_makeharness",
-      "community": 14,
+      "community": 13,
       "norm_label": "makeharness()"
     },
     {
@@ -3060,7 +3060,7 @@
       "source_file": "src/lib/server/shutdown.test.ts",
       "source_location": "L127",
       "id": "server_shutdown_test_releasedrain",
-      "community": 14,
+      "community": 13,
       "norm_label": "releasedrain()"
     },
     {
@@ -3069,7 +3069,7 @@
       "source_file": "src/lib/server/shutdown.ts",
       "source_location": "L1",
       "id": "src_lib_server_shutdown_ts",
-      "community": 14,
+      "community": 13,
       "norm_label": "shutdown.ts"
     },
     {
@@ -3078,7 +3078,7 @@
       "source_file": "src/lib/server/shutdown.ts",
       "source_location": "L34",
       "id": "server_shutdown_drainpool",
-      "community": 14,
+      "community": 13,
       "norm_label": "drainpool()"
     },
     {
@@ -3087,7 +3087,7 @@
       "source_file": "src/lib/server/shutdown.ts",
       "source_location": "L57",
       "id": "server_shutdown_registershutdownhandlers",
-      "community": 14,
+      "community": 13,
       "norm_label": "registershutdownhandlers()"
     },
     {
@@ -3096,7 +3096,7 @@
       "source_file": "src/lib/server/shutdown.ts",
       "source_location": "L89",
       "id": "server_shutdown_resetshutdownstate",
-      "community": 14,
+      "community": 13,
       "norm_label": "_resetshutdownstate()"
     },
     {
@@ -3240,7 +3240,7 @@
       "source_file": "src/lib/server/db/errors.ts",
       "source_location": "L1",
       "id": "src_lib_server_db_errors_ts",
-      "community": 21,
+      "community": 14,
       "norm_label": "errors.ts"
     },
     {
@@ -3249,7 +3249,7 @@
       "source_file": "src/lib/server/db/errors.ts",
       "source_location": "L4",
       "id": "db_errors_isuniqueviolation",
-      "community": 21,
+      "community": 14,
       "norm_label": "isuniqueviolation()"
     },
     {
@@ -3258,7 +3258,7 @@
       "source_file": "src/lib/server/db/seed.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_db_seed_test_ts",
-      "community": 14,
+      "community": 13,
       "norm_label": "seed.test.ts"
     },
     {
@@ -3276,7 +3276,7 @@
       "source_file": "src/lib/server/db/index.ts",
       "source_location": "L1",
       "id": "src_lib_server_db_index_ts",
-      "community": 14,
+      "community": 13,
       "norm_label": "index.ts"
     },
     {
@@ -3285,7 +3285,7 @@
       "source_file": "src/lib/server/db/index.ts",
       "source_location": "L18",
       "id": "db_index_resolvedatabaseurl",
-      "community": 14,
+      "community": 13,
       "norm_label": "resolvedatabaseurl()"
     },
     {
@@ -3294,7 +3294,7 @@
       "source_file": "src/lib/server/db/index.ts",
       "source_location": "L26",
       "id": "db_index_resolvepoolmax",
-      "community": 14,
+      "community": 13,
       "norm_label": "resolvepoolmax()"
     },
     {
@@ -3312,7 +3312,7 @@
       "source_file": "src/lib/server/db/seed.ts",
       "source_location": "L1",
       "id": "src_lib_server_db_seed_ts",
-      "community": 14,
+      "community": 13,
       "norm_label": "seed.ts"
     },
     {
@@ -3321,7 +3321,7 @@
       "source_file": "src/lib/server/db/seed.ts",
       "source_location": "L146",
       "id": "db_seed_seedfoods",
-      "community": 14,
+      "community": 13,
       "norm_label": "seedfoods()"
     },
     {
@@ -3330,7 +3330,7 @@
       "source_file": "src/lib/server/db/seed.ts",
       "source_location": "L187",
       "id": "db_seed_applyseedcorrections",
-      "community": 14,
+      "community": 13,
       "norm_label": "applyseedcorrections()"
     },
     {
@@ -3681,7 +3681,7 @@
       "source_file": "src/lib/utils/invites.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_invites_test_ts",
-      "community": 21,
+      "community": 14,
       "norm_label": "invites.test.ts"
     },
     {
@@ -3690,7 +3690,7 @@
       "source_file": "src/lib/utils/invites.ts",
       "source_location": "L1",
       "id": "src_lib_utils_invites_ts",
-      "community": 21,
+      "community": 14,
       "norm_label": "invites.ts"
     },
     {
@@ -3699,7 +3699,7 @@
       "source_file": "src/lib/utils/invites.ts",
       "source_location": "L15",
       "id": "utils_invites_generateinvitecoderaw",
-      "community": 21,
+      "community": 14,
       "norm_label": "generateinvitecoderaw()"
     },
     {
@@ -3708,7 +3708,7 @@
       "source_file": "src/lib/utils/invites.ts",
       "source_location": "L24",
       "id": "utils_invites_isvalidinvitecodeformat",
-      "community": 21,
+      "community": 14,
       "norm_label": "isvalidinvitecodeformat()"
     },
     {
@@ -3807,7 +3807,7 @@
       "source_file": "src/lib/utils/milestones.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_milestones_test_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "milestones.test.ts"
     },
     {
@@ -3816,7 +3816,7 @@
       "source_file": "src/lib/utils/milestones.test.ts",
       "source_location": "L4",
       "id": "utils_milestones_test_faketoast",
-      "community": 20,
+      "community": 21,
       "norm_label": "faketoast()"
     },
     {
@@ -3825,7 +3825,7 @@
       "source_file": "src/lib/utils/milestones.test.ts",
       "source_location": "L12",
       "id": "utils_milestones_test_qs",
-      "community": 20,
+      "community": 21,
       "norm_label": "qs()"
     },
     {
@@ -3933,7 +3933,7 @@
       "source_file": "src/lib/utils/allergens.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_allergens_test_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "allergens.test.ts"
     },
     {
@@ -3942,7 +3942,7 @@
       "source_file": "src/lib/utils/allergens.ts",
       "source_location": "L1",
       "id": "src_lib_utils_allergens_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "allergens.ts"
     },
     {
@@ -3951,7 +3951,7 @@
       "source_file": "src/lib/utils/allergens.ts",
       "source_location": "L58",
       "id": "utils_allergens_getallergenlabel",
-      "community": 20,
+      "community": 21,
       "norm_label": "getallergenlabel()"
     },
     {
@@ -4005,7 +4005,7 @@
       "source_file": "src/lib/utils/milestones.ts",
       "source_location": "L1",
       "id": "src_lib_utils_milestones_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "milestones.ts"
     },
     {
@@ -4014,7 +4014,7 @@
       "source_file": "src/lib/utils/milestones.ts",
       "source_location": "L20",
       "id": "utils_milestones_pickmilestonefromquery",
-      "community": 20,
+      "community": 21,
       "norm_label": "pickmilestonefromquery()"
     },
     {
@@ -4023,7 +4023,7 @@
       "source_file": "src/lib/utils/milestones.ts",
       "source_location": "L45",
       "id": "utils_milestones_celebrate",
-      "community": 20,
+      "community": 21,
       "norm_label": "celebrate()"
     },
     {
@@ -14877,7 +14877,7 @@
       "source_file": "src/routes/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_page_server_ts",
-      "community": 13,
+      "community": 20,
       "norm_label": "+page.server.ts"
     },
     {
@@ -14886,7 +14886,7 @@
       "source_file": "src/routes/+page.server.ts",
       "source_location": "L4",
       "id": "routes_page_server_load",
-      "community": 13,
+      "community": 20,
       "norm_label": "load()"
     },
     {
@@ -15651,7 +15651,7 @@
       "source_file": "src/routes/child/[id]/suggestions/+page.svelte",
       "source_location": "L1",
       "id": "src_routes_child_id_suggestions_page_svelte",
-      "community": 20,
+      "community": 21,
       "norm_label": "+page.svelte"
     },
     {
@@ -15660,7 +15660,7 @@
       "source_file": "src/routes/child/[id]/suggestions/+page.svelte",
       "source_location": "L72",
       "id": "suggestions_page_loghref",
-      "community": 20,
+      "community": 21,
       "norm_label": "loghref()"
     },
     {
@@ -15786,7 +15786,7 @@
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_new_page_server_ts",
-      "community": 21,
+      "community": 14,
       "norm_label": "+page.server.ts"
     },
     {
@@ -15795,7 +15795,7 @@
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L16",
       "id": "new_page_server_load",
-      "community": 21,
+      "community": 14,
       "norm_label": "load()"
     },
     {
@@ -15876,7 +15876,7 @@
       "source_file": "src/routes/join/[code]/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_join_code_page_server_ts",
-      "community": 13,
+      "community": 14,
       "norm_label": "+page.server.ts"
     },
     {
@@ -15885,7 +15885,7 @@
       "source_file": "src/routes/join/[code]/+page.server.ts",
       "source_location": "L15",
       "id": "code_page_server_findactiveinvitation",
-      "community": 13,
+      "community": 14,
       "norm_label": "findactiveinvitation()"
     },
     {
@@ -15894,7 +15894,7 @@
       "source_file": "src/routes/join/[code]/+page.server.ts",
       "source_location": "L37",
       "id": "code_page_server_userhasmembership",
-      "community": 13,
+      "community": 14,
       "norm_label": "userhasmembership()"
     },
     {
@@ -15903,7 +15903,7 @@
       "source_file": "src/routes/join/[code]/+page.server.ts",
       "source_location": "L53",
       "id": "code_page_server_load",
-      "community": 13,
+      "community": 14,
       "norm_label": "load()"
     },
     {
@@ -15939,7 +15939,7 @@
       "source_file": "src/routes/login/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_login_page_server_ts",
-      "community": 13,
+      "community": 20,
       "norm_label": "+page.server.ts"
     },
     {
@@ -15948,7 +15948,7 @@
       "source_file": "src/routes/login/+page.server.ts",
       "source_location": "L25",
       "id": "login_page_server_load",
-      "community": 13,
+      "community": 20,
       "norm_label": "load()"
     },
     {
@@ -16209,7 +16209,7 @@
       "source_file": "src/routes/signup/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_signup_page_server_ts",
-      "community": 13,
+      "community": 20,
       "norm_label": "+page.server.ts"
     },
     {
@@ -16218,7 +16218,7 @@
       "source_file": "src/routes/signup/+page.server.ts",
       "source_location": "L55",
       "id": "signup_page_server_load",
-      "community": 13,
+      "community": 20,
       "norm_label": "load()"
     },
     {
@@ -18977,6 +18977,79 @@
       "target": "test_component_textsnippet"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "src_lib_components_ui_modal_svelte"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_text"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_getsheettargets"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_dragsheet"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L180",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_fire"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ui_modal_test_dragsheet",
+      "target": "ui_modal_test_getsheettargets"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ui_modal_test_dragsheet",
+      "target": "ui_modal_test_fire"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -19068,17 +19141,6 @@
       "target": "ui_modal_onsheetpointercancel"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "src_lib_components_ui_modal_svelte"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -19143,68 +19205,6 @@
       "confidence_score": 1.0,
       "source": "ui_modal_onsheetpointerdown",
       "target": "ui_modal_findscrollable"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_text"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L60",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_getsheettargets"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L68",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_dragsheet"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L180",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_fire"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L69",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "ui_modal_test_dragsheet",
-      "target": "ui_modal_test_getsheettargets"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L75",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "ui_modal_test_dragsheet",
-      "target": "ui_modal_test_fire"
     },
     {
       "relation": "imports_from",
@@ -46291,5 +46291,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "86a953cdca8a64c042d344cffc3da037e3e50d86"
+  "built_at_commit": "fae9c08f251471973a6e5934e0edc9515afcfa63"
 }
