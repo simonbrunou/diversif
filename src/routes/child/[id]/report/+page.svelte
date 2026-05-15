@@ -52,7 +52,7 @@
     </a>
     <Button variant="outline" onclick={printPage}>
       <Printer size={16} aria-hidden="true" />
-      Imprimer / Enregistrer en PDF
+      {m.reportPrintButton()}
     </Button>
   </div>
 
