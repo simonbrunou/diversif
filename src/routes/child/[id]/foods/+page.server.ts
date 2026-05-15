@@ -184,6 +184,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
         bentoFoods: [],
         foodCount: 0,
         categoryCount: 0,
+        texturesTried: 0,
         bentoAllergens,
         weeklyEntries
       };
@@ -258,10 +259,17 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const foodCount = bentoFoods.length;
   const categoryCount = new Set(bentoFoods.map((f) => f.category)).size;
 
-  const [bentoAllergens, weeklyEntries] = await Promise.all([
+  const [bentoAllergens, weeklyEntries, texturesTriedRes] = await Promise.all([
     loadBentoAllergens(childId),
-    loadWeeklyEntries(childId)
+    loadWeeklyEntries(childId),
+    db
+      .select({ n: sql<number>`count(distinct ${foodEntries.texture})::int` })
+      .from(foodEntries)
+      .where(and(eq(foodEntries.childId, childId), sql`${foodEntries.texture} IS NOT NULL`))
+      .limit(1)
   ]);
+  /* v8 ignore next : COUNT() always returns a row */
+  const texturesTried = texturesTriedRes[0]?.n ?? 0;
 
   return {
     entries: rows.map((r) => ({
@@ -274,6 +282,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     bentoFoods,
     foodCount,
     categoryCount,
+    texturesTried,
     bentoAllergens,
     weeklyEntries
   };

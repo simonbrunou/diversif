@@ -51,6 +51,7 @@ export type DiversityMetrics = {
   totalCategories: number;
   lastNewFoodAt: number | null;
   repeatExposureCount: number;
+  texturesTried: number;
 };
 
 export async function loadDiversityMetrics(
@@ -107,11 +108,21 @@ export async function loadDiversityMetrics(
   );
   const repeatExposureCount = repeatRes.rows.length;
 
+  const texturesRes = await db.execute<{ count: string }>(
+    sql`SELECT COUNT(DISTINCT ${foodEntries.texture})::text as count
+        FROM ${foodEntries}
+        WHERE ${foodEntries.childId} = ${childId}
+          AND ${foodEntries.texture} IS NOT NULL`
+  );
+  /* v8 ignore next : pg COUNT(*) always returns a single row */
+  const texturesTried = Number(texturesRes.rows[0]?.count ?? 0);
+
   return {
     categoriesCovered: distinctCategories,
     totalCategories,
     lastNewFoodAt,
-    repeatExposureCount
+    repeatExposureCount,
+    texturesTried
   };
 }
 

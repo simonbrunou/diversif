@@ -240,6 +240,7 @@
   "carnetStatsLast7Days": "Last 7 days",
   "carnetStatsLogsOne": "1 log",
   "carnetStatsLogsOther": "{count} logs",
+  "carnetStatsTextures": "Textures explored",
   "decouvrirStagesTitle": "Stages",
   "decouvrirStageActiveAria": "Current stage",
   "decouvrirStageOpenAria": "Open this stage's guide",

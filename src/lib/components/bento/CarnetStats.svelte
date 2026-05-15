@@ -6,11 +6,13 @@
   let {
     diversityScore,
     distinctFoods,
+    texturesTried,
     weeklyEntries,
     anchorUtc
   }: {
     diversityScore: number;
     distinctFoods: number;
+    texturesTried: number;
     weeklyEntries: number[];
     anchorUtc?: number;
   } = $props();
@@ -47,7 +49,7 @@
 </script>
 
 <div class="flex flex-col gap-3">
-  <div class="grid grid-cols-2 gap-3">
+  <div class="grid grid-cols-3 gap-3">
     <Card as="article" variant="tile-mint" class="p-4" aria-label={m.carnetStatsDiversity()}>
       <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsDiversity()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{diversityScore}</p>
@@ -55,6 +57,10 @@
     <Card as="article" variant="tile-butter" class="p-4" aria-label={m.carnetStatsFoods()}>
       <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsFoods()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{distinctFoods}</p>
+    </Card>
+    <Card as="article" variant="tile-sky" class="p-4" aria-label={m.carnetStatsTextures()}>
+      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsTextures()}</p>
+      <p class="mt-1 font-display text-3xl italic leading-none">{texturesTried}<span class="text-base">/6</span></p>
     </Card>
   </div>
   {#if weeklyEntries.length > 0}

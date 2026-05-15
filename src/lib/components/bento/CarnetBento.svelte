@@ -45,6 +45,7 @@
       diversityScore: number;
       distinctFoods: number;
       weeklyEntries: { counts: number[]; anchorUtc: number };
+      texturesTried?: number;
     };
     currentSegment: Segment;
   } = $props();
@@ -65,6 +66,7 @@
       distinctFoods={stats.distinctFoods}
       weeklyEntries={stats.weeklyEntries.counts}
       anchorUtc={stats.weeklyEntries.anchorUtc}
+      texturesTried={stats.texturesTried ?? 0}
     />
   {/if}
 </div>
