@@ -342,6 +342,13 @@
     <DialogPrimitive.Content
       class={cn(
         'fixed z-50 grid w-full gap-4 border border-border bg-surface p-5 shadow-lifted duration-slow ease-spring data-[state=closed]:animate-out data-[state=open]:animate-in',
+        // touch-pan-y restricts the browser's own handling of vertical touch
+        // panning to this element only, preventing iOS Safari from claiming
+        // the gesture and firing pointercancel mid-drag (which would
+        // otherwise snap the sheet back instead of dismissing it). Inner
+        // scrollable areas keep their default touch-action so they can
+        // still scroll natively.
+        side === 'bottom' && 'touch-pan-y',
         sideClasses[side],
         className
       )}
