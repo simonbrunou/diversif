@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { asc, eq } from 'drizzle-orm';
-import { ALLERGENS } from '$lib/utils/allergens';
+import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import type { PageServerLoad } from './$types';
@@ -31,6 +31,7 @@ export type ReportFood = {
 export type AllergenReportRow = {
   id: string;
   label: string;
+  isPriority: boolean;
   status: 'introduced' | 'untested';
   worst: ReactionId | null;
   exposures: number;
@@ -136,10 +137,12 @@ export const load: PageServerLoad = async ({ parent }) => {
 
   const allergens: AllergenReportRow[] = ALLERGENS.map((a) => {
     const agg = allergenAggMap.get(a.id);
+    const isPriority = (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(a.id);
     if (!agg) {
       return {
         id: a.id,
         label: a.label,
+        isPriority,
         status: 'untested' as const,
         worst: null,
         exposures: 0,
@@ -150,12 +153,16 @@ export const load: PageServerLoad = async ({ parent }) => {
     return {
       id: a.id,
       label: a.label,
+      isPriority,
       status: 'introduced' as const,
       worst: agg.worst,
       exposures: agg.exposures,
       firstGivenAt: agg.first,
       lastGivenAt: agg.last
     };
+  }).sort((x, y) => {
+    if (x.isPriority !== y.isPriority) return x.isPriority ? -1 : 1;
+    return x.label.localeCompare(y.label, 'fr');
   });
 
   // Notable reactions for the timeline section: every inconfort/réaction

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { makeRouteEvent, seedChild, seedUser } from '../../../../test/route';
+import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
@@ -213,5 +214,53 @@ describe('child/[id]/report load', () => {
 
     const lait = data.allergens.find((a) => a.id === 'lait');
     expect(lait).toMatchObject({ status: 'untested', worst: null, exposures: 0 });
+  });
+
+  it('orders allergens priority-first, then non-priority, alphabetical within each group', async () => {
+    const { c } = await setup();
+    const event = makeRouteEvent({
+      parent: async () => ({ child: c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    const priorityIds = new Set(PRIORITY_INTRODUCTION_ALLERGENS);
+    // Every priority allergen comes before any non-priority allergen.
+    const firstNonPriority = data.allergens.findIndex((a) => !priorityIds.has(a.id));
+    if (firstNonPriority === -1) {
+      // No non-priority allergens — vacuously ordered. Still check priority order.
+    } else {
+      for (let i = 0; i < firstNonPriority; i++) {
+        expect(priorityIds.has(data.allergens[i].id)).toBe(true);
+      }
+      for (let i = firstNonPriority; i < data.allergens.length; i++) {
+        expect(priorityIds.has(data.allergens[i].id)).toBe(false);
+      }
+    }
+    // Within the priority group, check alphabetical (fr) order.
+    const priorityRows = data.allergens.filter((a) => priorityIds.has(a.id));
+    for (let i = 1; i < priorityRows.length; i++) {
+      expect(
+        priorityRows[i - 1].label.localeCompare(priorityRows[i].label, 'fr')
+      ).toBeLessThanOrEqual(0);
+    }
+    // Within the non-priority group, check alphabetical (fr) order.
+    const nonPriorityRows = data.allergens.filter((a) => !priorityIds.has(a.id));
+    for (let i = 1; i < nonPriorityRows.length; i++) {
+      expect(
+        nonPriorityRows[i - 1].label.localeCompare(nonPriorityRows[i].label, 'fr')
+      ).toBeLessThanOrEqual(0);
+    }
+  });
+
+  it('flags isPriority on every allergen row', async () => {
+    const { c } = await setup();
+    const event = makeRouteEvent({
+      parent: async () => ({ child: c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    for (const row of data.allergens) {
+      expect(row.isPriority).toBe(
+        (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(row.id)
+      );
+    }
   });
 });
