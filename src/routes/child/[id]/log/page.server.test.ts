@@ -680,4 +680,23 @@ describe('child/[id]/log texture field', () => {
     )) as { status: number };
     expect(result).toMatchObject({ status: 400 });
   });
+
+  it('rejects an empty texture value with 400', async () => {
+    const { u, c, m, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: new Date().toISOString(),
+        reaction: 'ras',
+        texture: ''
+      }
+    });
+    const result = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number };
+    expect(result).toMatchObject({ status: 400 });
+  });
 });

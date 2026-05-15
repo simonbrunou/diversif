@@ -12,6 +12,7 @@ import {
   uniqueIndex
 } from 'drizzle-orm/pg-core';
 import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
+import { TEXTURE_VALUES } from '$lib/utils/textures';
 
 export const users = pgTable(
   'users',
@@ -135,9 +136,7 @@ export const foodEntries = pgTable(
       .references(() => foods.id, { onDelete: 'restrict' }),
     givenAt: timestamp('given_at', { withTimezone: true, mode: 'date' }).notNull(),
     reaction: text('reaction', { enum: ['ras', 'inconfort', 'reaction'] }).notNull(),
-    texture: text('texture', {
-      enum: ['lisse', 'moulinee', 'ecrasee', 'petits-morceaux', 'morceaux', 'finger']
-    }),
+    texture: text('texture', { enum: TEXTURE_VALUES }),
     notes: text('notes'),
     loggedBy: integer('logged_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
