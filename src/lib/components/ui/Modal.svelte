@@ -245,6 +245,12 @@
 
     const dy = e.clientY - startY;
 
+    // Claim the pointer eagerly (before the 8px commit) so the browser
+    // can't reclassify our downward drag as a native pan and dispatch
+    // pointercancel — which would route through onSheetPointerCancel
+    // and snap the sheet back instead of dismissing.
+    if (e.cancelable) e.preventDefault();
+
     if (gestureMode === 'pending') {
       if (dy >= DRAG_TRIGGER_PX) {
         gestureMode = 'drag';
@@ -265,8 +271,6 @@
 
     if (gestureMode === 'drag') {
       dragY = Math.max(0, dy);
-      // Stop iOS Safari from rubber-banding the viewport during our drag.
-      if (e.cancelable) e.preventDefault();
     }
   }
 
