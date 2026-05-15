@@ -119,4 +119,32 @@ describe('Modal', () => {
     await dragGrabber(0);
     expect(lastOpen).toBeUndefined();
   });
+
+  it('does not dismiss when the drag is cancelled past the threshold (system interrupt)', () => {
+    let lastOpen: boolean | undefined;
+    render(Modal, {
+      props: {
+        open: true,
+        side: 'bottom',
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: text('x')
+      }
+    });
+
+    const grabber = document.querySelector('[data-sheet-grabber]')?.parentElement as HTMLElement;
+    (grabber as unknown as { setPointerCapture: (id: number) => void }).setPointerCapture =
+      () => {};
+    const fire = (type: string, clientY: number) =>
+      grabber.dispatchEvent(
+        new PointerEvent(type, { clientY, pointerType: 'touch', button: 0, bubbles: true })
+      );
+
+    fire('pointerdown', 0);
+    fire('pointermove', 200);
+    fire('pointercancel', 200);
+
+    expect(lastOpen).toBeUndefined();
+  });
 });

@@ -128,6 +128,21 @@
     dragY = Math.max(0, e.clientY - startY);
   }
 
+  function onGrabberPointerCancel() {
+    // A system gesture interrupted the drag (notch swipe, app backgrounding,
+    // etc.). The user did not deliberately complete the swipe, so snap back
+    // even if the drag had already crossed the dismiss threshold.
+    if (!dragging) return;
+    dragging = false;
+    if (dragY === 0) return;
+    dragY = 0;
+    releasing = true;
+    releaseTimer = setTimeout(() => {
+      releaseTimer = null;
+      releasing = false;
+    }, SNAP_RESET_MS);
+  }
+
   function onGrabberPointerUp(e: PointerEvent) {
     if (!dragging) return;
     const delta = e.clientY - startY;
@@ -168,7 +183,7 @@
 <DialogPrimitive.Root bind:open onOpenChange={handleOpenChange}>
   <DialogPrimitive.Portal>
     <DialogPrimitive.Overlay
-      class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=open]:animate-in"
+      class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm duration-slow data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=open]:animate-in"
     />
     <DialogPrimitive.Content
       class={cn(
@@ -185,7 +200,7 @@
           onpointerdown={onGrabberPointerDown}
           onpointermove={onGrabberPointerMove}
           onpointerup={onGrabberPointerUp}
-          onpointercancel={onGrabberPointerUp}
+          onpointercancel={onGrabberPointerCancel}
         >
           <span data-sheet-grabber class="h-1 w-9 rounded-full bg-border"></span>
         </div>
