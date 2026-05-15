@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { makeRouteEvent, seedChild, seedUser } from '../../../../test/route';
+import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
@@ -11,10 +12,39 @@ beforeEach(async () => {
   await resetTestDb();
 });
 
-async function setup() {
+async function setup(opts: { ageMonths?: number } = {}) {
   const u = await seedUser();
-  const c = await seedChild({ createdBy: u.id });
-  return { u, c };
+  let birthDate = '2024-01-01';
+  if (opts.ageMonths != null) {
+    const now = new Date();
+    const birth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - opts.ageMonths, now.getUTCDate())
+    );
+    birthDate = birth.toISOString().slice(0, 10);
+  }
+  const c = await seedChild({ createdBy: u.id, birthDate });
+  // Provide childId and foodId helpers for test convenience
+  const food = await testDb
+    .insert(foods)
+    .values({
+      name: '_setup_food',
+      category: 'legumes',
+      isMajorAllergen: false,
+      allergenType: null,
+      suggestedAgeMonths: 6,
+      notes: null,
+      isCustom: false,
+      customForChildId: null
+    })
+    .returning();
+  return {
+    u,
+    c,
+    childId: c.id,
+    foodId: food[0].id,
+    testDb,
+    locals: { user: u, memberships: [], sessionId: 'sess-id', locale: 'fr' as const }
+  };
 }
 
 async function seedFood(name: string, category: string, allergen: string | null = null) {
@@ -213,5 +243,232 @@ describe('child/[id]/report load', () => {
 
     const lait = data.allergens.find((a) => a.id === 'lait');
     expect(lait).toMatchObject({ status: 'untested', worst: null, exposures: 0 });
+  });
+
+  it('orders allergens priority-first, then non-priority, alphabetical within each group', async () => {
+    const { c } = await setup();
+    const event = makeRouteEvent({
+      parent: async () => ({ child: c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    const priorityIds = new Set(PRIORITY_INTRODUCTION_ALLERGENS);
+    // Every priority allergen comes before any non-priority allergen.
+    const firstNonPriority = data.allergens.findIndex((a) => !priorityIds.has(a.id));
+    if (firstNonPriority === -1) {
+      // No non-priority allergens — vacuously ordered. Still check priority order.
+    } else {
+      for (let i = 0; i < firstNonPriority; i++) {
+        expect(priorityIds.has(data.allergens[i].id)).toBe(true);
+      }
+      for (let i = firstNonPriority; i < data.allergens.length; i++) {
+        expect(priorityIds.has(data.allergens[i].id)).toBe(false);
+      }
+    }
+    // Within the priority group, check alphabetical (fr) order.
+    const priorityRows = data.allergens.filter((a) => priorityIds.has(a.id));
+    for (let i = 1; i < priorityRows.length; i++) {
+      expect(
+        priorityRows[i - 1].label.localeCompare(priorityRows[i].label, 'fr')
+      ).toBeLessThanOrEqual(0);
+    }
+    // Within the non-priority group, check alphabetical (fr) order.
+    const nonPriorityRows = data.allergens.filter((a) => !priorityIds.has(a.id));
+    for (let i = 1; i < nonPriorityRows.length; i++) {
+      expect(
+        nonPriorityRows[i - 1].label.localeCompare(nonPriorityRows[i].label, 'fr')
+      ).toBeLessThanOrEqual(0);
+    }
+  });
+
+  it('flags isPriority on every allergen row', async () => {
+    const { c } = await setup();
+    const event = makeRouteEvent({
+      parent: async () => ({ child: c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    for (const row of data.allergens) {
+      expect(row.isPriority).toBe(
+        (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(row.id)
+      );
+    }
+  });
+
+  it('returns the current diversification stage based on child age', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    const event = makeRouteEvent({
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.stage.id).toBe('9-12');
+    expect(data.stage.title).toBeTruthy();
+    expect(data.stage.textures).toBeTruthy();
+  });
+
+  it('returns the most-advanced non-finger texture logged', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    await testDb.insert(foodEntries).values([
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'lisse',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'ecrasee',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'finger',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      }
+    ]);
+    const event = makeRouteEvent({
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.mostAdvancedTexture).toBe('ecrasee'); // finger is parallel/opt-in — excluded
+  });
+
+  it('returns null mostAdvancedTexture when no texture is logged', async () => {
+    const ctx = await setup({ ageMonths: 7 });
+    const event = makeRouteEvent({
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.mostAdvancedTexture).toBeNull();
+  });
+
+  it('returns a 30-day texture distribution with counts per key and total', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    await ctx.testDb.insert(foodEntries).values([
+      // within 30-day window
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 1 * day),
+        reaction: 'ras',
+        texture: 'lisse',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 2 * day),
+        reaction: 'ras',
+        texture: 'lisse',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 3 * day),
+        reaction: 'ras',
+        texture: 'ecrasee',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 4 * day),
+        reaction: 'ras',
+        texture: null,
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      // outside window
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 60 * day),
+        reaction: 'ras',
+        texture: 'morceaux',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      }
+    ]);
+    const event = makeRouteEvent({
+      params: { id: String(ctx.childId) },
+      locals: ctx.locals,
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.textureDistribution.totalWithTexture).toBe(3);
+    expect(data.textureDistribution.counts.lisse).toBe(2);
+    expect(data.textureDistribution.counts.ecrasee).toBe(1);
+    expect(data.textureDistribution.counts.morceaux).toBe(0); // outside window
+    expect(data.textureDistribution.counts.moulinee).toBe(0);
+    expect(data.textureDistribution.counts['petits-morceaux']).toBe(0);
+    expect(data.textureDistribution.counts.finger).toBe(0);
+  });
+
+  it('returns zero totals when no textures logged in the last 30 days', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    const event = makeRouteEvent({
+      params: { id: String(ctx.childId) },
+      locals: ctx.locals,
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.textureDistribution.totalWithTexture).toBe(0);
+    for (const k of Object.keys(data.textureDistribution.counts)) {
+      expect(
+        data.textureDistribution.counts[k as keyof typeof data.textureDistribution.counts]
+      ).toBe(0);
+    }
+  });
+
+  it('excludes future-dated entries from the 30-day distribution', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    await ctx.testDb.insert(foodEntries).values([
+      // valid recent entry
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 1 * day),
+        reaction: 'ras',
+        texture: 'lisse',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      // future-dated — should be ignored
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now + 5 * day),
+        reaction: 'ras',
+        texture: 'finger',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      }
+    ]);
+    const event = makeRouteEvent({
+      params: { id: String(ctx.childId) },
+      locals: ctx.locals,
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.textureDistribution.totalWithTexture).toBe(1);
+    expect(data.textureDistribution.counts.lisse).toBe(1);
+    expect(data.textureDistribution.counts.finger).toBe(0);
   });
 });

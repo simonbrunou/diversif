@@ -3,9 +3,11 @@
   import CategoryTag from '$lib/components/CategoryTag.svelte';
   import { getCategoryLabel } from '$lib/utils/categories';
   import { getReactionLabel } from '$lib/utils/reactions';
-  import { formatAge, ageInMonths } from '$lib/utils/age';
-  import { getStageForAgeMonths } from '$lib/content/guidance';
+  import { formatAge } from '$lib/utils/age';
   import { localizedHref } from '$lib/utils/localized-href';
+  import { getTextureLabel } from '$lib/utils/texture-labels';
+  import { TEXTURE_VALUES } from '$lib/utils/textures';
+  import * as m from '$lib/paraglide/messages';
   import { Printer, CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
@@ -13,8 +15,6 @@
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
-
-  const stage = $derived(getStageForAgeMonths(ageInMonths(data.child.birthDate)));
 
   function printPage() {
     if (typeof window !== 'undefined') window.print();
@@ -38,7 +38,7 @@
 </script>
 
 <svelte:head>
-  <title>Récap pédiatrique : {data.child.name} · Diversif</title>
+  <title>{m.reportHandoffTitle()} : {data.child.name} · Diversif</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -52,7 +52,7 @@
     </a>
     <Button variant="outline" onclick={printPage}>
       <Printer size={16} aria-hidden="true" />
-      Imprimer / Enregistrer en PDF
+      {m.reportPrintButton()}
     </Button>
   </div>
 
@@ -66,7 +66,7 @@
       {data.child.name}
     </h1>
     <p class="text-sm text-muted-foreground">
-      {formatAge(data.child.birthDate)} · {stage.title}
+      {formatAge(data.child.birthDate)} · {data.stage.title}
     </p>
   </header>
 
@@ -104,6 +104,44 @@
       </div>
       <div class="mt-1 text-[11px] text-muted-foreground">prioritaires testés</div>
     </div>
+  </section>
+
+  <!-- Stage status -->
+  <section class="space-y-2 rounded-lg border bg-card p-4">
+    <h2 class="text-lg font-semibold">{m.reportStageHeading()}</h2>
+    <p class="text-sm text-muted-foreground">{data.stage.title}</p>
+    <p class="text-sm">{data.stage.oneLiner}</p>
+    <p class="text-sm">
+      <span class="text-muted-foreground">{m.reportStageExpectedTextures()} : </span>{data.stage.textures}
+    </p>
+    {#if data.mostAdvancedTexture}
+      <p class="text-sm">
+        <span class="text-muted-foreground">{m.reportStageMostAdvancedTexture()} : </span>
+        {getTextureLabel(data.mostAdvancedTexture)}
+      </p>
+    {/if}
+  </section>
+
+  <!-- Texture distribution (30-day window) -->
+  <section class="space-y-2 rounded-lg border bg-card p-4">
+    <h2 class="text-lg font-semibold">{m.reportTextureDistributionHeading()}</h2>
+    {#if data.textureDistribution.totalWithTexture === 0}
+      <p class="text-sm text-muted-foreground">{m.reportTextureDistributionEmpty()}</p>
+    {:else}
+      <ul class="space-y-1.5">
+        {#each TEXTURE_VALUES as k (k)}
+          {@const n = data.textureDistribution.counts[k]}
+          {@const pct = Math.round((n / data.textureDistribution.totalWithTexture) * 100)}
+          <li class="grid grid-cols-[10ch_1fr_3ch] items-center gap-2 text-sm">
+            <span class="text-muted-foreground">{getTextureLabel(k)}</span>
+            <span class="h-2 rounded-full bg-muted">
+              <span class="block h-2 rounded-full bg-foreground/70" style="width: {pct}%"></span>
+            </span>
+            <span class="text-right tabular-nums">{n}</span>
+          </li>
+        {/each}
+      </ul>
+    {/if}
   </section>
 
   <!-- Allergens grid -->
@@ -222,6 +260,11 @@
       2017, études LEAP (2015) et EAT (2016).
     </p>
   </footer>
+
+  <!-- Print-only date stamp -->
+  <p class="mt-4 hidden text-center text-xs text-muted-foreground print:block">
+    {m.reportPrintedOn({ date: new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(data.generatedAt)) })}
+  </p>
 </div>
 
 <style>
@@ -234,10 +277,19 @@
     :global(body) {
       background: #fff !important;
       color: #000 !important;
+      font-size: 11pt;
     }
     :global(a) {
       color: inherit !important;
       text-decoration: none !important;
+    }
+    /* Hide all app chrome (top bar, sidebar, bottom nav, FAB, desktop log btn) */
+    :global([data-no-print]) {
+      display: none !important;
+    }
+    section {
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
   }
 </style>

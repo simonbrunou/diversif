@@ -25,6 +25,11 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] }
     }
+    // WebKit project intentionally omitted: the signup helper does not
+    // complete the post-signup redirect on Safari (pre-existing helper
+    // incompatibility), so even isolated WebKit smokes time out before
+    // reaching the page under test. `@media print` is engine-equivalent
+    // across modern browsers; the Chromium pass covers the print stylesheet.
   ],
   webServer: {
     // E2E expects a Postgres reachable via E2E_DATABASE_URL (a throwaway

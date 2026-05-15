@@ -45,6 +45,7 @@
 <div class="grid min-h-screen lg:grid-cols-[220px_1fr]">
   <!-- Desktop left rail sidebar -->
   <nav
+    data-no-print
     aria-label={m.chromeLateralNavLabel()}
     class="hidden lg:flex lg:flex-col lg:gap-2 lg:border-r lg:border-border lg:bg-surface lg:p-4"
   >
@@ -77,7 +78,9 @@
     <!-- Main content area (mobile + desktop right column) -->
     <div class="mx-auto w-full max-w-md px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-3 lg:max-w-3xl lg:pb-3" data-variant="responsive">
       {#if showChrome && currentChild}
-        <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
+        <div data-no-print>
+          <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
+        </div>
       {/if}
 
       <main id="main" class="flex-1">
@@ -98,7 +101,7 @@
              vertically on the nav's center (bottom-[calc(0.625rem+safe)] puts
              its 60px circle around the nav's center at 40px+safe), filling the
              `w-16` spacer slot in BottomNavBento between tabs 2 and 3. -->
-        <div class="lg:hidden">
+        <div data-no-print class="lg:hidden">
           <BottomNavBento currentChildId={navChildId} {currentPath} />
           <div class="fixed bottom-[calc(0.625rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
             <FabLog onclick={openLog} />
@@ -114,6 +117,7 @@
   {#if showChrome && currentChildId}
     <button
       type="button"
+      data-no-print
       onclick={openLog}
       class="fixed right-4 top-4 z-30 hidden rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-soft lg:flex lg:items-center lg:gap-1"
     >

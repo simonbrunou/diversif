@@ -399,5 +399,13 @@
   "carnetSegmentsAriaLabel": "Sections du carnet",
   "errorsAccountPasskeyRegisterStartFailed": "Impossible de démarrer l'enregistrement.",
   "errorsAccountPasskeyRegisterFailed": "Enregistrement échoué.",
-  "errorsAccountPasskeyGenericError": "Erreur"
+  "errorsAccountPasskeyGenericError": "Erreur",
+  "reportHandoffTitle": "Bilan pour le pédiatre",
+  "reportPrintButton": "Imprimer / Enregistrer en PDF",
+  "reportPrintedOn": "Imprimé le {date}",
+  "reportStageHeading": "Étape de diversification",
+  "reportStageExpectedTextures": "Textures attendues",
+  "reportStageMostAdvancedTexture": "Texture la plus avancée enregistrée",
+  "reportTextureDistributionHeading": "Textures sur 30 jours",
+  "reportTextureDistributionEmpty": "Aucune texture enregistrée sur la période."
 }
