@@ -2,7 +2,9 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
+import { loadTexturesTried } from '$lib/server/guidance/queries';
 import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import type { TextureKey } from '$lib/utils/textures';
 import type { PageServerLoad } from './$types';
 
 export type AllergenItem = {
@@ -173,9 +175,10 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     const repeatRows = repeatResult.rows as Array<{ food_id: number }>;
     const ids = repeatRows.map((r) => Number(r.food_id));
     if (ids.length === 0) {
-      const [bentoAllergens, weeklyEntries] = await Promise.all([
+      const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
         loadBentoAllergens(childId),
-        loadWeeklyEntries(childId)
+        loadWeeklyEntries(childId),
+        loadTexturesTried(childId)
       ]);
       return {
         entries: [],
@@ -183,6 +186,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
         bentoFoods: [],
         foodCount: 0,
         categoryCount: 0,
+        texturesTried,
         bentoAllergens,
         weeklyEntries
       };
@@ -195,6 +199,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
       id: foodEntries.id,
       givenAt: foodEntries.givenAt,
       reaction: foodEntries.reaction,
+      texture: foodEntries.texture,
       notes: foodEntries.notes,
       foodId: foods.id,
       foodName: foods.name,
@@ -219,6 +224,8 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   // Rows are ordered DESC givenAt, so the first occurrence of each foodId is
   // the most recent entry : capture its id as `lastEntryId` so non-RAS food
   // cards can link to the reaction-detail page.
+  // Note: when a `?reaction=` filter is active, `lastEntryId` and `lastTexture`
+  // reflect the most recent entry within the filter, not the absolute latest.
   const foodMap = new Map<
     number,
     {
@@ -228,6 +235,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
       tried: number;
       status: 'ras' | 'inconfort' | 'reaction';
       lastEntryId: number;
+      lastTexture: TextureKey | null;
     }
   >();
   const severity = { ras: 0, inconfort: 1, reaction: 2 } as const;
@@ -244,7 +252,8 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
         category: r.category,
         tried: 1,
         status: reaction,
-        lastEntryId: r.id
+        lastEntryId: r.id,
+        lastTexture: r.texture ?? null
       });
     }
   }
@@ -252,9 +261,10 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const foodCount = bentoFoods.length;
   const categoryCount = new Set(bentoFoods.map((f) => f.category)).size;
 
-  const [bentoAllergens, weeklyEntries] = await Promise.all([
+  const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
     loadBentoAllergens(childId),
-    loadWeeklyEntries(childId)
+    loadWeeklyEntries(childId),
+    loadTexturesTried(childId)
   ]);
 
   return {
@@ -268,6 +278,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     bentoFoods,
     foodCount,
     categoryCount,
+    texturesTried,
     bentoAllergens,
     weeklyEntries
   };

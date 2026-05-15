@@ -16,6 +16,7 @@ import {
   type Membership,
   type Passkey
 } from './db/schema';
+import type { TextureKey } from '$lib/utils/textures';
 
 export type DeletionSummary = {
   deletedChildren: number;
@@ -128,6 +129,7 @@ export type ExportedUser = {
       givenAt: string;
       reaction: FoodEntry['reaction'];
       notes: string | null;
+      texture: TextureKey | null;
       loggedByMe: boolean;
       createdAt: string;
     }>;
@@ -266,6 +268,7 @@ export async function exportUserData(
             givenAt: foodEntries.givenAt,
             reaction: foodEntries.reaction,
             notes: foodEntries.notes,
+            texture: foodEntries.texture,
             loggedBy: foodEntries.loggedBy,
             createdAt: foodEntries.createdAt
           })
@@ -368,6 +371,7 @@ export async function exportUserData(
           givenAt: isoOrThrow(e.givenAt),
           reaction: e.reaction,
           notes: e.notes,
+          texture: e.texture ?? null,
           loggedByMe: e.loggedBy === userId,
           createdAt: isoOrThrow(e.createdAt)
         }))

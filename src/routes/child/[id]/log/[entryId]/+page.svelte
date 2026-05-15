@@ -5,9 +5,12 @@
   import Textarea from '$components/ui/Textarea.svelte';
   import FoodCombobox from '$lib/components/FoodCombobox.svelte';
   import ReactionPicker from '$lib/components/ReactionPicker.svelte';
+  import TexturePicker from '$lib/components/TexturePicker.svelte';
   import { formatDateInputValue } from '$lib/utils/dates';
+  import type { TextureKey } from '$lib/utils/textures';
   import { enhance } from '$app/forms';
   import { Trash2 } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -19,6 +22,9 @@
   let givenAt = $state(formatDateInputValue(new Date(data.entry.givenAt)));
   // svelte-ignore state_referenced_locally
   let reaction = $state<'ras' | 'inconfort' | 'reaction'>(data.entry.reaction);
+  // svelte-ignore state_referenced_locally
+  let texture = $state<TextureKey | null>(data.entry.texture);
+  let texturePristine = $state(false);
   // svelte-ignore state_referenced_locally
   let notes = $state(data.entry.notes ?? '');
   let saving = $state(false);
@@ -66,6 +72,18 @@
     <div class="grid gap-1.5">
       <Label>Comment bébé a réagi ?</Label>
       <ReactionPicker name="reaction" bind:value={reaction} />
+    </div>
+
+    <div class="grid gap-1.5">
+      <Label>{m.textureLabel()}</Label>
+      <TexturePicker
+        name="texture"
+        bind:value={texture}
+        bind:pristine={texturePristine}
+      />
+      {#if texture === null}
+        <input type="hidden" name="texture" value="" />
+      {/if}
     </div>
 
     <div class="grid gap-1.5">

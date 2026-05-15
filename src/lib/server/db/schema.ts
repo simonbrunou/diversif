@@ -9,9 +9,13 @@ import {
   timestamp,
   primaryKey,
   index,
-  uniqueIndex
+  uniqueIndex,
+  check
 } from 'drizzle-orm/pg-core';
 import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
+// Relative import so drizzle-kit can load this file outside the Vite/SvelteKit
+// alias resolver (npm run db:generate runs schema.ts directly via tsx).
+import { TEXTURE_VALUES } from '../../utils/textures';
 
 export const users = pgTable(
   'users',
@@ -135,12 +139,20 @@ export const foodEntries = pgTable(
       .references(() => foods.id, { onDelete: 'restrict' }),
     givenAt: timestamp('given_at', { withTimezone: true, mode: 'date' }).notNull(),
     reaction: text('reaction', { enum: ['ras', 'inconfort', 'reaction'] }).notNull(),
+    texture: text('texture', { enum: TEXTURE_VALUES }),
     notes: text('notes'),
     loggedBy: integer('logged_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
   },
   (t) => ({
-    childIdx: index('food_entries_child_idx').on(t.childId, t.givenAt)
+    childIdx: index('food_entries_child_idx').on(t.childId, t.givenAt),
+    // Mirror the CHECK constraint already in 0005_food_entry_texture.sql so
+    // drizzle-kit's snapshot matches the live schema (otherwise db:generate
+    // produces a spurious DROP CONSTRAINT migration).
+    textureCheck: check(
+      'food_entries_texture_check',
+      sql`${t.texture} in ('lisse', 'moulinee', 'ecrasee', 'petits-morceaux', 'morceaux', 'finger')`
+    )
   })
 );
 

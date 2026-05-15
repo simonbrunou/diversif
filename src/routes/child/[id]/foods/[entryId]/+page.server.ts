@@ -24,6 +24,7 @@ async function loadEntryForChild(entryId: number, childId: number) {
         foodId: foodEntries.foodId,
         givenAt: foodEntries.givenAt,
         reaction: foodEntries.reaction,
+        texture: foodEntries.texture,
         foodName: foods.name
       })
       .from(foodEntries)
@@ -57,6 +58,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     entryId,
     food: row.foodName,
     isRas: row.reaction === 'ras',
+    texture: row.texture ?? null,
     nth,
     date: formatDate(row.givenAt, locale),
     time: formatTime(row.givenAt, locale),

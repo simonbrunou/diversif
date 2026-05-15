@@ -239,6 +239,62 @@ describe('loadDiversityMetrics', () => {
     });
     expect((await loadDiversityMetrics(child.id, 11)).repeatExposureCount).toBe(0);
   });
+
+  it('counts distinct non-null textures and ignores null texture entries', async () => {
+    const { user, child } = await seedUserAndChild();
+    const food = await seedFood({ name: 'Carotte', category: 'legumes' });
+    const now = Date.now();
+    // Two entries with the same texture (lisse) → counts as 1 distinct
+    await testDb.insert(foodEntries).values({
+      childId: child.id,
+      foodId: food.id,
+      givenAt: new Date(now - 1000),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: user.id,
+      createdAt: new Date(),
+      texture: 'lisse'
+    });
+    await testDb.insert(foodEntries).values({
+      childId: child.id,
+      foodId: food.id,
+      givenAt: new Date(now - 2000),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: user.id,
+      createdAt: new Date(),
+      texture: 'lisse'
+    });
+    // One entry with a different texture (ecrasee) → counts as 2 distinct total
+    await testDb.insert(foodEntries).values({
+      childId: child.id,
+      foodId: food.id,
+      givenAt: new Date(now - 3000),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: user.id,
+      createdAt: new Date(),
+      texture: 'ecrasee'
+    });
+    // One entry with null texture → must NOT count
+    await testDb.insert(foodEntries).values({
+      childId: child.id,
+      foodId: food.id,
+      givenAt: new Date(now - 4000),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: user.id,
+      createdAt: new Date(),
+      texture: null
+    });
+    const m = await loadDiversityMetrics(child.id, 11);
+    expect(m.texturesTried).toBe(2);
+  });
+
+  it('returns texturesTried = 0 when no entries exist', async () => {
+    const { child } = await seedUserAndChild();
+    expect((await loadDiversityMetrics(child.id, 11)).texturesTried).toBe(0);
+  });
 });
 
 describe('loadRepeatCandidates', () => {

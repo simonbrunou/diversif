@@ -3,6 +3,7 @@
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
   import { getCategoryLabel } from '$lib/utils/categories';
+  import type { TextureKey } from '$lib/utils/textures';
 
   type Food = {
     id: number;
@@ -11,6 +12,7 @@
     tried: number;
     status: 'ras' | 'inconfort' | 'reaction' | 'todo';
     lastEntryId?: number | null;
+    lastTexture?: TextureKey | null;
   };
 
   let { foods, childId }: { foods: Food[]; childId?: string } = $props();

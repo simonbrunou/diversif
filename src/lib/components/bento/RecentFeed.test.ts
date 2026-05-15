@@ -2,6 +2,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import RecentFeed from './RecentFeed.svelte';
+import * as m from '$lib/paraglide/messages';
 
 afterEach(() => cleanup());
 
@@ -13,7 +14,8 @@ describe('RecentFeed', () => {
       foodName: 'Poire',
       category: 'fruits' as const,
       reaction: 'ras' as const,
-      givenAt: Date.now() - 1000
+      givenAt: Date.now() - 1000,
+      texture: null
     },
     {
       id: 2,
@@ -21,7 +23,8 @@ describe('RecentFeed', () => {
       foodName: 'Banane',
       category: 'fruits' as const,
       reaction: 'ras' as const,
-      givenAt: Date.now() - 2000
+      givenAt: Date.now() - 2000,
+      texture: null
     }
   ];
 
@@ -37,7 +40,8 @@ describe('RecentFeed', () => {
       foodName: `Food ${i}`,
       category: 'fruits' as const,
       reaction: 'ras' as const,
-      givenAt: Date.now() - i * 1000
+      givenAt: Date.now() - i * 1000,
+      texture: null
     }));
     render(RecentFeed, { props: { entries: many, childId: '5' } });
     expect(screen.getAllByRole('listitem').length).toBe(5);
@@ -61,7 +65,8 @@ describe('RecentFeed', () => {
         foodName: 'Arachide',
         category: 'proteines' as const,
         reaction: 'reaction' as const,
-        givenAt: Date.now() - 3000
+        givenAt: Date.now() - 3000,
+        texture: null
       },
       {
         id: 100,
@@ -69,7 +74,8 @@ describe('RecentFeed', () => {
         foodName: 'Œuf',
         category: 'oeufs' as const,
         reaction: 'inconfort' as const,
-        givenAt: Date.now() - 4000
+        givenAt: Date.now() - 4000,
+        texture: null
       }
     ];
     const { container } = render(RecentFeed, { props: { entries: mixed, childId: '7' } });
@@ -85,5 +91,31 @@ describe('RecentFeed', () => {
     expect(links.length).toBe(2);
     expect(links[0].getAttribute('href')).toBe('/child/5/foods/1');
     expect(links[1].getAttribute('href')).toBe('/child/5/foods/2');
+  });
+
+  it('shows the texture chip when texture is set, hides it when null', () => {
+    const withTexture = [
+      {
+        id: 3,
+        foodId: 12,
+        foodName: 'Carotte',
+        category: 'legumes' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now() - 1000,
+        texture: 'ecrasee' as const
+      },
+      {
+        id: 4,
+        foodId: 13,
+        foodName: 'Pomme',
+        category: 'fruits' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now() - 2000,
+        texture: null
+      }
+    ];
+    render(RecentFeed, { props: { entries: withTexture, childId: '5' } });
+    expect(screen.getByText(new RegExp(m.textureEcrasee(), 'i'))).toBeTruthy();
+    expect(screen.queryByText(new RegExp(m.textureLisse(), 'i'))).toBeNull();
   });
 });

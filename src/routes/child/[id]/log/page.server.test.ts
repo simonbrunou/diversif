@@ -621,3 +621,82 @@ describe('Idempotency-Key', () => {
     expect(Number(count)).toBe(2);
   });
 });
+
+describe('child/[id]/log texture field', () => {
+  it('persists a valid texture when provided', async () => {
+    const { u, c, m, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: new Date().toISOString(),
+        reaction: 'ras',
+        texture: 'ecrasee'
+      }
+    });
+    await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
+    expect(rows[0].texture).toBe('ecrasee');
+  });
+
+  it('persists null texture when omitted', async () => {
+    const { u, c, m, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: new Date().toISOString(),
+        reaction: 'ras'
+      }
+    });
+    await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
+    expect(rows[0].texture).toBeNull();
+  });
+
+  it('rejects an invalid texture value with 400', async () => {
+    const { u, c, m, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: new Date().toISOString(),
+        reaction: 'ras',
+        texture: 'not-a-texture'
+      }
+    });
+    const result = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number };
+    expect(result).toMatchObject({ status: 400 });
+  });
+
+  it('rejects an empty texture value with 400', async () => {
+    const { u, c, m, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: new Date().toISOString(),
+        reaction: 'ras',
+        texture: ''
+      }
+    });
+    const result = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number };
+    expect(result).toMatchObject({ status: 400 });
+  });
+});

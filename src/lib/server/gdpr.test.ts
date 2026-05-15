@@ -21,6 +21,7 @@ import {
   tipDismissals,
   users
 } from './db/schema';
+import type { TextureKey } from '$lib/utils/textures';
 import { and, eq } from 'drizzle-orm';
 
 async function insertUser(email: string, displayName = email) {
@@ -67,7 +68,12 @@ async function insertFood(name: string, category = 'fruit') {
   )[0];
 }
 
-async function insertEntry(childId: number, foodId: number, loggedBy: number) {
+async function insertEntry(
+  childId: number,
+  foodId: number,
+  loggedBy: number,
+  texture?: TextureKey | null
+) {
   return (
     await testDb
       .insert(foodEntries)
@@ -77,6 +83,7 @@ async function insertEntry(childId: number, foodId: number, loggedBy: number) {
         givenAt: new Date(),
         reaction: 'ras',
         loggedBy,
+        texture: texture ?? null,
         createdAt: new Date()
       })
       .returning()
@@ -548,5 +555,20 @@ describe('exportUserData', () => {
       userId: u.id,
       foodEntryCount: 3
     });
+  });
+
+  it('includes texture in exported food entries', async () => {
+    const u = await insertUser('texture-export@example.com');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Patate douce');
+    await insertEntry(c.id, food.id, u.id, 'ecrasee');
+    await insertEntry(c.id, food.id, u.id, null);
+
+    const out = await exportUserData(u.id);
+    const entries = out.children[0].foodEntries;
+    expect(entries).toHaveLength(2);
+    expect(entries[0].texture).toBe('ecrasee');
+    expect(entries[1].texture).toBeNull();
   });
 });

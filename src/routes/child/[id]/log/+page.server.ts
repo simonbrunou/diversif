@@ -6,6 +6,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import { CATEGORY_IDS } from '$lib/utils/categories';
+import { TEXTURE_VALUES } from '$lib/utils/textures';
 import { ALLERGENS } from '$lib/utils/allergens';
 import {
   IdempotencyInFlight,
@@ -21,6 +22,7 @@ const schema = z
     'customFood.category': z.string().optional(),
     givenAt: z.string().min(1, 'Date requise'),
     reaction: z.enum(['ras', 'inconfort', 'reaction']),
+    texture: z.enum(TEXTURE_VALUES).optional(),
     notes: z.string().max(2000).optional()
   })
   .refine((d) => !!d.foodId || !!d['customFood.name'], {
@@ -196,6 +198,7 @@ export const actions: Actions = {
             foodId,
             givenAt: givenAtDate,
             reaction: parsed.data.reaction,
+            texture: parsed.data.texture ?? null,
             notes: parsed.data.notes?.trim() || null,
             loggedBy: user.id,
             createdAt: new Date()

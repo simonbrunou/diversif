@@ -49,6 +49,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       givenAt: foodEntries.givenAt,
       reaction: foodEntries.reaction,
       notes: foodEntries.notes,
+      texture: foodEntries.texture,
       foodId: foods.id,
       foodName: foods.name,
       category: foods.category,

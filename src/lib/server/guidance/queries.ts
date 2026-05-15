@@ -9,6 +9,16 @@ import type { ReactionId } from '$lib/utils/reactions';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+export async function loadTexturesTried(childId: number): Promise<number> {
+  const rows = await db
+    .select({ n: sql<number>`count(distinct ${foodEntries.texture})::int` })
+    .from(foodEntries)
+    .where(and(eq(foodEntries.childId, childId), sql`${foodEntries.texture} IS NOT NULL`))
+    .limit(1);
+  /* v8 ignore next : COUNT() always returns a row */
+  return rows[0]?.n ?? 0;
+}
+
 export type EnrichedEntry = {
   id: number;
   foodId: number;
@@ -51,6 +61,7 @@ export type DiversityMetrics = {
   totalCategories: number;
   lastNewFoodAt: number | null;
   repeatExposureCount: number;
+  texturesTried: number;
 };
 
 export async function loadDiversityMetrics(
@@ -107,11 +118,14 @@ export async function loadDiversityMetrics(
   );
   const repeatExposureCount = repeatRes.rows.length;
 
+  const texturesTried = await loadTexturesTried(childId);
+
   return {
     categoriesCovered: distinctCategories,
     totalCategories,
     lastNewFoodAt,
-    repeatExposureCount
+    repeatExposureCount,
+    texturesTried
   };
 }
 

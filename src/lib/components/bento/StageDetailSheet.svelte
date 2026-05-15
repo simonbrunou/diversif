@@ -1,5 +1,6 @@
 <script lang="ts">
   import Modal from '../ui/Modal.svelte';
+  import * as m from '$lib/paraglide/messages';
 
   type Stage = {
     id: string;
@@ -43,7 +44,7 @@
 
     <section class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div class="rounded-tile bg-tile-mint/40 p-3 text-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">Texture</p>
+        <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">{m.textureDetailRowLabel()}</p>
         <p class="mt-1">{stage.textures}</p>
       </div>
       <div class="rounded-tile bg-tile-butter/40 p-3 text-sm">

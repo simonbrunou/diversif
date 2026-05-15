@@ -1,6 +1,8 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
+  import { type TextureKey } from '$lib/utils/textures';
+  import { getTextureLabel } from '$lib/utils/texture-labels';
 
   type Status = 'ras' | 'inconfort' | 'reaction' | 'todo';
   let {
@@ -8,8 +10,16 @@
     category,
     tried,
     status,
-    href
-  }: { name: string; category: string; tried: number; status: Status; href?: string } = $props();
+    href,
+    texture = null
+  }: {
+    name: string;
+    category: string;
+    tried: number;
+    status: Status;
+    href?: string;
+    texture?: TextureKey | null;
+  } = $props();
 
   const isUntried = $derived(tried === 0);
   const isLinkable = $derived(!isUntried && !!href);
@@ -29,6 +39,10 @@
   <p class="text-sm font-bold leading-tight">{name}</p>
   <p class="text-xs text-ink-soft">
     {isUntried ? m.carnetFoodCardUntried() : m.carnetFoodCardTried({ count: String(tried) })}
+    {#if texture && !isUntried}
+      <!-- Chip treatment for inline contexts; entry-detail headers use a labelled row instead. -->
+      · <span class="text-[11px] uppercase tracking-wide">{getTextureLabel(texture)}</span>
+    {/if}
   </p>
 {/snippet}
 
