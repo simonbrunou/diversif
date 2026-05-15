@@ -175,9 +175,10 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     const repeatRows = repeatResult.rows as Array<{ food_id: number }>;
     const ids = repeatRows.map((r) => Number(r.food_id));
     if (ids.length === 0) {
-      const [bentoAllergens, weeklyEntries] = await Promise.all([
+      const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
         loadBentoAllergens(childId),
-        loadWeeklyEntries(childId)
+        loadWeeklyEntries(childId),
+        loadTexturesTried(childId)
       ]);
       return {
         entries: [],
@@ -185,7 +186,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
         bentoFoods: [],
         foodCount: 0,
         categoryCount: 0,
-        texturesTried: 0,
+        texturesTried,
         bentoAllergens,
         weeklyEntries
       };

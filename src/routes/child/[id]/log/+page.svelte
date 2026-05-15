@@ -30,9 +30,19 @@
   let givenAt = $state(formatDateInputValue());
   let reaction = $state<'ras' | 'inconfort' | 'reaction'>('ras');
   // svelte-ignore state_referenced_locally
-  let texture = $state<TextureKey | null>(defaultTextureForAgeMonths(ageInMonths(data.child.birthDate)));
+  let texture = $state<TextureKey | null>(
+    defaultTextureForAgeMonths(ageInMonths(data.child.birthDate, new Date(givenAt)))
+  );
   let texturePristine = $state(true);
   let submitting = $state(false);
+
+  $effect(() => {
+    // While the user hasn't touched the picker, follow the meal date.
+    if (!texturePristine) return;
+    texture = defaultTextureForAgeMonths(
+      ageInMonths(data.child.birthDate, new Date(givenAt))
+    );
+  });
 
   const initialFoodId = (() => {
     const v = Number($page.url.searchParams.get('foodId'));
@@ -144,7 +154,7 @@
         name="texture"
         bind:value={texture}
         bind:pristine={texturePristine}
-        ageMonths={ageInMonths(data.child.birthDate)}
+        ageMonths={ageInMonths(data.child.birthDate, new Date(givenAt))}
       />
     </div>
 
