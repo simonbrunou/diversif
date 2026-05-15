@@ -192,7 +192,8 @@ export const load: PageServerLoad = async ({ parent }) => {
 
   // 30-day texture distribution: count each texture key logged in the window.
   const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-  const cutoff = Date.now() - THIRTY_DAYS_MS;
+  const now = Date.now();
+  const cutoff = now - THIRTY_DAYS_MS;
 
   const counts: Record<TextureKey, number> = {
     lisse: 0,
@@ -204,7 +205,7 @@ export const load: PageServerLoad = async ({ parent }) => {
   };
   let totalWithTexture = 0;
   for (const e of entries) {
-    if (e.givenAt < cutoff) continue;
+    if (e.givenAt < cutoff || e.givenAt > now) continue;
     if (!isTextureKey(e.texture)) continue;
     counts[e.texture] += 1;
     totalWithTexture += 1;

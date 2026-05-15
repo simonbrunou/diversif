@@ -434,4 +434,41 @@ describe('child/[id]/report load', () => {
       ).toBe(0);
     }
   });
+
+  it('excludes future-dated entries from the 30-day distribution', async () => {
+    const ctx = await setup({ ageMonths: 10 });
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    await ctx.testDb.insert(foodEntries).values([
+      // valid recent entry
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now - 1 * day),
+        reaction: 'ras',
+        texture: 'lisse',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      },
+      // future-dated — should be ignored
+      {
+        childId: ctx.childId,
+        foodId: ctx.foodId,
+        givenAt: new Date(now + 5 * day),
+        reaction: 'ras',
+        texture: 'finger',
+        createdAt: new Date(),
+        loggedBy: ctx.u.id
+      }
+    ]);
+    const event = makeRouteEvent({
+      params: { id: String(ctx.childId) },
+      locals: ctx.locals,
+      parent: async () => ({ child: ctx.c })
+    });
+    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(data.textureDistribution.totalWithTexture).toBe(1);
+    expect(data.textureDistribution.counts.lisse).toBe(1);
+    expect(data.textureDistribution.counts.finger).toBe(0);
+  });
 });

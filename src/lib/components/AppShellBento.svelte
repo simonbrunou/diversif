@@ -78,7 +78,9 @@
     <!-- Main content area (mobile + desktop right column) -->
     <div class="mx-auto w-full max-w-md px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-3 lg:max-w-3xl lg:pb-3" data-variant="responsive">
       {#if showChrome && currentChild}
-        <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
+        <div data-no-print>
+          <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
+        </div>
       {/if}
 
       <main id="main" class="flex-1">
