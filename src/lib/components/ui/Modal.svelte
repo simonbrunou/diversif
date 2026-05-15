@@ -51,10 +51,13 @@
 
   const DRAG_THRESHOLD_PX = 100;
   const DRAG_VELOCITY_THRESHOLD = 0.5;
+  const SNAP_TRANSITION_MS = 220;
+  const SNAP_RESET_MS = 240;
 
   let dragY = $state(0);
   let dragging = $state(false);
   let releasing = $state(false);
+  let dismissingFromDrag = $state(false);
   let startY = 0;
   let startTime = 0;
   let releaseTimer: ReturnType<typeof setTimeout> | null = null;
@@ -62,8 +65,28 @@
   const sheetStyle = $derived.by(() => {
     if (side !== 'bottom') return undefined;
     if (!dragging && !releasing) return undefined;
-    const transition = dragging ? 'none' : 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
+    const transition = dragging
+      ? 'none'
+      : `transform ${SNAP_TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
     return `transform: translateY(${dragY}px); transition: ${transition};`;
+  });
+
+  // Cancel a pending snap-back and reset drag state when the sheet closes
+  // externally (Escape, overlay click, parent setter). Without this, the
+  // setTimeout could mutate state on a torn-down instance or leave stale
+  // styles applied to the next open. Skip during dismiss-from-drag — that
+  // path owns its own cleanup so the exit animation keeps the released
+  // position rather than snapping back to 0.
+  $effect(() => {
+    if (open) return;
+    if (dismissingFromDrag) return;
+    if (releaseTimer) {
+      clearTimeout(releaseTimer);
+      releaseTimer = null;
+    }
+    dragY = 0;
+    dragging = false;
+    releasing = false;
   });
 
   function onGrabberPointerDown(e: PointerEvent) {
@@ -76,6 +99,7 @@
     startTime = performance.now();
     dragging = true;
     releasing = false;
+    dismissingFromDrag = false;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
 
@@ -91,17 +115,29 @@
     const velocity = delta / Math.max(duration, 1);
     dragging = false;
 
+    // Tap or upward drag: dragY is already 0, no animation needed.
+    if (dragY === 0) return;
+
     if (delta >= DRAG_THRESHOLD_PX || velocity >= DRAG_VELOCITY_THRESHOLD) {
-      dragY = 0;
-      releasing = false;
+      // Dismiss: keep the inline transform applied so the bits-ui exit
+      // keyframe interpolates from the released drag position (no
+      // rubber-band snap to 0 before the slide-out runs).
+      dismissingFromDrag = true;
+      releasing = true;
       handleOpenChange(false);
+      releaseTimer = setTimeout(() => {
+        dragY = 0;
+        releasing = false;
+        dismissingFromDrag = false;
+        releaseTimer = null;
+      }, SNAP_RESET_MS);
     } else {
       dragY = 0;
       releasing = true;
       releaseTimer = setTimeout(() => {
         releasing = false;
         releaseTimer = null;
-      }, 240);
+      }, SNAP_RESET_MS);
     }
   }
 </script>

@@ -103,4 +103,20 @@ describe('Modal', () => {
     await dragGrabber(40);
     expect(lastOpen).toBeUndefined();
   });
+
+  it('does not close a bottom sheet on a bare tap (no drag) of the grabber', async () => {
+    let lastOpen: boolean | undefined;
+    render(Modal, {
+      props: {
+        open: true,
+        side: 'bottom',
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: text('x')
+      }
+    });
+    await dragGrabber(0);
+    expect(lastOpen).toBeUndefined();
+  });
 });

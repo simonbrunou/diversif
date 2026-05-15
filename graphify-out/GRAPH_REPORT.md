@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-15)
 
 ## Corpus Check
-- 370 files · ~491,748 words
+- 370 files · ~491,971 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3fb9c75d`
+- Built from commit: `0fa73e0b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -203,7 +203,7 @@ Cohesion: 0.13
 Nodes (21): escapePatternText(), findPlaceholderClosingIndex(), flatten(), isBuffer(), parseBundle(), parseDeclaration(), parseMarkupBody(), parseMarkupPlaceholder() (+13 more)
 
 ### Community 12 - "SEO / JSON-LD Library"
-Cohesion: 0.2
+Cohesion: 0.18
 Nodes (13): load(), allergens load test, load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), parseChildIdParam() (+5 more)
 
 ### Community 13 - "UI Component Library"
@@ -219,28 +219,28 @@ Cohesion: 0.13
 Nodes (8): $components/ui/Badge.svelte, $lib/utils/cn, Select.svelte UI component, Select component tests, $lib/content/sources, Textarea.svelte UI component, Textarea component tests, $lib/utils/theme
 
 ### Community 16 - "Allergens & Milestones"
-Cohesion: 0.2
-Nodes (9): LogActionAbort, runCleanup(), startCleanupTimer(), stopCleanupTimer(), IdempotencyInFlight, IdempotencyScopeMismatch, pruneExpiredKeys(), withIdempotencyKey() (+1 more)
+Cohesion: 0.18
+Nodes (10): load(), LogActionAbort, runCleanup(), startCleanupTimer(), stopCleanupTimer(), IdempotencyInFlight, IdempotencyScopeMismatch, pruneExpiredKeys() (+2 more)
 
 ### Community 18 - "Legal Pages"
-Cohesion: 0.17
-Nodes (9): findActiveInvitation(), load(), userHasMembership(), load(), load(), load(), requireGuest(), localizedRedirect() (+1 more)
-
-### Community 19 - "Invitations & Memberships"
 Cohesion: 0.22
 Nodes (10): severityOf(), countNthExposition(), insertSymptom(), formatDate(), formatTime(), load(), loadEntry(), loadEntryForChild() (+2 more)
+
+### Community 19 - "Invitations & Memberships"
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 20 - "SEO Source-of-Truth Config"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 21 - "Diversification Guidance & Stages"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
+Cohesion: 0.21
+Nodes (14): 12 allergens misattributed to HCSP (actually EU 1169/2011), Medical-content audit 2026-05-08, Egg portion contradiction between guidance.ts:73 and :240, Three parallel agents methodology (PR-diff, age, quantity), Walnut oil mistranslated as 'noix de beurre' (knob of butter), oeuf-cru wrong age cliff (12mo vs 3 ans), Soja: ESPGHAN-permissive vs HCSP/ANSES-conservative, ANSES NUT2017SA0145 0–3 ans nutrition (+6 more)
 
 ### Community 22 - "UI Primitives & LEAP/EAT Cards"
 Cohesion: 0.21
-Nodes (14): 12 allergens misattributed to HCSP (actually EU 1169/2011), Medical-content audit 2026-05-08, Egg portion contradiction between guidance.ts:73 and :240, Three parallel agents methodology (PR-diff, age, quantity), Walnut oil mistranslated as 'noix de beurre' (knob of butter), oeuf-cru wrong age cliff (12mo vs 3 ans), Soja: ESPGHAN-permissive vs HCSP/ANSES-conservative, ANSES NUT2017SA0145 0–3 ans nutrition (+6 more)
+Nodes (8): findActiveInvitation(), load(), userHasMembership(), load(), load(), requireGuest(), localizedRedirect(), load()
 
 ### Community 23 - "Migration Tests"
 Cohesion: 0.29
@@ -368,7 +368,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `languageTag()` connect `i18n Messages (auth.*)` to `UI Components & Tests`, `Community 73`, `Offline Log Queue (IndexedDB)`?**
   _High betweenness centrality (0.068) - this node is a cross-community bridge._
-- **Why does `isValidBirthDate()` connect `UI Components & Tests` to `Legal Pages`, `Migration Tests`?**
+- **Why does `isValidBirthDate()` connect `UI Components & Tests` to `SEO / JSON-LD Library`, `Migration Tests`?**
   _High betweenness centrality (0.025) - this node is a cross-community bridge._
 - **Why does `setLanguageTag()` connect `UI Components & Tests` to `i18n Messages (auth.*)`?**
   _High betweenness centrality (0.024) - this node is a cross-community bridge._
