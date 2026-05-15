@@ -7,6 +7,7 @@
   import { cn } from '$lib/utils/cn';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { RecentEntry } from '$lib/types';
+  import { getTextureLabel } from '$lib/utils/textures';
 
   let { entries, childId }: { entries: RecentEntry[]; childId: string } = $props();
 
@@ -31,7 +32,14 @@
     <Icon size={18} aria-hidden="true" />
   </span>
   <span class="flex-1">
-    <p class="text-sm font-bold leading-tight">{entry.foodName}</p>
+    <p class="text-sm font-bold leading-tight">
+      {entry.foodName}
+      {#if entry.texture}
+        <span class="text-[11px] uppercase tracking-wide text-muted-foreground">
+          · {getTextureLabel(entry.texture)}
+        </span>
+      {/if}
+    </p>
     <p class="text-xs text-ink-soft">{formatRelative(entry.givenAt)}</p>
   </span>
   <span
