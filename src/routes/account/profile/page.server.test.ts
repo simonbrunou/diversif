@@ -7,7 +7,8 @@ vi.mock('$lib/server/db', () => ({ db: testDb }));
 import { hashPassword } from '$lib/server/auth';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { actions } from './+page.server';
+import { actions, load } from './+page.server';
+import { captureFlow } from '../../../test/route';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -28,6 +29,24 @@ async function seed() {
   )[0];
   return u;
 }
+
+describe('account/profile load', () => {
+  it('redirects unauthenticated users to /login', async () => {
+    const r = await captureFlow(() =>
+      load(makeRouteEvent({ user: null }) as unknown as Parameters<typeof load>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/login');
+  });
+
+  it('returns empty data for authenticated users', async () => {
+    const u = await seed();
+    const out = await load(
+      makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out).toEqual({});
+  });
+});
 
 describe('account/profile updateProfile', () => {
   it('fails when displayName is empty', async () => {

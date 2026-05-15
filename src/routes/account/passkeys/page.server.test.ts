@@ -13,7 +13,8 @@ vi.mock('$lib/server/audit', async () => {
 import { hashPassword } from '$lib/server/auth';
 import { passkeys, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { actions } from './+page.server';
+import { actions, load } from './+page.server';
+import { captureFlow } from '../../../test/route';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -50,6 +51,26 @@ async function seedKey(userId: number, id = 'p1', name = 'Old') {
     lastUsedAt: null
   });
 }
+
+describe('account/passkeys load', () => {
+  it('redirects unauthenticated users to /login', async () => {
+    const r = await captureFlow(() =>
+      load(makeRouteEvent({ user: null }) as unknown as Parameters<typeof load>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/login');
+  });
+
+  it('returns the passkey list for authenticated users', async () => {
+    const u = await seed();
+    await seedKey(u.id);
+    const out = await load(
+      makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.passkeys.length).toBe(1);
+    expect(out.passkeys[0].id).toBe('p1');
+  });
+});
 
 describe('account/passkeys rename', () => {
   it('fails with empty name', async () => {
