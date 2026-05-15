@@ -216,6 +216,8 @@
   "aujourdhuiAllergensTitle": "Priority allergens",
   "aujourdhuiAllergensOk": "introduced",
   "aujourdhuiAllergensTodo": "to discover",
+  "aujourdhuiAllergensFading": "to re-offer",
+  "carnetAllergensFadingCaption": "{days} d",
   "aujourdhuiRecentTitle": "This week",
   "aujourdhuiRecentEmpty": "Nothing this week",
   "carnetTitle": "Log",
