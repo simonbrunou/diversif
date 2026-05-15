@@ -136,6 +136,18 @@
     }
   });
 
+  // Belt-and-braces: if the parent unmounts Modal while a snap-back or
+  // dismiss-reset timer is still pending (route change mid-drag), kill it
+  // so the callback can't fire against a destroyed component.
+  $effect(() => {
+    return () => {
+      if (releaseTimer) {
+        clearTimeout(releaseTimer);
+        releaseTimer = null;
+      }
+    };
+  });
+
   function isInteractive(target: Element | null, root: HTMLElement): boolean {
     let node: Element | null = target;
     while (node && node !== root) {
@@ -178,6 +190,12 @@
   function onSheetPointerDown(e: PointerEvent) {
     if (side !== 'bottom') return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    // Ignore additional pointers while a gesture is already in flight
+    // (e.g. a thumb landing during a one-finger drag). Setting capture
+    // only happens after the 8px commit, so without this guard a second
+    // pointerdown would clobber activePointerId/startY and strand the
+    // first finger's state.
+    if (gestureMode !== 'idle') return;
 
     const root = e.currentTarget as HTMLElement;
     const target = e.target as Element;
@@ -194,6 +212,7 @@
     startY = e.clientY;
     startTime = performance.now();
     activePointerId = e.pointerId;
+    dismissingFromDrag = false;
 
     const isTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
     const scrollable = findScrollable(target, root);
@@ -333,7 +352,10 @@
       onpointercancel={onSheetPointerCancel}
     >
       {#if side === 'bottom'}
-        <div class="-mt-2 mb-1 flex justify-center py-2" role="presentation">
+        <div
+          class="-mt-2 mb-1 flex cursor-grab justify-center py-2 active:cursor-grabbing"
+          role="presentation"
+        >
           <span data-sheet-grabber class="h-1 w-9 rounded-full bg-border"></span>
         </div>
       {/if}

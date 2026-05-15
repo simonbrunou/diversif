@@ -864,7 +864,7 @@
       "source_file": "src/lib/components/EmptyState.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_emptystate_test_ts",
-      "community": 17,
+      "community": 154,
       "norm_label": "emptystate.test.ts"
     },
     {
@@ -945,7 +945,7 @@
       "source_file": "src/lib/components/TipCard.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_tipcard_test_ts",
-      "community": 155,
+      "community": 17,
       "norm_label": "tipcard.test.ts"
     },
     {
@@ -1125,7 +1125,7 @@
       "source_file": "src/lib/components/PublicHeader.svelte",
       "source_location": "L1",
       "id": "src_lib_components_publicheader_svelte",
-      "community": 34,
+      "community": 30,
       "norm_label": "publicheader.svelte"
     },
     {
@@ -1134,7 +1134,7 @@
       "source_file": "src/lib/components/PublicHeader.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_publicheader_test_ts",
-      "community": 34,
+      "community": 30,
       "norm_label": "publicheader.test.ts"
     },
     {
@@ -1179,7 +1179,7 @@
       "source_file": "src/lib/components/TipCard.svelte",
       "source_location": "L1",
       "id": "src_lib_components_tipcard_svelte",
-      "community": 155,
+      "community": 17,
       "norm_label": "tipcard.svelte"
     },
     {
@@ -1206,7 +1206,7 @@
       "source_file": "src/lib/components/EmptyState.svelte",
       "source_location": "L1",
       "id": "src_lib_components_emptystate_svelte",
-      "community": 17,
+      "community": 154,
       "norm_label": "emptystate.svelte"
     },
     {
@@ -1224,7 +1224,7 @@
       "source_file": "src/lib/components/AppShellBento.svelte",
       "source_location": "L1",
       "id": "src_lib_components_appshellbento_svelte",
-      "community": 17,
+      "community": 72,
       "norm_label": "appshellbento.svelte"
     },
     {
@@ -1233,7 +1233,7 @@
       "source_file": "src/lib/components/AppShellBento.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_appshellbento_test_ts",
-      "community": 17,
+      "community": 72,
       "norm_label": "appshellbento.test.ts"
     },
     {
@@ -1359,7 +1359,7 @@
       "source_file": "src/lib/components/ui/Label.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_label_test_ts",
-      "community": 153,
+      "community": 17,
       "norm_label": "label.test.ts"
     },
     {
@@ -1368,7 +1368,7 @@
       "source_file": "src/lib/components/ui/Select.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_select_test_ts",
-      "community": 72,
+      "community": 17,
       "norm_label": "select.test.ts"
     },
     {
@@ -1440,7 +1440,7 @@
       "source_file": "src/lib/components/ui/Label.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_label_svelte",
-      "community": 153,
+      "community": 17,
       "norm_label": "label.svelte"
     },
     {
@@ -1449,7 +1449,7 @@
       "source_file": "src/lib/components/ui/Select.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_select_svelte",
-      "community": 72,
+      "community": 17,
       "norm_label": "select.svelte"
     },
     {
@@ -1458,7 +1458,7 @@
       "source_file": "src/lib/components/ui/Select.svelte",
       "source_location": "L17",
       "id": "ui_select_cn",
-      "community": 72,
+      "community": 17,
       "norm_label": "cn()"
     },
     {
@@ -1494,7 +1494,7 @@
       "source_file": "src/lib/components/ui/Card.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_card_svelte",
-      "community": 154,
+      "community": 17,
       "norm_label": "card.svelte"
     },
     {
@@ -1503,7 +1503,7 @@
       "source_file": "src/lib/components/ui/Card.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_card_test_ts",
-      "community": 154,
+      "community": 17,
       "norm_label": "card.test.ts"
     },
     {
@@ -1512,7 +1512,7 @@
       "source_file": "src/lib/components/ui/EmptyHint.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_emptyhint_svelte",
-      "community": 17,
+      "community": 153,
       "norm_label": "emptyhint.svelte"
     },
     {
@@ -1521,7 +1521,7 @@
       "source_file": "src/lib/components/ui/EmptyHint.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_emptyhint_test_ts",
-      "community": 17,
+      "community": 153,
       "norm_label": "emptyhint.test.ts"
     },
     {
@@ -1530,7 +1530,7 @@
       "source_file": "src/lib/components/ui/LinkRow.svelte",
       "source_location": "L1",
       "id": "src_lib_components_ui_linkrow_svelte",
-      "community": 17,
+      "community": 155,
       "norm_label": "linkrow.svelte"
     },
     {
@@ -1539,89 +1539,8 @@
       "source_file": "src/lib/components/ui/LinkRow.test.ts",
       "source_location": "L1",
       "id": "src_lib_components_ui_linkrow_test_ts",
-      "community": 17,
+      "community": 155,
       "norm_label": "linkrow.test.ts"
-    },
-    {
-      "label": "Modal.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L1",
-      "id": "src_lib_components_ui_modal_svelte",
-      "community": 6,
-      "norm_label": "modal.svelte"
-    },
-    {
-      "label": "handleOpenChange()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L46",
-      "id": "ui_modal_handleopenchange",
-      "community": 6,
-      "norm_label": "handleopenchange()"
-    },
-    {
-      "label": "resetGesture()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L96",
-      "id": "ui_modal_resetgesture",
-      "community": 6,
-      "norm_label": "resetgesture()"
-    },
-    {
-      "label": "isInteractive()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L132",
-      "id": "ui_modal_isinteractive",
-      "community": 6,
-      "norm_label": "isinteractive()"
-    },
-    {
-      "label": "findScrollable()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L154",
-      "id": "ui_modal_findscrollable",
-      "community": 6,
-      "norm_label": "findscrollable()"
-    },
-    {
-      "label": "onSheetPointerDown()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L171",
-      "id": "ui_modal_onsheetpointerdown",
-      "community": 6,
-      "norm_label": "onsheetpointerdown()"
-    },
-    {
-      "label": "onSheetPointerMove()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L204",
-      "id": "ui_modal_onsheetpointermove",
-      "community": 6,
-      "norm_label": "onsheetpointermove()"
-    },
-    {
-      "label": "onSheetPointerUp()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L247",
-      "id": "ui_modal_onsheetpointerup",
-      "community": 6,
-      "norm_label": "onsheetpointerup()"
-    },
-    {
-      "label": "onSheetPointerCancel()",
-      "file_type": "code",
-      "source_file": "src/lib/components/ui/Modal.svelte",
-      "source_location": "L289",
-      "id": "ui_modal_onsheetpointercancel",
-      "community": 6,
-      "norm_label": "onsheetpointercancel()"
     },
     {
       "label": "Modal.test.ts",
@@ -1667,6 +1586,87 @@
       "id": "ui_modal_test_fire",
       "community": 6,
       "norm_label": "fire()"
+    },
+    {
+      "label": "Modal.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L1",
+      "id": "src_lib_components_ui_modal_svelte",
+      "community": 6,
+      "norm_label": "modal.svelte"
+    },
+    {
+      "label": "handleOpenChange()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L46",
+      "id": "ui_modal_handleopenchange",
+      "community": 6,
+      "norm_label": "handleopenchange()"
+    },
+    {
+      "label": "resetGesture()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L96",
+      "id": "ui_modal_resetgesture",
+      "community": 6,
+      "norm_label": "resetgesture()"
+    },
+    {
+      "label": "isInteractive()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L144",
+      "id": "ui_modal_isinteractive",
+      "community": 6,
+      "norm_label": "isinteractive()"
+    },
+    {
+      "label": "findScrollable()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L166",
+      "id": "ui_modal_findscrollable",
+      "community": 6,
+      "norm_label": "findscrollable()"
+    },
+    {
+      "label": "onSheetPointerDown()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L183",
+      "id": "ui_modal_onsheetpointerdown",
+      "community": 6,
+      "norm_label": "onsheetpointerdown()"
+    },
+    {
+      "label": "onSheetPointerMove()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L223",
+      "id": "ui_modal_onsheetpointermove",
+      "community": 6,
+      "norm_label": "onsheetpointermove()"
+    },
+    {
+      "label": "onSheetPointerUp()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L266",
+      "id": "ui_modal_onsheetpointerup",
+      "community": 6,
+      "norm_label": "onsheetpointerup()"
+    },
+    {
+      "label": "onSheetPointerCancel()",
+      "file_type": "code",
+      "source_file": "src/lib/components/ui/Modal.svelte",
+      "source_location": "L308",
+      "id": "ui_modal_onsheetpointercancel",
+      "community": 6,
+      "norm_label": "onsheetpointercancel()"
     },
     {
       "label": "AllergensSnapshot.test.ts",
@@ -2853,7 +2853,7 @@
       "source_file": "src/lib/server/idempotency.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_idempotency_test_ts",
-      "community": 27,
+      "community": 28,
       "norm_label": "idempotency.test.ts"
     },
     {
@@ -2862,7 +2862,7 @@
       "source_file": "src/lib/server/idempotency.test.ts",
       "source_location": "L14",
       "id": "server_idempotency_test_seeduser",
-      "community": 27,
+      "community": 28,
       "norm_label": "seeduser()"
     },
     {
@@ -2871,7 +2871,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L1",
       "id": "src_lib_server_idempotency_ts",
-      "community": 27,
+      "community": 28,
       "norm_label": "idempotency.ts"
     },
     {
@@ -2880,7 +2880,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L13",
       "id": "server_idempotency_idempotencyinflight",
-      "community": 27,
+      "community": 28,
       "norm_label": "idempotencyinflight"
     },
     {
@@ -2889,7 +2889,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L17",
       "id": "server_idempotency_idempotencyscopemismatch",
-      "community": 27,
+      "community": 28,
       "norm_label": "idempotencyscopemismatch"
     },
     {
@@ -2898,7 +2898,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L34",
       "id": "server_idempotency_withidempotencykey",
-      "community": 27,
+      "community": 28,
       "norm_label": "withidempotencykey()"
     },
     {
@@ -2907,7 +2907,7 @@
       "source_file": "src/lib/server/idempotency.ts",
       "source_location": "L85",
       "id": "server_idempotency_pruneexpiredkeys",
-      "community": 27,
+      "community": 28,
       "norm_label": "pruneexpiredkeys()"
     },
     {
@@ -3591,7 +3591,7 @@
       "source_file": "src/lib/server/guidance/reminders.test.ts",
       "source_location": "L1",
       "id": "src_lib_server_guidance_reminders_test_ts",
-      "community": 33,
+      "community": 34,
       "norm_label": "reminders.test.ts"
     },
     {
@@ -3600,7 +3600,7 @@
       "source_file": "src/lib/server/guidance/reminders.test.ts",
       "source_location": "L10",
       "id": "guidance_reminders_test_entry",
-      "community": 33,
+      "community": 34,
       "norm_label": "entry()"
     },
     {
@@ -3609,7 +3609,7 @@
       "source_file": "src/lib/server/guidance/reminders.test.ts",
       "source_location": "L23",
       "id": "guidance_reminders_test_input",
-      "community": 33,
+      "community": 34,
       "norm_label": "input()"
     },
     {
@@ -3618,7 +3618,7 @@
       "source_file": "src/lib/server/guidance/reminders.test.ts",
       "source_location": "L37",
       "id": "guidance_reminders_test_isolated",
-      "community": 33,
+      "community": 34,
       "norm_label": "isolated()"
     },
     {
@@ -3627,7 +3627,7 @@
       "source_file": "src/lib/server/guidance/reminders.ts",
       "source_location": "L1",
       "id": "src_lib_server_guidance_reminders_ts",
-      "community": 33,
+      "community": 34,
       "norm_label": "reminders.ts"
     },
     {
@@ -3636,7 +3636,7 @@
       "source_file": "src/lib/server/guidance/reminders.ts",
       "source_location": "L47",
       "id": "guidance_reminders_computereminders",
-      "community": 33,
+      "community": 34,
       "norm_label": "computereminders()"
     },
     {
@@ -3645,7 +3645,7 @@
       "source_file": "src/lib/server/guidance/reminders.ts",
       "source_location": "L276",
       "id": "guidance_reminders_push",
-      "community": 33,
+      "community": 34,
       "norm_label": "push()"
     },
     {
@@ -3654,7 +3654,7 @@
       "source_file": "src/lib/server/guidance/reminders.ts",
       "source_location": "L281",
       "id": "guidance_reminders_categorylabel",
-      "community": 33,
+      "community": 34,
       "norm_label": "categorylabel()"
     },
     {
@@ -3978,7 +3978,7 @@
       "source_file": "src/lib/utils/categories.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_categories_test_ts",
-      "community": 38,
+      "community": 37,
       "norm_label": "categories.test.ts"
     },
     {
@@ -4050,7 +4050,7 @@
       "source_file": "src/lib/utils/monitor-timer.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_monitor_timer_test_ts",
-      "community": 32,
+      "community": 33,
       "norm_label": "monitor-timer.test.ts"
     },
     {
@@ -4059,7 +4059,7 @@
       "source_file": "src/lib/utils/monitor-timer.ts",
       "source_location": "L1",
       "id": "src_lib_utils_monitor_timer_ts",
-      "community": 32,
+      "community": 33,
       "norm_label": "monitor-timer.ts"
     },
     {
@@ -4068,7 +4068,7 @@
       "source_file": "src/lib/utils/monitor-timer.ts",
       "source_location": "L5",
       "id": "utils_monitor_timer_keyfor",
-      "community": 32,
+      "community": 33,
       "norm_label": "keyfor()"
     },
     {
@@ -4077,7 +4077,7 @@
       "source_file": "src/lib/utils/monitor-timer.ts",
       "source_location": "L9",
       "id": "utils_monitor_timer_loadtimer",
-      "community": 32,
+      "community": 33,
       "norm_label": "loadtimer()"
     },
     {
@@ -4086,7 +4086,7 @@
       "source_file": "src/lib/utils/monitor-timer.ts",
       "source_location": "L25",
       "id": "utils_monitor_timer_savetimer",
-      "community": 32,
+      "community": 33,
       "norm_label": "savetimer()"
     },
     {
@@ -4095,7 +4095,7 @@
       "source_file": "src/lib/utils/monitor-timer.ts",
       "source_location": "L31",
       "id": "utils_monitor_timer_cleartimer",
-      "community": 32,
+      "community": 33,
       "norm_label": "cleartimer()"
     },
     {
@@ -4104,7 +4104,7 @@
       "source_file": "src/lib/utils/monitor-timer.ts",
       "source_location": "L37",
       "id": "utils_monitor_timer_remainingms",
-      "community": 32,
+      "community": 33,
       "norm_label": "remainingms()"
     },
     {
@@ -4113,7 +4113,7 @@
       "source_file": "src/lib/utils/monitor-timer.ts",
       "source_location": "L42",
       "id": "utils_monitor_timer_formatremaining",
-      "community": 32,
+      "community": 33,
       "norm_label": "formatremaining()"
     },
     {
@@ -4149,7 +4149,7 @@
       "source_file": "src/lib/utils/categories.ts",
       "source_location": "L1",
       "id": "src_lib_utils_categories_ts",
-      "community": 38,
+      "community": 37,
       "norm_label": "categories.ts"
     },
     {
@@ -4158,7 +4158,7 @@
       "source_file": "src/lib/utils/categories.ts",
       "source_location": "L65",
       "id": "utils_categories_getcategorylabel",
-      "community": 38,
+      "community": 37,
       "norm_label": "getcategorylabel()"
     },
     {
@@ -4167,7 +4167,7 @@
       "source_file": "src/lib/utils/categories.ts",
       "source_location": "L69",
       "id": "utils_categories_getcategorycolor",
-      "community": 38,
+      "community": 37,
       "norm_label": "getcategorycolor()"
     },
     {
@@ -4176,7 +4176,7 @@
       "source_file": "src/lib/utils/categories.ts",
       "source_location": "L73",
       "id": "utils_categories_getcategoryicon",
-      "community": 38,
+      "community": 37,
       "norm_label": "getcategoryicon()"
     },
     {
@@ -4185,7 +4185,7 @@
       "source_file": "src/lib/utils/categories.ts",
       "source_location": "L123",
       "id": "utils_categories_getcategoryclasses",
-      "community": 38,
+      "community": 37,
       "norm_label": "getcategoryclasses()"
     },
     {
@@ -4293,7 +4293,7 @@
       "source_file": "src/lib/utils/dates.test.ts",
       "source_location": "L1",
       "id": "src_lib_utils_dates_test_ts",
-      "community": 28,
+      "community": 27,
       "norm_label": "dates.test.ts"
     },
     {
@@ -4302,7 +4302,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L1",
       "id": "src_lib_utils_dates_ts",
-      "community": 28,
+      "community": 27,
       "norm_label": "dates.ts"
     },
     {
@@ -4311,7 +4311,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L21",
       "id": "utils_dates_formatrelative",
-      "community": 28,
+      "community": 27,
       "norm_label": "formatrelative()"
     },
     {
@@ -4320,7 +4320,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L40",
       "id": "utils_dates_formatdatetime",
-      "community": 28,
+      "community": 27,
       "norm_label": "formatdatetime()"
     },
     {
@@ -4329,7 +4329,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L44",
       "id": "utils_dates_formatdateinputvalue",
-      "community": 28,
+      "community": 27,
       "norm_label": "formatdateinputvalue()"
     },
     {
@@ -4338,7 +4338,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L49",
       "id": "utils_dates_parsedatetimelocal",
-      "community": 28,
+      "community": 27,
       "norm_label": "parsedatetimelocal()"
     },
     {
@@ -4347,7 +4347,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L57",
       "id": "utils_dates_formatmonthssince",
-      "community": 28,
+      "community": 27,
       "norm_label": "formatmonthssince()"
     },
     {
@@ -4356,7 +4356,7 @@
       "source_file": "src/lib/utils/dates.ts",
       "source_location": "L68",
       "id": "utils_dates_isvalidbirthdate",
-      "community": 28,
+      "community": 27,
       "norm_label": "isvalidbirthdate()"
     },
     {
@@ -15669,7 +15669,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_id_log_page_server_ts",
-      "community": 27,
+      "community": 28,
       "norm_label": "+page.server.ts"
     },
     {
@@ -15687,7 +15687,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L49",
       "id": "log_page_server_logactionabort",
-      "community": 27,
+      "community": 28,
       "norm_label": "logactionabort"
     },
     {
@@ -15696,7 +15696,7 @@
       "source_file": "src/routes/child/[id]/log/+page.server.ts",
       "source_location": "L50",
       "id": "log_page_server_logactionabort_constructor",
-      "community": 27,
+      "community": 28,
       "norm_label": ".constructor()"
     },
     {
@@ -15975,7 +15975,7 @@
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L1",
       "id": "src_routes_child_new_page_server_ts",
-      "community": 28,
+      "community": 27,
       "norm_label": "+page.server.ts"
     },
     {
@@ -15984,7 +15984,7 @@
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L16",
       "id": "new_page_server_load",
-      "community": 28,
+      "community": 27,
       "norm_label": "load()"
     },
     {
@@ -16569,7 +16569,7 @@
       "source_file": "src/test/app-stubs.ts",
       "source_location": "L1",
       "id": "src_test_app_stubs_ts",
-      "community": 34,
+      "community": 30,
       "norm_label": "app-stubs.ts"
     },
     {
@@ -16578,7 +16578,7 @@
       "source_file": "src/test/app-stubs.ts",
       "source_location": "L31",
       "id": "test_app_stubs_destroy",
-      "community": 34,
+      "community": 30,
       "norm_label": "destroy()"
     },
     {
@@ -16587,7 +16587,7 @@
       "source_file": "src/test/app-stubs.ts",
       "source_location": "L49",
       "id": "test_app_stubs_setpagepathname",
-      "community": 34,
+      "community": 30,
       "norm_label": "setpagepathname()"
     },
     {
@@ -18116,7 +18116,7 @@
       "file_type": "code",
       "source_file": "src/lib/components/AppShellBento.svelte",
       "source_location": "L69",
-      "community": 17,
+      "community": 72,
       "norm_label": "children()",
       "id": "components_appshellbento_children"
     },
@@ -18548,7 +18548,7 @@
       "file_type": "code",
       "source_file": "src/lib/utils/nav.test.ts",
       "source_location": "L1",
-      "community": 36,
+      "community": 38,
       "norm_label": "nav.test.ts",
       "id": "src_lib_utils_nav_test_ts"
     },
@@ -18557,7 +18557,7 @@
       "file_type": "code",
       "source_file": "src/lib/utils/nav.ts",
       "source_location": "L1",
-      "community": 36,
+      "community": 38,
       "norm_label": "nav.ts",
       "id": "src_lib_utils_nav_ts"
     },
@@ -18566,7 +18566,7 @@
       "file_type": "code",
       "source_file": "src/lib/utils/nav.ts",
       "source_location": "L18",
-      "community": 36,
+      "community": 38,
       "norm_label": "getchildnavitems()",
       "id": "utils_nav_getchildnavitems"
     },
@@ -18575,7 +18575,7 @@
       "file_type": "code",
       "source_file": "src/lib/utils/nav.ts",
       "source_location": "L35",
-      "community": 36,
+      "community": 38,
       "norm_label": "isnavitemactive()",
       "id": "utils_nav_isnavitemactive"
     },
@@ -20573,7 +20573,7 @@
       "file_type": "code",
       "source_file": "src/lib/components/AppShell.test.ts",
       "source_location": "L1",
-      "community": 36,
+      "community": 30,
       "norm_label": "appshell.test.ts",
       "id": "src_lib_components_appshell_test_ts"
     },
@@ -20582,7 +20582,7 @@
       "file_type": "code",
       "source_file": "src/lib/components/BottomNav.test.ts",
       "source_location": "L1",
-      "community": 34,
+      "community": 30,
       "norm_label": "bottomnav.test.ts",
       "id": "src_lib_components_bottomnav_test_ts"
     },
@@ -20591,7 +20591,7 @@
       "file_type": "code",
       "source_file": "src/lib/components/BottomNav.svelte",
       "source_location": "L1",
-      "community": 34,
+      "community": 30,
       "norm_label": "bottomnav.svelte",
       "id": "src_lib_components_bottomnav_svelte"
     },
@@ -20600,7 +20600,7 @@
       "file_type": "code",
       "source_file": "src/lib/components/BottomNav.svelte",
       "source_location": "L21",
-      "community": 34,
+      "community": 30,
       "norm_label": "#each()",
       "id": "components_bottomnav_each"
     },
@@ -20609,7 +20609,7 @@
       "file_type": "code",
       "source_file": "src/lib/components/AppShell.svelte",
       "source_location": "L1",
-      "community": 36,
+      "community": 38,
       "norm_label": "appshell.svelte",
       "id": "src_lib_components_appshell_svelte"
     },
@@ -20618,7 +20618,7 @@
       "file_type": "code",
       "source_file": "src/lib/components/AppShell.svelte",
       "source_location": "L48",
-      "community": 36,
+      "community": 38,
       "norm_label": "#each()",
       "id": "components_appshell_each"
     },
@@ -20919,7 +20919,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "site config (centralised seo)",
       "id": "seo_site"
     },
@@ -20932,7 +20932,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "absoluteurl",
       "id": "seo_absoluteurl"
     },
@@ -20945,7 +20945,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "resolveorigin",
       "id": "seo_resolveorigin"
     },
@@ -20958,7 +20958,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "breadcrumbjsonld",
       "id": "seo_breadcrumbjsonld"
     },
@@ -20971,7 +20971,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "organizationjsonld",
       "id": "seo_organizationjsonld"
     },
@@ -20984,7 +20984,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "websitejsonld",
       "id": "seo_websitejsonld"
     },
@@ -20997,7 +20997,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "webapplicationjsonld",
       "id": "seo_webapplicationjsonld"
     },
@@ -21010,7 +21010,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "articlejsonld",
       "id": "seo_articlejsonld"
     },
@@ -21036,7 +21036,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 30,
+      "community": 31,
       "norm_label": "centralised seo/json-ld source-of-truth pattern",
       "id": "seo_centralisation_pattern"
     },
@@ -21348,7 +21348,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 37,
+      "community": 36,
       "norm_label": "landingfeatures.svelte",
       "id": "landingfeatures_svelte"
     },
@@ -21361,7 +21361,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 37,
+      "community": 36,
       "norm_label": "leap & eat studies (early allergen introduction)",
       "id": "concept_leap_eat_studies"
     },
@@ -21374,7 +21374,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 37,
+      "community": 36,
       "norm_label": "landingfeatures.test.ts",
       "id": "landingfeatures_test_ts"
     },
@@ -21426,7 +21426,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 37,
+      "community": 36,
       "norm_label": "badge.svelte",
       "id": "badge_svelte"
     },
@@ -21439,7 +21439,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 37,
+      "community": 36,
       "norm_label": "badge.test.ts",
       "id": "badge_test_ts"
     },
@@ -21491,7 +21491,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 37,
+      "community": 36,
       "norm_label": "card.svelte",
       "id": "card_svelte"
     },
@@ -21504,7 +21504,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 37,
+      "community": 36,
       "norm_label": "card.test.ts",
       "id": "card_test_ts"
     },
@@ -23753,7 +23753,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "app.html sveltekit shell with paraglide lang",
       "id": "app_html_shell"
     },
@@ -23766,7 +23766,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "theme-init.js sync script (avoid theme flash)",
       "id": "app_html_theme_init"
     },
@@ -23779,7 +23779,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "pwa manifest + apple-touch-icon links",
       "id": "app_html_pwa_manifest"
     },
@@ -23792,7 +23792,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "favicon: green pin/leaf brand mark",
       "id": "favicon_svg_brand"
     },
@@ -23805,7 +23805,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "pwa icon 192x192 (green disc)",
       "id": "icon_192_png"
     },
@@ -23818,7 +23818,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "pwa icon 512x512 (green disc)",
       "id": "icon_512_png"
     },
@@ -23831,7 +23831,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "og image: diversifier en confiance hero",
       "id": "og_image_svg"
     },
@@ -23844,7 +23844,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "sources cited: hcsp, sante publique france, espghan",
       "id": "og_image_svg_sources_hcsp"
     },
@@ -23857,7 +23857,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 31,
+      "community": 32,
       "norm_label": "brand color #6b8e6b (sage green)",
       "id": "diversif_brand_color_6b8e6b"
     }
@@ -25662,6 +25662,100 @@
       "target": "test_component_textsnippet"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "src_lib_components_ui_modal_svelte"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_text"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_getsheettargets"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_dragsheet"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L139",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_fire"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_components_ui_modal_test_ts",
+      "target": "ui_modal_test_draggrabber"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ui_modal_test_dragsheet",
+      "target": "ui_modal_test_getsheettargets"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ui_modal_test_dragsheet",
+      "target": "ui_modal_test_fire"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/components/ui/Modal.test.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ui_modal_test_draggrabber",
+      "target": "ui_modal_test_fire"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -25688,9 +25782,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_ui_modal_svelte",
-      "target": "ui_modal_resetgesture",
-      "confidence_score": 1.0
+      "target": "ui_modal_resetgesture"
     },
     {
       "relation": "contains",
@@ -25698,9 +25792,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L132",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_ui_modal_svelte",
-      "target": "ui_modal_isinteractive",
-      "confidence_score": 1.0
+      "target": "ui_modal_isinteractive"
     },
     {
       "relation": "contains",
@@ -25708,9 +25802,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L154",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_ui_modal_svelte",
-      "target": "ui_modal_findscrollable",
-      "confidence_score": 1.0
+      "target": "ui_modal_findscrollable"
     },
     {
       "relation": "contains",
@@ -25718,9 +25812,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L171",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_ui_modal_svelte",
-      "target": "ui_modal_onsheetpointerdown",
-      "confidence_score": 1.0
+      "target": "ui_modal_onsheetpointerdown"
     },
     {
       "relation": "contains",
@@ -25728,9 +25822,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L204",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_ui_modal_svelte",
-      "target": "ui_modal_onsheetpointermove",
-      "confidence_score": 1.0
+      "target": "ui_modal_onsheetpointermove"
     },
     {
       "relation": "contains",
@@ -25738,9 +25832,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L247",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_lib_components_ui_modal_svelte",
-      "target": "ui_modal_onsheetpointerup",
-      "confidence_score": 1.0
+      "target": "ui_modal_onsheetpointerup"
     },
     {
       "relation": "contains",
@@ -25748,20 +25842,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L289",
       "weight": 1.0,
-      "source": "src_lib_components_ui_modal_svelte",
-      "target": "ui_modal_onsheetpointercancel",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L5",
-      "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "src_lib_components_ui_modal_svelte"
+      "source": "src_lib_components_ui_modal_svelte",
+      "target": "ui_modal_onsheetpointercancel"
     },
     {
       "relation": "contains",
@@ -25810,9 +25893,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L272",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "ui_modal_onsheetpointerup",
-      "target": "ui_modal_handleopenchange",
-      "confidence_score": 1.0
+      "target": "ui_modal_handleopenchange"
     },
     {
       "relation": "calls",
@@ -25832,9 +25915,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L233",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "ui_modal_onsheetpointermove",
-      "target": "ui_modal_resetgesture",
-      "confidence_score": 1.0
+      "target": "ui_modal_resetgesture"
     },
     {
       "relation": "calls",
@@ -25843,9 +25926,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L252",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "ui_modal_onsheetpointerup",
-      "target": "ui_modal_resetgesture",
-      "confidence_score": 1.0
+      "target": "ui_modal_resetgesture"
     },
     {
       "relation": "calls",
@@ -25854,9 +25937,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L294",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "ui_modal_onsheetpointercancel",
-      "target": "ui_modal_resetgesture",
-      "confidence_score": 1.0
+      "target": "ui_modal_resetgesture"
     },
     {
       "relation": "calls",
@@ -25865,9 +25948,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L180",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "ui_modal_onsheetpointerdown",
-      "target": "ui_modal_isinteractive",
-      "confidence_score": 1.0
+      "target": "ui_modal_isinteractive"
     },
     {
       "relation": "calls",
@@ -25876,92 +25959,9 @@
       "source_file": "src/lib/components/ui/Modal.svelte",
       "source_location": "L192",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "ui_modal_onsheetpointerdown",
-      "target": "ui_modal_findscrollable",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_text"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L60",
-      "weight": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_getsheettargets",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L68",
-      "weight": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_dragsheet",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L139",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_fire"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L60",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_components_ui_modal_test_ts",
-      "target": "ui_modal_test_draggrabber"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L69",
-      "weight": 1.0,
-      "source": "ui_modal_test_dragsheet",
-      "target": "ui_modal_test_getsheettargets",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L75",
-      "weight": 1.0,
-      "source": "ui_modal_test_dragsheet",
-      "target": "ui_modal_test_fire",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/components/ui/Modal.test.ts",
-      "source_location": "L69",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "ui_modal_test_draggrabber",
-      "target": "ui_modal_test_fire"
+      "target": "ui_modal_findscrollable"
     },
     {
       "relation": "imports_from",
@@ -59924,5 +59924,5 @@
       "source_file": "graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md"
     }
   ],
-  "built_at_commit": "efb411ab48c4dbcc77d09ad8c2bf199751552f30"
+  "built_at_commit": "3afd99ea18c6318797c2cf3e252bf2a270a3791e"
 }

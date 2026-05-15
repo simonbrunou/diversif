@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-15)
 
 ## Corpus Check
-- 370 files · ~493,127 words
+- 370 files · ~493,234 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `efb411ab`
+- Built from commit: `3afd99ea`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -256,30 +256,30 @@ Cohesion: 0.29
 Nodes (5): findActiveInvitation(), load(), userHasMembership(), load(), localizedRedirect()
 
 ### Community 27 - "Auth Guards & Sessions"
-Cohesion: 0.33
-Nodes (5): LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, pruneExpiredKeys(), withIdempotencyKey()
-
-### Community 28 - "Reactions Vocabulary"
 Cohesion: 0.31
 Nodes (7): load(), formatDateInputValue(), formatDateTime(), formatMonthsSince(), formatRelative(), isValidBirthDate(), parseDateTimeLocal()
+
+### Community 28 - "Reactions Vocabulary"
+Cohesion: 0.33
+Nodes (5): LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, pruneExpiredKeys(), withIdempotencyKey()
 
 ### Community 29 - "Diversity Metrics"
 Cohesion: 0.33
 Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
 
-### Community 30 - "Reminders Engine"
+### Community 31 - "Community 31"
 Cohesion: 0.33
 Nodes (9): absoluteUrl, articleJsonLd, breadcrumbJsonLd, Centralised SEO/JSON-LD source-of-truth pattern, organizationJsonLd, resolveOrigin, SITE config (centralised SEO), webApplicationJsonLd (+1 more)
 
-### Community 31 - "Community 31"
+### Community 32 - "Community 32"
 Cohesion: 0.33
 Nodes (9): PWA manifest + apple-touch-icon links, app.html SvelteKit shell with paraglide lang, theme-init.js sync script (avoid theme flash), Brand color #6b8e6b (sage green), Favicon: green pin/leaf brand mark, PWA icon 192x192 (green disc), PWA icon 512x512 (green disc), OG image: Diversifier en confiance hero (+1 more)
 
-### Community 32 - "Community 32"
+### Community 33 - "Community 33"
 Cohesion: 0.5
 Nodes (6): clearTimer(), formatRemaining(), keyFor(), loadTimer(), remainingMs(), saveTimer()
 
-### Community 33 - "Community 33"
+### Community 34 - "Community 34"
 Cohesion: 0.36
 Nodes (5): categoryLabel(), computeReminders(), push(), input(), isolated()
 
@@ -287,13 +287,13 @@ Nodes (5): categoryLabel(), computeReminders(), push(), input(), isolated()
 Cohesion: 0.48
 Nodes (4): listSymptomsByEntry(), load(), ageInMonths(), formatAge()
 
-### Community 36 - "Community 36"
-Cohesion: 0.33
-Nodes (3): #each(), getChildNavItems(), isNavItemActive()
-
-### Community 38 - "Community 38"
+### Community 37 - "Community 37"
 Cohesion: 0.6
 Nodes (4): getCategoryClasses(), getCategoryColor(), getCategoryIcon(), getCategoryLabel()
+
+### Community 38 - "Community 38"
+Cohesion: 0.4
+Nodes (3): #each(), getChildNavItems(), isNavItemActive()
 
 ### Community 39 - "Community 39"
 Cohesion: 0.47
@@ -371,9 +371,9 @@ Nodes (3): Read GRAPH_REPORT.md before answering architecture questions, Prefer 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Community 73`, `Page Loaders & Form Actions`, `Reactions Vocabulary`, `Architecture Patterns & Conventions`?**
+- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Page Loaders & Form Actions`, `Community 73`, `Auth Guards & Sessions`, `Architecture Patterns & Conventions`?**
   _High betweenness centrality (0.072) - this node is a cross-community bridge._
-- **Why does `isValidBirthDate()` connect `Reactions Vocabulary` to `Diversification Guidance & Stages`?**
+- **Why does `isValidBirthDate()` connect `Auth Guards & Sessions` to `Diversification Guidance & Stages`?**
   _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **Why does `requireUser()` connect `User Memory & Medical Audit` to `Page Loaders & Form Actions`, `SEO / JSON-LD Library`, `DB Init, Backup & Seed`, `Allergens & Milestones`, `Diversification Guidance & Stages`, `Idempotency Primitive`, `Auth Guards & Sessions`, `Reactions Vocabulary`?**
   _High betweenness centrality (0.020) - this node is a cross-community bridge._
