@@ -76,12 +76,13 @@
   let dismissingFromDrag = $state(false);
   // 'pending' = pointer is down but the user hasn't moved past the trigger
   // distance yet; 'scroll' = the press started on a scrolled-down content
-  // area, so the browser is panning natively (we wait for scrollTop to
-  // reach 0 before claiming the gesture); 'drag' = we own the gesture and
-  // are translating the sheet by inline transform.
+  // area, so we drive the scroll ourselves until scrollTop reaches 0;
+  // 'drag' = we own the gesture and are translating the sheet by inline
+  // transform.
   let gestureMode: 'idle' | 'pending' | 'scroll' | 'drag' = 'idle';
   let startY = 0;
   let startTime = 0;
+  let lastMoveY = 0;
   let activeScrollable: HTMLElement | null = null;
   let activePointerId: number | null = null;
   let releaseTimer: ReturnType<typeof setTimeout> | null = null;
@@ -211,6 +212,7 @@
 
     startY = e.clientY;
     startTime = performance.now();
+    lastMoveY = e.clientY;
     activePointerId = e.pointerId;
     dismissingFromDrag = false;
 
@@ -219,8 +221,10 @@
     activeScrollable = scrollable;
 
     if (isTouch && scrollable && scrollable.scrollTop > 0) {
-      // Native scroll first — we only own the gesture once scroll reaches the
-      // top and the user keeps pulling down.
+      // Defer to scroll first — we drive scrollTop ourselves (because
+      // Content has touch-action: none to keep the browser from
+      // claiming the pan), and only switch to the drag gesture once
+      // the scrollable has been pulled to the top.
       gestureMode = 'scroll';
     } else {
       gestureMode = 'pending';
@@ -232,24 +236,31 @@
     if (gestureMode === 'idle') return;
     if (e.pointerId !== activePointerId) return;
 
+    const currentY = e.clientY;
+    const incrementalDy = currentY - lastMoveY;
+    lastMoveY = currentY;
+
     if (gestureMode === 'scroll') {
-      // Watch for the scrollable hitting the top while the finger is still
-      // moving down — that's the iOS handoff point from scroll to dismiss.
-      if (activeScrollable && activeScrollable.scrollTop <= 0 && e.clientY > startY) {
-        gestureMode = 'pending';
-        startY = e.clientY;
-        startTime = performance.now();
+      // Content has touch-action: none, so native scroll is off — drive
+      // the scrollable manually. Once it pulls to the top and the finger
+      // is still moving down, hand off to the drag gesture.
+      if (activeScrollable) {
+        activeScrollable.scrollTop -= incrementalDy;
+        if (activeScrollable.scrollTop <= 0 && currentY > startY) {
+          gestureMode = 'pending';
+          startY = currentY;
+          startTime = performance.now();
+        }
       }
       return;
     }
 
-    const dy = e.clientY - startY;
-
-    // Claim the pointer eagerly (before the 8px commit) so the browser
-    // can't reclassify our downward drag as a native pan and dispatch
-    // pointercancel — which would route through onSheetPointerCancel
-    // and snap the sheet back instead of dismissing.
+    // In pending or drag mode: claim the pointer so the browser can't
+    // reclassify our drag as a native gesture (which would dispatch
+    // pointercancel and snap the sheet back).
     if (e.cancelable) e.preventDefault();
+
+    const dy = currentY - startY;
 
     if (gestureMode === 'pending') {
       if (dy >= DRAG_TRIGGER_PX) {
@@ -346,13 +357,11 @@
     <DialogPrimitive.Content
       class={cn(
         'fixed z-50 grid w-full gap-4 border border-border bg-surface p-5 shadow-lifted duration-slow ease-spring data-[state=closed]:animate-out data-[state=open]:animate-in',
-        // touch-pan-y restricts the browser's own handling of vertical touch
-        // panning to this element only, preventing iOS Safari from claiming
-        // the gesture and firing pointercancel mid-drag (which would
-        // otherwise snap the sheet back instead of dismissing it). Inner
-        // scrollable areas keep their default touch-action so they can
-        // still scroll natively.
-        side === 'bottom' && 'touch-pan-y',
+        // touch-none keeps the browser from claiming the vertical pan
+        // (which would dispatch pointercancel mid-drag and snap the
+        // sheet back). Inner scroll for scrollable descendants is
+        // driven manually in onSheetPointerMove's 'scroll' branch.
+        side === 'bottom' && 'touch-none',
         sideClasses[side],
         className
       )}

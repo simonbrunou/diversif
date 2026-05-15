@@ -153,7 +153,7 @@ describe('Modal', () => {
     expect(lastOpen).toBeUndefined();
   });
 
-  it('defers to native scroll when the press starts on a scrolled-down area', async () => {
+  it('scrolls the inner content (does not dismiss) when the press starts on a scrolled-down area', async () => {
     let lastOpen: boolean | undefined;
     const scrollSnippet = createRawSnippet(() => ({
       render: () =>
@@ -170,10 +170,16 @@ describe('Modal', () => {
       }
     });
     const area = document.querySelector('[data-testid="scroll-area"]') as HTMLElement;
-    // Force the scrollable into a non-top scroll position. happy-dom doesn't
-    // truly scroll, so we fake the scrollTop getter for the duration of the
-    // gesture.
-    Object.defineProperty(area, 'scrollTop', { configurable: true, value: 50 });
+    // happy-dom doesn't truly scroll. Back scrollTop with a getter/setter so
+    // the component's manual-scroll code can both read and write it.
+    let scrollTop = 50;
+    Object.defineProperty(area, 'scrollTop', {
+      configurable: true,
+      get: () => scrollTop,
+      set: (v: number) => {
+        scrollTop = Math.max(0, v);
+      }
+    });
     Object.defineProperty(area, 'scrollHeight', { configurable: true, value: 400 });
     Object.defineProperty(area, 'clientHeight', { configurable: true, value: 100 });
 
@@ -182,10 +188,13 @@ describe('Modal', () => {
         new PointerEvent(type, { clientY, pointerType: 'touch', button: 0, bubbles: true })
       );
     fire('pointerdown', 0);
-    fire('pointermove', 200);
+    fire('pointermove', 30);
     await new Promise((r) => setTimeout(r, 250));
-    fire('pointerup', 200);
+    fire('pointerup', 30);
 
+    // Dragging the finger down 30px should pull scrollTop down by 30 (from 50 to 20).
+    expect(scrollTop).toBe(20);
+    // The sheet itself should not have dismissed.
     expect(lastOpen).toBeUndefined();
   });
 

@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-15)
 
 ## Corpus Check
-- 370 files · ~493,393 words
+- 370 files · ~493,450 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e5a1261c`
+- Built from commit: `86a953cd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -68,6 +68,8 @@
 10. `seedUser()` - 19 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `load()` --calls--> `requireUser()`  [INFERRED]
+  src/routes/child/new/+page.server.ts → src/lib/server/guards.ts
 - `handleError()` --calls--> `scrubPathname()`  [INFERRED]
   src/hooks.server.ts → src/lib/sentry.ts
 - `handle()` --calls--> `validateSession()`  [INFERRED]
@@ -76,8 +78,6 @@
   src/routes/+layout.server.ts → src/lib/seo.ts
 - `load()` --calls--> `getLegalIdentity()`  [INFERRED]
   src/routes/mentions-legales/+page.server.ts → src/lib/server/legal.ts
-- `load()` --calls--> `getLegalIdentity()`  [INFERRED]
-  src/routes/politique-confidentialite/+page.server.ts → src/lib/server/legal.ts
 
 ## Communities (150 total, 9 thin omitted)
 
@@ -110,8 +110,8 @@ Cohesion: 0.13
 Nodes (21): escapePatternText(), findPlaceholderClosingIndex(), flatten(), isBuffer(), parseBundle(), parseDeclaration(), parseMarkupBody(), parseMarkupPlaceholder() (+13 more)
 
 ### Community 10 - "Offline Log Queue (IndexedDB)"
-Cohesion: 0.21
-Nodes (12): load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), load(), parseChildIdParam(), requireMembership() (+4 more)
+Cohesion: 0.24
+Nodes (11): load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), parseChildIdParam(), requireMembership(), requireOwnership() (+3 more)
 
 ### Community 11 - "User Memory & Medical Audit"
 Cohesion: 0.19
@@ -122,24 +122,24 @@ Cohesion: 0.24
 Nodes (11): dismissReminder(), loadAnalyticsBuckets(), loadCoparentActivity(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadRepeatCandidates(), loadStreak() (+3 more)
 
 ### Community 13 - "UI Component Library"
+Cohesion: 0.2
+Nodes (9): findActiveInvitation(), load(), userHasMembership(), load(), load(), findUserByEmail(), requireGuest(), localizedRedirect() (+1 more)
+
+### Community 14 - "Account Export / Delete"
 Cohesion: 0.18
 Nodes (7): applySeedCorrections(), seedFoods(), drainPool(), registerShutdownHandlers(), _resetShutdownState(), makeHarness(), makeProc()
 
-### Community 14 - "Account Export / Delete"
+### Community 15 - "DB Init, Backup & Seed"
 Cohesion: 0.21
 Nodes (10): severityOf(), countNthExposition(), insertSymptom(), formatDate(), formatTime(), load(), loadEntry(), loadEntryForChild() (+2 more)
-
-### Community 15 - "DB Init, Backup & Seed"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 16 - "Allergens & Milestones"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 17 - "Sentry Observability"
-Cohesion: 0.24
-Nodes (7): findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 18 - "Legal Pages"
 Cohesion: 0.26
@@ -150,12 +150,12 @@ Cohesion: 0.27
 Nodes (6): getAllStagesForBento(), getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), load(), chooseSuggestedFoods()
 
 ### Community 20 - "SEO Source-of-Truth Config"
-Cohesion: 0.26
-Nodes (6): load(), load(), findUserByEmail(), requireGuest(), localizedRedirect(), load()
-
-### Community 21 - "Diversification Guidance & Stages"
 Cohesion: 0.22
 Nodes (4): logHref(), getAllergenLabel(), celebrate(), pickMilestoneFromQuery()
+
+### Community 21 - "Diversification Guidance & Stages"
+Cohesion: 0.25
+Nodes (5): isUniqueViolation(), load(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
 
 ### Community 22 - "UI Primitives & LEAP/EAT Cards"
 Cohesion: 0.35
