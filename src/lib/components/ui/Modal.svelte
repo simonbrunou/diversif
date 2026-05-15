@@ -38,12 +38,20 @@
   // Resolve `side="auto"` against the viewport. Tailwind's `md` breakpoint
   // is 768px; below that we render the bottom sheet (with drag-to-dismiss
   // and inner-scroll handling), at md+ we render a center modal.
-  let isDesktop = $state(false);
+  // Seeded synchronously from matchMedia on the client so a `side="auto"`
+  // modal mounted-already-open on desktop renders directly as a center
+  // modal — without this, the first paint would briefly use the bottom
+  // sheet classes/grabber before the $effect flipped isDesktop true.
+  const DESKTOP_MEDIA_QUERY = '(min-width: 768px)';
+  let isDesktop = $state(
+    typeof window !== 'undefined' ? window.matchMedia(DESKTOP_MEDIA_QUERY).matches : false
+  );
 
   $effect(() => {
     if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(min-width: 768px)');
-    isDesktop = mq.matches;
+    const mq = window.matchMedia(DESKTOP_MEDIA_QUERY);
+    // Initial value is already seeded above; this effect just keeps
+    // isDesktop in sync with later viewport changes (rotation, resize).
     const onChange = (e: MediaQueryListEvent) => {
       isDesktop = e.matches;
     };
@@ -177,9 +185,10 @@
   // resolvedSide flips away from 'bottom' and every pointer handler early-
   // returns — leaving gestureMode/dragging/activePointerId stuck on the
   // last drag state. Wipe everything when the side leaves 'bottom' so the
-  // bottom handlers re-engage cleanly if the viewport comes back.
+  // bottom handlers re-engage cleanly if the viewport comes back. Skip
+  // during dismiss-from-drag so the exit animation can finish.
   $effect(() => {
-    if (resolvedSide !== 'bottom') {
+    if (resolvedSide !== 'bottom' && !dismissingFromDrag) {
       if (releaseTimer) {
         clearTimeout(releaseTimer);
         releaseTimer = null;
@@ -187,7 +196,6 @@
       dragY = 0;
       dragging = false;
       releasing = false;
-      dismissingFromDrag = false;
       resetGesture();
     }
   });
