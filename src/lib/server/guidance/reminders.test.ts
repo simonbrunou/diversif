@@ -374,9 +374,10 @@ describe('computeReminders', () => {
     });
 
     it('fires when the last exposure is older than 4 days', () => {
+      // Use isolated() default (ALL_ALLERGENS) so rule 4 / rule 6 noise does not
+      // crowd out the info-severity maintain card under the 4-card cap.
       const out = computeReminders(
         isolated({
-          introducedAllergens: new Set<AllergenId>(['oeuf']),
           entries: [allergenEntry('oeuf', 5)]
         })
       );
@@ -386,9 +387,10 @@ describe('computeReminders', () => {
     });
 
     it('caps at 2 cards sorted oldest-exposure-first', () => {
+      // Use isolated() default (ALL_ALLERGENS) so rule 4 pending-allergen does
+      // not fire for the other priority allergens and crowd the rail.
       const out = computeReminders(
         isolated({
-          introducedAllergens: new Set<AllergenId>(['oeuf', 'arachide', 'lait']),
           entries: [
             allergenEntry('oeuf', 6),
             allergenEntry('arachide', 9),

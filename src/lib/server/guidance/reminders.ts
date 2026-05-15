@@ -315,9 +315,9 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     }
   }
 
-  // Sort by severity, cap to top 6 to avoid noise
+  // Sort by severity, cap to top 4 to avoid noise
   out.sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]);
-  return out.slice(0, 6);
+  return out.slice(0, 4);
 }
 
 function push(out: Reminder[], dismissals: Set<string>, r: Reminder): void {
