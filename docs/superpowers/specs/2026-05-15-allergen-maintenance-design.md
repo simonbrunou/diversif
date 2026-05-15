@@ -29,7 +29,7 @@ After a priority allergen has been logged at least once, surface a calm maintena
 
 Two existing surfaces are extended:
 
-1. **`/foods` bento — `AllergenItem.state`** gains a fourth value `'fading'`. The tile renders with a butter-200 background, label "À reproposer", caption "{N} j" where N is the days since `lastTried`. Reaction trumps fading: a priority allergen that has both `hasReaction` and a stale `lastTried` keeps `'reaction'`.
+1. **`/foods` bento — `AllergenItem.state`** gains a fourth value `'fading'`. The tile renders with a butter-200 background, label "À reproposer", caption "{days} j" where `days` is the days since `lastTried`. Reaction trumps fading: a priority allergen that has both `hasReaction` and a stale `lastTried` keeps `'reaction'`.
 2. **Dashboard reminders rail** receives `maintain-allergen:<id>` cards, severity `info`, capped at 2, sorted oldest-exposure-first. Mirrors how rule 4 + bento `'todo'` already work as a pair.
 
 ## Threshold
