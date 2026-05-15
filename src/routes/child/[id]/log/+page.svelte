@@ -29,9 +29,8 @@
 
   let givenAt = $state(formatDateInputValue());
   let reaction = $state<'ras' | 'inconfort' | 'reaction'>('ras');
-  let texture = $state<TextureKey | null>(
-    (() => defaultTextureForAgeMonths(ageInMonths(data.child.birthDate)))()
-  );
+  // svelte-ignore state_referenced_locally
+  let texture = $state<TextureKey | null>(defaultTextureForAgeMonths(ageInMonths(data.child.birthDate)));
   let texturePristine = $state(true);
   let submitting = $state(false);
 
