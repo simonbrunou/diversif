@@ -59,7 +59,7 @@
             item.state === 'cleared' && 'bg-tile-mint',
             item.state === 'todo' && 'bg-tile-butter',
             item.state === 'reaction' && 'bg-tile-coral text-tile-coral-foreground',
-            item.state === 'fading' && 'bg-tile-peach'
+            item.state === 'fading' && 'bg-tile-peach text-tile-peach-foreground'
           )}
         >
           {stateLabel(item.state)}

@@ -7,13 +7,28 @@ afterEach(() => cleanup());
 
 describe('CarnetAllergens', () => {
   const items = [
-    { id: 'oeuf', label: 'Œuf', triedCount: 2, lastTried: '2026-04-01', state: 'cleared' as const },
-    { id: 'arachide', label: 'Arachide', triedCount: 0, lastTried: null, state: 'todo' as const },
+    {
+      id: 'oeuf',
+      label: 'Œuf',
+      triedCount: 2,
+      lastTried: '2026-04-01',
+      daysSinceLastTried: null,
+      state: 'cleared' as const
+    },
+    {
+      id: 'arachide',
+      label: 'Arachide',
+      triedCount: 0,
+      lastTried: null,
+      daysSinceLastTried: null,
+      state: 'todo' as const
+    },
     {
       id: 'lait',
       label: 'Lait',
       triedCount: 1,
       lastTried: '2026-04-15',
+      daysSinceLastTried: null,
       state: 'reaction' as const
     }
   ];
