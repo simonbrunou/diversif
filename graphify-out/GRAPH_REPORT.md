@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-15)
 
 ## Corpus Check
-- 370 files · ~493,944 words
+- 370 files · ~494,028 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6fecc401`
+- Built from commit: `d697da3b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -68,8 +68,6 @@
 10. `seedUser()` - 19 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `load()` --calls--> `requireUser()`  [INFERRED]
-  src/routes/child/new/+page.server.ts → src/lib/server/guards.ts
 - `handleError()` --calls--> `scrubPathname()`  [INFERRED]
   src/hooks.server.ts → src/lib/sentry.ts
 - `handle()` --calls--> `validateSession()`  [INFERRED]
@@ -78,6 +76,8 @@
   src/routes/+layout.server.ts → src/lib/seo.ts
 - `load()` --calls--> `getLegalIdentity()`  [INFERRED]
   src/routes/mentions-legales/+page.server.ts → src/lib/server/legal.ts
+- `load()` --calls--> `getLegalIdentity()`  [INFERRED]
+  src/routes/politique-confidentialite/+page.server.ts → src/lib/server/legal.ts
 
 ## Communities (150 total, 9 thin omitted)
 
@@ -110,7 +110,7 @@ Cohesion: 0.13
 Nodes (21): escapePatternText(), findPlaceholderClosingIndex(), flatten(), isBuffer(), parseBundle(), parseDeclaration(), parseMarkupBody(), parseMarkupPlaceholder() (+13 more)
 
 ### Community 10 - "Offline Log Queue (IndexedDB)"
-Cohesion: 0.24
+Cohesion: 0.22
 Nodes (11): load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), parseChildIdParam(), requireMembership(), requireOwnership() (+3 more)
 
 ### Community 11 - "User Memory & Medical Audit"
@@ -130,48 +130,48 @@ Cohesion: 0.21
 Nodes (10): severityOf(), countNthExposition(), insertSymptom(), formatDate(), formatTime(), load(), loadEntry(), loadEntryForChild() (+2 more)
 
 ### Community 15 - "DB Init, Backup & Seed"
-Cohesion: 0.21
-Nodes (7): load(), load(), load(), findUserByEmail(), requireGuest(), localizedRedirect(), load()
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 16 - "Allergens & Milestones"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 17 - "Sentry Observability"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
-
-### Community 18 - "Legal Pages"
-Cohesion: 0.24
-Nodes (7): findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
-
-### Community 19 - "Invitations & Memberships"
 Cohesion: 0.26
 Nodes (4): dismissWelcomeIfPresent(), signUp(), signUpAndCreateChild(), unique()
 
-### Community 20 - "SEO Source-of-Truth Config"
+### Community 18 - "Legal Pages"
 Cohesion: 0.27
 Nodes (6): getAllStagesForBento(), getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), load(), chooseSuggestedFoods()
+
+### Community 19 - "Invitations & Memberships"
+Cohesion: 0.26
+Nodes (6): load(), load(), findUserByEmail(), requireGuest(), localizedRedirect(), load()
+
+### Community 20 - "SEO Source-of-Truth Config"
+Cohesion: 0.24
+Nodes (6): isUniqueViolation(), load(), LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, withIdempotencyKey()
 
 ### Community 21 - "Diversification Guidance & Stages"
 Cohesion: 0.22
 Nodes (4): logHref(), getAllergenLabel(), celebrate(), pickMilestoneFromQuery()
 
 ### Community 22 - "UI Primitives & LEAP/EAT Cards"
-Cohesion: 0.35
-Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
+Cohesion: 0.29
+Nodes (6): findActiveInvitation(), load(), userHasMembership(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
 
 ### Community 23 - "Migration Tests"
 Cohesion: 0.35
 Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 24 - "Food Categories"
-Cohesion: 0.28
-Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
+Cohesion: 0.35
+Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 25 - "Reaction Reports & Reminders"
-Cohesion: 0.33
-Nodes (4): LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, withIdempotencyKey()
+Cohesion: 0.28
+Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
 
 ### Community 26 - "Idempotency Primitive"
 Cohesion: 0.5

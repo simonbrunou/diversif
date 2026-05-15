@@ -173,6 +173,25 @@
     };
   });
 
+  // If the viewport crosses the md breakpoint mid-gesture (rotation, resize),
+  // resolvedSide flips away from 'bottom' and every pointer handler early-
+  // returns — leaving gestureMode/dragging/activePointerId stuck on the
+  // last drag state. Wipe everything when the side leaves 'bottom' so the
+  // bottom handlers re-engage cleanly if the viewport comes back.
+  $effect(() => {
+    if (resolvedSide !== 'bottom') {
+      if (releaseTimer) {
+        clearTimeout(releaseTimer);
+        releaseTimer = null;
+      }
+      dragY = 0;
+      dragging = false;
+      releasing = false;
+      dismissingFromDrag = false;
+      resetGesture();
+    }
+  });
+
   function isInteractive(target: Element | null, root: HTMLElement): boolean {
     let node: Element | null = target;
     while (node && node !== root) {
