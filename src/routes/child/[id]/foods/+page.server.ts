@@ -2,6 +2,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
+import { loadTexturesTried } from '$lib/server/guidance/queries';
 import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 import type { TextureKey } from '$lib/utils/textures';
 import type { PageServerLoad } from './$types';
@@ -259,17 +260,11 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const foodCount = bentoFoods.length;
   const categoryCount = new Set(bentoFoods.map((f) => f.category)).size;
 
-  const [bentoAllergens, weeklyEntries, texturesTriedRes] = await Promise.all([
+  const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
     loadBentoAllergens(childId),
     loadWeeklyEntries(childId),
-    db
-      .select({ n: sql<number>`count(distinct ${foodEntries.texture})::int` })
-      .from(foodEntries)
-      .where(and(eq(foodEntries.childId, childId), sql`${foodEntries.texture} IS NOT NULL`))
-      .limit(1)
+    loadTexturesTried(childId)
   ]);
-  /* v8 ignore next : COUNT() always returns a row */
-  const texturesTried = texturesTriedRes[0]?.n ?? 0;
 
   return {
     entries: rows.map((r) => ({

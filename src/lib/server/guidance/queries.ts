@@ -9,6 +9,15 @@ import type { ReactionId } from '$lib/utils/reactions';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+export async function loadTexturesTried(childId: number): Promise<number> {
+  const rows = await db
+    .select({ n: sql<number>`count(distinct ${foodEntries.texture})::int` })
+    .from(foodEntries)
+    .where(and(eq(foodEntries.childId, childId), sql`${foodEntries.texture} IS NOT NULL`))
+    .limit(1);
+  return rows[0]?.n ?? 0;
+}
+
 export type EnrichedEntry = {
   id: number;
   foodId: number;
@@ -108,14 +117,7 @@ export async function loadDiversityMetrics(
   );
   const repeatExposureCount = repeatRes.rows.length;
 
-  const texturesRes = await db.execute<{ count: string }>(
-    sql`SELECT COUNT(DISTINCT ${foodEntries.texture})::text as count
-        FROM ${foodEntries}
-        WHERE ${foodEntries.childId} = ${childId}
-          AND ${foodEntries.texture} IS NOT NULL`
-  );
-  /* v8 ignore next : pg COUNT(*) always returns a single row */
-  const texturesTried = Number(texturesRes.rows[0]?.count ?? 0);
+  const texturesTried = await loadTexturesTried(childId);
 
   return {
     categoriesCovered: distinctCategories,
