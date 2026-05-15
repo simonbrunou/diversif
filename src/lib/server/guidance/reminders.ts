@@ -181,7 +181,13 @@ export function computeReminders(input: ReminderInput): Reminder[] {
   type RepeatCandidate = { foodId: number; foodName: string; lastGivenAt: number; count: number };
   const perFood = new Map<
     number,
-    { foodName: string; count: number; worstRank: number; lastGivenAt: number }
+    {
+      foodName: string;
+      count: number;
+      worstRank: number;
+      lastGivenAt: number;
+      allergenType: string | null;
+    }
   >();
   const reactionRank: Record<ReactionId, number> = { ras: 0, inconfort: 1, reaction: 2 };
   for (const e of input.entries) {
@@ -191,7 +197,8 @@ export function computeReminders(input: ReminderInput): Reminder[] {
         foodName: e.foodName,
         count: 1,
         worstRank: reactionRank[e.reaction],
-        lastGivenAt: e.givenAt
+        lastGivenAt: e.givenAt,
+        allergenType: e.allergenType
       });
     } else {
       cur.count += 1;
@@ -201,6 +208,10 @@ export function computeReminders(input: ReminderInput): Reminder[] {
   }
   const repeatCandidates: RepeatCandidate[] = [];
   for (const [foodId, v] of perFood) {
+    // Priority allergens are handled by rule 9 (maintain-allergen) and
+    // rule 4 (pending-allergen); avoid a duplicate generic "Reproposez «…»"
+    // info card for them on the same dashboard.
+    if (v.allergenType && ALLERGEN_PRIORITY.includes(v.allergenType as AllergenId)) continue;
     if (v.count === 1 && v.worstRank <= 1 && now - v.lastGivenAt > 3 * DAY_MS) {
       repeatCandidates.push({
         foodId,
@@ -303,12 +314,13 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     candidates.sort((a, b) => b.daysSince - a.daysSince);
     for (const c of candidates.slice(0, MAINTAIN_CARD_CAP)) {
       const label = ALLERGEN_LABELS[c.id];
+      const lastAtDayBucket = Math.floor(c.lastAt / DAY_MS);
       push(out, input.dismissals, {
-        key: `maintain-allergen:${c.id}`,
+        key: `maintain-allergen:${c.id}:${lastAtDayBucket}`,
         severity: 'info',
         title: `Reproposez « ${label} »`,
         body: `Bébé n'a pas eu ${label.toLowerCase()} depuis ${c.daysSince} jours. L'idéal est d'en reproposer 2 à 3 fois par semaine pour entretenir la tolérance.`,
-        cta: { label: 'Voir les suggestions', href: `${childPath}/suggestions?allergen=${c.id}` },
+        cta: { label: 'Voir les allergènes', href: `${childPath}/foods?segment=allergens` },
         sources: ['leap-2015', 'espghan-2017', 'anses-nourrisson'],
         dismissable: true
       });
