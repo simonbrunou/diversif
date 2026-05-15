@@ -139,7 +139,15 @@
       releasing = true;
       dragY = typeof window === 'undefined' ? 800 : window.innerHeight;
       releaseTimer = setTimeout(() => {
+        // Reset drag state in the same flush as the close so the
+        // unmount happens with `sheetStyle` already cleared. If we left
+        // dismissingFromDrag / dragY / releasing set, a later reopen
+        // would mount the new content with the stale off-screen
+        // transform still applied and animate it back to translateY(0).
         releaseTimer = null;
+        dragY = 0;
+        releasing = false;
+        dismissingFromDrag = false;
         handleOpenChange(false);
       }, TRANSITION_MS);
     } else {
