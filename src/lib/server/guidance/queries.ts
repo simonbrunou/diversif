@@ -15,6 +15,7 @@ export async function loadTexturesTried(childId: number): Promise<number> {
     .from(foodEntries)
     .where(and(eq(foodEntries.childId, childId), sql`${foodEntries.texture} IS NOT NULL`))
     .limit(1);
+  /* v8 ignore next : COUNT() always returns a row */
   return rows[0]?.n ?? 0;
 }
 

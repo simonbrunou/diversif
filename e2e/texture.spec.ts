@@ -12,8 +12,10 @@ test('texture picker defaults to age-appropriate value and surfaces on the feed'
   // Navigate to the log page
   await page.goto(`/child/${childId}/log`);
 
-  // Texture picker fieldset is visible (legend is sr-only, use role=group)
-  await expect(page.getByRole('group')).toBeVisible();
+  // Texture picker fieldset is visible (legend "Texture" is sr-only).
+  // The log page has multiple fieldsets — filter by accessible name so we
+  // don't trip Playwright's strict-mode multi-match guard.
+  await expect(page.getByRole('group', { name: 'Texture' })).toBeVisible();
 
   // Fill in food via FoodCombobox
   await page.getByPlaceholder('Rechercher un aliment…').fill('Poire');
