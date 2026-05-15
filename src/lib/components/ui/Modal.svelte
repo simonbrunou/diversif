@@ -48,6 +48,117 @@
     onOpenChange?.(v);
     if (!v) onclose?.();
   }
+
+  const DRAG_THRESHOLD_PX = 100;
+  const DRAG_VELOCITY_THRESHOLD = 0.5;
+  const TRANSITION_MS = 220;
+  const RESET_MS = 240;
+
+  let dragY = $state(0);
+  let dragging = $state(false);
+  let releasing = $state(false);
+  let dismissingFromDrag = $state(false);
+  let startY = 0;
+  let startTime = 0;
+  let releaseTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const sheetStyle = $derived.by(() => {
+    if (side !== 'bottom') return undefined;
+    if (!dragging && !releasing) return undefined;
+    const transition = dragging
+      ? 'none'
+      : `transform ${TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    return `transform: translateY(${dragY}px); transition: ${transition};`;
+  });
+
+  // Cancel a pending timer and reset drag state whenever `open` changes.
+  // On reopen, this wipes any stale styles left over from the previous
+  // dismiss (the dismiss path keeps the inline transform applied until
+  // bits-ui unmounts the content, so cleanup has to happen on the next
+  // open). On external close (Escape, overlay click, parent setter),
+  // it cancels a snap-back-in-flight; skip during dismiss-from-drag so
+  // the off-screen slide can finish before bits-ui tears the sheet down.
+  $effect(() => {
+    if (open) {
+      if (releaseTimer) {
+        clearTimeout(releaseTimer);
+        releaseTimer = null;
+      }
+      dragY = 0;
+      dragging = false;
+      releasing = false;
+      dismissingFromDrag = false;
+    } else if (!dismissingFromDrag) {
+      if (releaseTimer) {
+        clearTimeout(releaseTimer);
+        releaseTimer = null;
+      }
+      dragY = 0;
+      dragging = false;
+      releasing = false;
+    }
+  });
+
+  function onGrabberPointerDown(e: PointerEvent) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (releaseTimer) {
+      clearTimeout(releaseTimer);
+      releaseTimer = null;
+    }
+    startY = e.clientY;
+    startTime = performance.now();
+    dragging = true;
+    releasing = false;
+    dismissingFromDrag = false;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  function onGrabberPointerMove(e: PointerEvent) {
+    if (!dragging) return;
+    dragY = Math.max(0, e.clientY - startY);
+  }
+
+  function onGrabberPointerUp(e: PointerEvent) {
+    if (!dragging) return;
+    const delta = e.clientY - startY;
+    const duration = performance.now() - startTime;
+    const velocity = delta / Math.max(duration, 1);
+    dragging = false;
+
+    // Tap or upward drag: dragY is already 0, no animation needed.
+    if (dragY === 0) return;
+
+    if (delta >= DRAG_THRESHOLD_PX || velocity >= DRAG_VELOCITY_THRESHOLD) {
+      // Dismiss: animate the sheet off-screen with our own transition,
+      // then unmount via bits-ui. The project doesn't ship
+      // tailwindcss-animate, so the `slide-out-to-bottom` class is a
+      // no-op and bits-ui tears down the content immediately when
+      // `open` becomes false. Without this self-animation the sheet
+      // would either teleport away or snap back to translateY(0).
+      dismissingFromDrag = true;
+      releasing = true;
+      dragY = typeof window === 'undefined' ? 800 : window.innerHeight;
+      releaseTimer = setTimeout(() => {
+        // Reset drag state in the same flush as the close so the
+        // unmount happens with `sheetStyle` already cleared. If we left
+        // dismissingFromDrag / dragY / releasing set, a later reopen
+        // would mount the new content with the stale off-screen
+        // transform still applied and animate it back to translateY(0).
+        releaseTimer = null;
+        dragY = 0;
+        releasing = false;
+        dismissingFromDrag = false;
+        handleOpenChange(false);
+      }, TRANSITION_MS);
+    } else {
+      dragY = 0;
+      releasing = true;
+      releaseTimer = setTimeout(() => {
+        releaseTimer = null;
+        releasing = false;
+      }, RESET_MS);
+    }
+  }
 </script>
 
 <DialogPrimitive.Root bind:open onOpenChange={handleOpenChange}>
@@ -61,9 +172,19 @@
         sideClasses[side],
         className
       )}
+      style={sheetStyle}
     >
       {#if side === 'bottom'}
-        <div data-sheet-grabber class="mx-auto h-1 w-9 rounded-full bg-border"></div>
+        <div
+          class="-mt-2 mb-1 flex touch-none cursor-grab justify-center py-2 active:cursor-grabbing"
+          role="presentation"
+          onpointerdown={onGrabberPointerDown}
+          onpointermove={onGrabberPointerMove}
+          onpointerup={onGrabberPointerUp}
+          onpointercancel={onGrabberPointerUp}
+        >
+          <span data-sheet-grabber class="h-1 w-9 rounded-full bg-border"></span>
+        </div>
       {/if}
       {#if title}
         <DialogPrimitive.Title class="font-display text-xl italic leading-tight">

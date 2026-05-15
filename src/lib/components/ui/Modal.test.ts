@@ -56,4 +56,70 @@ describe('Modal', () => {
     });
     expect(screen.getByText('actions')).toBeTruthy();
   });
+
+  async function dragGrabber(deltaY: number, holdMs = 250) {
+    const grabber = document.querySelector('[data-sheet-grabber]')?.parentElement as HTMLElement;
+    // happy-dom does not implement setPointerCapture; stub it.
+    (grabber as unknown as { setPointerCapture: (id: number) => void }).setPointerCapture =
+      () => {};
+    const fire = (type: string, clientY: number) =>
+      grabber.dispatchEvent(
+        new PointerEvent(type, { clientY, pointerType: 'touch', button: 0, bubbles: true })
+      );
+    fire('pointerdown', 0);
+    fire('pointermove', deltaY);
+    await new Promise((r) => setTimeout(r, holdMs));
+    fire('pointerup', deltaY);
+  }
+
+  it('closes a bottom sheet when the grabber is dragged past the threshold', async () => {
+    let lastOpen: boolean | undefined;
+    render(Modal, {
+      props: {
+        open: true,
+        side: 'bottom',
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: text('x')
+      }
+    });
+    await dragGrabber(200);
+    // The dismiss animates the sheet off-screen for TRANSITION_MS (220) before
+    // it calls handleOpenChange — wait long enough for the timer to fire.
+    await new Promise((r) => setTimeout(r, 260));
+    expect(lastOpen).toBe(false);
+  });
+
+  it('keeps a bottom sheet open when the grabber is released below the threshold', async () => {
+    let lastOpen: boolean | undefined;
+    render(Modal, {
+      props: {
+        open: true,
+        side: 'bottom',
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: text('x')
+      }
+    });
+    await dragGrabber(40);
+    expect(lastOpen).toBeUndefined();
+  });
+
+  it('does not close a bottom sheet on a bare tap (no drag) of the grabber', async () => {
+    let lastOpen: boolean | undefined;
+    render(Modal, {
+      props: {
+        open: true,
+        side: 'bottom',
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: text('x')
+      }
+    });
+    await dragGrabber(0);
+    expect(lastOpen).toBeUndefined();
+  });
 });
