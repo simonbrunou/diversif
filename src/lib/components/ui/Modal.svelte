@@ -39,8 +39,15 @@
     bottom:
       'inset-x-0 bottom-0 max-h-[92dvh] rounded-t-hero pb-8 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
     left: 'inset-y-0 left-0 flex h-full w-3/4 max-w-xs flex-col data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+    // Center sits at left/top 50% with `-translate-x/y-1/2` for true
+    // centering. tailwindcss-animate animates the whole `transform`
+    // property, so without matching translate-1/2 anchors on the
+    // animation variables the modal would drift from translate(0,0)
+    // toward translate(-50%,-50%) on every open/close. The slide-*-1/2
+    // utilities pin the enter `from` / exit `to` to the centering
+    // transform so only the scale + opacity actually animate.
     center:
-      'left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-hero data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95'
+      'left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-hero data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-1/2 data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-1/2'
   };
 
   function handleOpenChange(v: boolean) {
