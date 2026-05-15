@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-15)
 
 ## Corpus Check
-- 370 files · ~492,280 words
+- 370 files · ~492,349 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `535fc34b`
+- Built from commit: `efb411ab`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -252,11 +252,11 @@ Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 26 - "Idempotency Primitive"
 Cohesion: 0.29
-Nodes (5): findActiveInvitation(), load(), userHasMembership(), load(), localizedRedirect()
+Nodes (5): load(), LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, withIdempotencyKey()
 
 ### Community 27 - "Auth Guards & Sessions"
 Cohesion: 0.29
-Nodes (5): load(), LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, withIdempotencyKey()
+Nodes (5): findActiveInvitation(), load(), userHasMembership(), load(), localizedRedirect()
 
 ### Community 28 - "Reactions Vocabulary"
 Cohesion: 0.33
