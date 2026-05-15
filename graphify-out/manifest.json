@@ -323,13 +323,13 @@
     "mtime": 1778764306.1887553,
     "hash": "d41fe03257ed4c16dffff9bc807cca17"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/ChildSwitcherDrawer.svelte": {
-    "mtime": 1778789119.944745,
-    "hash": "ceb5ad86a7bccc22cc50d1981bb5c5d2"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/BottomNavBento.svelte": {
-    "mtime": 1778789515.250355,
+    "mtime": 1778789897.5670905,
     "hash": "ca70c80bd6c416b6b202d56eb18ad6fd"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ChildSwitcherDrawer.svelte": {
+    "mtime": 1778789897.5670905,
+    "hash": "ceb5ad86a7bccc22cc50d1981bb5c5d2"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCtaBento.test.ts": {
     "mtime": 1778708530.7503636,
@@ -411,10 +411,6 @@
     "mtime": 1778708530.7726095,
     "hash": "963c9f474a964bb3228386d43a861f17"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.svelte": {
-    "mtime": 1778714600.4894998,
-    "hash": "e2e5c9c27f8820bd95efa449761dfc4a"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/SectionHeader.svelte": {
     "mtime": 1778742331.634663,
     "hash": "97e9013c7081fdd6def7f8d7e22df7da"
@@ -447,9 +443,13 @@
     "mtime": 1778744164.54867,
     "hash": "494782e38a65b66445e3e005f2e0e827"
   },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.svelte": {
+    "mtime": 1778824644.0308735,
+    "hash": "4e39df898f4920232aa6e505eb3a2e1d"
+  },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.test.ts": {
-    "mtime": 1778764306.1887553,
-    "hash": "8995f492914c90ecf4a8700e15deda55"
+    "mtime": 1778824738.3828058,
+    "hash": "775bd16dfb2181b979a8b703a61a1fc8"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/AllergensSnapshot.test.ts": {
     "mtime": 1778708530.777163,
@@ -715,37 +715,37 @@
     "mtime": 1778789003.6490302,
     "hash": "2a831d5117f9830cc47d6b9ea9526a3c"
   },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/AujourdhuiBento.svelte": {
+    "mtime": 1778789897.5670905,
+    "hash": "1f40e5a7392ed26be9304e7c36967582"
+  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetSegments.svelte": {
-    "mtime": 1778789130.1296325,
+    "mtime": 1778789897.5670905,
     "hash": "9920c5b5766eb235dda597f481d2cc2c"
   },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.svelte": {
+    "mtime": 1778789897.5670905,
+    "hash": "b4d5578d23a025e6a60c44cedbe1408e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCardGrid.svelte": {
+    "mtime": 1778789897.5670905,
+    "hash": "30262155ce3c44b42b1e9a1abd93a0f2"
+  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/ProfilBento.svelte": {
-    "mtime": 1778789159.5763063,
+    "mtime": 1778789897.5670905,
     "hash": "f140b767031a11508222d58eb3fea3d3"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/RgpdSection.svelte": {
-    "mtime": 1778789177.2371109,
+    "mtime": 1778789897.5670905,
     "hash": "a6a78a62b683b082e938fdc991720572"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SourcesCluster.svelte": {
-    "mtime": 1778789195.1989117,
+    "mtime": 1778789897.5670905,
     "hash": "c438f290311d4329d77ce46d84363a81"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/StayCoolCard.svelte": {
-    "mtime": 1778789198.2638779,
+    "mtime": 1778789897.5670905,
     "hash": "04c9625c4d4470c6a8ba4d5f77ded96e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.svelte": {
-    "mtime": 1778789498.834538,
-    "hash": "b4d5578d23a025e6a60c44cedbe1408e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AujourdhuiBento.svelte": {
-    "mtime": 1778789550.0339677,
-    "hash": "1f40e5a7392ed26be9304e7c36967582"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCardGrid.svelte": {
-    "mtime": 1778789555.0559118,
-    "hash": "30262155ce3c44b42b1e9a1abd93a0f2"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
@@ -1040,19 +1040,19 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1778789603.67237,
+    "mtime": 1778824751.9686522,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1778789603.67237,
+    "mtime": 1778824751.9686522,
     "hash": "25bf27081b36b20b060a56ee2d9e864b"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1778789603.67237,
+    "mtime": 1778824751.9686522,
     "hash": "b403c8d52afba18155a1e3168aa5ed80"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1778789603.67237,
+    "mtime": 1778824751.9686522,
     "hash": "3c883cf3cce353bd2c719a9be15a61f0"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {

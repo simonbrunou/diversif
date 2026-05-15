@@ -48,6 +48,62 @@
     onOpenChange?.(v);
     if (!v) onclose?.();
   }
+
+  const DRAG_THRESHOLD_PX = 100;
+  const DRAG_VELOCITY_THRESHOLD = 0.5;
+
+  let dragY = $state(0);
+  let dragging = $state(false);
+  let releasing = $state(false);
+  let startY = 0;
+  let startTime = 0;
+  let releaseTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const sheetStyle = $derived.by(() => {
+    if (side !== 'bottom') return undefined;
+    if (!dragging && !releasing) return undefined;
+    const transition = dragging ? 'none' : 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
+    return `transform: translateY(${dragY}px); transition: ${transition};`;
+  });
+
+  function onGrabberPointerDown(e: PointerEvent) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (releaseTimer) {
+      clearTimeout(releaseTimer);
+      releaseTimer = null;
+    }
+    startY = e.clientY;
+    startTime = performance.now();
+    dragging = true;
+    releasing = false;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  function onGrabberPointerMove(e: PointerEvent) {
+    if (!dragging) return;
+    dragY = Math.max(0, e.clientY - startY);
+  }
+
+  function onGrabberPointerUp(e: PointerEvent) {
+    if (!dragging) return;
+    const delta = e.clientY - startY;
+    const duration = performance.now() - startTime;
+    const velocity = delta / Math.max(duration, 1);
+    dragging = false;
+
+    if (delta >= DRAG_THRESHOLD_PX || velocity >= DRAG_VELOCITY_THRESHOLD) {
+      dragY = 0;
+      releasing = false;
+      handleOpenChange(false);
+    } else {
+      dragY = 0;
+      releasing = true;
+      releaseTimer = setTimeout(() => {
+        releasing = false;
+        releaseTimer = null;
+      }, 240);
+    }
+  }
 </script>
 
 <DialogPrimitive.Root bind:open onOpenChange={handleOpenChange}>
@@ -61,9 +117,19 @@
         sideClasses[side],
         className
       )}
+      style={sheetStyle}
     >
       {#if side === 'bottom'}
-        <div data-sheet-grabber class="mx-auto h-1 w-9 rounded-full bg-border"></div>
+        <div
+          class="-mt-2 mb-1 flex touch-none cursor-grab justify-center py-2 active:cursor-grabbing"
+          role="presentation"
+          onpointerdown={onGrabberPointerDown}
+          onpointermove={onGrabberPointerMove}
+          onpointerup={onGrabberPointerUp}
+          onpointercancel={onGrabberPointerUp}
+        >
+          <span data-sheet-grabber class="h-1 w-9 rounded-full bg-border"></span>
+        </div>
       {/if}
       {#if title}
         <DialogPrimitive.Title class="font-display text-xl italic leading-tight">
