@@ -51,8 +51,13 @@
 
   const DRAG_THRESHOLD_PX = 100;
   const DRAG_VELOCITY_THRESHOLD = 0.5;
-  const TRANSITION_MS = 220;
-  const RESET_MS = 240;
+  const SNAP_TRANSITION_MS = 220;
+  const SNAP_RESET_MS = 240;
+  // tailwindcss-animate exit runs at duration-slow (--dur-slow = 360ms).
+  // Wait past the exit animation + bits-ui unmount tick before clearing
+  // the inline transform so the element is gone by then and a CSS reset
+  // can't flash on its way out.
+  const DISMISS_RESET_MS = 400;
 
   let dragY = $state(0);
   let dragging = $state(false);
@@ -65,9 +70,14 @@
   const sheetStyle = $derived.by(() => {
     if (side !== 'bottom') return undefined;
     if (!dragging && !releasing) return undefined;
-    const transition = dragging
-      ? 'none'
-      : `transform ${TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    // During drag and during dismiss-from-drag, no inline transition:
+    // the finger drives the transform in the first case, and the
+    // tailwindcss-animate slide-out-to-bottom keyframe interpolates
+    // from the inline translate in the second.
+    const transition =
+      dragging || dismissingFromDrag
+        ? 'none'
+        : `transform ${SNAP_TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
     return `transform: translateY(${dragY}px); transition: ${transition};`;
   });
 
@@ -118,6 +128,21 @@
     dragY = Math.max(0, e.clientY - startY);
   }
 
+  function onGrabberPointerCancel() {
+    // A system gesture interrupted the drag (notch swipe, app backgrounding,
+    // etc.). The user did not deliberately complete the swipe, so snap back
+    // even if the drag had already crossed the dismiss threshold.
+    if (!dragging) return;
+    dragging = false;
+    if (dragY === 0) return;
+    dragY = 0;
+    releasing = true;
+    releaseTimer = setTimeout(() => {
+      releaseTimer = null;
+      releasing = false;
+    }, SNAP_RESET_MS);
+  }
+
   function onGrabberPointerUp(e: PointerEvent) {
     if (!dragging) return;
     const delta = e.clientY - startY;
@@ -129,34 +154,28 @@
     if (dragY === 0) return;
 
     if (delta >= DRAG_THRESHOLD_PX || velocity >= DRAG_VELOCITY_THRESHOLD) {
-      // Dismiss: animate the sheet off-screen with our own transition,
-      // then unmount via bits-ui. The project doesn't ship
-      // tailwindcss-animate, so the `slide-out-to-bottom` class is a
-      // no-op and bits-ui tears down the content immediately when
-      // `open` becomes false. Without this self-animation the sheet
-      // would either teleport away or snap back to translateY(0).
+      // Dismiss: keep dragY + releasing set so the inline transform
+      // remains the underlying value when tailwindcss-animate's
+      // slide-out-to-bottom keyframe starts. The keyframe's implicit
+      // `from` is sampled at animation start, so the exit interpolates
+      // from the released drag position to translate(0, 100%) rather
+      // than snapping back to translateY(0) first.
       dismissingFromDrag = true;
       releasing = true;
-      dragY = typeof window === 'undefined' ? 800 : window.innerHeight;
+      handleOpenChange(false);
       releaseTimer = setTimeout(() => {
-        // Reset drag state in the same flush as the close so the
-        // unmount happens with `sheetStyle` already cleared. If we left
-        // dismissingFromDrag / dragY / releasing set, a later reopen
-        // would mount the new content with the stale off-screen
-        // transform still applied and animate it back to translateY(0).
         releaseTimer = null;
         dragY = 0;
         releasing = false;
         dismissingFromDrag = false;
-        handleOpenChange(false);
-      }, TRANSITION_MS);
+      }, DISMISS_RESET_MS);
     } else {
       dragY = 0;
       releasing = true;
       releaseTimer = setTimeout(() => {
         releaseTimer = null;
         releasing = false;
-      }, RESET_MS);
+      }, SNAP_RESET_MS);
     }
   }
 </script>
@@ -164,7 +183,7 @@
 <DialogPrimitive.Root bind:open onOpenChange={handleOpenChange}>
   <DialogPrimitive.Portal>
     <DialogPrimitive.Overlay
-      class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=open]:animate-in"
+      class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm duration-slow data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=open]:animate-in"
     />
     <DialogPrimitive.Content
       class={cn(
@@ -181,7 +200,7 @@
           onpointerdown={onGrabberPointerDown}
           onpointermove={onGrabberPointerMove}
           onpointerup={onGrabberPointerUp}
-          onpointercancel={onGrabberPointerUp}
+          onpointercancel={onGrabberPointerCancel}
         >
           <span data-sheet-grabber class="h-1 w-9 rounded-full bg-border"></span>
         </div>
