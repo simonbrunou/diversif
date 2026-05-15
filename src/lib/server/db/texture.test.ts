@@ -83,15 +83,42 @@ describe('food_entries.texture column', () => {
   });
 
   it('rejects an invalid texture value via CHECK constraint', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const food = await seedFood('Poire');
+
+    // Must reject with the invalid texture value.
     await expect(
-      testDb.execute(
-        sql`INSERT INTO food_entries (child_id, food_id, given_at, reaction, texture, logged_by, created_at)
-            VALUES (
-              (SELECT id FROM children LIMIT 1),
-              (SELECT id FROM foods LIMIT 1),
-              now(), 'ras', 'not-a-texture', NULL, now()
-            )`
-      )
+      testDb.insert(foodEntries).values({
+        childId: c.id,
+        foodId: food.id,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'not-a-texture' as never,
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      })
     ).rejects.toThrow();
+
+    // Control: the same FK values with a valid texture must succeed.
+    // If the failure above were caused by a FK/NOT-NULL problem instead of the
+    // CHECK constraint, this control insert would also fail, making the test
+    // self-contradictory and immediately obvious.
+    const [control] = await testDb
+      .insert(foodEntries)
+      .values({
+        childId: c.id,
+        foodId: food.id,
+        givenAt: new Date(),
+        reaction: 'ras',
+        texture: 'lisse',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      })
+      .returning();
+    expect(control.texture).toBe('lisse');
   });
 });
