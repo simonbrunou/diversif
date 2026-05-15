@@ -87,7 +87,7 @@
       maxlength="280"
       bind:value={note}
       placeholder={m.addSymptomNotePlaceholder()}
-      class="mt-1 w-full rounded-tile border border-border bg-canvas p-2 text-sm"
+      class="mt-1 w-full touch-pan-y rounded-tile border border-border bg-canvas p-2 text-sm"
       rows="3"
     ></textarea>
 

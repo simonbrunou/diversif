@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-15)
 
 ## Corpus Check
-- 370 files · ~493,673 words
+- 370 files · ~493,674 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1927 nodes · 2774 edges · 149 communities (140 shown, 9 thin omitted)
+- 1927 nodes · 2774 edges · 150 communities (141 shown, 9 thin omitted)
 - Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 508 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `13b2c58f`
+- Built from commit: `302b8a38`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -47,12 +47,13 @@
 - [[_COMMUNITY_Community 31|Community 31]]
 - [[_COMMUNITY_Community 32|Community 32]]
 - [[_COMMUNITY_Community 33|Community 33]]
-- [[_COMMUNITY_Community 35|Community 35]]
-- [[_COMMUNITY_Community 38|Community 38]]
+- [[_COMMUNITY_Community 34|Community 34]]
+- [[_COMMUNITY_Community 36|Community 36]]
 - [[_COMMUNITY_Community 39|Community 39]]
 - [[_COMMUNITY_Community 40|Community 40]]
 - [[_COMMUNITY_Community 41|Community 41]]
 - [[_COMMUNITY_Community 42|Community 42]]
+- [[_COMMUNITY_Community 43|Community 43]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `languageTag()` - 395 edges
@@ -78,7 +79,7 @@
 - `load()` --calls--> `getLegalIdentity()`  [INFERRED]
   src/routes/mentions-legales/+page.server.ts → src/lib/server/legal.ts
 
-## Communities (149 total, 9 thin omitted)
+## Communities (150 total, 9 thin omitted)
 
 ### Community 0 - "i18n Messages (auth.*)"
 Cohesion: 0.01
@@ -109,8 +110,8 @@ Cohesion: 0.13
 Nodes (21): escapePatternText(), findPlaceholderClosingIndex(), flatten(), isBuffer(), parseBundle(), parseDeclaration(), parseMarkupBody(), parseMarkupPlaceholder() (+13 more)
 
 ### Community 10 - "Offline Log Queue (IndexedDB)"
-Cohesion: 0.2
-Nodes (12): load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), LogActionAbort, parseChildIdParam(), requireMembership() (+4 more)
+Cohesion: 0.24
+Nodes (11): load(), loadBentoAllergens(), loadWeeklyEntries(), load(), load(), parseChildIdParam(), requireMembership(), requireOwnership() (+3 more)
 
 ### Community 11 - "User Memory & Medical Audit"
 Cohesion: 0.19
@@ -121,28 +122,28 @@ Cohesion: 0.24
 Nodes (11): dismissReminder(), loadAnalyticsBuckets(), loadCoparentActivity(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadRepeatCandidates(), loadStreak() (+3 more)
 
 ### Community 13 - "UI Component Library"
-Cohesion: 0.17
-Nodes (8): isUniqueViolation(), load(), IdempotencyInFlight, IdempotencyScopeMismatch, withIdempotencyKey(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
-
-### Community 14 - "Account Export / Delete"
-Cohesion: 0.2
-Nodes (9): findActiveInvitation(), load(), userHasMembership(), load(), load(), findUserByEmail(), requireGuest(), localizedRedirect() (+1 more)
-
-### Community 15 - "DB Init, Backup & Seed"
 Cohesion: 0.18
 Nodes (7): applySeedCorrections(), seedFoods(), drainPool(), registerShutdownHandlers(), _resetShutdownState(), makeHarness(), makeProc()
 
-### Community 16 - "Allergens & Milestones"
+### Community 14 - "Account Export / Delete"
 Cohesion: 0.21
 Nodes (10): severityOf(), countNthExposition(), insertSymptom(), formatDate(), formatTime(), load(), loadEntry(), loadEntryForChild() (+2 more)
+
+### Community 15 - "DB Init, Backup & Seed"
+Cohesion: 0.21
+Nodes (7): load(), load(), load(), findUserByEmail(), requireGuest(), localizedRedirect(), load()
+
+### Community 16 - "Allergens & Milestones"
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 17 - "Sentry Observability"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
 
 ### Community 18 - "Legal Pages"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
+Cohesion: 0.24
+Nodes (7): findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
 
 ### Community 19 - "Invitations & Memberships"
 Cohesion: 0.26
@@ -169,30 +170,34 @@ Cohesion: 0.28
 Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
 
 ### Community 25 - "Reaction Reports & Reminders"
+Cohesion: 0.33
+Nodes (4): LogActionAbort, IdempotencyInFlight, IdempotencyScopeMismatch, withIdempotencyKey()
+
+### Community 26 - "Idempotency Primitive"
 Cohesion: 0.5
 Nodes (6): clearTimer(), formatRemaining(), keyFor(), loadTimer(), remainingMs(), saveTimer()
 
-### Community 26 - "Idempotency Primitive"
+### Community 27 - "Auth Guards & Sessions"
 Cohesion: 0.36
 Nodes (5): categoryLabel(), computeReminders(), push(), input(), isolated()
 
-### Community 27 - "Auth Guards & Sessions"
+### Community 28 - "Reactions Vocabulary"
 Cohesion: 0.48
 Nodes (4): listSymptomsByEntry(), load(), ageInMonths(), formatAge()
 
-### Community 28 - "Reactions Vocabulary"
+### Community 29 - "Diversity Metrics"
 Cohesion: 0.6
 Nodes (4): getCategoryClasses(), getCategoryColor(), getCategoryIcon(), getCategoryLabel()
 
-### Community 29 - "Diversity Metrics"
+### Community 30 - "Reminders Engine"
 Cohesion: 0.6
 Nodes (3): signUp(), signUpOwnerAndCreateChild(), unique()
 
-### Community 31 - "Community 31"
+### Community 32 - "Community 32"
 Cohesion: 0.7
 Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
-### Community 32 - "Community 32"
+### Community 33 - "Community 33"
 Cohesion: 0.7
 Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
