@@ -8,7 +8,7 @@
   import TexturePicker from '$lib/components/TexturePicker.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
   import { defaultTextureForAgeMonths, type TextureKey } from '$lib/utils/textures';
-  import { formatDateInputValue } from '$lib/utils/dates';
+  import { formatDateInputValue, localInputToIso } from '$lib/utils/dates';
   import { ageInMonths } from '$lib/utils/age';
   import { getTipsFor, pickRotatingTip } from '$lib/content/guidance';
   import { page } from '$app/stores';
@@ -72,6 +72,10 @@
         return async () => {};
       }
       submitting = true;
+      const rawGivenAt = formData.get('givenAt');
+      if (typeof rawGivenAt === 'string') {
+        formData.set('givenAt', localInputToIso(rawGivenAt));
+      }
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
         cancel();
         const formObj: Record<string, string> = {};

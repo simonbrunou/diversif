@@ -6,7 +6,7 @@
   import FoodCombobox from '$lib/components/FoodCombobox.svelte';
   import ReactionPicker from '$lib/components/ReactionPicker.svelte';
   import TexturePicker from '$lib/components/TexturePicker.svelte';
-  import { formatDateInputValue } from '$lib/utils/dates';
+  import { formatDateInputValue, localInputToIso } from '$lib/utils/dates';
   import type { TextureKey } from '$lib/utils/textures';
   import { enhance } from '$app/forms';
   import { Trash2 } from 'lucide-svelte';
@@ -46,8 +46,12 @@
     method="POST"
     action="?/update"
     class="grid gap-5"
-    use:enhance={() => {
+    use:enhance={({ formData }) => {
       saving = true;
+      const rawGivenAt = formData.get('givenAt');
+      if (typeof rawGivenAt === 'string') {
+        formData.set('givenAt', localInputToIso(rawGivenAt));
+      }
       return async ({ update }) => {
         await update();
         saving = false;
