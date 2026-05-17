@@ -50,6 +50,19 @@ export function parseDateTimeLocal(value: string): Date {
   return dayjs(value).toDate();
 }
 
+// <input type="datetime-local"> produces TZ-naive strings ("2026-05-17T12:27").
+// Per ECMA-262, the server parses those in *its* local TZ — typically UTC in
+// containers — so a user's "12:27 CEST" round-trips as "12:27 UTC" and the
+// browser then re-renders it as "14:27 CEST" (+2h). Anchoring to ISO here on
+// the client closes that gap before the form leaves the browser.
+export function localInputToIso(value: string): string {
+  if (!value) return value;
+  if (/[Zz]|[+-]\d{2}:?\d{2}$/.test(value)) return value;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toISOString();
+}
+
 /**
  * Returns a locale-aware age in months since birthMonth.
  * E.g. "6 mois" (FR) or "6 mo" (EN).

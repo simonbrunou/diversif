@@ -6,7 +6,8 @@ import {
   formatDateInputValue,
   parseDateTimeLocal,
   isValidBirthDate,
-  formatMonthsSince
+  formatMonthsSince,
+  localInputToIso
 } from './dates';
 
 describe('isValidBirthDate', () => {
@@ -118,6 +119,29 @@ describe('parseDateTimeLocal', () => {
     const d = parseDateTimeLocal('2024-03-01T09:30');
     expect(d).toBeInstanceOf(Date);
     expect(Number.isNaN(d.getTime())).toBe(false);
+  });
+});
+
+describe('localInputToIso', () => {
+  it('passes through values that already carry a timezone offset', () => {
+    expect(localInputToIso('2026-05-17T10:27:00Z')).toBe('2026-05-17T10:27:00Z');
+    expect(localInputToIso('2026-05-17T12:27:00+02:00')).toBe('2026-05-17T12:27:00+02:00');
+    expect(localInputToIso('2026-05-17T08:27:00-02:00')).toBe('2026-05-17T08:27:00-02:00');
+  });
+
+  it('anchors a TZ-naive datetime-local string to the same instant', () => {
+    // Naive strings round-trip through Date in host-local time. The helper's
+    // contract is "preserve the instant" — re-parsing the output yields the
+    // same moment as parsing the input.
+    const naive = '2026-05-17T12:27';
+    const isoOut = localInputToIso(naive);
+    expect(/Z|[+-]\d{2}:\d{2}$/.test(isoOut)).toBe(true);
+    expect(new Date(isoOut).getTime()).toBe(new Date(naive).getTime());
+  });
+
+  it('returns the input unchanged for invalid strings', () => {
+    expect(localInputToIso('not-a-date')).toBe('not-a-date');
+    expect(localInputToIso('')).toBe('');
   });
 });
 
