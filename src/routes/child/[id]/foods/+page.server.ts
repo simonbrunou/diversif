@@ -3,7 +3,11 @@ import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
 import { loadTexturesTried } from '$lib/server/guidance/queries';
-import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import {
+  ALLERGENS,
+  ALLERGEN_MAINTAIN_DAYS,
+  PRIORITY_INTRODUCTION_ALLERGENS
+} from '$lib/utils/allergens';
 import type { TextureKey } from '$lib/utils/textures';
 import type { PageServerLoad } from './$types';
 
@@ -18,7 +22,6 @@ export type AllergenItem = {
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const FADING_THRESHOLD_DAYS = 4;
 const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 function formatDDMMYY(d: Date): string {
@@ -81,7 +84,7 @@ async function loadBentoAllergens(
     let state: AllergenItem['state'];
     if (b.hasReaction) {
       state = 'reaction';
-    } else if (isPriority && daysSince > FADING_THRESHOLD_DAYS) {
+    } else if (isPriority && daysSince > ALLERGEN_MAINTAIN_DAYS) {
       state = 'fading';
     } else {
       state = 'cleared';

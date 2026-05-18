@@ -55,6 +55,17 @@ export const PRIORITY_INTRODUCTION_ALLERGENS = [
 
 export type PriorityIntroductionAllergenId = (typeof PRIORITY_INTRODUCTION_ALLERGENS)[number];
 
+// Days after which a previously-introduced priority allergen is considered
+// "fading" / needs maintenance re-exposure. Anchored to LEAP/ESPGHAN's
+// 2-3 exposures/week target. Single source of truth: both the dashboard
+// `fading` badge in /child/[id]/foods and the `maintain-allergen` reminder
+// in lib/server/guidance/reminders gate on this same threshold.
+export const ALLERGEN_MAINTAIN_DAYS = 4;
+
+// Typed overload: when called with a known AllergenId we always return a
+// string; the broader signature stays for consumers that pass arbitrary input.
+export function getAllergenLabel(id: AllergenId): string;
+export function getAllergenLabel(id: string | null | undefined): string | null;
 export function getAllergenLabel(id: string | null | undefined): string | null {
   if (!id) return null;
   return ALLERGENS.find((a) => a.id === id)?.label ?? null;

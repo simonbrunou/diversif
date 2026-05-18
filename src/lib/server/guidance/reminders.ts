@@ -2,8 +2,13 @@
 // list of reminders the dashboard should currently surface. No DB calls here
 // : the caller passes plain data : to keep this trivially testable.
 
-import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS, type AllergenId } from '$lib/utils/allergens';
-import type { CategoryId } from '$lib/utils/categories';
+import {
+  ALLERGEN_MAINTAIN_DAYS,
+  PRIORITY_INTRODUCTION_ALLERGENS,
+  getAllergenLabel,
+  type AllergenId
+} from '$lib/utils/allergens';
+import { getCategoryLabel, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import type { SourceId } from '$lib/content/sources';
 import type { EnrichedEntry } from './queries';
@@ -38,12 +43,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // the others (soja, céleri, moutarde, crustacés, mollusques) are excluded.
 const ALLERGEN_PRIORITY: readonly AllergenId[] = PRIORITY_INTRODUCTION_ALLERGENS;
 
-const MAINTAIN_THRESHOLD_DAYS = 4;
 const MAINTAIN_CARD_CAP = 2;
-
-const ALLERGEN_LABELS: Record<AllergenId, string> = Object.fromEntries(
-  ALLERGENS.map((a) => [a.id, a.label])
-) as Record<AllergenId, string>;
 
 const SEVERITY_RANK: Record<Severity, number> = { important: 0, warn: 1, info: 2 };
 
@@ -143,7 +143,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       push(out, input.dismissals, {
         key: `pending-allergen:${id}`,
         severity: 'warn',
-        title: `Allergène à introduire : ${ALLERGEN_LABELS[id]}`,
+        title: `Allergène à introduire : ${getAllergenLabel(id)}`,
         body: "Plus on attend, plus le risque d'allergie augmente. Introduisez-le sous une forme adaptée à l'âge de bébé.",
         cta: { label: "Comment l'introduire", href: `${childPath}/guide#allergenes` },
         sources: ['leap-2015', 'eat-2016', 'espghan-2017'],
@@ -258,7 +258,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
           key: `category-imbalance:${dominant.cat}`,
           severity: 'info',
           title: 'Pensez à varier les groupes',
-          body: `Plus de ${Math.round(dominant.ratio * 100)} % de vos logs des 14 derniers jours sont dans la catégorie « ${categoryLabel(dominant.cat)} ». Diversifiez avec d'autres groupes (protéines, féculents, fruits…).`,
+          body: `Plus de ${Math.round(dominant.ratio * 100)} % de vos logs des 14 derniers jours sont dans la catégorie « ${getCategoryLabel(dominant.cat)} ». Diversifiez avec d'autres groupes (protéines, féculents, fruits…).`,
           cta: { label: 'Voir les suggestions', href: `${childPath}/suggestions` },
           sources: ['spf-pnns-guide'],
           dismissable: true
@@ -306,14 +306,14 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       const lastAt = lastByAllergen.get(id);
       if (lastAt == null) continue; // introduced but no allergenType-tagged entry in window
       const daysSince = Math.max(0, Math.floor((now - lastAt) / DAY_MS));
-      if (daysSince > MAINTAIN_THRESHOLD_DAYS) {
+      if (daysSince > ALLERGEN_MAINTAIN_DAYS) {
         candidates.push({ id, daysSince, lastAt });
       }
     }
     // Sort oldest exposure first (largest daysSince first), cap to MAINTAIN_CARD_CAP.
     candidates.sort((a, b) => b.daysSince - a.daysSince);
     for (const c of candidates.slice(0, MAINTAIN_CARD_CAP)) {
-      const label = ALLERGEN_LABELS[c.id];
+      const label = getAllergenLabel(c.id);
       const lastAtDayBucket = Math.floor(c.lastAt / DAY_MS);
       push(out, input.dismissals, {
         key: `maintain-allergen:${c.id}:${lastAtDayBucket}`,
@@ -335,23 +335,4 @@ export function computeReminders(input: ReminderInput): Reminder[] {
 function push(out: Reminder[], dismissals: Set<string>, r: Reminder): void {
   if (dismissals.has(r.key)) return;
   out.push(r);
-}
-
-function categoryLabel(id: CategoryId): string {
-  // Avoid pulling categories.ts here to keep this module pure-server-friendly.
-  const map: Record<CategoryId, string> = {
-    legumes: 'Légumes',
-    fruits: 'Fruits',
-    feculents: 'Féculents',
-    legumineuses: 'Légumineuses',
-    viandes: 'Viandes',
-    poissons: 'Poissons',
-    oeufs: 'Œufs',
-    produits_laitiers: 'Produits laitiers',
-    allergenes: 'Allergènes',
-    matieres_grasses: 'Matières grasses',
-    aromates: 'Aromates',
-    autre: 'Autre'
-  };
-  return map[id] ?? id;
 }
