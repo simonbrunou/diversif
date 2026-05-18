@@ -535,10 +535,6 @@
     "mtime": 1778708530.8002276,
     "hash": "dbb24d2930eaacb2d17d88ddbe37727f"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StayCoolCard.test.ts": {
-    "mtime": 1778708530.8008142,
-    "hash": "af63cc5326c0b5976dc594a636071b50"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SuggestionFeed.test.ts": {
     "mtime": 1778708530.8013642,
     "hash": "e5401569e314eb0da906e82db3f6b2fb"
@@ -671,10 +667,6 @@
     "mtime": 1778789897.5670905,
     "hash": "c438f290311d4329d77ce46d84363a81"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StayCoolCard.svelte": {
-    "mtime": 1778789897.5670905,
-    "hash": "04c9625c4d4470c6a8ba4d5f77ded96e"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.svelte": {
     "mtime": 1778839382.1008472,
     "hash": "4855af1b8e56b1204d21e42775580cd1"
@@ -743,29 +735,37 @@
     "mtime": 1778877144.18866,
     "hash": "ce75817c622251c1d22cdb8c4515f3bf"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.svelte": {
-    "mtime": 1779123938.5640671,
-    "hash": "07039f5d1e0f282bed16363c891cbc96"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.svelte": {
-    "mtime": 1779123963.9617586,
-    "hash": "29040245ba2d06f7184b2c4a351cfbe3"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.test.ts": {
-    "mtime": 1779123992.9794064,
+    "mtime": 1779127068.6644719,
     "hash": "378672cffa471a54099cf0369cc97a34"
   },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.svelte": {
+    "mtime": 1779127068.6644719,
+    "hash": "07039f5d1e0f282bed16363c891cbc96"
+  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.test.ts": {
-    "mtime": 1779124004.5572658,
+    "mtime": 1779127068.6644719,
     "hash": "9839312f119da139c17184caf595c8b8"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.test.ts": {
-    "mtime": 1779124026.9979932,
-    "hash": "7517533533e20c8ebfc5c9b4d6db8dc1"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.svelte": {
-    "mtime": 1779124150.7414906,
+    "mtime": 1779127068.6644719,
     "hash": "2a6ba4ea8d434792c5db50a0cd2b82fb"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.test.ts": {
+    "mtime": 1779127068.6644719,
+    "hash": "110243a314603a2cc9c4032074646e81"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/StayCoolCard.svelte": {
+    "mtime": 1779128685.2864254,
+    "hash": "2780c4c08bd8a9a096ae5d1a3e6e9225"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.svelte": {
+    "mtime": 1779128693.0773427,
+    "hash": "d25e42f01fe6c1ac0f4b2137ed5237c5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/StayCoolCard.test.ts": {
+    "mtime": 1779128696.9573016,
+    "hash": "fbc9ad3d9d08d608cb6706df8d439b15"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
@@ -888,7 +888,7 @@
     "hash": "fbfb2a019a1b05caaa984e91a126b3ff"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/audit.ts": {
-    "mtime": 1779123889.7566597,
+    "mtime": 1779127068.6644719,
     "hash": "f59a21517c983b5cb988dfaba5e1adb7"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/errors.ts": {
@@ -919,13 +919,13 @@
     "mtime": 1778869839.0216243,
     "hash": "5b5ed0f2bf35953369047e3365609aaa"
   },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.ts": {
-    "mtime": 1779123865.9069493,
-    "hash": "93417cd45d32c8a6bb26ffbf694be042"
-  },
   "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.test.ts": {
-    "mtime": 1779124109.3429933,
+    "mtime": 1779127068.6644719,
     "hash": "7191eae2f6c343775cc6615e62b66a04"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.ts": {
+    "mtime": 1779127068.6644719,
+    "hash": "93417cd45d32c8a6bb26ffbf694be042"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/guidance/reminders.test.ts": {
     "mtime": 1778851917.2923646,
@@ -1080,19 +1080,19 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1779124214.462273,
+    "mtime": 1779128727.453977,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1779124214.462273,
+    "mtime": 1779128727.453977,
     "hash": "d4c9f4332b306f85ebe8ebf7c25cc369"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1779124214.462273,
+    "mtime": 1779128727.453977,
     "hash": "1c981356b1ebcbba90af3ba86fe9c3ef"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1779124214.462273,
+    "mtime": 1779128727.453977,
     "hash": "0f1a2121ee789f06fbf7ff11adf0a2cd"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
@@ -1283,16 +1283,16 @@
     "mtime": 1778869839.0226243,
     "hash": "8407e196c53e553ee8663a656932f471"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.svelte": {
-    "mtime": 1779123821.7084858,
-    "hash": "edb670a4892a39c5cc8d94e3d6211289"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.server.ts": {
-    "mtime": 1779123880.8267682,
+    "mtime": 1779127068.6644719,
     "hash": "f256ef6a74f95e3681159ceb02a3f54a"
   },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.svelte": {
+    "mtime": 1779127068.6644719,
+    "hash": "edb670a4892a39c5cc8d94e3d6211289"
+  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/page.server.test.ts": {
-    "mtime": 1779124086.6542687,
+    "mtime": 1779127068.6644719,
     "hash": "5964d83ff5f8546f69bef0ae05f2afdd"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/print/+page.server.ts": {
@@ -1336,11 +1336,11 @@
     "hash": "6148c4df06aa5e4aa3667ad9c726bbfb"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
-    "mtime": 1779123775.9650414,
-    "hash": "e8a0b898c2f42eb664ede85b5af6b519"
+    "mtime": 1779127068.6644719,
+    "hash": "7b304ed3d88f3d2ab4b1d67c168541a6"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/page.server.test.ts": {
-    "mtime": 1779124060.4085875,
+    "mtime": 1779127068.6644719,
     "hash": "6aacc63610f5cb7cfa64803d82e48de3"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.server.ts": {

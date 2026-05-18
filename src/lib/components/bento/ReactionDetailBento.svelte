@@ -64,7 +64,7 @@
 
   <ReassuranceHero />
   <SymptomList {symptoms} onAdd={() => (addOpen = true)} action={entryAction} />
-  <StayCoolCard {childId} />
+  <StayCoolCard />
   <SevereRail />
   <MonitorTimer entryId={String(entryId)} />
 
