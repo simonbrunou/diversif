@@ -405,6 +405,8 @@
   "carnetSegmentsAriaLabel": "Sections du carnet",
   "errorsAccountPasskeyRegisterStartFailed": "Impossible de démarrer l'enregistrement.",
   "errorsAccountPasskeyRegisterFailed": "Enregistrement échoué.",
+  "errorsAccountPasskeyAuthStartFailed": "Impossible de démarrer la connexion.",
+  "errorsAccountPasskeyAuthFailed": "Connexion échouée.",
   "errorsAccountPasskeyGenericError": "Erreur",
   "reportHandoffTitle": "Bilan pour le pédiatre",
   "reportPrintButton": "Imprimer / Enregistrer en PDF",

@@ -71,7 +71,7 @@
     <ul class="grid gap-3">
       {#each ALL_SOURCE_IDS as id (id)}
         {@const s = SOURCES[id]}
-        <li>
+        <li id={id} class="scroll-mt-24">
           <Card class="p-4">
             <a
               href={s.url}

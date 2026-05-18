@@ -1,5 +1,5 @@
 import type { toast as Toast } from 'svelte-sonner';
-import { ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
+import { PRIORITY_INTRODUCTION_ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
 
 const TOAST_CLASS = 'bg-celebrate/15 border-celebrate/30 text-celebrate-foreground';
 
@@ -46,7 +46,7 @@ export function celebrate(toast: typeof Toast, milestone: MilestoneKind): void {
   switch (milestone.kind) {
     case 'all-allergens':
       toast.success(
-        `Les ${ALLERGENS.length} allergènes prioritaires sont introduits : formidable !`,
+        `Les ${PRIORITY_INTRODUCTION_ALLERGENS.length} allergènes prioritaires sont introduits : formidable !`,
         {
           description: 'Maintenez une exposition régulière pour consolider la tolérance.',
           class: TOAST_CLASS

@@ -1,9 +1,10 @@
 import { ageInMonths } from '$lib/utils/age';
 import { getStageForAgeMonths, getAllStagesForBento } from '$lib/content/guidance';
 import { db } from '$lib/server/db';
-import { foodEntries, foods, tipDismissals } from '$lib/server/db/schema';
-import { desc, eq, and } from 'drizzle-orm';
+import { foodEntries, foods } from '$lib/server/db/schema';
+import { desc, eq } from 'drizzle-orm';
 import { chooseSuggestedFoods } from '$lib/utils/suggest';
+import { loadDismissals } from '$lib/server/guidance/queries';
 import type { PageServerLoad } from './$types';
 
 const TODAY_TIP = {
@@ -51,14 +52,12 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     count: 5
   });
 
-  // Tip dismissal : check against tip_dismissals using reminderKey column
-  const dismissed = await db
-    .select()
-    .from(tipDismissals)
-    .where(
-      and(eq(tipDismissals.userId, locals.user!.id), eq(tipDismissals.reminderKey, TODAY_TIP.id))
-    );
-  const tipDismissed = dismissed.length > 0;
+  // Tip dismissal: go through loadDismissals so the TTL conventions (info: 30d,
+  // warn: 90d, important: never) and the per-child scoping match the dashboard's
+  // reminder-strip read. Without this, a dismissal would persist forever here
+  // even though the dashboard re-surfaces it after 30 days.
+  const dismissals = await loadDismissals(locals.user!.id, child.id);
+  const tipDismissed = dismissals.has(TODAY_TIP.id);
 
   const stages = getAllStagesForBento();
 
