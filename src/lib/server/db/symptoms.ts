@@ -2,8 +2,7 @@ import { and, asc, eq, lte, sql } from 'drizzle-orm';
 import { db } from './index';
 import { foodEntries, symptoms } from './schema';
 import { severityOf, type SymptomLabel } from '$lib/content/symptoms';
-
-export type ReactionLevel = 'ras' | 'inconfort' | 'reaction';
+import type { ReactionId } from '$lib/utils/reactions';
 
 export interface InsertSymptomInput {
   foodEntryId: number;
@@ -12,12 +11,12 @@ export interface InsertSymptomInput {
   label: SymptomLabel;
   note: string | null;
   createdBy: number;
-  currentReaction: ReactionLevel;
+  currentReaction: ReactionId;
 }
 
 export interface InsertSymptomResult {
   symptomId: number;
-  promotedTo: 'inconfort' | 'reaction' | null;
+  promotedTo: Exclude<ReactionId, 'ras'> | null;
 }
 
 export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSymptomResult> {
@@ -34,7 +33,7 @@ export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSy
       })
       .returning({ id: symptoms.id });
 
-    let promotedTo: 'inconfort' | 'reaction' | null = null;
+    let promotedTo: Exclude<ReactionId, 'ras'> | null = null;
     if (input.currentReaction === 'ras') {
       const target = severityOf(input.label) === 'severe' ? 'reaction' : 'inconfort';
       const updated = await tx

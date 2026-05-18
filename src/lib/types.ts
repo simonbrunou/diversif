@@ -1,6 +1,8 @@
 import type { User, Membership } from './server/db/schema';
 import type { SymptomLabel } from './content/symptoms';
 import type { TextureKey } from '$lib/utils/textures';
+import type { CategoryId } from '$lib/utils/categories';
+import type { ReactionId } from '$lib/utils/reactions';
 
 export type SafeUser = Omit<User, 'passwordHash'>;
 export type { Membership };
@@ -16,8 +18,8 @@ export type RecentEntry = {
   id: number;
   foodId: number;
   foodName: string;
-  category: string;
-  reaction: 'ras' | 'inconfort' | 'reaction';
+  category: CategoryId;
+  reaction: ReactionId;
   givenAt: number;
   texture: TextureKey | null;
 };
