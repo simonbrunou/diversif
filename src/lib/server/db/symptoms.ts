@@ -55,6 +55,24 @@ export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSy
   });
 }
 
+export async function deleteSymptomById(input: {
+  symptomId: number;
+  foodEntryId: number;
+  childId: number;
+}): Promise<boolean> {
+  const result = await db
+    .delete(symptoms)
+    .where(
+      and(
+        eq(symptoms.id, input.symptomId),
+        eq(symptoms.foodEntryId, input.foodEntryId),
+        eq(symptoms.childId, input.childId)
+      )
+    )
+    .returning({ id: symptoms.id });
+  return result.length > 0;
+}
+
 export async function listSymptomsByEntry(foodEntryId: number) {
   const rows = await db
     .select()

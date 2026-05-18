@@ -6,11 +6,14 @@
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
   import { getTextureLabel } from '$lib/utils/texture-labels';
-  import { ChevronLeft } from 'lucide-svelte';
+  import { ChevronLeft, Pencil } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
   let lateReactionOpen = $state(false);
+  const editHref = $derived(
+    localizedHref(`/child/${data.childId}/log/${data.entryId}?from=detail`)
+  );
 </script>
 
 {#if data.isRas}
@@ -35,14 +38,19 @@
       </p>
     {/if}
     <RasCard nth={data.nth} />
-    <Button
-      variant="secondary"
-      size="sm"
-      class="mt-3 self-start"
-      onclick={() => (lateReactionOpen = true)}
-    >
-      {m.lateReactionButton()}
-    </Button>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <Button
+        variant="secondary"
+        size="sm"
+        onclick={() => (lateReactionOpen = true)}
+      >
+        {m.lateReactionButton()}
+      </Button>
+      <Button href={editHref} variant="ghost" size="sm">
+        <Pencil size={14} aria-hidden="true" />
+        {m.reactionEditEntry()}
+      </Button>
+    </div>
 
     <AddSymptomSheet
       bind:open={lateReactionOpen}
@@ -60,5 +68,6 @@
     texture={data.texture}
     symptoms={data.symptoms}
     printHref={localizedHref(`/child/${data.childId}/foods/${data.entryId}/print`)}
+    {editHref}
   />
 {/if}

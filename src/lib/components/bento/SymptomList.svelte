@@ -8,8 +8,9 @@
 
   let {
     symptoms,
-    onAdd
-  }: { symptoms: SymptomEntry[]; onAdd: () => void } = $props();
+    onAdd,
+    action
+  }: { symptoms: SymptomEntry[]; onAdd: () => void; action: string } = $props();
 </script>
 
 <section class="mb-3">
@@ -19,7 +20,13 @@
   {:else}
     <ul class="mb-2 flex flex-col gap-2">
       {#each symptoms as s (s.id)}
-        <SymptomRow label={s.label} observedAt={s.observedAt} note={s.note} />
+        <SymptomRow
+          id={s.id}
+          label={s.label}
+          observedAt={s.observedAt}
+          note={s.note}
+          {action}
+        />
       {/each}
     </ul>
   {/if}

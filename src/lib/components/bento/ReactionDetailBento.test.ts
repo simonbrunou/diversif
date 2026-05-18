@@ -15,7 +15,8 @@ describe('ReactionDetailBento', () => {
     date: '15 mai',
     time: '11:30',
     symptoms: [{ id: 1, label: 'rougeur' as const, observedAt: '11:42', note: 'joue gauche' }],
-    printHref: '/child/abc/foods/1/print'
+    printHref: '/child/abc/foods/1/print',
+    editHref: '/child/abc/log/1?from=detail'
   };
 
   it('renders the title and subtitle', () => {
@@ -61,5 +62,11 @@ describe('ReactionDetailBento', () => {
     render(ReactionDetailBento, { props: baseProps });
     const link = screen.getByText('Retour au carnet').closest('a');
     expect(link?.getAttribute('href')).toBe('/child/abc/foods');
+  });
+
+  it('renders the edit-meal link with from=detail', () => {
+    render(ReactionDetailBento, { props: baseProps });
+    const link = screen.getByText('Modifier ce repas').closest('a');
+    expect(link?.getAttribute('href')).toBe('/child/abc/log/1?from=detail');
   });
 });

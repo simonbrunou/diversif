@@ -511,10 +511,6 @@
     "mtime": 1778708530.793432,
     "hash": "36b360c033a6d25259f59929dc99b29f"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.test.ts": {
-    "mtime": 1778708530.794065,
-    "hash": "830cf14ef408c8e5f7bb8c92bfb0d9c0"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/ReassuranceHero.svelte": {
     "mtime": 1778708530.7946649,
     "hash": "cb1574ee8c31d7b5dc7ab6e4485b2658"
@@ -546,18 +542,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SuggestionFeed.test.ts": {
     "mtime": 1778708530.8013642,
     "hash": "e5401569e314eb0da906e82db3f6b2fb"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.test.ts": {
-    "mtime": 1778708530.802671,
-    "hash": "16f0e60ede3862e2793d1a3d541f8f3f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.svelte": {
-    "mtime": 1778708530.8033378,
-    "hash": "20fe7e6d7eae09cd84b23c7e40c393e1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.test.ts": {
-    "mtime": 1778708530.8040233,
-    "hash": "cab5ff7a5b12cecdd7ba734356b8fb60"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/TipsRotator.test.ts": {
     "mtime": 1778708530.8052478,
@@ -634,10 +618,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/AujourdhuiBento.test.ts": {
     "mtime": 1778746160.1046972,
     "hash": "a6e3774c814aa73023d645d4c1e213b2"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.svelte": {
-    "mtime": 1778749318.2519195,
-    "hash": "2a08cecf22dd7ac9f8a29af58f9a8fee"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/StageDetailSheet.test.ts": {
     "mtime": 1778764306.1887553,
@@ -727,10 +707,6 @@
     "mtime": 1778869839.0216243,
     "hash": "9597b038429bd71425182742d10ef2d3"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.svelte": {
-    "mtime": 1778869839.0216243,
-    "hash": "43dd543d542ab52547b11bc7475a1646"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.svelte": {
     "mtime": 1778869839.0216243,
     "hash": "564e163f1dbf7503c63cd6abbd8e248b"
@@ -766,6 +742,30 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/RgpdSection.test.ts": {
     "mtime": 1778877144.18866,
     "hash": "ce75817c622251c1d22cdb8c4515f3bf"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.svelte": {
+    "mtime": 1779123938.5640671,
+    "hash": "07039f5d1e0f282bed16363c891cbc96"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.svelte": {
+    "mtime": 1779123963.9617586,
+    "hash": "29040245ba2d06f7184b2c4a351cfbe3"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.test.ts": {
+    "mtime": 1779123992.9794064,
+    "hash": "378672cffa471a54099cf0369cc97a34"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.test.ts": {
+    "mtime": 1779124004.5572658,
+    "hash": "9839312f119da139c17184caf595c8b8"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.test.ts": {
+    "mtime": 1779124026.9979932,
+    "hash": "7517533533e20c8ebfc5c9b4d6db8dc1"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.svelte": {
+    "mtime": 1779124150.7414906,
+    "hash": "2a6ba4ea8d434792c5db50a0cd2b82fb"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
@@ -879,10 +879,6 @@
     "mtime": 1778710035.2734356,
     "hash": "98caba2642fb62a764ecd4149f70608a"
   },
-  "/home/sbrn/Projects/diversif/src/lib/server/audit.ts": {
-    "mtime": 1778770804.9567025,
-    "hash": "7b70ea220f4839a130769bb01a93ae80"
-  },
   "/home/sbrn/Projects/diversif/src/lib/server/gdpr.test.ts": {
     "mtime": 1778869839.0216243,
     "hash": "66bfa4029c2300b26d7674b4fbabb677"
@@ -890,6 +886,10 @@
   "/home/sbrn/Projects/diversif/src/lib/server/gdpr.ts": {
     "mtime": 1778869839.0226243,
     "hash": "fbfb2a019a1b05caaa984e91a126b3ff"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/audit.ts": {
+    "mtime": 1779123889.7566597,
+    "hash": "f59a21517c983b5cb988dfaba5e1adb7"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/errors.ts": {
     "mtime": 1778708530.8237503,
@@ -911,14 +911,6 @@
     "mtime": 1778710035.2724357,
     "hash": "50e3797a6b636b079cc8e779c94c0a01"
   },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.test.ts": {
-    "mtime": 1778770804.9567025,
-    "hash": "39b23a29ae2fbd30435f595a88c1cbb7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.ts": {
-    "mtime": 1778770804.9567025,
-    "hash": "4369e435eba7b14288aac31670af3966"
-  },
   "/home/sbrn/Projects/diversif/src/lib/server/db/schema.ts": {
     "mtime": 1778869839.0216243,
     "hash": "d90bfdf44f3230bb923b78499958b8ce"
@@ -926,6 +918,14 @@
   "/home/sbrn/Projects/diversif/src/lib/server/db/texture.test.ts": {
     "mtime": 1778869839.0216243,
     "hash": "5b5ed0f2bf35953369047e3365609aaa"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.ts": {
+    "mtime": 1779123865.9069493,
+    "hash": "93417cd45d32c8a6bb26ffbf694be042"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.test.ts": {
+    "mtime": 1779124109.3429933,
+    "hash": "7191eae2f6c343775cc6615e62b66a04"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/guidance/reminders.test.ts": {
     "mtime": 1778851917.2923646,
@@ -1055,13 +1055,13 @@
     "mtime": 1778869839.0226243,
     "hash": "490edcc055952faad5c12cf6988b6d5c"
   },
-  "/home/sbrn/Projects/diversif/src/lib/utils/dates.ts": {
-    "mtime": 1779040217.7465,
-    "hash": "85389e2b633f5f87ea38b9e9624aa276"
-  },
   "/home/sbrn/Projects/diversif/src/lib/utils/dates.test.ts": {
-    "mtime": 1779040256.1270409,
+    "mtime": 1779041350.4486399,
     "hash": "5d0191f06c1f9995bed57eac80fb72cd"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/utils/dates.ts": {
+    "mtime": 1779041350.4486399,
+    "hash": "85389e2b633f5f87ea38b9e9624aa276"
   },
   "/home/sbrn/Projects/diversif/src/lib/offline/uuid.test.ts": {
     "mtime": 1778708530.72481,
@@ -1080,20 +1080,20 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1779040261.9575958,
+    "mtime": 1779124214.462273,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1779040261.9575958,
-    "hash": "2cc678aab01bfc052249c7d50174e718"
+    "mtime": 1779124214.462273,
+    "hash": "d4c9f4332b306f85ebe8ebf7c25cc369"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1779040261.9575958,
-    "hash": "3fe3b4f9a713655d33c3525d34b6904d"
+    "mtime": 1779124214.462273,
+    "hash": "1c981356b1ebcbba90af3ba86fe9c3ef"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1779040261.9575958,
-    "hash": "c88212ce64b1d3d0e7fbe537bc10b1f8"
+    "mtime": 1779124214.462273,
+    "hash": "0f1a2121ee789f06fbf7ff11adf0a2cd"
   },
   "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
     "mtime": 1778708530.647732,
@@ -1283,17 +1283,17 @@
     "mtime": 1778869839.0226243,
     "hash": "8407e196c53e553ee8663a656932f471"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.server.ts": {
-    "mtime": 1778869839.0226243,
-    "hash": "b55c032b026b7aae53e2020460a1a529"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.svelte": {
-    "mtime": 1778869839.0226243,
-    "hash": "0935ee2b1148d409ca5d005746ad6f85"
+    "mtime": 1779123821.7084858,
+    "hash": "edb670a4892a39c5cc8d94e3d6211289"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.server.ts": {
+    "mtime": 1779123880.8267682,
+    "hash": "f256ef6a74f95e3681159ceb02a3f54a"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/page.server.test.ts": {
-    "mtime": 1778869839.0226243,
-    "hash": "97f6073389bcfcf6821169dcab0a0cfd"
+    "mtime": 1779124086.6542687,
+    "hash": "5964d83ff5f8546f69bef0ae05f2afdd"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/print/+page.server.ts": {
     "mtime": 1778708530.8634539,
@@ -1328,20 +1328,20 @@
     "hash": "57a2885e84b0b46921cbc3cbe32ff3c8"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.svelte": {
-    "mtime": 1779040227.8023796,
+    "mtime": 1779041350.4486399,
     "hash": "0968e992b489949f3026898ff4d60124"
   },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.svelte": {
+    "mtime": 1779041350.4486399,
+    "hash": "6148c4df06aa5e4aa3667ad9c726bbfb"
+  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
-    "mtime": 1778869839.0226243,
-    "hash": "2c037e05a071e7dc2401cf12386170b1"
+    "mtime": 1779123775.9650414,
+    "hash": "e8a0b898c2f42eb664ede85b5af6b519"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/page.server.test.ts": {
-    "mtime": 1778869839.0236244,
-    "hash": "4b0caffc652a5fb148262cc6205492e2"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.svelte": {
-    "mtime": 1779040236.9202707,
-    "hash": "6148c4df06aa5e4aa3667ad9c726bbfb"
+    "mtime": 1779124060.4085875,
+    "hash": "6aacc63610f5cb7cfa64803d82e48de3"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.server.ts": {
     "mtime": 1778710035.2754357,

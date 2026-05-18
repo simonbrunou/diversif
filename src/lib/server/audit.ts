@@ -51,6 +51,13 @@ export type AuditEvent =
       label: string;
     }
   | {
+      type: 'symptom.deleted';
+      userId: number;
+      childId: number;
+      entryId: number;
+      symptomId: number;
+    }
+  | {
       type: 'food_entry.reaction_promoted';
       userId: number;
       childId: number;

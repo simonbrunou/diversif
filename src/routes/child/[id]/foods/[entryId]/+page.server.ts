@@ -3,7 +3,12 @@ import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { listSymptomsByEntry, insertSymptom, countNthExposition } from '$lib/server/db/symptoms';
+import {
+  listSymptomsByEntry,
+  insertSymptom,
+  deleteSymptomById,
+  countNthExposition
+} from '$lib/server/db/symptoms';
 import { parseChildIdParam, requireMembership } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
@@ -118,6 +123,34 @@ export const actions: Actions = {
         triggeredBy: result.symptomId
       });
     }
+
+    return { success: true };
+  },
+
+  deleteSymptom: async ({ locals, params, request }) => {
+    const childId = parseChildIdParam(params);
+    const entryId = parseEntryIdParam(params.entryId);
+    const { user } = requireMembership(locals, childId);
+    await loadEntryForChild(entryId, childId);
+
+    const raw = Object.fromEntries(await request.formData());
+    const symptomId = Number(raw.symptomId);
+    if (!Number.isInteger(symptomId) || symptomId <= 0) {
+      return fail(400, { error: 'invalid-input' });
+    }
+
+    const deleted = await deleteSymptomById({ symptomId, foodEntryId: entryId, childId });
+    if (!deleted) {
+      return fail(404, { error: 'not-found' });
+    }
+
+    audit({
+      type: 'symptom.deleted',
+      userId: user.id,
+      childId,
+      entryId,
+      symptomId
+    });
 
     return { success: true };
   }

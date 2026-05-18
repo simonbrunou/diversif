@@ -10,7 +10,7 @@
   import { type TextureKey } from '$lib/utils/textures';
   import { getTextureLabel } from '$lib/utils/texture-labels';
   import type { SymptomEntry } from '$lib/types';
-  import { ChevronLeft } from 'lucide-svelte';
+  import { ChevronLeft, Pencil } from 'lucide-svelte';
 
   let {
     childId,
@@ -21,7 +21,8 @@
     time,
     texture = null,
     symptoms,
-    printHref
+    printHref,
+    editHref
   }: {
     childId: string;
     entryId: number;
@@ -32,9 +33,11 @@
     texture?: TextureKey | null;
     symptoms: SymptomEntry[];
     printHref: string;
+    editHref: string;
   } = $props();
 
   let addOpen = $state(false);
+  const entryAction = $derived(localizedHref(`/child/${childId}/foods/${entryId}`));
 </script>
 
 <div class="flex flex-col">
@@ -60,7 +63,7 @@
   {/if}
 
   <ReassuranceHero />
-  <SymptomList {symptoms} onAdd={() => (addOpen = true)} />
+  <SymptomList {symptoms} onAdd={() => (addOpen = true)} action={entryAction} />
   <StayCoolCard {childId} />
   <SevereRail />
   <MonitorTimer entryId={String(entryId)} />
@@ -73,9 +76,13 @@
   >
     {m.reactionExport()}
   </a>
+  <a
+    href={editHref}
+    class="mb-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border px-4 py-3 text-center text-sm font-semibold text-ink-soft shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+  >
+    <Pencil size={14} aria-hidden="true" />
+    {m.reactionEditEntry()}
+  </a>
 </div>
 
-<AddSymptomSheet
-  bind:open={addOpen}
-  action={localizedHref(`/child/${childId}/foods/${entryId}`)}
-/>
+<AddSymptomSheet bind:open={addOpen} action={entryAction} />
