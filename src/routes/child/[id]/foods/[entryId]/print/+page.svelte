@@ -1,9 +1,14 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages';
   import { severityOf, type SymptomLabel } from '$lib/content/symptoms';
+  import { Printer } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
+
+  function printPage(): void {
+    if (typeof window !== 'undefined') window.print();
+  }
 
   function severityLabel(label: SymptomLabel): string {
     const s = severityOf(label);
@@ -36,6 +41,11 @@
 </svelte:head>
 
 <div class="print-doc">
+  <button type="button" class="print-cta no-print" onclick={printPage}>
+    <Printer size={14} aria-hidden="true" />
+    {m.reportPrintButton()}
+  </button>
+
   <h1>{m.printDocumentTitle()}</h1>
   <p>{m.printChildHeader({ name: data.childName, months: String(data.months) })}</p>
 
@@ -112,9 +122,36 @@
     font-size: 12px;
     color: #555;
   }
+  .print-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 8px 14px;
+    border: 1px solid #d4d4d4;
+    border-radius: 999px;
+    background: #fafafa;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .print-cta:hover {
+    background: #f0f0f0;
+  }
   @media print {
     .print-doc {
       padding: 0;
+    }
+    .no-print {
+      display: none !important;
+    }
+    /* Hide app chrome (sidebar, bottom nav, FAB, child-header pill, desktop log
+       button) that the root layout wraps every /child/* route in via
+       AppShellBento. Without this the printed PDF would include the entire app
+       shell. Matches the rule in src/routes/child/[id]/report/+page.svelte. */
+    :global([data-no-print]) {
+      display: none !important;
     }
   }
 </style>

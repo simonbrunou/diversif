@@ -33,8 +33,17 @@ describe('AujourdhuiBento', () => {
 
   it('renders AllergensSnapshot tile linking to the segment', () => {
     render(AujourdhuiBento, { props: baseProps });
-    const link = screen.getByRole('link');
-    expect(link.getAttribute('href')).toBe('/child/abc/foods?segment=allergens');
+    const links = screen.getAllByRole('link');
+    const allergens = links.find(
+      (l) => l.getAttribute('href') === '/child/abc/foods?segment=allergens'
+    );
+    expect(allergens).toBeTruthy();
+  });
+
+  it('renders a Bilan-pour-le-pédiatre CTA linking to /report', () => {
+    render(AujourdhuiBento, { props: baseProps });
+    const link = screen.getByText('Bilan pour le pédiatre').closest('a');
+    expect(link?.getAttribute('href')).toBe('/child/abc/report');
   });
 
   it('hides the reminder strip when reminders is empty', () => {

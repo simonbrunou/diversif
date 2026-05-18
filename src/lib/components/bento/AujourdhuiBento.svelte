@@ -8,6 +8,8 @@
   import type { Reminder } from '$lib/server/guidance/reminders';
   import type { RecentEntry } from '$lib/types';
   import { localizedHref } from '$lib/utils/localized-href';
+  import * as m from '$lib/paraglide/messages';
+  import { FileText, ChevronRight } from 'lucide-svelte';
 
   type Stats = {
     foodsIntroduced: number;
@@ -68,4 +70,17 @@
     foodsHref={localizedHref(`/child/${childId}/foods?segment=allergens`)}
   />
   <RecentFeed entries={recent} {childId} />
+
+  <a
+    href={localizedHref(`/child/${childId}/report`)}
+    class="mb-3 flex items-center justify-between gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+  >
+    <span class="flex items-center gap-3">
+      <span class="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2">
+        <FileText size={18} aria-hidden="true" />
+      </span>
+      <span class="text-sm font-bold leading-tight">{m.reportHandoffTitle()}</span>
+    </span>
+    <ChevronRight size={16} class="text-ink-soft" aria-hidden="true" />
+  </a>
 </div>
