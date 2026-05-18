@@ -6,11 +6,11 @@ import StayCoolCard from './StayCoolCard.svelte';
 afterEach(() => cleanup());
 
 describe('StayCoolCard', () => {
-  it('renders title, body, and reactions guide link', () => {
-    render(StayCoolCard, { props: { childId: 'abc' } });
+  it('renders title, body, and reactions guide link to /guide#reactions', () => {
+    render(StayCoolCard);
     expect(screen.getByText('Respirez')).toBeTruthy();
     expect(screen.getByText(/Une réaction localisée/)).toBeTruthy();
     const link = screen.getByText('Voir le guide réactions').closest('a');
-    expect(link?.getAttribute('href')).toBe('/child/abc/guide#reactions');
+    expect(link?.getAttribute('href')).toBe('/guide#reactions');
   });
 });
