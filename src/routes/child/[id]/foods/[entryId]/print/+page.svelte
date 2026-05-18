@@ -146,5 +146,12 @@
     .no-print {
       display: none !important;
     }
+    /* Hide app chrome (sidebar, bottom nav, FAB, child-header pill, desktop log
+       button) that the root layout wraps every /child/* route in via
+       AppShellBento. Without this the printed PDF would include the entire app
+       shell. Matches the rule in src/routes/child/[id]/report/+page.svelte. */
+    :global([data-no-print]) {
+      display: none !important;
+    }
   }
 </style>
