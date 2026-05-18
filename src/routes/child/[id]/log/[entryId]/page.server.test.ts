@@ -115,6 +115,19 @@ describe('child/[id]/log/[entryId] load', () => {
     );
     expect(out.from).toBe('dashboard');
   });
+
+  it('returns from=detail when ?from=detail', async () => {
+    const { u, c, m, entry } = await setup();
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id), entryId: String(entry.id) },
+        url: `http://localhost/child/${c.id}/log/${entry.id}?from=detail`
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.from).toBe('detail');
+  });
 });
 
 describe('child/[id]/log/[entryId] update action', () => {
@@ -162,6 +175,26 @@ describe('child/[id]/log/[entryId] update action', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}`);
+  });
+
+  it('redirects back to /foods/[entryId] when from=detail', async () => {
+    const { u, c, m, entry, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2024-06-02T10:00',
+        reaction: 'ras',
+        from: 'detail'
+      }
+    });
+    const r = await captureFlow(() =>
+      actions.update!(event as unknown as Parameters<NonNullable<typeof actions.update>>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}/foods/${entry.id}`);
   });
 
   it('fails on invalid date', async () => {
@@ -388,5 +421,21 @@ describe('child/[id]/log/[entryId] delete action', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}`);
+  });
+
+  it('redirects to /foods after delete even when from=detail', async () => {
+    // After delete, the detail page would 404 -- /foods is the safe fallback.
+    const { u, c, m, entry } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: { from: 'detail' }
+    });
+    const r = await captureFlow(() =>
+      actions.delete!(event as unknown as Parameters<NonNullable<typeof actions.delete>>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}/foods`);
   });
 });

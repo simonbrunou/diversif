@@ -345,6 +345,136 @@ describe('addSymptom action', () => {
   });
 });
 
+describe('deleteSymptom action', () => {
+  beforeEach(() => {
+    vi.mocked(audit).mockClear();
+  });
+
+  async function seedSymptom(
+    ctx: Awaited<ReturnType<typeof setup>>,
+    entryId: number,
+    label = 'rougeur'
+  ) {
+    const [row] = await testDb
+      .insert(symptoms)
+      .values({
+        foodEntryId: entryId,
+        childId: ctx.c.id,
+        observedAt: new Date(),
+        label,
+        note: null,
+        createdBy: ctx.u.id
+      })
+      .returning();
+    return row;
+  }
+
+  function makeDeleteEvent(
+    ctx: Awaited<ReturnType<typeof setup>>,
+    entryId: number,
+    formData: Record<string, string>
+  ) {
+    return makeRouteEvent({
+      user: safeUser(ctx.u),
+      memberships: [ctx.m],
+      params: { id: String(ctx.c.id), entryId: String(entryId) },
+      url: 'http://localhost/',
+      formData
+    }) as unknown as Parameters<NonNullable<typeof actions.deleteSymptom>>[0];
+  }
+
+  it('deletes the symptom and emits an audit event', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('reaction');
+    const sym = await seedSymptom(ctx, entry.id);
+    const result = await actions.deleteSymptom!(
+      makeDeleteEvent(ctx, entry.id, { symptomId: String(sym.id) })
+    );
+    expect(result).toEqual({ success: true });
+    expect(await testDb.select().from(symptoms)).toHaveLength(0);
+    const deletedCall = vi
+      .mocked(audit)
+      .mock.calls.find((c) => c[0].type === 'symptom.deleted')?.[0];
+    expect(deletedCall).toMatchObject({ symptomId: sym.id, entryId: entry.id });
+  });
+
+  it('rejects deletion of a symptom that belongs to another entry', async () => {
+    const ctx = await setup();
+    const entryA = await ctx.log('reaction');
+    const entryB = await ctx.log('reaction', new Date('2026-05-01'));
+    const sym = await seedSymptom(ctx, entryB.id);
+    const result = (await actions.deleteSymptom!(
+      makeDeleteEvent(ctx, entryA.id, { symptomId: String(sym.id) })
+    )) as { status: number };
+    expect(result.status).toBe(404);
+    expect(await testDb.select().from(symptoms)).toHaveLength(1);
+  });
+
+  it('rejects deletion when symptom belongs to another child', async () => {
+    const ctx = await setup();
+    const otherUser = await seedUser({ email: 'other-parent2@example.com' });
+    const otherChild = await seedChild({ createdBy: otherUser.id, name: 'Léa' });
+    const [otherEntry] = await testDb
+      .insert(foodEntries)
+      .values({
+        childId: otherChild.id,
+        foodId: ctx.pear.id,
+        givenAt: new Date(),
+        reaction: 'reaction',
+        notes: null,
+        loggedBy: otherUser.id,
+        createdAt: new Date()
+      })
+      .returning();
+    const [foreignSym] = await testDb
+      .insert(symptoms)
+      .values({
+        foodEntryId: otherEntry.id,
+        childId: otherChild.id,
+        observedAt: new Date(),
+        label: 'rougeur',
+        note: null,
+        createdBy: otherUser.id
+      })
+      .returning();
+
+    await expect(
+      actions.deleteSymptom!(
+        makeDeleteEvent(ctx, otherEntry.id, { symptomId: String(foreignSym.id) })
+      )
+    ).rejects.toMatchObject({ status: 404 });
+
+    expect(await testDb.select().from(symptoms)).toHaveLength(1);
+  });
+
+  it('rejects invalid symptomId', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('reaction');
+    const result = (await actions.deleteSymptom!(
+      makeDeleteEvent(ctx, entry.id, { symptomId: 'nope' })
+    )) as { status: number };
+    expect(result.status).toBe(400);
+  });
+
+  it('returns 404 when symptomId does not exist', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('reaction');
+    const result = (await actions.deleteSymptom!(
+      makeDeleteEvent(ctx, entry.id, { symptomId: '999999' })
+    )) as { status: number };
+    expect(result.status).toBe(404);
+  });
+
+  it('does not auto-demote the entry reaction when symptoms are removed', async () => {
+    const ctx = await setup();
+    const entry = await ctx.log('inconfort');
+    const sym = await seedSymptom(ctx, entry.id);
+    await actions.deleteSymptom!(makeDeleteEvent(ctx, entry.id, { symptomId: String(sym.id) }));
+    const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
+    expect(row.reaction).toBe('inconfort');
+  });
+});
+
 describe('texture in entry-detail loader', () => {
   it('returns texture in the entry payload when set', async () => {
     const ctx = await setup();

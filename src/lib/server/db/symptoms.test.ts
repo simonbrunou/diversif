@@ -6,7 +6,12 @@ import { seedUser, seedChild, seedMembership } from '../../../test/route';
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods, symptoms } from './schema';
-import { listSymptomsByEntry, insertSymptom, countNthExposition } from './symptoms';
+import {
+  deleteSymptomById,
+  listSymptomsByEntry,
+  insertSymptom,
+  countNthExposition
+} from './symptoms';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -169,6 +174,76 @@ describe('symptoms queries', () => {
 
   it('countNthExposition returns 0 for unknown entry id', async () => {
     expect(await countNthExposition(99999)).toBe(0);
+  });
+
+  it('deleteSymptomById removes a row scoped to entry + child', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const food = await seedFood('Poire');
+    const entry = await seedFoodEntry({
+      childId: c.id,
+      foodId: food.id,
+      reaction: 'reaction',
+      loggedBy: u.id
+    });
+    const [row] = await testDb
+      .insert(symptoms)
+      .values({
+        foodEntryId: entry.id,
+        childId: c.id,
+        observedAt: new Date(),
+        label: 'rougeur',
+        note: null,
+        createdBy: u.id
+      })
+      .returning();
+    const ok = await deleteSymptomById({
+      symptomId: row.id,
+      foodEntryId: entry.id,
+      childId: c.id
+    });
+    expect(ok).toBe(true);
+    expect(await testDb.select().from(symptoms)).toHaveLength(0);
+  });
+
+  it('deleteSymptomById refuses cross-entry deletion', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const food = await seedFood('Poire');
+    const entryA = await seedFoodEntry({
+      childId: c.id,
+      foodId: food.id,
+      givenAt: new Date('2026-05-01'),
+      reaction: 'reaction',
+      loggedBy: u.id
+    });
+    const entryB = await seedFoodEntry({
+      childId: c.id,
+      foodId: food.id,
+      givenAt: new Date('2026-05-02'),
+      reaction: 'reaction',
+      loggedBy: u.id
+    });
+    const [row] = await testDb
+      .insert(symptoms)
+      .values({
+        foodEntryId: entryA.id,
+        childId: c.id,
+        observedAt: new Date(),
+        label: 'rougeur',
+        note: null,
+        createdBy: u.id
+      })
+      .returning();
+    const ok = await deleteSymptomById({
+      symptomId: row.id,
+      foodEntryId: entryB.id,
+      childId: c.id
+    });
+    expect(ok).toBe(false);
+    expect(await testDb.select().from(symptoms)).toHaveLength(1);
   });
 
   it('insertSymptom does not promote when entry has already been promoted concurrently', async () => {

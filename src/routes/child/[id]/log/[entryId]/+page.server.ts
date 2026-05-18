@@ -63,7 +63,9 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
   // Drizzle's timestamp_ms mode always materializes givenAt as a Date.
   const givenAt = entry.givenAt as Date;
 
-  const from = url.searchParams.get('from') === 'dashboard' ? 'dashboard' : 'foods';
+  const fromRaw = url.searchParams.get('from');
+  const from: 'dashboard' | 'detail' | 'foods' =
+    fromRaw === 'dashboard' ? 'dashboard' : fromRaw === 'detail' ? 'detail' : 'foods';
 
   return {
     foods: list,
@@ -78,6 +80,18 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
     from
   };
 };
+
+function destinationFor(
+  from: string,
+  childId: number,
+  entryId: number,
+  kind: 'update' | 'delete'
+): string {
+  if (from === 'dashboard') return `/child/${childId}`;
+  // After delete, the detail page would 404 -- send the user back to the carnet.
+  if (from === 'detail' && kind === 'update') return `/child/${childId}/foods/${entryId}`;
+  return `/child/${childId}/foods`;
+}
 
 export const actions: Actions = {
   update: async ({ request, params, locals }) => {
@@ -164,12 +178,8 @@ export const actions: Actions = {
       })
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
 
-    const from = (raw.from as string) === 'dashboard' ? 'dashboard' : 'foods';
-    throw localizedRedirect(
-      locals.locale,
-      303,
-      from === 'dashboard' ? `/child/${childId}` : `/child/${childId}/foods`
-    );
+    const from = String(raw.from ?? '');
+    throw localizedRedirect(locals.locale, 303, destinationFor(from, childId, entryId, 'update'));
   },
 
   delete: async ({ request, params, locals }) => {
@@ -184,11 +194,7 @@ export const actions: Actions = {
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
 
     const data = await request.formData();
-    const from = String(data.get('from') ?? '') === 'dashboard' ? 'dashboard' : 'foods';
-    throw localizedRedirect(
-      locals.locale,
-      303,
-      from === 'dashboard' ? `/child/${childId}` : `/child/${childId}/foods`
-    );
+    const from = String(data.get('from') ?? '');
+    throw localizedRedirect(locals.locale, 303, destinationFor(from, childId, entryId, 'delete'));
   }
 };
