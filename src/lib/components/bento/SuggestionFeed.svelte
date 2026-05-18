@@ -5,8 +5,13 @@
 
   let {
     suggestions,
-    onPick
-  }: { suggestions: RankedSuggestion[]; onPick: (food: SuggestFood) => void } = $props();
+    onPick,
+    viewAllHref
+  }: {
+    suggestions: RankedSuggestion[];
+    onPick: (food: SuggestFood) => void;
+    viewAllHref?: string;
+  } = $props();
 
   function reasonLabel(r: RankedSuggestion['reason']): string {
     if (r === 'allergen') return m.decouvrirSuggestionReasonAllergen();
@@ -34,5 +39,13 @@
         </li>
       {/each}
     </ul>
+    {#if viewAllHref}
+      <a
+        href={viewAllHref}
+        class="mt-2 inline-block text-sm font-semibold text-primary-strong underline-offset-2 hover:underline"
+      >
+        {m.decouvrirSuggestionsViewAll()} →
+      </a>
+    {/if}
   </section>
 {/if}

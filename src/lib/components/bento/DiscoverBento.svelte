@@ -25,7 +25,8 @@
     todayTip,
     tipDismissed,
     onPickSuggestion,
-    onDismissTip
+    onDismissTip,
+    viewAllSuggestionsHref
   }: {
     stages: Stage[];
     activeStageId: string;
@@ -34,6 +35,7 @@
     tipDismissed: boolean;
     onPickSuggestion: (food: SuggestFood) => void;
     onDismissTip: (id: string) => void;
+    viewAllSuggestionsHref?: string;
   } = $props();
 
   let openStageId = $state<string | null>(null);
@@ -50,7 +52,7 @@
 
 <div class="flex flex-col">
   <StagesBentoGrid {stages} {activeStageId} onOpen={openStageBy} />
-  <SuggestionFeed {suggestions} onPick={onPickSuggestion} />
+  <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
   <TipsRotator tip={todayTip} dismissed={tipDismissed} onDismiss={onDismissTip} />
   <SourcesCluster />
 </div>
