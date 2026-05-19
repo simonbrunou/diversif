@@ -270,12 +270,13 @@ export function computeReminders(input: ReminderInput): Reminder[] {
 
   // 8. Forbidden food matched in entries (e.g., custom food named "Miel"
   // before 12 mo). Iterates FORBIDDEN_FOODS so the age gate + name pattern
-  // come from a single source; only items with both `untilMonths` and
-  // `nameMatchers` set surface as runtime reminders. Other forbidden items
-  // (sel, sucre, lait-cru, …) are ingredient-level and aren't catalog-
-  // detectable; the guide page surfaces them statically.
+  // come from a single source; an item must set ALL of `untilMonths`,
+  // `nameMatchers` (non-empty), and `reminderTitle` to surface as a runtime
+  // reminder. Other forbidden items (sel, sucre, lait-cru, …) are
+  // ingredient-level and aren't catalog-detectable; the guide page surfaces
+  // them statically.
   for (const food of FORBIDDEN_FOODS) {
-    if (food.untilMonths == null || !food.nameMatchers || !food.reminderTitle) continue;
+    if (food.untilMonths == null || !food.nameMatchers?.length || !food.reminderTitle) continue;
     if (input.ageMonths >= food.untilMonths) continue;
     const lcMatchers = food.nameMatchers.map((m) => m.toLowerCase());
     const match = input.entries.find((e) => {
@@ -289,7 +290,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       key: `forbidden-reminder:${food.id}`,
       severity: 'important',
       title: food.reminderTitle,
-      body: `Un aliment loggé contient « ${token} ». ${food.reason}`,
+      body: `Un aliment enregistré contient « ${token} ». ${food.reason}`,
       sources: food.sources,
       dismissable: true
     });

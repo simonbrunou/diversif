@@ -624,9 +624,11 @@ export type ForbiddenFood = {
   nameMatchers?: readonly string[];
   /**
    * Canonical reminder title rendered when the food is detected in entries.
-   * Required if `nameMatchers` is set; the reminder is keyed off this so the
-   * title authoring stays in the data layer instead of being synthesised at
-   * the call site.
+   * Must be set alongside `nameMatchers` and `untilMonths` for the entry to
+   * surface as a runtime reminder; the reminders engine silently skips items
+   * that have `nameMatchers` but no `reminderTitle` (no enforcement at the
+   * type level on purpose — keeps authoring data-only with no synthesis at
+   * the call site).
    */
   reminderTitle?: string;
   reason: string;
