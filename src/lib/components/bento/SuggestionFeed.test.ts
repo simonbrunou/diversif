@@ -47,4 +47,17 @@ describe('SuggestionFeed', () => {
     const { container } = render(SuggestionFeed, { props: { suggestions: [], onPick: () => {} } });
     expect(container.querySelector('section')).toBeNull();
   });
+
+  it('renders a "view all" link when viewAllHref is provided', () => {
+    render(SuggestionFeed, {
+      props: { suggestions, onPick: () => {}, viewAllHref: '/child/42/suggestions' }
+    });
+    const link = screen.getByText(/Voir toutes les suggestions/).closest('a');
+    expect(link?.getAttribute('href')).toBe('/child/42/suggestions');
+  });
+
+  it('omits the "view all" link when viewAllHref is not provided', () => {
+    render(SuggestionFeed, { props: { suggestions, onPick: () => {} } });
+    expect(screen.queryByText(/Voir toutes les suggestions/)).toBeNull();
+  });
 });
