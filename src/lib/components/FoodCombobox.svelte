@@ -36,12 +36,15 @@
   let customNameValue = $state('');
   let customCategory = $state<string>('autre');
 
-  const filtered = $derived.by(() => {
+  const MAX_VISIBLE = 200;
+  const filteredAll = $derived.by(() => {
     let list = foods;
     if (activeCategory) list = list.filter((f) => f.category === activeCategory);
     if (!query.trim()) return list;
     return list.filter((f) => fuzzyMatch(query, f.name));
   });
+  const filtered = $derived(filteredAll.slice(0, MAX_VISIBLE));
+  const isCapped = $derived(filteredAll.length > MAX_VISIBLE);
 
   const selected = $derived(foods.find((f) => f.id === selectedId) ?? null);
 
@@ -148,6 +151,11 @@
           Aucun aliment trouvé.
         </li>
       {/each}
+      {#if isCapped}
+        <li class="bg-muted/40 px-3 py-2 text-center text-xs text-muted-foreground">
+          Affinez la recherche pour voir d’autres aliments…
+        </li>
+      {/if}
     </ul>
 
     <button
