@@ -6,6 +6,7 @@ import { foodEntries, foods, tipDismissals, users } from '$lib/server/db/schema'
 import { and, desc, eq, gte, ne, sql } from 'drizzle-orm';
 import type { CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
+import { REPEAT_CANDIDATE_MAX_COUNT, REPEAT_CANDIDATE_MAX_WORST_RANK } from './repeat-candidates';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -99,9 +100,11 @@ export async function loadDiversityMetrics(
     lastNewFoodRow?.given_at != null ? new Date(lastNewFoodRow.given_at).getTime() : null;
 
   // Foods given 1–2 times whose worst reaction is 'ras' or 'inconfort'.
-  // Filter via a wrapping WHERE rather than HAVING : pg-mem can't traverse a
-  // HAVING clause that contains MAX(CASE ... END), and the rewrite is also
-  // friendlier to query planners.
+  // Predicate (n <= REPEAT_CANDIDATE_MAX_COUNT && worst <= REPEAT_CANDIDATE_MAX_WORST_RANK)
+  // matches findRepeatCandidates in ./repeat-candidates (the SQL CASE WHEN
+  // mirrors REACTION_RANK there). Wrapping WHERE rather than HAVING : pg-mem
+  // can't traverse a HAVING clause that contains MAX(CASE ... END), and the
+  // rewrite is also friendlier to query planners.
   const repeatRes = await db.execute<{ food_id: number; n: number; worst: number }>(
     sql`SELECT food_id, n, worst FROM (
           SELECT ${foodEntries.foodId} as food_id,
@@ -114,7 +117,7 @@ export async function loadDiversityMetrics(
           WHERE ${foodEntries.childId} = ${childId}
           GROUP BY ${foodEntries.foodId}
         ) sub
-        WHERE n <= 2 AND worst <= 1`
+        WHERE n <= ${REPEAT_CANDIDATE_MAX_COUNT} AND worst <= ${REPEAT_CANDIDATE_MAX_WORST_RANK}`
   );
   const repeatExposureCount = repeatRes.rows.length;
 
@@ -137,9 +140,24 @@ export type RepeatCandidate = {
   lastGivenAt: number;
 };
 
-export async function loadRepeatCandidates(childId: number, limit = 5): Promise<RepeatCandidate[]> {
+/**
+ * `limit` defaults to 5 as a sane top-N for any future short-list consumer;
+ * pass `null` to disable the cap (e.g. the carnet `?repeat=1` filter, which
+ * must return every candidate, not the oldest N). The dashboard "Reproposez"
+ * cards take a separate JS path through findRepeatCandidates + reminders.ts
+ * rule 6 (capped to 2 cards there), so they do not hit this default.
+ * Predicate shares constants with findRepeatCandidates — see ./repeat-candidates.
+ */
+export async function loadRepeatCandidates(
+  childId: number,
+  limit: number | null = 5
+): Promise<RepeatCandidate[]> {
   // Same wrapping-WHERE shape as loadDiversityMetrics' repeat query : see
-  // comment there for why we don't use HAVING.
+  // comment there for why we don't use HAVING. LIMIT is conditionally
+  // emitted because the carnet filter needs an uncapped list (ORDER BY
+  // last_at ASC + a numeric cap would otherwise hide the most recently
+  // re-offered foods past the first N rows on extremely active children).
+  const limitClause = limit == null ? sql`` : sql`LIMIT ${limit}`;
   const res = await db.execute<{
     food_id: number;
     food_name: string;
@@ -163,9 +181,9 @@ export async function loadRepeatCandidates(childId: number, limit = 5): Promise<
           WHERE ${foodEntries.childId} = ${childId}
           GROUP BY ${foodEntries.foodId}, ${foods.name}, ${foods.category}
         ) sub
-        WHERE n <= 2 AND worst <= 1
+        WHERE n <= ${REPEAT_CANDIDATE_MAX_COUNT} AND worst <= ${REPEAT_CANDIDATE_MAX_WORST_RANK}
         ORDER BY last_at ASC
-        LIMIT ${limit}`
+        ${limitClause}`
   );
   return res.rows.map((r) => ({
     foodId: Number(r.food_id),

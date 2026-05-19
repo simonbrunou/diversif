@@ -9,10 +9,10 @@ import {
   type AllergenId
 } from '$lib/utils/allergens';
 import { getCategoryLabel, type CategoryId } from '$lib/utils/categories';
-import type { ReactionId } from '$lib/utils/reactions';
 import type { SourceId } from '$lib/content/sources';
 import { FORBIDDEN_FOODS } from '$lib/content/guidance';
 import type { EnrichedEntry } from './queries';
+import { findRepeatCandidates } from './repeat-candidates';
 
 export type Severity = 'info' | 'warn' | 'important';
 
@@ -178,50 +178,18 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     });
   }
 
-  // 6. Repeat exposure : food given 1× with reaction ras|inconfort, > 3 days ago
-  type RepeatCandidate = { foodId: number; foodName: string; lastGivenAt: number; count: number };
-  const perFood = new Map<
-    number,
-    {
-      foodName: string;
-      count: number;
-      worstRank: number;
-      lastGivenAt: number;
-      allergenType: string | null;
-    }
-  >();
-  const reactionRank: Record<ReactionId, number> = { ras: 0, inconfort: 1, reaction: 2 };
-  for (const e of input.entries) {
-    const cur = perFood.get(e.foodId);
-    if (!cur) {
-      perFood.set(e.foodId, {
-        foodName: e.foodName,
-        count: 1,
-        worstRank: reactionRank[e.reaction],
-        lastGivenAt: e.givenAt,
-        allergenType: e.allergenType
-      });
-    } else {
-      cur.count += 1;
-      cur.worstRank = Math.max(cur.worstRank, reactionRank[e.reaction]);
-      cur.lastGivenAt = Math.max(cur.lastGivenAt, e.givenAt);
-    }
-  }
-  const repeatCandidates: RepeatCandidate[] = [];
-  for (const [foodId, v] of perFood) {
-    // Priority allergens are handled by rule 9 (maintain-allergen) and
-    // rule 4 (pending-allergen); avoid a duplicate generic "Reproposez «…»"
-    // info card for them on the same dashboard.
-    if (v.allergenType && ALLERGEN_PRIORITY.includes(v.allergenType as AllergenId)) continue;
-    if (v.count === 1 && v.worstRank <= 1 && now - v.lastGivenAt > 3 * DAY_MS) {
-      repeatCandidates.push({
-        foodId,
-        foodName: v.foodName,
-        lastGivenAt: v.lastGivenAt,
-        count: v.count
-      });
-    }
-  }
+  // 6. Repeat exposure : food given exactly 1× with reaction ras|inconfort,
+  // > 3 days ago, and not a priority allergen (rule 9 owns those). Stricter
+  // than the broad "1-2× & worst<=1" predicate used by the carnet's repeat
+  // filter and loadDiversityMetrics; both share findRepeatCandidates as the
+  // canonical predicate engine, with reminders narrowing it further via the
+  // maxCount=1 + minDaysSinceLastGiven + excludeAllergens options.
+  const repeatCandidates = findRepeatCandidates(input.entries, {
+    maxCount: 1,
+    minDaysSinceLastGiven: 3,
+    excludeAllergens: new Set<AllergenId>(ALLERGEN_PRIORITY),
+    now
+  });
   repeatCandidates.sort((a, b) => a.lastGivenAt - b.lastGivenAt);
   for (const c of repeatCandidates.slice(0, 2)) {
     push(out, input.dismissals, {
