@@ -11,6 +11,7 @@ import {
 import { getCategoryLabel, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import type { SourceId } from '$lib/content/sources';
+import { FORBIDDEN_FOODS } from '$lib/content/guidance';
 import type { EnrichedEntry } from './queries';
 
 export type Severity = 'info' | 'warn' | 'important';
@@ -267,19 +268,31 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     }
   }
 
-  // 8. Forbidden food matched in entries (e.g., custom food named "Miel" before 12 mo)
-  if (input.ageMonths < 12) {
-    const honeyMatch = input.entries.find((e) => /miel/i.test(e.foodName));
-    if (honeyMatch) {
-      push(out, input.dismissals, {
-        key: `forbidden-reminder:miel`,
-        severity: 'important',
-        title: 'Miel avant 1 an : à éviter',
-        body: 'Un aliment loggé contient « miel ». Le miel est déconseillé avant 12 mois (risque de botulisme infantile). Vérifiez et, en cas de doute, contactez votre médecin.',
-        sources: ['who-cf', 'anses-nourrisson'],
-        dismissable: true
-      });
-    }
+  // 8. Forbidden food matched in entries (e.g., custom food named "Miel"
+  // before 12 mo). Iterates FORBIDDEN_FOODS so the age gate + name pattern
+  // come from a single source; only items with both `untilMonths` and
+  // `nameMatchers` set surface as runtime reminders. Other forbidden items
+  // (sel, sucre, lait-cru, …) are ingredient-level and aren't catalog-
+  // detectable; the guide page surfaces them statically.
+  for (const food of FORBIDDEN_FOODS) {
+    if (food.untilMonths == null || !food.nameMatchers || food.nameMatchers.length === 0) continue;
+    if (input.ageMonths >= food.untilMonths) continue;
+    const lcMatchers = food.nameMatchers.map((m) => m.toLowerCase());
+    const match = input.entries.find((e) => {
+      const lc = e.foodName.toLowerCase();
+      return lcMatchers.some((m) => lc.includes(m));
+    });
+    if (!match) continue;
+    // First matcher is conventionally the canonical name token (e.g. 'miel').
+    const token = food.nameMatchers[0];
+    push(out, input.dismissals, {
+      key: `forbidden-reminder:${food.id}`,
+      severity: 'important',
+      title: `${token.charAt(0).toUpperCase() + token.slice(1)} avant ${food.untilMonths === 12 ? '1 an' : `${food.untilMonths} mois`} : à éviter`,
+      body: `Un aliment loggé contient « ${token} ». ${food.reason}`,
+      sources: food.sources,
+      dismissable: true
+    });
   }
 
   // 9. Maintain priority allergens: once a priority allergen has been

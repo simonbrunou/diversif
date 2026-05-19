@@ -604,7 +604,24 @@ export const TEXTURE_PROGRESSION: readonly TextureStep[] = [
 export type ForbiddenFood = {
   id: string;
   name: string;
+  /** Human-readable age gate for the guidance UI ("< 12 mois", "À retarder"). */
   until: string;
+  /**
+   * Machine-checkable age gate, in months. Set this whenever a numeric upper
+   * bound exists so the reminders engine can iterate FORBIDDEN_FOODS instead
+   * of hardcoding the threshold separately. Leave undefined when `until` is
+   * advisory rather than numeric (e.g. "À retarder le plus possible").
+   */
+  untilMonths?: number;
+  /**
+   * Substrings (case-insensitive) to look for in `foodEntries.foodName` when
+   * deciding whether to surface a "forbidden food given" reminder. Most
+   * forbidden items (sel, sucre) are ingredient-level rather than food-level
+   * and so can't be detected from the catalog — leave undefined for those
+   * and rely on the guide page to surface them. Honey CAN be detected
+   * because parents add it as a custom food.
+   */
+  nameMatchers?: readonly string[];
   reason: string;
   sources: SourceId[];
 };
@@ -614,6 +631,8 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
     id: 'miel',
     name: 'Miel (et produits contenant du miel)',
     until: '< 12 mois',
+    untilMonths: 12,
+    nameMatchers: ['miel'],
     reason:
       'Risque de botulisme infantile (Clostridium botulinum). Aucun miel, même cuit, avant 1 an.',
     sources: ['who-cf', 'anses-nourrisson']
