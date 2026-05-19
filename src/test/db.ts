@@ -55,7 +55,8 @@ function applyMigrations(mem: IMemoryDb): void {
     '0000_init.sql',
     '0003_passkeys_transports_jsonb.sql',
     '0004_symptoms.sql',
-    '0005_food_entry_texture.sql'
+    '0005_food_entry_texture.sql',
+    '0006_symptoms_label_check.sql'
   ];
 
   for (const filename of filenames) {
@@ -92,6 +93,17 @@ function applyMigrations(mem: IMemoryDb): void {
         ALTER TABLE food_entries ADD COLUMN texture TEXT;
         ALTER TABLE food_entries ADD CONSTRAINT food_entries_texture_check
           CHECK (texture IS NULL OR texture IN ('lisse', 'moulinee', 'ecrasee', 'petits-morceaux', 'morceaux', 'finger'));
+      `;
+    }
+
+    // 0006 backfills then adds the symptoms.label CHECK. The test DB starts
+    // empty so the UPDATE is a no-op; keep just the ADD CONSTRAINT. label is
+    // NOT NULL in production, so we don't need pg-mem's IS NULL-OR escape
+    // here — every row is guaranteed to be a real string.
+    if (filename === '0006_symptoms_label_check.sql') {
+      unwrapped = `
+        ALTER TABLE symptoms ADD CONSTRAINT symptoms_label_check
+          CHECK (label IN ('rougeur', 'urticaire', 'eczema', 'vomissement', 'diarrhee', 'gonflement', 'toux', 'detresse-respiratoire', 'levres-bleues', 'autre'));
       `;
     }
 
