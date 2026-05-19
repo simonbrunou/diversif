@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-05-19)
 
 ## Corpus Check
-- 414 files · ~600,290 words
+- 414 files · ~602,779 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2140 nodes · 4245 edges · 159 communities (148 shown, 11 thin omitted)
-- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 535 edges (avg confidence: 0.8)
+- 2194 nodes · 4299 edges · 157 communities (146 shown, 11 thin omitted)
+- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 535 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `50aadb22`
+- Built from commit: `10e1cfc6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -47,18 +47,16 @@
 - [[_COMMUNITY_Diversity Metrics|Diversity Metrics]]
 - [[_COMMUNITY_Reminders Engine|Reminders Engine]]
 - [[_COMMUNITY_Community 31|Community 31]]
-- [[_COMMUNITY_Community 32|Community 32]]
+- [[_COMMUNITY_Community 33|Community 33]]
 - [[_COMMUNITY_Community 34|Community 34]]
 - [[_COMMUNITY_Community 35|Community 35]]
 - [[_COMMUNITY_Community 36|Community 36]]
-- [[_COMMUNITY_Community 37|Community 37]]
 - [[_COMMUNITY_Community 38|Community 38]]
-- [[_COMMUNITY_Community 40|Community 40]]
+- [[_COMMUNITY_Community 42|Community 42]]
+- [[_COMMUNITY_Community 43|Community 43]]
 - [[_COMMUNITY_Community 44|Community 44]]
 - [[_COMMUNITY_Community 45|Community 45]]
 - [[_COMMUNITY_Community 46|Community 46]]
-- [[_COMMUNITY_Community 47|Community 47]]
-- [[_COMMUNITY_Community 48|Community 48]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `languageTag()` - 397 edges
@@ -84,63 +82,63 @@
 - `handle()` --calls--> `validateSession()`  [INFERRED]
   src/hooks.server.ts → src/lib/server/auth.ts
 
-## Communities (159 total, 11 thin omitted)
+## Communities (157 total, 11 thin omitted)
 
 ### Community 0 - "i18n Messages (auth.*)"
 Cohesion: 0.01
-Nodes (278): addSymptomLabel(), addSymptomNote(), addSymptomNotePlaceholder(), addSymptomObservedAt(), allergenDialogBadgeFromMonths(), allergenDialogClose(), allergenDialogFirstSignsTitle(), allergenDialogSevereSignsTitle() (+270 more)
+Nodes (285): addSymptomNote(), addSymptomObservedAt(), addSymptomSubmit(), addSymptomTitle(), allergenDialogBadgeFromMonths(), allergenDialogClose(), allergenDialogFirstSignsTitle(), allergenDialogSevereSignsTitle() (+277 more)
 
 ### Community 1 - "i18n Messages (chrome.*)"
 Cohesion: 0.01
-Nodes (214): addSymptomNote(), addSymptomNotePlaceholder(), addSymptomObservedAt(), addSymptomSubmit(), addSymptomTitle(), allergenDialogClose(), allergenDialogFirstSignsTitle(), allergenDialogHowToOfferTitle() (+206 more)
+Nodes (223): addSymptomLabel(), addSymptomNote(), addSymptomNotePlaceholder(), addSymptomObservedAt(), allergenDialogBadgeFromMonths(), allergenDialogFirstSignsTitle(), allergenDialogSourcesTitle(), allergenDialogWhyEarlyTitle() (+215 more)
 
 ### Community 2 - "i18n Messages (errors+log+landing)"
 Cohesion: 0.01
-Nodes (174): addSymptomLabel(), allergenDialogBadgeFromMonths(), allergenDialogSeverityMajor(), allergenDialogSourcesTitle(), allergenDialogTitle(), allergenDialogWhyEarlyTitle(), aujourdhuiAllergensFading(), aujourdhuiAllergensTitle() (+166 more)
+Nodes (165): addSymptomSubmit(), addSymptomTitle(), allergenDialogClose(), allergenDialogHowToOfferTitle(), allergenDialogSevereSignsTitle(), allergenDialogSeverityMajor(), allergenDialogTitle(), aujourdhuiAllergensFading() (+157 more)
 
 ### Community 3 - "Page Loaders & Form Actions"
 Cohesion: 0.01
-Nodes (174): addSymptomNote(), allergenDialogBadgeFromMonths(), allergenDialogHowToOfferTitle(), allergenDialogSevereSignsTitle(), allergenDialogSeverityMajor(), aujourdhuiAllergensTodo(), aujourdhuiStatsStreak(), authAccountDataDescription() (+166 more)
+Nodes (165): addSymptomNotePlaceholder(), addSymptomSubmit(), allergenDialogClose(), allergenDialogFirstSignsTitle(), allergenDialogSevereSignsTitle(), allergenDialogSourcesTitle(), allergenDialogTitle(), aujourdhuiAllergensTitle() (+157 more)
 
 ### Community 4 - "Test Fixtures & Setup Helpers"
 Cohesion: 0.01
-Nodes (214): addSymptomLabel(), addSymptomNotePlaceholder(), addSymptomObservedAt(), addSymptomSubmit(), addSymptomTitle(), allergenDialogClose(), allergenDialogFirstSignsTitle(), allergenDialogSourcesTitle() (+206 more)
+Nodes (223): addSymptomLabel(), addSymptomNote(), addSymptomObservedAt(), addSymptomTitle(), allergenDialogBadgeFromMonths(), allergenDialogHowToOfferTitle(), allergenDialogSeverityMajor(), allergenDialogWhyEarlyTitle() (+215 more)
 
 ### Community 5 - "Branding, App Shell & PWA Manifest"
 Cohesion: 0.01
-Nodes (111): addSymptomSubmit(), addSymptomTitle(), allergenDialogHowToOfferTitle(), allergenDialogSeverityMajor(), aujourdhuiAllergensTitle(), aujourdhuiRecentEmpty(), aujourdhuiStatsAlimentsDelta(), aujourdhuiStatsStreakDaysOther() (+103 more)
+Nodes (104): addSymptomLabel(), addSymptomNotePlaceholder(), allergenDialogHowToOfferTitle(), allergenDialogSeverityMajor(), aujourdhuiAllergensFading(), aujourdhuiAllergensTitle(), aujourdhuiStatsStreakDaysOther(), aujourdhuiStatsStreakRecord() (+96 more)
 
 ### Community 6 - "Architecture Patterns & Conventions"
 Cohesion: 0.06
-Nodes (35): seed(), seed(), makeDeleteEvent(), makeFormEvent(), setup(), loadFor(), setup(), setupEgg() (+27 more)
+Nodes (34): seed(), seed(), makeDeleteEvent(), makeFormEvent(), setup(), loadFor(), setup(), setupEgg() (+26 more)
 
-### Community 8 - "UI Components & Tests"
+### Community 7 - "Auth Routes & i18n Routing"
+Cohesion: 0.05
+Nodes (37): getAllStagesForBento(), getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), dismissReminder(), loadAnalyticsBuckets(), loadCoparentActivity(), loadDismissals() (+29 more)
+
+### Community 9 - "WebAuthn / Passkeys"
 Cohesion: 0.15
 Nodes (23): load(), POST(), load(), base64UrlToBuffer(), bufferToBase64Url(), buildAuthenticationOptions(), buildRegistrationOptions(), consumeChallenge() (+15 more)
 
-### Community 9 - "WebAuthn / Passkeys"
+### Community 10 - "Offline Log Queue (IndexedDB)"
+Cohesion: 0.11
+Nodes (20): load(), POST(), load(), load(), createSession(), findUserByEmail(), getDecoyHash(), invalidateAllUserSessions() (+12 more)
+
+### Community 11 - "User Memory & Medical Audit"
 Cohesion: 0.08
 Nodes (14): back(), findScrollable(), handleOpenChange(), isInteractive(), onSheetPointerCancel(), onSheetPointerDown(), onSheetPointerMove(), onSheetPointerUp() (+6 more)
 
-### Community 10 - "Offline Log Queue (IndexedDB)"
-Cohesion: 0.13
-Nodes (18): load(), loadBentoAllergens(), loadWeeklyEntries(), loadRepeatCandidates(), loadTexturesTried(), load(), load(), load() (+10 more)
-
-### Community 11 - "User Memory & Medical Audit"
+### Community 12 - "SEO / JSON-LD Library"
 Cohesion: 0.09
 Nodes (15): clear(), deleteRow(), emit(), enqueue(), flush(), openDb(), postOne(), readAllOrdered() (+7 more)
 
-### Community 12 - "SEO / JSON-LD Library"
+### Community 13 - "UI Component Library"
 Cohesion: 0.11
 Nodes (19): filterIncomingBreadcrumb(), scrubEvent(), scrubPathname(), scrubUrlString(), enforceLanguageTag(), isAvailableLanguageTag(), onSetLanguageTag(), setLanguageTag() (+11 more)
 
-### Community 13 - "UI Component Library"
-Cohesion: 0.13
-Nodes (16): getAllStagesForBento(), dismissReminder(), loadAnalyticsBuckets(), loadCoparentActivity(), loadDismissals(), loadDiversityMetrics(), loadRecentEntries(), loadStreak() (+8 more)
-
 ### Community 14 - "Account Export / Delete"
-Cohesion: 0.1
-Nodes (16): categoryLabel(), computeReminders(), push(), allergenEntry(), entry(), input(), isolated(), findRepeatCandidates() (+8 more)
+Cohesion: 0.15
+Nodes (16): load(), loadBentoAllergens(), loadWeeklyEntries(), loadRepeatCandidates(), load(), load(), load(), load() (+8 more)
 
 ### Community 15 - "DB Init, Backup & Seed"
 Cohesion: 0.13
@@ -148,73 +146,65 @@ Nodes (21): escapePatternText(), findPlaceholderClosingIndex(), flatten(), isBuf
 
 ### Community 16 - "Allergens & Milestones"
 Cohesion: 0.14
-Nodes (12): load(), POST(), load(), load(), getDecoyHash(), invalidateAllUserSessions(), invalidateSession(), newToken() (+4 more)
+Nodes (15): severityOf(), countNthExposition(), deleteSymptomById(), insertSymptom(), listSymptomsByEntry(), formatDate(), formatTime(), load() (+7 more)
 
 ### Community 17 - "Sentry Observability"
-Cohesion: 0.16
-Nodes (11): findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), IdempotencyInFlight, IdempotencyScopeMismatch, pruneExpiredKeys(), withIdempotencyKey() (+3 more)
+Cohesion: 0.14
+Nodes (8): load(), GET(), audit(), deleteUserAccount(), ExportTooLargeError, exportUserData(), isoOrNull(), isoOrThrow()
 
 ### Community 18 - "Legal Pages"
-Cohesion: 0.2
-Nodes (12): load(), findUserByEmail(), runCleanup(), startCleanupTimer(), stopCleanupTimer(), requireGuest(), bucketKey(), checkRateLimit() (+4 more)
-
-### Community 19 - "Invitations & Memberships"
 Cohesion: 0.19
 Nodes (11): absoluteUrl(), articleJsonLd(), breadcrumbJsonLd(), faqPageJsonLd(), organizationJsonLd(), resolveOrigin(), webApplicationJsonLd(), websiteJsonLd() (+3 more)
 
+### Community 19 - "Invitations & Memberships"
+Cohesion: 0.19
+Nodes (9): LogActionAbort, runCleanup(), startCleanupTimer(), stopCleanupTimer(), IdempotencyInFlight, IdempotencyScopeMismatch, pruneExpiredKeys(), withIdempotencyKey() (+1 more)
+
 ### Community 20 - "SEO Source-of-Truth Config"
-Cohesion: 0.18
-Nodes (12): severityOf(), countNthExposition(), deleteSymptomById(), insertSymptom(), listSymptomsByEntry(), formatDate(), formatTime(), load() (+4 more)
-
-### Community 21 - "Diversification Guidance & Stages"
-Cohesion: 0.16
-Nodes (7): GET(), audit(), deleteUserAccount(), ExportTooLargeError, exportUserData(), isoOrNull(), isoOrThrow()
-
-### Community 22 - "UI Primitives & LEAP/EAT Cards"
 Cohesion: 0.18
 Nodes (7): applySeedCorrections(), seedFoods(), drainPool(), registerShutdownHandlers(), _resetShutdownState(), makeHarness(), makeProc()
 
-### Community 23 - "Migration Tests"
+### Community 21 - "Diversification Guidance & Stages"
 Cohesion: 0.23
 Nodes (4): dismissWelcomeIfPresent(), signUp(), signUpAndCreateChild(), unique()
 
-### Community 24 - "Food Categories"
+### Community 22 - "UI Primitives & LEAP/EAT Cards"
 Cohesion: 0.27
 Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
+
+### Community 23 - "Migration Tests"
+Cohesion: 0.27
+Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
+
+### Community 24 - "Food Categories"
+Cohesion: 0.24
+Nodes (7): findActiveInvitation(), load(), userHasMembership(), isUniqueViolation(), createInvitationForChild(), generateInviteCodeRaw(), isValidInviteCodeFormat()
 
 ### Community 25 - "Reaction Reports & Reminders"
-Cohesion: 0.27
-Nodes (11): addSortIndicators(), enableUI(), getNthColumn(), getTable(), getTableBody(), getTableHeader(), loadColumns(), loadData() (+3 more)
+Cohesion: 0.35
+Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 26 - "Idempotency Primitive"
-Cohesion: 0.27
-Nodes (7): getStageForAgeMonths(), getTipsFor(), pickRotatingTip(), load(), defaultTextureForAgeMonths(), getTextureLabel(), isTextureKey()
+Cohesion: 0.35
+Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
 
 ### Community 27 - "Auth Guards & Sessions"
-Cohesion: 0.35
-Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
-
-### Community 28 - "Reactions Vocabulary"
-Cohesion: 0.35
-Nodes (8): a(), B(), D(), g(), i(), k(), Q(), y()
-
-### Community 29 - "Diversity Metrics"
 Cohesion: 0.28
 Nodes (5): load(), load(), getLegalIdentity(), isPlaceholder(), read()
 
-### Community 30 - "Reminders Engine"
+### Community 28 - "Reactions Vocabulary"
 Cohesion: 0.5
 Nodes (6): clearTimer(), formatRemaining(), keyFor(), loadTimer(), remainingMs(), saveTimer()
 
-### Community 31 - "Community 31"
+### Community 29 - "Diversity Metrics"
 Cohesion: 0.6
 Nodes (3): signUp(), signUpOwnerAndCreateChild(), unique()
 
-### Community 35 - "Community 35"
+### Community 33 - "Community 33"
 Cohesion: 0.7
 Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
-### Community 36 - "Community 36"
+### Community 34 - "Community 34"
 Cohesion: 0.7
 Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 
@@ -224,12 +214,12 @@ Nodes (4): goToNext(), goToPrevious(), makeCurrent(), toggleClass()
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `WebAuthn / Passkeys`, `SEO / JSON-LD Library`, `Branding, App Shell & PWA Manifest`?**
-  _High betweenness centrality (0.099) - this node is a cross-community bridge._
-- **Why does `isValidBirthDate()` connect `SEO / JSON-LD Library` to `Offline Log Queue (IndexedDB)`?**
+- **Why does `languageTag()` connect `i18n Messages (auth.*)` to `Branding, App Shell & PWA Manifest`, `User Memory & Medical Audit`, `UI Component Library`?**
+  _High betweenness centrality (0.103) - this node is a cross-community bridge._
+- **Why does `isValidBirthDate()` connect `UI Component Library` to `Account Export / Delete`?**
   _High betweenness centrality (0.046) - this node is a cross-community bridge._
-- **Why does `setLanguageTag()` connect `SEO / JSON-LD Library` to `i18n Messages (auth.*)`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
+- **Why does `setLanguageTag()` connect `UI Component Library` to `i18n Messages (auth.*)`?**
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **Are the 389 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `formatRelative()`) actually correct?**
   _`languageTag()` has 389 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 5 inferred relationships involving `makeRouteEvent()` (e.g. with `loadFor()` and `makeFormEvent()`) actually correct?**

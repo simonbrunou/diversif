@@ -46,8 +46,8 @@
   <!-- Document header -->
   <header class="space-y-2 border-b pb-4">
     <div class="flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground">
-      <span>Récap pédiatrique · Diversif</span>
-      <span>Édité le {fmtDay(data.generatedAt)}</span>
+      <span>{m.reportHeaderEyebrow()}</span>
+      <span>{m.reportHeaderEditedOn({ date: fmtDay(data.generatedAt) })}</span>
     </div>
     <h1 class="font-display text-3xl font-semibold leading-tight md:text-4xl">
       {data.child.name}
@@ -60,36 +60,44 @@
   <!-- Summary stats -->
   <section class="grid grid-cols-2 gap-3 sm:grid-cols-4 print:grid-cols-4">
     <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">Aliments</div>
+      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+        {m.reportTotalsFoodsLabel()}
+      </div>
       <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
         {data.totals.foods}
       </div>
-      <div class="mt-1 text-[11px] text-muted-foreground">distincts introduits</div>
+      <div class="mt-1 text-[11px] text-muted-foreground">{m.reportTotalsFoodsCaption()}</div>
     </div>
     <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">Repas</div>
+      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+        {m.reportTotalsEntriesLabel()}
+      </div>
       <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
         {data.totals.entries}
       </div>
-      <div class="mt-1 text-[11px] text-muted-foreground">notés au total</div>
+      <div class="mt-1 text-[11px] text-muted-foreground">{m.reportTotalsEntriesCaption()}</div>
     </div>
     <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">Catégories</div>
+      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+        {m.reportTotalsCategoriesLabel()}
+      </div>
       <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
         {data.totals.categoriesCovered}<span class="text-sm font-normal text-muted-foreground">
           / {data.totals.categoriesTotal}</span
         >
       </div>
-      <div class="mt-1 text-[11px] text-muted-foreground">familles couvertes</div>
+      <div class="mt-1 text-[11px] text-muted-foreground">{m.reportTotalsCategoriesCaption()}</div>
     </div>
     <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">Allergènes</div>
+      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+        {m.reportTotalsAllergensLabel()}
+      </div>
       <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
         {data.totals.allergensIntroduced}<span class="text-sm font-normal text-muted-foreground">
           / {data.totals.allergensTotal}</span
         >
       </div>
-      <div class="mt-1 text-[11px] text-muted-foreground">prioritaires testés</div>
+      <div class="mt-1 text-[11px] text-muted-foreground">{m.reportTotalsAllergensCaption()}</div>
     </div>
   </section>
 
@@ -133,7 +141,7 @@
 
   <!-- Allergens grid -->
   <section class="space-y-3 break-inside-avoid">
-    <h2 class="font-display text-xl font-semibold">Allergènes prioritaires</h2>
+    <h2 class="font-display text-xl font-semibold">{m.reportAllergensHeading()}</h2>
     <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 print:grid-cols-2">
       {#each data.allergens as a (a.id)}
         {@const Icon = a.status === 'untested' ? CircleDashed : reactionIcon(a.worst!)}
@@ -150,10 +158,13 @@
           </div>
           {#if a.status === 'introduced'}
             <span class="shrink-0 text-xs text-muted-foreground">
-              {a.exposures}× · dès {fmtDay(a.firstGivenAt!)}
+              {m.reportExposuresSince({
+                count: String(a.exposures),
+                date: fmtDay(a.firstGivenAt!)
+              })}
             </span>
           {:else}
-            <span class="shrink-0 text-xs text-muted-foreground">à tester</span>
+            <span class="shrink-0 text-xs text-muted-foreground">{m.reportAllergenUntested()}</span>
           {/if}
         </li>
       {/each}
@@ -162,9 +173,9 @@
 
   <!-- Foods by category -->
   <section class="space-y-3">
-    <h2 class="font-display text-xl font-semibold">Aliments introduits par famille</h2>
+    <h2 class="font-display text-xl font-semibold">{m.reportFoodsByCategoryHeading()}</h2>
     {#if data.categoryGroups.length === 0}
-      <p class="text-sm text-muted-foreground">Aucun aliment encore noté.</p>
+      <p class="text-sm text-muted-foreground">{m.reportFoodsByCategoryEmpty()}</p>
     {:else}
       <div class="space-y-3">
         {#each data.categoryGroups as g (g.id)}
@@ -190,7 +201,10 @@
                     </span>
                   </span>
                   <span class="shrink-0 text-xs text-muted-foreground">
-                    {f.exposures}× · dès {fmtDay(f.firstGivenAt)}
+                    {m.reportExposuresSince({
+                      count: String(f.exposures),
+                      date: fmtDay(f.firstGivenAt)
+                    })}
                   </span>
                 </li>
               {/each}
@@ -204,7 +218,7 @@
   <!-- Notable reactions -->
   {#if data.notable.length > 0}
     <section class="space-y-3">
-      <h2 class="font-display text-xl font-semibold">Réactions à signaler</h2>
+      <h2 class="font-display text-xl font-semibold">{m.reportNotableHeading()}</h2>
       <ul class="space-y-2 text-sm">
         {#each data.notable as e (e.id)}
           {@const Icon = reactionIcon(e.reaction)}
@@ -238,18 +252,17 @@
 
   <!-- Footer -->
   <footer class="space-y-1 border-t pt-3 text-[11px] text-muted-foreground print:border-black/20">
-    <p>
-      Édité depuis Diversif : application de suivi de la diversification alimentaire. Ce récap
-      n'est pas un avis médical : présentez-le à votre pédiatre ou médecin pour discussion.
-    </p>
-    <p>
-      Sources de référence : Santé publique France (PNNS), HCSP 2020, ANSES nourrissons, ESPGHAN
-      2017, études LEAP (2015) et EAT (2016).
-    </p>
+    <p>{m.reportFooterDisclaimer()}</p>
+    <p>{m.reportFooterSources()}</p>
   </footer>
 
-  <!-- Print-only date stamp -->
+  <!-- Print-only date stamp. Locale follows the active UI language so an
+       English-locale parent doesn't get a French long-date stamp. -->
   <p class="mt-4 hidden text-center text-xs text-muted-foreground print:block">
-    {m.reportPrintedOn({ date: new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(data.generatedAt)) })}
+    {m.reportPrintedOn({
+      date: new Intl.DateTimeFormat(languageTag(), { dateStyle: 'long' }).format(
+        new Date(data.generatedAt)
+      )
+    })}
   </p>
 </PrintShell>
