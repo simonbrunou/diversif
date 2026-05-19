@@ -126,7 +126,7 @@
   </Card>
 
   {#if data.role === 'owner'}
-    <Card class="p-4">
+    <Card id="invite" class="scroll-mt-24 p-4">
       <h2 class="text-base font-semibold">Inviter quelqu’un</h2>
       <p class="mt-1 text-sm text-muted-foreground">
         Générez un code à partager. Il expire après 7 jours et ne peut être utilisé qu’une fois.

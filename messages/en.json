@@ -405,6 +405,8 @@
   "carnetSegmentsAriaLabel": "Notebook sections",
   "errorsAccountPasskeyRegisterStartFailed": "Could not start registration.",
   "errorsAccountPasskeyRegisterFailed": "Registration failed.",
+  "errorsAccountPasskeyAuthStartFailed": "Could not start sign-in.",
+  "errorsAccountPasskeyAuthFailed": "Sign-in failed.",
   "errorsAccountPasskeyGenericError": "Error",
   "reportHandoffTitle": "Pediatrician summary",
   "reportPrintButton": "Print / Save as PDF",

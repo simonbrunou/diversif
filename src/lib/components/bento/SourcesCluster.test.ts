@@ -15,9 +15,13 @@ describe('SourcesCluster', () => {
     expect(screen.getByText('HCSP')).toBeTruthy();
   });
 
-  it('each source links into /sources with an anchor', () => {
+  it('each source links into /sources with the canonical SourceId anchor', () => {
     render(SourcesCluster, {});
-    expect(screen.getByText('LEAP').closest('a')?.getAttribute('href')).toBe('/sources#leap');
-    expect(screen.getByText('ANSES').closest('a')?.getAttribute('href')).toBe('/sources#anses');
+    // The anchor ids must match canonical SourceId keys in $lib/content/sources
+    // so the #fragment lands on the right <li> on /sources.
+    expect(screen.getByText('LEAP').closest('a')?.getAttribute('href')).toBe('/sources#leap-2015');
+    expect(screen.getByText('ANSES').closest('a')?.getAttribute('href')).toBe(
+      '/sources#anses-nourrisson'
+    );
   });
 });
