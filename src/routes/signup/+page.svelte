@@ -97,7 +97,7 @@
     </div>
 
     <div class="grid gap-1.5">
-      <Label for="email">{m.authSignupEmailLabel()}</Label>
+      <Label for="email">{m.authEmailLabel()}</Label>
       <Input
         id="email"
         name="email"
@@ -109,7 +109,7 @@
     </div>
 
     <div class="grid gap-1.5">
-      <Label for="password">{m.authSignupPasswordLabel()}</Label>
+      <Label for="password">{m.authPasswordLabel()}</Label>
       <div class="relative">
         <Input
           id="password"
