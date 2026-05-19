@@ -39,8 +39,8 @@
   const filtered = $derived.by(() => {
     let list = foods;
     if (activeCategory) list = list.filter((f) => f.category === activeCategory);
-    if (!query.trim()) return list.slice(0, 50);
-    return list.filter((f) => fuzzyMatch(query, f.name)).slice(0, 80);
+    if (!query.trim()) return list;
+    return list.filter((f) => fuzzyMatch(query, f.name));
   });
 
   const selected = $derived(foods.find((f) => f.id === selectedId) ?? null);
