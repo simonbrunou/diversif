@@ -65,6 +65,11 @@
     :global([data-no-print]) {
       display: none !important;
     }
+    /* Keep each <section> on a single page by default; the two current
+       consumers wrap each logical block (stats, allergens, foods, …) in a
+       <section> precisely so they don't split. A consumer with a long
+       inherently-paginable section should override locally with
+       `break-inside: auto`. */
     :global(section) {
       break-inside: avoid;
       page-break-inside: avoid;
