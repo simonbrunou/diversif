@@ -431,30 +431,36 @@ describe('child/[id]/foods load', () => {
   });
 
   it('weeklyEntries returns a 7-length array bucketed by day with today last', async () => {
-    const ctx = await setup();
-    // Seed 5 entries across the last 3 days:
-    //   - 2 today
-    //   - 2 yesterday
-    //   - 1 two days ago
-    // Also seed one entry 30 days ago to confirm out-of-window entries are excluded.
-    await ctx.log(ctx.carrot.id, 'ras', 0);
-    await ctx.log(ctx.carrot.id, 'ras', 0);
-    await ctx.log(ctx.apple.id, 'ras', 1);
-    await ctx.log(ctx.apple.id, 'ras', 1);
-    await ctx.log(ctx.carrot.id, 'ras', 2);
-    await ctx.log(ctx.carrot.id, 'ras', 30);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
-    if (!('weeklyEntries' in out)) throw new Error('expected weeklyEntries in load result');
-    expect(out.weeklyEntries.counts).toHaveLength(7);
-    expect(out.weeklyEntries.counts.reduce((s, n) => s + n, 0)).toBe(5);
-    expect(out.weeklyEntries.counts[6]).toBe(2); // today
-    expect(out.weeklyEntries.counts[5]).toBe(2); // yesterday
-    expect(out.weeklyEntries.counts[4]).toBe(1); // two days ago
-    // anchorUtc pins the bucketing to a UTC midnight at request time.
-    const now = new Date();
-    expect(out.weeklyEntries.anchorUtc).toBe(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-    );
+    // Freeze Date so seeding (Date.now() - daysAgo), the load (new Date() in
+    // loadWeeklyEntries), and the assertion all see the same wall clock —
+    // without the freeze, a UTC midnight rollover between any pair flakes
+    // both the bucket counts and the anchorUtc equality.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-05-15T12:00:00Z'));
+    try {
+      const ctx = await setup();
+      // Seed 5 entries across the last 3 days:
+      //   - 2 today
+      //   - 2 yesterday
+      //   - 1 two days ago
+      // Also seed one entry 30 days ago to confirm out-of-window entries are excluded.
+      await ctx.log(ctx.carrot.id, 'ras', 0);
+      await ctx.log(ctx.carrot.id, 'ras', 0);
+      await ctx.log(ctx.apple.id, 'ras', 1);
+      await ctx.log(ctx.apple.id, 'ras', 1);
+      await ctx.log(ctx.carrot.id, 'ras', 2);
+      await ctx.log(ctx.carrot.id, 'ras', 30);
+      const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+      if (!('weeklyEntries' in out)) throw new Error('expected weeklyEntries in load result');
+      expect(out.weeklyEntries.counts).toHaveLength(7);
+      expect(out.weeklyEntries.counts.reduce((s, n) => s + n, 0)).toBe(5);
+      expect(out.weeklyEntries.counts[6]).toBe(2); // today
+      expect(out.weeklyEntries.counts[5]).toBe(2); // yesterday
+      expect(out.weeklyEntries.counts[4]).toBe(1); // two days ago
+      expect(out.weeklyEntries.anchorUtc).toBe(Date.UTC(2026, 4, 15));
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   describe('bentoAllergens fading state', () => {

@@ -59,10 +59,10 @@
       <table class="w-full border-collapse text-sm">
         <thead>
           <tr class="border-b text-left text-xs uppercase tracking-wider text-muted-foreground">
-            <th class="py-1.5 pr-3 font-medium">Heure</th>
-            <th class="py-1.5 pr-3 font-medium">Symptôme</th>
-            <th class="py-1.5 pr-3 font-medium">Note</th>
-            <th class="py-1.5 font-medium">Sévérité</th>
+            <th class="py-1.5 pr-3 font-medium">{m.printSymptomColTime()}</th>
+            <th class="py-1.5 pr-3 font-medium">{m.printSymptomColLabel()}</th>
+            <th class="py-1.5 pr-3 font-medium">{m.printSymptomColNote()}</th>
+            <th class="py-1.5 font-medium">{m.printSymptomColSeverity()}</th>
           </tr>
         </thead>
         <tbody>
