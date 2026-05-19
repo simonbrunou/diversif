@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BackHeader from '$components/ui/BackHeader.svelte';
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
@@ -8,7 +9,6 @@
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
   import { tick } from 'svelte';
-  import { localizedHref } from '$lib/utils/localized-href';
   import { trackSubmission } from '$lib/forms/tracked-enhance';
   import type { ActionData, PageData } from './$types';
 
@@ -55,13 +55,7 @@
 </script>
 
 <div class="container max-w-2xl space-y-6 py-6">
-  <header>
-    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
-      ← Tableau
-    </a>
-    <h1 class="mt-2 text-xl font-semibold">Paramètres</h1>
-    <p class="text-sm text-muted-foreground">{data.child.name}</p>
-  </header>
+  <BackHeader title="Paramètres" subtitle={data.child.name} fallback={`/child/${data.child.id}`} />
 
   {#if data.role === 'owner'}
     <Card class="p-4">

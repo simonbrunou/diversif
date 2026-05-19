@@ -4,6 +4,7 @@
   import Label from '$components/ui/Label.svelte';
   import Textarea from '$components/ui/Textarea.svelte';
   import FormError from '$components/ui/FormError.svelte';
+  import BackHeader from '$components/ui/BackHeader.svelte';
   import FoodCombobox from '$lib/components/FoodCombobox.svelte';
   import ReactionPicker from '$lib/components/ReactionPicker.svelte';
   import TexturePicker from '$lib/components/TexturePicker.svelte';
@@ -56,13 +57,11 @@
 </script>
 
 <div class="container max-w-xl space-y-5 py-6">
-  <header>
-    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
-      ← Retour
-    </a>
-    <h1 class="mt-2 text-xl font-semibold">Noter un repas</h1>
-    <p class="text-sm text-muted-foreground">Pour {data.child.name}</p>
-  </header>
+  <BackHeader
+    title="Noter un repas"
+    subtitle={`Pour ${data.child.name}`}
+    fallback={`/child/${data.child.id}`}
+  />
 
   <form
     method="POST"

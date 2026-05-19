@@ -16,8 +16,9 @@
 
   let {
     title,
+    subtitle,
     fallback = '/account'
-  }: { title?: string; fallback?: string } = $props();
+  }: { title?: string; subtitle?: string; fallback?: string } = $props();
 
   // afterNavigate fires once on initial hydration with from === null, and
   // again with a non-null from for every client-side navigation that
@@ -49,7 +50,14 @@
   >
     <ArrowLeft size={20} aria-hidden="true" />
   </button>
-  {#if title}
-    <h1 class="font-display text-xl italic leading-tight">{title}</h1>
+  {#if title || subtitle}
+    <div class="min-w-0 flex-1">
+      {#if title}
+        <h1 class="font-display text-xl italic leading-tight">{title}</h1>
+      {/if}
+      {#if subtitle}
+        <p class="truncate text-sm text-muted-foreground">{subtitle}</p>
+      {/if}
+    </div>
   {/if}
 </header>
