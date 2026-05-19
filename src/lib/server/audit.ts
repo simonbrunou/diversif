@@ -1,3 +1,5 @@
+import type { ReactionId } from '$lib/utils/reactions';
+
 // Structured audit log for sensitive account operations. Emitted as a single
 // JSON line to stdout so the deployment platform's log aggregator captures it
 // durably alongside application logs. Deliberately no email, IP or other
@@ -62,8 +64,8 @@ export type AuditEvent =
       userId: number;
       childId: number;
       entryId: number;
-      from: 'ras';
-      to: 'inconfort' | 'reaction';
+      from: Extract<ReactionId, 'ras'>;
+      to: Exclude<ReactionId, 'ras'>;
       triggeredBy: number; // symptom id
     };
 

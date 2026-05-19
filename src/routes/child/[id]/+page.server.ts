@@ -3,7 +3,8 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { desc, eq, sql, and, isNotNull } from 'drizzle-orm';
 import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
-import { CATEGORIES } from '$lib/utils/categories';
+import { CATEGORIES, type CategoryId } from '$lib/utils/categories';
+import type { ReactionId } from '$lib/utils/reactions';
 import { ageInMonths } from '$lib/utils/age';
 import { computeReminders } from '$lib/server/guidance/reminders';
 import {
@@ -213,6 +214,12 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   return {
     recent: recent.map((r) => ({
       ...r,
+      // The food catalog is seeded from a closed CategoryId/ReactionId union,
+      // but Drizzle types these columns as the bare `text` SQL types.
+      // Narrow at the read boundary so the RecentEntry contract carries
+      // through to consumers.
+      category: r.category as CategoryId,
+      reaction: r.reaction as ReactionId,
       loggedByName: r.loggedByName ?? 'Compte supprimé',
       givenAt:
         r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt)

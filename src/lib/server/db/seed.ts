@@ -4,6 +4,8 @@ import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { foods } from './schema';
 import type * as schema from './schema';
+import type { CategoryId } from '$lib/utils/categories';
+import type { AllergenId } from '$lib/utils/allergens';
 
 type Tx =
   | NodePgDatabase<typeof schema>
@@ -11,9 +13,9 @@ type Tx =
 
 type SeedFood = {
   name: string;
-  category: string;
+  category: CategoryId;
   age: number;
-  allergen?: string;
+  allergen?: AllergenId;
 };
 
 export const FOODS_SEED: SeedFood[] = [
