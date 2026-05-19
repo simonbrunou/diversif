@@ -22,7 +22,7 @@ describe('ALLERGENS', () => {
   //   - src/routes/child/[id]/log/page.server.test.ts (comment)
   //   - src/lib/utils/milestones.test.ts (toast assertion)
   //   - messages/fr.json + messages/en.json (dialogsWelcomeStep1Bullet2After
-  //     and dashboardNavAllergensDescription both reference the count)
+  //     references the count)
   // Programmatic call sites (milestones.ts toast) already interpolate
   // ALLERGENS.length and don't need a manual update.
   it('matches the "12" hardcoded in user-facing copy', () => {
