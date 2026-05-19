@@ -9,6 +9,7 @@
   import { toast } from 'svelte-sonner';
   import { tick } from 'svelte';
   import { localizedHref } from '$lib/utils/localized-href';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -24,16 +25,6 @@
   let creatingInvite = $state(false);
   let deletingChild = $state(false);
   let leavingChild = $state(false);
-
-  function trackSubmission(setter: (b: boolean) => void) {
-    return () => {
-      setter(true);
-      return async ({ update }: { update: () => Promise<void> }) => {
-        await update();
-        setter(false);
-      };
-    };
-  }
 
   $effect(() => {
     if (form?.success) {

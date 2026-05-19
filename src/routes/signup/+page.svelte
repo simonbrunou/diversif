@@ -3,6 +3,7 @@
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
   import BentoAuthLayout from '$lib/components/bento/BentoAuthLayout.svelte';
+  import FormError from '$components/ui/FormError.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
   import { browser } from '$app/environment';
@@ -78,9 +79,9 @@
   >
     {#if form?.errorKey}
       {@const k = form.errorKey as keyof typeof m}
-      <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+      <FormError>
         {(m[k] as (() => string) | undefined)?.() ?? /* v8 ignore next */ m.errorsGenericFallback()}
-      </div>
+      </FormError>
     {/if}
 
     <div class="grid gap-1.5">

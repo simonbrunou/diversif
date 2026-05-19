@@ -1,7 +1,7 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import Badge from '$components/ui/Badge.svelte';
-  import EmptyState from '$lib/components/EmptyState.svelte';
+  import EmptyHint from '$components/ui/EmptyHint.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
   import {
     CATEGORIES,
@@ -55,11 +55,9 @@
   />
 
   {#if data.priorityAllergens.length === 0 && data.others.length === 0}
-    <EmptyState
-      icon={Sparkles}
-      title="Vous avez fait le tour du catalogue"
-      description="Variez les préparations et confirmez les introductions à votre rythme."
-    />
+    <EmptyHint icon={Sparkles} title="Vous avez fait le tour du catalogue">
+      Variez les préparations et confirmez les introductions à votre rythme.
+    </EmptyHint>
   {:else}
     {#if data.priorityAllergens.length > 0}
       <section>
