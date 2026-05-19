@@ -141,14 +141,21 @@ export type RepeatCandidate = {
 };
 
 /**
- * `limit` defaults to 5 for the dashboard "Reproposez" suggestions; callers
- * that want the full filtered list (e.g. the carnet `?repeat=1` filter)
- * should pass a generous upper bound. Predicate shares constants with
- * findRepeatCandidates — see ./repeat-candidates.
+ * `limit` defaults to 5 for the dashboard "Reproposez" suggestions; pass
+ * `null` to disable the cap (e.g. the carnet `?repeat=1` filter, which must
+ * return every candidate, not the oldest N). Predicate shares constants
+ * with findRepeatCandidates — see ./repeat-candidates.
  */
-export async function loadRepeatCandidates(childId: number, limit = 5): Promise<RepeatCandidate[]> {
+export async function loadRepeatCandidates(
+  childId: number,
+  limit: number | null = 5
+): Promise<RepeatCandidate[]> {
   // Same wrapping-WHERE shape as loadDiversityMetrics' repeat query : see
-  // comment there for why we don't use HAVING.
+  // comment there for why we don't use HAVING. LIMIT is conditionally
+  // emitted because the carnet filter needs an uncapped list (ORDER BY
+  // last_at ASC + a numeric cap would otherwise hide the most recently
+  // re-offered foods past the first N rows on extremely active children).
+  const limitClause = limit == null ? sql`` : sql`LIMIT ${limit}`;
   const res = await db.execute<{
     food_id: number;
     food_name: string;
@@ -174,7 +181,7 @@ export async function loadRepeatCandidates(childId: number, limit = 5): Promise<
         ) sub
         WHERE n <= ${REPEAT_CANDIDATE_MAX_COUNT} AND worst <= ${REPEAT_CANDIDATE_MAX_WORST_RANK}
         ORDER BY last_at ASC
-        LIMIT ${limit}`
+        ${limitClause}`
   );
   return res.rows.map((r) => ({
     foodId: Number(r.food_id),

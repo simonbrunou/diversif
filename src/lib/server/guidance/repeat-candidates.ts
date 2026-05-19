@@ -47,9 +47,10 @@ export type FindRepeatCandidatesOptions = {
   /** Maximum worst-reaction rank (inclusive). Defaults to REPEAT_CANDIDATE_MAX_WORST_RANK. */
   maxWorstRank?: number;
   /**
-   * Optional minimum days since the food was last given. Used by the
-   * reminders rule to avoid nagging the same day the food was just
-   * introduced.
+   * Optional cooldown in days since the food was last given. Foods whose
+   * last exposure is <= N days ago are excluded. Used by reminders rule 6
+   * with N=3 so we don't surface a "Reproposez" card right after the food
+   * was logged.
    */
   minDaysSinceLastGiven?: number;
   /**

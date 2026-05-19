@@ -163,9 +163,9 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     // Foods given <= 2 times whose worst reaction is RAS or Inconfort. Shares
     // its predicate (and SQL form) with the dashboard "Reproposez" suggestions
     // via loadRepeatCandidates — see src/lib/server/guidance/repeat-candidates.
-    // Use a generous limit so the carnet filter shows the full set, not just
-    // the dashboard's top 5.
-    const candidates = await loadRepeatCandidates(childId, 1000);
+    // Pass `null` so the carnet filter returns every candidate (the dashboard
+    // uses the default top-5 cap).
+    const candidates = await loadRepeatCandidates(childId, null);
     const ids = candidates.map((c) => c.foodId);
     if (ids.length === 0) {
       const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([

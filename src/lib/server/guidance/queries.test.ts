@@ -336,6 +336,23 @@ describe('loadRepeatCandidates', () => {
     const { child } = await seedUserAndChild();
     expect(await loadRepeatCandidates(child.id)).toEqual([]);
   });
+
+  it('returns every candidate when limit is null (carnet ?repeat=1 case)', async () => {
+    const { user, child } = await seedUserAndChild();
+    const now = Date.now();
+    for (let i = 0; i < 7; i++) {
+      const food = await seedFood({ name: `F${i}`, category: 'legumes' });
+      await logEntry({
+        childId: child.id,
+        foodId: food.id,
+        userId: user.id,
+        givenAt: new Date(now - (i + 1) * DAY_MS),
+        reaction: 'ras'
+      });
+    }
+    const out = await loadRepeatCandidates(child.id, null);
+    expect(out.length).toBe(7);
+  });
 });
 
 describe('loadDismissals / dismissReminder', () => {
