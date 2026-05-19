@@ -1,14 +1,10 @@
 <script lang="ts">
+  import PrintShell from '$lib/components/PrintShell.svelte';
   import * as m from '$lib/paraglide/messages';
   import { severityOf, type SymptomLabel } from '$lib/content/symptoms';
-  import { Printer } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
-
-  function printPage(): void {
-    if (typeof window !== 'undefined') window.print();
-  }
 
   function severityLabel(label: SymptomLabel): string {
     const s = severityOf(label);
@@ -36,122 +32,55 @@
   }
 </script>
 
-<svelte:head>
-  <title>{m.printDocumentTitle()}</title>
-</svelte:head>
+<PrintShell title={m.printDocumentTitle()}>
+  <header class="space-y-1 border-b pb-3">
+    <h1 class="font-display text-2xl font-semibold leading-tight">
+      {m.printDocumentTitle()}
+    </h1>
+    <p class="text-sm text-muted-foreground">
+      {m.printChildHeader({ name: data.childName, months: String(data.months) })}
+    </p>
+  </header>
 
-<div class="print-doc">
-  <button type="button" class="print-cta no-print" onclick={printPage}>
-    <Printer size={14} aria-hidden="true" />
-    {m.reportPrintButton()}
-  </button>
+  <section class="space-y-2">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {m.printFoodSection()}
+    </h2>
+    <p class="text-sm">{data.foodName} : {data.givenAt} ({data.reaction})</p>
+  </section>
 
-  <h1>{m.printDocumentTitle()}</h1>
-  <p>{m.printChildHeader({ name: data.childName, months: String(data.months) })}</p>
-
-  <h2>{m.printFoodSection()}</h2>
-  <p>{data.foodName} : {data.givenAt} ({data.reaction})</p>
-
-  <h2>{m.printSymptomsSection()}</h2>
-  {#if data.symptoms.length === 0}
-    <p>—</p>
-  {:else}
-    <table>
-      <thead>
-        <tr>
-          <th>Heure</th>
-          <th>Symptôme</th>
-          <th>Note</th>
-          <th>Sévérité</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each data.symptoms as s, i (i)}
-          <tr>
-            <td>{s.observedAt}</td>
-            <td>{symptomLabelText(s.label)}</td>
-            <td>{s.note ?? ''}</td>
-            <td>{severityLabel(s.label)}</td>
+  <section class="space-y-2">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {m.printSymptomsSection()}
+    </h2>
+    {#if data.symptoms.length === 0}
+      <p class="text-sm text-muted-foreground">—</p>
+    {:else}
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="border-b text-left text-xs uppercase tracking-wider text-muted-foreground">
+            <th class="py-1.5 pr-3 font-medium">Heure</th>
+            <th class="py-1.5 pr-3 font-medium">Symptôme</th>
+            <th class="py-1.5 pr-3 font-medium">Note</th>
+            <th class="py-1.5 font-medium">Sévérité</th>
           </tr>
-        {/each}
-      </tbody>
-    </table>
-  {/if}
+        </thead>
+        <tbody>
+          {#each data.symptoms as s, i (i)}
+            <tr class="border-b align-top print:border-black/15">
+              <td class="py-1.5 pr-3 tabular-nums">{s.observedAt}</td>
+              <td class="py-1.5 pr-3">{symptomLabelText(s.label)}</td>
+              <td class="py-1.5 pr-3">{s.note ?? ''}</td>
+              <td class="py-1.5">{severityLabel(s.label)}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    {/if}
+  </section>
 
-  <footer>
+  <footer class="space-y-1 border-t pt-3 text-xs text-muted-foreground">
     <p>{m.printFooterNote()}</p>
     <p>{m.printGeneratedAt({ date: data.generatedAt })}</p>
   </footer>
-</div>
-
-<style>
-  :global(body) {
-    background: white;
-    color: black;
-    font-family: ui-sans-serif, system-ui, sans-serif;
-    margin: 0;
-  }
-  .print-doc {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 24px;
-  }
-  .print-doc h1 {
-    font-size: 20px;
-    margin: 0 0 8px 0;
-  }
-  .print-doc h2 {
-    font-size: 14px;
-    margin: 24px 0 8px 0;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .print-doc table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  .print-doc th,
-  .print-doc td {
-    border-bottom: 1px solid #ddd;
-    padding: 6px 4px;
-    text-align: left;
-  }
-  .print-doc footer {
-    margin-top: 32px;
-    font-size: 12px;
-    color: #555;
-  }
-  .print-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 16px;
-    padding: 8px 14px;
-    border: 1px solid #d4d4d4;
-    border-radius: 999px;
-    background: #fafafa;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .print-cta:hover {
-    background: #f0f0f0;
-  }
-  @media print {
-    .print-doc {
-      padding: 0;
-    }
-    .no-print {
-      display: none !important;
-    }
-    /* Hide app chrome (sidebar, bottom nav, FAB, child-header pill, desktop log
-       button) that the root layout wraps every /child/* route in via
-       AppShellBento. Without this the printed PDF would include the entire app
-       shell. Matches the rule in src/routes/child/[id]/report/+page.svelte. */
-    :global([data-no-print]) {
-      display: none !important;
-    }
-  }
-</style>
+</PrintShell>

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Button from '$components/ui/Button.svelte';
   import CategoryTag from '$lib/components/CategoryTag.svelte';
+  import PrintShell from '$lib/components/PrintShell.svelte';
   import { getCategoryLabel } from '$lib/utils/categories';
   import { getReactionLabel } from '$lib/utils/reactions';
   import { formatAge } from '$lib/utils/age';
@@ -8,17 +8,13 @@
   import { getTextureLabel } from '$lib/utils/texture-labels';
   import { TEXTURE_VALUES } from '$lib/utils/textures';
   import * as m from '$lib/paraglide/messages';
-  import { Printer, CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
+  import { CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
   import { languageTag } from '$lib/paraglide/runtime';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
-
-  function printPage() {
-    if (typeof window !== 'undefined') window.print();
-  }
 
   function fmtDay(ts: number): string {
     return dayjs(ts).locale(languageTag()).format('D MMM YYYY');
@@ -37,24 +33,15 @@
   }
 </script>
 
-<svelte:head>
-  <title>{m.reportHandoffTitle()} : {data.child.name} · Diversif</title>
-  <meta name="robots" content="noindex" />
-</svelte:head>
-
-<div
-  class="container max-w-4xl space-y-6 py-6 print:max-w-none print:py-0 print:text-[12px] print:text-black"
->
-  <!-- Toolbar (screen only) -->
-  <div class="flex items-center justify-between print:hidden">
-    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
+<PrintShell title="{m.reportHandoffTitle()} : {data.child.name} · Diversif">
+  {#snippet toolbarStart()}
+    <a
+      href={localizedHref(`/child/${data.child.id}`)}
+      class="text-sm text-muted-foreground hover:underline"
+    >
       ← Tableau
     </a>
-    <Button variant="outline" onclick={printPage}>
-      <Printer size={16} aria-hidden="true" />
-      {m.reportPrintButton()}
-    </Button>
-  </div>
+  {/snippet}
 
   <!-- Document header -->
   <header class="space-y-2 border-b pb-4">
@@ -265,31 +252,4 @@
   <p class="mt-4 hidden text-center text-xs text-muted-foreground print:block">
     {m.reportPrintedOn({ date: new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date(data.generatedAt)) })}
   </p>
-</div>
-
-<style>
-  @media print {
-    @page {
-      size: A4;
-      margin: 14mm 12mm;
-    }
-    :global(html),
-    :global(body) {
-      background: #fff !important;
-      color: #000 !important;
-      font-size: 11pt;
-    }
-    :global(a) {
-      color: inherit !important;
-      text-decoration: none !important;
-    }
-    /* Hide all app chrome (top bar, sidebar, bottom nav, FAB, desktop log btn) */
-    :global([data-no-print]) {
-      display: none !important;
-    }
-    section {
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-  }
-</style>
+</PrintShell>
