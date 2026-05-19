@@ -19,10 +19,10 @@
     </div>
 
     <nav aria-label={m.chromePublicFooterLabel()} class="grid grid-cols-2 gap-x-8 gap-y-1 text-sm md:grid-cols-1">
-      <a href={localizedHref('/guide')} class="hover:text-foreground hover:underline">{m.chromePublicFooterGuide()}</a>
-      <a href={localizedHref('/allergens')} class="hover:text-foreground hover:underline">{m.chromePublicFooterAllergens()}</a>
-      <a href={localizedHref('/sources')} class="hover:text-foreground hover:underline">{m.chromePublicFooterSources()}</a>
-      <a href={localizedHref('/login')} class="hover:text-foreground hover:underline">{m.chromePublicFooterLogin()}</a>
+      <a href={localizedHref('/guide')} class="hover:text-foreground hover:underline">{m.chromePublicNavGuide()}</a>
+      <a href={localizedHref('/allergens')} class="hover:text-foreground hover:underline">{m.chromePublicNavAllergens()}</a>
+      <a href={localizedHref('/sources')} class="hover:text-foreground hover:underline">{m.chromePublicNavSources()}</a>
+      <a href={localizedHref('/login')} class="hover:text-foreground hover:underline">{m.chromePublicNavLogin()}</a>
       <a href={localizedHref('/mentions-legales')} class="hover:text-foreground hover:underline">{m.chromePublicFooterMentionsLegales()}</a>
       <a href={localizedHref('/politique-confidentialite')} class="hover:text-foreground hover:underline">{m.chromePublicFooterPolitiqueConfidentialite()}</a>
       <a href={localizedHref('/cgu')} class="hover:text-foreground hover:underline">{m.chromePublicFooterCGU()}</a>

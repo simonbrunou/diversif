@@ -93,7 +93,7 @@
     {/if}
 
     <div class="grid gap-1.5">
-      <Label for="email">{m.authLoginEmailLabel()}</Label>
+      <Label for="email">{m.authEmailLabel()}</Label>
       <Input
         id="email"
         name="email"
@@ -105,7 +105,7 @@
     </div>
 
     <div class="grid gap-1.5">
-      <Label for="password">{m.authLoginPasswordLabel()}</Label>
+      <Label for="password">{m.authPasswordLabel()}</Label>
       <Input
         id="password"
         name="password"

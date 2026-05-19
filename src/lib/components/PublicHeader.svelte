@@ -17,9 +17,9 @@
 
   const navLinks = $derived([
     { href: localizedHref('/'), label: m.chromePublicHeaderNavHome() },
-    { href: localizedHref('/guide'), label: m.chromePublicHeaderNavGuide() },
-    { href: localizedHref('/allergens'), label: m.chromePublicHeaderNavAllergens() },
-    { href: localizedHref('/sources'), label: m.chromePublicHeaderNavSources() }
+    { href: localizedHref('/guide'), label: m.chromePublicNavGuide() },
+    { href: localizedHref('/allergens'), label: m.chromePublicNavAllergens() },
+    { href: localizedHref('/sources'), label: m.chromePublicNavSources() }
   ]);
 
   const dashboardHref = $derived(
@@ -55,7 +55,7 @@
         <Button href={dashboardHref} variant="outline" size="sm">{m.chromePublicHeaderMyDashboard()}</Button>
         <Button href={localizedHref('/account')} variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
       {:else}
-        <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
+        <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicNavLogin()}</Button>
         <Button href={localizedHref('/signup')} size="sm">{m.chromePublicHeaderNavSignup()}</Button>
       {/if}
       <LocaleSwitcher />
@@ -100,7 +100,7 @@
               <Button href={dashboardHref} variant="outline" size="sm">{m.chromePublicHeaderMyDashboard()}</Button>
               <Button href={localizedHref('/account')} variant="ghost" size="sm">{m.chromePublicHeaderMyAccount()}</Button>
             {:else}
-              <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicHeaderNavLogin()}</Button>
+              <Button href={localizedHref('/login')} variant="ghost" size="sm">{m.chromePublicNavLogin()}</Button>
               <Button href={localizedHref('/signup')} size="sm">{m.chromePublicHeaderNavSignup()}</Button>
             {/if}
           </div>
