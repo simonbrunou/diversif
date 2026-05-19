@@ -1,8 +1,15 @@
-// Shared use:enhance helpers. Five routes (login/signup are bespoke; account
-// password/profile/passkeys/delete and child settings are the consumers) all
-// previously declared the same trackSubmission/resolveMessageKey pair inline.
-// Centralise here so the submit-loading state and i18n-key lookup pattern
-// stay consistent.
+// Shared use:enhance helpers.
+//
+// `trackSubmission` consumers (4): account/password, account/profile,
+// account/delete, child/[id]/settings — each previously declared the same
+// closure inline.
+//
+// `resolveMessageKey` consumers (4): account/password, account/profile,
+// account/passkeys, account/delete — used to surface a paraglide key
+// returned by a server action via toast.
+//
+// (login/signup don't use either: their post-submit state is handled by
+// the form-action error key + a local submitting flag.)
 
 import * as m from '$lib/paraglide/messages';
 

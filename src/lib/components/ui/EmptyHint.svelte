@@ -33,9 +33,9 @@
   >
     {#if Icon}
       <div
-        class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface text-primary-strong shadow-soft"
+        class="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-surface text-primary-strong shadow-card"
       >
-        <Icon size={22} aria-hidden="true" />
+        <Icon size={26} aria-hidden="true" />
       </div>
     {/if}
     {#if title}
