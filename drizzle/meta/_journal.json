@@ -43,6 +43,13 @@
       "when": 1778856527672,
       "tag": "0005_food_entry_texture",
       "breakpoints": false
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779167768733,
+      "tag": "0006_symptoms_label_check",
+      "breakpoints": true
     }
   ]
 }

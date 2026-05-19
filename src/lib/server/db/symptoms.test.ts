@@ -246,6 +246,30 @@ describe('symptoms queries', () => {
     expect(await testDb.select().from(symptoms)).toHaveLength(1);
   });
 
+  it('the DB rejects a symptom label outside the SymptomLabel union', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const food = await seedFood('Banane');
+    const entry = await seedFoodEntry({
+      childId: c.id,
+      foodId: food.id,
+      reaction: 'ras',
+      loggedBy: u.id
+    });
+    await expect(
+      testDb.insert(symptoms).values({
+        foodEntryId: entry.id,
+        childId: c.id,
+        observedAt: new Date(),
+        // @ts-expect-error — runtime-only check that the DB rejects unknown labels
+        label: 'not-a-known-label',
+        note: null,
+        createdBy: u.id
+      })
+    ).rejects.toThrow();
+  });
+
   it('insertSymptom does not promote when entry has already been promoted concurrently', async () => {
     const u = await seedUser();
     const c = await seedChild({ createdBy: u.id });

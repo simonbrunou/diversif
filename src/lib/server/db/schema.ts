@@ -16,6 +16,7 @@ import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 // Relative import so drizzle-kit can load this file outside the Vite/SvelteKit
 // alias resolver (npm run db:generate runs schema.ts directly via tsx).
 import { TEXTURE_VALUES } from '../../utils/textures';
+import { SYMPTOM_LABELS } from '../../content/symptoms';
 
 export const users = pgTable(
   'users',
@@ -238,14 +239,21 @@ export const symptoms = pgTable(
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
     observedAt: timestamp('observed_at', { withTimezone: true, mode: 'date' }).notNull(),
-    label: text('label').notNull(),
+    label: text('label', { enum: SYMPTOM_LABELS }).notNull(),
     note: text('note'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
     createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' })
   },
   (t) => ({
     foodEntryIdx: index('symptoms_food_entry_id_idx').on(t.foodEntryId),
-    childObservedIdx: index('symptoms_child_id_observed_at_idx').on(t.childId, t.observedAt)
+    childObservedIdx: index('symptoms_child_id_observed_at_idx').on(t.childId, t.observedAt),
+    // Mirror the CHECK constraint introduced in 0006_symptoms_label_check.sql
+    // so drizzle-kit's snapshot matches the live schema (otherwise db:generate
+    // produces a spurious DROP CONSTRAINT migration).
+    labelCheck: check(
+      'symptoms_label_check',
+      sql`${t.label} in ('rougeur', 'urticaire', 'eczema', 'vomissement', 'diarrhee', 'gonflement', 'toux', 'detresse-respiratoire', 'levres-bleues', 'autre')`
+    )
   })
 );
 
