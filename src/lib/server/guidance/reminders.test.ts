@@ -246,6 +246,21 @@ describe('computeReminders', () => {
       const out = computeReminders(input({ ageMonths: 14, entries: [e] }));
       expect(out.find((r) => r.key === 'forbidden-reminder:miel')).toBeUndefined();
     });
+
+    it('matches case-insensitively', () => {
+      const e = entry({ foodName: 'Petit pot MIEL bio' });
+      const out = computeReminders(input({ ageMonths: 8, entries: [e] }));
+      expect(out.find((r) => r.key === 'forbidden-reminder:miel')).toBeDefined();
+    });
+
+    it('uses the canonical reason and sources from FORBIDDEN_FOODS data', () => {
+      const e = entry({ foodName: 'Miel' });
+      const out = computeReminders(input({ ageMonths: 6, entries: [e] }));
+      const r = out.find((x) => x.key === 'forbidden-reminder:miel');
+      expect(r).toBeDefined();
+      expect(r!.body).toContain('botulisme');
+      expect(r!.sources).toEqual(['who-cf', 'anses-nourrisson']);
+    });
   });
 
   describe('dismissals & ordering', () => {
