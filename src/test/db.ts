@@ -46,11 +46,14 @@ function buildMem(): IMemoryDb {
 }
 
 function applyMigrations(mem: IMemoryDb): void {
-  // pg-mem only models the initial schema for tests plus migrations that pg-mem
-  // can execute; later drizzle migrations (data backfills, partial unique
-  // indexes that pg-mem's wrapped-client semantics don't fully simulate) are
-  // enforced in production but skipped here. seedFoods + applySeedCorrections
-  // idempotently re-establish the same post-migration state in tests.
+  // pg-mem only models the migrations that pg-mem can execute as-is or with a
+  // narrow rewrite below. Migrations purely about backfilling pre-existing
+  // production data (0001 tofu age, 0002 partial unique index) or that depend
+  // on wrapped-client semantics pg-mem doesn't simulate are skipped — the
+  // test DB starts empty so the backfill is a no-op, and seedFoods +
+  // applySeedCorrections idempotently re-establish the same post-migration
+  // state. Other later migrations (0005 texture CHECK, 0006 symptoms.label
+  // CHECK) ARE applied via the rewrites below.
   const filenames = [
     '0000_init.sql',
     '0003_passkeys_transports_jsonb.sql',
@@ -96,10 +99,16 @@ function applyMigrations(mem: IMemoryDb): void {
       `;
     }
 
-    // 0006 backfills then adds the symptoms.label CHECK. The test DB starts
-    // empty so the UPDATE is a no-op; keep just the ADD CONSTRAINT. label is
-    // NOT NULL in production, so we don't need pg-mem's IS NULL-OR escape
-    // here — every row is guaranteed to be a real string.
+    // 0006 backfills any out-of-union labels to 'autre' then adds the
+    // symptoms.label CHECK. The test DB starts empty so the UPDATE is a
+    // no-op; keep just the ADD CONSTRAINT.
+    //
+    // Both pg-mem CHECK bugs documented for 0005 also apply in principle:
+    //   1. Inline CHECK on ADD COLUMN ("Corrupted alias") — not relevant
+    //      here because the column already exists (added in 0004); we use
+    //      ALTER TABLE … ADD CONSTRAINT, not inline syntax.
+    //   2. CHECK(col IN (...)) treats NULL as FALSE — not relevant because
+    //      label is NOT NULL in production, so every row has a real string.
     if (filename === '0006_symptoms_label_check.sql') {
       unwrapped = `
         ALTER TABLE symptoms ADD CONSTRAINT symptoms_label_check
