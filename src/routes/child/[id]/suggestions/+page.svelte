@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BackHeader from '$components/ui/BackHeader.svelte';
   import Card from '$components/ui/Card.svelte';
   import Badge from '$components/ui/Badge.svelte';
   import EmptyHint from '$components/ui/EmptyHint.svelte';
@@ -11,7 +12,6 @@
   } from '$lib/utils/categories';
   import { getAllergenLabel } from '$lib/utils/allergens';
   import { cn } from '$lib/utils/cn';
-  import { localizedHref } from '$lib/utils/localized-href';
   import { Sparkles, Lightbulb } from 'lucide-svelte';
   import type { PageData } from './$types';
 
@@ -36,15 +36,11 @@
 </script>
 
 <div class="container max-w-2xl space-y-6 py-6">
-  <header>
-    <a href={localizedHref(`/child/${data.child.id}`)} class="text-sm text-muted-foreground hover:underline">
-      ← Tableau
-    </a>
-    <h1 class="mt-2 text-xl font-semibold">Suggestions</h1>
-    <p class="text-sm text-muted-foreground">
-      À tester ces jours-ci selon l’âge de {data.child.name} ({data.ageMonths} mois).
-    </p>
-  </header>
+  <BackHeader
+    title="Suggestions"
+    subtitle={`À tester ces jours-ci selon l’âge de ${data.child.name} (${data.ageMonths} mois).`}
+    fallback={`/child/${data.child.id}`}
+  />
 
   <TipCard
     tone="info"
