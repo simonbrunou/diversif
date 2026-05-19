@@ -3595,114 +3595,6 @@
       "norm_label": "entry()"
     },
     {
-      "label": "queries.ts",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L1",
-      "id": "src_lib_server_guidance_queries_ts",
-      "community": 18,
-      "norm_label": "queries.ts"
-    },
-    {
-      "label": "loadTexturesTried()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L13",
-      "id": "guidance_queries_loadtexturestried",
-      "community": 25,
-      "norm_label": "loadtexturestried()"
-    },
-    {
-      "label": "loadRecentEntries()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L33",
-      "id": "guidance_queries_loadrecententries",
-      "community": 18,
-      "norm_label": "loadrecententries()"
-    },
-    {
-      "label": "loadDiversityMetrics()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L68",
-      "id": "guidance_queries_loaddiversitymetrics",
-      "community": 18,
-      "norm_label": "loaddiversitymetrics()"
-    },
-    {
-      "label": "loadRepeatCandidates()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L149",
-      "id": "guidance_queries_loadrepeatcandidates",
-      "community": 25,
-      "norm_label": "loadrepeatcandidates()"
-    },
-    {
-      "label": "loadWeeklyRecap()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L204",
-      "id": "guidance_queries_loadweeklyrecap",
-      "community": 18,
-      "norm_label": "loadweeklyrecap()"
-    },
-    {
-      "label": "loadStreak()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L251",
-      "id": "guidance_queries_loadstreak",
-      "community": 18,
-      "norm_label": "loadstreak()"
-    },
-    {
-      "label": "loadCoparentActivity()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L307",
-      "id": "guidance_queries_loadcoparentactivity",
-      "community": 18,
-      "norm_label": "loadcoparentactivity()"
-    },
-    {
-      "label": "loadAnalyticsBuckets()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L362",
-      "id": "guidance_queries_loadanalyticsbuckets",
-      "community": 18,
-      "norm_label": "loadanalyticsbuckets()"
-    },
-    {
-      "label": "loadDismissals()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L429",
-      "id": "guidance_queries_loaddismissals",
-      "community": 18,
-      "norm_label": "loaddismissals()"
-    },
-    {
-      "label": "ttlForReminderKey()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L447",
-      "id": "guidance_queries_ttlforreminderkey",
-      "community": 18,
-      "norm_label": "ttlforreminderkey()"
-    },
-    {
-      "label": "dismissReminder()",
-      "file_type": "code",
-      "source_file": "src/lib/server/guidance/queries.ts",
-      "source_location": "L466",
-      "id": "guidance_queries_dismissreminder",
-      "community": 18,
-      "norm_label": "dismissreminder()"
-    },
-    {
       "label": "queries.test.ts",
       "file_type": "code",
       "source_file": "src/lib/server/guidance/queries.test.ts",
@@ -3764,6 +3656,114 @@
       "id": "guidance_repeat_candidates_findrepeatcandidates",
       "community": 11,
       "norm_label": "findrepeatcandidates()"
+    },
+    {
+      "label": "queries.ts",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L1",
+      "id": "src_lib_server_guidance_queries_ts",
+      "community": 18,
+      "norm_label": "queries.ts"
+    },
+    {
+      "label": "loadTexturesTried()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L13",
+      "id": "guidance_queries_loadtexturestried",
+      "community": 25,
+      "norm_label": "loadtexturestried()"
+    },
+    {
+      "label": "loadRecentEntries()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L33",
+      "id": "guidance_queries_loadrecententries",
+      "community": 18,
+      "norm_label": "loadrecententries()"
+    },
+    {
+      "label": "loadDiversityMetrics()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L68",
+      "id": "guidance_queries_loaddiversitymetrics",
+      "community": 18,
+      "norm_label": "loaddiversitymetrics()"
+    },
+    {
+      "label": "loadRepeatCandidates()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L151",
+      "id": "guidance_queries_loadrepeatcandidates",
+      "community": 25,
+      "norm_label": "loadrepeatcandidates()"
+    },
+    {
+      "label": "loadWeeklyRecap()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L206",
+      "id": "guidance_queries_loadweeklyrecap",
+      "community": 18,
+      "norm_label": "loadweeklyrecap()"
+    },
+    {
+      "label": "loadStreak()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L253",
+      "id": "guidance_queries_loadstreak",
+      "community": 18,
+      "norm_label": "loadstreak()"
+    },
+    {
+      "label": "loadCoparentActivity()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L309",
+      "id": "guidance_queries_loadcoparentactivity",
+      "community": 18,
+      "norm_label": "loadcoparentactivity()"
+    },
+    {
+      "label": "loadAnalyticsBuckets()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L364",
+      "id": "guidance_queries_loadanalyticsbuckets",
+      "community": 18,
+      "norm_label": "loadanalyticsbuckets()"
+    },
+    {
+      "label": "loadDismissals()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L431",
+      "id": "guidance_queries_loaddismissals",
+      "community": 18,
+      "norm_label": "loaddismissals()"
+    },
+    {
+      "label": "ttlForReminderKey()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L449",
+      "id": "guidance_queries_ttlforreminderkey",
+      "community": 18,
+      "norm_label": "ttlforreminderkey()"
+    },
+    {
+      "label": "dismissReminder()",
+      "file_type": "code",
+      "source_file": "src/lib/server/guidance/queries.ts",
+      "source_location": "L468",
+      "id": "guidance_queries_dismissreminder",
+      "community": 18,
+      "norm_label": "dismissreminder()"
     },
     {
       "label": "age.test.ts",
@@ -4680,7 +4680,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L20",
       "id": "paraglide_messages_chromebottomnavlabel",
-      "community": 0,
+      "community": 5,
       "norm_label": "chromebottomnavlabel()"
     },
     {
@@ -4698,7 +4698,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L64",
       "id": "paraglide_messages_chromelocaleswitcherlabel",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromelocaleswitcherlabel()"
     },
     {
@@ -4716,7 +4716,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L108",
       "id": "paraglide_messages_chromelegallinkscookies",
-      "community": 0,
+      "community": 5,
       "norm_label": "chromelegallinkscookies()"
     },
     {
@@ -4725,7 +4725,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L130",
       "id": "paraglide_messages_chromelegallinkslabel",
-      "community": 0,
+      "community": 5,
       "norm_label": "chromelegallinkslabel()"
     },
     {
@@ -4734,7 +4734,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L152",
       "id": "paraglide_messages_chromelegallinksmentionslegales",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromelegallinksmentionslegales()"
     },
     {
@@ -4779,7 +4779,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L262",
       "id": "paraglide_messages_chromepublicfootercookies",
-      "community": 0,
+      "community": 5,
       "norm_label": "chromepublicfootercookies()"
     },
     {
@@ -4842,7 +4842,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L416",
       "id": "paraglide_messages_chromepublicfooterpolitiqueconfidentialite",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromepublicfooterpolitiqueconfidentialite()"
     },
     {
@@ -4860,7 +4860,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L460",
       "id": "paraglide_messages_chromepublicheaderbrand",
-      "community": 0,
+      "community": 5,
       "norm_label": "chromepublicheaderbrand()"
     },
     {
@@ -4869,7 +4869,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L482",
       "id": "paraglide_messages_chromepublicheadermenuclose",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromepublicheadermenuclose()"
     },
     {
@@ -4878,7 +4878,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L504",
       "id": "paraglide_messages_chromepublicheadermenuopen",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromepublicheadermenuopen()"
     },
     {
@@ -4896,7 +4896,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L548",
       "id": "paraglide_messages_chromepublicheadermydashboard",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromepublicheadermydashboard()"
     },
     {
@@ -4923,7 +4923,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L680",
       "id": "paraglide_messages_chromepublicheadernavsignup",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromepublicheadernavsignup()"
     },
     {
@@ -4941,7 +4941,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L746",
       "id": "paraglide_messages_chrometabscarnet",
-      "community": 0,
+      "community": 5,
       "norm_label": "chrometabscarnet()"
     },
     {
@@ -4986,7 +4986,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L856",
       "id": "paraglide_messages_categoryallergenes",
-      "community": 5,
+      "community": 0,
       "norm_label": "categoryallergenes()"
     },
     {
@@ -5004,7 +5004,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L900",
       "id": "paraglide_messages_categoryautre",
-      "community": 5,
+      "community": 0,
       "norm_label": "categoryautre()"
     },
     {
@@ -5022,7 +5022,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L944",
       "id": "paraglide_messages_categoryfruits",
-      "community": 0,
+      "community": 5,
       "norm_label": "categoryfruits()"
     },
     {
@@ -5031,7 +5031,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L966",
       "id": "paraglide_messages_categorylegumes",
-      "community": 5,
+      "community": 0,
       "norm_label": "categorylegumes()"
     },
     {
@@ -5058,7 +5058,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1032",
       "id": "paraglide_messages_categoryoeufs",
-      "community": 5,
+      "community": 0,
       "norm_label": "categoryoeufs()"
     },
     {
@@ -5085,7 +5085,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1098",
       "id": "paraglide_messages_categoryviandes",
-      "community": 0,
+      "community": 5,
       "norm_label": "categoryviandes()"
     },
     {
@@ -5103,7 +5103,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1142",
       "id": "paraglide_messages_chromechildswitcheradd",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromechildswitcheradd()"
     },
     {
@@ -5112,7 +5112,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1164",
       "id": "paraglide_messages_daterelativehours",
-      "community": 0,
+      "community": 5,
       "norm_label": "daterelativehours()"
     },
     {
@@ -5166,7 +5166,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1296",
       "id": "paraglide_messages_dialogswelcomebuttonnext",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomebuttonnext()"
     },
     {
@@ -5175,7 +5175,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1318",
       "id": "paraglide_messages_dialogswelcomebuttonopenguide",
-      "community": 5,
+      "community": 0,
       "norm_label": "dialogswelcomebuttonopenguide()"
     },
     {
@@ -5193,7 +5193,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1362",
       "id": "paraglide_messages_dialogswelcomestep0bullet1after",
-      "community": 5,
+      "community": 0,
       "norm_label": "dialogswelcomestep0bullet1after()"
     },
     {
@@ -5211,7 +5211,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1406",
       "id": "paraglide_messages_dialogswelcomestep0bullet1bold",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomestep0bullet1bold()"
     },
     {
@@ -5220,7 +5220,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1428",
       "id": "paraglide_messages_dialogswelcomestep0bullet2after",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomestep0bullet2after()"
     },
     {
@@ -5247,7 +5247,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1494",
       "id": "paraglide_messages_dialogswelcomestep0bullet3after",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomestep0bullet3after()"
     },
     {
@@ -5256,7 +5256,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1516",
       "id": "paraglide_messages_dialogswelcomestep0bullet3before",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomestep0bullet3before()"
     },
     {
@@ -5265,7 +5265,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1538",
       "id": "paraglide_messages_dialogswelcomestep0bullet3bold",
-      "community": 5,
+      "community": 0,
       "norm_label": "dialogswelcomestep0bullet3bold()"
     },
     {
@@ -5292,7 +5292,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1604",
       "id": "paraglide_messages_dialogswelcomestep1bullet1bold",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomestep1bullet1bold()"
     },
     {
@@ -5310,7 +5310,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1648",
       "id": "paraglide_messages_dialogswelcomestep1bullet2bold",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomestep1bullet2bold()"
     },
     {
@@ -5328,7 +5328,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1692",
       "id": "paraglide_messages_dialogswelcomestep1bullet3bold",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomestep1bullet3bold()"
     },
     {
@@ -5364,7 +5364,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1780",
       "id": "paraglide_messages_dialogswelcomestep1bullet5bold",
-      "community": 0,
+      "community": 5,
       "norm_label": "dialogswelcomestep1bullet5bold()"
     },
     {
@@ -5373,7 +5373,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1802",
       "id": "paraglide_messages_dialogswelcomestep1title",
-      "community": 5,
+      "community": 0,
       "norm_label": "dialogswelcomestep1title()"
     },
     {
@@ -5409,7 +5409,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1890",
       "id": "paraglide_messages_errorsgenericback",
-      "community": 5,
+      "community": 0,
       "norm_label": "errorsgenericback()"
     },
     {
@@ -5427,7 +5427,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1934",
       "id": "paraglide_messages_errorsgenericlabel",
-      "community": 5,
+      "community": 0,
       "norm_label": "errorsgenericlabel()"
     },
     {
@@ -5436,7 +5436,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1956",
       "id": "paraglide_messages_errorsgenericref",
-      "community": 5,
+      "community": 0,
       "norm_label": "errorsgenericref()"
     },
     {
@@ -5445,7 +5445,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L1978",
       "id": "paraglide_messages_errorsgenerictitle404",
-      "community": 5,
+      "community": 0,
       "norm_label": "errorsgenerictitle404()"
     },
     {
@@ -5526,7 +5526,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2176",
       "id": "paraglide_messages_legalcookiesrow1duration",
-      "community": 5,
+      "community": 0,
       "norm_label": "legalcookiesrow1duration()"
     },
     {
@@ -5553,7 +5553,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2242",
       "id": "paraglide_messages_legalcookiesrow2purpose",
-      "community": 5,
+      "community": 0,
       "norm_label": "legalcookiesrow2purpose()"
     },
     {
@@ -5607,7 +5607,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2374",
       "id": "paraglide_messages_errorsauthinvalidcredentials",
-      "community": 5,
+      "community": 0,
       "norm_label": "errorsauthinvalidcredentials()"
     },
     {
@@ -5625,7 +5625,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2418",
       "id": "paraglide_messages_errorsauthinvalidinviteexpired",
-      "community": 5,
+      "community": 0,
       "norm_label": "errorsauthinvalidinviteexpired()"
     },
     {
@@ -5661,7 +5661,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2506",
       "id": "paraglide_messages_errorsaccountpasswordincorrect",
-      "community": 5,
+      "community": 0,
       "norm_label": "errorsaccountpasswordincorrect()"
     },
     {
@@ -5688,7 +5688,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2572",
       "id": "paraglide_messages_errorsaccountpasskeynotfound",
-      "community": 0,
+      "community": 5,
       "norm_label": "errorsaccountpasskeynotfound()"
     },
     {
@@ -5697,7 +5697,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2594",
       "id": "paraglide_messages_errorsaccountpasskeyidmissing",
-      "community": 0,
+      "community": 5,
       "norm_label": "errorsaccountpasskeyidmissing()"
     },
     {
@@ -5706,7 +5706,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2616",
       "id": "paraglide_messages_errorsaccountpasskeyrenamesuccess",
-      "community": 0,
+      "community": 5,
       "norm_label": "errorsaccountpasskeyrenamesuccess()"
     },
     {
@@ -5724,7 +5724,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2660",
       "id": "paraglide_messages_errorsaccountdeleteemailmismatch",
-      "community": 5,
+      "community": 0,
       "norm_label": "errorsaccountdeleteemailmismatch()"
     },
     {
@@ -5760,7 +5760,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2748",
       "id": "paraglide_messages_authloginsubmit",
-      "community": 5,
+      "community": 0,
       "norm_label": "authloginsubmit()"
     },
     {
@@ -5769,7 +5769,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2770",
       "id": "paraglide_messages_authloginsubmitting",
-      "community": 5,
+      "community": 0,
       "norm_label": "authloginsubmitting()"
     },
     {
@@ -5778,7 +5778,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2792",
       "id": "paraglide_messages_authloginpasskeyloading",
-      "community": 5,
+      "community": 0,
       "norm_label": "authloginpasskeyloading()"
     },
     {
@@ -5787,7 +5787,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2814",
       "id": "paraglide_messages_authsignuptitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "authsignuptitle()"
     },
     {
@@ -5823,7 +5823,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2946",
       "id": "paraglide_messages_authsignuppasswordshow",
-      "community": 5,
+      "community": 0,
       "norm_label": "authsignuppasswordshow()"
     },
     {
@@ -5832,7 +5832,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L2968",
       "id": "paraglide_messages_authsignuppasswordhide",
-      "community": 5,
+      "community": 0,
       "norm_label": "authsignuppasswordhide()"
     },
     {
@@ -5850,7 +5850,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3012",
       "id": "paraglide_messages_authsignupage15",
-      "community": 5,
+      "community": 0,
       "norm_label": "authsignupage15()"
     },
     {
@@ -5886,7 +5886,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3100",
       "id": "paraglide_messages_authsignupacceptprivacylink",
-      "community": 0,
+      "community": 5,
       "norm_label": "authsignupacceptprivacylink()"
     },
     {
@@ -5904,7 +5904,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3144",
       "id": "paraglide_messages_authsignupsubmit",
-      "community": 5,
+      "community": 0,
       "norm_label": "authsignupsubmit()"
     },
     {
@@ -5940,7 +5940,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3320",
       "id": "paraglide_messages_authaccountdisplaynamelabel",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountdisplaynamelabel()"
     },
     {
@@ -5958,7 +5958,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3364",
       "id": "paraglide_messages_authaccountsaving",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountsaving()"
     },
     {
@@ -6003,7 +6003,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3474",
       "id": "paraglide_messages_authaccountpasswordchanging",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountpasswordchanging()"
     },
     {
@@ -6039,7 +6039,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3562",
       "id": "paraglide_messages_authaccountpasskeyrenamebutton",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountpasskeyrenamebutton()"
     },
     {
@@ -6057,7 +6057,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3606",
       "id": "paraglide_messages_authaccountpasskeynamelabel",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountpasskeynamelabel()"
     },
     {
@@ -6066,7 +6066,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3628",
       "id": "paraglide_messages_authaccountpasskeyaddedon",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountpasskeyaddedon()"
     },
     {
@@ -6084,7 +6084,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3672",
       "id": "paraglide_messages_authaccountpasskeysynced",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountpasskeysynced()"
     },
     {
@@ -6093,7 +6093,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3694",
       "id": "paraglide_messages_authaccountpasskeynewnamelabel",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountpasskeynewnamelabel()"
     },
     {
@@ -6111,7 +6111,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3738",
       "id": "paraglide_messages_authaccountpasskeyadd",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountpasskeyadd()"
     },
     {
@@ -6120,7 +6120,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3760",
       "id": "paraglide_messages_authaccountpasskeyadding",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountpasskeyadding()"
     },
     {
@@ -6147,7 +6147,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3826",
       "id": "paraglide_messages_authaccountappearancesection",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountappearancesection()"
     },
     {
@@ -6165,7 +6165,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3870",
       "id": "paraglide_messages_authaccountsessionssection",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountsessionssection()"
     },
     {
@@ -6219,7 +6219,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4024",
       "id": "paraglide_messages_authaccountdataexport",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountdataexport()"
     },
     {
@@ -6237,7 +6237,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4068",
       "id": "paraglide_messages_authaccountdeletedescription",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountdeletedescription()"
     },
     {
@@ -6273,7 +6273,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4156",
       "id": "paraglide_messages_authaccountdeletesubmitting",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountdeletesubmitting()"
     },
     {
@@ -6282,7 +6282,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4200",
       "id": "paraglide_messages_authdeletedtitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "authdeletedtitle()"
     },
     {
@@ -6300,7 +6300,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4244",
       "id": "paraglide_messages_authdeletedbody",
-      "community": 0,
+      "community": 5,
       "norm_label": "authdeletedbody()"
     },
     {
@@ -6318,7 +6318,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4310",
       "id": "paraglide_messages_commonfronlybannerguide",
-      "community": 5,
+      "community": 0,
       "norm_label": "commonfronlybannerguide()"
     },
     {
@@ -6327,7 +6327,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4332",
       "id": "paraglide_messages_commonfronlybannerlanding",
-      "community": 5,
+      "community": 0,
       "norm_label": "commonfronlybannerlanding()"
     },
     {
@@ -6336,7 +6336,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4354",
       "id": "paraglide_messages_commonfronlybannerlegal",
-      "community": 5,
+      "community": 0,
       "norm_label": "commonfronlybannerlegal()"
     },
     {
@@ -6345,7 +6345,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4376",
       "id": "paraglide_messages_commonfronlybannersources",
-      "community": 0,
+      "community": 5,
       "norm_label": "commonfronlybannersources()"
     },
     {
@@ -6363,7 +6363,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4420",
       "id": "paraglide_messages_offlinefallbackbody",
-      "community": 5,
+      "community": 0,
       "norm_label": "offlinefallbackbody()"
     },
     {
@@ -6372,7 +6372,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4442",
       "id": "paraglide_messages_offlinefallbackretry",
-      "community": 5,
+      "community": 0,
       "norm_label": "offlinefallbackretry()"
     },
     {
@@ -6390,7 +6390,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4486",
       "id": "paraglide_messages_offlinequeuedtoast",
-      "community": 5,
+      "community": 0,
       "norm_label": "offlinequeuedtoast()"
     },
     {
@@ -6408,7 +6408,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4530",
       "id": "paraglide_messages_offlinesessionexpiredtoast",
-      "community": 5,
+      "community": 0,
       "norm_label": "offlinesessionexpiredtoast()"
     },
     {
@@ -6426,7 +6426,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4574",
       "id": "paraglide_messages_aujourdhuistatsaliments",
-      "community": 0,
+      "community": 5,
       "norm_label": "aujourdhuistatsaliments()"
     },
     {
@@ -6435,7 +6435,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4596",
       "id": "paraglide_messages_aujourdhuistatsalimentsdelta",
-      "community": 0,
+      "community": 5,
       "norm_label": "aujourdhuistatsalimentsdelta()"
     },
     {
@@ -6444,7 +6444,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4618",
       "id": "paraglide_messages_aujourdhuistatsstreak",
-      "community": 0,
+      "community": 5,
       "norm_label": "aujourdhuistatsstreak()"
     },
     {
@@ -6453,7 +6453,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4640",
       "id": "paraglide_messages_aujourdhuistatsstreakdaysone",
-      "community": 0,
+      "community": 5,
       "norm_label": "aujourdhuistatsstreakdaysone()"
     },
     {
@@ -6525,7 +6525,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4816",
       "id": "paraglide_messages_aujourdhuirecenttitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "aujourdhuirecenttitle()"
     },
     {
@@ -6534,7 +6534,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4838",
       "id": "paraglide_messages_aujourdhuirecentempty",
-      "community": 0,
+      "community": 5,
       "norm_label": "aujourdhuirecentempty()"
     },
     {
@@ -6543,7 +6543,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4860",
       "id": "paraglide_messages_carnettitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "carnettitle()"
     },
     {
@@ -6561,7 +6561,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4904",
       "id": "paraglide_messages_carnetsubfoodsother",
-      "community": 0,
+      "community": 5,
       "norm_label": "carnetsubfoodsother()"
     },
     {
@@ -6570,7 +6570,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4926",
       "id": "paraglide_messages_carnetsubcategoriesone",
-      "community": 0,
+      "community": 5,
       "norm_label": "carnetsubcategoriesone()"
     },
     {
@@ -6579,7 +6579,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4948",
       "id": "paraglide_messages_carnetsubcategoriesother",
-      "community": 0,
+      "community": 5,
       "norm_label": "carnetsubcategoriesother()"
     },
     {
@@ -6588,7 +6588,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4970",
       "id": "paraglide_messages_carnetsegmentstous",
-      "community": 5,
+      "community": 0,
       "norm_label": "carnetsegmentstous()"
     },
     {
@@ -6597,7 +6597,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4992",
       "id": "paraglide_messages_carnetsegmentscategories",
-      "community": 5,
+      "community": 0,
       "norm_label": "carnetsegmentscategories()"
     },
     {
@@ -6624,7 +6624,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5058",
       "id": "paraglide_messages_carnettousfilterall",
-      "community": 5,
+      "community": 0,
       "norm_label": "carnettousfilterall()"
     },
     {
@@ -6633,7 +6633,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5080",
       "id": "paraglide_messages_carnettousempty",
-      "community": 0,
+      "community": 5,
       "norm_label": "carnettousempty()"
     },
     {
@@ -6651,7 +6651,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5124",
       "id": "paraglide_messages_carnetfoodcarduntried",
-      "community": 0,
+      "community": 5,
       "norm_label": "carnetfoodcarduntried()"
     },
     {
@@ -6660,7 +6660,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5146",
       "id": "paraglide_messages_carnetcategoriesempty",
-      "community": 5,
+      "community": 0,
       "norm_label": "carnetcategoriesempty()"
     },
     {
@@ -6678,7 +6678,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5190",
       "id": "paraglide_messages_carnetstatsdiversity",
-      "community": 0,
+      "community": 5,
       "norm_label": "carnetstatsdiversity()"
     },
     {
@@ -6687,7 +6687,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5212",
       "id": "paraglide_messages_carnetstatsfoods",
-      "community": 0,
+      "community": 5,
       "norm_label": "carnetstatsfoods()"
     },
     {
@@ -6696,7 +6696,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5234",
       "id": "paraglide_messages_carnetstatslast7days",
-      "community": 5,
+      "community": 0,
       "norm_label": "carnetstatslast7days()"
     },
     {
@@ -6921,7 +6921,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5498",
       "id": "paraglide_messages_decouvrirtipdismiss",
-      "community": 5,
+      "community": 0,
       "norm_label": "decouvrirtipdismiss()"
     },
     {
@@ -6939,7 +6939,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5542",
       "id": "paraglide_messages_profilchildrentitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "profilchildrentitle()"
     },
     {
@@ -6948,7 +6948,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5564",
       "id": "paraglide_messages_profilchildrenadd",
-      "community": 0,
+      "community": 5,
       "norm_label": "profilchildrenadd()"
     },
     {
@@ -7002,7 +7002,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5696",
       "id": "paraglide_messages_profilcomptepasskeys",
-      "community": 5,
+      "community": 0,
       "norm_label": "profilcomptepasskeys()"
     },
     {
@@ -7011,7 +7011,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5718",
       "id": "paraglide_messages_profilcomptepasskeysdevicesingular",
-      "community": 0,
+      "community": 5,
       "norm_label": "profilcomptepasskeysdevicesingular()"
     },
     {
@@ -7020,7 +7020,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5740",
       "id": "paraglide_messages_profilcomptepasskeysdevicesplural",
-      "community": 0,
+      "community": 5,
       "norm_label": "profilcomptepasskeysdevicesplural()"
     },
     {
@@ -7101,7 +7101,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L5894",
       "id": "paraglide_messages_profilrgpdtitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "profilrgpdtitle()"
     },
     {
@@ -7146,7 +7146,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6004",
       "id": "paraglide_messages_reactiontitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "reactiontitle()"
     },
     {
@@ -7155,7 +7155,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6026",
       "id": "paraglide_messages_reactionsubtitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "reactionsubtitle()"
     },
     {
@@ -7200,7 +7200,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6136",
       "id": "paraglide_messages_reactionsymptomsadd",
-      "community": 0,
+      "community": 5,
       "norm_label": "reactionsymptomsadd()"
     },
     {
@@ -7254,7 +7254,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6224",
       "id": "paraglide_messages_reactionsevererailbody",
-      "community": 0,
+      "community": 5,
       "norm_label": "reactionsevererailbody()"
     },
     {
@@ -7290,7 +7290,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6312",
       "id": "paraglide_messages_reactionexport",
-      "community": 0,
+      "community": 5,
       "norm_label": "reactionexport()"
     },
     {
@@ -7308,7 +7308,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6334",
       "id": "paraglide_messages_reactionbacktocarnet",
-      "community": 0,
+      "community": 5,
       "norm_label": "reactionbacktocarnet()"
     },
     {
@@ -7317,7 +7317,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6356",
       "id": "paraglide_messages_addsymptomtitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "addsymptomtitle()"
     },
     {
@@ -7335,7 +7335,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6400",
       "id": "paraglide_messages_addsymptomnote",
-      "community": 5,
+      "community": 0,
       "norm_label": "addsymptomnote()"
     },
     {
@@ -7362,7 +7362,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6466",
       "id": "paraglide_messages_addsymptomsubmit",
-      "community": 0,
+      "community": 5,
       "norm_label": "addsymptomsubmit()"
     },
     {
@@ -7407,7 +7407,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6576",
       "id": "paraglide_messages_symptomslabeldiarrhee",
-      "community": 5,
+      "community": 0,
       "norm_label": "symptomslabeldiarrhee()"
     },
     {
@@ -7416,7 +7416,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6598",
       "id": "paraglide_messages_symptomslabelgonflement",
-      "community": 5,
+      "community": 0,
       "norm_label": "symptomslabelgonflement()"
     },
     {
@@ -7434,7 +7434,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6642",
       "id": "paraglide_messages_symptomslabeldetresserespiratoire",
-      "community": 5,
+      "community": 0,
       "norm_label": "symptomslabeldetresserespiratoire()"
     },
     {
@@ -7443,7 +7443,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6664",
       "id": "paraglide_messages_symptomslabellevresbleues",
-      "community": 0,
+      "community": 5,
       "norm_label": "symptomslabellevresbleues()"
     },
     {
@@ -7452,7 +7452,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6686",
       "id": "paraglide_messages_symptomslabelautre",
-      "community": 0,
+      "community": 5,
       "norm_label": "symptomslabelautre()"
     },
     {
@@ -7461,7 +7461,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6708",
       "id": "paraglide_messages_stagebadgelabel",
-      "community": 5,
+      "community": 0,
       "norm_label": "stagebadgelabel()"
     },
     {
@@ -7470,7 +7470,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6730",
       "id": "paraglide_messages_modaldialogfallbacktitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "modaldialogfallbacktitle()"
     },
     {
@@ -7479,7 +7479,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6752",
       "id": "paraglide_messages_printdocumenttitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "printdocumenttitle()"
     },
     {
@@ -7533,7 +7533,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6884",
       "id": "paraglide_messages_printseveritysevere",
-      "community": 0,
+      "community": 5,
       "norm_label": "printseveritysevere()"
     },
     {
@@ -7560,7 +7560,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6950",
       "id": "paraglide_messages_authsignuptitlebento",
-      "community": 0,
+      "community": 5,
       "norm_label": "authsignuptitlebento()"
     },
     {
@@ -7569,7 +7569,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L6972",
       "id": "paraglide_messages_authsignupsubtitlebento",
-      "community": 5,
+      "community": 0,
       "norm_label": "authsignupsubtitlebento()"
     },
     {
@@ -7596,7 +7596,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7038",
       "id": "paraglide_messages_authloginpasswordreveal",
-      "community": 5,
+      "community": 0,
       "norm_label": "authloginpasswordreveal()"
     },
     {
@@ -7614,7 +7614,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7082",
       "id": "paraglide_messages_authsignupfooterlogin",
-      "community": 5,
+      "community": 0,
       "norm_label": "authsignupfooterlogin()"
     },
     {
@@ -7623,7 +7623,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7104",
       "id": "paraglide_messages_authloginfootersignup",
-      "community": 0,
+      "community": 5,
       "norm_label": "authloginfootersignup()"
     },
     {
@@ -7632,7 +7632,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7126",
       "id": "paraglide_messages_authsignupdivider",
-      "community": 0,
+      "community": 5,
       "norm_label": "authsignupdivider()"
     },
     {
@@ -7668,7 +7668,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7214",
       "id": "paraglide_messages_onboardingfirstnamelabel",
-      "community": 5,
+      "community": 0,
       "norm_label": "onboardingfirstnamelabel()"
     },
     {
@@ -7677,7 +7677,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7236",
       "id": "paraglide_messages_onboardingbirthdatelabel",
-      "community": 0,
+      "community": 5,
       "norm_label": "onboardingbirthdatelabel()"
     },
     {
@@ -7722,7 +7722,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7346",
       "id": "paraglide_messages_landingfeaturestitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "landingfeaturestitle()"
     },
     {
@@ -7749,7 +7749,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7412",
       "id": "paraglide_messages_landingtrustpillarsources",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingtrustpillarsources()"
     },
     {
@@ -7758,7 +7758,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7434",
       "id": "paraglide_messages_landingtrustpillarownership",
-      "community": 5,
+      "community": 0,
       "norm_label": "landingtrustpillarownership()"
     },
     {
@@ -7767,7 +7767,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7456",
       "id": "paraglide_messages_landingclosingctatitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "landingclosingctatitle()"
     },
     {
@@ -7785,7 +7785,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7500",
       "id": "paraglide_messages_landingfaqq1",
-      "community": 5,
+      "community": 0,
       "norm_label": "landingfaqq1()"
     },
     {
@@ -7794,7 +7794,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7522",
       "id": "paraglide_messages_landingfaqa1",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingfaqa1()"
     },
     {
@@ -7812,7 +7812,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7566",
       "id": "paraglide_messages_landingfaqa2",
-      "community": 5,
+      "community": 0,
       "norm_label": "landingfaqa2()"
     },
     {
@@ -7821,7 +7821,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7588",
       "id": "paraglide_messages_landingfaqq3",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingfaqq3()"
     },
     {
@@ -7848,7 +7848,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7654",
       "id": "paraglide_messages_landingfaqa4",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingfaqa4()"
     },
     {
@@ -7929,7 +7929,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7852",
       "id": "paraglide_messages_allergendialogseveresignstitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "allergendialogseveresignstitle()"
     },
     {
@@ -7938,7 +7938,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7874",
       "id": "paraglide_messages_allergendialogsourcestitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "allergendialogsourcestitle()"
     },
     {
@@ -7956,7 +7956,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7918",
       "id": "paraglide_messages_landingherotitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingherotitle()"
     },
     {
@@ -7965,7 +7965,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L7940",
       "id": "paraglide_messages_landingherobody",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingherobody()"
     },
     {
@@ -8019,7 +8019,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8072",
       "id": "paraglide_messages_landingfeatureallergenstitle",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingfeatureallergenstitle()"
     },
     {
@@ -8028,7 +8028,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8094",
       "id": "paraglide_messages_landingfeatureallergensbody",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingfeatureallergensbody()"
     },
     {
@@ -8037,7 +8037,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8116",
       "id": "paraglide_messages_landingfeaturecoparentstitle",
-      "community": 5,
+      "community": 0,
       "norm_label": "landingfeaturecoparentstitle()"
     },
     {
@@ -8046,7 +8046,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8138",
       "id": "paraglide_messages_landingfeaturecoparentsbody",
-      "community": 5,
+      "community": 0,
       "norm_label": "landingfeaturecoparentsbody()"
     },
     {
@@ -8064,7 +8064,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8182",
       "id": "paraglide_messages_landingfeatureguidebody",
-      "community": 0,
+      "community": 5,
       "norm_label": "landingfeatureguidebody()"
     },
     {
@@ -8100,7 +8100,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8270",
       "id": "paraglide_messages_kidpickerrolemember",
-      "community": 5,
+      "community": 0,
       "norm_label": "kidpickerrolemember()"
     },
     {
@@ -8109,7 +8109,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8292",
       "id": "paraglide_messages_kidpickeraddchild",
-      "community": 5,
+      "community": 0,
       "norm_label": "kidpickeraddchild()"
     },
     {
@@ -8127,7 +8127,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8336",
       "id": "paraglide_messages_kidpickerguidechiprules",
-      "community": 5,
+      "community": 0,
       "norm_label": "kidpickerguidechiprules()"
     },
     {
@@ -8145,7 +8145,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8380",
       "id": "paraglide_messages_kidpickerguidechipallergens",
-      "community": 0,
+      "community": 5,
       "norm_label": "kidpickerguidechipallergens()"
     },
     {
@@ -8154,7 +8154,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8402",
       "id": "paraglide_messages_reactionslabelras",
-      "community": 0,
+      "community": 5,
       "norm_label": "reactionslabelras()"
     },
     {
@@ -8172,7 +8172,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8446",
       "id": "paraglide_messages_reactionslabelreaction",
-      "community": 0,
+      "community": 5,
       "norm_label": "reactionslabelreaction()"
     },
     {
@@ -8181,7 +8181,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8468",
       "id": "paraglide_messages_carnetsegmentsarialabel",
-      "community": 5,
+      "community": 0,
       "norm_label": "carnetsegmentsarialabel()"
     },
     {
@@ -8199,7 +8199,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8512",
       "id": "paraglide_messages_errorsaccountpasskeyregisterfailed",
-      "community": 0,
+      "community": 5,
       "norm_label": "errorsaccountpasskeyregisterfailed()"
     },
     {
@@ -8226,7 +8226,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L8534",
       "id": "paraglide_messages_errorsaccountpasskeygenericerror",
-      "community": 0,
+      "community": 5,
       "norm_label": "errorsaccountpasskeygenericerror()"
     },
     {
@@ -8334,7 +8334,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L26",
       "id": "messages_fr_chromelateralnavlabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromelateralnavlabel()"
     },
     {
@@ -8343,7 +8343,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L34",
       "id": "messages_fr_chromelocaleswitcherlabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromelocaleswitcherlabel()"
     },
     {
@@ -8352,7 +8352,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L42",
       "id": "messages_fr_chromelegallinksconditions",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromelegallinksconditions()"
     },
     {
@@ -8361,7 +8361,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L50",
       "id": "messages_fr_chromelegallinkscookies",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromelegallinkscookies()"
     },
     {
@@ -8370,7 +8370,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L58",
       "id": "messages_fr_chromelegallinkslabel",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromelegallinkslabel()"
     },
     {
@@ -8379,7 +8379,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L66",
       "id": "messages_fr_chromelegallinksmentionslegales",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromelegallinksmentionslegales()"
     },
     {
@@ -8415,7 +8415,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L98",
       "id": "messages_fr_chromepublicfootercgu",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromepublicfootercgu()"
     },
     {
@@ -8424,7 +8424,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L106",
       "id": "messages_fr_chromepublicfootercookies",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromepublicfootercookies()"
     },
     {
@@ -8433,7 +8433,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L114",
       "id": "messages_fr_chromepublicfootercopyright",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromepublicfootercopyright()"
     },
     {
@@ -8442,7 +8442,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L122",
       "id": "messages_fr_chromepublicfooterdisclaimer",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromepublicfooterdisclaimer()"
     },
     {
@@ -8487,7 +8487,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L162",
       "id": "messages_fr_chromepublicfooterpolitiqueconfidentialite",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromepublicfooterpolitiqueconfidentialite()"
     },
     {
@@ -8505,7 +8505,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L178",
       "id": "messages_fr_chromepublicheaderbrand",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromepublicheaderbrand()"
     },
     {
@@ -8514,7 +8514,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L186",
       "id": "messages_fr_chromepublicheadermenuclose",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromepublicheadermenuclose()"
     },
     {
@@ -8523,7 +8523,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L194",
       "id": "messages_fr_chromepublicheadermenuopen",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromepublicheadermenuopen()"
     },
     {
@@ -8532,7 +8532,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L202",
       "id": "messages_fr_chromepublicheadermyaccount",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromepublicheadermyaccount()"
     },
     {
@@ -8541,7 +8541,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L210",
       "id": "messages_fr_chromepublicheadermydashboard",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromepublicheadermydashboard()"
     },
     {
@@ -8577,7 +8577,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L274",
       "id": "messages_fr_chrometabsaujourdhui",
-      "community": 3,
+      "community": 1,
       "norm_label": "chrometabsaujourdhui()"
     },
     {
@@ -8604,7 +8604,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L298",
       "id": "messages_fr_chrometabsprofil",
-      "community": 1,
+      "community": 3,
       "norm_label": "chrometabsprofil()"
     },
     {
@@ -8613,7 +8613,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L306",
       "id": "messages_fr_chromefablog",
-      "community": 1,
+      "community": 3,
       "norm_label": "chromefablog()"
     },
     {
@@ -8640,7 +8640,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L330",
       "id": "messages_fr_categoryaromates",
-      "community": 1,
+      "community": 3,
       "norm_label": "categoryaromates()"
     },
     {
@@ -8676,7 +8676,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L362",
       "id": "messages_fr_categorylegumes",
-      "community": 1,
+      "community": 3,
       "norm_label": "categorylegumes()"
     },
     {
@@ -8685,7 +8685,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L370",
       "id": "messages_fr_categorylegumineuses",
-      "community": 3,
+      "community": 1,
       "norm_label": "categorylegumineuses()"
     },
     {
@@ -8694,7 +8694,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L378",
       "id": "messages_fr_categorymatieresgrasses",
-      "community": 1,
+      "community": 3,
       "norm_label": "categorymatieresgrasses()"
     },
     {
@@ -8721,7 +8721,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L402",
       "id": "messages_fr_categoryproduitslaitiers",
-      "community": 1,
+      "community": 3,
       "norm_label": "categoryproduitslaitiers()"
     },
     {
@@ -8730,7 +8730,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L410",
       "id": "messages_fr_categoryviandes",
-      "community": 1,
+      "community": 3,
       "norm_label": "categoryviandes()"
     },
     {
@@ -8766,7 +8766,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L442",
       "id": "messages_fr_daterelativeminutes",
-      "community": 3,
+      "community": 1,
       "norm_label": "daterelativeminutes()"
     },
     {
@@ -8784,7 +8784,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L458",
       "id": "messages_fr_daterelativetoday",
-      "community": 1,
+      "community": 3,
       "norm_label": "daterelativetoday()"
     },
     {
@@ -8793,7 +8793,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L466",
       "id": "messages_fr_daterelativeyesterday",
-      "community": 1,
+      "community": 3,
       "norm_label": "daterelativeyesterday()"
     },
     {
@@ -8802,7 +8802,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L474",
       "id": "messages_fr_dialogswelcomebuttondismiss",
-      "community": 3,
+      "community": 1,
       "norm_label": "dialogswelcomebuttondismiss()"
     },
     {
@@ -8829,7 +8829,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L498",
       "id": "messages_fr_dialogswelcomestep0body",
-      "community": 1,
+      "community": 3,
       "norm_label": "dialogswelcomestep0body()"
     },
     {
@@ -8847,7 +8847,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L514",
       "id": "messages_fr_dialogswelcomestep0bullet1before",
-      "community": 3,
+      "community": 1,
       "norm_label": "dialogswelcomestep0bullet1before()"
     },
     {
@@ -8874,7 +8874,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L538",
       "id": "messages_fr_dialogswelcomestep0bullet2before",
-      "community": 1,
+      "community": 3,
       "norm_label": "dialogswelcomestep0bullet2before()"
     },
     {
@@ -8892,7 +8892,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L554",
       "id": "messages_fr_dialogswelcomestep0bullet3after",
-      "community": 3,
+      "community": 1,
       "norm_label": "dialogswelcomestep0bullet3after()"
     },
     {
@@ -8910,7 +8910,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L570",
       "id": "messages_fr_dialogswelcomestep0bullet3bold",
-      "community": 3,
+      "community": 1,
       "norm_label": "dialogswelcomestep0bullet3bold()"
     },
     {
@@ -8919,7 +8919,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L578",
       "id": "messages_fr_dialogswelcomestep0title",
-      "community": 3,
+      "community": 1,
       "norm_label": "dialogswelcomestep0title()"
     },
     {
@@ -8937,7 +8937,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L594",
       "id": "messages_fr_dialogswelcomestep1bullet1bold",
-      "community": 1,
+      "community": 3,
       "norm_label": "dialogswelcomestep1bullet1bold()"
     },
     {
@@ -8946,7 +8946,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L602",
       "id": "messages_fr_dialogswelcomestep1bullet2after",
-      "community": 1,
+      "community": 3,
       "norm_label": "dialogswelcomestep1bullet2after()"
     },
     {
@@ -8991,7 +8991,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L642",
       "id": "messages_fr_dialogswelcomestep1bullet4bold",
-      "community": 3,
+      "community": 1,
       "norm_label": "dialogswelcomestep1bullet4bold()"
     },
     {
@@ -9018,7 +9018,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L666",
       "id": "messages_fr_dialogswelcomestep1title",
-      "community": 3,
+      "community": 1,
       "norm_label": "dialogswelcomestep1title()"
     },
     {
@@ -9027,7 +9027,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L674",
       "id": "messages_fr_dialogswelcomestep2body1",
-      "community": 1,
+      "community": 3,
       "norm_label": "dialogswelcomestep2body1()"
     },
     {
@@ -9036,7 +9036,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L682",
       "id": "messages_fr_dialogswelcomestep2body2",
-      "community": 3,
+      "community": 1,
       "norm_label": "dialogswelcomestep2body2()"
     },
     {
@@ -9054,7 +9054,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L698",
       "id": "messages_fr_errorsgenericback",
-      "community": 1,
+      "community": 3,
       "norm_label": "errorsgenericback()"
     },
     {
@@ -9099,7 +9099,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L738",
       "id": "messages_fr_errorsgenerictitledefault",
-      "community": 3,
+      "community": 1,
       "norm_label": "errorsgenerictitledefault()"
     },
     {
@@ -9117,7 +9117,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L754",
       "id": "messages_fr_legalcookiesdisclaimer",
-      "community": 3,
+      "community": 1,
       "norm_label": "legalcookiesdisclaimer()"
     },
     {
@@ -9126,7 +9126,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L762",
       "id": "messages_fr_legalcookiesdurationheader",
-      "community": 3,
+      "community": 1,
       "norm_label": "legalcookiesdurationheader()"
     },
     {
@@ -9144,7 +9144,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L778",
       "id": "messages_fr_legalcookiesfooterbefore",
-      "community": 1,
+      "community": 3,
       "norm_label": "legalcookiesfooterbefore()"
     },
     {
@@ -9180,7 +9180,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L810",
       "id": "messages_fr_legalcookiesrow1purpose",
-      "community": 1,
+      "community": 3,
       "norm_label": "legalcookiesrow1purpose()"
     },
     {
@@ -9189,7 +9189,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L818",
       "id": "messages_fr_legalcookiesrow2duration",
-      "community": 3,
+      "community": 1,
       "norm_label": "legalcookiesrow2duration()"
     },
     {
@@ -9207,7 +9207,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L834",
       "id": "messages_fr_legalcookiestitle",
-      "community": 1,
+      "community": 3,
       "norm_label": "legalcookiestitle()"
     },
     {
@@ -9216,7 +9216,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L842",
       "id": "messages_fr_legalcookiesupdated",
-      "community": 1,
+      "community": 3,
       "norm_label": "legalcookiesupdated()"
     },
     {
@@ -9225,7 +9225,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L850",
       "id": "messages_fr_errorsgenericfallback",
-      "community": 1,
+      "community": 3,
       "norm_label": "errorsgenericfallback()"
     },
     {
@@ -9234,7 +9234,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L858",
       "id": "messages_fr_errorsauthratelimited",
-      "community": 1,
+      "community": 3,
       "norm_label": "errorsauthratelimited()"
     },
     {
@@ -9252,7 +9252,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L874",
       "id": "messages_fr_errorsauthinvalidcredentials",
-      "community": 3,
+      "community": 1,
       "norm_label": "errorsauthinvalidcredentials()"
     },
     {
@@ -9270,7 +9270,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L890",
       "id": "messages_fr_errorsauthinvalidinviteexpired",
-      "community": 1,
+      "community": 3,
       "norm_label": "errorsauthinvalidinviteexpired()"
     },
     {
@@ -9288,7 +9288,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L906",
       "id": "messages_fr_errorsaccountprofilenameinvalid",
-      "community": 3,
+      "community": 1,
       "norm_label": "errorsaccountprofilenameinvalid()"
     },
     {
@@ -9297,7 +9297,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L914",
       "id": "messages_fr_errorsaccountprofilesuccess",
-      "community": 1,
+      "community": 3,
       "norm_label": "errorsaccountprofilesuccess()"
     },
     {
@@ -9306,7 +9306,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L922",
       "id": "messages_fr_errorsaccountpasswordincorrect",
-      "community": 3,
+      "community": 1,
       "norm_label": "errorsaccountpasswordincorrect()"
     },
     {
@@ -9315,7 +9315,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L930",
       "id": "messages_fr_errorsaccountpasswordsuccess",
-      "community": 1,
+      "community": 3,
       "norm_label": "errorsaccountpasswordsuccess()"
     },
     {
@@ -9324,7 +9324,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L938",
       "id": "messages_fr_errorsaccountpasskeynameinvalid",
-      "community": 1,
+      "community": 3,
       "norm_label": "errorsaccountpasskeynameinvalid()"
     },
     {
@@ -9360,7 +9360,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L970",
       "id": "messages_fr_errorsaccountpasskeydeletesuccess",
-      "community": 3,
+      "community": 1,
       "norm_label": "errorsaccountpasskeydeletesuccess()"
     },
     {
@@ -9423,7 +9423,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1026",
       "id": "messages_fr_authloginpasskeyloading",
-      "community": 1,
+      "community": 3,
       "norm_label": "authloginpasskeyloading()"
     },
     {
@@ -9432,7 +9432,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1034",
       "id": "messages_fr_authsignuptitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "authsignuptitle()"
     },
     {
@@ -9441,7 +9441,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1042",
       "id": "messages_fr_authsignupsubheadinginvited",
-      "community": 1,
+      "community": 3,
       "norm_label": "authsignupsubheadinginvited()"
     },
     {
@@ -9450,7 +9450,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1050",
       "id": "messages_fr_authsignupdisplaynamelabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "authsignupdisplaynamelabel()"
     },
     {
@@ -9459,7 +9459,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1074",
       "id": "messages_fr_authsignuppasswordhint",
-      "community": 1,
+      "community": 3,
       "norm_label": "authsignuppasswordhint()"
     },
     {
@@ -9468,7 +9468,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1082",
       "id": "messages_fr_authsignuppasswordshow",
-      "community": 3,
+      "community": 1,
       "norm_label": "authsignuppasswordshow()"
     },
     {
@@ -9477,7 +9477,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1090",
       "id": "messages_fr_authsignuppasswordhide",
-      "community": 1,
+      "community": 3,
       "norm_label": "authsignuppasswordhide()"
     },
     {
@@ -9504,7 +9504,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1114",
       "id": "messages_fr_authsignupaccepttosprefix",
-      "community": 1,
+      "community": 3,
       "norm_label": "authsignupaccepttosprefix()"
     },
     {
@@ -9513,7 +9513,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1122",
       "id": "messages_fr_authsignupaccepttoslink",
-      "community": 1,
+      "community": 3,
       "norm_label": "authsignupaccepttoslink()"
     },
     {
@@ -9531,7 +9531,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1138",
       "id": "messages_fr_authsignupacceptprivacylink",
-      "community": 3,
+      "community": 1,
       "norm_label": "authsignupacceptprivacylink()"
     },
     {
@@ -9558,7 +9558,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1162",
       "id": "messages_fr_authsignupsubmitting",
-      "community": 1,
+      "community": 3,
       "norm_label": "authsignupsubmitting()"
     },
     {
@@ -9576,7 +9576,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1210",
       "id": "messages_fr_authaccountprofilesection",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountprofilesection()"
     },
     {
@@ -9585,7 +9585,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1218",
       "id": "messages_fr_authaccountdisplaynamelabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountdisplaynamelabel()"
     },
     {
@@ -9603,7 +9603,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1234",
       "id": "messages_fr_authaccountsaving",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountsaving()"
     },
     {
@@ -9639,7 +9639,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1266",
       "id": "messages_fr_authaccountpasswordchange",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountpasswordchange()"
     },
     {
@@ -9657,7 +9657,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1282",
       "id": "messages_fr_authaccountpasskeyssection",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountpasskeyssection()"
     },
     {
@@ -9684,7 +9684,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1306",
       "id": "messages_fr_authaccountpasskeyrenamebutton",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountpasskeyrenamebutton()"
     },
     {
@@ -9693,7 +9693,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1314",
       "id": "messages_fr_authaccountpasskeydeletebutton",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountpasskeydeletebutton()"
     },
     {
@@ -9720,7 +9720,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1338",
       "id": "messages_fr_authaccountpasskeylastused",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountpasskeylastused()"
     },
     {
@@ -9729,7 +9729,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1346",
       "id": "messages_fr_authaccountpasskeysynced",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountpasskeysynced()"
     },
     {
@@ -9738,7 +9738,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1354",
       "id": "messages_fr_authaccountpasskeynewnamelabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountpasskeynewnamelabel()"
     },
     {
@@ -9756,7 +9756,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1370",
       "id": "messages_fr_authaccountpasskeyadd",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountpasskeyadd()"
     },
     {
@@ -9774,7 +9774,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1386",
       "id": "messages_fr_authaccountpasskeyregistersuccess",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountpasskeyregistersuccess()"
     },
     {
@@ -9783,7 +9783,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1394",
       "id": "messages_fr_authaccountpasskeyunsupported",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountpasskeyunsupported()"
     },
     {
@@ -9819,7 +9819,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1426",
       "id": "messages_fr_authaccountsessionsdescription",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountsessionsdescription()"
     },
     {
@@ -9855,7 +9855,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1466",
       "id": "messages_fr_authaccountdatadescription",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountdatadescription()"
     },
     {
@@ -9864,7 +9864,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1474",
       "id": "messages_fr_authaccountdataexport",
-      "community": 1,
+      "community": 3,
       "norm_label": "authaccountdataexport()"
     },
     {
@@ -9873,7 +9873,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1482",
       "id": "messages_fr_authaccountdeletesection",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountdeletesection()"
     },
     {
@@ -9909,7 +9909,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1514",
       "id": "messages_fr_authaccountdeletesubmit",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountdeletesubmit()"
     },
     {
@@ -9918,7 +9918,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1522",
       "id": "messages_fr_authaccountdeletesubmitting",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountdeletesubmitting()"
     },
     {
@@ -9927,7 +9927,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1538",
       "id": "messages_fr_authdeletedtitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "authdeletedtitle()"
     },
     {
@@ -9936,7 +9936,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1546",
       "id": "messages_fr_authdeletedheading",
-      "community": 1,
+      "community": 3,
       "norm_label": "authdeletedheading()"
     },
     {
@@ -9972,7 +9972,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1586",
       "id": "messages_fr_commonfronlybannerlanding",
-      "community": 3,
+      "community": 1,
       "norm_label": "commonfronlybannerlanding()"
     },
     {
@@ -9981,7 +9981,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1594",
       "id": "messages_fr_commonfronlybannerlegal",
-      "community": 1,
+      "community": 3,
       "norm_label": "commonfronlybannerlegal()"
     },
     {
@@ -10017,7 +10017,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1626",
       "id": "messages_fr_offlinefallbackretry",
-      "community": 1,
+      "community": 3,
       "norm_label": "offlinefallbackretry()"
     },
     {
@@ -10035,7 +10035,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1642",
       "id": "messages_fr_offlinequeuedtoast",
-      "community": 3,
+      "community": 1,
       "norm_label": "offlinequeuedtoast()"
     },
     {
@@ -10044,7 +10044,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1650",
       "id": "messages_fr_offlinequeuefailedtoast",
-      "community": 3,
+      "community": 1,
       "norm_label": "offlinequeuefailedtoast()"
     },
     {
@@ -10089,7 +10089,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1690",
       "id": "messages_fr_aujourdhuistatsstreak",
-      "community": 1,
+      "community": 3,
       "norm_label": "aujourdhuistatsstreak()"
     },
     {
@@ -10098,7 +10098,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1698",
       "id": "messages_fr_aujourdhuistatsstreakdaysone",
-      "community": 3,
+      "community": 1,
       "norm_label": "aujourdhuistatsstreakdaysone()"
     },
     {
@@ -10116,7 +10116,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1714",
       "id": "messages_fr_aujourdhuistatsstreakrecord",
-      "community": 1,
+      "community": 3,
       "norm_label": "aujourdhuistatsstreakrecord()"
     },
     {
@@ -10134,7 +10134,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1730",
       "id": "messages_fr_aujourdhuiallergensok",
-      "community": 3,
+      "community": 1,
       "norm_label": "aujourdhuiallergensok()"
     },
     {
@@ -10143,7 +10143,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1738",
       "id": "messages_fr_aujourdhuiallergenstodo",
-      "community": 3,
+      "community": 1,
       "norm_label": "aujourdhuiallergenstodo()"
     },
     {
@@ -10152,7 +10152,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1746",
       "id": "messages_fr_aujourdhuiallergensfading",
-      "community": 1,
+      "community": 3,
       "norm_label": "aujourdhuiallergensfading()"
     },
     {
@@ -10161,7 +10161,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1754",
       "id": "messages_fr_carnetallergensfadingcaption",
-      "community": 3,
+      "community": 1,
       "norm_label": "carnetallergensfadingcaption()"
     },
     {
@@ -10197,7 +10197,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1786",
       "id": "messages_fr_carnetsubfoodsone",
-      "community": 3,
+      "community": 1,
       "norm_label": "carnetsubfoodsone()"
     },
     {
@@ -10206,7 +10206,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1794",
       "id": "messages_fr_carnetsubfoodsother",
-      "community": 1,
+      "community": 3,
       "norm_label": "carnetsubfoodsother()"
     },
     {
@@ -10224,7 +10224,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1810",
       "id": "messages_fr_carnetsubcategoriesother",
-      "community": 3,
+      "community": 1,
       "norm_label": "carnetsubcategoriesother()"
     },
     {
@@ -10251,7 +10251,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1834",
       "id": "messages_fr_carnetsegmentsallergenes",
-      "community": 1,
+      "community": 3,
       "norm_label": "carnetsegmentsallergenes()"
     },
     {
@@ -10278,7 +10278,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1858",
       "id": "messages_fr_carnettousempty",
-      "community": 1,
+      "community": 3,
       "norm_label": "carnettousempty()"
     },
     {
@@ -10287,7 +10287,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1866",
       "id": "messages_fr_carnetfoodcardtried",
-      "community": 3,
+      "community": 1,
       "norm_label": "carnetfoodcardtried()"
     },
     {
@@ -10314,7 +10314,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1890",
       "id": "messages_fr_carnetallergensempty",
-      "community": 1,
+      "community": 3,
       "norm_label": "carnetallergensempty()"
     },
     {
@@ -10503,7 +10503,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1962",
       "id": "messages_fr_decouvrirstageopenaria",
-      "community": 1,
+      "community": 3,
       "norm_label": "decouvrirstageopenaria()"
     },
     {
@@ -10512,7 +10512,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1970",
       "id": "messages_fr_decouvrirsuggestionstitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "decouvrirsuggestionstitle()"
     },
     {
@@ -10521,7 +10521,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1978",
       "id": "messages_fr_decouvrirsuggestionreasonallergen",
-      "community": 3,
+      "community": 1,
       "norm_label": "decouvrirsuggestionreasonallergen()"
     },
     {
@@ -10530,7 +10530,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1986",
       "id": "messages_fr_decouvrirsuggestionreasondiversify",
-      "community": 1,
+      "community": 3,
       "norm_label": "decouvrirsuggestionreasondiversify()"
     },
     {
@@ -10539,7 +10539,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1994",
       "id": "messages_fr_decouvrirsuggestionreasonrecent",
-      "community": 1,
+      "community": 3,
       "norm_label": "decouvrirsuggestionreasonrecent()"
     },
     {
@@ -10557,7 +10557,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2002",
       "id": "messages_fr_decouvrirtipstitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "decouvrirtipstitle()"
     },
     {
@@ -10593,7 +10593,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2034",
       "id": "messages_fr_profilchildrenadd",
-      "community": 3,
+      "community": 1,
       "norm_label": "profilchildrenadd()"
     },
     {
@@ -10611,7 +10611,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2050",
       "id": "messages_fr_profilcoparentstitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "profilcoparentstitle()"
     },
     {
@@ -10656,7 +10656,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2090",
       "id": "messages_fr_profilcomptepasskeysdevicesingular",
-      "community": 3,
+      "community": 1,
       "norm_label": "profilcomptepasskeysdevicesingular()"
     },
     {
@@ -10683,7 +10683,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2114",
       "id": "messages_fr_profilcomptetheme",
-      "community": 1,
+      "community": 3,
       "norm_label": "profilcomptetheme()"
     },
     {
@@ -10692,7 +10692,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2122",
       "id": "messages_fr_profilcomptethemevaluesystem",
-      "community": 3,
+      "community": 1,
       "norm_label": "profilcomptethemevaluesystem()"
     },
     {
@@ -10719,7 +10719,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2146",
       "id": "messages_fr_profilcomptepassword",
-      "community": 3,
+      "community": 1,
       "norm_label": "profilcomptepassword()"
     },
     {
@@ -10746,7 +10746,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2154",
       "id": "messages_fr_profilrgpdtitle",
-      "community": 1,
+      "community": 3,
       "norm_label": "profilrgpdtitle()"
     },
     {
@@ -10755,7 +10755,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2162",
       "id": "messages_fr_profilrgpdexport",
-      "community": 3,
+      "community": 1,
       "norm_label": "profilrgpdexport()"
     },
     {
@@ -10764,7 +10764,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2170",
       "id": "messages_fr_profilrgpddelete",
-      "community": 1,
+      "community": 3,
       "norm_label": "profilrgpddelete()"
     },
     {
@@ -10773,7 +10773,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2178",
       "id": "messages_fr_profillegaltitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "profillegaltitle()"
     },
     {
@@ -10782,7 +10782,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2186",
       "id": "messages_fr_reactionherobody",
-      "community": 3,
+      "community": 1,
       "norm_label": "reactionherobody()"
     },
     {
@@ -10791,7 +10791,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2194",
       "id": "messages_fr_reactiontitle",
-      "community": 1,
+      "community": 3,
       "norm_label": "reactiontitle()"
     },
     {
@@ -10809,7 +10809,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2210",
       "id": "messages_fr_reactionrasmessage",
-      "community": 3,
+      "community": 1,
       "norm_label": "reactionrasmessage()"
     },
     {
@@ -10827,7 +10827,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2226",
       "id": "messages_fr_reactionsymptomstitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "reactionsymptomstitle()"
     },
     {
@@ -10836,7 +10836,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2234",
       "id": "messages_fr_reactionsymptomsempty",
-      "community": 1,
+      "community": 3,
       "norm_label": "reactionsymptomsempty()"
     },
     {
@@ -10881,7 +10881,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2258",
       "id": "messages_fr_reactionstaycoolbody",
-      "community": 3,
+      "community": 1,
       "norm_label": "reactionstaycoolbody()"
     },
     {
@@ -10890,7 +10890,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2266",
       "id": "messages_fr_reactionstaycoollink",
-      "community": 3,
+      "community": 1,
       "norm_label": "reactionstaycoollink()"
     },
     {
@@ -10917,7 +10917,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2290",
       "id": "messages_fr_reactiontimerrunning",
-      "community": 1,
+      "community": 3,
       "norm_label": "reactiontimerrunning()"
     },
     {
@@ -10926,7 +10926,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2298",
       "id": "messages_fr_reactiontimerdone",
-      "community": 3,
+      "community": 1,
       "norm_label": "reactiontimerdone()"
     },
     {
@@ -10935,7 +10935,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2306",
       "id": "messages_fr_reactionexport",
-      "community": 1,
+      "community": 3,
       "norm_label": "reactionexport()"
     },
     {
@@ -10962,7 +10962,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2322",
       "id": "messages_fr_addsymptomtitle",
-      "community": 1,
+      "community": 3,
       "norm_label": "addsymptomtitle()"
     },
     {
@@ -11007,7 +11007,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2362",
       "id": "messages_fr_addsymptomsubmit",
-      "community": 3,
+      "community": 1,
       "norm_label": "addsymptomsubmit()"
     },
     {
@@ -11016,7 +11016,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2370",
       "id": "messages_fr_symptomslabelrougeur",
-      "community": 1,
+      "community": 3,
       "norm_label": "symptomslabelrougeur()"
     },
     {
@@ -11043,7 +11043,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2394",
       "id": "messages_fr_symptomslabelvomissement",
-      "community": 3,
+      "community": 1,
       "norm_label": "symptomslabelvomissement()"
     },
     {
@@ -11052,7 +11052,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2402",
       "id": "messages_fr_symptomslabeldiarrhee",
-      "community": 1,
+      "community": 3,
       "norm_label": "symptomslabeldiarrhee()"
     },
     {
@@ -11070,7 +11070,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2418",
       "id": "messages_fr_symptomslabeltoux",
-      "community": 1,
+      "community": 3,
       "norm_label": "symptomslabeltoux()"
     },
     {
@@ -11079,7 +11079,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2426",
       "id": "messages_fr_symptomslabeldetresserespiratoire",
-      "community": 3,
+      "community": 1,
       "norm_label": "symptomslabeldetresserespiratoire()"
     },
     {
@@ -11088,7 +11088,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2434",
       "id": "messages_fr_symptomslabellevresbleues",
-      "community": 3,
+      "community": 1,
       "norm_label": "symptomslabellevresbleues()"
     },
     {
@@ -11097,7 +11097,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2442",
       "id": "messages_fr_symptomslabelautre",
-      "community": 1,
+      "community": 3,
       "norm_label": "symptomslabelautre()"
     },
     {
@@ -11142,7 +11142,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2482",
       "id": "messages_fr_printfoodsection",
-      "community": 3,
+      "community": 1,
       "norm_label": "printfoodsection()"
     },
     {
@@ -11151,7 +11151,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2490",
       "id": "messages_fr_printsymptomssection",
-      "community": 3,
+      "community": 1,
       "norm_label": "printsymptomssection()"
     },
     {
@@ -11160,7 +11160,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2498",
       "id": "messages_fr_printseverityneutral",
-      "community": 3,
+      "community": 1,
       "norm_label": "printseverityneutral()"
     },
     {
@@ -11187,7 +11187,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2522",
       "id": "messages_fr_printfooternote",
-      "community": 1,
+      "community": 3,
       "norm_label": "printfooternote()"
     },
     {
@@ -11196,7 +11196,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2530",
       "id": "messages_fr_printgeneratedat",
-      "community": 1,
+      "community": 3,
       "norm_label": "printgeneratedat()"
     },
     {
@@ -11214,7 +11214,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2546",
       "id": "messages_fr_authsignupsubtitlebento",
-      "community": 3,
+      "community": 1,
       "norm_label": "authsignupsubtitlebento()"
     },
     {
@@ -11241,7 +11241,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2570",
       "id": "messages_fr_authloginpasswordreveal",
-      "community": 3,
+      "community": 1,
       "norm_label": "authloginpasswordreveal()"
     },
     {
@@ -11259,7 +11259,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2586",
       "id": "messages_fr_authsignupfooterlogin",
-      "community": 3,
+      "community": 1,
       "norm_label": "authsignupfooterlogin()"
     },
     {
@@ -11268,7 +11268,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2594",
       "id": "messages_fr_authloginfootersignup",
-      "community": 1,
+      "community": 3,
       "norm_label": "authloginfootersignup()"
     },
     {
@@ -11277,7 +11277,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2602",
       "id": "messages_fr_authsignupdivider",
-      "community": 3,
+      "community": 1,
       "norm_label": "authsignupdivider()"
     },
     {
@@ -11286,7 +11286,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2610",
       "id": "messages_fr_authsignuppasskeycta",
-      "community": 1,
+      "community": 3,
       "norm_label": "authsignuppasskeycta()"
     },
     {
@@ -11295,7 +11295,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2618",
       "id": "messages_fr_onboardingtitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "onboardingtitle()"
     },
     {
@@ -11313,7 +11313,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2634",
       "id": "messages_fr_onboardingfirstnamelabel",
-      "community": 1,
+      "community": 3,
       "norm_label": "onboardingfirstnamelabel()"
     },
     {
@@ -11322,7 +11322,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2642",
       "id": "messages_fr_onboardingbirthdatelabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "onboardingbirthdatelabel()"
     },
     {
@@ -11349,7 +11349,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2666",
       "id": "messages_fr_onboardinginvitecaption",
-      "community": 3,
+      "community": 1,
       "norm_label": "onboardinginvitecaption()"
     },
     {
@@ -11367,7 +11367,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2682",
       "id": "messages_fr_landingfeaturestitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "landingfeaturestitle()"
     },
     {
@@ -11376,7 +11376,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2690",
       "id": "messages_fr_landingtrusttitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "landingtrusttitle()"
     },
     {
@@ -11385,7 +11385,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2698",
       "id": "messages_fr_landingtrustpillarnotelemetry",
-      "community": 3,
+      "community": 1,
       "norm_label": "landingtrustpillarnotelemetry()"
     },
     {
@@ -11412,7 +11412,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2722",
       "id": "messages_fr_landingclosingctatitle",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingclosingctatitle()"
     },
     {
@@ -11439,7 +11439,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2746",
       "id": "messages_fr_landingfaqa1",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingfaqa1()"
     },
     {
@@ -11448,7 +11448,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2754",
       "id": "messages_fr_landingfaqq2",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingfaqq2()"
     },
     {
@@ -11457,7 +11457,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2762",
       "id": "messages_fr_landingfaqa2",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingfaqa2()"
     },
     {
@@ -11475,7 +11475,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2778",
       "id": "messages_fr_landingfaqa3",
-      "community": 3,
+      "community": 1,
       "norm_label": "landingfaqa3()"
     },
     {
@@ -11493,7 +11493,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2794",
       "id": "messages_fr_landingfaqa4",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingfaqa4()"
     },
     {
@@ -11502,7 +11502,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2802",
       "id": "messages_fr_landingfaqq5",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingfaqq5()"
     },
     {
@@ -11511,7 +11511,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2810",
       "id": "messages_fr_landingfaqa5",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingfaqa5()"
     },
     {
@@ -11520,7 +11520,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2818",
       "id": "messages_fr_allergendialogtitle",
-      "community": 3,
+      "community": 1,
       "norm_label": "allergendialogtitle()"
     },
     {
@@ -11538,7 +11538,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2834",
       "id": "messages_fr_allergendialogseveritymajor",
-      "community": 3,
+      "community": 1,
       "norm_label": "allergendialogseveritymajor()"
     },
     {
@@ -11583,7 +11583,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2874",
       "id": "messages_fr_allergendialogsourcestitle",
-      "community": 1,
+      "community": 3,
       "norm_label": "allergendialogsourcestitle()"
     },
     {
@@ -11592,7 +11592,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2882",
       "id": "messages_fr_allergendialogclose",
-      "community": 1,
+      "community": 3,
       "norm_label": "allergendialogclose()"
     },
     {
@@ -11610,7 +11610,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2898",
       "id": "messages_fr_landingherobody",
-      "community": 3,
+      "community": 1,
       "norm_label": "landingherobody()"
     },
     {
@@ -11628,7 +11628,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2914",
       "id": "messages_fr_landingheroctalogin",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingheroctalogin()"
     },
     {
@@ -11646,7 +11646,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2930",
       "id": "messages_fr_landingfeaturecarnettitle",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingfeaturecarnettitle()"
     },
     {
@@ -11655,7 +11655,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L2938",
       "id": "messages_fr_landingfeaturecarnetbody",
-      "community": 1,
+      "community": 3,
       "norm_label": "landingfeaturecarnetbody()"
     },
     {
@@ -11736,7 +11736,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3010",
       "id": "messages_fr_kidpickerroleowner",
-      "community": 1,
+      "community": 3,
       "norm_label": "kidpickerroleowner()"
     },
     {
@@ -11754,7 +11754,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3026",
       "id": "messages_fr_kidpickeraddchild",
-      "community": 3,
+      "community": 1,
       "norm_label": "kidpickeraddchild()"
     },
     {
@@ -11772,7 +11772,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3042",
       "id": "messages_fr_kidpickerguidechiprules",
-      "community": 3,
+      "community": 1,
       "norm_label": "kidpickerguidechiprules()"
     },
     {
@@ -11781,7 +11781,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3050",
       "id": "messages_fr_kidpickerguidechipstages",
-      "community": 1,
+      "community": 3,
       "norm_label": "kidpickerguidechipstages()"
     },
     {
@@ -11790,7 +11790,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3058",
       "id": "messages_fr_kidpickerguidechipallergens",
-      "community": 1,
+      "community": 3,
       "norm_label": "kidpickerguidechipallergens()"
     },
     {
@@ -11799,7 +11799,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3066",
       "id": "messages_fr_reactionslabelras",
-      "community": 3,
+      "community": 1,
       "norm_label": "reactionslabelras()"
     },
     {
@@ -11817,7 +11817,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3082",
       "id": "messages_fr_reactionslabelreaction",
-      "community": 1,
+      "community": 3,
       "norm_label": "reactionslabelreaction()"
     },
     {
@@ -11826,7 +11826,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3090",
       "id": "messages_fr_carnetsegmentsarialabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "carnetsegmentsarialabel()"
     },
     {
@@ -11835,7 +11835,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L3098",
       "id": "messages_fr_errorsaccountpasskeyregisterstartfailed",
-      "community": 1,
+      "community": 3,
       "norm_label": "errorsaccountpasskeyregisterstartfailed()"
     },
     {
@@ -11979,7 +11979,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L26",
       "id": "messages_en_chromelateralnavlabel",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromelateralnavlabel()"
     },
     {
@@ -12006,7 +12006,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L50",
       "id": "messages_en_chromelegallinkscookies",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromelegallinkscookies()"
     },
     {
@@ -12024,7 +12024,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L66",
       "id": "messages_en_chromelegallinksmentionslegales",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromelegallinksmentionslegales()"
     },
     {
@@ -12060,7 +12060,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L98",
       "id": "messages_en_chromepublicfootercgu",
-      "community": 2,
+      "community": 4,
       "norm_label": "chromepublicfootercgu()"
     },
     {
@@ -12069,7 +12069,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L106",
       "id": "messages_en_chromepublicfootercookies",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromepublicfootercookies()"
     },
     {
@@ -12087,7 +12087,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L122",
       "id": "messages_en_chromepublicfooterdisclaimer",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromepublicfooterdisclaimer()"
     },
     {
@@ -12132,7 +12132,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L162",
       "id": "messages_en_chromepublicfooterpolitiqueconfidentialite",
-      "community": 2,
+      "community": 4,
       "norm_label": "chromepublicfooterpolitiqueconfidentialite()"
     },
     {
@@ -12150,7 +12150,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L178",
       "id": "messages_en_chromepublicheaderbrand",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromepublicheaderbrand()"
     },
     {
@@ -12159,7 +12159,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L186",
       "id": "messages_en_chromepublicheadermenuclose",
-      "community": 2,
+      "community": 4,
       "norm_label": "chromepublicheadermenuclose()"
     },
     {
@@ -12168,7 +12168,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L194",
       "id": "messages_en_chromepublicheadermenuopen",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromepublicheadermenuopen()"
     },
     {
@@ -12177,7 +12177,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L202",
       "id": "messages_en_chromepublicheadermyaccount",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromepublicheadermyaccount()"
     },
     {
@@ -12195,7 +12195,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L234",
       "id": "messages_en_chromepublicheadernavhome",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromepublicheadernavhome()"
     },
     {
@@ -12213,7 +12213,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L258",
       "id": "messages_en_chromepublicheadernavsignup",
-      "community": 2,
+      "community": 4,
       "norm_label": "chromepublicheadernavsignup()"
     },
     {
@@ -12222,7 +12222,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L274",
       "id": "messages_en_chrometabsaujourdhui",
-      "community": 4,
+      "community": 2,
       "norm_label": "chrometabsaujourdhui()"
     },
     {
@@ -12231,7 +12231,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L282",
       "id": "messages_en_chrometabscarnet",
-      "community": 2,
+      "community": 4,
       "norm_label": "chrometabscarnet()"
     },
     {
@@ -12240,7 +12240,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L290",
       "id": "messages_en_chrometabsdecouvrir",
-      "community": 2,
+      "community": 4,
       "norm_label": "chrometabsdecouvrir()"
     },
     {
@@ -12249,7 +12249,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L298",
       "id": "messages_en_chrometabsprofil",
-      "community": 4,
+      "community": 2,
       "norm_label": "chrometabsprofil()"
     },
     {
@@ -12267,7 +12267,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L314",
       "id": "messages_en_chromeheaderchangechild",
-      "community": 2,
+      "community": 4,
       "norm_label": "chromeheaderchangechild()"
     },
     {
@@ -12276,7 +12276,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L322",
       "id": "messages_en_categoryallergenes",
-      "community": 4,
+      "community": 2,
       "norm_label": "categoryallergenes()"
     },
     {
@@ -12294,7 +12294,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L338",
       "id": "messages_en_categoryautre",
-      "community": 2,
+      "community": 4,
       "norm_label": "categoryautre()"
     },
     {
@@ -12303,7 +12303,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L346",
       "id": "messages_en_categoryfeculents",
-      "community": 4,
+      "community": 2,
       "norm_label": "categoryfeculents()"
     },
     {
@@ -12321,7 +12321,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L362",
       "id": "messages_en_categorylegumes",
-      "community": 2,
+      "community": 4,
       "norm_label": "categorylegumes()"
     },
     {
@@ -12357,7 +12357,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L394",
       "id": "messages_en_categorypoissons",
-      "community": 2,
+      "community": 4,
       "norm_label": "categorypoissons()"
     },
     {
@@ -12384,7 +12384,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L418",
       "id": "messages_en_chromechildswitchertitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "chromechildswitchertitle()"
     },
     {
@@ -12420,7 +12420,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L450",
       "id": "messages_en_daterelativenow",
-      "community": 2,
+      "community": 4,
       "norm_label": "daterelativenow()"
     },
     {
@@ -12429,7 +12429,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L458",
       "id": "messages_en_daterelativetoday",
-      "community": 2,
+      "community": 4,
       "norm_label": "daterelativetoday()"
     },
     {
@@ -12492,7 +12492,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L514",
       "id": "messages_en_dialogswelcomestep0bullet1before",
-      "community": 2,
+      "community": 4,
       "norm_label": "dialogswelcomestep0bullet1before()"
     },
     {
@@ -12501,7 +12501,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L522",
       "id": "messages_en_dialogswelcomestep0bullet1bold",
-      "community": 4,
+      "community": 2,
       "norm_label": "dialogswelcomestep0bullet1bold()"
     },
     {
@@ -12528,7 +12528,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L546",
       "id": "messages_en_dialogswelcomestep0bullet2bold",
-      "community": 4,
+      "community": 2,
       "norm_label": "dialogswelcomestep0bullet2bold()"
     },
     {
@@ -12555,7 +12555,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L570",
       "id": "messages_en_dialogswelcomestep0bullet3bold",
-      "community": 2,
+      "community": 4,
       "norm_label": "dialogswelcomestep0bullet3bold()"
     },
     {
@@ -12573,7 +12573,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L586",
       "id": "messages_en_dialogswelcomestep1bullet1after",
-      "community": 4,
+      "community": 2,
       "norm_label": "dialogswelcomestep1bullet1after()"
     },
     {
@@ -12591,7 +12591,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L602",
       "id": "messages_en_dialogswelcomestep1bullet2after",
-      "community": 2,
+      "community": 4,
       "norm_label": "dialogswelcomestep1bullet2after()"
     },
     {
@@ -12636,7 +12636,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L642",
       "id": "messages_en_dialogswelcomestep1bullet4bold",
-      "community": 4,
+      "community": 2,
       "norm_label": "dialogswelcomestep1bullet4bold()"
     },
     {
@@ -12654,7 +12654,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L658",
       "id": "messages_en_dialogswelcomestep1bullet5bold",
-      "community": 2,
+      "community": 4,
       "norm_label": "dialogswelcomestep1bullet5bold()"
     },
     {
@@ -12690,7 +12690,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L690",
       "id": "messages_en_dialogswelcomestep2title",
-      "community": 4,
+      "community": 2,
       "norm_label": "dialogswelcomestep2title()"
     },
     {
@@ -12699,7 +12699,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L698",
       "id": "messages_en_errorsgenericback",
-      "community": 4,
+      "community": 2,
       "norm_label": "errorsgenericback()"
     },
     {
@@ -12708,7 +12708,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L706",
       "id": "messages_en_errorsgenerichome",
-      "community": 2,
+      "community": 4,
       "norm_label": "errorsgenerichome()"
     },
     {
@@ -12717,7 +12717,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L714",
       "id": "messages_en_errorsgenericlabel",
-      "community": 2,
+      "community": 4,
       "norm_label": "errorsgenericlabel()"
     },
     {
@@ -12735,7 +12735,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L730",
       "id": "messages_en_errorsgenerictitle404",
-      "community": 4,
+      "community": 2,
       "norm_label": "errorsgenerictitle404()"
     },
     {
@@ -12789,7 +12789,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L778",
       "id": "messages_en_legalcookiesfooterbefore",
-      "community": 2,
+      "community": 4,
       "norm_label": "legalcookiesfooterbefore()"
     },
     {
@@ -12798,7 +12798,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L786",
       "id": "messages_en_legalcookiesnameheader",
-      "community": 2,
+      "community": 4,
       "norm_label": "legalcookiesnameheader()"
     },
     {
@@ -12852,7 +12852,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L834",
       "id": "messages_en_legalcookiestitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "legalcookiestitle()"
     },
     {
@@ -12870,7 +12870,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L850",
       "id": "messages_en_errorsgenericfallback",
-      "community": 4,
+      "community": 2,
       "norm_label": "errorsgenericfallback()"
     },
     {
@@ -12888,7 +12888,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L866",
       "id": "messages_en_errorsauthbadinput",
-      "community": 4,
+      "community": 2,
       "norm_label": "errorsauthbadinput()"
     },
     {
@@ -12924,7 +12924,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L898",
       "id": "messages_en_errorsauthsignupimpossible",
-      "community": 4,
+      "community": 2,
       "norm_label": "errorsauthsignupimpossible()"
     },
     {
@@ -12942,7 +12942,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L914",
       "id": "messages_en_errorsaccountprofilesuccess",
-      "community": 2,
+      "community": 4,
       "norm_label": "errorsaccountprofilesuccess()"
     },
     {
@@ -12960,7 +12960,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L930",
       "id": "messages_en_errorsaccountpasswordsuccess",
-      "community": 4,
+      "community": 2,
       "norm_label": "errorsaccountpasswordsuccess()"
     },
     {
@@ -12969,7 +12969,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L938",
       "id": "messages_en_errorsaccountpasskeynameinvalid",
-      "community": 2,
+      "community": 4,
       "norm_label": "errorsaccountpasskeynameinvalid()"
     },
     {
@@ -12987,7 +12987,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L954",
       "id": "messages_en_errorsaccountpasskeyidmissing",
-      "community": 2,
+      "community": 4,
       "norm_label": "errorsaccountpasskeyidmissing()"
     },
     {
@@ -13023,7 +13023,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L986",
       "id": "messages_en_authlogintitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "authlogintitle()"
     },
     {
@@ -13059,7 +13059,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1018",
       "id": "messages_en_authloginsubmitting",
-      "community": 2,
+      "community": 4,
       "norm_label": "authloginsubmitting()"
     },
     {
@@ -13095,7 +13095,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1050",
       "id": "messages_en_authsignupdisplaynamelabel",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignupdisplaynamelabel()"
     },
     {
@@ -13113,7 +13113,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1082",
       "id": "messages_en_authsignuppasswordshow",
-      "community": 2,
+      "community": 4,
       "norm_label": "authsignuppasswordshow()"
     },
     {
@@ -13122,7 +13122,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1090",
       "id": "messages_en_authsignuppasswordhide",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignuppasswordhide()"
     },
     {
@@ -13140,7 +13140,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1106",
       "id": "messages_en_authsignupage15",
-      "community": 2,
+      "community": 4,
       "norm_label": "authsignupage15()"
     },
     {
@@ -13149,7 +13149,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1114",
       "id": "messages_en_authsignupaccepttosprefix",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignupaccepttosprefix()"
     },
     {
@@ -13167,7 +13167,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1130",
       "id": "messages_en_authsignupacceptprivacyprefix",
-      "community": 2,
+      "community": 4,
       "norm_label": "authsignupacceptprivacyprefix()"
     },
     {
@@ -13176,7 +13176,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1138",
       "id": "messages_en_authsignupacceptprivacylink",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignupacceptprivacylink()"
     },
     {
@@ -13194,7 +13194,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1154",
       "id": "messages_en_authsignupsubmit",
-      "community": 2,
+      "community": 4,
       "norm_label": "authsignupsubmit()"
     },
     {
@@ -13221,7 +13221,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1210",
       "id": "messages_en_authaccountprofilesection",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountprofilesection()"
     },
     {
@@ -13230,7 +13230,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1218",
       "id": "messages_en_authaccountdisplaynamelabel",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountdisplaynamelabel()"
     },
     {
@@ -13248,7 +13248,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1234",
       "id": "messages_en_authaccountsaving",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountsaving()"
     },
     {
@@ -13257,7 +13257,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1242",
       "id": "messages_en_authaccountpasswordsection",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountpasswordsection()"
     },
     {
@@ -13266,7 +13266,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1250",
       "id": "messages_en_authaccountcurrentpasswordlabel",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountcurrentpasswordlabel()"
     },
     {
@@ -13275,7 +13275,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1258",
       "id": "messages_en_authaccountnewpasswordlabel",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountnewpasswordlabel()"
     },
     {
@@ -13302,7 +13302,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1282",
       "id": "messages_en_authaccountpasskeyssection",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountpasskeyssection()"
     },
     {
@@ -13311,7 +13311,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1290",
       "id": "messages_en_authaccountpasskeysdescription",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountpasskeysdescription()"
     },
     {
@@ -13320,7 +13320,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1298",
       "id": "messages_en_authaccountpasskeysempty",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountpasskeysempty()"
     },
     {
@@ -13329,7 +13329,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1306",
       "id": "messages_en_authaccountpasskeyrenamebutton",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountpasskeyrenamebutton()"
     },
     {
@@ -13347,7 +13347,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1322",
       "id": "messages_en_authaccountpasskeynamelabel",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountpasskeynamelabel()"
     },
     {
@@ -13365,7 +13365,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1338",
       "id": "messages_en_authaccountpasskeylastused",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountpasskeylastused()"
     },
     {
@@ -13374,7 +13374,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1346",
       "id": "messages_en_authaccountpasskeysynced",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountpasskeysynced()"
     },
     {
@@ -13392,7 +13392,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1362",
       "id": "messages_en_authaccountpasskeynameplaceholder",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountpasskeynameplaceholder()"
     },
     {
@@ -13401,7 +13401,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1370",
       "id": "messages_en_authaccountpasskeyadd",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountpasskeyadd()"
     },
     {
@@ -13428,7 +13428,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1394",
       "id": "messages_en_authaccountpasskeyunsupported",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountpasskeyunsupported()"
     },
     {
@@ -13437,7 +13437,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1402",
       "id": "messages_en_authaccountappearancesection",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountappearancesection()"
     },
     {
@@ -13455,7 +13455,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1418",
       "id": "messages_en_authaccountsessionssection",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountsessionssection()"
     },
     {
@@ -13491,7 +13491,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1450",
       "id": "messages_en_authaccountlogout",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountlogout()"
     },
     {
@@ -13500,7 +13500,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1466",
       "id": "messages_en_authaccountdatadescription",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountdatadescription()"
     },
     {
@@ -13509,7 +13509,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1474",
       "id": "messages_en_authaccountdataexport",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountdataexport()"
     },
     {
@@ -13518,7 +13518,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1482",
       "id": "messages_en_authaccountdeletesection",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountdeletesection()"
     },
     {
@@ -13590,7 +13590,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1554",
       "id": "messages_en_authdeletedbody",
-      "community": 2,
+      "community": 4,
       "norm_label": "authdeletedbody()"
     },
     {
@@ -13599,7 +13599,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1562",
       "id": "messages_en_authdeletedbackhome",
-      "community": 4,
+      "community": 2,
       "norm_label": "authdeletedbackhome()"
     },
     {
@@ -13608,7 +13608,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1578",
       "id": "messages_en_commonfronlybannerguide",
-      "community": 4,
+      "community": 2,
       "norm_label": "commonfronlybannerguide()"
     },
     {
@@ -13617,7 +13617,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1586",
       "id": "messages_en_commonfronlybannerlanding",
-      "community": 2,
+      "community": 4,
       "norm_label": "commonfronlybannerlanding()"
     },
     {
@@ -13626,7 +13626,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1594",
       "id": "messages_en_commonfronlybannerlegal",
-      "community": 2,
+      "community": 4,
       "norm_label": "commonfronlybannerlegal()"
     },
     {
@@ -13635,7 +13635,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1602",
       "id": "messages_en_commonfronlybannersources",
-      "community": 4,
+      "community": 2,
       "norm_label": "commonfronlybannersources()"
     },
     {
@@ -13644,7 +13644,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1610",
       "id": "messages_en_offlinedroppedtoast",
-      "community": 2,
+      "community": 4,
       "norm_label": "offlinedroppedtoast()"
     },
     {
@@ -13653,7 +13653,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1618",
       "id": "messages_en_offlinefallbackbody",
-      "community": 2,
+      "community": 4,
       "norm_label": "offlinefallbackbody()"
     },
     {
@@ -13671,7 +13671,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1634",
       "id": "messages_en_offlinefallbacktitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "offlinefallbacktitle()"
     },
     {
@@ -13680,7 +13680,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1642",
       "id": "messages_en_offlinequeuedtoast",
-      "community": 4,
+      "community": 2,
       "norm_label": "offlinequeuedtoast()"
     },
     {
@@ -13689,7 +13689,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1650",
       "id": "messages_en_offlinequeuefailedtoast",
-      "community": 4,
+      "community": 2,
       "norm_label": "offlinequeuefailedtoast()"
     },
     {
@@ -13698,7 +13698,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1658",
       "id": "messages_en_offlinesessionexpiredtoast",
-      "community": 4,
+      "community": 2,
       "norm_label": "offlinesessionexpiredtoast()"
     },
     {
@@ -13707,7 +13707,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1666",
       "id": "messages_en_offlinesyncedtoast",
-      "community": 4,
+      "community": 2,
       "norm_label": "offlinesyncedtoast()"
     },
     {
@@ -13743,7 +13743,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1698",
       "id": "messages_en_aujourdhuistatsstreakdaysone",
-      "community": 2,
+      "community": 4,
       "norm_label": "aujourdhuistatsstreakdaysone()"
     },
     {
@@ -13752,7 +13752,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1706",
       "id": "messages_en_aujourdhuistatsstreakdaysother",
-      "community": 4,
+      "community": 2,
       "norm_label": "aujourdhuistatsstreakdaysother()"
     },
     {
@@ -13761,7 +13761,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1714",
       "id": "messages_en_aujourdhuistatsstreakrecord",
-      "community": 2,
+      "community": 4,
       "norm_label": "aujourdhuistatsstreakrecord()"
     },
     {
@@ -13770,7 +13770,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1722",
       "id": "messages_en_aujourdhuiallergenstitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "aujourdhuiallergenstitle()"
     },
     {
@@ -13788,7 +13788,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1738",
       "id": "messages_en_aujourdhuiallergenstodo",
-      "community": 2,
+      "community": 4,
       "norm_label": "aujourdhuiallergenstodo()"
     },
     {
@@ -13815,7 +13815,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1762",
       "id": "messages_en_aujourdhuirecenttitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "aujourdhuirecenttitle()"
     },
     {
@@ -13833,7 +13833,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1778",
       "id": "messages_en_carnettitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "carnettitle()"
     },
     {
@@ -13869,7 +13869,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1810",
       "id": "messages_en_carnetsubcategoriesother",
-      "community": 2,
+      "community": 4,
       "norm_label": "carnetsubcategoriesother()"
     },
     {
@@ -13878,7 +13878,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1818",
       "id": "messages_en_carnetsegmentstous",
-      "community": 2,
+      "community": 4,
       "norm_label": "carnetsegmentstous()"
     },
     {
@@ -13887,7 +13887,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1826",
       "id": "messages_en_carnetsegmentscategories",
-      "community": 4,
+      "community": 2,
       "norm_label": "carnetsegmentscategories()"
     },
     {
@@ -13905,7 +13905,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1842",
       "id": "messages_en_carnetsegmentsstats",
-      "community": 2,
+      "community": 4,
       "norm_label": "carnetsegmentsstats()"
     },
     {
@@ -13923,7 +13923,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1858",
       "id": "messages_en_carnettousempty",
-      "community": 2,
+      "community": 4,
       "norm_label": "carnettousempty()"
     },
     {
@@ -13941,7 +13941,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1874",
       "id": "messages_en_carnetfoodcarduntried",
-      "community": 4,
+      "community": 2,
       "norm_label": "carnetfoodcarduntried()"
     },
     {
@@ -13950,7 +13950,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1882",
       "id": "messages_en_carnetcategoriesempty",
-      "community": 2,
+      "community": 4,
       "norm_label": "carnetcategoriesempty()"
     },
     {
@@ -13968,7 +13968,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1898",
       "id": "messages_en_carnetstatsdiversity",
-      "community": 4,
+      "community": 2,
       "norm_label": "carnetstatsdiversity()"
     },
     {
@@ -13977,7 +13977,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1906",
       "id": "messages_en_carnetstatsfoods",
-      "community": 4,
+      "community": 2,
       "norm_label": "carnetstatsfoods()"
     },
     {
@@ -14004,7 +14004,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1930",
       "id": "messages_en_carnetstatslogsother",
-      "community": 4,
+      "community": 2,
       "norm_label": "carnetstatslogsother()"
     },
     {
@@ -14130,7 +14130,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1946",
       "id": "messages_en_decouvrirstagestitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "decouvrirstagestitle()"
     },
     {
@@ -14139,7 +14139,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1954",
       "id": "messages_en_decouvrirstageactivearia",
-      "community": 2,
+      "community": 4,
       "norm_label": "decouvrirstageactivearia()"
     },
     {
@@ -14148,7 +14148,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1962",
       "id": "messages_en_decouvrirstageopenaria",
-      "community": 4,
+      "community": 2,
       "norm_label": "decouvrirstageopenaria()"
     },
     {
@@ -14166,7 +14166,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1978",
       "id": "messages_en_decouvrirsuggestionreasonallergen",
-      "community": 2,
+      "community": 4,
       "norm_label": "decouvrirsuggestionreasonallergen()"
     },
     {
@@ -14184,7 +14184,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1994",
       "id": "messages_en_decouvrirsuggestionreasonrecent",
-      "community": 2,
+      "community": 4,
       "norm_label": "decouvrirsuggestionreasonrecent()"
     },
     {
@@ -14220,7 +14220,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2018",
       "id": "messages_en_decouvrirsourcestitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "decouvrirsourcestitle()"
     },
     {
@@ -14229,7 +14229,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2026",
       "id": "messages_en_profilchildrentitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "profilchildrentitle()"
     },
     {
@@ -14238,7 +14238,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2034",
       "id": "messages_en_profilchildrenadd",
-      "community": 2,
+      "community": 4,
       "norm_label": "profilchildrenadd()"
     },
     {
@@ -14256,7 +14256,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2050",
       "id": "messages_en_profilcoparentstitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "profilcoparentstitle()"
     },
     {
@@ -14265,7 +14265,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2058",
       "id": "messages_en_profilcoparentsinvite",
-      "community": 2,
+      "community": 4,
       "norm_label": "profilcoparentsinvite()"
     },
     {
@@ -14274,7 +14274,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2066",
       "id": "messages_en_profilcoparentsempty",
-      "community": 4,
+      "community": 2,
       "norm_label": "profilcoparentsempty()"
     },
     {
@@ -14283,7 +14283,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2074",
       "id": "messages_en_profilcomptetitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "profilcomptetitle()"
     },
     {
@@ -14292,7 +14292,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2082",
       "id": "messages_en_profilcomptepasskeys",
-      "community": 4,
+      "community": 2,
       "norm_label": "profilcomptepasskeys()"
     },
     {
@@ -14319,7 +14319,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2106",
       "id": "messages_en_profilcomptelangue",
-      "community": 2,
+      "community": 4,
       "norm_label": "profilcomptelangue()"
     },
     {
@@ -14400,7 +14400,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2162",
       "id": "messages_en_profilrgpdexport",
-      "community": 2,
+      "community": 4,
       "norm_label": "profilrgpdexport()"
     },
     {
@@ -14436,7 +14436,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2194",
       "id": "messages_en_reactiontitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "reactiontitle()"
     },
     {
@@ -14445,7 +14445,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2202",
       "id": "messages_en_reactionsubtitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "reactionsubtitle()"
     },
     {
@@ -14463,7 +14463,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2218",
       "id": "messages_en_latereactionbutton",
-      "community": 2,
+      "community": 4,
       "norm_label": "latereactionbutton()"
     },
     {
@@ -14490,7 +14490,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2242",
       "id": "messages_en_reactionsymptomsadd",
-      "community": 4,
+      "community": 2,
       "norm_label": "reactionsymptomsadd()"
     },
     {
@@ -14517,7 +14517,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2250",
       "id": "messages_en_reactionstaycooltitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "reactionstaycooltitle()"
     },
     {
@@ -14526,7 +14526,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2258",
       "id": "messages_en_reactionstaycoolbody",
-      "community": 4,
+      "community": 2,
       "norm_label": "reactionstaycoolbody()"
     },
     {
@@ -14544,7 +14544,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2274",
       "id": "messages_en_reactionsevererailbody",
-      "community": 2,
+      "community": 4,
       "norm_label": "reactionsevererailbody()"
     },
     {
@@ -14553,7 +14553,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2282",
       "id": "messages_en_reactiontimerstart",
-      "community": 2,
+      "community": 4,
       "norm_label": "reactiontimerstart()"
     },
     {
@@ -14562,7 +14562,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2290",
       "id": "messages_en_reactiontimerrunning",
-      "community": 2,
+      "community": 4,
       "norm_label": "reactiontimerrunning()"
     },
     {
@@ -14571,7 +14571,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2298",
       "id": "messages_en_reactiontimerdone",
-      "community": 4,
+      "community": 2,
       "norm_label": "reactiontimerdone()"
     },
     {
@@ -14580,7 +14580,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2306",
       "id": "messages_en_reactionexport",
-      "community": 4,
+      "community": 2,
       "norm_label": "reactionexport()"
     },
     {
@@ -14598,7 +14598,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2314",
       "id": "messages_en_reactionbacktocarnet",
-      "community": 4,
+      "community": 2,
       "norm_label": "reactionbacktocarnet()"
     },
     {
@@ -14625,7 +14625,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2338",
       "id": "messages_en_addsymptomnote",
-      "community": 4,
+      "community": 2,
       "norm_label": "addsymptomnote()"
     },
     {
@@ -14679,7 +14679,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2386",
       "id": "messages_en_symptomslabeleczema",
-      "community": 2,
+      "community": 4,
       "norm_label": "symptomslabeleczema()"
     },
     {
@@ -14688,7 +14688,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2394",
       "id": "messages_en_symptomslabelvomissement",
-      "community": 2,
+      "community": 4,
       "norm_label": "symptomslabelvomissement()"
     },
     {
@@ -14706,7 +14706,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2410",
       "id": "messages_en_symptomslabelgonflement",
-      "community": 4,
+      "community": 2,
       "norm_label": "symptomslabelgonflement()"
     },
     {
@@ -14724,7 +14724,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2426",
       "id": "messages_en_symptomslabeldetresserespiratoire",
-      "community": 4,
+      "community": 2,
       "norm_label": "symptomslabeldetresserespiratoire()"
     },
     {
@@ -14742,7 +14742,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2442",
       "id": "messages_en_symptomslabelautre",
-      "community": 4,
+      "community": 2,
       "norm_label": "symptomslabelautre()"
     },
     {
@@ -14751,7 +14751,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2450",
       "id": "messages_en_stagebadgelabel",
-      "community": 4,
+      "community": 2,
       "norm_label": "stagebadgelabel()"
     },
     {
@@ -14760,7 +14760,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2458",
       "id": "messages_en_modaldialogfallbacktitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "modaldialogfallbacktitle()"
     },
     {
@@ -14769,7 +14769,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2466",
       "id": "messages_en_printdocumenttitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "printdocumenttitle()"
     },
     {
@@ -14778,7 +14778,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2474",
       "id": "messages_en_printchildheader",
-      "community": 2,
+      "community": 4,
       "norm_label": "printchildheader()"
     },
     {
@@ -14796,7 +14796,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2490",
       "id": "messages_en_printsymptomssection",
-      "community": 2,
+      "community": 4,
       "norm_label": "printsymptomssection()"
     },
     {
@@ -14805,7 +14805,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2498",
       "id": "messages_en_printseverityneutral",
-      "community": 2,
+      "community": 4,
       "norm_label": "printseverityneutral()"
     },
     {
@@ -14814,7 +14814,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2506",
       "id": "messages_en_printseveritywarn",
-      "community": 4,
+      "community": 2,
       "norm_label": "printseveritywarn()"
     },
     {
@@ -14823,7 +14823,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2514",
       "id": "messages_en_printseveritysevere",
-      "community": 4,
+      "community": 2,
       "norm_label": "printseveritysevere()"
     },
     {
@@ -14832,7 +14832,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2522",
       "id": "messages_en_printfooternote",
-      "community": 2,
+      "community": 4,
       "norm_label": "printfooternote()"
     },
     {
@@ -14850,7 +14850,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2538",
       "id": "messages_en_authsignuptitlebento",
-      "community": 2,
+      "community": 4,
       "norm_label": "authsignuptitlebento()"
     },
     {
@@ -14859,7 +14859,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2546",
       "id": "messages_en_authsignupsubtitlebento",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignupsubtitlebento()"
     },
     {
@@ -14868,7 +14868,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2554",
       "id": "messages_en_authlogintitlebento",
-      "community": 2,
+      "community": 4,
       "norm_label": "authlogintitlebento()"
     },
     {
@@ -14877,7 +14877,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2562",
       "id": "messages_en_authloginpasskeyprimarycta",
-      "community": 2,
+      "community": 4,
       "norm_label": "authloginpasskeyprimarycta()"
     },
     {
@@ -14886,7 +14886,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2570",
       "id": "messages_en_authloginpasswordreveal",
-      "community": 2,
+      "community": 4,
       "norm_label": "authloginpasswordreveal()"
     },
     {
@@ -14895,7 +14895,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2578",
       "id": "messages_en_authloginpasskeysecondary",
-      "community": 2,
+      "community": 4,
       "norm_label": "authloginpasskeysecondary()"
     },
     {
@@ -14904,7 +14904,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2586",
       "id": "messages_en_authsignupfooterlogin",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignupfooterlogin()"
     },
     {
@@ -14922,7 +14922,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2602",
       "id": "messages_en_authsignupdivider",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignupdivider()"
     },
     {
@@ -14931,7 +14931,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2610",
       "id": "messages_en_authsignuppasskeycta",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignuppasskeycta()"
     },
     {
@@ -14940,7 +14940,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2618",
       "id": "messages_en_onboardingtitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "onboardingtitle()"
     },
     {
@@ -14958,7 +14958,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2634",
       "id": "messages_en_onboardingfirstnamelabel",
-      "community": 2,
+      "community": 4,
       "norm_label": "onboardingfirstnamelabel()"
     },
     {
@@ -14976,7 +14976,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2650",
       "id": "messages_en_onboardinginvitesectionheader",
-      "community": 2,
+      "community": 4,
       "norm_label": "onboardinginvitesectionheader()"
     },
     {
@@ -15003,7 +15003,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2674",
       "id": "messages_en_onboardingsubmit",
-      "community": 2,
+      "community": 4,
       "norm_label": "onboardingsubmit()"
     },
     {
@@ -15021,7 +15021,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2690",
       "id": "messages_en_landingtrusttitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingtrusttitle()"
     },
     {
@@ -15039,7 +15039,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2706",
       "id": "messages_en_landingtrustpillarsources",
-      "community": 2,
+      "community": 4,
       "norm_label": "landingtrustpillarsources()"
     },
     {
@@ -15048,7 +15048,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2714",
       "id": "messages_en_landingtrustpillarownership",
-      "community": 2,
+      "community": 4,
       "norm_label": "landingtrustpillarownership()"
     },
     {
@@ -15066,7 +15066,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2730",
       "id": "messages_en_landingclosingctabutton",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingclosingctabutton()"
     },
     {
@@ -15075,7 +15075,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2738",
       "id": "messages_en_landingfaqq1",
-      "community": 2,
+      "community": 4,
       "norm_label": "landingfaqq1()"
     },
     {
@@ -15084,7 +15084,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2746",
       "id": "messages_en_landingfaqa1",
-      "community": 2,
+      "community": 4,
       "norm_label": "landingfaqa1()"
     },
     {
@@ -15102,7 +15102,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2762",
       "id": "messages_en_landingfaqa2",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingfaqa2()"
     },
     {
@@ -15111,7 +15111,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2770",
       "id": "messages_en_landingfaqq3",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingfaqq3()"
     },
     {
@@ -15120,7 +15120,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2778",
       "id": "messages_en_landingfaqa3",
-      "community": 2,
+      "community": 4,
       "norm_label": "landingfaqa3()"
     },
     {
@@ -15138,7 +15138,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2794",
       "id": "messages_en_landingfaqa4",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingfaqa4()"
     },
     {
@@ -15147,7 +15147,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2802",
       "id": "messages_en_landingfaqq5",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingfaqq5()"
     },
     {
@@ -15156,7 +15156,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2810",
       "id": "messages_en_landingfaqa5",
-      "community": 2,
+      "community": 4,
       "norm_label": "landingfaqa5()"
     },
     {
@@ -15192,7 +15192,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2842",
       "id": "messages_en_allergendialogwhyearlytitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "allergendialogwhyearlytitle()"
     },
     {
@@ -15201,7 +15201,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2850",
       "id": "messages_en_allergendialoghowtooffertitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "allergendialoghowtooffertitle()"
     },
     {
@@ -15210,7 +15210,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2858",
       "id": "messages_en_allergendialogfirstsignstitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "allergendialogfirstsignstitle()"
     },
     {
@@ -15219,7 +15219,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2866",
       "id": "messages_en_allergendialogseveresignstitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "allergendialogseveresignstitle()"
     },
     {
@@ -15246,7 +15246,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2890",
       "id": "messages_en_landingherotitle",
-      "community": 2,
+      "community": 4,
       "norm_label": "landingherotitle()"
     },
     {
@@ -15264,7 +15264,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2906",
       "id": "messages_en_landingheroctacreateaccount",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingheroctacreateaccount()"
     },
     {
@@ -15282,7 +15282,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2922",
       "id": "messages_en_landingheroctacontinue",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingheroctacontinue()"
     },
     {
@@ -15291,7 +15291,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2930",
       "id": "messages_en_landingfeaturecarnettitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingfeaturecarnettitle()"
     },
     {
@@ -15309,7 +15309,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2946",
       "id": "messages_en_landingfeatureallergenstitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingfeatureallergenstitle()"
     },
     {
@@ -15327,7 +15327,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2962",
       "id": "messages_en_landingfeaturecoparentstitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingfeaturecoparentstitle()"
     },
     {
@@ -15336,7 +15336,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2970",
       "id": "messages_en_landingfeaturecoparentsbody",
-      "community": 4,
+      "community": 2,
       "norm_label": "landingfeaturecoparentsbody()"
     },
     {
@@ -15363,7 +15363,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L2994",
       "id": "messages_en_kidpickertitle",
-      "community": 4,
+      "community": 2,
       "norm_label": "kidpickertitle()"
     },
     {
@@ -15390,7 +15390,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L3018",
       "id": "messages_en_kidpickerrolemember",
-      "community": 2,
+      "community": 4,
       "norm_label": "kidpickerrolemember()"
     },
     {
@@ -15399,7 +15399,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L3026",
       "id": "messages_en_kidpickeraddchild",
-      "community": 4,
+      "community": 2,
       "norm_label": "kidpickeraddchild()"
     },
     {
@@ -15426,7 +15426,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L3050",
       "id": "messages_en_kidpickerguidechipstages",
-      "community": 4,
+      "community": 2,
       "norm_label": "kidpickerguidechipstages()"
     },
     {
@@ -15444,7 +15444,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L3066",
       "id": "messages_en_reactionslabelras",
-      "community": 4,
+      "community": 2,
       "norm_label": "reactionslabelras()"
     },
     {
@@ -15453,7 +15453,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L3074",
       "id": "messages_en_reactionslabelinconfort",
-      "community": 4,
+      "community": 2,
       "norm_label": "reactionslabelinconfort()"
     },
     {
@@ -15462,7 +15462,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L3082",
       "id": "messages_en_reactionslabelreaction",
-      "community": 2,
+      "community": 4,
       "norm_label": "reactionslabelreaction()"
     },
     {
@@ -17712,7 +17712,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L372",
       "id": "paraglide_messages_chromepublicfooterlogin",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromepublicfooterlogin()"
     },
     {
@@ -17757,7 +17757,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L702",
       "id": "paraglide_messages_chromepublicheadernavsources",
-      "community": 5,
+      "community": 0,
       "norm_label": "chromepublicheadernavsources()"
     },
     {
@@ -17802,7 +17802,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3210",
       "id": "paraglide_messages_authaccountgroupidentity",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountgroupidentity()"
     },
     {
@@ -17811,7 +17811,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3232",
       "id": "paraglide_messages_authaccountgrouppreferences",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountgrouppreferences()"
     },
     {
@@ -17820,7 +17820,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3254",
       "id": "paraglide_messages_authaccountgroupsessions",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountgroupsessions()"
     },
     {
@@ -17829,7 +17829,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3276",
       "id": "paraglide_messages_authaccountgroupdata",
-      "community": 0,
+      "community": 5,
       "norm_label": "authaccountgroupdata()"
     },
     {
@@ -17838,7 +17838,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L3980",
       "id": "paraglide_messages_authaccountdatasection",
-      "community": 5,
+      "community": 0,
       "norm_label": "authaccountdatasection()"
     },
     {
@@ -17856,7 +17856,7 @@
       "source_file": "src/paraglide/messages.js",
       "source_location": "L4288",
       "id": "paraglide_messages_dashboardnavallergensdescription",
-      "community": 0,
+      "community": 5,
       "norm_label": "dashboardnavallergensdescription()"
     },
     {
@@ -17874,7 +17874,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L90",
       "id": "messages_fr_chromepublicfooterallergens",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromepublicfooterallergens()"
     },
     {
@@ -17883,7 +17883,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L130",
       "id": "messages_fr_chromepublicfooterguide",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromepublicfooterguide()"
     },
     {
@@ -17919,7 +17919,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L226",
       "id": "messages_fr_chromepublicheadernavguide",
-      "community": 3,
+      "community": 1,
       "norm_label": "chromepublicheadernavguide()"
     },
     {
@@ -17946,7 +17946,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L994",
       "id": "messages_fr_authloginemaillabel",
-      "community": 3,
+      "community": 1,
       "norm_label": "authloginemaillabel()"
     },
     {
@@ -17955,7 +17955,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1002",
       "id": "messages_fr_authloginpasswordlabel",
-      "community": 1,
+      "community": 3,
       "norm_label": "authloginpasswordlabel()"
     },
     {
@@ -17964,7 +17964,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1058",
       "id": "messages_fr_authsignupemaillabel",
-      "community": 1,
+      "community": 3,
       "norm_label": "authsignupemaillabel()"
     },
     {
@@ -17982,7 +17982,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1178",
       "id": "messages_fr_authaccountgroupidentity",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountgroupidentity()"
     },
     {
@@ -18009,7 +18009,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1202",
       "id": "messages_fr_authaccountgroupdata",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountgroupdata()"
     },
     {
@@ -18027,7 +18027,7 @@
       "source_file": "src/paraglide/messages/fr.js",
       "source_location": "L1530",
       "id": "messages_fr_authaccountlegalsection",
-      "community": 3,
+      "community": 1,
       "norm_label": "authaccountlegalsection()"
     },
     {
@@ -18063,7 +18063,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L130",
       "id": "messages_en_chromepublicfooterguide",
-      "community": 2,
+      "community": 4,
       "norm_label": "chromepublicfooterguide()"
     },
     {
@@ -18108,7 +18108,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L250",
       "id": "messages_en_chromepublicheadernavlogin",
-      "community": 2,
+      "community": 4,
       "norm_label": "chromepublicheadernavlogin()"
     },
     {
@@ -18117,7 +18117,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L266",
       "id": "messages_en_chromepublicheadernavsources",
-      "community": 2,
+      "community": 4,
       "norm_label": "chromepublicheadernavsources()"
     },
     {
@@ -18135,7 +18135,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1002",
       "id": "messages_en_authloginpasswordlabel",
-      "community": 2,
+      "community": 4,
       "norm_label": "authloginpasswordlabel()"
     },
     {
@@ -18144,7 +18144,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1058",
       "id": "messages_en_authsignupemaillabel",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignupemaillabel()"
     },
     {
@@ -18153,7 +18153,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1066",
       "id": "messages_en_authsignuppasswordlabel",
-      "community": 4,
+      "community": 2,
       "norm_label": "authsignuppasswordlabel()"
     },
     {
@@ -18162,7 +18162,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1178",
       "id": "messages_en_authaccountgroupidentity",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountgroupidentity()"
     },
     {
@@ -18180,7 +18180,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1194",
       "id": "messages_en_authaccountgroupsessions",
-      "community": 2,
+      "community": 4,
       "norm_label": "authaccountgroupsessions()"
     },
     {
@@ -18207,7 +18207,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1530",
       "id": "messages_en_authaccountlegalsection",
-      "community": 4,
+      "community": 2,
       "norm_label": "authaccountlegalsection()"
     },
     {
@@ -18216,7 +18216,7 @@
       "source_file": "src/paraglide/messages/en.js",
       "source_location": "L1570",
       "id": "messages_en_dashboardnavallergensdescription",
-      "community": 2,
+      "community": 4,
       "norm_label": "dashboardnavallergensdescription()"
     },
     {
@@ -26761,6 +26761,166 @@
       "target": "guidance_repeat_candidates_test_entry"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "test_db_resettestdb"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loadrecententries"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loaddiversitymetrics"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loadrepeatcandidates"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loaddismissals"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loadstreak"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loadweeklyrecap"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loadanalyticsbuckets"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_loadcoparentactivity"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_dismissreminder"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_test_seeduserandchild"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_test_seedfood"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L66",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_test_logentry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/queries.test.ts",
+      "source_location": "L702",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_queries_test_ts",
+      "target": "guidance_queries_test_seedseconduser"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/server/guidance/repeat-candidates.ts",
+      "source_location": "L71",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_lib_server_guidance_repeat_candidates_ts",
+      "target": "guidance_repeat_candidates_findrepeatcandidates"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/server/guidance/queries.ts",
@@ -26907,28 +27067,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_loadrecententries"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_loaddiversitymetrics"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/routes/child/[id]/+page.server.ts",
       "source_location": "L9",
       "weight": 1.0,
@@ -26946,17 +27084,6 @@
       "weight": 1.0,
       "source": "id_page_server_load",
       "target": "guidance_queries_loaddiversitymetrics"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_loadrepeatcandidates"
     },
     {
       "relation": "imports",
@@ -26984,17 +27111,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_loadweeklyrecap"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/routes/child/[id]/+page.server.ts",
       "source_location": "L9",
       "weight": 1.0,
@@ -27012,17 +27128,6 @@
       "weight": 1.0,
       "source": "id_page_server_load",
       "target": "guidance_queries_loadweeklyrecap"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_loadstreak"
     },
     {
       "relation": "imports",
@@ -27050,17 +27155,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_loadcoparentactivity"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/routes/child/[id]/+page.server.ts",
       "source_location": "L9",
       "weight": 1.0,
@@ -27080,17 +27174,6 @@
       "target": "guidance_queries_loadcoparentactivity"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_loadanalyticsbuckets"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -27100,17 +27183,6 @@
       "confidence_score": 1.0,
       "source": "guidance_queries_loaddismissals",
       "target": "guidance_queries_ttlforreminderkey"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_loaddismissals"
     },
     {
       "relation": "imports",
@@ -27160,84 +27232,12 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_dismissreminder"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "src/routes/child/[id]/+page.server.ts",
       "source_location": "L9",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_routes_child_id_page_server_ts",
       "target": "guidance_queries_dismissreminder"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "test_db_resettestdb"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L22",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_test_seeduserandchild"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L48",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_test_seedfood"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L66",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_test_logentry"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/queries.test.ts",
-      "source_location": "L702",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_queries_test_ts",
-      "target": "guidance_queries_test_seedseconduser"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/server/guidance/repeat-candidates.ts",
-      "source_location": "L71",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_lib_server_guidance_repeat_candidates_ts",
-      "target": "guidance_repeat_candidates_findrepeatcandidates"
     },
     {
       "relation": "imports",
@@ -62655,5 +62655,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "00dc9041a387b2081548a75d246071949986a5a5"
+  "built_at_commit": "c2e66dbbb47fe6df1d76376081d6b55e063800b8"
 }

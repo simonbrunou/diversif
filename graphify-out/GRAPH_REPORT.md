@@ -1,7 +1,7 @@
 # Graph Report - diversif  (2026-05-19)
 
 ## Corpus Check
-- 412 files · ~599,205 words
+- 412 files · ~599,252 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `00dc9041`
+- Built from commit: `c2e66dbb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -87,27 +87,27 @@
 
 ### Community 0 - "i18n Messages (auth.*)"
 Cohesion: 0.01
-Nodes (276): addSymptomObservedAt(), addSymptomSubmit(), allergenDialogBadgeFromMonths(), allergenDialogClose(), allergenDialogHowToOfferTitle(), allergenDialogSeverityMajor(), allergenDialogSourcesTitle(), allergenDialogTitle() (+268 more)
+Nodes (276): addSymptomNote(), addSymptomObservedAt(), addSymptomTitle(), allergenDialogBadgeFromMonths(), allergenDialogClose(), allergenDialogHowToOfferTitle(), allergenDialogSevereSignsTitle(), allergenDialogSeverityMajor() (+268 more)
 
 ### Community 1 - "i18n Messages (chrome.*)"
 Cohesion: 0.01
-Nodes (177): addSymptomNote(), addSymptomObservedAt(), addSymptomTitle(), allergenDialogClose(), allergenDialogSourcesTitle(), aujourdhuiAllergensFading(), aujourdhuiStatsAlimentsDelta(), aujourdhuiStatsStreak() (+169 more)
+Nodes (177): addSymptomNote(), addSymptomObservedAt(), addSymptomSubmit(), allergenDialogSeverityMajor(), allergenDialogTitle(), aujourdhuiAllergensOk(), aujourdhuiAllergensTodo(), aujourdhuiStatsAlimentsDelta() (+169 more)
 
 ### Community 2 - "i18n Messages (errors+log+landing)"
 Cohesion: 0.01
-Nodes (177): addSymptomObservedAt(), addSymptomTitle(), allergenDialogFirstSignsTitle(), allergenDialogHowToOfferTitle(), allergenDialogSevereSignsTitle(), allergenDialogSeverityMajor(), aujourdhuiAllergensFading(), aujourdhuiAllergensOk() (+169 more)
+Nodes (177): addSymptomNote(), addSymptomObservedAt(), addSymptomTitle(), allergenDialogSeverityMajor(), allergenDialogWhyEarlyTitle(), aujourdhuiAllergensFading(), aujourdhuiAllergensOk(), aujourdhuiAllergensTitle() (+169 more)
 
 ### Community 3 - "Page Loaders & Form Actions"
 Cohesion: 0.01
-Nodes (211): addSymptomLabel(), addSymptomNotePlaceholder(), addSymptomSubmit(), allergenDialogBadgeFromMonths(), allergenDialogFirstSignsTitle(), allergenDialogHowToOfferTitle(), allergenDialogSevereSignsTitle(), allergenDialogSeverityMajor() (+203 more)
+Nodes (211): addSymptomLabel(), addSymptomNotePlaceholder(), addSymptomTitle(), allergenDialogBadgeFromMonths(), allergenDialogClose(), allergenDialogFirstSignsTitle(), allergenDialogHowToOfferTitle(), allergenDialogSevereSignsTitle() (+203 more)
 
 ### Community 4 - "Test Fixtures & Setup Helpers"
 Cohesion: 0.01
-Nodes (211): addSymptomLabel(), addSymptomNote(), addSymptomNotePlaceholder(), addSymptomSubmit(), allergenDialogBadgeFromMonths(), allergenDialogClose(), allergenDialogSourcesTitle(), allergenDialogTitle() (+203 more)
+Nodes (211): addSymptomLabel(), addSymptomNotePlaceholder(), addSymptomSubmit(), allergenDialogBadgeFromMonths(), allergenDialogClose(), allergenDialogFirstSignsTitle(), allergenDialogHowToOfferTitle(), allergenDialogSevereSignsTitle() (+203 more)
 
 ### Community 5 - "Branding, App Shell & PWA Manifest"
 Cohesion: 0.01
-Nodes (113): addSymptomLabel(), addSymptomNote(), addSymptomNotePlaceholder(), addSymptomTitle(), allergenDialogFirstSignsTitle(), allergenDialogSevereSignsTitle(), aujourdhuiAllergensTitle(), authAccountCurrentPasswordLabel() (+105 more)
+Nodes (113): addSymptomLabel(), addSymptomNotePlaceholder(), addSymptomSubmit(), allergenDialogFirstSignsTitle(), allergenDialogSourcesTitle(), aujourdhuiAllergensTitle(), aujourdhuiRecentEmpty(), aujourdhuiRecentTitle() (+105 more)
 
 ### Community 6 - "Architecture Patterns & Conventions"
 Cohesion: 0.05
@@ -225,9 +225,9 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `languageTag()` connect `i18n Messages (auth.*)` to `WebAuthn / Passkeys`, `Branding, App Shell & PWA Manifest`, `UI Component Library`?**
   _High betweenness centrality (0.099) - this node is a cross-community bridge._
-- **Why does `setLanguageTag()` connect `UI Component Library` to `i18n Messages (auth.*)`, `Architecture Patterns & Conventions`?**
-  _High betweenness centrality (0.043) - this node is a cross-community bridge._
 - **Why does `isValidBirthDate()` connect `UI Component Library` to `Sentry Observability`, `Diversification Guidance & Stages`?**
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **Why does `setLanguageTag()` connect `UI Component Library` to `i18n Messages (auth.*)`, `Architecture Patterns & Conventions`?**
   _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Are the 389 inferred relationships involving `languageTag()` (e.g. with `localizedHref()` and `formatRelative()`) actually correct?**
   _`languageTag()` has 389 INFERRED edges - model-reasoned connections that need verification._

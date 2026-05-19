@@ -141,10 +141,12 @@ export type RepeatCandidate = {
 };
 
 /**
- * `limit` defaults to 5 for the dashboard "Reproposez" suggestions; pass
- * `null` to disable the cap (e.g. the carnet `?repeat=1` filter, which must
- * return every candidate, not the oldest N). Predicate shares constants
- * with findRepeatCandidates — see ./repeat-candidates.
+ * `limit` defaults to 5 as a sane top-N for any future short-list consumer;
+ * pass `null` to disable the cap (e.g. the carnet `?repeat=1` filter, which
+ * must return every candidate, not the oldest N). The dashboard "Reproposez"
+ * cards take a separate JS path through findRepeatCandidates + reminders.ts
+ * rule 6 (capped to 2 cards there), so they do not hit this default.
+ * Predicate shares constants with findRepeatCandidates — see ./repeat-candidates.
  */
 export async function loadRepeatCandidates(
   childId: number,
