@@ -622,6 +622,13 @@ export type ForbiddenFood = {
    * because parents add it as a custom food.
    */
   nameMatchers?: readonly string[];
+  /**
+   * Canonical reminder title rendered when the food is detected in entries.
+   * Required if `nameMatchers` is set; the reminder is keyed off this so the
+   * title authoring stays in the data layer instead of being synthesised at
+   * the call site.
+   */
+  reminderTitle?: string;
   reason: string;
   sources: SourceId[];
 };
@@ -633,6 +640,7 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
     until: '< 12 mois',
     untilMonths: 12,
     nameMatchers: ['miel'],
+    reminderTitle: 'Miel avant 1 an : à éviter',
     reason:
       'Risque de botulisme infantile (Clostridium botulinum). Aucun miel, même cuit, avant 1 an.',
     sources: ['who-cf', 'anses-nourrisson']

@@ -275,7 +275,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
   // (sel, sucre, lait-cru, …) are ingredient-level and aren't catalog-
   // detectable; the guide page surfaces them statically.
   for (const food of FORBIDDEN_FOODS) {
-    if (food.untilMonths == null || !food.nameMatchers || food.nameMatchers.length === 0) continue;
+    if (food.untilMonths == null || !food.nameMatchers || !food.reminderTitle) continue;
     if (input.ageMonths >= food.untilMonths) continue;
     const lcMatchers = food.nameMatchers.map((m) => m.toLowerCase());
     const match = input.entries.find((e) => {
@@ -288,7 +288,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     push(out, input.dismissals, {
       key: `forbidden-reminder:${food.id}`,
       severity: 'important',
-      title: `${token.charAt(0).toUpperCase() + token.slice(1)} avant ${food.untilMonths === 12 ? '1 an' : `${food.untilMonths} mois`} : à éviter`,
+      title: food.reminderTitle,
       body: `Un aliment loggé contient « ${token} ». ${food.reason}`,
       sources: food.sources,
       dismissable: true
