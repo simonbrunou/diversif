@@ -2,7 +2,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
-import { loadTexturesTried } from '$lib/server/guidance/queries';
+import { loadRepeatCandidates, loadTexturesTried } from '$lib/server/guidance/queries';
 import {
   ALLERGENS,
   ALLERGEN_MAINTAIN_DAYS,
@@ -160,23 +160,13 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   }
 
   if (repeat) {
-    // Foods given <= 2 times whose worst reaction is RAS or Inconfort (worth re-exposing).
-    const repeatResult = await db.execute(
-      sql`SELECT food_id FROM (
-            SELECT ${foodEntries.foodId} AS food_id,
-                   COUNT(*) AS n,
-                   MAX(CASE ${foodEntries.reaction}
-                         WHEN 'reaction' THEN 2
-                         WHEN 'inconfort' THEN 1
-                         ELSE 0 END) AS worst
-            FROM ${foodEntries}
-            WHERE ${foodEntries.childId} = ${childId}
-            GROUP BY ${foodEntries.foodId}
-          ) sub
-          WHERE n <= 2 AND worst <= 1`
-    );
-    const repeatRows = repeatResult.rows as Array<{ food_id: number }>;
-    const ids = repeatRows.map((r) => Number(r.food_id));
+    // Foods given <= 2 times whose worst reaction is RAS or Inconfort. Shares
+    // its predicate (and SQL form) with the dashboard "Reproposez" suggestions
+    // via loadRepeatCandidates — see src/lib/server/guidance/repeat-candidates.
+    // Use a generous limit so the carnet filter shows the full set, not just
+    // the dashboard's top 5.
+    const candidates = await loadRepeatCandidates(childId, 1000);
+    const ids = candidates.map((c) => c.foodId);
     if (ids.length === 0) {
       const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
         loadBentoAllergens(childId),
