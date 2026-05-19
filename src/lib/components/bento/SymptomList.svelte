@@ -1,5 +1,6 @@
 <script lang="ts">
   import SymptomRow from './SymptomRow.svelte';
+  import DashedActionRow from '$components/ui/DashedActionRow.svelte';
   import EmptyHint from '$components/ui/EmptyHint.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
@@ -30,12 +31,7 @@
       {/each}
     </ul>
   {/if}
-  <button
-    type="button"
-    onclick={onAdd}
-    class="flex w-full items-center justify-center gap-2 rounded-tile border border-dashed border-border bg-canvas px-3 py-2 text-sm font-semibold text-ink-soft transition-transform duration-base ease-soft active:scale-[0.99]"
-  >
-    <Plus size={16} aria-hidden="true" />
+  <DashedActionRow onclick={onAdd} icon={Plus} class="flex w-full justify-center">
     {m.reactionSymptomsAdd()}
-  </button>
+  </DashedActionRow>
 </section>

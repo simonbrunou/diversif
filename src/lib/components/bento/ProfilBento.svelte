@@ -3,6 +3,7 @@
   import CoparentsSection from './CoparentsSection.svelte';
   import CompteSection from './CompteSection.svelte';
   import RgpdSection from './RgpdSection.svelte';
+  import DashedActionRow from '$components/ui/DashedActionRow.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -34,13 +35,14 @@
     {#each children as child (child.id)}
       <ChildCardRow {child} href={localizedHref(`/child/${child.id}/settings`)} />
     {/each}
-    <a
+    <DashedActionRow
       href={localizedHref('/child/new')}
-      class="flex items-center gap-2 rounded-tile border border-dashed border-border bg-canvas px-4 py-3 text-sm font-semibold text-ink-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+      icon={Plus}
+      iconSize={18}
+      class="flex px-4 py-3"
     >
-      <Plus size={18} aria-hidden="true" />
       {m.profilChildrenAdd()}
-    </a>
+    </DashedActionRow>
   </section>
 
   {#each children as child (child.id)}
