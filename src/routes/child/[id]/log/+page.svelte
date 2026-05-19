@@ -3,6 +3,7 @@
   import Input from '$components/ui/Input.svelte';
   import Label from '$components/ui/Label.svelte';
   import Textarea from '$components/ui/Textarea.svelte';
+  import FormError from '$components/ui/FormError.svelte';
   import FoodCombobox from '$lib/components/FoodCombobox.svelte';
   import ReactionPicker from '$lib/components/ReactionPicker.svelte';
   import TexturePicker from '$lib/components/TexturePicker.svelte';
@@ -113,9 +114,7 @@
     }}
   >
     {#if form?.error}
-      <div class="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-        {form.error}
-      </div>
+      <FormError>{form.error}</FormError>
     {/if}
 
     <FoodCombobox foods={data.foods} {initialFoodId} />

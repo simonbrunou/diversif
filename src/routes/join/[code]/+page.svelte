@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import Button from '$components/ui/Button.svelte';
+  import FormError from '$components/ui/FormError.svelte';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData, PageData } from './$types';
 
@@ -23,9 +24,7 @@
       <p class="mt-2 text-xs text-muted-foreground">Code <span class="font-mono">{data.code}</span></p>
 
       {#if form?.error}
-        <div class="mt-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-          {form.error}
-        </div>
+        <FormError class="mt-4">{form.error}</FormError>
       {/if}
 
       <form method="POST" class="mt-6 flex justify-center gap-2">

@@ -6,37 +6,25 @@
   import { enhance } from '$app/forms';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
+  import { trackSubmission, resolveMessageKey } from '$lib/forms/tracked-enhance';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();
   let changing = $state(false);
-
-  function trackSubmission() {
-    changing = true;
-    return async ({ update }: { update: () => Promise<void> }) => {
-      await update();
-      changing = false;
-    };
-  }
-
-  function resolveKey(key: string): string {
-    const fn = m[key as keyof typeof m] as (() => string) | undefined;
-    return fn?.() ?? /* v8 ignore next */ m.errorsGenericFallback();
-  }
 
   let lastFormSeen: typeof form;
   $effect(() => {
     if (form === lastFormSeen) return;
     lastFormSeen = form;
     if (!form) return;
-    if (form.passwordSuccessKey) toast.success(resolveKey(form.passwordSuccessKey));
-    if (form.passwordErrorKey) toast.error(resolveKey(form.passwordErrorKey));
+    if (form.passwordSuccessKey) toast.success(resolveMessageKey(form.passwordSuccessKey));
+    if (form.passwordErrorKey) toast.error(resolveMessageKey(form.passwordErrorKey));
   });
 </script>
 
 <BackHeader title={m.authAccountPasswordSection()} />
 
-<form method="POST" class="grid gap-4" use:enhance={trackSubmission}>
+<form method="POST" class="grid gap-4" use:enhance={trackSubmission((v) => (changing = v))}>
   <div class="grid gap-1.5">
     <Label for="currentPassword">{m.authAccountCurrentPasswordLabel()}</Label>
     <Input

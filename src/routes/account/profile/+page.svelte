@@ -6,37 +6,25 @@
   import { enhance } from '$app/forms';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
+  import { trackSubmission, resolveMessageKey } from '$lib/forms/tracked-enhance';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let saving = $state(false);
-
-  function trackSubmission() {
-    saving = true;
-    return async ({ update }: { update: () => Promise<void> }) => {
-      await update();
-      saving = false;
-    };
-  }
-
-  function resolveKey(key: string): string {
-    const fn = m[key as keyof typeof m] as (() => string) | undefined;
-    return fn?.() ?? /* v8 ignore next */ m.errorsGenericFallback();
-  }
 
   let lastFormSeen: typeof form;
   $effect(() => {
     if (form === lastFormSeen) return;
     lastFormSeen = form;
     if (!form) return;
-    if (form.profileSuccessKey) toast.success(resolveKey(form.profileSuccessKey));
-    if (form.profileErrorKey) toast.error(resolveKey(form.profileErrorKey));
+    if (form.profileSuccessKey) toast.success(resolveMessageKey(form.profileSuccessKey));
+    if (form.profileErrorKey) toast.error(resolveMessageKey(form.profileErrorKey));
   });
 </script>
 
 <BackHeader title={m.authAccountProfileSection()} />
 
-<form method="POST" class="grid gap-4" use:enhance={trackSubmission}>
+<form method="POST" class="grid gap-4" use:enhance={trackSubmission((v) => (saving = v))}>
   <div class="grid gap-1.5">
     <Label for="displayName">{m.authAccountDisplayNameLabel()}</Label>
     <Input
