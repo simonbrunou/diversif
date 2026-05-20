@@ -44,9 +44,12 @@ COPY priv priv
 COPY lib lib
 COPY assets assets
 
-# Build CSS + JS, digest into priv/static/, compile the app.
-RUN mix assets.deploy
+# `mix compile` MUST run before `mix assets.deploy`: the `:phoenix_live_view`
+# compiler emits colocated JS hooks under
+# `_build/prod/lib/phoenix-colocated/diversif/`, and `app.js` imports that
+# path. Running esbuild first would fail to resolve the import.
 RUN mix compile
+RUN mix assets.deploy
 
 # runtime.exs is evaluated at release boot — copy it last so dev-only edits
 # don't invalidate the compile cache.
@@ -77,7 +80,13 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/diversif ./
 
 # Custom entrypoint runs ecto migrations before exec'ing the release server.
 COPY --chown=nobody:root docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /app/docker-entrypoint.sh
+
+# Belt-and-braces: ensure the entrypoint AND release scripts are executable.
+# `mix phx.gen.release` generates rel/overlays/bin/{migrate,server} without
+# setting the executable bit, and git's filemode tracking is host-dependent.
+# A defensive chmod here means the image works regardless of what got
+# committed.
+RUN chmod +x /app/docker-entrypoint.sh /app/bin/server /app/bin/migrate /app/bin/diversif
 
 USER nobody
 

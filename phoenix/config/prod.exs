@@ -12,9 +12,12 @@ config :diversif, DiversifWeb.Endpoint, cache_static_manifest: "priv/static/cach
 # Note `:force_ssl` is required to be set at compile-time.
 config :diversif, DiversifWeb.Endpoint,
   force_ssl: [
+    hsts: true,
     rewrite_on: [:x_forwarded_proto],
     exclude: [
-      # paths: ["/health"],
+      # /healthz often gets hit over plain HTTP by load-balancer internal
+      # health checks; exclude it so those don't get 301'd.
+      paths: ["/healthz"],
       hosts: ["localhost", "127.0.0.1"]
     ]
   ]

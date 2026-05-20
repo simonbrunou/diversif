@@ -100,14 +100,16 @@ if config_env() == :prod do
       Generate one with: mix phx.gen.secret 32
       """
 
+  # force_ssl lives in prod.exs because Phoenix marks `:force_ssl` as a
+  # compile-time-only config (Application.compile_env). Trying to extend
+  # it here would crash boot with a compile-vs-runtime mismatch.
   config :diversif, DiversifWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
       ip: {0, 0, 0, 0, 0, 0, 0, 0}
     ],
     secret_key_base: secret_key_base,
-    live_view: [signing_salt: live_view_salt],
-    force_ssl: [hsts: true]
+    live_view: [signing_salt: live_view_salt]
 
   # Trust the Cloudflare / proxy chain only when explicitly configured. Read
   # comma-separated CIDRs from TRUSTED_PROXIES, e.g.
