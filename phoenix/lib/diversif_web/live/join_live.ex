@@ -21,11 +21,25 @@ defmodule DiversifWeb.JoinLive do
     case socket.assigns do
       %{invitation: %{} = inv, current_user: %{id: user_id}} ->
         case Children.accept_invitation(inv, user_id) do
-          {:ok, child} ->
+          {:ok, {:joined, child}} ->
             {:noreply,
              socket
              |> put_flash(:info, "Vous suivez maintenant #{child.name}.")
              |> push_navigate(to: ~p"/child/#{child.id}")}
+
+          {:ok, {:already_member, child}} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Vous suivez déjà #{child.name}.")
+             |> push_navigate(to: ~p"/child/#{child.id}")}
+
+          {:error, :race_lost} ->
+            {:noreply,
+             put_flash(
+               socket,
+               :error,
+               "Ce lien d'invitation vient d'être utilisé par quelqu'un d'autre."
+             )}
 
           _ ->
             {:noreply, put_flash(socket, :error, "Invitation invalide.")}

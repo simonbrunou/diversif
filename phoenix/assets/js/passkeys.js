@@ -1,6 +1,8 @@
-// Minimal WebAuthn browser glue. Mirrors what @simplewebauthn/browser does
-// internally (base64url encode/decode + navigator.credentials.create/get) but
-// avoids pulling the npm dep — Phoenix esbuild has no package.json by default.
+// Minimal WebAuthn glue. The server emits / accepts JSON in the same shape
+// that @simplewebauthn/browser uses (base64url for binary fields), so we
+// can roll our own bridge in ~120 lines instead of pulling that dep. Phoenix
+// 1.8 *can* consume npm packages, but every dep we add to assets/package.json
+// is one more thing to keep patched.
 
 const b64urlEncode = (buf) => {
   const bytes = new Uint8Array(buf);
@@ -72,29 +74,45 @@ const encodeAssertion = (cred) => ({
   },
 });
 
-// Hook for "register a new passkey" button. Triggers on click.
+// NotAllowedError + AbortError are what the browser throws when the user
+// cancels the OS prompt or the prompt times out. They're not errors that
+// deserve a scary "Échec" alert.
+const isUserCancellation = (err) =>
+  err && (err.name === "NotAllowedError" || err.name === "AbortError");
+
+// Hook for "register a new passkey" button. Reads the name from a sibling
+// input identified by data-name-input (CSS selector) or falls back to a
+// generic label.
 export const PasskeyRegister = {
   mounted() {
     this.el.addEventListener("click", async (e) => {
       e.preventDefault();
       if (!window.PublicKeyCredential) {
-        alert("Votre navigateur ne prend pas en charge les clés d'accès.");
+        this.pushEvent("passkey:unsupported", {});
         return;
       }
-      const name = this.el.dataset.name || prompt("Nom de cette clé ?") || "Passkey";
+
+      const selector = this.el.dataset.nameInput;
+      const nameField = selector ? document.querySelector(selector) : null;
+      const name = (nameField?.value || "Passkey").trim().slice(0, 80);
+
       this.el.disabled = true;
       try {
         const opts = await postJson("/api/webauthn/registration/options", {});
         const cred = await navigator.credentials.create({
           publicKey: decodePublicKeyOptions(opts),
         });
-        await postJson("/api/webauthn/registration/verify", {
+        const result = await postJson("/api/webauthn/registration/verify", {
           name,
           response: encodeAttestation(cred),
         });
-        window.location.reload();
+        if (nameField) nameField.value = "";
+        // Push the new passkey row up so the LiveView can prepend it without
+        // hard-reloading and dropping our socket.
+        this.pushEvent("passkey:added", { passkey: result.passkey });
       } catch (err) {
-        alert(`Échec de l'enregistrement : ${err.message || err}`);
+        if (isUserCancellation(err)) return;
+        this.pushEvent("passkey:error", { error: err.message || String(err) });
       } finally {
         this.el.disabled = false;
       }
@@ -108,7 +126,7 @@ export const PasskeyAuthenticate = {
     this.el.addEventListener("click", async (e) => {
       e.preventDefault();
       if (!window.PublicKeyCredential) {
-        alert("Votre navigateur ne prend pas en charge les clés d'accès.");
+        this.pushEvent("passkey:unsupported", {});
         return;
       }
       this.el.disabled = true;
@@ -117,9 +135,9 @@ export const PasskeyAuthenticate = {
         const cred = await navigator.credentials.get({
           publicKey: decodePublicKeyOptions(opts),
         });
-        // The verify endpoint sets the session cookie and (on success) issues
-        // a 302 redirect via UserAuth.log_in_user. fetch follows redirects
-        // automatically; we land on the home page.
+        // verify sets the session cookie + returns 302 via UserAuth.log_in_user.
+        // fetch follows redirects; land on the home page (or wherever the
+        // server told us).
         const res = await fetch("/api/webauthn/authentication/verify", {
           method: "POST",
           credentials: "same-origin",
@@ -135,7 +153,8 @@ export const PasskeyAuthenticate = {
           throw new Error(err.error);
         }
       } catch (err) {
-        alert(`Connexion impossible : ${err.message || err}`);
+        if (isUserCancellation(err)) return;
+        this.pushEvent("passkey:error", { error: err.message || String(err) });
       } finally {
         this.el.disabled = false;
       }

@@ -1,8 +1,16 @@
 defmodule Diversif.Webauthn do
   @moduledoc """
-  Port of `src/lib/server/passkeys.ts`. Wire format mirrors
-  `@simplewebauthn/server` so the existing `@simplewebauthn/browser` client lib
-  keeps working unchanged. Crypto verification delegates to `wax_`.
+  WebAuthn / passkey lifecycle. Crypto verification delegates to `wax_`.
+
+  Wire format: same JSON shape that `@simplewebauthn/browser` uses (base64url
+  for binary fields), so the browser-side glue in `assets/js/passkeys.js` is
+  thin and the protocol stays compatible with anything that consumes the
+  simplewebauthn JSON shape.
+
+  Single-use challenge storage uses the `webauthn_challenges` table with an
+  atomic `Repo.delete_all/2 ... select: c` (Postgres `DELETE … RETURNING`
+  semantics) so two concurrent verifies of the same token can't both walk
+  away with a valid challenge.
   """
 
   import Ecto.Query
@@ -52,9 +60,11 @@ defmodule Diversif.Webauthn do
   end
 
   @doc """
-  Atomic single-use consume: DELETE…RETURNING ensures two racing verifies of
-  the same token can't both walk away with a valid challenge. Mirrors the
-  invariant from `src/lib/server/passkeys.ts:consumeChallenge`.
+  Atomic single-use consume. Two racing verifies of the same token can't both
+  walk away with a valid challenge — exactly one gets `{:ok, ...}`, the other
+  gets `:error`. We DELETE on the bare token regardless of purpose/expiry, so
+  hostile callers can't reflexively probe to see what purpose a token is
+  bound to either.
   """
   def consume_challenge(token, purpose)
       when is_binary(token) and purpose in ["registration", "authentication"] do
@@ -160,15 +170,30 @@ defmodule Diversif.Webauthn do
         "created_at" => DateTime.utc_now()
       }
 
-      %Passkey{}
-      |> Passkey.changeset(attrs)
-      |> Repo.insert()
+      case %Passkey{} |> Passkey.changeset(attrs) |> Repo.insert() do
+        {:ok, _} = ok -> ok
+        # Unique-violation on the credential id => already registered. Surface
+        # the dedicated reason so callers can render the right message.
+        {:error, %Ecto.Changeset{errors: errors}} ->
+          if Keyword.has_key?(errors, :id),
+            do: {:error, :credential_already_registered},
+            else: {:error, :persistence_failed}
+      end
     else
-      :error -> {:error, :invalid_challenge}
-      %Passkey{} -> {:error, :credential_already_registered}
-      {:error, %_{} = wax_err} -> {:error, Exception.message(wax_err)}
-      {:error, reason} -> {:error, reason}
-      _ -> {:error, :invalid_response}
+      :error ->
+        {:error, :invalid_challenge}
+
+      %Passkey{} ->
+        {:error, :credential_already_registered}
+
+      {:error, %_{} = wax_err} ->
+        {:error, Exception.message(wax_err)}
+
+      {:error, reason} ->
+        {:error, reason}
+
+      _ ->
+        {:error, :invalid_response}
     end
   end
 
@@ -218,16 +243,28 @@ defmodule Diversif.Webauthn do
              challenge_struct,
              [{credential_id, cose_key}]
            ) do
-      {:ok, updated} =
-        passkey
-        |> Ecto.Changeset.change(%{
-          counter: auth_data.sign_count,
-          backed_up: auth_data.flag.backup_state,
-          last_used_at: DateTime.utc_now()
-        })
-        |> Repo.update()
+      case passkey
+           |> Ecto.Changeset.change(%{
+             counter: auth_data.sign_count,
+             backed_up: auth_data.flag.backup_state,
+             last_used_at: DateTime.utc_now()
+           })
+           |> Repo.update() do
+        {:ok, updated} ->
+          {:ok, %{passkey: updated, user_id: passkey.user_id}}
 
-      {:ok, %{passkey: updated, user_id: passkey.user_id}}
+        {:error, cs} ->
+          # Persistence failure after a successful crypto verify is a server
+          # problem, not an auth failure. Log and surface a distinct error so
+          # the user retries instead of re-running the WebAuthn ceremony.
+          require Logger
+
+          Logger.error(
+            "passkey.counter_update_failed: #{inspect(cs.errors)} credential=#{credential_id}"
+          )
+
+          {:error, :persistence_failed}
+      end
     else
       :error -> {:error, @generic_auth_error}
       :no_credential -> {:error, @generic_auth_error}
@@ -236,9 +273,12 @@ defmodule Diversif.Webauthn do
     end
   end
 
-  # Decoy ECDSA verify so wall-clock time of "no such credential" matches
-  # "credential found, signature wrong". Returns :no_credential to short-circuit
-  # the `with`. Mirrors `timingDecoyVerify` from the SvelteKit port.
+  # Defends against credential-id enumeration via response timing. Burns the
+  # CPU equivalent of a real ECDSA verify so "no such credential" can't be
+  # told apart from "credential found, signature wrong" at the wall-clock
+  # level. The returned :no_credential short-circuits the `with` and reaches
+  # the generic-error branch (same message as a real-verify failure — content
+  # parity matters as much as timing).
   defp run_timing_decoy do
     {public_key, _private_key} = :crypto.generate_key(:ecdh, :secp256r1)
     sig = :crypto.strong_rand_bytes(64)
@@ -246,7 +286,13 @@ defmodule Diversif.Webauthn do
     try do
       :crypto.verify(:ecdsa, :sha256, :crypto.strong_rand_bytes(32), sig, [public_key, :secp256r1])
     rescue
-      _ -> :ok
+      # :crypto.verify raises on some malformed sigs (and on FIPS/curve issues
+      # in future OTP releases). Scope to argument-shape errors and log if the
+      # mitigation breaks so an operator notices before pentest does.
+      e in [ArgumentError, ErlangError] ->
+        require Logger
+        Logger.warning("webauthn.timing_decoy_failed: #{Exception.message(e)}")
+        :ok
     end
 
     :no_credential

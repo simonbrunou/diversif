@@ -31,10 +31,5 @@ defmodule DiversifWeb.RegistrationController do
     end
   end
 
-  defp client_ip(conn) do
-    case get_req_header(conn, "x-forwarded-for") do
-      [val | _] -> val |> String.split(",") |> List.first() |> String.trim()
-      _ -> conn.remote_ip |> :inet.ntoa() |> to_string()
-    end
-  end
+  defp client_ip(conn), do: DiversifWeb.RemoteIp.from_conn(conn)
 end

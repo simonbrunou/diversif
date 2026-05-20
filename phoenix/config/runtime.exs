@@ -86,16 +86,35 @@ if config_env() == :prod do
 
   config :diversif, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  live_view_salt =
+    System.get_env("LIVE_VIEW_SIGNING_SALT") ||
+      raise """
+      environment variable LIVE_VIEW_SIGNING_SALT is missing.
+      Generate one with: mix phx.gen.secret 32
+      """
+
   config :diversif, DiversifWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
-      # Enable IPv6 and bind on all interfaces.
-      # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
-      # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
-      # for details about using IPv6 vs IPv4 and loopback vs public addresses.
       ip: {0, 0, 0, 0, 0, 0, 0, 0}
     ],
-    secret_key_base: secret_key_base
+    secret_key_base: secret_key_base,
+    live_view: [signing_salt: live_view_salt],
+    force_ssl: [hsts: true]
+
+  # Trust the Cloudflare / proxy chain only when explicitly configured. Read
+  # comma-separated CIDRs from TRUSTED_PROXIES, e.g.
+  # "173.245.48.0/20,103.21.244.0/22,...". An empty / missing value falls
+  # back to "trust nothing" and the rate limiter / audit keys on
+  # conn.remote_ip — the secure default for a direct-deploy.
+  trusted_proxies =
+    case System.get_env("TRUSTED_PROXIES") do
+      nil -> []
+      "" -> []
+      raw -> raw |> String.split(",") |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
+    end
+
+  config :diversif, :trusted_proxies, trusted_proxies
 
   # ## SSL Support
   #

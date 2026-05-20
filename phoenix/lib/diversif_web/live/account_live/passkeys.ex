@@ -12,16 +12,6 @@ defmodule DiversifWeb.AccountLive.Passkeys do
   end
 
   @impl true
-  def handle_event("rename", %{"id" => id, "name" => name}, socket) do
-    user_id = socket.assigns.current_user.id
-
-    if Webauthn.rename_passkey(user_id, id, name) do
-      {:noreply, assign(socket, :passkeys, Webauthn.list_passkeys(user_id))}
-    else
-      {:noreply, put_flash(socket, :error, "Renommage impossible.")}
-    end
-  end
-
   def handle_event("delete", %{"id" => id}, socket) do
     user_id = socket.assigns.current_user.id
 
@@ -35,6 +25,24 @@ defmodule DiversifWeb.AccountLive.Passkeys do
     end
   end
 
+  # The JS hook bubbles up these events after the WebAuthn ceremony lands so
+  # we can refresh the list without a full page reload.
+  def handle_event("passkey:added", _payload, socket) do
+    {:noreply,
+     socket
+     |> assign(:passkeys, Webauthn.list_passkeys(socket.assigns.current_user.id))
+     |> put_flash(:info, "Clé enregistrée.")}
+  end
+
+  def handle_event("passkey:error", %{"error" => msg}, socket) do
+    {:noreply, put_flash(socket, :error, "Échec de l'enregistrement : #{msg}")}
+  end
+
+  def handle_event("passkey:unsupported", _payload, socket) do
+    {:noreply,
+     put_flash(socket, :error, "Votre navigateur ne prend pas en charge les clés d'accès.")}
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -45,14 +53,27 @@ defmodule DiversifWeb.AccountLive.Passkeys do
         Une clé d'accès vous permet de vous connecter sans mot de passe.
       </p>
 
-      <button
-        type="button"
-        id="passkey-register-btn"
-        phx-hook="PasskeyRegister"
-        class="rounded bg-zinc-900 text-white px-3 py-2 text-sm font-medium mb-6"
-      >
-        Enregistrer une nouvelle clé
-      </button>
+      <div class="rounded border border-zinc-200 p-4 mb-6">
+        <label for="passkey-name" class="block text-sm font-medium mb-1">
+          Nom de l'appareil
+        </label>
+        <input
+          type="text"
+          id="passkey-name"
+          placeholder="iPhone, MacBook…"
+          maxlength="80"
+          class="w-full rounded border border-zinc-300 px-3 py-2 mb-3"
+        />
+        <button
+          type="button"
+          id="passkey-register-btn"
+          phx-hook="PasskeyRegister"
+          data-name-input="#passkey-name"
+          class="rounded bg-zinc-900 text-white px-3 py-2 text-sm font-medium"
+        >
+          Enregistrer cette clé
+        </button>
+      </div>
 
       <div :if={@passkeys == []} class="rounded border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500">
         Aucune clé enregistrée.

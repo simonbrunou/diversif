@@ -24,11 +24,19 @@ defmodule Diversif.Logbook.Symptom do
 
   def changeset(symptom, attrs) do
     symptom
-    |> cast(attrs, [:food_entry_id, :child_id, :observed_at, :label, :note, :created_by])
-    |> validate_required([:food_entry_id, :child_id, :observed_at, :label])
+    |> cast(attrs, [:food_entry_id, :child_id, :observed_at, :label, :note, :created_by, :created_at])
+    |> put_change_if_missing(:created_at, DateTime.utc_now())
+    |> validate_required([:food_entry_id, :child_id, :observed_at, :label, :created_at])
     |> validate_inclusion(:label, @labels)
     |> foreign_key_constraint(:food_entry_id)
     |> foreign_key_constraint(:child_id)
     |> foreign_key_constraint(:created_by)
+  end
+
+  defp put_change_if_missing(changeset, field, value) do
+    case Ecto.Changeset.get_field(changeset, field) do
+      nil -> Ecto.Changeset.put_change(changeset, field, value)
+      _ -> changeset
+    end
   end
 end

@@ -163,7 +163,10 @@ defmodule Diversif.Repo.Migrations.InitialSchema do
       add :observed_at, :utc_datetime_usec, null: false
       add :label, :text, null: false
       add :note, :text
-      add :created_at, :utc_datetime_usec, null: false, default: fragment("now()")
+      # All other timestamps are stamped app-side from DateTime.utc_now/0; we
+      # don't want a SQL default here so audit ordering is consistent across
+      # tables even when the DB clock drifts from the app server clock.
+      add :created_at, :utc_datetime_usec, null: false
       add :created_by, references(:users, on_delete: :nilify_all)
     end
 

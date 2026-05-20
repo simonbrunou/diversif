@@ -21,7 +21,14 @@ defmodule DiversifWeb.AccountLive.Sessions do
   def handle_event("revoke", %{"id" => token}, socket) do
     user_id = socket.assigns.current_user.id
 
-    Repo.delete_all(from s in Session, where: s.id == ^token and s.user_id == ^user_id)
+    {n, _} =
+      Repo.delete_all(from s in Session, where: s.id == ^token and s.user_id == ^user_id)
+
+    # Kick any live socket bound to this token so the revoked device doesn't
+    # keep its LiveView WS up until its next HTTP request.
+    if n > 0 do
+      DiversifWeb.Endpoint.broadcast("users_sessions:#{token}", "disconnect", %{})
+    end
 
     {:noreply,
      socket

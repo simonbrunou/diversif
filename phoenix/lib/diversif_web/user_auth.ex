@@ -59,8 +59,16 @@ defmodule DiversifWeb.UserAuth do
       {:ok, %{user: user}} ->
         assign(conn, :current_user, user)
 
-      _ ->
+      nil ->
+        # No token: no-op assign (don't churn the session cookie).
         assign(conn, :current_user, nil)
+
+      _stale ->
+        # Token present but invalid (expired, revoked, deleted). Scrub it so
+        # subsequent requests don't re-hit the DB with the same dead value.
+        conn
+        |> delete_session(:user_token)
+        |> assign(:current_user, nil)
     end
   end
 

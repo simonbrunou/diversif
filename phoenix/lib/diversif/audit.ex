@@ -4,11 +4,11 @@ defmodule Diversif.Audit do
   account deletion, passkey ops, invite acceptance). Port of
   `src/lib/server/audit.ts` reduced to the minimum useful set.
 
-  All writes go via `record/3`; never read back from app code (the table is for
-  incident response, not feature logic).
+  Writes go via `record/3`. Reads exist (`count_recent/3`) only for
+  abuse-detection counters — never let business logic depend on them.
   """
 
-  import Ecto.Query
+  require Logger
 
   alias Diversif.Repo
 
@@ -27,15 +27,24 @@ defmodule Diversif.Audit do
     Repo.insert_all(@table, [row])
     :ok
   rescue
-    # Audit MUST never break the path that called it. Worst case we lose a row.
-    _ -> :ok
+    # The contract is "audit MUST never break the caller" — so we eat DB
+    # failures. But naked `_` would also swallow `ArgumentError` from a bad
+    # meta map (a developer bug we want to crash on in dev/test). Scope the
+    # rescue and log so a degraded Postgres at the worst moment (deploy,
+    # incident) doesn't vanish from telemetry.
+    e in [DBConnection.ConnectionError, Postgrex.Error, Ecto.QueryError] ->
+      Logger.error("audit.record dropped: #{Exception.message(e)} event=#{event}")
+      :ok
   end
 
   @doc """
   Count records matching event within the last `seconds`, optionally filtered
-  by IP. Powers basic rate-limit checks.
+  by IP. Powers abuse-detection counters in admin/observability tooling.
+  Not used as a security gate — see `DiversifWeb.Plugs.RateLimit` for that.
   """
   def count_recent(event, seconds, opts \\ []) do
+    import Ecto.Query
+
     since = DateTime.utc_now() |> DateTime.add(-seconds, :second)
     ip = opts[:ip]
 

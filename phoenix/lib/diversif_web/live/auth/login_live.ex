@@ -3,7 +3,10 @@ defmodule DiversifWeb.AuthLive.Login do
 
   @impl true
   def mount(_params, _session, socket) do
-    form = to_form(%{"email" => "", "password" => ""}, as: :session)
+    # The login controller stuffs the failed email into the :email flash on
+    # bad credentials so the user doesn't have to retype it.
+    email = Phoenix.Flash.get(socket.assigns.flash, :email) || ""
+    form = to_form(%{"email" => email, "password" => ""}, as: :session)
 
     {:ok,
      socket
@@ -17,10 +20,23 @@ defmodule DiversifWeb.AuthLive.Login do
     {:noreply, assign(socket, :form, to_form(params, as: :session))}
   end
 
+  def handle_event("passkey:unsupported", _, socket) do
+    {:noreply,
+     put_flash(socket, :error, "Votre navigateur ne prend pas en charge les clés d'accès.")}
+  end
+
+  def handle_event("passkey:error", %{"error" => msg}, socket) do
+    {:noreply, put_flash(socket, :error, "Connexion impossible : #{msg}")}
+  end
+
   def handle_event("submit", %{"session" => params}, socket) do
+    # Echo only the email back to the form — never the password. Otherwise the
+    # plaintext sits in socket.assigns and surfaces in crash dumps / dev tools.
+    safe = %{"email" => params["email"], "password" => ""}
+
     {:noreply,
      socket
-     |> assign(:form, to_form(params, as: :session))
+     |> assign(:form, to_form(safe, as: :session))
      |> assign(:trigger_submit, true)}
   end
 
@@ -35,7 +51,6 @@ defmodule DiversifWeb.AuthLive.Login do
           for={@form}
           action={~p"/login"}
           method="post"
-          phx-change="validate"
           phx-submit="submit"
           phx-trigger-action={@trigger_submit}
           class="space-y-4"
@@ -73,6 +88,10 @@ defmodule DiversifWeb.AuthLive.Login do
         >
           Se connecter avec une clé d'accès
         </button>
+
+        <p :if={Phoenix.Flash.get(@flash, :passkey_error)} class="mt-2 text-sm text-rose-700">
+          {Phoenix.Flash.get(@flash, :passkey_error)}
+        </p>
 
         <p class="mt-6 text-sm text-zinc-600">
           Pas encore de compte ?

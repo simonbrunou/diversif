@@ -86,26 +86,46 @@ defmodule Diversif.Children do
     now = DateTime.utc_now()
     expires_at = DateTime.add(now, @invite_duration_seconds, :second)
 
-    Enum.reduce_while(1..5, nil, fn _, _ ->
-      code = Invites.generate_code()
+    result =
+      Enum.reduce_while(1..5, {:error, :code_exhausted}, fn _, _ ->
+        code = Invites.generate_code()
 
-      changeset =
-        Invitation.changeset(%Invitation{}, %{
-          "code" => code,
-          "child_id" => child_id,
-          "created_by" => created_by,
-          "created_at" => now,
-          "expires_at" => expires_at
-        })
+        changeset =
+          Invitation.changeset(%Invitation{}, %{
+            "code" => code,
+            "child_id" => child_id,
+            "created_by" => created_by,
+            "created_at" => now,
+            "expires_at" => expires_at
+          })
 
-      case Repo.insert(changeset) do
-        {:ok, _} -> {:halt, {:ok, code}}
-        {:error, %{errors: [code: {"has already been taken", _}]}} -> {:cont, nil}
-        {:error, cs} -> {:halt, {:error, cs}}
-      end
-    end)
+        case Repo.insert(changeset) do
+          {:ok, _} ->
+            {:halt, {:ok, code}}
+
+          # Match the unique_constraint on :code regardless of the exact
+          # message text (Ecto's "has already been taken" is conventional but
+          # not load-bearing).
+          {:error, %Ecto.Changeset{} = cs} ->
+            if Keyword.has_key?(cs.errors, :code),
+              do: {:cont, {:error, :code_exhausted}},
+              else: {:halt, {:error, cs}}
+        end
+      end)
+
+    if match?({:error, :code_exhausted}, result) do
+      require Logger
+      Logger.warning("invite.code_exhausted child_id=#{child_id}")
+    end
+
+    result
   end
 
+  @doc """
+  Look up an invitation by code. Returns the row only when it's unused and
+  unexpired — callers can therefore treat a `nil` result as "not actionable"
+  without re-checking the time/used columns.
+  """
   def find_invitation(code) when is_binary(code) do
     case Repo.get(Invitation, code) do
       nil -> nil
@@ -116,8 +136,17 @@ defmodule Diversif.Children do
   end
 
   @doc """
-  Accept an invitation: marks it used AND inserts the membership in a single
-  transaction. Returns the child the user now belongs to.
+  Accept an invitation. Two outcomes in one transaction:
+
+  * Not-yet-member: insert the membership and mark the invite used.
+  * Already-member: no-op (the user's membership stays as-is and the
+    invitation is NOT consumed, so it remains valid for someone else).
+
+  Returns `{:ok, {:joined | :already_member, %Child{}}}` on success, or
+  `{:error, :race_lost}` if a concurrent acceptance burned the invite
+  between `find_invitation/1` and the `update_all`. Older `{1, _} = ...`
+  shape would `MatchError` and 500 in that race; this is the documented
+  path that lets the caller render a friendly toast.
   """
   def accept_invitation(%Invitation{} = inv, user_id) when is_integer(user_id) do
     now = DateTime.utc_now()
@@ -135,17 +164,22 @@ defmodule Diversif.Children do
             })
             |> Repo.insert()
 
-          :ok
+          {n, _} =
+            from(i in Invitation, where: i.code == ^inv.code and is_nil(i.used_at))
+            |> Repo.update_all(set: [used_at: now, used_by: user_id])
 
-        _existing ->
-          :already_member
+          if n == 0 do
+            # Someone else consumed the invite between our find and update.
+            # Roll back the membership so we don't grant access on a now-
+            # invalid token.
+            Repo.rollback(:race_lost)
+          else
+            {:joined, get_child(inv.child_id)}
+          end
+
+        %Membership{} ->
+          {:already_member, get_child(inv.child_id)}
       end
-
-      {1, _} =
-        from(i in Invitation, where: i.code == ^inv.code and is_nil(i.used_at))
-        |> Repo.update_all(set: [used_at: now, used_by: user_id])
-
-      get_child(inv.child_id)
     end)
   end
 end

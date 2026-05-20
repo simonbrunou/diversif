@@ -123,10 +123,13 @@ defmodule DiversifWeb.WebauthnController do
   # ---------------------------------------------------------------------------
 
   defp put_challenge_cookie(conn, token) do
+    # Strict — no legitimate cross-site flow needs this cookie. The WebAuthn
+    # ceremony always happens on our origin and the browser submits the
+    # verify call from the same tab.
     put_resp_cookie(conn, @challenge_cookie, token,
       sign: false,
       encrypt: false,
-      same_site: "Lax",
+      same_site: "Strict",
       http_only: true,
       secure: conn.scheme == :https,
       max_age: @challenge_max_age
@@ -134,7 +137,7 @@ defmodule DiversifWeb.WebauthnController do
   end
 
   defp clear_challenge_cookie(conn) do
-    delete_resp_cookie(conn, @challenge_cookie, same_site: "Lax")
+    delete_resp_cookie(conn, @challenge_cookie, same_site: "Strict")
   end
 
   defp format_error(msg) when is_binary(msg), do: msg

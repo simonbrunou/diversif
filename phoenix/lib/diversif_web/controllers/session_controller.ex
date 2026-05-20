@@ -13,6 +13,7 @@ defmodule DiversifWeb.SessionController do
 
         conn
         |> put_flash(:error, "Adresse e-mail ou mot de passe incorrect.")
+        |> put_flash(:email, email || "")
         |> redirect(to: ~p"/login")
 
       user ->
@@ -31,10 +32,5 @@ defmodule DiversifWeb.SessionController do
     |> UserAuth.log_out_user()
   end
 
-  defp client_ip(conn) do
-    case get_req_header(conn, "x-forwarded-for") do
-      [val | _] -> val |> String.split(",") |> List.first() |> String.trim()
-      _ -> conn.remote_ip |> :inet.ntoa() |> to_string()
-    end
-  end
+  defp client_ip(conn), do: DiversifWeb.RemoteIp.from_conn(conn)
 end

@@ -30,8 +30,16 @@ defmodule DiversifWeb.SiteController do
     |> send_resp(200, body)
   end
 
-  defp base_url(conn) do
-    scheme = if conn.scheme == :https, do: "https", else: "http"
-    "#{scheme}://#{conn.host}"
+  # Pull the canonical scheme/host from Endpoint config instead of the request
+  # Host header so a hostile `Host: evil.example` can't poison the sitemap.
+  defp base_url(_conn) do
+    %URI{scheme: scheme, host: host, port: port} =
+      DiversifWeb.Endpoint.struct_url()
+
+    case {scheme, port} do
+      {"http", 80} -> "http://#{host}"
+      {"https", 443} -> "https://#{host}"
+      _ -> "#{scheme}://#{host}:#{port}"
+    end
   end
 end

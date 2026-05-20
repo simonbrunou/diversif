@@ -70,29 +70,24 @@ defmodule Diversif.Logbook do
   # ---------------------------------------------------------------------------
 
   def stats_for_child(child_id) when is_integer(child_id) do
-    %{
-      entry_count: Repo.one(from e in FoodEntry, where: e.child_id == ^child_id, select: count()),
-      distinct_foods:
-        Repo.one(
-          from e in FoodEntry,
-            where: e.child_id == ^child_id,
-            select: count(e.food_id, :distinct)
-        ),
-      distinct_categories:
-        Repo.one(
-          from e in FoodEntry,
-            join: f in assoc(e, :food),
-            where: e.child_id == ^child_id and f.category != "autre",
-            select: count(f.category, :distinct)
-        ),
-      distinct_allergens:
-        Repo.one(
-          from e in FoodEntry,
-            join: f in assoc(e, :food),
-            where: e.child_id == ^child_id and not is_nil(f.allergen_type),
-            select: count(f.allergen_type, :distinct)
-        )
-    }
+    # One round-trip instead of four. Postgres can compute these aggregates
+    # in a single sequential scan over the child's food_entries.
+    Repo.one(
+      from e in FoodEntry,
+        left_join: f in assoc(e, :food),
+        where: e.child_id == ^child_id,
+        select: %{
+          entry_count: count(e.id),
+          distinct_foods: count(e.food_id, :distinct),
+          distinct_categories:
+            fragment(
+              "count(distinct case when ? <> 'autre' then ? end)",
+              f.category,
+              f.category
+            ),
+          distinct_allergens: count(f.allergen_type, :distinct)
+        }
+    ) || %{entry_count: 0, distinct_foods: 0, distinct_categories: 0, distinct_allergens: 0}
   end
 
   @doc """
@@ -119,31 +114,21 @@ defmodule Diversif.Logbook do
 
   @doc """
   Reaction-report data: every entry that has either a non-"ras" reaction or
-  one+ associated symptom. Suitable for the printable medical report.
+  one+ associated symptom. Single query — uses EXISTS instead of two passes
+  + Elixir merge so the SQL planner stays in charge.
   """
   def reaction_report_for_child(child_id) when is_integer(child_id) do
-    entries =
-      Repo.all(
-        from e in FoodEntry,
-          where: e.child_id == ^child_id and e.reaction != "ras",
-          order_by: [desc: e.given_at],
-          preload: [:food, :symptoms]
-      )
+    sym = from(s in Symptom, where: s.food_entry_id == parent_as(:entry).id)
 
-    with_symptoms =
-      Repo.all(
-        from e in FoodEntry,
-          join: s in Symptom,
-          on: s.food_entry_id == e.id,
-          where: e.child_id == ^child_id and e.reaction == "ras",
-          distinct: e.id,
-          order_by: [desc: e.given_at],
-          preload: [:food, :symptoms]
-      )
-
-    (entries ++ with_symptoms)
-    |> Enum.uniq_by(& &1.id)
-    |> Enum.sort_by(& &1.given_at, {:desc, DateTime})
+    Repo.all(
+      from e in FoodEntry,
+        as: :entry,
+        where:
+          e.child_id == ^child_id and
+            (e.reaction != "ras" or exists(sym)),
+        order_by: [desc: e.given_at],
+        preload: [:food, :symptoms]
+    )
   end
 
   @doc """
@@ -154,15 +139,20 @@ defmodule Diversif.Logbook do
     eaten_food_ids =
       from(e in FoodEntry, where: e.child_id == ^child_id, select: e.food_id, distinct: true)
 
+    # Include this child's own custom foods alongside the global catalog, so
+    # a parent's "Brocoli bio" suggestion shows up under the child it was
+    # created for. Custom foods scoped to OTHER children stay invisible.
     Repo.all(
       from f in Food,
-        where: f.is_custom == false and f.id not in subquery(eaten_food_ids),
+        where:
+          (f.is_custom == false or f.custom_for_child_id == ^child_id) and
+            f.id not in subquery(eaten_food_ids),
         order_by: [asc: f.suggested_age_months, asc: f.name]
     )
   end
 
   def update_entry(%FoodEntry{} = entry, attrs) do
-    entry |> FoodEntry.changeset(attrs) |> Repo.update()
+    entry |> FoodEntry.update_changeset(attrs) |> Repo.update()
   end
 
   # ---------------------------------------------------------------------------

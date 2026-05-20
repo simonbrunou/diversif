@@ -42,4 +42,17 @@ defmodule Diversif.Logbook.FoodEntry do
     |> foreign_key_constraint(:food_id)
     |> foreign_key_constraint(:logged_by)
   end
+
+  @doc """
+  Sparse changeset for the Edit LiveView. Only mutates user-editable fields;
+  intentionally skips `validate_required` on child_id/food_id/created_at so
+  a partial form submit doesn't blank them.
+  """
+  def update_changeset(entry, attrs) do
+    entry
+    |> cast(attrs, [:given_at, :reaction, :texture, :notes])
+    |> validate_required([:given_at, :reaction])
+    |> validate_inclusion(:reaction, @reactions)
+    |> validate_inclusion(:texture, @textures)
+  end
 end

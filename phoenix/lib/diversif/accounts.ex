@@ -130,7 +130,18 @@ defmodule Diversif.Accounts do
   def delete_session(_), do: :ok
 
   def delete_all_user_sessions(user_id) when is_integer(user_id) do
+    tokens =
+      Repo.all(from s in Session, where: s.user_id == ^user_id, select: s.id)
+
     Repo.delete_all(from s in Session, where: s.user_id == ^user_id)
+
+    # Kick every live socket bound to one of those tokens — otherwise the user's
+    # other tabs keep their LV connection open until the next HTTP roundtrip
+    # validates the now-missing session.
+    Enum.each(tokens, fn t ->
+      DiversifWeb.Endpoint.broadcast("users_sessions:#{t}", "disconnect", %{})
+    end)
+
     :ok
   end
 
