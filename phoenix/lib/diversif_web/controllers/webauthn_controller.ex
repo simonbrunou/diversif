@@ -148,15 +148,15 @@ defmodule DiversifWeb.WebauthnController do
     delete_resp_cookie(conn, @challenge_cookie, same_site: "Strict")
   end
 
-  # Atom reasons get mapped to French copy here — they end up in toast / flash
-  # in the UI. wax_'s exception messages are still surfaced verbatim because
-  # they're already specific (and not user-facing in the strict sense; they
-  # appear as a developer hint in case of a misconfigured RP-ID etc.).
-  defp format_error(:invalid_challenge), do: "Le défi de sécurité a expiré. Réessayez."
-  defp format_error(:invalid_response), do: "Réponse invalide."
-  defp format_error(:persistence_failed), do: "Enregistrement impossible. Réessayez."
-  defp format_error(:missing_field), do: "Réponse incomplète."
+  # Atom reasons get mapped to localised copy here — they end up in toast /
+  # flash in the UI. wax_'s exception messages are surfaced verbatim because
+  # they're already specific (and read more like a developer hint if a
+  # misconfigured RP-ID or origin ever surfaces in production).
+  defp format_error(:invalid_challenge), do: gettext("Le défi de sécurité a expiré. Réessayez.")
+  defp format_error(:invalid_response), do: gettext("Réponse invalide.")
+  defp format_error(:persistence_failed), do: gettext("Enregistrement impossible. Réessayez.")
+  defp format_error(:missing_field), do: gettext("Réponse incomplète.")
   defp format_error(msg) when is_binary(msg), do: msg
   defp format_error(atom) when is_atom(atom), do: Atom.to_string(atom)
-  defp format_error(_), do: "Vérification impossible."
+  defp format_error(_), do: gettext("Vérification impossible.")
 end

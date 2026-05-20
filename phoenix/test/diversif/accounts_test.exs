@@ -48,6 +48,42 @@ defmodule Diversif.AccountsTest do
                  "correcthorsebatterystaple"
                )
     end
+
+    test "decoy verify is invoked when user is missing AND when password is wrong" do
+      # Telemetry attach is the regression net for the timing mitigation —
+      # a future refactor that drops Argon2.no_user_verify would still pass
+      # the value-based tests above (both return nil) but would silently
+      # remove the side-channel defense. The event has to fire for both
+      # failure modes.
+      test_pid = self()
+      handler_id = "test-#{System.unique_integer([:positive])}"
+
+      :telemetry.attach(
+        handler_id,
+        [:diversif, :accounts, :login, :decoy_verify],
+        fn _event, _measure, meta, _config -> send(test_pid, {:decoy, meta}) end,
+        nil
+      )
+
+      register_user(%{"email" => "decoy-existing@diversif.test"})
+
+      # Unknown email: meta says user didn't exist.
+      assert nil ==
+               Accounts.get_user_by_email_and_password("unknown@diversif.test", "x")
+
+      assert_receive {:decoy, %{user_existed: false}}, 1000
+
+      # Wrong password for existing user: meta says user existed.
+      assert nil ==
+               Accounts.get_user_by_email_and_password(
+                 "decoy-existing@diversif.test",
+                 "wrong-password!"
+               )
+
+      assert_receive {:decoy, %{user_existed: true}}, 1000
+
+      :telemetry.detach(handler_id)
+    end
   end
 
   describe "validate_session/1" do

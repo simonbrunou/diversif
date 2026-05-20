@@ -8,6 +8,7 @@ defmodule DiversifWeb.UserAuth do
   """
 
   use DiversifWeb, :verified_routes
+  use Gettext, backend: DiversifWeb.Gettext
 
   import Plug.Conn
   import Phoenix.Controller
@@ -80,7 +81,7 @@ defmodule DiversifWeb.UserAuth do
     else
       conn
       |> maybe_store_return_to()
-      |> put_flash(:error, "Vous devez être connecté pour accéder à cette page.")
+      |> put_flash(:error, gettext("Vous devez être connecté pour accéder à cette page."))
       |> redirect(to: ~p"/login")
       |> halt()
     end
@@ -110,7 +111,7 @@ defmodule DiversifWeb.UserAuth do
     else
       {:halt,
        socket
-       |> LiveView.put_flash(:error, "Vous devez être connecté.")
+       |> LiveView.put_flash(:error, gettext("Vous devez être connecté."))
        |> LiveView.redirect(to: ~p"/login")}
     end
   end

@@ -10,7 +10,7 @@ defmodule DiversifWeb.AuthLive.Login do
 
     {:ok,
      socket
-     |> assign(:page_title, "Se connecter")
+     |> assign(:page_title, gettext("Se connecter"))
      |> assign(:trigger_submit, false)
      |> assign(:form, form)}
   end
@@ -18,11 +18,15 @@ defmodule DiversifWeb.AuthLive.Login do
   @impl true
   def handle_event("passkey:unsupported", _, socket) do
     {:noreply,
-     put_flash(socket, :error, "Votre navigateur ne prend pas en charge les clés d'accès.")}
+     put_flash(
+       socket,
+       :error,
+       gettext("Votre navigateur ne prend pas en charge les clés d'accès.")
+     )}
   end
 
   def handle_event("passkey:error", %{"error" => msg}, socket) do
-    {:noreply, put_flash(socket, :error, "Connexion impossible : #{msg}")}
+    {:noreply, put_flash(socket, :error, gettext("Connexion impossible : %{msg}", msg: msg))}
   end
 
   def handle_event("submit", _params, socket) do
@@ -40,7 +44,7 @@ defmodule DiversifWeb.AuthLive.Login do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="mx-auto max-w-sm">
-        <h1 class="text-2xl font-semibold mb-6">Se connecter</h1>
+        <h1 class="text-2xl font-semibold mb-6">{gettext("Se connecter")}</h1>
 
         <.form
           for={@form}
@@ -53,25 +57,25 @@ defmodule DiversifWeb.AuthLive.Login do
           <.input
             field={@form[:email]}
             type="email"
-            label="Adresse e-mail"
+            label={gettext("Adresse e-mail")}
             autocomplete="username webauthn"
             required
           />
           <.input
             field={@form[:password]}
             type="password"
-            label="Mot de passe"
+            label={gettext("Mot de passe")}
             autocomplete="current-password"
             required
           />
           <button type="submit" class="w-full rounded bg-zinc-900 text-white py-2 font-medium">
-            Se connecter
+            {gettext("Se connecter")}
           </button>
         </.form>
 
         <div class="my-4 flex items-center gap-3">
           <span class="flex-1 border-t border-zinc-200"></span>
-          <span class="text-xs uppercase tracking-wide text-zinc-500">ou</span>
+          <span class="text-xs uppercase tracking-wide text-zinc-500">{gettext("ou")}</span>
           <span class="flex-1 border-t border-zinc-200"></span>
         </div>
 
@@ -81,7 +85,7 @@ defmodule DiversifWeb.AuthLive.Login do
           phx-hook="PasskeyAuthenticate"
           class="w-full rounded border border-zinc-300 py-2 font-medium"
         >
-          Se connecter avec une clé d'accès
+          {gettext("Se connecter avec une clé d'accès")}
         </button>
 
         <p :if={Phoenix.Flash.get(@flash, :passkey_error)} class="mt-2 text-sm text-rose-700">
@@ -89,8 +93,8 @@ defmodule DiversifWeb.AuthLive.Login do
         </p>
 
         <p class="mt-6 text-sm text-zinc-600">
-          Pas encore de compte ?
-          <.link navigate={~p"/signup"} class="underline">Créer un compte</.link>
+          {gettext("Pas encore de compte ?")}
+          <.link navigate={~p"/signup"} class="underline">{gettext("Créer un compte")}</.link>
         </p>
       </div>
     </Layouts.app>

@@ -9,7 +9,7 @@ defmodule DiversifWeb.HomeLive do
 
     {:ok,
      socket
-     |> assign(:page_title, "Mes enfants")
+     |> assign(:page_title, gettext("Mes enfants"))
      |> assign(:children_rows, rows)}
   end
 
@@ -18,24 +18,24 @@ defmodule DiversifWeb.HomeLive do
     ~H"""
     <Layouts.app flash={@flash} current_user={@current_user}>
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-semibold">Mes enfants</h1>
+        <h1 class="text-2xl font-semibold">{gettext("Mes enfants")}</h1>
         <.link
           navigate={~p"/child/new"}
           class="rounded bg-zinc-900 text-white px-3 py-2 text-sm font-medium"
         >
-          Ajouter un enfant
+          {gettext("Ajouter un enfant")}
         </.link>
       </div>
 
       <div :if={@children_rows == []} class="rounded border border-dashed border-zinc-300 p-8 text-center">
         <p class="text-zinc-600 mb-4">
-          Aucun enfant pour l'instant. Créez-en un pour commencer le suivi.
+          {gettext("Aucun enfant pour l'instant. Créez-en un pour commencer le suivi.")}
         </p>
         <.link
           navigate={~p"/child/new"}
           class="inline-block rounded bg-zinc-900 text-white px-4 py-2 font-medium"
         >
-          Créer un enfant
+          {gettext("Créer un enfant")}
         </.link>
       </div>
 
@@ -48,7 +48,7 @@ defmodule DiversifWeb.HomeLive do
             <div class="flex items-center justify-between">
               <div>
                 <div class="font-medium">{c.name}</div>
-                <div class="text-sm text-zinc-500">Né(e) le {c.birth_date}</div>
+                <div class="text-sm text-zinc-500">{gettext("Né(e) le %{date}", date: c.birth_date)}</div>
               </div>
               <span class="text-xs uppercase tracking-wide text-zinc-500">{role}</span>
             </div>

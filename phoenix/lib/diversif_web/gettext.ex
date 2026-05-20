@@ -21,5 +21,8 @@ defmodule DiversifWeb.Gettext do
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext.Backend, otp_app: :diversif
+  use Gettext.Backend,
+    otp_app: :diversif,
+    default_locale: "fr",
+    locales: ~w(fr en)
 end

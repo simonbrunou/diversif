@@ -40,9 +40,9 @@ defmodule DiversifWeb.Layouts do
 
         <nav class="flex items-center gap-4 text-sm">
           <%= if @current_user do %>
-            <.link navigate={~p"/"} class="hidden sm:inline hover:underline">Enfants</.link>
-            <.link navigate={~p"/allergens"} class="hidden sm:inline hover:underline">Allergènes</.link>
-            <.link navigate={~p"/guide"} class="hidden sm:inline hover:underline">Guide</.link>
+            <.link navigate={~p"/"} class="hidden sm:inline hover:underline">{gettext("Enfants")}</.link>
+            <.link navigate={~p"/allergens"} class="hidden sm:inline hover:underline">{gettext("Allergènes")}</.link>
+            <.link navigate={~p"/guide"} class="hidden sm:inline hover:underline">{gettext("Guide")}</.link>
             <.link navigate={~p"/account"} class="hover:underline">
               {@current_user.display_name}
             </.link>
@@ -51,16 +51,16 @@ defmodule DiversifWeb.Layouts do
               method="delete"
               class="rounded border border-zinc-300 px-3 py-1 hover:bg-zinc-50"
             >
-              Se déconnecter
+              {gettext("Se déconnecter")}
             </.link>
           <% else %>
-            <.link navigate={~p"/guide"} class="hidden sm:inline hover:underline">Guide</.link>
-            <.link navigate={~p"/login"} class="hover:underline">Se connecter</.link>
+            <.link navigate={~p"/guide"} class="hidden sm:inline hover:underline">{gettext("Guide")}</.link>
+            <.link navigate={~p"/login"} class="hover:underline">{gettext("Se connecter")}</.link>
             <.link
               navigate={~p"/signup"}
               class="rounded bg-zinc-900 text-white px-3 py-1"
             >
-              Créer un compte
+              {gettext("Créer un compte")}
             </.link>
           <% end %>
         </nav>

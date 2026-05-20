@@ -44,12 +44,19 @@ defmodule Diversif.Accounts do
 
     cond do
       user && Argon2.verify_pass(password, user.password_hash) ->
+        :telemetry.execute([:diversif, :accounts, :login, :success], %{}, %{})
         user
 
       true ->
         # Constant-time path when user missing OR password wrong. Argon2
         # ships a `no_user_verify` helper that performs a dummy hash exactly
-        # like a real verify.
+        # like a real verify. Telemetry lets tests verify both branches were
+        # taken (and that the decoy wasn't accidentally removed) without
+        # mocking Argon2 directly.
+        :telemetry.execute([:diversif, :accounts, :login, :decoy_verify], %{}, %{
+          user_existed: user != nil
+        })
+
         Argon2.no_user_verify()
         nil
     end

@@ -12,7 +12,7 @@ defmodule DiversifWeb.SessionController do
         Audit.record("login.failed", %{email: String.downcase(email || "")}, ip: ip)
 
         conn
-        |> put_flash(:error, "Adresse e-mail ou mot de passe incorrect.")
+        |> put_flash(:error, gettext("Adresse e-mail ou mot de passe incorrect."))
         |> put_flash(:email, email || "")
         |> redirect(to: ~p"/login")
 
@@ -28,7 +28,7 @@ defmodule DiversifWeb.SessionController do
     end
 
     conn
-    |> put_flash(:info, "Vous êtes déconnecté.")
+    |> put_flash(:info, gettext("Vous êtes déconnecté."))
     |> UserAuth.log_out_user()
   end
 

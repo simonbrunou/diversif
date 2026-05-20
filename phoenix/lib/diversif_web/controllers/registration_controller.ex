@@ -19,14 +19,14 @@ defmodule DiversifWeb.RegistrationController do
         Audit.record("signup.success", %{}, ip: ip, user_id: user.id)
 
         conn
-        |> put_flash(:info, "Bienvenue !")
+        |> put_flash(:info, gettext("Bienvenue !"))
         |> UserAuth.log_in_user(user)
 
       {:error, _changeset} ->
         Audit.record("signup.failed", %{email: params["email"] || ""}, ip: ip)
 
         conn
-        |> put_flash(:error, "Inscription impossible. Vérifiez vos informations.")
+        |> put_flash(:error, gettext("Inscription impossible. Vérifiez vos informations."))
         |> redirect(to: ~p"/signup")
     end
   end
