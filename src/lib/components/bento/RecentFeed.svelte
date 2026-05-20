@@ -23,7 +23,7 @@
 
   function reactionPillClass(r: RecentEntry['reaction']): string {
     if (r === 'inconfort') return 'bg-tile-butter';
-    if (r === 'reaction') return 'bg-tile-coral text-tile-coral-foreground';
+    if (r === 'reaction') return 'bg-reaction-reaction text-reaction-reaction-foreground';
     return 'bg-tile-mint';
   }
 </script>
