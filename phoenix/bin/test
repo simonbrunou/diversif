@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Wrapper around `mix test` that ensures the test Postgres container is up.
+# Idempotent: docker compose up -d is a no-op when the container is already running.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+docker compose up -d postgres-test >/dev/null
+
+# Wait for healthcheck to flip green so the first migration doesn't race startup.
+until [ "$(docker inspect -f '{{.State.Health.Status}}' diversif-phoenix-postgres-test 2>/dev/null)" = "healthy" ]; do
+  sleep 0.2
+done
+
+exec mix test "$@"

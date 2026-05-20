@@ -34,7 +34,8 @@ export default ts.config(
       'test-results/',
       '.e2e-data/',
       'static/',
-      'project.inlang/modules/'
+      'project.inlang/modules/',
+      'phoenix/'
     ]
   },
   {

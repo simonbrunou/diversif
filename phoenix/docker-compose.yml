@@ -1,0 +1,52 @@
+# Phoenix-side dev/test databases.
+#
+# Ports 5434/5435 deliberately avoid 5432, which the existing SvelteKit
+# diversif-local compose binds. Both can run concurrently during the migration.
+name: diversif-phoenix
+
+services:
+  postgres-dev:
+    image: postgres:16-alpine
+    container_name: diversif-phoenix-postgres-dev
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: diversif_dev
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 2s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - phoenix_pg_dev:/var/lib/postgresql/data
+
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: diversif-phoenix-postgres-test
+    ports:
+      - '5435:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: diversif_test
+    # tmpfs storage: tests reset the DB constantly, durability is wasted I/O.
+    tmpfs:
+      - /var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - full_page_writes=off
+      - -c
+      - synchronous_commit=off
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  phoenix_pg_dev:

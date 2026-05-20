@@ -8,5 +8,6 @@ package-lock.json
 *.svelte
 .claude
 graphify-out
+phoenix
 
 project.inlang/modules
