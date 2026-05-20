@@ -48,10 +48,20 @@ defmodule DiversifWeb.Router do
       live "/join/:code", JoinLive
     end
 
-    get "/healthz", HealthController, :show
     # robots.txt is served statically from priv/static/robots.txt; sitemap is
     # dynamic so the host matches the deployment.
     get "/sitemap.xml", SiteController, :sitemap
+  end
+
+  # Healthchecks deliberately skip every pipeline — the browser pipeline's
+  # `:accepts ["html"]` filter would 406 probes that set Accept: text/plain
+  # or application/json, and there's nothing CSRF or session-related to do
+  # on a `SELECT 1` round-trip. Both paths point at the same controller:
+  # `/health` for Coolify / k8s / Traefik conventions, `/healthz` for the
+  # Phoenix scaffold default.
+  scope "/", DiversifWeb do
+    get "/health", HealthController, :show
+    get "/healthz", HealthController, :show
   end
 
   # ---------------------------------------------------------------------------

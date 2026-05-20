@@ -15,9 +15,11 @@ config :diversif, DiversifWeb.Endpoint,
     hsts: true,
     rewrite_on: [:x_forwarded_proto],
     exclude: [
-      # /healthz often gets hit over plain HTTP by load-balancer internal
-      # health checks; exclude it so those don't get 301'd.
-      paths: ["/healthz"],
+      # Both health paths are excluded so plain-HTTP internal LB checks
+      # don't get 301'd. /health is Coolify / k8s / Traefik default;
+      # /healthz is the Phoenix scaffold convention. Both hit the same
+      # controller.
+      paths: ["/health", "/healthz"],
       hosts: ["localhost", "127.0.0.1"]
     ]
   ]

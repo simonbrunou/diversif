@@ -61,7 +61,7 @@ RUN mix release
 FROM ${RUNNER_IMAGE} AS runner
 
 RUN apt-get update -y \
- && apt-get install -y --no-install-recommends libstdc++6 openssl libncurses6 locales ca-certificates \
+ && apt-get install -y --no-install-recommends libstdc++6 openssl libncurses6 locales ca-certificates curl \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # UTF-8 locale — French copy / regex assumptions depend on this.
@@ -91,6 +91,12 @@ RUN chmod +x /app/docker-entrypoint.sh /app/bin/server /app/bin/migrate /app/bin
 USER nobody
 
 EXPOSE 4000
+
+# Healthcheck so `docker ps` and Coolify's own probe agree on health
+# without each having to be configured separately. start-period gives the
+# release time to migrate + bind the socket before failures count.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -fsS "http://127.0.0.1:${PORT:-4000}/health" || exit 1
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["/app/bin/server"]
