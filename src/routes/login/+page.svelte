@@ -45,7 +45,11 @@
         if (cancelled) return;
         const supported = await mod.browserSupportsWebAuthnAutofill();
         if (!supported || cancelled) return;
-        const optsRes = await fetch('/passkeys/authentication/options', { method: 'POST' });
+        const optsRes = await fetch('/passkeys/authentication/options', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ mode: 'autofill' })
+        });
         if (!optsRes.ok || cancelled) return;
         const optsJSON = await optsRes.json();
         if (cancelled) return;
@@ -59,7 +63,9 @@
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ response: assertion })
         });
+        if (cancelled) return;
         const data = await verifyRes.json().catch(() => ({}));
+        if (cancelled) return;
         if (verifyRes.ok && data?.ok) {
           await goto('/', { invalidateAll: true });
         }

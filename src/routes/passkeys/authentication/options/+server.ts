@@ -1,5 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import {
+  PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
   PASSKEY_CHALLENGE_TTL_MS,
   buildAuthenticationOptions,
@@ -20,10 +21,37 @@ const PASSKEY_OPTIONS_LIMIT = {
   windowMs: 5 * 60 * 1000
 };
 
+// Conditional UI fires this endpoint automatically on every /login page view,
+// so it must not share the modal flow's bucket : otherwise a user reloading
+// the login page a couple dozen times would lock themselves (and anyone on the
+// same IP) out of explicit passkey sign-in. The autofill cap is set higher
+// because legitimate page-load volume is higher than user-initiated clicks.
+const PASSKEY_AUTOFILL_OPTIONS_LIMIT = {
+  name: 'passkey-auth-options-autofill',
+  limit: 60,
+  windowMs: 5 * 60 * 1000
+};
+
 export const POST: RequestHandler = async (event) => {
-  const { cookies, url } = event;
+  const { cookies, request, url } = event;
+
+  // Body is optional : conditional-UI clients send {"mode":"autofill"} so the
+  // server can route to the autofill cookie + bucket. Legacy / modal clients
+  // POST with no body, in which case we fall through to the standard path.
+  let mode: 'modal' | 'autofill' = 'modal';
+  if (request.headers.get('content-type')?.includes('application/json')) {
+    try {
+      const body = (await request.json()) as { mode?: unknown };
+      if (body?.mode === 'autofill') mode = 'autofill';
+    } catch {
+      // Malformed JSON falls back to modal; the verify step will reject any
+      // assertion that doesn't match a real challenge anyway.
+    }
+  }
+
   const ip = clientKey(event);
-  const rl = checkRateLimit(PASSKEY_OPTIONS_LIMIT, ip);
+  const bucket = mode === 'autofill' ? PASSKEY_AUTOFILL_OPTIONS_LIMIT : PASSKEY_OPTIONS_LIMIT;
+  const rl = checkRateLimit(bucket, ip);
   if (!rl.allowed) {
     throw error(429, `Trop de tentatives. Réessayez dans ${rl.retryAfterSeconds}s.`);
   }
@@ -39,7 +67,9 @@ export const POST: RequestHandler = async (event) => {
     userId: null
   });
 
-  cookies.set(PASSKEY_CHALLENGE_COOKIE, stored.token, {
+  const cookieName =
+    mode === 'autofill' ? PASSKEY_CHALLENGE_AUTOFILL_COOKIE : PASSKEY_CHALLENGE_COOKIE;
+  cookies.set(cookieName, stored.token, {
     path: '/',
     httpOnly: true,
     sameSite: 'strict',

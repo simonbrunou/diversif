@@ -16,7 +16,11 @@ import { POST } from './+server';
 import { SESSION_COOKIE, validateSession } from '$lib/server/auth';
 import { passkeys, sessions, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { PASSKEY_CHALLENGE_COOKIE, createChallenge } from '$lib/server/passkeys';
+import {
+  PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
+  PASSKEY_CHALLENGE_COOKIE,
+  createChallenge
+} from '$lib/server/passkeys';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 
 beforeEach(async () => {
@@ -52,10 +56,12 @@ async function seedUserAndKey() {
   return u;
 }
 
-function makeReq(opts: { body?: unknown; cookieToken?: string }) {
+function makeReq(opts: { body?: unknown; cookieToken?: string; autofillCookieToken?: string }) {
   const url = new URL('https://app.example.com/passkeys/authentication/verify');
   const event = makeRouteEvent();
   if (opts.cookieToken) event.cookies.set(PASSKEY_CHALLENGE_COOKIE, opts.cookieToken);
+  if (opts.autofillCookieToken)
+    event.cookies.set(PASSKEY_CHALLENGE_AUTOFILL_COOKIE, opts.autofillCookieToken);
   (event as { request: Request }).request = new Request(url, {
     method: 'POST',
     body: typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body ?? {})
@@ -168,6 +174,62 @@ describe('POST /passkeys/authentication/verify', () => {
       await testDb.select().from(sessions).where(eq(sessions.id, sessionToken)).limit(1)
     )[0];
     expect(row?.userId).toBe(u.id);
+  });
+
+  it('authenticates from the autofill cookie when modal cookie is absent', async () => {
+    const u = await seedUserAndKey();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'authentication' });
+    mocks.verifyAuthenticationResponse.mockResolvedValue({
+      verified: true,
+      authenticationInfo: {
+        credentialID: 'cred-id',
+        newCounter: 1,
+        userVerified: true,
+        credentialDeviceType: 'singleDevice',
+        credentialBackedUp: false,
+        origin: 'https://app.example.com',
+        rpID: 'app.example.com'
+      }
+    });
+    const event = makeReq({
+      body: { response: { id: 'cred-id' } },
+      autofillCookieToken: c.token
+    });
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    // Session was issued for the right user.
+    const sessionCall = event.cookies.set.mock.calls.find((args) => args[0] === SESSION_COOKIE);
+    const sessionToken = sessionCall?.[1] as string;
+    const validated = await validateSession(sessionToken);
+    expect(validated?.user.id).toBe(u.id);
+  });
+
+  it('clears both challenge cookies after verify', async () => {
+    await seedUserAndKey();
+    const c = await createChallenge({ challenge: 'ch', purpose: 'authentication' });
+    mocks.verifyAuthenticationResponse.mockResolvedValue({
+      verified: true,
+      authenticationInfo: {
+        credentialID: 'cred-id',
+        newCounter: 1,
+        userVerified: true,
+        credentialDeviceType: 'singleDevice',
+        credentialBackedUp: false,
+        origin: 'https://app.example.com',
+        rpID: 'app.example.com'
+      }
+    });
+    const event = makeReq({
+      body: { response: { id: 'cred-id' } },
+      cookieToken: c.token,
+      autofillCookieToken: 'stale-autofill'
+    });
+    await POST(event as unknown as Parameters<typeof POST>[0]);
+    const deletedNames = event.cookies.delete.mock.calls.map((args) => args[0]);
+    expect(deletedNames).toContain(PASSKEY_CHALLENGE_COOKIE);
+    expect(deletedNames).toContain(PASSKEY_CHALLENGE_AUTOFILL_COOKIE);
   });
 
   it('marks the session cookie secure in production', async () => {

@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import {
+  PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
   consumeChallenge,
   finishAuthentication,
@@ -33,10 +34,18 @@ export const POST: RequestHandler = async (event) => {
     throw error(400, 'Réponse manquante');
   }
 
-  const token = cookies.get(PASSKEY_CHALLENGE_COOKIE) ?? '';
+  // The client doesn't tell us which mode it took, so try both cookies. Both
+  // are always cleared so a stale challenge from one flow can't survive into
+  // the other's next attempt. consumeChallenge is a DELETE-RETURNING and
+  // single-use, so at most one returns a row.
+  const modalToken = cookies.get(PASSKEY_CHALLENGE_COOKIE) ?? '';
+  const autofillToken = cookies.get(PASSKEY_CHALLENGE_AUTOFILL_COOKIE) ?? '';
   cookies.delete(PASSKEY_CHALLENGE_COOKIE, { path: '/' });
+  cookies.delete(PASSKEY_CHALLENGE_AUTOFILL_COOKIE, { path: '/' });
 
-  const challenge = await consumeChallenge(token, 'authentication');
+  const challenge =
+    (await consumeChallenge(modalToken, 'authentication')) ??
+    (await consumeChallenge(autofillToken, 'authentication'));
   if (!challenge) {
     throw error(400, 'Challenge expiré ou invalide');
   }
