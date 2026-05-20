@@ -99,6 +99,8 @@
   "legalCookiesRow1Purpose": "Maintain the authenticated parent session.",
   "legalCookiesRow2Duration": "5 minutes",
   "legalCookiesRow2Purpose": "Secure a WebAuthn ceremony (passkey).",
+  "legalCookiesRow3Duration": "5 minutes",
+  "legalCookiesRow3Purpose": "Pre-arm a WebAuthn ceremony for passkey autofill.",
   "legalCookiesTitle": "Cookies",
   "legalCookiesUpdated": "Last updated: 4 May 2026.",
   "errorsGenericFallback": "An error occurred.",

@@ -46,6 +46,12 @@
           <td class="border-b py-2 pr-4">{m.legalCookiesRow2Duration()}</td>
           <td class="border-b py-2">HttpOnly · SameSite=Strict · Secure (en production)</td>
         </tr>
+        <tr>
+          <td class="border-b py-2 pr-4 font-mono">wa_challenge_autofill</td>
+          <td class="border-b py-2 pr-4">{m.legalCookiesRow3Purpose()}</td>
+          <td class="border-b py-2 pr-4">{m.legalCookiesRow3Duration()}</td>
+          <td class="border-b py-2">HttpOnly · SameSite=Strict · Secure (en production)</td>
+        </tr>
       </tbody>
     </table>
   </div>
