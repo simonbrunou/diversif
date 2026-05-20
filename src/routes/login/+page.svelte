@@ -8,6 +8,7 @@
   import { enhance } from '$app/forms';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -25,6 +26,57 @@
       typeof window.PublicKeyCredential === 'function' &&
       typeof navigator.credentials?.get === 'function'
     );
+  });
+
+  // Conditional UI: pre-arms a passkey ceremony so the browser can offer
+  // matching credentials inline with the email field's autofill dropdown.
+  // Unsupported browsers silently fall back to the explicit passkey button.
+  // Starting a modal ceremony (signInWithPasskey) auto-cancels this via
+  // simplewebauthn's internal AbortService, so the two flows coexist safely.
+  onMount(() => {
+    if (!browser) return;
+    let cancelled = false;
+    let cancelCeremony: (() => void) | null = null;
+
+    void (async () => {
+      try {
+        const mod = await import('@simplewebauthn/browser');
+        cancelCeremony = () => mod.WebAuthnAbortService.cancelCeremony();
+        if (cancelled) return;
+        const supported = await mod.browserSupportsWebAuthnAutofill();
+        if (!supported || cancelled) return;
+        const optsRes = await fetch('/passkeys/authentication/options', { method: 'POST' });
+        if (!optsRes.ok || cancelled) return;
+        const optsJSON = await optsRes.json();
+        if (cancelled) return;
+        const assertion = await mod.startAuthentication({
+          optionsJSON: optsJSON,
+          useBrowserAutofill: true
+        });
+        if (cancelled) return;
+        const verifyRes = await fetch('/passkeys/authentication/verify', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ response: assertion })
+        });
+        const data = await verifyRes.json().catch(() => ({}));
+        if (verifyRes.ok && data?.ok) {
+          await goto('/', { invalidateAll: true });
+        }
+      } catch {
+        // Background flow: aborts, refusals, and network blips stay silent.
+        // Users can still authenticate via the explicit passkey button or password.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      try {
+        cancelCeremony?.();
+      } catch {
+        /* ignore */
+      }
+    };
   });
 
   async function signInWithPasskey() {
