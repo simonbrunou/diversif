@@ -16,7 +16,6 @@ The release **will refuse to boot** without these (it raises in
 | `SECRET_KEY_BASE` | `mix phx.gen.secret` (64 chars) | Signs/encrypts the Plug.Session cookie (holds `:user_token`). Rotate ⇒ everyone logs out. |
 | `LIVE_VIEW_SIGNING_SALT` | `mix phx.gen.secret 32` | Signs LiveView socket tokens. Hardcoding it once meant any reader of the repo could sign LV tokens — that's why it's env-sourced now. |
 | `PHX_HOST` | `diversif.example.com` | Canonical public hostname (no scheme, no slash). Drives URL generation for sitemap, email, etc. |
-| `PHX_SERVER` | `true` | Tells the endpoint to actually bind a socket. The Dockerfile sets this by default; included here so a Coolify run without the Dockerfile (`mix release` artifact only) still works. |
 
 ## Optional but you almost certainly want them
 
@@ -27,6 +26,8 @@ The release **will refuse to boot** without these (it raises in
 | `PORT` | `4000` | What the BEAM binds. Coolify usually proxies. |
 | `POOL_SIZE` | `10` | Postgres pool. Raise under high concurrency. |
 | `ECTO_IPV6` | unset | Set to `true` or `1` if your DB endpoint is IPv6-only. |
+| `DNS_CLUSTER_QUERY` | unset | DNSCluster query (e.g. `diversif.internal`) for multi-node BEAM clustering. Leave unset for single-node deploys. |
+| `PHX_SERVER` | `true` (set by Dockerfile + `bin/server`) | You only need to set this manually if you're invoking `bin/diversif start` directly without the entrypoint or overlay scripts. |
 
 ## Migrations
 
