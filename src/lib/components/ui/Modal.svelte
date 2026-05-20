@@ -69,7 +69,7 @@
     right:
       'inset-y-0 right-0 flex h-full w-3/4 max-w-xs flex-col data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
     bottom:
-      'inset-x-0 bottom-0 max-h-[92dvh] rounded-t-hero pb-8 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
+      'inset-x-0 bottom-0 max-h-[92dvh] rounded-t-hero pb-[max(2rem,env(safe-area-inset-bottom))] data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
     left: 'inset-y-0 left-0 flex h-full w-3/4 max-w-xs flex-col data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
     // Center sits at left/top 50% with `-translate-x/y-1/2` for true
     // centering. tailwindcss-animate animates the whole `transform`
