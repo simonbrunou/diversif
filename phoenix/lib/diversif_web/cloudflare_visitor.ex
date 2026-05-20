@@ -15,6 +15,15 @@ defmodule DiversifWeb.CloudflareVisitor do
   AFTER `Plug.Builder.__before_compile__/1` has installed the endpoint's
   base `call/2`. A naked `defoverridable call: 2` in the endpoint body
   fails because `call/2` isn't defined yet at that point.
+
+  **Spoofability.** This shim trusts `CF-Visitor` unconditionally — if
+  Bandit ever becomes reachable directly (load-balancer / VPC
+  misconfiguration that bypasses Coolify + Cloudflare Tunnel), an
+  attacker can set `CF-Visitor: {"scheme":"https"}` themselves and the
+  app will treat the connection as HTTPS (skip the force_ssl redirect,
+  mark cookies as `secure`). Acceptable today because the container is
+  unreachable except via the proxy; re-evaluate if the deploy topology
+  changes.
   """
 
   defmacro __before_compile__(_env) do
