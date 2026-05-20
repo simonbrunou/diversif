@@ -22,6 +22,39 @@ defmodule DiversifWeb.RemoteIp do
 
   import Bitwise
 
+  require Logger
+
+  @doc """
+  Boot-time validation. Called from `Diversif.Application.start/2` so a
+  fat-fingered CIDR ("10.0.0.0" instead of "10.0.0.0/8") logs loudly once
+  instead of silently failing-closed on every request.
+  """
+  def validate_trusted_proxies! do
+    proxies = Application.get_env(:diversif, :trusted_proxies, [])
+
+    Enum.each(proxies, fn cidr ->
+      unless valid_cidr?(cidr) do
+        Logger.error(
+          "remote_ip: malformed trusted_proxies entry #{inspect(cidr)} — every request " <>
+            "will fall back to conn.remote_ip (XFF/CF-Connecting-IP ignored)."
+        )
+      end
+    end)
+  end
+
+  defp valid_cidr?(cidr) when is_binary(cidr) do
+    with [addr, bits_str] <- String.split(cidr, "/"),
+         {bits, ""} <- Integer.parse(bits_str),
+         true <- bits in 0..32,
+         {:ok, _} <- :inet.parse_ipv4_address(String.to_charlist(addr)) do
+      true
+    else
+      _ -> false
+    end
+  end
+
+  defp valid_cidr?(_), do: false
+
   def from_conn(conn) do
     if trusted_proxy?(conn.remote_ip) do
       cf_ip(conn) || xff_first(conn) || remote_ip_str(conn)

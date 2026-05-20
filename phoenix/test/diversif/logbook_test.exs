@@ -68,6 +68,35 @@ defmodule Diversif.LogbookTest do
     end
   end
 
+  describe "Symptom.changeset default created_at" do
+    test "omitting the key defaults to now()" do
+      attrs = %{
+        "food_entry_id" => 1,
+        "child_id" => 1,
+        "observed_at" => DateTime.utc_now(),
+        "label" => "rougeur"
+      }
+
+      cs = Diversif.Logbook.Symptom.changeset(%Diversif.Logbook.Symptom{}, attrs)
+      assert cs.valid?
+      assert %DateTime{} = Ecto.Changeset.get_field(cs, :created_at)
+    end
+
+    test "passing explicit nil for created_at fails validate_required (no silent default)" do
+      attrs = %{
+        "food_entry_id" => 1,
+        "child_id" => 1,
+        "observed_at" => DateTime.utc_now(),
+        "label" => "rougeur",
+        "created_at" => nil
+      }
+
+      cs = Diversif.Logbook.Symptom.changeset(%Diversif.Logbook.Symptom{}, attrs)
+      refute cs.valid?
+      assert {"can't be blank", _} = cs.errors[:created_at]
+    end
+  end
+
   describe "stats_for_child/1" do
     test "returns zeroed map for a child with no entries" do
       {_, child} = setup_child()

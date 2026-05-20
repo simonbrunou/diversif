@@ -16,10 +16,6 @@ defmodule DiversifWeb.AuthLive.Login do
   end
 
   @impl true
-  def handle_event("validate", %{"session" => params}, socket) do
-    {:noreply, assign(socket, :form, to_form(params, as: :session))}
-  end
-
   def handle_event("passkey:unsupported", _, socket) do
     {:noreply,
      put_flash(socket, :error, "Votre navigateur ne prend pas en charge les clés d'accès.")}

@@ -76,6 +76,14 @@ defmodule DiversifWeb.WebauthnController do
             UserAuth.log_in_user(conn, user)
 
           _ ->
+            # Crypto verified against a passkey row whose user_id no longer
+            # exists. Either the user deleted their account mid-ceremony or
+            # the passkey row is orphaned. Log the data-integrity signal so
+            # it doesn't vanish; return the generic error so we don't leak
+            # which case it is.
+            require Logger
+            Logger.warning("webauthn.orphan_passkey user_id=#{user_id}")
+
             conn
             |> put_status(:unauthorized)
             |> json(%{ok: false, error: "Échec de l'authentification."})

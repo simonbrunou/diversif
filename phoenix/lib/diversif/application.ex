@@ -11,6 +11,10 @@ defmodule Diversif.Application do
     # it lazily inside the plug races on cold start under concurrent traffic.
     DiversifWeb.Plugs.RateLimit.ensure_table()
 
+    # Validate trusted-proxy CIDRs at boot so a typo logs once instead of
+    # silently disabling X-Forwarded-For trust on every request forever.
+    DiversifWeb.RemoteIp.validate_trusted_proxies!()
+
     children = [
       DiversifWeb.Telemetry,
       Diversif.Repo,

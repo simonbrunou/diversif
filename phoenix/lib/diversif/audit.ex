@@ -27,11 +27,11 @@ defmodule Diversif.Audit do
     Repo.insert_all(@table, [row])
     :ok
   rescue
-    # The contract is "audit MUST never break the caller" — so we eat DB
-    # failures. But naked `_` would also swallow `ArgumentError` from a bad
-    # meta map (a developer bug we want to crash on in dev/test). Scope the
-    # rescue and log so a degraded Postgres at the worst moment (deploy,
-    # incident) doesn't vanish from telemetry.
+    # The contract is "audit MUST never break the caller" — so we eat any
+    # insert-time DB exception (including ConstraintError from a future
+    # CHECK/unique migration). A bad `meta` map raises ArgumentError, which
+    # we deliberately don't rescue — that's a developer bug, crash in
+    # dev/test. Anything else worth knowing about goes to Logger.error.
     e in [
       DBConnection.ConnectionError,
       DBConnection.OwnershipError,
@@ -41,6 +41,13 @@ defmodule Diversif.Audit do
       Ecto.StaleEntryError
     ] ->
       Logger.error("audit.record dropped: #{Exception.message(e)} event=#{event}")
+      :ok
+  catch
+    # During rolling deploys / pool shutdown, Repo.insert_all can exit with
+    # :noproc or :shutdown rather than raise. Same contract applies — eat
+    # it, log it, never break the caller.
+    :exit, reason ->
+      Logger.error("audit.record exited: #{inspect(reason)} event=#{event}")
       :ok
   end
 

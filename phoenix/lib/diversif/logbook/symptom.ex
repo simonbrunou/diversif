@@ -23,9 +23,15 @@ defmodule Diversif.Logbook.Symptom do
   end
 
   def changeset(symptom, attrs) do
+    # Default created_at to now ONLY when the caller omits the key entirely.
+    # `cast` doesn't record a `nil` change for utc_datetime_usec when the
+    # caller passes the key with a nil value, so checking the changeset
+    # after cast can't distinguish "absent" from "explicit nil". We have
+    # to inspect attrs directly *before* cast.
+    attrs = default_created_at(attrs)
+
     symptom
     |> cast(attrs, [:food_entry_id, :child_id, :observed_at, :label, :note, :created_by, :created_at])
-    |> put_change_if_missing(:created_at, DateTime.utc_now())
     |> validate_required([:food_entry_id, :child_id, :observed_at, :label, :created_at])
     |> validate_inclusion(:label, @labels)
     |> foreign_key_constraint(:food_entry_id)
@@ -33,13 +39,22 @@ defmodule Diversif.Logbook.Symptom do
     |> foreign_key_constraint(:created_by)
   end
 
-  # Distinguish "caller didn't set the field" (default it) from "caller
-  # explicitly set nil" (let validate_required catch it). get_field/2 collapses
-  # both cases to nil; fetch_change/2 doesn't.
-  defp put_change_if_missing(changeset, field, value) do
-    case Ecto.Changeset.fetch_change(changeset, field) do
-      :error -> Ecto.Changeset.put_change(changeset, field, value)
-      {:ok, _} -> changeset
+  defp default_created_at(%{} = attrs) do
+    cond do
+      Map.has_key?(attrs, "created_at") -> attrs
+      Map.has_key?(attrs, :created_at) -> attrs
+      # Match the caller's key style — Ecto's cast raises on mixed string +
+      # atom keys, so we infer from whatever else is in the map.
+      atom_keyed?(attrs) -> Map.put(attrs, :created_at, DateTime.utc_now())
+      true -> Map.put(attrs, "created_at", DateTime.utc_now())
     end
+  end
+
+  defp default_created_at(attrs), do: attrs
+
+  defp atom_keyed?(attrs) when attrs == %{}, do: true
+
+  defp atom_keyed?(attrs) do
+    Enum.all?(Map.keys(attrs), &is_atom/1)
   end
 end
