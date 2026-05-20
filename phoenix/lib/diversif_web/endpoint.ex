@@ -1,6 +1,19 @@
 defmodule DiversifWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :diversif
 
+  # Behind a TLS-terminating proxy (Coolify/Traefik, Cloudflare Tunnel, etc.)
+  # Bandit only ever sees the inner HTTP hop, so `conn.scheme` is `:http` by
+  # default. Plug.RewriteOn re-derives scheme / host / port from the
+  # `x-forwarded-*` headers BEFORE Plug.SSL (installed by `force_ssl`) makes
+  # its redirect decision and before secure cookies / URL generators look at
+  # `conn.scheme`. Without this plug, every request 301s to https, the proxy
+  # forwards it back as http, and the loop terminates as "Too many redirects".
+  #
+  # Spoofability: harmless here because the container is only reachable
+  # through the proxy. If we ever expose Bandit directly, this becomes a
+  # trust-the-client-blindly footgun — re-evaluate then.
+  plug Plug.RewriteOn, [:x_forwarded_proto, :x_forwarded_host, :x_forwarded_port]
+
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.

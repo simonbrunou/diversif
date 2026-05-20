@@ -13,12 +13,21 @@ config :diversif, DiversifWeb.Endpoint, cache_static_manifest: "priv/static/cach
 config :diversif, DiversifWeb.Endpoint,
   force_ssl: [
     hsts: true,
-    rewrite_on: [:x_forwarded_proto],
+    # Plug.SSL is injected by `use Phoenix.Endpoint` BEFORE any user `plug`
+    # calls in endpoint.ex run, so the endpoint-level `plug Plug.RewriteOn`
+    # can't help Plug.SSL see the proxy-rewritten scheme. The `:rewrite_on`
+    # key here is what Plug.SSL itself consults — it calls
+    # `Plug.RewriteOn.call(conn, rewrite_on)` at the top of its own plug,
+    # before deciding whether to 301. Without this, every request behind a
+    # TLS-terminating proxy gets 301'd to https, the proxy forwards it
+    # back as http, and we loop ("Too many redirects"). The endpoint-level
+    # `Plug.RewriteOn` still earns its keep for downstream plugs (secure
+    # cookie flag, URL generators, etc.).
+    rewrite_on: [:x_forwarded_proto, :x_forwarded_host, :x_forwarded_port],
     exclude: [
       # Both health paths are excluded so plain-HTTP internal LB checks
       # don't get 301'd. /health is Coolify / k8s / Traefik default;
-      # /healthz is the Phoenix scaffold convention. Both hit the same
-      # controller.
+      # /healthz is the Phoenix scaffold convention.
       paths: ["/health", "/healthz"],
       hosts: ["localhost", "127.0.0.1"]
     ]
