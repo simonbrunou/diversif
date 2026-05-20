@@ -24,7 +24,7 @@
         <button
           type="button"
           onclick={() => onDismiss(tip.id)}
-          class="rounded-full bg-surface px-2 py-1 text-xs font-semibold text-ink-soft transition-transform duration-fast ease-soft active:scale-[0.97]"
+          class="inline-flex min-h-11 items-center rounded-full bg-surface px-3 text-xs font-semibold text-ink-soft transition-transform duration-fast ease-soft active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {m.decouvrirTipDismiss()}
         </button>

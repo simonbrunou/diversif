@@ -60,7 +60,7 @@
           {@const isSelected = selected === label}
           {@const isSevere = severityOf(label) === 'severe'}
           <label
-            class="flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold {isSelected
+            class="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 {isSelected
               ? 'border-primary bg-primary text-primary-foreground'
               : isSevere
                 ? 'border-destructive/40 bg-canvas text-destructive'
@@ -74,6 +74,9 @@
               onchange={() => (selected = label)}
               class="sr-only"
             />
+            {#if isSevere}
+              <span class="sr-only">{m.addSymptomSeveritySevereSrPrefix()} </span>
+            {/if}
             {labelText(label)}
           </label>
         {/each}

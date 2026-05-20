@@ -312,6 +312,7 @@
   "addSymptomNotePlaceholder": "Describe what you observe (280 chars max)…",
   "addSymptomObservedAt": "Observed at",
   "addSymptomSubmit": "Log the symptom",
+  "addSymptomSeveritySevereSrPrefix": "Severe symptom:",
   "symptomsLabelRougeur": "Redness",
   "symptomsLabelUrticaire": "Hives",
   "symptomsLabelEczema": "Eczema",

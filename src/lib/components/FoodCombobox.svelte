@@ -70,14 +70,19 @@
       bind:value={query}
       autocomplete="off"
     />
-    <div class="-mx-1 flex flex-wrap gap-1 px-1">
+    <div
+      role="group"
+      aria-label="Filtrer par catégorie"
+      class="-mx-1 flex flex-wrap gap-1 px-1"
+    >
       <button
         type="button"
         class={cn(
-          'rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+          'inline-flex min-h-11 items-center rounded-full border px-2.5 text-xs font-medium transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           activeCategory === '' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
         )}
+        aria-pressed={activeCategory === ''}
         onclick={() => (activeCategory = '')}
       >
         Tous
@@ -88,12 +93,13 @@
         <button
           type="button"
           class={cn(
-            'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+            'inline-flex min-h-11 items-center gap-1 rounded-full border px-2.5 text-xs font-medium transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
             activeCategory === c.id
               ? 'bg-primary text-primary-foreground'
               : cn(cls.tint, cls.text, 'hover:brightness-95 dark:hover:brightness-110')
           )}
+          aria-pressed={activeCategory === c.id}
           onclick={() => (activeCategory = activeCategory === c.id ? '' : c.id)}
         >
           <Icon size={12} aria-hidden="true" />
@@ -116,7 +122,7 @@
       </div>
       <button
         type="button"
-        class="text-sm text-muted-foreground hover:underline"
+        class="rounded-sm text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label={`Changer l'aliment sélectionné (actuellement ${selected.name})`}
         onclick={() => pick(0)}
       >
@@ -130,7 +136,7 @@
         <li>
           <button
             type="button"
-            class="flex w-full items-center justify-between px-3 py-2 text-left transition-colors hover:bg-accent"
+            class="flex w-full items-center justify-between px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
             onclick={() => pick(f.id)}
           >
             <span class="min-w-0 truncate">
@@ -170,7 +176,7 @@
 
     <button
       type="button"
-      class="text-left text-sm text-primary-strong hover:underline"
+      class="rounded-sm text-left text-sm text-primary-strong hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       onclick={openCustom}
     >
       + Ajouter un aliment hors catalogue
