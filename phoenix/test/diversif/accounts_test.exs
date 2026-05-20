@@ -65,6 +65,11 @@ defmodule Diversif.AccountsTest do
         nil
       )
 
+      # Guarantee detach even if an assert_receive below times out; otherwise
+      # the handler closes over a dead test pid and leaks into the rest of
+      # the suite for the lifetime of the VM.
+      on_exit(fn -> :telemetry.detach(handler_id) end)
+
       register_user(%{"email" => "decoy-existing@diversif.test"})
 
       # Unknown email: meta says user didn't exist.
@@ -81,8 +86,6 @@ defmodule Diversif.AccountsTest do
                )
 
       assert_receive {:decoy, %{user_existed: true}}, 1000
-
-      :telemetry.detach(handler_id)
     end
   end
 

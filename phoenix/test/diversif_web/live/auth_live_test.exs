@@ -10,9 +10,8 @@ defmodule DiversifWeb.AuthLiveTest do
       {:ok, _view, html} = live(conn, ~p"/login")
       assert html =~ "Se connecter"
       assert html =~ "Adresse e-mail"
-      # HEEx escapes apostrophes in attributes/text — match on the escaped
-      # form so the assertion isn't tied to escape-character choices.
-      assert html =~ ~r/clé d.{1,6}acc&#39;?è?s|clé d&#39;accès/
+      # HEEx escapes apostrophes to &#39;
+      assert html =~ "clé d&#39;accès"
     end
 
     test "redirects authenticated users to home", %{conn: conn} do
@@ -38,15 +37,14 @@ defmodule DiversifWeb.AuthLiveTest do
       {:ok, _view, html} = live(conn, ~p"/signup")
       assert html =~ "Créer un compte"
       assert html =~ "Prénom"
-      assert html =~ ~r/conditions d.{1,6}utilisation|conditions d&#39;utilisation/
+      assert html =~ "conditions d&#39;utilisation"
     end
   end
 
   describe "public legal pages" do
     test "/cgu renders without auth", %{conn: conn} do
       {:ok, _view, html} = live(conn, ~p"/cgu")
-      # HTML-escapes apostrophes; matching the escaped variant is the safest.
-      assert html =~ ~r/Conditions d.{1,6}utilisation|Conditions d&#39;utilisation/
+      assert html =~ "Conditions d&#39;utilisation"
     end
 
     test "/guide renders without auth", %{conn: conn} do

@@ -50,9 +50,7 @@ defmodule Diversif.Accounts do
       true ->
         # Constant-time path when user missing OR password wrong. Argon2
         # ships a `no_user_verify` helper that performs a dummy hash exactly
-        # like a real verify. Telemetry lets tests verify both branches were
-        # taken (and that the decoy wasn't accidentally removed) without
-        # mocking Argon2 directly.
+        # like a real verify, so wall-clock time matches the truthy branch.
         :telemetry.execute([:diversif, :accounts, :login, :decoy_verify], %{}, %{
           user_existed: user != nil
         })

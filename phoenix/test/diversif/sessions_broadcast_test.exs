@@ -27,16 +27,19 @@ defmodule Diversif.SessionsBroadcastTest do
 
     # Both targeted devices must receive the disconnect — otherwise their
     # LV socket keeps a stale-token connection alive until the next HTTP
-    # roundtrip validates the now-missing session.
+    # roundtrip validates the now-missing session. 1s timeout (default 100ms)
+    # absorbs CI scheduler jitter.
     assert_receive %Phoenix.Socket.Broadcast{
-      topic: "users_sessions:" <> id1,
-      event: "disconnect"
-    }
+                     topic: "users_sessions:" <> id1,
+                     event: "disconnect"
+                   },
+                   1000
 
     assert_receive %Phoenix.Socket.Broadcast{
-      topic: "users_sessions:" <> id2,
-      event: "disconnect"
-    }
+                     topic: "users_sessions:" <> id2,
+                     event: "disconnect"
+                   },
+                   1000
 
     assert MapSet.new([id1, id2]) == MapSet.new([s1.id, s2.id])
   end
