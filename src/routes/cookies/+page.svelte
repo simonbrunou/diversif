@@ -6,7 +6,7 @@
 
 <Seo
   title="Cookies · Diversif"
-  description="Diversif n'utilise que deux cookies strictement nécessaires au fonctionnement du service. Aucun cookie de mesure ni de publicité."
+  description="Diversif n'utilise que trois cookies strictement nécessaires au fonctionnement du service. Aucun cookie de mesure ni de publicité."
   path="/cookies"
   noindex
   alternateLocales={['en']}
@@ -44,6 +44,12 @@
           <td class="border-b py-2 pr-4 font-mono">wa_challenge</td>
           <td class="border-b py-2 pr-4">{m.legalCookiesRow2Purpose()}</td>
           <td class="border-b py-2 pr-4">{m.legalCookiesRow2Duration()}</td>
+          <td class="border-b py-2">HttpOnly · SameSite=Strict · Secure (en production)</td>
+        </tr>
+        <tr>
+          <td class="border-b py-2 pr-4 font-mono">wa_challenge_autofill</td>
+          <td class="border-b py-2 pr-4">{m.legalCookiesRow3Purpose()}</td>
+          <td class="border-b py-2 pr-4">{m.legalCookiesRow3Duration()}</td>
           <td class="border-b py-2">HttpOnly · SameSite=Strict · Secure (en production)</td>
         </tr>
       </tbody>

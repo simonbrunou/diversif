@@ -15,7 +15,7 @@ vi.mock('@simplewebauthn/server', () => mocks);
 import { POST } from './+server';
 import { webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
+import { PASSKEY_CHALLENGE_AUTOFILL_COOKIE, PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 
 beforeEach(async () => {
@@ -89,5 +89,68 @@ describe('POST /passkeys/authentication/options', () => {
     );
     expect(r.kind).toBe('error');
     if (r.kind === 'error') expect(r.status).toBe(429);
+  });
+
+  function makeAutofillEvent() {
+    const event = makeRouteEvent({
+      url: 'https://app.example.com/passkeys/authentication/options'
+    });
+    (event as { request: Request }).request = new Request(event.url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ mode: 'autofill' })
+    });
+    return event;
+  }
+
+  it('writes to the autofill cookie when mode=autofill', async () => {
+    mocks.generateAuthenticationOptions.mockResolvedValue({ challenge: 'auto' });
+    const event = makeAutofillEvent();
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(200);
+    const cookieNames = event.cookies.set.mock.calls.map((c) => c[0]);
+    expect(cookieNames).toContain(PASSKEY_CHALLENGE_AUTOFILL_COOKIE);
+    expect(cookieNames).not.toContain(PASSKEY_CHALLENGE_COOKIE);
+    const token = event.cookies.set.mock.calls.find(
+      (c) => c[0] === PASSKEY_CHALLENGE_AUTOFILL_COOKIE
+    )?.[1] as string;
+    const stored = (
+      await testDb
+        .select()
+        .from(webauthnChallenges)
+        .where(eq(webauthnChallenges.token, token))
+        .limit(1)
+    )[0];
+    expect(stored?.purpose).toBe('authentication');
+  });
+
+  it('autofill mode has its own rate-limit bucket', async () => {
+    mocks.generateAuthenticationOptions.mockResolvedValue({ challenge: 'x' });
+    // Saturate the modal bucket (limit 20 per 5 minutes).
+    for (let i = 0; i < 20; i++) {
+      const event = makeRouteEvent();
+      await POST(event as unknown as Parameters<typeof POST>[0]);
+    }
+    // Autofill must still succeed despite the modal bucket being full.
+    const event = makeAutofillEvent();
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(200);
+  });
+
+  it('falls back to modal cookie when the JSON body is malformed', async () => {
+    mocks.generateAuthenticationOptions.mockResolvedValue({ challenge: 'x' });
+    const event = makeRouteEvent({
+      url: 'https://app.example.com/passkeys/authentication/options'
+    });
+    (event as { request: Request }).request = new Request(event.url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: 'not json'
+    });
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(200);
+    const cookieNames = event.cookies.set.mock.calls.map((c) => c[0]);
+    expect(cookieNames).toContain(PASSKEY_CHALLENGE_COOKIE);
+    expect(cookieNames).not.toContain(PASSKEY_CHALLENGE_AUTOFILL_COOKIE);
   });
 });

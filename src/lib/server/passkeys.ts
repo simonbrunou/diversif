@@ -17,6 +17,10 @@ import { passkeys, webauthnChallenges, type Passkey } from './db/schema';
 
 export const RP_NAME = 'Diversif';
 export const PASSKEY_CHALLENGE_COOKIE = 'wa_challenge';
+// Conditional-UI ceremonies fire automatically on page load and would otherwise
+// stomp on an in-flight registration/authentication challenge in another tab;
+// they get their own cookie so the two flows can coexist.
+export const PASSKEY_CHALLENGE_AUTOFILL_COOKIE = 'wa_challenge_autofill';
 export const PASSKEY_CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // Decoy ECDSA P-256 keypair (matches the curve simplewebauthn uses for ES256
