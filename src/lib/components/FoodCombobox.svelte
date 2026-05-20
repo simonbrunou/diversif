@@ -6,6 +6,7 @@
   import Input from '$components/ui/Input.svelte';
   import Select from '$components/ui/Select.svelte';
   import { cn } from '$lib/utils/cn';
+  import { SearchX, ListFilter } from 'lucide-svelte';
 
   type FoodOption = {
     id: number;
@@ -147,13 +148,22 @@
           </button>
         </li>
       {:else}
-        <li class="px-3 py-6 text-center text-sm text-muted-foreground">
-          Aucun aliment trouvé.
+        <li class="px-3 py-8 text-center">
+          <SearchX class="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
+          <p class="mt-2 text-sm font-medium">Aucun aliment trouvé</p>
+          <p class="mt-1 text-xs text-muted-foreground">
+            {#if query.trim()}
+              Aucune correspondance pour « {query.trim()} ». Essayez un autre terme ou ajoutez-le au catalogue ci-dessous.
+            {:else}
+              Aucun aliment dans cette catégorie. Choisissez « Tous » ou ajoutez un aliment hors catalogue.
+            {/if}
+          </p>
         </li>
       {/each}
       {#if isCapped}
-        <li class="bg-muted/40 px-3 py-2 text-center text-xs text-muted-foreground">
-          Affinez la recherche pour voir d’autres aliments…
+        <li class="flex items-center justify-center gap-1.5 bg-muted/40 px-3 py-2 text-center text-xs text-muted-foreground">
+          <ListFilter size={12} aria-hidden="true" />
+          <span>Affinez la recherche pour voir d’autres aliments…</span>
         </li>
       {/if}
     </ul>

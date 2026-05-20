@@ -234,7 +234,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     weeklyRecap,
     coparentActivity,
     reminders,
-    showWelcomeDialog
+    showWelcomeDialog,
+    ageMonths
   };
 };
 

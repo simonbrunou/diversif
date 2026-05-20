@@ -1,9 +1,13 @@
 <script lang="ts">
   import FoodCardGrid from './FoodCardGrid.svelte';
+  import EmptyHint from '$components/ui/EmptyHint.svelte';
+  import Button from '$components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
   import { getCategoryLabel } from '$lib/utils/categories';
+  import { localizedHref } from '$lib/utils/localized-href';
   import type { TextureKey } from '$lib/utils/textures';
+  import { Salad } from 'lucide-svelte';
 
   type Food = {
     id: number;
@@ -56,9 +60,20 @@
   {#key active}
     <div class="animate-fade-in-soft">
       {#if filtered.length === 0}
-        <p class="rounded-tile border border-dashed border-border bg-canvas p-4 text-center text-sm text-ink-soft">
-          {m.carnetTousEmpty()}
-        </p>
+        <EmptyHint icon={Salad} title={m.carnetTousEmpty()}>
+          {#snippet action()}
+            {#if active !== ''}
+              <Button onclick={() => (active = '')} variant="outline" size="sm">
+                {m.carnetTousEmptyFilteredCta()}
+              </Button>
+            {:else if childId}
+              <Button href={localizedHref(`/child/${childId}/log`)} size="sm">
+                {m.carnetTousEmptyAllCta()}
+              </Button>
+            {/if}
+          {/snippet}
+          {active !== '' ? m.carnetTousEmptyFilteredBody() : m.carnetTousEmptyAllBody()}
+        </EmptyHint>
       {:else}
         <FoodCardGrid items={filtered} {childId} />
       {/if}
