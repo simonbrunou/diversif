@@ -136,4 +136,21 @@ describe('POST /passkeys/authentication/options', () => {
     const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
     expect(res.status).toBe(200);
   });
+
+  it('falls back to modal cookie when the JSON body is malformed', async () => {
+    mocks.generateAuthenticationOptions.mockResolvedValue({ challenge: 'x' });
+    const event = makeRouteEvent({
+      url: 'https://app.example.com/passkeys/authentication/options'
+    });
+    (event as { request: Request }).request = new Request(event.url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: 'not json'
+    });
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(200);
+    const cookieNames = event.cookies.set.mock.calls.map((c) => c[0]);
+    expect(cookieNames).toContain(PASSKEY_CHALLENGE_COOKIE);
+    expect(cookieNames).not.toContain(PASSKEY_CHALLENGE_AUTOFILL_COOKIE);
+  });
 });

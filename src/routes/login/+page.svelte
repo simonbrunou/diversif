@@ -67,6 +67,7 @@
         const data = await verifyRes.json().catch(() => ({}));
         if (cancelled) return;
         if (verifyRes.ok && data?.ok) {
+          if (cancelled) return;
           await goto('/', { invalidateAll: true });
         }
       } catch {
