@@ -6,7 +6,7 @@
 
 <Seo
   title="Cookies · Diversif"
-  description="Diversif n'utilise que deux cookies strictement nécessaires au fonctionnement du service. Aucun cookie de mesure ni de publicité."
+  description="Diversif n'utilise que trois cookies strictement nécessaires au fonctionnement du service. Aucun cookie de mesure ni de publicité."
   path="/cookies"
   noindex
   alternateLocales={['en']}
