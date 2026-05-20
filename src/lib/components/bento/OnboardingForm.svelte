@@ -16,10 +16,12 @@
     name="firstName"
     type="text"
     required
+    aria-invalid={errors?.firstName ? 'true' : undefined}
+    aria-describedby={errors?.firstName ? 'firstName-error' : undefined}
     class="mt-1 w-full rounded-tile border border-border bg-canvas px-3 py-2 text-sm"
   />
   {#if errors?.firstName}
-    <p class="mt-1 text-xs text-severe">{errors.firstName}</p>
+    <p id="firstName-error" class="mt-1 text-xs text-severe">{errors.firstName}</p>
   {/if}
 
   <Label for="birthDate" class="mt-4 block">{m.onboardingBirthDateLabel()}</Label>
@@ -28,10 +30,12 @@
     name="birthDate"
     type="date"
     required
+    aria-invalid={errors?.birthDate ? 'true' : undefined}
+    aria-describedby={errors?.birthDate ? 'birthDate-error' : undefined}
     class="mt-1 w-full rounded-tile border border-border bg-canvas px-3 py-2 text-sm"
   />
   {#if errors?.birthDate}
-    <p class="mt-1 text-xs text-severe">{errors.birthDate}</p>
+    <p id="birthDate-error" class="mt-1 text-xs text-severe">{errors.birthDate}</p>
   {/if}
 
   <hr class="my-5 border-border" />

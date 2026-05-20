@@ -40,6 +40,7 @@
       data-sveltekit-replacestate
       class={cn(
         'flex min-h-11 flex-1 items-center justify-center rounded-full px-3 text-center text-xs font-semibold transition-colors duration-base ease-soft active:scale-[0.97]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         active ? 'bg-primary text-primary-foreground' : 'text-ink-soft hover:text-foreground'
       )}
     >

@@ -312,6 +312,7 @@
   "addSymptomNotePlaceholder": "Décrivez ce que vous observez (280 caractères max)…",
   "addSymptomObservedAt": "Observé à",
   "addSymptomSubmit": "Enregistrer le symptôme",
+  "addSymptomSeveritySevereSrPrefix": "Symptôme grave :",
   "symptomsLabelRougeur": "Rougeur",
   "symptomsLabelUrticaire": "Urticaire",
   "symptomsLabelEczema": "Eczéma",
