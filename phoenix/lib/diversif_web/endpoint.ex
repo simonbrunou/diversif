@@ -1,17 +1,21 @@
 defmodule DiversifWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :diversif
 
-  # Behind a TLS-terminating proxy (Coolify/Traefik, Cloudflare Tunnel, etc.)
-  # Bandit only ever sees the inner HTTP hop, so `conn.scheme` is `:http` by
-  # default. Plug.RewriteOn re-derives scheme / host / port from the
-  # `x-forwarded-*` headers BEFORE Plug.SSL (installed by `force_ssl`) makes
-  # its redirect decision and before secure cookies / URL generators look at
-  # `conn.scheme`. Without this plug, every request 301s to https, the proxy
-  # forwards it back as http, and the loop terminates as "Too many redirects".
-  #
-  # Spoofability: harmless here because the container is only reachable
-  # through the proxy. If we ever expose Bandit directly, this becomes a
-  # trust-the-client-blindly footgun — re-evaluate then.
+  # Cloudflare Tunnel signals scheme via `CF-Visitor`, not
+  # `X-Forwarded-Proto`. The shim hooks via `@before_compile` so it lands
+  # AFTER `Plug.Builder.__before_compile__` installs the endpoint's base
+  # `call/2`. A naked `defoverridable call: 2` in the module body would
+  # fail because `call/2` isn't defined yet at that point. See
+  # `DiversifWeb.CloudflareVisitor` for the full why.
+  @before_compile DiversifWeb.CloudflareVisitor
+
+  # Belt-and-suspenders for the same problem at the next layer: Plug.RewriteOn
+  # re-derives scheme / host / port from the `x-forwarded-*` headers for any
+  # downstream plug that runs AFTER Plug.SSL (cookie `secure` flag, URL
+  # generators, etc.). Plug.SSL itself uses its own `:rewrite_on` option
+  # (set in `config/prod.exs`) which fires before this plug; that's the
+  # piece that breaks the redirect loop. This one keeps `conn.scheme` :https
+  # for everything that comes after.
   plug Plug.RewriteOn, [:x_forwarded_proto, :x_forwarded_host, :x_forwarded_port]
 
   # The session will be stored in the cookie and signed,

@@ -72,4 +72,62 @@ defmodule DiversifWeb.ProxySchemeTest do
 
     refute conn.halted
   end
+
+  describe "CloudflareVisitor.lift_cf_visitor_to_xfp/1" do
+    alias DiversifWeb.CloudflareVisitor
+
+    test "cf-visitor scheme=https → adds x-forwarded-proto: https" do
+      conn =
+        conn(:get, "/")
+        |> put_req_header("cf-visitor", ~s|{"scheme":"https"}|)
+        |> CloudflareVisitor.lift_cf_visitor_to_xfp()
+
+      assert ["https"] == Plug.Conn.get_req_header(conn, "x-forwarded-proto")
+    end
+
+    test "cf-visitor scheme=http → adds x-forwarded-proto: http (don't lie)" do
+      conn =
+        conn(:get, "/")
+        |> put_req_header("cf-visitor", ~s|{"scheme":"http"}|)
+        |> CloudflareVisitor.lift_cf_visitor_to_xfp()
+
+      assert ["http"] == Plug.Conn.get_req_header(conn, "x-forwarded-proto")
+    end
+
+    test "no cf-visitor header → conn untouched" do
+      conn = conn(:get, "/") |> CloudflareVisitor.lift_cf_visitor_to_xfp()
+      assert [] == Plug.Conn.get_req_header(conn, "x-forwarded-proto")
+    end
+
+    test "malformed cf-visitor json → conn untouched (no crash)" do
+      conn =
+        conn(:get, "/")
+        |> put_req_header("cf-visitor", "not-json")
+        |> CloudflareVisitor.lift_cf_visitor_to_xfp()
+
+      assert [] == Plug.Conn.get_req_header(conn, "x-forwarded-proto")
+    end
+
+    test "cf-visitor with bogus scheme value → conn untouched" do
+      conn =
+        conn(:get, "/")
+        |> put_req_header("cf-visitor", ~s|{"scheme":"gopher"}|)
+        |> CloudflareVisitor.lift_cf_visitor_to_xfp()
+
+      assert [] == Plug.Conn.get_req_header(conn, "x-forwarded-proto")
+    end
+
+    test "end-to-end: cf-visitor + Plug.SSL → no redirect" do
+      opts = ssl_init()
+
+      conn =
+        conn(:get, "/login")
+        |> Map.put(:host, "app.example.com")
+        |> put_req_header("cf-visitor", ~s|{"scheme":"https"}|)
+        |> CloudflareVisitor.lift_cf_visitor_to_xfp()
+        |> call(opts)
+
+      refute conn.halted
+    end
+  end
 end
