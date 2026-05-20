@@ -95,6 +95,76 @@ defmodule Diversif.Logbook do
     }
   end
 
+  @doc """
+  Per-allergen introduction map. Returns a list of
+  `%{allergen: id, first_at: DateTime.t() | nil, count: integer}` keyed in the
+  Allergens.all/0 order so the UI can iterate predictably.
+  """
+  def allergen_status_for_child(child_id) when is_integer(child_id) do
+    rows =
+      Repo.all(
+        from e in FoodEntry,
+          join: f in assoc(e, :food),
+          where: e.child_id == ^child_id and not is_nil(f.allergen_type),
+          group_by: f.allergen_type,
+          select: {f.allergen_type, min(e.given_at), count(e.id)}
+      )
+      |> Map.new(fn {a, first, n} -> {a, %{first_at: first, count: n}} end)
+
+    Enum.map(Diversif.Catalog.Allergens.all(), fn {id, label} ->
+      data = Map.get(rows, id, %{first_at: nil, count: 0})
+      Map.merge(data, %{allergen: id, label: label})
+    end)
+  end
+
+  @doc """
+  Reaction-report data: every entry that has either a non-"ras" reaction or
+  one+ associated symptom. Suitable for the printable medical report.
+  """
+  def reaction_report_for_child(child_id) when is_integer(child_id) do
+    entries =
+      Repo.all(
+        from e in FoodEntry,
+          where: e.child_id == ^child_id and e.reaction != "ras",
+          order_by: [desc: e.given_at],
+          preload: [:food, :symptoms]
+      )
+
+    with_symptoms =
+      Repo.all(
+        from e in FoodEntry,
+          join: s in Symptom,
+          on: s.food_entry_id == e.id,
+          where: e.child_id == ^child_id and e.reaction == "ras",
+          distinct: e.id,
+          order_by: [desc: e.given_at],
+          preload: [:food, :symptoms]
+      )
+
+    (entries ++ with_symptoms)
+    |> Enum.uniq_by(& &1.id)
+    |> Enum.sort_by(& &1.given_at, {:desc, DateTime})
+  end
+
+  @doc """
+  Foods not yet introduced for a child, ordered by suggested_age_months
+  (so the "next thing to try" shows first). Excludes custom foods.
+  """
+  def suggestions_for_child(child_id) when is_integer(child_id) do
+    eaten_food_ids =
+      from(e in FoodEntry, where: e.child_id == ^child_id, select: e.food_id, distinct: true)
+
+    Repo.all(
+      from f in Food,
+        where: f.is_custom == false and f.id not in subquery(eaten_food_ids),
+        order_by: [asc: f.suggested_age_months, asc: f.name]
+    )
+  end
+
+  def update_entry(%FoodEntry{} = entry, attrs) do
+    entry |> FoodEntry.changeset(attrs) |> Repo.update()
+  end
+
   # ---------------------------------------------------------------------------
   # Symptoms
   # ---------------------------------------------------------------------------

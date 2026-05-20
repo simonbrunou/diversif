@@ -59,6 +59,21 @@ defmodule DiversifWeb.AuthLive.Login do
           </button>
         </.form>
 
+        <div class="my-4 flex items-center gap-3">
+          <span class="flex-1 border-t border-zinc-200"></span>
+          <span class="text-xs uppercase tracking-wide text-zinc-500">ou</span>
+          <span class="flex-1 border-t border-zinc-200"></span>
+        </div>
+
+        <button
+          type="button"
+          id="passkey-auth-btn"
+          phx-hook="PasskeyAuthenticate"
+          class="w-full rounded border border-zinc-300 py-2 font-medium"
+        >
+          Se connecter avec une clé d'accès
+        </button>
+
         <p class="mt-6 text-sm text-zinc-600">
           Pas encore de compte ?
           <.link navigate={~p"/signup"} class="underline">Créer un compte</.link>

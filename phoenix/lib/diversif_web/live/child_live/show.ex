@@ -79,18 +79,15 @@ defmodule DiversifWeb.ChildLive.Show do
         </li>
       </ul>
 
-      <p class="mt-6 text-sm">
-        <.link navigate={~p"/child/#{@child.id}/foods"} class="underline">
-          Historique complet
+      <p class="mt-6 text-sm flex flex-wrap gap-x-3 gap-y-1">
+        <.link navigate={~p"/child/#{@child.id}/foods"} class="underline">Historique</.link>
+        <.link navigate={~p"/child/#{@child.id}/guide"} class="underline">Guide</.link>
+        <.link navigate={~p"/child/#{@child.id}/suggestions"} class="underline">Suggestions</.link>
+        <.link navigate={~p"/child/#{@child.id}/report"} class="underline">Bilan médical</.link>
+        <.link navigate={~p"/child/#{@child.id}/settings"} class="underline">Paramètres</.link>
+        <.link :if={@role == "owner"} navigate={~p"/child/#{@child.id}/invite"} class="underline">
+          Inviter
         </.link>
-        ·
-        <.link navigate={~p"/child/#{@child.id}/settings"} class="underline">
-          Paramètres
-        </.link>
-        <span :if={@role == "owner"}>
-          ·
-          <.link navigate={~p"/child/#{@child.id}/invite"} class="underline">Inviter</.link>
-        </span>
       </p>
     </Layouts.app>
     """

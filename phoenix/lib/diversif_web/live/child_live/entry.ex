@@ -152,13 +152,28 @@ defmodule DiversifWeb.ChildLive.Entry do
         </button>
       </.form>
 
-      <button
-        phx-click="delete_entry"
-        data-confirm="Supprimer ce repas et ses symptômes ?"
-        class="text-rose-600 underline text-sm"
-      >
-        Supprimer ce repas
-      </button>
+      <div class="flex gap-3 items-center">
+        <.link
+          navigate={~p"/child/#{@child.id}/foods/#{@entry.id}/edit"}
+          class="underline text-sm"
+        >
+          Modifier
+        </.link>
+        <.link
+          navigate={~p"/child/#{@child.id}/foods/#{@entry.id}/print"}
+          target="_blank"
+          class="underline text-sm"
+        >
+          Imprimer
+        </.link>
+        <button
+          phx-click="delete_entry"
+          data-confirm="Supprimer ce repas et ses symptômes ?"
+          class="text-rose-600 underline text-sm"
+        >
+          Supprimer
+        </button>
+      </div>
     </Layouts.app>
     """
   end

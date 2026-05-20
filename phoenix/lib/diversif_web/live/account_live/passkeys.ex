@@ -42,10 +42,17 @@ defmodule DiversifWeb.AccountLive.Passkeys do
       <p class="text-sm mb-2"><.link navigate={~p"/account"} class="underline">← Mon compte</.link></p>
       <h1 class="text-2xl font-semibold mb-2">Clés d'accès</h1>
       <p class="text-sm text-zinc-600 mb-6">
-        Une passkey vous permet de vous connecter sans mot de passe.
-        L'inscription depuis le navigateur nécessite l'intégration de @simplewebauthn/browser
-        (à venir côté front).
+        Une clé d'accès vous permet de vous connecter sans mot de passe.
       </p>
+
+      <button
+        type="button"
+        id="passkey-register-btn"
+        phx-hook="PasskeyRegister"
+        class="rounded bg-zinc-900 text-white px-3 py-2 text-sm font-medium mb-6"
+      >
+        Enregistrer une nouvelle clé
+      </button>
 
       <div :if={@passkeys == []} class="rounded border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500">
         Aucune clé enregistrée.

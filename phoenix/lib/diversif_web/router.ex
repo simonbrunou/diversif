@@ -23,14 +23,23 @@ defmodule DiversifWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :login_throttle do
+    plug DiversifWeb.Plugs.RateLimit, bucket: "login", limit: 10, window: 60
+  end
+
+  pipeline :signup_throttle do
+    plug DiversifWeb.Plugs.RateLimit, bucket: "signup", limit: 5, window: 60
+  end
+
   # ---------------------------------------------------------------------------
-  # Public routes (no auth required, but current_user is loaded if available)
+  # Public routes
   # ---------------------------------------------------------------------------
   scope "/", DiversifWeb do
     pipe_through :browser
 
     live_session :public,
       on_mount: [{DiversifWeb.UserAuth, :mount_current_user}] do
+      live "/guide", GuideLive
       live "/cgu", LegalLive.Cgu
       live "/politique-confidentialite", LegalLive.Privacy
       live "/mentions-legales", LegalLive.MentionsLegales
@@ -40,10 +49,13 @@ defmodule DiversifWeb.Router do
     end
 
     get "/healthz", HealthController, :show
+    # robots.txt is served statically from priv/static/robots.txt; sitemap is
+    # dynamic so the host matches the deployment.
+    get "/sitemap.xml", SiteController, :sitemap
   end
 
   # ---------------------------------------------------------------------------
-  # Guest-only routes (login/signup screens)
+  # Guest-only
   # ---------------------------------------------------------------------------
   scope "/", DiversifWeb do
     pipe_through :browser
@@ -53,13 +65,20 @@ defmodule DiversifWeb.Router do
       live "/login", AuthLive.Login
       live "/signup", AuthLive.Signup
     end
+  end
 
+  scope "/", DiversifWeb do
+    pipe_through [:browser, :login_throttle]
     post "/login", SessionController, :create
+  end
+
+  scope "/", DiversifWeb do
+    pipe_through [:browser, :signup_throttle]
     post "/signup", RegistrationController, :create
   end
 
   # ---------------------------------------------------------------------------
-  # Authenticated routes
+  # Authenticated
   # ---------------------------------------------------------------------------
   scope "/", DiversifWeb do
     pipe_through [:browser, :require_authenticated_user]
@@ -67,13 +86,20 @@ defmodule DiversifWeb.Router do
     live_session :authenticated,
       on_mount: [{DiversifWeb.UserAuth, :ensure_authenticated}] do
       live "/", HomeLive
+      live "/allergens", AllergensLive
+
       live "/child/new", ChildLive.New
       live "/child/:id", ChildLive.Show
       live "/child/:id/log", ChildLive.Log
       live "/child/:id/foods", ChildLive.History
       live "/child/:id/foods/:entry_id", ChildLive.Entry
+      live "/child/:id/foods/:entry_id/edit", ChildLive.Edit
+      live "/child/:id/foods/:entry_id/print", ChildLive.Print
       live "/child/:id/settings", ChildLive.Settings
       live "/child/:id/invite", ChildLive.Invite
+      live "/child/:id/guide", ChildLive.Guide
+      live "/child/:id/suggestions", ChildLive.Suggestions
+      live "/child/:id/report", ChildLive.Report
 
       live "/account", AccountLive.Index
       live "/account/profile", AccountLive.Profile
@@ -115,7 +141,6 @@ defmodule DiversifWeb.Router do
 
     scope "/dev" do
       pipe_through :browser
-
       live_dashboard "/dashboard", metrics: DiversifWeb.Telemetry
     end
   end
