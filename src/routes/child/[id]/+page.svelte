@@ -1,9 +1,13 @@
 <script lang="ts">
   import AujourdhuiBento from '$lib/components/bento/AujourdhuiBento.svelte';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
+  import TipCard from '$lib/components/TipCard.svelte';
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
   import { celebrate, pickMilestoneFromQuery } from '$lib/utils/milestones';
+  import { localizedHref } from '$lib/utils/localized-href';
+  import * as m from '$lib/paraglide/messages';
+  import { Baby } from 'lucide-svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -37,6 +41,25 @@
     history.replaceState({}, '', url);
   });
 </script>
+
+{#if data.ageMonths < 4 && data.stats.foodsIntroduced === 0}
+  <div class="container max-w-2xl px-3 pt-3">
+    <TipCard
+      tone="info"
+      icon={Baby}
+      eyebrow={m.preDiversificationEyebrow()}
+      title={m.preDiversificationTitle()}
+      body={m.preDiversificationBody()}
+    >
+      <a
+        href={localizedHref('/guide')}
+        class="inline-flex items-center font-medium text-primary-strong hover:underline"
+      >
+        {m.preDiversificationCta()} →
+      </a>
+    </TipCard>
+  </div>
+{/if}
 
 <AujourdhuiBento
   childId={String(data.child.id)}

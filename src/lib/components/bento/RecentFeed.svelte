@@ -1,6 +1,7 @@
 <script lang="ts">
   import EmptyHint from '$components/ui/EmptyHint.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
+  import Button from '$components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
   import { formatRelative } from '$lib/utils/dates';
   import { getCategoryIcon } from '$lib/utils/categories';
@@ -8,6 +9,7 @@
   import { localizedHref } from '$lib/utils/localized-href';
   import type { RecentEntry } from '$lib/types';
   import { getTextureLabel } from '$lib/utils/texture-labels';
+  import { UtensilsCrossed } from 'lucide-svelte';
 
   let { entries, childId }: { entries: RecentEntry[]; childId: string } = $props();
 
@@ -55,7 +57,14 @@
 <section class="mb-3">
   <SectionHeader>{m.aujourdhuiRecentTitle()}</SectionHeader>
   {#if visible.length === 0}
-    <EmptyHint class="p-4">{m.aujourdhuiRecentEmpty()}</EmptyHint>
+    <EmptyHint icon={UtensilsCrossed} title={m.aujourdhuiRecentEmpty()}>
+      {#snippet action()}
+        <Button href={localizedHref(`/child/${childId}/log`)} size="sm">
+          {m.aujourdhuiRecentEmptyCta()}
+        </Button>
+      {/snippet}
+      {m.aujourdhuiRecentEmptyBody()}
+    </EmptyHint>
   {:else}
     <ul class="flex flex-col gap-2">
       {#each visible as entry, i (entry.id)}
