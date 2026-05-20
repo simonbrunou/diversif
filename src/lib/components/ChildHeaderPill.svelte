@@ -21,6 +21,7 @@
 <button
   type="button"
   onclick={onSwitch}
+  style="view-transition-name: child-header-pill"
   class="mx-auto mb-3 flex w-full max-w-md items-center gap-3 rounded-tile border border-border/60 bg-canvas px-3 py-2 text-left transition-colors duration-base ease-soft hover:bg-surface-2"
 >
   <span

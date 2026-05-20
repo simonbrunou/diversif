@@ -4,6 +4,7 @@
   import { flush } from '$lib/offline/queue';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/stores';
+  import { onNavigate } from '$app/navigation';
   import { browser } from '$app/environment';
   import { setLanguageTag } from '$lib/paraglide/runtime';
   import * as m from '$lib/paraglide/messages';
@@ -65,6 +66,17 @@
     if (document.documentElement.lang !== locale) {
       document.documentElement.lang = locale;
     }
+  });
+
+  onNavigate((navigation) => {
+    if (!document.startViewTransition) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    return new Promise((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
   });
 
   onMount(() => {
