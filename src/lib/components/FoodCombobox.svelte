@@ -70,11 +70,15 @@
       bind:value={query}
       autocomplete="off"
     />
-    <div class="-mx-1 flex flex-wrap gap-1 px-1">
+    <div
+      role="group"
+      aria-label="Filtrer par catégorie"
+      class="-mx-1 flex flex-wrap gap-1 px-1"
+    >
       <button
         type="button"
         class={cn(
-          'inline-flex min-h-11 items-center rounded-full border px-3 text-xs font-medium transition-colors',
+          'inline-flex min-h-11 items-center rounded-full border px-2.5 text-xs font-medium transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           activeCategory === '' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
         )}
@@ -89,7 +93,7 @@
         <button
           type="button"
           class={cn(
-            'inline-flex min-h-11 items-center gap-1 rounded-full border px-3 text-xs font-medium transition-colors',
+            'inline-flex min-h-11 items-center gap-1 rounded-full border px-2.5 text-xs font-medium transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
             activeCategory === c.id
               ? 'bg-primary text-primary-foreground'
