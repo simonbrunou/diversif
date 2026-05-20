@@ -1,0 +1,34 @@
+# Source: things the builder doesn't need to copy.
+
+# Build artifacts the builder regenerates anyway.
+_build/
+cover/
+deps/
+doc/
+priv/static/assets/
+
+# Local environment.
+.git/
+.gitignore
+.formatter.exs
+.elixir_ls/
+.elixir-tools/
+*.ez
+
+# Test data.
+test/
+priv/repo/seeds.exs
+
+# Editor / IDE.
+.vscode/
+.idea/
+*.swp
+
+# Local dev helpers that don't belong in prod.
+docker-compose.yml
+bin/test
+tmp/
+
+# Already in the image via the release archive.
+Dockerfile
+.dockerignore
