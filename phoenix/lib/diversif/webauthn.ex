@@ -280,15 +280,20 @@ defmodule Diversif.Webauthn do
   # the generic-error branch (same message as a real-verify failure — content
   # parity matters as much as timing).
   defp run_timing_decoy do
-    {public_key, _private_key} = :crypto.generate_key(:ecdh, :secp256r1)
-    sig = :crypto.strong_rand_bytes(64)
-
+    # Keep keygen + verify both inside the try — FIPS-restricted OTP builds
+    # can raise from generate_key, not just from verify. Without this wrapper
+    # the "no credential" path would 500 instead of returning a generic auth
+    # error, re-opening the credential-id enumeration oracle the decoy is
+    # designed to close. The Logger.warning makes the failure visible.
     try do
-      :crypto.verify(:ecdsa, :sha256, :crypto.strong_rand_bytes(32), sig, [public_key, :secp256r1])
+      {public_key, _private_key} = :crypto.generate_key(:ecdh, :secp256r1)
+      sig = :crypto.strong_rand_bytes(64)
+
+      :crypto.verify(:ecdsa, :sha256, :crypto.strong_rand_bytes(32), sig, [
+        public_key,
+        :secp256r1
+      ])
     rescue
-      # :crypto.verify raises on some malformed sigs (and on FIPS/curve issues
-      # in future OTP releases). Scope to argument-shape errors and log if the
-      # mitigation breaks so an operator notices before pentest does.
       e in [ArgumentError, ErlangError] ->
         require Logger
         Logger.warning("webauthn.timing_decoy_failed: #{Exception.message(e)}")

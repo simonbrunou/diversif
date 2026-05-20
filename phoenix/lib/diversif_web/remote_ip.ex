@@ -25,21 +25,37 @@ defmodule DiversifWeb.RemoteIp do
   require Logger
 
   @doc """
-  Boot-time validation. Called from `Diversif.Application.start/2` so a
-  fat-fingered CIDR ("10.0.0.0" instead of "10.0.0.0/8") logs loudly once
-  instead of silently failing-closed on every request.
+  Boot-time validation. Called from `Diversif.Application.start/2`. Logs
+  per malformed entry, and RAISES when the entire list is non-empty but
+  contains zero valid entries — that's "config is entirely broken" and a
+  loud crash at boot is safer than silently disabling proxy trust on every
+  subsequent request.
+
+  Naming: the `!` follows Elixir convention precisely because we raise on
+  the "all bad" path; individual bad entries log so an operator can fix
+  them post-deploy without taking the app down.
   """
   def validate_trusted_proxies! do
     proxies = Application.get_env(:diversif, :trusted_proxies, [])
 
-    Enum.each(proxies, fn cidr ->
-      unless valid_cidr?(cidr) do
-        Logger.error(
-          "remote_ip: malformed trusted_proxies entry #{inspect(cidr)} — every request " <>
-            "will fall back to conn.remote_ip (XFF/CF-Connecting-IP ignored)."
-        )
-      end
+    {good, bad} = Enum.split_with(proxies, &valid_cidr?/1)
+
+    Enum.each(bad, fn cidr ->
+      Logger.error(
+        "remote_ip: malformed trusted_proxies entry #{inspect(cidr)} — every request " <>
+          "will fall back to conn.remote_ip (XFF/CF-Connecting-IP ignored for this entry)."
+      )
     end)
+
+    if proxies != [] and good == [] do
+      raise """
+      remote_ip: trusted_proxies config is non-empty but every entry is malformed.
+      Refusing to boot — fix the CIDRs in TRUSTED_PROXIES or remove the env var.
+      Got: #{inspect(proxies)}
+      """
+    end
+
+    :ok
   end
 
   defp valid_cidr?(cidr) when is_binary(cidr) do
