@@ -61,7 +61,7 @@ defmodule Diversif.AccountsTest do
       assert nil == Accounts.validate_session("deadbeef")
     end
 
-    test "returns nil for expired session" do
+    test "returns :expired for present-but-stale session (so callers can scrub)" do
       user = register_user()
       session = Accounts.create_session(user.id)
 
@@ -70,7 +70,7 @@ defmodule Diversif.AccountsTest do
         set: [expires_at: DateTime.add(DateTime.utc_now(), -3600, :second)]
       )
 
-      assert nil == Accounts.validate_session(session.id)
+      assert :expired == Accounts.validate_session(session.id)
     end
 
     test "validates within renew threshold but does NOT renew when fresh" do

@@ -166,6 +166,8 @@ defmodule Diversif.Repo.Migrations.InitialSchema do
       # All other timestamps are stamped app-side from DateTime.utc_now/0; we
       # don't want a SQL default here so audit ordering is consistent across
       # tables even when the DB clock drifts from the app server clock.
+      # (Migration 20260520000003 enforces the same on environments that
+      # already applied an earlier revision of this file with `now()`.)
       add :created_at, :utc_datetime_usec, null: false
       add :created_by, references(:users, on_delete: :nilify_all)
     end

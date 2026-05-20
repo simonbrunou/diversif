@@ -38,5 +38,10 @@ defmodule Diversif.Accounts.Passkey do
     |> validate_inclusion(:device_type, @device_types)
     |> validate_length(:name, min: 1, max: 80)
     |> foreign_key_constraint(:user_id)
+    # The PK collision (re-registering a credential id we already store) must
+    # come back as a changeset error so Webauthn.finish_registration can map
+    # it to :credential_already_registered. Without this, Repo.insert raises
+    # Ecto.ConstraintError and that dedicated path is unreachable.
+    |> unique_constraint(:id, name: :passkeys_pkey)
   end
 end

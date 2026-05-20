@@ -33,10 +33,13 @@ defmodule Diversif.Logbook.Symptom do
     |> foreign_key_constraint(:created_by)
   end
 
+  # Distinguish "caller didn't set the field" (default it) from "caller
+  # explicitly set nil" (let validate_required catch it). get_field/2 collapses
+  # both cases to nil; fetch_change/2 doesn't.
   defp put_change_if_missing(changeset, field, value) do
-    case Ecto.Changeset.get_field(changeset, field) do
-      nil -> Ecto.Changeset.put_change(changeset, field, value)
-      _ -> changeset
+    case Ecto.Changeset.fetch_change(changeset, field) do
+      :error -> Ecto.Changeset.put_change(changeset, field, value)
+      {:ok, _} -> changeset
     end
   end
 end

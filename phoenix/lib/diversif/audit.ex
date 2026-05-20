@@ -32,7 +32,14 @@ defmodule Diversif.Audit do
     # meta map (a developer bug we want to crash on in dev/test). Scope the
     # rescue and log so a degraded Postgres at the worst moment (deploy,
     # incident) doesn't vanish from telemetry.
-    e in [DBConnection.ConnectionError, Postgrex.Error, Ecto.QueryError] ->
+    e in [
+      DBConnection.ConnectionError,
+      DBConnection.OwnershipError,
+      Postgrex.Error,
+      Ecto.QueryError,
+      Ecto.ConstraintError,
+      Ecto.StaleEntryError
+    ] ->
       Logger.error("audit.record dropped: #{Exception.message(e)} event=#{event}")
       :ok
   end

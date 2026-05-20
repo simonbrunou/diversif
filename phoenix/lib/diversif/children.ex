@@ -144,9 +144,7 @@ defmodule Diversif.Children do
 
   Returns `{:ok, {:joined | :already_member, %Child{}}}` on success, or
   `{:error, :race_lost}` if a concurrent acceptance burned the invite
-  between `find_invitation/1` and the `update_all`. Older `{1, _} = ...`
-  shape would `MatchError` and 500 in that race; this is the documented
-  path that lets the caller render a friendly toast.
+  between `find_invitation/1` and the membership insert.
   """
   def accept_invitation(%Invitation{} = inv, user_id) when is_integer(user_id) do
     now = DateTime.utc_now()

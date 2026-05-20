@@ -70,6 +70,9 @@ defmodule DiversifWeb.RemoteIp do
   defp in_cidr?({_, _, _, _} = ip, cidr) when is_binary(cidr) do
     with [addr, bits_str] <- String.split(cidr, "/"),
          {bits, ""} <- Integer.parse(bits_str),
+         # Reject malformed CIDRs early. `<<<` with a negative shift produces
+         # nonsense; a missing bounds check would silently accept `/33`.
+         true <- bits in 0..32,
          {:ok, net} <- :inet.parse_ipv4_address(String.to_charlist(addr)) do
       mask =
         if bits == 0, do: 0, else: 0xFFFFFFFF <<< (32 - bits) &&& 0xFFFFFFFF

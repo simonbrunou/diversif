@@ -53,6 +53,30 @@ defmodule Diversif.WebauthnTest do
     end
   end
 
+  describe "consume_challenge/2 atomicity under concurrency" do
+    test "20 concurrent consumes of the same token: exactly one succeeds" do
+      # SQL sandbox in shared mode so the spawned Tasks see the same row.
+      Ecto.Adapters.SQL.Sandbox.mode(Diversif.Repo, {:shared, self()})
+
+      {:ok, %{challenge_token: token}} = Webauthn.build_authentication_options()
+
+      results =
+        1..20
+        |> Task.async_stream(
+          fn _ -> Webauthn.consume_challenge(token, "authentication") end,
+          max_concurrency: 20,
+          ordered: false
+        )
+        |> Enum.map(fn {:ok, r} -> r end)
+
+      ok_count = Enum.count(results, &match?({:ok, _}, &1))
+      error_count = Enum.count(results, &(&1 == :error))
+
+      assert ok_count == 1, "exactly one task must walk away with the challenge"
+      assert error_count == 19
+    end
+  end
+
   # Helper: register a user without going through Accounts.register_user/1
   # so we don't drag in the timing-decoy delay.
   defp register_user do

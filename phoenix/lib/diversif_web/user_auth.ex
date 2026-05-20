@@ -53,22 +53,24 @@ defmodule DiversifWeb.UserAuth do
   valid session.
   """
   def fetch_current_user(conn, _opts) do
-    token = get_session(conn, :user_token)
-
-    case token && Accounts.validate_session(token) do
-      {:ok, %{user: user}} ->
-        assign(conn, :current_user, user)
-
+    case get_session(conn, :user_token) do
       nil ->
-        # No token: no-op assign (don't churn the session cookie).
         assign(conn, :current_user, nil)
 
-      _stale ->
-        # Token present but invalid (expired, revoked, deleted). Scrub it so
-        # subsequent requests don't re-hit the DB with the same dead value.
-        conn
-        |> delete_session(:user_token)
-        |> assign(:current_user, nil)
+      token ->
+        case Accounts.validate_session(token) do
+          {:ok, %{user: user}} ->
+            assign(conn, :current_user, user)
+
+          :expired ->
+            # Token present in cookie but past expiry — scrub it so we don't
+            # keep re-hitting the DB on every request with the same dead value.
+            conn |> delete_session(:user_token) |> assign(:current_user, nil)
+
+          nil ->
+            # Token unknown / revoked / deleted server-side. Same treatment.
+            conn |> delete_session(:user_token) |> assign(:current_user, nil)
+        end
     end
   end
 
@@ -129,6 +131,10 @@ defmodule DiversifWeb.UserAuth do
            {:ok, %{user: user}} <- Accounts.validate_session(token) do
         user
       else
+        # We can't scrub the Phoenix session from a LiveView socket — that
+        # has to happen via the next HTTP roundtrip (the controller plug does
+        # it). Just leave current_user nil; the next controller-fronted
+        # request will clear the cookie.
         _ -> nil
       end
     end)

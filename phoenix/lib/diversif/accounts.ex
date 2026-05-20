@@ -74,53 +74,65 @@ defmodule Diversif.Accounts do
 
   @doc """
   Look up a session by token. If valid and within the renew threshold, extends
-  the expiry and bumps `users.last_login_at` in a single transaction (mirrors
-  the SvelteKit version).
+  the expiry and bumps `users.last_login_at` in a single transaction.
 
-  Returns:
-    * `{:ok, %{user: %User{}, session: %Session{}, renewed: boolean}}`
-    * `nil` if no valid session
+  Return shapes (distinct so callers can scrub stale tokens from cookies):
+
+    * `{:ok, %{user: %User{}, session: %Session{}, renewed: boolean}}` — valid
+    * `:expired` — token exists in DB but is past `expires_at`
+    * `nil` — token unknown, deleted, or malformed
   """
   def validate_session(token) when is_binary(token) and byte_size(token) > 0 do
     now = DateTime.utc_now()
 
-    case Repo.one(
-           from s in Session,
-             join: u in assoc(s, :user),
-             where: s.id == ^token and s.expires_at > ^now,
-             select: {s, u},
-             limit: 1
-         ) do
-      nil ->
+    row =
+      Repo.one(
+        from s in Session,
+          join: u in assoc(s, :user),
+          where: s.id == ^token,
+          select: {s, u},
+          limit: 1
+      )
+
+    cond do
+      is_nil(row) ->
         nil
 
-      {session, user} ->
-        remaining = DateTime.diff(session.expires_at, now, :second)
+      elem(row, 0).expires_at |> DateTime.compare(now) != :gt ->
+        :expired
 
-        if remaining < @session_renew_threshold_seconds do
-          new_expiry = DateTime.add(now, @session_duration_seconds, :second)
-
-          {:ok, %{session: renewed_session}} =
-            Repo.transaction(fn ->
-              {1, _} =
-                from(s in Session, where: s.id == ^token)
-                |> Repo.update_all(set: [expires_at: new_expiry])
-
-              {1, _} =
-                from(u in User, where: u.id == ^user.id)
-                |> Repo.update_all(set: [last_login_at: now])
-
-              %{session: %{session | expires_at: new_expiry}}
-            end)
-
-          {:ok, %{user: %{user | last_login_at: now}, session: renewed_session, renewed: true}}
-        else
-          {:ok, %{user: user, session: session, renewed: false}}
-        end
+      true ->
+        validate_session_renew(row, now)
     end
   end
 
   def validate_session(_), do: nil
+
+  defp validate_session_renew({session, user}, now) do
+    remaining = DateTime.diff(session.expires_at, now, :second)
+
+    if remaining < @session_renew_threshold_seconds do
+      new_expiry = DateTime.add(now, @session_duration_seconds, :second)
+      token = session.id
+
+      {:ok, %{session: renewed_session}} =
+        Repo.transaction(fn ->
+          {1, _} =
+            from(s in Session, where: s.id == ^token)
+            |> Repo.update_all(set: [expires_at: new_expiry])
+
+          {1, _} =
+            from(u in User, where: u.id == ^user.id)
+            |> Repo.update_all(set: [last_login_at: now])
+
+          %{session: %{session | expires_at: new_expiry}}
+        end)
+
+      {:ok, %{user: %{user | last_login_at: now}, session: renewed_session, renewed: true}}
+    else
+      {:ok, %{user: user, session: session, renewed: false}}
+    end
+  end
 
   def delete_session(token) when is_binary(token) and byte_size(token) > 0 do
     Repo.delete_all(from s in Session, where: s.id == ^token)

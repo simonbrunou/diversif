@@ -21,19 +21,32 @@ defmodule DiversifWeb.AccountLive.Sessions do
   def handle_event("revoke", %{"id" => token}, socket) do
     user_id = socket.assigns.current_user.id
 
-    {n, _} =
-      Repo.delete_all(from s in Session, where: s.id == ^token and s.user_id == ^user_id)
+    cond do
+      token == socket.assigns.current_token ->
+        # The UI hides the button for the current session; if it lands here
+        # anyway (replay, devtools, stale DOM), refuse — revoking your own
+        # token via this endpoint would broadcast a disconnect mid-flash.
+        # Use /logout for that flow.
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           "Utilisez Se déconnecter pour terminer la session courante."
+         )}
 
-    # Kick any live socket bound to this token so the revoked device doesn't
-    # keep its LiveView WS up until its next HTTP request.
-    if n > 0 do
-      DiversifWeb.Endpoint.broadcast("users_sessions:#{token}", "disconnect", %{})
+      true ->
+        {n, _} =
+          Repo.delete_all(from s in Session, where: s.id == ^token and s.user_id == ^user_id)
+
+        if n > 0 do
+          DiversifWeb.Endpoint.broadcast("users_sessions:#{token}", "disconnect", %{})
+        end
+
+        {:noreply,
+         socket
+         |> assign(:sessions, list_sessions(user_id))
+         |> put_flash(:info, "Session révoquée.")}
     end
-
-    {:noreply,
-     socket
-     |> assign(:sessions, list_sessions(user_id))
-     |> put_flash(:info, "Session révoquée.")}
   end
 
   defp list_sessions(user_id) do

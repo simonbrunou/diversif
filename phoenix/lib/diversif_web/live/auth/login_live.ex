@@ -29,15 +29,14 @@ defmodule DiversifWeb.AuthLive.Login do
     {:noreply, put_flash(socket, :error, "Connexion impossible : #{msg}")}
   end
 
-  def handle_event("submit", %{"session" => params}, socket) do
-    # Echo only the email back to the form — never the password. Otherwise the
-    # plaintext sits in socket.assigns and surfaces in crash dumps / dev tools.
-    safe = %{"email" => params["email"], "password" => ""}
-
-    {:noreply,
-     socket
-     |> assign(:form, to_form(safe, as: :session))
-     |> assign(:trigger_submit, true)}
+  def handle_event("submit", _params, socket) do
+    # Don't echo form params back to assigns. phx-trigger-action submits the
+    # currently-rendered form to /login, and the next render mustn't
+    # overwrite the typed password (assigning "" would blank the DOM input
+    # before the auto-submit, killing every legitimate login). The form
+    # values never enter socket assigns because we dropped phx-change, so
+    # nothing sensitive sits in the LV process.
+    {:noreply, assign(socket, :trigger_submit, true)}
   end
 
   @impl true

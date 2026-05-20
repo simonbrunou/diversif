@@ -70,17 +70,19 @@ defmodule Diversif.ChildrenTest do
     end
   end
 
-  describe "create_invitation/2 collision exhaustion" do
-    test "returns {:error, :code_exhausted} after 5 retries with no successful insert" do
+  describe "create_invitation/2 happy path" do
+    test "generates a fresh BEBE-XXXXXX code on first attempt" do
       owner = register_user("owner4")
-      {:ok, child} = Children.create_child_with_owner(owner.id, %{"name" => "Bebe", "birth_date" => "2025-01-01"})
 
-      # Pre-seed the next 5 codes by stubbing — easier: monkey-patch isn't
-      # idiomatic. Instead, exhaust by inserting fake invitations with every
-      # possible BEBE-XXXXXX from a tiny test alphabet would need code
-      # changes. Skip the negative path here: the change is mechanical and
-      # the positive path (clean insert) is exercised in the other tests.
-      assert {:ok, _code} = Children.create_invitation(child.id, owner.id)
+      {:ok, child} =
+        Children.create_child_with_owner(owner.id, %{
+          "name" => "Bebe",
+          "birth_date" => "2025-01-01"
+        })
+
+      assert {:ok, code} = Children.create_invitation(child.id, owner.id)
+      assert String.starts_with?(code, "BEBE-")
+      assert Children.find_invitation(code)
     end
   end
 end
