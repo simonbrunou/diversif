@@ -122,6 +122,12 @@ const config: Config = {
           foreground: 'hsl(var(--celebrate-foreground) / <alpha-value>)'
         }
       },
+      // Radius rule (Bundle 2):
+      //   - sm/md  → chips, inputs, small buttons
+      //   - tile   → cards, tiles (rounded-tile)
+      //   - hero   → page-scale tiles, modals (rounded-hero)
+      //   - full   → pills, badges, avatars
+      // If you need a new value here, the design has drifted — discuss first.
       borderRadius: {
         xl: 'calc(var(--radius) + 4px)',
         lg: 'var(--radius-lg)',

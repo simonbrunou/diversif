@@ -98,13 +98,13 @@ describe('Modal', () => {
   it('does NOT wrap children in a scroll container by default', () => {
     // Default Modal (no `scrollableBody`) should keep the body un-wrapped so
     // short content (confirm dialogs, info modals) doesn't get an unnecessary
-    // 70vh cap.
+    // scroll cap.
     render(Modal, { props: { open: true, children: text('plain body') } });
-    const wrapper = document.querySelector('[role="dialog"] .max-h-\\[70vh\\].overflow-y-auto');
+    const wrapper = document.querySelector('[role="dialog"] .flex-1.overflow-y-auto');
     expect(wrapper).toBeNull();
   });
 
-  it('wraps children in a max-h-[70vh] overflow-y-auto container when scrollableBody is true', () => {
+  it('wraps children in a flex-1 min-h-0 overflow-y-auto container when scrollableBody is true', () => {
     // The wrapper is what lets the inner content scroll instead of clipping
     // when the body grows taller than the 92dvh bottom-sheet cap. Modal's
     // pointer handler routes inner-scroll vs drag-to-dismiss via the
@@ -113,7 +113,7 @@ describe('Modal', () => {
     render(Modal, {
       props: { open: true, side: 'auto', scrollableBody: true, children: text('long body') }
     });
-    const wrapper = document.querySelector('[role="dialog"] .max-h-\\[70vh\\].overflow-y-auto');
+    const wrapper = document.querySelector('[role="dialog"] .flex-1.overflow-y-auto');
     expect(wrapper).not.toBeNull();
     // Children land inside the wrapper, not as a sibling.
     expect(wrapper?.textContent).toContain('long body');

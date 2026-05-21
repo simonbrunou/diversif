@@ -19,11 +19,12 @@
     description?: string;
     class?: string;
     /**
-     * When true, wraps `children` in a `max-h-[70vh] overflow-y-auto` container
-     * so long body content scrolls instead of clipping. Required for any
-     * `side="auto"` / `side="bottom"` sheet whose body can grow taller than
-     * the 92dvh sheet limit — without it, the lower portion (including the
-     * close button) becomes unreachable on mobile.
+     * When true, wraps `children` in a flex-1 within the sheet flex column
+     * overflow-y-auto container so long body content scrolls instead of
+     * clipping. Required for any `side="auto"` / `side="bottom"` sheet whose
+     * body can grow taller than the 92dvh sheet limit — without it, the
+     * lower portion (including the close button) becomes unreachable on
+     * mobile.
      */
     scrollableBody?: boolean;
     children?: Snippet;
@@ -441,7 +442,7 @@
     >
       {#if resolvedSide === 'bottom'}
         <div
-          class="-mt-2 mb-1 flex cursor-grab justify-center py-2 active:cursor-grabbing"
+          class="tap-target -mt-2 mb-1 flex cursor-grab items-center justify-center py-2 active:cursor-grabbing"
           role="presentation"
         >
           <span data-sheet-grabber class="h-1 w-9 rounded-full bg-border"></span>
@@ -463,7 +464,7 @@
       {/if}
       {#if children}
         {#if scrollableBody}
-          <div class="max-h-[70vh] overflow-y-auto">{@render children()}</div>
+          <div class="flex-1 min-h-0 overflow-y-auto">{@render children()}</div>
         {:else}
           {@render children()}
         {/if}

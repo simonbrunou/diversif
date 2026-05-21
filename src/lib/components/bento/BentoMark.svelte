@@ -5,7 +5,7 @@
 <div
   aria-label="Diversif"
   role="img"
-  class="relative inline-block overflow-hidden rounded-2xl shadow-soft {className}"
+  class="relative inline-block overflow-hidden rounded-tile shadow-soft {className}"
   style="width: {size}px; height: {size}px"
 >
   <div class="absolute inset-y-0 left-0 w-1/2 bg-primary"></div>
