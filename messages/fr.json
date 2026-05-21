@@ -252,7 +252,7 @@
   "textureEcrasee": "Écrasée",
   "texturePetitsMorceaux": "Petits morceaux",
   "textureMorceaux": "Morceaux",
-  "textureFinger": "Finger food",
+  "textureFinger": "Aliments à saisir",
   "decouvrirStagesTitle": "Les étapes",
   "decouvrirStageActiveAria": "Étape actuelle",
   "decouvrirStageOpenAria": "Voir le guide de cette étape",
@@ -471,6 +471,6 @@
   "textureTimelineStateRecent": "Texture la plus récente",
   "textureTimelineStateTried": "Déjà essayée",
   "textureTimelineStateUpcoming": "À venir",
-  "textureTimelineFingerLabel": "Finger food (en parallèle)",
+  "textureTimelineFingerLabel": "Aliments à saisir (en parallèle)",
   "textureTimelineFingerHint": "Optionnel à partir de 6 mois, en complément de la cuillère."
 }

@@ -30,7 +30,7 @@ describe('TextureTimeline', () => {
     render(TextureTimeline, {
       props: { ageMonths: 8, progress: { tried: [], mostRecent: null } }
     });
-    expect(screen.getByText(/Finger food/)).toBeTruthy();
+    expect(screen.getByText(/Aliments à saisir/)).toBeTruthy();
     expect(screen.getByText(/Optionnel à partir de 6 mois/)).toBeTruthy();
   });
 
