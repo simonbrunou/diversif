@@ -7,6 +7,7 @@
     | 'tile-butter'
     | 'tile-sky'
     | 'tile-lilac';
+  export type Padding = 'sm' | 'md' | 'lg';
 
   const VARIANTS: Record<Variant, string> = {
     default: 'bg-card text-card-foreground border-border shadow-card',
@@ -17,6 +18,12 @@
     'tile-sky': 'bg-tile-sky text-tile-sky-foreground border-transparent shadow-soft',
     'tile-lilac': 'bg-tile-lilac text-tile-lilac-foreground border-transparent shadow-soft'
   };
+
+  const PADDING: Record<Padding, string> = {
+    sm: 'p-3',
+    md: 'p-4',
+    lg: 'p-5'
+  };
 </script>
 
 <script lang="ts">
@@ -26,6 +33,7 @@
   let {
     as = 'div',
     variant = 'default',
+    padding,
     class: className = '',
     id,
     'aria-label': ariaLabel,
@@ -34,18 +42,21 @@
   }: {
     as?: 'div' | 'section' | 'article';
     variant?: Variant;
+    padding?: Padding;
     class?: string;
     id?: string;
     'aria-label'?: string;
     'aria-labelledby'?: string;
     children?: Snippet;
   } = $props();
+
+  const paddingClass = $derived(padding ? PADDING[padding] : '');
 </script>
 
 {#if as === 'section'}
   <section
     {id}
-    class={cn('rounded-tile border', VARIANTS[variant], className)}
+    class={cn('rounded-tile border', VARIANTS[variant], paddingClass, className)}
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledby}
   >
@@ -54,7 +65,7 @@
 {:else if as === 'article'}
   <article
     {id}
-    class={cn('rounded-tile border', VARIANTS[variant], className)}
+    class={cn('rounded-tile border', VARIANTS[variant], paddingClass, className)}
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledby}
   >
@@ -63,7 +74,7 @@
 {:else}
   <div
     {id}
-    class={cn('rounded-tile border', VARIANTS[variant], className)}
+    class={cn('rounded-tile border', VARIANTS[variant], paddingClass, className)}
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledby}
   >
