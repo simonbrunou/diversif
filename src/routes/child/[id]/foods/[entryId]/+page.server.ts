@@ -9,16 +9,10 @@ import {
   deleteSymptomById,
   countNthExposition
 } from '$lib/server/db/symptoms';
-import { requireChildContext } from '$lib/server/guards';
+import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
 import type { Actions, PageServerLoad } from './$types';
-
-function parseEntryIdParam(raw: string | undefined): number {
-  const n = Number(raw);
-  if (!Number.isInteger(n) || n <= 0) throw error(404, 'Food entry not found');
-  return n;
-}
 
 async function loadEntryForChild(entryId: number, childId: number) {
   const row = (
@@ -43,7 +37,7 @@ async function loadEntryForChild(entryId: number, childId: number) {
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const { childId } = requireChildContext(locals, params);
-  const entryId = parseEntryIdParam(params.entryId);
+  const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
 
   const row = await loadEntryForChild(entryId, childId);
 
@@ -78,7 +72,7 @@ const addSchema = z.object({
 export const actions: Actions = {
   addSymptom: async ({ locals, params, request }) => {
     const { user, childId } = requireChildContext(locals, params);
-    const entryId = parseEntryIdParam(params.entryId);
+    const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
 
     const raw = Object.fromEntries(await request.formData());
     const parsed = addSchema.safeParse(raw);
@@ -126,7 +120,7 @@ export const actions: Actions = {
 
   deleteSymptom: async ({ locals, params, request }) => {
     const { user, childId } = requireChildContext(locals, params);
-    const entryId = parseEntryIdParam(params.entryId);
+    const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
     await loadEntryForChild(entryId, childId);
 
     const raw = Object.fromEntries(await request.formData());
