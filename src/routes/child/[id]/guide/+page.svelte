@@ -24,6 +24,7 @@
   seasonalFoods={data.seasonalFoods}
   currentMonth={data.currentMonth}
   {childId}
+  recipes={data.recipes}
   onPickSuggestion={(food) => goto(`/child/${childId}?suggested=${food.id}`)}
   onDismissTip={() => {}}
   {viewAllSuggestionsHref}

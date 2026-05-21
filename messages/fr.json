@@ -487,5 +487,11 @@
   "seasonalFoodsMonth9": "septembre",
   "seasonalFoodsMonth10": "octobre",
   "seasonalFoodsMonth11": "novembre",
-  "seasonalFoodsMonth12": "décembre"
+  "seasonalFoodsMonth12": "décembre",
+  "recipesTitle": "Idées de préparation",
+  "recipesSubtitle": "Quelques pistes simples adaptées à l’étape de bébé. À adapter à vos habitudes et aux aliments déjà introduits.",
+  "recipesEmpty": "Pas encore d’idées pour cette étape.",
+  "recipesTimeMinutes": "{minutes} min",
+  "recipesIngredientsLabel": "Ingrédients",
+  "recipesDisclaimer": "Vérifiez avant de servir que chaque ingrédient a déjà été introduit sans réaction. Diversif n’est pas un livre de recettes médicalisé : en cas de doute (allergie, texture, conservation), consultez votre pédiatre."
 }

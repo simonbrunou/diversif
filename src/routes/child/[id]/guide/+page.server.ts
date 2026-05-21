@@ -1,5 +1,7 @@
 import { ageInMonths } from '$lib/utils/age';
 import { getStageForAgeMonths, getAllStagesForBento } from '$lib/content/guidance';
+import { getRecipesForStage } from '$lib/content/recipes';
+// (combined seasonal-foods + recipes branch rebased onto post-#174 main)
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { desc, eq } from 'drizzle-orm';
@@ -70,6 +72,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
   const now = new Date();
   const currentMonth = now.getUTCMonth() + 1;
   const seasonalFoods = await loadSeasonalFoods(months, currentMonth);
+  const recipes = getRecipesForStage(currentStageId);
 
   return {
     ageMonths: months,
@@ -81,6 +84,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     allergens,
     textureProgress,
     seasonalFoods,
-    currentMonth
+    currentMonth,
+    recipes
   };
 };
