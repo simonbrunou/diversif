@@ -252,7 +252,7 @@
   "textureEcrasee": "Écrasée",
   "texturePetitsMorceaux": "Petits morceaux",
   "textureMorceaux": "Morceaux",
-  "textureFinger": "Finger food",
+  "textureFinger": "Aliments à saisir",
   "decouvrirStagesTitle": "Les étapes",
   "decouvrirStageActiveAria": "Étape actuelle",
   "decouvrirStageOpenAria": "Voir le guide de cette étape",
@@ -464,5 +464,13 @@
   "allergenPassportStateReaction": "Réaction observée",
   "allergenPassportTriedFirst": "Première fois",
   "allergenPassportTriedCount": "{count} fois",
-  "allergenPassportFadingHint": "{days} j depuis la dernière fois"
+  "allergenPassportFadingHint": "{days} j depuis la dernière fois",
+  "textureTimelineTitle": "Progression des textures",
+  "textureTimelineSubtitle": "À {months} mois, la texture par défaut est {label}.",
+  "textureTimelineStateExpected": "Attendue à cet âge",
+  "textureTimelineStateRecent": "Texture la plus récente",
+  "textureTimelineStateTried": "Déjà essayée",
+  "textureTimelineStateUpcoming": "À venir",
+  "textureTimelineFingerLabel": "Aliments à saisir (en parallèle)",
+  "textureTimelineFingerHint": "Optionnel à partir de 6 mois, en complément de la cuillère."
 }
