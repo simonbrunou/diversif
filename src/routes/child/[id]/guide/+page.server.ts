@@ -1,7 +1,6 @@
 import { ageInMonths } from '$lib/utils/age';
 import { getStageForAgeMonths, getAllStagesForBento } from '$lib/content/guidance';
 import { getRecipesForStage } from '$lib/content/recipes';
-// (combined seasonal-foods + recipes branch rebased onto post-#174 main)
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { desc, eq } from 'drizzle-orm';

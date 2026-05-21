@@ -19,7 +19,7 @@
   <p class="-mt-1 mb-3 text-xs text-ink-soft">{m.recipesSubtitle()}</p>
 
   {#if recipes.length === 0}
-    <EmptyHint icon={ChefHat} title={m.recipesTitle()}>
+    <EmptyHint icon={ChefHat}>
       {m.recipesEmpty()}
     </EmptyHint>
   {:else}
