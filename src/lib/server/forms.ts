@@ -25,10 +25,10 @@ export async function parseForm<T>(
   const values = Object.fromEntries(formData);
   const result = schema.safeParse(values);
   if (!result.success) {
-    const first = result.error.issues[0];
+    // zod guarantees at least one issue when success is false.
     return {
       ok: false,
-      failure: fail(400, { error: first?.message ?? 'Formulaire invalide', values })
+      failure: fail(400, { error: result.error.issues[0].message, values })
     };
   }
   return { ok: true, data: result.data };

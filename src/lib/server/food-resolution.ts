@@ -36,15 +36,15 @@ export async function resolveOrInsertFood(
   input: ResolveFoodInput,
   tx: DB = db
 ): Promise<ResolveFoodResult> {
-  let resolvedId = input.foodId ?? null;
   const customName = input.customName?.trim();
 
-  if (!resolvedId && !customName) {
-    return { ok: false, reason: 'invalid-custom' };
-  }
-
-  // Insert a new custom food when no existing food was selected.
-  if (!resolvedId && customName) {
+  // Resolve to a foodId — either reuse the provided one or insert a new custom
+  // row. The else branch is the bail-out for callers that forgot to provide
+  // either.
+  let resolvedId: number;
+  if (input.foodId) {
+    resolvedId = input.foodId;
+  } else if (customName) {
     const category =
       input.customCategory?.trim() && CATEGORY_IDS.includes(input.customCategory.trim())
         ? input.customCategory.trim()
@@ -67,9 +67,7 @@ export async function resolveOrInsertFood(
     )[0];
 
     resolvedId = inserted.id;
-  }
-
-  if (!resolvedId) {
+  } else {
     return { ok: false, reason: 'invalid-custom' };
   }
 
