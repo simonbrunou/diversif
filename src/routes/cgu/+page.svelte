@@ -2,6 +2,7 @@
   import BackHeader from '$components/ui/BackHeader.svelte';
   import Callout from '$lib/components/ui/Callout.svelte';
   import Seo from '$lib/components/Seo.svelte';
+  import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { page } from '$app/stores';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -29,7 +30,7 @@
     </header>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">1. Objet</h2>
+    <SectionHeader as="h2">1. Objet</SectionHeader>
     <p class="text-sm leading-relaxed">
       Diversif est un service en ligne d'aide au suivi de la diversification alimentaire d'un
       enfant. Les présentes conditions encadrent son utilisation.
@@ -37,7 +38,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">2. Conditions d'accès</h2>
+    <SectionHeader as="h2">2. Conditions d'accès</SectionHeader>
     <p class="text-sm leading-relaxed">
       L'accès au service nécessite la création d'un compte. L'utilisateur doit être âgé d'au moins
       15 ans (article 45 de la loi Informatique et Libertés). Les fonctionnalités sont mises à
@@ -46,7 +47,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">3. Compte et sécurité</h2>
+    <SectionHeader as="h2">3. Compte et sécurité</SectionHeader>
     <p class="text-sm leading-relaxed">
       L'utilisateur choisit un mot de passe d'au moins 12 caractères ou utilise une clé d'accès
       WebAuthn. Il est responsable de la confidentialité de ses identifiants. Toute activité
@@ -55,7 +56,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">4. Contenu utilisateur</h2>
+    <SectionHeader as="h2">4. Contenu utilisateur</SectionHeader>
     <p class="text-sm leading-relaxed">
       L'utilisateur reste propriétaire des informations qu'il enregistre (fiche de l'enfant,
       journal des aliments, observations, notes). Il garantit disposer du droit d'enregistrer ces
@@ -65,7 +66,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">5. Avertissement médical</h2>
+    <SectionHeader as="h2">5. Avertissement médical</SectionHeader>
     <p class="text-sm leading-relaxed">
       Les contenus de Diversif sont à visée informative et ne se substituent en aucun cas à un
       avis médical individuel. En cas de doute ou de réaction, l'utilisateur est invité à
@@ -74,7 +75,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">6. Disponibilité</h2>
+    <SectionHeader as="h2">6. Disponibilité</SectionHeader>
     <p class="text-sm leading-relaxed">
       Le service est fourni « en l'état », sans garantie de disponibilité ni d'absence d'erreurs.
       L'éditeur peut interrompre tout ou partie du service à des fins de maintenance ou
@@ -83,7 +84,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">7. Données personnelles</h2>
+    <SectionHeader as="h2">7. Données personnelles</SectionHeader>
     <p class="text-sm leading-relaxed">
       Le traitement des données personnelles est décrit sur la page
       <a class="text-primary-strong underline" href={localizedHref('/politique-confidentialite')}>Politique de confidentialité</a>.
@@ -92,7 +93,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">8. Suppression du compte</h2>
+    <SectionHeader as="h2">8. Suppression du compte</SectionHeader>
     <p class="text-sm leading-relaxed">
       L'utilisateur peut supprimer son compte à tout moment depuis la page « Mon compte ». La
       suppression est immédiate et irréversible : sessions, clés d'accès, appartenances et
@@ -102,7 +103,7 @@
   </section>
 
     <section class="mt-8 space-y-3">
-      <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">9. Loi applicable</h2>
+      <SectionHeader as="h2">9. Loi applicable</SectionHeader>
       <p class="text-sm leading-relaxed">
         Les présentes conditions sont soumises au droit français. Tout litige relève des
         juridictions françaises compétentes.
