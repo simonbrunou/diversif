@@ -8,6 +8,8 @@
   import SeasonalFoods from './SeasonalFoods.svelte';
   import Recipes from './Recipes.svelte';
   import DidYouKnow from './DidYouKnow.svelte';
+  import DiscoverGroup from './DiscoverGroup.svelte';
+  import * as m from '$lib/paraglide/messages.js';
   import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
   import type { AllergenItem } from '$lib/server/guidance/allergen-status';
   import type { Recipe } from '$lib/content/recipes';
@@ -70,14 +72,22 @@
 </script>
 
 <div class="flex flex-col">
-  <StagesBentoGrid {stages} {activeStageId} onOpen={openStageBy} />
-  <AllergenPassport {allergens} />
-  <TextureTimeline {ageMonths} progress={textureProgress} />
-  <SeasonalFoods foods={seasonalFoods} month={currentMonth} {childId} />
-  <Recipes {recipes} />
-  <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
-  <DidYouKnow cards={factCards} />
-  <SourcesCluster />
+  <DiscoverGroup label={m.discoverGroupReperes()} tint="mint">
+    <StagesBentoGrid {stages} {activeStageId} onOpen={openStageBy} />
+    <AllergenPassport {allergens} />
+    <TextureTimeline {ageMonths} progress={textureProgress} />
+  </DiscoverGroup>
+
+  <DiscoverGroup label={m.discoverGroupAEssayer()} tint="peach">
+    <SeasonalFoods foods={seasonalFoods} month={currentMonth} {childId} />
+    <Recipes {recipes} />
+    <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
+  </DiscoverGroup>
+
+  <DiscoverGroup label={m.discoverGroupApprendre()} tint="butter">
+    <DidYouKnow cards={factCards} />
+    <SourcesCluster />
+  </DiscoverGroup>
 </div>
 
 {#if openStage}
