@@ -3,10 +3,9 @@ import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import {
-  SESSION_COOKIE,
-  SESSION_DURATION_MS,
   createSession,
   findUserByEmail,
+  setSessionCookie,
   verifyPasswordOrDecoy
 } from '$lib/server/auth';
 import { db } from '$lib/server/db';
@@ -73,13 +72,7 @@ export const actions: Actions = {
     await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
 
     const session = await createSession(user.id);
-    cookies.set(SESSION_COOKIE, session.id, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: Math.floor(SESSION_DURATION_MS / 1000)
-    });
+    setSessionCookie(cookies, session.id);
 
     throw localizedRedirect(event.locals.locale, 303, '/');
   }
