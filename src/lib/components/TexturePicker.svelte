@@ -73,7 +73,7 @@
     {@const s = TILE[k]}
     <label
       class={cn(
-        'group relative flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border p-2 text-center transition-all duration-200 ease-soft',
+        'group relative flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border p-2 text-center transition-all duration-base ease-soft',
         'has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2',
         s.tint,
         s.text,

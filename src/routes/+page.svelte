@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import Button from '$components/ui/Button.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import LandingHeroBento from '$lib/components/landing/LandingHeroBento.svelte';
   import LandingFeaturesBento from '$lib/components/landing/LandingFeaturesBento.svelte';
   import LandingTrustBento from '$lib/components/landing/LandingTrustBento.svelte';
@@ -57,12 +58,9 @@
 {#if data.kind === 'landing'}
   {#if $page.url.pathname.startsWith('/en')}
     <div class="container max-w-4xl pt-4 md:pt-6">
-      <aside
-        class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
-        role="note"
-      >
+      <Callout variant="warning">
         {m.commonFrOnlyBannerLanding()}
-      </aside>
+      </Callout>
     </div>
   {/if}
   <LandingHeroBento child={null} />

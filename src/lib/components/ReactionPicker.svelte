@@ -45,7 +45,7 @@
         // hover/tint cue. The :has(:focus-visible) style only paints a ring
         // when the radio receives keyboard focus, so mouse selection stays
         // quiet but tab-navigation is unmistakable.
-        'group relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border p-3 text-center transition-all duration-200 ease-soft',
+        'group relative flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border p-3 text-center transition-all duration-base ease-soft',
         'has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2',
         s.tint,
         s.text,

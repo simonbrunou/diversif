@@ -98,9 +98,9 @@ describe('Modal', () => {
   it('does NOT wrap children in a scroll container by default', () => {
     // Default Modal (no `scrollableBody`) should keep the body un-wrapped so
     // short content (confirm dialogs, info modals) doesn't get an unnecessary
-    // 70vh cap.
+    // scroll cap.
     render(Modal, { props: { open: true, children: text('plain body') } });
-    const wrapper = document.querySelector('[role="dialog"] .max-h-\\[70vh\\].overflow-y-auto');
+    const wrapper = document.querySelector('[role="dialog"] .overflow-y-auto');
     expect(wrapper).toBeNull();
   });
 

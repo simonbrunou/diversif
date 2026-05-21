@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { goto } from '$app/navigation';
+  import Button from '$lib/components/ui/Button.svelte';
   import BottomNavBento, { TABS } from './BottomNavBento.svelte';
   import FabLog from './FabLog.svelte';
   import ChildHeaderPill from './ChildHeaderPill.svelte';
@@ -115,13 +116,14 @@
 
   <!-- Desktop top-right log button -->
   {#if showChrome && currentChildId}
-    <button
+    <Button
       type="button"
+      size="pill"
       data-no-print
       onclick={openLog}
-      class="fixed right-4 top-4 z-30 hidden rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-soft lg:flex lg:items-center lg:gap-1"
+      class="fixed right-4 top-4 z-30 hidden shadow-soft lg:flex lg:items-center lg:gap-1"
     >
       + {m.chromeFabLog()}
-    </button>
+    </Button>
   {/if}
 </div>

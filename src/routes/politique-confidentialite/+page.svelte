@@ -1,6 +1,8 @@
 <script lang="ts">
   import BackHeader from '$components/ui/BackHeader.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import Seo from '$lib/components/Seo.svelte';
+  import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { page } from '$app/stores';
   import type { PageData } from './$types';
@@ -19,9 +21,9 @@
 <div class="mx-auto max-w-3xl px-6 py-6 text-ink sm:px-10">
   <BackHeader fallback="/" />
   {#if $page.url.pathname.startsWith('/en')}
-    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+    <Callout variant="warning">
       {m.commonFrOnlyBannerLegal()}
-    </aside>
+    </Callout>
   {/if}
 
   <section lang="fr" class="mt-8 space-y-3">
@@ -31,7 +33,7 @@
     </header>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">1. Responsable de traitement</h2>
+    <SectionHeader as="h2">1. Responsable de traitement</SectionHeader>
     <p class="text-sm leading-relaxed">
       {legal.controllerName}, joignable à
       <a class="text-primary-strong underline" href={`mailto:${legal.controllerEmail}`}>{legal.controllerEmail}</a>.
@@ -40,7 +42,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">2. Finalités et bases légales</h2>
+    <SectionHeader as="h2">2. Finalités et bases légales</SectionHeader>
     <ul class="list-disc space-y-1 pl-5 text-sm leading-relaxed">
       <li>
         <span class="font-medium">Tenir un compte parent</span> (email, nom d'usage, mot de passe haché) :
@@ -70,7 +72,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">3. Catégories de données collectées</h2>
+    <SectionHeader as="h2">3. Catégories de données collectées</SectionHeader>
     <ul class="list-disc space-y-1 pl-5 text-sm leading-relaxed">
       <li>Compte parent : email, nom d'usage, mot de passe haché (Argon2id), horodatages d'acceptation des CGU et de la politique, horodatage de dernière connexion.</li>
       <li>Enfant : prénom et date de naissance.</li>
@@ -91,7 +93,7 @@
        https://sentry.io/legal/dpa/ if the policy needs more precision than
        "Berlin, Allemagne". -->
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">4. Destinataires et sous-traitants</h2>
+    <SectionHeader as="h2">4. Destinataires et sous-traitants</SectionHeader>
     <p class="text-sm leading-relaxed">
       Les données applicatives (compte, enfants, journal, sessions) sont stockées dans une base
       PostgreSQL hébergée par {legal.hostProvider}. Aucun tiers de mesure d'audience, de publicité,
@@ -117,7 +119,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">5. Durées de conservation</h2>
+    <SectionHeader as="h2">5. Durées de conservation</SectionHeader>
     <ul class="list-disc space-y-1 pl-5 text-sm leading-relaxed">
       <li>Compte et journaux : tant que le compte est actif. Un compte sans connexion depuis {legal.retentionInactiveDays} jours peut être identifié comme obsolète et supprimé manuellement par l'éditeur.</li>
       <li>Sessions : 30 jours ; renouvellement automatique en cas d'usage.</li>
@@ -129,7 +131,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">6. Vos droits</h2>
+    <SectionHeader as="h2">6. Vos droits</SectionHeader>
     <p class="text-sm leading-relaxed">
       Conformément aux articles 15 à 22 du RGPD, vous disposez des droits suivants : accès,
       rectification, effacement, limitation, opposition, portabilité, retrait du consentement.
@@ -147,7 +149,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">7. Mineurs</h2>
+    <SectionHeader as="h2">7. Mineurs</SectionHeader>
     <p class="text-sm leading-relaxed">
       Diversif est destiné à des parents et personnes responsables d'un enfant. La création d'un
       compte est réservée aux personnes de 15 ans ou plus (article 45 de la loi Informatique et
@@ -157,7 +159,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">8. Sécurité</h2>
+    <SectionHeader as="h2">8. Sécurité</SectionHeader>
     <p class="text-sm leading-relaxed">
       Les mots de passe sont hachés avec Argon2id. Les communications sont chiffrées en HTTPS.
       L'application utilise des en-têtes de sécurité (CSP, HSTS, X-Frame-Options, Referrer-Policy,
@@ -166,7 +168,7 @@
   </section>
 
     <section class="mt-8 space-y-3">
-      <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">9. Transferts hors Union européenne</h2>
+      <SectionHeader as="h2">9. Transferts hors Union européenne</SectionHeader>
       <p class="text-sm leading-relaxed">
         Aucun transfert hors Union européenne n'est effectué tant que l'hébergement reste assuré
         par {legal.hostProvider}.

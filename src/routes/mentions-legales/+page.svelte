@@ -1,6 +1,8 @@
 <script lang="ts">
   import BackHeader from '$components/ui/BackHeader.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import Seo from '$lib/components/Seo.svelte';
+  import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
   import { page } from '$app/stores';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -20,9 +22,9 @@
 <div class="mx-auto max-w-3xl px-6 py-6 text-ink sm:px-10">
   <BackHeader fallback="/" />
   {#if $page.url.pathname.startsWith('/en')}
-    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+    <Callout variant="warning">
       {m.commonFrOnlyBannerLegal()}
-    </aside>
+    </Callout>
   {/if}
 
   <section lang="fr" class="mt-8 space-y-3">
@@ -32,7 +34,7 @@
     </header>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">Éditeur du site</h2>
+    <SectionHeader as="h2">Éditeur du site</SectionHeader>
     <p class="text-sm leading-relaxed">
       <span class="font-medium">{legal.controllerName}</span><br />
       Adresse : {legal.controllerAddress}<br />
@@ -42,7 +44,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">Hébergeur</h2>
+    <SectionHeader as="h2">Hébergeur</SectionHeader>
     <p class="text-sm leading-relaxed">
       <span class="font-medium">{legal.hostProvider}</span><br />
       {legal.hostProviderAddress}
@@ -50,7 +52,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">Propriété intellectuelle</h2>
+    <SectionHeader as="h2">Propriété intellectuelle</SectionHeader>
     <p class="text-sm leading-relaxed">
       Le code source de Diversif est publié sous licence libre sur
       <a class="text-primary-strong underline" href="https://github.com/simonbrunou/diversif" target="_blank" rel="noopener noreferrer">GitHub</a>.
@@ -60,7 +62,7 @@
   </section>
 
   <section class="mt-8 space-y-3">
-    <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">Avertissement médical</h2>
+    <SectionHeader as="h2">Avertissement médical</SectionHeader>
     <p class="text-sm leading-relaxed">
       Diversif fournit des informations générales sur la diversification alimentaire à partir de
       sources reconnues (HCSP, Santé publique France, ANSES, ESPGHAN, OMS). Ces informations ne
@@ -70,7 +72,7 @@
   </section>
 
     <section class="mt-8 space-y-3">
-      <h2 class="text-sm font-semibold uppercase tracking-wider text-ink-soft">Données personnelles</h2>
+      <SectionHeader as="h2">Données personnelles</SectionHeader>
       <p class="text-sm leading-relaxed">
         Le traitement des données personnelles est décrit sur la page
         <a class="text-primary-strong underline" href={localizedHref('/politique-confidentialite')}>Politique de confidentialité</a>.

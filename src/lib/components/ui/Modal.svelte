@@ -24,6 +24,13 @@
      * `side="auto"` / `side="bottom"` sheet whose body can grow taller than
      * the 92dvh sheet limit — without it, the lower portion (including the
      * close button) becomes unreachable on mobile.
+     *
+     * NOTE: a flex-1 approach was tried (Bundle 2) to claim the remaining
+     * space inside the 92dvh sheet, but `DialogPrimitive.Content` is laid
+     * out as a CSS grid, not a flex column, so `flex-1` has no effect there.
+     * Reverting to a 70vh ceiling restores working scroll. The audit-flagged
+     * "dead space below the sheet" requires a layout-level fix in the
+     * grid template, tracked for a follow-up.
      */
     scrollableBody?: boolean;
     children?: Snippet;
@@ -441,7 +448,7 @@
     >
       {#if resolvedSide === 'bottom'}
         <div
-          class="-mt-2 mb-1 flex cursor-grab justify-center py-2 active:cursor-grabbing"
+          class="tap-target -mt-2 mb-1 flex cursor-grab items-center justify-center py-2 active:cursor-grabbing"
           role="presentation"
         >
           <span data-sheet-grabber class="h-1 w-9 rounded-full bg-border"></span>

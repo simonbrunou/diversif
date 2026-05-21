@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Button from '$lib/components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
   import {
     loadTimer,
@@ -42,13 +43,14 @@
 </script>
 
 {#if startedAt === null}
-  <button
+  <Button
     type="button"
+    size="pill"
     onclick={start}
-    class="mb-2 w-full rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+    class="mb-2 w-full shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
   >
     {m.reactionTimerStart()}
-  </button>
+  </Button>
 {:else if remaining > 0}
   <p class="mb-2 rounded-full bg-tile-mint px-4 py-3 text-center text-sm font-bold text-tile-mint-foreground">
     {m.reactionTimerRunning({ time: formatRemaining(remaining) })}

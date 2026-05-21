@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Button from '$lib/components/ui/Button.svelte';
   import BentoMark from '$lib/components/bento/BentoMark.svelte';
   import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
@@ -17,19 +18,21 @@
     </p>
     <div class="mt-6 flex flex-wrap items-center gap-3">
       {#if child}
-        <a
+        <Button
           href={localizedHref(`/child/${child.id}`)}
-          class="rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-soft"
+          size="pill"
+          class="shadow-soft"
         >
           {m.landingHeroCtaContinue({ name: child.name })}
-        </a>
+        </Button>
       {:else}
-        <a
+        <Button
           href={localizedHref('/signup')}
-          class="rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-soft"
+          size="pill"
+          class="shadow-soft"
         >
           {m.landingHeroCtaCreateAccount()}
-        </a>
+        </Button>
         <a
           href={localizedHref('/login')}
           class="text-sm font-semibold text-primary-strong underline"

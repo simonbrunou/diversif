@@ -46,7 +46,7 @@
     type="button"
     onclick={back}
     aria-label={m.chromeBack()}
-    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface-2 hover:text-foreground active:scale-95"
+    class="tap-target inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface-2 hover:text-foreground active:scale-95"
   >
     <ArrowLeft size={20} aria-hidden="true" />
   </button>

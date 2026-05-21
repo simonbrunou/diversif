@@ -20,10 +20,11 @@ describe('AllergenInfoDialog', () => {
   });
 
   it('wraps the dialog body in a scroll container so mobile bottom-sheet content cannot clip', () => {
-    // Without the max-h + overflow-y-auto wrapper, the why / how-to-offer /
-    // first-signs / severe-signs / sources stack overflows the 92dvh sheet
-    // height with no way to reach the bottom — content (and the close button)
-    // become unreachable. The same pattern is used by StageDetailSheet.
+    // Without the max-h-[70vh] + overflow-y-auto wrapper, the why /
+    // how-to-offer / first-signs / severe-signs / sources stack overflows the
+    // 92dvh sheet height with no way to reach the bottom — content (and the
+    // close button) become unreachable. The same pattern is used by
+    // StageDetailSheet.
     render(AllergenInfoDialog, { props: { allergenId: 'oeuf' } });
     const scroller = document.querySelector('[role="dialog"] .max-h-\\[70vh\\].overflow-y-auto');
     expect(scroller).toBeTruthy();

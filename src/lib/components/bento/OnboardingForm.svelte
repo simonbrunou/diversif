@@ -1,5 +1,7 @@
 <script lang="ts">
+  import Button from '$lib/components/ui/Button.svelte';
   import Label from '$components/ui/Label.svelte';
+  import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
 
   type Errors = { firstName?: string; birthDate?: string } | null;
@@ -40,9 +42,7 @@
 
   <hr class="my-5 border-border" />
 
-  <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">
-    {m.onboardingInviteSectionHeader()}
-  </p>
+  <SectionHeader size="sm">{m.onboardingInviteSectionHeader()}</SectionHeader>
   <div class="mt-2 flex items-start gap-2 text-sm">
     <input
       id="inviteCoparent"
@@ -58,10 +58,11 @@
     </label>
   </div>
 
-  <button
+  <Button
     type="submit"
-    class="mt-6 w-full rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+    size="pill"
+    class="mt-6 w-full shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
   >
     {m.onboardingSubmit()}
-  </button>
+  </Button>
 </form>

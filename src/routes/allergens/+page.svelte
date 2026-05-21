@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import Card from '$components/ui/Card.svelte';
   import Badge from '$components/ui/Badge.svelte';
   import AllergenInfoDialog from '$lib/components/AllergenInfoDialog.svelte';
@@ -59,9 +60,9 @@
 
 <div class="container max-w-4xl space-y-8 py-6 md:py-8">
   {#if $page.url.pathname.startsWith('/en')}
-    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+    <Callout variant="warning">
       {m.commonFrOnlyBannerGuide()}
-    </aside>
+    </Callout>
   {/if}
 
   <section lang="fr" class="space-y-8">
@@ -116,9 +117,9 @@
     {/each}
   </div>
 
-  <Card class="p-5 text-center md:p-6">
-    <h2 class="text-lg font-semibold">Suivre l'introduction des allergènes</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+  <Card padding="lg" class="text-center mt-8">
+    <h2 class="text-base font-semibold">Suivre l'introduction des allergènes</h2>
+    <p class="mt-1 text-sm text-ink-soft">
       Diversif suit l'introduction des 12 allergènes du carnet et vous rappelle les allergènes
       prioritaires (œuf, arachide, lait, gluten, poisson, fruits à coque, sésame) qui restent à
       proposer dans la fenêtre 4–11 mois.
