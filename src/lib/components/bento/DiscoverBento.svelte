@@ -2,7 +2,6 @@
   import StagesBentoGrid from './StagesBentoGrid.svelte';
   import StageDetailSheet from './StageDetailSheet.svelte';
   import SuggestionFeed from './SuggestionFeed.svelte';
-  import TipsRotator from './TipsRotator.svelte';
   import SourcesCluster from './SourcesCluster.svelte';
   import AllergenPassport from './AllergenPassport.svelte';
   import TextureTimeline from './TextureTimeline.svelte';
@@ -32,10 +31,7 @@
     stages,
     activeStageId,
     suggestions,
-    todayTip,
-    tipDismissed,
     onPickSuggestion,
-    onDismissTip,
     viewAllSuggestionsHref,
     allergens,
     ageMonths,
@@ -49,10 +45,7 @@
     stages: Stage[];
     activeStageId: string;
     suggestions: RankedSuggestion[];
-    todayTip: { id: string; title: string; body: string } | null;
-    tipDismissed: boolean;
     onPickSuggestion: (food: SuggestFood) => void;
-    onDismissTip: (id: string) => void;
     viewAllSuggestionsHref?: string;
     allergens: AllergenItem[];
     ageMonths: number;
@@ -84,7 +77,6 @@
   <Recipes {recipes} />
   <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
   <DidYouKnow cards={factCards} />
-  <TipsRotator tip={todayTip} dismissed={tipDismissed} onDismiss={onDismissTip} />
   <SourcesCluster />
 </div>
 

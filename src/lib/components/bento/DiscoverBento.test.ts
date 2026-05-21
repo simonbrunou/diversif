@@ -65,10 +65,7 @@ describe('DiscoverBento', () => {
     stages,
     activeStageId: '6-9m',
     suggestions,
-    todayTip: { id: 'tip-1', title: 'Astuce', body: 'Quelque chose' },
-    tipDismissed: false,
     onPickSuggestion: vi.fn(),
-    onDismissTip: vi.fn(),
     allergens: [],
     ageMonths: 7,
     textureProgress: { tried: [], mostRecent: null },
@@ -79,11 +76,10 @@ describe('DiscoverBento', () => {
     factCards: []
   };
 
-  it('renders the stages, suggestions, tips, and sources section headings', () => {
+  it('renders the stages, suggestions, and sources section headings', () => {
     render(DiscoverBento, { props: baseProps });
     expect(screen.getByText('Les étapes')).toBeTruthy();
     expect(screen.getByText('Suggestions du jour')).toBeTruthy();
-    expect(screen.getByText('Astuce du jour')).toBeTruthy();
     expect(screen.getByText('Sources scientifiques')).toBeTruthy();
   });
 

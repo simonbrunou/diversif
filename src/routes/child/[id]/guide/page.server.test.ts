@@ -45,7 +45,7 @@ describe('child/[id]/guide load', () => {
     expect(out.currentStageId).toBe('4-6');
   });
 
-  it('returns stages, suggestions, todayTip and tipDismissed', async () => {
+  it('returns stages and suggestions', async () => {
     const u = await seedUser();
     const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
     await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
@@ -73,37 +73,6 @@ describe('child/[id]/guide load', () => {
     });
 
     expect(Array.isArray(out.suggestions)).toBe(true);
-    expect(out.todayTip).toMatchObject({
-      id: 'tip-allergen-eggs',
-      title: expect.any(String),
-      body: expect.any(String)
-    });
-    expect(typeof out.tipDismissed).toBe('boolean');
-    expect(out.tipDismissed).toBe(false);
-  });
-
-  it('reflects tipDismissed=true when the tip has been dismissed', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-
-    // Insert a dismissal for the today tip
-    const { tipDismissals } = await import('$lib/server/db/schema');
-    await testDb.insert(tipDismissals).values({
-      userId: u.id,
-      childId: c.id,
-      reminderKey: 'tip-allergen-eggs',
-      dismissedAt: new Date()
-    });
-
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      url: 'http://localhost/',
-      parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
-    });
-
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.tipDismissed).toBe(true);
   });
 
   it('maps food entries into the recent list for the suggestion engine', async () => {
