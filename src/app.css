@@ -68,7 +68,8 @@
     --info: var(--tile-sky);
     --info-foreground: var(--tile-sky-foreground);
     --severe: 14 100% 71%; /* coral #ff8a6b : appeler le 15 only */
-    --severe-foreground: 0 0% 100%;
+    --severe-foreground: 14 88% 22%; /* dark warm red — AA contrast on the coral bg (~5.4:1) */
+    --severe-text: 14 88% 22%; /* readable severe-flavoured text on canvas */
     --destructive: var(--severe);
     --destructive-foreground: var(--severe-foreground);
 
@@ -172,7 +173,8 @@
     --info: var(--tile-sky);
     --info-foreground: var(--tile-sky-foreground);
     --severe: 14 100% 71%;
-    --severe-foreground: 0 0% 100%;
+    --severe-foreground: 14 88% 22%;
+    --severe-text: 14 100% 87%; /* light peach — readable severe text on dark canvas */
     --destructive: var(--severe);
     --destructive-foreground: var(--severe-foreground);
 

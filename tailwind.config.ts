@@ -96,7 +96,8 @@ const config: Config = {
         },
         severe: {
           DEFAULT: 'hsl(var(--severe) / <alpha-value>)',
-          foreground: 'hsl(var(--severe-foreground) / <alpha-value>)'
+          foreground: 'hsl(var(--severe-foreground) / <alpha-value>)',
+          text: 'hsl(var(--severe-text) / <alpha-value>)'
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive) / <alpha-value>)',
