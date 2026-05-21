@@ -231,10 +231,6 @@
     "mtime": 1778708530.6671166,
     "hash": "d78078bd20b9ccc93f607db656062be9"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/LegalLinks.svelte": {
-    "mtime": 1778708530.6684284,
-    "hash": "017e444e5a114e4e8131b218c48d3856"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/Seo.svelte": {
     "mtime": 1778708530.6707003,
     "hash": "be31ab3811e3b5664898e7497624731a"
@@ -254,10 +250,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/FabLog.test.ts": {
     "mtime": 1778708530.6761818,
     "hash": "554c11e55a411328d60321549f106d6b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/GuideStaticSections.svelte": {
-    "mtime": 1778710035.2694356,
-    "hash": "5498a88a28a7a94d0231266aba22f83d"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/LocaleSwitcher.svelte": {
     "mtime": 1778710035.2694356,
@@ -358,6 +350,10 @@
   "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.test.ts": {
     "mtime": 1779377766.858377,
     "hash": "7e7197944273f5fff5b9239f2bc1b978"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/GuideStaticSections.svelte": {
+    "mtime": 1779378621.4844518,
+    "hash": "4a32889766b4fdf8f6dde3297050d774"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCtaBento.test.ts": {
     "mtime": 1778708530.7503636,
@@ -527,10 +523,6 @@
     "mtime": 1779372997.7827723,
     "hash": "2e73035ffd430fda36e525b3c3adab5e"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.svelte": {
-    "mtime": 1779374216.5992272,
-    "hash": "ba1450f9ce15cf94f77ded3b3e0f55b9"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.svelte": {
     "mtime": 1779374223.5401502,
     "hash": "f4c6ada05ec550fb739557125613be92"
@@ -546,6 +538,14 @@
   "/home/sbrn/Projects/diversif/src/lib/components/ui/ConfirmModal.svelte": {
     "mtime": 1779377341.2617981,
     "hash": "a50acd65894caad5d7cd43aa6e98171c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/use-bottom-sheet-drag.svelte.ts": {
+    "mtime": 1779378304.560762,
+    "hash": "d5558092fff31e22cdfd8a7e9e07deba"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.svelte": {
+    "mtime": 1779378341.5863752,
+    "hash": "bcc3794e594cf5fbf43bc705c2635105"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/AllergensSnapshot.test.ts": {
     "mtime": 1778708530.777163,
@@ -887,6 +887,42 @@
     "mtime": 1779377853.8554688,
     "hash": "f5a92462be4a89b382caa80671e3d2e1"
   },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideAllergensSection.svelte": {
+    "mtime": 1779378621.4844518,
+    "hash": "595963979ee5a74d5790aa053f7b513b"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideApproachesSection.svelte": {
+    "mtime": 1779378621.484843,
+    "hash": "928752160b255d6c7ed31cca49fe82a5"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideCategoriesSection.svelte": {
+    "mtime": 1779378621.484843,
+    "hash": "1b8a349f93d1e0b7077f10d5b45734f2"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideForbiddenSection.svelte": {
+    "mtime": 1779378621.484843,
+    "hash": "f042a3ec57a23d5046741722939c52a7"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideReactionsSection.svelte": {
+    "mtime": 1779378621.484843,
+    "hash": "d7a27650672c091e526fc71f4b3e584b"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideReglesSection.svelte": {
+    "mtime": 1779378621.484843,
+    "hash": "0ee108af2106b0748893ef0db91ae309"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideSourcesSection.svelte": {
+    "mtime": 1779378621.484843,
+    "hash": "86ec3fcf4de958f982943067a42d634a"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideTexturesSection.svelte": {
+    "mtime": 1779378621.484843,
+    "hash": "67dd7bbfbeac0ba8e2fd205664f0f73e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideStagesSection.svelte": {
+    "mtime": 1779378625.8074067,
+    "hash": "f9db3d79fa6141ec9f6db811e84e6cd4"
+  },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
     "hash": "1099ccc015376940c86b99d5a68d9a8e"
@@ -922,14 +958,6 @@
   "/home/sbrn/Projects/diversif/src/lib/content/seasonal-foods.ts": {
     "mtime": 1779342781.0850663,
     "hash": "2868362dbfe28426724388212870e99b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/legal.test.ts": {
-    "mtime": 1778708530.6930692,
-    "hash": "c4ac36eef171f204a149a6d73c8f83ae"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/legal.ts": {
-    "mtime": 1778708530.6937313,
-    "hash": "088b6b0fe3587e79da74b643a2155f3d"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/rate-limit.test.ts": {
     "mtime": 1778708530.6943486,
@@ -995,10 +1023,6 @@
     "mtime": 1778869839.0216243,
     "hash": "66bfa4029c2300b26d7674b4fbabb677"
   },
-  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.ts": {
-    "mtime": 1778869839.0226243,
-    "hash": "fbfb2a019a1b05caaa984e91a126b3ff"
-  },
   "/home/sbrn/Projects/diversif/src/lib/server/audit.ts": {
     "mtime": 1779156767.7601178,
     "hash": "7fd2481b68fb2f4ee7057740d05bea55"
@@ -1046,6 +1070,18 @@
   "/home/sbrn/Projects/diversif/src/lib/server/guards.ts": {
     "mtime": 1779376181.2333722,
     "hash": "bfc72027bdfeb1b3d7f31dbd5d390e8e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.ts": {
+    "mtime": 1779378176.2721019,
+    "hash": "6a22802dcd5f2d8d60e9ebbaf6003837"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/legal.ts": {
+    "mtime": 1779378228.7705536,
+    "hash": "7c282ab0b7f3264a9d99ef568ce9125e"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/legal.test.ts": {
+    "mtime": 1779378183.331028,
+    "hash": "47c450c49f9f69305b0406d3bf7d01f7"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/errors.ts": {
     "mtime": 1778708530.8237503,
@@ -1107,9 +1143,25 @@
     "mtime": 1779342781.0850663,
     "hash": "885cc5d369a54f51611e1938d060753c"
   },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries.ts": {
-    "mtime": 1779342781.0850663,
-    "hash": "a2e30d680f64e0111126b2d582beaab6"
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/seasonal.ts": {
+    "mtime": 1779378671.0089345,
+    "hash": "074571d046ade52f7eb49ca4d63e1372"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/diversity.ts": {
+    "mtime": 1779378805.8725257,
+    "hash": "a1aead88210a553fe3148bd1c7390347"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/timeline.ts": {
+    "mtime": 1779378735.9152565,
+    "hash": "129976e1ee35ee0b7f39f62c27c66051"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/dismissals.ts": {
+    "mtime": 1779378805.843526,
+    "hash": "5a4edecd83db9ea817c74172dac10823"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/index.ts": {
+    "mtime": 1779378749.1221185,
+    "hash": "c537c1d7528bd66b5d0fc2c9f4a594f0"
   },
   "/home/sbrn/Projects/diversif/src/lib/utils/age.test.ts": {
     "mtime": 1778708530.7092724,
@@ -1224,12 +1276,12 @@
     "hash": "ae632dde8b7efffb83cdf594938176a5"
   },
   "/home/sbrn/Projects/diversif/src/lib/utils/dates.ts": {
-    "mtime": 1779375495.5270283,
-    "hash": "8e17f89a6b9ec91d04ef120466576e1e"
+    "mtime": 1779378153.4033406,
+    "hash": "d0286e535d6ed9fd4211b7c60c6d982c"
   },
   "/home/sbrn/Projects/diversif/src/lib/utils/dates.test.ts": {
-    "mtime": 1779375702.6194308,
-    "hash": "9326ee5e344e57f968decfacd5fd5135"
+    "mtime": 1779378170.964157,
+    "hash": "e68a4deabcc146adca62108a948d74a4"
   },
   "/home/sbrn/Projects/diversif/src/lib/offline/uuid.test.ts": {
     "mtime": 1778708530.72481,
@@ -1248,19 +1300,19 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1779377961.3203466,
+    "mtime": 1779378812.7484748,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1779377961.3203466,
+    "mtime": 1779378812.7484748,
     "hash": "9f575f0d09d2e1a7b95a00148371a9b3"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1779377961.3203466,
+    "mtime": 1779378812.7484748,
     "hash": "9284100a6dcfd65c1ab898d251b45a8e"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1779377961.3203466,
+    "mtime": 1779378812.7484748,
     "hash": "d14211693c7c7667e03514513ac56eaf"
   },
   "/home/sbrn/Projects/diversif/src/lib/forms/tracked-enhance.test.ts": {
