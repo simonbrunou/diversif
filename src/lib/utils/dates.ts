@@ -84,3 +84,31 @@ export function isValidBirthDate(value: string): boolean {
   if (Number.isNaN(d.getTime())) return false;
   return d.toISOString().slice(0, 10) === value;
 }
+
+/**
+ * Format a date using the medium dateStyle for the given locale.
+ * E.g. "1 mars 2026" (fr-FR) or "1 Mar 2026" (en-GB).
+ */
+export function formatDate(d: Date | string | number, locale: string): string {
+  const date = d instanceof Date ? d : new Date(d);
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date);
+}
+
+/**
+ * Format a time using the short timeStyle for the given locale.
+ * E.g. "14:27" (fr-FR) or "2:27 PM" (en-US).
+ */
+export function formatTime(d: Date | string | number, locale: string): string {
+  const date = d instanceof Date ? d : new Date(d);
+  return new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(date);
+}
+
+/**
+ * Coerce a Date, epoch milliseconds number, or ISO string to milliseconds
+ * since epoch. Useful for serialising dates over the page/server boundary.
+ */
+export function toEpochMs(value: Date | number | string): number {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'number') return value;
+  return new Date(value).getTime();
+}

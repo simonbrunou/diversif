@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   parseChildIdParam,
+  parseIntParam,
+  requireChildContext,
   requireUser,
   requireGuest,
   requireMembership,
@@ -108,6 +110,76 @@ describe('parseChildIdParam', () => {
 
   it('throws 404 when id is missing', () => {
     expectError(() => parseChildIdParam({}), 404);
+  });
+});
+
+describe('parseIntParam', () => {
+  it('returns the parsed integer for a valid positive string', () => {
+    expect(parseIntParam('5', 'Foo')).toBe(5);
+    expect(parseIntParam('100', 'Foo')).toBe(100);
+  });
+
+  it('throws 400 when the raw value is undefined', () => {
+    expectError(() => parseIntParam(undefined, 'Foo'), 400);
+  });
+
+  it('throws 400 on non-numeric strings', () => {
+    expectError(() => parseIntParam('abc', 'Foo'), 400);
+  });
+
+  it('throws 400 on zero', () => {
+    expectError(() => parseIntParam('0', 'Foo'), 400);
+  });
+
+  it('throws 400 on negative values', () => {
+    expectError(() => parseIntParam('-1', 'Foo'), 400);
+  });
+
+  it('throws 400 on fractional values', () => {
+    expectError(() => parseIntParam('1.5', 'Foo'), 400);
+  });
+
+  it('includes the kind in the error message', () => {
+    const err = expectError(() => parseIntParam(undefined, 'Identifiant'), 400) as {
+      body?: { message?: string };
+    };
+    expect(err.body?.message).toMatch(/Identifiant/);
+  });
+});
+
+describe('requireChildContext', () => {
+  const m: Membership = {
+    userId: 1,
+    childId: 7,
+    role: 'member',
+    createdAt: new Date()
+  };
+
+  it('returns user, childId and membership on happy path', () => {
+    const result = requireChildContext(makeLocals({ user: fakeUser, memberships: [m] }), {
+      id: '7'
+    });
+    expect(result.childId).toBe(7);
+    expect(result.user).toBe(fakeUser);
+    expect(result.membership).toBe(m);
+  });
+
+  it('throws 404 when id param is missing', () => {
+    expectError(
+      () => requireChildContext(makeLocals({ user: fakeUser, memberships: [m] }), {}),
+      404
+    );
+  });
+
+  it('redirects to /login when not authenticated', () => {
+    expectRedirect(() => requireChildContext(makeLocals({}), { id: '7' }), 303, '/login');
+  });
+
+  it('throws 403 when user has no membership for that child', () => {
+    expectError(
+      () => requireChildContext(makeLocals({ user: fakeUser, memberships: [] }), { id: '7' }),
+      403
+    );
   });
 });
 
