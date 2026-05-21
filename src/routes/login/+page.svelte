@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import BentoAuthLayout from '$lib/components/bento/BentoAuthLayout.svelte';
   import FormError from '$components/ui/FormError.svelte';
   import Seo from '$lib/components/Seo.svelte';
@@ -153,8 +153,7 @@
       </FormError>
     {/if}
 
-    <div class="grid gap-1.5">
-      <Label for="email">{m.authEmailLabel()}</Label>
+    <Field name="email" label={m.authEmailLabel()}>
       <Input
         id="email"
         name="email"
@@ -163,10 +162,9 @@
         required
         value={form?.email ?? ''}
       />
-    </div>
+    </Field>
 
-    <div class="grid gap-1.5">
-      <Label for="password">{m.authPasswordLabel()}</Label>
+    <Field name="password" label={m.authPasswordLabel()}>
       <Input
         id="password"
         name="password"
@@ -174,7 +172,7 @@
         autocomplete="current-password webauthn"
         required
       />
-    </div>
+    </Field>
 
     <Button type="submit" size="lg" loading={submitting}>
       {submitting ? m.authLoginSubmitting() : m.authLoginSubmit()}

@@ -2,8 +2,9 @@
   import BackHeader from '$components/ui/BackHeader.svelte';
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import Card from '$components/ui/Card.svelte';
+
   import Modal from '$components/ui/Modal.svelte';
   import { enhance } from '$app/forms';
   import { page } from '$app/stores';
@@ -66,14 +67,12 @@
         class="mt-3 grid gap-3"
         use:enhance={trackSubmission((v) => (savingChild = v))}
       >
-        <div class="grid gap-1.5">
-          <Label for="name">Prénom</Label>
+        <Field name="name" label="Prénom">
           <Input id="name" name="name" required maxlength={80} value={data.child.name} />
-        </div>
-        <div class="grid gap-1.5">
-          <Label for="birthDate">Date de naissance</Label>
+        </Field>
+        <Field name="birthDate" label="Date de naissance">
           <Input id="birthDate" name="birthDate" type="date" required value={data.child.birthDate} />
-        </div>
+        </Field>
         <div>
           <Button type="submit" loading={savingChild}>
             {savingChild ? 'Enregistrement…' : 'Enregistrer'}
@@ -197,8 +196,7 @@
     use:enhance={trackSubmission((v) => (deletingChild = v))}
   >
     <Input id="confirmName" name="confirmName" bind:value={confirmName} placeholder={data.child.name} autocomplete="off" />
-    <div class="grid gap-1.5">
-      <Label for="confirmDeleteChildPassword">Mot de passe</Label>
+    <Field name="confirmDeleteChildPassword" label="Mot de passe">
       <Input
         id="confirmDeleteChildPassword"
         name="currentPassword"
@@ -207,7 +205,7 @@
         bind:value={confirmDeleteChildPassword}
         required
       />
-    </div>
+    </Field>
     <div class="mt-2 flex justify-end gap-2">
       <Button type="button" variant="outline" onclick={() => (deleteOpen = false)}>Annuler</Button>
       <Button

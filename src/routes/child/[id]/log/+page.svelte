@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import Label from '$components/ui/Label.svelte';
   import Textarea from '$components/ui/Textarea.svelte';
   import FormError from '$components/ui/FormError.svelte';
@@ -118,10 +119,9 @@
 
     <FoodCombobox foods={data.foods} {initialFoodId} />
 
-    <div class="grid gap-1.5">
-      <Label for="givenAt">Quand ?</Label>
+    <Field name="givenAt" label="Quand ?">
       <Input id="givenAt" name="givenAt" type="datetime-local" bind:value={givenAt} required />
-    </div>
+    </Field>
 
     <div class="grid gap-1.5">
       <Label>Comment bébé a réagi ?</Label>
@@ -160,15 +160,14 @@
       />
     </div>
 
-    <div class="grid gap-1.5">
-      <Label for="notes">Une note ? (facultatif)</Label>
+    <Field name="notes" label="Une note ? (facultatif)">
       <Textarea
         id="notes"
         name="notes"
         maxlength={2000}
         placeholder="Quantité, ambiance du repas, observations…"
       />
-    </div>
+    </Field>
 
     <div class="flex gap-2">
       <Button type="submit" size="lg" class="flex-1" loading={submitting}>

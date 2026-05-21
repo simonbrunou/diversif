@@ -2,7 +2,7 @@
   import BackHeader from '$components/ui/BackHeader.svelte';
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import { enhance } from '$app/forms';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
@@ -25,8 +25,7 @@
 <BackHeader title={m.authAccountProfileSection()} />
 
 <form method="POST" class="grid gap-4" use:enhance={trackSubmission((v) => (saving = v))}>
-  <div class="grid gap-1.5">
-    <Label for="displayName">{m.authAccountDisplayNameLabel()}</Label>
+  <Field name="displayName" label={m.authAccountDisplayNameLabel()}>
     <Input
       id="displayName"
       name="displayName"
@@ -34,7 +33,7 @@
       maxlength={80}
       value={data.user?.displayName ?? ''}
     />
-  </div>
+  </Field>
   <div>
     <Button type="submit" loading={saving}>
       {saving ? m.authAccountSaving() : m.authAccountSave()}

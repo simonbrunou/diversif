@@ -2,7 +2,7 @@
   import BackHeader from '$components/ui/BackHeader.svelte';
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import { invalidateAll } from '$app/navigation';
   import { browser } from '$app/environment';
   import { toast } from 'svelte-sonner';
@@ -123,15 +123,14 @@
 
   {#if !unsupported}
     <div class="grid gap-3 border-t border-border pt-4">
-      <div class="grid gap-1.5">
-        <Label for="passkeyName">{m.authAccountPasskeyNewNameLabel()}</Label>
+      <Field name="passkeyName" label={m.authAccountPasskeyNewNameLabel()}>
         <Input
           id="passkeyName"
           placeholder={m.authAccountPasskeyNamePlaceholder()}
           maxlength={80}
           bind:value={passkeyName}
         />
-      </div>
+      </Field>
       <div>
         <Button type="button" onclick={registerPasskey} loading={registering}>
           {registering ? m.authAccountPasskeyAdding() : m.authAccountPasskeyAdd()}
