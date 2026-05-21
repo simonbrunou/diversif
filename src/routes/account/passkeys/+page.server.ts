@@ -1,8 +1,22 @@
 import { fail } from '@sveltejs/kit';
+import { z } from 'zod';
 import { deletePasskey, listPasskeys, publicPasskey, renamePasskey } from '$lib/server/passkeys';
 import { requireUser } from '$lib/server/guards';
+import { parseFormWithKey } from '$lib/server/forms';
 import { audit } from '$lib/server/audit';
 import type { Actions, PageServerLoad } from './$types';
+
+const renameSchema = z.object({
+  id: z.string().min(1),
+  name: z
+    .string()
+    .min(1)
+    .refine((s) => s.trim().length > 0)
+});
+
+const deleteSchema = z.object({
+  id: z.string().min(1)
+});
 
 export const load: PageServerLoad = async ({ locals }) => {
   const user = requireUser(locals);
@@ -13,30 +27,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
   rename: async ({ request, locals }) => {
     const user = requireUser(locals);
-    const raw = Object.fromEntries(await request.formData());
-    const id = typeof raw.id === 'string' ? raw.id : /* v8 ignore next */ '';
-    const name = typeof raw.name === 'string' ? raw.name : /* v8 ignore next */ '';
-    if (!id || !name.trim()) {
-      return fail(400, { passkeyErrorKey: 'errorsAccountPasskeyNameInvalid' });
-    }
-    if (!(await renamePasskey(user.id, id, name))) {
+    const parsed = await parseFormWithKey(request, renameSchema, {
+      field: 'passkeyErrorKey',
+      badInputKey: 'errorsAccountPasskeyNameInvalid'
+    });
+    if (!parsed.ok) return parsed.failure;
+    if (!(await renamePasskey(user.id, parsed.data.id, parsed.data.name))) {
       return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
     }
-    audit({ type: 'account.passkey_renamed', userId: user.id, passkeyId: id });
+    audit({ type: 'account.passkey_renamed', userId: user.id, passkeyId: parsed.data.id });
     return { passkeySuccessKey: 'errorsAccountPasskeyRenameSuccess' };
   },
 
   delete: async ({ request, locals }) => {
     const user = requireUser(locals);
-    const raw = Object.fromEntries(await request.formData());
-    const id = typeof raw.id === 'string' ? raw.id : /* v8 ignore next */ '';
-    if (!id) {
-      return fail(400, { passkeyErrorKey: 'errorsAccountPasskeyIdMissing' });
-    }
-    if (!(await deletePasskey(user.id, id))) {
+    const parsed = await parseFormWithKey(request, deleteSchema, {
+      field: 'passkeyErrorKey',
+      badInputKey: 'errorsAccountPasskeyIdMissing'
+    });
+    if (!parsed.ok) return parsed.failure;
+    if (!(await deletePasskey(user.id, parsed.data.id))) {
       return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
     }
-    audit({ type: 'account.passkey_deleted', userId: user.id, passkeyId: id });
+    audit({ type: 'account.passkey_deleted', userId: user.id, passkeyId: parsed.data.id });
     return { passkeySuccessKey: 'errorsAccountPasskeyDeleteSuccess' };
   }
 };
