@@ -20,6 +20,46 @@ export async function loadTexturesTried(childId: number): Promise<number> {
   return rows[0]?.n ?? 0;
 }
 
+export type TextureProgress = {
+  /** Every distinct texture the child has ever been logged with. */
+  tried: string[];
+  /** Most recent texture seen in the past 30 days, or null if none. */
+  mostRecent: string | null;
+};
+
+export async function loadTextureProgress(
+  childId: number,
+  now: Date = new Date()
+): Promise<TextureProgress> {
+  const since = new Date(now.getTime() - 30 * DAY_MS);
+
+  const triedRows = await db
+    .selectDistinct({ texture: foodEntries.texture })
+    .from(foodEntries)
+    .where(and(eq(foodEntries.childId, childId), sql`${foodEntries.texture} IS NOT NULL`));
+  const tried: string[] = [];
+  for (const r of triedRows) {
+    if (r.texture != null) tried.push(r.texture);
+  }
+
+  const recentRows = await db
+    .select({ texture: foodEntries.texture, givenAt: foodEntries.givenAt })
+    .from(foodEntries)
+    .where(
+      and(
+        eq(foodEntries.childId, childId),
+        gte(foodEntries.givenAt, since),
+        sql`${foodEntries.texture} IS NOT NULL`
+      )
+    )
+    .orderBy(desc(foodEntries.givenAt))
+    .limit(1);
+
+  const mostRecent = recentRows[0]?.texture ?? null;
+
+  return { tried, mostRecent };
+}
+
 export type EnrichedEntry = {
   id: number;
   foodId: number;

@@ -464,5 +464,13 @@
   "allergenPassportStateReaction": "Réaction observée",
   "allergenPassportTriedFirst": "Première fois",
   "allergenPassportTriedCount": "{count} fois",
-  "allergenPassportFadingHint": "{days} j depuis la dernière fois"
+  "allergenPassportFadingHint": "{days} j depuis la dernière fois",
+  "textureTimelineTitle": "Progression des textures",
+  "textureTimelineSubtitle": "À {months} mois, la texture par défaut est {label}.",
+  "textureTimelineStateExpected": "Attendue à cet âge",
+  "textureTimelineStateRecent": "Texture la plus récente",
+  "textureTimelineStateTried": "Déjà essayée",
+  "textureTimelineStateUpcoming": "À venir",
+  "textureTimelineFingerLabel": "Finger food (en parallèle)",
+  "textureTimelineFingerHint": "Optionnel à partir de 6 mois, en complément de la cuillère."
 }

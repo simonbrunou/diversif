@@ -4,7 +4,7 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { chooseSuggestedFoods } from '$lib/utils/suggest';
-import { loadDismissals } from '$lib/server/guidance/queries';
+import { loadDismissals, loadTextureProgress } from '$lib/server/guidance/queries';
 import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
 import type { PageServerLoad } from './$types';
 
@@ -62,6 +62,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 
   const stages = getAllStagesForBento();
   const allergens = await loadAllergenStatus(child.id);
+  const textureProgress = await loadTextureProgress(child.id);
 
   return {
     ageMonths: months,
@@ -70,6 +71,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     suggestions,
     todayTip: TODAY_TIP,
     tipDismissed,
-    allergens
+    allergens,
+    textureProgress
   };
 };

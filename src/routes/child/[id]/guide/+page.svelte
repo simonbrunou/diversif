@@ -18,6 +18,8 @@
   todayTip={data.todayTip}
   tipDismissed={data.tipDismissed}
   allergens={data.allergens}
+  ageMonths={data.ageMonths}
+  textureProgress={data.textureProgress}
   onPickSuggestion={(food) => goto(`/child/${childId}?suggested=${food.id}`)}
   onDismissTip={() => {}}
   {viewAllSuggestionsHref}
