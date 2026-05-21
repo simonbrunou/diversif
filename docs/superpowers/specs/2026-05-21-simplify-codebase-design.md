@@ -187,11 +187,11 @@ Six independently-mergeable PRs, executed in dependency order. Each bundle leave
 - **`schema.ts` split into per-domain files**. Modest gain; Drizzle migration tooling expects a single source.
 - **Welcome dialog ICU rich-text consolidation** (`Step0Bullet*Before/Bold/After` per bullet). Worth doing eventually; isolated effort, not part of the coherence story.
 
-## Open questions
+## Decisions (locked during brainstorm 2026-05-21)
 
-1. Bundle 5's "Suivi des allergènes" rename — does the user want "Carnet des allergènes", or to keep "Suivi" as the verb-noun and only normalize "journal" → "carnet"? Cheap decision to defer to writing-plans.
-2. Should `Callout` ship with an icon prop, or keep the icon hardcoded per variant (warning = ⚠, info = ℹ, success = ✓)? Recommendation: hardcoded per variant for consistency; user can override via a slot if ever needed.
-3. Bundle 5's Report-surface terminology — align everything on "Bilan" (recommended), or keep "Récap pédiatrique" as the eyebrow because it reads as a different register? Cheap decision to defer to writing-plans.
+1. **"Carnet" is canonical.** "Suivi des allergènes" → "Carnet des allergènes" in the Welcome dialog. "Journal" → "Carnet" in PDF/export copy. One noun for the surface across the app.
+2. **`Callout` icons are hardcoded per variant.** `warning = ⚠`, `info = ℹ`, `success = ✓`. No icon prop; no slot. Visual consistency by construction.
+3. **Report surface aligns on "Bilan."** "Récap pédiatrique" eyebrow → "Bilan pédiatrique." "← Tableau" back-link → "← Bilan." One word for the concept across Carnet and Report.
 
 ## Risks & mitigations
 
