@@ -21,7 +21,7 @@ describe('SymptomList', () => {
 
   it('renders the empty placeholder when list is empty', () => {
     render(SymptomList, { props: { symptoms: [], onAdd: () => {}, action } });
-    expect(screen.getByText("Aucun symptôme enregistré pour l'instant.")).toBeTruthy();
+    expect(screen.getByText('Aucun symptôme enregistré pour l’instant.')).toBeTruthy();
   });
 
   it('calls onAdd when the add button is tapped', async () => {

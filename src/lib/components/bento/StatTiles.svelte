@@ -19,33 +19,33 @@
 
   const streakLabel = $derived(
     streakCurrent === 1
-      ? m.aujourdhuiStatsStreakDaysOne()
-      : m.aujourdhuiStatsStreakDaysOther({ days: String(streakCurrent) })
+      ? m.aujourdhuiBilanStreakDaysOne()
+      : m.aujourdhuiBilanStreakDaysOther({ days: String(streakCurrent) })
   );
 </script>
 
 <div class="mb-3 grid grid-cols-2 gap-3">
-  <Card as="article" variant="tile-mint" class="p-4" aria-label={m.aujourdhuiStatsAliments()}>
+  <Card as="article" variant="tile-mint" class="p-4" aria-label={m.aujourdhuiBilanAliments()}>
     <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">
-      {m.aujourdhuiStatsAliments()}
+      {m.aujourdhuiBilanAliments()}
     </p>
     <p class="mt-1 font-display text-3xl italic leading-none">{foodsIntroduced}</p>
     {#if weekCount > 0}
       <p class="mt-2 text-xs text-ink-soft">
-        {m.aujourdhuiStatsAlimentsDelta({ count: String(weekCount) })}
+        {m.aujourdhuiBilanAlimentsDelta({ count: String(weekCount) })}
       </p>
     {/if}
   </Card>
-  <Card as="article" variant="tile-butter" class="p-4" aria-label={m.aujourdhuiStatsStreak()}>
+  <Card as="article" variant="tile-butter" class="p-4" aria-label={m.aujourdhuiBilanStreak()}>
     <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">
-      {m.aujourdhuiStatsStreak()}
+      {m.aujourdhuiBilanStreak()}
     </p>
     <p class="mt-1 font-display text-3xl italic leading-none">
       {streakLabel}
     </p>
     {#if isRecord}
       <p class="mt-2 text-xs font-semibold text-primary-strong animate-record-pop">
-        {m.aujourdhuiStatsStreakRecord()}
+        {m.aujourdhuiBilanStreakRecord()}
       </p>
     {/if}
   </Card>

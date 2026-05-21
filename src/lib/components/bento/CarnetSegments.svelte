@@ -3,7 +3,7 @@
 
   type Entry = {
     id: Segment;
-    labelKey: 'carnetSegmentsTous' | 'carnetSegmentsCategories' | 'carnetSegmentsAllergenes' | 'carnetSegmentsStats';
+    labelKey: 'carnetSegmentsTous' | 'carnetSegmentsCategories' | 'carnetSegmentsAllergenes' | 'carnetSegmentsBilan';
     query: string;
   };
 
@@ -11,7 +11,7 @@
     { id: 'all', labelKey: 'carnetSegmentsTous', query: '' },
     { id: 'categories', labelKey: 'carnetSegmentsCategories', query: '?segment=categories' },
     { id: 'allergens', labelKey: 'carnetSegmentsAllergenes', query: '?segment=allergens' },
-    { id: 'stats', labelKey: 'carnetSegmentsStats', query: '?segment=stats' }
+    { id: 'stats', labelKey: 'carnetSegmentsBilan', query: '?segment=stats' }
   ];
 </script>
 

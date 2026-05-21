@@ -32,7 +32,7 @@ describe('SuggestionFeed', () => {
   it('renders the reason chip for each suggestion', () => {
     render(SuggestionFeed, { props: { suggestions, onPick: () => {} } });
     expect(screen.getByText('Priorité allergène')).toBeTruthy();
-    expect(screen.getByText('Diversifie ta journée')).toBeTruthy();
+    expect(screen.getByText('Pour diversifier la journée')).toBeTruthy();
     expect(screen.getByText('Pas essayé depuis 2 semaines')).toBeTruthy();
   });
 

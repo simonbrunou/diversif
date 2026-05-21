@@ -39,7 +39,7 @@
       href={localizedHref(`/child/${data.child.id}`)}
       class="text-sm text-muted-foreground hover:underline"
     >
-      {m.reportBackToDashboard()}
+      ← {m.reportBackToDashboard()}
     </a>
   {/snippet}
 
