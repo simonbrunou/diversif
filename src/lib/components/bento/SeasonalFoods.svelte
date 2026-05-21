@@ -1,6 +1,6 @@
 <script lang="ts">
   import SectionHeader from '$components/ui/SectionHeader.svelte';
-  import EmptyHint from '$components/ui/EmptyHint.svelte';
+  import CalloutCard from '$components/ui/CalloutCard.svelte';
   import CategoryTag from '$lib/components/CategoryTag.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -48,9 +48,9 @@
   </p>
 
   {#if foods.length === 0}
-    <EmptyHint icon={Sprout} title={m.seasonalFoodsTitle()}>
+    <CalloutCard icon={Sprout} title={m.seasonalFoodsTitle()}>
       {m.seasonalFoodsEmpty()}
-    </EmptyHint>
+    </CalloutCard>
   {:else}
     <ul class="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1">
       {#each foods as food (food.id)}

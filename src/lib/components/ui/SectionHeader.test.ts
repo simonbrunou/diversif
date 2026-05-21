@@ -39,4 +39,17 @@ describe('SectionHeader', () => {
     });
     expect(container.querySelector('h2')?.className).toContain('mt-8');
   });
+
+  it('uses text-sm by default (size="md")', () => {
+    const { container } = render(SectionHeader, { props: { children: textSnippet('X') } });
+    expect(container.querySelector('h2')?.className).toContain('text-sm');
+  });
+
+  it('uses text-xs when size="sm"', () => {
+    const { container } = render(SectionHeader, {
+      props: { size: 'sm', children: textSnippet('X') }
+    });
+    expect(container.querySelector('h2')?.className).toContain('text-xs');
+    expect(container.querySelector('h2')?.className).not.toContain('text-sm');
+  });
 });

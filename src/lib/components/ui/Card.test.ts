@@ -68,4 +68,31 @@ describe('Card', () => {
     });
     expect(container.querySelector('section')?.getAttribute('aria-label')).toBe('Stats');
   });
+
+  it('applies p-3 when padding="sm"', () => {
+    const { container } = render(Card, {
+      props: { padding: 'sm', children: textSnippet('X') }
+    });
+    expect(container.querySelector('div')?.className).toContain('p-3');
+  });
+
+  it('applies p-4 when padding="md"', () => {
+    const { container } = render(Card, {
+      props: { padding: 'md', children: textSnippet('X') }
+    });
+    expect(container.querySelector('div')?.className).toContain('p-4');
+  });
+
+  it('applies p-5 when padding="lg"', () => {
+    const { container } = render(Card, {
+      props: { padding: 'lg', children: textSnippet('X') }
+    });
+    expect(container.querySelector('div')?.className).toContain('p-5');
+  });
+
+  it('does not apply padding when padding prop is omitted', () => {
+    const { container } = render(Card, { props: { children: textSnippet('X') } });
+    const cls = container.querySelector('div')?.className ?? '';
+    expect(cls).not.toMatch(/\bp-3\b|\bp-4\b|\bp-5\b/);
+  });
 });

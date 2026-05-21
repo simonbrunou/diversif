@@ -1,6 +1,6 @@
 <script lang="ts">
   import FoodCardGrid from './FoodCardGrid.svelte';
-  import EmptyHint from '$components/ui/EmptyHint.svelte';
+  import CalloutCard from '$components/ui/CalloutCard.svelte';
   import Button from '$components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
@@ -60,7 +60,7 @@
   {#key active}
     <div class="animate-fade-in-soft">
       {#if filtered.length === 0}
-        <EmptyHint icon={Salad} title={m.carnetTousEmpty()}>
+        <CalloutCard icon={Salad} title={m.carnetTousEmpty()}>
           {#snippet action()}
             {#if active !== ''}
               <Button onclick={() => (active = '')} variant="outline" size="sm">
@@ -73,7 +73,7 @@
             {/if}
           {/snippet}
           {active !== '' ? m.carnetTousEmptyFilteredBody() : m.carnetTousEmptyAllBody()}
-        </EmptyHint>
+        </CalloutCard>
       {:else}
         <FoodCardGrid items={filtered} {childId} />
       {/if}

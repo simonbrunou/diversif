@@ -59,4 +59,18 @@ describe('Button', () => {
     const btn = screen.getByRole('button');
     expect(btn.querySelector('svg')).not.toBeNull();
   });
+
+  it('applies the pill size class', () => {
+    render(Button, { props: { size: 'pill', children: text('Noter') } });
+    const btn = screen.getByRole('button');
+    expect(btn.className).toContain('rounded-full');
+    expect(btn.className).toContain('font-bold');
+  });
+
+  it('keeps the variant color when pill size is used', () => {
+    render(Button, {
+      props: { size: 'pill', variant: 'tile-mint', children: text('Noter') }
+    });
+    expect(screen.getByRole('button').className).toContain('bg-tile-mint');
+  });
 });

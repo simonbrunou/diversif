@@ -1,5 +1,5 @@
 <script lang="ts">
-  import EmptyHint from '$components/ui/EmptyHint.svelte';
+  import CalloutCard from '$components/ui/CalloutCard.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import Button from '$components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
@@ -57,14 +57,14 @@
 <section class="mb-3">
   <SectionHeader>{m.aujourdhuiRecentTitle()}</SectionHeader>
   {#if visible.length === 0}
-    <EmptyHint icon={UtensilsCrossed} title={m.aujourdhuiRecentEmpty()}>
+    <CalloutCard icon={UtensilsCrossed} title={m.aujourdhuiRecentEmpty()}>
       {#snippet action()}
         <Button href={localizedHref(`/child/${childId}/log`)} size="sm">
           {m.aujourdhuiRecentEmptyCta()}
         </Button>
       {/snippet}
       {m.aujourdhuiRecentEmptyBody()}
-    </EmptyHint>
+    </CalloutCard>
   {:else}
     <ul class="flex flex-col gap-2">
       {#each visible as entry, i (entry.id)}

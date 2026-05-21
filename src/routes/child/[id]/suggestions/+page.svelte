@@ -2,7 +2,7 @@
   import BackHeader from '$components/ui/BackHeader.svelte';
   import Card from '$components/ui/Card.svelte';
   import Badge from '$components/ui/Badge.svelte';
-  import EmptyHint from '$components/ui/EmptyHint.svelte';
+  import CalloutCard from '$components/ui/CalloutCard.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
   import {
     CATEGORIES,
@@ -51,9 +51,9 @@
   />
 
   {#if data.priorityAllergens.length === 0 && data.others.length === 0}
-    <EmptyHint icon={Sparkles} title="Vous avez fait le tour du catalogue">
+    <CalloutCard icon={Sparkles} title="Vous avez fait le tour du catalogue">
       Variez les préparations et confirmez les introductions à votre rythme.
-    </EmptyHint>
+    </CalloutCard>
   {:else}
     {#if data.priorityAllergens.length > 0}
       <section>
