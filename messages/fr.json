@@ -439,5 +439,19 @@
   "reportStageExpectedTextures": "Textures attendues",
   "reportStageMostAdvancedTexture": "Texture la plus avancée enregistrée",
   "reportTextureDistributionHeading": "Textures sur 30 jours",
-  "reportTextureDistributionEmpty": "Aucune texture enregistrée sur la période."
+  "reportTextureDistributionEmpty": "Aucune texture enregistrée sur la période.",
+  "foodComboboxSearchPlaceholder": "Rechercher un aliment…",
+  "foodComboboxFilterAriaLabel": "Filtrer par catégorie",
+  "foodComboboxFilterAll": "Tous",
+  "foodComboboxChange": "Changer",
+  "foodComboboxChangeAria": "Changer l’aliment sélectionné (actuellement {name})",
+  "foodComboboxApproximate": "(approchant)",
+  "foodComboboxNoneTitle": "Aucun aliment trouvé",
+  "foodComboboxNoneForQuery": "Aucune correspondance pour « {query} ». Essayez un autre terme ou ajoutez-le au catalogue ci-dessous.",
+  "foodComboboxNoneInCategory": "Aucun aliment dans cette catégorie. Choisissez « Tous » ou ajoutez un aliment hors catalogue.",
+  "foodComboboxCapped": "Affinez la recherche pour voir d’autres aliments…",
+  "foodComboboxAddCustomCta": "+ Ajouter un aliment hors catalogue",
+  "foodComboboxCustomNameLabel": "Nom de l’aliment",
+  "foodComboboxCustomCategoryLabel": "Catégorie",
+  "foodComboboxCustomScopeHint": "Cet aliment ne sera visible que pour cet enfant."
 }

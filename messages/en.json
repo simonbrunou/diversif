@@ -439,5 +439,19 @@
   "reportStageExpectedTextures": "Expected textures",
   "reportStageMostAdvancedTexture": "Most advanced texture logged",
   "reportTextureDistributionHeading": "Textures over 30 days",
-  "reportTextureDistributionEmpty": "No texture logged in this period."
+  "reportTextureDistributionEmpty": "No texture logged in this period.",
+  "foodComboboxSearchPlaceholder": "Search a food…",
+  "foodComboboxFilterAriaLabel": "Filter by category",
+  "foodComboboxFilterAll": "All",
+  "foodComboboxChange": "Change",
+  "foodComboboxChangeAria": "Change the selected food (currently {name})",
+  "foodComboboxApproximate": "(approximate)",
+  "foodComboboxNoneTitle": "No food found",
+  "foodComboboxNoneForQuery": "No match for \"{query}\". Try another term or add it to the catalog below.",
+  "foodComboboxNoneInCategory": "No food in this category. Pick \"All\" or add a food outside the catalog.",
+  "foodComboboxCapped": "Refine the search to see more foods…",
+  "foodComboboxAddCustomCta": "+ Add a food outside the catalog",
+  "foodComboboxCustomNameLabel": "Food name",
+  "foodComboboxCustomCategoryLabel": "Category",
+  "foodComboboxCustomScopeHint": "This food will only be visible for this child."
 }
