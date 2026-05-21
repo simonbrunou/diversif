@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 # HUSKY=0 stops the `prepare` script from trying to install git hooks during
 # `npm ci` — the build context has no .git so husky would otherwise error.
@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build
 RUN npm prune --omit=dev
 
-FROM node:22-alpine
+FROM node:24-alpine
 WORKDIR /app
 RUN apk add --no-cache tini
 
@@ -40,3 +40,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/docker-entrypoint.sh"]
+
