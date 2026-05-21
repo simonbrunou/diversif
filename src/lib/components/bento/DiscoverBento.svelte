@@ -6,8 +6,11 @@
   import SourcesCluster from './SourcesCluster.svelte';
   import AllergenPassport from './AllergenPassport.svelte';
   import TextureTimeline from './TextureTimeline.svelte';
+  import SeasonalFoods from './SeasonalFoods.svelte';
   import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
   import type { AllergenItem } from '$lib/server/guidance/allergen-status';
+
+  type Food = { id: number; name: string; category: string; allergenType: string | null };
 
   type Stage = {
     id: string;
@@ -32,7 +35,10 @@
     viewAllSuggestionsHref,
     allergens,
     ageMonths,
-    textureProgress
+    textureProgress,
+    seasonalFoods,
+    currentMonth,
+    childId
   }: {
     stages: Stage[];
     activeStageId: string;
@@ -45,6 +51,9 @@
     allergens: AllergenItem[];
     ageMonths: number;
     textureProgress: { tried: string[]; mostRecent: string | null };
+    seasonalFoods: Food[];
+    currentMonth: number;
+    childId: string;
   } = $props();
 
   let openStageId = $state<string | null>(null);
@@ -63,6 +72,7 @@
   <StagesBentoGrid {stages} {activeStageId} onOpen={openStageBy} />
   <AllergenPassport {allergens} />
   <TextureTimeline {ageMonths} progress={textureProgress} />
+  <SeasonalFoods foods={seasonalFoods} month={currentMonth} {childId} />
   <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
   <TipsRotator tip={todayTip} dismissed={tipDismissed} onDismiss={onDismissTip} />
   <SourcesCluster />
