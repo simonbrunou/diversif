@@ -9,16 +9,11 @@ import {
   deleteSymptomById,
   countNthExposition
 } from '$lib/server/db/symptoms';
-import { parseChildIdParam, requireMembership } from '$lib/server/guards';
+import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
+import { formatDate, formatTime } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
-
-function parseEntryIdParam(raw: string | undefined): number {
-  const n = Number(raw);
-  if (!Number.isInteger(n) || n <= 0) throw error(404, 'Food entry not found');
-  return n;
-}
 
 async function loadEntryForChild(entryId: number, childId: number) {
   const row = (
@@ -42,18 +37,16 @@ async function loadEntryForChild(entryId: number, childId: number) {
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-  const childId = parseChildIdParam(params);
-  const entryId = parseEntryIdParam(params.entryId);
-  const { user } = requireMembership(locals, childId);
-  void user;
+  const { childId } = requireChildContext(locals, params);
+  const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
 
   const row = await loadEntryForChild(entryId, childId);
 
-  const locale = (locals.locale ?? 'fr') as 'fr' | 'en';
+  const intlLocale = (locals.locale ?? 'fr') === 'fr' ? 'fr-FR' : 'en-GB';
   const sList = (await listSymptomsByEntry(entryId)).map((s) => ({
     id: s.id,
     label: s.label,
-    observedAt: formatTime(s.observedAt, locale),
+    observedAt: formatTime(s.observedAt, intlLocale),
     note: s.note
   }));
   const nth = await countNthExposition(entryId);
@@ -65,8 +58,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     isRas: row.reaction === 'ras',
     texture: row.texture ?? null,
     nth,
-    date: formatDate(row.givenAt, locale),
-    time: formatTime(row.givenAt, locale),
+    date: formatDate(row.givenAt, intlLocale),
+    time: formatTime(row.givenAt, intlLocale),
     symptoms: sList
   };
 };
@@ -79,9 +72,8 @@ const addSchema = z.object({
 
 export const actions: Actions = {
   addSymptom: async ({ locals, params, request }) => {
-    const childId = parseChildIdParam(params);
-    const entryId = parseEntryIdParam(params.entryId);
-    const { user } = requireMembership(locals, childId);
+    const { user, childId } = requireChildContext(locals, params);
+    const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
 
     const raw = Object.fromEntries(await request.formData());
     const parsed = addSchema.safeParse(raw);
@@ -128,9 +120,8 @@ export const actions: Actions = {
   },
 
   deleteSymptom: async ({ locals, params, request }) => {
-    const childId = parseChildIdParam(params);
-    const entryId = parseEntryIdParam(params.entryId);
-    const { user } = requireMembership(locals, childId);
+    const { user, childId } = requireChildContext(locals, params);
+    const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
     await loadEntryForChild(entryId, childId);
 
     const raw = Object.fromEntries(await request.formData());
@@ -155,17 +146,3 @@ export const actions: Actions = {
     return { success: true };
   }
 };
-
-function formatDate(d: Date, locale: 'fr' | 'en'): string {
-  return new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
-    day: 'numeric',
-    month: 'long'
-  }).format(d);
-}
-
-function formatTime(d: Date, locale: 'fr' | 'en'): string {
-  return new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(d);
-}

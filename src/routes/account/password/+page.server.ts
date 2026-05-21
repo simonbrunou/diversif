@@ -5,11 +5,10 @@ import { eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import {
-  SESSION_COOKIE,
-  SESSION_DURATION_MS,
   createSession,
   hashPassword,
   invalidateAllUserSessions,
+  setSessionCookie,
   verifyPassword
 } from '$lib/server/auth';
 import { requireUser } from '$lib/server/guards';
@@ -57,13 +56,7 @@ export const actions: Actions = {
     // device they used to change their password.
     await invalidateAllUserSessions(user.id);
     const session = await createSession(user.id);
-    cookies.set(SESSION_COOKIE, session.id, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: Math.floor(SESSION_DURATION_MS / 1000)
-    });
+    setSessionCookie(cookies, session.id);
 
     audit({ type: 'account.password_changed', userId: user.id });
     return { passwordSuccessKey: 'errorsAccountPasswordSuccess' };

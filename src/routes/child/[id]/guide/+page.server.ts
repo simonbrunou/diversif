@@ -7,6 +7,7 @@ import { desc, eq } from 'drizzle-orm';
 import { chooseSuggestedFoods } from '$lib/utils/suggest';
 import { loadSeasonalFoods, loadTextureProgress } from '$lib/server/guidance/queries';
 import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
+import { toEpochMs } from '$lib/utils/dates';
 import { FACT_CARDS } from '$lib/content/did-you-know';
 import type { PageServerLoad } from './$types';
 
@@ -30,16 +31,13 @@ export const load: PageServerLoad = async ({ parent }) => {
     .orderBy(desc(foodEntries.givenAt))
     .limit(20);
 
-  const recent = recentRows.map((r) => {
-    const ts = r.givenAt as unknown;
-    return {
-      foodId: r.foodId,
-      foodName: r.foodName,
-      category: r.category,
-      allergenType: r.allergenType,
-      givenAt: ts instanceof Date ? ts.getTime() : /* v8 ignore next */ Number(ts)
-    };
-  });
+  const recent = recentRows.map((r) => ({
+    foodId: r.foodId,
+    foodName: r.foodName,
+    category: r.category,
+    allergenType: r.allergenType,
+    givenAt: toEpochMs(r.givenAt as Date | number | string)
+  }));
 
   const suggestions = chooseSuggestedFoods({
     starterFoods: [],

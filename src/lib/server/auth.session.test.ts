@@ -14,7 +14,8 @@ import {
   hashPassword,
   verifyPassword,
   findUserByEmail,
-  listMembershipsForUser
+  listMembershipsForUser,
+  setSessionCookie
 } from './auth';
 import { users, memberships, children, sessions } from './db/schema';
 import { eq } from 'drizzle-orm';
@@ -187,5 +188,29 @@ describe('listMembershipsForUser', () => {
 
     expect((await listMembershipsForUser(user.id)).length).toBe(1);
     expect(await listMembershipsForUser(other.id)).toEqual([]);
+  });
+});
+
+describe('setSessionCookie', () => {
+  it('calls cookies.set with the session cookie name and correct options', () => {
+    const setCalls: [string, string, Record<string, unknown>][] = [];
+    const mockCookies = {
+      set: (name: string, value: string, opts: Record<string, unknown>) => {
+        setCalls.push([name, value, opts]);
+      }
+    };
+
+    // Cast to satisfy the Cookies type — only .set is exercised.
+    setSessionCookie(mockCookies as Parameters<typeof setSessionCookie>[0], 'test-session-id');
+
+    expect(setCalls).toHaveLength(1);
+    const [name, value, opts] = setCalls[0];
+    expect(name).toBe(SESSION_COOKIE);
+    expect(value).toBe('test-session-id');
+    expect(opts.path).toBe('/');
+    expect(opts.httpOnly).toBe(true);
+    expect(opts.sameSite).toBe('lax');
+    expect(typeof opts.maxAge).toBe('number');
+    expect(opts.maxAge as number).toBe(Math.floor(SESSION_DURATION_MS / 1000));
   });
 });

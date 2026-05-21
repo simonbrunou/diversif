@@ -7,7 +7,10 @@ import {
   parseDateTimeLocal,
   isValidBirthDate,
   formatMonthsSince,
-  localInputToIso
+  localInputToIso,
+  formatDate,
+  formatTime,
+  toEpochMs
 } from './dates';
 
 describe('isValidBirthDate', () => {
@@ -157,5 +160,68 @@ describe('formatMonthsSince', () => {
     const result = formatMonthsSince('2025-11-01', new Date('2026-05-10T00:00:00Z'));
     setLanguageTag(sourceLanguageTag);
     expect(result).toBe('6 mo');
+  });
+});
+
+describe('formatDate', () => {
+  const d = new Date('2026-03-01T12:00:00Z');
+
+  it('formats a Date object with French locale', () => {
+    const out = formatDate(d, 'fr-FR');
+    // "medium" dateStyle in fr-FR → "1 mars 2026"
+    expect(out).toMatch(/mars/i);
+    expect(out).toMatch(/2026/);
+  });
+
+  it('formats a Date object with English locale', () => {
+    const out = formatDate(d, 'en-GB');
+    expect(out).toMatch(/Mar/i);
+    expect(out).toMatch(/2026/);
+  });
+
+  it('accepts an epoch ms number', () => {
+    const out = formatDate(d.getTime(), 'fr-FR');
+    expect(out).toMatch(/2026/);
+  });
+
+  it('accepts an ISO string', () => {
+    const out = formatDate('2026-03-01T12:00:00Z', 'fr-FR');
+    expect(out).toMatch(/2026/);
+  });
+});
+
+describe('formatTime', () => {
+  it('returns a non-empty time string with digit separators', () => {
+    const d = new Date('2026-03-01T14:27:00Z');
+    const out = formatTime(d, 'fr-FR');
+    // timeStyle:'short' in fr-FR produces something like "14:27" or "15:27"
+    // depending on the host timezone. Just confirm it's a time-shaped string.
+    expect(typeof out).toBe('string');
+    expect(out.length).toBeGreaterThan(0);
+    // Must contain exactly the minutes component ":27" or " 27"
+    expect(out).toMatch(/27/);
+  });
+
+  it('accepts an epoch ms number', () => {
+    const d = new Date('2026-03-01T09:05:00Z');
+    const out = formatTime(d.getTime(), 'en-GB');
+    expect(typeof out).toBe('string');
+    expect(out.length).toBeGreaterThan(0);
+  });
+});
+
+describe('toEpochMs', () => {
+  const d = new Date('2026-01-15T08:00:00Z');
+
+  it('returns getTime() for a Date', () => {
+    expect(toEpochMs(d)).toBe(d.getTime());
+  });
+
+  it('passes through a number unchanged', () => {
+    expect(toEpochMs(1234567890)).toBe(1234567890);
+  });
+
+  it('parses an ISO string to epoch ms', () => {
+    expect(toEpochMs('2026-01-15T08:00:00Z')).toBe(d.getTime());
   });
 });

@@ -6,12 +6,11 @@ import { invitations, memberships, users } from '$lib/server/db/schema';
 import { isUniqueViolation } from '$lib/server/db/errors';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import {
-  SESSION_COOKIE,
-  SESSION_DURATION_MS,
   createSession,
   findUserByEmail,
   hashPassword,
-  isValidInviteCodeFormat
+  isValidInviteCodeFormat,
+  setSessionCookie
 } from '$lib/server/auth';
 import { requireGuest } from '$lib/server/guards';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
@@ -228,13 +227,7 @@ export const actions: Actions = {
     }
 
     const session = await createSession(userId);
-    cookies.set(SESSION_COOKIE, session.id, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: Math.floor(SESSION_DURATION_MS / 1000)
-    });
+    setSessionCookie(cookies, session.id);
 
     throw localizedRedirect(
       event.locals.locale,

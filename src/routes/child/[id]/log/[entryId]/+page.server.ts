@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { and, eq, isNull, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
-import { CATEGORY_IDS } from '$lib/utils/categories';
+import { parseIntParam, requireChildContext } from '$lib/server/guards';
+import { resolveOrInsertFood } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -23,12 +23,6 @@ const schema = z
     message: 'Choisissez un aliment ou créez-en un.'
   });
 
-function parseEntryId(value: string | undefined): number {
-  const id = Number(value);
-  if (!Number.isInteger(id) || id <= 0) throw error(404, 'Entrée introuvable');
-  return id;
-}
-
 async function loadEntry(entryId: number, childId: number) {
   const row = (
     await db
@@ -42,10 +36,8 @@ async function loadEntry(entryId: number, childId: number) {
 }
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
-  requireUser(locals);
-  const childId = parseChildIdParam(params);
-  requireMembership(locals, childId);
-  const entryId = parseEntryId(params.entryId);
+  const { childId } = requireChildContext(locals, params);
+  const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
 
   const entry = await loadEntry(entryId, childId);
 
@@ -95,10 +87,8 @@ function destinationFor(
 
 export const actions: Actions = {
   update: async ({ request, params, locals }) => {
-    requireUser(locals);
-    const childId = parseChildIdParam(params);
-    requireMembership(locals, childId);
-    const entryId = parseEntryId(params.entryId);
+    const { childId } = requireChildContext(locals, params);
+    const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
     await loadEntry(entryId, childId);
 
     const raw = Object.fromEntries(await request.formData());
@@ -109,51 +99,19 @@ export const actions: Actions = {
       });
     }
 
-    let foodId = parsed.data.foodId ?? null;
-    const customName = parsed.data['customFood.name']?.trim();
-    const customCategoryRaw = parsed.data['customFood.category']?.trim();
-
-    if (!foodId && customName) {
-      const category = CATEGORY_IDS.includes(customCategoryRaw ?? /* v8 ignore next */ '')
-        ? (customCategoryRaw as string)
-        : 'autre';
-      const inserted = (
-        await db
-          .insert(foods)
-          .values({
-            name: customName,
-            category,
-            isMajorAllergen: false,
-            allergenType: null,
-            suggestedAgeMonths: 0,
-            notes: null,
-            isCustom: true,
-            customForChildId: childId
-          })
-          .returning({ id: foods.id })
-      )[0];
-      foodId = inserted.id;
+    const resolved = await resolveOrInsertFood({
+      foodId: parsed.data.foodId ?? null,
+      customName: parsed.data['customFood.name'],
+      customCategory: parsed.data['customFood.category'],
+      childId
+    });
+    if (!resolved.ok) {
+      return fail(400, {
+        error:
+          resolved.reason === 'not-found' ? 'Aliment introuvable.' : 'Aucun aliment sélectionné.'
+      });
     }
-
-    if (!foodId) {
-      return fail(400, { error: 'Aucun aliment sélectionné.' });
-    }
-
-    const food = (
-      await db
-        .select()
-        .from(foods)
-        .where(
-          and(
-            eq(foods.id, foodId),
-            or(isNull(foods.customForChildId), eq(foods.customForChildId, childId))
-          )
-        )
-        .limit(1)
-    )[0];
-    if (!food) {
-      return fail(400, { error: 'Aliment introuvable.' });
-    }
+    const { foodId } = resolved;
 
     const givenAtDate = new Date(parsed.data.givenAt);
     if (Number.isNaN(givenAtDate.getTime())) {
@@ -183,10 +141,8 @@ export const actions: Actions = {
   },
 
   delete: async ({ request, params, locals }) => {
-    requireUser(locals);
-    const childId = parseChildIdParam(params);
-    requireMembership(locals, childId);
-    const entryId = parseEntryId(params.entryId);
+    const { childId } = requireChildContext(locals, params);
+    const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
     await loadEntry(entryId, childId);
 
     await db

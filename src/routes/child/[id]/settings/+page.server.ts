@@ -15,7 +15,7 @@ import { checkRateLimit } from '$lib/server/rate-limit';
 const FRESH_AUTH_LIMIT = { name: 'fresh-auth', limit: 5, windowMs: 5 * 60 * 1000 };
 import {
   parseChildIdParam,
-  requireMembership,
+  requireChildContext,
   requireOwnership,
   requireUser
 } from '$lib/server/guards';
@@ -23,9 +23,7 @@ import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-  requireUser(locals);
-  const childId = parseChildIdParam(params);
-  const { membership } = requireMembership(locals, childId);
+  const { childId, membership } = requireChildContext(locals, params);
 
   const memberRows = await db
     .select({
@@ -134,9 +132,7 @@ export const actions: Actions = {
   },
 
   leaveChild: async ({ params, locals }) => {
-    requireUser(locals);
-    const childId = parseChildIdParam(params);
-    const { user, membership } = requireMembership(locals, childId);
+    const { user, childId, membership } = requireChildContext(locals, params);
     if (membership.role === 'owner') {
       return fail(400, {
         error: 'Le créateur ne peut pas quitter, supprimez l’enfant à la place.'

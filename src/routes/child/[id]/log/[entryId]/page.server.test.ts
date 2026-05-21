@@ -56,7 +56,7 @@ async function setup() {
 }
 
 describe('child/[id]/log/[entryId] load', () => {
-  it('errors 404 on invalid entryId', async () => {
+  it('errors 400 on invalid entryId', async () => {
     const { u, c, m } = await setup();
     const r = await captureFlow(() =>
       load(
@@ -69,7 +69,7 @@ describe('child/[id]/log/[entryId] load', () => {
       )
     );
     expect(r.kind).toBe('error');
-    if (r.kind === 'error') expect(r.status).toBe(404);
+    if (r.kind === 'error') expect(r.status).toBe(400);
   });
 
   it('errors 404 on entryId not belonging to the child', async () => {

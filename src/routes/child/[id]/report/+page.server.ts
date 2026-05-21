@@ -5,6 +5,7 @@ import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens
 import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import { ageInMonths } from '$lib/utils/age';
+import { toEpochMs } from '$lib/utils/dates';
 import { getStageForAgeMonths, type Stage } from '$lib/content/guidance';
 import { TEXTURE_VALUES, type TextureKey, isTextureKey } from '$lib/utils/textures';
 import type { PageServerLoad } from './$types';
@@ -72,8 +73,7 @@ export const load: PageServerLoad = async ({ parent }) => {
     category: r.category as CategoryId,
     allergenType: r.allergenType,
     reaction: r.reaction as ReactionId,
-    givenAt:
-      r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt),
+    givenAt: toEpochMs(r.givenAt as Date | number | string),
     notes: r.notes,
     texture: isTextureKey(r.texture) ? r.texture : null
   }));

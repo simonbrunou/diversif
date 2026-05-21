@@ -2,15 +2,13 @@ import { error } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { children } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
+import { requireChildContext } from '$lib/server/guards';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals, params }) => {
   // requireUser before the integer check so unauthed visitors hit /login
   // rather than a 404 when the URL has a malformed id.
-  requireUser(locals);
-  const childId = parseChildIdParam(params);
-  const { membership } = requireMembership(locals, childId);
+  const { childId, membership } = requireChildContext(locals, params);
 
   const child = (await db.select().from(children).where(eq(children.id, childId)).limit(1))[0];
   if (!child) throw error(404, 'Enfant introuvable');

@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
-import { CATEGORY_IDS } from '$lib/utils/categories';
+import { requireChildContext } from '$lib/server/guards';
+import { resolveOrInsertFood } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import { ALLERGENS } from '$lib/utils/allergens';
 import {
@@ -30,9 +30,7 @@ const schema = z
   });
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-  requireUser(locals);
-  const childId = parseChildIdParam(params);
-  requireMembership(locals, childId);
+  const { childId } = requireChildContext(locals, params);
 
   const list = await db
     .select({
@@ -60,9 +58,7 @@ class LogActionAbort extends Error {
 
 export const actions: Actions = {
   default: async ({ request, params, locals }) => {
-    requireUser(locals);
-    const childId = parseChildIdParam(params);
-    const { user } = requireMembership(locals, childId);
+    const { user, childId } = requireChildContext(locals, params);
 
     const idempotencyKey = request.headers.get('Idempotency-Key');
     if (
@@ -89,52 +85,24 @@ export const actions: Actions = {
     try {
       redirectPath = await db.transaction(async (tx) => {
         const work = async (): Promise<{ redirect: string }> => {
-          let foodId = parsed.data.foodId ?? null;
-          const customName = parsed.data['customFood.name']?.trim();
-          const customCategoryRaw = parsed.data['customFood.category']?.trim();
-
-          if (!foodId && customName) {
-            const category = CATEGORY_IDS.includes(customCategoryRaw ?? /* v8 ignore next */ '')
-              ? (customCategoryRaw as string)
-              : 'autre';
-            const inserted = (
-              await tx
-                .insert(foods)
-                .values({
-                  name: customName,
-                  category,
-                  isMajorAllergen: false,
-                  allergenType: null,
-                  suggestedAgeMonths: 0,
-                  notes: null,
-                  isCustom: true,
-                  customForChildId: childId
-                })
-                .returning({ id: foods.id })
-            )[0];
-            foodId = inserted.id;
+          const resolved = await resolveOrInsertFood(
+            {
+              foodId: parsed.data.foodId ?? null,
+              customName: parsed.data['customFood.name'],
+              customCategory: parsed.data['customFood.category'],
+              childId
+            },
+            tx
+          );
+          if (!resolved.ok) {
+            throw new LogActionAbort(
+              400,
+              resolved.reason === 'not-found'
+                ? 'Aliment introuvable.'
+                : 'Aucun aliment sélectionné.'
+            );
           }
-
-          if (!foodId) {
-            throw new LogActionAbort(400, 'Aucun aliment sélectionné.');
-          }
-
-          // Verify the food belongs to this child or is from the global catalog.
-          const food = (
-            await tx
-              .select()
-              .from(foods)
-              .where(
-                and(
-                  eq(foods.id, foodId),
-                  or(isNull(foods.customForChildId), eq(foods.customForChildId, childId))
-                )
-              )
-              .limit(1)
-          )[0];
-          if (!food) {
-            throw new LogActionAbort(400, 'Aliment introuvable.');
-          }
+          const { food, foodId } = resolved;
 
           // Snapshot pre-insert state so we can detect milestones after the
           // insert. Cast counts to int : node-postgres returns BIGINT as a

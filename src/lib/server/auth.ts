@@ -4,6 +4,7 @@ import { and, eq, gt } from 'drizzle-orm';
 import { db } from './db';
 import { sessions, users, memberships, type Session, type User } from './db/schema';
 import type { SafeUser } from '$lib/types';
+import type { Cookies } from '@sveltejs/kit';
 
 export const SESSION_COOKIE = 'session';
 export const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
@@ -153,3 +154,18 @@ export async function findUserByEmail(email: string): Promise<User | undefined> 
 }
 
 export { generateInviteCodeRaw, isValidInviteCodeFormat } from '$lib/utils/invites';
+
+/**
+ * Set the session cookie with the canonical options used across login, signup,
+ * and password-change flows. Centralises the 6-property options object so a
+ * single place controls path, httpOnly, sameSite, secure and maxAge.
+ */
+export function setSessionCookie(cookies: Cookies, sessionId: string): void {
+  cookies.set(SESSION_COOKIE, sessionId, {
+    path: '/',
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: Math.floor(SESSION_DURATION_MS / 1000)
+  });
+}
