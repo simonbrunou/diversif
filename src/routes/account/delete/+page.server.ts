@@ -1,15 +1,10 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '$lib/server/redirect';
-import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { SESSION_COOKIE, verifyPassword } from '$lib/server/auth';
+import { SESSION_COOKIE } from '$lib/server/auth';
 import { deleteUserAccount } from '$lib/server/gdpr';
 import { requireUser } from '$lib/server/guards';
-import { checkRateLimit } from '$lib/server/rate-limit';
+import { requireFreshAuthWithKey } from '$lib/server/fresh-auth';
 import type { Actions, PageServerLoad } from './$types';
-
-const FRESH_AUTH_LIMIT = { name: 'fresh-auth', limit: 5, windowMs: 5 * 60 * 1000 };
 
 export const load: PageServerLoad = async ({ locals }) => {
   requireUser(locals);
@@ -19,10 +14,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
   default: async ({ request, locals, cookies }) => {
     const user = requireUser(locals);
-    const rl = checkRateLimit(FRESH_AUTH_LIMIT, String(user.id));
-    if (!rl.allowed) {
-      return fail(429, { deleteErrorKey: 'errorsAuthRateLimited' });
-    }
     const raw = Object.fromEntries(await request.formData());
     const confirmEmail =
       typeof raw.confirmEmail === 'string' ? raw.confirmEmail.trim().toLowerCase() : '';
@@ -37,12 +28,16 @@ export const actions: Actions = {
     // Fresh-auth: typed email is visible on the page, so a stolen session
     // cookie alone shouldn't be enough to permanently destroy the account.
     // Require the current password as proof the request comes from the owner.
-    const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
-    if (!fresh) throw localizedRedirect(locals.locale, 303, '/login');
-    const ok = currentPassword ? await verifyPassword(fresh.passwordHash, currentPassword) : false;
-    if (!ok) {
-      return fail(400, { deleteErrorKey: 'errorsAccountPasswordIncorrect' });
-    }
+    const fresh = await requireFreshAuthWithKey(user, currentPassword, {
+      field: 'deleteErrorKey',
+      rateLimitedKey: 'errorsAuthRateLimited',
+      incorrectKey: 'errorsAccountPasswordIncorrect',
+      onMissingUser: () => {
+        throw localizedRedirect(locals.locale, 303, '/login');
+      }
+    });
+    if (!fresh.ok) return fresh.failure;
+
     await deleteUserAccount(user.id);
     cookies.delete(SESSION_COOKIE, { path: '/' });
     throw localizedRedirect(locals.locale, 303, '/account/deleted');
