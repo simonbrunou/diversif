@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Button from '$lib/components/ui/Button.svelte';
   import Modal from '../ui/Modal.svelte';
   import Label from '$components/ui/Label.svelte';
   import * as m from '$lib/paraglide/messages';
@@ -103,12 +104,13 @@
       class="mt-1 rounded-tile border border-border bg-canvas px-3 py-2 text-sm"
     />
 
-    <button
+    <Button
       type="submit"
+      size="pill"
       disabled={selected === null}
-      class="mt-5 w-full rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-primary/40 disabled:active:scale-100"
+      class="mt-5 w-full shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-primary/40 disabled:active:scale-100"
     >
       {m.addSymptomSubmit()}
-    </button>
+    </Button>
   </form>
 </Modal>

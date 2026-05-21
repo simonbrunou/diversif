@@ -121,14 +121,15 @@
 
 <BentoAuthLayout title={m.authLoginTitleBento()} subtitle="">
   {#if !unsupported}
-    <button
+    <Button
       type="button"
-      disabled={passkeyLoading}
+      size="pill"
+      loading={passkeyLoading}
       onclick={signInWithPasskey}
-      class="w-full rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-soft disabled:opacity-60"
+      class="w-full shadow-soft"
     >
       {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeyPrimaryCta()}
-    </button>
+    </Button>
     <div class="my-4 text-center text-xs uppercase tracking-wider text-ink-soft">
       {m.authLoginPasswordReveal()}
     </div>
