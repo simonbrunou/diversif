@@ -25,6 +25,7 @@
   currentMonth={data.currentMonth}
   {childId}
   recipes={data.recipes}
+  factCards={data.factCards}
   onPickSuggestion={(food) => goto(`/child/${childId}?suggested=${food.id}`)}
   onDismissTip={() => {}}
   {viewAllSuggestionsHref}

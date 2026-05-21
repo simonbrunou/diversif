@@ -11,6 +11,7 @@ import {
   loadTextureProgress
 } from '$lib/server/guidance/queries';
 import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
+import { FACT_CARDS } from '$lib/content/did-you-know';
 import type { PageServerLoad } from './$types';
 
 const TODAY_TIP = {
@@ -84,6 +85,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     textureProgress,
     seasonalFoods,
     currentMonth,
-    recipes
+    recipes,
+    factCards: FACT_CARDS
   };
 };

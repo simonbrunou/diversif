@@ -75,7 +75,8 @@ describe('DiscoverBento', () => {
     seasonalFoods: [],
     currentMonth: 5,
     childId: '5',
-    recipes: []
+    recipes: [],
+    factCards: []
   };
 
   it('renders the stages, suggestions, tips, and sources section headings', () => {
