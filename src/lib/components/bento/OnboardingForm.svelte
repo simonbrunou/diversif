@@ -21,7 +21,7 @@
     class="mt-1 w-full rounded-tile border border-border bg-canvas px-3 py-2 text-sm"
   />
   {#if errors?.firstName}
-    <p id="firstName-error" class="mt-1 text-xs text-severe">{errors.firstName}</p>
+    <p id="firstName-error" class="mt-1 text-xs text-severe-text">{errors.firstName}</p>
   {/if}
 
   <Label for="birthDate" class="mt-4 block">{m.onboardingBirthDateLabel()}</Label>
@@ -35,7 +35,7 @@
     class="mt-1 w-full rounded-tile border border-border bg-canvas px-3 py-2 text-sm"
   />
   {#if errors?.birthDate}
-    <p id="birthDate-error" class="mt-1 text-xs text-severe">{errors.birthDate}</p>
+    <p id="birthDate-error" class="mt-1 text-xs text-severe-text">{errors.birthDate}</p>
   {/if}
 
   <hr class="my-5 border-border" />
