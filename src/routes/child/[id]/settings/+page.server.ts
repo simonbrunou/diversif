@@ -159,11 +159,11 @@ export const actions: Actions = {
     }
 
     const data = await request.formData();
-    const confirmName = String(data.get('confirmName') ?? /* v8 ignore next */ '').trim();
+    const confirmText = String(data.get('confirmText') ?? /* v8 ignore next */ '').trim();
     const currentPassword = String(data.get('currentPassword') ?? /* v8 ignore next */ '');
     const child = (await db.select().from(children).where(eq(children.id, childId)).limit(1))[0];
     if (!child) throw localizedRedirect(locals.locale, 303, '/');
-    if (confirmName !== child.name) {
+    if (confirmText !== child.name) {
       return fail(400, { error: 'Saisissez le prénom exact pour confirmer.' });
     }
 

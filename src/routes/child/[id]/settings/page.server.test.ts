@@ -434,13 +434,13 @@ describe('settings leaveChild action', () => {
 });
 
 describe('settings deleteChild action', () => {
-  it('fails when confirmName mismatches', async () => {
+  it('fails when confirmText mismatches', async () => {
     const { u, c, m } = await setup();
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Wrong', currentPassword: PASSWORD }
+      formData: { confirmText: 'Wrong', currentPassword: PASSWORD }
     });
     const r = (await actions.deleteChild!(
       event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
@@ -455,7 +455,7 @@ describe('settings deleteChild action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Bébé', currentPassword: PASSWORD }
+      formData: { confirmText: 'Bébé', currentPassword: PASSWORD }
     });
     const r = await captureFlow(() =>
       actions.deleteChild!(
@@ -472,7 +472,7 @@ describe('settings deleteChild action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Bébé' }
+      formData: { confirmText: 'Bébé' }
     });
     const r = (await actions.deleteChild!(
       event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
@@ -500,7 +500,7 @@ describe('settings deleteChild action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Bébé', currentPassword: PASSWORD }
+      formData: { confirmText: 'Bébé', currentPassword: PASSWORD }
     });
     const r = await captureFlow(() =>
       actions.deleteChild!(
@@ -517,7 +517,7 @@ describe('settings deleteChild action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Bébé', currentPassword: 'wrong-current' }
+      formData: { confirmText: 'Bébé', currentPassword: 'wrong-current' }
     });
     const r = (await actions.deleteChild!(
       event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
@@ -534,7 +534,7 @@ describe('settings deleteChild action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Bébé', currentPassword: PASSWORD }
+      formData: { confirmText: 'Bébé', currentPassword: PASSWORD }
     });
     const r = await captureFlow(() =>
       actions.deleteChild!(
@@ -556,7 +556,7 @@ describe('settings deleteChild action', () => {
         user: safeUser(u),
         memberships: [m],
         params: { id: String(c.id) },
-        formData: { confirmName: 'Bébé', currentPassword: 'wrong' }
+        formData: { confirmText: 'Bébé', currentPassword: 'wrong' }
       });
       await actions.deleteChild!(
         event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
@@ -566,7 +566,7 @@ describe('settings deleteChild action', () => {
       user: safeUser(u),
       memberships: [m],
       params: { id: String(c.id) },
-      formData: { confirmName: 'Bébé', currentPassword: 'wrong' }
+      formData: { confirmText: 'Bébé', currentPassword: 'wrong' }
     });
     const r = (await actions.deleteChild!(
       event as unknown as Parameters<NonNullable<typeof actions.deleteChild>>[0]
