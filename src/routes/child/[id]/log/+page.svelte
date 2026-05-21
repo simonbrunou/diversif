@@ -59,8 +59,8 @@
 
 <div class="container max-w-xl space-y-5 py-6">
   <BackHeader
-    title="Noter un repas"
-    subtitle={`Pour ${data.child.name}`}
+    title={m.logFormTitle()}
+    subtitle={m.logFormSubtitle({ name: data.child.name })}
     fallback={`/child/${data.child.id}`}
   />
 
@@ -119,32 +119,28 @@
 
     <FoodCombobox foods={data.foods} {initialFoodId} />
 
-    <Field name="givenAt" label="Quand ?">
+    <Field name="givenAt" label={m.logFormGivenAtLabel()}>
       <Input id="givenAt" name="givenAt" type="datetime-local" bind:value={givenAt} required />
     </Field>
 
     <div class="grid gap-1.5">
-      <Label>Comment bébé a réagi ?</Label>
+      <Label>{m.logFormReactionLegend()}</Label>
       <ReactionPicker name="reaction" bind:value={reaction} />
       <details class="mt-1 rounded-md border bg-muted/40 p-2 text-xs">
         <summary class="flex cursor-pointer items-center gap-1.5 font-medium text-foreground/80">
           <Info size={12} aria-hidden="true" />
-          Comment choisir ?
+          {m.logFormReactionHelpToggle()}
         </summary>
         <ul class="mt-2 space-y-1.5 pl-4 text-muted-foreground">
           <li>
-            <strong class="text-reaction-ras">Tout va bien</strong> : bébé a bien toléré, aucun
-            signe particulier.
+            <strong class="text-reaction-ras">{m.logFormReactionHelpRasBold()}</strong> : {m.logFormReactionHelpRasText()}
           </li>
           <li>
-            <strong class="text-reaction-inconfort">Petit inconfort</strong> : gêne digestive ou
-            cutanée légère (régurgitation, selles molles, rougeurs autour de la bouche). Reproposez
-            à distance et observez.
+            <strong class="text-reaction-inconfort">{m.logFormReactionHelpInconfortBold()}</strong> : {m.logFormReactionHelpInconfortText()}
           </li>
           <li>
-            <strong class="text-reaction-reaction">Réaction marquée</strong> : urticaire, œdème,
-            vomissements, gêne respiratoire. <strong>Arrêtez tout de suite</strong> et consultez.
-            En cas de gêne respiratoire ou d'œdème de la gorge, appelez le 15.
+            <strong class="text-reaction-reaction">{m.logFormReactionHelpReactionBold()}</strong> : {m.logFormReactionHelpReactionText1()}
+            <strong>{m.logFormReactionHelpReactionStopBold()}</strong> {m.logFormReactionHelpReactionText2()}
           </li>
         </ul>
       </details>
@@ -160,27 +156,27 @@
       />
     </div>
 
-    <Field name="notes" label="Une note ? (facultatif)">
+    <Field name="notes" label={m.logFormNoteLabel()}>
       <Textarea
         id="notes"
         name="notes"
         maxlength={2000}
-        placeholder="Quantité, ambiance du repas, observations…"
+        placeholder={m.logFormNotePlaceholder()}
       />
     </Field>
 
     <div class="flex gap-2">
       <Button type="submit" size="lg" class="flex-1" loading={submitting}>
-        {submitting ? 'Enregistrement…' : 'Noter ce repas'}
+        {submitting ? m.logFormSubmitting() : m.logFormSubmitCta()}
       </Button>
-      <Button href={localizedHref(`/child/${data.child.id}`)} variant="outline" size="lg">Annuler</Button>
+      <Button href={localizedHref(`/child/${data.child.id}`)} variant="outline" size="lg">{m.commonCancel()}</Button>
     </div>
   </form>
 
   {#if tip}
     <TipCard
       tone="info"
-      eyebrow="Astuce"
+      eyebrow={m.logFormTipEyebrow()}
       body={tip.body}
       sources={tip.sources ? [...tip.sources] : undefined}
     />
