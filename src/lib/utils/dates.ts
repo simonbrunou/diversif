@@ -37,17 +37,9 @@ export function formatRelative(date: Date | number, now: Date = new Date()): str
   return d.format('D MMM YYYY HH:mm');
 }
 
-export function formatDateTime(date: Date | number): string {
-  return dayjs(date).locale(languageTag()).format('D MMM YYYY HH:mm');
-}
-
 export function formatDateInputValue(date: Date = new Date()): string {
   // YYYY-MM-DDTHH:mm for <input type="datetime-local">
   return dayjs(date).format('YYYY-MM-DDTHH:mm');
-}
-
-export function parseDateTimeLocal(value: string): Date {
-  return dayjs(value).toDate();
 }
 
 // <input type="datetime-local"> produces TZ-naive strings ("2026-05-17T12:27").

@@ -2,9 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { setLanguageTag, sourceLanguageTag } from '$lib/paraglide/runtime';
 import {
   formatRelative,
-  formatDateTime,
   formatDateInputValue,
-  parseDateTimeLocal,
   isValidBirthDate,
   formatMonthsSince,
   localInputToIso,
@@ -89,20 +87,6 @@ describe('formatRelative', () => {
       const yesterday = new Date('2026-05-02T18:00:00Z');
       expect(formatRelative(yesterday, now).startsWith('yesterday ')).toBe(true);
     });
-
-    it('renders dayjs month names in English when locale is en', () => {
-      setLanguageTag('en');
-      // March '24 is "Mar" in English vs "mars" in French
-      expect(formatDateTime(new Date('2024-03-01T09:30:00Z'))).toMatch(/Mar/);
-    });
-  });
-});
-
-describe('formatDateTime', () => {
-  it('formats a date with year', () => {
-    const out = formatDateTime(new Date('2024-03-01T09:30:00Z'));
-    expect(out).toMatch(/2024/);
-    expect(out).toMatch(/\d{2}:\d{2}/);
   });
 });
 
@@ -114,14 +98,6 @@ describe('formatDateInputValue', () => {
 
   it('defaults to "now" when no argument is provided', () => {
     expect(formatDateInputValue()).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
-  });
-});
-
-describe('parseDateTimeLocal', () => {
-  it('round-trips a local datetime string into a Date', () => {
-    const d = parseDateTimeLocal('2024-03-01T09:30');
-    expect(d).toBeInstanceOf(Date);
-    expect(Number.isNaN(d.getTime())).toBe(false);
   });
 });
 

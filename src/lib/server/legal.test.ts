@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { getLegalIdentity, isPlaceholder } from './legal';
+import { getLegalIdentity } from './legal';
+
+// Mirrors the PLACEHOLDER constant defined privately in ./legal.
+const isPlaceholder = (value: string): boolean => value === 'à compléter';
 
 const KEYS = [
   'LEGAL_CONTROLLER_NAME',

@@ -1,0 +1,16 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]: "500"
+    - heading "Internal Error" [level=1] [ref=e5]
+  - generic [ref=e8]:
+    - generic [ref=e9]: DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif)
+    - generic [ref=e10]: "Error: DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif) at resolveDatabaseUrl (/home/sbrn/Projects/diversif/src/lib/server/db/index.ts:21:11) at /home/sbrn/Projects/diversif/src/lib/server/db/index.ts:46:21 at async ESModulesEvaluator.runInlinedModule (file:///home/sbrn/Projects/diversif/node_modules/vite/dist/node/module-runner.js:1062:5) at async SSRCompatModuleRunner.directRequest (file:///home/sbrn/Projects/diversif/node_modules/vite/dist/node/module-runner.js:1284:61) at async SSRCompatModuleRunner.directRequest (file:///home/sbrn/Projects/diversif/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:25274:23) at async SSRCompatModuleRunner.cachedRequest (file:///home/sbrn/Projects/diversif/node_modules/vite/dist/node/module-runner.js:1180:76) at async eval (/home/sbrn/Projects/diversif/src/lib/server/auth.ts:4:1) at async ESModulesEvaluator.runInlinedModule (file:///home/sbrn/Projects/diversif/node_modules/vite/dist/node/module-runner.js:1062:5) at async SSRCompatModuleRunner.directRequest (file:///home/sbrn/Projects/diversif/node_modules/vite/dist/node/module-runner.js:1284:61) at async SSRCompatModuleRunner.directRequest (file:///home/sbrn/Projects/diversif/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:25274:23"
+    - generic [ref=e11]:
+      - text: Click outside, press Esc key, or fix the code to dismiss.
+      - text: You can also disable this overlay by setting
+      - code [ref=e12]: server.hmr.overlay
+      - text: to
+      - code [ref=e13]: "false"
+      - text: in
+      - code [ref=e14]: vite.config.ts
+      - text: .

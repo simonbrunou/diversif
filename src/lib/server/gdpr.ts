@@ -182,7 +182,7 @@ export type ExportedUser = {
 // and corresponds to ~12MB of JSON pre-pretty-print). If we ever see it
 // hit in practice, the right fix is to stream the response, not to lower
 // the cap.
-export const EXPORT_FOOD_ENTRIES_LIMIT = 50_000;
+const EXPORT_FOOD_ENTRIES_LIMIT = 50_000;
 
 export class ExportTooLargeError extends Error {
   readonly count: number;

@@ -31,7 +31,3 @@ export function getLegalIdentity(): LegalIdentity {
     retentionInactiveDays
   };
 }
-
-export function isPlaceholder(value: string): boolean {
-  return value === PLACEHOLDER;
-}
