@@ -12,6 +12,7 @@ import {
   loadWeeklyRecap,
   loadAnalyticsBuckets,
   loadCoparentActivity,
+  loadTextureProgress,
   dismissReminder
 } from './queries';
 import { children, foods, foodEntries, users, tipDismissals } from '../db/schema';
@@ -88,6 +89,95 @@ async function logEntry(opts: {
 
 beforeEach(async () => {
   await resetTestDb();
+});
+
+describe('loadTextureProgress', () => {
+  async function logTextured(opts: {
+    childId: number;
+    foodId: number;
+    userId: number;
+    givenAt: Date;
+    texture: string | null;
+  }) {
+    return (
+      await testDb
+        .insert(foodEntries)
+        .values({
+          childId: opts.childId,
+          foodId: opts.foodId,
+          givenAt: opts.givenAt,
+          reaction: 'ras',
+          texture: opts.texture,
+          notes: null,
+          loggedBy: opts.userId,
+          createdAt: new Date()
+        })
+        .returning()
+    )[0];
+  }
+
+  it('returns empty tried and null mostRecent when no entries exist', async () => {
+    const { child } = await seedUserAndChild();
+    const out = await loadTextureProgress(child.id);
+    expect(out.tried).toEqual([]);
+    expect(out.mostRecent).toBeNull();
+  });
+
+  it('returns distinct textures ever logged + the latest one in the past 30 days', async () => {
+    const { user, child } = await seedUserAndChild();
+    const food = await seedFood({ name: 'Carotte', category: 'legumes' });
+    const now = Date.now();
+    await logTextured({
+      childId: child.id,
+      foodId: food.id,
+      userId: user.id,
+      givenAt: new Date(now - 5 * DAY_MS),
+      texture: 'lisse'
+    });
+    await logTextured({
+      childId: child.id,
+      foodId: food.id,
+      userId: user.id,
+      givenAt: new Date(now - 3 * DAY_MS),
+      texture: 'moulinee'
+    });
+    await logTextured({
+      childId: child.id,
+      foodId: food.id,
+      userId: user.id,
+      givenAt: new Date(now - 1 * DAY_MS),
+      texture: 'ecrasee'
+    });
+    // entry with no texture should be ignored on both fields
+    await logTextured({
+      childId: child.id,
+      foodId: food.id,
+      userId: user.id,
+      givenAt: new Date(now - 12 * 60 * 60 * 1000),
+      texture: null
+    });
+
+    const out = await loadTextureProgress(child.id, new Date(now));
+    expect(out.tried.sort()).toEqual(['ecrasee', 'lisse', 'moulinee']);
+    expect(out.mostRecent).toBe('ecrasee');
+  });
+
+  it('ignores entries older than 30 days for mostRecent but still counts them in tried', async () => {
+    const { user, child } = await seedUserAndChild();
+    const food = await seedFood({ name: 'Pomme', category: 'fruits' });
+    const now = Date.now();
+    await logTextured({
+      childId: child.id,
+      foodId: food.id,
+      userId: user.id,
+      givenAt: new Date(now - 60 * DAY_MS),
+      texture: 'lisse'
+    });
+
+    const out = await loadTextureProgress(child.id, new Date(now));
+    expect(out.tried).toEqual(['lisse']);
+    expect(out.mostRecent).toBeNull();
+  });
 });
 
 describe('loadRecentEntries', () => {
