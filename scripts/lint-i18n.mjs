@@ -23,7 +23,9 @@ for (const [key, value] of Object.entries(data)) {
 }
 
 if (failures > 0) {
-  console.error(`\n${failures} key(s) need typographic apostrophes (run scripts/normalize-fr-apostrophes.py).`);
+  console.error(
+    `\n${failures} key(s) need typographic apostrophes (run scripts/normalize-fr-apostrophes.py).`
+  );
   process.exit(1);
 }
 
