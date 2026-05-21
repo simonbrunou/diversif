@@ -29,7 +29,7 @@
 <Modal
   open={open}
   onclose={close}
-  side="center"
+  side="auto"
   title={label ? m.allergenDialogTitle({ label }) : ''}
   class="max-w-lg"
 >
