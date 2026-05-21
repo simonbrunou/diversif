@@ -13,26 +13,20 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@simplewebauthn/server', () => mocks);
 
 import {
-  PASSKEY_CHALLENGE_TTL_MS,
   RP_NAME,
   buildAuthenticationOptions,
   buildRegistrationOptions,
-  consumeChallenge,
-  createChallenge,
   deletePasskey,
   findPasskey,
   finishAuthentication,
   finishRegistration,
   listPasskeys,
-  originFromEnv,
   PASSKEY_AUTH_FAILED_MESSAGE,
-  publicPasskey,
-  purgeExpiredChallenges,
-  renamePasskey,
-  rpIdFromOrigin
+  renamePasskey
 } from './passkeys';
-import { passkeys, users, webauthnChallenges } from './db/schema';
+import { users } from './db/schema';
 import { eq } from 'drizzle-orm';
+import { seedPasskey, seedUser } from './passkeys-test-fixtures';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -40,179 +34,6 @@ beforeEach(async () => {
   mocks.verifyRegistrationResponse.mockReset();
   mocks.generateAuthenticationOptions.mockReset();
   mocks.verifyAuthenticationResponse.mockReset();
-});
-
-async function seedUser() {
-  return (
-    await testDb
-      .insert(users)
-      .values({
-        email: 'parent@example.com',
-        passwordHash: 'h',
-        displayName: 'Parent',
-        createdAt: new Date()
-      })
-      .returning()
-  )[0];
-}
-
-async function seedPasskey(userId: number, overrides: Partial<typeof passkeys.$inferInsert> = {}) {
-  return (
-    await testDb
-      .insert(passkeys)
-      .values({
-        id: overrides.id ?? 'cred-id',
-        userId,
-        publicKey: overrides.publicKey ?? 'cHVi', // base64url for "pub"
-        counter: overrides.counter ?? 0,
-        transports: overrides.transports ?? ['internal'],
-        deviceType: overrides.deviceType ?? 'singleDevice',
-        backedUp: overrides.backedUp ?? false,
-        name: overrides.name ?? 'Test Key',
-        createdAt: overrides.createdAt ?? new Date(),
-        lastUsedAt: overrides.lastUsedAt ?? null
-      })
-      .returning()
-  )[0];
-}
-
-describe('rpIdFromOrigin', () => {
-  it('returns the hostname for a valid URL', () => {
-    expect(rpIdFromOrigin('https://example.com')).toBe('example.com');
-    expect(rpIdFromOrigin('https://app.example.com:8443/foo')).toBe('app.example.com');
-  });
-  it('returns localhost on a malformed value', () => {
-    expect(rpIdFromOrigin('not-a-url')).toBe('localhost');
-  });
-});
-
-describe('originFromEnv', () => {
-  it('prefers the ORIGIN env var', () => {
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = 'https://from-env.test';
-    try {
-      expect(originFromEnv('https://fallback.test')).toBe('https://from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
-    }
-  });
-  it('falls back when ORIGIN is unset', () => {
-    const orig = process.env.ORIGIN;
-    delete process.env.ORIGIN;
-    try {
-      expect(originFromEnv('https://fallback.test')).toBe('https://fallback.test');
-    } finally {
-      if (orig !== undefined) process.env.ORIGIN = orig;
-    }
-  });
-  it('strips trailing slashes and surrounding whitespace', () => {
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = '  https://from-env.test/  ';
-    try {
-      expect(originFromEnv('https://fallback.test')).toBe('https://from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
-    }
-  });
-  it('also normalizes the fallback', () => {
-    const orig = process.env.ORIGIN;
-    delete process.env.ORIGIN;
-    try {
-      expect(originFromEnv('https://fallback.test///')).toBe('https://fallback.test');
-    } finally {
-      if (orig !== undefined) process.env.ORIGIN = orig;
-    }
-  });
-});
-
-describe('challenges', () => {
-  it('creates and consumes a challenge', async () => {
-    const u = await seedUser();
-    const c = await createChallenge({ challenge: 'abc', purpose: 'registration', userId: u.id });
-    expect(c.token).toMatch(/^[0-9a-f]+$/);
-    expect(c.challenge).toBe('abc');
-    expect(c.expiresAt.getTime()).toBeGreaterThan(Date.now());
-
-    const consumed = await consumeChallenge(c.token, 'registration');
-    expect(consumed).toEqual({ challenge: 'abc', userId: u.id });
-
-    // Token is single-use.
-    expect(await consumeChallenge(c.token, 'registration')).toBeNull();
-  });
-
-  it('createChallenge defaults missing userId to null', async () => {
-    const c = await createChallenge({ challenge: 'x', purpose: 'authentication' });
-    const row = (
-      await testDb
-        .select()
-        .from(webauthnChallenges)
-        .where(eq(webauthnChallenges.token, c.token))
-        .limit(1)
-    )[0];
-    expect(row?.userId).toBeNull();
-  });
-
-  it('returns null for an empty token', async () => {
-    expect(await consumeChallenge('', 'registration')).toBeNull();
-  });
-
-  it('returns null for the wrong purpose', async () => {
-    const c = await createChallenge({ challenge: 'x', purpose: 'registration', userId: null });
-    expect(await consumeChallenge(c.token, 'authentication')).toBeNull();
-  });
-
-  it('purges expired challenges and ignores them', async () => {
-    const past = new Date(Date.now() - 1000);
-    await testDb.insert(webauthnChallenges).values({
-      token: 'expired',
-      challenge: 'x',
-      purpose: 'registration',
-      userId: null,
-      expiresAt: past
-    });
-
-    expect(await consumeChallenge('expired', 'registration')).toBeNull();
-
-    await purgeExpiredChallenges();
-    const stillThere = (
-      await testDb
-        .select()
-        .from(webauthnChallenges)
-        .where(eq(webauthnChallenges.token, 'expired'))
-        .limit(1)
-    )[0];
-    expect(stillThere).toBeUndefined();
-  });
-
-  it('exposes the challenge TTL', () => {
-    expect(PASSKEY_CHALLENGE_TTL_MS).toBeGreaterThan(0);
-  });
-
-  it('atomically consumes a challenge : concurrent verifies cannot both succeed', async () => {
-    const c = await createChallenge({ challenge: 'x', purpose: 'registration', userId: null });
-
-    const [first, second] = await Promise.all([
-      consumeChallenge(c.token, 'registration'),
-      consumeChallenge(c.token, 'registration')
-    ]);
-
-    const successes = [first, second].filter((r) => r !== null);
-    expect(successes).toHaveLength(1);
-    expect(successes[0]).toEqual({ challenge: 'x', userId: null });
-
-    // The row is gone (the DELETE-RETURNING winner removed it; the loser
-    // got nothing back, but the table reflects the same outcome).
-    const stillThere = (
-      await testDb
-        .select()
-        .from(webauthnChallenges)
-        .where(eq(webauthnChallenges.token, c.token))
-        .limit(1)
-    )[0];
-    expect(stillThere).toBeUndefined();
-  });
 });
 
 describe('listPasskeys / findPasskey / deletePasskey / renamePasskey', () => {
@@ -566,29 +387,5 @@ describe('finishAuthentication', () => {
     expect(mocks.verifyAuthenticationResponse.mock.calls[0][0].credential.transports).toEqual([
       'usb'
     ]);
-  });
-});
-
-describe('publicPasskey', () => {
-  it('includes the timestamps as numbers', async () => {
-    const u = await seedUser();
-    const created = new Date(2024, 0, 1);
-    const used = new Date(2024, 5, 1);
-    const p = await seedPasskey(u.id, { createdAt: created, lastUsedAt: used });
-    const out = publicPasskey(p);
-    expect(out).toEqual({
-      id: 'cred-id',
-      name: 'Test Key',
-      deviceType: 'singleDevice',
-      backedUp: false,
-      createdAt: created.getTime(),
-      lastUsedAt: used.getTime()
-    });
-  });
-
-  it('handles a never-used passkey', async () => {
-    const u = await seedUser();
-    const p = await seedPasskey(u.id);
-    expect(publicPasskey(p).lastUsedAt).toBeNull();
   });
 });
