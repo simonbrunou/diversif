@@ -57,9 +57,11 @@ export type PriorityIntroductionAllergenId = (typeof PRIORITY_INTRODUCTION_ALLER
 
 // Days after which a previously-introduced priority allergen is considered
 // "fading" / needs maintenance re-exposure. Anchored to LEAP/ESPGHAN's
-// 2-3 exposures/week target. Single source of truth: both the dashboard
-// `fading` badge in /child/[id]/foods and the `maintain-allergen` reminder
-// in lib/server/guidance/reminders gate on this same threshold.
+// 2-3 exposures/week target. Single source of truth: the dashboard
+// `fading` badge in /child/[id]/foods, the `maintain-allergen` reminder
+// in lib/server/guidance/reminders, and the `loadAllergenStatus` function
+// in lib/server/guidance/allergen-status (powers both the carnet allergens
+// row and the Discover passport) all gate on this same threshold.
 export const ALLERGEN_MAINTAIN_DAYS = 4;
 
 // Typed overload: when called with a known AllergenId we always return a

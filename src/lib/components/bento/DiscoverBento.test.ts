@@ -68,7 +68,8 @@ describe('DiscoverBento', () => {
     todayTip: { id: 'tip-1', title: 'Astuce', body: 'Quelque chose' },
     tipDismissed: false,
     onPickSuggestion: vi.fn(),
-    onDismissTip: vi.fn()
+    onDismissTip: vi.fn(),
+    allergens: []
   };
 
   it('renders the stages, suggestions, tips, and sources section headings', () => {

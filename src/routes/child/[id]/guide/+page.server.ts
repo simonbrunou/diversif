@@ -5,6 +5,7 @@ import { foodEntries, foods } from '$lib/server/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { chooseSuggestedFoods } from '$lib/utils/suggest';
 import { loadDismissals } from '$lib/server/guidance/queries';
+import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
 import type { PageServerLoad } from './$types';
 
 const TODAY_TIP = {
@@ -60,6 +61,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
   const tipDismissed = dismissals.has(TODAY_TIP.id);
 
   const stages = getAllStagesForBento();
+  const allergens = await loadAllergenStatus(child.id);
 
   return {
     ageMonths: months,
@@ -67,6 +69,7 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     stages,
     suggestions,
     todayTip: TODAY_TIP,
-    tipDismissed
+    tipDismissed,
+    allergens
   };
 };

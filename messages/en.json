@@ -453,5 +453,16 @@
   "foodComboboxAddCustomCta": "+ Add a food outside the catalog",
   "foodComboboxCustomNameLabel": "Food name",
   "foodComboboxCustomCategoryLabel": "Category",
-  "foodComboboxCustomScopeHint": "This food will only be visible for this child."
+  "foodComboboxCustomScopeHint": "This food will only be visible for this child.",
+  "allergenPassportTitle": "Allergen passport",
+  "allergenPassportSubtitle": "{introduced}/{total} priority allergens introduced",
+  "allergenPassportSectionPriority": "Priority",
+  "allergenPassportSectionOther": "Other tracked allergens",
+  "allergenPassportStateCleared": "Introduced",
+  "allergenPassportStateTodo": "To discover",
+  "allergenPassportStateFading": "To re-offer",
+  "allergenPassportStateReaction": "Reaction observed",
+  "allergenPassportTriedFirst": "First time",
+  "allergenPassportTriedCount": "{count} times",
+  "allergenPassportFadingHint": "{days} d since last time"
 }

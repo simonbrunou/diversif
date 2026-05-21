@@ -4,7 +4,9 @@
   import SuggestionFeed from './SuggestionFeed.svelte';
   import TipsRotator from './TipsRotator.svelte';
   import SourcesCluster from './SourcesCluster.svelte';
+  import AllergenPassport from './AllergenPassport.svelte';
   import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
+  import type { AllergenItem } from '$lib/server/guidance/allergen-status';
 
   type Stage = {
     id: string;
@@ -26,7 +28,8 @@
     tipDismissed,
     onPickSuggestion,
     onDismissTip,
-    viewAllSuggestionsHref
+    viewAllSuggestionsHref,
+    allergens
   }: {
     stages: Stage[];
     activeStageId: string;
@@ -36,6 +39,7 @@
     onPickSuggestion: (food: SuggestFood) => void;
     onDismissTip: (id: string) => void;
     viewAllSuggestionsHref?: string;
+    allergens: AllergenItem[];
   } = $props();
 
   let openStageId = $state<string | null>(null);
@@ -52,6 +56,7 @@
 
 <div class="flex flex-col">
   <StagesBentoGrid {stages} {activeStageId} onOpen={openStageBy} />
+  <AllergenPassport {allergens} />
   <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
   <TipsRotator tip={todayTip} dismissed={tipDismissed} onDismiss={onDismissTip} />
   <SourcesCluster />
