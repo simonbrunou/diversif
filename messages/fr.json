@@ -493,5 +493,10 @@
   "recipesEmpty": "Pas encore d’idées pour cette étape.",
   "recipesTimeMinutes": "{minutes} min",
   "recipesIngredientsLabel": "Ingrédients",
-  "recipesDisclaimer": "Vérifiez avant de servir que chaque ingrédient a déjà été introduit sans réaction. Diversif n’est pas un livre de recettes médicalisé : en cas de doute (allergie, texture, conservation), consultez votre pédiatre."
+  "recipesDisclaimer": "Vérifiez avant de servir que chaque ingrédient a déjà été introduit sans réaction. Diversif n’est pas un livre de recettes médicalisé : en cas de doute (allergie, texture, conservation), consultez votre pédiatre.",
+  "didYouKnowTitle": "Le saviez-vous ?",
+  "didYouKnowSubtitle": "Quelques repères courts pour démêler le vrai du faux, sourcés.",
+  "didYouKnowPrevAria": "Carte précédente",
+  "didYouKnowNextAria": "Carte suivante",
+  "didYouKnowPositionAria": "Carte {current} sur {total}"
 }

@@ -493,5 +493,10 @@
   "recipesEmpty": "No ideas for this stage yet.",
   "recipesTimeMinutes": "{minutes} min",
   "recipesIngredientsLabel": "Ingredients",
-  "recipesDisclaimer": "Before serving, check that each ingredient has already been introduced without reaction. Diversif is not a medical cookbook: if in doubt (allergy, texture, storage), check with your paediatrician."
+  "recipesDisclaimer": "Before serving, check that each ingredient has already been introduced without reaction. Diversif is not a medical cookbook: if in doubt (allergy, texture, storage), check with your paediatrician.",
+  "didYouKnowTitle": "Did you know?",
+  "didYouKnowSubtitle": "Short evidence-based facts to sort fact from fiction.",
+  "didYouKnowPrevAria": "Previous card",
+  "didYouKnowNextAria": "Next card",
+  "didYouKnowPositionAria": "Card {current} of {total}"
 }

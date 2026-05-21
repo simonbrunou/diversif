@@ -8,9 +8,11 @@
   import TextureTimeline from './TextureTimeline.svelte';
   import SeasonalFoods from './SeasonalFoods.svelte';
   import Recipes from './Recipes.svelte';
+  import DidYouKnow from './DidYouKnow.svelte';
   import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
   import type { AllergenItem } from '$lib/server/guidance/allergen-status';
   import type { Recipe } from '$lib/content/recipes';
+  import type { FactCard } from '$lib/content/did-you-know';
 
   type Food = { id: number; name: string; category: string; allergenType: string | null };
 
@@ -41,7 +43,8 @@
     seasonalFoods,
     currentMonth,
     childId,
-    recipes
+    recipes,
+    factCards
   }: {
     stages: Stage[];
     activeStageId: string;
@@ -58,6 +61,7 @@
     currentMonth: number;
     childId: string;
     recipes: readonly Recipe[];
+    factCards: readonly FactCard[];
   } = $props();
 
   let openStageId = $state<string | null>(null);
@@ -79,6 +83,7 @@
   <SeasonalFoods foods={seasonalFoods} month={currentMonth} {childId} />
   <Recipes {recipes} />
   <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
+  <DidYouKnow cards={factCards} />
   <TipsRotator tip={todayTip} dismissed={tipDismissed} onDismiss={onDismissTip} />
   <SourcesCluster />
 </div>
