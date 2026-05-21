@@ -10,11 +10,11 @@
   }: {
     label: string;
     tint: Tint;
-    children?: Snippet;
+    children: Snippet;
   } = $props();
 </script>
 
 <section class="discover-group" data-tint={tint} aria-label={label}>
   <p class="discover-group__label" aria-hidden="true">{label}</p>
-  {@render children?.()}
+  {@render children()}
 </section>
