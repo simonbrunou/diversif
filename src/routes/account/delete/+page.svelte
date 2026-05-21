@@ -3,7 +3,7 @@
   import Button from '$components/ui/Button.svelte';
   import Card from '$components/ui/Card.svelte';
   import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import { enhance } from '$app/forms';
   import { toast } from 'svelte-sonner';
@@ -31,8 +31,7 @@
   <SectionHeader as="h2" tone="destructive">{m.authAccountDeleteSection()}</SectionHeader>
   <p class="mb-3 text-sm text-ink-soft">{m.authAccountDeleteDescription()}</p>
   <form method="POST" class="grid gap-3" use:enhance={trackSubmission((v) => (deletingAccount = v))}>
-    <div class="grid gap-1.5">
-      <Label for="confirmEmail">{m.authAccountDeleteConfirmLabel()}</Label>
+    <Field name="confirmEmail" label={m.authAccountDeleteConfirmLabel()}>
       <Input
         id="confirmEmail"
         name="confirmEmail"
@@ -42,9 +41,8 @@
         placeholder={data.user?.email ?? ''}
         required
       />
-    </div>
-    <div class="grid gap-1.5">
-      <Label for="deletePassword">{m.authAccountDeletePasswordLabel()}</Label>
+    </Field>
+    <Field name="deletePassword" label={m.authAccountDeletePasswordLabel()}>
       <Input
         id="deletePassword"
         name="currentPassword"
@@ -53,7 +51,7 @@
         bind:value={confirmDeletePassword}
         required
       />
-    </div>
+    </Field>
     <div>
       <Button
         type="submit"

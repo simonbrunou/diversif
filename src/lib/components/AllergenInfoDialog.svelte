@@ -1,11 +1,13 @@
 <script lang="ts">
   import Modal from '$components/ui/Modal.svelte';
+  import SheetSection from '$lib/components/ui/SheetSection.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import Button from '$components/ui/Button.svelte';
   import Badge from '$components/ui/Badge.svelte';
   import SourceCitation from './SourceCitation.svelte';
   import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
   import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
-  import { CheckCircle2, AlertCircle, AlertTriangle, ShieldCheck } from 'lucide-svelte';
+  import { CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
 
   let {
@@ -35,7 +37,7 @@
   class="max-w-lg"
 >
   {#if guidance}
-    <div class="space-y-4 text-sm">
+    <div class="text-sm">
       <div class="flex items-center gap-2">
         <Badge variant="default">
           {m.allergenDialogBadgeFromMonths({ months: guidance.recommendedAgeMonths })}
@@ -43,57 +45,40 @@
         <span class="text-xs text-muted-foreground">{m.allergenDialogSeverityMajor()}</span>
       </div>
 
-      <div>
-        <h3 class="flex items-center gap-2 text-sm font-semibold">
-          <ShieldCheck size={16} class="text-primary" aria-hidden="true" />
-          {m.allergenDialogWhyEarlyTitle()}
-        </h3>
-        <p class="mt-1 text-foreground/90">{guidance.why}</p>
-      </div>
+      <SheetSection title={m.allergenDialogWhyEarlyTitle()} icon={ShieldCheck}>
+        <p class="text-foreground/90">{guidance.why}</p>
+      </SheetSection>
 
-      <div>
-        <h3 class="flex items-center gap-2 text-sm font-semibold">
-          <CheckCircle2 size={16} class="text-reaction-ras" aria-hidden="true" />
-          {m.allergenDialogHowToOfferTitle()}
-        </h3>
-        <ul class="mt-1 list-disc space-y-1 pl-5 text-foreground/90">
+      <SheetSection title={m.allergenDialogHowToOfferTitle()} icon={CheckCircle2}>
+        <ul class="list-disc space-y-1 pl-5 text-foreground/90">
           {#each guidance.howToOffer as item, i (i)}
             <li>{item}</li>
           {/each}
         </ul>
-      </div>
+      </SheetSection>
 
-      <div>
-        <h3 class="flex items-center gap-2 text-sm font-semibold">
-          <AlertCircle size={16} class="text-reaction-inconfort" aria-hidden="true" />
-          {m.allergenDialogFirstSignsTitle()}
-        </h3>
-        <ul class="mt-1 list-disc space-y-1 pl-5 text-foreground/90">
+      <SheetSection title={m.allergenDialogFirstSignsTitle()} icon={AlertCircle}>
+        <ul class="list-disc space-y-1 pl-5 text-foreground/90">
           {#each guidance.firstSigns as item, i (i)}
             <li>{item}</li>
           {/each}
         </ul>
-      </div>
+      </SheetSection>
 
-      <div class="rounded-md border border-reaction-reaction/30 bg-reaction-reaction/5 p-3">
-        <h3 class="flex items-center gap-2 text-sm font-semibold text-reaction-reaction">
-          <AlertTriangle size={16} aria-hidden="true" />
-          {m.allergenDialogSevereSignsTitle()}
-        </h3>
-        <ul class="mt-1 list-disc space-y-1 pl-5 text-foreground/90">
-          {#each guidance.severeSigns as item, i (i)}
-            <li>{item}</li>
-          {/each}
-        </ul>
-        <p class="mt-2 text-foreground/90">{guidance.whatToDo}</p>
-      </div>
+      <SheetSection title={m.allergenDialogSevereSignsTitle()}>
+        <Callout variant="warning">
+          <ul class="list-disc space-y-1 pl-5">
+            {#each guidance.severeSigns as item, i (i)}
+              <li>{item}</li>
+            {/each}
+          </ul>
+          <p class="mt-2">{guidance.whatToDo}</p>
+        </Callout>
+      </SheetSection>
 
-      <div>
-        <div class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {m.allergenDialogSourcesTitle()}
-        </div>
+      <SheetSection title={m.allergenDialogSourcesTitle()}>
         <SourceCitation ids={[...guidance.sources]} />
-      </div>
+      </SheetSection>
     </div>
   {/if}
 

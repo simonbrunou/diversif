@@ -1,5 +1,7 @@
 <script lang="ts">
-  import Modal from '../ui/Modal.svelte';
+  import DetailSheet from '$lib/components/ui/DetailSheet.svelte';
+  import SheetSection from '$lib/components/ui/SheetSection.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import * as m from '$lib/paraglide/messages';
 
   type Stage = {
@@ -20,29 +22,25 @@
   }: { open: boolean; stage: Stage } = $props();
 </script>
 
-<Modal bind:open title={stage.title} side="auto" scrollableBody>
-  <div>
-    <p class="text-sm text-ink-soft">{stage.oneLiner}</p>
+<DetailSheet bind:open title={stage.title} intro={stage.oneLiner}>
+  <SheetSection title="Principes">
+    <ul class="list-disc space-y-1 pl-5 text-sm">
+      {#each stage.principles as p, i (i)}
+        <li>{p}</li>
+      {/each}
+    </ul>
+  </SheetSection>
 
-    <section class="mt-4">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-ink-soft">Principes</h3>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
-        {#each stage.principles as p, i (i)}
-          <li>{p}</li>
-        {/each}
-      </ul>
-    </section>
+  <SheetSection title="Aliments à proposer">
+    <ul class="list-disc space-y-1 pl-5 text-sm">
+      {#each stage.focus as f, i (i)}
+        <li>{f}</li>
+      {/each}
+    </ul>
+  </SheetSection>
 
-    <section class="mt-4">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-ink-soft">Aliments à proposer</h3>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
-        {#each stage.focus as f, i (i)}
-          <li>{f}</li>
-        {/each}
-      </ul>
-    </section>
-
-    <section class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+  <SheetSection title="Texture & lait">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div class="rounded-tile bg-tile-mint/40 p-3 text-sm">
         <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">{m.textureDetailRowLabel()}</p>
         <p class="mt-1">{stage.textures}</p>
@@ -51,17 +49,18 @@
         <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">Lait</p>
         <p class="mt-1">{stage.milkTarget}</p>
       </div>
-    </section>
+    </div>
+  </SheetSection>
 
-    {#if stage.redFlags.length > 0}
-      <section class="mt-4 rounded-tile border border-warning bg-tile-butter/30 p-3 text-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-warning-foreground">À surveiller</p>
-        <ul class="mt-1 list-disc space-y-1 pl-5">
+  {#if stage.redFlags.length > 0}
+    <SheetSection title="À surveiller">
+      <Callout variant="warning">
+        <ul class="list-disc space-y-1 pl-5">
           {#each stage.redFlags as f, i (i)}
             <li>{f}</li>
           {/each}
         </ul>
-      </section>
-    {/if}
-  </div>
-</Modal>
+      </Callout>
+    </SheetSection>
+  {/if}
+</DetailSheet>

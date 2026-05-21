@@ -331,10 +331,6 @@
     "mtime": 1779334330.3258276,
     "hash": "12882c31b14b09575ad23fdd5e1b1e99"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.svelte": {
-    "mtime": 1779368229.3306544,
-    "hash": "ce011719f96c8db2983e6d844bf438ec"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/AppShellBento.svelte": {
     "mtime": 1779373500.0871859,
     "hash": "34c1ea5eff73e4131f46b24955fd03ca"
@@ -350,6 +346,10 @@
   "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.test.ts": {
     "mtime": 1779374312.1551661,
     "hash": "cd190b9d1cb1ab2f57ec9ecc8f3a77c8"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.svelte": {
+    "mtime": 1779375154.134818,
+    "hash": "643a56a71d3f14fca10bfa6aba6d7bb0"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCtaBento.test.ts": {
     "mtime": 1778708530.7503636,
@@ -839,10 +839,6 @@
     "mtime": 1779360700.2957966,
     "hash": "8bd9f9d581fa9ff5414a069f53c2f611"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StageDetailSheet.svelte": {
-    "mtime": 1779368229.3306544,
-    "hash": "8ea041be174d8364ab60caa009d4f903"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SeasonalFoods.svelte": {
     "mtime": 1779372092.4959023,
     "hash": "471cd4243fc34e59f9e9130f9e5b0359"
@@ -878,6 +874,10 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/DiscoverGroup.svelte": {
     "mtime": 1779374190.0655217,
     "hash": "c382cb6cf4e7175e0c42ec3c97030bcb"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/StageDetailSheet.svelte": {
+    "mtime": 1779375116.1892395,
+    "hash": "61756c5db1a5f02581f4610f22dada70"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
@@ -1216,19 +1216,19 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1779374376.8954473,
+    "mtime": 1779375162.9512208,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1779374376.8954473,
+    "mtime": 1779375162.9512208,
     "hash": "c141b101d33640bb23a5a580e62e7424"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1779374376.8954473,
+    "mtime": 1779375162.9512208,
     "hash": "6d8455a12e36b80a0a30b0d9b2a79324"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1779374376.8954473,
+    "mtime": 1779375162.9512208,
     "hash": "ae9f19db249417a603799ef0f433159b"
   },
   "/home/sbrn/Projects/diversif/src/lib/forms/tracked-enhance.test.ts": {
@@ -1300,8 +1300,8 @@
     "hash": "d43ed61bee87375a10018f70f71ddf0c"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/delete/+page.svelte": {
-    "mtime": 1779156767.7601178,
-    "hash": "b8cc0074610d6996c001992fed185d97"
+    "mtime": 1779374628.0546587,
+    "hash": "29c18316ad342315edfe868dfc297cbd"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/locale/+page.server.ts": {
     "mtime": 1778877144.1906302,
@@ -1324,8 +1324,8 @@
     "hash": "52e32191346a0f72fcbc4c4b72fa6bd6"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/passkeys/+page.svelte": {
-    "mtime": 1779156767.7601178,
-    "hash": "27aa5663320965135f3d13a266189606"
+    "mtime": 1779374654.6573634,
+    "hash": "f228026464d8b3971a1a69a010462b78"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/password/+page.server.ts": {
     "mtime": 1778877144.1909237,
@@ -1336,8 +1336,8 @@
     "hash": "f9eb68429a4cf162cc50c7ff6380b054"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/password/+page.svelte": {
-    "mtime": 1779156767.7601178,
-    "hash": "e733878aeb9bbfbb89721f97291e6e80"
+    "mtime": 1779374643.5854862,
+    "hash": "2a3f7f0d4b04d2c4c0c35c71e31686b7"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/profile/+page.server.ts": {
     "mtime": 1778877144.1910436,
@@ -1348,8 +1348,8 @@
     "hash": "af4c67fdb260e805369e3751a41bd733"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/profile/+page.svelte": {
-    "mtime": 1779156767.7601178,
-    "hash": "341c811596fc9337e2a1df4370dd6daf"
+    "mtime": 1779374635.1175802,
+    "hash": "f3b995bf015030277fa4403c66aaac72"
   },
   "/home/sbrn/Projects/diversif/src/routes/account/sessions/+page.server.ts": {
     "mtime": 1778877144.1911533,
@@ -1472,8 +1472,8 @@
     "hash": "57a2885e84b0b46921cbc3cbe32ff3c8"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.svelte": {
-    "mtime": 1779171462.4507847,
-    "hash": "96459b66e162012460240e977a0fa61e"
+    "mtime": 1779374666.4262326,
+    "hash": "cf3590b0caf7943d0b981ca5ba9acf2d"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
     "mtime": 1779127068.6644719,
@@ -1488,16 +1488,16 @@
     "hash": "f908475b30f555241604e2a9fc612018"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.server.ts": {
-    "mtime": 1778710035.2754357,
-    "hash": "e3eec9e18adaafc9dbc168035bf12e8e"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/page.server.test.ts": {
-    "mtime": 1778710035.2754357,
-    "hash": "e22d2701abb51a5e89af2ef63a56ffba"
+    "mtime": 1779374839.7613082,
+    "hash": "1a62f6c150e0c9cb0fa1f1ea63fafeb2"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.svelte": {
-    "mtime": 1779171462.4507847,
-    "hash": "918c9ec321e95e41fd165c2862bf6812"
+    "mtime": 1779374879.1188712,
+    "hash": "8ce601118185f908efc53721b9ceb25b"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/page.server.test.ts": {
+    "mtime": 1779374964.087928,
+    "hash": "5d5c745128d567210994e7bbc17b69ec"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.server.ts": {
     "mtime": 1778710035.2754357,
@@ -1572,8 +1572,8 @@
     "hash": "12f67fd466bd88e354dc9eb9276f5d7f"
   },
   "/home/sbrn/Projects/diversif/src/routes/login/+page.svelte": {
-    "mtime": 1779373510.329072,
-    "hash": "b0cccda4a035ba2336a42cb413225ea2"
+    "mtime": 1779374615.2758005,
+    "hash": "616ed2ad33fda5ec0686224b0b3797af"
   },
   "/home/sbrn/Projects/diversif/src/routes/logout/server.test.ts": {
     "mtime": 1778708530.7368724,
@@ -1656,8 +1656,8 @@
     "hash": "61a6e72bad7494d79aa2575433a2c451"
   },
   "/home/sbrn/Projects/diversif/src/routes/signup/+page.svelte": {
-    "mtime": 1779156767.7611125,
-    "hash": "7fe81d0862d557171a6c24281caaec36"
+    "mtime": 1779374600.6639628,
+    "hash": "2ac77b6ac3f1e0bafd684eee7812aece"
   },
   "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/server.test.ts": {
     "mtime": 1778708530.7456532,

@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import BentoAuthLayout from '$lib/components/bento/BentoAuthLayout.svelte';
   import FormError from '$components/ui/FormError.svelte';
   import Seo from '$lib/components/Seo.svelte';
@@ -84,8 +84,7 @@
       </FormError>
     {/if}
 
-    <div class="grid gap-1.5">
-      <Label for="displayName">{m.authSignupDisplayNameLabel()}</Label>
+    <Field name="displayName" label={m.authSignupDisplayNameLabel()}>
       <Input
         id="displayName"
         name="displayName"
@@ -94,10 +93,9 @@
         maxlength={80}
         value={form?.displayName ?? ''}
       />
-    </div>
+    </Field>
 
-    <div class="grid gap-1.5">
-      <Label for="email">{m.authEmailLabel()}</Label>
+    <Field name="email" label={m.authEmailLabel()}>
       <Input
         id="email"
         name="email"
@@ -106,10 +104,9 @@
         required
         value={form?.email ?? ''}
       />
-    </div>
+    </Field>
 
-    <div class="grid gap-1.5">
-      <Label for="password">{m.authPasswordLabel()}</Label>
+    <Field name="password" label={m.authPasswordLabel()} hint={m.authSignupPasswordHint()}>
       <div class="relative">
         <Input
           id="password"
@@ -134,11 +131,9 @@
           {/if}
         </button>
       </div>
-      <p class="text-xs text-muted-foreground">{m.authSignupPasswordHint()}</p>
-    </div>
+    </Field>
 
-    <div class="grid gap-1.5">
-      <Label for="inviteCode">{m.authSignupInviteCodeLabel()}</Label>
+    <Field name="inviteCode" label={m.authSignupInviteCodeLabel()}>
       <Input
         id="inviteCode"
         name="inviteCode"
@@ -146,7 +141,7 @@
         value={form?.inviteCode ?? data.inviteCode}
         autocomplete="off"
       />
-    </div>
+    </Field>
 
     <div class="grid gap-2 rounded-md border bg-surface/50 p-3 text-sm">
       <label class="flex items-start gap-2">

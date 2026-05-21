@@ -2,7 +2,7 @@
   import BackHeader from '$components/ui/BackHeader.svelte';
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import { enhance } from '$app/forms';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
@@ -25,8 +25,7 @@
 <BackHeader title={m.authAccountPasswordSection()} />
 
 <form method="POST" class="grid gap-4" use:enhance={trackSubmission((v) => (changing = v))}>
-  <div class="grid gap-1.5">
-    <Label for="currentPassword">{m.authAccountCurrentPasswordLabel()}</Label>
+  <Field name="currentPassword" label={m.authAccountCurrentPasswordLabel()}>
     <Input
       id="currentPassword"
       name="currentPassword"
@@ -34,9 +33,8 @@
       required
       autocomplete="current-password"
     />
-  </div>
-  <div class="grid gap-1.5">
-    <Label for="newPassword">{m.authAccountNewPasswordLabel()}</Label>
+  </Field>
+  <Field name="newPassword" label={m.authAccountNewPasswordLabel()}>
     <Input
       id="newPassword"
       name="newPassword"
@@ -45,7 +43,7 @@
       minlength={12}
       autocomplete="new-password"
     />
-  </div>
+  </Field>
   <div>
     <Button type="submit" loading={changing}>
       {changing ? m.authAccountPasswordChanging() : m.authAccountPasswordChange()}

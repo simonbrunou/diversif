@@ -2,13 +2,13 @@
   import BackHeader from '$components/ui/BackHeader.svelte';
   import Button from '$components/ui/Button.svelte';
   import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
+  import Field from '$lib/components/ui/Field.svelte';
   import Card from '$components/ui/Card.svelte';
-  import Modal from '$components/ui/Modal.svelte';
+
+  import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
   import { enhance } from '$app/forms';
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
-  import { tick } from 'svelte';
   import { trackSubmission } from '$lib/forms/tracked-enhance';
   import type { ActionData, PageData } from './$types';
 
@@ -19,12 +19,8 @@
 
   let deleteOpen = $state(false);
   let leaveOpen = $state(false);
-  let confirmName = $state('');
-  let confirmDeleteChildPassword = $state('');
   let savingChild = $state(false);
   let creatingInvite = $state(false);
-  let deletingChild = $state(false);
-  let leavingChild = $state(false);
 
   $effect(() => {
     if (form?.success) {
@@ -48,10 +44,6 @@
     return `${$page.url.origin}/join/${code}`;
   }
 
-  async function focusConfirm() {
-    await tick();
-    document.getElementById('confirmName')?.focus();
-  }
 </script>
 
 <div class="container max-w-2xl space-y-6 py-6">
@@ -66,14 +58,12 @@
         class="mt-3 grid gap-3"
         use:enhance={trackSubmission((v) => (savingChild = v))}
       >
-        <div class="grid gap-1.5">
-          <Label for="name">Prénom</Label>
+        <Field name="name" label="Prénom">
           <Input id="name" name="name" required maxlength={80} value={data.child.name} />
-        </div>
-        <div class="grid gap-1.5">
-          <Label for="birthDate">Date de naissance</Label>
+        </Field>
+        <Field name="birthDate" label="Date de naissance">
           <Input id="birthDate" name="birthDate" type="date" required value={data.child.birthDate} />
-        </div>
+        </Field>
         <div>
           <Button type="submit" loading={savingChild}>
             {savingChild ? 'Enregistrement…' : 'Enregistrer'}
@@ -162,11 +152,7 @@
         <Button
           type="button"
           variant="destructive"
-          onclick={() => {
-            deleteOpen = true;
-            confirmName = '';
-            focusConfirm();
-          }}
+          onclick={() => (deleteOpen = true)}
         >
           Supprimer cet enfant
         </Button>
@@ -184,55 +170,24 @@
   </Card>
 </div>
 
-<Modal
+<ConfirmModal
   bind:open={deleteOpen}
-  side="center"
-  title="Supprimer {data.child.name} ?"
-  description="Saisissez exactement « {data.child.name} » pour confirmer."
->
-  <form
-    method="POST"
-    action="?/deleteChild"
-    class="grid gap-3"
-    use:enhance={trackSubmission((v) => (deletingChild = v))}
-  >
-    <Input id="confirmName" name="confirmName" bind:value={confirmName} placeholder={data.child.name} autocomplete="off" />
-    <div class="grid gap-1.5">
-      <Label for="confirmDeleteChildPassword">Mot de passe</Label>
-      <Input
-        id="confirmDeleteChildPassword"
-        name="currentPassword"
-        type="password"
-        autocomplete="current-password"
-        bind:value={confirmDeleteChildPassword}
-        required
-      />
-    </div>
-    <div class="mt-2 flex justify-end gap-2">
-      <Button type="button" variant="outline" onclick={() => (deleteOpen = false)}>Annuler</Button>
-      <Button
-        type="submit"
-        variant="destructive"
-        loading={deletingChild}
-        disabled={confirmName !== data.child.name || confirmDeleteChildPassword.length === 0}
-      >
-        {deletingChild ? 'Suppression…' : 'Supprimer définitivement'}
-      </Button>
-    </div>
-  </form>
-</Modal>
+  title={`Supprimer ${data.child.name} ?`}
+  description={`Saisissez exactement « ${data.child.name} » pour confirmer.`}
+  action="?/deleteChild"
+  confirmLabel="Supprimer définitivement"
+  loadingLabel="Suppression…"
+  destructive
+  requireText={data.child.name}
+  requirePassword
+/>
 
-<Modal bind:open={leaveOpen} side="center" title="Quitter ce suivi ?" description="Vous perdrez l’accès aux logs.">
-  <form
-    method="POST"
-    action="?/leaveChild"
-    use:enhance={trackSubmission((v) => (leavingChild = v))}
-  >
-    <div class="flex justify-end gap-2">
-      <Button type="button" variant="outline" onclick={() => (leaveOpen = false)}>Annuler</Button>
-      <Button type="submit" variant="destructive" loading={leavingChild}>
-        {leavingChild ? 'Sortie…' : 'Quitter'}
-      </Button>
-    </div>
-  </form>
-</Modal>
+<ConfirmModal
+  bind:open={leaveOpen}
+  title="Quitter ce suivi ?"
+  description="Vous perdrez l’accès aux logs."
+  action="?/leaveChild"
+  confirmLabel="Quitter"
+  loadingLabel="Sortie…"
+  destructive
+/>
