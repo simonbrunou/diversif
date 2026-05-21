@@ -40,4 +40,24 @@ describe('DetailSheet', () => {
     });
     expect(screen.queryByRole('dialog')).toBeNull();
   });
+
+  it('renders the footer snippet when provided', () => {
+    render(DetailSheet, {
+      props: {
+        open: true,
+        title: 'Lait',
+        children: textSnippet('body'),
+        footer: textSnippet('FOOTER_CONTENT')
+      }
+    });
+    expect(screen.getByText('FOOTER_CONTENT')).toBeTruthy();
+  });
+
+  it('forwards a custom class to the sheet', () => {
+    render(DetailSheet, {
+      props: { open: true, title: 'Lait', class: 'max-w-lg', children: textSnippet('body') }
+    });
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog?.className).toContain('max-w-lg');
+  });
 });

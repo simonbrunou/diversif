@@ -13,6 +13,7 @@ import {
   setSessionCookie
 } from '$lib/server/auth';
 import { requireGuest } from '$lib/server/guards';
+import { parseFormWithKey } from '$lib/server/forms';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -70,25 +71,17 @@ export const actions: Actions = {
       });
     }
 
-    const raw = Object.fromEntries(await request.formData());
-    const parsed = schema.safeParse(raw);
-
-    const formEmail = typeof raw.email === 'string' ? raw.email : /* v8 ignore next */ '';
-    const formDisplayName =
-      typeof raw.displayName === 'string' ? raw.displayName : /* v8 ignore next */ '';
-    const formInvite =
-      typeof raw.inviteCode === 'string' ? raw.inviteCode : /* v8 ignore next */ '';
-
-    if (!parsed.success) {
-      return fail(400, {
-        email: formEmail,
-        displayName: formDisplayName,
-        inviteCode: formInvite,
-        errorKey: 'errorsAuthBadInput'
-      });
-    }
+    const parsed = await parseFormWithKey(request, schema, {
+      field: 'errorKey',
+      badInputKey: 'errorsAuthBadInput',
+      echo: ['email', 'displayName', 'inviteCode']
+    });
+    if (!parsed.ok) return parsed.failure;
 
     const { email, password, displayName, inviteCode } = parsed.data;
+    const formEmail = email;
+    const formDisplayName = displayName;
+    const formInvite = inviteCode;
     const lowerEmail = email.toLowerCase();
 
     // Validate the invite code BEFORE checking the duplicate email. If we

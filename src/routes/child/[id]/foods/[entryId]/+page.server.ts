@@ -58,7 +58,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     isRas: row.reaction === 'ras',
     texture: row.texture ?? null,
     nth,
-    date: formatDate(row.givenAt, intlLocale),
+    date: formatDate(row.givenAt, intlLocale, { style: 'short' }),
     time: formatTime(row.givenAt, intlLocale),
     symptoms: sList
   };

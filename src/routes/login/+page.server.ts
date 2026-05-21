@@ -11,6 +11,7 @@ import {
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { requireGuest } from '$lib/server/guards';
+import { parseFormWithKey } from '$lib/server/forms';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -38,15 +39,12 @@ export const actions: Actions = {
       });
     }
 
-    const data = Object.fromEntries(await request.formData());
-    const parsed = schema.safeParse(data);
-
-    if (!parsed.success) {
-      return fail(400, {
-        email: typeof data.email === 'string' ? data.email : /* v8 ignore next */ '',
-        errorKey: 'errorsAuthBadInput'
-      });
-    }
+    const parsed = await parseFormWithKey(request, schema, {
+      field: 'errorKey',
+      badInputKey: 'errorsAuthBadInput',
+      echo: ['email']
+    });
+    if (!parsed.ok) return parsed.failure;
 
     const { email, password } = parsed.data;
     const user = await findUserByEmail(email);

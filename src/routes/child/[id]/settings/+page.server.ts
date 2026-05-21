@@ -4,15 +4,8 @@ import { z } from 'zod';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
-import { verifyPassword } from '$lib/server/auth';
 import { createInvitationForChild } from '$lib/server/invitations';
-import { checkRateLimit } from '$lib/server/rate-limit';
-
-// Same fresh-auth bucket the /account changePassword and deleteAccount
-// actions use : sharing the budget across all currentPassword-gated
-// surfaces is intentional, the threat model is identical (a session
-// cookie attacker brute-forcing the password against argon2id).
-const FRESH_AUTH_LIMIT = { name: 'fresh-auth', limit: 5, windowMs: 5 * 60 * 1000 };
+import { requireFreshAuth } from '$lib/server/fresh-auth';
 import {
   parseChildIdParam,
   requireChildContext,
@@ -149,11 +142,6 @@ export const actions: Actions = {
     const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
 
-    const rl = checkRateLimit(FRESH_AUTH_LIMIT, String(user.id));
-    if (!rl.allowed) {
-      return fail(429, { error: 'Trop de tentatives. Réessayez plus tard.' });
-    }
-
     const data = await request.formData();
     const confirmText = String(data.get('confirmText') ?? /* v8 ignore next */ '').trim();
     const currentPassword = String(data.get('currentPassword') ?? /* v8 ignore next */ '');
@@ -165,13 +153,15 @@ export const actions: Actions = {
 
     // Fresh-auth: typed name is visible on the page; require the current
     // password as proof the request comes from the owner, not a stolen
-    // session cookie.
-    const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
-    if (!fresh) throw localizedRedirect(locals.locale, 303, '/login');
-    const ok = currentPassword ? await verifyPassword(fresh.passwordHash, currentPassword) : false;
-    if (!ok) {
-      return fail(400, { error: 'Mot de passe incorrect.' });
-    }
+    // session cookie. `onMissingUser` localizes the /login redirect on the
+    // rare race where the owner row vanished between requireOwnership and
+    // now (helper would otherwise throw a plain Error → unhandled 500).
+    const fresh = await requireFreshAuth(user, currentPassword, {
+      onMissingUser: () => {
+        throw localizedRedirect(locals.locale, 303, '/login');
+      }
+    });
+    if (!fresh.ok) return fresh.error;
 
     await db.delete(children).where(eq(children.id, childId));
     throw localizedRedirect(locals.locale, 303, '/');

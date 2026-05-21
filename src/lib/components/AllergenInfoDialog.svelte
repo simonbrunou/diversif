@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Modal from '$components/ui/Modal.svelte';
+  import DetailSheet from '$lib/components/ui/DetailSheet.svelte';
   import SheetSection from '$lib/components/ui/SheetSection.svelte';
   import Callout from '$lib/components/ui/Callout.svelte';
   import Button from '$components/ui/Button.svelte';
@@ -28,11 +28,9 @@
   }
 </script>
 
-<Modal
+<DetailSheet
   open={open}
   onclose={close}
-  side="auto"
-  scrollableBody
   title={label ? m.allergenDialogTitle({ label }) : ''}
   class="max-w-lg"
 >
@@ -85,4 +83,4 @@
   {#snippet footer()}
     <Button variant="outline" onclick={close}>{m.allergenDialogClose()}</Button>
   {/snippet}
-</Modal>
+</DetailSheet>
