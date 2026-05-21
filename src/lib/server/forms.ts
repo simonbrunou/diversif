@@ -77,6 +77,7 @@ export async function parseFormWithKey<T, TField extends string, TEcho extends s
     if (opts.echo) {
       for (const name of opts.echo) {
         const v = values[name];
+        /* v8 ignore next : File branch — none of the echoing forms accept file uploads */
         if (v !== undefined) echoed[name] = typeof v === 'string' ? v : v.name;
       }
     }

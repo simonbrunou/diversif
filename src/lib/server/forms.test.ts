@@ -107,6 +107,22 @@ describe('parseFormWithKey', () => {
     }
   });
 
+  it('silently skips echo entries that were absent from the submission', async () => {
+    // Echo list references a field the form didn't post — payload must still
+    // resolve cleanly without an undefined key sneaking in.
+    const result = await parseFormWithKey(makeRequest({ name: '', age: 'bogus' }), schema, {
+      field: 'errorKey',
+      badInputKey: 'errorsAuthBadInput',
+      echo: ['name', 'inviteCode'] as const
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const data = result.failure.data as Record<string, string | undefined>;
+      expect(data.name).toBe('');
+      expect(Object.prototype.hasOwnProperty.call(data, 'inviteCode')).toBe(false);
+    }
+  });
+
   it('does not echo fields when echo is omitted', async () => {
     const result = await parseFormWithKey(makeRequest({ name: 'Alice', age: 'bogus' }), schema, {
       field: 'errorKey',
