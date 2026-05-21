@@ -5,22 +5,12 @@ import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { chooseSuggestedFoods } from '$lib/utils/suggest';
-import {
-  loadDismissals,
-  loadSeasonalFoods,
-  loadTextureProgress
-} from '$lib/server/guidance/queries';
+import { loadSeasonalFoods, loadTextureProgress } from '$lib/server/guidance/queries';
 import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
 import { FACT_CARDS } from '$lib/content/did-you-know';
 import type { PageServerLoad } from './$types';
 
-const TODAY_TIP = {
-  id: 'tip-allergen-eggs',
-  title: "Introduire l'œuf tôt",
-  body: "LEAP recommande l'introduction de l'œuf entre 4 et 11 mois."
-} as const;
-
-export const load: PageServerLoad = async ({ parent, locals }) => {
+export const load: PageServerLoad = async ({ parent }) => {
   const { child } = await parent();
   const months = ageInMonths(child.birthDate);
   const currentStageId = getStageForAgeMonths(months).id;
@@ -59,13 +49,6 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     count: 5
   });
 
-  // Tip dismissal: go through loadDismissals so the TTL conventions (info: 30d,
-  // warn: 90d, important: never) and the per-child scoping match the dashboard's
-  // reminder-strip read. Without this, a dismissal would persist forever here
-  // even though the dashboard re-surfaces it after 30 days.
-  const dismissals = await loadDismissals(locals.user!.id, child.id);
-  const tipDismissed = dismissals.has(TODAY_TIP.id);
-
   const stages = getAllStagesForBento();
   const allergens = await loadAllergenStatus(child.id);
   const textureProgress = await loadTextureProgress(child.id);
@@ -79,8 +62,6 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
     currentStageId,
     stages,
     suggestions,
-    todayTip: TODAY_TIP,
-    tipDismissed,
     allergens,
     textureProgress,
     seasonalFoods,

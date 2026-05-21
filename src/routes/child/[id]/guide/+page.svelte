@@ -16,8 +16,6 @@
   stages={data.stages}
   activeStageId={data.currentStageId}
   suggestions={data.suggestions}
-  todayTip={data.todayTip}
-  tipDismissed={data.tipDismissed}
   allergens={data.allergens}
   ageMonths={data.ageMonths}
   textureProgress={data.textureProgress}
@@ -27,6 +25,5 @@
   recipes={data.recipes}
   factCards={data.factCards}
   onPickSuggestion={(food) => goto(`/child/${childId}?suggested=${food.id}`)}
-  onDismissTip={() => {}}
   {viewAllSuggestionsHref}
 />
