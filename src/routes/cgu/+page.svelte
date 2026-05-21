@@ -1,5 +1,6 @@
 <script lang="ts">
   import BackHeader from '$components/ui/BackHeader.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import * as m from '$lib/paraglide/messages';
   import { page } from '$app/stores';
@@ -16,9 +17,9 @@
 <div class="mx-auto max-w-3xl px-6 py-6 text-ink sm:px-10">
   <BackHeader fallback="/" />
   {#if $page.url.pathname.startsWith('/en')}
-    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+    <Callout variant="warning">
       {m.commonFrOnlyBannerLegal()}
-    </aside>
+    </Callout>
   {/if}
 
   <section lang="fr" class="mt-8 space-y-3">

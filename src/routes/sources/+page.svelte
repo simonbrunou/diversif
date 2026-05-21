@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '$components/ui/Button.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import Card from '$components/ui/Card.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import JsonLd from '$lib/components/JsonLd.svelte';
@@ -48,9 +49,9 @@
 
 <div class="container max-w-3xl space-y-8 py-6 md:py-8">
   {#if $page.url.pathname.startsWith('/en')}
-    <aside class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+    <Callout variant="warning">
       {m.commonFrOnlyBannerSources()}
-    </aside>
+    </Callout>
   {/if}
 
   <section lang="fr" class="space-y-8">
