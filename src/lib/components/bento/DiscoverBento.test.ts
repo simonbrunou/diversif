@@ -96,4 +96,11 @@ describe('DiscoverBento', () => {
     // Sheet oneLiner, so use getAllByText and assert at least two occurrences (grid + sheet).
     expect(screen.getAllByText('Cuillère').length).toBeGreaterThanOrEqual(2);
   });
+
+  it('renders the three group labels (Repères / À essayer / Apprendre)', () => {
+    render(DiscoverBento, { props: baseProps });
+    expect(screen.getByText('Repères')).toBeTruthy();
+    expect(screen.getByText('À essayer')).toBeTruthy();
+    expect(screen.getByText('Apprendre')).toBeTruthy();
+  });
 });
