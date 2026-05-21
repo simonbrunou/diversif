@@ -17,6 +17,7 @@
   suggestions={data.suggestions}
   todayTip={data.todayTip}
   tipDismissed={data.tipDismissed}
+  allergens={data.allergens}
   onPickSuggestion={(food) => goto(`/child/${childId}?suggested=${food.id}`)}
   onDismissTip={() => {}}
   {viewAllSuggestionsHref}

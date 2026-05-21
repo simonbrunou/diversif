@@ -453,5 +453,16 @@
   "foodComboboxAddCustomCta": "+ Ajouter un aliment hors catalogue",
   "foodComboboxCustomNameLabel": "Nom de l’aliment",
   "foodComboboxCustomCategoryLabel": "Catégorie",
-  "foodComboboxCustomScopeHint": "Cet aliment ne sera visible que pour cet enfant."
+  "foodComboboxCustomScopeHint": "Cet aliment ne sera visible que pour cet enfant.",
+  "allergenPassportTitle": "Passeport allergènes",
+  "allergenPassportSubtitle": "{introduced}/{total} allergènes prioritaires introduits",
+  "allergenPassportSectionPriority": "Prioritaires",
+  "allergenPassportSectionOther": "Autres allergènes suivis",
+  "allergenPassportStateCleared": "Introduit",
+  "allergenPassportStateTodo": "À découvrir",
+  "allergenPassportStateFading": "À reproposer",
+  "allergenPassportStateReaction": "Réaction observée",
+  "allergenPassportTriedFirst": "Première fois",
+  "allergenPassportTriedCount": "{count} fois",
+  "allergenPassportFadingHint": "{days} j depuis la dernière fois"
 }
