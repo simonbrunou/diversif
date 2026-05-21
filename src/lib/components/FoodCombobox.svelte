@@ -7,6 +7,7 @@
   import Select from '$components/ui/Select.svelte';
   import { cn } from '$lib/utils/cn';
   import { SearchX, ListFilter } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
 
   type FoodOption = {
     id: number;
@@ -66,13 +67,13 @@
   <div class="grid gap-2">
     <Input
       type="search"
-      placeholder="Rechercher un aliment…"
+      placeholder={m.foodComboboxSearchPlaceholder()}
       bind:value={query}
       autocomplete="off"
     />
     <div
       role="group"
-      aria-label="Filtrer par catégorie"
+      aria-label={m.foodComboboxFilterAriaLabel()}
       class="-mx-1 flex flex-wrap gap-1 px-1"
     >
       <button
@@ -85,7 +86,7 @@
         aria-pressed={activeCategory === ''}
         onclick={() => (activeCategory = '')}
       >
-        Tous
+        {m.foodComboboxFilterAll()}
       </button>
       {#each CATEGORIES as c (c.id)}
         {@const cls = getCategoryClasses(c.id)}
@@ -123,10 +124,10 @@
       <button
         type="button"
         class="rounded-sm text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        aria-label={`Changer l'aliment sélectionné (actuellement ${selected.name})`}
+        aria-label={m.foodComboboxChangeAria({ name: selected.name })}
         onclick={() => pick(0)}
       >
-        Changer
+        {m.foodComboboxChange()}
       </button>
     </div>
     <input type="hidden" {name} value={selected.id} />
@@ -142,7 +143,7 @@
             <span class="min-w-0 truncate">
               <span class="font-medium">{f.name}</span>
               {#if normalize(f.name).includes(normalize(query)) === false && query}
-                <span class="ml-1 text-xs text-muted-foreground">(approchant)</span>
+                <span class="ml-1 text-xs text-muted-foreground">{m.foodComboboxApproximate()}</span>
               {/if}
             </span>
             <span class="ml-2 flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
@@ -156,12 +157,12 @@
       {:else}
         <li class="px-3 py-8 text-center">
           <SearchX class="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
-          <p class="mt-2 text-sm font-medium">Aucun aliment trouvé</p>
+          <p class="mt-2 text-sm font-medium">{m.foodComboboxNoneTitle()}</p>
           <p class="mt-1 text-xs text-muted-foreground">
             {#if query.trim()}
-              Aucune correspondance pour « {query.trim()} ». Essayez un autre terme ou ajoutez-le au catalogue ci-dessous.
+              {m.foodComboboxNoneForQuery({ query: query.trim() })}
             {:else}
-              Aucun aliment dans cette catégorie. Choisissez « Tous » ou ajoutez un aliment hors catalogue.
+              {m.foodComboboxNoneInCategory()}
             {/if}
           </p>
         </li>
@@ -169,7 +170,7 @@
       {#if isCapped}
         <li class="flex items-center justify-center gap-1.5 bg-muted/40 px-3 py-2 text-center text-xs text-muted-foreground">
           <ListFilter size={12} aria-hidden="true" />
-          <span>Affinez la recherche pour voir d’autres aliments…</span>
+          <span>{m.foodComboboxCapped()}</span>
         </li>
       {/if}
     </ul>
@@ -179,17 +180,17 @@
       class="rounded-sm text-left text-sm text-primary-strong hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       onclick={openCustom}
     >
-      + Ajouter un aliment hors catalogue
+      {m.foodComboboxAddCustomCta()}
     </button>
 
     {#if customOpen}
       <div class="grid gap-3 rounded-md border bg-card p-3">
         <div class="grid gap-1.5">
-          <label for="custom-name" class="text-sm font-medium">Nom de l’aliment</label>
+          <label for="custom-name" class="text-sm font-medium">{m.foodComboboxCustomNameLabel()}</label>
           <Input id="custom-name" name={`${customName}.name`} bind:value={customNameValue} required maxlength={80} />
         </div>
         <div class="grid gap-1.5">
-          <label for="custom-cat" class="text-sm font-medium">Catégorie</label>
+          <label for="custom-cat" class="text-sm font-medium">{m.foodComboboxCustomCategoryLabel()}</label>
           <Select
             id="custom-cat"
             name={`${customName}.category`}
@@ -201,7 +202,7 @@
           </Select>
         </div>
         <p class="text-xs text-muted-foreground">
-          Cet aliment ne sera visible que pour cet enfant.
+          {m.foodComboboxCustomScopeHint()}
         </p>
       </div>
     {/if}
