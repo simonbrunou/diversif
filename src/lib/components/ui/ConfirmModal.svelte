@@ -39,10 +39,19 @@
   const passwordOk = $derived(requirePassword ? confirmPassword.length > 0 : true);
   const canSubmit = $derived(textOk && passwordOk);
 
+  // Reset confirmation state on every close (Cancel, Escape, overlay click,
+  // parent-driven `open = false`) so a reopened modal never inherits prior
+  // satisfied gates — the destructive-confirm safety net would be paper-thin
+  // otherwise.
+  $effect(() => {
+    if (!open) {
+      confirmText = '';
+      confirmPassword = '';
+    }
+  });
+
   function close() {
     open = false;
-    confirmText = '';
-    confirmPassword = '';
   }
 </script>
 
@@ -54,7 +63,7 @@
     use:enhance={trackSubmission((v) => (submitting = v))}
   >
     {#if requireText}
-      <Field name="confirmText" label={`Saisissez « ${requireText} » pour confirmer`}>
+      <Field name="confirmText" label={m.commonConfirmTextLabel({ text: requireText })}>
         <Input
           id="confirmText"
           name="confirmText"

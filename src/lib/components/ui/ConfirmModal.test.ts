@@ -105,4 +105,49 @@ describe('ConfirmModal', () => {
     expect(form?.getAttribute('action')).toBe('?/myAction');
     expect(form?.getAttribute('method')?.toLowerCase()).toBe('post');
   });
+
+  it('resets confirmText + confirmPassword when open flips to false', async () => {
+    const { rerender } = render(ConfirmModal, {
+      props: {
+        open: true,
+        title: 'X',
+        action: '?/x',
+        confirmLabel: 'OK',
+        requireText: 'Léo',
+        requirePassword: true
+      }
+    });
+    const input = screen.getByPlaceholderText('Léo') as HTMLInputElement;
+    const pwd = document.querySelector('input[type="password"]') as HTMLInputElement;
+    await fireEvent.input(input, { target: { value: 'Léo' } });
+    await fireEvent.input(pwd, { target: { value: 'secret' } });
+    expect(input.value).toBe('Léo');
+    expect(pwd.value).toBe('secret');
+
+    // Simulate Escape / overlay-click / parent setting open=false (bypasses Cancel).
+    await rerender({
+      open: false,
+      title: 'X',
+      action: '?/x',
+      confirmLabel: 'OK',
+      requireText: 'Léo',
+      requirePassword: true
+    });
+    await rerender({
+      open: true,
+      title: 'X',
+      action: '?/x',
+      confirmLabel: 'OK',
+      requireText: 'Léo',
+      requirePassword: true
+    });
+
+    // After reopen, the input nodes are remounted with empty values.
+    const input2 = screen.getByPlaceholderText('Léo') as HTMLInputElement;
+    const pwd2 = document.querySelector('input[type="password"]') as HTMLInputElement;
+    expect(input2.value).toBe('');
+    expect(pwd2.value).toBe('');
+    const submit = screen.getByRole('button', { name: 'OK' }) as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
+  });
 });

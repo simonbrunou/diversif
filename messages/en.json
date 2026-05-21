@@ -189,6 +189,7 @@
   "authDeletedBody": "Your account and associated data have been deleted. Your sessions have been invalidated on all devices.",
   "authDeletedBackHome": "Back to home",
   "commonCancel": "Cancel",
+  "commonConfirmTextLabel": "Type \"{text}\" to confirm",
   "commonDelete": "Delete",
   "commonFirstName": "First name",
   "commonPassword": "Password",
