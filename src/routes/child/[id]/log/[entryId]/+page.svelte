@@ -39,8 +39,8 @@
 
 <div class="container max-w-xl space-y-5 py-6">
   <BackHeader
-    title="Modifier ce repas"
-    subtitle={`Pour ${data.child.name}`}
+    title={m.logEditTitle()}
+    subtitle={m.logFormSubtitle({ name: data.child.name })}
     fallback={backHref}
   />
 
@@ -69,12 +69,12 @@
     <FoodCombobox foods={data.foods} initialFoodId={data.entry.foodId} />
 
     <div class="grid gap-1.5">
-      <Label for="givenAt">Quand ?</Label>
+      <Label for="givenAt">{m.logFormGivenAtLabel()}</Label>
       <Input id="givenAt" name="givenAt" type="datetime-local" bind:value={givenAt} required />
     </div>
 
     <div class="grid gap-1.5">
-      <Label>Comment bébé a réagi ?</Label>
+      <Label>{m.logFormReactionLegend()}</Label>
       <ReactionPicker name="reaction" bind:value={reaction} />
     </div>
 
@@ -91,21 +91,21 @@
     </div>
 
     <div class="grid gap-1.5">
-      <Label for="notes">Une note ? (facultatif)</Label>
+      <Label for="notes">{m.logFormNoteLabel()}</Label>
       <Textarea
         id="notes"
         name="notes"
         maxlength={2000}
-        placeholder="Quantité, ambiance du repas, observations…"
+        placeholder={m.logFormNotePlaceholder()}
         bind:value={notes}
       />
     </div>
 
     <div class="flex gap-2">
       <Button type="submit" size="lg" class="flex-1" loading={saving}>
-        {saving ? 'Enregistrement…' : 'Enregistrer'}
+        {saving ? m.logFormSubmitting() : m.commonSave()}
       </Button>
-      <Button href={backHref} variant="outline" size="lg">Annuler</Button>
+      <Button href={backHref} variant="outline" size="lg">{m.commonCancel()}</Button>
     </div>
   </form>
 
@@ -114,7 +114,7 @@
     action="?/delete"
     class="border-t pt-5"
     use:enhance={({ cancel }) => {
-      if (!confirm('Supprimer ce repas ? L’opération est définitive.')) {
+      if (!confirm(m.logEditDeleteConfirm())) {
         cancel();
         return;
       }
@@ -128,7 +128,7 @@
     <input type="hidden" name="from" value={data.from} />
     <Button type="submit" variant="ghost" size="sm" class="text-destructive hover:text-destructive" loading={deleting}>
       <Trash2 size={16} aria-hidden="true" />
-      {deleting ? 'Suppression…' : 'Supprimer ce repas'}
+      {deleting ? m.logEditDeleting() : m.logEditDeleteCta()}
     </Button>
   </form>
 </div>

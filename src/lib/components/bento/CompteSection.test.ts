@@ -15,7 +15,7 @@ describe('CompteSection', () => {
   it('renders every account row', () => {
     render(CompteSection, { props: baseProps });
     expect(screen.getByText('Profil')).toBeTruthy();
-    expect(screen.getByText("Clés d'accès")).toBeTruthy();
+    expect(screen.getByText('Clés d’accès')).toBeTruthy();
     expect(screen.getByText('Mot de passe')).toBeTruthy();
     expect(screen.getByText('Langue')).toBeTruthy();
     expect(screen.getByText('Thème')).toBeTruthy();
@@ -25,7 +25,7 @@ describe('CompteSection', () => {
   it('points each row at its dedicated sub-route', () => {
     render(CompteSection, { props: baseProps });
     expect(screen.getByText('Profil').closest('a')?.getAttribute('href')).toBe('/account/profile');
-    expect(screen.getByText("Clés d'accès").closest('a')?.getAttribute('href')).toBe(
+    expect(screen.getByText('Clés d’accès').closest('a')?.getAttribute('href')).toBe(
       '/account/passkeys'
     );
     expect(screen.getByText('Mot de passe').closest('a')?.getAttribute('href')).toBe(

@@ -44,28 +44,28 @@
   });
 
   function logsLabel(count: number): string {
-    return count === 1 ? m.carnetStatsLogsOne() : m.carnetStatsLogsOther({ count: String(count) });
+    return count === 1 ? m.carnetBilanLogsOne() : m.carnetBilanLogsOther({ count: String(count) });
   }
 </script>
 
 <div class="flex flex-col gap-3">
   <div class="grid grid-cols-3 gap-3">
-    <Card as="article" variant="tile-mint" class="p-4" aria-label={m.carnetStatsDiversity()}>
-      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsDiversity()}</p>
+    <Card as="article" variant="tile-mint" class="p-4" aria-label={m.carnetBilanDiversity()}>
+      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanDiversity()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{diversityScore}</p>
     </Card>
-    <Card as="article" variant="tile-butter" class="p-4" aria-label={m.carnetStatsFoods()}>
-      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsFoods()}</p>
+    <Card as="article" variant="tile-butter" class="p-4" aria-label={m.carnetBilanFoods()}>
+      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanFoods()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{distinctFoods}</p>
     </Card>
-    <Card as="article" variant="tile-sky" class="p-4" aria-label={m.carnetStatsTextures()}>
-      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsTextures()}</p>
+    <Card as="article" variant="tile-sky" class="p-4" aria-label={m.carnetBilanTextures()}>
+      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanTextures()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{texturesTried}<span class="text-base">/6</span></p>
     </Card>
   </div>
   {#if weeklyEntries.length > 0}
     <article class="rounded-tile bg-canvas p-4 shadow-soft">
-      <p class="mb-3 text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetStatsLast7Days()}</p>
+      <p class="mb-3 text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanLast7Days()}</p>
       <div class="flex h-20 items-end gap-1">
         {#each weeklyEntries as count, i (i)}
           <div

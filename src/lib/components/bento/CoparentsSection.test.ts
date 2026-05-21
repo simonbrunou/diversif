@@ -25,7 +25,7 @@ describe('CoparentsSection', () => {
     render(CoparentsSection, {
       props: { childName: 'Léo', coparents: [], inviteHref: '/child/abc/settings#invite' }
     });
-    expect(screen.getByText("Aucun co-parent invité pour l'instant.")).toBeTruthy();
+    expect(screen.getByText('Aucun co-parent invité pour l’instant.')).toBeTruthy();
   });
 
   it('always renders the invite link', () => {

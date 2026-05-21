@@ -26,6 +26,6 @@ describe('CarnetCategories', () => {
 
   it('renders the empty state when foods is empty', () => {
     render(CarnetCategories, { props: { foods: [] } });
-    expect(screen.getByText("Aucune catégorie pour l'instant")).toBeTruthy();
+    expect(screen.getByText('Aucune catégorie pour l’instant')).toBeTruthy();
   });
 });
