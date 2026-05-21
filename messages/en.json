@@ -487,5 +487,11 @@
   "seasonalFoodsMonth9": "September",
   "seasonalFoodsMonth10": "October",
   "seasonalFoodsMonth11": "November",
-  "seasonalFoodsMonth12": "December"
+  "seasonalFoodsMonth12": "December",
+  "recipesTitle": "Preparation ideas",
+  "recipesSubtitle": "A few simple ideas suited to baby’s stage. Adapt them to your habits and to the foods you have already introduced.",
+  "recipesEmpty": "No ideas for this stage yet.",
+  "recipesTimeMinutes": "{minutes} min",
+  "recipesIngredientsLabel": "Ingredients",
+  "recipesDisclaimer": "Before serving, check that each ingredient has already been introduced without reaction. Diversif is not a medical cookbook: if in doubt (allergy, texture, storage), check with your paediatrician."
 }

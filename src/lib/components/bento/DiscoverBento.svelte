@@ -7,8 +7,10 @@
   import AllergenPassport from './AllergenPassport.svelte';
   import TextureTimeline from './TextureTimeline.svelte';
   import SeasonalFoods from './SeasonalFoods.svelte';
+  import Recipes from './Recipes.svelte';
   import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
   import type { AllergenItem } from '$lib/server/guidance/allergen-status';
+  import type { Recipe } from '$lib/content/recipes';
 
   type Food = { id: number; name: string; category: string; allergenType: string | null };
 
@@ -38,7 +40,8 @@
     textureProgress,
     seasonalFoods,
     currentMonth,
-    childId
+    childId,
+    recipes
   }: {
     stages: Stage[];
     activeStageId: string;
@@ -54,6 +57,7 @@
     seasonalFoods: Food[];
     currentMonth: number;
     childId: string;
+    recipes: readonly Recipe[];
   } = $props();
 
   let openStageId = $state<string | null>(null);
@@ -73,6 +77,7 @@
   <AllergenPassport {allergens} />
   <TextureTimeline {ageMonths} progress={textureProgress} />
   <SeasonalFoods foods={seasonalFoods} month={currentMonth} {childId} />
+  <Recipes {recipes} />
   <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
   <TipsRotator tip={todayTip} dismissed={tipDismissed} onDismiss={onDismissTip} />
   <SourcesCluster />
