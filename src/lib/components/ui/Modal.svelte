@@ -19,12 +19,18 @@
     description?: string;
     class?: string;
     /**
-     * When true, wraps `children` in a flex-1 within the sheet flex column
-     * overflow-y-auto container so long body content scrolls instead of
-     * clipping. Required for any `side="auto"` / `side="bottom"` sheet whose
-     * body can grow taller than the 92dvh sheet limit — without it, the
-     * lower portion (including the close button) becomes unreachable on
-     * mobile.
+     * When true, wraps `children` in a `max-h-[70vh] overflow-y-auto` container
+     * so long body content scrolls instead of clipping. Required for any
+     * `side="auto"` / `side="bottom"` sheet whose body can grow taller than
+     * the 92dvh sheet limit — without it, the lower portion (including the
+     * close button) becomes unreachable on mobile.
+     *
+     * NOTE: a flex-1 approach was tried (Bundle 2) to claim the remaining
+     * space inside the 92dvh sheet, but `DialogPrimitive.Content` is laid
+     * out as a CSS grid, not a flex column, so `flex-1` has no effect there.
+     * Reverting to a 70vh ceiling restores working scroll. The audit-flagged
+     * "dead space below the sheet" requires a layout-level fix in the
+     * grid template, tracked for a follow-up.
      */
     scrollableBody?: boolean;
     children?: Snippet;
@@ -464,7 +470,7 @@
       {/if}
       {#if children}
         {#if scrollableBody}
-          <div class="flex-1 min-h-0 overflow-y-auto">{@render children()}</div>
+          <div class="max-h-[70vh] overflow-y-auto">{@render children()}</div>
         {:else}
           {@render children()}
         {/if}
