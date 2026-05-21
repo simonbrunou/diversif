@@ -108,7 +108,7 @@
     "hash": "567adef9b07269fce1c4b5c875edabe6"
   },
   "/home/sbrn/Projects/diversif/e2e/bento-discover.spec.ts": {
-    "mtime": 1779367116.9787338,
+    "mtime": 1779368229.3266544,
     "hash": "fe3353876a680dcd1cb2ff6297ef1818"
   },
   "/home/sbrn/Projects/diversif/scripts/generate-icons.mjs": {
@@ -343,13 +343,13 @@
     "mtime": 1779334330.3258276,
     "hash": "12882c31b14b09575ad23fdd5e1b1e99"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.test.ts": {
-    "mtime": 1779367291.1977968,
-    "hash": "09c6ce144f8ca1cfc2a46c3eb3d3f524"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.svelte": {
-    "mtime": 1779367593.4735582,
+    "mtime": 1779368229.3306544,
     "hash": "ce011719f96c8db2983e6d844bf438ec"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.test.ts": {
+    "mtime": 1779368229.3306544,
+    "hash": "09c6ce144f8ca1cfc2a46c3eb3d3f524"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCtaBento.test.ts": {
     "mtime": 1778708530.7503636,
@@ -407,14 +407,6 @@
     "mtime": 1778708530.7588313,
     "hash": "3dbcad365d7e4f42b7182382ec4cffa1"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.svelte": {
-    "mtime": 1778708530.7593985,
-    "hash": "714d3439ed612742378a1f2679db28a4"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.test.ts": {
-    "mtime": 1778708530.7600217,
-    "hash": "129ead3f3b791e75729f71ebd1f197b2"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Input.svelte": {
     "mtime": 1778708530.7638087,
     "hash": "848e99a6065c3bb33ccf62744decb735"
@@ -431,22 +423,6 @@
     "mtime": 1778708530.7726095,
     "hash": "963c9f474a964bb3228386d43a861f17"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/SectionHeader.svelte": {
-    "mtime": 1778742331.634663,
-    "hash": "97e9013c7081fdd6def7f8d7e22df7da"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/SectionHeader.test.ts": {
-    "mtime": 1778742331.634663,
-    "hash": "7b93ee5937a9103cde1a99e1f8992d00"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.svelte": {
-    "mtime": 1778742957.4095016,
-    "hash": "c06b6a7637c8d5c0f8297efb724e18d1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.test.ts": {
-    "mtime": 1778742957.4095016,
-    "hash": "79ebf50c5e536cfafeddddd11633feaf"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/LinkRow.svelte": {
     "mtime": 1778744164.54867,
     "hash": "91a102790602513084d5c03a2628398e"
@@ -454,14 +430,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/ui/LinkRow.test.ts": {
     "mtime": 1778744164.54867,
     "hash": "494782e38a65b66445e3e005f2e0e827"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/EmptyHint.svelte": {
-    "mtime": 1779156767.759624,
-    "hash": "810108ed19546aaa7f44af990c4bc8e9"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/EmptyHint.test.ts": {
-    "mtime": 1779156767.759624,
-    "hash": "458d27dfd00e2b93576e39d736c11480"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/FormError.svelte": {
     "mtime": 1779156767.759624,
@@ -484,12 +452,92 @@
     "hash": "76d9d5befe3830e734f4ef7edafbee45"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.svelte": {
-    "mtime": 1779367583.8086617,
+    "mtime": 1779368229.3306544,
     "hash": "cf9dc27bb641debe442d54fb8b137225"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.test.ts": {
-    "mtime": 1779367635.9201026,
+    "mtime": 1779368229.3306544,
     "hash": "71f3f0312097803183d4d9eb66b8e12f"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Field.test.ts": {
+    "mtime": 1779371776.9024882,
+    "hash": "90509255009f5556d1b5da5e6725da7d"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Field.svelte": {
+    "mtime": 1779371789.2053475,
+    "hash": "5f3dc5564ebf523a7b3bbeb418f063e0"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Callout.test.ts": {
+    "mtime": 1779371903.920039,
+    "hash": "b0098f0c19b8720dd1671182961d9078"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Callout.svelte": {
+    "mtime": 1779371917.183888,
+    "hash": "491fa85cfcb327fe8e4789826ebc9c70"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/CalloutCard.test.ts": {
+    "mtime": 1779372058.8352826,
+    "hash": "129392c7983aed3e1b830b785e122026"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/CalloutCard.svelte": {
+    "mtime": 1779372065.789204,
+    "hash": "0ec8bfb90bfa6a0d8ad8168a1e77bd79"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/EmptyHint.svelte": {
+    "mtime": 1779372078.7340577,
+    "hash": "77389c35dbfa6d87915738ca52713e54"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/EmptyHint.test.ts": {
+    "mtime": 1779372131.7514594,
+    "hash": "8d452be9a9391a06f6c195f1de77e8d3"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/ConfirmModal.svelte": {
+    "mtime": 1779372329.6452339,
+    "hash": "cbb56113676ea65eeb0b7e2351b8f112"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/ConfirmModal.test.ts": {
+    "mtime": 1779372446.4489248,
+    "hash": "251a117545bca2e386658ce912302ba6"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/SheetSection.test.ts": {
+    "mtime": 1779372554.958711,
+    "hash": "6db07e2a33af8a90d3b70f1cb124ebfb"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/SheetSection.svelte": {
+    "mtime": 1779372564.3156064,
+    "hash": "0c2526c35fa00e94dbb5a1d3cc1564b8"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/DetailSheet.test.ts": {
+    "mtime": 1779372671.151413,
+    "hash": "86db3dfccfcb6b7c523f7fe87f1fc8ed"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/DetailSheet.svelte": {
+    "mtime": 1779372681.182301,
+    "hash": "a0628d5e9fca7307689763a8cf16a382"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.test.ts": {
+    "mtime": 1779372770.370306,
+    "hash": "03b111c3095f381a94bf6c02a3db7ae4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.svelte": {
+    "mtime": 1779372787.7181127,
+    "hash": "beaddd662341e70f06658e278b76422c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/SectionHeader.test.ts": {
+    "mtime": 1779372875.1131384,
+    "hash": "ccc1aaeff49bb99f4b0723131f8d348c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/SectionHeader.svelte": {
+    "mtime": 1779372887.1410046,
+    "hash": "63400ce56e2248486e21cd89672b14e3"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.test.ts": {
+    "mtime": 1779372981.2369566,
+    "hash": "4ce5eac441928df7287913b1c6115965"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.svelte": {
+    "mtime": 1779372997.7827723,
+    "hash": "2e73035ffd430fda36e525b3c3adab5e"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/AllergensSnapshot.test.ts": {
     "mtime": 1778708530.777163,
@@ -743,10 +791,6 @@
     "mtime": 1779171462.4497845,
     "hash": "db06719082eae35a7b8a4c62324bfec7"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetTous.svelte": {
-    "mtime": 1779306871.944697,
-    "hash": "a9ec98e8fe3c614eed4bc8c44e236ec6"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.svelte": {
     "mtime": 1779314445.9233398,
     "hash": "a7d054ce8af037b0f301b50894878037"
@@ -758,10 +802,6 @@
   "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetAllergens.svelte": {
     "mtime": 1779315483.1004324,
     "hash": "f454b61949d3ecdf05a097c4d97ba92f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.svelte": {
-    "mtime": 1779315483.1004324,
-    "hash": "a25bcdc52c5b8bd7b2d739a9f6128f04"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/OnboardingForm.svelte": {
     "mtime": 1779334330.3258276,
@@ -791,17 +831,9 @@
     "mtime": 1779342781.0850663,
     "hash": "f0dbb0b4d090454cd97e7f18e94fecde"
   },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/Recipes.svelte": {
-    "mtime": 1779342781.0850663,
-    "hash": "9019a025f74f929efdbaeb3582375c05"
-  },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/Recipes.test.ts": {
     "mtime": 1779342781.0850663,
     "hash": "39e6afe915e66f704e8a9baa6f9772e0"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SeasonalFoods.svelte": {
-    "mtime": 1779342781.0850663,
-    "hash": "149ebf9eef447fd0499d2c2feb32a804"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/SeasonalFoods.test.ts": {
     "mtime": 1779342781.0850663,
@@ -828,8 +860,24 @@
     "hash": "8bd9f9d581fa9ff5414a069f53c2f611"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/StageDetailSheet.svelte": {
-    "mtime": 1779367589.8305972,
+    "mtime": 1779368229.3306544,
     "hash": "8ea041be174d8364ab60caa009d4f903"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/SeasonalFoods.svelte": {
+    "mtime": 1779372092.4959023,
+    "hash": "471cd4243fc34e59f9e9130f9e5b0359"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/Recipes.svelte": {
+    "mtime": 1779372103.2697806,
+    "hash": "2fed378f558819df176a7a05c5f5ab4c"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.svelte": {
+    "mtime": 1779372116.012637,
+    "hash": "edef668ab723d31cbc02e2a87b0700e4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetTous.svelte": {
+    "mtime": 1779372125.0055356,
+    "hash": "937135a7dfa5c87991d38a32c6882732"
   },
   "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
     "mtime": 1778708530.6889315,
@@ -1168,20 +1216,20 @@
     "hash": "5d0f9d5549ffb24f7a59794a32e60035"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1779367697.770437,
+    "mtime": 1779373007.8836598,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1779367697.770437,
-    "hash": "1b85890053d7f386337e3eaa912e7495"
+    "mtime": 1779373007.8836598,
+    "hash": "c141b101d33640bb23a5a580e62e7424"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1779367697.770437,
-    "hash": "9bbd33a34505c7457d62de1df8cd855c"
+    "mtime": 1779373007.8836598,
+    "hash": "6d8455a12e36b80a0a30b0d9b2a79324"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1779367697.770437,
-    "hash": "208d8abcbf410c3b93826db684b304b6"
+    "mtime": 1779373007.8836598,
+    "hash": "ae9f19db249417a603799ef0f433159b"
   },
   "/home/sbrn/Projects/diversif/src/lib/forms/tracked-enhance.test.ts": {
     "mtime": 1779156767.759624,
@@ -1460,8 +1508,8 @@
     "hash": "e38f2ca8086acd53f64ead172d981aa4"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.svelte": {
-    "mtime": 1779171462.4507847,
-    "hash": "b5ac843b50005434320263e22ffa6491"
+    "mtime": 1779372086.232973,
+    "hash": "cd5b0ce23729d93b671d6cca2752ff4c"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/report/+page.server.ts": {
     "mtime": 1778873431.3951135,
@@ -1783,6 +1831,10 @@
     "mtime": 1779359612.335347,
     "hash": "b31ccc884665ca8c4c980625e2d14e17"
   },
+  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-21-simplify-codebase-design.md": {
+    "mtime": 1779370832.0720885,
+    "hash": "41b130df660e71746754d9e1b95f2e00"
+  },
   "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-06-observability-sentry.md": {
     "mtime": 1778089710.4477434,
     "hash": "1c0dbba22ba617aa505ec4a4856d251e"
@@ -1830,6 +1882,10 @@
   "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-21-discover-tab-grouped-layout.md": {
     "mtime": 1779359754.2066867,
     "hash": "d0fd3f1db6ee3c6c7dad0cd0e921cc9a"
+  },
+  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-21-bundle-1-foundation-primitives.md": {
+    "mtime": 1779371277.9311802,
+    "hash": "a1c493cd7540a046c1c75aa325d84ecd"
   },
   "/home/sbrn/Projects/diversif/docs/superpowers/runbooks/sentry-setup.md": {
     "mtime": 1778113941.3848512,
