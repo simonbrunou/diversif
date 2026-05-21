@@ -1,6 +1,6 @@
 <script lang="ts">
   import SectionHeader from '$components/ui/SectionHeader.svelte';
-  import EmptyHint from '$components/ui/EmptyHint.svelte';
+  import CalloutCard from '$components/ui/CalloutCard.svelte';
   import * as m from '$lib/paraglide/messages';
   import { Clock, ChefHat } from 'lucide-svelte';
   import type { Recipe } from '$lib/content/recipes';
@@ -19,9 +19,9 @@
   <p class="-mt-1 mb-3 text-xs text-ink-soft">{m.recipesSubtitle()}</p>
 
   {#if recipes.length === 0}
-    <EmptyHint icon={ChefHat}>
+    <CalloutCard icon={ChefHat} title={m.recipesTitle()}>
       {m.recipesEmpty()}
-    </EmptyHint>
+    </CalloutCard>
   {:else}
     <ul class="flex flex-col gap-2">
       {#each recipes as recipe (recipe.id)}
