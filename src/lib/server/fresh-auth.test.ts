@@ -58,9 +58,9 @@ describe('requireFreshAuth', () => {
     // Exhaust the 5-attempt budget first (all wrong passwords, but the budget
     // is consumed regardless of outcome).
     for (let i = 0; i < 5; i++) {
-      await requireFreshAuth(fakeUser, 'wrong', String(fakeUser.id));
+      await requireFreshAuth(fakeUser, 'wrong', { rateLimitKey: String(fakeUser.id) });
     }
-    const result = await requireFreshAuth(fakeUser, 'pw', String(fakeUser.id));
+    const result = await requireFreshAuth(fakeUser, 'pw', { rateLimitKey: String(fakeUser.id) });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.status).toBe(429);
   });
@@ -69,6 +69,17 @@ describe('requireFreshAuth', () => {
     // Use a user id that has no DB row — the helper should throw, not fail.
     const ghost: SafeUser = { ...fakeUser, id: 99999 };
     await expect(requireFreshAuth(ghost, 'whatever')).rejects.toThrow(/no password hash/);
+  });
+
+  it('invokes onMissingUser when the DB row is gone (race)', async () => {
+    const ghost: SafeUser = { ...fakeUser, id: 88880 };
+    const onMissingUser = vi.fn(() => {
+      throw new Error('REDIRECT_TO_LOGIN');
+    });
+    await expect(requireFreshAuth(ghost, 'whatever', { onMissingUser })).rejects.toThrow(
+      /REDIRECT_TO_LOGIN/
+    );
+    expect(onMissingUser).toHaveBeenCalled();
   });
 });
 

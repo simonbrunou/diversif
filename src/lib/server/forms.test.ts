@@ -90,4 +90,33 @@ describe('parseFormWithKey', () => {
       expect(data.deleteErrorKey).toBe('errorsAccountDeleteInvalid');
     }
   });
+
+  it('echoes named form fields into the failure payload', async () => {
+    const result = await parseFormWithKey(makeRequest({ name: '', age: 'bogus' }), schema, {
+      field: 'errorKey',
+      badInputKey: 'errorsAuthBadInput',
+      echo: ['name']
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const data = result.failure.data as Record<string, string>;
+      expect(data.errorKey).toBe('errorsAuthBadInput');
+      expect(data.name).toBe('');
+      // age was NOT in echo list — must not leak (caller's discretion to avoid secrets)
+      expect(data.age).toBeUndefined();
+    }
+  });
+
+  it('does not echo fields when echo is omitted', async () => {
+    const result = await parseFormWithKey(makeRequest({ name: 'Alice', age: 'bogus' }), schema, {
+      field: 'errorKey',
+      badInputKey: 'errorsAuthBadInput'
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const data = result.failure.data as Record<string, string>;
+      expect(data.name).toBeUndefined();
+      expect(data.age).toBeUndefined();
+    }
+  });
 });

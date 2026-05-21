@@ -35,8 +35,9 @@ type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 export async function requireFreshAuth(
   user: SafeUser,
   currentPassword: string,
-  rateLimitKey: string = String(user.id)
+  opts?: { rateLimitKey?: string; onMissingUser?: () => never }
 ): Promise<Result<true, ActionFailure<{ error: string }>>> {
+  const rateLimitKey = opts?.rateLimitKey ?? String(user.id);
   const rl = checkRateLimit(FRESH_AUTH_LIMIT, rateLimitKey);
   if (!rl.allowed) {
     return {
@@ -52,6 +53,7 @@ export async function requireFreshAuth(
     .limit(1);
 
   if (!row?.passwordHash) {
+    if (opts?.onMissingUser) opts.onMissingUser();
     throw new Error(`requireFreshAuth: user ${user.id} has no password hash`);
   }
 

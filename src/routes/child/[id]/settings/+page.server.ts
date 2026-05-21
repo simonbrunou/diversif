@@ -153,13 +153,14 @@ export const actions: Actions = {
 
     // Fresh-auth: typed name is visible on the page; require the current
     // password as proof the request comes from the owner, not a stolen
-    // session cookie. Re-check the row beforehand so we can localize the
-    // /login redirect on the rare race where the owner row vanished between
-    // requireOwnership and now (the helper would otherwise throw a plain
-    // Error which surfaces as an unhandled 500).
-    const ownerRow = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
-    if (!ownerRow) throw localizedRedirect(locals.locale, 303, '/login');
-    const fresh = await requireFreshAuth(user, currentPassword);
+    // session cookie. `onMissingUser` localizes the /login redirect on the
+    // rare race where the owner row vanished between requireOwnership and
+    // now (helper would otherwise throw a plain Error → unhandled 500).
+    const fresh = await requireFreshAuth(user, currentPassword, {
+      onMissingUser: () => {
+        throw localizedRedirect(locals.locale, 303, '/login');
+      }
+    });
     if (!fresh.ok) return fresh.error;
 
     await db.delete(children).where(eq(children.id, childId));

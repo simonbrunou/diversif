@@ -43,7 +43,7 @@ type ParseFormWithKeyResult<T, TField extends string> =
   | { ok: true; data: T }
   | {
       ok: false;
-      failure: ActionFailure<Record<TField, string>>;
+      failure: ActionFailure<Record<TField, string> & Record<string, FormDataEntryValue>>;
     };
 
 /**
@@ -51,25 +51,37 @@ type ParseFormWithKeyResult<T, TField extends string> =
  * instead of `{ error: string }`. Suited for routes whose `+page.svelte`
  * surfaces errors through `resolveMessageKey()` (account/*, signup, login).
  *
+ * When `echo` is provided, those named form fields are spread into the failure
+ * payload as top-level keys so the page can re-bind them (e.g. `value={form?.email}`).
+ * Password / secret fields should never be echoed.
+ *
  * Usage:
- *   const parsed = await parseFormWithKey(request, passwordSchema, {
- *     field: 'passwordErrorKey',
- *     badInputKey: 'errorsAuthBadInput'
+ *   const parsed = await parseFormWithKey(request, loginSchema, {
+ *     field: 'errorKey',
+ *     badInputKey: 'errorsAuthBadInput',
+ *     echo: ['email']
  *   });
  *   if (!parsed.ok) return parsed.failure;
  */
 export async function parseFormWithKey<T, TField extends string>(
   request: Request,
   schema: ZodSchema<T>,
-  opts: { field: TField; badInputKey: string }
+  opts: { field: TField; badInputKey: string; echo?: readonly string[] }
 ): Promise<ParseFormWithKeyResult<T, TField>> {
   const formData = await request.formData();
   const values = Object.fromEntries(formData);
   const result = schema.safeParse(values);
   if (!result.success) {
+    const echoed: Record<string, FormDataEntryValue> = {};
+    if (opts.echo) {
+      for (const name of opts.echo) {
+        if (name in values) echoed[name] = values[name];
+      }
+    }
     return {
       ok: false,
-      failure: fail(400, { [opts.field]: opts.badInputKey } as Record<TField, string>)
+      failure: fail(400, { [opts.field]: opts.badInputKey, ...echoed } as Record<TField, string> &
+        Record<string, FormDataEntryValue>)
     };
   }
   return { ok: true, data: result.data };

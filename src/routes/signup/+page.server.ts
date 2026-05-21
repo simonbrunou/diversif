@@ -73,7 +73,8 @@ export const actions: Actions = {
 
     const parsed = await parseFormWithKey(request, schema, {
       field: 'errorKey',
-      badInputKey: 'errorsAuthBadInput'
+      badInputKey: 'errorsAuthBadInput',
+      echo: ['email', 'displayName', 'inviteCode']
     });
     if (!parsed.ok) return parsed.failure;
 
