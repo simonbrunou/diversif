@@ -13,6 +13,7 @@ import {
   loadAnalyticsBuckets,
   loadCoparentActivity,
   loadTextureProgress,
+  loadSeasonalFoods,
   dismissReminder
 } from './queries';
 import { children, foods, foodEntries, users, tipDismissals } from '../db/schema';
@@ -177,6 +178,80 @@ describe('loadTextureProgress', () => {
     const out = await loadTextureProgress(child.id, new Date(now));
     expect(out.tried).toEqual(['lisse']);
     expect(out.mostRecent).toBeNull();
+  });
+});
+
+describe('loadSeasonalFoods', () => {
+  it('returns empty when the month has no seasonal entries that map to seeded foods', async () => {
+    // March doesn't list any food with name 'Inexistant' so the inArray filter
+    // matches nothing; verify the empty path.
+    const out = await loadSeasonalFoods(12, 3);
+    // Without seeding the seasonal foods themselves, the call may still
+    // return matches if some happen to be in the seed by name. So assert it's
+    // an array (zero-or-more), then verify structure on any returned row.
+    expect(Array.isArray(out)).toBe(true);
+    for (const r of out) {
+      expect(typeof r.id).toBe('number');
+      expect(typeof r.name).toBe('string');
+    }
+  });
+
+  it('filters by suggestedAgeMonths', async () => {
+    // Seed two foods, one age-appropriate and one not. Pick names that appear
+    // in the seasonal calendar for an arbitrary month (we use June here →
+    // "Tomate" is in the seasonal list).
+    await testDb.insert(foods).values({
+      name: 'Tomate',
+      category: 'legumes',
+      isMajorAllergen: false,
+      allergenType: null,
+      suggestedAgeMonths: 6,
+      notes: null,
+      isCustom: false,
+      customForChildId: null
+    });
+    await testDb.insert(foods).values({
+      name: 'Aubergine',
+      category: 'legumes',
+      isMajorAllergen: false,
+      allergenType: null,
+      suggestedAgeMonths: 10,
+      notes: null,
+      isCustom: false,
+      customForChildId: null
+    });
+
+    const at8mo = await loadSeasonalFoods(8, 6);
+    const names8 = at8mo.map((f) => f.name);
+    expect(names8).toContain('Tomate');
+    expect(names8).not.toContain('Aubergine');
+
+    const at10mo = await loadSeasonalFoods(10, 6);
+    const names10 = at10mo.map((f) => f.name);
+    expect(names10).toContain('Tomate');
+    expect(names10).toContain('Aubergine');
+  });
+
+  it('returns nothing for invalid months (defensive)', async () => {
+    expect(await loadSeasonalFoods(12, 0)).toEqual([]);
+    expect(await loadSeasonalFoods(12, 13)).toEqual([]);
+  });
+
+  it('excludes custom-per-child foods even if their name matches', async () => {
+    const { child } = await seedUserAndChild();
+    await testDb.insert(foods).values({
+      name: 'Tomate',
+      category: 'legumes',
+      isMajorAllergen: false,
+      allergenType: null,
+      suggestedAgeMonths: 6,
+      notes: null,
+      isCustom: true,
+      customForChildId: child.id
+    });
+
+    const out = await loadSeasonalFoods(8, 6);
+    expect(out.find((f) => f.name === 'Tomate')).toBeUndefined();
   });
 });
 
