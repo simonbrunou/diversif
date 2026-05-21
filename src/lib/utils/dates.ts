@@ -78,11 +78,19 @@ export function isValidBirthDate(value: string): boolean {
 }
 
 /**
- * Format a date using the medium dateStyle for the given locale.
- * E.g. "1 mars 2026" (fr-FR) or "1 Mar 2026" (en-GB).
+ * Format a date for the given locale. Default `style="medium"` includes the
+ * year ("1 mars 2026"); `style="short"` omits it ("1 mars") for surfaces where
+ * the year is redundant context (today's log, recent entries).
  */
-export function formatDate(d: Date | string | number, locale: string): string {
+export function formatDate(
+  d: Date | string | number,
+  locale: string,
+  options: { style?: 'medium' | 'short' } = {}
+): string {
   const date = d instanceof Date ? d : new Date(d);
+  if (options.style === 'short') {
+    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(date);
+  }
   return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date);
 }
 

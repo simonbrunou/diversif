@@ -164,6 +164,12 @@ describe('formatDate', () => {
     const out = formatDate('2026-03-01T12:00:00Z', 'fr-FR');
     expect(out).toMatch(/2026/);
   });
+
+  it('omits the year when style="short"', () => {
+    const out = formatDate(d, 'fr-FR', { style: 'short' });
+    expect(out).toMatch(/mars/i);
+    expect(out).not.toMatch(/2026/);
+  });
 });
 
 describe('formatTime', () => {
