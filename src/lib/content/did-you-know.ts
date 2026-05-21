@@ -58,7 +58,7 @@ export const FACT_CARDS: readonly FactCard[] = [
   {
     id: 'fruits-secs-entiers',
     title: 'Fruits à coque entiers ?',
-    body: "Risque d'étouffement avant 4 à 5 ans. En purée ou en poudre intégrée à une préparation, c'est sans risque et nutritionnellement intéressant : noix, amandes, noisettes apportent de bons acides gras.",
+    body: "Risque d'étouffement avant 5 ans. En purée ou en poudre intégrée à une préparation, c'est sans risque et nutritionnellement intéressant : noix, amandes, noisettes apportent de bons acides gras.",
     sources: ['hcsp-2020', 'anses-nourrisson']
   },
   {
