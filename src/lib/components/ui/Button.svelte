@@ -10,7 +10,7 @@
     | 'tile-butter'
     | 'tile-sky'
     | 'tile-lilac';
-  export type Size = 'default' | 'sm' | 'lg' | 'icon';
+  export type Size = 'default' | 'sm' | 'lg' | 'icon' | 'pill';
 
   const VARIANTS: Record<Variant, string> = {
     default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-card',
@@ -29,7 +29,8 @@
     default: 'h-10 px-4 py-2 text-sm',
     sm: 'h-9 px-3 text-sm',
     lg: 'h-12 px-6 text-base',
-    icon: 'h-10 w-10'
+    icon: 'h-10 w-10',
+    pill: 'h-11 px-5 text-sm font-bold rounded-full'
   };
 </script>
 
