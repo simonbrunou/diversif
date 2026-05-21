@@ -107,9 +107,9 @@
 
   <GuideStaticSections currentStageId={null} />
 
-  <Card class="p-5 text-center md:p-6">
-    <h2 class="text-lg font-semibold">Suivre tout ça en pratique ?</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+  <Card padding="lg" class="text-center mt-8">
+    <h2 class="text-base font-semibold">Suivre tout ça en pratique ?</h2>
+    <p class="mt-1 text-sm text-ink-soft">
       Diversif vous aide à logguer chaque aliment, suivre les 12 allergènes et partager le tableau
       avec l'autre parent.
     </p>

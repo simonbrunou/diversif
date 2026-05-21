@@ -117,9 +117,9 @@
     {/each}
   </div>
 
-  <Card class="p-5 text-center md:p-6">
-    <h2 class="text-lg font-semibold">Suivre l'introduction des allergènes</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+  <Card padding="lg" class="text-center mt-8">
+    <h2 class="text-base font-semibold">Suivre l'introduction des allergènes</h2>
+    <p class="mt-1 text-sm text-ink-soft">
       Diversif suit l'introduction des 12 allergènes du carnet et vous rappelle les allergènes
       prioritaires (œuf, arachide, lait, gluten, poisson, fruits à coque, sésame) qui restent à
       proposer dans la fenêtre 4–11 mois.
