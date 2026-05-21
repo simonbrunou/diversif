@@ -6,6 +6,7 @@ import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import { CATEGORIES, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import { ageInMonths } from '$lib/utils/age';
+import { toEpochMs } from '$lib/utils/dates';
 import { computeReminders } from '$lib/server/guidance/reminders';
 import {
   loadCoparentActivity,
@@ -139,18 +140,15 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     .where(eq(foodEntries.childId, childId))
     .orderBy(desc(foodEntries.givenAt));
 
-  const entriesNormalized: EnrichedEntry[] = recentForReminders.map((r) => {
-    const ts = r.givenAt as unknown;
-    return {
-      id: r.id,
-      foodId: r.foodId,
-      foodName: r.foodName,
-      category: r.category as EnrichedEntry['category'],
-      allergenType: r.allergenType,
-      reaction: r.reaction as EnrichedEntry['reaction'],
-      givenAt: ts instanceof Date ? ts.getTime() : /* v8 ignore next */ Number(ts)
-    };
-  });
+  const entriesNormalized: EnrichedEntry[] = recentForReminders.map((r) => ({
+    id: r.id,
+    foodId: r.foodId,
+    foodName: r.foodName,
+    category: r.category as EnrichedEntry['category'],
+    allergenType: r.allergenType,
+    reaction: r.reaction as EnrichedEntry['reaction'],
+    givenAt: toEpochMs(r.givenAt as Date | number | string)
+  }));
 
   // child.createdAt comes from the layout load, avoiding a second SELECT.
   const childCreatedAt = child.createdAt;
@@ -219,8 +217,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       category: r.category as CategoryId,
       reaction: r.reaction as ReactionId,
       loggedByName: r.loggedByName ?? 'Compte supprimé',
-      givenAt:
-        r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt)
+      givenAt: toEpochMs(r.givenAt as Date | number | string)
     })),
     stats: {
       foodsIntroduced: distinctFoods,

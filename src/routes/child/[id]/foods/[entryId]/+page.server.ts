@@ -12,6 +12,7 @@ import {
 import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
+import { formatDate, formatTime } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
 
 async function loadEntryForChild(entryId: number, childId: number) {
@@ -41,11 +42,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
   const row = await loadEntryForChild(entryId, childId);
 
-  const locale = (locals.locale ?? 'fr') as 'fr' | 'en';
+  const intlLocale = (locals.locale ?? 'fr') === 'fr' ? 'fr-FR' : 'en-GB';
   const sList = (await listSymptomsByEntry(entryId)).map((s) => ({
     id: s.id,
     label: s.label,
-    observedAt: formatTime(s.observedAt, locale),
+    observedAt: formatTime(s.observedAt, intlLocale),
     note: s.note
   }));
   const nth = await countNthExposition(entryId);
@@ -57,8 +58,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     isRas: row.reaction === 'ras',
     texture: row.texture ?? null,
     nth,
-    date: formatDate(row.givenAt, locale),
-    time: formatTime(row.givenAt, locale),
+    date: formatDate(row.givenAt, intlLocale),
+    time: formatTime(row.givenAt, intlLocale),
     symptoms: sList
   };
 };
@@ -145,17 +146,3 @@ export const actions: Actions = {
     return { success: true };
   }
 };
-
-function formatDate(d: Date, locale: 'fr' | 'en'): string {
-  return new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
-    day: 'numeric',
-    month: 'long'
-  }).format(d);
-}
-
-function formatTime(d: Date, locale: 'fr' | 'en'): string {
-  return new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(d);
-}
