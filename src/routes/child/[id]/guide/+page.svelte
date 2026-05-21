@@ -7,7 +7,8 @@
 
   let { data }: { data: PageData } = $props();
 
-  const childId = $derived($page.params.id);
+  // params.id is required by the route, so it is always a string here.
+  const childId = $derived($page.params.id ?? '');
   const viewAllSuggestionsHref = $derived(localizedHref(`/child/${childId}/suggestions`));
 </script>
 
@@ -20,6 +21,9 @@
   allergens={data.allergens}
   ageMonths={data.ageMonths}
   textureProgress={data.textureProgress}
+  seasonalFoods={data.seasonalFoods}
+  currentMonth={data.currentMonth}
+  {childId}
   onPickSuggestion={(food) => goto(`/child/${childId}?suggested=${food.id}`)}
   onDismissTip={() => {}}
   {viewAllSuggestionsHref}

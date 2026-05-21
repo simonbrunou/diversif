@@ -472,5 +472,20 @@
   "textureTimelineStateTried": "Déjà essayée",
   "textureTimelineStateUpcoming": "À venir",
   "textureTimelineFingerLabel": "Aliments à saisir (en parallèle)",
-  "textureTimelineFingerHint": "Optionnel à partir de 6 mois, en complément de la cuillère."
+  "textureTimelineFingerHint": "Optionnel à partir de 6 mois, en complément de la cuillère.",
+  "seasonalFoodsTitle": "De saison ce mois-ci",
+  "seasonalFoodsSubtitle": "Variez le panier de bébé avec les fruits et légumes du moment.",
+  "seasonalFoodsEmpty": "Aucun aliment de saison adapté à cet âge pour l’instant.",
+  "seasonalFoodsMonth1": "janvier",
+  "seasonalFoodsMonth2": "février",
+  "seasonalFoodsMonth3": "mars",
+  "seasonalFoodsMonth4": "avril",
+  "seasonalFoodsMonth5": "mai",
+  "seasonalFoodsMonth6": "juin",
+  "seasonalFoodsMonth7": "juillet",
+  "seasonalFoodsMonth8": "août",
+  "seasonalFoodsMonth9": "septembre",
+  "seasonalFoodsMonth10": "octobre",
+  "seasonalFoodsMonth11": "novembre",
+  "seasonalFoodsMonth12": "décembre"
 }

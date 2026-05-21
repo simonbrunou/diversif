@@ -71,7 +71,10 @@ describe('DiscoverBento', () => {
     onDismissTip: vi.fn(),
     allergens: [],
     ageMonths: 7,
-    textureProgress: { tried: [], mostRecent: null }
+    textureProgress: { tried: [], mostRecent: null },
+    seasonalFoods: [],
+    currentMonth: 5,
+    childId: '5'
   };
 
   it('renders the stages, suggestions, tips, and sources section headings', () => {

@@ -3,12 +3,51 @@
 
 import { db } from '$lib/server/db';
 import { foodEntries, foods, tipDismissals, users } from '$lib/server/db/schema';
-import { and, desc, eq, gte, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte, ne, sql } from 'drizzle-orm';
 import type { CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import { REPEAT_CANDIDATE_MAX_COUNT, REPEAT_CANDIDATE_MAX_WORST_RANK } from './repeat-candidates';
+import { getSeasonalNames } from '$lib/content/seasonal-foods';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+export type SeasonalFood = {
+  id: number;
+  name: string;
+  category: string;
+  allergenType: string | null;
+};
+
+/**
+ * Foods from the seasonal calendar for `month` (1-12) that are also
+ * age-appropriate (`suggestedAgeMonths <= ageMonths`). Built-in seeded
+ * foods only — custom per-child foods aren't included.
+ */
+export async function loadSeasonalFoods(ageMonths: number, month: number): Promise<SeasonalFood[]> {
+  const names = getSeasonalNames(month);
+  if (names.length === 0) return [];
+
+  const rows = await db
+    .select({
+      id: foods.id,
+      name: foods.name,
+      category: foods.category,
+      allergenType: foods.allergenType
+    })
+    .from(foods)
+    .where(
+      and(
+        inArray(foods.name, names as string[]),
+        eq(foods.isCustom, false),
+        lte(foods.suggestedAgeMonths, ageMonths)
+      )
+    );
+
+  // Preserve the order from the seasonal list so the most-iconic of the month
+  // shows first; DB row order is otherwise undefined.
+  const byName = new Map(rows.map((r) => [r.name, r]));
+  return names.map((n) => byName.get(n)).filter((r): r is SeasonalFood => r != null);
+}
 
 export async function loadTexturesTried(childId: number): Promise<number> {
   const rows = await db

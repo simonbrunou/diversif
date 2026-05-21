@@ -472,5 +472,20 @@
   "textureTimelineStateTried": "Already tried",
   "textureTimelineStateUpcoming": "Upcoming",
   "textureTimelineFingerLabel": "Finger food (in parallel)",
-  "textureTimelineFingerHint": "Optional from 6 months, alongside the spoon."
+  "textureTimelineFingerHint": "Optional from 6 months, alongside the spoon.",
+  "seasonalFoodsTitle": "In season this month",
+  "seasonalFoodsSubtitle": "Vary baby’s basket with this month’s fruits and vegetables.",
+  "seasonalFoodsEmpty": "No seasonal food suitable for this age yet.",
+  "seasonalFoodsMonth1": "January",
+  "seasonalFoodsMonth2": "February",
+  "seasonalFoodsMonth3": "March",
+  "seasonalFoodsMonth4": "April",
+  "seasonalFoodsMonth5": "May",
+  "seasonalFoodsMonth6": "June",
+  "seasonalFoodsMonth7": "July",
+  "seasonalFoodsMonth8": "August",
+  "seasonalFoodsMonth9": "September",
+  "seasonalFoodsMonth10": "October",
+  "seasonalFoodsMonth11": "November",
+  "seasonalFoodsMonth12": "December"
 }
