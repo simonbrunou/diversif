@@ -65,6 +65,10 @@ export function requireOwnership(
  * Resolves: authenticated user, validated child id, and membership.
  * Throws/redirects on any failure via the underlying guards.
  *
+ * Order matters: requireUser is called BEFORE parseChildIdParam so a guest
+ * hitting a malformed id (e.g. /child/abc) gets redirected to /login rather
+ * than a 404. This matches the documented prelude order across the app.
+ *
  * Usage:
  *   const { user, childId, membership } = requireChildContext(locals, params);
  */
@@ -72,6 +76,7 @@ export function requireChildContext(
   locals: App.Locals,
   params: Partial<Record<string, string>>
 ): { user: SafeUser; childId: number; membership: Membership } {
+  requireUser(locals);
   const childId = parseChildIdParam(params);
   const { user, membership } = requireMembership(locals, childId);
   return { user, childId, membership };

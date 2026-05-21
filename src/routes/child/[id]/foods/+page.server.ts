@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
-import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
+import { requireChildContext } from '$lib/server/guards';
 import { loadRepeatCandidates, loadTexturesTried } from '$lib/server/guidance/queries';
 import { loadAllergenStatus, type AllergenItem } from '$lib/server/guidance/allergen-status';
 import type { TextureKey } from '$lib/utils/textures';
@@ -53,9 +53,7 @@ async function loadWeeklyEntries(
 }
 
 export const load: PageServerLoad = async ({ params, url, locals }) => {
-  requireUser(locals);
-  const childId = parseChildIdParam(params);
-  requireMembership(locals, childId);
+  const { childId } = requireChildContext(locals, params);
 
   const q = url.searchParams.get('q')?.trim() ?? '';
   const category = url.searchParams.get('category') ?? '';

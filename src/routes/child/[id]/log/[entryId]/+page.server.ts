@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { and, eq, isNull, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
-import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
+import { requireChildContext } from '$lib/server/guards';
 import { CATEGORY_IDS } from '$lib/utils/categories';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import type { Actions, PageServerLoad } from './$types';
@@ -42,9 +42,7 @@ async function loadEntry(entryId: number, childId: number) {
 }
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
-  requireUser(locals);
-  const childId = parseChildIdParam(params);
-  requireMembership(locals, childId);
+  const { childId } = requireChildContext(locals, params);
   const entryId = parseEntryId(params.entryId);
 
   const entry = await loadEntry(entryId, childId);
@@ -95,9 +93,7 @@ function destinationFor(
 
 export const actions: Actions = {
   update: async ({ request, params, locals }) => {
-    requireUser(locals);
-    const childId = parseChildIdParam(params);
-    requireMembership(locals, childId);
+    const { childId } = requireChildContext(locals, params);
     const entryId = parseEntryId(params.entryId);
     await loadEntry(entryId, childId);
 
@@ -183,9 +179,7 @@ export const actions: Actions = {
   },
 
   delete: async ({ request, params, locals }) => {
-    requireUser(locals);
-    const childId = parseChildIdParam(params);
-    requireMembership(locals, childId);
+    const { childId } = requireChildContext(locals, params);
     const entryId = parseEntryId(params.entryId);
     await loadEntry(entryId, childId);
 

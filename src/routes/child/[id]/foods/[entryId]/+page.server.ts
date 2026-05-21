@@ -9,7 +9,7 @@ import {
   deleteSymptomById,
   countNthExposition
 } from '$lib/server/db/symptoms';
-import { parseChildIdParam, requireMembership } from '$lib/server/guards';
+import { requireChildContext } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
 import type { Actions, PageServerLoad } from './$types';
@@ -42,10 +42,8 @@ async function loadEntryForChild(entryId: number, childId: number) {
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-  const childId = parseChildIdParam(params);
+  const { childId } = requireChildContext(locals, params);
   const entryId = parseEntryIdParam(params.entryId);
-  const { user } = requireMembership(locals, childId);
-  void user;
 
   const row = await loadEntryForChild(entryId, childId);
 
@@ -79,9 +77,8 @@ const addSchema = z.object({
 
 export const actions: Actions = {
   addSymptom: async ({ locals, params, request }) => {
-    const childId = parseChildIdParam(params);
+    const { user, childId } = requireChildContext(locals, params);
     const entryId = parseEntryIdParam(params.entryId);
-    const { user } = requireMembership(locals, childId);
 
     const raw = Object.fromEntries(await request.formData());
     const parsed = addSchema.safeParse(raw);
@@ -128,9 +125,8 @@ export const actions: Actions = {
   },
 
   deleteSymptom: async ({ locals, params, request }) => {
-    const childId = parseChildIdParam(params);
+    const { user, childId } = requireChildContext(locals, params);
     const entryId = parseEntryIdParam(params.entryId);
-    const { user } = requireMembership(locals, childId);
     await loadEntryForChild(entryId, childId);
 
     const raw = Object.fromEntries(await request.formData());

@@ -16,7 +16,7 @@ import {
   dismissReminder,
   type EnrichedEntry
 } from '$lib/server/guidance/queries';
-import { parseChildIdParam, requireMembership, requireUser } from '$lib/server/guards';
+import { requireChildContext } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -32,9 +32,7 @@ export type AllergenSummary = {
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
   // Same ordering as the layout: redirect guests to /login *before* a
   // malformed id can turn the response into a 404.
-  requireUser(locals);
-  const childId = parseChildIdParam(params);
-  const { user } = requireMembership(locals, childId);
+  const { user, childId } = requireChildContext(locals, params);
   const { child } = await parent();
   // Pin a single "now" so ageMonths, the reminder windows, and the
   // weekCount cutoff all see the same instant. Otherwise a request that
@@ -241,9 +239,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
 export const actions: Actions = {
   dismissReminder: async ({ request, params, locals }) => {
-    requireUser(locals);
-    const childId = parseChildIdParam(params);
-    const { user } = requireMembership(locals, childId);
+    const { user, childId } = requireChildContext(locals, params);
     const data = await request.formData();
     const key = data.get('reminderKey');
     if (typeof key !== 'string' || key.length === 0 || key.length > 100) {

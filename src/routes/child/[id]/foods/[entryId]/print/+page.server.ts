@@ -3,15 +3,13 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, foodEntries, foods } from '$lib/server/db/schema';
 import { listSymptomsByEntry } from '$lib/server/db/symptoms';
-import { requireMembership } from '$lib/server/guards';
+import { requireChildContext } from '$lib/server/guards';
 import { ageInMonths } from '$lib/utils/age';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-  const childId = Number(params.id);
+  const { childId } = requireChildContext(locals, params);
   const entryId = Number(params.entryId);
-  const { user } = requireMembership(locals, childId);
-  void user;
 
   const row = (
     await db
