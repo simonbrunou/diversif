@@ -18,6 +18,14 @@
     title?: string;
     description?: string;
     class?: string;
+    /**
+     * When true, wraps `children` in a `max-h-[70vh] overflow-y-auto` container
+     * so long body content scrolls instead of clipping. Required for any
+     * `side="auto"` / `side="bottom"` sheet whose body can grow taller than
+     * the 92dvh sheet limit — without it, the lower portion (including the
+     * close button) becomes unreachable on mobile.
+     */
+    scrollableBody?: boolean;
     children?: Snippet;
     footer?: Snippet;
     onclose?: () => void;
@@ -30,6 +38,7 @@
     title,
     description,
     class: className = '',
+    scrollableBody = false,
     children,
     footer,
     onclose
@@ -452,7 +461,13 @@
           {description}
         </DialogPrimitive.Description>
       {/if}
-      {#if children}{@render children()}{/if}
+      {#if children}
+        {#if scrollableBody}
+          <div class="max-h-[70vh] overflow-y-auto">{@render children()}</div>
+        {:else}
+          {@render children()}
+        {/if}
+      {/if}
       {#if footer}
         <div class="flex justify-end gap-2">{@render footer()}</div>
       {/if}

@@ -30,6 +30,7 @@
   open={open}
   onclose={close}
   side="auto"
+  scrollableBody
   title={label ? m.allergenDialogTitle({ label }) : ''}
   class="max-w-lg"
 >
