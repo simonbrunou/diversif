@@ -6,7 +6,7 @@ import { _clearAllRateLimits } from './rate-limit';
 vi.mock('$lib/server/db', () => ({ db: testDb }));
 
 // Import after mocks are in place.
-const { requireFreshAuth } = await import('./fresh-auth');
+const { requireFreshAuth, requireFreshAuthWithKey } = await import('./fresh-auth');
 const { hashPassword } = await import('./auth');
 
 import type { SafeUser } from '$lib/types';
@@ -69,5 +69,65 @@ describe('requireFreshAuth', () => {
     // Use a user id that has no DB row — the helper should throw, not fail.
     const ghost: SafeUser = { ...fakeUser, id: 99999 };
     await expect(requireFreshAuth(ghost, 'whatever')).rejects.toThrow(/no password hash/);
+  });
+});
+
+describe('requireFreshAuthWithKey', () => {
+  const keyOpts = {
+    field: 'passwordErrorKey' as const,
+    rateLimitedKey: 'errorsAuthRateLimited',
+    incorrectKey: 'errorsAccountPasswordIncorrect'
+  };
+
+  it('returns ok:true when password is correct', async () => {
+    await insertUserWithPassword('correct-password-123');
+    const result = await requireFreshAuthWithKey(fakeUser, 'correct-password-123', keyOpts);
+    expect(result.ok).toBe(true);
+  });
+
+  it('returns the caller-specified field + incorrectKey on wrong password', async () => {
+    await insertUserWithPassword('correct-password-123');
+    const result = await requireFreshAuthWithKey(fakeUser, 'wrong-password', keyOpts);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.failure.status).toBe(400);
+      const data = result.failure.data as Record<string, string>;
+      expect(data.passwordErrorKey).toBe('errorsAccountPasswordIncorrect');
+    }
+  });
+
+  it('returns rateLimitedKey on 429', async () => {
+    await insertUserWithPassword('pw');
+    for (let i = 0; i < 5; i++) {
+      await requireFreshAuthWithKey(fakeUser, 'wrong', { ...keyOpts, rateLimitKey: 'k1' });
+    }
+    const result = await requireFreshAuthWithKey(fakeUser, 'pw', {
+      ...keyOpts,
+      rateLimitKey: 'k1'
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.failure.status).toBe(429);
+      const data = result.failure.data as Record<string, string>;
+      expect(data.passwordErrorKey).toBe('errorsAuthRateLimited');
+    }
+  });
+
+  it('invokes onMissingUser when the DB row is gone (race)', async () => {
+    const ghost: SafeUser = { ...fakeUser, id: 88888 };
+    const onMissingUser = vi.fn(() => {
+      throw new Error('REDIRECT_TO_LOGIN');
+    });
+    await expect(
+      requireFreshAuthWithKey(ghost, 'whatever', { ...keyOpts, onMissingUser })
+    ).rejects.toThrow(/REDIRECT_TO_LOGIN/);
+    expect(onMissingUser).toHaveBeenCalled();
+  });
+
+  it('throws when no onMissingUser and the DB row is gone', async () => {
+    const ghost: SafeUser = { ...fakeUser, id: 77777 };
+    await expect(requireFreshAuthWithKey(ghost, 'whatever', keyOpts)).rejects.toThrow(
+      /no password hash/
+    );
   });
 });

@@ -62,3 +62,60 @@ export async function requireFreshAuth(
 
   return { ok: true, value: true };
 }
+
+/**
+ * Like `requireFreshAuth`, but returns failures shaped as
+ * `{ [field]: <message-key> }` (consumed by `resolveMessageKey()` on the
+ * client) and accepts an `onMissingUser` callback so the caller can localize
+ * the redirect when the DB user row has gone (rare race after revocation).
+ *
+ * Usage:
+ *   const fresh = await requireFreshAuthWithKey(user, currentPassword, {
+ *     field: 'passwordErrorKey',
+ *     rateLimitedKey: 'errorsAuthRateLimited',
+ *     incorrectKey: 'errorsAccountPasswordIncorrect',
+ *     onMissingUser: () => { throw localizedRedirect(locale, 303, '/login'); }
+ *   });
+ *   if (!fresh.ok) return fresh.failure;
+ */
+export async function requireFreshAuthWithKey<TField extends string>(
+  user: SafeUser,
+  currentPassword: string,
+  opts: {
+    field: TField;
+    rateLimitedKey: string;
+    incorrectKey: string;
+    onMissingUser?: () => never;
+    rateLimitKey?: string;
+  }
+): Promise<{ ok: true } | { ok: false; failure: ActionFailure<Record<TField, string>> }> {
+  const rateLimitKey = opts.rateLimitKey ?? String(user.id);
+  const rl = checkRateLimit(FRESH_AUTH_LIMIT, rateLimitKey);
+  if (!rl.allowed) {
+    return {
+      ok: false,
+      failure: fail(429, { [opts.field]: opts.rateLimitedKey } as Record<TField, string>)
+    };
+  }
+
+  const [row] = await db
+    .select({ passwordHash: users.passwordHash })
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1);
+
+  if (!row?.passwordHash) {
+    if (opts.onMissingUser) opts.onMissingUser();
+    throw new Error(`requireFreshAuthWithKey: user ${user.id} has no password hash`);
+  }
+
+  const valid = await verifyPassword(row.passwordHash, currentPassword);
+  if (!valid) {
+    return {
+      ok: false,
+      failure: fail(400, { [opts.field]: opts.incorrectKey } as Record<TField, string>)
+    };
+  }
+
+  return { ok: true };
+}

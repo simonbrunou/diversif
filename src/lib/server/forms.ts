@@ -16,6 +16,11 @@ type ParseFormResult<T> =
  *   const parsed = await parseForm(request, schema);
  *   if (!parsed.ok) return parsed.failure;
  *   // parsed.data is fully typed
+ *
+ * For routes that surface errors through paraglide message keys (account/*,
+ * signup, login), use `parseFormWithKey` instead — it returns a failure with
+ * a caller-specified field name (e.g. `passwordErrorKey`) carrying a key
+ * string the client resolves through `resolveMessageKey()`.
  */
 export async function parseForm<T>(
   request: Request,
@@ -29,6 +34,42 @@ export async function parseForm<T>(
     return {
       ok: false,
       failure: fail(400, { error: result.error.issues[0].message, values })
+    };
+  }
+  return { ok: true, data: result.data };
+}
+
+type ParseFormWithKeyResult<T, TField extends string> =
+  | { ok: true; data: T }
+  | {
+      ok: false;
+      failure: ActionFailure<Record<TField, string>>;
+    };
+
+/**
+ * Like `parseForm`, but returns a failure shaped as `{ [field]: badInputKey }`
+ * instead of `{ error: string }`. Suited for routes whose `+page.svelte`
+ * surfaces errors through `resolveMessageKey()` (account/*, signup, login).
+ *
+ * Usage:
+ *   const parsed = await parseFormWithKey(request, passwordSchema, {
+ *     field: 'passwordErrorKey',
+ *     badInputKey: 'errorsAuthBadInput'
+ *   });
+ *   if (!parsed.ok) return parsed.failure;
+ */
+export async function parseFormWithKey<T, TField extends string>(
+  request: Request,
+  schema: ZodSchema<T>,
+  opts: { field: TField; badInputKey: string }
+): Promise<ParseFormWithKeyResult<T, TField>> {
+  const formData = await request.formData();
+  const values = Object.fromEntries(formData);
+  const result = schema.safeParse(values);
+  if (!result.success) {
+    return {
+      ok: false,
+      failure: fail(400, { [opts.field]: opts.badInputKey } as Record<TField, string>)
     };
   }
   return { ok: true, data: result.data };

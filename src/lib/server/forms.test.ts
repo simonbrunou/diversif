@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { parseForm } from './forms';
+import { parseForm, parseFormWithKey } from './forms';
 
 function makeRequest(data: Record<string, string>): Request {
   const body = new URLSearchParams(data);
@@ -49,6 +49,45 @@ describe('parseForm', () => {
     if (!result.ok) {
       const data = result.failure.data as { values?: Record<string, FormDataEntryValue> };
       expect(data.values?.name).toBe('');
+    }
+  });
+});
+
+describe('parseFormWithKey', () => {
+  it('returns ok:true with typed data on a valid submission', async () => {
+    const result = await parseFormWithKey(makeRequest({ name: 'Alice', age: '3' }), schema, {
+      field: 'errorKey',
+      badInputKey: 'errorsAuthBadInput'
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.name).toBe('Alice');
+    }
+  });
+
+  it('returns the caller-specified field + key on validation failure', async () => {
+    const result = await parseFormWithKey(makeRequest({ name: '', age: '3' }), schema, {
+      field: 'passwordErrorKey',
+      badInputKey: 'errorsAuthBadInput'
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.failure.status).toBe(400);
+      const data = result.failure.data as Record<string, string>;
+      expect(data.passwordErrorKey).toBe('errorsAuthBadInput');
+      expect(data.error).toBeUndefined();
+    }
+  });
+
+  it('supports any field name (e.g. deleteErrorKey, profileErrorKey)', async () => {
+    const result = await parseFormWithKey(makeRequest({ name: '', age: '3' }), schema, {
+      field: 'deleteErrorKey',
+      badInputKey: 'errorsAccountDeleteInvalid'
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const data = result.failure.data as Record<string, string>;
+      expect(data.deleteErrorKey).toBe('errorsAccountDeleteInvalid');
     }
   });
 });
