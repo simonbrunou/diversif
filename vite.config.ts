@@ -128,7 +128,17 @@ export default defineConfig({
         // Universal hook (one-line re-export of paraglide's reroute helper).
         'src/hooks.ts',
         // Paraglide adapter bootstrap — exercises real runtime; covered indirectly via the e2e smoke in Task 7.
-        'src/lib/i18n.ts'
+        'src/lib/i18n.ts',
+        // Bottom-sheet drag-to-dismiss gesture state machine. Driven by real
+        // pointer events; the dismiss / snap-back / scroll-handoff / cancel
+        // branches are exercised by Playwright's `bento-discover.spec.ts`
+        // (real touch + scrollHeight + cancellable events). happy-dom can stub
+        // setPointerCapture but can't fire native scroll or system gesture
+        // cancellation, so unit-side coverage of every branch is low-value
+        // testing — Modal.test.ts asserts the wiring (which handlers attach
+        // where, what the threshold/velocity gates look like), and e2e
+        // validates the actual gesture behavior.
+        'src/lib/components/ui/use-bottom-sheet-drag.svelte.ts'
       ],
       thresholds: {
         lines: 100,
