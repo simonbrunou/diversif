@@ -1,9 +1,9 @@
-import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { requireUser } from '$lib/server/guards';
+import { parseFormWithKey } from '$lib/server/forms';
 import type { Actions, PageServerLoad } from './$types';
 
 const profileSchema = z.object({
@@ -18,9 +18,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
   default: async ({ request, locals }) => {
     const user = requireUser(locals);
-    const raw = Object.fromEntries(await request.formData());
-    const parsed = profileSchema.safeParse(raw);
-    if (!parsed.success) return fail(400, { profileErrorKey: 'errorsAccountProfileNameInvalid' });
+    const parsed = await parseFormWithKey(request, profileSchema, {
+      field: 'profileErrorKey',
+      badInputKey: 'errorsAccountProfileNameInvalid'
+    });
+    if (!parsed.ok) return parsed.failure;
     await db
       .update(users)
       .set({ displayName: parsed.data.displayName.trim() })
