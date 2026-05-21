@@ -65,7 +65,7 @@
             'flex w-full flex-col items-start gap-1 rounded-tile border border-border/40 bg-canvas p-3 text-left shadow-soft transition-transform duration-fast ease-soft active:scale-[0.98]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
             item.state === 'cleared' && 'border-success/40',
-            item.state === 'fading' && 'border-tile-butter-foreground/30 bg-tile-butter/30',
+            item.state === 'fading' && 'border-tile-peach-foreground/30 bg-tile-peach/30',
             item.state === 'reaction' && 'border-severe/40 bg-reaction-reaction/20',
             item.state === 'todo' && 'border-dashed'
           )}
@@ -78,7 +78,7 @@
               aria-hidden="true"
               class={cn(
                 item.state === 'cleared' && 'text-success',
-                item.state === 'fading' && 'text-tile-butter-foreground',
+                item.state === 'fading' && 'text-tile-peach-foreground',
                 item.state === 'reaction' && 'text-severe',
                 item.state === 'todo' && 'text-ink-soft'
               )}
@@ -114,7 +114,7 @@
             item.state === 'cleared' && 'border-success/40 bg-canvas text-success',
             item.state === 'todo' && 'border-border border-dashed bg-canvas text-ink-soft',
             item.state === 'reaction' && 'border-severe/40 bg-reaction-reaction/20 text-severe-foreground',
-            item.state === 'fading' && 'border-tile-butter-foreground/30 bg-tile-butter/30 text-tile-butter-foreground'
+            item.state === 'fading' && 'border-tile-peach-foreground/30 bg-tile-peach/30 text-tile-peach-foreground'
           )}
         >
           <span>{item.label}</span>
