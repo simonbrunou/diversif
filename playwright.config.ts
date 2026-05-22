@@ -38,13 +38,20 @@ export default defineConfig({
       // iPhone 14 (390 × 844) is below Tailwind's md breakpoint (768px) so
       // side="auto" modals resolve to bottom-sheet behaviour.
       name: 'mobile',
-      use: { ...devices['iPhone 14'] },
+      use: {
+        ...devices['iPhone 14'],
+        // Force chromium — iPhone devices default to webkit, but the signup
+        // helper has a pre-existing WebKit incompatibility. Use Chromium with
+        // iPhone 14's viewport / UA / touch settings to exercise the mobile
+        // breakpoint without the WebKit baggage.
+        browserName: 'chromium'
+      },
       grep: /@responsive|@mobile-only/
     }
-    // WebKit project intentionally omitted: the signup helper does not
-    // complete the post-signup redirect on Safari (pre-existing helper
-    // incompatibility), so even isolated WebKit smokes time out before
-    // reaching the page under test. `@media print` is engine-equivalent
+    // WebKit is intentionally avoided across both projects: the signup helper
+    // does not complete the post-signup redirect on Safari (pre-existing
+    // helper incompatibility). The mobile project exercises an iPhone 14
+    // viewport via Chromium instead. `@media print` is engine-equivalent
     // across modern browsers; the Chromium pass covers the print stylesheet.
   ],
   webServer: {

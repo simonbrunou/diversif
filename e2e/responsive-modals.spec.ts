@@ -43,13 +43,12 @@ test('outside-click dismisses the modal on every viewport @responsive', async ({
   const childId = await signUpAndCreateChild(page, 'Lou', '2025-08-01');
   await dismissWelcomeIfPresent(page);
   await openCarrier(page, childId);
-  // bits-ui mounts the Dialog overlay as a sibling of the content inside the
-  // portal — both share `data-state="open"`. Click the overlay (the only
-  // open-state node that is not the dialog itself) to trigger interactOutside.
+  // Modal.svelte tags the bits-ui Dialog overlay with `data-dialog-overlay`
+  // so tests have a stable hook regardless of bits-ui internal markup
+  // changes. Filtering on `data-state="open"` alone matched both the
+  // overlay and the dialog title (bits-ui sets it on every descendant).
   // The dialog is centered on desktop and anchored bottom on mobile, so the
   // overlay's top-left corner is always outside its bounding box.
-  await page
-    .locator('[data-state="open"]:not([role="dialog"])')
-    .click({ position: { x: 5, y: 5 } });
+  await page.locator('[data-dialog-overlay]').click({ position: { x: 5, y: 5 } });
   await expect(page.getByRole('dialog')).not.toBeVisible();
 });
