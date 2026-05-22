@@ -118,6 +118,7 @@
       class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm duration-slow data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=open]:animate-in"
     />
     <DialogPrimitive.Content
+      data-side={resolvedSide}
       class={cn(
         'fixed z-50 grid w-full gap-4 border border-border bg-surface p-5 shadow-lifted duration-slow ease-spring data-[state=closed]:animate-out data-[state=open]:animate-in',
         // touch-none keeps the browser from claiming the vertical pan

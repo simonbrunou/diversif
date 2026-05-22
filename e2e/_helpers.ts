@@ -5,11 +5,22 @@ export function unique(prefix: string): string {
 }
 
 /**
+ * Like `unique()` but also mixes the Playwright worker index so two
+ * projects running in parallel can't collide on the same email seed.
+ * Falls back to `unique()` when no worker index is set (single-project runs).
+ */
+export function uniqueForWorker(seed: string): string {
+  const w = process.env.TEST_WORKER_INDEX;
+  if (!w) return unique(seed);
+  return `${seed}-w${w}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
+
+/**
  * Submit the signup form with a generated email and land on /child/new.
  * Use this when you want to drive the onboarding form yourself.
  */
 export async function signUp(page: Page, emailPrefix = 'bento'): Promise<string> {
-  const email = `${unique(emailPrefix)}@example.com`;
+  const email = `${uniqueForWorker(emailPrefix)}@example.com`;
   await page.goto('/signup');
   await page.getByLabel('Votre prénom').fill('Parent');
   await page.getByLabel('Adresse e-mail').fill(email);
@@ -57,4 +68,25 @@ export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
     await dismiss.click();
     await expect(dismiss).not.toBeVisible();
   }
+}
+
+/**
+ * Assert the visible dialog rendered as a bottom-sheet (side="bottom",
+ * the resolved side of "auto" on a sub-768px viewport).
+ */
+export async function expectBottomSheet(page: Page): Promise<void> {
+  await expect(page.getByRole('dialog')).toHaveAttribute('data-side', 'bottom');
+}
+
+/**
+ * Assert the visible dialog rendered as a side-sheet or center modal
+ * (anything other than "bottom"). Use this for the desktop counterpart
+ * of `expectBottomSheet` — the exact desktop side is a component-level
+ * decision (e.g. side="auto" resolves to "center" on md+).
+ */
+export async function expectSideSheet(page: Page): Promise<void> {
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const side = await dialog.getAttribute('data-side');
+  expect(['top', 'right', 'left', 'center']).toContain(side);
 }
