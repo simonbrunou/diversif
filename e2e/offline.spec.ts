@@ -1,21 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-async function signUpAndCreateChild(page: Page, name: string, birthDate: string) {
-  const email = `e2e-${Date.now()}-${Math.random()}@example.com`;
-  await page.goto('/signup');
-  await page.getByLabel('Votre prénom').fill('Parent');
-  await page.getByLabel('Adresse e-mail').fill(email);
-  await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
-  await page.getByLabel(/au moins 15 ans/i).check();
-  await page.getByLabel(/conditions générales/i).check();
-  await page.getByLabel(/politique de confidentialité/i).check();
-  await page.getByRole('button', { name: /créer mon compte/i }).click();
-  await expect(page).toHaveURL(/\/child\/new/);
-  await page.getByLabel('Prénom').fill(name);
-  await page.getByLabel('Date de naissance').fill(birthDate);
-  await page.getByRole('button', { name: /^créer$/i }).click();
-  await expect(page).toHaveURL(/\/child\/\d+$/);
-}
+import { test, expect } from '@playwright/test';
+import { signUpAndCreateChild } from './_helpers';
 
 // Smoke: when navigator.onLine is false, the log form's enhanced submit
 // handler must short-circuit, write to IDB, and surface the queued toast.
@@ -24,10 +8,12 @@ async function signUpAndCreateChild(page: Page, name: string, birthDate: string)
 test('queues a log submission while offline', async ({ page }) => {
   const sevenMonthsAgo = new Date();
   sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-  await signUpAndCreateChild(page, 'Lulu', sevenMonthsAgo.toISOString().slice(0, 10));
-
-  const childUrl = page.url();
-  const childId = childUrl.match(/\/child\/(\d+)/)![1];
+  const childId = await signUpAndCreateChild(
+    page,
+    'Lulu',
+    sevenMonthsAgo.toISOString().slice(0, 10),
+    'offline'
+  );
 
   await page.goto(`/child/${childId}/log`);
 

@@ -10,7 +10,19 @@ export default defineConfig({
   // applied. Tests assume a fresh database — supply one via the E2E
   // postgres service in CI, or run scripts/reset-e2e-db.sh locally.
   fullyParallel: false,
-  workers: 1,
+  // Two workers: one per project, so desktop and mobile run in parallel.
+  // `fullyParallel: false` is kept so tests within a project still run
+  // serially (the suite assumes one user per test, but several tests share
+  // the same Postgres database).
+  //
+  // Note: Playwright's `workers` setting is GLOBAL — there is no per-project
+  // override. A previous review suggested `workers: 1` per project to avoid
+  // Postgres contention; instead we accept the cross-project contention
+  // (one desktop worker + one mobile worker share a single PG) and absorb it
+  // by bumping the URL-assertion timeouts in `e2e/_helpers.ts` to 15s on the
+  // signup + child-creation redirects. Keep that compensation in mind if
+  // bumping workers further.
+  workers: 2,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
@@ -18,17 +30,46 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     trace: 'retain-on-failure',
-    screenshot: 'only-on-failure'
+    screenshot: 'only-on-failure',
+    // Disable view transitions across the suite. The root +layout.svelte
+    // gates `document.startViewTransition` on a `prefers-reduced-motion:
+    // reduce` check ; setting this here makes every browser context honour
+    // that gate, so navigation between bento tabs doesn't hide source
+    // elements behind `visibility: hidden` mid-transition (which causes
+    // elementFromPoint to return whatever sits underneath, like an h2 in
+    // main intercepting clicks on a fixed bottom-nav link).
+    reducedMotion: 'reduce'
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      // Default project — runs every untagged spec at desktop viewport.
+      // The negative-lookahead grep excludes specs explicitly tagged
+      // @mobile-only (drag gestures, mobile-keyboard interactions).
+      name: 'desktop',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+      grep: /^(?!.*@mobile-only).*$/s
+    },
+    {
+      // Mobile project — runs only specs tagged @responsive or @mobile-only.
+      // iPhone 14 (390 × 664 viewport — the 844px figure is the screen size ;
+      // Playwright's device descriptor subtracts a Safari chrome offset for
+      // the visible viewport) is below Tailwind's md breakpoint (768px) so
+      // side="auto" modals resolve to bottom-sheet behaviour.
+      name: 'mobile',
+      use: {
+        ...devices['iPhone 14'],
+        // Force chromium — iPhone devices default to webkit, but the signup
+        // helper has a pre-existing WebKit incompatibility. Use Chromium with
+        // iPhone 14's viewport / UA / touch settings to exercise the mobile
+        // breakpoint without the WebKit baggage.
+        browserName: 'chromium'
+      },
+      grep: /@responsive|@mobile-only/
     }
-    // WebKit project intentionally omitted: the signup helper does not
-    // complete the post-signup redirect on Safari (pre-existing helper
-    // incompatibility), so even isolated WebKit smokes time out before
-    // reaching the page under test. `@media print` is engine-equivalent
+    // WebKit is intentionally avoided across both projects: the signup helper
+    // does not complete the post-signup redirect on Safari (pre-existing
+    // helper incompatibility). The mobile project exercises an iPhone 14
+    // viewport via Chromium instead. `@media print` is engine-equivalent
     // across modern browsers; the Chromium pass covers the print stylesheet.
   ],
   webServer: {

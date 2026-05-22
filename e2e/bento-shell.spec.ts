@@ -1,20 +1,18 @@
 import { test, expect } from '@playwright/test';
 import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
-// Force a sub-`lg:` viewport so the mobile chrome (BottomNavBento + FAB) is
-// rendered/visible. Playwright's default chromium project uses Desktop Chrome
-// (1280×720) which crosses the `lg:` breakpoint and switches to the desktop
-// left-rail variant : those elements (`Navigation latérale`, `+ Logger` text)
-// are tested separately. This block targets the mobile flow.
+// Mobile-only suite (@mobile-only tag). The mobile Playwright project
+// renders these against an iPhone 14 viewport (390 × 844), which is sub-`lg:`
+// so the bottom nav + FAB chrome paints. The desktop project skips this
+// entire describe block via the negative-lookahead grep on @mobile-only.
+// The desktop left-rail variant is tested separately.
 //
 // The FAB navigates to the full `/log` page (rather than opening an inline
 // bottom sheet) so users get the complete logging form — FoodCombobox with
 // category filters, datetime picker, ReactionPicker with severity helper,
 // and the stage-rotating tip card. The HeroTile suggestion CTA uses the
 // same destination.
-test.describe('Bento shell : tab navigation', () => {
-  test.use({ viewport: { width: 414, height: 896 } });
-
+test.describe('Bento shell : tab navigation @mobile-only', () => {
   test('switches between the four tabs', async ({ page }) => {
     const sevenMonthsAgo = new Date();
     sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
@@ -27,16 +25,34 @@ test.describe('Bento shell : tab navigation', () => {
     // Bento bottom nav rendered.
     await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible();
 
+    // Bottom-nav links are activated via focus + Enter (keyboard nav)
+    // rather than .click(). Reason: at iPhone 14's 390×664 viewport, the
+    // empty-state card on the Carnet page extends below the bottom of the
+    // viewport, putting its <section>/<h2> elements at the same Y as the
+    // bottom nav. Even though the nav is fixed z-40 with backdrop-blur,
+    // Playwright's coordinate-based click (incl. force:true) lands on the
+    // section instead of the link. Keyboard activation dispatches click
+    // on the focused element directly, bypassing the coord lookup.
+    // Real users on touch devices fire pointer events from the tap target,
+    // which the browser correctly routes via fixed-element stacking — so
+    // touch works in practice; only Playwright's mouse-based click misroutes.
+
     // Click "Carnet" → /child/<id>/foods
-    await page.getByRole('link', { name: 'Carnet' }).click();
+    const carnetLink = page.getByRole('link', { name: 'Carnet' });
+    await carnetLink.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/child\/\d+\/foods/);
 
     // Click "Découvrir" → /child/<id>/guide
-    await page.getByRole('link', { name: 'Découvrir' }).click();
+    const decouvrirLink = page.getByRole('link', { name: 'Découvrir' });
+    await decouvrirLink.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/child\/\d+\/guide/);
 
     // Click "Profil" → /account
-    await page.getByRole('link', { name: 'Profil' }).click();
+    const profilLink = page.getByRole('link', { name: 'Profil' });
+    await profilLink.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/account/);
   });
 

@@ -301,6 +301,36 @@ describe('Modal', () => {
     expect(lastOpen).toBeUndefined();
   });
 
+  it('exposes side="center" as data-side="center"', () => {
+    render(Modal, { props: { open: true, side: 'center', children: text('x') } });
+    expect(screen.getByRole('dialog').getAttribute('data-side')).toBe('center');
+  });
+
+  it('exposes side="bottom" as data-side="bottom"', () => {
+    render(Modal, { props: { open: true, side: 'bottom', children: text('x') } });
+    expect(screen.getByRole('dialog').getAttribute('data-side')).toBe('bottom');
+  });
+
+  it('resolves side="auto" to data-side="bottom" on narrow viewports', () => {
+    const restore = mockMatchMedia(false);
+    try {
+      render(Modal, { props: { open: true, side: 'auto', children: text('x') } });
+      expect(screen.getByRole('dialog').getAttribute('data-side')).toBe('bottom');
+    } finally {
+      restore();
+    }
+  });
+
+  it('resolves side="auto" to data-side="center" on wide viewports', () => {
+    const restore = mockMatchMedia(true);
+    try {
+      render(Modal, { props: { open: true, side: 'auto', children: text('x') } });
+      expect(screen.getByRole('dialog').getAttribute('data-side')).toBe('center');
+    } finally {
+      restore();
+    }
+  });
+
   it('lets a tap on an interactive child element pass through without dragging', async () => {
     let lastOpen: boolean | undefined;
     const buttonSnippet = createRawSnippet(() => ({
