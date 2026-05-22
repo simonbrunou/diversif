@@ -1,8 +1,43 @@
+import { execFileSync } from 'node:child_process';
 import { paraglide } from '@inlang/paraglide-sveltekit/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { defineConfig } from 'vitest/config';
+
+/**
+ * Resolve the Sentry release name from the most reliable source available
+ * at build time. Mirrors the runtime fallback in sentry-init.server.ts so
+ * both surfaces tag events with the same SHA.
+ *
+ * Order:
+ *  1. SENTRY_RELEASE — explicit override
+ *  2. SOURCE_COMMIT — set by Coolify in its build container automatically
+ *  3. GITHUB_SHA — GitHub Actions
+ *  4. GIT_COMMIT_SHA — generic CI shape (Drone, Buildkite, etc.)
+ *  5. `git rev-parse HEAD` — local builds with .git/ in the working tree
+ *  6. undefined — sentryVitePlugin emits "No release name provided" and
+ *     uploads sourcemaps unassociated; build still succeeds
+ *
+ * Uses execFileSync (vs execSync) so the command + args bypass the shell
+ * entirely — no token splitting, no metacharacter expansion. The inputs
+ * are hard-coded, but execFile is the strictly safer pattern.
+ */
+function resolveSentryRelease(): string | undefined {
+  if (process.env.SENTRY_RELEASE) return process.env.SENTRY_RELEASE;
+  if (process.env.SOURCE_COMMIT) return process.env.SOURCE_COMMIT;
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA;
+  if (process.env.GIT_COMMIT_SHA) return process.env.GIT_COMMIT_SHA;
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], {
+      stdio: ['ignore', 'pipe', 'ignore']
+    })
+      .toString()
+      .trim();
+  } catch {
+    return undefined;
+  }
+}
 
 export default defineConfig({
   plugins: [
@@ -48,7 +83,7 @@ export default defineConfig({
             authToken: process.env.SENTRY_AUTH_TOKEN,
             org: process.env.SENTRY_ORG || 'simonbrunou',
             project: process.env.SENTRY_PROJECT || 'diversif',
-            release: { name: process.env.SENTRY_RELEASE || undefined },
+            release: { name: resolveSentryRelease() },
             sourcemaps: {
               assets: ['./build/**'],
               // Delete .map files after upload so the deployed build
