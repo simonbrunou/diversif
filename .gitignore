@@ -14,7 +14,6 @@ data
 .vscode
 .claude/scheduled_tasks.lock
 .claude/worktrees/
-.claude/hooks/
 .playwright-mcp/
 *.log
 coverage
