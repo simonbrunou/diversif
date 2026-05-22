@@ -86,6 +86,8 @@ if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
     // enough to drain the buffer over a healthy connection; short enough
     // that a wedged Sentry endpoint doesn't outlive the orchestrator's
     // shutdown grace period.
-    flush: () => Sentry.close(2000)
+    flush: async () => {
+      await Sentry.close(2000);
+    }
   });
 }
