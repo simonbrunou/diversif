@@ -47,6 +47,7 @@ export const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as readonly string[];
 // id string itself, matching the prior behavior. Adding a new category to
 // CATEGORIES without adding a resolver here will surface the id at runtime,
 // which is the desired loud failure.
+// i18n-keep: categoryLegumes categoryFruits categoryFeculents categoryLegumineuses categoryViandes categoryPoissons categoryOeufs categoryProduitsLaitiers categoryAllergenes categoryMatieresGrasses categoryAromates categoryAutre
 const CATEGORY_LABEL_RESOLVERS: Record<string, () => string> = {
   legumes: m.categoryLegumes,
   fruits: m.categoryFruits,
