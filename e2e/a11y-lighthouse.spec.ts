@@ -40,6 +40,12 @@ async function lighthouseAudit(page: Page, route: string): Promise<void> {
   });
 }
 
+// playAudit() takes 20-60s per route (Lighthouse runs a full audit pass
+// including a perf trace). The global 30s timeout from playwright.config.ts
+// would kill it before report write. Per-test timeout overrides below.
+const SINGLE_AUDIT_TIMEOUT = 180_000;
+const AUTH_WALKER_TIMEOUT = 14 * SINGLE_AUDIT_TIMEOUT;
+
 const PUBLIC_ROUTES = [
   '/',
   '/signup',
@@ -54,6 +60,7 @@ const PUBLIC_ROUTES = [
 
 for (const route of PUBLIC_ROUTES) {
   test(`lighthouse: ${route} @lighthouse`, async ({ page }) => {
+    test.setTimeout(SINGLE_AUDIT_TIMEOUT);
     await page.goto(route);
     await lighthouseAudit(page, route);
   });
@@ -61,6 +68,7 @@ for (const route of PUBLIC_ROUTES) {
 
 test.describe('lighthouse — auth routes @lighthouse', () => {
   test('walks the signed-in surface', async ({ page }) => {
+    test.setTimeout(AUTH_WALKER_TIMEOUT);
     const childId = await signUpAndCreateChild(page, 'A11yLH', '2025-08-01');
     await dismissWelcomeIfPresent(page);
 
