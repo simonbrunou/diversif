@@ -29,7 +29,11 @@ export async function signUp(page: Page, emailPrefix = 'bento'): Promise<string>
   await page.getByLabel(/conditions générales/i).check();
   await page.getByLabel(/politique de confidentialité/i).check();
   await page.getByRole('button', { name: /créer mon compte/i }).click();
-  await expect(page).toHaveURL(/\/child\/new/);
+  // Bumped from the 5s default : with workers:2 the signup action contends
+  // with parallel-project requests on a shared Postgres, and a slow CI
+  // runner can push the POST + 303-follow over 5s. Keep the assertion
+  // bounded so a genuinely stuck redirect still fails, just not flakily.
+  await expect(page).toHaveURL(/\/child\/new/, { timeout: 15_000 });
   return email;
 }
 
@@ -48,7 +52,11 @@ export async function signUpAndCreateChild(
   await page.getByLabel('Prénom').fill(name);
   await page.getByLabel('Date de naissance').fill(birthDate);
   await page.getByRole('button', { name: /^créer$/i }).click();
-  await expect(page).toHaveURL(/\/child\/\d+$/);
+  // Same 15s bump as the signup-step assertion : the /child/new action
+  // inserts a child + a membership and redirects to /child/<id>, which
+  // can exceed the 5s default under workers:2 contention on a shared
+  // Postgres in CI.
+  await expect(page).toHaveURL(/\/child\/\d+$/, { timeout: 15_000 });
 
   const url = page.url();
   const match = url.match(/\/child\/(\d+)$/);

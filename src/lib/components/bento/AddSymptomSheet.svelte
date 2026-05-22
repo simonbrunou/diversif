@@ -44,7 +44,7 @@
   }
 </script>
 
-<Modal bind:open title={m.addSymptomTitle()} side="auto">
+<Modal bind:open title={m.addSymptomTitle()} side="auto" scrollableBody>
   <form
     method="POST"
     action={`${action}?/addSymptom`}

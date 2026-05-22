@@ -22,7 +22,15 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     trace: 'retain-on-failure',
-    screenshot: 'only-on-failure'
+    screenshot: 'only-on-failure',
+    // Disable view transitions across the suite. The root +layout.svelte
+    // gates `document.startViewTransition` on a `prefers-reduced-motion:
+    // reduce` check ; setting this here makes every browser context honour
+    // that gate, so navigation between bento tabs doesn't hide source
+    // elements behind `visibility: hidden` mid-transition (which causes
+    // elementFromPoint to return whatever sits underneath, like an h2 in
+    // main intercepting clicks on a fixed bottom-nav link).
+    reducedMotion: 'reduce'
   },
   projects: [
     {
@@ -35,7 +43,9 @@ export default defineConfig({
     },
     {
       // Mobile project — runs only specs tagged @responsive or @mobile-only.
-      // iPhone 14 (390 × 844) is below Tailwind's md breakpoint (768px) so
+      // iPhone 14 (390 × 664 viewport — the 844px figure is the screen size ;
+      // Playwright's device descriptor subtracts a Safari chrome offset for
+      // the visible viewport) is below Tailwind's md breakpoint (768px) so
       // side="auto" modals resolve to bottom-sheet behaviour.
       name: 'mobile',
       use: {
