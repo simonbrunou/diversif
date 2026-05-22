@@ -26,7 +26,7 @@ See `docs/superpowers/specs/2026-05-22-ui-regression-coverage-design.md`.
 
 **Helpers:**
 
-- Modify: `e2e/_helpers.ts` — add `uniqueForWorker`, `expectBottomSheet`, `expectSideSheet`; rewrite `signUp` to use `uniqueForWorker`.
+- Modify: `e2e/_helpers.ts` — add `uniqueForWorker`, `expectBottomSheet`, `expectNotBottomSheet` (renamed from `expectNotBottomSheet` in commit d3f0b47); rewrite `signUp` to use `uniqueForWorker`.
 
 **Existing specs (tag + cleanup `test.use({ viewport })`):**
 
@@ -75,9 +75,13 @@ Expected: FAIL — `data-side` is `null`.
 
 - [ ] **Step 3: Add the attribute**
 
-In `src/lib/components/ui/Modal.svelte`, on the `<DialogPrimitive.Content>` element (around line 120), add `data-side={resolvedSide}` as a sibling of `class={cn(...)}`:
+In `src/lib/components/ui/Modal.svelte`, on the `<DialogPrimitive.Content>` element (around line 120), add `data-side={resolvedSide}` as a sibling of `class={cn(...)}`. Also add a static `data-dialog-overlay` attribute on the sibling `<DialogPrimitive.Overlay>` element so e2e specs can target the overlay independently (for outside-click dismiss assertions etc.):
 
 ```svelte
+<DialogPrimitive.Overlay
+  data-dialog-overlay
+  class={cn(...)}
+/>
 <DialogPrimitive.Content
   data-side={resolvedSide}
   class={cn(
@@ -109,18 +113,18 @@ Expected: all tests pass.
 
 - [ ] **Step 1: Add `uniqueForWorker`**
 
-In `e2e/_helpers.ts`, add below the existing `unique` function:
+In `e2e/_helpers.ts`, add below the existing `unique` function. Always include the worker index (Playwright sets `TEST_WORKER_INDEX` in every worker, including single-worker runs); default to `'0'` only as a belt-and-braces fallback for non-Playwright invocations:
 
 ```ts
 /**
- * Like `unique()` but also mixes the Playwright worker index so two
- * projects running in parallel can't collide on the same email seed.
- * Falls back to `unique()` when no worker index is set (single-project runs).
+ * Like `unique()` but mixes in the Playwright worker index so two
+ * projects running in parallel (e.g. desktop + mobile) can't collide
+ * on the same email seed. Always includes the worker index — Playwright
+ * sets TEST_WORKER_INDEX in every worker, including single-worker runs.
  */
-export function uniqueForWorker(seed: string): string {
-  const w = process.env.TEST_WORKER_INDEX;
-  if (!w) return unique(seed);
-  return `${seed}-w${w}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+export function uniqueForWorker(prefix: string): string {
+  const w = process.env.TEST_WORKER_INDEX ?? '0';
+  return `${unique(prefix)}-w${w}`;
 }
 ```
 
@@ -138,9 +142,9 @@ to:
 const email = `${uniqueForWorker(emailPrefix)}@example.com`;
 ```
 
-- [ ] **Step 3: Add the `expectBottomSheet` / `expectSideSheet` helpers**
+- [ ] **Step 3: Add the `expectBottomSheet` / `expectNotBottomSheet` helpers**
 
-Append to `e2e/_helpers.ts`:
+Append to `e2e/_helpers.ts`. Both helpers locate the dialog via `getByRole('dialog')` (no `data-modal-root` wrapper required) and assert `data-side` directly:
 
 ```ts
 /**
@@ -148,20 +152,24 @@ Append to `e2e/_helpers.ts`:
  * the resolved side of "auto" on a sub-768px viewport).
  */
 export async function expectBottomSheet(page: Page): Promise<void> {
-  await expect(page.getByRole('dialog')).toHaveAttribute('data-side', 'bottom');
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-side', 'bottom');
 }
 
 /**
- * Assert the visible dialog rendered as a side-sheet or center modal
- * (anything other than "bottom"). Use this for the desktop counterpart
- * of `expectBottomSheet` — the exact desktop side is a component-level
+ * Assert the visible dialog rendered as anything other than a bottom-sheet
+ * (top / right / left / center). Use this as the desktop-side counterpart
+ * of `expectBottomSheet` — the exact desktop placement is a component-level
  * decision (e.g. side="auto" resolves to "center" on md+).
+ *
+ * Renamed from `expectNotBottomSheet` in commit d3f0b47 — the negated framing
+ * matches how the helper is actually used in specs.
  */
-export async function expectSideSheet(page: Page): Promise<void> {
+export async function expectNotBottomSheet(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  const side = await dialog.getAttribute('data-side');
-  expect(['top', 'right', 'left', 'center']).toContain(side);
+  await expect(dialog).toHaveAttribute('data-side', /^(top|right|left|center)$/);
 }
 ```
 
@@ -452,7 +460,7 @@ import {
   signUpAndCreateChild,
   dismissWelcomeIfPresent,
   expectBottomSheet,
-  expectSideSheet
+  expectNotBottomSheet
 } from './_helpers';
 
 /**
@@ -476,7 +484,7 @@ test('Modal side=auto resolves correctly across viewports @responsive', async ({
   if (project === 'mobile') {
     await expectBottomSheet(page);
   } else {
-    await expectSideSheet(page);
+    await expectNotBottomSheet(page);
   }
 });
 

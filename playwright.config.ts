@@ -14,6 +14,14 @@ export default defineConfig({
   // `fullyParallel: false` is kept so tests within a project still run
   // serially (the suite assumes one user per test, but several tests share
   // the same Postgres database).
+  //
+  // Note: Playwright's `workers` setting is GLOBAL — there is no per-project
+  // override. A previous review suggested `workers: 1` per project to avoid
+  // Postgres contention; instead we accept the cross-project contention
+  // (one desktop worker + one mobile worker share a single PG) and absorb it
+  // by bumping the URL-assertion timeouts in `e2e/_helpers.ts` to 15s on the
+  // signup + child-creation redirects. Keep that compensation in mind if
+  // bumping workers further.
   workers: 2,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

@@ -31,7 +31,7 @@ test('allergen sheet placement matches viewport @responsive', async ({ page }) =
   await expectDialogMatchesViewport(page);
 });
 
-test('allergen sheet body scrolls when content overflows (regression for #180) @responsive @mobile-only', async ({
+test('allergen sheet body scrolls when content overflows (regression for #180) @mobile-only', async ({
   page
 }) => {
   // The fix lives inside Modal.svelte's `scrollableBody` branch

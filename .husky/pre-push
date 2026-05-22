@@ -69,10 +69,25 @@ trap cleanup_pg EXIT
 # isn't installed everywhere).
 PG_CONTAINER=$(docker ps --filter publish=5432 --format '{{.Names}}' 2>/dev/null | head -1 || true)
 port_open() { (echo >/dev/tcp/localhost/5432) >/dev/null 2>&1; }
+# Probe Postgres reachability inside the container — a non-Postgres process
+# publishing :5432 (or a Postgres still booting) would falsely satisfy the
+# docker-filter match. pg_isready exits 0 only when the server accepts conns.
+pg_container_ready() {
+  [ -n "$PG_CONTAINER" ] && docker exec "$PG_CONTAINER" pg_isready -U diversif >/dev/null 2>&1
+}
 
-if [ -n "$PG_CONTAINER" ]; then
+if [ -n "$PG_CONTAINER" ] && pg_container_ready; then
   echo "  postgres on :5432 (container $PG_CONTAINER) — reusing"
 elif port_open; then
+  # Either the candidate container isn't actually Postgres / isn't ready, or
+  # something non-docker is listening. Either way, the raw port is open — fall
+  # back to the non-docker path so reset_db uses scripts/reset-e2e-db.mjs
+  # (which talks to the URL directly) rather than `docker exec` on the wrong
+  # container.
+  if [ -n "$PG_CONTAINER" ]; then
+    echo "  postgres candidate container $PG_CONTAINER failed pg_isready — treating :5432 as non-docker"
+    PG_CONTAINER=""
+  fi
   echo "  postgres on :5432 (non-docker) — reusing"
 elif command -v docker >/dev/null 2>&1; then
   echo "  no postgres on :5432 — spinning up a throwaway container"
@@ -81,13 +96,23 @@ elif command -v docker >/dev/null 2>&1; then
   docker run --rm -d --name "$PG_OWNED_BY_HOOK" \
     -e POSTGRES_USER=diversif -e POSTGRES_PASSWORD=diversif -e POSTGRES_DB=diversif_e2e \
     -p 5432:5432 postgres:16-alpine >/dev/null
-  # Wait for postgres to accept connections.
-  for _ in $(seq 1 30); do
-    if docker exec "$PG_OWNED_BY_HOOK" pg_isready -U diversif >/dev/null 2>&1; then
+  # Wait for postgres to accept connections against the target user/db.
+  # `pg_isready` returns 0 while the image's init step is still bouncing
+  # the temporary daemon, so connections issued at that moment can be
+  # dropped mid-query. SELECT 1 against the actual target database is the
+  # reliable readiness signal.
+  ready=0
+  for _ in $(seq 1 60); do
+    if docker exec "$PG_OWNED_BY_HOOK" psql -U diversif -d diversif_e2e -c 'SELECT 1' >/dev/null 2>&1; then
+      ready=1
       break
     fi
     sleep 0.5
   done
+  if [ "$ready" -eq 0 ]; then
+    warn "postgres container started but never became ready in 30s"
+    exit 1
+  fi
 else
   warn "no postgres on :5432 and no docker available — skipping e2e"
   warn "CI will still gate the branch. To run e2e locally, install docker or"
@@ -98,7 +123,10 @@ else
 fi
 
 reset_db
-E2E_DATABASE_URL="$E2E_HOST" npm run test:e2e
+# Skip `npm run test:e2e` because its `node scripts/reset-e2e-db.mjs &&`
+# prefix would race the docker-exec reset we just did. We've already
+# reset; invoke playwright directly.
+E2E_DATABASE_URL="$E2E_HOST" npx playwright test
 ok "e2e passed"
 
 end=$(date +%s)

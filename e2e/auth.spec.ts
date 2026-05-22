@@ -1,12 +1,9 @@
 import { test, expect } from '@playwright/test';
-
-function unique(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-}
+import { uniqueForWorker } from './_helpers';
 
 test.describe('signup → onboarding', () => {
   test('signup creates an account and redirects to onboarding @responsive', async ({ page }) => {
-    const email = `${unique('user')}@example.com`;
+    const email = `${uniqueForWorker('user')}@example.com`;
     await page.goto('/signup');
     await page.getByLabel('Votre prénom').fill('Test Parent');
     await page.getByLabel('Adresse e-mail').fill(email);

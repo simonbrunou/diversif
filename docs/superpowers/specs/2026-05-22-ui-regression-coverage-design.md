@@ -75,19 +75,31 @@ The desktop `grep` is a negative lookahead so untagged specs run on desktop; the
 ### Helpers (`e2e/_helpers.ts`)
 
 ```ts
-export function uniqueForWorker(seed: string): string {
+// Always include the worker index — Playwright sets TEST_WORKER_INDEX in every
+// worker, including single-worker runs ; default to '0' only as a belt-and-
+// braces fallback for non-Playwright invocations.
+export function uniqueForWorker(prefix: string): string {
   const w = process.env.TEST_WORKER_INDEX ?? '0';
-  return `${seed}-w${w}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  return `${unique(prefix)}-w${w}`;
 }
 
+// Locate the live dialog via the ARIA role (bits-ui's Content node carries
+// role="dialog"); read data-side directly off it. No data-modal-root wrapper
+// is required — the role-based locator is the canonical handle.
 export async function expectBottomSheet(page: Page) {
-  await expect(page.locator('[data-modal-root][data-side="bottom"]')).toBeVisible();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-side', 'bottom');
 }
 
-export async function expectSideSheet(page: Page) {
-  const root = page.locator('[data-modal-root]');
-  const side = await root.getAttribute('data-side');
-  expect(['top', 'right', 'left']).toContain(side);
+// Renamed from `expectSideSheet` to `expectNotBottomSheet` (commit d3f0b47) —
+// the desktop counterpart of `expectBottomSheet`. Asserts the dialog renders
+// as anything other than a bottom-sheet (top / right / left / center) via a
+// regex on the data-side attribute.
+export async function expectNotBottomSheet(page: Page) {
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-side', /^(top|right|left|center)$/);
 }
 ```
 
@@ -114,7 +126,7 @@ The Modal/DetailSheet root must expose its current `side` as a `data-side` attri
 
 - Add `mobile` project to `playwright.config.ts` with grep filter.
 - Bump `workers: 2`.
-- Add `uniqueForWorker`, `expectBottomSheet`, `expectSideSheet` to `_helpers.ts`.
+- Add `uniqueForWorker`, `expectBottomSheet`, `expectNotBottomSheet` (renamed from `expectSideSheet`) to `_helpers.ts`.
 - Add `data-side` attribute to Modal/DetailSheet root.
 - CI: mobile project runs as no-op pass (no specs tagged yet).
 
