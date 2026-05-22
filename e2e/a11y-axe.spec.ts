@@ -8,9 +8,9 @@ import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
  * and mobile Playwright projects pick it up; auth routes share one signup
  * per worker via test.step for speed.
  *
- * Phase 1 of Bundle C ships these as SOFT gates (`expect.soft`) so the
- * initial PR doesn't fail itself before the violations are triaged.
- * Phase 2 flips to hard `expect.toEqual([])` in the final commit.
+ * Hard gate: any violation fails the test. The companion Lighthouse layer
+ * (a11y/best-practices/SEO scores) was deferred — see the spec doc's
+ * "Status" section for the playwright-lighthouse NO_FCP backstory.
  */
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
@@ -38,7 +38,7 @@ function formatViolations(violations: AxeViolation[]): string {
 
 async function axeSweep(page: Page): Promise<void> {
   const result = await new AxeBuilder({ page }).withTags(TAGS).analyze();
-  expect.soft(result.violations, formatViolations(result.violations as AxeViolation[])).toEqual([]);
+  expect(result.violations, formatViolations(result.violations as AxeViolation[])).toEqual([]);
 }
 
 const PUBLIC_ROUTES = [
