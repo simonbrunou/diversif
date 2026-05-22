@@ -18,7 +18,14 @@ if (!url) {
 
 const client = new pg.Client({ connectionString: url });
 await client.connect();
+// Drop both `public` (app tables) AND `drizzle` (migration journal).
+// Without dropping drizzle, repeated local resets leave the journal
+// untouched, so the webServer's next migration step no-ops and the
+// app boots against an empty public schema — every query fails with
+// "relation does not exist". CI gets a fresh container per run and
+// doesn't hit this, but local devs running this script repeatedly do.
 await client.query('DROP SCHEMA IF EXISTS public CASCADE');
+await client.query('DROP SCHEMA IF EXISTS drizzle CASCADE');
 await client.query('CREATE SCHEMA public');
 await client.end();
 console.log('Reset', url.replace(/:[^:@]*@/, ':***@'));
