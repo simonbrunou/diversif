@@ -4,6 +4,18 @@
 **Status:** draft
 **Bundle:** C (third of a 4-bundle hardening sweep — see [Companion bundles](#companion-bundles))
 
+## Status — 2026-05-22
+
+Lighthouse layer DEFERRED. `playwright-lighthouse` returns NO_FCP
+errors on every JS-driven SvelteKit route during initial baseline,
+and two rounds of fixes (per-test timeout bump, renderer-backgrounding
+flags, networkidle wait) didn't resolve it. Bundle C ships with the
+axe gate only. The Lighthouse layer (a11y / best-practices / SEO
+scores) is queued as a follow-up; a future bundle will likely
+switch to `@lhci/cli` standalone with cookie-injection for auth
+routes, since the playwright-lighthouse integration has compat
+issues with our SvelteKit setup.
+
 ## Goal
 
 Sweep every public + auth-required route with axe (WCAG 2.1 AA + best-practice) and Lighthouse (a11y + best-practices + SEO scores), fix every violation surfaced, then lock the gates in CI so future regressions are caught at PR time.

@@ -79,11 +79,3 @@ jobs:
           name: playwright-report
           path: playwright-report
           retention-days: 14
-      - name: Upload Lighthouse reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse-reports
-          path: lighthouse-reports
-          retention-days: 14
-          if-no-files-found: ignore
