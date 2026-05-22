@@ -5,14 +5,14 @@ export function unique(prefix: string): string {
 }
 
 /**
- * Like `unique()` but also mixes the Playwright worker index so two
- * projects running in parallel can't collide on the same email seed.
- * Falls back to `unique()` when no worker index is set (single-project runs).
+ * Like `unique()` but mixes in the Playwright worker index so two
+ * projects running in parallel (e.g. desktop + mobile) can't collide
+ * on the same email seed. Always includes the worker index — Playwright
+ * sets TEST_WORKER_INDEX in every worker, including single-worker runs.
  */
-export function uniqueForWorker(seed: string): string {
-  const w = process.env.TEST_WORKER_INDEX;
-  if (!w) return unique(seed);
-  return `${seed}-w${w}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+export function uniqueForWorker(prefix: string): string {
+  const w = process.env.TEST_WORKER_INDEX ?? '0';
+  return `${unique(prefix)}-w${w}`;
 }
 
 /**
@@ -75,18 +75,19 @@ export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
  * the resolved side of "auto" on a sub-768px viewport).
  */
 export async function expectBottomSheet(page: Page): Promise<void> {
-  await expect(page.getByRole('dialog')).toHaveAttribute('data-side', 'bottom');
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute('data-side', 'bottom');
 }
 
 /**
- * Assert the visible dialog rendered as a side-sheet or center modal
- * (anything other than "bottom"). Use this for the desktop counterpart
- * of `expectBottomSheet` — the exact desktop side is a component-level
+ * Assert the visible dialog rendered as anything other than a bottom-sheet
+ * (top / right / left / center). Use this as the desktop-side counterpart
+ * of `expectBottomSheet` — the exact desktop placement is a component-level
  * decision (e.g. side="auto" resolves to "center" on md+).
  */
-export async function expectSideSheet(page: Page): Promise<void> {
+export async function expectNotBottomSheet(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  const side = await dialog.getAttribute('data-side');
-  expect(['top', 'right', 'left', 'center']).toContain(side);
+  await expect(dialog).toHaveAttribute('data-side', /^(top|right|left|center)$/);
 }

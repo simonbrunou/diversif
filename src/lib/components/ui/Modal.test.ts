@@ -301,10 +301,12 @@ describe('Modal', () => {
     expect(lastOpen).toBeUndefined();
   });
 
-  it('exposes the explicit side prop as data-side', () => {
+  it('exposes side="center" as data-side="center"', () => {
     render(Modal, { props: { open: true, side: 'center', children: text('x') } });
     expect(screen.getByRole('dialog').getAttribute('data-side')).toBe('center');
-    cleanup();
+  });
+
+  it('exposes side="bottom" as data-side="bottom"', () => {
     render(Modal, { props: { open: true, side: 'bottom', children: text('x') } });
     expect(screen.getByRole('dialog').getAttribute('data-side')).toBe('bottom');
   });
