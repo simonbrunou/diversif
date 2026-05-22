@@ -1,9 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
-test.use({ viewport: { width: 414, height: 896 } });
-
-test('Profil bento renders all five sections', async ({ page }) => {
+test('Profil bento renders all five sections @responsive', async ({ page }) => {
   await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 
@@ -14,9 +12,15 @@ test('Profil bento renders all five sections', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Compte', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Vos données (RGPD)' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Légal' })).toBeVisible();
+
+  // Bundle 5 canonicalisation: surface should say Carnet / Bilan, never the
+  // English-leaning Stats / Streak / Logger.
+  await expect(page.getByText(/\bStats\b/)).toHaveCount(0);
+  await expect(page.getByText(/\bStreak\b/)).toHaveCount(0);
+  await expect(page.getByText(/\bLogger\b/)).toHaveCount(0);
 });
 
-test('Profil shows the seeded child name', async ({ page }) => {
+test('Profil shows the seeded child name @responsive', async ({ page }) => {
   await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 

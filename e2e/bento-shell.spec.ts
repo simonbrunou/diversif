@@ -1,20 +1,18 @@
 import { test, expect } from '@playwright/test';
 import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
-// Force a sub-`lg:` viewport so the mobile chrome (BottomNavBento + FAB) is
-// rendered/visible. Playwright's default chromium project uses Desktop Chrome
-// (1280×720) which crosses the `lg:` breakpoint and switches to the desktop
-// left-rail variant : those elements (`Navigation latérale`, `+ Logger` text)
-// are tested separately. This block targets the mobile flow.
+// Mobile-only suite (@mobile-only tag). The mobile Playwright project
+// renders these against an iPhone 14 viewport (390 × 844), which is sub-`lg:`
+// so the bottom nav + FAB chrome paints. The desktop project skips this
+// entire describe block via the negative-lookahead grep on @mobile-only.
+// The desktop left-rail variant is tested separately.
 //
 // The FAB navigates to the full `/log` page (rather than opening an inline
 // bottom sheet) so users get the complete logging form — FoodCombobox with
 // category filters, datetime picker, ReactionPicker with severity helper,
 // and the stage-rotating tip card. The HeroTile suggestion CTA uses the
 // same destination.
-test.describe('Bento shell : tab navigation', () => {
-  test.use({ viewport: { width: 414, height: 896 } });
-
+test.describe('Bento shell : tab navigation @mobile-only', () => {
   test('switches between the four tabs', async ({ page }) => {
     const sevenMonthsAgo = new Date();
     sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);

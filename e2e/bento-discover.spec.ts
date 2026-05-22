@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
+import {
+  dismissWelcomeIfPresent,
+  expectDialogMatchesViewport,
+  signUpAndCreateChild
+} from './_helpers';
 
-test.use({ viewport: { width: 414, height: 896 } });
-
-test('Découvrir bento renders all four sections', async ({ page }) => {
+test('Découvrir bento renders all four sections @responsive', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 
@@ -13,7 +15,7 @@ test('Découvrir bento renders all four sections', async ({ page }) => {
   await expect(page.getByText('Sources scientifiques')).toBeVisible();
 });
 
-test('tapping a stage tile opens the StageDetailSheet', async ({ page }) => {
+test('tapping a stage tile opens the StageDetailSheet @responsive', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 
@@ -21,11 +23,13 @@ test('tapping a stage tile opens the StageDetailSheet', async ({ page }) => {
   // Stage tiles are buttons whose visible text contains the stage title.
   // Child born 2025-10-01 is ~7 months old at test time; any stage tile works.
   await page.getByRole('button', { name: /6–9 mois/i }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
+  await expectDialogMatchesViewport(page);
 });
 
-test('the allergen sheet body actually scrolls on mobile', async ({ page }) => {
-  // Mobile viewport (already set on the file). The allergen tiles each open
+test('the allergen sheet body actually scrolls on mobile @responsive @mobile-only', async ({
+  page
+}) => {
+  // Runs only on the mobile project (@mobile-only). The allergen tiles each open
   // AllergenInfoDialog as a bottom-sheet (side="auto"). The dialog body has
   // enough content (why / how-to-offer / first-signs / severe-signs / sources)
   // to overflow the 70vh max-height. This regression test catches the case

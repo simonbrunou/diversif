@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 export function unique(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -90,4 +90,18 @@ export async function expectNotBottomSheet(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute('data-side', /^(top|right|left|center)$/);
+}
+
+/**
+ * Project-aware dialog placement assertion: bottom-sheet on the `mobile`
+ * project, anything-else on the `desktop` project. Use when both projects
+ * exercise the same dialog and we just want to lock that the resolved side
+ * matches the current viewport.
+ */
+export async function expectDialogMatchesViewport(page: Page): Promise<void> {
+  if (test.info().project.name === 'mobile') {
+    await expectBottomSheet(page);
+  } else {
+    await expectNotBottomSheet(page);
+  }
 }

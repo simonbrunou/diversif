@@ -1,7 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
-import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
-
-test.use({ viewport: { width: 414, height: 896 } });
+import {
+  dismissWelcomeIfPresent,
+  expectDialogMatchesViewport,
+  signUpAndCreateChild
+} from './_helpers';
 
 // Logs a food via the full /log page. The FAB now navigates there instead
 // of opening an inline bottom sheet, so we drive the same FoodCombobox +
@@ -27,7 +29,9 @@ async function logFoodWithReaction(
   await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
 }
 
-test('reaction-detail bento renders for non-RAS entry with all panels', async ({ page }) => {
+test('reaction-detail bento renders for non-RAS entry with all panels @responsive', async ({
+  page
+}) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
@@ -44,7 +48,7 @@ test('reaction-detail bento renders for non-RAS entry with all panels', async ({
   await expect(page.getByRole('button', { name: /Suivre 30 min/ })).toBeVisible();
 });
 
-test('add-symptom flow appends a row to the symptom list', async ({ page }) => {
+test('add-symptom flow appends a row to the symptom list @responsive', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
@@ -55,13 +59,16 @@ test('add-symptom flow appends a row to the symptom list', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Ajouter un symptôme' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
+  await expectDialogMatchesViewport(page);
   await page.getByText('Rougeur', { exact: true }).click();
   await page.getByRole('button', { name: 'Enregistrer le symptôme' }).click();
 
   await expect(page.getByText('Rougeur', { exact: true })).toBeVisible();
 });
 
-test('print page renders without bento chrome and contains key strings', async ({ page }) => {
+test('print page renders without bento chrome and contains key strings @responsive', async ({
+  page
+}) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
