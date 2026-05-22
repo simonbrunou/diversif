@@ -37,27 +37,29 @@ ok "unit tests passed"
 log "e2e (Playwright, full suite — desktop + mobile projects)"
 
 E2E_HOST="${E2E_DATABASE_URL:-postgres://diversif:diversif@localhost:5432/diversif_e2e}"
-PG_CONTAINER=""
+PG_CONTAINER=""     # container we can run psql in (for DB reset)
+PG_OWNED_BY_HOOK="" # only set if WE started the container — only then do we stop it
 
 reset_db() {
   # Drop + recreate the DB so a fresh migration journal lands every run.
-  # The bundled scripts/reset-e2e-db.mjs only drops the `public` schema,
-  # which leaves drizzle's migration journal behind and makes repeated
-  # local runs flaky.
+  # The bundled scripts/reset-e2e-db.mjs already drops both `public` and
+  # `drizzle` schemas, so it's safe to use as a fallback when we don't have
+  # a container reference (non-docker postgres on :5432).
   if [ -n "$PG_CONTAINER" ]; then
     docker exec -i "$PG_CONTAINER" psql -U diversif -d postgres >/dev/null <<'SQL'
 DROP DATABASE IF EXISTS diversif_e2e;
 CREATE DATABASE diversif_e2e;
 SQL
   else
-    # Fall back to the script if we didn't spin up the container ourselves.
     E2E_DATABASE_URL="$E2E_HOST" node scripts/reset-e2e-db.mjs >/dev/null
   fi
 }
 
 cleanup_pg() {
-  if [ -n "$PG_CONTAINER" ]; then
-    docker stop "$PG_CONTAINER" >/dev/null 2>&1 || true
+  # Only stop the container if the hook started it. A pre-existing one
+  # belongs to the user; leave it running.
+  if [ -n "$PG_OWNED_BY_HOOK" ]; then
+    docker stop "$PG_OWNED_BY_HOOK" >/dev/null 2>&1 || true
   fi
 }
 trap cleanup_pg EXIT
@@ -74,13 +76,14 @@ elif port_open; then
   echo "  postgres on :5432 (non-docker) — reusing"
 elif command -v docker >/dev/null 2>&1; then
   echo "  no postgres on :5432 — spinning up a throwaway container"
-  PG_CONTAINER="diversif-pre-push-$$"
-  docker run --rm -d --name "$PG_CONTAINER" \
+  PG_OWNED_BY_HOOK="diversif-pre-push-$$"
+  PG_CONTAINER="$PG_OWNED_BY_HOOK"
+  docker run --rm -d --name "$PG_OWNED_BY_HOOK" \
     -e POSTGRES_USER=diversif -e POSTGRES_PASSWORD=diversif -e POSTGRES_DB=diversif_e2e \
     -p 5432:5432 postgres:16-alpine >/dev/null
   # Wait for postgres to accept connections.
   for _ in $(seq 1 30); do
-    if docker exec "$PG_CONTAINER" pg_isready -U diversif >/dev/null 2>&1; then
+    if docker exec "$PG_OWNED_BY_HOOK" pg_isready -U diversif >/dev/null 2>&1; then
       break
     fi
     sleep 0.5
