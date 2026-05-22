@@ -4,9 +4,7 @@
   "chromeBottomNavLabel": "Navigation principale",
   "chromeLateralNavLabel": "Navigation latérale",
   "chromeLocaleSwitcherLabel": "Choix de la langue",
-  "chromeLegalLinksConditions": "Conditions d’utilisation",
   "chromeLegalLinksCookies": "Cookies",
-  "chromeLegalLinksLabel": "Liens légaux",
   "chromeLegalLinksMentionsLegales": "Mentions légales",
   "chromeLegalLinksPolitiqueConfidentialite": "Politique de confidentialité",
   "chromeSkipToContent": "Aller au contenu",
@@ -188,7 +186,6 @@
   "authDeletedBackHome": "Retour à l’accueil",
   "commonCancel": "Annuler",
   "commonConfirmTextLabel": "Saisissez « {text} » pour confirmer",
-  "commonDelete": "Supprimer",
   "commonFirstName": "Prénom",
   "commonPassword": "Mot de passe",
   "commonRemove": "Retirer",
@@ -553,7 +550,6 @@
   "settingsLeaveLoadingLabel": "Sortie…",
   "joinTitle": "Invitation",
   "joinBack": "Retour",
-  "joinInvitedBody": "Vous êtes invité·e à suivre {name}.",
   "joinCodeLine": "Code",
   "joinAcceptCta": "Accepter l’invitation"
 }

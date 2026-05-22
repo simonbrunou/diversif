@@ -10,7 +10,7 @@
   import { page } from '$app/stores';
   import { toast } from 'svelte-sonner';
   import { trackSubmission } from '$lib/forms/tracked-enhance';
-  import * as msg from '$lib/paraglide/messages';
+  import * as m from '$lib/paraglide/messages';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -35,9 +35,9 @@
   async function copy(value: string) {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success(msg.settingsCopyToast());
+      toast.success(m.settingsCopyToast());
     } catch {
-      toast.error(msg.settingsCopyFailToast());
+      toast.error(m.settingsCopyFailToast());
     }
   }
 
@@ -48,26 +48,26 @@
 </script>
 
 <div class="container max-w-2xl space-y-6 py-6">
-  <BackHeader title={msg.settingsTitle()} subtitle={data.child.name} fallback={`/child/${data.child.id}`} />
+  <BackHeader title={m.settingsTitle()} subtitle={data.child.name} fallback={`/child/${data.child.id}`} />
 
   {#if data.role === 'owner'}
     <Card class="p-4">
-      <h2 class="text-base font-semibold">{msg.settingsInformationsHeading()}</h2>
+      <h2 class="text-base font-semibold">{m.settingsInformationsHeading()}</h2>
       <form
         method="POST"
         action="?/updateChild"
         class="mt-3 grid gap-3"
         use:enhance={trackSubmission((v) => (savingChild = v))}
       >
-        <Field name="name" label={msg.commonFirstName()}>
+        <Field name="name" label={m.commonFirstName()}>
           <Input id="name" name="name" required maxlength={80} value={data.child.name} />
         </Field>
-        <Field name="birthDate" label={msg.onboardingBirthDateLabel()}>
+        <Field name="birthDate" label={m.onboardingBirthDateLabel()}>
           <Input id="birthDate" name="birthDate" type="date" required value={data.child.birthDate} />
         </Field>
         <div>
           <Button type="submit" loading={savingChild}>
-            {savingChild ? msg.logFormSubmitting() : msg.commonSave()}
+            {savingChild ? m.logFormSubmitting() : m.commonSave()}
           </Button>
         </div>
       </form>
@@ -75,24 +75,24 @@
   {/if}
 
   <Card class="p-4">
-    <h2 class="text-base font-semibold">{msg.settingsMembersHeading()}</h2>
+    <h2 class="text-base font-semibold">{m.settingsMembersHeading()}</h2>
     <ul class="mt-3 divide-y">
-      {#each data.members as m (m.userId)}
+      {#each data.members as member (member.userId)}
         <li class="flex items-center justify-between py-3">
           <div>
-            <div class="font-medium">{m.displayName}</div>
-            {#if m.email}
-              <div class="text-xs text-muted-foreground">{m.email}</div>
+            <div class="font-medium">{member.displayName}</div>
+            {#if member.email}
+              <div class="text-xs text-muted-foreground">{member.email}</div>
             {/if}
           </div>
           <div class="flex items-center gap-3">
             <span class="text-xs uppercase tracking-wider text-muted-foreground">
-              {m.role === 'owner' ? msg.kidPickerRoleOwner() : msg.kidPickerRoleMember()}
+              {member.role === 'owner' ? m.kidPickerRoleOwner() : m.kidPickerRoleMember()}
             </span>
-            {#if data.role === 'owner' && m.role !== 'owner'}
+            {#if data.role === 'owner' && member.role !== 'owner'}
               <form method="POST" action="?/removeMember">
-                <input type="hidden" name="userId" value={m.userId} />
-                <Button type="submit" variant="ghost" size="sm">{msg.commonRemove()}</Button>
+                <input type="hidden" name="userId" value={member.userId} />
+                <Button type="submit" variant="ghost" size="sm">{m.commonRemove()}</Button>
               </form>
             {/if}
           </div>
@@ -103,9 +103,9 @@
 
   {#if data.role === 'owner'}
     <Card id="invite" class="scroll-mt-24 p-4">
-      <h2 class="text-base font-semibold">{msg.settingsInviteHeading()}</h2>
+      <h2 class="text-base font-semibold">{m.settingsInviteHeading()}</h2>
       <p class="mt-1 text-sm text-muted-foreground">
-        {msg.settingsInviteDescription()}
+        {m.settingsInviteDescription()}
       </p>
 
       <form
@@ -115,7 +115,7 @@
         use:enhance={trackSubmission((v) => (creatingInvite = v))}
       >
         <Button type="submit" variant="secondary" loading={creatingInvite}>
-          {creatingInvite ? msg.settingsInviteGenerating() : msg.settingsInviteGenerateCta()}
+          {creatingInvite ? m.settingsInviteGenerating() : m.settingsInviteGenerateCta()}
         </Button>
       </form>
 
@@ -129,11 +129,11 @@
               </div>
               <div class="flex gap-2">
                 <Button type="button" size="sm" variant="outline" onclick={() => copy(inviteUrl(inv.code))}>
-                  {msg.settingsInviteCopy()}
+                  {m.settingsInviteCopy()}
                 </Button>
                 <form method="POST" action="?/revokeInvitation">
                   <input type="hidden" name="code" value={inv.code} />
-                  <Button type="submit" size="sm" variant="ghost">{msg.settingsInvitationRevoke()}</Button>
+                  <Button type="submit" size="sm" variant="ghost">{m.settingsInvitationRevoke()}</Button>
                 </form>
               </div>
             </li>
@@ -144,10 +144,10 @@
   {/if}
 
   <Card class="border-destructive/30 p-4">
-    <h2 class="text-base font-semibold text-destructive">{msg.settingsDangerHeading()}</h2>
+    <h2 class="text-base font-semibold text-destructive">{m.settingsDangerHeading()}</h2>
     {#if data.role === 'owner'}
       <p class="mt-1 text-sm text-muted-foreground">
-        {msg.settingsDangerOwnerDescription()}
+        {m.settingsDangerOwnerDescription()}
       </p>
       <div class="mt-3">
         <Button
@@ -155,16 +155,16 @@
           variant="destructive"
           onclick={() => (deleteOpen = true)}
         >
-          {msg.settingsDangerOwnerCta()}
+          {m.settingsDangerOwnerCta()}
         </Button>
       </div>
     {:else}
       <p class="mt-1 text-sm text-muted-foreground">
-        {msg.settingsDangerMemberDescription()}
+        {m.settingsDangerMemberDescription()}
       </p>
       <div class="mt-3">
         <Button type="button" variant="outline" onclick={() => (leaveOpen = true)}>
-          {msg.settingsDangerMemberCta()}
+          {m.settingsDangerMemberCta()}
         </Button>
       </div>
     {/if}
@@ -173,11 +173,11 @@
 
 <ConfirmModal
   bind:open={deleteOpen}
-  title={msg.settingsDeleteConfirmTitle({ name: data.child.name })}
-  description={msg.settingsDeleteConfirmDescription({ name: data.child.name })}
+  title={m.settingsDeleteConfirmTitle({ name: data.child.name })}
+  description={m.settingsDeleteConfirmDescription({ name: data.child.name })}
   action="?/deleteChild"
-  confirmLabel={msg.settingsDeleteConfirmLabel()}
-  loadingLabel={msg.settingsDeleteLoadingLabel()}
+  confirmLabel={m.settingsDeleteConfirmLabel()}
+  loadingLabel={m.settingsDeleteLoadingLabel()}
   destructive
   requireText={data.child.name}
   requirePassword
@@ -185,10 +185,10 @@
 
 <ConfirmModal
   bind:open={leaveOpen}
-  title={msg.settingsLeaveConfirmTitle()}
-  description={msg.settingsLeaveConfirmDescription()}
+  title={m.settingsLeaveConfirmTitle()}
+  description={m.settingsLeaveConfirmDescription()}
   action="?/leaveChild"
-  confirmLabel={msg.settingsLeaveConfirmLabel()}
-  loadingLabel={msg.settingsLeaveLoadingLabel()}
+  confirmLabel={m.settingsLeaveConfirmLabel()}
+  loadingLabel={m.settingsLeaveLoadingLabel()}
   destructive
 />

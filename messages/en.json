@@ -4,9 +4,7 @@
   "chromeBottomNavLabel": "Main navigation",
   "chromeLateralNavLabel": "Side navigation",
   "chromeLocaleSwitcherLabel": "Language selection",
-  "chromeLegalLinksConditions": "Terms of use",
   "chromeLegalLinksCookies": "Cookies",
-  "chromeLegalLinksLabel": "Legal links",
   "chromeLegalLinksMentionsLegales": "Legal notice",
   "chromeLegalLinksPolitiqueConfidentialite": "Privacy policy",
   "chromeSkipToContent": "Skip to content",
@@ -188,7 +186,6 @@
   "authDeletedBackHome": "Back to home",
   "commonCancel": "Cancel",
   "commonConfirmTextLabel": "Type \"{text}\" to confirm",
-  "commonDelete": "Delete",
   "commonFirstName": "First name",
   "commonPassword": "Password",
   "commonRemove": "Remove",
@@ -553,7 +550,6 @@
   "settingsLeaveLoadingLabel": "Leaving…",
   "joinTitle": "Invitation",
   "joinBack": "Back",
-  "joinInvitedBody": "You are invited to follow {name}.",
   "joinCodeLine": "Code",
   "joinAcceptCta": "Accept invitation"
 }
