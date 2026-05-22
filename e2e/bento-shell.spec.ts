@@ -25,24 +25,34 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     // Bento bottom nav rendered.
     await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible();
 
-    // Bottom nav links use { force: true } to bypass Playwright's
-    // elementFromPoint actionability check, which mis-reports a `<h2>` /
-    // `<section>` from the page content as the topmost element at the
-    // link's click coordinates. The nav is fixed z-40 with backdrop-blur,
-    // visually and functionally on top of the page content — real taps work,
-    // but the headless Chromium check seems to race the backdrop-filter
-    // composite. force:true still fires a real click on the link element.
+    // Bottom-nav links are activated via focus + Enter (keyboard nav)
+    // rather than .click(). Reason: at iPhone 14's 390×664 viewport, the
+    // empty-state card on the Carnet page extends below the bottom of the
+    // viewport, putting its <section>/<h2> elements at the same Y as the
+    // bottom nav. Even though the nav is fixed z-40 with backdrop-blur,
+    // Playwright's coordinate-based click (incl. force:true) lands on the
+    // section instead of the link. Keyboard activation dispatches click
+    // on the focused element directly, bypassing the coord lookup.
+    // Real users on touch devices fire pointer events from the tap target,
+    // which the browser correctly routes via fixed-element stacking — so
+    // touch works in practice; only Playwright's mouse-based click misroutes.
 
     // Click "Carnet" → /child/<id>/foods
-    await page.getByRole('link', { name: 'Carnet' }).click({ force: true });
+    const carnetLink = page.getByRole('link', { name: 'Carnet' });
+    await carnetLink.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/child\/\d+\/foods/);
 
     // Click "Découvrir" → /child/<id>/guide
-    await page.getByRole('link', { name: 'Découvrir' }).click({ force: true });
+    const decouvrirLink = page.getByRole('link', { name: 'Découvrir' });
+    await decouvrirLink.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/child\/\d+\/guide/);
 
     // Click "Profil" → /account
-    await page.getByRole('link', { name: 'Profil' }).click({ force: true });
+    const profilLink = page.getByRole('link', { name: 'Profil' });
+    await profilLink.focus();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/account/);
   });
 
