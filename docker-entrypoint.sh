@@ -19,4 +19,14 @@ if [ -n "${COOLIFY_URL:-}" ]; then
   export ORIGIN
 fi
 
+# /app/.release-sha is written by the Dockerfile builder stage from
+# `git rev-parse HEAD`. Coolify's env panel single-quotes literals so we
+# can't expand the SHA there; the entrypoint bridges build → runtime so
+# sentry-init.server.ts sees the same release name the vite plugin used
+# at bundle time.
+if [ -s /app/.release-sha ]; then
+  SENTRY_RELEASE=$(cat /app/.release-sha)
+  export SENTRY_RELEASE
+fi
+
 exec node build

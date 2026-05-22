@@ -9,7 +9,10 @@ data
 *.db
 *.db-shm
 *.db-wal
-.git
+# .git is intentionally INCLUDED in the build context: the builder stage
+# runs `git rev-parse HEAD` to capture the deploy SHA for Sentry release
+# tagging. Adds ~few MB but keeps the build SHA-aware without a Coolify
+# build-arg.
 .github
 coverage
 .vscode
