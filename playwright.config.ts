@@ -10,7 +10,11 @@ export default defineConfig({
   // applied. Tests assume a fresh database — supply one via the E2E
   // postgres service in CI, or run scripts/reset-e2e-db.sh locally.
   fullyParallel: false,
-  workers: 1,
+  // Two workers: one per project, so desktop and mobile run in parallel.
+  // `fullyParallel: false` is kept so tests within a project still run
+  // serially (the suite assumes one user per test, but several tests share
+  // the same Postgres database).
+  workers: 2,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
@@ -22,8 +26,20 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      // Default project — runs every untagged spec at desktop viewport.
+      // The negative-lookahead grep excludes specs explicitly tagged
+      // @mobile-only (drag gestures, mobile-keyboard interactions).
+      name: 'desktop',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+      grep: /^(?!.*@mobile-only).*$/s
+    },
+    {
+      // Mobile project — runs only specs tagged @responsive or @mobile-only.
+      // iPhone 14 (390 × 844) is below Tailwind's md breakpoint (768px) so
+      // side="auto" modals resolve to bottom-sheet behaviour.
+      name: 'mobile',
+      use: { ...devices['iPhone 14'] },
+      grep: /@responsive|@mobile-only/
     }
     // WebKit project intentionally omitted: the signup helper does not
     // complete the post-signup redirect on Safari (pre-existing helper
