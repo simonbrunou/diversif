@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "NODE_OPTIONS='--unhandled-rejections=warn' vite build",
+    "build": "INLANG_TELEMETRY=false NODE_OPTIONS='--unhandled-rejections=warn' vite build",
     "preview": "vite preview",
-    "paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
+    "paraglide": "INLANG_TELEMETRY=false paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
     "check": "npm run paraglide && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold warning",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold warning --watch",
     "check:budget": "npm run build && node scripts/check-bundle-size.mjs",
