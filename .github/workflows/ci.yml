@@ -79,3 +79,36 @@ jobs:
           name: playwright-report
           path: playwright-report
           retention-days: 14
+
+  bundle-budget:
+    name: Bundle size budget
+    runs-on: ubuntu-latest
+    services:
+      # The Vite build's `analyse` step prerenders routes; some prerendered
+      # +page.server.ts handlers hit the DB. A throwaway postgres makes the
+      # build succeed without affecting the budget script (which only reads
+      # the resulting JS / static artifacts).
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: diversif
+          POSTGRES_PASSWORD: diversif
+          POSTGRES_DB: diversif_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U diversif"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+        env:
+          DATABASE_URL: postgres://diversif:diversif@localhost:5432/diversif_e2e
+      - run: node scripts/check-bundle-size.mjs
