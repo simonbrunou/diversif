@@ -46,7 +46,7 @@ export default defineConfig({
       ? [
           sentryVitePlugin({
             authToken: process.env.SENTRY_AUTH_TOKEN,
-            org: process.env.SENTRY_ORG || 'diversif',
+            org: process.env.SENTRY_ORG || 'simonbrunou',
             project: process.env.SENTRY_PROJECT || 'diversif',
             release: { name: process.env.SENTRY_RELEASE || undefined },
             sourcemaps: {
