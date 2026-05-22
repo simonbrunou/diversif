@@ -47,7 +47,8 @@ export default defineConfig({
       // @mobile-only (drag gestures, mobile-keyboard interactions).
       name: 'desktop',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
-      grep: /^(?!.*@mobile-only).*$/s
+      grep: /^(?!.*@mobile-only).*$/s,
+      grepInvert: /@lighthouse/
     },
     {
       // Mobile project — runs only specs tagged @responsive or @mobile-only.
@@ -64,7 +65,24 @@ export default defineConfig({
         // breakpoint without the WebKit baggage.
         browserName: 'chromium'
       },
-      grep: /@responsive|@mobile-only/
+      grep: /@responsive|@mobile-only/,
+      grepInvert: /@lighthouse/
+    },
+    {
+      // Dedicated project for Lighthouse audits. Runs only specs tagged
+      // `@lighthouse`. Uses a fixed CDP port (9222) because Lighthouse needs
+      // a stable debugging endpoint to attach to; the @lighthouse grep
+      // ensures tests within this project run serially against the shared
+      // port without collision. Viewport: desktop-class (1280×800) —
+      // Lighthouse's "mobile" emulation is configured per-audit, not via
+      // Playwright viewport.
+      name: 'lighthouse',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 800 },
+        launchOptions: { args: ['--remote-debugging-port=9222'] }
+      },
+      grep: /@lighthouse/
     }
     // WebKit is intentionally avoided across both projects: the signup helper
     // does not complete the post-signup redirect on Safari (pre-existing
