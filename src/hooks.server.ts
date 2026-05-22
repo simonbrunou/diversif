@@ -20,9 +20,20 @@ import { setLanguageTag, type AvailableLanguageTag } from '$lib/paraglide/runtim
  * and pass only the id back to the client. Operators read the prefixed log
  * line (Coolify streams stderr) and correlate to user reports via the id
  * shown on /+error.svelte.
+ *
+ * 4xx are routing dead-ends — SvelteKit's "no matching route" error
+ * (typos, stale bookmarks, bots scanning for /wp-admin), client typos,
+ * deliberate aborts — and they would otherwise flood Sentry + stderr with
+ * uninteresting noise. The errorId is still generated and returned so
+ * /+error.svelte can surface it for support tickets, but no event is
+ * captured. Only 5xx (unhandled exceptions in route code, infra failures)
+ * are worth waking someone up.
  */
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   const errorId = randomBytes(4).toString('hex');
+  if (status < 500) {
+    return { message: 'Internal Error', errorId };
+  }
   const err = error as Error;
   // The Sentry event already drops user.id and scrubs the URL : this stderr
   // line is the operator-side trail. Apply the same path scrub so child/food

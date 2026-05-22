@@ -429,12 +429,32 @@ describe('handleError → Sentry', () => {
       handleError({
         error: new Error('x'),
         event: { ...makeSentryErrorEvent(), route: { id: null } },
-        status: 404,
-        message: 'Not Found'
+        status: 500,
+        message: 'Internal Error'
       } as unknown as Parameters<typeof handleError>[0]);
       const ctx = captureExceptionMock.mock.calls[0][1];
       expect(ctx.tags.route).toBeNull();
-      expect(ctx.tags.status).toBe(404);
+      expect(ctx.tags.status).toBe(500);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('skips Sentry capture and the stderr line for 4xx', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const result = handleError({
+        error: new Error('Not Found: /wp-admin'),
+        event: { ...makeSentryErrorEvent(), route: { id: null } },
+        status: 404,
+        message: 'Not Found'
+      } as unknown as Parameters<typeof handleError>[0]);
+      // /+error.svelte still gets an errorId so support flows work, but no
+      // Sentry event and no operator-noise log line.
+      expect(result?.errorId).toMatch(/^[0-9a-f]{8}$/);
+      expect(result?.message).toBe('Internal Error');
+      expect(captureExceptionMock).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
     } finally {
       spy.mockRestore();
     }

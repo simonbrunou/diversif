@@ -2,8 +2,17 @@
  * PII scrubbing applied to every Sentry event before it leaves the process.
  * Imported by hooks.server.ts and hooks.client.ts as the `beforeSend` callback.
  *
- * Posture: strict. The errorId in event.tags is the only correlation token;
- * Sentry never sees user.id, email, IP, request body, cookies, or headers.
+ * Posture: strict, defence in depth. The errorId in event.tags is the only
+ * correlation token. From the SDK side this scrubber drops user.id, email,
+ * request body, cookies, headers, query string, message bodies, and stack
+ * frame locals; combined with `sendDefaultPii: false` in Sentry.init, no
+ * client identifiers leave the process.
+ *
+ * Geo enrichment is enforced Sentry-side: when an event arrives over the
+ * network, Sentry's ingest derives user.geo from the *connection IP* (the
+ * process posting the event) unless the project's "Prevent Storing of IP
+ * Addresses" setting is enabled. Toggle that in Settings → Security & Privacy
+ * for the project — this file cannot influence ingest-side enrichment.
  */
 
 type ScrubbableEvent = {
