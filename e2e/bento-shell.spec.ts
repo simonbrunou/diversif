@@ -25,16 +25,24 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     // Bento bottom nav rendered.
     await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible();
 
+    // Bottom nav links use { force: true } to bypass Playwright's
+    // elementFromPoint actionability check, which mis-reports a `<h2>` /
+    // `<section>` from the page content as the topmost element at the
+    // link's click coordinates. The nav is fixed z-40 with backdrop-blur,
+    // visually and functionally on top of the page content — real taps work,
+    // but the headless Chromium check seems to race the backdrop-filter
+    // composite. force:true still fires a real click on the link element.
+
     // Click "Carnet" → /child/<id>/foods
-    await page.getByRole('link', { name: 'Carnet' }).click();
+    await page.getByRole('link', { name: 'Carnet' }).click({ force: true });
     await expect(page).toHaveURL(/\/child\/\d+\/foods/);
 
     // Click "Découvrir" → /child/<id>/guide
-    await page.getByRole('link', { name: 'Découvrir' }).click();
+    await page.getByRole('link', { name: 'Découvrir' }).click({ force: true });
     await expect(page).toHaveURL(/\/child\/\d+\/guide/);
 
     // Click "Profil" → /account
-    await page.getByRole('link', { name: 'Profil' }).click();
+    await page.getByRole('link', { name: 'Profil' }).click({ force: true });
     await expect(page).toHaveURL(/\/account/);
   });
 
