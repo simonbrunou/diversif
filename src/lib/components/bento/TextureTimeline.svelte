@@ -50,7 +50,17 @@
     })}
   </p>
 
-  <ol class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+  <!-- tabindex=0 + aria-label make this horizontally-scrolling list reachable
+       and announceable for keyboard / Safari users. Cards inside carry static
+       info (no inherent focus targets), so the region itself must be focusable
+       to satisfy axe's scrollable-region-focusable rule. Svelte's a11y lint
+       warns on tabindex on a list, but axe's rule is the WCAG authority here. -->
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+  <ol
+    class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    tabindex="0"
+    aria-label={m.textureTimelineTitle()}
+  >
     {#each LADDER as step, i (step)}
       {@const Icon = iconFor(step)}
       {@const isExpected = expected === step}

@@ -30,7 +30,10 @@ describe('SectionHeader', () => {
     const { container } = render(SectionHeader, {
       props: { tone: 'destructive', children: textSnippet('Zone de danger') }
     });
-    expect(container.querySelector('h2')?.className).toContain('text-destructive');
+    // `text-severe-text` is the readable warm-red ink for severe text on
+    // light surfaces; bare `text-destructive` was the coral background hue
+    // which fails WCAG contrast on tinted cards.
+    expect(container.querySelector('h2')?.className).toContain('text-severe-text');
   });
 
   it('forwards a custom class', () => {

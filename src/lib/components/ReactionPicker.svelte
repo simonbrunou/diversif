@@ -16,19 +16,19 @@
       tint: 'bg-reaction-ras/5 border-reaction-ras/20',
       tintHover: 'hover:bg-reaction-ras/10 hover:border-reaction-ras/30',
       ring: 'border-reaction-ras ring-reaction-ras/30 bg-reaction-ras/10',
-      text: 'text-reaction-ras'
+      text: 'text-reaction-ras-foreground'
     },
     inconfort: {
       tint: 'bg-reaction-inconfort/5 border-reaction-inconfort/20',
       tintHover: 'hover:bg-reaction-inconfort/10 hover:border-reaction-inconfort/30',
       ring: 'border-reaction-inconfort ring-reaction-inconfort/30 bg-reaction-inconfort/10',
-      text: 'text-reaction-inconfort'
+      text: 'text-reaction-inconfort-foreground'
     },
     reaction: {
       tint: 'bg-reaction-reaction/5 border-reaction-reaction/20',
       tintHover: 'hover:bg-reaction-reaction/10 hover:border-reaction-reaction/30',
       ring: 'border-reaction-reaction ring-reaction-reaction/30 bg-reaction-reaction/10',
-      text: 'text-reaction-reaction'
+      text: 'text-reaction-reaction-foreground'
     }
   };
 </script>

@@ -53,7 +53,7 @@
         tint: 'bg-primary/5 border-primary/20',
         tintHover: 'hover:bg-primary/10 hover:border-primary/30',
         ring: 'border-primary ring-primary/30 bg-primary/10',
-        text: 'text-primary'
+        text: 'text-primary-strong'
       }
     };
 

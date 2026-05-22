@@ -4,13 +4,17 @@
   const TONES: Record<TipTone, { wrapper: string; eyebrow: string; iconBg: string }> = {
     info: {
       wrapper: 'border-accent-sky/40 bg-accent-sky/15 dark:bg-accent-sky/10',
-      eyebrow: 'text-info',
-      iconBg: 'bg-accent-sky/40 dark:bg-accent-sky/15 text-info'
+      // `text-info` is the sky background hue (≈1.2:1 on the sky-tinted
+      // wrapper). `text-info-foreground` is the deep navy paired text color.
+      eyebrow: 'text-info-foreground',
+      iconBg: 'bg-accent-sky/40 dark:bg-accent-sky/15 text-info-foreground'
     },
     warn: {
       wrapper: 'border-reaction-inconfort/30 bg-reaction-inconfort/10',
-      eyebrow: 'text-reaction-inconfort',
-      iconBg: 'bg-reaction-inconfort/20 text-reaction-inconfort'
+      // Same fix as `info`: the bare reaction-inconfort token is the butter
+      // background hue. The `-foreground` variant is the dark readable text.
+      eyebrow: 'text-reaction-inconfort-foreground',
+      iconBg: 'bg-reaction-inconfort/20 text-reaction-inconfort-foreground'
     },
     important: {
       wrapper: 'border-primary/40 bg-accent',

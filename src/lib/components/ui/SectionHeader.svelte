@@ -23,7 +23,10 @@
 
   const TONES: Record<Tone, string> = {
     default: 'text-ink-soft',
-    destructive: 'text-destructive'
+    // `text-destructive` is the coral background hue (≈2.4:1 on canvas, far
+    // worse on tinted cards). `text-severe-text` is the readable warm-red
+    // variant defined in app.css for severe-flavoured text on light surfaces.
+    destructive: 'text-severe-text'
   };
 
   const SIZES: Record<Size, string> = {
