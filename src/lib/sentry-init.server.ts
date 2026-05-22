@@ -12,16 +12,13 @@ import { scrubEvent, filterIncomingBreadcrumb } from '$lib/sentry';
 Sentry.init({
   dsn: process.env.SENTRY_DSN || '',
   environment: process.env.SENTRY_ENVIRONMENT || 'production',
-  // Runtime mirror of resolveSentryRelease() in vite.config.ts. Coolify
-  // exposes SOURCE_COMMIT in its runtime env when SOURCE_COMMIT was used
-  // at build time; the fallback chain keeps the runtime release tag in
-  // step with the bundle's compiled release name.
-  release:
-    process.env.SENTRY_RELEASE ||
-    process.env.SOURCE_COMMIT ||
-    process.env.GITHUB_SHA ||
-    process.env.GIT_COMMIT_SHA ||
-    undefined,
+  // docker-entrypoint.sh resolves SENTRY_RELEASE from /app/.release-sha or
+  // a CI env var (SOURCE_COMMIT / GITHUB_SHA / GIT_COMMIT_SHA) before
+  // exec'ing node, so a single env-var read here covers every deploy path.
+  // Keeping the fallback chain in shell (instead of inlining || branches
+  // here) also avoids untestable env-var-truthy branches under vitest's
+  // 100% coverage threshold.
+  release: process.env.SENTRY_RELEASE || undefined,
   tracesSampleRate: 0,
   // Explicitly opt out of default PII (IP address, cookies, user agent).
   // This is v8's default but we set it explicitly so a future SDK upgrade

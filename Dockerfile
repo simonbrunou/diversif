@@ -1,23 +1,29 @@
 # syntax=docker/dockerfile:1
 FROM node:24-alpine AS builder
 WORKDIR /app
-# git is needed at build time so vite.config.ts's resolveSentryRelease() can
-# `git rev-parse HEAD` when no SHA env var is present, AND so we can capture
-# the SHA into a file the runtime stage copies forward (see /app/.release-sha
-# below) for sentry-init.server.ts to read at boot.
-RUN apk add --no-cache git
 # HUSKY=0 stops the `prepare` script from running `husky install` during
-# `npm ci`. Even with .git present, husky's hook-install path is unnecessary
-# inside the container — we don't commit from here.
+# `npm ci`. Husky's hook-install path is unnecessary inside the container —
+# we don't commit from here.
 ENV HUSKY=0
 COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
     npm ci
 COPY . .
-# Capture the commit SHA into a file the runtime image will copy. Fails the
-# build loudly if .git is missing or broken — we deliberately do NOT want to
-# ship an image with no release tag.
-RUN git rev-parse HEAD > /app/.release-sha
+# Best-effort SHA capture for sentry release tagging. When .git/ is in the
+# build context (local `docker build .` from a checkout), install git and
+# write the HEAD SHA into /app/.release-sha; the runtime stage copies it
+# and docker-entrypoint.sh exports it as SENTRY_RELEASE before node boots.
+#
+# Coolify's archive-based deploys don't include .git/ in the build context,
+# so the file is left empty and the entrypoint falls back to SOURCE_COMMIT
+# / GITHUB_SHA / GIT_COMMIT_SHA from the runtime env. Either path is fine
+# — what we want to avoid is failing the build when the SHA can't be
+# resolved at this layer.
+RUN if [ -d .git ]; then \
+      apk add --no-cache git && git rev-parse HEAD > /app/.release-sha; \
+    else \
+      : > /app/.release-sha; \
+    fi
 RUN npm run build
 RUN npm prune --omit=dev
 

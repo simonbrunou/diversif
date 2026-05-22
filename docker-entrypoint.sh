@@ -19,13 +19,28 @@ if [ -n "${COOLIFY_URL:-}" ]; then
   export ORIGIN
 fi
 
-# /app/.release-sha is written by the Dockerfile builder stage from
-# `git rev-parse HEAD`. Coolify's env panel single-quotes literals so we
-# can't expand the SHA there; the entrypoint bridges build → runtime so
-# sentry-init.server.ts sees the same release name the vite plugin used
-# at bundle time.
-if [ -s /app/.release-sha ]; then
-  SENTRY_RELEASE=$(cat /app/.release-sha)
+# Resolve SENTRY_RELEASE before exec'ing node. Order:
+#   1. SENTRY_RELEASE already in env (operator-set override)
+#   2. /app/.release-sha — populated by the Dockerfile builder when .git/
+#      is in the build context (local docker build, dev images)
+#   3. SOURCE_COMMIT — Coolify exposes this for nixpacks-based builds
+#   4. GITHUB_SHA / GIT_COMMIT_SHA — CI-style hosts
+# Coolify's env panel single-quotes literal values, so $VAR / ${VAR} /
+# $(cmd) entered there never expand — the expansion has to happen here
+# in the entrypoint shim against env vars Coolify (or another orchestrator)
+# injects as real values.
+if [ -z "${SENTRY_RELEASE:-}" ]; then
+  if [ -s /app/.release-sha ]; then
+    SENTRY_RELEASE=$(cat /app/.release-sha)
+  elif [ -n "${SOURCE_COMMIT:-}" ]; then
+    SENTRY_RELEASE=$SOURCE_COMMIT
+  elif [ -n "${GITHUB_SHA:-}" ]; then
+    SENTRY_RELEASE=$GITHUB_SHA
+  elif [ -n "${GIT_COMMIT_SHA:-}" ]; then
+    SENTRY_RELEASE=$GIT_COMMIT_SHA
+  fi
+fi
+if [ -n "${SENTRY_RELEASE:-}" ]; then
   export SENTRY_RELEASE
 fi
 
