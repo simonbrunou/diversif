@@ -14,6 +14,11 @@ type ShutdownOptions = {
   // timer, idempotency-key purge); errors are logged and swallowed so a
   // broken cleanup never blocks the pool drain.
   beforeExit?: () => void | Promise<void>;
+  // flush runs LAST, after the pool drain, so events captured during
+  // shutdown (Sentry buffers errors and posts them out-of-band) get one
+  // final chance to reach their destination before the process exits.
+  // Errors are logged and swallowed so a broken flush never wedges exit.
+  flush?: () => Promise<void>;
   // Caps the pool drain. pool.end() waits for in-flight queries : fine in
   // theory, but a stuck statement_timeout-defying query would hold the
   // process forever. 10s deliberately matches the pool's statement_timeout:
@@ -46,7 +51,7 @@ export async function drainPool(
       () => {
         // pool.end() shouldn't reject under normal use, but we don't want a
         // rejection from a half-closed pool to leak as an unhandledRejection
-        // and prevent Sentry/audit from getting their final flush in.
+        // and prevent the final flush hook from running.
         clearTimeout(timer);
         resolve('error');
       }
@@ -74,6 +79,13 @@ export function registerShutdownHandlers(opts: ShutdownOptions): void {
       }
     }
     const result = await drainPool(opts.pool, timeoutMs);
+    if (opts.flush) {
+      try {
+        await opts.flush();
+      } catch (err) {
+        log({ type: 'shutdown.flushFailed', error: String(err) });
+      }
+    }
     log({ type: 'shutdown.complete', drain: result });
     exit(0);
   };

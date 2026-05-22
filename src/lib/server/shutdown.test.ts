@@ -107,6 +107,47 @@ describe('registerShutdownHandlers', () => {
     });
   });
 
+  it('runs flush after draining the pool, before exit', async () => {
+    const order: string[] = [];
+    const pool = {
+      end: vi.fn(async () => {
+        order.push('drain');
+      })
+    };
+    const flush = vi.fn(async () => {
+      order.push('flush');
+    });
+    const exit = vi.fn(() => {
+      order.push('exit');
+    });
+    const proc = makeProc();
+    registerShutdownHandlers({
+      pool,
+      process: proc,
+      exit,
+      log: vi.fn(),
+      flush,
+      timeoutMs: 1000
+    });
+    proc.emit('SIGTERM');
+    await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(0));
+    expect(order).toEqual(['drain', 'flush', 'exit']);
+    expect(flush).toHaveBeenCalledTimes(1);
+  });
+
+  it('logs and swallows flush failures so shutdown still completes', async () => {
+    const flush = vi.fn(async () => {
+      throw new Error('flush blew up');
+    });
+    const { proc, exit, log } = makeHarness({ flush });
+    proc.emit('SIGTERM');
+    await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(0));
+    expect(log).toHaveBeenCalledWith({
+      type: 'shutdown.flushFailed',
+      error: 'Error: flush blew up'
+    });
+  });
+
   it('is idempotent across re-registration', async () => {
     const { proc, pool, exit } = makeHarness();
     // A second register call must not stack listeners : otherwise SIGTERM

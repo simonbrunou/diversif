@@ -81,6 +81,11 @@ if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   });
   registerShutdownHandlers({
     pool,
-    beforeExit: () => stopCleanupTimer?.()
+    beforeExit: () => stopCleanupTimer?.(),
+    // 2s flush budget mirrors Sentry's own docs for SIGTERM handlers. Long
+    // enough to drain the buffer over a healthy connection; short enough
+    // that a wedged Sentry endpoint doesn't outlive the orchestrator's
+    // shutdown grace period.
+    flush: () => Sentry.close(2000)
   });
 }
