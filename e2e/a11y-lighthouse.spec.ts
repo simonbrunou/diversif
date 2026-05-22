@@ -28,6 +28,10 @@ function reportName(route: string): string {
 }
 
 async function lighthouseAudit(page: Page, route: string): Promise<void> {
+  // Wait until network is idle before launching Lighthouse — without this
+  // playAudit() races SvelteKit's hydration and Lighthouse occasionally
+  // misses the First Contentful Paint signal, returning null category scores.
+  await page.waitForLoadState('networkidle');
   await playAudit({
     page,
     thresholds: SOFT_THRESHOLDS,

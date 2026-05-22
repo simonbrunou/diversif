@@ -80,7 +80,19 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 800 },
-        launchOptions: { args: ['--remote-debugging-port=9222'] }
+        launchOptions: {
+          args: [
+            '--remote-debugging-port=9222',
+            // Headless Chromium otherwise backgrounds the renderer when no
+            // window is focused; Lighthouse then times out waiting for First
+            // Contentful Paint on any JS-driven route (every page except the
+            // static /offline fallback), reporting NO_FCP and null category
+            // scores. These three flags keep the renderer active.
+            '--disable-renderer-backgrounding',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows'
+          ]
+        }
       },
       grep: /@lighthouse/
     }
