@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "provider": "node",
+  "packages": {
+    "node": "24"
+  },
+  "steps": {
+    "install": {
+      "variables": {
+        "HUSKY": "0"
+      }
+    }
+  },
+  "deploy": {
+    "startCommand": "node build",
+    "variables": {
+      "NODE_ENV": "production",
+      "PROTOCOL_HEADER": "x-forwarded-proto",
+      "HOST_HEADER": "x-forwarded-host"
+    }
+  }
+}
