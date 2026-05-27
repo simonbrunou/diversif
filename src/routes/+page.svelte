@@ -17,7 +17,7 @@
 
   let { data }: { data: PageData } = $props();
 
-  const siteUrl = $derived(page.data.siteUrl ?? SITE.defaultOrigin);
+  const siteUrl = SITE.defaultOrigin;
 
   const landingFaq = $derived([
     {

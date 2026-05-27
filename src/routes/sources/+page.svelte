@@ -11,7 +11,7 @@
   import { SOURCES, ALL_SOURCE_IDS } from '$lib/content/sources';
   import { Library, ExternalLink } from 'lucide-svelte';
 
-  const siteUrl = $derived(page.data.siteUrl ?? SITE.defaultOrigin);
+  const siteUrl = SITE.defaultOrigin;
 
   const sourcesItemList = {
     '@context': 'https://schema.org',

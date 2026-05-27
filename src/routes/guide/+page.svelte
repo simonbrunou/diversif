@@ -13,7 +13,7 @@
   import { localizedHref } from '$lib/utils/localized-href';
   import { BookOpen } from 'lucide-svelte';
 
-  const siteUrl = $derived(page.data.siteUrl ?? SITE.defaultOrigin);
+  const siteUrl = SITE.defaultOrigin;
 
   const guideFaq = [
     {
