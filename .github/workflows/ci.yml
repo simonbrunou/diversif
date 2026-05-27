@@ -22,6 +22,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run check
+      - name: Drizzle schema vs migration drift check
+        run: npx drizzle-kit check
 
   unit-and-component:
     name: Unit + component tests (vitest, 100% coverage)
