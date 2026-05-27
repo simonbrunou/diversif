@@ -3,7 +3,7 @@ import { children } from '$lib/server/db/schema';
 import { inArray } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { ChildSummary } from '$lib/types';
-import { resolveOrigin } from '$lib/seo';
+import { SITE } from '$lib/seo';
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
   let childList: ChildSummary[] = [];
@@ -31,7 +31,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
   return {
     user: locals.user,
     children: childList,
-    siteUrl: resolveOrigin(url),
+    siteUrl: SITE.defaultOrigin,
     currentChildId: currentChildIdStr
   };
 };

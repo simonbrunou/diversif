@@ -15,7 +15,11 @@ vi.mock('@simplewebauthn/server', () => mocks);
 import { POST } from './+server';
 import { webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { PASSKEY_CHALLENGE_AUTOFILL_COOKIE, PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
+import {
+  PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
+  PASSKEY_CHALLENGE_COOKIE,
+  RP_ID
+} from '$lib/server/passkeys';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 
 beforeEach(async () => {
@@ -45,7 +49,7 @@ describe('POST /passkeys/authentication/options', () => {
     )[0];
     expect(stored?.purpose).toBe('authentication');
     expect(stored?.userId).toBeNull();
-    expect(mocks.generateAuthenticationOptions.mock.calls[0][0].rpID).toBe('app.example.com');
+    expect(mocks.generateAuthenticationOptions.mock.calls[0][0].rpID).toBe(RP_ID);
   });
 
   it('marks the cookie secure in production', async () => {
@@ -59,20 +63,6 @@ describe('POST /passkeys/authentication/options', () => {
       expect(opts.secure).toBe(true);
     } finally {
       process.env.NODE_ENV = orig;
-    }
-  });
-
-  it('honours the ORIGIN env override', async () => {
-    mocks.generateAuthenticationOptions.mockResolvedValue({ challenge: 'x' });
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = 'https://from-env.test';
-    try {
-      const event = makeRouteEvent();
-      await POST(event as unknown as Parameters<typeof POST>[0]);
-      expect(mocks.generateAuthenticationOptions.mock.calls[0][0].rpID).toBe('from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
     }
   });
 

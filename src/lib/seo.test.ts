@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   SITE,
   absoluteUrl,
-  resolveOrigin,
   breadcrumbJsonLd,
   organizationJsonLd,
   websiteJsonLd,
@@ -33,74 +32,6 @@ describe('absoluteUrl', () => {
 
   it('falls back to default origin if origin is empty', () => {
     expect(absoluteUrl('', '/x')).toBe(`${SITE.defaultOrigin}/x`);
-  });
-});
-
-describe('resolveOrigin', () => {
-  const ORIGINAL = process.env.ORIGIN;
-  beforeEach(() => {
-    delete process.env.ORIGIN;
-  });
-  afterEach(() => {
-    if (ORIGINAL === undefined) delete process.env.ORIGIN;
-    else process.env.ORIGIN = ORIGINAL;
-  });
-
-  it('returns the URL origin when no env override is set', () => {
-    expect(resolveOrigin(new URL('https://my.app/path'))).toBe('https://my.app');
-  });
-
-  it('accepts a string URL', () => {
-    expect(resolveOrigin('https://my.app/path')).toBe('https://my.app');
-  });
-
-  it('prefers ORIGIN env var when request is on localhost', () => {
-    process.env.ORIGIN = 'https://prod.app';
-    expect(resolveOrigin(new URL('http://localhost:5173/'))).toBe('https://prod.app');
-    expect(resolveOrigin(new URL('http://127.0.0.1:5173/'))).toBe('https://prod.app');
-    expect(resolveOrigin(new URL('http://0.0.0.0:5173/'))).toBe('https://prod.app');
-  });
-
-  it('strips trailing slash from the env override', () => {
-    process.env.ORIGIN = 'https://prod.app/';
-    expect(resolveOrigin(new URL('http://localhost:5173/'))).toBe('https://prod.app');
-  });
-
-  it('uses the request origin when env override is non-http', () => {
-    process.env.ORIGIN = 'not-a-url';
-    expect(resolveOrigin(new URL('https://my.app/'))).toBe('https://my.app');
-  });
-
-  it('uses the env override when no URL is provided', () => {
-    process.env.ORIGIN = 'https://prod.app';
-    expect(resolveOrigin(null)).toBe('https://prod.app');
-    expect(resolveOrigin(undefined)).toBe('https://prod.app');
-  });
-
-  it('falls back to default when nothing is provided', () => {
-    expect(resolveOrigin(null)).toBe(SITE.defaultOrigin);
-  });
-
-  it('keeps the request origin if env override is also a real (non-local) origin', () => {
-    process.env.ORIGIN = 'https://prod.app';
-    expect(resolveOrigin(new URL('https://staging.app/x'))).toBe('https://staging.app');
-  });
-
-  it('falls through gracefully when given a malformed URL string', () => {
-    expect(resolveOrigin('not a url')).toBe(SITE.defaultOrigin);
-  });
-
-  it("falls back to ORIGIN when the URL is SvelteKit's prerender placeholder", () => {
-    process.env.ORIGIN = 'https://prod.app';
-    expect(resolveOrigin(new URL('http://sveltekit-prerender/robots.txt'))).toBe(
-      'https://prod.app'
-    );
-  });
-
-  it("falls back to SITE.defaultOrigin on prerender placeholder when ORIGIN isn't set", () => {
-    expect(resolveOrigin(new URL('http://sveltekit-prerender/sitemap.xml'))).toBe(
-      SITE.defaultOrigin
-    );
   });
 });
 

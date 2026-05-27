@@ -16,6 +16,21 @@ import { db } from './db';
 import { passkeys, webauthnChallenges, type Passkey } from './db/schema';
 
 export const RP_NAME = 'Diversif';
+/**
+ * Stable WebAuthn Relying Party ID — the registrable domain, not whatever
+ * subdomain a given request lands on. Passkeys are scoped to this rpID,
+ * so a passkey registered on `diversif.app` continues to work on every
+ * subdomain (preview deploys at `*.diversif.app`, www., etc.).
+ *
+ * Was previously derived from `process.env.ORIGIN`'s hostname, which made
+ * rpID become the preview-deploy host and quietly broke cross-deploy
+ * passkey use. Hard-coding the registrable domain is the WebAuthn-correct
+ * choice; deploy-host changes should never invalidate stored credentials.
+ *
+ * If we ever ship under a second registrable domain, lift this to a build-
+ * time constant via Vite `define` so each build pins to one rpID.
+ */
+export const RP_ID = 'diversif.app';
 export const PASSKEY_CHALLENGE_COOKIE = 'wa_challenge';
 // Conditional-UI ceremonies fire automatically on page load and would otherwise
 // stomp on an in-flight registration/authentication challenge in another tab;
@@ -45,28 +60,6 @@ function timingDecoyVerify(): void {
 /* v8 ignore next 3 : module-load warming, skipped in tests by design */
 if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   timingDecoyVerify();
-}
-
-export function rpIdFromOrigin(origin: string): string {
-  try {
-    return new URL(origin).hostname;
-  } catch {
-    return 'localhost';
-  }
-}
-
-/**
- * Browsers send the page's origin in WebAuthn responses without a trailing
- * slash, while operators sometimes write `ORIGIN=https://example.com/` in env
- * files. simplewebauthn does an exact string compare, so any trailing slash
- * (or surrounding whitespace) breaks verification.
- */
-export function normalizeOrigin(value: string): string {
-  return value.trim().replace(/\/+$/, '');
-}
-
-export function originFromEnv(fallback: string): string {
-  return normalizeOrigin(process.env.ORIGIN ?? fallback);
 }
 
 function newToken(): string {

@@ -9,10 +9,14 @@ data
 *.db
 *.db-shm
 *.db-wal
-# .git is intentionally INCLUDED in the build context: the builder stage
-# runs `git rev-parse HEAD` to capture the deploy SHA for Sentry release
-# tagging. Adds ~few MB but keeps the build SHA-aware without a Coolify
-# build-arg.
+# vite.config.ts:resolveSentryRelease falls through to `git rev-parse HEAD`
+# only when SENTRY_RELEASE / SOURCE_COMMIT / GITHUB_SHA / GIT_COMMIT_SHA are
+# all unset. Coolify + GitHub Actions both populate one of those, so .git/
+# is dispensable in those build contexts. Keeping it here trims the image
+# by ~a few MB; if you ever `docker build .` from a checkout where none of
+# the env vars are present and you want the SHA tagged, drop .git/ from
+# this list (or just set SENTRY_RELEASE explicitly).
+.git
 .github
 coverage
 .vscode

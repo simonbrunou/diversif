@@ -3,10 +3,9 @@ import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
   PASSKEY_CHALLENGE_TTL_MS,
+  RP_ID,
   buildAuthenticationOptions,
-  createChallenge,
-  originFromEnv,
-  rpIdFromOrigin
+  createChallenge
 } from '$lib/server/passkeys';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { RequestHandler } from './$types';
@@ -33,7 +32,7 @@ const PASSKEY_AUTOFILL_OPTIONS_LIMIT = {
 };
 
 export const POST: RequestHandler = async (event) => {
-  const { cookies, request, url } = event;
+  const { cookies, request } = event;
 
   // Body is optional : conditional-UI clients send {"mode":"autofill"} so the
   // server can route to the autofill cookie + bucket. Legacy / modal clients
@@ -56,10 +55,7 @@ export const POST: RequestHandler = async (event) => {
     throw error(429, `Trop de tentatives. Réessayez dans ${rl.retryAfterSeconds}s.`);
   }
 
-  const origin = originFromEnv(url.origin);
-  const rpID = rpIdFromOrigin(origin);
-
-  const options = await buildAuthenticationOptions({ rpID });
+  const options = await buildAuthenticationOptions({ rpID: RP_ID });
 
   const stored = await createChallenge({
     challenge: options.challenge,

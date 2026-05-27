@@ -16,7 +16,7 @@ import { POST } from './+server';
 import { SESSION_COOKIE } from '$lib/server/auth';
 import { users, webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
+import { PASSKEY_CHALLENGE_COOKIE, RP_ID } from '$lib/server/passkeys';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -84,42 +84,10 @@ describe('POST /passkeys/registration/options', () => {
     expect(stored?.challenge).toBe('big-challenge');
     expect(stored?.userId).toBe(u.id);
 
-    // rpID must come from ORIGIN env when set, otherwise URL.
+    // rpID is the stable registrable domain, never the request host —
+    // see RP_ID's doc-comment for why.
     const args = mocks.generateRegistrationOptions.mock.calls[0][0];
-    expect(args.rpID).toBe('app.example.com');
-  });
-
-  it('honours the ORIGIN env override', async () => {
-    const u = await seed();
-    mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = 'https://from-env.test';
-    try {
-      const event = makeRouteEvent({ user: safeUser(u) });
-      await POST(event as unknown as Parameters<typeof POST>[0]);
-      expect(mocks.generateRegistrationOptions.mock.calls[0][0].rpID).toBe('from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
-    }
-  });
-
-  it('tolerates a trailing slash on the ORIGIN env var', async () => {
-    const u = await seed();
-    mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = 'https://from-env.test/';
-    try {
-      const event = makeRouteEvent({ user: safeUser(u) });
-      await POST(event as unknown as Parameters<typeof POST>[0]);
-      // Without normalization the rpID would still be the hostname, but the
-      // expectedOrigin used during verify would carry the trailing slash and
-      // never match what the browser sends : regression-guard the helper here.
-      expect(mocks.generateRegistrationOptions.mock.calls[0][0].rpID).toBe('from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
-    }
+    expect(args.rpID).toBe(RP_ID);
   });
 
   it('marks the challenge cookie secure in production', async () => {

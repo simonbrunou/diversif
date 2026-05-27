@@ -5,27 +5,23 @@ import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_COOKIE,
   PASSKEY_CHALLENGE_TTL_MS,
+  RP_ID,
   buildRegistrationOptions,
-  createChallenge,
-  originFromEnv,
-  rpIdFromOrigin
+  createChallenge
 } from '$lib/server/passkeys';
 import { requireUser } from '$lib/server/guards';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async ({ locals, cookies, url }) => {
+export const POST: RequestHandler = async ({ locals, cookies }) => {
   const safe = requireUser(locals);
   const fresh = (await db.select().from(users).where(eq(users.id, safe.id)).limit(1))[0];
   if (!fresh) throw error(401, 'Utilisateur introuvable');
-
-  const origin = originFromEnv(url.origin);
-  const rpID = rpIdFromOrigin(origin);
 
   const options = await buildRegistrationOptions({
     userId: fresh.id,
     email: fresh.email,
     displayName: fresh.displayName,
-    rpID
+    rpID: RP_ID
   });
 
   const stored = await createChallenge({
