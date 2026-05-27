@@ -18,11 +18,10 @@ setLanguageTag(() => {
 Sentry.init({
   dsn: env.PUBLIC_SENTRY_DSN || '',
   environment: env.PUBLIC_SENTRY_ENVIRONMENT || 'production',
-  // docker-entrypoint.sh mirrors the server's SENTRY_RELEASE into
-  // PUBLIC_SENTRY_RELEASE so $env/dynamic/public surfaces it to the browser.
-  // Without this, client-side errors arrive untagged and Sentry cannot
-  // symbolicate them against the source maps uploaded under the same SHA.
-  release: env.PUBLIC_SENTRY_RELEASE || undefined,
+  // Inlined at build time by Vite's `define` (vite.config.ts), so the
+  // server-side SHA and the client bundle share one constant. No runtime
+  // env hop, no PUBLIC_SENTRY_RELEASE mirroring needed.
+  release: __SENTRY_RELEASE__ || undefined,
   tracesSampleRate: 0,
   // Explicitly opt out of default PII (IP address, cookies, user agent).
   // This is v8's default but we set it explicitly so a future SDK upgrade

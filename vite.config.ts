@@ -39,7 +39,19 @@ function resolveSentryRelease(): string | undefined {
   }
 }
 
+// Resolved once at module load so the same SHA flows into both Vite's
+// build-time `define` (inlining the constant in server + client bundles)
+// and the Sentry plugin's release name (so uploaded sourcemaps match the
+// release tag attached to runtime errors).
+const SENTRY_RELEASE_RESOLVED = resolveSentryRelease();
+
 export default defineConfig({
+  define: {
+    // Inlined at build time into every bundle. Replaces the runtime
+    // env-var read + docker-entrypoint.sh fallback chain — see
+    // src/lib/sentry-init.server.ts and src/hooks.client.ts.
+    __SENTRY_RELEASE__: JSON.stringify(SENTRY_RELEASE_RESOLVED ?? '')
+  },
   plugins: [
     sveltekit(),
     paraglide({
@@ -83,7 +95,7 @@ export default defineConfig({
             authToken: process.env.SENTRY_AUTH_TOKEN,
             org: process.env.SENTRY_ORG || 'simonbrunou',
             project: process.env.SENTRY_PROJECT || 'diversif',
-            release: { name: resolveSentryRelease() },
+            release: { name: SENTRY_RELEASE_RESOLVED },
             sourcemaps: {
               assets: ['./build/**'],
               // Delete .map files after upload so the deployed build

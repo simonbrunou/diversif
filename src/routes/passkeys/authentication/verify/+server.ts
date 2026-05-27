@@ -3,10 +3,9 @@ import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
+  RP_ID,
   consumeChallenge,
-  finishAuthentication,
-  originFromEnv,
-  rpIdFromOrigin
+  finishAuthentication
 } from '$lib/server/passkeys';
 import { SESSION_COOKIE, SESSION_DURATION_MS, createSession } from '$lib/server/auth';
 import { db } from '$lib/server/db';
@@ -50,14 +49,14 @@ export const POST: RequestHandler = async (event) => {
     throw error(400, 'Challenge expiré ou invalide');
   }
 
-  const origin = originFromEnv(url.origin);
-  const rpID = rpIdFromOrigin(origin);
-
   const result = await finishAuthentication({
     response: body.response as Parameters<typeof finishAuthentication>[0]['response'],
     expectedChallenge: challenge.challenge,
-    expectedOrigin: origin,
-    expectedRPID: rpID
+    // See registration/verify for the rationale on these two: per-request
+    // origin comes from adapter-node (PROTOCOL_HEADER + HOST_HEADER) and
+    // RP_ID is the registrable domain.
+    expectedOrigin: url.origin,
+    expectedRPID: RP_ID
   });
 
   if (!result.ok) {

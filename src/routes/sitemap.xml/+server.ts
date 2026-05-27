@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { absoluteUrl, resolveOrigin } from '$lib/seo';
+import { SITE, absoluteUrl } from '$lib/seo';
 
 export const prerender = true;
 
@@ -42,8 +42,11 @@ function escapeXml(s: string): string {
     .replace(/'/g, '&apos;');
 }
 
-export const GET: RequestHandler = ({ url }) => {
-  const origin = resolveOrigin(url);
+export const GET: RequestHandler = () => {
+  // Canonical URLs always point to prod (SITE.defaultOrigin) — never the
+  // request host. Preview-deploy sitemaps would otherwise leak preview
+  // hostnames into the index, see SITE.defaultOrigin's comment.
+  const origin = SITE.defaultOrigin;
   const entries: Entry[] = [
     ...STATIC_PAGES,
     // Anchored sub-sections share the guide's lastmod since they all point

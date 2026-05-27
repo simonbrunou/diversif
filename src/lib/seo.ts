@@ -4,9 +4,13 @@
 
 export const SITE = {
   name: 'Diversif',
-  // Fallback used when the request origin is unavailable (e.g. when building
-  // the sitemap from a server hook with no event). Override at runtime via
-  // the ORIGIN env var, which is also what SvelteKit uses for CSRF.
+  // Canonical origin used for every public surface (sitemap, robots, JSON-LD,
+  // OpenGraph/Twitter `og:url`). It must remain stable across every deploy
+  // (prod + preview), since canonicals should always point at the prod URL —
+  // otherwise crawlers index preview hostnames and dilute the canonical
+  // signal. Used to be configurable via the ORIGIN env var so that preview
+  // deploys could override it; that lever turned out to be footgun, not
+  // feature, so it's now pinned in source.
   defaultOrigin: 'https://diversif.app',
   locale: 'fr_FR',
   lang: 'fr',
@@ -59,44 +63,6 @@ export function absoluteUrl(origin: string, path: string): string {
   const base = (origin || SITE.defaultOrigin).replace(/\/$/, '');
   const p = path.startsWith('/') ? path : `/${path}`;
   return `${base}${p}`;
-}
-
-/**
- * Resolve a usable origin from either the SvelteKit URL or the ORIGIN env var.
- * Server-only; pass through `+layout.server.ts` for client visibility.
- */
-export function resolveOrigin(url?: URL | string | null): string {
-  try {
-    if (url) {
-      const parsed = typeof url === 'string' ? new URL(url) : url;
-      // SvelteKit's prerender pipeline passes a placeholder URL with host
-      // `sveltekit-prerender`; surfaces that bake the URL into output
-      // (robots.txt, sitemap.xml, JSON-LD canonicals) would otherwise leak
-      // that host. Treat it as a non-origin: prefer ORIGIN env, then
-      // SITE.defaultOrigin.
-      const isPrerenderPlaceholder = /^https?:\/\/sveltekit-prerender/i.test(parsed.origin);
-      // In dev SvelteKit's URL is the request origin which is fine. Skip
-      // private-network origins only if we have a real ORIGIN to fall back to.
-      const env = (typeof process !== 'undefined' && process.env?.ORIGIN) || '';
-      if (
-        env &&
-        /^https?:\/\//i.test(env) &&
-        !isPrerenderPlaceholder &&
-        !/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(parsed.origin)
-      ) {
-        return parsed.origin;
-      }
-      if (env && /^https?:\/\//i.test(env)) return env.replace(/\/$/, '');
-      if (isPrerenderPlaceholder) return SITE.defaultOrigin;
-      return parsed.origin;
-    }
-  } catch {
-    // ignore
-  }
-  if (typeof process !== 'undefined' && process.env?.ORIGIN) {
-    return String(process.env.ORIGIN).replace(/\/$/, '');
-  }
-  return SITE.defaultOrigin;
 }
 
 export type BreadcrumbItem = { name: string; path: string };
