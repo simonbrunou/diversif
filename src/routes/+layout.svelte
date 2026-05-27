@@ -18,7 +18,7 @@
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
-  const siteUrl = $derived(data.siteUrl ?? SITE.defaultOrigin);
+  const siteUrl = SITE.defaultOrigin;
 
   // Strip the /en locale prefix once before route classification : the visible
   // URL keeps the prefix, but reroute makes the underlying SvelteKit route the

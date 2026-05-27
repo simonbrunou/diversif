@@ -17,7 +17,7 @@
 
   let openAllergenId = $state<AllergenId | null>(null);
 
-  const siteUrl = $derived(page.data.siteUrl ?? SITE.defaultOrigin);
+  const siteUrl = SITE.defaultOrigin;
 
   const allergensItemList = {
     '@context': 'https://schema.org',
