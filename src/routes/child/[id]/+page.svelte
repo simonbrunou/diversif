@@ -2,7 +2,7 @@
   import AujourdhuiBento from '$lib/components/bento/AujourdhuiBento.svelte';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
   import { celebrate, pickMilestoneFromQuery } from '$lib/utils/milestones';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -22,12 +22,12 @@
 
   $effect(() => {
     const milestone = pickMilestoneFromQuery(
-      $page.url.searchParams,
+      page.url.searchParams,
       data.diversity.totalCategories
     );
     if (!milestone) return;
     celebrate(toast, milestone);
-    const url = new URL($page.url);
+    const url = new URL(page.url);
     for (const key of [
       'logged',
       'first',

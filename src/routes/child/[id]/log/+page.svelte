@@ -14,7 +14,7 @@
   import { formatDateInputValue, localInputToIso } from '$lib/utils/dates';
   import { ageInMonths } from '$lib/utils/age';
   import { getTipsFor, pickRotatingTip } from '$lib/content/guidance';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
@@ -48,7 +48,7 @@
   });
 
   const initialFoodId = (() => {
-    const v = Number($page.url.searchParams.get('foodId'));
+    const v = Number(page.url.searchParams.get('foodId'));
     return Number.isInteger(v) && v > 0 ? v : null;
   })();
 

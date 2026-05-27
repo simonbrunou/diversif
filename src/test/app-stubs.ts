@@ -8,9 +8,8 @@
  * before importing the component under test.
  */
 import { vi } from 'vitest';
-import { writable } from 'svelte/store';
 
-const pageStore = writable({
+const page = {
   url: new URL('http://localhost/'),
   params: {},
   route: { id: '/' },
@@ -19,12 +18,19 @@ const pageStore = writable({
   data: {},
   form: null,
   state: {}
-});
+};
 
-vi.mock('$app/stores', () => ({
-  page: pageStore,
-  navigating: writable(null),
-  updated: writable(false)
+vi.mock('$app/state', () => ({
+  page,
+  navigating: {
+    type: null,
+    from: null,
+    to: null,
+    willUnload: false,
+    delta: 0,
+    complete: Promise.resolve()
+  },
+  updated: { current: false, check: vi.fn() }
 }));
 
 vi.mock('$app/forms', () => ({
@@ -47,5 +53,5 @@ vi.mock('$app/navigation', () => ({
 }));
 
 export function setPagePathname(pathname: string) {
-  pageStore.update((p) => ({ ...p, url: new URL(`http://localhost${pathname}`) }));
+  page.url = new URL(`http://localhost${pathname}`);
 }

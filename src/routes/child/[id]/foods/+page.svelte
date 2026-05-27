@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PageData } from './$types';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import CarnetBento from '$lib/components/bento/CarnetBento.svelte';
   import type { Segment } from '$lib/components/bento/CarnetSegments.svelte';
 
@@ -10,7 +10,7 @@
 
   const currentSegment = $derived<Segment>(
     (() => {
-      const q = $page.url.searchParams.get('segment');
+      const q = page.url.searchParams.get('segment');
       return (VALID_SEGMENTS as string[]).includes(q ?? '') ? (q as Segment) : 'all';
     })()
   );

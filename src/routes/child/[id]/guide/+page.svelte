@@ -1,6 +1,6 @@
 <script lang="ts">
   import DiscoverBento from '$lib/components/bento/DiscoverBento.svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { PageData } from './$types';
@@ -8,7 +8,7 @@
   let { data }: { data: PageData } = $props();
 
   // params.id is required by the route, so it is always a string here.
-  const childId = $derived($page.params.id ?? '');
+  const childId = $derived(page.params.id ?? '');
   const viewAllSuggestionsHref = $derived(localizedHref(`/child/${childId}/suggestions`));
 </script>
 

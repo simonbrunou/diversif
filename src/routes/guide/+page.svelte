@@ -8,12 +8,12 @@
   import Seo from '$lib/components/Seo.svelte';
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { articleJsonLd, breadcrumbJsonLd, faqPageJsonLd, SITE } from '$lib/seo';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
   import { BookOpen } from 'lucide-svelte';
 
-  const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
+  const siteUrl = $derived(page.data.siteUrl ?? SITE.defaultOrigin);
 
   const guideFaq = [
     {
@@ -68,7 +68,7 @@
 />
 
 <div class="container max-w-4xl space-y-8 py-6 md:py-8">
-  {#if $page.url.pathname.startsWith('/en')}
+  {#if page.url.pathname.startsWith('/en')}
     <Callout variant="warning">
       {m.commonFrOnlyBannerGuide()}
     </Callout>

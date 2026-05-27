@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { SITE, absoluteUrl, type SeoInput } from '$lib/seo';
 
   let {
@@ -14,7 +14,7 @@
     alternateLocales = []
   }: SeoInput & { alternateLocales?: string[] } = $props();
 
-  const origin = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
+  const origin = $derived(page.data.siteUrl ?? SITE.defaultOrigin);
   const canonical = $derived(absoluteUrl(origin, path));
   const ogImageUrl = $derived(absoluteUrl(origin, ogImage));
   const ogImageFallback = $derived(absoluteUrl(origin, SITE.ogImageFallback));

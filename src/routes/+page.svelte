@@ -9,7 +9,7 @@
   import Seo from '$lib/components/Seo.svelte';
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { SITE, faqPageJsonLd, webApplicationJsonLd } from '$lib/seo';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { formatAge } from '$lib/utils/age';
   import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
@@ -17,7 +17,7 @@
 
   let { data }: { data: PageData } = $props();
 
-  const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
+  const siteUrl = $derived(page.data.siteUrl ?? SITE.defaultOrigin);
 
   const landingFaq = $derived([
     {
@@ -56,7 +56,7 @@
 {/if}
 
 {#if data.kind === 'landing'}
-  {#if $page.url.pathname.startsWith('/en')}
+  {#if page.url.pathname.startsWith('/en')}
     <div class="container max-w-4xl pt-4 md:pt-6">
       <Callout variant="warning">
         {m.commonFrOnlyBannerLanding()}

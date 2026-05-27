@@ -7,7 +7,7 @@
 
   import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
   import { enhance } from '$app/forms';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
   import { trackSubmission } from '$lib/forms/tracked-enhance';
   import * as m from '$lib/paraglide/messages';
@@ -42,7 +42,7 @@
   }
 
   function inviteUrl(code: string): string {
-    return `${$page.url.origin}/join/${code}`;
+    return `${page.url.origin}/join/${code}`;
   }
 
 </script>

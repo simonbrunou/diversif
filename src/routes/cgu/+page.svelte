@@ -4,7 +4,7 @@
   import Seo from '$lib/components/Seo.svelte';
   import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { localizedHref } from '$lib/utils/localized-href';
 </script>
 
@@ -17,7 +17,7 @@
 
 <div class="mx-auto max-w-3xl px-6 py-6 text-ink sm:px-10">
   <BackHeader fallback="/" />
-  {#if $page.url.pathname.startsWith('/en')}
+  {#if page.url.pathname.startsWith('/en')}
     <Callout variant="warning">
       {m.commonFrOnlyBannerLegal()}
     </Callout>

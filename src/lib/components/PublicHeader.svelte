@@ -2,7 +2,7 @@
   import Button from '$components/ui/Button.svelte';
   import LocaleSwitcher from './LocaleSwitcher.svelte';
   import SharedTopBar from './SharedTopBar.svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import type { SafeUser } from '$lib/types';
   import { Menu, X } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
@@ -27,8 +27,8 @@
   );
 
   function isActive(href: string): boolean {
-    if (href === '/' || href === localizedHref('/')) return $page.url.pathname === href;
-    return $page.url.pathname === href || $page.url.pathname.startsWith(`${href}/`);
+    if (href === '/' || href === localizedHref('/')) return page.url.pathname === href;
+    return page.url.pathname === href || page.url.pathname.startsWith(`${href}/`);
   }
 </script>
 
