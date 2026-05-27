@@ -42,6 +42,12 @@ if [ -z "${SENTRY_RELEASE:-}" ]; then
 fi
 if [ -n "${SENTRY_RELEASE:-}" ]; then
   export SENTRY_RELEASE
+  # Mirror the same SHA into PUBLIC_SENTRY_RELEASE so $env/dynamic/public
+  # surfaces it to the browser. Without this, hooks.client.ts initializes
+  # Sentry with `release: undefined`, so client-side errors arrive at Sentry
+  # untagged — even though @sentry/vite-plugin uploaded source maps under
+  # the same SHA, Sentry has no way to associate them.
+  export PUBLIC_SENTRY_RELEASE=$SENTRY_RELEASE
 fi
 
 exec node build
