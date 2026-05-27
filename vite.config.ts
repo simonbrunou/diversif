@@ -50,7 +50,15 @@ export default defineConfig({
     // Inlined at build time into every bundle. Replaces the runtime
     // env-var read + docker-entrypoint.sh fallback chain — see
     // src/lib/sentry-init.server.ts and src/hooks.client.ts.
-    __SENTRY_RELEASE__: JSON.stringify(SENTRY_RELEASE_RESOLVED ?? '')
+    //
+    // When no SHA could be resolved, emit the literal token `undefined`
+    // (not `""`) so the call sites can read the constant directly
+    // without a `|| undefined` fallback. That fallback would re-introduce
+    // a runtime branch which vitest's 100% threshold can't cover from
+    // either a release-tagged or release-less test environment.
+    __SENTRY_RELEASE__: SENTRY_RELEASE_RESOLVED
+      ? JSON.stringify(SENTRY_RELEASE_RESOLVED)
+      : 'undefined'
   },
   plugins: [
     sveltekit(),

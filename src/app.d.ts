@@ -10,12 +10,12 @@ declare global {
    * required docker-entrypoint.sh to resolve and mirror the SHA at
    * container start, which Railpack-style builders don't run.
    *
-   * Empty string when no SHA could be resolved at build time (the
-   * resolver in vite.config.ts coalesces `undefined` to `''` so the
-   * constant is always JSON-safe). Both call sites coerce `''` to
-   * `undefined` before handing it to Sentry.
+   * `undefined` when no SHA could be resolved at build time. vite.config.ts
+   * emits either a string literal or the bare `undefined` token so both
+   * call sites can pass the constant straight to Sentry without a
+   * `|| undefined` fallback (which would be an uncoverable branch).
    */
-  const __SENTRY_RELEASE__: string;
+  const __SENTRY_RELEASE__: string | undefined;
 
   namespace App {
     interface Locals {
