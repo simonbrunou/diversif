@@ -15,16 +15,13 @@
 
   let passkeyName = $state('');
   let registering = $state(false);
-  let unsupported = $state(false);
-
-  $effect(() => {
-    if (!browser) return;
-    unsupported = !(
-      typeof window !== 'undefined' &&
-      typeof window.PublicKeyCredential === 'function' &&
-      typeof navigator.credentials?.create === 'function'
-    );
-  });
+  const unsupported = $derived(
+    browser &&
+      !(
+        typeof window.PublicKeyCredential === 'function' &&
+        typeof navigator.credentials?.create === 'function'
+      )
+  );
 
   let lastFormSeen: typeof form;
   $effect(() => {

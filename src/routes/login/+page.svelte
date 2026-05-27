@@ -17,16 +17,13 @@
   let { form }: { form: ActionData } = $props();
   let submitting = $state(false);
   let passkeyLoading = $state(false);
-  let unsupported = $state(false);
-
-  $effect(() => {
-    if (!browser) return;
-    unsupported = !(
-      typeof window !== 'undefined' &&
-      typeof window.PublicKeyCredential === 'function' &&
-      typeof navigator.credentials?.get === 'function'
-    );
-  });
+  const unsupported = $derived(
+    browser &&
+      !(
+        typeof window.PublicKeyCredential === 'function' &&
+        typeof navigator.credentials?.get === 'function'
+      )
+  );
 
   // Conditional UI: pre-arms a passkey ceremony so the browser can offer
   // matching credentials inline with the email field's autofill dropdown.
