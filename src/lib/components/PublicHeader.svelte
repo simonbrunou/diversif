@@ -33,8 +33,7 @@
 </script>
 
 <SharedTopBar>
-  {#snippet children()}
-    <nav aria-label={m.chromePublicHeaderNavLabel()} class="hidden md:block">
+  <nav aria-label={m.chromePublicHeaderNavLabel()} class="hidden md:block">
       <ul class="flex items-center gap-1 text-sm">
         {#each navLinks as l (l.href)}
           <li>
@@ -75,7 +74,6 @@
         <Menu size={20} aria-hidden="true" />
       {/if}
     </button>
-  {/snippet}
 
   {#snippet below()}
     {#if mobileOpen}
