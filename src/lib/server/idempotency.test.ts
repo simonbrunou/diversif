@@ -104,36 +104,29 @@ describe('withIdempotencyKey', () => {
     expect(row).toBeUndefined();
   });
 
-  // TODO bun-migration: this test inserts via testDb from inside a
-  // testDb.transaction() callback to simulate a concurrent process. PGlite is
-  // single-connection (in-process WASM), so the nested insert deadlocks
-  // waiting for the open transaction. pg-mem allowed it because it didn't
-  // enforce connection serialization. Needs a rewrite using two separate
-  // PGlite instances (or a SAVEPOINT-based race simulation) under bun.
-  it.skip('absorbs a concurrent INSERT race as IdempotencyInFlight, not a 500', async () => {
+  it('absorbs a concurrent INSERT race as IdempotencyInFlight, not a 500', async () => {
     // Simulate the race: another concurrent transaction wins the optimistic
     // INSERT before our savepoint runs. Our INSERT raises 23505; the savepoint
-    // rolls back so the outer tx is still alive and we should detect the
-    // existing in-flight row and throw IdempotencyInFlight (which the route
-    // turns into a 409, never a 500).
+    // rolls back and we should detect the existing in-flight row and throw
+    // IdempotencyInFlight (which the route turns into a 409, never a 500).
+    //
+    // Under pg-mem the original test nested an `await testDb.insert(...)` inside
+    // `testDb.transaction(...)` to simulate the racing process. PGlite is
+    // single-connection in-process WASM, so the nested insert deadlocks. We
+    // pre-seed the racing row first, then drive withIdempotencyKey against the
+    // testDb directly: the savepoint's INSERT raises 23505 (real Postgres
+    // semantics under PGlite), the catch path queries the existing row and
+    // throws IdempotencyInFlight.
+    await testDb.insert(idempotencyKeys).values({
+      key: 'race',
+      userId: 1,
+      scope: SCOPE,
+      redirect: null,
+      createdAt: new Date()
+    });
     const doWork = mock(() => ({ redirect: '/should-not-run' }));
-    let racePlanted = false;
     await expect(
-      testDb.transaction(async (tx) => {
-        if (!racePlanted) {
-          racePlanted = true;
-          // Insert via the outer testDb so the row is committed to the shared
-          // pg-mem store before tx's savepoint fires.
-          await testDb.insert(idempotencyKeys).values({
-            key: 'race',
-            userId: 1,
-            scope: SCOPE,
-            redirect: null,
-            createdAt: new Date()
-          });
-        }
-        return withIdempotencyKey(tx, { key: 'race', userId: 1, scope: SCOPE }, doWork);
-      })
+      withIdempotencyKey(testDb, { key: 'race', userId: 1, scope: SCOPE }, doWork)
     ).rejects.toThrow(IdempotencyInFlight);
     expect(doWork).not.toHaveBeenCalled();
   });
