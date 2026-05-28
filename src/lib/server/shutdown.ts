@@ -3,6 +3,16 @@
 // log "unexpected EOF" or : worse : keep the backend alive long enough to
 // affect a follow-up deploy (e.g. another instance hitting connection
 // limits). Drain the pool ourselves before letting the process exit.
+//
+// Drain contract: pool.end() (currently a Bun.SQL instance) MUST wait for
+// in-flight queries to finish before resolving, matching the prior pg.Pool
+// semantic. Per bun-types/sql.d.ts (close/end with no `timeout` option):
+// "it will wait for all queries to finish before closing." A live probe
+// against Postgres confirmed end() resolved at ~2s for a pg_sleep(2) and
+// the awaited query promise returned the row, not a connection error. This
+// is locked in by the shutdown.drain.test.ts integration test (gated on a
+// reachable Postgres). If we ever switch drivers or pass `{ timeout: 0 }`,
+// that drain test will fail loudly.
 
 type EndablePool = { end: () => Promise<void> };
 
