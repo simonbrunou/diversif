@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import Button from './Button.svelte';
@@ -22,7 +22,7 @@ describe('Button', () => {
   });
 
   it('calls onclick when clicked', async () => {
-    const onclick = vi.fn();
+    const onclick = mock();
     render(Button, { props: { onclick, children: text('Tap') } });
     await fireEvent.click(screen.getByRole('button'));
     expect(onclick).toHaveBeenCalled();

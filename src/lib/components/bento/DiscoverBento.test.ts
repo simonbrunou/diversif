@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/svelte';
 import DiscoverBento from './DiscoverBento.svelte';
 import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
@@ -65,7 +65,7 @@ describe('DiscoverBento', () => {
     stages,
     activeStageId: '6-9m',
     suggestions,
-    onPickSuggestion: vi.fn(),
+    onPickSuggestion: mock(),
     allergens: [],
     ageMonths: 7,
     textureProgress: { tried: [], mostRecent: null },

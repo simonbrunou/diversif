@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { seedUser, seedChild, seedMembership } from '../../../test/route';
 import { foodEntries, foods } from './schema';

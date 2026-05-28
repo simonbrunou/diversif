@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import AllergenPassport from './AllergenPassport.svelte';
 import type { AllergenItem } from '$lib/server/guidance/allergen-status';

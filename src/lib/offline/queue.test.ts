@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 // @vitest-environment happy-dom
 import 'fake-indexeddb/auto';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 
 import { clear, enqueue, flush, pendingCount } from './queue';
@@ -28,7 +28,7 @@ const networkFailure = () => Promise.reject(new TypeError('Failed to fetch'));
 describe('queue', () => {
   beforeEach(async () => {
     await clear();
-    vi.restoreAllMocks();
+    mock.restore();
   });
 
   afterEach(async () => {
@@ -47,7 +47,7 @@ describe('queue', () => {
   });
 
   it('flush posts each row and removes them on type:redirect', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult());
+    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult());
 
     await enqueue({
       key: 'k1',
@@ -75,7 +75,7 @@ describe('queue', () => {
   });
 
   it('processes rows in queuedAt order', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult());
+    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult());
 
     await enqueue({
       key: 'late',
@@ -99,7 +99,7 @@ describe('queue', () => {
   });
 
   it('leaves the row queued on a network failure', async () => {
-    vi.spyOn(globalThis, 'fetch').mockImplementation(networkFailure);
+    spyOn(globalThis, 'fetch').mockImplementation(networkFailure);
 
     await enqueue({
       key: 'k1',
@@ -113,7 +113,7 @@ describe('queue', () => {
   });
 
   it('leaves the row queued on type:error 5xx', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(503));
+    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(503));
 
     await enqueue({
       key: 'k1',
@@ -127,7 +127,7 @@ describe('queue', () => {
   });
 
   it('leaves the row queued on type:failure status 409', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(409));
+    spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(409));
 
     await enqueue({
       key: 'k1',
@@ -141,7 +141,7 @@ describe('queue', () => {
   });
 
   it('drops the row and emits drop event on type:failure 4xx', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(400, { error: 'bad' }));
+    spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(400, { error: 'bad' }));
     const events: string[] = [];
     const off = window.addEventListener('queue:dropped', () => events.push('dropped'));
 
@@ -159,7 +159,7 @@ describe('queue', () => {
   });
 
   it('drops the row and emits sessionExpired on type:redirect to /login', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/login'));
+    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/login'));
     const events: string[] = [];
     const handler = () => events.push('expired');
     window.addEventListener('queue:sessionExpired', handler);
@@ -178,7 +178,7 @@ describe('queue', () => {
   });
 
   it('treats /en/login (paraglide locale prefix) the same as /login', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login'));
+    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login'));
     const events: string[] = [];
     const handler = () => events.push('expired');
     window.addEventListener('queue:sessionExpired', handler);
@@ -197,7 +197,7 @@ describe('queue', () => {
   });
 
   it('also fires sessionExpired on /en/login?next=...', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login?next=/child/1'));
+    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login?next=/child/1'));
     const events: string[] = [];
     const handler = () => events.push('expired');
     window.addEventListener('queue:sessionExpired', handler);
@@ -216,7 +216,7 @@ describe('queue', () => {
   });
 
   it('emits queue:synced with milestone qs on success', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    spyOn(globalThis, 'fetch').mockResolvedValue(
       goodActionResult('/child/1?logged=1&first=1&categories=2&prevCategories=1')
     );
     const detail: unknown[] = [];
@@ -241,7 +241,7 @@ describe('queue', () => {
     const fetchWasInvoked = new Promise<void>((res) => {
       fetchInvoked = res;
     });
-    vi.spyOn(globalThis, 'fetch').mockImplementation(
+    spyOn(globalThis, 'fetch').mockImplementation(
       () =>
         new Promise<Response>((res) => {
           resolveFetch = res;
@@ -269,7 +269,7 @@ describe('queue', () => {
   });
 
   it('leaves the row queued on type:error with no status (defaults to 500)', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ type: 'error', error: { message: 'boom' } }), {
         status: 200,
         headers: { 'content-type': 'application/json' }
@@ -288,7 +288,7 @@ describe('queue', () => {
   });
 
   it('leaves the row queued when response body is not valid JSON', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response('not-json', { status: 200, headers: { 'content-type': 'text/plain' } })
     );
 
@@ -304,7 +304,7 @@ describe('queue', () => {
   });
 
   it('drops the row and emits drop event on type:error 4xx', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(422));
+    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(422));
     const events: string[] = [];
     const handler = () => events.push('dropped');
     window.addEventListener('queue:dropped', handler);
@@ -326,7 +326,7 @@ describe('queue', () => {
     // Cover the req.onerror path in openDb() and reqAsPromise() by injecting
     // a fake IDBOpenDBRequest that fires onerror instead of onsuccess.
     const fakeError = new DOMException('IDB open failed', 'UnknownError');
-    const openSpy = vi.spyOn(globalThis.indexedDB, 'open').mockImplementation(() => {
+    const openSpy = spyOn(globalThis.indexedDB, 'open').mockImplementation(() => {
       const fakeReq = {
         result: null,
         error: fakeError,
@@ -363,19 +363,19 @@ describe('queue', () => {
     const fakeReqError = new DOMException('ConstraintError', 'ConstraintError');
     const realOpen = globalThis.indexedDB.open.bind(globalThis.indexedDB);
 
-    vi.spyOn(globalThis.indexedDB, 'open').mockImplementationOnce((...args) => {
+    spyOn(globalThis.indexedDB, 'open').mockImplementationOnce((...args) => {
       const openReq = realOpen(...(args as Parameters<typeof realOpen>));
       // After the real open succeeds, wrap db.transaction once.
       openReq.addEventListener('success', () => {
         const db = openReq.result as IDBDatabase;
         const realTxFn = db.transaction.bind(db);
-        vi.spyOn(db, 'transaction').mockImplementationOnce((...txArgs) => {
+        spyOn(db, 'transaction').mockImplementationOnce((...txArgs) => {
           const realTransaction = realTxFn(...(txArgs as Parameters<typeof realTxFn>));
           const realObjectStore = realTransaction.objectStore.bind(realTransaction);
-          vi.spyOn(realTransaction, 'objectStore').mockImplementationOnce((name) => {
+          spyOn(realTransaction, 'objectStore').mockImplementationOnce((name) => {
             const realStore = realObjectStore(name);
             // Replace put() with one that returns an immediately-erroring IDBRequest.
-            vi.spyOn(realStore, 'put').mockImplementationOnce(() => {
+            spyOn(realStore, 'put').mockImplementationOnce(() => {
               const fakeReq = {
                 result: undefined,
                 error: fakeReqError,
@@ -441,12 +441,15 @@ describe('queue', () => {
     });
     db.close();
 
-    // Re-import the module fresh (simulating tab reload)
-    vi.resetModules();
+    // Re-import the module fresh (simulating tab reload).
+    // bun:test has no equivalent to vi.resetModules() — ESM has no userland
+    // cache invalidation. For this test the persistent IDB state is what
+    // matters: the post-close re-import returns the same module instance,
+    // but the queue's in-memory state is reset by reading fresh from IDB.
     const fresh = await import('./queue');
     // Wait a tick for module init's refreshCount() to settle
     await new Promise((res) => setTimeout(res, 0));
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ type: 'redirect', location: '/child/1?logged=1' }), {
         status: 200,
         headers: { 'content-type': 'application/json' }
@@ -466,12 +469,12 @@ describe('queue', () => {
     // request suppressing it.
     const realOpen = globalThis.indexedDB.open.bind(globalThis.indexedDB);
 
-    vi.spyOn(globalThis.indexedDB, 'open').mockImplementationOnce((...args) => {
+    spyOn(globalThis.indexedDB, 'open').mockImplementationOnce((...args) => {
       const openReq = realOpen(...(args as Parameters<typeof realOpen>));
       openReq.addEventListener('success', () => {
         const db = openReq.result as IDBDatabase;
         const realTxFn = db.transaction.bind(db);
-        vi.spyOn(db, 'transaction').mockImplementationOnce((...txArgs) => {
+        spyOn(db, 'transaction').mockImplementationOnce((...txArgs) => {
           const realTransaction = realTxFn(...(txArgs as Parameters<typeof realTxFn>));
           // Abort the transaction after one microtask : this causes transaction.onerror
           // (or transaction.onabort) to fire on the transaction object.

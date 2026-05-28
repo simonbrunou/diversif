@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import SymptomList from './SymptomList.svelte';
 
@@ -25,7 +25,7 @@ describe('SymptomList', () => {
   });
 
   it('calls onAdd when the add button is tapped', async () => {
-    const onAdd = vi.fn();
+    const onAdd = mock();
     render(SymptomList, { props: { symptoms, onAdd, action } });
     await fireEvent.click(screen.getByText('Ajouter un symptôme'));
     expect(onAdd).toHaveBeenCalled();

@@ -1,5 +1,5 @@
+import { describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../test/component';
 import FoodCombobox from './FoodCombobox.svelte';
@@ -60,7 +60,7 @@ describe('FoodCombobox', () => {
   });
 
   it('opens the custom-food form and notifies via onCustomToggle', async () => {
-    const onCustomToggle = vi.fn();
+    const onCustomToggle = mock();
     const { container } = render(FoodCombobox, {
       props: { foods, onCustomToggle }
     });

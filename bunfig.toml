@@ -1,0 +1,30 @@
+[install]
+# Trust @sentry/cli's postinstall (downloads the CLI binary used by the
+# Sentry Vite plugin for sourcemap upload).
+trustedDependencies = ["@sentry/cli"]
+
+[test]
+# Preload script: registers happy-dom + jest-dom matchers + $app/* mocks
+# (see bunfig.preload.ts) before any test file imports.
+preload = ["./bunfig.preload.ts"]
+# Disable coverage by default; opt in via `bun test --coverage`.
+coverage = false
+coverageReporter = ["text", "lcov"]
+coverageDir = "./coverage"
+# Mirror the previous vitest 100% threshold. bun test's coverage threshold
+# uses 0..1 (vitest used 0..100).
+coverageThreshold = { line = 1.0, function = 1.0, statement = 1.0 }
+# Mirror the previous vitest coverage.exclude list.
+coveragePathIgnorePatterns = [
+  "src/**/*.test.ts",
+  "src/**/*.d.ts",
+  "src/test/**",
+  "src/lib/types.ts",
+  "src/lib/server/db/index.ts",
+  "src/lib/server/db/schema.ts",
+  "src/hooks.client.ts",
+  "src/lib/paraglide/**",
+  "src/hooks.ts",
+  "src/lib/i18n.ts",
+  "src/lib/components/ui/use-bottom-sheet-drag.svelte.ts"
+]

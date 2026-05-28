@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import SuggestionFeed from './SuggestionFeed.svelte';
 import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
@@ -37,7 +37,7 @@ describe('SuggestionFeed', () => {
   });
 
   it('calls onPick with the food when a card is tapped', async () => {
-    const onPick = vi.fn();
+    const onPick = mock();
     render(SuggestionFeed, { props: { suggestions, onPick } });
     await fireEvent.click(screen.getByText('Poire'));
     expect(onPick).toHaveBeenCalledWith(suggestions[0].food);

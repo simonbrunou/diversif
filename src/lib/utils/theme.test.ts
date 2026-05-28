@@ -1,8 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 const browserState = { browser: false };
 
-vi.mock('$app/environment', () => ({
+mock.module('$app/environment', () => ({
   get browser() {
     return browserState.browser;
   }
@@ -10,6 +9,7 @@ vi.mock('$app/environment', () => ({
 
 import { applyTheme, getStoredTheme, resolveTheme } from './theme';
 
+import { stubGlobal, unstubAllGlobals } from '../../test/bun-test-utils';
 type Stored = string | null;
 
 function makeBrowserGlobals(opts: { stored: Stored; prefersDark: boolean }) {
@@ -17,16 +17,16 @@ function makeBrowserGlobals(opts: { stored: Stored; prefersDark: boolean }) {
   if (opts.stored != null) store.set('theme', opts.stored);
 
   const localStorage = {
-    getItem: vi.fn((k: string) => (store.has(k) ? store.get(k)! : null)),
-    setItem: vi.fn((k: string, v: string) => {
+    getItem: mock((k: string) => (store.has(k) ? store.get(k)! : null)),
+    setItem: mock((k: string, v: string) => {
       store.set(k, v);
     }),
-    removeItem: vi.fn((k: string) => {
+    removeItem: mock((k: string) => {
       store.delete(k);
     })
   };
 
-  const matchMedia = vi.fn((q: string) => ({
+  const matchMedia = mock((q: string) => ({
     matches: q.includes('dark') ? opts.prefersDark : false
   }));
 
@@ -74,14 +74,14 @@ describe('theme : browser behavior', () => {
   beforeEach(() => {
     browserState.browser = true;
     env = makeBrowserGlobals({ stored: null, prefersDark: false });
-    vi.stubGlobal('localStorage', env.localStorage);
-    vi.stubGlobal('window', { matchMedia: env.matchMedia });
+    stubGlobal('localStorage', env.localStorage);
+    stubGlobal('window', { matchMedia: env.matchMedia });
     (globalThis as unknown as { matchMedia: typeof env.matchMedia }).matchMedia = env.matchMedia;
-    vi.stubGlobal('document', env.document);
+    stubGlobal('document', env.document);
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    unstubAllGlobals();
   });
 
   it('getStoredTheme returns "light" or "dark" when stored', () => {

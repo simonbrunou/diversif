@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import StagesBentoGrid from './StagesBentoGrid.svelte';
 
@@ -28,7 +28,7 @@ describe('StagesBentoGrid', () => {
   });
 
   it('calls onOpen with the stage id when a tile is tapped', async () => {
-    const onOpen = vi.fn();
+    const onOpen = mock();
     render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen } });
     await fireEvent.click(screen.getByText('9 à 12 mois'));
     expect(onOpen).toHaveBeenCalledWith('9-12m');

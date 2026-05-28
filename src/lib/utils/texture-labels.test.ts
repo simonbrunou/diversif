@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import * as m from '$lib/paraglide/messages';
 import { TEXTURE_VALUES, getTextureLabel } from './texture-labels';
 

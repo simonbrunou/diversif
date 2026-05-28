@@ -1,9 +1,9 @@
-import { afterEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { testDb } from '../../test/db';
 import { _clearAllRateLimits } from './rate-limit';
 
 // Use the in-memory pg-mem db so we can insert real rows without a live PG.
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 // Import after mocks are in place.
 const { requireFreshAuth, requireFreshAuthWithKey } = await import('./fresh-auth');
@@ -73,7 +73,7 @@ describe('requireFreshAuth', () => {
 
   it('invokes onMissingUser when the DB row is gone (race)', async () => {
     const ghost: SafeUser = { ...fakeUser, id: 88880 };
-    const onMissingUser = vi.fn(() => {
+    const onMissingUser = mock(() => {
       throw new Error('REDIRECT_TO_LOGIN');
     });
     await expect(requireFreshAuth(ghost, 'whatever', { onMissingUser })).rejects.toThrow(
@@ -126,7 +126,7 @@ describe('requireFreshAuthWithKey', () => {
 
   it('invokes onMissingUser when the DB row is gone (race)', async () => {
     const ghost: SafeUser = { ...fakeUser, id: 88888 };
-    const onMissingUser = vi.fn(() => {
+    const onMissingUser = mock(() => {
       throw new Error('REDIRECT_TO_LOGIN');
     });
     await expect(

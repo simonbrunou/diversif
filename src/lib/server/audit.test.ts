@@ -1,13 +1,13 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { audit } from './audit';
 
 describe('audit', () => {
   afterEach(() => {
-    vi.restoreAllMocks();
+    mock.restore();
   });
 
   it('emits a single JSON line to stdout with ts + level + payload', () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const spy = spyOn(console, 'log').mockImplementation(() => {});
     audit({
       type: 'account.deleted',
       userId: 42,
@@ -31,7 +31,7 @@ describe('audit', () => {
   });
 
   it('emits the export event with foodEntryCount', () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const spy = spyOn(console, 'log').mockImplementation(() => {});
     audit({ type: 'account.exported', userId: 7, foodEntryCount: 1234 });
     const parsed = JSON.parse(spy.mock.calls[0][0] as string);
     expect(parsed).toMatchObject({
@@ -43,7 +43,7 @@ describe('audit', () => {
   });
 
   it('emits the export_blocked event with the refusal reason and counts', () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const spy = spyOn(console, 'log').mockImplementation(() => {});
     audit({
       type: 'account.export_blocked',
       userId: 9,
@@ -63,7 +63,7 @@ describe('audit', () => {
   });
 
   it('emits credential lifecycle events with the userId (and passkeyId where relevant)', () => {
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const spy = spyOn(console, 'log').mockImplementation(() => {});
     audit({ type: 'account.password_changed', userId: 11 });
     audit({ type: 'account.passkey_added', userId: 11, passkeyId: 'pk-A' });
     audit({ type: 'account.passkey_renamed', userId: 11, passkeyId: 'pk-A' });

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, setSystemTime } from 'bun:test';
 import {
   _clearAllRateLimits,
   checkRateLimit,
@@ -10,7 +10,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 
 afterEach(() => {
   _clearAllRateLimits();
-  vi.useRealTimers();
+  setSystemTime(null);
 });
 
 describe('checkRateLimit', () => {
@@ -46,12 +46,12 @@ describe('checkRateLimit', () => {
   });
 
   it('lets hits age out after the window', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
+    setSystemTime(new Date()); /* [bun-test] was useFakeTimers() */
+    setSystemTime(new Date('2024-01-01T00:00:00Z'));
     for (let i = 0; i < opts.limit; i++) checkRateLimit(opts, 'a');
     expect(checkRateLimit(opts, 'a').allowed).toBe(false);
 
-    vi.setSystemTime(new Date('2024-01-01T00:01:01Z')); // > windowMs later
+    setSystemTime(new Date('2024-01-01T00:01:01Z')); // > windowMs later
     expect(checkRateLimit(opts, 'a').allowed).toBe(true);
   });
 
@@ -71,14 +71,14 @@ describe('checkRateLimit', () => {
 
 describe('evictExpiredRateLimits', () => {
   it('drops buckets whose newest hit is older than maxAge', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
+    setSystemTime(new Date()); /* [bun-test] was useFakeTimers() */
+    setSystemTime(new Date('2024-01-01T00:00:00Z'));
     const opts = { name: 'evict', limit: 10, windowMs: 60_000 };
     checkRateLimit(opts, 'a');
     checkRateLimit(opts, 'b');
 
     // Move past the eviction horizon for `a` only.
-    vi.setSystemTime(new Date('2024-01-01T02:00:00Z'));
+    setSystemTime(new Date('2024-01-01T02:00:00Z'));
     checkRateLimit(opts, 'b');
 
     const removed = evictExpiredRateLimits(60 * 60 * 1000);

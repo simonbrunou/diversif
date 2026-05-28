@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect } from 'vitest';
 import { render, fireEvent, screen } from '@testing-library/svelte';
 import '../../test/component';
 import GuideStaticSections, { STATIC_NAV_SECTIONS } from './GuideStaticSections.svelte';

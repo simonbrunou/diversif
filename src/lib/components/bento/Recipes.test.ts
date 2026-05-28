@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/svelte';
 import Recipes from './Recipes.svelte';
 import type { Recipe } from '$lib/content/recipes';

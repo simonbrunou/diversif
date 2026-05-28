@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent } from '../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const mocks = vi.hoisted(() => ({
-  generateRegistrationOptions: vi.fn(),
-  verifyRegistrationResponse: vi.fn(),
-  generateAuthenticationOptions: vi.fn(),
-  verifyAuthenticationResponse: vi.fn()
-}));
-vi.mock('@simplewebauthn/server', () => mocks);
+const mocks = {
+  generateRegistrationOptions: mock(),
+  verifyRegistrationResponse: mock(),
+  generateAuthenticationOptions: mock(),
+  verifyAuthenticationResponse: mock()
+};
+mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
 import { webauthnChallenges } from '$lib/server/db/schema';

@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const exportSpy = vi.hoisted(() => ({ fn: vi.fn() }));
-vi.mock('$lib/server/gdpr', async () => {
-  const actual = await vi.importActual<typeof import('$lib/server/gdpr')>('$lib/server/gdpr');
+const exportSpy = { fn: mock() };
+mock.module('$lib/server/gdpr', async () => {
+  const actual = await ((await import('$lib/server/gdpr')) as typeof import('$lib/server/gdpr'));
   return {
     ...actual,
     exportUserData: (...args: Parameters<typeof actual.exportUserData>) => exportSpy.fn(...args)
@@ -20,7 +20,7 @@ import { GET } from './+server';
 
 let realExport: (userId: number) => unknown;
 beforeAll(async () => {
-  const actual = await vi.importActual<typeof import('$lib/server/gdpr')>('$lib/server/gdpr');
+  const actual = await ((await import('$lib/server/gdpr')) as typeof import('$lib/server/gdpr'));
   realExport = actual.exportUserData;
 });
 

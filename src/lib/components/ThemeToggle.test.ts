@@ -1,6 +1,7 @@
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
+import { stubGlobal, unstubAllGlobals } from '../../test/bun-test-utils';
 import '../../test/app-stubs';
 import '../../test/component';
 import ThemeToggle from './ThemeToggle.svelte';
@@ -9,25 +10,25 @@ describe('ThemeToggle', () => {
   beforeEach(() => {
     // Browser-mode test : provide localStorage + matchMedia stubs.
     const store = new Map<string, string>();
-    vi.stubGlobal('localStorage', {
+    stubGlobal('localStorage', {
       getItem: (k: string) => store.get(k) ?? null,
       setItem: (k: string, v: string) => store.set(k, v),
       removeItem: (k: string) => store.delete(k)
     });
-    vi.stubGlobal('matchMedia', (q: string) => ({
+    stubGlobal('matchMedia', (q: string) => ({
       matches: false,
       media: q,
       onchange: null,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn()
+      addEventListener: mock(),
+      removeEventListener: mock(),
+      addListener: mock(),
+      removeListener: mock(),
+      dispatchEvent: mock()
     }));
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    unstubAllGlobals();
   });
 
   it('renders 3 toggle buttons', () => {

@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/svelte';
 import { textSnippet } from '../../../test/component';
 import { Plus } from 'lucide-svelte';
@@ -18,7 +18,7 @@ describe('DashedActionRow', () => {
   });
 
   it('renders as a <button> when href is omitted', () => {
-    const onclick = vi.fn();
+    const onclick = mock();
     render(DashedActionRow, {
       props: { onclick, icon: Plus, children: textSnippet('Ajouter') }
     });

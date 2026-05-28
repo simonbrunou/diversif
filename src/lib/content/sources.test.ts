@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { ALL_SOURCE_IDS, SOURCES, getSource } from './sources';
 
 describe('SOURCES catalog', () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import {
   captureFlow,
@@ -9,7 +9,7 @@ import {
   seedUser
 } from '../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { invitations, memberships } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -199,7 +199,7 @@ describe('join/[code] default action', () => {
     // transaction's UPDATE, another claim flips used_at. The transaction's
     // conditional WHERE used_at IS NULL should match 0 rows and we should
     // bail without inserting a membership row for `me`.
-    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
       await testDb
         .update(invitations)
         .set({ usedAt: new Date(), usedBy: racer.id })

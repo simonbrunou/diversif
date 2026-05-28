@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { makeRouteEvent, safeUser } from '../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const generateInviteCodeRawSpy = vi.hoisted(() => vi.fn<() => string>());
+const generateInviteCodeRawSpy = mock<() => string>();
 
-vi.mock('$lib/server/auth', async () => {
-  const actual = await vi.importActual<typeof import('$lib/server/auth')>('$lib/server/auth');
+mock.module('$lib/server/auth', async () => {
+  const actual = await ((await import('$lib/server/auth')) as typeof import('$lib/server/auth'));
   return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
 });
 
@@ -16,9 +16,10 @@ vi.mock('$lib/server/auth', async () => {
 // controls the auth re-export also controls the shared module, giving the
 // createInvitation collision tests full control over code generation.
 // We use a ref-object (plain {}), safe to assign inside the hoisted factory.
-const _invitesRef = vi.hoisted(() => ({ real: null as null | (() => string) }));
-vi.mock('$lib/utils/invites', async () => {
-  const actual = await vi.importActual<typeof import('$lib/utils/invites')>('$lib/utils/invites');
+const _invitesRef = { real: null as null | (() => string) };
+mock.module('$lib/utils/invites', async () => {
+  const actual =
+    await ((await import('$lib/utils/invites')) as typeof import('$lib/utils/invites'));
   _invitesRef.real = actual.generateInviteCodeRaw;
   return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
 });

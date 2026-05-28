@@ -1,23 +1,23 @@
+import { describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import '../../test/component';
 import LocaleSwitcher from './LocaleSwitcher.svelte';
 
-vi.mock('$app/state', () => ({
+mock.module('$app/state', () => ({
   page: { url: { pathname: '/login', search: '', hash: '' } }
 }));
 
-vi.mock('$app/environment', () => ({
+mock.module('$app/environment', () => ({
   building: false
 }));
 
-vi.mock('$lib/paraglide/runtime', () => ({
-  languageTag: vi.fn(() => 'fr'),
+mock.module('$lib/paraglide/runtime', () => ({
+  languageTag: mock(() => 'fr'),
   availableLanguageTags: ['fr', 'en'] as const
 }));
 
-vi.mock('$lib/i18n', () => ({
+mock.module('$lib/i18n', () => ({
   i18n: {
     resolveRoute: (path: string, locale: string) => (locale === 'fr' ? path : `/${locale}${path}`)
   }
@@ -46,7 +46,7 @@ describe('LocaleSwitcher', () => {
     const state = await import('$app/state');
     const original = state.page.url;
     const runtime = await import('$lib/paraglide/runtime');
-    vi.mocked(runtime.languageTag).mockReturnValue('en');
+    runtime.languageTag.mockReturnValue('en');
     Object.assign(state.page, {
       url: { pathname: '/en/login', search: '', hash: '' }
     });
@@ -85,7 +85,7 @@ describe('LocaleSwitcher', () => {
     Object.assign(state.page, {
       url: { pathname: '/signup', search: '?code=INVITE', hash: '#form' }
     });
-    vi.mocked(env).building = true;
+    env.building = true;
     try {
       render(LocaleSwitcher);
       const fr = screen.getByRole('link', { name: /fr/i });
@@ -93,14 +93,14 @@ describe('LocaleSwitcher', () => {
       expect(fr.getAttribute('href')).toBe('/signup');
       expect(en.getAttribute('href')).toBe('/en/signup');
     } finally {
-      vi.mocked(env).building = false;
+      env.building = false;
       Object.assign(state.page, { url: original });
     }
   });
 
   it('flips data-active and aria-current when languageTag is en', async () => {
     const runtime = await import('$lib/paraglide/runtime');
-    vi.mocked(runtime.languageTag).mockReturnValue('en');
+    runtime.languageTag.mockReturnValue('en');
 
     render(LocaleSwitcher);
     const fr = screen.getByRole('link', { name: /fr/i });

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import {
   makeRouteEvent,
@@ -8,7 +8,7 @@ import {
   seedUser
 } from '../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { load } from './+page.server';
@@ -300,8 +300,8 @@ describe('child/[id]/foods load', () => {
     // loadWeeklyEntries), and the assertion all see the same wall clock —
     // without the freeze, a UTC midnight rollover between any pair flakes
     // both the bucket counts and the anchorUtc equality.
-    vi.useFakeTimers({ toFake: ['Date'] });
-    vi.setSystemTime(new Date('2026-05-15T12:00:00Z'));
+    setSystemTime(new Date()); /* [bun-test] was useFakeTimers({ toFake: ['Date'] }) */
+    setSystemTime(new Date('2026-05-15T12:00:00Z'));
     try {
       const ctx = await setup();
       // Seed 5 entries across the last 3 days:
@@ -324,7 +324,7 @@ describe('child/[id]/foods load', () => {
       expect(out.weeklyEntries.counts[4]).toBe(1); // two days ago
       expect(out.weeklyEntries.anchorUtc).toBe(Date.UTC(2026, 4, 15));
     } finally {
-      vi.useRealTimers();
+      setSystemTime(null);
     }
   });
 

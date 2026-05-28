@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const auditSpy = vi.fn();
-vi.mock('./audit', async () => {
-  const actual = await vi.importActual<typeof import('./audit')>('./audit');
+const auditSpy = mock();
+mock.module('./audit', async () => {
+  const actual = await ((await import('./audit')) as typeof import('./audit'));
   return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
 });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { generateInviteCodeRaw, isValidInviteCodeFormat } from './invites';
 
 describe('generateInviteCodeRaw', () => {

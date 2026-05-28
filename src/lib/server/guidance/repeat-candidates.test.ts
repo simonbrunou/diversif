@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { findRepeatCandidates } from './repeat-candidates';
 import type { EnrichedEntry } from './queries';
 import type { AllergenId } from '$lib/utils/allergens';

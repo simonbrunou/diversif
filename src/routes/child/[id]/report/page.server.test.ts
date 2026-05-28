@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { makeRouteEvent, seedChild, seedUser } from '../../../../test/route';
 import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { load } from './+page.server';

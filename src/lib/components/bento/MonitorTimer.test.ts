@@ -1,5 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/svelte';
 import MonitorTimer from './MonitorTimer.svelte';
 

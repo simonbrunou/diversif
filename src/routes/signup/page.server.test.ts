@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 import { captureFlow, makeRouteEvent, safeUser, seedChild, seedUser } from '../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { invitations, memberships, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -221,7 +221,7 @@ describe('signup default action', () => {
       usedBy: null
     });
 
-    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async () => {
+    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce(async () => {
       throw new Error('pool timeout');
     });
 
@@ -242,7 +242,7 @@ describe('signup default action', () => {
     // the users.email unique constraint and raises 23505. The handler should
     // map that to the same opaque "signup impossible" 400 the registered-email
     // read path returns, NOT a 500.
-    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
       await testDb.insert(users).values({
         email: 'new@example.com',
         passwordHash: 'h',
@@ -285,7 +285,7 @@ describe('signup default action', () => {
     // Simulate the race: between the unlocked findActiveInvitation read and
     // the transaction's conditional UPDATE, another claim flips used_at.
     // The transaction throws InviteRace and rolls back the user insert.
-    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
       await testDb
         .update(invitations)
         .set({ usedAt: new Date(), usedBy: racer.id })

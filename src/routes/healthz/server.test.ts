@@ -1,7 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-
-const { execute } = vi.hoisted(() => ({ execute: vi.fn() }));
-vi.mock('$lib/server/db', () => ({ db: { execute } }));
+import { describe, expect, it, mock } from 'bun:test';
+const { execute } = { execute: mock() };
+mock.module('$lib/server/db', () => ({ db: { execute } }));
 
 import { GET } from './+server';
 

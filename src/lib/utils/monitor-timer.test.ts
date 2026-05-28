@@ -1,5 +1,5 @@
+import { beforeEach, describe, expect, it, setSystemTime } from 'bun:test';
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   loadTimer,
   saveTimer,
@@ -42,24 +42,24 @@ describe('monitor-timer storage', () => {
 
 describe('remainingMs', () => {
   it('returns full duration when timer just started', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_700_000_000_000);
+    setSystemTime(new Date()); /* [bun-test] was useFakeTimers() */
+    setSystemTime(1_700_000_000_000);
     expect(remainingMs({ startedAt: 1_700_000_000_000 })).toBe(MONITOR_DURATION_MS);
-    vi.useRealTimers();
+    setSystemTime(null);
   });
 
   it('returns 0 when duration has elapsed', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_700_000_000_000 + MONITOR_DURATION_MS + 1000);
+    setSystemTime(new Date()); /* [bun-test] was useFakeTimers() */
+    setSystemTime(1_700_000_000_000 + MONITOR_DURATION_MS + 1000);
     expect(remainingMs({ startedAt: 1_700_000_000_000 })).toBe(0);
-    vi.useRealTimers();
+    setSystemTime(null);
   });
 
   it('returns positive remaining when mid-flight', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_700_000_000_000 + 5_000);
+    setSystemTime(new Date()); /* [bun-test] was useFakeTimers() */
+    setSystemTime(1_700_000_000_000 + 5_000);
     expect(remainingMs({ startedAt: 1_700_000_000_000 })).toBe(MONITOR_DURATION_MS - 5000);
-    vi.useRealTimers();
+    setSystemTime(null);
   });
 });
 

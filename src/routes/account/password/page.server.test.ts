@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const auditSpy = vi.fn();
-vi.mock('$lib/server/audit', async () => {
-  const actual = await vi.importActual<typeof import('$lib/server/audit')>('$lib/server/audit');
+const auditSpy = mock();
+mock.module('$lib/server/audit', async () => {
+  const actual = await ((await import('$lib/server/audit')) as typeof import('$lib/server/audit'));
   return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
 });
 
@@ -137,7 +137,7 @@ describe('account/password changePassword', () => {
     expect(await validateSession(a.id)).toBeNull();
     expect(await validateSession(b.id)).toBeNull();
 
-    const setCalls = (event.cookies.set as ReturnType<typeof vi.fn>).mock.calls;
+    const setCalls = (event.cookies.set as ReturnType<typeof mock>).mock.calls;
     expect(setCalls.length).toBeGreaterThanOrEqual(1);
     const [name, value, opts] = setCalls[setCalls.length - 1];
     expect(name).toBe(SESSION_COOKIE);
