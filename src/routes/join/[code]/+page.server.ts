@@ -107,9 +107,9 @@ export const actions: Actions = {
       const result = await tx
         .update(invitations)
         .set({ usedAt: now, usedBy: locals.user!.id })
-        .where(and(eq(invitations.code, code), isNull(invitations.usedAt)));
-      /* v8 ignore next : node-postgres always populates rowCount for UPDATE */
-      if ((result.rowCount ?? 0) === 0) return;
+        .where(and(eq(invitations.code, code), isNull(invitations.usedAt)))
+        .returning({ code: invitations.code });
+      if (result.length === 0) return;
       await tx
         .insert(memberships)
         .values({ userId: locals.user!.id, childId: inv.childId, role: 'member', createdAt: now });

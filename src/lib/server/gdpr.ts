@@ -1,5 +1,6 @@
 import { and, asc, eq, inArray, ne, or, sql } from 'drizzle-orm';
 import { db } from './db';
+import { execRows } from './db/exec';
 import { audit } from './audit';
 import {
   children,
@@ -239,11 +240,12 @@ export async function exportUserData(
   // Count first so we can refuse oversize exports up front, instead of
   // silently truncating and handing the user an incomplete archive.
   if (childIds.length > 0) {
-    const countRes = await db.execute<{ count: string }>(
+    const countRows = await execRows<{ count: string }>(
+      db,
       sql`SELECT COUNT(*)::text as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
     );
     /* v8 ignore next : pg COUNT(*) always returns a single row */
-    const total = Number(countRes.rows[0]?.count ?? 0);
+    const total = Number(countRows[0]?.count ?? 0);
     if (total > entryLimit) {
       audit({
         type: 'account.export_blocked',

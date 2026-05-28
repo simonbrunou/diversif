@@ -6,15 +6,15 @@ import '$lib/sentry-init.server';
 
 import path from 'node:path';
 import * as Sentry from '@sentry/sveltekit';
-import { Pool } from 'pg';
-import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { SQL } from 'bun';
+import { drizzle, type BunSQLDatabase } from 'drizzle-orm/bun-sql';
+import { migrate } from 'drizzle-orm/bun-sql/migrator';
 import * as schema from './schema';
 import { seedFoods } from './seed';
 import { registerShutdownHandlers } from '../shutdown';
 import { building } from '$app/environment';
 
-export type DB = NodePgDatabase<typeof schema>;
+export type DB = BunSQLDatabase<typeof schema>;
 
 function resolveDatabaseUrl(): string {
   const url = process.env.DATABASE_URL;
@@ -34,33 +34,37 @@ function resolvePoolMax(): number {
   return n;
 }
 
-// Pool defaults are dangerous for a single-process Node app:
-//   - connectionTimeoutMillis: 0 means acquires wait forever, so a saturated
-//     pool wedges every incoming request including /healthz, defeating the
-//     Docker HEALTHCHECK that's meant to detect a wedged DB.
-//   - idleTimeoutMillis: 10s churns connections under sustained load.
-//   - no statement_timeout means a single runaway query holds a worker until
-//     the OS kills the connection.
-// Override all four so failures fail fast and surface as 5xx instead of
-// hangs. PGPOOL_MAX lets self-hosters scale the pool to their pg server.
-const pool = new Pool({
-  connectionString: resolveDatabaseUrl(),
+// Bun.SQL pools internally. Defaults are similar in spirit to pg.Pool's, but
+// we override them for the same reasons as before:
+//   - connectionTimeout: bound how long an acquire can wait. A saturated pool
+//     should fail fast so /healthz stays responsive (Docker HEALTHCHECK relies
+//     on it).
+//   - idleTimeout: 30s avoids churn under sustained load.
+//   - connection.statement_timeout: applied as a Postgres runtime parameter on
+//     every new connection. A runaway query fails fast instead of holding a
+//     worker until the OS kills the socket.
+// PGPOOL_MAX lets self-hosters scale concurrent connections to their PG
+// server's max_connections budget.
+const sqlClient = new SQL({
+  url: resolveDatabaseUrl(),
   max: resolvePoolMax(),
-  idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 5_000,
-  statement_timeout: 10_000
+  idleTimeout: 30,
+  connectionTimeout: 5,
+  connection: {
+    statement_timeout: 10_000
+  }
 });
-const drizzleDb = drizzle(pool, { schema });
+const drizzleDb = drizzle(sqlClient, { schema });
 
-// Top-level await: SvelteKit's Node adapter runs as ESM, so importing this
+// Top-level await: SvelteKit's adapter runs as ESM, so importing this
 // module blocks on migration + seed at runtime. After the import settles,
 // `db` is a connected, migrated, seeded handle.
 //
 // Skip during `vite build` — the SSR/prerender pass imports server modules
 // to render pages, which fires this top-level await. The build container
-// (Railpack BuildKit, Dockerfile builder) cannot reach the runtime postgres
-// hostname, so the migrate() call would fail with ENOTFOUND. `building` is
-// true only during `vite build`; false at server start and in tests.
+// cannot reach the runtime postgres hostname, so the migrate() call would
+// fail with ENOTFOUND. `building` is true only during `vite build`; false
+// at server start and in tests.
 if (!building) {
   try {
     const migrationsFolder = path.resolve('./drizzle');
@@ -74,9 +78,12 @@ if (!building) {
 
 export const db = drizzleDb;
 export { schema };
-export { pool };
+// Exported as `pool` for symmetry with the prior pg.Pool export — the
+// shutdown handler only uses .end() so the rename would be churn without
+// changing semantics.
+export { sqlClient as pool };
 
-if (!building && process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+if (!building && process.env.NODE_ENV !== 'test' && !process.env.BUN_TEST) {
   // Register the SIGTERM handler synchronously: a fire-and-forget dynamic
   // import would lose the signal if SIGTERM arrived during the startup
   // window before the .then() callback ran (e.g. Coolify replacing a
@@ -89,7 +96,7 @@ if (!building && process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
     mod.startCleanupTimer();
   });
   registerShutdownHandlers({
-    pool,
+    pool: sqlClient,
     beforeExit: () => stopCleanupTimer?.(),
     // 2s flush budget mirrors Sentry's own docs for SIGTERM handlers. Long
     // enough to drain the buffer over a healthy connection; short enough

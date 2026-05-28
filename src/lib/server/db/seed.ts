@@ -1,15 +1,17 @@
-import type { NodePgDatabase, NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
-import type { PgTransaction } from 'drizzle-orm/pg-core';
+import type { PgDatabase, PgQueryResultHKT, PgTransaction } from 'drizzle-orm/pg-core';
 import type { ExtractTablesWithRelations } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
+import { sql, count } from 'drizzle-orm';
 import { foods } from './schema';
 import type * as schema from './schema';
 import type { CategoryId } from '$lib/utils/categories';
 import type { AllergenId } from '$lib/utils/allergens';
 
+// Driver-agnostic: BunSQLDatabase in prod, PgliteDatabase in tests both
+// extend PgDatabase. The HKT-loose union lets either driver flow through.
+type AnyDb = PgDatabase<PgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 type Tx =
-  | NodePgDatabase<typeof schema>
-  | PgTransaction<NodePgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+  | AnyDb
+  | PgTransaction<PgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 type SeedFood = {
   name: string;
@@ -145,7 +147,7 @@ export const FOODS_SEED: SeedFood[] = [
   { name: 'Paprika doux', category: 'aromates', age: 6 }
 ];
 
-export async function seedFoods(db: NodePgDatabase<typeof schema>): Promise<void> {
+export async function seedFoods(db: AnyDb): Promise<void> {
   await db.transaction(async (tx) => {
     // Serialize concurrent boots (rolling deploy, sidecar, healthcheck-driven
     // respawn) so two processes can't both observe an empty table and both
@@ -155,13 +157,13 @@ export async function seedFoods(db: NodePgDatabase<typeof schema>): Promise<void
     // 23505 on the race-loser without that guard's protection being missed.
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('diversif.seed_foods'))`);
 
-    const existing = await tx.execute<{ count: string }>(
-      sql`SELECT COUNT(*)::text as count FROM foods`
-    );
-    /* v8 ignore next : pg COUNT(*) always returns a single row */
-    const count = Number(existing.rows[0]?.count ?? 0);
+    // count() is portable across drivers; .execute(sql\`COUNT(*)\`) requires
+    // accessing .rows on pglite but not on bun:sql, so we use the typed
+    // builder instead.
+    const [{ n }] = await tx.select({ n: count() }).from(foods);
+    const total = Number(n);
 
-    if (count === 0) {
+    if (total === 0) {
       const rows = FOODS_SEED.map((f) => ({
         name: f.name,
         category: f.category,

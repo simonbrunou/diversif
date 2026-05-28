@@ -1,6 +1,7 @@
 // Diversity metrics, repeat-exposure candidates, weekly recap.
 
 import { db } from '$lib/server/db';
+import { execRows } from '$lib/server/db/exec';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { sql } from 'drizzle-orm';
 import type { CategoryId } from '$lib/utils/categories';
@@ -24,7 +25,8 @@ export async function loadDiversityMetrics(
   // Exclude 'autre' so the numerator matches the denominator the dashboard
   // passes (CATEGORIES.length - 1). Otherwise an `autre` log would push
   // categoriesCovered above totalCategories.
-  const distinctRes = await db.execute<{ count: string }>(
+  const distinctRows = await execRows<{ count: string }>(
+    db,
     sql`SELECT COUNT(DISTINCT ${foods.category})::text as count
         FROM ${foodEntries}
         INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
@@ -32,13 +34,14 @@ export async function loadDiversityMetrics(
           AND ${foods.category} != 'autre'`
   );
   /* v8 ignore next : pg COUNT(*) always returns a single row */
-  const distinctCategories = Number(distinctRes.rows[0]?.count ?? 0);
+  const distinctCategories = Number(distinctRows[0]?.count ?? 0);
 
   // For each food, take the timestamp of its FIRST appearance (introduction).
   // We want the most recent of those, i.e. when the latest "new food" event
   // happened. MAX-of-grouped-MINs expresses this directly without the
   // accidental ORDER BY/LIMIT 1/outer MIN dance we used to do.
-  const lastNewFoodRes = await db.execute<{ given_at: Date | null }>(
+  const lastNewFoodRows = await execRows<{ given_at: Date | string | null }>(
+    db,
     sql`SELECT MAX(first_given_at) as given_at
         FROM (
           SELECT MIN(${foodEntries.givenAt}) as first_given_at
@@ -47,17 +50,18 @@ export async function loadDiversityMetrics(
           GROUP BY ${foodEntries.foodId}
         ) firsts`
   );
-  const lastNewFoodRow = lastNewFoodRes.rows[0];
+  const lastNewFoodRow = lastNewFoodRows[0];
   const lastNewFoodAt =
     lastNewFoodRow?.given_at != null ? new Date(lastNewFoodRow.given_at).getTime() : null;
 
   // Foods given 1–2 times whose worst reaction is 'ras' or 'inconfort'.
   // Predicate (n <= REPEAT_CANDIDATE_MAX_COUNT && worst <= REPEAT_CANDIDATE_MAX_WORST_RANK)
   // matches findRepeatCandidates in ../repeat-candidates (the SQL CASE WHEN
-  // mirrors REACTION_RANK there). Wrapping WHERE rather than HAVING : pg-mem
-  // can't traverse a HAVING clause that contains MAX(CASE ... END), and the
-  // rewrite is also friendlier to query planners.
-  const repeatRes = await db.execute<{ food_id: number; n: number; worst: number }>(
+  // mirrors REACTION_RANK there). Wrapping WHERE rather than HAVING is
+  // friendlier to query planners and was originally needed for pg-mem
+  // compatibility; the wrap is harmless under PGlite/bun:sql so we keep it.
+  const repeatRows = await execRows<{ food_id: number; n: number; worst: number }>(
+    db,
     sql`SELECT food_id, n, worst FROM (
           SELECT ${foodEntries.foodId} as food_id,
                  COUNT(*)::int as n,
@@ -71,7 +75,7 @@ export async function loadDiversityMetrics(
         ) sub
         WHERE n <= ${REPEAT_CANDIDATE_MAX_COUNT} AND worst <= ${REPEAT_CANDIDATE_MAX_WORST_RANK}`
   );
-  const repeatExposureCount = repeatRes.rows.length;
+  const repeatExposureCount = repeatRows.length;
 
   const texturesTried = await loadTexturesTried(childId);
 
@@ -110,14 +114,15 @@ export async function loadRepeatCandidates(
   // last_at ASC + a numeric cap would otherwise hide the most recently
   // re-offered foods past the first N rows on extremely active children).
   const limitClause = limit == null ? sql`` : sql`LIMIT ${limit}`;
-  const res = await db.execute<{
+  const rows = await execRows<{
     food_id: number;
     food_name: string;
     category: string;
     n: number;
-    last_at: Date;
+    last_at: Date | string;
     worst: number;
   }>(
+    db,
     sql`SELECT food_id, food_name, category, n, last_at, worst FROM (
           SELECT ${foodEntries.foodId} as food_id,
                  ${foods.name} as food_name,
@@ -137,7 +142,7 @@ export async function loadRepeatCandidates(
         ORDER BY last_at ASC
         ${limitClause}`
   );
-  return res.rows.map((r) => ({
+  return rows.map((r) => ({
     foodId: Number(r.food_id),
     foodName: r.food_name,
     category: r.category as CategoryId,
@@ -161,18 +166,21 @@ export async function loadWeeklyRecap(
 ): Promise<WeeklyRecap> {
   const since = new Date(now.getTime() - 7 * DAY_MS);
 
-  const entriesRes = await db.execute<{ count: string }>(
+  const entriesRows = await execRows<{ count: string }>(
+    db,
     sql`SELECT COUNT(*)::text as count
         FROM ${foodEntries}
         WHERE ${foodEntries.childId} = ${childId}
           AND ${foodEntries.givenAt} >= ${since}`
   );
   /* v8 ignore next : pg COUNT(*) always returns a single row */
-  const entries = Number(entriesRes.rows[0]?.count ?? 0);
+  const entries = Number(entriesRows[0]?.count ?? 0);
 
   // First-ever appearance per food, kept only if that first appearance is in
-  // the window. Wrap with WHERE rather than HAVING so pg-mem can plan it.
-  const newFoodsRes = await db.execute<{ count: string }>(
+  // the window. Wrap with WHERE rather than HAVING — friendlier to planners
+  // and historically required for the pg-mem path.
+  const newFoodsRows = await execRows<{ count: string }>(
+    db,
     sql`SELECT COUNT(*)::text as count FROM (
           SELECT ${foodEntries.foodId} as food_id, MIN(${foodEntries.givenAt}) as first_at
           FROM ${foodEntries}
@@ -182,10 +190,11 @@ export async function loadWeeklyRecap(
         WHERE first_at >= ${since}`
   );
   /* v8 ignore next : pg COUNT(*) always returns a single row */
-  const newFoods = Number(newFoodsRes.rows[0]?.count ?? 0);
+  const newFoods = Number(newFoodsRows[0]?.count ?? 0);
 
   // First-ever appearance per allergenType, restricted to non-null allergens.
-  const newAllergensRes = await db.execute<{ count: string }>(
+  const newAllergensRows = await execRows<{ count: string }>(
+    db,
     sql`SELECT COUNT(*)::text as count FROM (
           SELECT ${foods.allergenType} as allergen_type, MIN(${foodEntries.givenAt}) as first_at
           FROM ${foodEntries}
@@ -197,7 +206,7 @@ export async function loadWeeklyRecap(
         WHERE first_at >= ${since}`
   );
   /* v8 ignore next : pg COUNT(*) always returns a single row */
-  const newAllergens = Number(newAllergensRes.rows[0]?.count ?? 0);
+  const newAllergens = Number(newAllergensRows[0]?.count ?? 0);
 
   return { entries, newFoods, newAllergens };
 }

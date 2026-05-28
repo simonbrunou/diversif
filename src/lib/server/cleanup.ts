@@ -19,19 +19,29 @@ export type CleanupResult = {
 };
 
 export async function runCleanup(now: Date = new Date()): Promise<CleanupResult> {
-  const s = await db.delete(sessions).where(lt(sessions.expiresAt, now));
-  const i = await db.delete(invitations).where(lt(invitations.expiresAt, now));
-  const c = await db.delete(webauthnChallenges).where(lt(webauthnChallenges.expiresAt, now));
+  // .returning() is portable across bun:sql and pglite — .rowCount on the
+  // delete result is not (bun:sql returns a plain row array).
+  const s = await db
+    .delete(sessions)
+    .where(lt(sessions.expiresAt, now))
+    .returning({ id: sessions.id });
+  const i = await db
+    .delete(invitations)
+    .where(lt(invitations.expiresAt, now))
+    .returning({ code: invitations.code });
+  const c = await db
+    .delete(webauthnChallenges)
+    .where(lt(webauthnChallenges.expiresAt, now))
+    .returning({ token: webauthnChallenges.token });
   // idempotency_keys would otherwise grow forever (used to be pruned inside
   // every successful log transaction, which contended on the same row-locks
   // and risked deadlocks under Postgres).
   const k = await pruneExpiredKeys(db);
   const evicted = evictExpiredRateLimits(RATE_LIMIT_MAX_AGE_MS, now.getTime());
   return {
-    /* v8 ignore next 3 : node-postgres always populates rowCount for DELETE */
-    expiredSessions: s.rowCount ?? 0,
-    expiredInvitations: i.rowCount ?? 0,
-    expiredChallenges: c.rowCount ?? 0,
+    expiredSessions: s.length,
+    expiredInvitations: i.length,
+    expiredChallenges: c.length,
     expiredIdempotencyKeys: k,
     evictedRateLimitBuckets: evicted
   };

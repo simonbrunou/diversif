@@ -1,14 +1,18 @@
 import { eq, lt } from 'drizzle-orm';
 import { idempotencyKeys } from './db/schema';
 import { isUniqueViolation } from './db/errors';
-import type { NodePgDatabase, NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
-import type { PgTransaction } from 'drizzle-orm/pg-core';
+import type { PgDatabase, PgQueryResultHKT, PgTransaction } from 'drizzle-orm/pg-core';
 import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import type * as schema from './db/schema';
 
+// Driver-agnostic: both BunSQLDatabase (prod) and PgliteDatabase (tests) are
+// PgDatabase subclasses. Keeping the type union loose at the HKT lets the same
+// code path run under either driver — bun:sql returns rows-as-array, pglite
+// returns the node-postgres-shaped wrapper, but Drizzle's typed builders used
+// here normalise both.
 type Tx =
-  | NodePgDatabase<typeof schema>
-  | PgTransaction<NodePgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+  | PgDatabase<PgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>
+  | PgTransaction<PgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 export class IdempotencyInFlight extends Error {
   readonly name = 'IdempotencyInFlight' as const;
@@ -87,7 +91,11 @@ export async function pruneExpiredKeys(
   olderThanMs: number = TWENTY_FOUR_HOURS_MS
 ): Promise<number> {
   const cutoff = new Date(Date.now() - olderThanMs);
-  const result = await tx.delete(idempotencyKeys).where(lt(idempotencyKeys.createdAt, cutoff));
-  /* v8 ignore next : node-postgres always populates rowCount for DELETE */
-  return result.rowCount ?? 0;
+  // .returning() is portable across bun:sql and pglite; .rowCount is not — bun:sql's
+  // result is a bare row array with no rowCount property.
+  const deleted = await tx
+    .delete(idempotencyKeys)
+    .where(lt(idempotencyKeys.createdAt, cutoff))
+    .returning({ key: idempotencyKeys.key });
+  return deleted.length;
 }

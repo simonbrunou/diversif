@@ -2,6 +2,7 @@
 // rolling analytics buckets.
 
 import { db } from '$lib/server/db';
+import { execRows } from '$lib/server/db/exec';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, gte, ne, sql } from 'drizzle-orm';
 import type { CategoryId } from '$lib/utils/categories';
@@ -56,13 +57,14 @@ export async function loadStreak(childId: number, now: Date = new Date()): Promi
   // server's TZ env or a costly per-row TZ shift. If we ever start serving
   // users far from Europe, switch to a localized bucketing here.
   // Distinct UTC days that contain at least one entry, in descending order.
-  const res = await db.execute<{ day: string }>(
+  const res = await execRows<{ day: string }>(
+    db,
     sql`SELECT DISTINCT FLOOR(EXTRACT(EPOCH FROM ${foodEntries.givenAt}) / ${sql.raw(String(DAY_MS / 1000))})::bigint::text as day
         FROM ${foodEntries}
         WHERE ${foodEntries.childId} = ${childId}
         ORDER BY day DESC`
   );
-  const rows = res.rows.map((r) => ({ day: Number(r.day) }));
+  const rows = res.map((r) => ({ day: Number(r.day) }));
   if (rows.length === 0) return 0;
 
   const today = Math.floor(now.getTime() / DAY_MS);

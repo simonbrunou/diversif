@@ -142,11 +142,14 @@ export async function findPasskey(credentialId: string): Promise<Passkey | undef
 }
 
 export async function deletePasskey(userId: number, credentialId: string): Promise<boolean> {
-  const result = await db
+  // .returning() is portable across bun:sql and pglite (bun:sql's result is a
+  // plain array with no rowCount property); the returned array's length
+  // tells us whether the row existed.
+  const deleted = await db
     .delete(passkeys)
-    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
-  /* v8 ignore next : node-postgres always populates rowCount for DELETE */
-  return (result.rowCount ?? 0) > 0;
+    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)))
+    .returning({ id: passkeys.id });
+  return deleted.length > 0;
 }
 
 export async function renamePasskey(
@@ -156,12 +159,12 @@ export async function renamePasskey(
 ): Promise<boolean> {
   const trimmed = name.trim();
   if (!trimmed) return false;
-  const result = await db
+  const updated = await db
     .update(passkeys)
     .set({ name: trimmed.slice(0, 80) })
-    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
-  /* v8 ignore next : node-postgres always populates rowCount for UPDATE */
-  return (result.rowCount ?? 0) > 0;
+    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)))
+    .returning({ id: passkeys.id });
+  return updated.length > 0;
 }
 
 export async function buildRegistrationOptions(opts: {
