@@ -17,6 +17,15 @@ import { building } from '$app/environment';
 export type DB = BunSQLDatabase<typeof schema>;
 
 function resolveDatabaseUrl(): string {
+  // Vite's SSR prerender imports server modules at build time. bun:sql is
+  // lazy (no connection until first query) and the migrate()/seedFoods()
+  // calls below are already gated by `building`, but the SQL constructor
+  // still reads this URL to validate the shape. Returning a build-time
+  // stub avoids requiring DATABASE_URL in the build environment (Railpack,
+  // Docker without --build-arg, plain `bun run build` for dev sanity).
+  // The stub is never connected to — `building` short-circuits everything
+  // downstream.
+  if (building) return 'postgres://build-stub@127.0.0.1:5432/build';
   const url = process.env.DATABASE_URL;
   if (!url) {
     throw new Error('DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif)');
