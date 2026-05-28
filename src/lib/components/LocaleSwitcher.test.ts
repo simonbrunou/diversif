@@ -1,7 +1,14 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { afterAll, describe, expect, it, mock } from 'bun:test';
 // @vitest-environment happy-dom
 import { render, screen } from '@testing-library/svelte';
 import '../../test/component';
+
+// Capture real exports BEFORE the per-file mocks so afterAll can restore
+// them — bun:test's mock.module is process-global, so the languageTag/i18n
+// overrides below would otherwise leak into every subsequent file.
+import * as actualParaglide from '$lib/paraglide/runtime';
+import * as actualI18n from '$lib/i18n';
+
 import LocaleSwitcher from './LocaleSwitcher.svelte';
 
 mock.module('$app/state', () => ({
@@ -13,6 +20,7 @@ mock.module('$app/environment', () => ({
 }));
 
 mock.module('$lib/paraglide/runtime', () => ({
+  ...actualParaglide,
   languageTag: mock(() => 'fr'),
   availableLanguageTags: ['fr', 'en'] as const
 }));
@@ -22,6 +30,13 @@ mock.module('$lib/i18n', () => ({
     resolveRoute: (path: string, locale: string) => (locale === 'fr' ? path : `/${locale}${path}`)
   }
 }));
+
+// Restore real modules after this file's tests so the next file isn't
+// polluted by the languageTag = 'fr' mock here.
+afterAll(() => {
+  mock.module('$lib/paraglide/runtime', () => actualParaglide);
+  mock.module('$lib/i18n', () => actualI18n);
+});
 
 describe('LocaleSwitcher', () => {
   it('renders both FR and EN as anchors with correct href', () => {
