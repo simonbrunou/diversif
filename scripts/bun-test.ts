@@ -65,22 +65,37 @@ for (let i = 0; i < files.length; i++) {
   const passMatch = out.match(/(\d+) pass/);
   const failMatch = out.match(/(\d+) fail/);
   const skipMatch = out.match(/(\d+) skip/);
+  // Guard against bun changing its output format: if none of the counters
+  // match, we have no signal at all — treat the file as a failure rather
+  // than silently summing 0+0+0 and claiming green.
+  const parsedNothing = passMatch == null && failMatch == null && skipMatch == null;
   const pass = passMatch ? Number(passMatch[1]) : 0;
   const fail = failMatch ? Number(failMatch[1]) : 0;
   const skip = skipMatch ? Number(skipMatch[1]) : 0;
+  // Secondary signal: non-zero exit with zero parsed counts almost always
+  // means the runner itself blew up (loader error, segfault, etc).
+  const exitCode = proc.exitCode ?? 0;
+  const runnerCrashed = exitCode !== 0 && pass === 0 && fail === 0 && skip === 0;
+  const runnerBroken = parsedNothing || runnerCrashed;
   totalPass += pass;
   totalFail += fail;
   totalSkip += skip;
   // Trust the fail counter over proc.exitCode — bun test sometimes exits
   // non-zero on warnings (e.g. svelte derived_inert) even when every test
-  // passed.
-  const status = fail > 0 ? 'FAIL' : 'pass';
+  // passed. But if we couldn't parse anything, fall back to failing loud.
+  const status = fail > 0 || runnerBroken ? 'FAIL' : 'pass';
   const counts = [pass && `${pass}p`, fail && `${fail}f`, skip && `${skip}s`]
     .filter(Boolean)
     .join(' ');
   console.log(`[${i + 1}/${files.length}] ${status.padEnd(4)} ${counts.padEnd(15)} ${f}`);
-  if (fail > 0) {
+  if (fail > 0 || runnerBroken) {
     failedFiles.push(f);
+    if (runnerBroken) {
+      const reason = parsedNothing
+        ? "runner: couldn't parse bun test output"
+        : `runner: bun exited ${exitCode} with no parsed counts`;
+      process.stderr.write(`!! ${f}: ${reason}\n`);
+    }
     // Emit the file's output so failure details aren't lost.
     process.stderr.write(out);
   }
@@ -90,6 +105,16 @@ const elapsedSec = ((Date.now() - startWall) / 1000).toFixed(1);
 console.log(
   `\n${files.length} files | ${totalPass} pass | ${totalFail} fail | ${totalSkip} skip | ${elapsedSec}s`
 );
+
+// Whole-run sanity check: if we walked the tree and found test files but
+// parsed zero of every counter, the regex contract with bun is broken.
+// Don't let that masquerade as a clean run.
+if (totalPass + totalFail + totalSkip === 0) {
+  console.error(
+    `\n!! Runner self-check failed: found ${files.length} test file(s) but parsed 0p/0f/0s overall.\n!! The bun test output format may have changed — counter regexes need updating.`
+  );
+  process.exit(2);
+}
 
 if (failedFiles.length > 0) {
   console.log(`\nFailed files:`);
