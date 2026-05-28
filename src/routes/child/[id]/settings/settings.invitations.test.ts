@@ -16,14 +16,14 @@ mock.module('$lib/server/auth', () => ({
 // $lib/utils/invites directly. We intercept it here so the same spy that
 // controls the auth re-export also controls the shared module, giving the
 // createInvitation collision tests full control over code generation.
-// We use a ref-object (plain {}), safe to assign inside the hoisted factory.
-const _invitesRef = { real: null as null | (() => string) };
-mock.module('$lib/utils/invites', async () => {
-  const actual =
-    await ((await import('$lib/utils/invites')) as typeof import('$lib/utils/invites'));
-  _invitesRef.real = actual.generateInviteCodeRaw;
-  return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
-});
+// Capture the actual export via a static import BEFORE mock.module —
+// otherwise the factory's await import recurses through its own mock.
+import * as actualInvites from '$lib/utils/invites';
+const _invitesRef = { real: actualInvites.generateInviteCodeRaw as () => string };
+mock.module('$lib/utils/invites', () => ({
+  ...actualInvites,
+  generateInviteCodeRaw: () => generateInviteCodeRawSpy()
+}));
 
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { invitations } from '$lib/server/db/schema';
