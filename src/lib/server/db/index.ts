@@ -12,6 +12,7 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import * as schema from './schema';
 import { seedFoods } from './seed';
 import { registerShutdownHandlers } from '../shutdown';
+import { building } from '$app/environment';
 
 export type DB = NodePgDatabase<typeof schema>;
 
@@ -52,22 +53,30 @@ const pool = new Pool({
 const drizzleDb = drizzle(pool, { schema });
 
 // Top-level await: SvelteKit's Node adapter runs as ESM, so importing this
-// module blocks on migration + seed. After the import settles, `db` is a
-// connected, migrated, seeded handle.
-try {
-  const migrationsFolder = path.resolve('./drizzle');
-  await migrate(drizzleDb, { migrationsFolder });
-  await seedFoods(drizzleDb);
-} catch (err) {
-  Sentry.captureException(err, { tags: { subsystem: 'db-migrate' } });
-  throw err;
+// module blocks on migration + seed at runtime. After the import settles,
+// `db` is a connected, migrated, seeded handle.
+//
+// Skip during `vite build` — the SSR/prerender pass imports server modules
+// to render pages, which fires this top-level await. The build container
+// (Railpack BuildKit, Dockerfile builder) cannot reach the runtime postgres
+// hostname, so the migrate() call would fail with ENOTFOUND. `building` is
+// true only during `vite build`; false at server start and in tests.
+if (!building) {
+  try {
+    const migrationsFolder = path.resolve('./drizzle');
+    await migrate(drizzleDb, { migrationsFolder });
+    await seedFoods(drizzleDb);
+  } catch (err) {
+    Sentry.captureException(err, { tags: { subsystem: 'db-migrate' } });
+    throw err;
+  }
 }
 
 export const db = drizzleDb;
 export { schema };
 export { pool };
 
-if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+if (!building && process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   // Register the SIGTERM handler synchronously: a fire-and-forget dynamic
   // import would lose the signal if SIGTERM arrived during the startup
   // window before the .then() callback ran (e.g. Coolify replacing a
