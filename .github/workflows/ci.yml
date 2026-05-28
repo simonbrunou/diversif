@@ -22,7 +22,7 @@ jobs:
       - run: bun run lint
       - run: bun run check
       - name: Drizzle schema vs migration drift check
-        run: bun --bun drizzle-kit check
+        run: bun --bun node_modules/drizzle-kit/bin.cjs check
 
   unit-and-component:
     name: Unit + component tests (bun test, 100% coverage)
@@ -66,8 +66,8 @@ jobs:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
       - name: Install Playwright browsers
-        run: bun --bun playwright install --with-deps chromium
-      - run: bun --bun playwright test
+        run: bun --bun node_modules/playwright/cli.js install --with-deps chromium
+      - run: bun --bun node_modules/playwright/cli.js test
         env:
           CI: 'true'
           E2E_DATABASE_URL: postgres://diversif:diversif@localhost:5432/diversif_e2e
