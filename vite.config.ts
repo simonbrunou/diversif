@@ -131,7 +131,19 @@ export default defineConfig({
     // 'hidden' (vs 'true') omits the //# sourceMappingURL= comment, but
     // the .map files would still be reachable by URL-guessing without the
     // post-upload delete (configured below in the plugin block).
-    sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false
+    sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
+    rollupOptions: {
+      // `bun` and `bun:*` (bun:sql, bun:test, etc.) are runtime built-ins
+      // resolved by the Bun runtime, not by node_modules. Rollup can't find
+      // them, so without this they fail bundle resolution. svelte-adapter-bun
+      // expects to run under Bun, so leaving these external is correct.
+      external: ['bun', /^bun:/]
+    }
+  },
+  ssr: {
+    // Same reasoning as build.rollupOptions.external — Vite's SSR build also
+    // needs to know these are Bun-runtime externals, not bundleable modules.
+    external: ['bun']
   },
   resolve: {
     // For component tests we want the browser/client export of Svelte. The
