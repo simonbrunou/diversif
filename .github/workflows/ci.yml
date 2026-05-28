@@ -15,27 +15,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: '24'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run check
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run check
       - name: Drizzle schema vs migration drift check
-        run: npx drizzle-kit check
+        run: bun --bun drizzle-kit check
 
   unit-and-component:
-    name: Unit + component tests (vitest, 100% coverage)
+    name: Unit + component tests (bun test, 100% coverage)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: '24'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run test:coverage
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run test:coverage
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,14 +61,13 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: '24'
-          cache: 'npm'
-      - run: npm ci
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-      - run: npx playwright test
+        run: bun --bun playwright install --with-deps chromium
+      - run: bun --bun playwright test
         env:
           CI: 'true'
           E2E_DATABASE_URL: postgres://diversif:diversif@localhost:5432/diversif_e2e
@@ -86,10 +83,10 @@ jobs:
     name: Bundle size budget
     runs-on: ubuntu-latest
     services:
-      # The Vite build's `analyse` step prerenders routes; some prerendered
-      # +page.server.ts handlers hit the DB. A throwaway postgres makes the
-      # build succeed without affecting the budget script (which only reads
-      # the resulting JS / static artifacts).
+      # The Vite build's prerender step renders +page.server.ts handlers
+      # that touch the DB. A throwaway postgres lets the build succeed
+      # without affecting the budget script (which only reads the JS /
+      # static artifacts).
       postgres:
         image: postgres:16-alpine
         env:
@@ -105,12 +102,11 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: '24'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run build
         env:
           DATABASE_URL: postgres://diversif:diversif@localhost:5432/diversif_e2e
-      - run: node scripts/check-bundle-size.mjs
+      - run: bun scripts/check-bundle-size.ts
