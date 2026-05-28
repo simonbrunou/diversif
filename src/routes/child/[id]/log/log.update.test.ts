@@ -100,24 +100,29 @@ describe('child/[id]/log texture field', () => {
     expect(result).toMatchObject({ status: 400 });
   });
 
-  // TODO bun-migration: under bun's Request/FormData a `texture: ''` field
-  // reaches the action's zod parse without rejection, where vitest+node's
-  // FormData coerced it differently. The texture is treated as undefined
-  // (allowed by .optional()) and the entry persists with a redirect. Skipped
-  // until either the zod schema gets an explicit empty-string rejection or
-  // the test is restructured.
-  it.skip('rejects an empty texture value with 400', async () => {
+  it('rejects an empty texture value with 400', async () => {
     const { u, c, m, food } = await setup();
+    // Construct the request body via URLSearchParams rather than the helper's
+    // FormData path: bun's Request, when handed a FormData with an empty-
+    // string field, drops the key entirely on re-parse (the multipart payload
+    // round-trips as if texture were never sent). urlencoded bodies preserve
+    // empty values, so the schema's enum validation can reject ''.
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      params: { id: String(c.id) },
-      formData: {
-        foodId: String(food.id),
-        givenAt: new Date().toISOString(),
-        reaction: 'ras',
-        texture: ''
-      }
+      params: { id: String(c.id) }
+    });
+    const params = new URLSearchParams({
+      foodId: String(food.id),
+      givenAt: new Date().toISOString(),
+      reaction: 'ras',
+      texture: ''
+    });
+    const url = new URL('http://localhost/');
+    (event as { request: Request }).request = new Request(url, {
+      method: 'POST',
+      body: params.toString(),
+      headers: { 'content-type': 'application/x-www-form-urlencoded' }
     });
     const result = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
