@@ -8,17 +8,38 @@
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 GlobalRegistrator.register();
 
+// Svelte compilation loader lives in svelte-loader.preload.ts (listed first
+// in bunfig.toml) so it's active before this file's imports run.
+
 // Vite's `define` in vite.config.ts inlines __SENTRY_RELEASE__ as a literal
 // at build time. bun test bypasses Vite, so we have to define the global
 // ourselves or every server module that reads it ReferenceErrors at import.
 (globalThis as { __SENTRY_RELEASE__?: string | undefined }).__SENTRY_RELEASE__ = undefined;
 
-import { expect, mock } from 'bun:test';
+import { afterEach, expect, mock, setSystemTime } from 'bun:test';
 import * as matchers from '@testing-library/jest-dom/matchers';
+import { unstubAllGlobals } from './src/test/bun-test-utils';
 // Cast: jest-dom's matchers are typed for jest/vitest; bun:test's expect is
 // jest-API-compatible at runtime, so the extension works at runtime even
 // though the type signatures don't match exactly.
 expect.extend(matchers as never);
+
+// Belt-and-braces reset between tests so cross-file state doesn't leak.
+// setSystemTime(null) returns the clock to real time (vitest had this
+// behaviour implicit via the per-test fake-timer context; bun:test does
+// not). unstubAllGlobals() restores any window/document/etc. that a test
+// replaced via the stubGlobal helper. We also clear the document body —
+// @testing-library/svelte's cleanup() is the obvious choice but importing
+// it from this preload tears down happy-dom (its module init touches a
+// global that GlobalRegistrator is mid-setting-up), so we use a manual
+// equivalent: empty body innerHTML between tests.
+afterEach(() => {
+  if (typeof document !== 'undefined') {
+    document.body.innerHTML = '';
+  }
+  setSystemTime(null);
+  unstubAllGlobals();
+});
 
 // $app/environment — building/dev/browser flags. In tests we're never in a
 // build context and we treat `dev` as true (matches what the dev server

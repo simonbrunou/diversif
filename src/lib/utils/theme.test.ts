@@ -1,15 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
-const browserState = { browser: false };
 
-mock.module('$app/environment', () => ({
-  get browser() {
-    return browserState.browser;
-  }
-}));
+// Helper to flip $app/environment.browser between tests. bun:test's
+// mock.module replaces the factory each call; ESM live bindings on a
+// returned object's getter survive replacement, so we use one. Each call
+// to setBrowser re-registers the mock with the new constant value so the
+// theme.ts side sees a fresh value at function-call time.
+function setBrowser(value: boolean): void {
+  mock.module('$app/environment', () => ({
+    browser: value,
+    building: false,
+    dev: true,
+    version: 'test'
+  }));
+}
 
-import { applyTheme, getStoredTheme, resolveTheme } from './theme';
+setBrowser(false);
+
+const { applyTheme, getStoredTheme, resolveTheme } = await import('./theme');
 
 import { stubGlobal, unstubAllGlobals } from '../../test/bun-test-utils';
+
 type Stored = string | null;
 
 function makeBrowserGlobals(opts: { stored: Stored; prefersDark: boolean }) {
@@ -47,7 +57,7 @@ function makeBrowserGlobals(opts: { stored: Stored; prefersDark: boolean }) {
 
 describe('theme : non-browser fallbacks', () => {
   beforeEach(() => {
-    browserState.browser = false;
+    setBrowser(false);
   });
 
   it('getStoredTheme returns "system" when not in the browser', () => {
@@ -72,7 +82,7 @@ describe('theme : browser behavior', () => {
   let env: ReturnType<typeof makeBrowserGlobals>;
 
   beforeEach(() => {
-    browserState.browser = true;
+    setBrowser(true);
     env = makeBrowserGlobals({ stored: null, prefersDark: false });
     stubGlobal('localStorage', env.localStorage);
     stubGlobal('window', { matchMedia: env.matchMedia });
@@ -92,9 +102,9 @@ describe('theme : browser behavior', () => {
   });
 
   it('getStoredTheme falls back to "system" for invalid / missing values', () => {
-    env.store.set('theme', 'lavender');
-    expect(getStoredTheme()).toBe('system');
     env.store.delete('theme');
+    expect(getStoredTheme()).toBe('system');
+    env.store.set('theme', 'nope');
     expect(getStoredTheme()).toBe('system');
   });
 

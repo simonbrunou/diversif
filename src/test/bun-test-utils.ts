@@ -17,16 +17,35 @@ export function stubGlobal(name: string, value: unknown): void {
     stubbedKeys.add(name);
     stubbedOriginals.set(name, (globalThis as Record<string, unknown>)[name]);
   }
-  // happy-dom's GlobalRegistrator installs `window`, `document`, etc. as
-  // non-writable properties on globalThis. Plain assignment throws under
-  // strict mode. defineProperty with configurable:true lets us round-trip
-  // through unstubAllGlobals.
+  // happy-dom's GlobalRegistrator installs `window`, `document`,
+  // `localStorage`, etc. as non-writable properties on globalThis. Plain
+  // assignment throws under strict mode. defineProperty with
+  // configurable:true lets us round-trip through unstubAllGlobals.
+  //
+  // Also stub on `window` (which happy-dom mirrors with globalThis): some
+  // code reads `window.localStorage` instead of bare `localStorage`, and if
+  // we only patched globalThis the window-prefixed read would still see
+  // happy-dom's original. Try/catch the window stub because not every name
+  // exists on window (e.g. internal-only test stubs).
   Object.defineProperty(globalThis, name, {
     value,
     writable: true,
     configurable: true,
     enumerable: true
   });
+  try {
+    const w = (globalThis as Record<string, unknown>).window as Record<string, unknown> | undefined;
+    if (w && typeof w === 'object') {
+      Object.defineProperty(w, name, {
+        value,
+        writable: true,
+        configurable: true,
+        enumerable: true
+      });
+    }
+  } catch {
+    // window may not exist or property may be locked — ignored.
+  }
 }
 
 export function unstubAllGlobals(): void {
@@ -34,6 +53,14 @@ export function unstubAllGlobals(): void {
     const orig = stubbedOriginals.get(name);
     if (orig === undefined) {
       delete (globalThis as Record<string, unknown>)[name];
+      try {
+        const w = (globalThis as Record<string, unknown>).window as
+          | Record<string, unknown>
+          | undefined;
+        if (w) delete w[name];
+      } catch {
+        // ignored
+      }
     } else {
       Object.defineProperty(globalThis, name, {
         value: orig,
@@ -41,6 +68,21 @@ export function unstubAllGlobals(): void {
         configurable: true,
         enumerable: true
       });
+      try {
+        const w = (globalThis as Record<string, unknown>).window as
+          | Record<string, unknown>
+          | undefined;
+        if (w && typeof w === 'object') {
+          Object.defineProperty(w, name, {
+            value: orig,
+            writable: true,
+            configurable: true,
+            enumerable: true
+          });
+        }
+      } catch {
+        // ignored
+      }
     }
   }
   stubbedKeys.clear();
