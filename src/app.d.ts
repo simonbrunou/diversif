@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
 import type { Membership, SafeUser } from '$lib/types';
 
