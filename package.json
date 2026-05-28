@@ -7,7 +7,7 @@
     "dev": "bun --bun vite dev",
     "build": "INLANG_TELEMETRY=false bun --bun vite build",
     "preview": "bun --bun vite preview",
-    "paraglide": "INLANG_TELEMETRY=false bun --bun paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
+    "paraglide": "INLANG_TELEMETRY=false bunx paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
     "check": "bun run paraglide && bun --bun svelte-kit sync && bun --bun svelte-check --tsconfig ./tsconfig.json --threshold warning",
     "check:watch": "bun --bun svelte-kit sync && bun --bun svelte-check --tsconfig ./tsconfig.json --threshold warning --watch",
     "check:budget": "bun run build && bun scripts/check-bundle-size.ts",
