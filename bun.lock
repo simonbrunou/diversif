@@ -71,6 +71,9 @@
   "trustedDependencies": [
     "@sentry/cli",
   ],
+  "patchedDependencies": {
+    "@inlang/sdk@0.37.0": "patches/@inlang%2Fsdk@0.37.0.patch",
+  },
   "overrides": {
     "cookie": "^0.7.2",
     "devalue": "^5.6.4",
