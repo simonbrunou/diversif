@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
 
@@ -6,6 +6,11 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 const exportSpy = { fn: mock() };
 import * as actualGdpr from '$lib/server/gdpr';
+// Snapshot the real export AT IMPORT TIME, before mock.module replaces the
+// module. If we read actualGdpr.exportUserData later, the live binding has
+// already flipped to the mocked spy — calling the snapshot from the spy's
+// implementation would recurse infinitely.
+const realExportUserData: typeof actualGdpr.exportUserData = actualGdpr.exportUserData;
 mock.module('$lib/server/gdpr', () => ({
   ...actualGdpr,
   exportUserData: (...args: Parameters<typeof actualGdpr.exportUserData>) => exportSpy.fn(...args)
@@ -16,17 +21,11 @@ import { eq } from 'drizzle-orm';
 import { ExportTooLargeError } from '$lib/server/gdpr';
 import { GET } from './+server';
 
-let realExport: (userId: number) => unknown;
-beforeAll(async () => {
-  const actual = await ((await import('$lib/server/gdpr')) as typeof import('$lib/server/gdpr'));
-  realExport = actual.exportUserData;
-});
-
 beforeEach(async () => {
   await resetTestDb();
-  // Default the spy to the real implementation; individual tests can
-  // override it to simulate the oversize path without seeding 50k rows.
-  exportSpy.fn.mockImplementation((userId: number) => realExport(userId));
+  // Default the spy to the real implementation (snapshotted above before
+  // the mock.module replaced the module's namespace bindings).
+  exportSpy.fn.mockImplementation((userId: number) => realExportUserData(userId));
 });
 
 async function seedUser() {

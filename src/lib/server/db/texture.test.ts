@@ -88,18 +88,21 @@ describe('food_entries.texture column', () => {
     await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
     const food = await seedFood('Poire');
 
-    // Must reject with the invalid texture value.
+    // Must reject with the invalid texture value. Wrap in an async IIFE so
+    // bun:test's .rejects sees a real Promise — Drizzle's PgInsertBase is
+    // thenable but bun checks isPromise() before awaiting.
     await expect(
-      testDb.insert(foodEntries).values({
-        childId: c.id,
-        foodId: food.id,
-        givenAt: new Date(),
-        reaction: 'ras',
-        texture: 'not-a-texture' as never,
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      })
+      (async () =>
+        await testDb.insert(foodEntries).values({
+          childId: c.id,
+          foodId: food.id,
+          givenAt: new Date(),
+          reaction: 'ras',
+          texture: 'not-a-texture' as never,
+          notes: null,
+          loggedBy: u.id,
+          createdAt: new Date()
+        }))()
     ).rejects.toThrow();
 
     // Control: the same FK values with a valid texture must succeed.

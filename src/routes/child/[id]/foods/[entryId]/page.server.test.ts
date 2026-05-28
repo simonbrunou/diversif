@@ -292,9 +292,9 @@ describe('addSymptom action', () => {
     const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(row.reaction).toBe('inconfort');
 
-    const promotedCall = vi
-      .mocked(audit)
-      .mock.calls.find((c) => c[0].type === 'food_entry.reaction_promoted')?.[0];
+    const promotedCall = (audit as ReturnType<typeof mock>).mock.calls.find(
+      (c) => c[0].type === 'food_entry.reaction_promoted'
+    )?.[0];
     expect(promotedCall).toMatchObject({ from: 'ras', to: 'inconfort', entryId: entry.id });
   });
 
@@ -310,9 +310,9 @@ describe('addSymptom action', () => {
     );
     const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(row.reaction).toBe('reaction');
-    const promotedCall = vi
-      .mocked(audit)
-      .mock.calls.find((c) => c[0].type === 'food_entry.reaction_promoted')?.[0];
+    const promotedCall = (audit as ReturnType<typeof mock>).mock.calls.find(
+      (c) => c[0].type === 'food_entry.reaction_promoted'
+    )?.[0];
     expect(promotedCall).toMatchObject({ from: 'ras', to: 'reaction' });
   });
 
@@ -392,9 +392,9 @@ describe('deleteSymptom action', () => {
     );
     expect(result).toEqual({ success: true });
     expect(await testDb.select().from(symptoms)).toHaveLength(0);
-    const deletedCall = vi
-      .mocked(audit)
-      .mock.calls.find((c) => c[0].type === 'symptom.deleted')?.[0];
+    const deletedCall = (audit as ReturnType<typeof mock>).mock.calls.find(
+      (c) => c[0].type === 'symptom.deleted'
+    )?.[0];
     expect(deletedCall).toMatchObject({ symptomId: sym.id, entryId: entry.id });
   });
 

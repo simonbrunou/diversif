@@ -257,16 +257,20 @@ describe('symptoms queries', () => {
       reaction: 'ras',
       loggedBy: u.id
     });
+    // Wrap in an async IIFE so the value bun:test sees is a real Promise:
+    // Drizzle's PgInsertBase is thenable but not a Promise instance, and
+    // bun:test's .rejects checks isPromise() before awaiting.
     await expect(
-      testDb.insert(symptoms).values({
-        foodEntryId: entry.id,
-        childId: c.id,
-        observedAt: new Date(),
-        // @ts-expect-error — runtime-only check that the DB rejects unknown labels
-        label: 'not-a-known-label',
-        note: null,
-        createdBy: u.id
-      })
+      (async () =>
+        await testDb.insert(symptoms).values({
+          foodEntryId: entry.id,
+          childId: c.id,
+          observedAt: new Date(),
+          // @ts-expect-error — runtime-only check that the DB rejects unknown labels
+          label: 'not-a-known-label',
+          note: null,
+          createdBy: u.id
+        }))()
     ).rejects.toThrow();
   });
 

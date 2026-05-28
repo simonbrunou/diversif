@@ -132,7 +132,9 @@ describe('invalidateSession', () => {
   });
 
   it('does nothing for empty token', async () => {
-    await expect(invalidateSession('')).resolves.not.toThrow();
+    // bun:test's .resolves.not.toThrow() tries to call the resolved value
+    // as a function. Assert the resolved value (void → undefined) directly.
+    await expect(invalidateSession('')).resolves.toBeUndefined();
   });
 });
 

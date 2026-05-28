@@ -6,9 +6,12 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 const generateInviteCodeRawSpy = mock<() => string>();
 
-import * as actualAuth from '$lib/server/auth';
+// Same live-binding hazard as $lib/utils/invites below — snapshot the
+// namespace as a plain object before mock.module replaces it.
+import * as actualAuthNs from '$lib/server/auth';
+const realAuth: typeof actualAuthNs = { ...actualAuthNs };
 mock.module('$lib/server/auth', () => ({
-  ...actualAuth,
+  ...realAuth,
   generateInviteCodeRaw: () => generateInviteCodeRawSpy()
 }));
 
@@ -16,12 +19,29 @@ mock.module('$lib/server/auth', () => ({
 // $lib/utils/invites directly. We intercept it here so the same spy that
 // controls the auth re-export also controls the shared module, giving the
 // createInvitation collision tests full control over code generation.
-// Capture the actual export via a static import BEFORE mock.module —
-// otherwise the factory's await import recurses through its own mock.
-import * as actualInvites from '$lib/utils/invites';
-const _invitesRef = { real: actualInvites.generateInviteCodeRaw as () => string };
+//
+// Snapshot the real exports as a plain object BEFORE mock.module. ESM
+// namespace properties are live bindings — once mock.module replaces the
+// module, `actualInvites.x` reads the mocked binding. Both the local
+// snapshot AND the factory's spread of actualInvites need to be against
+// frozen values, otherwise the spy returned by the factory ends up
+// referencing itself and the default beforeEach delegation recurses
+// infinitely.
+// bun:test's mock.module calls are hoisted above static imports, so the
+// usual `import * as actual; snapshot real exports` trick captures the
+// already-mocked binding. Hard-code a simple default generator instead —
+// matches the real generateInviteCodeRaw's BEBE- prefix pattern. Tests
+// that need collision behaviour set .mockImplementation themselves.
+import * as actualInvitesNs from '$lib/utils/invites';
+const defaultInviteCodeGen = (): string => {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let suffix = '';
+  for (let i = 0; i < 6; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+  return `BEBE-${suffix}`;
+};
+const _invitesRef = { real: defaultInviteCodeGen };
 mock.module('$lib/utils/invites', () => ({
-  ...actualInvites,
+  ...actualInvitesNs,
   generateInviteCodeRaw: () => generateInviteCodeRawSpy()
 }));
 

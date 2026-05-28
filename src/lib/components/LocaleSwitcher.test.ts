@@ -94,13 +94,15 @@ describe('LocaleSwitcher', () => {
   });
 
   it('drops the query/hash suffix during prerender (building === true)', async () => {
-    const env = await import('$app/environment');
     const state = await import('$app/state');
     const original = state.page.url;
     Object.assign(state.page, {
       url: { pathname: '/signup', search: '?code=INVITE', hash: '#form' }
     });
-    env.building = true;
+    // Re-mock the module (bun:test mock.module replaces the factory) rather
+    // than assigning into the imported namespace — ESM namespace objects are
+    // read-only and the previous `env.building = true` threw under bun.
+    mock.module('$app/environment', () => ({ building: true }));
     try {
       render(LocaleSwitcher);
       const fr = screen.getByRole('link', { name: /fr/i });
@@ -108,7 +110,7 @@ describe('LocaleSwitcher', () => {
       expect(fr.getAttribute('href')).toBe('/signup');
       expect(en.getAttribute('href')).toBe('/en/signup');
     } finally {
-      env.building = false;
+      mock.module('$app/environment', () => ({ building: false }));
       Object.assign(state.page, { url: original });
     }
   });
