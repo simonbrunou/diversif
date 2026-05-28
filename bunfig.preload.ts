@@ -39,6 +39,10 @@ afterEach(() => {
   }
   setSystemTime(null);
   unstubAllGlobals();
+  // mock.restore() restores all spyOn-created mocks to their originals. Tests
+  // that spy on shared singletons (testDb.delete, the cleanup setInterval,
+  // etc.) need this to avoid the spy leaking into the next file's test.
+  mock.restore();
 });
 
 // $app/environment — building/dev/browser flags. In tests we're never in a
