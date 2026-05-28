@@ -23,7 +23,7 @@
 </script>
 
 <nav class="locale-switcher" aria-label={m.chromeLocaleSwitcherLabel()}>
-  {#each availableLanguageTags as locale}
+  {#each availableLanguageTags as locale (locale)}
     <a
       href={i18n.resolveRoute(canonicalPath, locale) + urlSuffix}
       data-active={languageTag() === locale ? 'true' : undefined}
