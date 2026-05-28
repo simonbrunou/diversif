@@ -3,11 +3,16 @@ import { testDb, resetTestDb } from '../../test/db';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
+// Import the real audit module BEFORE re-mocking it. bun's mock.module is
+// process-global, so an `await import('./audit')` inside the factory would
+// recurse forever (it goes through the very mock we're defining). Capturing
+// the actual export statically once is the equivalent of vi.importActual.
+import * as actualAudit from './audit';
 const auditSpy = mock();
-mock.module('./audit', async () => {
-  const actual = await ((await import('./audit')) as typeof import('./audit'));
-  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
-});
+mock.module('./audit', () => ({
+  ...actualAudit,
+  audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
+}));
 
 import { ExportTooLargeError, exportUserData } from './gdpr';
 import { invitations, passkeys, tipDismissals, users } from './db/schema';

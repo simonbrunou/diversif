@@ -4,10 +4,11 @@ import { testDb, resetTestDb } from '../../test/db';
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
 const auditSpy = mock();
-mock.module('./audit', async () => {
-  const actual = await ((await import('./audit')) as typeof import('./audit'));
-  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
-});
+import * as actualAudit from './audit';
+mock.module('./audit', () => ({
+  ...actualAudit,
+  audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
+}));
 
 import { deleteUserAccount } from './gdpr';
 import {

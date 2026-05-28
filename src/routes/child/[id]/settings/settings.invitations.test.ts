@@ -6,10 +6,11 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 const generateInviteCodeRawSpy = mock<() => string>();
 
-mock.module('$lib/server/auth', async () => {
-  const actual = await ((await import('$lib/server/auth')) as typeof import('$lib/server/auth'));
-  return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
-});
+import * as actualAuth from '$lib/server/auth';
+mock.module('$lib/server/auth', () => ({
+  ...actualAuth,
+  generateInviteCodeRaw: () => generateInviteCodeRawSpy()
+}));
 
 // The shared invitations helper imports generateInviteCodeRaw from
 // $lib/utils/invites directly. We intercept it here so the same spy that

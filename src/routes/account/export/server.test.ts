@@ -5,13 +5,11 @@ import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
 const exportSpy = { fn: mock() };
-mock.module('$lib/server/gdpr', async () => {
-  const actual = await ((await import('$lib/server/gdpr')) as typeof import('$lib/server/gdpr'));
-  return {
-    ...actual,
-    exportUserData: (...args: Parameters<typeof actual.exportUserData>) => exportSpy.fn(...args)
-  };
-});
+import * as actualGdpr from '$lib/server/gdpr';
+mock.module('$lib/server/gdpr', () => ({
+  ...actualGdpr,
+  exportUserData: (...args: Parameters<typeof actualGdpr.exportUserData>) => exportSpy.fn(...args)
+}));
 
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';

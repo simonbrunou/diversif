@@ -5,10 +5,11 @@ import { makeRouteEvent, safeUser } from '../../../test/route';
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
 const auditSpy = mock();
-mock.module('$lib/server/audit', async () => {
-  const actual = await ((await import('$lib/server/audit')) as typeof import('$lib/server/audit'));
-  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
-});
+import * as actualAudit from '$lib/server/audit';
+mock.module('$lib/server/audit', () => ({
+  ...actualAudit,
+  audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
+}));
 
 import { hashPassword } from '$lib/server/auth';
 import { passkeys, users } from '$lib/server/db/schema';
