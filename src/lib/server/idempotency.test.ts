@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime, spyOn } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../test/db';
 import { idempotencyKeys, users } from './db/schema';
@@ -144,13 +144,16 @@ describe('withIdempotencyKey', () => {
     expect(doWork).not.toHaveBeenCalled();
   });
 
-  // TODO bun-migration: spies on testDb.transaction inside a testDb.transaction —
-  // the nested transaction deadlocks under PGlite's single-connection model.
-  it.skip('absorbs a 23505 error with the code on the top-level error (real-pg shape)', async () => {
-    // pg-mem nests the SQLSTATE under err.cause.code; the real `pg` driver
-    // surfaces it on err.code directly. Mock the inner transaction to throw
-    // an Error in the top-level shape so isUniqueViolation's first branch
-    // is exercised.
+  it('absorbs a 23505 error with the code on the top-level error (real-pg shape)', async () => {
+    // bun:sql (real pg) surfaces SQLSTATE on `err.code` directly; pg-mem
+    // nested it under `err.cause.code`. Both must be recognised by
+    // isUniqueViolation. We exercise the top-level-code branch by handing
+    // withIdempotencyKey a fake tx whose `transaction` (the savepoint call)
+    // rejects with an Error shaped like real pg, while `select` is delegated
+    // to testDb so the conflict-resolution read finds the existing row.
+    //
+    // The original test nested a real testDb.transaction inside another to
+    // inject the error -- PGlite is single-connection, so that deadlocks.
     await testDb.insert(idempotencyKeys).values({
       key: 'real-pg',
       userId: 1,
@@ -159,63 +162,45 @@ describe('withIdempotencyKey', () => {
       createdAt: new Date()
     });
 
-    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
-      const realTx = testDb.transaction.bind(testDb);
-      txSpy.mockRestore();
-      return realTx(async (tx) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const subSpy = spyOn(tx as any, 'transaction').mockRejectedValueOnce(
+    const fakeTx = {
+      transaction: mock(() => {
+        return Promise.reject(
           Object.assign(new Error('duplicate key value violates unique constraint'), {
             code: '23505'
           })
         );
-        try {
-          return await fn(tx);
-        } finally {
-          subSpy.mockRestore();
-        }
-      });
-    });
+      }),
+      select: testDb.select.bind(testDb)
+    };
 
     await expect(
-      testDb.transaction(async (tx) =>
-        withIdempotencyKey(tx, { key: 'real-pg', userId: 1, scope: SCOPE }, () => ({
-          redirect: '/should-not-run'
-        }))
+      withIdempotencyKey(
+        fakeTx as unknown as Parameters<typeof withIdempotencyKey>[0],
+        { key: 'real-pg', userId: 1, scope: SCOPE },
+        () => ({ redirect: '/should-not-run' })
       )
     ).rejects.toThrow(IdempotencyInFlight);
+    expect(fakeTx.transaction).toHaveBeenCalledTimes(1);
   });
 
-  // TODO bun-migration: spies on testDb.transaction inside a testDb.transaction —
-  // the nested transaction deadlocks under PGlite's single-connection model.
-  it.skip('isUniqueViolation distinguishes 23505 from other shapes', async () => {
-    // Direct cover for the predicate's non-23505 branches: only thrown
-    // through the PK race path of withIdempotencyKey at runtime, but the
-    // helper must reject everything that isn't shaped like a PK violation.
-    // We assert behaviour observably: a primitive error makes the helper
-    // re-throw rather than swallow as a race.
-    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
-      const realTx = testDb.transaction.bind(testDb);
-      txSpy.mockRestore();
-      return realTx(async (tx) => {
-        // Force the inner savepoint call to reject with a non-Error value.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const subSpy = spyOn(tx as any, 'transaction').mockRejectedValueOnce('plain string');
-        try {
-          return await fn(tx);
-        } finally {
-          subSpy.mockRestore();
-        }
-      });
-    });
+  it('isUniqueViolation distinguishes 23505 from other shapes', async () => {
+    // Direct cover for the predicate's non-23505 branches: the helper must
+    // reject everything that isn't shaped like a PK violation by re-throwing
+    // instead of swallowing as a race. We force the inner savepoint call to
+    // reject with a primitive non-Error value and assert it propagates.
+    const fakeTx = {
+      transaction: mock(() => Promise.reject('plain string')),
+      select: testDb.select.bind(testDb)
+    };
 
     await expect(
-      testDb.transaction(async (tx) =>
-        withIdempotencyKey(tx, { key: 'plain', userId: 1, scope: SCOPE }, () => ({
-          redirect: '/x'
-        }))
+      withIdempotencyKey(
+        fakeTx as unknown as Parameters<typeof withIdempotencyKey>[0],
+        { key: 'plain', userId: 1, scope: SCOPE },
+        () => ({ redirect: '/x' })
       )
     ).rejects.toBe('plain string');
+    expect(fakeTx.transaction).toHaveBeenCalledTimes(1);
   });
 });
 
