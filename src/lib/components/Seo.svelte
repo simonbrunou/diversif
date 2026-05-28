@@ -27,7 +27,7 @@
   <link rel="canonical" href={canonical} />
   {#if alternateLocales.length > 0}
     <link rel="alternate" hreflang="fr" href={canonical} />
-    {#each alternateLocales as locale}
+    {#each alternateLocales as locale (locale)}
       <link
         rel="alternate"
         hreflang={locale}
