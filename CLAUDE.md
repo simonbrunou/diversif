@@ -2,14 +2,14 @@
 
 ## Orientation
 
-- **Stack & commands**: see `README.md` (SvelteKit + Postgres via `pg` + Drizzle + WebAuthn passkeys).
+- **Stack & commands**: see `README.md` (Bun-native: SvelteKit on svelte-adapter-bun + Postgres via `bun:sql` + Drizzle + WebAuthn passkeys + `Bun.password` Argon2id).
 - **Product, tone, users**: see `PRODUCT.md`.
-- **Tests**: `npm test` runs vitest against `pg-mem` — no live Postgres needed. E2E: `npm run test:e2e` (Playwright; the script resets the DB first).
+- **Tests**: `bun test` runs `bun:test` against an in-process PGlite (WASM Postgres) — no Docker required. E2E: `bun run test:e2e` (Playwright against a real PG; the script resets the DB first).
 
 ## Conventions Claude must respect
 
 - **French UI, no anglicisms.** Use "Enregistrer" not "logger", "Régularité" not "Streak", "Adresse e-mail" not "Email", "Bilan" not "Stats". PR reviewers reject regressions.
-- **Don't run `npm audit fix`.** It rewrites the lockfile in a way CI's older npm rejects. For new dependency overrides, also delete `node_modules` and reinstall — `--package-lock-only` silently no-ops them.
+- **Use Bun, not npm/Node.** `bun install`, `bun run X`, `bun test`. `bun --bun <cmd>` forces tools with Node shebangs (vite, drizzle-kit, playwright, svelte-check) to run under Bun — without it, server code that imports `bun` / `bun:sql` fails to resolve.
 - **Pre-commit**: husky runs `lint-staged` (prettier + eslint). Don't bypass with `--no-verify`.
 
 ## graphify

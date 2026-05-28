@@ -6,21 +6,22 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 
 ## Stack
 
-- SvelteKit (Svelte 5 + TypeScript)
-- Postgres via `pg` + Drizzle ORM (`pg-mem` in tests)
-- Tailwind CSS, in-house auth (Argon2id sessions, WebAuthn passkeys)
+- Bun 1.3+ runtime (dev, test, build, prod server)
+- SvelteKit (Svelte 5 + TypeScript) on `svelte-adapter-bun`
+- Postgres via `bun:sql` + Drizzle ORM (`@electric-sql/pglite` in tests)
+- Tailwind CSS, in-house auth (`Bun.password` Argon2id sessions, WebAuthn passkeys)
 - i18n via `@inlang/paraglide-sveltekit` (FR default, `/en/` for English)
 - PWA via `@vite-pwa/sveltekit` with an in-page offline log queue
 - Observability via `@sentry/sveltekit` (strict PII scrubbing)
-- Node adapter, deployed in a single Alpine Docker image
+- Deployed in a single `oven/bun` Docker image
 
 ## Development
 
 ```bash
-npm install
+bun install
 docker compose up -d postgres   # local Postgres for dev
-DATABASE_URL=postgres://diversif:diversif@localhost:5432/diversif npm run dev
-npm run db:generate   # only when schema.ts changes
+DATABASE_URL=postgres://diversif:diversif@localhost:5432/diversif bun run dev
+bun run db:generate   # only when schema.ts changes
 ```
 
 The app reads `DATABASE_URL` at startup, runs migrations, and seeds the food catalog automatically on first connect.
@@ -28,10 +29,10 @@ The app reads `DATABASE_URL` at startup, runs migrations, and seeds the food cat
 ## Tests / checks
 
 ```bash
-npm run check
-npm run lint
-npm run test
-npm run build
+bun run check
+bun run lint
+bun test
+bun run build
 ```
 
 ## Production deploy
@@ -42,7 +43,7 @@ The repo's `docker-compose.yml` is a **local-dev example only** — it brings up
 
 ### Reverse proxy / Cloudflare Tunnel
 
-When the app sits behind a proxy (Coolify/Traefik, a Cloudflare Tunnel, nginx, etc.), `adapter-node` needs a few env vars to recover the real client IP and scheme. Without them the per-IP rate limits on `/signup` and `/login` see the proxy as a single client, so one bad actor can lock everyone out.
+When the app sits behind a proxy (Coolify/Traefik, a Cloudflare Tunnel, nginx, etc.), `svelte-adapter-bun` needs a few env vars to recover the real client IP and scheme. Without them the per-IP rate limits on `/signup` and `/login` see the proxy as a single client, so one bad actor can lock everyone out.
 
 For a Cloudflare Tunnel terminating at Coolify (the reference deploy):
 
@@ -103,7 +104,7 @@ RETENTION_INACTIVE_DAYS=1095
 Une tâche déclenchée au démarrage du process (puis toutes les 6 heures) supprime les sessions, invitations et défis WebAuthn expirés (`src/lib/server/cleanup.ts`). Pour un déclenchement manuel :
 
 ```bash
-node scripts/cleanup.mjs
+bun scripts/cleanup.ts
 ```
 
 `scripts/list-stale-users.mjs` liste (sans supprimer) les comptes inactifs depuis plus de `RETENTION_INACTIVE_DAYS` jours. L'inactivité est mesurée sur le maximum de `users.last_login_at` (mis à jour à la connexion **et** lors du renouvellement automatique de la session), de la dernière session encore en base (moins 30 jours) et de `users.created_at`. Aucune suppression automatique des comptes inactifs n'est effectuée en v1.
@@ -113,7 +114,7 @@ node scripts/cleanup.mjs
 Pour répondre manuellement à une demande RGPD article 15 / 20 (par exemple si l'utilisateur ne peut pas se connecter) :
 
 ```bash
-node scripts/export-user.mjs user@example.com
+bun scripts/export-user.ts user@example.com
 ```
 
 ## Out of scope (for the MVP)
