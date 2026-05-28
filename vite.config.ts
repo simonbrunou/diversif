@@ -105,12 +105,17 @@ export default defineConfig({
             project: process.env.SENTRY_PROJECT || 'diversif',
             release: { name: SENTRY_RELEASE_RESOLVED },
             sourcemaps: {
-              assets: ['./build/**'],
+              // .map files land in .svelte-kit/output/ during vite build.
+              // adapter-node copies that tree to ./build/ in a later phase,
+              // but the Sentry plugin runs in vite's closeBundle hook BEFORE
+              // that copy — so ./build/ is still empty at upload time and
+              // the plugin warns "Didn't find any matching sources".
+              assets: ['./.svelte-kit/output/**'],
               // Delete .map files after upload so the deployed build
               // (which adapter-node copies into the runtime image) doesn't
               // ship reachable .map files. Sentry retains them for stack
               // symbolication.
-              filesToDeleteAfterUpload: ['./build/**/*.map']
+              filesToDeleteAfterUpload: ['./.svelte-kit/output/**/*.map']
             },
             telemetry: false
           })
