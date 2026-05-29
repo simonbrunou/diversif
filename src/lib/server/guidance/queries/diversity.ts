@@ -27,7 +27,7 @@ export async function loadDiversityMetrics(
   // categoriesCovered above totalCategories.
   const distinctRows = await execRows<{ count: string }>(
     db,
-    sql`SELECT COUNT(DISTINCT ${foods.category})::text as count
+    sql`SELECT COUNT(DISTINCT ${foods.category}) as count
         FROM ${foodEntries}
         INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
         WHERE ${foodEntries.childId} = ${childId}
@@ -64,7 +64,7 @@ export async function loadDiversityMetrics(
     db,
     sql`SELECT food_id, n, worst FROM (
           SELECT ${foodEntries.foodId} as food_id,
-                 COUNT(*)::int as n,
+                 COUNT(*) as n,
                  MAX(CASE ${foodEntries.reaction}
                        WHEN 'reaction' THEN 2
                        WHEN 'inconfort' THEN 1
@@ -127,7 +127,7 @@ export async function loadRepeatCandidates(
           SELECT ${foodEntries.foodId} as food_id,
                  ${foods.name} as food_name,
                  ${foods.category} as category,
-                 COUNT(*)::int as n,
+                 COUNT(*) as n,
                  MAX(${foodEntries.givenAt}) as last_at,
                  MAX(CASE ${foodEntries.reaction}
                        WHEN 'reaction' THEN 2
@@ -168,10 +168,10 @@ export async function loadWeeklyRecap(
 
   const entriesRows = await execRows<{ count: string }>(
     db,
-    sql`SELECT COUNT(*)::text as count
+    sql`SELECT COUNT(*) as count
         FROM ${foodEntries}
         WHERE ${foodEntries.childId} = ${childId}
-          AND ${foodEntries.givenAt} >= ${since}`
+          AND ${foodEntries.givenAt} >= ${since.getTime()}`
   );
   /* v8 ignore next : pg COUNT(*) always returns a single row */
   const entries = Number(entriesRows[0]?.count ?? 0);
@@ -181,13 +181,13 @@ export async function loadWeeklyRecap(
   // and historically required for the pg-mem path.
   const newFoodsRows = await execRows<{ count: string }>(
     db,
-    sql`SELECT COUNT(*)::text as count FROM (
+    sql`SELECT COUNT(*) as count FROM (
           SELECT ${foodEntries.foodId} as food_id, MIN(${foodEntries.givenAt}) as first_at
           FROM ${foodEntries}
           WHERE ${foodEntries.childId} = ${childId}
           GROUP BY ${foodEntries.foodId}
         ) firsts
-        WHERE first_at >= ${since}`
+        WHERE first_at >= ${since.getTime()}`
   );
   /* v8 ignore next : pg COUNT(*) always returns a single row */
   const newFoods = Number(newFoodsRows[0]?.count ?? 0);
@@ -195,7 +195,7 @@ export async function loadWeeklyRecap(
   // First-ever appearance per allergenType, restricted to non-null allergens.
   const newAllergensRows = await execRows<{ count: string }>(
     db,
-    sql`SELECT COUNT(*)::text as count FROM (
+    sql`SELECT COUNT(*) as count FROM (
           SELECT ${foods.allergenType} as allergen_type, MIN(${foodEntries.givenAt}) as first_at
           FROM ${foodEntries}
           INNER JOIN ${foods} ON ${foods.id} = ${foodEntries.foodId}
@@ -203,7 +203,7 @@ export async function loadWeeklyRecap(
             AND ${foods.allergenType} IS NOT NULL
           GROUP BY ${foods.allergenType}
         ) firsts
-        WHERE first_at >= ${since}`
+        WHERE first_at >= ${since.getTime()}`
   );
   /* v8 ignore next : pg COUNT(*) always returns a single row */
   const newAllergens = Number(newAllergensRows[0]?.count ?? 0);

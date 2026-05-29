@@ -21,6 +21,9 @@ async function seedUser(id = 1): Promise<void> {
   });
 }
 
+// bun:sqlite transactions are synchronous: withIdempotencyKey runs inside a
+// sync `testDb.transaction((tx) => ...)` and throws synchronously, so error
+// cases assert via `expect(() => ...).toThrow()` rather than `.rejects`.
 describe('withIdempotencyKey', () => {
   beforeEach(async () => {
     await resetTestDb();
@@ -29,7 +32,7 @@ describe('withIdempotencyKey', () => {
 
   it('runs doWork on a fresh key, stores redirect, returns "fresh"', async () => {
     const doWork = mock(() => ({ redirect: '/child/1?logged=1' }));
-    const result = await testDb.transaction(async (tx) =>
+    const result = testDb.transaction((tx) =>
       withIdempotencyKey(tx, { key: 'k1', userId: 1, scope: SCOPE }, doWork)
     );
     expect(doWork).toHaveBeenCalledOnce();
@@ -41,15 +44,15 @@ describe('withIdempotencyKey', () => {
     expect(row?.redirect).toBe('/child/1?logged=1');
   });
 
-  it('replays without calling doWork when key has a stored redirect', async () => {
-    await testDb.transaction(async (tx) =>
+  it('replays without calling doWork when key has a stored redirect', () => {
+    testDb.transaction((tx) =>
       withIdempotencyKey(tx, { key: 'k2', userId: 1, scope: SCOPE }, () => ({
         redirect: '/child/1?logged=1&first=1'
       }))
     );
 
     const doWork = mock(() => ({ redirect: 'should-not-run' }));
-    const result = await testDb.transaction(async (tx) =>
+    const result = testDb.transaction((tx) =>
       withIdempotencyKey(tx, { key: 'k2', userId: 1, scope: SCOPE }, doWork)
     );
     expect(doWork).not.toHaveBeenCalled();
@@ -62,11 +65,11 @@ describe('withIdempotencyKey', () => {
       .values({ key: 'k3', userId: 1, scope: SCOPE, redirect: null, createdAt: new Date() });
 
     const doWork = mock();
-    await expect(
-      testDb.transaction(async (tx) =>
+    expect(() =>
+      testDb.transaction((tx) =>
         withIdempotencyKey(tx, { key: 'k3', userId: 1, scope: SCOPE }, doWork)
       )
-    ).rejects.toThrow(IdempotencyInFlight);
+    ).toThrow(IdempotencyInFlight);
     expect(doWork).not.toHaveBeenCalled();
   });
 
@@ -80,23 +83,23 @@ describe('withIdempotencyKey', () => {
     });
 
     const doWork = mock();
-    await expect(
-      testDb.transaction(async (tx) =>
+    expect(() =>
+      testDb.transaction((tx) =>
         withIdempotencyKey(tx, { key: 'k4', userId: 1, scope: SCOPE }, doWork)
       )
-    ).rejects.toThrow(IdempotencyScopeMismatch);
+    ).toThrow(IdempotencyScopeMismatch);
     expect(doWork).not.toHaveBeenCalled();
   });
 
   it('rolls back the inserted key row when doWork throws', async () => {
     const err = new Error('boom');
-    await expect(
-      testDb.transaction(async (tx) =>
+    expect(() =>
+      testDb.transaction((tx) =>
         withIdempotencyKey(tx, { key: 'k5', userId: 1, scope: SCOPE }, () => {
           throw err;
         })
       )
-    ).rejects.toThrow(err);
+    ).toThrow(err);
 
     const row = (
       await testDb.select().from(idempotencyKeys).where(eq(idempotencyKeys.key, 'k5')).limit(1)
@@ -104,103 +107,18 @@ describe('withIdempotencyKey', () => {
     expect(row).toBeUndefined();
   });
 
-  it('absorbs a concurrent INSERT race as IdempotencyInFlight, not a 500', async () => {
-    // Simulate the race: another concurrent transaction wins the optimistic
-    // INSERT before our savepoint runs. Our INSERT raises 23505; the savepoint
-    // rolls back and we should detect the existing in-flight row and throw
-    // IdempotencyInFlight (which the route turns into a 409, never a 500).
-    //
-    // Under pg-mem the original test nested an `await testDb.insert(...)` inside
-    // `testDb.transaction(...)` to simulate the racing process. PGlite is
-    // single-connection in-process WASM, so the nested insert deadlocks. We
-    // pre-seed the racing row first, then drive withIdempotencyKey against the
-    // testDb directly: the savepoint's INSERT raises 23505 (real Postgres
-    // semantics under PGlite), the catch path queries the existing row and
-    // throws IdempotencyInFlight.
-    await testDb.insert(idempotencyKeys).values({
-      key: 'race',
-      userId: 1,
-      scope: SCOPE,
-      redirect: null,
-      createdAt: new Date()
-    });
-    const doWork = mock(() => ({ redirect: '/should-not-run' }));
-    await expect(
-      withIdempotencyKey(testDb, { key: 'race', userId: 1, scope: SCOPE }, doWork)
-    ).rejects.toThrow(IdempotencyInFlight);
-    expect(doWork).not.toHaveBeenCalled();
-  });
-
-  it('rethrows non-PK errors from the savepoint INSERT', async () => {
-    // Trigger a FK violation (23503) by passing a userId that doesn't exist.
-    // The savepoint INSERT fails : isUniqueViolation rejects 23503, so
-    // withIdempotencyKey re-throws instead of treating it as a race.
+  it('rethrows non-unique INSERT errors (e.g. FK violation) without calling doWork', () => {
+    // userId 99999 has no users row; with PRAGMA foreign_keys=ON the INSERT
+    // raises a FK violation. withIdempotencyKey doesn't swallow it (it only
+    // returns the in-flight/replay paths for an EXISTING key), so it propagates
+    // and the transaction rolls back.
     const doWork = mock();
-    await expect(
-      testDb.transaction(async (tx) =>
+    expect(() =>
+      testDb.transaction((tx) =>
         withIdempotencyKey(tx, { key: 'fk', userId: 99999, scope: SCOPE }, doWork)
       )
-    ).rejects.toThrow();
+    ).toThrow();
     expect(doWork).not.toHaveBeenCalled();
-  });
-
-  it('absorbs a 23505 error with the code on the top-level error (real-pg shape)', async () => {
-    // bun:sql (real pg) surfaces SQLSTATE on `err.code` directly; pg-mem
-    // nested it under `err.cause.code`. Both must be recognised by
-    // isUniqueViolation. We exercise the top-level-code branch by handing
-    // withIdempotencyKey a fake tx whose `transaction` (the savepoint call)
-    // rejects with an Error shaped like real pg, while `select` is delegated
-    // to testDb so the conflict-resolution read finds the existing row.
-    //
-    // The original test nested a real testDb.transaction inside another to
-    // inject the error -- PGlite is single-connection, so that deadlocks.
-    await testDb.insert(idempotencyKeys).values({
-      key: 'real-pg',
-      userId: 1,
-      scope: SCOPE,
-      redirect: null,
-      createdAt: new Date()
-    });
-
-    const fakeTx = {
-      transaction: mock(() => {
-        return Promise.reject(
-          Object.assign(new Error('duplicate key value violates unique constraint'), {
-            code: '23505'
-          })
-        );
-      }),
-      select: testDb.select.bind(testDb)
-    };
-
-    await expect(
-      withIdempotencyKey(
-        fakeTx as unknown as Parameters<typeof withIdempotencyKey>[0],
-        { key: 'real-pg', userId: 1, scope: SCOPE },
-        () => ({ redirect: '/should-not-run' })
-      )
-    ).rejects.toThrow(IdempotencyInFlight);
-    expect(fakeTx.transaction).toHaveBeenCalledTimes(1);
-  });
-
-  it('isUniqueViolation distinguishes 23505 from other shapes', async () => {
-    // Direct cover for the predicate's non-23505 branches: the helper must
-    // reject everything that isn't shaped like a PK violation by re-throwing
-    // instead of swallowing as a race. We force the inner savepoint call to
-    // reject with a primitive non-Error value and assert it propagates.
-    const fakeTx = {
-      transaction: mock(() => Promise.reject('plain string')),
-      select: testDb.select.bind(testDb)
-    };
-
-    await expect(
-      withIdempotencyKey(
-        fakeTx as unknown as Parameters<typeof withIdempotencyKey>[0],
-        { key: 'plain', userId: 1, scope: SCOPE },
-        () => ({ redirect: '/x' })
-      )
-    ).rejects.toBe('plain string');
-    expect(fakeTx.transaction).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -216,7 +134,6 @@ describe('pruneExpiredKeys', () => {
 
   it('deletes only rows older than the threshold and returns the count', async () => {
     const now = new Date('2026-05-07T12:00:00Z');
-    setSystemTime(new Date()); /* [bun-test] was useFakeTimers({ toFake: ['Date'] }) */
     setSystemTime(now);
 
     await testDb.insert(idempotencyKeys).values([
@@ -243,7 +160,7 @@ describe('pruneExpiredKeys', () => {
       }
     ]);
 
-    const deleted = await testDb.transaction(async (tx) => pruneExpiredKeys(tx));
+    const deleted = testDb.transaction((tx) => pruneExpiredKeys(tx));
     expect(deleted).toBe(2);
 
     const remaining = await testDb.select().from(idempotencyKeys);
@@ -252,7 +169,6 @@ describe('pruneExpiredKeys', () => {
 
   it('respects a custom threshold', async () => {
     const now = new Date('2026-05-07T12:00:00Z');
-    setSystemTime(new Date()); /* [bun-test] was useFakeTimers({ toFake: ['Date'] }) */
     setSystemTime(now);
 
     await testDb.insert(idempotencyKeys).values({
@@ -263,7 +179,7 @@ describe('pruneExpiredKeys', () => {
       createdAt: new Date(now.getTime() - 90 * 1000)
     });
 
-    const deleted = await testDb.transaction(async (tx) => pruneExpiredKeys(tx, 60 * 1000));
+    const deleted = testDb.transaction((tx) => pruneExpiredKeys(tx, 60 * 1000));
     expect(deleted).toBe(1);
   });
 });

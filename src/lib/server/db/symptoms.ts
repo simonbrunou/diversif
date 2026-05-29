@@ -20,8 +20,10 @@ export interface InsertSymptomResult {
 }
 
 export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSymptomResult> {
-  return await db.transaction(async (tx) => {
-    const [row] = await tx
+  // bun:sqlite transactions are synchronous: the callback runs inline and the
+  // result is returned synchronously (no await inside).
+  return db.transaction((tx) => {
+    const [row] = tx
       .insert(symptoms)
       .values({
         foodEntryId: input.foodEntryId,
@@ -31,12 +33,13 @@ export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSy
         note: input.note,
         createdBy: input.createdBy
       })
-      .returning({ id: symptoms.id });
+      .returning({ id: symptoms.id })
+      .all();
 
     let promotedTo: Exclude<ReactionId, 'ras'> | null = null;
     if (input.currentReaction === 'ras') {
       const target = severityOf(input.label) === 'severe' ? 'reaction' : 'inconfort';
-      const updated = await tx
+      const updated = tx
         .update(foodEntries)
         .set({ reaction: target })
         .where(
@@ -46,7 +49,8 @@ export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSy
             eq(foodEntries.reaction, 'ras')
           )
         )
-        .returning({ id: foodEntries.id });
+        .returning({ id: foodEntries.id })
+        .all();
       if (updated.length > 0) promotedTo = target;
     }
 
@@ -101,7 +105,7 @@ export async function countNthExposition(foodEntryId: number): Promise<number> {
   if (!row) return 0;
   const countRow = (
     await db
-      .select({ count: sql<number>`count(*)::int` })
+      .select({ count: sql<number>`count(*)` })
       .from(foodEntries)
       .where(
         and(

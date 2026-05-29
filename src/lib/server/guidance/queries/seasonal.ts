@@ -47,7 +47,7 @@ export async function loadSeasonalFoods(ageMonths: number, month: number): Promi
 
 export async function loadTexturesTried(childId: number): Promise<number> {
   const rows = await db
-    .select({ n: sql<number>`count(distinct ${foodEntries.texture})::int` })
+    .select({ n: sql<number>`count(distinct ${foodEntries.texture})` })
     .from(foodEntries)
     .where(and(eq(foodEntries.childId, childId), sql`${foodEntries.texture} IS NOT NULL`))
     .limit(1);

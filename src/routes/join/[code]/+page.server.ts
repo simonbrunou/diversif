@@ -103,16 +103,17 @@ export const actions: Actions = {
     // and condition the invitation UPDATE on `used_at IS NULL`. If rowCount
     // is 0 someone else won the race and we abort the membership write.
     let consumed = false;
-    await db.transaction(async (tx) => {
-      const result = await tx
+    db.transaction((tx) => {
+      const result = tx
         .update(invitations)
         .set({ usedAt: now, usedBy: locals.user!.id })
         .where(and(eq(invitations.code, code), isNull(invitations.usedAt)))
-        .returning({ code: invitations.code });
+        .returning({ code: invitations.code })
+        .all();
       if (result.length === 0) return;
-      await tx
-        .insert(memberships)
-        .values({ userId: locals.user!.id, childId: inv.childId, role: 'member', createdAt: now });
+      tx.insert(memberships)
+        .values({ userId: locals.user!.id, childId: inv.childId, role: 'member', createdAt: now })
+        .run();
       consumed = true;
     });
 

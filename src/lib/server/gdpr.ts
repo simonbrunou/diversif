@@ -36,30 +36,32 @@ export type DeletionSummary = {
  * `memberships.created_at` (tiebreak: lowest user_id) is promoted to owner.
  */
 export async function deleteUserAccount(userId: number): Promise<DeletionSummary> {
-  const summary = await db.transaction(async (tx) => {
+  const summary = db.transaction((tx) => {
     const summary: DeletionSummary = {
       deletedChildren: 0,
       promotedMemberships: 0,
       removedMemberships: 0
     };
 
-    const userMemberships = await tx
+    const userMemberships = tx
       .select({ childId: memberships.childId, role: memberships.role })
       .from(memberships)
-      .where(eq(memberships.userId, userId));
+      .where(eq(memberships.userId, userId))
+      .all();
 
     for (const m of userMemberships) {
-      const others = await tx
+      const others = tx
         .select({
           userId: memberships.userId,
           role: memberships.role,
           createdAt: memberships.createdAt
         })
         .from(memberships)
-        .where(and(eq(memberships.childId, m.childId), ne(memberships.userId, userId)));
+        .where(and(eq(memberships.childId, m.childId), ne(memberships.userId, userId)))
+        .all();
 
       if (others.length === 0) {
-        await tx.delete(children).where(eq(children.id, m.childId));
+        tx.delete(children).where(eq(children.id, m.childId)).run();
         summary.deletedChildren += 1;
         continue;
       }
@@ -73,27 +75,27 @@ export async function deleteUserAccount(userId: number): Promise<DeletionSummary
             if (ta !== tb) return ta - tb;
             return a.userId - b.userId;
           })[0];
-          await tx
-            .update(memberships)
+          tx.update(memberships)
             .set({ role: 'owner' })
-            .where(and(eq(memberships.childId, m.childId), eq(memberships.userId, heir.userId)));
+            .where(and(eq(memberships.childId, m.childId), eq(memberships.userId, heir.userId)))
+            .run();
           summary.promotedMemberships += 1;
         }
       }
 
-      await tx
-        .delete(memberships)
-        .where(and(eq(memberships.childId, m.childId), eq(memberships.userId, userId)));
+      tx.delete(memberships)
+        .where(and(eq(memberships.childId, m.childId), eq(memberships.userId, userId)))
+        .run();
       summary.removedMemberships += 1;
     }
 
     // Explicitly drop every live session before the user row goes away.
-    // The sessions FK has ON DELETE CASCADE so Postgres would do this for us,
+    // The sessions FK has ON DELETE CASCADE so SQLite would do this for us,
     // but the explicit delete documents the intent : future moves of the
     // session store (Redis, etc.) would silently lose revocation otherwise.
-    await tx.delete(sessions).where(eq(sessions.userId, userId));
+    tx.delete(sessions).where(eq(sessions.userId, userId)).run();
 
-    await tx.delete(users).where(eq(users.id, userId));
+    tx.delete(users).where(eq(users.id, userId)).run();
 
     return summary;
   });
@@ -242,7 +244,7 @@ export async function exportUserData(
   if (childIds.length > 0) {
     const countRows = await execRows<{ count: string }>(
       db,
-      sql`SELECT COUNT(*)::text as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
+      sql`SELECT COUNT(*) as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
     );
     /* v8 ignore next : pg COUNT(*) always returns a single row */
     const total = Number(countRows[0]?.count ?? 0);

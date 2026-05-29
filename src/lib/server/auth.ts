@@ -111,12 +111,12 @@ export async function validateSession(token: string): Promise<ValidatedSession |
     // the session renewed without a corresponding lastLoginAt bump (or vice
     // versa). Bumping `last_login_at` keeps retention queries seeing recent
     // activity even when the user never explicitly re-logs in.
-    await db.transaction(async (tx) => {
-      await tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token));
-      await tx
-        .update(users)
+    db.transaction((tx) => {
+      tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token)).run();
+      tx.update(users)
         .set({ lastLoginAt: new Date(now) })
-        .where(eq(users.id, row.user.id));
+        .where(eq(users.id, row.user.id))
+        .run();
     });
     session = { ...session, expiresAt: newExpiry };
     renewed = true;

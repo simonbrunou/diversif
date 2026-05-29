@@ -59,7 +59,10 @@ export async function loadStreak(childId: number, now: Date = new Date()): Promi
   // Distinct UTC days that contain at least one entry, in descending order.
   const res = await execRows<{ day: string }>(
     db,
-    sql`SELECT DISTINCT FLOOR(EXTRACT(EPOCH FROM ${foodEntries.givenAt}) / ${sql.raw(String(DAY_MS / 1000))})::bigint::text as day
+    // givenAt is stored as integer epoch-ms; integer division by DAY_MS yields
+    // the UTC day index directly (no EXTRACT(EPOCH)/FLOOR needed). SQLite's `/`
+    // on two integers truncates, which equals floor for non-negative epochs.
+    sql`SELECT DISTINCT ${foodEntries.givenAt} / ${sql.raw(String(DAY_MS))} as day
         FROM ${foodEntries}
         WHERE ${foodEntries.childId} = ${childId}
         ORDER BY day DESC`

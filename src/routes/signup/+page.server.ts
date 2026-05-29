@@ -159,37 +159,39 @@ export const actions: Actions = {
 
     let userId: number;
     try {
-      userId = await db.transaction(async (tx) => {
-        const inserted = (
-          await tx
-            .insert(users)
-            .values({
-              email: lowerEmail,
-              passwordHash,
-              displayName,
-              createdAt: now,
-              tosAcceptedAt: now,
-              privacyAcceptedAt: now,
-              ageConfirmedAt: now,
-              lastLoginAt: now
-            })
-            .returning({ id: users.id })
-        )[0];
+      userId = db.transaction((tx) => {
+        const inserted = tx
+          .insert(users)
+          .values({
+            email: lowerEmail,
+            passwordHash,
+            displayName,
+            createdAt: now,
+            tosAcceptedAt: now,
+            privacyAcceptedAt: now,
+            ageConfirmedAt: now,
+            lastLoginAt: now
+          })
+          .returning({ id: users.id })
+          .all()[0];
         const id = inserted.id;
 
         if (invitationChildId !== null && inviteCode) {
-          const result = await tx
+          const result = tx
             .update(invitations)
             .set({ usedAt: now, usedBy: id })
             .where(and(eq(invitations.code, inviteCode), isNull(invitations.usedAt)))
-            .returning({ code: invitations.code });
+            .returning({ code: invitations.code })
+            .all();
           if (result.length === 0) throw new InviteRace();
-          await tx.insert(memberships).values({
-            userId: id,
-            childId: invitationChildId,
-            role: 'member',
-            createdAt: now
-          });
+          tx.insert(memberships)
+            .values({
+              userId: id,
+              childId: invitationChildId,
+              role: 'member',
+              createdAt: now
+            })
+            .run();
         }
 
         return id;
