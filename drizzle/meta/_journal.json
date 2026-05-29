@@ -1,54 +1,12 @@
 {
   "version": "7",
-  "dialect": "postgresql",
+  "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
-      "version": "7",
-      "when": 1778256400596,
-      "tag": "0000_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1778315477851,
-      "tag": "0001_backfill_tofu_age",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1778315953453,
-      "tag": "0002_foods_name_seed_unique",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1778330047609,
-      "tag": "0003_passkeys_transports_jsonb",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1778517167421,
-      "tag": "0004_symptoms",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1778856527672,
-      "tag": "0005_food_entry_texture",
-      "breakpoints": false
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1779167768733,
-      "tag": "0006_symptoms_label_check",
+      "version": "6",
+      "when": 1780076521361,
+      "tag": "0000_certain_mindworm",
       "breakpoints": true
     }
   ]

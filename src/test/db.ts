@@ -1,40 +1,42 @@
 import path from 'node:path';
 import { readFileSync, readdirSync } from 'node:fs';
-import { PGlite } from '@electric-sql/pglite';
-import { drizzle, type PgliteDatabase } from 'drizzle-orm/pglite';
-import { sql } from 'drizzle-orm';
+import { Database } from 'bun:sqlite';
+import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import * as schema from '$lib/server/db/schema';
 
-type DB = PgliteDatabase<typeof schema>;
+type DB = BunSQLiteDatabase<typeof schema>;
 
-// One in-process PGlite instance per test run. PGlite has real Postgres
-// semantics (DO $$ blocks, SAVEPOINT, ALTER COLUMN … USING, CHECK on NULL,
-// hashtext, pg_advisory_xact_lock, FLOOR over float), which means the
-// migrations folder applies verbatim — no rewrites, no shims, no per-bug
-// workarounds the pg-mem harness used to need.
-const pglite = new PGlite();
-const testDb: DB = drizzle(pglite, { schema });
+// One in-process bun:sqlite database per test run — the SAME engine as prod,
+// so the migrations folder applies verbatim and there are no dialect-emulation
+// gaps (the PGlite harness this replaced emulated Postgres semantics the prod
+// driver no longer uses). foreign_keys must be enabled per-connection for the
+// ON DELETE actions in schema.ts to fire.
+const sqlite = new Database(':memory:');
+sqlite.exec('PRAGMA foreign_keys = ON;');
+const testDb: DB = drizzle(sqlite, { schema });
 
-async function applyMigrations(): Promise<void> {
+function applyMigrations(): void {
   const migrationsDir = path.resolve('./drizzle');
   const files = readdirSync(migrationsDir)
     .filter((f) => f.endsWith('.sql'))
     .sort();
   for (const file of files) {
     const sqlText = readFileSync(path.join(migrationsDir, file), 'utf8');
-    // drizzle-kit emits `--> statement-breakpoint` between statements; PGlite
-    // executes one SQL statement per .exec() call.
+    // drizzle-kit emits `--> statement-breakpoint` between statements; run them
+    // one at a time so multi-statement migration files apply cleanly.
     for (const stmt of sqlText
       .split('--> statement-breakpoint')
       .map((s) => s.trim())
       .filter(Boolean)) {
-      await pglite.exec(stmt);
+      sqlite.exec(stmt);
     }
   }
 }
 
-await applyMigrations();
+applyMigrations();
 
+// Child → parent order so the deletes satisfy foreign keys regardless of
+// cascade configuration.
 const TRUNCATE_ORDER = [
   'tip_dismissals',
   'symptoms',
@@ -50,16 +52,16 @@ const TRUNCATE_ORDER = [
   'foods'
 ];
 
-// TRUNCATE … RESTART IDENTITY CASCADE is real Postgres and PGlite supports
-// it directly. Single statement vs the per-table DELETE loop the pg-mem
-// harness needed; also resets sequences cleanly (pg-mem's sequence naming
-// diverged from real PG, which made ALTER SEQUENCE … RESTART unusable).
+// SQLite has no `TRUNCATE … RESTART IDENTITY CASCADE`. Delete every table in FK
+// order, then clear sqlite_sequence so AUTOINCREMENT ids restart at 1 —
+// matching the identity reset the PGlite harness gave for free.
 export async function resetTestDb(): Promise<void> {
-  await testDb.execute(
-    sql.raw(
-      `TRUNCATE TABLE ${TRUNCATE_ORDER.map((t) => `"${t}"`).join(', ')} RESTART IDENTITY CASCADE`
-    )
-  );
+  sqlite.transaction(() => {
+    for (const table of TRUNCATE_ORDER) {
+      sqlite.exec(`DELETE FROM "${table}";`);
+    }
+    sqlite.exec('DELETE FROM sqlite_sequence;');
+  })();
 }
 
 export { testDb, schema };

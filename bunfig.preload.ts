@@ -141,13 +141,12 @@ afterAll(() => {
   applyDefaultAppMocks();
 });
 
-// Redirect prod DB to the PGlite test instance for every test in the suite.
-// Without this, transitive imports of any module that pulls in
+// Redirect prod DB to the in-memory bun:sqlite test instance for every test in
+// the suite. Without this, transitive imports of any module that pulls in
 // $lib/server/db (auth, gdpr, passkeys, idempotency, the route action
-// handlers …) trigger the top-level await migrate() against a real Postgres
-// at DATABASE_URL — which doesn't exist in test runs. Individual test files
-// can override this with their own mock.module call; the LAST registration
-// for a given path wins.
+// handlers …) would run the module's migrate()/seed against a DATABASE_PATH
+// file that test runs don't provide. Individual test files can override this
+// with their own mock.module call; the LAST registration for a given path wins.
 import { testDb, schema } from './src/test/db';
 mock.module('$lib/server/db', () => ({
   db: testDb,

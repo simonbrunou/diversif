@@ -1,23 +1,17 @@
-// Bridge for the result-shape mismatch between bun:sql (production) and PGlite
-// (tests). drizzle-orm/bun-sql's session returns rows as a plain array; drizzle-
-// orm/pglite returns the node-postgres-shaped `{ rows, affectedRows, fields }`.
-// Code that hand-crafts SQL via `db.execute(sql\`...\`)` is the only surface that
-// sees the difference (Drizzle's typed builders normalise across drivers), so
-// callers there route through execRows() and get a uniform `T[]` regardless.
-
+// Uniform row access for hand-crafted SQL. bun:sqlite (drizzle-orm/bun-sqlite)
+// is synchronous and exposes `db.all()` for raw `sql\`...\`` queries, returning
+// rows as a plain array. Both prod and the test harness now run on bun:sqlite,
+// so there's no longer a cross-driver result-shape mismatch to bridge — but
+// callers still route through execRows() for a single typed surface and to keep
+// the `await execRows(...)` call sites unchanged.
 import type { SQL } from 'drizzle-orm';
 
-type Executor = { execute: (q: SQL) => Promise<unknown> };
+type Executor = { all: (q: SQL) => unknown };
 
 export async function execRows<T = Record<string, unknown>>(
   db: Executor,
   query: SQL
 ): Promise<T[]> {
-  const result = await db.execute(query);
-  if (Array.isArray(result)) return result as T[];
-  if (result && typeof result === 'object' && 'rows' in result) {
-    const wrapped = (result as { rows?: unknown }).rows;
-    return Array.isArray(wrapped) ? (wrapped as T[]) : [];
-  }
-  return [];
+  const rows = db.all(query);
+  return Array.isArray(rows) ? (rows as T[]) : [];
 }

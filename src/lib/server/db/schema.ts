@@ -1,65 +1,70 @@
 import { sql } from 'drizzle-orm';
 import {
-  pgTable,
+  sqliteTable,
   text,
   integer,
-  serial,
-  boolean,
-  jsonb,
-  timestamp,
   primaryKey,
   index,
   uniqueIndex,
   check
-} from 'drizzle-orm/pg-core';
+} from 'drizzle-orm/sqlite-core';
 import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 // Relative import so drizzle-kit can load this file outside the Vite/SvelteKit
 // alias resolver (npm run db:generate runs schema.ts directly via tsx).
 import { TEXTURE_VALUES } from '../../utils/textures';
 import { SYMPTOM_LABELS } from '../../content/symptoms';
 
-export const users = pgTable(
+// SQLite type conventions used throughout this schema:
+//   - serial PK            -> integer().primaryKey({ autoIncrement: true })
+//   - timestamptz (Date)   -> integer({ mode: 'timestamp_ms' }) (Drizzle still
+//                             reads/writes JS Date objects)
+//   - boolean              -> integer({ mode: 'boolean' }) (stored as 0/1)
+//   - jsonb                -> text({ mode: 'json' }) (stored as a JSON string)
+// Foreign-key actions only fire when `PRAGMA foreign_keys = ON` is set on the
+// connection — see src/lib/server/db/index.ts and src/test/db.ts.
+
+export const users = sqliteTable(
   'users',
   {
-    id: serial('id').primaryKey(),
+    id: integer('id').primaryKey({ autoIncrement: true }),
     email: text('email').notNull().unique(),
     passwordHash: text('password_hash').notNull(),
     displayName: text('display_name').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull(),
-    tosAcceptedAt: timestamp('tos_accepted_at', { withTimezone: true, mode: 'date' }),
-    privacyAcceptedAt: timestamp('privacy_accepted_at', { withTimezone: true, mode: 'date' }),
-    ageConfirmedAt: timestamp('age_confirmed_at', { withTimezone: true, mode: 'date' }),
-    lastLoginAt: timestamp('last_login_at', { withTimezone: true, mode: 'date' }),
-    lastExportAt: timestamp('last_export_at', { withTimezone: true, mode: 'date' })
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    tosAcceptedAt: integer('tos_accepted_at', { mode: 'timestamp_ms' }),
+    privacyAcceptedAt: integer('privacy_accepted_at', { mode: 'timestamp_ms' }),
+    ageConfirmedAt: integer('age_confirmed_at', { mode: 'timestamp_ms' }),
+    lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
+    lastExportAt: integer('last_export_at', { mode: 'timestamp_ms' })
   },
   (t) => ({
     lastLoginIdx: index('users_last_login_at_idx').on(t.lastLoginAt)
   })
 );
 
-export const sessions = pgTable(
+export const sessions = sqliteTable(
   'sessions',
   {
     id: text('id').primaryKey(),
     userId: integer('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
     expiresIdx: index('sessions_expires_at_idx').on(t.expiresAt)
   })
 );
 
-export const children = pgTable('children', {
-  id: serial('id').primaryKey(),
+export const children = sqliteTable('children', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   birthDate: text('birth_date').notNull(),
   createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
-  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
 });
 
-export const memberships = pgTable(
+export const memberships = sqliteTable(
   'memberships',
   {
     userId: integer('user_id')
@@ -69,14 +74,14 @@ export const memberships = pgTable(
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
     role: text('role', { enum: ['owner', 'member'] }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.childId] })
   })
 );
 
-export const invitations = pgTable(
+export const invitations = sqliteTable(
   'invitations',
   {
     code: text('code').primaryKey(),
@@ -84,9 +89,9 @@ export const invitations = pgTable(
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
     createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull(),
-    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
-    usedAt: timestamp('used_at', { withTimezone: true, mode: 'date' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+    usedAt: integer('used_at', { mode: 'timestamp_ms' }),
     usedBy: integer('used_by').references(() => users.id, { onDelete: 'set null' })
   },
   (t) => ({
@@ -94,40 +99,40 @@ export const invitations = pgTable(
   })
 );
 
-export const foods = pgTable(
+export const foods = sqliteTable(
   'foods',
   {
-    id: serial('id').primaryKey(),
+    id: integer('id').primaryKey({ autoIncrement: true }),
     name: text('name').notNull(),
     category: text('category').notNull(),
-    isMajorAllergen: boolean('is_major_allergen').notNull().default(false),
+    isMajorAllergen: integer('is_major_allergen', { mode: 'boolean' }).notNull().default(false),
     allergenType: text('allergen_type'),
     suggestedAgeMonths: integer('suggested_age_months').notNull(),
     notes: text('notes'),
-    isCustom: boolean('is_custom').notNull().default(false),
+    isCustom: integer('is_custom', { mode: 'boolean' }).notNull().default(false),
     customForChildId: integer('custom_for_child_id').references(() => children.id, {
       onDelete: 'cascade'
     })
   },
   (t) => ({
     customForChildIdx: index('foods_custom_for_child_idx').on(t.customForChildId),
-    // Built-in seeded rows (is_custom = false) must be unique by name. The
-    // advisory-locked transaction in seedFoods() serializes concurrent boots
-    // and ON CONFLICT DO NOTHING absorbs race-losers, but this index is the
-    // hard guard: it also catches operator pg_restore replays, future code
-    // changes that bypass the lock, and any divergent seeder that might be
-    // added later. Custom (per-child) rows are intentionally excluded so a
-    // parent can still name a custom food after a built-in entry.
+    // Built-in seeded rows (is_custom = false) must be unique by name. SQLite
+    // serializes writers (one writer at a time per file), and seedFoods() uses
+    // ON CONFLICT DO NOTHING inside a transaction, but this partial unique
+    // index is the hard guard: it also catches operator restores, future code
+    // changes, and any divergent seeder added later. Custom (per-child) rows
+    // are intentionally excluded so a parent can still name a custom food after
+    // a built-in entry.
     nameSeedUnique: uniqueIndex('foods_name_seed_idx')
       .on(t.name)
-      .where(sql`${t.isCustom} = false`)
+      .where(sql`${t.isCustom} = 0`)
   })
 );
 
-export const foodEntries = pgTable(
+export const foodEntries = sqliteTable(
   'food_entries',
   {
-    id: serial('id').primaryKey(),
+    id: integer('id').primaryKey({ autoIncrement: true }),
     childId: integer('child_id')
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
@@ -138,18 +143,17 @@ export const foodEntries = pgTable(
     foodId: integer('food_id')
       .notNull()
       .references(() => foods.id, { onDelete: 'restrict' }),
-    givenAt: timestamp('given_at', { withTimezone: true, mode: 'date' }).notNull(),
+    givenAt: integer('given_at', { mode: 'timestamp_ms' }).notNull(),
     reaction: text('reaction', { enum: ['ras', 'inconfort', 'reaction'] }).notNull(),
     texture: text('texture', { enum: TEXTURE_VALUES }),
     notes: text('notes'),
     loggedBy: integer('logged_by').references(() => users.id, { onDelete: 'set null' }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
     childIdx: index('food_entries_child_idx').on(t.childId, t.givenAt),
-    // Mirror the CHECK constraint already in 0005_food_entry_texture.sql so
-    // drizzle-kit's snapshot matches the live schema (otherwise db:generate
-    // produces a spurious DROP CONSTRAINT migration).
+    // CHECK mirrors the texture enum so the value space is enforced at the DB
+    // level, not just by Drizzle's TS type.
     textureCheck: check(
       'food_entries_texture_check',
       sql`${t.texture} in ('lisse', 'moulinee', 'ecrasee', 'petits-morceaux', 'morceaux', 'finger')`
@@ -157,7 +161,7 @@ export const foodEntries = pgTable(
   })
 );
 
-export const tipDismissals = pgTable(
+export const tipDismissals = sqliteTable(
   'tip_dismissals',
   {
     userId: integer('user_id')
@@ -167,14 +171,14 @@ export const tipDismissals = pgTable(
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
     reminderKey: text('reminder_key').notNull(),
-    dismissedAt: timestamp('dismissed_at', { withTimezone: true, mode: 'date' }).notNull()
+    dismissedAt: integer('dismissed_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.childId, t.reminderKey] })
   })
 );
 
-export const passkeys = pgTable(
+export const passkeys = sqliteTable(
   'passkeys',
   {
     id: text('id').primaryKey(),
@@ -183,36 +187,36 @@ export const passkeys = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     publicKey: text('public_key').notNull(),
     counter: integer('counter').notNull().default(0),
-    transports: jsonb('transports')
+    transports: text('transports', { mode: 'json' })
       .$type<AuthenticatorTransportFuture[]>()
       .notNull()
-      .default(sql`'[]'::jsonb`),
+      .default(sql`'[]'`),
     deviceType: text('device_type', { enum: ['singleDevice', 'multiDevice'] }).notNull(),
-    backedUp: boolean('backed_up').notNull(),
+    backedUp: integer('backed_up', { mode: 'boolean' }).notNull(),
     name: text('name').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull(),
-    lastUsedAt: timestamp('last_used_at', { withTimezone: true, mode: 'date' })
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    lastUsedAt: integer('last_used_at', { mode: 'timestamp_ms' })
   },
   (t) => ({
     userIdx: index('passkeys_user_idx').on(t.userId)
   })
 );
 
-export const webauthnChallenges = pgTable(
+export const webauthnChallenges = sqliteTable(
   'webauthn_challenges',
   {
     token: text('token').primaryKey(),
     challenge: text('challenge').notNull(),
     purpose: text('purpose', { enum: ['registration', 'authentication'] }).notNull(),
     userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
-    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
     expiresIdx: index('webauthn_challenges_expires_idx').on(t.expiresAt)
   })
 );
 
-export const idempotencyKeys = pgTable(
+export const idempotencyKeys = sqliteTable(
   'idempotency_keys',
   {
     key: text('key').primaryKey(),
@@ -221,35 +225,36 @@ export const idempotencyKeys = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     scope: text('scope').notNull(),
     redirect: text('redirect'),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
     createdAtIdx: index('idempotency_keys_created_at_idx').on(t.createdAt)
   })
 );
 
-export const symptoms = pgTable(
+export const symptoms = sqliteTable(
   'symptoms',
   {
-    id: serial('id').primaryKey(),
+    id: integer('id').primaryKey({ autoIncrement: true }),
     foodEntryId: integer('food_entry_id')
       .notNull()
       .references(() => foodEntries.id, { onDelete: 'cascade' }),
     childId: integer('child_id')
       .notNull()
       .references(() => children.id, { onDelete: 'cascade' }),
-    observedAt: timestamp('observed_at', { withTimezone: true, mode: 'date' }).notNull(),
+    observedAt: integer('observed_at', { mode: 'timestamp_ms' }).notNull(),
     label: text('label', { enum: SYMPTOM_LABELS }).notNull(),
     note: text('note'),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
     createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' })
   },
   (t) => ({
     foodEntryIdx: index('symptoms_food_entry_id_idx').on(t.foodEntryId),
     childObservedIdx: index('symptoms_child_id_observed_at_idx').on(t.childId, t.observedAt),
-    // Mirror the CHECK constraint introduced in 0006_symptoms_label_check.sql
-    // so drizzle-kit's snapshot matches the live schema (otherwise db:generate
-    // produces a spurious DROP CONSTRAINT migration).
+    // CHECK mirrors the symptom-label enum so the value space is enforced at the
+    // DB level, not just by Drizzle's TS type.
     labelCheck: check(
       'symptoms_label_check',
       sql`${t.label} in ('rougeur', 'urticaire', 'eczema', 'vomissement', 'diarrhee', 'gonflement', 'toux', 'detresse-respiratoire', 'levres-bleues', 'autre')`

@@ -1,4 +1,5 @@
-import type { PgDatabase, PgQueryResultHKT, PgTransaction } from 'drizzle-orm/pg-core';
+import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import type { SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import { sql, count } from 'drizzle-orm';
 import { foods } from './schema';
@@ -6,12 +7,10 @@ import type * as schema from './schema';
 import type { CategoryId } from '$lib/utils/categories';
 import type { AllergenId } from '$lib/utils/allergens';
 
-// Driver-agnostic: BunSQLDatabase in prod, PgliteDatabase in tests both
-// extend PgDatabase. The HKT-loose union lets either driver flow through.
-type AnyDb = PgDatabase<PgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+type AnyDb = BunSQLiteDatabase<typeof schema>;
 type Tx =
   | AnyDb
-  | PgTransaction<PgQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+  | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 type SeedFood = {
   name: string;
@@ -147,20 +146,14 @@ export const FOODS_SEED: SeedFood[] = [
   { name: 'Paprika doux', category: 'aromates', age: 6 }
 ];
 
-export async function seedFoods(db: AnyDb): Promise<void> {
-  await db.transaction(async (tx) => {
-    // Serialize concurrent boots (rolling deploy, sidecar, healthcheck-driven
-    // respawn) so two processes can't both observe an empty table and both
-    // bulk-insert the catalog. The xact-level lock auto-releases at commit.
-    // The unique partial index foods_name_seed_idx (migration 0002) is the
-    // hard guard; this lock + ON CONFLICT DO NOTHING below avoid the loud
-    // 23505 on the race-loser without that guard's protection being missed.
-    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('diversif.seed_foods'))`);
-
-    // count() is portable across drivers; .execute(sql\`COUNT(*)\`) requires
-    // accessing .rows on pglite but not on bun:sql, so we use the typed
-    // builder instead.
-    const [{ n }] = await tx.select({ n: count() }).from(foods);
+export function seedFoods(db: AnyDb): void {
+  // bun:sqlite is synchronous and serializes writers (one writer per file), so
+  // the prior pg_advisory_xact_lock dance isn't needed: this transaction holds
+  // the database for its duration. ON CONFLICT DO NOTHING plus the partial
+  // unique index foods_name_seed_idx still guard against a seeder racing an
+  // operator restore or a divergent future seeder.
+  db.transaction((tx) => {
+    const [{ n }] = tx.select({ n: count() }).from(foods).all();
     const total = Number(n);
 
     if (total === 0) {
@@ -175,27 +168,26 @@ export async function seedFoods(db: AnyDb): Promise<void> {
         customForChildId: null
       }));
 
-      await tx.insert(foods).values(rows).onConflictDoNothing();
+      tx.insert(foods).values(rows).onConflictDoNothing().run();
     }
 
-    await applySeedCorrections(tx);
+    applySeedCorrections(tx);
   });
 }
 
 // Self-healing pass for seed-row drift that older deployments may carry.
 // Mirrors drizzle/0001_backfill_tofu_age.sql so a deploy that skipped or
-// missed the migration (e.g. operator pg_restore from a pre-Postgres dump
-// after migrations were applied) still converges on the right values.
-// Idempotent: each UPDATE filters on the stale value, so re-runs no-op,
-// and operator-customised rows (is_custom = true) are left alone.
-export async function applySeedCorrections(db: Tx): Promise<void> {
-  await db.execute(sql`
+// missed the migration still converges on the right values. Idempotent: the
+// UPDATE filters on the stale value, so re-runs no-op, and operator-customised
+// rows (is_custom = 1) are left alone.
+export function applySeedCorrections(db: Tx): void {
+  db.run(sql`
     UPDATE foods
     SET suggested_age_months = 36
     WHERE name = 'Tofu'
       AND category = 'legumineuses'
       AND allergen_type = 'soja'
-      AND is_custom = false
+      AND is_custom = 0
       AND suggested_age_months = 6
   `);
 }

@@ -14,7 +14,9 @@ const NO_STORE = { 'Cache-Control': 'no-store' };
 
 export const GET: RequestHandler = async () => {
   try {
-    await db.execute(sql`SELECT 1 as ok`);
+    // bun:sqlite is synchronous and has no .execute(); db.get() runs the probe
+    // and returns the single row (or null). Throws if the DB handle is dead.
+    db.get(sql`SELECT 1 as ok`);
     return json({ ok: true, db: 'ok', uptimeMs: Date.now() - startedAt }, { headers: NO_STORE });
   } catch {
     return json({ ok: false, db: 'down' }, { status: 503, headers: NO_STORE });

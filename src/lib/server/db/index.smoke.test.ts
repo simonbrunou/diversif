@@ -15,13 +15,10 @@ import * as schemaNs from './schema';
 
 describe('src/lib/server/db/index.ts (prod-db bootstrap smoke)', () => {
   it('loads without throwing and exports db, schema, pool', async () => {
-    // Harmless URL — bun:sql is lazy, `new SQL(url)` does NOT block on
-    // connect, so a non-routable host is fine for module load.
-    if (!process.env.DATABASE_URL) {
-      process.env.DATABASE_URL = 'postgres://user:pass@localhost:5432/db';
-    }
+    // No DATABASE_PATH needed: with building=true the module opens an in-memory
+    // SQLite handle and skips migrate()/seed entirely.
 
-    // Re-register $app/environment with building=true so the top-level
+    // Re-register $app/environment with building=true so the
     // `if (!building)` migrate/seed block is skipped. The preload defaults
     // to building=false; the LAST mock.module registration wins.
     mock.module('$app/environment', () => ({

@@ -1,84 +1,62 @@
-// Side-effect-only: ensures Sentry is initialised before this module's
-// top-level await runs migrations. captureException below would otherwise
-// silently drop events because hooks.server.ts's own Sentry.init has not
-// run yet at that point in the import chain.
+// Side-effect-only: ensures Sentry is initialised before this module runs
+// migrations. captureException below would otherwise silently drop events
+// because hooks.server.ts's own Sentry.init has not run yet at that point in
+// the import chain.
 import '$lib/sentry-init.server';
 
 import path from 'node:path';
 import * as Sentry from '@sentry/sveltekit';
-import { SQL } from 'bun';
-import { drizzle, type BunSQLDatabase } from 'drizzle-orm/bun-sql';
-import { migrate } from 'drizzle-orm/bun-sql/migrator';
+import { Database } from 'bun:sqlite';
+import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import * as schema from './schema';
 import { seedFoods } from './seed';
 import { registerShutdownHandlers } from '../shutdown';
 import { building } from '$app/environment';
 
-export type DB = BunSQLDatabase<typeof schema>;
+export type DB = BunSQLiteDatabase<typeof schema>;
 
-function resolveDatabaseUrl(): string {
-  // Vite's SSR prerender imports server modules at build time. bun:sql is
-  // lazy (no connection until first query) and the migrate()/seedFoods()
-  // calls below are already gated by `building`, but the SQL constructor
-  // still reads this URL to validate the shape. Returning a build-time
-  // stub avoids requiring DATABASE_URL in the build environment (Railpack,
-  // Docker without --build-arg, plain `bun run build` for dev sanity).
-  // The stub is never connected to — `building` short-circuits everything
-  // downstream.
-  if (building) return 'postgres://build-stub@127.0.0.1:5432/build';
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error('DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif)');
+function resolveDatabasePath(): string {
+  // Vite's SSR/prerender pass imports server modules at build time. migrate()
+  // and seedFoods() are gated by `building`, but the Database constructor still
+  // opens a handle, so use an in-memory DB during build. This keeps
+  // DATABASE_PATH out of the build environment (Railpack, Docker without a
+  // mounted volume, plain `bun run build`). It is never migrated or queried —
+  // `building` short-circuits everything downstream.
+  if (building) return ':memory:';
+  const dbPath = process.env.DATABASE_PATH;
+  if (!dbPath) {
+    throw new Error('DATABASE_PATH is required (e.g. /app/data/diversif.db)');
   }
-  return url;
+  return dbPath;
 }
 
-function resolvePoolMax(): number {
-  const raw = process.env.PGPOOL_MAX;
-  /* v8 ignore next : defensive for invalid env input, no test env sets PGPOOL_MAX */
-  if (!raw) return 10;
-  const n = Number(raw);
-  /* v8 ignore next : defensive for invalid env input */
-  if (!Number.isInteger(n) || n <= 0) return 10;
-  return n;
-}
+const sqlite = new Database(resolveDatabasePath(), { create: true });
+// Connection pragmas (this process holds a single SQLite connection, unlike
+// the prior pg pool):
+//   - journal_mode=WAL: readers never block the single writer; durable.
+//   - foreign_keys=ON: REQUIRED for the ON DELETE CASCADE / SET NULL / RESTRICT
+//     actions in schema.ts to fire (SQLite leaves this OFF per-connection).
+//   - busy_timeout: wait (don't throw SQLITE_BUSY) when the writer is briefly
+//     held — e.g. a rolling-deploy overlap or the seed transaction.
+//   - synchronous=NORMAL: safe under WAL, far fewer fsyncs than FULL.
+sqlite.exec('PRAGMA journal_mode = WAL;');
+sqlite.exec('PRAGMA foreign_keys = ON;');
+sqlite.exec('PRAGMA busy_timeout = 5000;');
+sqlite.exec('PRAGMA synchronous = NORMAL;');
 
-// Bun.SQL pools internally. Defaults are similar in spirit to pg.Pool's, but
-// we override them for the same reasons as before:
-//   - connectionTimeout: bound how long an acquire can wait. A saturated pool
-//     should fail fast so /healthz stays responsive (Docker HEALTHCHECK relies
-//     on it).
-//   - idleTimeout: 30s avoids churn under sustained load.
-//   - connection.statement_timeout: applied as a Postgres runtime parameter on
-//     every new connection. A runaway query fails fast instead of holding a
-//     worker until the OS kills the socket.
-// PGPOOL_MAX lets self-hosters scale concurrent connections to their PG
-// server's max_connections budget.
-const sqlClient = new SQL({
-  url: resolveDatabaseUrl(),
-  max: resolvePoolMax(),
-  idleTimeout: 30,
-  connectionTimeout: 5,
-  connection: {
-    statement_timeout: 10_000
-  }
-});
-const drizzleDb = drizzle(sqlClient, { schema });
+const drizzleDb = drizzle(sqlite, { schema });
 
-// Top-level await: SvelteKit's adapter runs as ESM, so importing this
-// module blocks on migration + seed at runtime. After the import settles,
-// `db` is a connected, migrated, seeded handle.
-//
-// Skip during `vite build` — the SSR/prerender pass imports server modules
-// to render pages, which fires this top-level await. The build container
-// cannot reach the runtime postgres hostname, so the migrate() call would
-// fail with ENOTFOUND. `building` is true only during `vite build`; false
-// at server start and in tests.
+// bun:sqlite is synchronous, so — unlike the prior Postgres bootstrap — there
+// is no top-level await here: migrate() + seedFoods() run to completion as the
+// module evaluates. Skip during `vite build`: the SSR/prerender pass imports
+// server modules to render pages, which would otherwise fire migrate()/seed
+// against the :memory: stub. `building` is true only during `vite build`.
 if (!building) {
   try {
     const migrationsFolder = path.resolve('./drizzle');
-    await migrate(drizzleDb, { migrationsFolder });
-    await seedFoods(drizzleDb);
+    migrate(drizzleDb, { migrationsFolder });
+    seedFoods(drizzleDb);
   } catch (err) {
     Sentry.captureException(err, { tags: { subsystem: 'db-migrate' } });
     throw err;
@@ -87,30 +65,26 @@ if (!building) {
 
 export const db = drizzleDb;
 export { schema };
-// Exported as `pool` for symmetry with the prior pg.Pool export — the
-// shutdown handler only uses .end() so the rename would be churn without
-// changing semantics.
-export { sqlClient as pool };
+// Exported as `pool` for symmetry with the prior pg.Pool / Bun.SQL export. The
+// shutdown handler only needs to close the handle; bun:sqlite's close() is
+// synchronous, so we wrap it in the EndablePool `{ end }` shape it expects.
+export const pool = { end: async () => sqlite.close() };
 
 if (!building && process.env.NODE_ENV !== 'test' && !process.env.BUN_TEST) {
   // Register the SIGTERM handler synchronously: a fire-and-forget dynamic
-  // import would lose the signal if SIGTERM arrived during the startup
-  // window before the .then() callback ran (e.g. Coolify replacing a
-  // revision within seconds of boot), defeating the entire purpose.
-  // Cleanup stays dynamic to avoid pulling its setInterval into test envs;
-  // beforeExit captures stopCleanupTimer once the module loads.
+  // import would lose the signal if SIGTERM arrived during the startup window
+  // before the .then() callback ran (e.g. Coolify replacing a revision within
+  // seconds of boot). Cleanup stays dynamic to avoid pulling its setInterval
+  // into test envs; beforeExit captures stopCleanupTimer once the module loads.
   let stopCleanupTimer: (() => void) | null = null;
   void import('../cleanup').then((mod) => {
     stopCleanupTimer = mod.stopCleanupTimer;
     mod.startCleanupTimer();
   });
   registerShutdownHandlers({
-    pool: sqlClient,
+    pool,
     beforeExit: () => stopCleanupTimer?.(),
-    // 2s flush budget mirrors Sentry's own docs for SIGTERM handlers. Long
-    // enough to drain the buffer over a healthy connection; short enough
-    // that a wedged Sentry endpoint doesn't outlive the orchestrator's
-    // shutdown grace period.
+    // 2s flush budget mirrors Sentry's own docs for SIGTERM handlers.
     flush: async () => {
       await Sentry.close(2000);
     }
