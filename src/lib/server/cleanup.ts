@@ -19,8 +19,8 @@ export type CleanupResult = {
 };
 
 export async function runCleanup(now: Date = new Date()): Promise<CleanupResult> {
-  // .returning() is portable across bun:sql and pglite — .rowCount on the
-  // delete result is not (bun:sql returns a plain row array).
+  // Count deletions via .returning().length — bun:sqlite's run result does not
+  // expose an affected-rows count on the typed delete builder.
   const s = await db
     .delete(sessions)
     .where(lt(sessions.expiresAt, now))

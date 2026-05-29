@@ -58,8 +58,8 @@ export async function loadDiversityMetrics(
   // Predicate (n <= REPEAT_CANDIDATE_MAX_COUNT && worst <= REPEAT_CANDIDATE_MAX_WORST_RANK)
   // matches findRepeatCandidates in ../repeat-candidates (the SQL CASE WHEN
   // mirrors REACTION_RANK there). Wrapping WHERE rather than HAVING is
-  // friendlier to query planners and was originally needed for pg-mem
-  // compatibility; the wrap is harmless under PGlite/bun:sql so we keep it.
+  // friendlier to query planners; the subquery wrap is harmless under SQLite
+  // so we keep it.
   const repeatRows = await execRows<{ food_id: number; n: number; worst: number }>(
     db,
     sql`SELECT food_id, n, worst FROM (
@@ -177,8 +177,7 @@ export async function loadWeeklyRecap(
   const entries = Number(entriesRows[0]?.count ?? 0);
 
   // First-ever appearance per food, kept only if that first appearance is in
-  // the window. Wrap with WHERE rather than HAVING — friendlier to planners
-  // and historically required for the pg-mem path.
+  // the window. Wrap with WHERE rather than HAVING — friendlier to planners.
   const newFoodsRows = await execRows<{ count: string }>(
     db,
     sql`SELECT COUNT(*) as count FROM (
