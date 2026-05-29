@@ -37,9 +37,13 @@ ENV HOST=0.0.0.0
 # them.
 ENV PROTOCOL_HEADER=x-forwarded-proto
 ENV HOST_HEADER=x-forwarded-host
+# SQLite file location. Mount a persistent volume here (Coolify / docker-compose
+# both map /app/data) so the database survives redeploys and image rebuilds.
+ENV DATABASE_PATH=/app/data/diversif.db
+VOLUME /app/data
 EXPOSE 3000
 
-# /healthz returns {ok:true} only when bun:sql answers SELECT 1, so this
+# /healthz returns {ok:true} only when bun:sqlite answers SELECT 1, so this
 # doubles as a liveness + DB-reachability probe. start-period gives
 # migrations room before the first probe counts.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \

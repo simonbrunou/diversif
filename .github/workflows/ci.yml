@@ -45,20 +45,6 @@ jobs:
   e2e:
     name: End-to-end tests (Playwright)
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: diversif
-          POSTGRES_PASSWORD: diversif
-          POSTGRES_DB: diversif_e2e
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U diversif"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -67,10 +53,12 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Install Playwright browsers
         run: bun --bun node_modules/playwright/cli.js install --with-deps chromium
+      # The webServer (playwright.config.ts) boots against a throwaway SQLite
+      # file at DATABASE_PATH and migrates/seeds on start — no DB service needed.
       - run: bun --bun node_modules/playwright/cli.js test
         env:
           CI: 'true'
-          E2E_DATABASE_URL: postgres://diversif:diversif@localhost:5432/diversif_e2e
+          DATABASE_PATH: ${{ runner.temp }}/diversif-e2e.db
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
@@ -82,31 +70,14 @@ jobs:
   bundle-budget:
     name: Bundle size budget
     runs-on: ubuntu-latest
-    services:
-      # The Vite build's prerender step renders +page.server.ts handlers
-      # that touch the DB. A throwaway postgres lets the build succeed
-      # without affecting the budget script (which only reads the JS /
-      # static artifacts).
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: diversif
-          POSTGRES_PASSWORD: diversif
-          POSTGRES_DB: diversif_e2e
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U diversif"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
+      # The build's prerender uses an in-memory SQLite stub (see
+      # src/lib/server/db/index.ts: `building` -> :memory:), so no DB service
+      # or DATABASE_PATH is needed at build time.
       - run: bun run build
-        env:
-          DATABASE_URL: postgres://diversif:diversif@localhost:5432/diversif_e2e
       - run: bun scripts/check-bundle-size.ts

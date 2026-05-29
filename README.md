@@ -8,7 +8,7 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 
 - Bun 1.3+ runtime (dev, test, build, prod server)
 - SvelteKit (Svelte 5 + TypeScript) on `svelte-adapter-bun`
-- Postgres via `bun:sql` + Drizzle ORM (`@electric-sql/pglite` in tests)
+- SQLite via `bun:sqlite` + Drizzle ORM (in-memory `bun:sqlite` in tests)
 - Tailwind CSS, in-house auth (`Bun.password` Argon2id sessions, WebAuthn passkeys)
 - i18n via `@inlang/paraglide-sveltekit` (FR default, `/en/` for English)
 - PWA via `@vite-pwa/sveltekit` with an in-page offline log queue
@@ -19,12 +19,11 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 
 ```bash
 bun install
-docker compose up -d postgres   # local Postgres for dev
-DATABASE_URL=postgres://diversif:diversif@localhost:5432/diversif bun run dev
+DATABASE_PATH=./dev.db bun run dev
 bun run db:generate   # only when schema.ts changes
 ```
 
-The app reads `DATABASE_URL` at startup, runs migrations, and seeds the food catalog automatically on first connect.
+The app reads `DATABASE_PATH` at startup, creates the SQLite file if absent, runs migrations, and seeds the food catalog automatically on first boot.
 
 ## Tests / checks
 
@@ -37,9 +36,9 @@ bun run build
 
 ## Production deploy
 
-The reference deploy is **Coolify**, which provides a managed Postgres and injects `DATABASE_URL` into the app container automatically. Migrations and seeding run on every container start (idempotent). Backups are handled by Coolify's managed-DB tooling.
+The reference deploy is **Coolify** with the **Railpack** builder. A persistent volume is mounted at `/app/data` and `DATABASE_PATH=/app/data/diversif.db` is set, so the SQLite database survives redeploys. Migrations and seeding run on every container start (idempotent). The volume MUST persist and be backed up — losing it loses all data.
 
-The repo's `docker-compose.yml` is a **local-dev example only** — it brings up the app plus a throwaway Postgres on `localhost:5432`. Don't use it in production unless you own the Postgres lifecycle yourself.
+The repo's `docker-compose.yml` is a **local-dev / self-hosting example** — it builds the app and mounts a named volume at `/app/data` for the SQLite file.
 
 ### Reverse proxy / Cloudflare Tunnel
 
@@ -57,13 +56,16 @@ HOST_HEADER=x-forwarded-host
 
 ### Backups
 
-Coolify's managed-DB tooling owns backup orchestration in production. For ad-hoc local dumps:
+In production the database is a single SQLite file on the persistent volume; an
+off-box cron takes a consistent `VACUUM INTO` snapshot and ships it to encrypted
+object storage. For an ad-hoc consistent local snapshot:
 
 ```bash
-docker compose exec postgres pg_dump -U diversif diversif > diversif-$(date +%F).sql
+# Online-safe snapshot (works while the app is running):
+sqlite3 "$DATABASE_PATH" "VACUUM INTO 'diversif-$(date +%F).db'"
 ```
 
-> Only run `docker compose down -v` if you intend to wipe the local-dev database — the `-v` flag deletes the named volume.
+> Only run `docker compose down -v` if you intend to wipe the local-dev database — the `-v` flag deletes the named volume holding the SQLite file.
 
 ## Routes overview
 
@@ -77,7 +79,7 @@ docker compose exec postgres pg_dump -U diversif diversif > diversif-$(date +%F)
 
 ## Vie privée & RGPD
 
-Diversif est conçu pour être conforme au RGPD lorsqu'il est exposé en tant qu'instance publique (l'éditeur agit alors comme responsable de traitement). Aucune donnée n'est partagée avec un tiers ; la base Postgres reste chez l'hébergeur de l'instance.
+Diversif est conçu pour être conforme au RGPD lorsqu'il est exposé en tant qu'instance publique (l'éditeur agit alors comme responsable de traitement). Aucune donnée n'est partagée avec un tiers ; la base SQLite reste chez l'hébergeur de l'instance.
 
 - **Pages légales** : `/mentions-legales`, `/politique-confidentialite`, `/cgu`, `/cookies`. Elles affichent « à compléter » tant que les variables d'environnement décrites ci-dessous ne sont pas renseignées.
 - **Consentement** : à l'inscription, l'utilisateur doit confirmer avoir au moins 15 ans (article 45 LIL), accepter les CGU et la politique de confidentialité. Les horodatages sont stockés dans la table `users`.

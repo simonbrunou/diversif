@@ -6,9 +6,9 @@ const BASE_URL = `http://localhost:${PORT}`;
 export default defineConfig({
   testDir: 'e2e',
   // No globalSetup: Playwright invokes globalSetup AFTER the webServer boots,
-  // so a schema reset there would clobber the migrations the webServer just
-  // applied. Tests assume a fresh database — supply one via the E2E
-  // postgres service in CI, or run scripts/reset-e2e-db.sh locally.
+  // so a reset there would clobber the migrations the webServer just applied.
+  // Tests assume a fresh database — `bun run test:e2e` deletes the throwaway
+  // SQLite file (scripts/reset-e2e-db.ts) before invoking Playwright.
   fullyParallel: false,
   // Two workers: one per project, so desktop and mobile run in parallel.
   // `fullyParallel: false` is kept so tests within a project still run
@@ -73,11 +73,10 @@ export default defineConfig({
     // across modern browsers; the Chromium pass covers the print stylesheet.
   ],
   webServer: {
-    // E2E expects a Postgres reachable via E2E_DATABASE_URL (a throwaway
-    // database — the suite runs migrations on every start). Set it in CI to
-    // a postgres:16-alpine service container; locally, point it at a docker
-    // compose postgres or skip the suite.
-    command: `npm run build && PORT=${PORT} HOST=127.0.0.1 ORIGIN=${BASE_URL} node build/index.js`,
+    // E2E runs against a throwaway SQLite file at DATABASE_PATH. The app applies
+    // migrations + seeds the catalog on boot; scripts/reset-e2e-db.ts deletes
+    // the file before the suite runs (test:e2e). No external DB service needed.
+    command: `bun run build && PORT=${PORT} HOST=127.0.0.1 ORIGIN=${BASE_URL} bun build/index.js`,
     port: PORT,
     timeout: 180_000,
     reuseExistingServer: !process.env.CI,
@@ -85,8 +84,7 @@ export default defineConfig({
     stderr: 'pipe',
     env: {
       NODE_ENV: 'production',
-      DATABASE_URL:
-        process.env.E2E_DATABASE_URL ?? 'postgres://diversif:diversif@localhost:5432/diversif_e2e',
+      DATABASE_PATH: process.env.DATABASE_PATH ?? './e2e-test.db',
       // Marks this server as an end-to-end run so the signup throttle relaxes
       // its 20/hr cap — a single Playwright suite legitimately creates dozens
       // of accounts from one address, and we'd otherwise lock ourselves out.

@@ -2,14 +2,14 @@
 
 ## Orientation
 
-- **Stack & commands**: see `README.md` (Bun-native: SvelteKit on svelte-adapter-bun + Postgres via `bun:sql` + Drizzle + WebAuthn passkeys + `Bun.password` Argon2id).
+- **Stack & commands**: see `README.md` (Bun-native: SvelteKit on svelte-adapter-bun + SQLite via `bun:sqlite` + Drizzle + WebAuthn passkeys + `Bun.password` Argon2id).
 - **Product, tone, users**: see `PRODUCT.md`.
-- **Tests**: `bun test` runs `bun:test` against an in-process PGlite (WASM Postgres) — no Docker required. E2E: `bun run test:e2e` (Playwright against a real PG; the script resets the DB first).
+- **Tests**: `bun test` runs `bun:test` against an in-process `bun:sqlite` `:memory:` database (same engine as prod) — no Docker required. E2E: `bun run test:e2e` (Playwright; the script resets a throwaway SQLite file first).
 
 ## Conventions Claude must respect
 
 - **French UI, no anglicisms.** Use "Enregistrer" not "logger", "Régularité" not "Streak", "Adresse e-mail" not "Email", "Bilan" not "Stats". PR reviewers reject regressions.
-- **Use Bun, not npm/Node.** `bun install`, `bun run X`, `bun test`. `bun --bun <cmd>` forces tools with Node shebangs (vite, drizzle-kit, playwright, svelte-check) to run under Bun — without it, server code that imports `bun` / `bun:sql` fails to resolve.
+- **Use Bun, not npm/Node.** `bun install`, `bun run X`, `bun test`. `bun --bun <cmd>` forces tools with Node shebangs (vite, drizzle-kit, playwright, svelte-check) to run under Bun — without it, server code that imports `bun` / `bun:sqlite` fails to resolve.
 - **Pre-commit**: husky runs `lint-staged` (prettier + eslint). Don't bypass with `--no-verify`.
 
 ## graphify
