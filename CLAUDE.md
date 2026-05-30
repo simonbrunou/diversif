@@ -2,7 +2,7 @@
 
 ## Orientation
 
-- **Stack & commands**: see `README.md` (Bun-native: SvelteKit on svelte-adapter-bun + SQLite via `bun:sqlite` + Drizzle + WebAuthn passkeys + `Bun.password` Argon2id).
+- **Stack & commands**: see `README.md` (Bun-native: SvelteKit on `@sveltejs/adapter-node` run under Bun + SQLite via `bun:sqlite` + Drizzle + WebAuthn passkeys + `Bun.password` Argon2id).
 - **Product, tone, users**: see `PRODUCT.md`.
 - **Tests**: `bun test` runs `bun:test` against an in-process `bun:sqlite` `:memory:` database (same engine as prod) — no Docker required. E2E: `bun run test:e2e` (Playwright; the script resets a throwaway SQLite file first).
 
