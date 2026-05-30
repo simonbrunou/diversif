@@ -135,8 +135,9 @@ export default defineConfig({
     rollupOptions: {
       // `bun` and `bun:*` (bun:sql, bun:test, etc.) are runtime built-ins
       // resolved by the Bun runtime, not by node_modules. Rollup can't find
-      // them, so without this they fail bundle resolution. svelte-adapter-bun
-      // expects to run under Bun, so leaving these external is correct.
+      // them, so without this they fail bundle resolution. The adapter-node
+      // output runs under Bun (`bun ./build/index.js`), so leaving these
+      // external is correct.
       external: ['bun', /^bun:/]
     }
   },
