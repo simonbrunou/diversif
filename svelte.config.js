@@ -1,10 +1,12 @@
-import adapter from 'svelte-adapter-bun';
+import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   preprocess: vitePreprocess(),
   kit: {
+    // adapter-node default output is ./build; keep it explicit so the
+    // Docker entrypoint's `bun ./build/index.js` path is unambiguous.
     adapter: adapter({ out: 'build' }),
     alias: {
       $components: 'src/lib/components',

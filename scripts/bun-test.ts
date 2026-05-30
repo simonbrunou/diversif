@@ -62,9 +62,15 @@ for (let i = 0; i < files.length; i++) {
   });
   // bun:test writes to stderr; both streams may contain output.
   const out = `${proc.stdout?.toString() ?? ''}${proc.stderr?.toString() ?? ''}`;
-  const passMatch = out.match(/(\d+) pass/);
-  const failMatch = out.match(/(\d+) fail/);
-  const skipMatch = out.match(/(\d+) skip/);
+  // Anchor the counters to bun's summary lines (" 10 pass", " 0 fail"), not
+  // loose substrings. A bare /(\d+) fail/ also matches prose inside a printed
+  // test name — e.g. forms.test.ts's "returns ok:false with a 400 failure …"
+  // yields a phantom "400 fail" — but only when bun emits per-test (pass)
+  // lines (it does in CI), which is why this slipped through locally. The
+  // leading `^\s*` + trailing `\b` pin the match to the real summary row.
+  const passMatch = out.match(/^\s*(\d+) pass\b/m);
+  const failMatch = out.match(/^\s*(\d+) fail\b/m);
+  const skipMatch = out.match(/^\s*(\d+) skip\b/m);
   // Guard against bun changing its output format: if none of the counters
   // match, we have no signal at all — treat the file as a failure rather
   // than silently summing 0+0+0 and claiming green.
