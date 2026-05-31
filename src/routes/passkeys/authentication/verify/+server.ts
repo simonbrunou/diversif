@@ -5,7 +5,8 @@ import {
   PASSKEY_CHALLENGE_COOKIE,
   RP_ID,
   consumeChallenge,
-  finishAuthentication
+  finishAuthentication,
+  isOriginAllowedForRPID
 } from '$lib/server/passkeys';
 import { SESSION_COOKIE, SESSION_DURATION_MS, createSession } from '$lib/server/auth';
 import { db } from '$lib/server/db';
@@ -17,6 +18,10 @@ const PASSKEY_LIMIT = { name: 'passkey-auth', limit: 20, windowMs: 5 * 60 * 1000
 
 export const POST: RequestHandler = async (event) => {
   const { cookies, request, url } = event;
+  if (!isOriginAllowedForRPID(url.origin)) {
+    throw error(500, 'Configuration WebAuthn invalide pour cet hôte.');
+  }
+
   const ip = clientKey(event);
   const rl = checkRateLimit(PASSKEY_LIMIT, ip);
   if (!rl.allowed) {

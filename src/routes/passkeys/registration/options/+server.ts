@@ -7,13 +7,43 @@ import {
   PASSKEY_CHALLENGE_TTL_MS,
   RP_ID,
   buildRegistrationOptions,
-  createChallenge
+  createChallenge,
+  isOriginAllowedForRPID
 } from '$lib/server/passkeys';
 import { requireUser } from '$lib/server/guards';
+import { requireFreshAuth } from '$lib/server/fresh-auth';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async ({ locals, cookies }) => {
+export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
   const safe = requireUser(locals);
+  if (!isOriginAllowedForRPID(url.origin)) {
+    throw error(500, 'Configuration WebAuthn invalide pour cet hôte.');
+  }
+
+  let body: { currentPassword?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return json({ ok: false, error: 'Mot de passe requis.' }, { status: 400 });
+  }
+
+  const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
+  if (!currentPassword) {
+    return json({ ok: false, error: 'Mot de passe requis.' }, { status: 400 });
+  }
+
+  const freshAuth = await requireFreshAuth(safe, currentPassword, {
+    onMissingUser: () => {
+      throw error(401, 'Utilisateur introuvable');
+    }
+  });
+  if (!freshAuth.ok) {
+    return json(
+      { ok: false, error: freshAuth.error.data.error },
+      { status: freshAuth.error.status }
+    );
+  }
+
   const fresh = (await db.select().from(users).where(eq(users.id, safe.id)).limit(1))[0];
   if (!fresh) throw error(401, 'Utilisateur introuvable');
 

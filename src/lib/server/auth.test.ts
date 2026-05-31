@@ -19,6 +19,7 @@ describe('isValidInviteCodeFormat', () => {
   });
   it('rejects wrong shape', () => {
     expect(isValidInviteCodeFormat('bebe-abcdef')).toBe(false);
+    expect(isValidInviteCodeFormat('BEBE-ABCD')).toBe(false);
     expect(isValidInviteCodeFormat('BEBE-ABCDE')).toBe(false);
     expect(isValidInviteCodeFormat('NOPE-ABCDEF')).toBe(false);
     expect(isValidInviteCodeFormat('BEBE_ABCDEF')).toBe(false);

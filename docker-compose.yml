@@ -13,6 +13,7 @@ services:
       - '3000:3000'
     environment:
       ORIGIN: http://localhost:3000
+      WEBAUTHN_RP_ID: localhost
       DATABASE_PATH: /app/data/diversif.db
       NODE_ENV: development
       BODY_SIZE_LIMIT: 65536

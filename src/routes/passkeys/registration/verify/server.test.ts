@@ -49,10 +49,10 @@ function makeReq(opts: {
   body?: unknown;
   cookieToken?: string;
 }) {
-  const url = new URL('https://app.example.com/passkeys/registration/verify');
+  const url = new URL('https://diversif.app/passkeys/registration/verify');
   const cookieValues: Record<string, string> = {};
   if (opts.cookieToken) cookieValues[PASSKEY_CHALLENGE_COOKIE] = opts.cookieToken;
-  const event = makeRouteEvent({ user: opts.user ?? null });
+  const event = makeRouteEvent({ user: opts.user ?? null, url: url.toString() });
   // Override request with JSON body and cookies.
   (event as { request: Request }).request = new Request(url, {
     method: 'POST',

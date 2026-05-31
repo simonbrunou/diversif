@@ -4,6 +4,7 @@ import {
   RP_ID,
   consumeChallenge,
   finishRegistration,
+  isOriginAllowedForRPID,
   publicPasskey
 } from '$lib/server/passkeys';
 import { requireUser } from '$lib/server/guards';
@@ -12,6 +13,9 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
   const user = requireUser(locals);
+  if (!isOriginAllowedForRPID(url.origin)) {
+    throw error(500, 'Configuration WebAuthn invalide pour cet hôte.');
+  }
 
   let body: { response?: unknown; name?: unknown };
   try {

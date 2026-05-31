@@ -37,6 +37,7 @@ ENV HOST=0.0.0.0
 # them.
 ENV PROTOCOL_HEADER=x-forwarded-proto
 ENV HOST_HEADER=x-forwarded-host
+ENV WEBAUTHN_RP_ID=diversif.app
 # SQLite file location. Mount a persistent volume here (Coolify / docker-compose
 # both map /app/data) so the database survives redeploys and image rebuilds.
 ENV DATABASE_PATH=/app/data/diversif.db

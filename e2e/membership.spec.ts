@@ -39,6 +39,10 @@ async function signUpOwnerAndCreateChild(page: Page, name: string): Promise<{ ch
 async function generateInviteCode(page: Page, childId: number): Promise<string> {
   await page.goto(`/child/${childId}/settings`);
   await page.getByRole('button', { name: /générer un code/i }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByLabel('Mot de passe').fill('hunter2-very-long');
+  await dialog.getByRole('button', { name: /générer un code/i }).click();
   // The settings page renders the invitation code in a monospace block
   // (.font-mono) once the action returns.
   const codeEl = page
