@@ -17,20 +17,39 @@ import { passkeys, webauthnChallenges, type Passkey } from './db/schema';
 
 export const RP_NAME = 'Diversif';
 /**
- * Stable WebAuthn Relying Party ID — the registrable domain, not whatever
- * subdomain a given request lands on. Passkeys are scoped to this rpID,
- * so a passkey registered on `diversif.app` continues to work on every
- * subdomain (preview deploys at `*.diversif.app`, www., etc.).
- *
- * Was previously derived from `process.env.ORIGIN`'s hostname, which made
- * rpID become the preview-deploy host and quietly broke cross-deploy
- * passkey use. Hard-coding the registrable domain is the WebAuthn-correct
- * choice; deploy-host changes should never invalidate stored credentials.
- *
- * If we ever ship under a second registrable domain, lift this to a build-
- * time constant via Vite `define` so each build pins to one rpID.
+ * Stable WebAuthn Relying Party ID — a bare registrable domain, not a full
+ * origin. The default keeps prod + `*.diversif.app` previews in one passkey
+ * scope; self-hosted deployments must set WEBAUTHN_RP_ID to their own host
+ * (for local Docker, `localhost`).
  */
-export const RP_ID = 'diversif.app';
+const DEFAULT_RP_ID = 'diversif.app';
+
+function resolveRPID(): string {
+  const raw = process.env.WEBAUTHN_RP_ID?.trim();
+  if (!raw) return DEFAULT_RP_ID;
+  const rpID = raw.toLowerCase();
+  if (
+    rpID.includes('://') ||
+    rpID.includes('/') ||
+    rpID.includes(':') ||
+    rpID.startsWith('.') ||
+    rpID.endsWith('.')
+  ) {
+    throw new Error('WEBAUTHN_RP_ID must be a bare hostname such as diversif.app');
+  }
+  return rpID;
+}
+
+export const RP_ID = resolveRPID();
+
+export function isOriginAllowedForRPID(origin: string, rpID: string = RP_ID): boolean {
+  try {
+    const host = new URL(origin).hostname.toLowerCase();
+    return host === rpID || host.endsWith(`.${rpID}`);
+  } catch {
+    return false;
+  }
+}
 export const PASSKEY_CHALLENGE_COOKIE = 'wa_challenge';
 // Conditional-UI ceremonies fire automatically on page load and would otherwise
 // stomp on an in-flight registration/authentication challenge in another tab;

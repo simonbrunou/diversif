@@ -12,7 +12,7 @@ const mocks = {
 
 mock.module('@simplewebauthn/server', () => mocks);
 
-import { RP_ID, publicPasskey } from './passkeys';
+import { RP_ID, isOriginAllowedForRPID, publicPasskey } from './passkeys';
 import { seedPasskey, seedUser } from './passkeys-test-fixtures';
 
 beforeEach(async () => {
@@ -24,14 +24,17 @@ beforeEach(async () => {
 });
 
 describe('RP_ID', () => {
-  it('is the registrable domain so subdomain deploys share one passkey scope', () => {
+  it('defaults to the hosted registrable domain', () => {
     // Sanity check: a bare hostname with no scheme and no subdomain.
-    // Re-deriving rpID from request origin (preview hostnames, www., etc.)
-    // would scope new passkeys to a domain prod users can't authenticate
-    // against — locking in the registrable domain prevents that drift.
     expect(RP_ID).toBe('diversif.app');
     expect(RP_ID).not.toMatch(/\//);
     expect(RP_ID).not.toMatch(/:/);
+  });
+
+  it('accepts the RP ID host and subdomains, but rejects unrelated hosts', () => {
+    expect(isOriginAllowedForRPID('https://diversif.app')).toBe(true);
+    expect(isOriginAllowedForRPID('https://preview.diversif.app')).toBe(true);
+    expect(isOriginAllowedForRPID('https://example.com')).toBe(false);
   });
 });
 

@@ -5,7 +5,8 @@ import {
   PASSKEY_CHALLENGE_TTL_MS,
   RP_ID,
   buildAuthenticationOptions,
-  createChallenge
+  createChallenge,
+  isOriginAllowedForRPID
 } from '$lib/server/passkeys';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { RequestHandler } from './$types';
@@ -32,7 +33,10 @@ const PASSKEY_AUTOFILL_OPTIONS_LIMIT = {
 };
 
 export const POST: RequestHandler = async (event) => {
-  const { cookies, request } = event;
+  const { cookies, request, url } = event;
+  if (!isOriginAllowedForRPID(url.origin)) {
+    throw error(500, 'Configuration WebAuthn invalide pour cet hôte.');
+  }
 
   // Body is optional : conditional-UI clients send {"mode":"autofill"} so the
   // server can route to the autofill cookie + bucket. Legacy / modal clients

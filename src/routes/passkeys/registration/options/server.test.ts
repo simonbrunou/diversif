@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../../test/route';
 
@@ -13,10 +13,17 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { SESSION_COOKIE } from '$lib/server/auth';
+import { SESSION_COOKIE, hashPassword } from '$lib/server/auth';
 import { users, webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, RP_ID } from '$lib/server/passkeys';
+
+const PASSWORD = 'current-password-12';
+let passwordHash: string;
+
+beforeAll(async () => {
+  passwordHash = await hashPassword(PASSWORD);
+});
 
 beforeEach(async () => {
   await resetTestDb();
@@ -29,12 +36,20 @@ async function seed() {
       .insert(users)
       .values({
         email: 'p@example.com',
-        passwordHash: 'placeholder-hash',
+        passwordHash,
         displayName: 'Parent',
         createdAt: new Date()
       })
       .returning()
   )[0];
+}
+
+function withJsonBody(event: ReturnType<typeof makeRouteEvent>, body: unknown) {
+  (event as { request: Request }).request = new Request(event.url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 }
 
 describe('POST /passkeys/registration/options', () => {
@@ -50,7 +65,11 @@ describe('POST /passkeys/registration/options', () => {
   it('errors 401 when the user no longer exists', async () => {
     const u = await seed();
     await testDb.delete(users).where(eq(users.id, u.id));
-    const event = makeRouteEvent({ user: safeUser(u) });
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://diversif.app/passkeys/registration/options'
+    });
+    withJsonBody(event, { currentPassword: PASSWORD });
     const r = await captureFlow(
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
     );
@@ -66,8 +85,9 @@ describe('POST /passkeys/registration/options', () => {
     });
     const event = makeRouteEvent({
       user: safeUser(u),
-      url: 'https://app.example.com/passkeys/registration/options'
+      url: 'https://diversif.app/passkeys/registration/options'
     });
+    withJsonBody(event, { currentPassword: PASSWORD });
     const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
     const body = await res.json();
     expect(body.challenge).toBe('big-challenge');
@@ -96,13 +116,41 @@ describe('POST /passkeys/registration/options', () => {
     const orig = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {
-      const event = makeRouteEvent({ user: safeUser(u) });
+      const event = makeRouteEvent({
+        user: safeUser(u),
+        url: 'https://diversif.app/passkeys/registration/options'
+      });
+      withJsonBody(event, { currentPassword: PASSWORD });
       await POST(event as unknown as Parameters<typeof POST>[0]);
       const opts = event.cookies.set.mock.calls[0][2] as { secure: boolean };
       expect(opts.secure).toBe(true);
     } finally {
       process.env.NODE_ENV = orig;
     }
+  });
+
+  it('rejects a missing current password before creating a challenge', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://diversif.app/passkeys/registration/options'
+    });
+    withJsonBody(event, {});
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(400);
+    expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
+  });
+
+  it('rejects an incorrect current password before creating a challenge', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://diversif.app/passkeys/registration/options'
+    });
+    withJsonBody(event, { currentPassword: 'wrong-password' });
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(400);
+    expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 });
 

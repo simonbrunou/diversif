@@ -85,10 +85,19 @@ export const actions: Actions = {
     return { success: 'Enfant mis à jour.' };
   },
 
-  createInvitation: async ({ params, locals }) => {
+  createInvitation: async ({ params, request, locals }) => {
     requireUser(locals);
     const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
+    const data = await request.formData();
+    const currentPassword = String(data.get('currentPassword') ?? '');
+
+    const fresh = await requireFreshAuth(user, currentPassword, {
+      onMissingUser: () => {
+        throw localizedRedirect(locals.locale, 303, '/login');
+      }
+    });
+    if (!fresh.ok) return fresh.error;
 
     const code = await createInvitationForChild({ childId, createdBy: user.id });
     if (!code) return fail(500, { error: 'Impossible de générer un code unique.' });

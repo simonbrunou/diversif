@@ -19,11 +19,13 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 
 ```bash
 bun install
-DATABASE_PATH=./dev.db bun run dev
+DATABASE_PATH=./dev.db WEBAUTHN_RP_ID=localhost bun run dev
 bun run db:generate   # only when schema.ts changes
 ```
 
 The app reads `DATABASE_PATH` at startup, creates the SQLite file if absent, runs migrations, and seeds the food catalog automatically on first boot.
+
+Passkeys require `WEBAUTHN_RP_ID` to match the browser host's registrable domain. The hosted default is `diversif.app`; set `WEBAUTHN_RP_ID=localhost` for local Docker, or to your own bare hostname when self-hosting on a custom domain.
 
 ## Tests / checks
 

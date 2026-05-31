@@ -49,7 +49,7 @@ import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { invitations } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { actions } from './+page.server';
-import { setup } from './settings-test-fixtures';
+import { PASSWORD, setup } from './settings-test-fixtures';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -64,7 +64,8 @@ describe('settings createInvitation action', () => {
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      params: { id: String(c.id) }
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
@@ -74,6 +75,21 @@ describe('settings createInvitation action', () => {
       await testDb.select().from(invitations).where(eq(invitations.code, r.code)).limit(1)
     )[0];
     expect(stored).toBeDefined();
+  });
+
+  it('requires the current password before creating an invitation', async () => {
+    const { u, c, m } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { currentPassword: 'wrong-password' }
+    });
+    const r = (await actions.createInvitation!(
+      event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(400);
+    expect(await testDb.select().from(invitations)).toHaveLength(0);
   });
 
   it('returns the failure key after 5 colliding attempts', async () => {
@@ -94,7 +110,8 @@ describe('settings createInvitation action', () => {
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      params: { id: String(c.id) }
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
@@ -121,7 +138,8 @@ describe('settings createInvitation action', () => {
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      params: { id: String(c.id) }
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
