@@ -23,10 +23,14 @@ describe('StagesBentoGrid', () => {
     expect(screen.queryByText('Voir moins')).toBeNull();
   });
 
-  it('marks the active stage with aria-current="step"', () => {
+  it('marks only the active stage with aria-current="step"', () => {
     render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
     const active = screen.getByText('6 à 9 mois').closest('button');
     expect(active?.getAttribute('aria-current')).toBe('step');
+    // Non-active tiles must not be marked current — guards against a flipped
+    // ternary marking every (or the wrong) tile as the screen-reader step.
+    const inactive = screen.getByText('9 à 12 mois').closest('button');
+    expect(inactive?.getAttribute('aria-current')).toBeNull();
   });
 
   it('calls onOpen with the stage id when a tile is tapped', async () => {
