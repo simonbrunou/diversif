@@ -68,16 +68,15 @@ describe('DiscoverBento', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('collapses the stages grid to the current stage with the others behind an expander', () => {
+  it('renders every stage tile in the grid', () => {
     render(DiscoverBento, { props: baseProps });
     expect(screen.getByText('6 à 9 mois')).toBeTruthy();
-    expect(screen.queryByText('9 à 12 mois')).toBeNull();
-    expect(screen.getByText('Voir toutes les étapes')).toBeTruthy();
+    expect(screen.getByText('9 à 12 mois')).toBeTruthy();
+    expect(screen.queryByText('Voir toutes les étapes')).toBeNull();
   });
 
-  it('opens the StageDetailSheet when a stage tile is tapped (after expanding)', async () => {
+  it('opens the StageDetailSheet when a stage tile is tapped', async () => {
     render(DiscoverBento, { props: baseProps });
-    await fireEvent.click(screen.getByText('Voir toutes les étapes'));
     await fireEvent.click(screen.getByText('9 à 12 mois'));
     expect(screen.getAllByText('Cuillère').length).toBeGreaterThanOrEqual(2);
   });

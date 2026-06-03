@@ -13,24 +13,14 @@ describe('StagesBentoGrid', () => {
     { id: '12m+', title: '12 mois et plus', oneLiner: 'Vers la table familiale' }
   ];
 
-  it('shows only the active stage tile by default, with the rest behind an expander', () => {
+  it('shows all four stage tiles with no expander', () => {
     render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
-    expect(screen.getByText('6 à 9 mois')).toBeTruthy();
-    expect(screen.queryByText('4 à 6 mois')).toBeNull();
-    expect(screen.queryByText('9 à 12 mois')).toBeNull();
-    expect(screen.queryByText('12 mois et plus')).toBeNull();
-    expect(screen.getByText('Voir toutes les étapes')).toBeTruthy();
-  });
-
-  it('reveals all four stage tiles once expanded', async () => {
-    render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
-    await fireEvent.click(screen.getByText('Voir toutes les étapes'));
     expect(screen.getByText('4 à 6 mois')).toBeTruthy();
     expect(screen.getByText('6 à 9 mois')).toBeTruthy();
     expect(screen.getByText('9 à 12 mois')).toBeTruthy();
     expect(screen.getByText('12 mois et plus')).toBeTruthy();
-    // The toggle flips to a collapse affordance.
-    expect(screen.getByText('Voir moins')).toBeTruthy();
+    expect(screen.queryByText('Voir toutes les étapes')).toBeNull();
+    expect(screen.queryByText('Voir moins')).toBeNull();
   });
 
   it('marks the active stage with aria-current="step"', () => {
@@ -42,7 +32,6 @@ describe('StagesBentoGrid', () => {
   it('calls onOpen with the stage id when a tile is tapped', async () => {
     const onOpen = mock();
     render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen } });
-    await fireEvent.click(screen.getByText('Voir toutes les étapes'));
     await fireEvent.click(screen.getByText('9 à 12 mois'));
     expect(onOpen).toHaveBeenCalledWith('9-12m');
   });
