@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/sveltekit';
 import { lt } from 'drizzle-orm';
 import { db } from './db';
 import { invitations, sessions, webauthnChallenges } from './db/schema';
@@ -53,10 +54,12 @@ export function startCleanupTimer(): void {
   if (timer) return;
   void runCleanup().catch((err) => {
     console.error('[cleanup] initial run failed:', err);
+    Sentry.captureException(err, { tags: { subsystem: 'cleanup' } });
   });
   timer = setInterval(() => {
     void runCleanup().catch((err) => {
       console.error('[cleanup] scheduled run failed:', err);
+      Sentry.captureException(err, { tags: { subsystem: 'cleanup' } });
     });
   }, CLEANUP_INTERVAL_MS);
   timer.unref?.();
