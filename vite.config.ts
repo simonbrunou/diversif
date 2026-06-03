@@ -122,6 +122,15 @@ export default defineConfig({
         ]
       : [])
   ],
+  esbuild: {
+    // esbuild >= 0.27.7 regressed: it tries to *lower* array destructuring
+    // even for targets that support it natively (Vite's default `modules`
+    // target), then errors "Transforming destructuring ... is not supported
+    // yet" on paraglide-generated `const [x] = fns` code. Explicitly marking
+    // destructuring as supported skips the broken lowering path.
+    // Upstream: evanw/esbuild#4436, vitejs/vite#22225.
+    supported: { destructuring: true }
+  },
   build: {
     // Emit hidden source maps ONLY when SENTRY_AUTH_TOKEN is set, so we
     // produce them precisely when the Sentry plugin will upload + delete
