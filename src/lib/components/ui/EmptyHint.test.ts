@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, cleanup } from '@testing-library/svelte';
 import { textSnippet } from '../../../test/component';
 import EmptyHint from './EmptyHint.svelte';

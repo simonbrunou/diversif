@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, fireEvent } from '@testing-library/svelte';
 import { stubGlobal, unstubAllGlobals } from '../../test/bun-test-utils';
 import '../../test/app-stubs';

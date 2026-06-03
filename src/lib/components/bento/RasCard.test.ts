@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, screen, cleanup } from '@testing-library/svelte';
 import RasCard from './RasCard.svelte';
 

@@ -1,4 +1,4 @@
-import { afterEach } from 'vitest';
+import { afterEach } from 'bun:test';
 import { cleanup } from '@testing-library/svelte';
 import { createRawSnippet, type Snippet } from 'svelte';
 

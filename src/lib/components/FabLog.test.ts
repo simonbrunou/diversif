@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import FabLog from './FabLog.svelte';
 

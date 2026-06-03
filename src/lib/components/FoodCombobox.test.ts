@@ -1,5 +1,4 @@
 import { describe, expect, it, mock } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../test/component';
 import FoodCombobox from './FoodCombobox.svelte';

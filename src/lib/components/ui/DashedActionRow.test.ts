@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, screen, cleanup, fireEvent } from '@testing-library/svelte';
 import { textSnippet } from '../../../test/component';
 import { Plus } from 'lucide-svelte';

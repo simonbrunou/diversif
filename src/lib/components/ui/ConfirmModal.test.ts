@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, cleanup, screen, fireEvent } from '@testing-library/svelte';
 
 // happy-dom's cloneNode interaction with bits-ui's Portal trips $app/forms'

@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, spyOn } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import PrintShell from './PrintShell.svelte';

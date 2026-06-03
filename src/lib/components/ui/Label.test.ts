@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'bun:test';
-// @vitest-environment happy-dom
 import { render } from '@testing-library/svelte';
 import '../../../test/component';
 import { textSnippet } from '../../../test/component';
