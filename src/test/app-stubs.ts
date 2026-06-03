@@ -3,11 +3,11 @@
  * mounted in jsdom/happy-dom without a full SvelteKit runtime. Each test
  * file that needs them does:
  *
- *   import './app-stubs'; // hoists the vi.mock calls
+ *   import './app-stubs'; // registers the $app/* module mocks
  *
  * before importing the component under test.
  */
-import { vi } from 'vitest';
+import { mock } from 'bun:test';
 
 const page = {
   url: new URL('http://localhost/'),
@@ -20,7 +20,7 @@ const page = {
   state: {}
 };
 
-vi.mock('$app/state', () => ({
+mock.module('$app/state', () => ({
   page,
   navigating: {
     type: null,
@@ -30,26 +30,26 @@ vi.mock('$app/state', () => ({
     delta: 0,
     complete: Promise.resolve()
   },
-  updated: { current: false, check: vi.fn() }
+  updated: { current: false, check: mock(() => {}) }
 }));
 
-vi.mock('$app/forms', () => ({
+mock.module('$app/forms', () => ({
   enhance: () => ({ destroy() {} }),
-  applyAction: vi.fn(),
-  deserialize: vi.fn()
+  applyAction: mock(() => {}),
+  deserialize: mock(() => {})
 }));
 
-vi.mock('$app/environment', () => ({
+mock.module('$app/environment', () => ({
   browser: true,
   building: false,
   dev: true,
   version: 'test'
 }));
 
-vi.mock('$app/navigation', () => ({
-  goto: vi.fn(),
-  invalidate: vi.fn(),
-  invalidateAll: vi.fn()
+mock.module('$app/navigation', () => ({
+  goto: mock(() => {}),
+  invalidate: mock(() => {}),
+  invalidateAll: mock(() => {})
 }));
 
 export function setPagePathname(pathname: string) {
