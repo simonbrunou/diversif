@@ -6,6 +6,7 @@ import { children, memberships } from '$lib/server/db/schema';
 import { requireUser } from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
 import { createInvitationForChild } from '$lib/server/invitations';
+import { audit } from '$lib/server/audit';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z.object({
@@ -60,6 +61,7 @@ export const actions: Actions = {
     await db
       .insert(memberships)
       .values({ userId: user.id, childId: inserted.id, role: 'owner', createdAt: now });
+    audit({ type: 'child.created', userId: user.id, childId: inserted.id });
 
     const inviteCoparent = formData.get('inviteCoparent') === '1';
     let redirectQuery = '';
@@ -67,6 +69,7 @@ export const actions: Actions = {
       const code = await createInvitationForChild({ childId: inserted.id, createdBy: user.id });
       /* v8 ignore next : code === null only after 5 random-code collisions (~1-in-trillion) */
       redirectQuery = code ? `?inviteCode=${code}` : '?invite=failed';
+      if (code) audit({ type: 'invite.created', userId: user.id, childId: inserted.id });
     }
 
     throw localizedRedirect(locals.locale, 303, `/child/${inserted.id}${redirectQuery}`);

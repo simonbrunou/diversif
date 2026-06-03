@@ -40,7 +40,7 @@
     "hash": "07cc10695ec7548f933597815113241b"
   },
   "/home/sbrn/Projects/diversif/drizzle/0001_neat_the_twelve.sql": {
-    "mtime": 1780508924.9012895,
+    "mtime": 1780510593.1358478,
     "hash": "8fae27a37e1fdf27ec3e03d171bef085"
   },
   "/home/sbrn/Projects/diversif/e2e/i18n.spec.ts": {
@@ -156,8 +156,8 @@
     "hash": "622934d2e000470f62cb8edd09b212d3"
   },
   "/home/sbrn/Projects/diversif/scripts/verify-backup-restore.ts": {
-    "mtime": 1780509340.7319927,
-    "hash": "ac3abfdbec60eebefb5b15e7942274a1"
+    "mtime": 1780510593.1428478,
+    "hash": "1e46682b1a4202018112c6bfbc552586"
   },
   "/home/sbrn/Projects/diversif/src/hooks.ts": {
     "mtime": 1778708530.63204,
@@ -836,7 +836,7 @@
     "hash": "357d787223c97a4378c067fec211a161"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/bento/StageDetailSheet.svelte": {
-    "mtime": 1780508718.5483863,
+    "mtime": 1780510593.1428478,
     "hash": "f72e214e7f6d82c7e69e081eaf5cb6f7"
   },
   "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideAllergensSection.svelte": {
@@ -923,10 +923,6 @@
     "mtime": 1778710035.2734356,
     "hash": "fb466f5fb3a23c59525d614b950b51da"
   },
-  "/home/sbrn/Projects/diversif/src/lib/server/audit.ts": {
-    "mtime": 1779156767.7601178,
-    "hash": "7fd2481b68fb2f4ee7057740d05bea55"
-  },
   "/home/sbrn/Projects/diversif/src/lib/server/guards.ts": {
     "mtime": 1779393170.9955785,
     "hash": "bfc72027bdfeb1b3d7f31dbd5d390e8e"
@@ -970,10 +966,6 @@
   "/home/sbrn/Projects/diversif/src/lib/server/cleanup.test.ts": {
     "mtime": 1780503890.8151777,
     "hash": "4a5ba6d8749d1af78c6da690a4e6da22"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/cleanup.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "bdfec0ce7695b7357684dbc56b8debbe"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/food-resolution.test.ts": {
     "mtime": 1780503890.8161776,
@@ -1055,6 +1047,14 @@
     "mtime": 1780503890.8171775,
     "hash": "1468272a7837170c51cb22707e383828"
   },
+  "/home/sbrn/Projects/diversif/src/lib/server/audit.ts": {
+    "mtime": 1780512011.476119,
+    "hash": "0980548f47e6c14c72274434323277a4"
+  },
+  "/home/sbrn/Projects/diversif/src/lib/server/cleanup.ts": {
+    "mtime": 1780512237.711747,
+    "hash": "9b169a9890cb657e5c1786b963563649"
+  },
   "/home/sbrn/Projects/diversif/src/lib/server/db/errors.ts": {
     "mtime": 1780503890.8151777,
     "hash": "9fcb0372fa80fa61f301bf09803c17e5"
@@ -1092,11 +1092,11 @@
     "hash": "049efe9c6c56269b0236934630475c66"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/schema.ts": {
-    "mtime": 1780508904.903494,
+    "mtime": 1780510593.1428478,
     "hash": "32d68c7d90865e525a9178802327562b"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.ts": {
-    "mtime": 1780508968.4598432,
+    "mtime": 1780510593.1428478,
     "hash": "d7b9c5d17f3255110c7d437b4154d47c"
   },
   "/home/sbrn/Projects/diversif/src/lib/server/guidance/reminders.ts": {
@@ -1280,19 +1280,19 @@
     "hash": "333612d1caccfa72d4db17565012764c"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1780509406.2473996,
+    "mtime": 1780512892.2926326,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1780509406.2473996,
+    "mtime": 1780512892.2926326,
     "hash": "d85a75f59a34bb153df72f7518937ca3"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1780509406.2473996,
+    "mtime": 1780512892.2926326,
     "hash": "f98e2625e895e781af9a12989b681614"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1780509406.2473996,
+    "mtime": 1780512892.2926326,
     "hash": "94f5c82ad57e6e95b2dc293b882ba8ee"
   },
   "/home/sbrn/Projects/diversif/src/lib/forms/tracked-enhance.ts": {
@@ -1528,7 +1528,7 @@
     "hash": "28ec99fcdc086ae99e536dd61b8c053a"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/guide/+page.svelte": {
-    "mtime": 1780508724.4913263,
+    "mtime": 1780510593.1428478,
     "hash": "13e55b9af0c8c7f5e1e5e0d5666c95b1"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.svelte": {
@@ -1543,25 +1543,25 @@
     "mtime": 1780503890.8201776,
     "hash": "bd680a32184511ffc1be5bc34e18aba3"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.server.ts": {
-    "mtime": 1780508966.9738584,
-    "hash": "ec3b42bbf90c232fd32bc90de8d4df9c"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/log.update.test.ts": {
-    "mtime": 1780509267.3527558,
+    "mtime": 1780510593.1438477,
     "hash": "57f01067040a0fb9a5a614ec5ce425de"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.server.ts": {
+    "mtime": 1780512181.8743327,
+    "hash": "67deb6286f06bce6a59960309ad907ef"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.svelte": {
     "mtime": 1779393424.33595,
     "hash": "982c174341d7ce87134af42fc4669fc6"
   },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
-    "mtime": 1780508976.170764,
-    "hash": "1d9e875e448f79eb57eccbf6560ba66c"
-  },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/page.server.test.ts": {
-    "mtime": 1780509298.8794281,
+    "mtime": 1780510593.1438477,
     "hash": "a7780339423d162208913243eea8ce7c"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
+    "mtime": 1780512210.252035,
+    "hash": "cb3cb4b96783b8d3059220e76594cdd4"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.svelte": {
     "mtime": 1780503890.8201776,
@@ -1584,8 +1584,8 @@
     "hash": "4d0b9960486b09dc8dc17ce0f0a19a50"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.server.ts": {
-    "mtime": 1780509340.7709923,
-    "hash": "a7be1649f3eb670382b62a93bed2b3a5"
+    "mtime": 1780512132.1208544,
+    "hash": "0d72324efef1211eed57a92e28b88ad3"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.svelte": {
     "mtime": 1779392646.4209328,
@@ -1620,8 +1620,8 @@
     "hash": "13291f7fbf17904be3d047a2216df4c4"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/new/+page.server.ts": {
-    "mtime": 1780508963.6808922,
-    "hash": "6a58e6de222bd90f96d79bf0cbd00ca9"
+    "mtime": 1780512154.0396245,
+    "hash": "ad013ef3b04ef149ddde498090afc787"
   },
   "/home/sbrn/Projects/diversif/src/routes/cookies/+page.svelte": {
     "mtime": 1779257799.4649305,
@@ -1643,33 +1643,33 @@
     "mtime": 1779393424.33595,
     "hash": "025c4706af91db0d134bb0b3781f4ade"
   },
-  "/home/sbrn/Projects/diversif/src/routes/join/[code]/+page.server.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "ff84a36557723ffc4d2eba4a09ca9e2b"
-  },
   "/home/sbrn/Projects/diversif/src/routes/join/[code]/page.server.test.ts": {
     "mtime": 1780503890.8201776,
     "hash": "d7be93f61db1e50c0b90929776241fd2"
   },
-  "/home/sbrn/Projects/diversif/src/routes/login/+page.server.ts": {
-    "mtime": 1779393951.0064473,
-    "hash": "3e61e0825712d12d485aab8a676f4345"
+  "/home/sbrn/Projects/diversif/src/routes/join/[code]/+page.server.ts": {
+    "mtime": 1780512094.4212496,
+    "hash": "26b70da28244708152aad0027f982ca6"
   },
   "/home/sbrn/Projects/diversif/src/routes/login/+page.svelte": {
     "mtime": 1780503890.8211775,
     "hash": "362a520c0371e3219151e915f3f1cd97"
   },
-  "/home/sbrn/Projects/diversif/src/routes/login/page.server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "ecdf5757bef44c2783666e482686036d"
+  "/home/sbrn/Projects/diversif/src/routes/login/+page.server.ts": {
+    "mtime": 1780512032.3878999,
+    "hash": "6f6ad005c0a123edbf9c11fde457e713"
   },
-  "/home/sbrn/Projects/diversif/src/routes/logout/+server.ts": {
-    "mtime": 1778708530.737405,
-    "hash": "85466d502f72ee168b06f76000f132fb"
+  "/home/sbrn/Projects/diversif/src/routes/login/page.server.test.ts": {
+    "mtime": 1780512851.4490957,
+    "hash": "7b32c4022911a715e4cf85d1ad73e1a3"
   },
   "/home/sbrn/Projects/diversif/src/routes/logout/server.test.ts": {
     "mtime": 1780503890.8211775,
     "hash": "6fe2bc64599e2ca65f44caa481ba4af6"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/logout/+server.ts": {
+    "mtime": 1780512079.6714041,
+    "hash": "dcf4ae600c799b41ca0e6108808d7a39"
   },
   "/home/sbrn/Projects/diversif/src/routes/mentions-legales/+page.server.ts": {
     "mtime": 1778708530.7379937,
@@ -1691,13 +1691,13 @@
     "mtime": 1780503890.8211775,
     "hash": "3f5a5b63e14c50e9134b7004807dffde"
   },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/verify/+server.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "aa40a8cc842fcd719c47d18483b8a557"
-  },
   "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/verify/server.test.ts": {
     "mtime": 1780503890.8211775,
     "hash": "0186009f899922251ec080261fdc9fb8"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/verify/+server.ts": {
+    "mtime": 1780512047.828738,
+    "hash": "f03f75152f471c7731ca72692740a593"
   },
   "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/options/+server.ts": {
     "mtime": 1780503890.8211775,
@@ -1735,10 +1735,6 @@
     "mtime": 1780503890.8211775,
     "hash": "b463983495ac14fb982109dbe4fce7ae"
   },
-  "/home/sbrn/Projects/diversif/src/routes/signup/+page.server.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "57d954596f4848691157b35e80e2b6af"
-  },
   "/home/sbrn/Projects/diversif/src/routes/signup/+page.svelte": {
     "mtime": 1780503890.8211775,
     "hash": "a98be93baeaa1996ca52f6fb39a94433"
@@ -1746,6 +1742,10 @@
   "/home/sbrn/Projects/diversif/src/routes/signup/page.server.test.ts": {
     "mtime": 1780503890.8211775,
     "hash": "f0a5632f059f419cabf7013d2fcd0006"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/signup/+page.server.ts": {
+    "mtime": 1780512063.9155693,
+    "hash": "8491476c69a58428b6ad07939a103373"
   },
   "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/+server.ts": {
     "mtime": 1780503890.8221776,
@@ -1848,7 +1848,7 @@
     "hash": "49424957a60c6472100a0295320000ed"
   },
   "/home/sbrn/Projects/diversif/DEPLOY.md": {
-    "mtime": 1780509340.6459935,
+    "mtime": 1780510593.1358478,
     "hash": "cfefe008b9aa90762fae68d8623e58c1"
   },
   "/home/sbrn/Projects/diversif/src/app.html": {

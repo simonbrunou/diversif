@@ -5,6 +5,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { createInvitationForChild } from '$lib/server/invitations';
+import { audit } from '$lib/server/audit';
 import { requireFreshAuth } from '$lib/server/fresh-auth';
 import {
   parseChildIdParam,
@@ -105,19 +106,21 @@ export const actions: Actions = {
 
     const code = await createInvitationForChild({ childId, createdBy: user.id });
     if (!code) return fail(500, { error: 'Impossible de générer un code unique.' });
+    audit({ type: 'invite.created', userId: user.id, childId });
     return { success: 'Code généré.', code };
   },
 
   revokeInvitation: async ({ params, request, locals }) => {
     requireUser(locals);
     const childId = parseChildIdParam(params);
-    requireOwnership(locals, childId);
+    const { user } = requireOwnership(locals, childId);
     const data = await request.formData();
     const code = String(data.get('code') ?? '');
     if (!code) return fail(400, { error: 'Code manquant.' });
     await db
       .delete(invitations)
       .where(and(eq(invitations.code, code), eq(invitations.childId, childId)));
+    audit({ type: 'invite.revoked', userId: user.id, childId });
     return { success: 'Invitation révoquée.' };
   },
 
@@ -134,6 +137,7 @@ export const actions: Actions = {
     await db
       .delete(memberships)
       .where(and(eq(memberships.childId, childId), eq(memberships.userId, userId)));
+    audit({ type: 'membership.removed', userId: owner.id, childId, removedUserId: userId });
     return { success: 'Membre retiré.' };
   },
 
@@ -147,6 +151,7 @@ export const actions: Actions = {
     await db
       .delete(memberships)
       .where(and(eq(memberships.childId, childId), eq(memberships.userId, user.id)));
+    audit({ type: 'membership.left', userId: user.id, childId });
     throw localizedRedirect(locals.locale, 303, '/');
   },
 

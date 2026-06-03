@@ -11,6 +11,7 @@ import {
 import { SESSION_COOKIE, SESSION_DURATION_MS, createSession } from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
+import { audit } from '$lib/server/audit';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { RequestHandler } from './$types';
 
@@ -65,6 +66,7 @@ export const POST: RequestHandler = async (event) => {
   });
 
   if (!result.ok) {
+    audit({ type: 'auth.login_failed', method: 'passkey' });
     return json({ ok: false, error: result.error }, { status: 400 });
   }
 
@@ -83,6 +85,7 @@ export const POST: RequestHandler = async (event) => {
     secure: process.env.NODE_ENV === 'production',
     maxAge: Math.floor(SESSION_DURATION_MS / 1000)
   });
+  audit({ type: 'auth.login_succeeded', userId: result.userId, method: 'passkey' });
 
   return json({ ok: true });
 };
