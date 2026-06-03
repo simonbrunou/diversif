@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, cleanup, screen } from '@testing-library/svelte';
 import { createRawSnippet, type Snippet } from 'svelte';
 import Field from './Field.svelte';

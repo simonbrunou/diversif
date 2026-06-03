@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, setSystemTime } from 'bun:test';
-// @vitest-environment happy-dom
 import {
   loadTimer,
   saveTimer,

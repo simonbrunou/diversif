@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
-// @vitest-environment happy-dom
 import 'fake-indexeddb/auto';
 import { get } from 'svelte/store';
 

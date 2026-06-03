@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
-// @vitest-environment happy-dom
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import SymptomList from './SymptomList.svelte';
 
