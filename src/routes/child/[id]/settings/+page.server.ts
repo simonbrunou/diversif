@@ -80,7 +80,11 @@ export const actions: Actions = {
 
     await db
       .update(children)
-      .set({ name: parsed.data.name.trim(), birthDate: parsed.data.birthDate })
+      .set({
+        name: parsed.data.name.trim(),
+        birthDate: parsed.data.birthDate,
+        updatedAt: new Date()
+      })
       .where(eq(children.id, childId));
     return { success: 'Enfant mis à jour.' };
   },

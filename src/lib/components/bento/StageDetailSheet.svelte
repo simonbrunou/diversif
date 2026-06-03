@@ -63,4 +63,6 @@
       </Callout>
     </SheetSection>
   {/if}
+
+  <Callout variant="info">{m.guideMedicalDisclaimer()}</Callout>
 </DetailSheet>

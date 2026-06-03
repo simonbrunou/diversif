@@ -41,7 +41,7 @@ export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSy
       const target = severityOf(input.label) === 'severe' ? 'reaction' : 'inconfort';
       const updated = tx
         .update(foodEntries)
-        .set({ reaction: target })
+        .set({ reaction: target, updatedAt: new Date() })
         .where(
           and(
             eq(foodEntries.id, input.foodEntryId),

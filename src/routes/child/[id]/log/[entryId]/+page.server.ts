@@ -132,7 +132,8 @@ export const actions: Actions = {
         givenAt: givenAtDate,
         reaction: parsed.data.reaction,
         texture: textureValue,
-        notes: parsed.data.notes?.trim() || null
+        notes: parsed.data.notes?.trim() || null,
+        updatedAt: new Date()
       })
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
 

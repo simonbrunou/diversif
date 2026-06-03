@@ -160,7 +160,8 @@ export const actions: Actions = {
               texture: parsed.data.texture ?? null,
               notes: parsed.data.notes?.trim() || null,
               loggedBy: user.id,
-              createdAt: new Date()
+              createdAt: new Date(),
+              updatedAt: new Date()
             })
             .run();
 
