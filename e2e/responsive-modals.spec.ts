@@ -15,9 +15,10 @@ import {
 
 const openCarrier = async (page: Page, childId: string): Promise<void> => {
   await page.goto(`/child/${childId}/guide`);
-  // Children born 2025-08-01 are ~9 months old at test time; the "6–9 mois"
-  // stage tile is always rendered by the bento. Same pattern as
-  // bento-discover.spec.ts.
+  // The stages grid collapses to the current stage by default, so expand it
+  // first to guarantee the "6–9 mois" tile is rendered regardless of the
+  // child's exact age. Same stage-sheet wiring as bento-discover.spec.ts.
+  await page.getByRole('button', { name: /Voir toutes les étapes/i }).click();
   await page.getByRole('button', { name: /6–9 mois/i }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 };

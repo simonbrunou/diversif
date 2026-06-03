@@ -9,6 +9,7 @@
   import Recipes from './Recipes.svelte';
   import DidYouKnow from './DidYouKnow.svelte';
   import DiscoverGroup from './DiscoverGroup.svelte';
+  import DiscoverSegments, { type DiscoverSection } from './DiscoverSegments.svelte';
   import * as m from '$lib/paraglide/messages.js';
   import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
   import type { AllergenItem } from '$lib/server/guidance/allergen-status';
@@ -42,7 +43,8 @@
     currentMonth,
     childId,
     recipes,
-    factCards
+    factCards,
+    currentSection = 'reperes'
   }: {
     stages: Stage[];
     activeStageId: string;
@@ -57,6 +59,7 @@
     childId: string;
     recipes: readonly Recipe[];
     factCards: readonly FactCard[];
+    currentSection?: DiscoverSection;
   } = $props();
 
   let openStageId = $state<string | null>(null);
@@ -72,22 +75,30 @@
 </script>
 
 <div class="flex flex-col">
-  <DiscoverGroup label={m.discoverGroupReperes()} tint="mint">
-    <StagesBentoGrid {stages} {activeStageId} onOpen={openStageBy} />
-    <AllergenPassport {allergens} />
-    <TextureTimeline {ageMonths} progress={textureProgress} />
-  </DiscoverGroup>
+  <DiscoverSegments {childId} {currentSection} />
 
-  <DiscoverGroup label={m.discoverGroupAEssayer()} tint="peach">
-    <SeasonalFoods foods={seasonalFoods} month={currentMonth} {childId} />
-    <Recipes {recipes} />
-    <SuggestionFeed {suggestions} onPick={onPickSuggestion} viewAllHref={viewAllSuggestionsHref} />
-  </DiscoverGroup>
-
-  <DiscoverGroup label={m.discoverGroupApprendre()} tint="butter">
-    <DidYouKnow cards={factCards} />
-    <SourcesCluster />
-  </DiscoverGroup>
+  {#if currentSection === 'reperes'}
+    <DiscoverGroup label={m.discoverGroupReperes()} tint="mint">
+      <StagesBentoGrid {stages} {activeStageId} onOpen={openStageBy} />
+      <AllergenPassport {allergens} />
+      <TextureTimeline {ageMonths} progress={textureProgress} />
+    </DiscoverGroup>
+  {:else if currentSection === 'essayer'}
+    <DiscoverGroup label={m.discoverGroupAEssayer()} tint="peach">
+      <SeasonalFoods foods={seasonalFoods} month={currentMonth} {childId} />
+      <Recipes {recipes} />
+      <SuggestionFeed
+        {suggestions}
+        onPick={onPickSuggestion}
+        viewAllHref={viewAllSuggestionsHref}
+      />
+    </DiscoverGroup>
+  {:else}
+    <DiscoverGroup label={m.discoverGroupApprendre()} tint="butter">
+      <DidYouKnow cards={factCards} />
+      <SourcesCluster />
+    </DiscoverGroup>
+  {/if}
 </div>
 
 {#if openStage}
