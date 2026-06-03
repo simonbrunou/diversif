@@ -1,79 +1,81 @@
-// Side-effect-only: ensures Sentry is initialised before this module's
-// top-level await runs migrations. captureException below would otherwise
-// silently drop events because hooks.server.ts's own Sentry.init has not
-// run yet at that point in the import chain.
+// Side-effect-only: ensures Sentry is initialised before this module runs
+// migrations. captureException below would otherwise silently drop events
+// because hooks.server.ts's own Sentry.init has not run yet at that point in
+// the import chain.
 import '$lib/sentry-init.server';
 
 import path from 'node:path';
 import * as Sentry from '@sentry/sveltekit';
-import { Pool } from 'pg';
-import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { Database } from 'bun:sqlite';
+import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import * as schema from './schema';
 import { seedFoods } from './seed';
 import { registerShutdownHandlers } from '../shutdown';
+import { building } from '$app/environment';
 
-export type DB = NodePgDatabase<typeof schema>;
+export type DB = BunSQLiteDatabase<typeof schema>;
 
-function resolveDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error('DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif)');
+function resolveDatabasePath(): string {
+  // Vite's SSR/prerender pass imports server modules at build time. migrate()
+  // and seedFoods() are gated by `building`, but the Database constructor still
+  // opens a handle, so use an in-memory DB during build. This keeps
+  // DATABASE_PATH out of the build environment (Railpack, Docker without a
+  // mounted volume, plain `bun run build`). It is never migrated or queried —
+  // `building` short-circuits everything downstream.
+  if (building) return ':memory:';
+  const dbPath = process.env.DATABASE_PATH;
+  if (!dbPath) {
+    throw new Error('DATABASE_PATH is required (e.g. /app/data/diversif.db)');
   }
-  return url;
+  return dbPath;
 }
 
-function resolvePoolMax(): number {
-  const raw = process.env.PGPOOL_MAX;
-  /* v8 ignore next : defensive for invalid env input, no test env sets PGPOOL_MAX */
-  if (!raw) return 10;
-  const n = Number(raw);
-  /* v8 ignore next : defensive for invalid env input */
-  if (!Number.isInteger(n) || n <= 0) return 10;
-  return n;
-}
+const sqlite = new Database(resolveDatabasePath(), { create: true });
+// Connection pragmas (this process holds a single SQLite connection, unlike
+// the prior pg pool):
+//   - journal_mode=WAL: readers never block the single writer; durable.
+//   - foreign_keys=ON: REQUIRED for the ON DELETE CASCADE / SET NULL / RESTRICT
+//     actions in schema.ts to fire (SQLite leaves this OFF per-connection).
+//   - busy_timeout: wait (don't throw SQLITE_BUSY) when the writer is briefly
+//     held — e.g. a rolling-deploy overlap or the seed transaction.
+//   - synchronous=NORMAL: safe under WAL, far fewer fsyncs than FULL.
+sqlite.exec('PRAGMA journal_mode = WAL;');
+sqlite.exec('PRAGMA foreign_keys = ON;');
+sqlite.exec('PRAGMA busy_timeout = 5000;');
+sqlite.exec('PRAGMA synchronous = NORMAL;');
 
-// Pool defaults are dangerous for a single-process Node app:
-//   - connectionTimeoutMillis: 0 means acquires wait forever, so a saturated
-//     pool wedges every incoming request including /healthz, defeating the
-//     Docker HEALTHCHECK that's meant to detect a wedged DB.
-//   - idleTimeoutMillis: 10s churns connections under sustained load.
-//   - no statement_timeout means a single runaway query holds a worker until
-//     the OS kills the connection.
-// Override all four so failures fail fast and surface as 5xx instead of
-// hangs. PGPOOL_MAX lets self-hosters scale the pool to their pg server.
-const pool = new Pool({
-  connectionString: resolveDatabaseUrl(),
-  max: resolvePoolMax(),
-  idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 5_000,
-  statement_timeout: 10_000
-});
-const drizzleDb = drizzle(pool, { schema });
+const drizzleDb = drizzle(sqlite, { schema });
 
-// Top-level await: SvelteKit's Node adapter runs as ESM, so importing this
-// module blocks on migration + seed. After the import settles, `db` is a
-// connected, migrated, seeded handle.
-try {
-  const migrationsFolder = path.resolve('./drizzle');
-  await migrate(drizzleDb, { migrationsFolder });
-  await seedFoods(drizzleDb);
-} catch (err) {
-  Sentry.captureException(err, { tags: { subsystem: 'db-migrate' } });
-  throw err;
+// bun:sqlite is synchronous, so — unlike the prior Postgres bootstrap — there
+// is no top-level await here: migrate() + seedFoods() run to completion as the
+// module evaluates. Skip during `vite build`: the SSR/prerender pass imports
+// server modules to render pages, which would otherwise fire migrate()/seed
+// against the :memory: stub. `building` is true only during `vite build`.
+if (!building) {
+  try {
+    const migrationsFolder = path.resolve('./drizzle');
+    migrate(drizzleDb, { migrationsFolder });
+    seedFoods(drizzleDb);
+  } catch (err) {
+    Sentry.captureException(err, { tags: { subsystem: 'db-migrate' } });
+    throw err;
+  }
 }
 
 export const db = drizzleDb;
 export { schema };
-export { pool };
+// Exported as `pool` for symmetry with the prior pg.Pool / Bun.SQL export. The
+// shutdown handler only needs to close the handle; bun:sqlite's close() is
+// synchronous, so we wrap it in the EndablePool `{ end }` shape it expects.
+export const pool = { end: async () => sqlite.close() };
 
-if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+if (!building && process.env.NODE_ENV !== 'test' && !process.env.BUN_TEST) {
   // Register the SIGTERM handler synchronously: a fire-and-forget dynamic
-  // import would lose the signal if SIGTERM arrived during the startup
-  // window before the .then() callback ran (e.g. Coolify replacing a
-  // revision within seconds of boot), defeating the entire purpose.
-  // Cleanup stays dynamic to avoid pulling its setInterval into test envs;
-  // beforeExit captures stopCleanupTimer once the module loads.
+  // import would lose the signal if SIGTERM arrived during the startup window
+  // before the .then() callback ran (e.g. Coolify replacing a revision within
+  // seconds of boot). Cleanup stays dynamic to avoid pulling its setInterval
+  // into test envs; beforeExit captures stopCleanupTimer once the module loads.
   let stopCleanupTimer: (() => void) | null = null;
   void import('../cleanup').then((mod) => {
     stopCleanupTimer = mod.stopCleanupTimer;
@@ -82,10 +84,7 @@ if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   registerShutdownHandlers({
     pool,
     beforeExit: () => stopCleanupTimer?.(),
-    // 2s flush budget mirrors Sentry's own docs for SIGTERM handlers. Long
-    // enough to drain the buffer over a healthy connection; short enough
-    // that a wedged Sentry endpoint doesn't outlive the orchestrator's
-    // shutdown grace period.
+    // 2s flush budget mirrors Sentry's own docs for SIGTERM handlers.
     flush: async () => {
       await Sentry.close(2000);
     }

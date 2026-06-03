@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { getLegalIdentity } from './legal';
 
 // Mirrors the PLACEHOLDER constant defined privately in ./legal.

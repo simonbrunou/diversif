@@ -1,13 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
-
-const { execute } = vi.hoisted(() => ({ execute: vi.fn() }));
-vi.mock('$lib/server/db', () => ({ db: { execute } }));
+import { describe, expect, it, mock } from 'bun:test';
+// bun:sqlite is synchronous: the healthz probe calls db.get() (not .execute())
+// and relies on it throwing when the handle is dead.
+const { get } = { get: mock() };
+mock.module('$lib/server/db', () => ({ db: { get } }));
 
 import { GET } from './+server';
 
 describe('GET /healthz', () => {
   it('returns 200 with ok payload when the DB probe succeeds', async () => {
-    execute.mockResolvedValueOnce({ rows: [{ ok: 1 }] });
+    get.mockReturnValueOnce({ ok: 1 });
     const res = await GET({} as unknown as Parameters<typeof GET>[0]);
     expect(res.status).toBe(200);
     expect(res.headers.get('cache-control')).toBe('no-store');
@@ -19,7 +20,9 @@ describe('GET /healthz', () => {
   });
 
   it('returns 503 with down payload when the DB probe throws', async () => {
-    execute.mockRejectedValueOnce(new Error('connection refused'));
+    get.mockImplementationOnce(() => {
+      throw new Error('database is closed');
+    });
     const res = await GET({} as unknown as Parameters<typeof GET>[0]);
     expect(res.status).toBe(503);
     expect(res.headers.get('cache-control')).toBe('no-store');

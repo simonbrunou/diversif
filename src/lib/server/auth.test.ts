@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, mock } from 'bun:test';
 import { testDb } from '../../test/db';
 import { isValidInviteCodeFormat, generateInviteCodeRaw } from '$lib/utils/invites';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 const { hashPassword, verifyPasswordOrDecoy } = await import('./auth');
 
@@ -19,6 +19,7 @@ describe('isValidInviteCodeFormat', () => {
   });
   it('rejects wrong shape', () => {
     expect(isValidInviteCodeFormat('bebe-abcdef')).toBe(false);
+    expect(isValidInviteCodeFormat('BEBE-ABCD')).toBe(false);
     expect(isValidInviteCodeFormat('BEBE-ABCDE')).toBe(false);
     expect(isValidInviteCodeFormat('NOPE-ABCDEF')).toBe(false);
     expect(isValidInviteCodeFormat('BEBE_ABCDEF')).toBe(false);

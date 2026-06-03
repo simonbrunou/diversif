@@ -7,7 +7,7 @@
 
   import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
   import { enhance } from '$app/forms';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
   import { trackSubmission } from '$lib/forms/tracked-enhance';
   import * as m from '$lib/paraglide/messages';
@@ -20,8 +20,8 @@
 
   let deleteOpen = $state(false);
   let leaveOpen = $state(false);
+  let inviteOpen = $state(false);
   let savingChild = $state(false);
-  let creatingInvite = $state(false);
 
   $effect(() => {
     if (form?.success) {
@@ -29,6 +29,9 @@
     }
     if (form?.error) {
       toast.error(form.error);
+    }
+    if (inviteOpen && form?.code) {
+      inviteOpen = false;
     }
   });
 
@@ -42,7 +45,7 @@
   }
 
   function inviteUrl(code: string): string {
-    return `${$page.url.origin}/join/${code}`;
+    return `${page.url.origin}/join/${code}`;
   }
 
 </script>
@@ -108,16 +111,11 @@
         {m.settingsInviteDescription()}
       </p>
 
-      <form
-        method="POST"
-        action="?/createInvitation"
-        class="mt-3"
-        use:enhance={trackSubmission((v) => (creatingInvite = v))}
-      >
-        <Button type="submit" variant="secondary" loading={creatingInvite}>
-          {creatingInvite ? m.settingsInviteGenerating() : m.settingsInviteGenerateCta()}
+      <div class="mt-3">
+        <Button type="button" variant="secondary" onclick={() => (inviteOpen = true)}>
+          {m.settingsInviteGenerateCta()}
         </Button>
-      </form>
+      </div>
 
       {#if data.invitations.length > 0}
         <ul class="mt-4 grid gap-2">
@@ -191,4 +189,14 @@
   confirmLabel={m.settingsLeaveConfirmLabel()}
   loadingLabel={m.settingsLeaveLoadingLabel()}
   destructive
+/>
+
+<ConfirmModal
+  bind:open={inviteOpen}
+  title={m.settingsInviteGenerateCta()}
+  description={m.settingsInviteDescription()}
+  action="?/createInvitation"
+  confirmLabel={m.settingsInviteGenerateCta()}
+  loadingLabel={m.settingsInviteGenerating()}
+  requirePassword
 />

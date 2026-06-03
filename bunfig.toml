@@ -1,0 +1,33 @@
+[install]
+# Trust @sentry/cli's postinstall (downloads the CLI binary used by the
+# Sentry Vite plugin for sourcemap upload).
+trustedDependencies = ["@sentry/cli"]
+
+[test]
+# Preload order matters: svelte-loader.preload.ts registers the Bun.plugin
+# for .svelte / .svelte.{js,ts} compilation BEFORE bunfig.preload.ts pulls
+# in @testing-library/svelte (which imports props.svelte.js — needs the
+# plugin already active). bunfig.preload.ts then sets up happy-dom, $app/*
+# mocks, jest-dom matchers, and the per-test reset hooks.
+preload = ["./svelte-loader.preload.ts", "./bunfig.preload.ts"]
+# Disable coverage by default; opt in via `bun test --coverage`.
+coverage = false
+coverageReporter = ["text", "lcov"]
+coverageDir = "./coverage"
+# Mirror the previous vitest 100% threshold. bun test's coverage threshold
+# uses 0..1 (vitest used 0..100).
+coverageThreshold = { line = 1.0, function = 1.0, statement = 1.0 }
+# Mirror the previous vitest coverage.exclude list.
+coveragePathIgnorePatterns = [
+  "src/**/*.test.ts",
+  "src/**/*.d.ts",
+  "src/test/**",
+  "src/lib/types.ts",
+  "src/lib/server/db/index.ts",
+  "src/lib/server/db/schema.ts",
+  "src/hooks.client.ts",
+  "src/lib/paraglide/**",
+  "src/hooks.ts",
+  "src/lib/i18n.ts",
+  "src/lib/components/ui/use-bottom-sheet-drag.svelte.ts"
+]

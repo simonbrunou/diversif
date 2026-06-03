@@ -12,13 +12,13 @@ import { scrubEvent, filterIncomingBreadcrumb } from '$lib/sentry';
 Sentry.init({
   dsn: process.env.SENTRY_DSN || '',
   environment: process.env.SENTRY_ENVIRONMENT || 'production',
-  // docker-entrypoint.sh resolves SENTRY_RELEASE from /app/.release-sha or
-  // a CI env var (SOURCE_COMMIT / GITHUB_SHA / GIT_COMMIT_SHA) before
-  // exec'ing node, so a single env-var read here covers every deploy path.
-  // Keeping the fallback chain in shell (instead of inlining || branches
-  // here) also avoids untestable env-var-truthy branches under vitest's
-  // 100% coverage threshold.
-  release: process.env.SENTRY_RELEASE || undefined,
+  // Inlined at build time by Vite's `define` — see vite.config.ts. The
+  // resolver there walks SENTRY_RELEASE → SOURCE_COMMIT → GITHUB_SHA →
+  // GIT_COMMIT_SHA → `git rev-parse HEAD`, then emits either a string
+  // literal or the bare `undefined` token. Reading the constant straight
+  // through avoids the `|| undefined` fallback that vitest's 100% branch
+  // threshold can't cover from either kind of test environment.
+  release: __SENTRY_RELEASE__,
   tracesSampleRate: 0,
   // Explicitly opt out of default PII (IP address, cookies, user agent).
   // This is v8's default but we set it explicitly so a future SDK upgrade

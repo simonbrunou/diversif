@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { getTableConfig } from 'drizzle-orm/pg-core';
+import { describe, expect, it } from 'bun:test';
+import { getTableConfig } from 'drizzle-orm/sqlite-core';
 import {
   users,
   sessions,

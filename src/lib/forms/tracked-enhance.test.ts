@@ -1,13 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, mock } from 'bun:test';
 import { trackSubmission, resolveMessageKey } from './tracked-enhance';
 
 describe('trackSubmission', () => {
   it('flips the setter true on submit and false after update resolves', async () => {
-    const setter = vi.fn();
+    const setter = mock();
     const onSubmit = trackSubmission(setter);
     const after = onSubmit();
     expect(setter).toHaveBeenLastCalledWith(true);
-    const update = vi.fn(() => Promise.resolve());
+    const update = mock(() => Promise.resolve());
     await after({ update });
     expect(update).toHaveBeenCalledOnce();
     expect(setter).toHaveBeenLastCalledWith(false);

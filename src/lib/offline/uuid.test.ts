@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, spyOn } from 'bun:test';
 import { newId } from './uuid';
 
 describe('newId', () => {
@@ -14,7 +14,7 @@ describe('newId', () => {
   });
 
   it('uses crypto.randomUUID when available', () => {
-    const spy = vi.spyOn(globalThis.crypto, 'randomUUID');
+    const spy = spyOn(globalThis.crypto, 'randomUUID');
     newId();
     expect(spy).toHaveBeenCalled();
   });

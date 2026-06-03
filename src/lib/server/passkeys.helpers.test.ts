@@ -1,18 +1,18 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const mocks = vi.hoisted(() => ({
-  generateRegistrationOptions: vi.fn(),
-  verifyRegistrationResponse: vi.fn(),
-  generateAuthenticationOptions: vi.fn(),
-  verifyAuthenticationResponse: vi.fn()
-}));
+const mocks = {
+  generateRegistrationOptions: mock(),
+  verifyRegistrationResponse: mock(),
+  generateAuthenticationOptions: mock(),
+  verifyAuthenticationResponse: mock()
+};
 
-vi.mock('@simplewebauthn/server', () => mocks);
+mock.module('@simplewebauthn/server', () => mocks);
 
-import { originFromEnv, publicPasskey, rpIdFromOrigin } from './passkeys';
+import { RP_ID, isOriginAllowedForRPID, publicPasskey } from './passkeys';
 import { seedPasskey, seedUser } from './passkeys-test-fixtures';
 
 beforeEach(async () => {
@@ -23,54 +23,18 @@ beforeEach(async () => {
   mocks.verifyAuthenticationResponse.mockReset();
 });
 
-describe('rpIdFromOrigin', () => {
-  it('returns the hostname for a valid URL', () => {
-    expect(rpIdFromOrigin('https://example.com')).toBe('example.com');
-    expect(rpIdFromOrigin('https://app.example.com:8443/foo')).toBe('app.example.com');
+describe('RP_ID', () => {
+  it('defaults to the hosted registrable domain', () => {
+    // Sanity check: a bare hostname with no scheme and no subdomain.
+    expect(RP_ID).toBe('diversif.app');
+    expect(RP_ID).not.toMatch(/\//);
+    expect(RP_ID).not.toMatch(/:/);
   });
-  it('returns localhost on a malformed value', () => {
-    expect(rpIdFromOrigin('not-a-url')).toBe('localhost');
-  });
-});
 
-describe('originFromEnv', () => {
-  it('prefers the ORIGIN env var', () => {
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = 'https://from-env.test';
-    try {
-      expect(originFromEnv('https://fallback.test')).toBe('https://from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
-    }
-  });
-  it('falls back when ORIGIN is unset', () => {
-    const orig = process.env.ORIGIN;
-    delete process.env.ORIGIN;
-    try {
-      expect(originFromEnv('https://fallback.test')).toBe('https://fallback.test');
-    } finally {
-      if (orig !== undefined) process.env.ORIGIN = orig;
-    }
-  });
-  it('strips trailing slashes and surrounding whitespace', () => {
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = '  https://from-env.test/  ';
-    try {
-      expect(originFromEnv('https://fallback.test')).toBe('https://from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
-    }
-  });
-  it('also normalizes the fallback', () => {
-    const orig = process.env.ORIGIN;
-    delete process.env.ORIGIN;
-    try {
-      expect(originFromEnv('https://fallback.test///')).toBe('https://fallback.test');
-    } finally {
-      if (orig !== undefined) process.env.ORIGIN = orig;
-    }
+  it('accepts the RP ID host and subdomains, but rejects unrelated hosts', () => {
+    expect(isOriginAllowedForRPID('https://diversif.app')).toBe(true);
+    expect(isOriginAllowedForRPID('https://preview.diversif.app')).toBe(true);
+    expect(isOriginAllowedForRPID('https://example.com')).toBe(false);
   });
 });
 

@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, spyOn } from 'bun:test';
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import PrintShell from './PrintShell.svelte';
@@ -35,7 +34,7 @@ describe('PrintShell', () => {
   });
 
   it('invokes window.print() when the Imprimer button is clicked', async () => {
-    const spy = vi.spyOn(window, 'print').mockImplementation(() => {});
+    const spy = spyOn(window, 'print').mockImplementation(() => {});
     render(PrintShell, {
       props: { title: 'Doc', children: textSnippet('body') }
     });

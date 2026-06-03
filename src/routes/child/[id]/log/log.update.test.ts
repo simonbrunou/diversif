@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import {
   captureFlow,
@@ -9,7 +9,7 @@ import {
   seedUser
 } from '../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -102,16 +102,27 @@ describe('child/[id]/log texture field', () => {
 
   it('rejects an empty texture value with 400', async () => {
     const { u, c, m, food } = await setup();
+    // Construct the request body via URLSearchParams rather than the helper's
+    // FormData path: bun's Request, when handed a FormData with an empty-
+    // string field, drops the key entirely on re-parse (the multipart payload
+    // round-trips as if texture were never sent). urlencoded bodies preserve
+    // empty values, so the schema's enum validation can reject ''.
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      params: { id: String(c.id) },
-      formData: {
-        foodId: String(food.id),
-        givenAt: new Date().toISOString(),
-        reaction: 'ras',
-        texture: ''
-      }
+      params: { id: String(c.id) }
+    });
+    const params = new URLSearchParams({
+      foodId: String(food.id),
+      givenAt: new Date().toISOString(),
+      reaction: 'ras',
+      texture: ''
+    });
+    const url = new URL('http://localhost/');
+    (event as { request: Request }).request = new Request(url, {
+      method: 'POST',
+      body: params.toString(),
+      headers: { 'content-type': 'application/x-www-form-urlencoded' }
     });
     const result = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { setLanguageTag, sourceLanguageTag } from '$lib/paraglide/runtime';
 import {
   formatRelative,

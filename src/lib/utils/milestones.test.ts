@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, mock } from 'bun:test';
 import { celebrate, pickMilestoneFromQuery } from './milestones';
 
 function fakeToast() {
-  const success = vi.fn();
+  const success = mock();
   return {
     toast: { success } as unknown as Parameters<typeof celebrate>[0],
     success

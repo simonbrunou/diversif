@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import AddSymptomSheet from './AddSymptomSheet.svelte';
 

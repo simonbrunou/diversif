@@ -1,7 +1,17 @@
 import { and, eq, isNull, or } from 'drizzle-orm';
 import { db, type DB } from './db';
+import type { SQLiteTransaction } from 'drizzle-orm/sqlite-core';
+import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import { foods } from './db/schema';
+import type * as schema from './db/schema';
 import { CATEGORY_IDS } from '$lib/utils/categories';
+
+// Accepts either the bare db handle or a transaction handle so the insert can
+// participate in an outer transaction. bun:sqlite is synchronous, so this runs
+// inline inside the caller's sync `db.transaction((tx) => ...)`.
+type Executor =
+  | DB
+  | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 export type ResolveFoodInput = {
   /** ID of an existing food from the global catalog or this child's custom foods. */
@@ -23,19 +33,16 @@ export type ResolveFoodResult =
  * insert a new custom food and return it. Validates that the resolved food is
  * accessible to the given child (global catalog or owned custom food).
  *
- * The helper is transaction-aware: pass a Drizzle tx instance when you need
- * the insert to participate in an outer transaction, or omit it to run against
- * the default db connection.
+ * The helper is transaction-aware: pass a Drizzle tx instance when you need the
+ * insert to participate in an outer transaction, or omit it to run against the
+ * default db connection.
  *
  * Usage:
- *   const result = await resolveOrInsertFood({ foodId, customName, customCategory, childId }, tx);
+ *   const result = resolveOrInsertFood({ foodId, customName, customCategory, childId }, tx);
  *   if (!result.ok) return fail(400, { error: result.reason === 'not-found' ? 'Aliment introuvable.' : 'Aliment invalide.' });
  *   const { food, foodId: resolvedId } = result;
  */
-export async function resolveOrInsertFood(
-  input: ResolveFoodInput,
-  tx: DB = db
-): Promise<ResolveFoodResult> {
+export function resolveOrInsertFood(input: ResolveFoodInput, tx: Executor = db): ResolveFoodResult {
   const customName = input.customName?.trim();
 
   // Resolve to a foodId — either reuse the provided one or insert a new custom
@@ -50,21 +57,20 @@ export async function resolveOrInsertFood(
         ? input.customCategory.trim()
         : 'autre';
 
-    const inserted = (
-      await tx
-        .insert(foods)
-        .values({
-          name: customName,
-          category,
-          isMajorAllergen: false,
-          allergenType: null,
-          suggestedAgeMonths: 0,
-          notes: null,
-          isCustom: true,
-          customForChildId: input.childId
-        })
-        .returning({ id: foods.id })
-    )[0];
+    const inserted = tx
+      .insert(foods)
+      .values({
+        name: customName,
+        category,
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 0,
+        notes: null,
+        isCustom: true,
+        customForChildId: input.childId
+      })
+      .returning({ id: foods.id })
+      .all()[0];
 
     resolvedId = inserted.id;
   } else {
@@ -73,18 +79,17 @@ export async function resolveOrInsertFood(
 
   // Verify the food is accessible: either from the global catalog or owned by
   // this child. This is the same guard used in log/+page.server.ts.
-  const food = (
-    await tx
-      .select()
-      .from(foods)
-      .where(
-        and(
-          eq(foods.id, resolvedId),
-          or(isNull(foods.customForChildId), eq(foods.customForChildId, input.childId))
-        )
+  const food = tx
+    .select()
+    .from(foods)
+    .where(
+      and(
+        eq(foods.id, resolvedId),
+        or(isNull(foods.customForChildId), eq(foods.customForChildId, input.childId))
       )
-      .limit(1)
-  )[0];
+    )
+    .limit(1)
+    .all()[0];
 
   if (!food) {
     return { ok: false, reason: 'not-found' };

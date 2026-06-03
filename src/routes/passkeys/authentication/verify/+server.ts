@@ -3,10 +3,10 @@ import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
+  RP_ID,
   consumeChallenge,
   finishAuthentication,
-  originFromEnv,
-  rpIdFromOrigin
+  isOriginAllowedForRPID
 } from '$lib/server/passkeys';
 import { SESSION_COOKIE, SESSION_DURATION_MS, createSession } from '$lib/server/auth';
 import { db } from '$lib/server/db';
@@ -18,6 +18,10 @@ const PASSKEY_LIMIT = { name: 'passkey-auth', limit: 20, windowMs: 5 * 60 * 1000
 
 export const POST: RequestHandler = async (event) => {
   const { cookies, request, url } = event;
+  if (!isOriginAllowedForRPID(url.origin)) {
+    throw error(500, 'Configuration WebAuthn invalide pour cet hôte.');
+  }
+
   const ip = clientKey(event);
   const rl = checkRateLimit(PASSKEY_LIMIT, ip);
   if (!rl.allowed) {
@@ -50,14 +54,14 @@ export const POST: RequestHandler = async (event) => {
     throw error(400, 'Challenge expiré ou invalide');
   }
 
-  const origin = originFromEnv(url.origin);
-  const rpID = rpIdFromOrigin(origin);
-
   const result = await finishAuthentication({
     response: body.response as Parameters<typeof finishAuthentication>[0]['response'],
     expectedChallenge: challenge.challenge,
-    expectedOrigin: origin,
-    expectedRPID: rpID
+    // See registration/verify for the rationale on these two: per-request
+    // origin comes from adapter-node (PROTOCOL_HEADER + HOST_HEADER) and
+    // RP_ID is the registrable domain.
+    expectedOrigin: url.origin,
+    expectedRPID: RP_ID
   });
 
   if (!result.ok) {

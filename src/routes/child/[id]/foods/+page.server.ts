@@ -29,8 +29,8 @@ async function loadWeeklyEntries(
     .where(
       and(
         eq(foodEntries.childId, childId),
-        sql`${foodEntries.givenAt} >= ${start}`,
-        sql`${foodEntries.givenAt} < ${end}`
+        sql`${foodEntries.givenAt} >= ${start.getTime()}`,
+        sql`${foodEntries.givenAt} < ${end.getTime()}`
       )
     );
 

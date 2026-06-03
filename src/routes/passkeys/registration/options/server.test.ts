@@ -1,22 +1,29 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const mocks = vi.hoisted(() => ({
-  generateRegistrationOptions: vi.fn(),
-  verifyRegistrationResponse: vi.fn(),
-  generateAuthenticationOptions: vi.fn(),
-  verifyAuthenticationResponse: vi.fn()
-}));
-vi.mock('@simplewebauthn/server', () => mocks);
+const mocks = {
+  generateRegistrationOptions: mock(),
+  verifyRegistrationResponse: mock(),
+  generateAuthenticationOptions: mock(),
+  verifyAuthenticationResponse: mock()
+};
+mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { SESSION_COOKIE } from '$lib/server/auth';
+import { SESSION_COOKIE, hashPassword } from '$lib/server/auth';
 import { users, webauthnChallenges } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { PASSKEY_CHALLENGE_COOKIE } from '$lib/server/passkeys';
+import { PASSKEY_CHALLENGE_COOKIE, RP_ID } from '$lib/server/passkeys';
+
+const PASSWORD = 'current-password-12';
+let passwordHash: string;
+
+beforeAll(async () => {
+  passwordHash = await hashPassword(PASSWORD);
+});
 
 beforeEach(async () => {
   await resetTestDb();
@@ -29,12 +36,20 @@ async function seed() {
       .insert(users)
       .values({
         email: 'p@example.com',
-        passwordHash: 'placeholder-hash',
+        passwordHash,
         displayName: 'Parent',
         createdAt: new Date()
       })
       .returning()
   )[0];
+}
+
+function withJsonBody(event: ReturnType<typeof makeRouteEvent>, body: unknown) {
+  (event as { request: Request }).request = new Request(event.url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 }
 
 describe('POST /passkeys/registration/options', () => {
@@ -50,7 +65,11 @@ describe('POST /passkeys/registration/options', () => {
   it('errors 401 when the user no longer exists', async () => {
     const u = await seed();
     await testDb.delete(users).where(eq(users.id, u.id));
-    const event = makeRouteEvent({ user: safeUser(u) });
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://diversif.app/passkeys/registration/options'
+    });
+    withJsonBody(event, { currentPassword: PASSWORD });
     const r = await captureFlow(
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
     );
@@ -66,8 +85,9 @@ describe('POST /passkeys/registration/options', () => {
     });
     const event = makeRouteEvent({
       user: safeUser(u),
-      url: 'https://app.example.com/passkeys/registration/options'
+      url: 'https://diversif.app/passkeys/registration/options'
     });
+    withJsonBody(event, { currentPassword: PASSWORD });
     const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
     const body = await res.json();
     expect(body.challenge).toBe('big-challenge');
@@ -84,42 +104,10 @@ describe('POST /passkeys/registration/options', () => {
     expect(stored?.challenge).toBe('big-challenge');
     expect(stored?.userId).toBe(u.id);
 
-    // rpID must come from ORIGIN env when set, otherwise URL.
+    // rpID is the stable registrable domain, never the request host —
+    // see RP_ID's doc-comment for why.
     const args = mocks.generateRegistrationOptions.mock.calls[0][0];
-    expect(args.rpID).toBe('app.example.com');
-  });
-
-  it('honours the ORIGIN env override', async () => {
-    const u = await seed();
-    mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = 'https://from-env.test';
-    try {
-      const event = makeRouteEvent({ user: safeUser(u) });
-      await POST(event as unknown as Parameters<typeof POST>[0]);
-      expect(mocks.generateRegistrationOptions.mock.calls[0][0].rpID).toBe('from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
-    }
-  });
-
-  it('tolerates a trailing slash on the ORIGIN env var', async () => {
-    const u = await seed();
-    mocks.generateRegistrationOptions.mockResolvedValue({ challenge: 'x' });
-    const orig = process.env.ORIGIN;
-    process.env.ORIGIN = 'https://from-env.test/';
-    try {
-      const event = makeRouteEvent({ user: safeUser(u) });
-      await POST(event as unknown as Parameters<typeof POST>[0]);
-      // Without normalization the rpID would still be the hostname, but the
-      // expectedOrigin used during verify would carry the trailing slash and
-      // never match what the browser sends : regression-guard the helper here.
-      expect(mocks.generateRegistrationOptions.mock.calls[0][0].rpID).toBe('from-env.test');
-    } finally {
-      if (orig === undefined) delete process.env.ORIGIN;
-      else process.env.ORIGIN = orig;
-    }
+    expect(args.rpID).toBe(RP_ID);
   });
 
   it('marks the challenge cookie secure in production', async () => {
@@ -128,13 +116,41 @@ describe('POST /passkeys/registration/options', () => {
     const orig = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {
-      const event = makeRouteEvent({ user: safeUser(u) });
+      const event = makeRouteEvent({
+        user: safeUser(u),
+        url: 'https://diversif.app/passkeys/registration/options'
+      });
+      withJsonBody(event, { currentPassword: PASSWORD });
       await POST(event as unknown as Parameters<typeof POST>[0]);
       const opts = event.cookies.set.mock.calls[0][2] as { secure: boolean };
       expect(opts.secure).toBe(true);
     } finally {
       process.env.NODE_ENV = orig;
     }
+  });
+
+  it('rejects a missing current password before creating a challenge', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://diversif.app/passkeys/registration/options'
+    });
+    withJsonBody(event, {});
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(400);
+    expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
+  });
+
+  it('rejects an incorrect current password before creating a challenge', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://diversif.app/passkeys/registration/options'
+    });
+    withJsonBody(event, { currentPassword: 'wrong-password' });
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(400);
+    expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 });
 

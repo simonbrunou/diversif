@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent, screen } from '@testing-library/svelte';
 import '../../test/component';
 import AllergenInfoDialog from './AllergenInfoDialog.svelte';
@@ -31,7 +30,7 @@ describe('AllergenInfoDialog', () => {
   });
 
   it('calls onclose when the Fermer button is clicked', async () => {
-    const onclose = vi.fn();
+    const onclose = mock();
     render(AllergenInfoDialog, { props: { allergenId: 'oeuf', onclose } });
     await fireEvent.click(screen.getByText('Fermer'));
     expect(onclose).toHaveBeenCalled();

@@ -1,27 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import {
   dismissWelcomeIfPresent,
   expectDialogMatchesViewport,
   signUpAndCreateChild
 } from './_helpers';
 
-test('Découvrir bento renders all four sections @responsive', async ({ page }) => {
-  const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
-  await dismissWelcomeIfPresent(page);
-
-  await page.goto(`/child/${childId}/guide`);
-  // h2 headings inside aria-labelled sections
-  await expect(page.getByText('Les étapes')).toBeVisible();
-  await expect(page.getByText('Sources scientifiques')).toBeVisible();
-});
-
 test('tapping a stage tile opens the StageDetailSheet @responsive', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
 
   await page.goto(`/child/${childId}/guide`);
-  // Stage tiles are buttons whose visible text contains the stage title.
-  // Child born 2025-10-01 is ~7 months old at test time; any stage tile works.
+  // Child born 2025-10-01 is ~8 months old at test time, so the 6–9 mois stage
+  // is the current one and shows by default.
   await page.getByRole('button', { name: /6–9 mois/i }).click();
   await expectDialogMatchesViewport(page);
 });

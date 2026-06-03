@@ -1,13 +1,18 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const auditSpy = vi.fn();
-vi.mock('./audit', async () => {
-  const actual = await vi.importActual<typeof import('./audit')>('./audit');
-  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
-});
+// Import the real audit module BEFORE re-mocking it. bun's mock.module is
+// process-global, so an `await import('./audit')` inside the factory would
+// recurse forever (it goes through the very mock we're defining). Capturing
+// the actual export statically once is the equivalent of vi.importActual.
+import * as actualAudit from './audit';
+const auditSpy = mock();
+mock.module('./audit', () => ({
+  ...actualAudit,
+  audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
+}));
 
 import { ExportTooLargeError, exportUserData } from './gdpr';
 import { invitations, passkeys, tipDismissals, users } from './db/schema';

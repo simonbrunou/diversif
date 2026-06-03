@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import ChildHeaderPill from './ChildHeaderPill.svelte';
 
@@ -14,7 +13,7 @@ describe('ChildHeaderPill', () => {
   });
 
   it('fires onSwitch when the chevron is tapped', async () => {
-    const onSwitch = vi.fn();
+    const onSwitch = mock();
     render(ChildHeaderPill, { props: { child, onSwitch } });
     await fireEvent.click(screen.getByRole('button'));
     expect(onSwitch).toHaveBeenCalled();

@@ -1,11 +1,10 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, cleanup, screen, fireEvent } from '@testing-library/svelte';
 
 // happy-dom's cloneNode interaction with bits-ui's Portal trips $app/forms'
 // "method must be POST" guard. Stub `enhance` for unit tests; e2e covers the
 // real form submission.
-vi.mock('$app/forms', () => ({
+mock.module('$app/forms', () => ({
   enhance: () => ({ destroy: () => {} })
 }));
 

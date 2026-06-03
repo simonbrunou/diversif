@@ -1,4 +1,4 @@
-import { beforeAll } from 'vitest';
+import { beforeAll } from 'bun:test';
 import { hashPassword } from '$lib/server/auth';
 import { seedChild, seedMembership, seedUser } from '../../../../test/route';
 

@@ -1,33 +1,55 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { makeRouteEvent, safeUser } from '../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const generateInviteCodeRawSpy = vi.hoisted(() => vi.fn<() => string>());
+const generateInviteCodeRawSpy = mock<() => string>();
 
-vi.mock('$lib/server/auth', async () => {
-  const actual = await vi.importActual<typeof import('$lib/server/auth')>('$lib/server/auth');
-  return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
-});
+// Same live-binding hazard as $lib/utils/invites below — snapshot the
+// namespace as a plain object before mock.module replaces it.
+import * as actualAuthNs from '$lib/server/auth';
+const realAuth: typeof actualAuthNs = { ...actualAuthNs };
+mock.module('$lib/server/auth', () => ({
+  ...realAuth,
+  generateInviteCodeRaw: () => generateInviteCodeRawSpy()
+}));
 
 // The shared invitations helper imports generateInviteCodeRaw from
 // $lib/utils/invites directly. We intercept it here so the same spy that
 // controls the auth re-export also controls the shared module, giving the
 // createInvitation collision tests full control over code generation.
-// We use a ref-object (plain {}), safe to assign inside the hoisted factory.
-const _invitesRef = vi.hoisted(() => ({ real: null as null | (() => string) }));
-vi.mock('$lib/utils/invites', async () => {
-  const actual = await vi.importActual<typeof import('$lib/utils/invites')>('$lib/utils/invites');
-  _invitesRef.real = actual.generateInviteCodeRaw;
-  return { ...actual, generateInviteCodeRaw: () => generateInviteCodeRawSpy() };
-});
+//
+// Snapshot the real exports as a plain object BEFORE mock.module. ESM
+// namespace properties are live bindings — once mock.module replaces the
+// module, `actualInvites.x` reads the mocked binding. Both the local
+// snapshot AND the factory's spread of actualInvites need to be against
+// frozen values, otherwise the spy returned by the factory ends up
+// referencing itself and the default beforeEach delegation recurses
+// infinitely.
+// bun:test's mock.module calls are hoisted above static imports, so the
+// usual `import * as actual; snapshot real exports` trick captures the
+// already-mocked binding. Hard-code a simple default generator instead —
+// matches the real generateInviteCodeRaw's BEBE- prefix pattern. Tests
+// that need collision behaviour set .mockImplementation themselves.
+import * as actualInvitesNs from '$lib/utils/invites';
+const defaultInviteCodeGen = (): string => {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let suffix = '';
+  for (let i = 0; i < 6; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+  return `BEBE-${suffix}`;
+};
+const _invitesRef = { real: defaultInviteCodeGen };
+mock.module('$lib/utils/invites', () => ({
+  ...actualInvitesNs,
+  generateInviteCodeRaw: () => generateInviteCodeRawSpy()
+}));
 
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { invitations } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { actions } from './+page.server';
-import { setup } from './settings-test-fixtures';
+import { PASSWORD, setup } from './settings-test-fixtures';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -42,7 +64,8 @@ describe('settings createInvitation action', () => {
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      params: { id: String(c.id) }
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
@@ -52,6 +75,21 @@ describe('settings createInvitation action', () => {
       await testDb.select().from(invitations).where(eq(invitations.code, r.code)).limit(1)
     )[0];
     expect(stored).toBeDefined();
+  });
+
+  it('requires the current password before creating an invitation', async () => {
+    const { u, c, m } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { currentPassword: 'wrong-password' }
+    });
+    const r = (await actions.createInvitation!(
+      event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(400);
+    expect(await testDb.select().from(invitations)).toHaveLength(0);
   });
 
   it('returns the failure key after 5 colliding attempts', async () => {
@@ -72,7 +110,8 @@ describe('settings createInvitation action', () => {
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      params: { id: String(c.id) }
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
@@ -99,7 +138,8 @@ describe('settings createInvitation action', () => {
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      params: { id: String(c.id) }
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]

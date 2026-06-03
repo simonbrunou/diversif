@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { mock } from 'bun:test';
 import { testDb, schema } from './db';
 import type { SafeUser } from '$lib/types';
 
@@ -12,11 +12,11 @@ export function makeCookies(initial: Record<string, string> = {}) {
   const store = new Map<string, CookieRecord>();
   for (const [k, v] of Object.entries(initial)) store.set(k, { value: v, opts: {} });
 
-  const get = vi.fn((name: string) => store.get(name)?.value ?? null);
-  const set = vi.fn((name: string, value: string, opts: Record<string, unknown> = {}) => {
+  const get = mock((name: string) => store.get(name)?.value ?? null);
+  const set = mock((name: string, value: string, opts: Record<string, unknown> = {}) => {
     store.set(name, { value, opts });
   });
-  const del = vi.fn((name: string, _opts: Record<string, unknown> = {}) => {
+  const del = mock((name: string, _opts: Record<string, unknown> = {}) => {
     store.delete(name);
   });
   return { get, set, delete: del, _store: store };

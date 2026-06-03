@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { generateInviteCodeRaw, isValidInviteCodeFormat } from './invites';
 
 describe('generateInviteCodeRaw', () => {
@@ -17,12 +17,9 @@ describe('isValidInviteCodeFormat', () => {
     expect(isValidInviteCodeFormat('BEBE-234567')).toBe(true);
   });
 
-  it('still accepts legacy 4-char codes during the rollout window', () => {
-    // Codes generated before the entropy bump may still be in the DB
-    // up to the 7-day invite TTL. Rejecting them outright would break
-    // onboarding for anyone holding an in-flight 4-char invite link.
-    expect(isValidInviteCodeFormat('BEBE-ABCD')).toBe(true);
-    expect(isValidInviteCodeFormat('BEBE-2345')).toBe(true);
+  it('rejects legacy 4-char codes', () => {
+    expect(isValidInviteCodeFormat('BEBE-ABCD')).toBe(false);
+    expect(isValidInviteCodeFormat('BEBE-2345')).toBe(false);
   });
 
   it('rejects ambiguous characters in either length', () => {
@@ -30,8 +27,6 @@ describe('isValidInviteCodeFormat', () => {
     expect(isValidInviteCodeFormat('BEBE-OBCDEF')).toBe(false);
     expect(isValidInviteCodeFormat('BEBE-1BCDEF')).toBe(false);
     expect(isValidInviteCodeFormat('BEBE-IBCDEF')).toBe(false);
-    expect(isValidInviteCodeFormat('BEBE-0BCD')).toBe(false);
-    expect(isValidInviteCodeFormat('BEBE-OBCD')).toBe(false);
   });
 
   it('rejects malformed codes', () => {

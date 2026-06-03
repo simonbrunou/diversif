@@ -1,14 +1,24 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-const browserState = { browser: false };
+// Helper to flip $app/environment.browser between tests. bun:test's
+// mock.module replaces the factory each call; ESM live bindings on a
+// returned object's getter survive replacement, so we use one. Each call
+// to setBrowser re-registers the mock with the new constant value so the
+// theme.ts side sees a fresh value at function-call time.
+function setBrowser(value: boolean): void {
+  mock.module('$app/environment', () => ({
+    browser: value,
+    building: false,
+    dev: true,
+    version: 'test'
+  }));
+}
 
-vi.mock('$app/environment', () => ({
-  get browser() {
-    return browserState.browser;
-  }
-}));
+setBrowser(false);
 
-import { applyTheme, getStoredTheme, resolveTheme } from './theme';
+const { applyTheme, getStoredTheme, resolveTheme } = await import('./theme');
+
+import { stubGlobal, unstubAllGlobals } from '../../test/bun-test-utils';
 
 type Stored = string | null;
 
@@ -17,16 +27,16 @@ function makeBrowserGlobals(opts: { stored: Stored; prefersDark: boolean }) {
   if (opts.stored != null) store.set('theme', opts.stored);
 
   const localStorage = {
-    getItem: vi.fn((k: string) => (store.has(k) ? store.get(k)! : null)),
-    setItem: vi.fn((k: string, v: string) => {
+    getItem: mock((k: string) => (store.has(k) ? store.get(k)! : null)),
+    setItem: mock((k: string, v: string) => {
       store.set(k, v);
     }),
-    removeItem: vi.fn((k: string) => {
+    removeItem: mock((k: string) => {
       store.delete(k);
     })
   };
 
-  const matchMedia = vi.fn((q: string) => ({
+  const matchMedia = mock((q: string) => ({
     matches: q.includes('dark') ? opts.prefersDark : false
   }));
 
@@ -47,7 +57,7 @@ function makeBrowserGlobals(opts: { stored: Stored; prefersDark: boolean }) {
 
 describe('theme : non-browser fallbacks', () => {
   beforeEach(() => {
-    browserState.browser = false;
+    setBrowser(false);
   });
 
   it('getStoredTheme returns "system" when not in the browser', () => {
@@ -72,16 +82,16 @@ describe('theme : browser behavior', () => {
   let env: ReturnType<typeof makeBrowserGlobals>;
 
   beforeEach(() => {
-    browserState.browser = true;
+    setBrowser(true);
     env = makeBrowserGlobals({ stored: null, prefersDark: false });
-    vi.stubGlobal('localStorage', env.localStorage);
-    vi.stubGlobal('window', { matchMedia: env.matchMedia });
+    stubGlobal('localStorage', env.localStorage);
+    stubGlobal('window', { matchMedia: env.matchMedia });
     (globalThis as unknown as { matchMedia: typeof env.matchMedia }).matchMedia = env.matchMedia;
-    vi.stubGlobal('document', env.document);
+    stubGlobal('document', env.document);
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    unstubAllGlobals();
   });
 
   it('getStoredTheme returns "light" or "dark" when stored', () => {
@@ -92,9 +102,9 @@ describe('theme : browser behavior', () => {
   });
 
   it('getStoredTheme falls back to "system" for invalid / missing values', () => {
-    env.store.set('theme', 'lavender');
-    expect(getStoredTheme()).toBe('system');
     env.store.delete('theme');
+    expect(getStoredTheme()).toBe('system');
+    env.store.set('theme', 'nope');
     expect(getStoredTheme()).toBe('system');
   });
 

@@ -78,7 +78,10 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
         .select({ count: sql<number>`count(*)` })
         .from(foodEntries)
         .where(
-          and(eq(foodEntries.childId, childId), sql`${foodEntries.givenAt} >= ${sevenDaysAgo}`)
+          and(
+            eq(foodEntries.childId, childId),
+            sql`${foodEntries.givenAt} >= ${sevenDaysAgo.getTime()}`
+          )
         )
         .limit(1)
     )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0

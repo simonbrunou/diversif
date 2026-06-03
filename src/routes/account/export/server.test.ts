@@ -1,34 +1,31 @@
-import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const exportSpy = vi.hoisted(() => ({ fn: vi.fn() }));
-vi.mock('$lib/server/gdpr', async () => {
-  const actual = await vi.importActual<typeof import('$lib/server/gdpr')>('$lib/server/gdpr');
-  return {
-    ...actual,
-    exportUserData: (...args: Parameters<typeof actual.exportUserData>) => exportSpy.fn(...args)
-  };
-});
+const exportSpy = { fn: mock() };
+import * as actualGdpr from '$lib/server/gdpr';
+// Snapshot the real export AT IMPORT TIME, before mock.module replaces the
+// module. If we read actualGdpr.exportUserData later, the live binding has
+// already flipped to the mocked spy — calling the snapshot from the spy's
+// implementation would recurse infinitely.
+const realExportUserData: typeof actualGdpr.exportUserData = actualGdpr.exportUserData;
+mock.module('$lib/server/gdpr', () => ({
+  ...actualGdpr,
+  exportUserData: (...args: Parameters<typeof actualGdpr.exportUserData>) => exportSpy.fn(...args)
+}));
 
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { ExportTooLargeError } from '$lib/server/gdpr';
 import { GET } from './+server';
 
-let realExport: (userId: number) => unknown;
-beforeAll(async () => {
-  const actual = await vi.importActual<typeof import('$lib/server/gdpr')>('$lib/server/gdpr');
-  realExport = actual.exportUserData;
-});
-
 beforeEach(async () => {
   await resetTestDb();
-  // Default the spy to the real implementation; individual tests can
-  // override it to simulate the oversize path without seeding 50k rows.
-  exportSpy.fn.mockImplementation((userId: number) => realExport(userId));
+  // Default the spy to the real implementation (snapshotted above before
+  // the mock.module replaced the module's namespace bindings).
+  exportSpy.fn.mockImplementation((userId: number) => realExportUserData(userId));
 });
 
 async function seedUser() {

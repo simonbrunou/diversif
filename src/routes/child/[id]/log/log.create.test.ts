@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import {
   captureFlow,
@@ -9,7 +9,7 @@ import {
   seedUser
 } from '../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { eq, sql } from 'drizzle-orm';
@@ -379,13 +379,15 @@ describe('child/[id]/log default action', () => {
   it('rolls back the custom-food insert when the entry insert fails', async () => {
     const { u, c, m } = await setup();
 
-    // Install a CHECK constraint that rejects any food_entries insert whose
-    // notes match the sentinel string. The action's transaction routes both
-    // the custom-food insert and the entry insert through the same pool, so
-    // when the entry insert raises a constraint violation, the surrounding
-    // transaction rolls back : exactly what we want to verify.
-    await testDb.execute(
-      sql`ALTER TABLE food_entries ADD CONSTRAINT tmp_abort_entry CHECK (notes <> '__simulated_fail__')`
+    // Install a trigger that aborts any food_entries insert whose notes match
+    // the sentinel string (SQLite can't ADD a CHECK constraint via ALTER TABLE).
+    // The action's transaction routes both the custom-food insert and the entry
+    // insert through the same connection, so when the entry insert raises, the
+    // surrounding transaction rolls back : exactly what we want to verify.
+    testDb.run(
+      sql`CREATE TRIGGER tmp_abort_entry BEFORE INSERT ON food_entries
+          WHEN NEW.notes = '__simulated_fail__'
+          BEGIN SELECT RAISE(ABORT, 'simulated entry-insert failure'); END`
     );
 
     try {
@@ -408,7 +410,7 @@ describe('child/[id]/log default action', () => {
         )
       ).rejects.toThrow();
     } finally {
-      await testDb.execute(sql`ALTER TABLE food_entries DROP CONSTRAINT IF EXISTS tmp_abort_entry`);
+      testDb.run(sql`DROP TRIGGER IF EXISTS tmp_abort_entry`);
     }
 
     // Assert: no custom food committed for this child

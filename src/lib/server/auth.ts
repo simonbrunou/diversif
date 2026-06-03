@@ -1,5 +1,4 @@
 import { randomBytes } from 'node:crypto';
-import { hash as argonHash, verify as argonVerify } from '@node-rs/argon2';
 import { and, eq, gt } from 'drizzle-orm';
 import { db } from './db';
 import { sessions, users, memberships, type Session, type User } from './db/schema';
@@ -10,22 +9,25 @@ export const SESSION_COOKIE = 'session';
 export const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 export const SESSION_RENEW_THRESHOLD_MS = 1000 * 60 * 60 * 24 * 15; // 15 days
 
-// Algorithm.Argon2id = 2 (avoid importing the const enum for verbatimModuleSyntax compat).
+// Bun.password ships argon2id natively. memoryCost/timeCost mirror the
+// previous @node-rs/argon2 tuning so the cost profile is unchanged and
+// existing $argon2id$ hashes from before the migration verify-roundtrip
+// (the format is standard, not implementation-specific).
 const ARGON_OPTS = {
-  algorithm: 2,
+  algorithm: 'argon2id',
   memoryCost: 19_456,
-  timeCost: 2,
-  outputLen: 32,
-  parallelism: 1
+  timeCost: 2
 } as const;
 
 export async function hashPassword(plain: string): Promise<string> {
-  return argonHash(plain, ARGON_OPTS);
+  return Bun.password.hash(plain, ARGON_OPTS);
 }
 
 export async function verifyPassword(hash: string, plain: string): Promise<boolean> {
   try {
-    return await argonVerify(hash, plain);
+    // Bun.password.verify takes (password, hash) — OPPOSITE of
+    // @node-rs/argon2's (hash, password). Flipped intentionally.
+    return await Bun.password.verify(plain, hash);
   } catch {
     return false;
   }
@@ -109,12 +111,12 @@ export async function validateSession(token: string): Promise<ValidatedSession |
     // the session renewed without a corresponding lastLoginAt bump (or vice
     // versa). Bumping `last_login_at` keeps retention queries seeing recent
     // activity even when the user never explicitly re-logs in.
-    await db.transaction(async (tx) => {
-      await tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token));
-      await tx
-        .update(users)
+    db.transaction((tx) => {
+      tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token)).run();
+      tx.update(users)
         .set({ lastLoginAt: new Date(now) })
-        .where(eq(users.id, row.user.id));
+        .where(eq(users.id, row.user.id))
+        .run();
     });
     session = { ...session, expiresAt: newExpiry };
     renewed = true;

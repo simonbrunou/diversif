@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import { SITE, absoluteUrl, type SeoInput } from '$lib/seo';
 
   let {
@@ -14,10 +13,12 @@
     alternateLocales = []
   }: SeoInput & { alternateLocales?: string[] } = $props();
 
-  const origin = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
-  const canonical = $derived(absoluteUrl(origin, path));
-  const ogImageUrl = $derived(absoluteUrl(origin, ogImage));
-  const ogImageFallback = $derived(absoluteUrl(origin, SITE.ogImageFallback));
+  // Canonical origin is a build-time constant — see SITE.defaultOrigin.
+  // Preview deploys deliberately share the prod canonical so crawlers don't
+  // index preview hostnames.
+  const canonical = $derived(absoluteUrl(SITE.defaultOrigin, path));
+  const ogImageUrl = $derived(absoluteUrl(SITE.defaultOrigin, ogImage));
+  const ogImageFallback = $derived(absoluteUrl(SITE.defaultOrigin, SITE.ogImageFallback));
 </script>
 
 <svelte:head>
@@ -26,11 +27,11 @@
   <link rel="canonical" href={canonical} />
   {#if alternateLocales.length > 0}
     <link rel="alternate" hreflang="fr" href={canonical} />
-    {#each alternateLocales as locale}
+    {#each alternateLocales as locale (locale)}
       <link
         rel="alternate"
         hreflang={locale}
-        href={absoluteUrl(origin, `/${locale}${path === '/' ? '' : path}`)}
+        href={absoluteUrl(SITE.defaultOrigin, `/${locale}${path === '/' ? '' : path}`)}
       />
     {/each}
     <link rel="alternate" hreflang="x-default" href={canonical} />

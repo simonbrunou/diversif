@@ -1,13 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const auditSpy = vi.fn();
-vi.mock('./audit', async () => {
-  const actual = await vi.importActual<typeof import('./audit')>('./audit');
-  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
-});
+const auditSpy = mock();
+import * as actualAudit from './audit';
+mock.module('./audit', () => ({
+  ...actualAudit,
+  audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
+}));
 
 import { deleteUserAccount } from './gdpr';
 import {

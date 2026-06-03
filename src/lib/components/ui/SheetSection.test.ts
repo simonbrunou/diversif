@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { render, cleanup, screen } from '@testing-library/svelte';
 import { textSnippet } from '../../../test/component';
 import { Calendar } from 'lucide-svelte';

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'bun:test';
 import { eq, and } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../test/db';
 import { FOODS_SEED, seedFoods, applySeedCorrections } from './seed';

@@ -1,21 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-vi.mock('$lib/i18n', () => ({
+mock.module('$lib/i18n', () => ({
   i18n: {
     resolveRoute: (path: string, locale: string) => (locale === 'fr' ? path : `/${locale}${path}`)
   }
 }));
 
-vi.mock('$lib/paraglide/runtime', () => ({
-  languageTag: vi.fn(() => 'fr')
-}));
-
 import { localizedHref } from './localized-href';
-import { languageTag } from '$lib/paraglide/runtime';
+import { setLanguageTag, sourceLanguageTag } from '$lib/paraglide/runtime';
+
+// Don't mock.module('$lib/paraglide/runtime') — bun:test's mock.module is
+// process-global, so the replacement would leak into every subsequent test
+// file (e.g. dates.test.ts) that relies on languageTag() returning 'fr'.
+// Instead, drive the real runtime via setLanguageTag and reset after each.
 
 describe('localizedHref', () => {
   beforeEach(() => {
-    vi.mocked(languageTag).mockReturnValue('fr');
+    setLanguageTag('fr');
+  });
+
+  afterEach(() => {
+    setLanguageTag(sourceLanguageTag);
   });
 
   it('returns the path unchanged for the FR base locale', () => {
@@ -23,7 +28,7 @@ describe('localizedHref', () => {
   });
 
   it('prefixes /en for the EN locale', () => {
-    vi.mocked(languageTag).mockReturnValue('en');
+    setLanguageTag('en');
     expect(localizedHref('/login')).toBe('/en/login');
   });
 });

@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import ReactionDetailBento from './ReactionDetailBento.svelte';
 

@@ -1,10 +1,11 @@
 import type { RequestHandler } from './$types';
-import { resolveOrigin } from '$lib/seo';
+import { SITE } from '$lib/seo';
 
 export const prerender = true;
 
-export const GET: RequestHandler = ({ url }) => {
-  const origin = resolveOrigin(url);
+export const GET: RequestHandler = () => {
+  // Sitemap pointer pinned to prod canonical — see sitemap.xml/+server.ts.
+  const origin = SITE.defaultOrigin;
   const body = [
     'User-agent: *',
     'Allow: /',

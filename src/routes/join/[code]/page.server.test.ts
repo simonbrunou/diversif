@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import {
   captureFlow,
@@ -9,14 +9,16 @@ import {
   seedUser
 } from '../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { invitations, memberships } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 
 beforeEach(async () => {
   await resetTestDb();
+  _clearAllRateLimits();
 });
 
 async function seedInvite(opts: {
@@ -43,6 +45,16 @@ describe('join/[code] load', () => {
     const event = makeRouteEvent({
       user: safeUser(u),
       params: { code: 'not-valid' }
+    });
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out).toMatchObject({ error: expect.stringMatching(/invalide/i) });
+  });
+
+  it('rejects legacy 4-character invite codes as malformed', async () => {
+    const u = await seedUser();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      params: { code: 'BEBE-ABCD' }
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
     expect(out).toMatchObject({ error: expect.stringMatching(/invalide/i) });
@@ -104,6 +116,28 @@ describe('join/[code] load', () => {
     expect(out.error).toBeNull();
     expect(out.code).toBe('BEBE-ABCDEF');
     expect(out.child.id).toBe(child.id);
+  });
+
+  it('rate-limits authenticated invite lookups', async () => {
+    const u = await seedUser();
+    for (let i = 0; i < 20; i++) {
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          params: { code: 'BEBE-ZZZZZZ' }
+        }) as unknown as Parameters<typeof load>[0]
+      );
+    }
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(u),
+          params: { code: 'BEBE-ZZZZZZ' }
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(429);
   });
 });
 
@@ -199,7 +233,7 @@ describe('join/[code] default action', () => {
     // transaction's UPDATE, another claim flips used_at. The transaction's
     // conditional WHERE used_at IS NULL should match 0 rows and we should
     // bail without inserting a membership row for `me`.
-    const txSpy = vi.spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
+    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
       await testDb
         .update(invitations)
         .set({ usedAt: new Date(), usedBy: racer.id })

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { computeReminders, type ReminderInput } from './reminders';
 import type { EnrichedEntry } from './queries';
 import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';

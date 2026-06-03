@@ -18,6 +18,11 @@ setLanguageTag(() => {
 Sentry.init({
   dsn: env.PUBLIC_SENTRY_DSN || '',
   environment: env.PUBLIC_SENTRY_ENVIRONMENT || 'production',
+  // Inlined at build time by Vite's `define` (vite.config.ts), so the
+  // server-side SHA and the client bundle share one constant. The define
+  // emits either a string literal or the bare `undefined` token, so no
+  // runtime fallback is needed here.
+  release: __SENTRY_RELEASE__,
   tracesSampleRate: 0,
   // Explicitly opt out of default PII (IP address, cookies, user agent).
   // This is v8's default but we set it explicitly so a future SDK upgrade

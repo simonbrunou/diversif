@@ -1,14 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const auditSpy = vi.fn();
-vi.mock('$lib/server/audit', async () => {
-  const actual = await vi.importActual<typeof import('$lib/server/audit')>('$lib/server/audit');
-  return { ...actual, audit: (...args: Parameters<typeof actual.audit>) => auditSpy(...args) };
-});
+const auditSpy = mock();
+import * as actualAudit from '$lib/server/audit';
+mock.module('$lib/server/audit', () => ({
+  ...actualAudit,
+  audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
+}));
 
 import { hashPassword, SESSION_COOKIE, validateSession, createSession } from '$lib/server/auth';
 import { users } from '$lib/server/db/schema';

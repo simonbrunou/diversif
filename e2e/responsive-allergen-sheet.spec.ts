@@ -15,19 +15,17 @@ import {
  * Plus standard dismiss flows (Esc, drag-to-dismiss on mobile only).
  */
 
-const openAllergenSheet = async (page: Page, childId: string): Promise<void> => {
-  await page.goto(`/child/${childId}/guide`);
-  // Tap the first priority allergen tile (e.g. "Œuf"). The tile's accessible
-  // name is "<label> — <state>"; AllergenPassport always renders the priority
-  // set, so any priority allergen works.
+const openAllergenSheet = async (page: Page): Promise<void> => {
+  await page.goto('/guide');
+  // Tap the first allergen button in GuideAllergensSection (e.g. "Œuf").
   await page.getByRole('button', { name: /Œuf/i }).first().click();
   await expect(page.getByRole('dialog')).toBeVisible();
 };
 
 test('allergen sheet placement matches viewport @responsive', async ({ page }) => {
-  const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
+  await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
-  await openAllergenSheet(page, childId);
+  await openAllergenSheet(page);
   await expectDialogMatchesViewport(page);
 });
 
@@ -37,9 +35,9 @@ test('allergen sheet body scrolls when content overflows (regression for #180) @
   // The fix lives inside Modal.svelte's `scrollableBody` branch
   // (max-h-[70vh] overflow-y-auto wrapper). If that wrapper is removed,
   // scrollHeight and clientHeight collapse and this assertion fails.
-  const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
+  await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
-  await openAllergenSheet(page, childId);
+  await openAllergenSheet(page);
 
   const dialog = page.getByRole('dialog');
   const overflow = await dialog.evaluate((el) => {
@@ -55,9 +53,9 @@ test('allergen sheet body scrolls when content overflows (regression for #180) @
 });
 
 test('drag-to-dismiss closes the bottom-sheet @mobile-only', async ({ page }) => {
-  const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
+  await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
-  await openAllergenSheet(page, childId);
+  await openAllergenSheet(page);
 
   const grabber = page.locator('[data-sheet-grabber]');
   await expect(grabber).toBeVisible();
@@ -76,9 +74,9 @@ test('drag-to-dismiss closes the bottom-sheet @mobile-only', async ({ page }) =>
 });
 
 test('Esc dismisses the sheet on every viewport @responsive', async ({ page }) => {
-  const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
+  await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
-  await openAllergenSheet(page, childId);
+  await openAllergenSheet(page);
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).not.toBeVisible();
 });

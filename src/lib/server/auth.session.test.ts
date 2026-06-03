@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import {
   SESSION_COOKIE,
@@ -132,7 +132,9 @@ describe('invalidateSession', () => {
   });
 
   it('does nothing for empty token', async () => {
-    await expect(invalidateSession('')).resolves.not.toThrow();
+    // bun:test's .resolves.not.toThrow() tries to call the resolved value
+    // as a function. Assert the resolved value (void → undefined) directly.
+    await expect(invalidateSession('')).resolves.toBeUndefined();
   });
 });
 

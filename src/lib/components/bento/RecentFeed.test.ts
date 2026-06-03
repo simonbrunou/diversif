@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import RecentFeed from './RecentFeed.svelte';
 import * as m from '$lib/paraglide/messages';

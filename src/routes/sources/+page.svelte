@@ -7,11 +7,11 @@
   import { breadcrumbJsonLd, SITE } from '$lib/seo';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { SOURCES, ALL_SOURCE_IDS } from '$lib/content/sources';
   import { Library, ExternalLink } from 'lucide-svelte';
 
-  const siteUrl = $derived($page.data.siteUrl ?? SITE.defaultOrigin);
+  const siteUrl = SITE.defaultOrigin;
 
   const sourcesItemList = {
     '@context': 'https://schema.org',
@@ -48,7 +48,7 @@
 />
 
 <div class="container max-w-3xl space-y-8 py-6 md:py-8">
-  {#if $page.url.pathname.startsWith('/en')}
+  {#if page.url.pathname.startsWith('/en')}
     <Callout variant="warning">
       {m.commonFrOnlyBannerSources()}
     </Callout>

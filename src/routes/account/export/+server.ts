@@ -24,10 +24,10 @@ export const GET: RequestHandler = async ({ locals }) => {
         eq(users.id, user.id),
         or(isNull(users.lastExportAt), lt(users.lastExportAt, new Date(now - EXPORT_THROTTLE_MS)))
       )
-    );
+    )
+    .returning({ id: users.id });
 
-  /* v8 ignore next : node-postgres always populates rowCount for UPDATE */
-  if ((claimed.rowCount ?? 0) === 0) {
+  if (claimed.length === 0) {
     throw error(429, 'Export déjà demandé récemment, veuillez réessayer dans une minute.');
   }
 

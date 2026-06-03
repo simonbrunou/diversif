@@ -1,5 +1,4 @@
-// @vitest-environment node
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { chooseSuggestedFoods, type SuggestFood } from './suggest';
 
 describe('chooseSuggestedFoods', () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { seedUser, seedChild, seedMembership } from '../../../test/route';
 import { foodEntries, foods } from './schema';
@@ -26,18 +26,14 @@ async function seedFood(name: string) {
 }
 
 describe('food_entries.texture column', () => {
-  it('column exists in information_schema', async () => {
-    // Verifies the migration added the column. We do not assert is_nullable='YES'
-    // here because pg-mem always returns 'NO' for that field even for nullable
-    // columns; nullability is exercised by the "accepts null texture" test below.
-    const rows = await testDb.execute(
-      sql`SELECT column_name
-          FROM information_schema.columns
-          WHERE table_name = 'food_entries'
-            AND column_name = 'texture'`
-    );
-    expect(rows.rows).toHaveLength(1);
-    expect((rows.rows[0] as { column_name: string }).column_name).toBe('texture');
+  it('column exists in the food_entries table', () => {
+    // Verifies the migration added the column, via SQLite's table introspection
+    // pragma. Nullability is exercised by the "accepts null texture" test below.
+    const rows = testDb.all(
+      sql`SELECT name FROM pragma_table_info('food_entries') WHERE name = 'texture'`
+    ) as Array<{ name: string }>;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].name).toBe('texture');
   });
 
   it('accepts null texture', async () => {
@@ -88,18 +84,21 @@ describe('food_entries.texture column', () => {
     await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
     const food = await seedFood('Poire');
 
-    // Must reject with the invalid texture value.
+    // Must reject with the invalid texture value. Wrap in an async IIFE so
+    // bun:test's .rejects sees a real Promise — Drizzle's PgInsertBase is
+    // thenable but bun checks isPromise() before awaiting.
     await expect(
-      testDb.insert(foodEntries).values({
-        childId: c.id,
-        foodId: food.id,
-        givenAt: new Date(),
-        reaction: 'ras',
-        texture: 'not-a-texture' as never,
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      })
+      (async () =>
+        await testDb.insert(foodEntries).values({
+          childId: c.id,
+          foodId: food.id,
+          givenAt: new Date(),
+          reaction: 'ras',
+          texture: 'not-a-texture' as never,
+          notes: null,
+          loggedBy: u.id,
+          createdAt: new Date()
+        }))()
     ).rejects.toThrow();
 
     // Control: the same FK values with a valid texture must succeed.

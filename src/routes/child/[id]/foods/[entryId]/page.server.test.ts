@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../../../test/db';
 import {
@@ -9,8 +9,8 @@ import {
   seedUser
 } from '../../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
-vi.mock('$lib/server/audit', () => ({ audit: vi.fn() }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/audit', () => ({ audit: mock() }));
 
 import { audit } from '$lib/server/audit';
 
@@ -201,7 +201,7 @@ describe('reaction-detail loader', () => {
 
 describe('addSymptom action', () => {
   beforeEach(() => {
-    vi.mocked(audit).mockClear();
+    audit.mockClear();
   });
 
   function makeFormEvent(
@@ -292,9 +292,9 @@ describe('addSymptom action', () => {
     const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(row.reaction).toBe('inconfort');
 
-    const promotedCall = vi
-      .mocked(audit)
-      .mock.calls.find((c) => c[0].type === 'food_entry.reaction_promoted')?.[0];
+    const promotedCall = (audit as ReturnType<typeof mock>).mock.calls.find(
+      (c) => c[0].type === 'food_entry.reaction_promoted'
+    )?.[0];
     expect(promotedCall).toMatchObject({ from: 'ras', to: 'inconfort', entryId: entry.id });
   });
 
@@ -310,9 +310,9 @@ describe('addSymptom action', () => {
     );
     const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(row.reaction).toBe('reaction');
-    const promotedCall = vi
-      .mocked(audit)
-      .mock.calls.find((c) => c[0].type === 'food_entry.reaction_promoted')?.[0];
+    const promotedCall = (audit as ReturnType<typeof mock>).mock.calls.find(
+      (c) => c[0].type === 'food_entry.reaction_promoted'
+    )?.[0];
     expect(promotedCall).toMatchObject({ from: 'ras', to: 'reaction' });
   });
 
@@ -328,7 +328,7 @@ describe('addSymptom action', () => {
     );
     const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(row.reaction).toBe('inconfort');
-    const calls = vi.mocked(audit).mock.calls.map((c) => c[0].type);
+    const calls = audit.mock.calls.map((c) => c[0].type);
     expect(calls).not.toContain('food_entry.reaction_promoted');
   });
 
@@ -340,14 +340,14 @@ describe('addSymptom action', () => {
     );
     const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(row.reaction).toBe('reaction');
-    const calls = vi.mocked(audit).mock.calls.map((c) => c[0].type);
+    const calls = audit.mock.calls.map((c) => c[0].type);
     expect(calls).not.toContain('food_entry.reaction_promoted');
   });
 });
 
 describe('deleteSymptom action', () => {
   beforeEach(() => {
-    vi.mocked(audit).mockClear();
+    audit.mockClear();
   });
 
   async function seedSymptom(
@@ -392,9 +392,9 @@ describe('deleteSymptom action', () => {
     );
     expect(result).toEqual({ success: true });
     expect(await testDb.select().from(symptoms)).toHaveLength(0);
-    const deletedCall = vi
-      .mocked(audit)
-      .mock.calls.find((c) => c[0].type === 'symptom.deleted')?.[0];
+    const deletedCall = (audit as ReturnType<typeof mock>).mock.calls.find(
+      (c) => c[0].type === 'symptom.deleted'
+    )?.[0];
     expect(deletedCall).toMatchObject({ symptomId: sym.id, entryId: entry.id });
   });
 

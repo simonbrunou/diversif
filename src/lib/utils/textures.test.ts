@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { TEXTURE_VALUES, defaultTextureForAgeMonths, isTextureKey } from './textures';
 
 describe('textures', () => {

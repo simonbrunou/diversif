@@ -16,6 +16,40 @@ import { db } from './db';
 import { passkeys, webauthnChallenges, type Passkey } from './db/schema';
 
 export const RP_NAME = 'Diversif';
+/**
+ * Stable WebAuthn Relying Party ID — a bare registrable domain, not a full
+ * origin. The default keeps prod + `*.diversif.app` previews in one passkey
+ * scope; self-hosted deployments must set WEBAUTHN_RP_ID to their own host
+ * (for local Docker, `localhost`).
+ */
+const DEFAULT_RP_ID = 'diversif.app';
+
+function resolveRPID(): string {
+  const raw = process.env.WEBAUTHN_RP_ID?.trim();
+  if (!raw) return DEFAULT_RP_ID;
+  const rpID = raw.toLowerCase();
+  if (
+    rpID.includes('://') ||
+    rpID.includes('/') ||
+    rpID.includes(':') ||
+    rpID.startsWith('.') ||
+    rpID.endsWith('.')
+  ) {
+    throw new Error('WEBAUTHN_RP_ID must be a bare hostname such as diversif.app');
+  }
+  return rpID;
+}
+
+export const RP_ID = resolveRPID();
+
+export function isOriginAllowedForRPID(origin: string, rpID: string = RP_ID): boolean {
+  try {
+    const host = new URL(origin).hostname.toLowerCase();
+    return host === rpID || host.endsWith(`.${rpID}`);
+  } catch {
+    return false;
+  }
+}
 export const PASSKEY_CHALLENGE_COOKIE = 'wa_challenge';
 // Conditional-UI ceremonies fire automatically on page load and would otherwise
 // stomp on an in-flight registration/authentication challenge in another tab;
@@ -45,28 +79,6 @@ function timingDecoyVerify(): void {
 /* v8 ignore next 3 : module-load warming, skipped in tests by design */
 if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
   timingDecoyVerify();
-}
-
-export function rpIdFromOrigin(origin: string): string {
-  try {
-    return new URL(origin).hostname;
-  } catch {
-    return 'localhost';
-  }
-}
-
-/**
- * Browsers send the page's origin in WebAuthn responses without a trailing
- * slash, while operators sometimes write `ORIGIN=https://example.com/` in env
- * files. simplewebauthn does an exact string compare, so any trailing slash
- * (or surrounding whitespace) breaks verification.
- */
-export function normalizeOrigin(value: string): string {
-  return value.trim().replace(/\/+$/, '');
-}
-
-export function originFromEnv(fallback: string): string {
-  return normalizeOrigin(process.env.ORIGIN ?? fallback);
 }
 
 function newToken(): string {
@@ -149,11 +161,13 @@ export async function findPasskey(credentialId: string): Promise<Passkey | undef
 }
 
 export async function deletePasskey(userId: number, credentialId: string): Promise<boolean> {
-  const result = await db
+  // The returned array's length tells us whether the row existed (bun:sqlite's
+  // delete builder doesn't expose an affected-rows count).
+  const deleted = await db
     .delete(passkeys)
-    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
-  /* v8 ignore next : node-postgres always populates rowCount for DELETE */
-  return (result.rowCount ?? 0) > 0;
+    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)))
+    .returning({ id: passkeys.id });
+  return deleted.length > 0;
 }
 
 export async function renamePasskey(
@@ -163,12 +177,12 @@ export async function renamePasskey(
 ): Promise<boolean> {
   const trimmed = name.trim();
   if (!trimmed) return false;
-  const result = await db
+  const updated = await db
     .update(passkeys)
     .set({ name: trimmed.slice(0, 80) })
-    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)));
-  /* v8 ignore next : node-postgres always populates rowCount for UPDATE */
-  return (result.rowCount ?? 0) > 0;
+    .where(and(eq(passkeys.id, credentialId), eq(passkeys.userId, userId)))
+    .returning({ id: passkeys.id });
+  return updated.length > 0;
 }
 
 export async function buildRegistrationOptions(opts: {

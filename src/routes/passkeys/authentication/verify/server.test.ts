@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent } from '../../../../test/route';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const mocks = vi.hoisted(() => ({
-  generateRegistrationOptions: vi.fn(),
-  verifyRegistrationResponse: vi.fn(),
-  generateAuthenticationOptions: vi.fn(),
-  verifyAuthenticationResponse: vi.fn()
-}));
-vi.mock('@simplewebauthn/server', () => mocks);
+const mocks = {
+  generateRegistrationOptions: mock(),
+  verifyRegistrationResponse: mock(),
+  generateAuthenticationOptions: mock(),
+  verifyAuthenticationResponse: mock()
+};
+mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
 import { SESSION_COOKIE, validateSession } from '$lib/server/auth';
@@ -57,8 +57,8 @@ async function seedUserAndKey() {
 }
 
 function makeReq(opts: { body?: unknown; cookieToken?: string; autofillCookieToken?: string }) {
-  const url = new URL('https://app.example.com/passkeys/authentication/verify');
-  const event = makeRouteEvent();
+  const url = new URL('https://diversif.app/passkeys/authentication/verify');
+  const event = makeRouteEvent({ url: url.toString() });
   if (opts.cookieToken) event.cookies.set(PASSKEY_CHALLENGE_COOKIE, opts.cookieToken);
   if (opts.autofillCookieToken)
     event.cookies.set(PASSKEY_CHALLENGE_AUTOFILL_COOKIE, opts.autofillCookieToken);

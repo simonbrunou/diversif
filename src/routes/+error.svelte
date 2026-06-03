@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import Button from '$components/ui/Button.svelte';
   import { AlertTriangle } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
 
-  const status = $derived($page.status);
-  const message = $derived($page.error?.message ?? 'Une erreur est survenue.');
+  const status = $derived(page.status);
+  const message = $derived(page.error?.message ?? 'Une erreur est survenue.');
   const title = $derived(status === 404 ? m.errorsGenericTitle404() : m.errorsGenericTitleDefault());
 </script>
 
@@ -18,9 +18,9 @@
     <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">{m.errorsGenericLabel({ status })}</p>
     <h1 class="mt-1 text-2xl font-semibold">{title}</h1>
     <p class="mt-2 text-sm text-muted-foreground">{message}</p>
-    {#if $page.error?.errorId}
+    {#if page.error?.errorId}
       <p class="mt-2 text-xs text-muted-foreground/80">
-        {m.errorsGenericRef()} <code class="font-mono">{$page.error.errorId}</code>
+        {m.errorsGenericRef()} <code class="font-mono">{page.error.errorId}</code>
       </p>
     {/if}
   </div>

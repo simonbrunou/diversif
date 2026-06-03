@@ -1,27 +1,41 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest';
+import { afterAll, describe, expect, it, mock } from 'bun:test';
 import { render, screen } from '@testing-library/svelte';
 import '../../test/component';
+
+// Capture real exports BEFORE the per-file mocks so afterAll can restore
+// them — bun:test's mock.module is process-global, so the languageTag/i18n
+// overrides below would otherwise leak into every subsequent file.
+import * as actualParaglide from '$lib/paraglide/runtime';
+import * as actualI18n from '$lib/i18n';
+
 import LocaleSwitcher from './LocaleSwitcher.svelte';
 
-vi.mock('$app/state', () => ({
+mock.module('$app/state', () => ({
   page: { url: { pathname: '/login', search: '', hash: '' } }
 }));
 
-vi.mock('$app/environment', () => ({
+mock.module('$app/environment', () => ({
   building: false
 }));
 
-vi.mock('$lib/paraglide/runtime', () => ({
-  languageTag: vi.fn(() => 'fr'),
+mock.module('$lib/paraglide/runtime', () => ({
+  ...actualParaglide,
+  languageTag: mock(() => 'fr'),
   availableLanguageTags: ['fr', 'en'] as const
 }));
 
-vi.mock('$lib/i18n', () => ({
+mock.module('$lib/i18n', () => ({
   i18n: {
     resolveRoute: (path: string, locale: string) => (locale === 'fr' ? path : `/${locale}${path}`)
   }
 }));
+
+// Restore real modules after this file's tests so the next file isn't
+// polluted by the languageTag = 'fr' mock here.
+afterAll(() => {
+  mock.module('$lib/paraglide/runtime', () => actualParaglide);
+  mock.module('$lib/i18n', () => actualI18n);
+});
 
 describe('LocaleSwitcher', () => {
   it('renders both FR and EN as anchors with correct href', () => {
@@ -46,7 +60,7 @@ describe('LocaleSwitcher', () => {
     const state = await import('$app/state');
     const original = state.page.url;
     const runtime = await import('$lib/paraglide/runtime');
-    vi.mocked(runtime.languageTag).mockReturnValue('en');
+    runtime.languageTag.mockReturnValue('en');
     Object.assign(state.page, {
       url: { pathname: '/en/login', search: '', hash: '' }
     });
@@ -79,13 +93,15 @@ describe('LocaleSwitcher', () => {
   });
 
   it('drops the query/hash suffix during prerender (building === true)', async () => {
-    const env = await import('$app/environment');
     const state = await import('$app/state');
     const original = state.page.url;
     Object.assign(state.page, {
       url: { pathname: '/signup', search: '?code=INVITE', hash: '#form' }
     });
-    vi.mocked(env).building = true;
+    // Re-mock the module (bun:test mock.module replaces the factory) rather
+    // than assigning into the imported namespace — ESM namespace objects are
+    // read-only and the previous `env.building = true` threw under bun.
+    mock.module('$app/environment', () => ({ building: true }));
     try {
       render(LocaleSwitcher);
       const fr = screen.getByRole('link', { name: /fr/i });
@@ -93,14 +109,14 @@ describe('LocaleSwitcher', () => {
       expect(fr.getAttribute('href')).toBe('/signup');
       expect(en.getAttribute('href')).toBe('/en/signup');
     } finally {
-      vi.mocked(env).building = false;
+      mock.module('$app/environment', () => ({ building: false }));
       Object.assign(state.page, { url: original });
     }
   });
 
   it('flips data-active and aria-current when languageTag is en', async () => {
     const runtime = await import('$lib/paraglide/runtime');
-    vi.mocked(runtime.languageTag).mockReturnValue('en');
+    runtime.languageTag.mockReturnValue('en');
 
     render(LocaleSwitcher);
     const fr = screen.getByRole('link', { name: /fr/i });

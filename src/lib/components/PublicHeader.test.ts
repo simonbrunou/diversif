@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../test/app-stubs';
 import { setPagePathname } from '../../test/app-stubs';

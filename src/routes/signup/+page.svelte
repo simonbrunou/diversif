@@ -18,16 +18,13 @@
   let submitting = $state(false);
   let showPassword = $state(false);
   let passkeyLoading = $state(false);
-  let passkeyUnsupported = $state(false);
-
-  $effect(() => {
-    if (!browser) return;
-    passkeyUnsupported = !(
-      typeof window !== 'undefined' &&
-      typeof window.PublicKeyCredential === 'function' &&
-      typeof navigator.credentials?.get === 'function'
-    );
-  });
+  const passkeyUnsupported = $derived(
+    browser &&
+      !(
+        typeof window.PublicKeyCredential === 'function' &&
+        typeof navigator.credentials?.get === 'function'
+      )
+  );
 
   async function signInWithPasskey() {
     if (passkeyLoading) return;

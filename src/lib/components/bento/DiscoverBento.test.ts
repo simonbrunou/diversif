@@ -1,8 +1,6 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup, fireEvent } from '@testing-library/svelte';
 import DiscoverBento from './DiscoverBento.svelte';
-import type { SuggestFood, RankedSuggestion } from '$lib/utils/suggest';
 
 afterEach(() => cleanup());
 
@@ -54,53 +52,31 @@ describe('DiscoverBento', () => {
     }
   ];
 
-  const suggestions: RankedSuggestion[] = [
-    {
-      food: { id: 1, name: 'Poire', category: 'fruits', allergenType: null } as SuggestFood,
-      reason: 'diversify'
-    }
-  ];
-
   const baseProps = {
     stages,
-    activeStageId: '6-9m',
-    suggestions,
-    onPickSuggestion: vi.fn(),
-    allergens: [],
-    ageMonths: 7,
-    textureProgress: { tried: [], mostRecent: null },
-    seasonalFoods: [],
-    currentMonth: 5,
-    childId: '5',
-    recipes: [],
-    factCards: []
+    activeStageId: '6-9m'
   };
 
-  it('renders the stages, suggestions, and sources section headings', () => {
+  it('renders the stages grid', () => {
     render(DiscoverBento, { props: baseProps });
     expect(screen.getByText('Les étapes')).toBeTruthy();
-    expect(screen.getByText('Suggestions du jour')).toBeTruthy();
-    expect(screen.getByText('Sources scientifiques')).toBeTruthy();
   });
 
   it('renders no Sheet content while no stage is selected', () => {
     render(DiscoverBento, { props: baseProps });
-    // The Sheet primitive renders into a Portal only when open; initial state has none open
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('renders every stage tile in the grid', () => {
+    render(DiscoverBento, { props: baseProps });
+    expect(screen.getByText('6 à 9 mois')).toBeTruthy();
+    expect(screen.getByText('9 à 12 mois')).toBeTruthy();
+    expect(screen.queryByText('Voir toutes les étapes')).toBeNull();
   });
 
   it('opens the StageDetailSheet when a stage tile is tapped', async () => {
     render(DiscoverBento, { props: baseProps });
     await fireEvent.click(screen.getByText('9 à 12 mois'));
-    // After tap, the Sheet is open : "Cuillère" appears in both the grid tile oneLiner and the
-    // Sheet oneLiner, so use getAllByText and assert at least two occurrences (grid + sheet).
     expect(screen.getAllByText('Cuillère').length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('renders the three group labels (Repères / À essayer / Apprendre)', () => {
-    render(DiscoverBento, { props: baseProps });
-    expect(screen.getByText('Repères')).toBeTruthy();
-    expect(screen.getByText('À essayer')).toBeTruthy();
-    expect(screen.getByText('Apprendre')).toBeTruthy();
   });
 });

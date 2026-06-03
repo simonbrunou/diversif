@@ -14,17 +14,15 @@
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   let passkeyName = $state('');
+  let currentPassword = $state('');
   let registering = $state(false);
-  let unsupported = $state(false);
-
-  $effect(() => {
-    if (!browser) return;
-    unsupported = !(
-      typeof window !== 'undefined' &&
-      typeof window.PublicKeyCredential === 'function' &&
-      typeof navigator.credentials?.create === 'function'
-    );
-  });
+  const unsupported = $derived(
+    browser &&
+      !(
+        typeof window.PublicKeyCredential === 'function' &&
+        typeof navigator.credentials?.create === 'function'
+      )
+  );
 
   let lastFormSeen: typeof form;
   $effect(() => {
@@ -48,9 +46,15 @@
     registering = true;
     try {
       const { startRegistration } = await import('@simplewebauthn/browser');
-      const optsRes = await fetch('/passkeys/registration/options', { method: 'POST' });
-      if (!optsRes.ok) throw new Error(m.errorsAccountPasskeyRegisterStartFailed());
-      const optsJSON = await optsRes.json();
+      const optsRes = await fetch('/passkeys/registration/options', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ currentPassword })
+      });
+      const optsJSON = await optsRes.json().catch(() => ({}));
+      if (!optsRes.ok || optsJSON?.ok === false) {
+        throw new Error(optsJSON?.error ?? m.errorsAccountPasskeyRegisterStartFailed());
+      }
       const attResp = await startRegistration({ optionsJSON: optsJSON });
       const verifyRes = await fetch('/passkeys/registration/verify', {
         method: 'POST',
@@ -66,6 +70,7 @@
         return;
       }
       passkeyName = '';
+      currentPassword = '';
       toast.success(m.authAccountPasskeyRegisterSuccess());
       await invalidateAll();
     } catch (err) {
@@ -131,8 +136,17 @@
           bind:value={passkeyName}
         />
       </Field>
+      <Field name="currentPassword" label={m.commonPassword()}>
+        <Input
+          id="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          bind:value={currentPassword}
+          required
+        />
+      </Field>
       <div>
-        <Button type="button" onclick={registerPasskey} loading={registering}>
+        <Button type="button" onclick={registerPasskey} loading={registering} disabled={!currentPassword}>
           {registering ? m.authAccountPasskeyAdding() : m.authAccountPasskeyAdd()}
         </Button>
       </div>

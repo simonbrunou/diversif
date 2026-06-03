@@ -1,10 +1,9 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import { textSnippet } from '../../test/component';
 import AppShellBento from './AppShellBento.svelte';
 
-vi.mock('$app/forms', () => ({
+mock.module('$app/forms', () => ({
   enhance: () => ({ destroy: () => {} })
 }));
 

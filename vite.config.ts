@@ -3,7 +3,7 @@ import { paraglide } from '@inlang/paraglide-sveltekit/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 
 /**
  * Resolve the Sentry release name from the most reliable source available
@@ -39,7 +39,27 @@ function resolveSentryRelease(): string | undefined {
   }
 }
 
+// Resolved once at module load so the same SHA flows into both Vite's
+// build-time `define` (inlining the constant in server + client bundles)
+// and the Sentry plugin's release name (so uploaded sourcemaps match the
+// release tag attached to runtime errors).
+const SENTRY_RELEASE_RESOLVED = resolveSentryRelease();
+
 export default defineConfig({
+  define: {
+    // Inlined at build time into every bundle. Replaces the runtime
+    // env-var read + docker-entrypoint.sh fallback chain — see
+    // src/lib/sentry-init.server.ts and src/hooks.client.ts.
+    //
+    // When no SHA could be resolved, emit the literal token `undefined`
+    // (not `""`) so the call sites can read the constant directly
+    // without a `|| undefined` fallback. That fallback would re-introduce
+    // a runtime branch which vitest's 100% threshold can't cover from
+    // either a release-tagged or release-less test environment.
+    __SENTRY_RELEASE__: SENTRY_RELEASE_RESOLVED
+      ? JSON.stringify(SENTRY_RELEASE_RESOLVED)
+      : 'undefined'
+  },
   plugins: [
     sveltekit(),
     paraglide({
@@ -83,14 +103,19 @@ export default defineConfig({
             authToken: process.env.SENTRY_AUTH_TOKEN,
             org: process.env.SENTRY_ORG || 'simonbrunou',
             project: process.env.SENTRY_PROJECT || 'diversif',
-            release: { name: resolveSentryRelease() },
+            release: { name: SENTRY_RELEASE_RESOLVED },
             sourcemaps: {
-              assets: ['./build/**'],
+              // .map files land in .svelte-kit/output/ during vite build.
+              // adapter-node copies that tree to ./build/ in a later phase,
+              // but the Sentry plugin runs in vite's closeBundle hook BEFORE
+              // that copy — so ./build/ is still empty at upload time and
+              // the plugin warns "Didn't find any matching sources".
+              assets: ['./.svelte-kit/output/**'],
               // Delete .map files after upload so the deployed build
               // (which adapter-node copies into the runtime image) doesn't
               // ship reachable .map files. Sentry retains them for stack
               // symbolication.
-              filesToDeleteAfterUpload: ['./build/**/*.map']
+              filesToDeleteAfterUpload: ['./.svelte-kit/output/**/*.map']
             },
             telemetry: false
           })
@@ -106,81 +131,25 @@ export default defineConfig({
     // 'hidden' (vs 'true') omits the //# sourceMappingURL= comment, but
     // the .map files would still be reachable by URL-guessing without the
     // post-upload delete (configured below in the plugin block).
-    sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false
+    sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
+    rollupOptions: {
+      // `bun` and `bun:*` (bun:sql, bun:test, etc.) are runtime built-ins
+      // resolved by the Bun runtime, not by node_modules. Rollup can't find
+      // them, so without this they fail bundle resolution. The adapter-node
+      // output runs under Bun (`bun ./build/index.js`), so leaving these
+      // external is correct.
+      external: ['bun', /^bun:/]
+    }
+  },
+  ssr: {
+    // Same reasoning as build.rollupOptions.external — Vite's SSR build also
+    // needs to know these are Bun-runtime externals, not bundleable modules.
+    external: ['bun']
   },
   resolve: {
-    // For component tests we want the browser/client export of Svelte. The
-    // sveltekit plugin sets server conditions for SSR builds; here we only
-    // need to ensure tests resolve the browser entry when happy-dom is in
-    // play. Test-time only — production builds set their own conditions.
-    conditions: process.env.VITEST ? ['browser'] : undefined
-  },
-  test: {
-    include: ['src/**/*.{test,spec}.{js,ts}'],
-    environment: 'node',
-    server: {
-      deps: {
-        // Inline svelte component packages so test-time module resolution
-        // sees the same browser entry as the page tests.
-        inline: ['svelte', '@testing-library/svelte']
-      }
-    },
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
-      include: [
-        'src/lib/**/*.ts',
-        'src/hooks.server.ts',
-        'src/hooks.client.ts',
-        'src/routes/**/+page.server.ts',
-        'src/routes/**/+layout.server.ts',
-        'src/routes/**/+server.ts'
-      ],
-      exclude: [
-        'src/**/*.test.ts',
-        'src/**/*.d.ts',
-        'src/test/**',
-        // Pure type aliases — no runtime statements to cover.
-        'src/lib/types.ts',
-        // Bootstrap singleton — opens a real Postgres pool and runs migrations
-        // at module init; covered indirectly via the pg-mem test harness that
-        // mirrors it.
-        'src/lib/server/db/index.ts',
-        // Schema declarations: the runtime arrow functions here are drizzle's
-        // foreign-key resolvers, evaluated lazily by the ORM. The declarations
-        // themselves are exercised in schema.test.ts and indirectly by every
-        // DB-backed test via INSERT/SELECT.
-        'src/lib/server/db/schema.ts',
-        // Bootstrap singleton calling Sentry.init at module top — exercises
-        // real network/SDK runtime; the `handleError` body itself is a thin
-        // pass-through to Sentry.captureException with no logic worth covering
-        // (the strict-PII contract lives in scrubEvent, which is tested in
-        // src/lib/sentry.test.ts at 100%).
-        'src/hooks.client.ts',
-        // Paraglide-generated runtime + messages — regenerated on every
-        // build by @inlang/paraglide-sveltekit/vite. No point measuring.
-        'src/lib/paraglide/**',
-        // Universal hook (one-line re-export of paraglide's reroute helper).
-        'src/hooks.ts',
-        // Paraglide adapter bootstrap — exercises real runtime; covered indirectly via the e2e smoke in Task 7.
-        'src/lib/i18n.ts',
-        // Bottom-sheet drag-to-dismiss gesture state machine. Driven by real
-        // pointer events; the dismiss / snap-back / scroll-handoff / cancel
-        // branches are exercised by Playwright's `bento-discover.spec.ts`
-        // (real touch + scrollHeight + cancellable events). happy-dom can stub
-        // setPointerCapture but can't fire native scroll or system gesture
-        // cancellation, so unit-side coverage of every branch is low-value
-        // testing — Modal.test.ts asserts the wiring (which handlers attach
-        // where, what the threshold/velocity gates look like), and e2e
-        // validates the actual gesture behavior.
-        'src/lib/components/ui/use-bottom-sheet-drag.svelte.ts'
-      ],
-      thresholds: {
-        lines: 100,
-        functions: 100,
-        branches: 100,
-        statements: 100
-      }
-    }
+    // For component tests we want the browser/client export of Svelte under
+    // happy-dom. bun test sets BUN_TEST=1; under that env we resolve the
+    // browser entry. Build-time conditions are set by sveltekit() itself.
+    conditions: process.env.BUN_TEST ? ['browser'] : undefined
   }
 });

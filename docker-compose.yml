@@ -1,8 +1,8 @@
-# Local development example.
+# Local development / self-hosting example.
 #
-# Coolify (production) provides its own managed Postgres and injects DATABASE_URL
-# into the app container automatically — production deploys do NOT use this file.
-# Run `docker compose up` to bring up the app + a throwaway Postgres for hacking.
+# Coolify (production) mounts a persistent volume at /app/data and sets
+# DATABASE_PATH; production deploys do NOT use this file.
+# Run `docker compose up` to bring up the app with a local SQLite volume.
 name: diversif-local
 
 services:
@@ -13,31 +13,14 @@ services:
       - '3000:3000'
     environment:
       ORIGIN: http://localhost:3000
-      DATABASE_URL: postgres://diversif:diversif@postgres:5432/diversif
+      WEBAUTHN_RP_ID: localhost
+      DATABASE_PATH: /app/data/diversif.db
       NODE_ENV: development
       BODY_SIZE_LIMIT: 65536
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  postgres:
-    image: postgres:16-alpine
-    container_name: diversif-postgres
-    # Published so `npm run dev` on the host can reach it. The compose-internal
-    # service-name `postgres` continues to work for the app container.
-    ports:
-      - '5432:5432'
-    environment:
-      POSTGRES_USER: diversif
-      POSTGRES_PASSWORD: diversif
-      POSTGRES_DB: diversif
     volumes:
-      - data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U diversif']
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      # SQLite lives on a named volume so it survives `docker compose down`
+      # (without -v) and image rebuilds. Losing this volume loses all data.
+      - data:/app/data
 
 volumes:
   data:

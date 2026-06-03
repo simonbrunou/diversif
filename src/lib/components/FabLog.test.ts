@@ -1,5 +1,4 @@
-// @vitest-environment happy-dom
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import FabLog from './FabLog.svelte';
 
@@ -12,7 +11,7 @@ describe('FabLog', () => {
   });
 
   it('fires onclick when pressed', async () => {
-    const onclick = vi.fn();
+    const onclick = mock();
     render(FabLog, { props: { onclick } });
     await fireEvent.click(screen.getByRole('button'));
     expect(onclick).toHaveBeenCalled();

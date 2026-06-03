@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { testDb, resetTestDb } from './test/db';
 
-vi.mock('$lib/server/db', () => ({ db: testDb }));
+mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const { captureExceptionMock, initMock } = vi.hoisted(() => ({
-  captureExceptionMock: vi.fn(),
-  initMock: vi.fn()
-}));
+const { captureExceptionMock, initMock } = {
+  captureExceptionMock: mock(),
+  initMock: mock()
+};
 
-vi.mock('@sentry/sveltekit', () => ({
+mock.module('@sentry/sveltekit', () => ({
   init: initMock,
   captureException: captureExceptionMock
 }));
@@ -17,7 +17,7 @@ vi.mock('@sentry/sveltekit', () => ({
 // calls event.cookies.set (for the lang cookie). The synthetic test events
 // don't carry a real Request, so we replace i18n.handle() with a plain
 // pass-through to keep all existing handle tests exercising appHandle only.
-vi.mock('$lib/i18n', () => ({
+mock.module('$lib/i18n', () => ({
   i18n: {
     handle:
       () =>
@@ -27,16 +27,16 @@ vi.mock('$lib/i18n', () => ({
   }
 }));
 
-const { setLanguageTagMock } = vi.hoisted(() => ({ setLanguageTagMock: vi.fn() }));
+const { setLanguageTagMock } = { setLanguageTagMock: mock() };
 
-vi.mock('$lib/paraglide/runtime', () => ({
+mock.module('$lib/paraglide/runtime', () => ({
   setLanguageTag: setLanguageTagMock
 }));
 
 // SvelteKit's sequence() calls get_request_store() which requires a live
 // server context unavailable in unit tests. Replace with a simple chainer
 // that invokes each handler in order with the same event/resolve pair.
-vi.mock('@sveltejs/kit/hooks', () => ({
+mock.module('@sveltejs/kit/hooks', () => ({
   sequence:
     (...handlers: import('@sveltejs/kit').Handle[]) =>
     async ({ event, resolve }: Parameters<import('@sveltejs/kit').Handle>[0]) => {
@@ -65,10 +65,10 @@ type CookieOpts = {
 };
 
 function makeEvent(token: string | null, pathname = '/') {
-  const set = vi.fn((_name: string, _value: string, _opts: CookieOpts) => {});
-  const del = vi.fn((_name: string, _opts: CookieOpts) => {});
+  const set = mock((_name: string, _value: string, _opts: CookieOpts) => {});
+  const del = mock((_name: string, _opts: CookieOpts) => {});
   const cookies = {
-    get: vi.fn((name: string) => (name === SESSION_COOKIE ? token : null)),
+    get: mock((name: string) => (name === SESSION_COOKIE ? token : null)),
     set,
     delete: del
   };
@@ -103,7 +103,7 @@ beforeEach(async () => {
 describe('handle', () => {
   it('clears locals when no token', async () => {
     const { event } = makeEvent(null);
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(event.locals.user).toBeNull();
     expect(event.locals.sessionId).toBeNull();
@@ -113,7 +113,7 @@ describe('handle', () => {
 
   it('clears stale token and deletes the cookie', async () => {
     const { event, del } = makeEvent('garbage-token');
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(event.locals.user).toBeNull();
     expect(del).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
@@ -138,7 +138,7 @@ describe('handle', () => {
     const session = await createSession(user.id);
 
     const { event } = makeEvent(session.id);
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
 
     expect(event.locals.user?.id).toBe(user.id);
@@ -156,7 +156,7 @@ describe('handle', () => {
       .where(eq(sessions.id, session.id));
 
     const { event, set } = makeEvent(session.id);
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
 
     expect(set).toHaveBeenCalled();
@@ -171,21 +171,21 @@ describe('handle', () => {
     const user = await seedUser();
     const session = await createSession(user.id);
     const { event } = makeEvent(session.id);
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
   });
 
   it('emits X-Robots-Tag noindex on the /account area for anonymous requests', async () => {
     const { event } = makeEvent(null, '/account/deleted');
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
   });
 
   it('does not set X-Robots-Tag for anonymous public pages', async () => {
     const { event } = makeEvent(null, '/');
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(response.headers.get('X-Robots-Tag')).toBeNull();
   });
@@ -201,7 +201,7 @@ describe('handle', () => {
         .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
         .where(eq(sessions.id, session.id));
       const { event, set } = makeEvent(session.id);
-      const resolve = vi.fn(async () => new Response('ok'));
+      const resolve = mock(async () => new Response('ok'));
       await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
       expect(set.mock.calls[0][2].secure).toBe(true);
     } finally {
@@ -211,21 +211,21 @@ describe('handle', () => {
 
   it('sets locale to fr for paths without /en/ prefix', async () => {
     const { event } = makeEvent(null, '/mentions-legales');
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(setLanguageTagMock).toHaveBeenCalledWith('fr');
   });
 
   it('sets locale to en for /en/ prefixed paths', async () => {
     const { event } = makeEvent(null, '/en/mentions-legales');
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(setLanguageTagMock).toHaveBeenCalledWith('en');
   });
 
   it('sets locale to en for the bare /en path', async () => {
     const { event } = makeEvent(null, '/en');
-    const resolve = vi.fn(async () => new Response('ok'));
+    const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(setLanguageTagMock).toHaveBeenCalledWith('en');
   });
@@ -236,7 +236,7 @@ describe('handle', () => {
     // placeholder lives in the very first chunk that gets streamed. Asserting
     // both done=false and done=true chunks get the substitution prevents a
     // regression where gating on `done` leaks `%paraglide.lang%` to the wire.
-    const resolve = vi.fn(
+    const resolve = mock(
       async (
         _event,
         opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
@@ -273,7 +273,7 @@ describe('handleError', () => {
   }
 
   it('logs a structured stderr line and returns a generic message + errorId', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const err = new TypeError('boom');
       const result = handleError({
@@ -305,7 +305,7 @@ describe('handleError', () => {
   });
 
   it('prefers event.route.id over the raw URL when scrubbing the path', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const event = {
         request: { method: 'GET' } as Request,
@@ -329,7 +329,7 @@ describe('handleError', () => {
   });
 
   it('records userId as null when there is no authenticated user', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       handleError({
         error: new Error('x'),
@@ -346,7 +346,7 @@ describe('handleError', () => {
   });
 
   it('handles non-Error-shaped throws without crashing', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const result = handleError({
         error: null,
@@ -380,7 +380,7 @@ describe('handleError → Sentry', () => {
   }
 
   it('forwards the error to Sentry with errorId, status, method, route tags', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const err = new TypeError('boom');
       const result = handleError({
@@ -408,7 +408,7 @@ describe('handleError → Sentry', () => {
   });
 
   it('still emits the [diversif:error] stderr line', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       handleError({
         error: new Error('x'),
@@ -424,7 +424,7 @@ describe('handleError → Sentry', () => {
   });
 
   it('routes default to null when SvelteKit did not match a route', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       handleError({
         error: new Error('x'),
@@ -441,7 +441,7 @@ describe('handleError → Sentry', () => {
   });
 
   it('skips Sentry capture and the stderr line for 4xx', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const result = handleError({
         error: new Error('Not Found: /wp-admin'),

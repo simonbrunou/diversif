@@ -1,9 +1,10 @@
-import { fail } from '@sveltejs/kit';
+import { error, fail, type RequestEvent } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships } from '$lib/server/db/schema';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { isValidInviteCodeFormat } from '$lib/utils/invites';
 import { localizedRedirect } from '$lib/server/redirect';
+import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
 type ActiveInvite = {
@@ -11,6 +12,25 @@ type ActiveInvite = {
   childId: number;
   childName: string;
 };
+
+const JOIN_INVITE_LOOKUP_LIMIT = {
+  name: 'join-invite-lookup',
+  limit: 20,
+  windowMs: 5 * 60 * 1000
+};
+
+function checkJoinInviteLookupLimit(event: RequestEvent): string | null {
+  const keys = [`ip:${clientKey(event)}`];
+  if (event.locals.user) keys.push(`user:${event.locals.user.id}`);
+
+  for (const key of keys) {
+    const rl = checkRateLimit(JOIN_INVITE_LOOKUP_LIMIT, key);
+    if (!rl.allowed) {
+      return `Trop de tentatives. Réessayez dans ${rl.retryAfterSeconds}s.`;
+    }
+  }
+  return null;
+}
 
 async function findActiveInvitation(code: string): Promise<ActiveInvite | null> {
   const row = (
@@ -50,7 +70,8 @@ async function userHasMembership(userId: number, childId: number): Promise<boole
  * consumption happens in the POST action below, so link previews / prefetches
  * cannot accidentally consume a one-shot code.
  */
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async (event) => {
+  const { params, locals } = event;
   const code = params.code.toUpperCase();
 
   if (!isValidInviteCodeFormat(code)) {
@@ -60,6 +81,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   if (!locals.user) {
     throw localizedRedirect(locals.locale, 303, `/signup?code=${encodeURIComponent(code)}`);
   }
+
+  const limited = checkJoinInviteLookupLimit(event);
+  if (limited) throw error(429, limited);
 
   const inv = await findActiveInvitation(code);
   if (!inv) {
@@ -78,7 +102,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ params, locals }) => {
+  default: async (event) => {
+    const { params, locals } = event;
     const code = params.code.toUpperCase();
     if (!isValidInviteCodeFormat(code)) {
       return fail(400, { error: 'Code d’invitation invalide.' });
@@ -86,6 +111,9 @@ export const actions: Actions = {
     if (!locals.user) {
       throw localizedRedirect(locals.locale, 303, `/signup?code=${encodeURIComponent(code)}`);
     }
+
+    const limited = checkJoinInviteLookupLimit(event);
+    if (limited) return fail(429, { error: limited });
 
     const inv = await findActiveInvitation(code);
     if (!inv) {
@@ -103,16 +131,17 @@ export const actions: Actions = {
     // and condition the invitation UPDATE on `used_at IS NULL`. If rowCount
     // is 0 someone else won the race and we abort the membership write.
     let consumed = false;
-    await db.transaction(async (tx) => {
-      const result = await tx
+    db.transaction((tx) => {
+      const result = tx
         .update(invitations)
         .set({ usedAt: now, usedBy: locals.user!.id })
-        .where(and(eq(invitations.code, code), isNull(invitations.usedAt)));
-      /* v8 ignore next : node-postgres always populates rowCount for UPDATE */
-      if ((result.rowCount ?? 0) === 0) return;
-      await tx
-        .insert(memberships)
-        .values({ userId: locals.user!.id, childId: inv.childId, role: 'member', createdAt: now });
+        .where(and(eq(invitations.code, code), isNull(invitations.usedAt)))
+        .returning({ code: invitations.code })
+        .all();
+      if (result.length === 0) return;
+      tx.insert(memberships)
+        .values({ userId: locals.user!.id, childId: inv.childId, role: 'member', createdAt: now })
+        .run();
       consumed = true;
     });
 
