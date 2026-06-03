@@ -5,6 +5,7 @@ import { and, eq, isNull, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { parseIntParam, requireChildContext } from '$lib/server/guards';
+import { audit } from '$lib/server/audit';
 import { resolveOrInsertFood } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import type { Actions, PageServerLoad } from './$types';
@@ -87,7 +88,7 @@ function destinationFor(
 
 export const actions: Actions = {
   update: async ({ request, params, locals }) => {
-    const { childId } = requireChildContext(locals, params);
+    const { user, childId } = requireChildContext(locals, params);
     const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
     await loadEntry(entryId, childId);
 
@@ -136,19 +137,21 @@ export const actions: Actions = {
         updatedAt: new Date()
       })
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
+    audit({ type: 'food_entry.updated', userId: user.id, childId, entryId });
 
     const from = String(raw.from ?? '');
     throw localizedRedirect(locals.locale, 303, destinationFor(from, childId, entryId, 'update'));
   },
 
   delete: async ({ request, params, locals }) => {
-    const { childId } = requireChildContext(locals, params);
+    const { user, childId } = requireChildContext(locals, params);
     const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
     await loadEntry(entryId, childId);
 
     await db
       .delete(foodEntries)
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
+    audit({ type: 'food_entry.deleted', userId: user.id, childId, entryId });
 
     const data = await request.formData();
     const from = String(data.get('from') ?? '');

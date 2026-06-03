@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { db } from '$lib/server/db';
 import { invitations, memberships, users } from '$lib/server/db/schema';
 import { isUniqueViolation } from '$lib/server/db/errors';
+import { audit } from '$lib/server/audit';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import {
   createSession,
@@ -223,6 +224,10 @@ export const actions: Actions = {
 
     const session = await createSession(userId);
     setSessionCookie(cookies, session.id);
+    audit({ type: 'auth.signup', userId, viaInvite: invitationChildId !== null });
+    if (invitationChildId !== null) {
+      audit({ type: 'invite.redeemed', userId, childId: invitationChildId });
+    }
 
     throw localizedRedirect(
       event.locals.locale,

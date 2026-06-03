@@ -5,6 +5,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { isValidInviteCodeFormat } from '$lib/utils/invites';
 import { localizedRedirect } from '$lib/server/redirect';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
+import { audit } from '$lib/server/audit';
 import type { Actions, PageServerLoad } from './$types';
 
 type ActiveInvite = {
@@ -149,6 +150,7 @@ export const actions: Actions = {
       return fail(400, { error: 'Code d’invitation introuvable ou expiré.' });
     }
 
+    audit({ type: 'invite.redeemed', userId: locals.user.id, childId: inv.childId });
     throw localizedRedirect(locals.locale, 303, `/child/${inv.childId}`);
   }
 };

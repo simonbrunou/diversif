@@ -67,7 +67,34 @@ export type AuditEvent =
       from: Extract<ReactionId, 'ras'>;
       to: Exclude<ReactionId, 'ras'>;
       triggeredBy: number; // symptom id
-    };
+    }
+  // Auth lifecycle. Enough to reconstruct "I tried to log in / sign up and it
+  // broke" without storing email or IP. login_failed deliberately carries NO
+  // userId : we must not record which account a failed attempt targeted (it
+  // would turn the audit log into an account-enumeration oracle), and on a
+  // wrong-email attempt there is no user to name anyway.
+  | { type: 'auth.login_succeeded'; userId: number; method: 'password' | 'passkey' }
+  | { type: 'auth.login_failed'; method: 'password' | 'passkey' }
+  | { type: 'auth.logout'; userId: number }
+  | { type: 'auth.signup'; userId: number; viaInvite: boolean }
+  // Invitation lifecycle. The bearer code is a secret/credential, so it is
+  // never logged — childId + actor are enough to debug "my co-parent can't
+  // join". redeemed.userId is the joining user; created/revoked.userId is the
+  // owner acting on their own child.
+  | { type: 'invite.created'; userId: number; childId: number }
+  | { type: 'invite.redeemed'; userId: number; childId: number }
+  | { type: 'invite.revoked'; userId: number; childId: number }
+  // Core write path — the literal "it broke when I tapped log" surface. created
+  // omits entryId (the insert is inside an idempotency/milestone transaction
+  // that doesn't surface the row id); update/delete have it from the route.
+  | { type: 'food_entry.created'; userId: number; childId: number }
+  | { type: 'food_entry.updated'; userId: number; childId: number; entryId: number }
+  | { type: 'food_entry.deleted'; userId: number; childId: number; entryId: number }
+  | { type: 'child.created'; userId: number; childId: number }
+  // Collaboration changes. removed: an owner removed someone (removedUserId);
+  // left: a member removed themselves.
+  | { type: 'membership.removed'; userId: number; childId: number; removedUserId: number }
+  | { type: 'membership.left'; userId: number; childId: number };
 
 export function audit(event: AuditEvent): void {
   console.log(

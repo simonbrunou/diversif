@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
 
@@ -160,5 +160,40 @@ describe('login default action', () => {
     } finally {
       process.env.NODE_ENV = orig;
     }
+  });
+
+  it('audits login_failed (without userId) and login_succeeded', async () => {
+    const user = await seedTestUser();
+    const logSpy = spyOn(console, 'log').mockImplementation(() => {});
+    // Read mock.calls BEFORE mockRestore() — restoring clears the recorded calls.
+    let events: Array<Record<string, unknown>>;
+    try {
+      await actions.default!(
+        makeRouteEvent({
+          formData: { email: 'parent@example.com', password: 'wrong-password' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      );
+      await captureFlow(() =>
+        actions.default!(
+          makeRouteEvent({
+            formData: { email: 'parent@example.com', password: 'correct-password' }
+          }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+        )
+      );
+      events = logSpy.mock.calls
+        .map((c) => c[0])
+        .filter((line): line is string => typeof line === 'string' && line.startsWith('{'))
+        .map((line) => JSON.parse(line));
+    } finally {
+      logSpy.mockRestore();
+    }
+
+    const failed = events.find((e) => e.type === 'auth.login_failed');
+    const succeeded = events.find((e) => e.type === 'auth.login_succeeded');
+    expect(failed).toMatchObject({ level: 'audit', method: 'password' });
+    // Security invariant: a failed attempt must NOT record which account it
+    // targeted, or the audit log becomes an account-enumeration oracle.
+    expect(failed).not.toHaveProperty('userId');
+    expect(succeeded).toMatchObject({ level: 'audit', method: 'password', userId: user.id });
   });
 });

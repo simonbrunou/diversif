@@ -5,6 +5,7 @@ import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { requireChildContext } from '$lib/server/guards';
+import { audit } from '$lib/server/audit';
 import { resolveOrInsertFood } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import { ALLERGENS } from '$lib/utils/allergens';
@@ -82,6 +83,10 @@ export const actions: Actions = {
     }
 
     let redirectPath: string;
+    // Set only on a real insert inside the tx below, so the audit after the
+    // commit doesn't double-count an idempotent offline-queue replay (which
+    // returns the cached redirect without inserting a row).
+    let didInsert = false;
     try {
       // bun:sqlite transactions are synchronous: the callback (and `work`)
       // run inline with no awaits; the database serializes writers for us.
@@ -164,6 +169,7 @@ export const actions: Actions = {
               updatedAt: new Date()
             })
             .run();
+          didInsert = true;
 
           const categoriesNowCovered =
             tx
@@ -210,6 +216,7 @@ export const actions: Actions = {
       throw e;
     }
 
+    if (didInsert) audit({ type: 'food_entry.created', userId: user.id, childId });
     throw localizedRedirect(locals.locale, 303, redirectPath);
   }
 };

@@ -10,6 +10,7 @@ import {
 } from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
+import { audit } from '$lib/server/audit';
 import { requireGuest } from '$lib/server/guards';
 import { parseFormWithKey } from '$lib/server/forms';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
@@ -54,6 +55,7 @@ export const actions: Actions = {
     const valid = await verifyPasswordOrDecoy(user?.passwordHash, password);
 
     if (!user || !valid) {
+      audit({ type: 'auth.login_failed', method: 'password' });
       return fail(400, {
         email,
         errorKey: 'errorsAuthInvalidCredentials'
@@ -71,6 +73,7 @@ export const actions: Actions = {
 
     const session = await createSession(user.id);
     setSessionCookie(cookies, session.id);
+    audit({ type: 'auth.login_succeeded', userId: user.id, method: 'password' });
 
     throw localizedRedirect(event.locals.locale, 303, '/');
   }
