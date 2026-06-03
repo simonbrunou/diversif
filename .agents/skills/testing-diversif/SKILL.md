@@ -32,6 +32,7 @@ description: Test the Diversif app end-to-end locally. Use when verifying UI cha
 ## Child Age & Stages
 
 The guide page shows stages based on child age:
+
 - 4–6 mois
 - 6–9 mois
 - 9–12 mois
