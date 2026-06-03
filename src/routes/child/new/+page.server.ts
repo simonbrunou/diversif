@@ -51,7 +51,8 @@ export const actions: Actions = {
           name: parsed.data.firstName.trim(),
           birthDate: parsed.data.birthDate,
           createdBy: user.id,
-          createdAt: now
+          createdAt: now,
+          updatedAt: now
         })
         .returning({ id: children.id })
     )[0];

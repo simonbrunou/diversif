@@ -61,7 +61,13 @@ export const children = sqliteTable('children', {
   name: text('name').notNull(),
   birthDate: text('birth_date').notNull(),
   createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  // Concurrency policy for co-parent edits is deliberately LAST-WRITE-WINS (two
+  // co-parents almost never edit the same row in the same second). updatedAt
+  // exists so a write is at least auditable / surfaceable rather than silent,
+  // and so optimistic-locking can be layered on later without another schema
+  // migration. Every write path sets it; backfilled to createdAt for old rows.
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
 });
 
 export const memberships = sqliteTable(
@@ -148,7 +154,10 @@ export const foodEntries = sqliteTable(
     texture: text('texture', { enum: TEXTURE_VALUES }),
     notes: text('notes'),
     loggedBy: integer('logged_by').references(() => users.id, { onDelete: 'set null' }),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    // Last-write-wins across co-parents (see children.updatedAt). Set on insert
+    // and bumped on every edit (entry update + symptom reaction promotion).
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
   },
   (t) => ({
     childIdx: index('food_entries_child_idx').on(t.childId, t.givenAt),

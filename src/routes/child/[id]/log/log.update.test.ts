@@ -81,6 +81,27 @@ describe('child/[id]/log texture field', () => {
     expect(rows[0].texture).toBeNull();
   });
 
+  it('stamps updatedAt when a new entry is logged', async () => {
+    const { u, c, m, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: new Date().toISOString(),
+        reaction: 'ras'
+      }
+    });
+    await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
+    expect(rows[0].updatedAt).toBeInstanceOf(Date);
+    // Set on insert alongside createdAt (last-write-wins concurrency policy).
+    expect(rows[0].updatedAt!.getTime()).toBeGreaterThanOrEqual(rows[0].createdAt.getTime());
+  });
+
   it('rejects an invalid texture value with 400', async () => {
     const { u, c, m, food } = await setup();
     const event = makeRouteEvent({

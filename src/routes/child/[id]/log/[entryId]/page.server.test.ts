@@ -264,6 +264,33 @@ describe('child/[id]/log/[entryId] update action', () => {
     expect(r.status).toBe(400);
   });
 
+  it('bumps updatedAt on a successful edit so the change is not silent', async () => {
+    const { u, c, m, food, entry } = await setup();
+    // Pin updatedAt to a fixed point in the past so the post-edit comparison is
+    // deterministic (no reliance on wall-clock advancing within the test tick).
+    const past = new Date('2024-01-01T00:00:00Z');
+    await testDb.update(foodEntries).set({ updatedAt: past }).where(eq(foodEntries.id, entry.id));
+
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2024-06-02T10:00',
+        reaction: 'inconfort'
+      }
+    });
+    await captureFlow(() =>
+      actions.update!(event as unknown as Parameters<NonNullable<typeof actions.update>>[0])
+    );
+
+    const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
+    expect(row.reaction).toBe('inconfort');
+    expect(row.updatedAt).toBeInstanceOf(Date);
+    expect(row.updatedAt!.getTime()).toBeGreaterThan(past.getTime());
+  });
+
   it('fails when customFood.name is whitespace-only (no foodId, trimmed empty)', async () => {
     const { u, c, m, entry } = await setup();
     const event = makeRouteEvent({
