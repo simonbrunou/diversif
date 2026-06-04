@@ -61,11 +61,15 @@
 
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-accent-peach: hsl(var(--accent-peach));
-  --color-accent-butter: hsl(var(--accent-butter));
-  --color-accent-mint: hsl(var(--accent-mint));
-  --color-accent-sky: hsl(var(--accent-sky));
-  --color-accent-lilac: hsl(var(--accent-lilac));
+  /* accent tints alias the tile palette (consumed by bg-accent-* and
+     ring-accent-* in StageBadge, TipCard, category tints). v3 routed these
+     through runtime --accent-x aliases; mapped straight to --tile-x here so
+     there's no dead var. */
+  --color-accent-peach: hsl(var(--tile-peach));
+  --color-accent-butter: hsl(var(--tile-butter));
+  --color-accent-mint: hsl(var(--tile-mint));
+  --color-accent-sky: hsl(var(--tile-sky));
+  --color-accent-lilac: hsl(var(--tile-lilac));
 
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
@@ -120,28 +124,41 @@
 /* Named easing + duration utilities. v4 has an --ease-* namespace but no
    --duration-* one, and both runtime vars are toggled by the reduced-motion
    block below, so they're defined as utilities that reference the live vars
-   rather than as static theme tokens. (v3 equivalent: theme.extend
+   rather than as static theme tokens.
+   Each also sets --tw-ease / --tw-duration — exactly like v4's built-in ease-*
+   / duration-* utilities — so the `animate-in` / `animate-out` classes from
+   tw-animate-css inherit the same timing. The Modal overlay/content and the
+   bottom-sheet rely on `duration-slow` + `ease-spring` driving their enter/exit
+   animation (not just transitions); without the --tw-* vars they'd fall back to
+   the package default (150ms / ease). (v3 equivalent: theme.extend
    transitionTimingFunction / transitionDuration.) */
 @utility ease-soft {
   transition-timing-function: var(--ease-soft);
+  --tw-ease: var(--ease-soft);
 }
 @utility ease-spring {
   transition-timing-function: var(--ease-spring);
+  --tw-ease: var(--ease-spring);
 }
 @utility ease-celebrate {
   transition-timing-function: var(--ease-celebrate);
+  --tw-ease: var(--ease-celebrate);
 }
 @utility duration-fast {
   transition-duration: var(--dur-fast);
+  --tw-duration: var(--dur-fast);
 }
 @utility duration-base {
   transition-duration: var(--dur-base);
+  --tw-duration: var(--dur-base);
 }
 @utility duration-slow {
   transition-duration: var(--dur-slow);
+  --tw-duration: var(--dur-slow);
 }
 @utility duration-celebrate {
   transition-duration: var(--dur-celebrate);
+  --tw-duration: var(--dur-celebrate);
 }
 
 @layer base {
@@ -329,6 +346,16 @@
 
   * {
     @apply border-border;
+  }
+  /* v3 set ringOffsetColor.DEFAULT = canvas; v4's default ring offset is white,
+     which would show a white gap on the app's bare `ring-offset-2` focus rings
+     (buttons, chips, combobox rows, links) in dark mode. Restore the canvas
+     default — explicit `ring-offset-*` color utilities still override it. */
+  *,
+  ::before,
+  ::after,
+  ::backdrop {
+    --tw-ring-offset-color: hsl(var(--canvas));
   }
   html {
     -webkit-tap-highlight-color: transparent;
