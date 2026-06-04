@@ -125,6 +125,20 @@ export const actions: Actions = {
       invitationChildId = inv.childId;
     }
 
+    // Invite-only mode (opt-in via INVITE_ONLY=true): registration requires a
+    // valid, unexpired invite. Checked AFTER invite resolution but BEFORE the
+    // duplicate-email lookup, so the response never depends on whether the
+    // email is registered (same enumeration-safety reasoning as the
+    // invite-first ordering above). Unset/anything-else keeps signup open.
+    if (process.env.INVITE_ONLY === 'true' && invitationChildId === null) {
+      return fail(403, {
+        email: formEmail,
+        displayName: formDisplayName,
+        inviteCode: formInvite,
+        errorKey: 'errorsAuthInviteRequired'
+      });
+    }
+
     if (await findUserByEmail(lowerEmail)) {
       // Generic message : the previous "compte existe déjà" wording let an
       // attacker enumerate registered addresses by attempting to sign up.
