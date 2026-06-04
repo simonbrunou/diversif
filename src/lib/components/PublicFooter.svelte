@@ -22,6 +22,7 @@
       <a href={localizedHref('/guide')} class="hover:text-foreground hover:underline">{m.chromePublicNavGuide()}</a>
       <a href={localizedHref('/allergens')} class="hover:text-foreground hover:underline">{m.chromePublicNavAllergens()}</a>
       <a href={localizedHref('/sources')} class="hover:text-foreground hover:underline">{m.chromePublicNavSources()}</a>
+      <a href={localizedHref('/aide')} class="hover:text-foreground hover:underline">{m.aideNavLabel()}</a>
       <a href={localizedHref('/login')} class="hover:text-foreground hover:underline">{m.chromePublicNavLogin()}</a>
       <a href={localizedHref('/mentions-legales')} class="hover:text-foreground hover:underline">{m.chromePublicFooterMentionsLegales()}</a>
       <a href={localizedHref('/politique-confidentialite')} class="hover:text-foreground hover:underline">{m.chromePublicFooterPolitiqueConfidentialite()}</a>

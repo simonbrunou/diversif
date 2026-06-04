@@ -1,6 +1,6 @@
 import { error, fail, type RequestEvent } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { children, invitations, memberships } from '$lib/server/db/schema';
+import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { isValidInviteCodeFormat } from '$lib/utils/invites';
 import { localizedRedirect } from '$lib/server/redirect';
@@ -12,6 +12,8 @@ type ActiveInvite = {
   code: string;
   childId: number;
   childName: string;
+  // null when the inviter's account was since deleted (createdBy → set null).
+  inviterName: string | null;
 };
 
 const JOIN_INVITE_LOOKUP_LIMIT = {
@@ -39,10 +41,12 @@ async function findActiveInvitation(code: string): Promise<ActiveInvite | null> 
       .select({
         code: invitations.code,
         childId: invitations.childId,
-        childName: children.name
+        childName: children.name,
+        inviterName: users.displayName
       })
       .from(invitations)
       .innerJoin(children, eq(children.id, invitations.childId))
+      .leftJoin(users, eq(users.id, invitations.createdBy))
       .where(
         and(
           eq(invitations.code, code),
@@ -76,7 +80,7 @@ export const load: PageServerLoad = async (event) => {
   const code = params.code.toUpperCase();
 
   if (!isValidInviteCodeFormat(code)) {
-    return { error: 'Code d’invitation invalide.' as const, code, child: null };
+    return { error: 'Code d’invitation invalide.' as const, code, child: null, inviter: null };
   }
 
   if (!locals.user) {
@@ -88,7 +92,12 @@ export const load: PageServerLoad = async (event) => {
 
   const inv = await findActiveInvitation(code);
   if (!inv) {
-    return { error: 'Code d’invitation introuvable ou expiré.' as const, code, child: null };
+    return {
+      error: 'Code d’invitation introuvable ou expiré.' as const,
+      code,
+      child: null,
+      inviter: null
+    };
   }
 
   if (await userHasMembership(locals.user.id, inv.childId)) {
@@ -98,7 +107,8 @@ export const load: PageServerLoad = async (event) => {
   return {
     error: null,
     code,
-    child: { id: inv.childId, name: inv.childName }
+    child: { id: inv.childId, name: inv.childName },
+    inviter: inv.inviterName
   };
 };
 
