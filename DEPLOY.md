@@ -100,6 +100,23 @@ Schedule the off-box backup cron (`VACUUM INTO` → encrypted object storage) an
 periodically run `bun run db:verify-backup` against a pulled-back copy so the
 restore path is exercised, not assumed.
 
+### Signup & abuse controls
+
+Signup is **open by decision** — anyone can register. The exposure is bounded by:
+
+- **`INVITE_ONLY`** (optional, default open): set `INVITE_ONLY=true` to require a
+  valid, unexpired invite code for every new account. A dormant lever — flip it
+  if open signup is abused, no code change needed. Anything other than the exact
+  string `true` keeps signup open.
+- **Per-account creation caps** (code, not config): child creation is limited to
+  10/hour per account, and each child may have at most 10 simultaneously-active
+  (unused, unexpired) invites. Both are generous headroom for any real parent;
+  they only stop an account from spraying unbounded rows. Tune in
+  `child/new/+page.server.ts` (`CHILD_CREATE_LIMIT`) and
+  `child/[id]/settings/+page.server.ts` (`MAX_ACTIVE_INVITES_PER_CHILD`).
+- **Email verification is deferred** — there is no mail sender (see
+  `PARKING_LOT.md`). Email is collected as the login identifier but not verified.
+
 ---
 
 ## Concurrency decision (lost updates)

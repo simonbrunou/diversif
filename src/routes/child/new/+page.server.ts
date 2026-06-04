@@ -7,12 +7,19 @@ import { requireUser } from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
 import { createInvitationForChild } from '$lib/server/invitations';
 import { audit } from '$lib/server/audit';
+import { checkRateLimit } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z.object({
   firstName: z.string().min(1, 'Prénom requis').max(80),
   birthDate: z.string().refine(isValidBirthDate, 'Date invalide')
 });
+
+// Per-account ceiling on child creation. 10/hour is far above any real
+// parent's need (even twins/triplets are a handful of one-off creations) but
+// stops an authenticated account from spraying unbounded child + invitation
+// rows — the open-signup threat model. Keyed by user id, not IP.
+const CHILD_CREATE_LIMIT = { name: 'child-create', limit: 10, windowMs: 60 * 60 * 1000 };
 
 export const load: PageServerLoad = async ({ locals, parent }) => {
   requireUser(locals);
@@ -27,6 +34,12 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 export const actions: Actions = {
   default: async ({ request, locals }) => {
     const user = requireUser(locals);
+    const rl = checkRateLimit(CHILD_CREATE_LIMIT, `user:${user.id}`);
+    if (!rl.allowed) {
+      return fail(429, {
+        errors: { firstName: 'Trop de créations récentes. Réessayez dans un moment.' }
+      });
+    }
     const formData = await request.formData();
     const raw = Object.fromEntries(formData);
     const parsed = schema.safeParse(raw);

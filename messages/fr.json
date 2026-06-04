@@ -107,6 +107,7 @@
   "errorsAuthInvalidCredentials": "Adresse e-mail ou mot de passe incorrect.",
   "errorsAuthInvalidInvite": "Code d’invitation invalide.",
   "errorsAuthInvalidInviteExpired": "Code d’invitation introuvable ou expiré.",
+  "errorsAuthInviteRequired": "Une invitation est requise pour créer un compte.",
   "errorsAuthSignupImpossible": "Inscription impossible. Si vous avez déjà un compte, essayez de vous connecter.",
   "errorsAccountProfileNameInvalid": "Nom invalide.",
   "errorsAccountProfileSuccess": "Profil mis à jour.",

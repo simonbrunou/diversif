@@ -208,6 +208,48 @@ describe('signup default action', () => {
     expect(inv?.usedBy).toBe(newUser!.id);
   });
 
+  it('blocks invite-less signup with 403 when INVITE_ONLY is set', async () => {
+    process.env.INVITE_ONLY = 'true';
+    try {
+      const event = makeRouteEvent({ formData: form() });
+      const r = (await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )) as { status: number; data: { errorKey: string } };
+      expect(r.status).toBe(403);
+      expect(r.data.errorKey).toBe('errorsAuthInviteRequired');
+      // No account is created when the gate rejects.
+      expect(
+        await testDb.select().from(users).where(eq(users.email, 'new@example.com'))
+      ).toHaveLength(0);
+    } finally {
+      delete process.env.INVITE_ONLY;
+    }
+  });
+
+  it('allows signup with a valid invite even when INVITE_ONLY is set', async () => {
+    process.env.INVITE_ONLY = 'true';
+    try {
+      const owner = await seedUser({ email: 'owner@example.com' });
+      const child = await seedChild({ createdBy: owner.id });
+      await testDb.insert(invitations).values({
+        code: 'BEBE-ABCDEF',
+        childId: child.id,
+        createdBy: owner.id,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 86400_000),
+        usedAt: null,
+        usedBy: null
+      });
+      const event = makeRouteEvent({ formData: form({ inviteCode: 'BEBE-ABCDEF' }) });
+      const r = await captureFlow(() =>
+        actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+      );
+      expect(r.kind).toBe('redirect');
+    } finally {
+      delete process.env.INVITE_ONLY;
+    }
+  });
+
   it('re-throws non-race errors from the signup transaction (so SvelteKit returns 500)', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const child = await seedChild({ createdBy: owner.id });
