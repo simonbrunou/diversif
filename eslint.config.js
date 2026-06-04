@@ -17,7 +17,10 @@ export default ts.config(
     }
   },
   {
-    files: ['**/*.svelte'],
+    // eslint-plugin-svelte v3 also lints .svelte.ts/.svelte.js runes modules
+    // with svelte-eslint-parser; point it at the TS parser so type syntax
+    // (e.g. `export type …`) parses instead of throwing "Unexpected token".
+    files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
     languageOptions: {
       parserOptions: { parser: ts.parser }
     }
@@ -50,7 +53,17 @@ export default ts.config(
     files: ['**/*.svelte'],
     rules: {
       // We never compile to custom elements, so the rest-prop warning is noise.
-      'svelte/valid-compile': ['error', { ignoreWarnings: true }]
+      'svelte/valid-compile': ['error', { ignoreWarnings: true }],
+      // eslint-plugin-svelte v3 turns this on by default. It wants every link to
+      // go through SvelteKit's resolve(), but diversif routes through
+      // localizedHref() for the paraglide /en/ locale prefix — which resolve()
+      // can't express — so the rule fights the i18n routing. Disable it.
+      'svelte/no-navigation-without-resolve': 'off',
+      // Also new in v3: flags every `new Map()`/`new Set()` in a component as
+      // non-reactive. We use plain Maps for local, non-reactive computation
+      // (e.g. grouping a list before render); reactive state never lives in a
+      // bare Map here. Disable rather than churn to SvelteMap needlessly.
+      'svelte/prefer-svelte-reactivity': 'off'
     }
   },
   {
