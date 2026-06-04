@@ -5,7 +5,8 @@
 
 /* Dark mode is class-driven: the anti-FOIT script in app.html toggles `.dark`
    on <html> before paint. `:where()` keeps the variant at specificity 0 so it
-   never beats an explicit utility. (v3 equivalent: darkMode: ['class'].) */
+   never beats an explicit utility. (v3 equivalent: darkMode: ['class']; v3's
+   safelist: ['dark'] is unneeded — v4 never purges authored selectors.) */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Static design tokens (identical in light + dark). */
@@ -15,9 +16,10 @@
     'Helvetica Neue', Arial, sans-serif;
   --font-display: 'Fraunces Variable', Fraunces, Georgia, serif;
 
-  /* Radius rule (Bundle 2):
+  /* Radius scale (chips/inputs → pages):
        - sm/md  → chips, inputs, small buttons
        - lg     → default cards
+       - xl     → lg + 4px (kept for shadcn-style component defaults)
        - tile   → cards, tiles (rounded-tile)
        - hero   → page-scale tiles, modals (rounded-hero)
        - full   → pills, badges, avatars
@@ -121,17 +123,17 @@
   --shadow-glow: var(--ds-shadow-glow);
 }
 
-/* Named easing + duration utilities. v4 has an --ease-* namespace but no
-   --duration-* one, and both runtime vars are toggled by the reduced-motion
-   block below, so they're defined as utilities that reference the live vars
-   rather than as static theme tokens.
-   Each also sets --tw-ease / --tw-duration — exactly like v4's built-in ease-*
-   / duration-* utilities — so the `animate-in` / `animate-out` classes from
-   tw-animate-css inherit the same timing. The Modal overlay/content and the
-   bottom-sheet rely on `duration-slow` + `ease-spring` driving their enter/exit
-   animation (not just transitions); without the --tw-* vars they'd fall back to
-   the package default (150ms / ease). (v3 equivalent: theme.extend
-   transitionTimingFunction / transitionDuration.) */
+/* Named easing + duration utilities. Defined as @utility (not theme tokens)
+   because each must also set --tw-ease / --tw-duration — exactly like v4's
+   built-in ease-* / duration-* utilities — so the `animate-in` / `animate-out`
+   classes from tw-animate-css inherit the same timing (and v4 has no
+   --duration-* theme namespace anyway). They reference the live runtime vars,
+   so the reduced-motion block below — and dark mode — keep switching them.
+   The Modal overlay/content and the bottom-sheet rely on `duration-slow` +
+   `ease-spring` driving their enter/exit animation (not just transitions);
+   without the --tw-* vars they'd fall back to the package default (150ms /
+   ease). (v3 equivalent: theme.extend transitionTimingFunction /
+   transitionDuration.) */
 @utility ease-soft {
   transition-timing-function: var(--ease-soft);
   --tw-ease: var(--ease-soft);

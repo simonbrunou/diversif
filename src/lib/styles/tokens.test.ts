@@ -109,21 +109,29 @@ describe('design tokens', () => {
     it('aliases accent-* tints onto the tile palette', () => {
       expect(css).toMatch(/--color-accent-peach\s*:\s*hsl\(var\(--tile-peach\)\)/);
       expect(css).toMatch(/--color-accent-sky\s*:\s*hsl\(var\(--tile-sky\)\)/);
-      // the removed tint aliases must not be referenced (the neutral
-      // --color-accent / -foreground legitimately still map to --accent).
-      expect(css).not.toMatch(
-        /--color-accent-(peach|butter|mint|sky|lilac)\s*:\s*hsl\(var\(--accent-/
-      );
+      // the removed tint aliases must not be referenced anywhere (any form):
+      // the neutral --color-accent / -foreground legitimately keep --accent /
+      // --accent-foreground, but the five tint aliases are gone.
+      expect(css).not.toMatch(/var\(--accent-(peach|butter|mint|sky|lilac)\)/);
     });
   });
 
   describe('v4 consumer compatibility', () => {
     // duration-*/ease-* must drive tw-animate-css animate-in/out (Modal,
-    // bottom-sheet), not just transitions — i.e. set --tw-duration/--tw-ease.
-    it('routes named duration/ease through the tw-animate-css vars', () => {
-      expect(css).toMatch(/--tw-duration\s*:\s*var\(--dur-slow\)/);
-      expect(css).toMatch(/--tw-ease\s*:\s*var\(--ease-spring\)/);
-    });
+    // bottom-sheet), not just transitions — every utility has to emit its own
+    // --tw-duration / --tw-ease, so assert each one (a copy-paste slip dropping
+    // the line on any single utility — e.g. duration-base on the feed-item
+    // animation — would otherwise pass undetected).
+    for (const ease of ['soft', 'spring', 'celebrate']) {
+      it(`ease-${ease} sets --tw-ease for tw-animate-css`, () => {
+        expect(css).toMatch(new RegExp(`--tw-ease\\s*:\\s*var\\(--ease-${ease}\\)`));
+      });
+    }
+    for (const dur of ['fast', 'base', 'slow', 'celebrate']) {
+      it(`duration-${dur} sets --tw-duration for tw-animate-css`, () => {
+        expect(css).toMatch(new RegExp(`--tw-duration\\s*:\\s*var\\(--dur-${dur}\\)`));
+      });
+    }
 
     // v4's default ring offset is white; the app uses bare ring-offset-2, so the
     // canvas default must be restored or dark-mode focus rings get a white gap.
