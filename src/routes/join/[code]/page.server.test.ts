@@ -112,10 +112,13 @@ describe('join/[code] load', () => {
       error: null;
       code: string;
       child: { id: number; name: string };
+      inviter: string | null;
     };
     expect(out.error).toBeNull();
     expect(out.code).toBe('BEBE-ABCDEF');
     expect(out.child.id).toBe(child.id);
+    // The invitee sees WHO invited them (createdBy → displayName), not an anonymous code.
+    expect(out.inviter).toBe(owner.displayName);
   });
 
   it('rate-limits authenticated invite lookups', async () => {

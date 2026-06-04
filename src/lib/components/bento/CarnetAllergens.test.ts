@@ -44,6 +44,12 @@ describe('CarnetAllergens', () => {
     expect(screen.getByText(/Aucun allergène/)).toBeTruthy();
   });
 
+  it('shows a log CTA in the empty state when childId is provided', () => {
+    render(CarnetAllergens, { props: { items: [], childId: '7' } });
+    const cta = screen.getByRole('link');
+    expect(cta.getAttribute('href')).toContain('/child/7/log');
+  });
+
   it('renders the state per card', () => {
     render(CarnetAllergens, { props: { items } });
     expect(screen.getAllByText(/à découvrir/).length).toBeGreaterThan(0);

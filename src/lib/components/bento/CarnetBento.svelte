@@ -59,7 +59,7 @@
   {:else if currentSegment === 'categories'}
     <CarnetCategories {foods} />
   {:else if currentSegment === 'allergens'}
-    <CarnetAllergens items={allergens} />
+    <CarnetAllergens items={allergens} {childId} />
   {:else if currentSegment === 'stats'}
     <CarnetStats
       diversityScore={stats.diversityScore}

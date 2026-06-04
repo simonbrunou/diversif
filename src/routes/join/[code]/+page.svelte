@@ -20,7 +20,14 @@
       </div>
     {:else if data.child}
       <p class="mt-3 text-sm text-muted-foreground">
-        Vous êtes invité·e à suivre <span class="font-medium text-foreground">{data.child.name}</span>.
+        {#if data.inviter}
+          {m.joinInviteIntroNamed({ inviter: data.inviter, child: data.child.name })}
+        {:else}
+          {m.joinInviteIntroAnon({ child: data.child.name })}
+        {/if}
+      </p>
+      <p class="mt-2 text-sm text-muted-foreground">
+        {m.joinInviteExplainer({ child: data.child.name })}
       </p>
       <p class="mt-2 text-xs text-muted-foreground">{m.joinCodeLine()} <span class="font-mono">{data.code}</span></p>
 

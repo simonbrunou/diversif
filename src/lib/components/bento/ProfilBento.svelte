@@ -59,6 +59,7 @@
   <section class="mb-3">
     <SectionHeader>{m.profilLegalTitle()}</SectionHeader>
     <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-primary-strong">
+      <li><a href={localizedHref('/aide')} class="underline">{m.aideNavLabel()}</a></li>
       <li><a href={localizedHref('/cgu')} class="underline">{m.chromePublicFooterCGU()}</a></li>
       <li><a href={localizedHref('/mentions-legales')} class="underline">{m.chromeLegalLinksMentionsLegales()}</a></li>
       <li><a href={localizedHref('/politique-confidentialite')} class="underline">{m.chromeLegalLinksPolitiqueConfidentialite()}</a></li>

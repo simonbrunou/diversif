@@ -208,7 +208,13 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   // *all-time* : `entriesNormalized` only covers the last 90 days, so basing
   // this on that set would re-trigger onboarding for older children that
   // simply went silent for a quarter.
-  const showWelcomeDialog = !dismissals.has('welcome-dialog') && distinctFoods === 0;
+  //
+  // Gate on ageMonths >= 4 so the onboarding (which nudges "log a first food")
+  // doesn't fire for an under-4-month baby — who instead sees the "pas encore
+  // l'heure" pre-diversification card. Otherwise the modal and that card
+  // contradict each other, and the one-shot dialog is spent before it's useful.
+  const showWelcomeDialog =
+    !dismissals.has('welcome-dialog') && distinctFoods === 0 && ageMonths >= 4;
 
   return {
     recent: recent.map((r) => ({
