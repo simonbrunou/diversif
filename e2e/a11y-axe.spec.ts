@@ -50,6 +50,7 @@ const PUBLIC_ROUTES = [
   '/politique-confidentialite',
   '/cookies',
   '/sources',
+  '/aide',
   '/offline'
 ];
 

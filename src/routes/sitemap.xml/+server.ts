@@ -13,12 +13,14 @@ const LANDING_LASTMOD = '2026-05-03';
 const GUIDE_LASTMOD = '2026-05-03';
 const ALLERGENS_LASTMOD = '2026-05-03';
 const SOURCES_LASTMOD = '2026-05-03';
+const AIDE_LASTMOD = '2026-06-04';
 
 const STATIC_PAGES: Entry[] = [
   { path: '/', changefreq: 'weekly', priority: '1.0', lastmod: LANDING_LASTMOD },
   { path: '/guide', changefreq: 'monthly', priority: '0.9', lastmod: GUIDE_LASTMOD },
   { path: '/allergens', changefreq: 'monthly', priority: '0.9', lastmod: ALLERGENS_LASTMOD },
-  { path: '/sources', changefreq: 'yearly', priority: '0.6', lastmod: SOURCES_LASTMOD }
+  { path: '/sources', changefreq: 'yearly', priority: '0.6', lastmod: SOURCES_LASTMOD },
+  { path: '/aide', changefreq: 'yearly', priority: '0.5', lastmod: AIDE_LASTMOD }
 ];
 
 const GUIDE_ANCHORS = [

@@ -2,6 +2,7 @@
   "name": "diversif",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "_bun_invocation_note": "Tools that have node-shebang bin shims (vite, svelte-check, prettier, eslint, playwright, drizzle-kit) MUST be invoked by their JS entry directly — `bun --bun TOOL` resolves the shim, which then execs `node`, so the dev/build process ends up under Node despite --bun. Calling `bun --bun node_modules/TOOL/bin/X.js` runs the JS under Bun directly. paraglide-js is the exception: see _paraglide_note.",

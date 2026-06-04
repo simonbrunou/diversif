@@ -121,6 +121,14 @@ Pour répondre manuellement à une demande RGPD article 15 / 20 (par exemple si 
 bun scripts/export-user.ts user@example.com
 ```
 
+## Internationalisation
+
+The UI is bilingual — French (default) and English under `/en/`, via paraglide. Message-key parity between `messages/fr.json` and `messages/en.json` is enforced by `bun run lint:i18n`. **Legal and marketing pages (mentions légales, politique de confidentialité, CGU, guide, sources, allergènes) are intentionally French-only _content_** — only the app chrome translates. Localise those pages only if reaching an English-speaking audience becomes a goal.
+
+## License
+
+Diversif is licensed under the **GNU General Public License v3.0 or later** (`GPL-3.0-or-later`) — see [`LICENSE`](./LICENSE). Editorial content (guides, allergen cards, sources) is provided for personal and informational use.
+
 ## Out of scope (for the MVP)
 
-BLW textures, photos, quantities, recipes, growth charts, push notifications, CSV/PDF export, i18n, offline queue, read-only sharing.
+BLW textures, photos, quantities, recipes, growth charts, push notifications, CSV/PDF export, read-only sharing.

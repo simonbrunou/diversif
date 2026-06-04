@@ -17,6 +17,7 @@ describe('GET /sitemap.xml', () => {
     expect(body).toContain(`<loc>${SITE.defaultOrigin}/guide</loc>`);
     expect(body).toContain(`<loc>${SITE.defaultOrigin}/allergens</loc>`);
     expect(body).toContain(`<loc>${SITE.defaultOrigin}/sources</loc>`);
+    expect(body).toContain(`<loc>${SITE.defaultOrigin}/aide</loc>`);
     expect(body).not.toContain('preview-abc');
     expect(body).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
     expect(body).toContain('<changefreq>weekly</changefreq>');
