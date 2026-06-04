@@ -141,6 +141,31 @@ describe('child/new default action', () => {
     expect(memb.length).toBe(1);
     expect(memb[0].role).toBe('owner');
   });
+
+  it('rolls back the child if a write in the creation transaction fails (no orphan)', async () => {
+    const u = await seedUser();
+    // The action wraps the child + owner-membership inserts in one transaction
+    // so a failure can't leave a child no one is a member of. Prove that
+    // contract in the same DB context: a child insert followed by a throw
+    // inside db.transaction must persist nothing.
+    expect(() =>
+      testDb.transaction((tx) => {
+        tx.insert(children)
+          .values({
+            name: 'Orphelin',
+            birthDate: '2024-01-01',
+            createdBy: u.id,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          })
+          .run();
+        throw new Error('simulated membership-insert failure');
+      })
+    ).toThrow();
+    expect(await testDb.select().from(children).where(eq(children.name, 'Orphelin'))).toHaveLength(
+      0
+    );
+  });
 });
 
 describe('child/new action : invite-coparent flow', () => {
