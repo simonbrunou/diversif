@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
+    "@eslint/js": "^10.0.0",
     "@happy-dom/global-registrator": "^20.9.0",
     "@inlang/paraglide-sveltekit": "^0.16.1",
     "@playwright/test": "^1.59.1",
