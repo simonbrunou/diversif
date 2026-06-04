@@ -1,7 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
-import { and, eq, gt, isNull } from 'drizzle-orm';
+import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { createInvitationForChild } from '$lib/server/invitations';
@@ -15,6 +15,12 @@ import {
 } from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
 import type { Actions, PageServerLoad } from './$types';
+
+// Cap on simultaneously-active (unused, unexpired) invites per child. A parent
+// realistically needs one or two pending codes; 10 is generous headroom while
+// stopping an account from spraying unbounded invite rows. Expired/used invites
+// don't count, so revoking or letting one lapse frees a slot.
+const MAX_ACTIVE_INVITES_PER_CHILD = 10;
 
 export const load: PageServerLoad = async ({ params, locals }) => {
   const { childId, membership } = requireChildContext(locals, params);
@@ -94,6 +100,30 @@ export const actions: Actions = {
     requireUser(locals);
     const childId = parseChildIdParam(params);
     const { user } = requireOwnership(locals, childId);
+
+    // Enforce the active-invite cap before the fresh-auth prompt: a capped
+    // owner gets told to revoke one rather than being asked to re-enter their
+    // password only to be refused.
+    // count(*) always returns exactly one row, so [0] is non-null.
+    const activeInvites = (
+      await db
+        .select({ n: sql<number>`count(*)` })
+        .from(invitations)
+        .where(
+          and(
+            eq(invitations.childId, childId),
+            isNull(invitations.usedAt),
+            gt(invitations.expiresAt, new Date())
+          )
+        )
+    )[0]!.n;
+    if (activeInvites >= MAX_ACTIVE_INVITES_PER_CHILD) {
+      return fail(429, {
+        error:
+          'Trop d’invitations actives pour cet enfant. Révoquez-en une avant d’en générer une nouvelle.'
+      });
+    }
+
     const data = await request.formData();
     const currentPassword = String(data.get('currentPassword') ?? '');
 

@@ -6,10 +6,15 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { children, memberships, invitations } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {
   await resetTestDb();
+  // The per-account child-create limiter is module-level state that survives
+  // resetTestDb; clear it so each test starts with a fresh bucket (user ids
+  // restart at 1 every test, so without this they'd share one bucket).
+  _clearAllRateLimits();
 });
 
 describe('child/new load', () => {
@@ -55,6 +60,31 @@ describe('child/new load', () => {
       }) as unknown as Parameters<typeof load>[0]
     );
     expect(out).toEqual({ isFirstChild: true });
+  });
+});
+
+describe('child/new action : rate limiting', () => {
+  it('rejects the 11th child creation within the window for one account', async () => {
+    const u = await seedUser();
+    for (let i = 0; i < 10; i++) {
+      await captureFlow(() =>
+        actions.default!(
+          makeRouteEvent({
+            user: safeUser(u),
+            formData: { firstName: `Bébé ${i}`, birthDate: '2024-01-01' }
+          }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+        )
+      );
+    }
+    const r = (await actions.default!(
+      makeRouteEvent({
+        user: safeUser(u),
+        formData: { firstName: 'Onzième', birthDate: '2024-01-01' }
+      }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { errors: { firstName: string } } };
+    expect(r.status).toBe(429);
+    expect(r.data.errors.firstName).toMatch(/réessayez/i);
+    expect(await testDb.select().from(children)).toHaveLength(10);
   });
 });
 

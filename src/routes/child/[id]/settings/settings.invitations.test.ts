@@ -120,6 +120,34 @@ describe('settings createInvitation action', () => {
     expect(generateInviteCodeRawSpy).toHaveBeenCalledTimes(5);
   });
 
+  it('rejects creating an invitation once the active-invite cap is reached', async () => {
+    const { u, c, m } = await setup();
+    // Seed 10 active (unused, unexpired) invites for this child — the cap.
+    for (let i = 0; i < 10; i++) {
+      await testDb.insert(invitations).values({
+        code: `BEBE-CAP${i}`,
+        childId: c.id,
+        createdBy: u.id,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 86_400_000),
+        usedAt: null,
+        usedBy: null
+      });
+    }
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
+    });
+    const r = (await actions.createInvitation!(
+      event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
+    )) as { status: number; data: { error: string } };
+    expect(r.status).toBe(429);
+    expect(r.data.error).toMatch(/invitations actives/i);
+    expect(await testDb.select().from(invitations)).toHaveLength(10);
+  });
+
   it('retries on a 23505 collision and lands on the next generated code', async () => {
     const { u, c, m } = await setup();
     // Pre-seed the collision target so the first INSERT will hit
