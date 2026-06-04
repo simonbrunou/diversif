@@ -37,7 +37,7 @@
   );
 </script>
 
-<div class="container max-w-xl space-y-5 py-6">
+<div class="mx-auto w-full px-4 max-w-xl space-y-5 py-6">
   <BackHeader
     title={m.logEditTitle()}
     subtitle={m.logFormSubtitle({ name: data.child.name })}

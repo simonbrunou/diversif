@@ -35,7 +35,7 @@
   const otherGroups = $derived(groupByCategory(data.others));
 </script>
 
-<div class="container max-w-2xl space-y-6 py-6">
+<div class="mx-auto w-full px-4 max-w-2xl space-y-6 py-6">
   <BackHeader
     title="Suggestions"
     subtitle={`À tester ces jours-ci selon l’âge de ${data.child.name} (${data.ageMonths} mois).`}

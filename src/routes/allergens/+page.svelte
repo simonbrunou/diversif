@@ -58,7 +58,7 @@
   ])}
 />
 
-<div class="container max-w-4xl space-y-8 py-6 md:py-8">
+<div class="mx-auto w-full px-4 max-w-4xl space-y-8 py-6 md:py-8">
   {#if page.url.pathname.startsWith('/en')}
     <Callout variant="warning">
       {m.commonFrOnlyBannerGuide()}

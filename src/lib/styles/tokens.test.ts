@@ -33,12 +33,13 @@ const REQUIRED_TOKENS = [
   '--reaction-inconfort',
   '--reaction-reaction',
   '--celebrate',
-  '--radius-tile',
-  '--radius-hero',
-  '--shadow-card',
-  '--shadow-soft',
-  '--shadow-lifted',
-  '--shadow-glow',
+  // Shadows are runtime vars (they differ light/dark) prefixed --ds-* to avoid
+  // colliding with the v4 --shadow-* theme namespace; @theme inline maps them
+  // back to the shadow-* utilities (asserted in the "theme layer" block below).
+  '--ds-shadow-card',
+  '--ds-shadow-soft',
+  '--ds-shadow-lifted',
+  '--ds-shadow-glow',
   '--ease-soft',
   '--ease-spring',
   '--ease-celebrate',
@@ -85,6 +86,23 @@ describe('design tokens', () => {
         expect(block).toMatch(new RegExp(`${token}\\s*:`));
       });
     }
+  });
+
+  describe('theme layer (@theme)', () => {
+    it('defines the radius scale as static theme tokens', () => {
+      expect(css).toMatch(/--radius-tile\s*:/);
+      expect(css).toMatch(/--radius-hero\s*:/);
+    });
+
+    it('maps shadow utilities to the runtime --ds-shadow-* vars (inline)', () => {
+      expect(css).toMatch(/--shadow-card\s*:\s*var\(--ds-shadow-card\)/);
+      expect(css).toMatch(/--shadow-glow\s*:\s*var\(--ds-shadow-glow\)/);
+    });
+
+    it('maps color utilities to the runtime hsl tokens (inline, dark-switchable)', () => {
+      expect(css).toMatch(/--color-primary\s*:\s*hsl\(var\(--primary\)\)/);
+      expect(css).toMatch(/--color-tile-peach\s*:\s*hsl\(var\(--tile-peach\)\)/);
+    });
   });
 
   describe('reduced-motion safeguard', () => {

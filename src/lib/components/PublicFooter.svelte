@@ -6,7 +6,7 @@
 </script>
 
 <footer class="mt-12 border-t bg-surface">
-  <div class="container grid gap-6 py-8 text-sm text-muted-foreground md:grid-cols-[1fr_auto] md:items-start">
+  <div class="mx-auto w-full max-w-[1280px] px-4 grid gap-6 py-8 text-sm text-muted-foreground md:grid-cols-[1fr_auto] md:items-start">
     <div class="space-y-2">
       <div class="flex items-center gap-2 font-semibold text-foreground">
         <img src="/favicon.svg" alt="" class="h-5 w-5" aria-hidden="true" />

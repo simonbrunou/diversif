@@ -10,7 +10,7 @@
   const title = $derived(status === 404 ? m.errorsGenericTitle404() : m.errorsGenericTitleDefault());
 </script>
 
-<div class="container flex max-w-md flex-1 flex-col items-center justify-center gap-5 py-16 text-center">
+<div class="mx-auto w-full px-4 flex max-w-md flex-1 flex-col items-center justify-center gap-5 py-16 text-center">
   <div class="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
     <AlertTriangle size={28} aria-hidden="true" />
   </div>

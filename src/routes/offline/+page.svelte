@@ -8,7 +8,7 @@
   }
 </script>
 
-<div class="container mx-auto flex max-w-md flex-col items-center px-4 py-16 text-center">
+<div class="mx-auto flex max-w-md flex-col items-center px-4 py-16 text-center">
   <div
     class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface text-primary-strong shadow-card"
   >

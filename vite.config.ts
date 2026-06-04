@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import tailwindcss from '@tailwindcss/vite';
 import { paraglide } from '@inlang/paraglide-sveltekit/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
@@ -61,6 +62,7 @@ export default defineConfig({
       : 'undefined'
   },
   plugins: [
+    tailwindcss(),
     sveltekit(),
     paraglide({
       project: './project.inlang',

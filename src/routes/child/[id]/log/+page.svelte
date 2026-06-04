@@ -57,7 +57,7 @@
   const tip = $derived(pickRotatingTip(getTipsFor({ ageMonths: months }), data.child.id + 7));
 </script>
 
-<div class="container max-w-xl space-y-5 py-6">
+<div class="mx-auto w-full px-4 max-w-xl space-y-5 py-6">
   <BackHeader
     title={m.logFormTitle()}
     subtitle={m.logFormSubtitle({ name: data.child.name })}

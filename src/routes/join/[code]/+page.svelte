@@ -9,7 +9,7 @@
   let { data, form }: { data: PageData; form: ActionData } = $props();
 </script>
 
-<div class="container flex max-w-md flex-1 flex-col justify-center py-10">
+<div class="mx-auto w-full px-4 flex max-w-md flex-1 flex-col justify-center py-10">
   <Card class="p-6 text-center">
     <h1 class="text-xl font-semibold">{m.joinTitle()}</h1>
 
