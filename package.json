@@ -85,7 +85,7 @@
     "@sentry/sveltekit": "^8.55.2",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.0",
-    "@vite-pwa/sveltekit": "^0.6.7",
+    "@vite-pwa/sveltekit": "^1.0.0",
     "bits-ui": "^2.18.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
