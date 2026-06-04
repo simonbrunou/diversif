@@ -1,4 +1,9 @@
-import { generateKeyPairSync, randomBytes, verify as cryptoVerify } from 'node:crypto';
+import {
+  generateKeyPairSync,
+  randomBytes,
+  verify as cryptoVerify,
+  type KeyObject
+} from 'node:crypto';
 import { and, eq, lt } from 'drizzle-orm';
 import {
   generateRegistrationOptions,
@@ -62,7 +67,10 @@ export const PASSKEY_CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 // non-test runs so the FIRST production "no such credential" attempt doesn't
 // pay the keygen cost on top of the verify cost. A single key is reused for
 // the lifetime of the process.
-let decoyVerifyKey: ReturnType<typeof generateKeyPairSync>['publicKey'] | null = null;
+// generateKeyPairSync('ec', …).publicKey is a KeyObject at runtime; annotate it
+// as such. @types/node v25 widened the un-annotated return to a union
+// (string | KeyObject | Buffer | JsonWebKey) that crypto.verify won't accept.
+let decoyVerifyKey: KeyObject | null = null;
 function timingDecoyVerify(): void {
   if (!decoyVerifyKey) {
     decoyVerifyKey = generateKeyPairSync('ec', { namedCurve: 'P-256' }).publicKey;
