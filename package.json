@@ -55,7 +55,7 @@
     "bun-plugin-svelte": "^0.0.6",
     "drizzle-kit": "^0.31.0",
     "eslint": "^9.13.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-drizzle": "^0.2.3",
     "eslint-plugin-svelte": "^2.45.1",
     "fake-indexeddb": "^6.2.5",
