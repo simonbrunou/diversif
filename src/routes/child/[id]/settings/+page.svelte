@@ -50,7 +50,7 @@
 
 </script>
 
-<div class="container max-w-2xl space-y-6 py-6">
+<div class="mx-auto w-full px-4 max-w-2xl space-y-6 py-6">
   <BackHeader title={m.settingsTitle()} subtitle={data.child.name} fallback={`/child/${data.child.id}`} />
 
   {#if data.role === 'owner'}

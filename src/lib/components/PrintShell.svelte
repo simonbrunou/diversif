@@ -27,7 +27,7 @@
 </svelte:head>
 
 <div
-  class="container max-w-4xl space-y-6 py-6 print:max-w-none print:py-0 print:text-[12px] print:text-black"
+  class="mx-auto w-full px-4 max-w-4xl space-y-6 py-6 print:max-w-none print:py-0 print:text-[12px] print:text-black"
 >
   <div class="flex items-center justify-between print:hidden">
     <span>

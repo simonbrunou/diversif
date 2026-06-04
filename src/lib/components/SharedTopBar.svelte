@@ -28,7 +28,7 @@
     className
   )}
 >
-  <div class="container flex h-14 items-center justify-between gap-4 md:h-16">
+  <div class="mx-auto w-full max-w-[1280px] px-4 flex h-14 items-center justify-between gap-4 md:h-16">
     <a
       href={localizedHref('/')}
       class="inline-flex items-center gap-2 font-semibold text-foreground"

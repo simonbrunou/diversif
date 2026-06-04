@@ -13,7 +13,7 @@
   path="/aide"
 />
 
-<div class="container flex max-w-2xl flex-1 flex-col gap-4 py-8">
+<div class="mx-auto w-full px-4 flex max-w-2xl flex-1 flex-col gap-4 py-8">
   <h1 class="text-2xl font-semibold">{m.aideTitle()}</h1>
 
   <Card class="p-5">

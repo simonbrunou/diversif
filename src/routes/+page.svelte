@@ -57,7 +57,7 @@
 
 {#if data.kind === 'landing'}
   {#if page.url.pathname.startsWith('/en')}
-    <div class="container max-w-4xl pt-4 md:pt-6">
+    <div class="mx-auto w-full px-4 max-w-4xl pt-4 md:pt-6">
       <Callout variant="warning">
         {m.commonFrOnlyBannerLanding()}
       </Callout>
@@ -66,7 +66,7 @@
   <LandingHeroBento child={null} />
   <LandingFeaturesBento />
 
-  <section class="container max-w-4xl pb-4 text-center">
+  <section class="mx-auto w-full px-4 max-w-4xl pb-4 text-center">
     <p class="text-sm text-muted-foreground">{m.kidPickerGuideChipNoAccount()}</p>
     <ul class="mt-3 flex flex-wrap justify-center gap-2">
       {#each [{ href: '/guide#regles', label: m.kidPickerGuideChipRules() }, { href: '/guide#etapes', label: m.kidPickerGuideChipStages() }, { href: '/guide#allergenes', label: m.kidPickerGuideChipAllergens() }] as chip (chip.href)}
@@ -85,7 +85,7 @@
   <LandingTrustBento />
   <LandingClosingCtaBento />
 {:else}
-  <div class="container max-w-2xl py-10">
+  <div class="mx-auto w-full px-4 max-w-2xl py-10">
     <h1 class="text-2xl font-semibold">{m.kidPickerTitle()}</h1>
     <p class="mt-2 text-sm text-muted-foreground">{m.kidPickerSubtitle()}</p>
 
