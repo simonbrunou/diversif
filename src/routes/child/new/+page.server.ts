@@ -58,8 +58,12 @@ export const actions: Actions = {
     }
 
     const now = new Date();
-    const inserted = (
-      await db
+    // Child + owner membership must be atomic: a failure after the child insert
+    // would otherwise leave an orphan child that no one is a member of —
+    // invisible in the UI (no membership ⇒ no access) but lingering in the DB.
+    // bun:sqlite transactions run synchronously, so the callback inserts inline.
+    const childId = db.transaction((tx) => {
+      const created = tx
         .insert(children)
         .values({
           name: parsed.data.firstName.trim(),
@@ -69,22 +73,23 @@ export const actions: Actions = {
           updatedAt: now
         })
         .returning({ id: children.id })
-    )[0];
-
-    await db
-      .insert(memberships)
-      .values({ userId: user.id, childId: inserted.id, role: 'owner', createdAt: now });
-    audit({ type: 'child.created', userId: user.id, childId: inserted.id });
+        .all()[0];
+      tx.insert(memberships)
+        .values({ userId: user.id, childId: created.id, role: 'owner', createdAt: now })
+        .run();
+      return created.id;
+    });
+    audit({ type: 'child.created', userId: user.id, childId });
 
     const inviteCoparent = formData.get('inviteCoparent') === '1';
     let redirectQuery = '';
     if (inviteCoparent) {
-      const code = await createInvitationForChild({ childId: inserted.id, createdBy: user.id });
+      const code = await createInvitationForChild({ childId, createdBy: user.id });
       /* v8 ignore next : code === null only after 5 random-code collisions (~1-in-trillion) */
       redirectQuery = code ? `?inviteCode=${code}` : '?invite=failed';
-      if (code) audit({ type: 'invite.created', userId: user.id, childId: inserted.id });
+      if (code) audit({ type: 'invite.created', userId: user.id, childId });
     }
 
-    throw localizedRedirect(locals.locale, 303, `/child/${inserted.id}${redirectQuery}`);
+    throw localizedRedirect(locals.locale, 303, `/child/${childId}${redirectQuery}`);
   }
 };
