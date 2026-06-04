@@ -144,6 +144,31 @@ describe('child/[id] +page.server load', () => {
     expect(out.showWelcomeDialog).toBe(true);
   });
 
+  it('hides the welcome dialog for an under-4-month child', async () => {
+    const { u, c, m } = await setup();
+    // ~2 months old: pre-diversification. The dashboard shows the "pas encore
+    // l'heure" card, so the log-nudging welcome modal must stay hidden rather
+    // than contradict it (and burn the one-shot onboarding before it's useful).
+    const recentBirth = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        parent: async () => ({
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: recentBirth,
+            createdAt: c.createdAt.getTime()
+          }
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.stats.foodsIntroduced).toBe(0);
+    expect(out.showWelcomeDialog).toBe(false);
+  });
+
   it('returns dashboard data with entries and hides welcome dialog', async () => {
     const { u, c, m } = await setup({ entries: 3 });
     const out = await load(

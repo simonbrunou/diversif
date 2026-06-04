@@ -1,8 +1,10 @@
 <!-- src/lib/components/bento/CarnetAllergens.svelte -->
 <script lang="ts">
   import { Sparkles } from 'lucide-svelte';
+  import Button from '$components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
+  import { localizedHref } from '$lib/utils/localized-href';
 
   type Item = {
     id: string;
@@ -13,7 +15,7 @@
     state: 'cleared' | 'todo' | 'reaction' | 'fading';
   };
 
-  let { items }: { items: Item[] } = $props();
+  let { items, childId }: { items: Item[]; childId?: string } = $props();
 
   function stateLabel(s: Item['state']): string {
     if (s === 'cleared') return m.aujourdhuiAllergensOk();
@@ -36,6 +38,11 @@
     <p class="text-center text-sm text-ink-soft">
       {m.carnetAllergensEmpty()}
     </p>
+    {#if childId}
+      <Button href={localizedHref(`/child/${childId}/log`)} size="sm">
+        {m.carnetTousEmptyAllCta()}
+      </Button>
+    {/if}
   </div>
 {:else}
   <ul class="flex flex-col gap-2">
