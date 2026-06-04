@@ -36,7 +36,7 @@ jobs:
       - run: bun run test:coverage
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage
@@ -61,7 +61,7 @@ jobs:
           DATABASE_PATH: ${{ runner.temp }}/diversif-e2e.db
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report
