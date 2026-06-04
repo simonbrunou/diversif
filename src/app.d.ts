@@ -1,4 +1,5 @@
 /// <reference types="bun" />
+/// <reference types="vite-plugin-pwa/svelte" />
 import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
 import type { Membership, SafeUser } from '$lib/types';
 

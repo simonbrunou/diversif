@@ -12,6 +12,7 @@
   import PublicHeader from '$lib/components/PublicHeader.svelte';
   import PublicFooter from '$lib/components/PublicFooter.svelte';
   import AppShellBento from '$lib/components/AppShellBento.svelte';
+  import ReloadPrompt from '$lib/components/ReloadPrompt.svelte';
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { organizationJsonLd, websiteJsonLd, SITE } from '$lib/seo';
   import type { LayoutData } from './$types';
@@ -162,3 +163,4 @@
   {/if}
 </div>
 <Toaster richColors position="top-center" />
+<ReloadPrompt />

@@ -67,7 +67,12 @@ export default defineConfig({
       outdir: './src/lib/paraglide'
     }),
     SvelteKitPWA({
-      registerType: 'autoUpdate',
+      // 'prompt' (not autoUpdate): a freshly-deployed service worker waits in
+      // the 'waiting' state instead of skipWaiting+clientsClaim-ing the page
+      // mid-session. For an offline-first logging app, autoUpdate could reload
+      // a parent while they log a meal or the offline queue flushes.
+      // ReloadPrompt.svelte surfaces a toast and the user reloads when ready.
+      registerType: 'prompt',
       strategies: 'generateSW',
       manifest: false,
       injectRegister: 'auto',

@@ -200,6 +200,8 @@
   "offlineQueueFailedToast": "Impossible d’enregistrer hors-ligne. Réessayez quand vous serez en ligne.",
   "offlineSessionExpiredToast": "Session expirée. Reconnectez-vous puis ressaisissez l’entrée.",
   "offlineSyncedToast": "Synchronisé.",
+  "pwaUpdateAvailable": "Une nouvelle version est disponible.",
+  "pwaUpdateReload": "Recharger",
   "aujourdhuiBilanAliments": "Aliments",
   "aujourdhuiBilanAlimentsDelta": "+{count} cette semaine",
   "aujourdhuiBilanStreak": "Régularité",
