@@ -91,10 +91,6 @@
     "mtime": 1779435611.2974746,
     "hash": "eaf2fd76e7721e562413e3104f0edad0"
   },
-  "/home/sbrn/Projects/diversif/e2e/a11y-axe.spec.ts": {
-    "mtime": 1779449538.222537,
-    "hash": "5f39b86ef08b90d294da130db8cea041"
-  },
   "/home/sbrn/Projects/diversif/e2e/bento-discover.spec.ts": {
     "mtime": 1780503890.7961779,
     "hash": "77ddf8588d8f1c8b51861274771c2700"
@@ -110,6 +106,10 @@
   "/home/sbrn/Projects/diversif/e2e/responsive-modals.spec.ts": {
     "mtime": 1780503890.7961779,
     "hash": "b5422ec3d0592d9c53d65c2e35d126c1"
+  },
+  "/home/sbrn/Projects/diversif/e2e/a11y-axe.spec.ts": {
+    "mtime": 1780544181.6856751,
+    "hash": "20ecdda5e785458b603b177a8ff41c10"
   },
   "/home/sbrn/Projects/diversif/scripts/normalize-fr-apostrophes.py": {
     "mtime": 1779393424.33595,
@@ -1280,19 +1280,19 @@
     "hash": "333612d1caccfa72d4db17565012764c"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1780543481.7925804,
+    "mtime": 1780544288.9205394,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1780543481.7925804,
+    "mtime": 1780544288.9205394,
     "hash": "795d0609e16167de862ee99af339aa28"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1780543481.7925804,
+    "mtime": 1780544288.9205394,
     "hash": "4071b671ce76e859a04b198f5130139b"
   },
   "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1780543481.7925804,
+    "mtime": 1780544288.9205394,
     "hash": "027ba691d161b049c275f137073d771f"
   },
   "/home/sbrn/Projects/diversif/src/lib/forms/tracked-enhance.ts": {
@@ -1616,11 +1616,11 @@
     "hash": "5fac698a2a7d09311e715e6a908fbaa5"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/new/+page.server.ts": {
-    "mtime": 1780543362.6663675,
+    "mtime": 1780544130.25922,
     "hash": "bcb350aa2887a007fc219dedbef5e7ea"
   },
   "/home/sbrn/Projects/diversif/src/routes/child/new/page.server.test.ts": {
-    "mtime": 1780543441.3125312,
+    "mtime": 1780544130.25922,
     "hash": "eefe2a8996953f3aed08b40bb40e2faa"
   },
   "/home/sbrn/Projects/diversif/src/routes/cookies/+page.svelte": {
@@ -1675,13 +1675,13 @@
     "mtime": 1778708530.7379937,
     "hash": "8e822653b5e0dd04d475ecd4db94991c"
   },
-  "/home/sbrn/Projects/diversif/src/routes/mentions-legales/+page.svelte": {
-    "mtime": 1780503890.8211775,
-    "hash": "3614da8ab76f4ee0fc4c67aa6312a013"
-  },
   "/home/sbrn/Projects/diversif/src/routes/mentions-legales/page.server.test.ts": {
     "mtime": 1780503890.8211775,
     "hash": "07d7d4af475f9457370ef878927f55f7"
+  },
+  "/home/sbrn/Projects/diversif/src/routes/mentions-legales/+page.svelte": {
+    "mtime": 1780544211.0323641,
+    "hash": "15293490f90937c8e68b387c53531574"
   },
   "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/options/+server.ts": {
     "mtime": 1780503890.8211775,
@@ -1748,12 +1748,12 @@
     "hash": "34ce9d95921c359b1b8e3ce70917206c"
   },
   "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/+server.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "d9edd88dcb3ec6d3f1645f4505a784a7"
+    "mtime": 1780544147.986032,
+    "hash": "2ffb677bc5f00011dc5f0b480f477952"
   },
   "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/server.test.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "67b6930d9d69c7726bba1fd8ff5ab65d"
+    "mtime": 1780544165.4148474,
+    "hash": "234bf5c4e3fb650b1ab3c570bc6e3f3f"
   },
   "/home/sbrn/Projects/diversif/src/routes/sources/+page.server.ts": {
     "mtime": 1778708530.746243,
@@ -1843,10 +1843,6 @@
     "mtime": 1780503890.7955794,
     "hash": "2b9b6b2cad2b241ea6e85a42f42026cf"
   },
-  "/home/sbrn/Projects/diversif/README.md": {
-    "mtime": 1780503890.7955794,
-    "hash": "147af2fab25a9662cac8fbe1ab744bc4"
-  },
   "/home/sbrn/Projects/diversif/docker-compose.yml": {
     "mtime": 1780503890.7955794,
     "hash": "49424957a60c6472100a0295320000ed"
@@ -1858,6 +1854,10 @@
   "/home/sbrn/Projects/diversif/DEPLOY.md": {
     "mtime": 1780541181.4630988,
     "hash": "90614b0fec51e910c85a85823d7d984e"
+  },
+  "/home/sbrn/Projects/diversif/README.md": {
+    "mtime": 1780544238.2820756,
+    "hash": "68be3934f1a0e8fcb3a93c3cb811df69"
   },
   "/home/sbrn/Projects/diversif/src/app.html": {
     "mtime": 1778710035.2694356,
