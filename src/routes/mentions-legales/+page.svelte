@@ -54,7 +54,7 @@
   <section class="mt-8 space-y-3">
     <SectionHeader as="h2">Propriété intellectuelle</SectionHeader>
     <p class="text-sm leading-relaxed">
-      Le code source de Diversif est publié sous licence libre sur
+      Le code source de Diversif est publié sous licence libre GNU GPL v3 sur
       <a class="text-primary-strong underline" href="https://github.com/simonbrunou/diversif" target="_blank" rel="noopener noreferrer">GitHub</a>.
       Les contenus rédactionnels (guides, fiches allergènes, sources) sont mis à disposition pour un
       usage personnel et familial. Toute reproduction commerciale est interdite sans accord préalable.
