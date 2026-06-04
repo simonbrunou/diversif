@@ -128,7 +128,7 @@
    built-in ease-* / duration-* utilities — so the `animate-in` / `animate-out`
    classes from tw-animate-css inherit the same timing (and v4 has no
    --duration-* theme namespace anyway). They reference the live runtime vars,
-   so the reduced-motion block below — and dark mode — keep switching them.
+   so the reduced-motion block below keeps switching them.
    The Modal overlay/content and the bottom-sheet rely on `duration-slow` +
    `ease-spring` driving their enter/exit animation (not just transitions);
    without the --tw-* vars they'd fall back to the package default (150ms /
