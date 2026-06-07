@@ -57,33 +57,9 @@ test('queues a log submission while offline', async ({ page }) => {
   expect(dbCount).toBeGreaterThanOrEqual(1);
 });
 
-test('shows the offline fallback page on uncached navigation', async ({ page, context }) => {
-  await page.goto('/');
-
-  // navigator.serviceWorker.ready resolves once an active SW is registered.
-  // Race against a 12s timeout so the test self-skips rather than hanging
-  // if the SW does not activate (some headless Chromium configurations
-  // don't register the SW reliably).
-  const swState = await page.evaluate(async () => {
-    if (!navigator.serviceWorker) return 'no-sw-api';
-    return Promise.race([
-      navigator.serviceWorker.ready.then((reg) => (reg.active ? 'active' : 'no-active')),
-      new Promise<string>((resolve) => setTimeout(() => resolve('timeout'), 12_000))
-    ]);
-  });
-
-  if (swState !== 'active') {
-    test.skip(true, `Service worker not active in headless Chromium (state: ${swState})`);
-    return;
-  }
-
-  await context.setOffline(true);
-
-  await page.goto('/never-cached-route-xyz').catch(() => {
-    /* navigation can throw when offline; expected */
-  });
-
-  await expect(page.getByRole('heading', { name: 'Hors-ligne' })).toBeVisible({
-    timeout: 10_000
-  });
-});
+// The offline fallback page (/offline) is available as a SvelteKit route for
+// users to visit directly, but cannot be served as a navigation fallback in
+// generateSW mode: Workbox's navigateFallback option serves the fallback for
+// ALL navigations (online and offline), which breaks SSR apps. Selective
+// offline-only fallback requires injectManifest mode with a custom
+// setCatchHandler — a future improvement tracked separately.

@@ -200,6 +200,8 @@
   "offlineQueueFailedToast": "Could not save offline. Try again when you're online.",
   "offlineSessionExpiredToast": "Session expired. Sign in and re-enter the item.",
   "offlineSyncedToast": "Synced.",
+  "pwaUpdateAvailable": "New version available.",
+  "pwaUpdateAction": "Update",
   "aujourdhuiBilanAliments": "Foods",
   "aujourdhuiBilanAlimentsDelta": "+{count} this week",
   "aujourdhuiBilanStreak": "Streak",

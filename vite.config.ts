@@ -69,13 +69,13 @@ export default defineConfig({
       outdir: './src/lib/paraglide'
     }),
     SvelteKitPWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       strategies: 'generateSW',
       manifest: false,
-      injectRegister: 'auto',
+      injectRegister: null,
       workbox: {
         globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-        navigateFallback: '/offline',
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === 'navigate',
