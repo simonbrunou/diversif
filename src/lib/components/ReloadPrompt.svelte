@@ -3,7 +3,7 @@
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
 
-  let swRegistration: ServiceWorkerRegistration | undefined;
+  let swRegistration = $state<ServiceWorkerRegistration | undefined>();
 
   const { needRefresh, updateServiceWorker } = useRegisterSW({
     onRegisteredSW(_url, registration) {
