@@ -69,7 +69,7 @@ export default defineConfig({
       outdir: './src/lib/paraglide'
     }),
     SvelteKitPWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       strategies: 'generateSW',
       manifest: false,
       injectRegister: null,
