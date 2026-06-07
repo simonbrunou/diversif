@@ -19,16 +19,23 @@
     return () => clearInterval(id);
   });
 
+  function showUpdateToast() {
+    toast(m.pwaUpdateAvailable(), {
+      id: 'pwa-update',
+      action: {
+        label: m.pwaUpdateAction(),
+        onClick: () => void updateServiceWorker()
+      },
+      duration: Infinity,
+      onDismiss: () => {
+        // Re-show after 30 s so the user doesn't lose the update prompt
+        // if they swipe the toast away by accident.
+        setTimeout(showUpdateToast, 30_000);
+      }
+    });
+  }
+
   $effect(() => {
-    if ($needRefresh) {
-      toast(m.pwaUpdateAvailable(), {
-        id: 'pwa-update',
-        action: {
-          label: m.pwaUpdateAction(),
-          onClick: () => void updateServiceWorker()
-        },
-        duration: Infinity
-      });
-    }
+    if ($needRefresh) showUpdateToast();
   });
 </script>
