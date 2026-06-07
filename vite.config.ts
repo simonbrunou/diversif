@@ -72,7 +72,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       strategies: 'generateSW',
       manifest: false,
-      injectRegister: 'auto',
+      injectRegister: null,
       workbox: {
         globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
         navigateFallback: '/offline',

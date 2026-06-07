@@ -362,6 +362,14 @@
   html {
     -webkit-tap-highlight-color: transparent;
   }
+  /* Prevent pull-to-refresh and overscroll bounce when running as an
+     installed PWA so the app feels native. */
+  @media (display-mode: standalone) {
+    html,
+    body {
+      overscroll-behavior: none;
+    }
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings:
