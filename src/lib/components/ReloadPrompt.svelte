@@ -22,6 +22,7 @@
   $effect(() => {
     if ($needRefresh) {
       toast(m.pwaUpdateAvailable(), {
+        id: 'pwa-update',
         action: {
           label: m.pwaUpdateAction(),
           onClick: () => void updateServiceWorker()
