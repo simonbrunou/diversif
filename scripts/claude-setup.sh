@@ -62,7 +62,7 @@ if [ "$DRY_RUN" = 0 ]; then
     || { echo "error: cannot create skills dir $INSTALL_DIR — check permissions on \$HOME" >&2; exit 1; }
 fi
 
-count="$(jq '.skills | length' "$MANIFEST")"
+count="$(jq -r 'if (.skills | type) == "array" then (.skills | length) else -1 end' "$MANIFEST")"
 [ "$count" -gt 0 ] 2>/dev/null \
   || { echo "error: .skills is empty or not an array in $MANIFEST" >&2; exit 1; }
 echo "Installing $count standalone skills into $INSTALL_DIR ..."
