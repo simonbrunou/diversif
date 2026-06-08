@@ -1,5 +1,5 @@
 {
-  "$comment": "Curated standalone agent skills relevant to diversif, reproduced by scripts/claude-setup.sh. Each entry: name, repo (github owner/name), skillPath (folder containing SKILL.md), optional ref (default HEAD). This is a curated subset of ~/.agents/.skill-lock.json — Postgres-only skills (postgresql-code-review, postgresql-optimization, supabase-postgres-best-practices, pgmicro-postgres-sqlite) were dropped because diversif is SQLite/Drizzle. Marketplace plugins are NOT listed here; they auto-install from .claude/settings.json.",
+  "$comment": "Curated standalone agent skills relevant to diversif, reproduced by scripts/claude-setup.sh. Each entry: name, repo (github owner/name), skillPath (folder containing SKILL.md), optional ref (default HEAD). This is a curated subset of ~/.agents/.skill-lock.json — Postgres-only skills (postgresql-code-review, postgresql-optimization, supabase-postgres-best-practices, pgmicro-postgres-sqlite) were dropped because diversif is SQLite/Drizzle. Marketplace plugins are NOT listed here; they auto-install from .claude/settings.json. The 'council' skill was promoted to a committed project skill (.claude/skills/council/) because a committed hook depends on it and it must load at launch (incl. on Claude cloud).",
   "installDir": "~/.claude/skills",
   "skills": [
     { "name": "bun-development", "repo": "sickn33/antigravity-awesome-skills", "skillPath": "skills/bun-development" },
@@ -18,7 +18,6 @@
     { "name": "resolve-merge-conflicts", "repo": "warpdotdev/common-skills", "skillPath": ".agents/skills/resolve-merge-conflicts" },
     { "name": "respond-to-pr-comments-in-blocklist", "repo": "warpdotdev/common-skills", "skillPath": ".agents/skills/respond-to-pr-comments-in-blocklist" },
     { "name": "pr-walkthrough", "repo": "warpdotdev/common-skills", "skillPath": ".agents/skills/pr-walkthrough" },
-    { "name": "council", "repo": "warpdotdev/common-skills", "skillPath": ".agents/skills/council" },
     { "name": "find-skills", "repo": "vercel-labs/skills", "skillPath": "skills/find-skills" },
     { "name": "database", "repo": "sickn33/antigravity-awesome-skills", "skillPath": "skills/database" },
     { "name": "database-migration", "repo": "sickn33/antigravity-awesome-skills", "skillPath": "skills/database-migration" }
