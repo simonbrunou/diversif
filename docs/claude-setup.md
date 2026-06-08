@@ -12,9 +12,10 @@ scripts/claude-setup.sh         # installs standalone skills, seeds local settin
 # then open the project in Claude Code and trust it → plugins + MCPs auto-install
 ```
 
-Prereqs on PATH: `git`, `jq`, `bun`, `gh`. Plus the external **graphify** CLI
-(see below). Tip: in a Claude Code session you can run a command yourself by
-typing `! <command>` at the prompt.
+Prereqs to run `claude-setup.sh`: `git`, `jq`. For the agent tooling itself once
+set up: `bun`, `gh`, `python3` (used by the graphify hook), plus the external
+**graphify** CLI (see below). Tip: in a Claude Code session you can run a command
+yourself by typing `! <command>` at the prompt.
 
 ## What reproduces automatically (no script)
 
@@ -64,7 +65,7 @@ machine-local `settings.local.json` if you ever need them.
 ## Secrets — important
 
 `.claude/settings.local.json` holds your `GITHUB_PERSONAL_ACCESS_TOKEN` and is
-**gitignored** (both repo-level and via the global ignore). Never commit it.
+**gitignored at the repo level** (see `.gitignore`). Never commit it.
 The committed template `settings.local.json.example` ships a `ghp_REPLACE_ME`
 placeholder. If a real token ever sat in a plaintext file, rotate it.
 
