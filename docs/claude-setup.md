@@ -71,14 +71,14 @@ machine-local `settings.local.json` if you ever need them.
    - `--force` refreshes existing skills; `--dry-run` previews.
 2. **`settings.local.json`** — copies the committed
    `settings.local.json.example` to `settings.local.json` if missing, so you can
-   drop in your token and machine-local permissions.
+   add any machine-local permissions/env.
 
 ## Secrets — important
 
-`.claude/settings.local.json` holds your `GITHUB_PERSONAL_ACCESS_TOKEN` and is
-**gitignored at the repo level** (see `.gitignore`). Never commit it.
-The committed template `settings.local.json.example` ships a `ghp_REPLACE_ME`
-placeholder. If a real token ever sat in a plaintext file, rotate it.
+`.claude/settings.local.json` is **gitignored at the repo level** (see
+`.gitignore`) and holds only machine-local permissions/env — keep any future
+secrets there, never in a committed file. GitHub access uses the **`gh` CLI**
+(`gh auth login`), so no personal access token is needed.
 
 ## External prerequisite: graphify
 
