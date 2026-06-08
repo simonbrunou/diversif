@@ -5,6 +5,13 @@ import {
   signUpAndCreateChild
 } from './_helpers';
 
+// Opens StageDetailSheet via an authenticated nav to /child/<id>/guide — the same
+// wiring as responsive-modals.spec.ts, so it shares the same flake: a just-
+// activated PWA service worker can claim the client and abort the navigation's
+// `_app/*.js` chunk loads mid-click ("Target page ... has been closed"). Block
+// the SW for this spec; see responsive-modals.spec.ts for the full rationale.
+test.use({ serviceWorkers: 'block' });
+
 test('tapping a stage tile opens the StageDetailSheet @responsive', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await dismissWelcomeIfPresent(page);
