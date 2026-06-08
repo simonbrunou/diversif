@@ -30,7 +30,7 @@ inside a plugin**, installing the plugins also restores the MCP servers.
   (nextlevelbuilder/ui-ux-pro-max-skill).
 - **Plugins** (`enabledPlugins`): the Bun/Svelte/testing/review/UI/git/CI/meta
   set — superpowers, svelte, github, playwright, chrome-devtools-mcp, context7,
-  code-review, code-simplifier, pr-review-toolkit, coderabbit, commit-commands,
+  code-review, code-simplifier, pr-review-toolkit, commit-commands,
   feature-dev, claude-md-management, frontend-design, impeccable, ui-ux-pro-max,
   hookify, plugin-dev, skill-creator, typescript-lsp, security-guidance.
 - **MCP servers** (bundled in those plugins): github, svelte, playwright,
