@@ -19,8 +19,17 @@ const ARGON_OPTS = {
   timeCost: 2
 } as const;
 
+// E2E runs the production build with full-cost argon2id. Under two parallel
+// Playwright workers the CPU cost starves the single server process and stalls
+// unrelated requests (the fast child-creation redirect queues past its 15s
+// budget). Relax the cost for E2E only (E2E=1, set in playwright.config.ts) —
+// hash strength is irrelevant against a throwaway test DB, and
+// Bun.password.verify reads each hash's params back from the stored string, so
+// verification is unaffected.
+const ARGON_OPTS_E2E = { algorithm: 'argon2id', memoryCost: 4_096, timeCost: 1 } as const;
+
 export async function hashPassword(plain: string): Promise<string> {
-  return Bun.password.hash(plain, ARGON_OPTS);
+  return Bun.password.hash(plain, process.env.E2E === '1' ? ARGON_OPTS_E2E : ARGON_OPTS);
 }
 
 export async function verifyPassword(hash: string, plain: string): Promise<boolean> {

@@ -31,10 +31,10 @@
         <Heart size={20} class="text-primary" aria-hidden="true" />
         <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep0Title()}</h2>
       </div>
-      <p class="text-foreground/90">
+      <p class="text-foreground">
         {m.dialogsWelcomeStep0Body()}
       </p>
-      <ul class="list-disc space-y-1.5 pl-5 text-foreground/90">
+      <ul class="list-disc space-y-1.5 pl-5 text-foreground">
         <li>
           {m.dialogsWelcomeStep0Bullet1Before()} <strong>{m.dialogsWelcomeStep0Bullet1Bold()}</strong>{m.dialogsWelcomeStep0Bullet1After()}
         </li>
@@ -50,7 +50,7 @@
         <Sparkles size={20} class="text-primary" aria-hidden="true" />
         <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep1Title()}</h2>
       </div>
-      <ul class="list-disc space-y-1.5 pl-5 text-foreground/90">
+      <ul class="list-disc space-y-1.5 pl-5 text-foreground">
         <li><strong>{m.dialogsWelcomeStep1Bullet1Bold()}</strong>{m.dialogsWelcomeStep1Bullet1After()}</li>
         <li><strong>{m.dialogsWelcomeStep1Bullet2Bold()}</strong>{m.dialogsWelcomeStep1Bullet2After()}</li>
         <li><strong>{m.dialogsWelcomeStep1Bullet3Bold()}</strong>{m.dialogsWelcomeStep1Bullet3After()}</li>
@@ -62,10 +62,10 @@
         <BookOpen size={20} class="text-primary" aria-hidden="true" />
         <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep2Title()}</h2>
       </div>
-      <p class="text-foreground/90">
+      <p class="text-foreground">
         {m.dialogsWelcomeStep2Body1()}
       </p>
-      <p class="text-foreground/90">
+      <p class="text-foreground">
         {m.dialogsWelcomeStep2Body2()}
       </p>
     {/if}
