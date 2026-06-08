@@ -14,7 +14,7 @@ data
 .vscode
 .claude/scheduled_tasks.lock
 .claude/worktrees/
-# Machine-local Claude settings (holds GITHUB_PERSONAL_ACCESS_TOKEN).
+# Machine-local Claude settings (permissions + any machine-local env).
 # Reproduce from .claude/settings.local.json.example via scripts/claude-setup.sh.
 .claude/settings.local.json
 .playwright-mcp/

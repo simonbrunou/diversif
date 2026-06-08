@@ -49,7 +49,7 @@ if [ ! -f "$LOCAL" ] && [ -f "$EXAMPLE" ]; then
   else
     cp "$EXAMPLE" "$LOCAL" \
       || { echo "error: failed to seed $LOCAL from example — check permissions" >&2; exit 1; }
-    echo "Created .claude/settings.local.json — edit it and set GITHUB_PERSONAL_ACCESS_TOKEN."
+    echo "Created .claude/settings.local.json — edit it to add any machine-local permissions/env."
   fi
 fi
 
@@ -150,7 +150,7 @@ fi
 echo "Next steps:"
 echo "  1. Open this project in Claude Code and trust it — plugins + MCP servers"
 echo "     auto-install from .claude/settings.json."
-echo "  2. Edit .claude/settings.local.json — set GITHUB_PERSONAL_ACCESS_TOKEN."
+echo "  2. Authenticate the GitHub CLI: gh auth login (GitHub access uses gh, no PAT needed)."
 echo "  3. Install the graphify CLI (provides the /graphify skill + 'graphify'"
 echo "     command). See docs/claude-setup.md."
 echo "  4. Ensure 'bun', 'gh', and 'jq' are on PATH."
