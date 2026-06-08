@@ -70,6 +70,19 @@
             "statusMessage": "Checking PR for /code-review trigger"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/format-edited.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/council-on-brainstorm.sh"
+          }
+        ]
       }
     ]
   }

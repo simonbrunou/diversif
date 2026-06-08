@@ -41,6 +41,17 @@ inside a plugin**, installing the plugins also restores the MCP servers.
   - `PostToolUse` (Bash) → `.claude/hooks/code-review-on-push.sh` — after a
     `git push` on a branch with an open PR, auto-triggers `/code-review`.
     Needs `gh` + `jq`; exits cleanly when neither a PR nor `gh` is present.
+  - `PostToolUse` (Write|Edit) → `.claude/hooks/format-edited.sh` — Prettier-formats
+    the just-edited file (local prettier → bunx → npx).
+  - `PostToolUse` (Write|Edit) → `.claude/hooks/council-on-brainstorm.sh` — when a
+    `docs/superpowers/specs/*.md` or `docs/superpowers/plans/*.md` is written, nudges
+    a `council`-skill pressure-test before the spec/plan is presented. Needs `jq`.
+- **Project skills & agent** (committed, project-local — distinct from the standalone
+  skills the setup script installs):
+  - `.claude/skills/migration/` — guided Drizzle/SQLite migration workflow.
+  - `.claude/skills/gen-test/` — generate a `bun:test` test in the house style.
+  - `.claude/agents/security-reviewer.md` — proactive WebAuthn/session/membership
+    security reviewer (auto-discovered as the `security-reviewer` subagent).
 
 **Deliberately excluded** (off-topic for diversif, which is SQLite + self-hosted
 on Coolify/Komodo, no Cloudflare/Discord/Sentry): the `cloudflare`, `discord`,
