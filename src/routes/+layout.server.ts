@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { children } from '$lib/server/db/schema';
-import { parseChildIdParam } from '$lib/server/guards';
+import { parseChildIdParamOrNull } from '$lib/server/guards';
 import { inArray } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { ChildSummary } from '$lib/types';
@@ -31,12 +31,8 @@ export const load: LayoutServerLoad = async ({ locals, params }) => {
   // re-running on every client-side navigation. Reusing the route guard's
   // parser keeps the shell and the child layout agreeing on validity ('0' is
   // rejected) and normalization ('007' → '7').
-  let currentChildIdStr: string | null = null;
-  try {
-    currentChildIdStr = String(parseChildIdParam(params));
-  } catch {
-    // Not a child route, or a malformed id the child layout 404s anyway.
-  }
+  const parsedChildId = parseChildIdParamOrNull(params);
+  const currentChildIdStr = parsedChildId === null ? null : String(parsedChildId);
 
   return {
     user: locals.user,

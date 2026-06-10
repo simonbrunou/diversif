@@ -7,11 +7,9 @@
   let { data: _data, form }: { data: PageData; form: ActionData } = $props();
 
   const errors = $derived(form?.errors ?? null);
-  const values = $derived(
-    form && 'firstName' in form
-      ? { firstName: form.firstName, birthDate: form.birthDate }
-      : null
-  );
+  // Every failure payload echoes the typed values (400 and 429 alike), so no
+  // shape narrowing is needed.
+  const values = $derived(form ? { firstName: form.firstName, birthDate: form.birthDate } : null);
 </script>
 
 <Seo title={m.onboardingTitle()} path="/child/new" noindex alternateLocales={['en']} />

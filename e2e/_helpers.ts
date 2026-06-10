@@ -52,8 +52,10 @@ export async function signUpAndCreateChild(
   // Values typed into the SSR'd form before hydration finishes can be lost
   // when the client render replaces the inputs, so the submit then posts an
   // empty form. Fill, then require the values to be observed intact on a
-  // LATER toPass attempt — surviving the gap between two spaced reads is the
-  // signal that the late client render already happened.
+  // LATER toPass attempt. This greatly narrows (does not fully close) the
+  // race — hydration landing after the second read can still clobber — but
+  // the form also echoes values back on failure now, so a residual loss
+  // surfaces as a visible 400 rather than silent data loss.
   const nameInput = page.getByLabel('Prénom');
   const birthInput = page.getByLabel('Date de naissance');
   let filledOnce = false;

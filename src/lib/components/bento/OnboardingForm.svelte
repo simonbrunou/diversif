@@ -18,10 +18,12 @@
   use:enhance={() => {
     submitting = true;
     return async ({ update }) => {
-      submitting = false;
       // Keep what the parent typed when validation fails — wiping the form
-      // on a 400 means retyping everything on the most fragile screen.
+      // on a 400 means retyping everything on the most fragile screen. The
+      // button re-enables only after update() so the success redirect can't
+      // be double-submitted while the navigation is in flight.
       await update({ reset: false });
+      submitting = false;
     };
   }}
 >

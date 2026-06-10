@@ -34,14 +34,21 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 export const actions: Actions = {
   default: async ({ request, locals }) => {
     const user = requireUser(locals);
+    const formData = await request.formData();
+    const raw = Object.fromEntries(formData);
+    // Both failure payloads echo what was typed so the form never wipes the
+    // parent's input (the page feeds these back into the field values).
+    const echo = {
+      firstName: typeof raw.firstName === 'string' ? raw.firstName : /* v8 ignore next */ '',
+      birthDate: typeof raw.birthDate === 'string' ? raw.birthDate : /* v8 ignore next */ ''
+    };
     const rl = checkRateLimit(CHILD_CREATE_LIMIT, `user:${user.id}`);
     if (!rl.allowed) {
       return fail(429, {
+        ...echo,
         errors: { firstName: 'Trop de créations récentes. Réessayez dans un moment.' }
       });
     }
-    const formData = await request.formData();
-    const raw = Object.fromEntries(formData);
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
       const issues = parsed.error.issues;
@@ -50,11 +57,7 @@ export const actions: Actions = {
         const field = issue.path[0] as string;
         if (!errors[field]) errors[field] = issue.message;
       }
-      return fail(400, {
-        firstName: typeof raw.firstName === 'string' ? raw.firstName : /* v8 ignore next */ '',
-        birthDate: typeof raw.birthDate === 'string' ? raw.birthDate : /* v8 ignore next */ '',
-        errors
-      });
+      return fail(400, { ...echo, errors });
     }
 
     const now = new Date();

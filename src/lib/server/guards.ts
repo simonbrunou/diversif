@@ -17,10 +17,19 @@ export function parseIntParam(raw: string | undefined, kind: string): number {
   return n;
 }
 
-export function parseChildIdParam(params: Partial<Record<string, string>>): number {
+/**
+ * Non-throwing variant for callers that render with or without a child
+ * context (the root layout shell) instead of 404ing.
+ */
+export function parseChildIdParamOrNull(params: Partial<Record<string, string>>): number | null {
   const raw = params.id;
   const n = raw === undefined ? NaN : Number(raw);
-  if (!Number.isInteger(n) || n <= 0) throw error(404, 'Enfant introuvable');
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
+export function parseChildIdParam(params: Partial<Record<string, string>>): number {
+  const n = parseChildIdParamOrNull(params);
+  if (n === null) throw error(404, 'Enfant introuvable');
   return n;
 }
 
