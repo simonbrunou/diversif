@@ -26,7 +26,7 @@
     },
     {
       q: "Quelles textures à quel âge ?",
-      a: "4–6 mois : purées très lisses. 6–8 mois : purées plus épaisses, écrasées à la fourchette. 8–10 mois : petits morceaux fondants. 10–12 mois : morceaux tendres, finger food. Après 12 mois : alimentation familiale adaptée."
+      a: "4–6 mois : purées très lisses. 6–8 mois : purées plus épaisses, écrasées à la fourchette. 8–10 mois : petits morceaux fondants. 10–12 mois : morceaux tendres, aliments à saisir. Après 12 mois : alimentation familiale adaptée."
     },
     {
       q: "Que faire en cas de réaction allergique ?",
@@ -110,7 +110,7 @@
   <Card padding="lg" class="text-center mt-8">
     <h2 class="text-base font-semibold">Suivre tout ça en pratique ?</h2>
     <p class="mt-1 text-sm text-ink-soft">
-      Diversif vous aide à logguer chaque aliment, suivre les 12 allergènes et partager le tableau
+      Diversif vous aide à noter chaque aliment, suivre les 12 allergènes et partager le carnet
       avec l'autre parent.
     </p>
     <div class="mt-4 flex flex-wrap justify-center gap-3">

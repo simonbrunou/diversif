@@ -40,7 +40,7 @@
         <Phone size={18} aria-hidden="true" />
       </div>
       <div>
-        <h3 class="text-base font-semibold text-reaction-reaction">
+        <h3 class="text-base font-semibold text-reaction-reaction-foreground">
           Urgence : appeler le {EMERGENCY_NUMBER}
         </h3>
         <p class="text-sm text-foreground/90">

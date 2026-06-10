@@ -60,16 +60,15 @@ describe('+layout.server load', () => {
     expect(out.children).toEqual([]);
   });
 
-  it('returns null currentChildId on a non-child path', async () => {
-    const out = await load(
-      makeRouteEvent({ user: null, url: 'http://localhost/' }) as unknown as Parameters<
-        typeof load
-      >[0]
-    );
+  // currentChildId comes from `params.id` (the router resolves it post-reroute,
+  // so locale prefixes never reach the load, and the static /child/new route
+  // shadows [id]). The load only validates the digits-only shape.
+  it('returns null currentChildId when the route has no id param', async () => {
+    const out = await load(makeRouteEvent({ user: null }) as unknown as Parameters<typeof load>[0]);
     expect(out.currentChildId).toBeNull();
   });
 
-  it('extracts currentChildId from a /child/:id path', async () => {
+  it('extracts currentChildId from the id param', async () => {
     const u = await seedUser();
     const c = await seedChild({ createdBy: u.id, name: 'Léo' });
     const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
@@ -77,10 +76,26 @@ describe('+layout.server load', () => {
     const event = makeRouteEvent({
       user: safeUser(u),
       memberships: [m],
-      url: `http://localhost/child/${c.id}`
+      params: { id: String(c.id) }
     });
 
     const out = await load(event as unknown as Parameters<typeof load>[0]);
     expect(out.currentChildId).toBe(String(c.id));
+  });
+
+  it('returns null currentChildId for an id param the child routes refuse', async () => {
+    for (const id of ['new', '12abc', '', '0', '-3']) {
+      const out = await load(
+        makeRouteEvent({ user: null, params: { id } }) as unknown as Parameters<typeof load>[0]
+      );
+      expect(out.currentChildId).toBeNull();
+    }
+  });
+
+  it('normalizes a zero-padded id param like the child routes do', async () => {
+    const out = await load(
+      makeRouteEvent({ user: null, params: { id: '007' } }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.currentChildId).toBe('7');
   });
 });

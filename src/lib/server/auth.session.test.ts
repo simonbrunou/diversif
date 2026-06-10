@@ -17,6 +17,7 @@ import {
   listMembershipsForUser,
   setSessionCookie
 } from './auth';
+import { seedChild } from '../../test/route';
 import { users, memberships, children, sessions } from './db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -190,6 +191,34 @@ describe('listMembershipsForUser', () => {
 
     expect((await listMembershipsForUser(user.id)).length).toBe(1);
     expect(await listMembershipsForUser(other.id)).toEqual([]);
+  });
+
+  it('orders memberships by joined-at, not by child id or row order', async () => {
+    const user = await seedUser({ email: 'order@example.com' });
+    const coParented = await seedChild({ name: 'Aîné', createdBy: user.id });
+    const own = await seedChild({ name: 'Cadet', createdBy: user.id });
+
+    // The user created their own child first, then joined an OLDER child
+    // (smaller id) via invitation. kids[0] is the nav fallback target, so
+    // join order must win over child id — otherwise the co-parented child
+    // silently becomes the default log target. The later-joined membership
+    // is INSERTED first so neither child id nor SQLite row order coincides
+    // with the expected result — only ORDER BY createdAt produces it.
+    await testDb.insert(memberships).values({
+      userId: user.id,
+      childId: coParented.id,
+      role: 'member',
+      createdAt: new Date('2026-02-01T00:00:00Z')
+    });
+    await testDb.insert(memberships).values({
+      userId: user.id,
+      childId: own.id,
+      role: 'owner',
+      createdAt: new Date('2026-01-01T00:00:00Z')
+    });
+
+    const rows = await listMembershipsForUser(user.id);
+    expect(rows.map((r) => r.childId)).toEqual([own.id, coParented.id]);
   });
 });
 

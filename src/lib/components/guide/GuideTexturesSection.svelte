@@ -35,7 +35,7 @@
   </Card>
 
   <Card class="border-reaction-inconfort/30 bg-reaction-inconfort/5 p-4">
-    <h3 class="flex items-center gap-2 text-sm font-semibold text-reaction-inconfort">
+    <h3 class="flex items-center gap-2 text-sm font-semibold text-reaction-inconfort-foreground">
       <AlertTriangle size={14} aria-hidden="true" />
       Étouffement : règles de découpe
     </h3>

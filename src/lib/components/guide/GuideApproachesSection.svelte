@@ -15,7 +15,7 @@
       <Card class="p-4">
         <h3 class="text-sm font-semibold">{a.title}</h3>
         <p class="mt-1 text-sm text-foreground/90">{a.body}</p>
-        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-ras">
+        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-ras-foreground">
           Avantages
         </h4>
         <ul class="mt-1 list-disc space-y-0.5 pl-5 text-sm">
@@ -23,7 +23,7 @@
             <li>{p}</li>
           {/each}
         </ul>
-        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-inconfort">
+        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-inconfort-foreground">
           Limites
         </h4>
         <ul class="mt-1 list-disc space-y-0.5 pl-5 text-sm">

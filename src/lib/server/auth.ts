@@ -156,7 +156,16 @@ export async function invalidateAllUserSessions(userId: number): Promise<void> {
 }
 
 export async function listMembershipsForUser(userId: number) {
-  return db.select().from(memberships).where(eq(memberships.userId, userId));
+  // Ordered so kids[0] (the nav fallback target on /account) is stable —
+  // without ORDER BY, SQLite row order is unspecified. createdAt first so an
+  // invite-joiner's own first child stays ahead of an older co-parented child
+  // (childId alone would sort by global creation order across all users);
+  // childId breaks same-millisecond ties deterministically.
+  return db
+    .select()
+    .from(memberships)
+    .where(eq(memberships.userId, userId))
+    .orderBy(memberships.createdAt, memberships.childId);
 }
 
 export async function findUserByEmail(email: string): Promise<User | undefined> {

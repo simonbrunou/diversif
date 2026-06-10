@@ -129,6 +129,38 @@ describe('settings load', () => {
       expect(m.displayName).toBeTruthy();
     }
   });
+
+  it('non-owner members never see active invite codes (bearer credentials)', async () => {
+    const owner = await seedUser({ email: 'owner@example.com' });
+    const c = await seedChild({ createdBy: owner.id, name: 'Bébé' });
+    await seedMembership({ userId: owner.id, childId: c.id, role: 'owner' });
+    const viewer = await seedUser({ email: 'viewer@example.com' });
+    const viewerMembership = await seedMembership({
+      userId: viewer.id,
+      childId: c.id,
+      role: 'member'
+    });
+    await testDb.insert(invitations).values({
+      code: 'BEBE-SECRET',
+      childId: c.id,
+      createdBy: owner.id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 86400_000),
+      usedAt: null,
+      usedBy: null
+    });
+
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(viewer),
+        memberships: [viewerMembership],
+        params: { id: String(c.id) }
+      }) as unknown as Parameters<typeof load>[0]
+    );
+
+    expect(out.role).toBe('member');
+    expect(out.invitations).toEqual([]);
+  });
 });
 
 describe('settings updateChild action', () => {
