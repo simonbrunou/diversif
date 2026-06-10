@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db';
 import { children } from '$lib/server/db/schema';
+import { parseChildIdParam } from '$lib/server/guards';
 import { inArray } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { ChildSummary } from '$lib/types';
@@ -25,13 +26,17 @@ export const load: LayoutServerLoad = async ({ locals, params }) => {
   }
 
   // `params.id` comes from the router: /child/[id] is the only route with an
-  // `id` param, paraglide's reroute runs before matching (so /en/child/1 still
-  // resolves it), and the static /child/new route shadows [id] (so 'new' can
-  // never appear). Reading params instead of `url` also keeps this load from
-  // re-running — children query included — on every client-side navigation.
-  // Digits-only rejects malformed ids (/child/12abc) that the child layout
-  // 404s anyway, so the shell never claims a child context the route refused.
-  const currentChildIdStr = params.id && /^\d+$/.test(params.id) ? params.id : null;
+  // `id` param (the static /child/new route shadows it), and reading params
+  // instead of `url` keeps this load — children query included — from
+  // re-running on every client-side navigation. Reusing the route guard's
+  // parser keeps the shell and the child layout agreeing on validity ('0' is
+  // rejected) and normalization ('007' → '7').
+  let currentChildIdStr: string | null = null;
+  try {
+    currentChildIdStr = String(parseChildIdParam(params));
+  } catch {
+    // Not a child route, or a malformed id the child layout 404s anyway.
+  }
 
   return {
     user: locals.user,

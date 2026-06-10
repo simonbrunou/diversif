@@ -49,18 +49,22 @@ export async function signUpAndCreateChild(
 ): Promise<string> {
   await signUp(page, emailPrefix);
 
-  // Svelte hydration can clobber values typed into the SSR'd form before the
-  // component claims its inputs (bind:value resets them to initial state), so
-  // a too-eager fill is silently lost and the submit fails validation. Re-fill
-  // until both values stick — hydration runs once, so one surviving check
-  // round means the form is interactive for real.
+  // Values typed into the SSR'd form before hydration finishes can be lost
+  // when the client render replaces the inputs, so the submit then posts an
+  // empty form. Fill, then require the values to be observed intact on a
+  // LATER toPass attempt — surviving the gap between two spaced reads is the
+  // signal that the late client render already happened.
   const nameInput = page.getByLabel('Prénom');
   const birthInput = page.getByLabel('Date de naissance');
+  let filledOnce = false;
   await expect(async () => {
-    if ((await nameInput.inputValue()) !== name) await nameInput.fill(name);
-    if ((await birthInput.inputValue()) !== birthDate) await birthInput.fill(birthDate);
-    expect(await nameInput.inputValue()).toBe(name);
-    expect(await birthInput.inputValue()).toBe(birthDate);
+    const intact =
+      (await nameInput.inputValue()) === name && (await birthInput.inputValue()) === birthDate;
+    if (intact && filledOnce) return;
+    await nameInput.fill(name);
+    await birthInput.fill(birthDate);
+    filledOnce = true;
+    throw new Error('waiting for the filled values to survive a re-check');
   }).toPass({ timeout: 15_000 });
   await page.getByRole('button', { name: /^créer$/i }).click();
   // Same 15s bump as the signup-step assertion : the /child/new action
@@ -87,11 +91,16 @@ export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
   // isVisible() races it : the check returns false, dismissal is skipped, and
   // the dialog opens mid-test — polluting later assertions and axe sweeps
   // (which then scan its entry animation and report blended-opacity contrast
-  // failures). Give it a short window to appear before concluding absence.
+  // failures). Give it a short window to appear before concluding absence;
+  // only a timeout means absence — anything else (page closed, strict-mode
+  // violation) is a real failure that must surface here, not three steps later.
   const appeared = await dismiss
     .waitFor({ state: 'visible', timeout: 2_000 })
     .then(() => true)
-    .catch(() => false);
+    .catch((e: Error) => {
+      if (e.name === 'TimeoutError') return false;
+      throw e;
+    });
   if (appeared) {
     await dismiss.click();
     await expect(dismiss).not.toBeVisible();

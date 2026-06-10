@@ -26,9 +26,7 @@
   // URL keeps the prefix, but reroute makes the underlying SvelteKit route the
   // same as the FR variant, so shell predicates have to match the unprefixed
   // form to keep `/en/login` etc. on the auth layout instead of the public shell.
-  // i18n.route() always returns at least '/' (paraglide's serializeRoute
-  // ends in `|| "/"`), so no fallback is needed.
-  const unprefixedPath = $derived(i18n.route(page.url.pathname));
+  const unprefixedPath = $derived(i18n.route(page.url.pathname) || '/');
 
   const isChildRoute = $derived(unprefixedPath.startsWith('/child/'));
 

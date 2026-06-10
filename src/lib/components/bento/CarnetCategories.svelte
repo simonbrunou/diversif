@@ -22,8 +22,10 @@
     }, {})
   );
 
-  // Curated CATEGORIES order (légumes first, autre last) like the combobox
-  // and guide — alphabetical raw ids would scramble once labels are localized.
+  // Curated CATEGORIES order like the combobox and guide — alphabetical raw
+  // ids would scramble once labels are localized. Ids outside CATEGORY_IDS
+  // can't be produced by the server today, but if legacy data carries one it
+  // must still render (at the end) rather than silently hide its foods.
   const categories = $derived([
     ...CATEGORY_IDS.filter((id) => id in grouped),
     ...Object.keys(grouped)

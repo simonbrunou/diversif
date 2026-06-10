@@ -83,12 +83,19 @@ describe('+layout.server load', () => {
     expect(out.currentChildId).toBe(String(c.id));
   });
 
-  it('returns null currentChildId for a non-numeric id param', async () => {
-    for (const id of ['new', '12abc', '']) {
+  it('returns null currentChildId for an id param the child routes refuse', async () => {
+    for (const id of ['new', '12abc', '', '0', '-3']) {
       const out = await load(
         makeRouteEvent({ user: null, params: { id } }) as unknown as Parameters<typeof load>[0]
       );
       expect(out.currentChildId).toBeNull();
     }
+  });
+
+  it('normalizes a zero-padded id param like the child routes do', async () => {
+    const out = await load(
+      makeRouteEvent({ user: null, params: { id: '007' } }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.currentChildId).toBe('7');
   });
 });
