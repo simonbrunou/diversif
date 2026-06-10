@@ -1,8 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-
-function unique(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-}
+import { unique } from './_helpers';
 
 async function signUp(page: Page, email: string) {
   await page.goto('/signup');

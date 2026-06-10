@@ -12,6 +12,7 @@ import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 // Relative import so drizzle-kit can load this file outside the Vite/SvelteKit
 // alias resolver (npm run db:generate runs schema.ts directly via tsx).
 import { TEXTURE_VALUES } from '../../utils/textures';
+import { REACTION_VALUES } from '../../utils/reaction-values';
 import { SYMPTOM_LABELS } from '../../content/symptoms';
 
 // SQLite type conventions used throughout this schema:
@@ -150,7 +151,7 @@ export const foodEntries = sqliteTable(
       .notNull()
       .references(() => foods.id, { onDelete: 'restrict' }),
     givenAt: integer('given_at', { mode: 'timestamp_ms' }).notNull(),
-    reaction: text('reaction', { enum: ['ras', 'inconfort', 'reaction'] }).notNull(),
+    reaction: text('reaction', { enum: REACTION_VALUES }).notNull(),
     texture: text('texture', { enum: TEXTURE_VALUES }),
     notes: text('notes'),
     loggedBy: integer('logged_by').references(() => users.id, { onDelete: 'set null' }),

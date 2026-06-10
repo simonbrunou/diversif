@@ -3,13 +3,7 @@
 // via Drizzle. Imports of the legacy `./queries` path continue to work via
 // this barrel re-export.
 
-export {
-  loadSeasonalFoods,
-  loadTexturesTried,
-  loadTextureProgress,
-  type SeasonalFood,
-  type TextureProgress
-} from './seasonal';
+export { loadTexturesTried } from './seasonal';
 export {
   loadDiversityMetrics,
   loadRepeatCandidates,
@@ -19,12 +13,9 @@ export {
   type WeeklyRecap
 } from './diversity';
 export {
-  loadRecentEntries,
   loadStreak,
   loadCoparentActivity,
-  loadAnalyticsBuckets,
   type EnrichedEntry,
-  type CoparentEntry,
-  type WeekBucket
+  type CoparentEntry
 } from './timeline';
 export { loadDismissals, dismissReminder } from './dismissals';
