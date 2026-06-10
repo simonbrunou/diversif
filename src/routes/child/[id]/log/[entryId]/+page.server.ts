@@ -8,6 +8,7 @@ import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { audit } from '$lib/server/audit';
 import { resolveOrInsertFood } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
+import { REACTION_VALUES } from '$lib/utils/reaction-values';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z
@@ -16,7 +17,7 @@ const schema = z
     'customFood.name': z.string().min(1).max(80).optional(),
     'customFood.category': z.string().optional(),
     givenAt: z.string().min(1, 'Date requise'),
-    reaction: z.enum(['ras', 'inconfort', 'reaction']),
+    reaction: z.enum(REACTION_VALUES),
     texture: z.union([z.enum(TEXTURE_VALUES), z.literal('')]).optional(),
     notes: z.string().max(2000).optional()
   })

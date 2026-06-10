@@ -1,4 +1,9 @@
 import { AlertCircle, OctagonAlert, Smile, type Icon as LucideIcon } from 'lucide-svelte';
+import type { ReactionId } from './reaction-values';
+
+// Single source of truth for the id value space — shared with schema.ts and
+// the Zod form schemas, which must stay free of lucide-svelte imports.
+export type { ReactionId } from './reaction-values';
 
 export const REACTIONS = [
   {
@@ -20,13 +25,11 @@ export const REACTIONS = [
     icon: OctagonAlert
   }
 ] as const satisfies ReadonlyArray<{
-  id: string;
+  id: ReactionId;
   label: string;
   description: string;
   icon: typeof LucideIcon;
 }>;
-
-export type ReactionId = (typeof REACTIONS)[number]['id'];
 
 export function getReactionLabel(id: ReactionId): string {
   return REACTIONS.find((r) => r.id === id)?.label ?? id;
