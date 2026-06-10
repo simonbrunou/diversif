@@ -31,12 +31,11 @@ export const load: LayoutServerLoad = async ({ locals, params }) => {
   // re-running on every client-side navigation. Reusing the route guard's
   // parser keeps the shell and the child layout agreeing on validity ('0' is
   // rejected) and normalization ('007' → '7').
-  const parsedChildId = parseChildIdParamOrNull(params);
-  const currentChildIdStr = parsedChildId === null ? null : String(parsedChildId);
+  const currentChildId = parseChildIdParamOrNull(params)?.toString() ?? null;
 
   return {
     user: locals.user,
     children: childList,
-    currentChildId: currentChildIdStr
+    currentChildId
   };
 };
