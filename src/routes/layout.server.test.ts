@@ -83,4 +83,28 @@ describe('+layout.server load', () => {
     const out = await load(event as unknown as Parameters<typeof load>[0]);
     expect(out.currentChildId).toBe(String(c.id));
   });
+
+  it('returns null currentChildId on /child/new (non-numeric segment)', async () => {
+    const out = await load(
+      makeRouteEvent({ user: null, url: 'http://localhost/child/new' }) as unknown as Parameters<
+        typeof load
+      >[0]
+    );
+    expect(out.currentChildId).toBeNull();
+  });
+
+  it('extracts currentChildId from a locale-prefixed /en/child/:id path', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id, name: 'Léo' });
+    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      url: `http://localhost/en/child/${c.id}`
+    });
+
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out.currentChildId).toBe(String(c.id));
+  });
 });

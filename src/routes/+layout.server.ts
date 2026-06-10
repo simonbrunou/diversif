@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db';
 import { children } from '$lib/server/db/schema';
+import { i18n } from '$lib/i18n';
 import { inArray } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { ChildSummary } from '$lib/types';
@@ -24,7 +25,10 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
       .filter((x): x is ChildSummary => x !== null);
   }
 
-  const childMatch = url.pathname.match(/^\/child\/([^/]+)/);
+  // De-localize first (e.g. /en/child/1 → /child/1) so the EN locale keeps
+  // its navigation, then match digits only so /child/new doesn't leak a bogus
+  // currentChildId='new' into nav/FAB hrefs.
+  const childMatch = i18n.route(url.pathname).match(/^\/child\/(\d+)/);
   const currentChildIdStr = childMatch ? childMatch[1] : null;
 
   return {

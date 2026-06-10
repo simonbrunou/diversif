@@ -90,9 +90,9 @@ export const STAGES = [
     ageMax: 12,
     title: "9–12 mois · Vers les morceaux et l'autonomie",
     oneLiner:
-      'Bébé mâchonne, pince entre pouce et index, peut tenir un morceau dans la main. On évolue vers des textures plus riches et des finger foods sécurisés.',
+      'Bébé mâchonne, pince entre pouce et index, peut tenir un morceau dans la main. On évolue vers des textures plus riches et des aliments à saisir sécurisés.',
     principles: [
-      'Petits morceaux fondants, finger foods : bâtonnets de légumes bien cuits, morceaux de fruits mûrs, pâtes bien cuites.',
+      'Petits morceaux fondants, aliments à saisir : bâtonnets de légumes bien cuits, morceaux de fruits mûrs, pâtes bien cuites.',
       'Repas en commun à table familiale ; bébé observe et imite.',
       'Continuer la diversification : épices douces (cumin, paprika doux, curcuma, herbes fraîches).',
       "Proposer l'eau dans un petit verre / une paille."
@@ -103,7 +103,7 @@ export const STAGES = [
       "Continuer l'exposition régulière aux allergènes déjà introduits : la tolérance s'entretient."
     ],
     textures:
-      'Petits morceaux fondants ; finger foods (bâtonnets, lamelles). Toujours sous surveillance.',
+      'Petits morceaux fondants ; aliments à saisir (bâtonnets, lamelles). Toujours sous surveillance.',
     milkTarget: "~500 mL/jour de lait 2ᵉ âge ou poursuite de l'allaitement.",
     redFlags: [
       "Pas d'aliments durs et ronds (raisins entiers, tomates cerises entières, saucisses rondes, carotte crue) : découper.",
@@ -574,7 +574,7 @@ export const TEXTURE_PROGRESSION: readonly TextureStep[] = [
   },
   {
     ageMonths: 9,
-    texture: 'Petits morceaux fondants. Premiers finger foods sécurisés.',
+    texture: 'Petits morceaux fondants. Premiers aliments à saisir sécurisés.',
     examples: ['Bâtonnets de courgette cuite', "Lamelles d'avocat mûr", 'Pâtes bien cuites'],
     markers: [
       'Pince entre pouce et index',

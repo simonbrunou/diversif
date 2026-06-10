@@ -46,7 +46,7 @@
     tone="info"
     icon={Lightbulb}
     eyebrow="Bon à savoir"
-    body="Ces suggestions excluent les aliments déjà loggués et privilégient en haut les allergènes pas encore introduits. Reproposez un nouvel aliment jusqu'à 10 fois pour qu'il soit accepté : l'acceptation gustative se construit avec la répétition."
+    body="Ces suggestions excluent les aliments déjà notés et privilégient en haut les allergènes pas encore introduits. Reproposez un nouvel aliment jusqu'à 10 fois pour qu'il soit accepté : l'acceptation gustative se construit avec la répétition."
     sources={['spf-pnns-guide']}
   />
 
@@ -57,7 +57,7 @@
   {:else}
     {#if data.priorityAllergens.length > 0}
       <section>
-        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-reaction-inconfort">
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-reaction-inconfort-foreground">
           Allergènes à introduire
         </h2>
         <div class="grid gap-2 sm:grid-cols-2">

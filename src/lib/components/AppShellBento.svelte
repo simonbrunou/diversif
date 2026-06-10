@@ -51,11 +51,14 @@
     class="hidden lg:flex lg:flex-col lg:gap-2 lg:border-r lg:border-border lg:bg-surface lg:p-4"
   >
     <span class="mb-4 font-display text-2xl italic">diversif</span>
-    {#if currentChildId}
+    <!-- navChildId (not currentChildId) so the rail survives on /account,
+         matching the mobile bottom nav below. showChrome keeps it off
+         auth/landing routes. -->
+    {#if showChrome && navChildId}
       {#each TABS as tab (tab.labelKey)}
         {@const active = tab.matcher(currentPath)}
         <a
-          href={tab.href(currentChildId)}
+          href={tab.href(navChildId)}
           aria-current={active ? 'page' : undefined}
           class={cn(
             'flex items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium transition-colors',
@@ -114,8 +117,8 @@
     </div>
   </div>
 
-  <!-- Desktop top-right log button -->
-  {#if showChrome && currentChildId}
+  <!-- Desktop top-right log button (navChildId : survives on /account) -->
+  {#if showChrome && navChildId}
     <Button
       type="button"
       size="pill"

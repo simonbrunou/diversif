@@ -26,10 +26,10 @@
 
   function reactionClass(r: 'ras' | 'inconfort' | 'reaction'): string {
     return r === 'ras'
-      ? 'text-reaction-ras'
+      ? 'text-reaction-ras-foreground'
       : r === 'inconfort'
-        ? 'text-reaction-inconfort'
-        : 'text-reaction-reaction';
+        ? 'text-reaction-inconfort-foreground'
+        : 'text-reaction-reaction-foreground';
   }
 </script>
 

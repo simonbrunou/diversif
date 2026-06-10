@@ -7,6 +7,7 @@
   import { onNavigate } from '$app/navigation';
   import { browser } from '$app/environment';
   import { setLanguageTag } from '$lib/paraglide/runtime';
+  import { i18n } from '$lib/i18n';
   import * as m from '$lib/paraglide/messages';
   import { applyTheme, getStoredTheme } from '$lib/utils/theme';
   import PublicHeader from '$lib/components/PublicHeader.svelte';
@@ -25,9 +26,8 @@
   // URL keeps the prefix, but reroute makes the underlying SvelteKit route the
   // same as the FR variant, so shell predicates have to match the unprefixed
   // form to keep `/en/login` etc. on the auth layout instead of the public shell.
-  const unprefixedPath = $derived(
-    page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/'
-  );
+  // Same canonical helper as +layout.server.ts (currentChildId extraction).
+  const unprefixedPath = $derived(i18n.route(page.url.pathname) || '/');
 
   const isChildRoute = $derived(unprefixedPath.startsWith('/child/'));
 

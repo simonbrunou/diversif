@@ -2,6 +2,7 @@
 <script lang="ts">
   import FoodCard from './FoodCard.svelte';
   import EmptyHint from '$components/ui/EmptyHint.svelte';
+  import { getCategoryLabel } from '$lib/utils/categories';
   import * as m from '$lib/paraglide/messages';
 
   type Food = {
@@ -34,7 +35,7 @@
         class="rounded-tile border border-border/40 bg-canvas p-3 shadow-soft"
       >
         <summary class="cursor-pointer text-sm font-semibold uppercase tracking-wider text-ink-soft">
-          {cat} ({grouped[cat].length})
+          {getCategoryLabel(cat)} ({grouped[cat].length})
         </summary>
         <div class="relative">
           <div class="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto">

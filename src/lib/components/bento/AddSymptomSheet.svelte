@@ -64,7 +64,7 @@
             class="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 {isSelected
               ? 'border-primary bg-primary text-primary-foreground'
               : isSevere
-                ? 'border-destructive/40 bg-canvas text-destructive'
+                ? 'border-destructive/40 bg-canvas text-severe-text'
                 : 'border-border bg-canvas text-ink-soft'}"
           >
             <input

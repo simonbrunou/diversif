@@ -58,7 +58,7 @@ describe('AddSymptomSheet', () => {
     const severe = screen.getByText('Détresse respiratoire').closest('label');
     const mild = screen.getByText('Rougeur').closest('label');
     expect(severe?.className).toContain('border-destructive/40');
-    expect(severe?.className).toContain('text-destructive');
+    expect(severe?.className).toContain('text-severe-text');
     expect(mild?.className).not.toContain('border-destructive');
   });
 

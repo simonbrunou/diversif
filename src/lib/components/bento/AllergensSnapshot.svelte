@@ -23,7 +23,7 @@
         class={cn(
           'inline-flex shrink-0 snap-start items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium',
           item.state === 'ok'
-            ? 'border-success/40 bg-canvas text-success'
+            ? 'border-success/40 bg-canvas text-success-foreground'
             : 'border-border bg-canvas text-ink-soft'
         )}
       >

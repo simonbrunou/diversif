@@ -63,10 +63,15 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       // Drizzle's timestamp_ms mode always materializes timestamps as Date.
       createdAt: (m.createdAt as Date).getTime()
     })),
-    invitations: activeInvites.map((i) => ({
-      code: i.code,
-      expiresAt: (i.expiresAt as Date).getTime()
-    })),
+    // Invite codes are live bearer credentials : only the owner (the sole
+    // role allowed to create/revoke them) gets to see them. The settings UI
+    // already renders the invitations block under `data.role === 'owner'`.
+    invitations: isOwner
+      ? activeInvites.map((i) => ({
+          code: i.code,
+          expiresAt: (i.expiresAt as Date).getTime()
+        }))
+      : [],
     role: membership.role
   };
 };
