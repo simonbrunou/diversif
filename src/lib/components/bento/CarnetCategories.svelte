@@ -2,7 +2,7 @@
 <script lang="ts">
   import FoodCard from './FoodCard.svelte';
   import EmptyHint from '$components/ui/EmptyHint.svelte';
-  import { getCategoryLabel } from '$lib/utils/categories';
+  import { CATEGORY_IDS, getCategoryLabel } from '$lib/utils/categories';
   import * as m from '$lib/paraglide/messages';
 
   type Food = {
@@ -22,7 +22,14 @@
     }, {})
   );
 
-  const categories = $derived(Object.keys(grouped).sort());
+  // Curated CATEGORIES order (légumes first, autre last) like the combobox
+  // and guide — alphabetical raw ids would scramble once labels are localized.
+  const categories = $derived([
+    ...CATEGORY_IDS.filter((id) => id in grouped),
+    ...Object.keys(grouped)
+      .filter((id) => !CATEGORY_IDS.includes(id))
+      .sort()
+  ]);
 </script>
 
 {#if categories.length === 0}

@@ -495,7 +495,7 @@
   "settingsCopyToast": "Copié.",
   "settingsCopyFailToast": "Impossible de copier.",
   "settingsDangerHeading": "Zone dangereuse",
-  "settingsDangerOwnerDescription": "Supprimer cet enfant retire toutes les données associées (repas notés, membres, invitations). Action irréversible.",
+  "settingsDangerOwnerDescription": "Supprimer cet enfant retire toutes les données associées (repas notés, symptômes, membres, invitations). Action irréversible.",
   "settingsDangerOwnerCta": "Supprimer cet enfant",
   "settingsDangerMemberDescription": "Vous n’êtes pas le créateur. Vous pouvez quitter ce suivi à tout moment.",
   "settingsDangerMemberCta": "Quitter cet enfant",

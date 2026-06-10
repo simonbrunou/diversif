@@ -49,8 +49,19 @@ export async function signUpAndCreateChild(
 ): Promise<string> {
   await signUp(page, emailPrefix);
 
-  await page.getByLabel('Prénom').fill(name);
-  await page.getByLabel('Date de naissance').fill(birthDate);
+  // Svelte hydration can clobber values typed into the SSR'd form before the
+  // component claims its inputs (bind:value resets them to initial state), so
+  // a too-eager fill is silently lost and the submit fails validation. Re-fill
+  // until both values stick — hydration runs once, so one surviving check
+  // round means the form is interactive for real.
+  const nameInput = page.getByLabel('Prénom');
+  const birthInput = page.getByLabel('Date de naissance');
+  await expect(async () => {
+    if ((await nameInput.inputValue()) !== name) await nameInput.fill(name);
+    if ((await birthInput.inputValue()) !== birthDate) await birthInput.fill(birthDate);
+    expect(await nameInput.inputValue()).toBe(name);
+    expect(await birthInput.inputValue()).toBe(birthDate);
+  }).toPass({ timeout: 15_000 });
   await page.getByRole('button', { name: /^créer$/i }).click();
   // Same 15s bump as the signup-step assertion : the /child/new action
   // inserts a child + a membership and redirects to /child/<id>, which
@@ -72,7 +83,16 @@ export async function signUpAndCreateChild(
  */
 export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
   const dismiss = page.getByRole('button', { name: 'Plus tard' });
-  if (await dismiss.isVisible().catch(() => false)) {
+  // The dialog mounts client-side after hydration, so an instantaneous
+  // isVisible() races it : the check returns false, dismissal is skipped, and
+  // the dialog opens mid-test — polluting later assertions and axe sweeps
+  // (which then scan its entry animation and report blended-opacity contrast
+  // failures). Give it a short window to appear before concluding absence.
+  const appeared = await dismiss
+    .waitFor({ state: 'visible', timeout: 2_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (appeared) {
     await dismiss.click();
     await expect(dismiss).not.toBeVisible();
   }

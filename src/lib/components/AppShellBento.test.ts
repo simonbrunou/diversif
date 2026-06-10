@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import { textSnippet } from '../../test/component';
 import AppShellBento from './AppShellBento.svelte';
+import { TABS } from './BottomNavBento.svelte';
 
 mock.module('$app/forms', () => ({
   enhance: () => ({ destroy: () => {} })
@@ -59,14 +60,12 @@ describe('AppShellBento', () => {
     });
     const rail = container.querySelector('nav[aria-label="Navigation latérale"]');
     expect(rail).not.toBeNull();
-    // Child tabs must point at the first kid, same fallback as the mobile
-    // nav (the last tab is /account itself).
+    // Brand link home, then every tab pointing at the first kid — the same
+    // fallback as the mobile nav.
     const links = [...rail!.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(links.length).toBeGreaterThan(0);
-    expect(links.filter((href) => href?.startsWith('/child/a')).length).toBe(links.length - 1);
-    expect(links).toContain('/account');
+    expect(links).toEqual(['/', ...TABS.map((t) => t.href('a'))]);
     // Log CTAs (mobile FAB + desktop fixed button) also survive on /account.
-    expect(screen.getAllByRole('button', { name: /Enregistrer/ }).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByRole('button', { name: /Enregistrer/ }).length).toBe(2);
   });
 
   it('renders no rail tabs on auth routes even when kids exist', () => {
@@ -74,6 +73,8 @@ describe('AppShellBento', () => {
       props: { ...baseProps, currentPath: '/login', currentChildId: undefined }
     });
     const rail = container.querySelector('nav[aria-label="Navigation latérale"]');
-    expect(rail!.querySelectorAll('a').length).toBe(0);
+    // Only the brand home link — no tab links.
+    const links = [...rail!.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    expect(links).toEqual(['/']);
   });
 });
