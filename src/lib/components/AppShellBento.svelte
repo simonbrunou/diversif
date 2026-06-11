@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { goto } from '$app/navigation';
+  import { goto, afterNavigate } from '$app/navigation';
   import { localizedHref } from '$lib/utils/localized-href';
   import Button from '$lib/components/ui/Button.svelte';
   import BottomNavBento, { TABS } from './BottomNavBento.svelte';
@@ -48,6 +48,12 @@
   const isReportRoute = $derived(/^\/child\/[^/]+\/report(?:\/|$)/.test(currentPath));
   const showLogCta = $derived(showNav && !isReportRoute);
 
+  let scrollEl: HTMLElement | null = $state(null);
+
+  afterNavigate(() => {
+    scrollEl?.scrollTo({ top: 0, behavior: 'instant' });
+  });
+
   function openLog(): void {
     if (!navChildId) return;
     // localizedHref so an EN visitor isn't flipped back to the FR UI.
@@ -83,52 +89,63 @@
     {/if}
   </nav>
 
-  <div class="flex flex-col">
+  <!-- On mobile this column must fill the viewport so the bottom nav sits
+       flush at the bottom edge of the screen. flex-1 on the scrollable
+       content area then fills all available space above the nav, so short
+       pages never leave a gap between content and nav. lg:min-h-0 disables
+       the fixed height on desktop where the grid tracks handle it. -->
+  <div class="flex min-h-dvh flex-col lg:min-h-0">
     <!-- Mobile brand strip via the shared component, so the chrome
          signature matches PublicHeader exactly across the marketing
          to app boundary. Hidden on lg: the left rail carries the brand
          on desktop. -->
     <SharedTopBar class="lg:hidden" />
 
-    <!-- Main content area (mobile + desktop right column) -->
-    <div class="mx-auto w-full max-w-md px-3 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-3 lg:max-w-3xl lg:pb-3" data-variant="responsive">
-      {#if showChrome && currentChild}
-        <div data-no-print>
-          <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
-        </div>
-      {/if}
-
-      <main id="main" class="flex-1">
-        <!-- Screen-reader anchor: every app-shell route lands here, and the
-             bento sub-pages start at h2, so AT users need an h1 above to
-             know where they are. Visually hidden — ChildHeaderPill and
-             page hero copy carry the visual heading. -->
-        {#if currentPath === '/account'}
-          <h1 class="sr-only">{m.authAccountHeading()}</h1>
-        {:else if currentChild}
-          <h1 class="sr-only">{currentChild.name}</h1>
+    <!-- Scrollable content area fills the space between the top bar and nav -->
+    <div
+      bind:this={scrollEl}
+      class="flex-1 overflow-y-auto"
+      data-variant="responsive"
+    >
+      <div class="mx-auto w-full max-w-md px-3 pb-4 pt-3 lg:max-w-3xl lg:pb-3">
+        {#if showChrome && currentChild}
+          <div data-no-print>
+            <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
+          </div>
         {/if}
-        {#if children}{@render children()}{/if}
-      </main>
 
-      {#if showNav}
-        <!-- Mobile bottom nav + FAB (hidden on desktop). Nav is h-[3.5rem+SAI]
-             with pb-SAI, so its visual 56px band spans SAI–SAI+56px from the
-             bottom. FAB at bottom-SAI (center=SAI+30px) sits ~2px above the
-             band's centre — close enough to read as centred. Fills the `w-16`
-             spacer slot in BottomNavBento between tabs 2 and 3. -->
-        <div data-no-print class="lg:hidden">
-          <BottomNavBento currentChildId={navChildId} {currentPath} />
-          {#if showLogCta}
-            <div class="fixed bottom-[env(safe-area-inset-bottom)] left-1/2 z-40 -translate-x-1/2">
-              <FabLog onclick={openLog} />
-            </div>
+        <main id="main" class="flex-1">
+          <!-- Screen-reader anchor: every app-shell route lands here, and the
+               bento sub-pages start at h2, so AT users need an h1 above to
+               know where they are. Visually hidden — ChildHeaderPill and
+               page hero copy carry the visual heading. -->
+          {#if currentPath === '/account'}
+            <h1 class="sr-only">{m.authAccountHeading()}</h1>
+          {:else if currentChild}
+            <h1 class="sr-only">{currentChild.name}</h1>
           {/if}
-        </div>
-
-        <ChildSwitcherDrawer bind:open={switcherOpen} {kids} currentChildId={navChildId} />
-      {/if}
+          {#if children}{@render children()}{/if}
+        </main>
+      </div>
     </div>
+
+    {#if showNav}
+      <!-- Bottom nav is in normal document flow (not fixed/floating) so it
+           sits flush below the scrollable content rather than overlaying it.
+           The FAB stays fixed so it can float over the nav's centre slot. -->
+      <div data-no-print class="lg:hidden">
+        <BottomNavBento currentChildId={navChildId} {currentPath} />
+        {#if showLogCta}
+          <!-- FAB at bottom-SAI centres it on the nav's 56px visual band
+               (SAI+30px ≈ SAI+28px band centre, 2px above). -->
+          <div class="fixed bottom-[env(safe-area-inset-bottom)] left-1/2 z-40 -translate-x-1/2">
+            <FabLog onclick={openLog} />
+          </div>
+        {/if}
+      </div>
+
+      <ChildSwitcherDrawer bind:open={switcherOpen} {kids} currentChildId={navChildId} />
+    {/if}
   </div>
 
   <!-- Desktop top-right log button -->
