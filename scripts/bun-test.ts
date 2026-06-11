@@ -166,15 +166,23 @@ if (!reportOnly) {
 // covered if ANY child hit it. bun's lcov has no per-function FNDA records,
 // so only LINE coverage can be merged across processes — function thresholds
 // are unenforceable in this architecture and line coverage is the gate.
-// (Caveat: a one-line function definition registers as a covered line at
-// module evaluation even if never called; multi-line bodies report 0-hit
-// lines and are caught.)
+// Known false-negative class (bun/V8 data limitation, not fixable here):
+// a one-line function definition registers as a covered line at module
+// evaluation even if never called, and never-taken branches INSIDE an
+// executed function can receive phantom nonzero hits (probe: an untaken
+// `if (x<0) { break; }` guard in a loop reported hits on both lines).
+// "100% line coverage" therefore does not mean "all branches reached" —
+// it catches dead multi-line functions and unloaded modules, not every
+// untested branch.
 //
 // `/* v8 ignore … */` markers (inherited from the vitest era) are honored
-// here: `next [N]`, and `start`/`stop` ranges.
+// here: `next [N]` (standalone markers also exempt the N following lines;
+// markers inline after code exempt only their own line), and
+// `start`/`stop` ranges (an unterminated `start` fails the run loudly —
+// it would otherwise silently exempt the rest of the file).
 // ---------------------------------------------------------------------------
 
-function parseIgnoredLines(source: string): Set<number> {
+function parseIgnoredLines(file: string, source: string): Set<number> {
   const ignored = new Set<number>();
   const lines = source.split('\n');
   let inBlock = false;
@@ -190,11 +198,25 @@ function parseIgnoredLines(source: string): Set<number> {
     } else {
       const next = line.match(/v8 ignore next(?:\s+(\d+))?/);
       if (next) {
-        const span = next[1] ? Number(next[1]) : 1;
-        // The marker's own line plus the N lines after it.
-        for (let k = 0; k <= span; k++) ignored.add(li + 1 + k);
+        ignored.add(li + 1);
+        // A marker inline after code (`x ?? /* v8 ignore next */ 0`) exempts
+        // only its own line; a standalone marker line exempts the N
+        // following lines. Without the distinction, an inline marker would
+        // silently exempt the (unmarked) line after it too.
+        const standalone = line.slice(0, line.indexOf('/*')).trim() === '';
+        if (standalone) {
+          const span = next[1] ? Number(next[1]) : 1;
+          for (let k = 1; k <= span; k++) ignored.add(li + 1 + k);
+        }
       }
     }
+  }
+  if (inBlock) {
+    console.error(
+      `!! ${file}: '/* v8 ignore start */' without a matching stop — ` +
+        `this would silently exempt the rest of the file.`
+    );
+    process.exit(2);
   }
   return ignored;
 }
@@ -233,9 +255,35 @@ function compactRanges(nums: number[]): string {
 }
 
 if (wantCoverage || reportOnly) {
-  const ignoreGlobs = (bunfig.test?.coveragePathIgnorePatterns ?? []).map(
-    (p: string) => new Bun.Glob(p)
-  );
+  if (reportOnly && paths.length > 0) {
+    // The raw dirs are keyed by index into the FULL run's file list; a
+    // path-filtered replay would misalign indices and merge garbage.
+    console.error('!! --coverage-report-only cannot be combined with path arguments.');
+    process.exit(2);
+  }
+  const manifestPath = path.join(covRoot, 'manifest.json');
+  if (reportOnly) {
+    const recorded = existsSync(manifestPath)
+      ? (JSON.parse(readFileSync(manifestPath, 'utf8')) as string[])
+      : null;
+    if (!recorded || JSON.stringify(recorded) !== JSON.stringify(files)) {
+      console.error(
+        '!! coverage/raw was produced for a different file list (older commit or subset run) — ' +
+          're-run `bun run test:coverage` before replaying.'
+      );
+      process.exit(2);
+    }
+  } else {
+    Bun.write(manifestPath, JSON.stringify(files));
+  }
+  // Belt-and-braces: the TOML import is untyped (`any`), so a renamed key
+  // would silently yield an empty ignore list.
+  const patterns = bunfig.test?.coveragePathIgnorePatterns;
+  if (!Array.isArray(patterns) || patterns.length === 0) {
+    console.error('!! bunfig.toml [test].coveragePathIgnorePatterns missing or empty.');
+    process.exit(2);
+  }
+  const ignoreGlobs = patterns.map((p: string) => new Bun.Glob(p));
   const isIgnored = (rel: string): boolean => ignoreGlobs.some((g) => g.match(rel));
 
   // Merge DA records: file -> line -> { max hit count, children reporting
@@ -259,25 +307,34 @@ if (wantCoverage || reportOnly) {
   for (let i = 0; i < files.length; i++) {
     const lcovPath = path.join(covRoot, String(i), 'lcov.info');
     if (!existsSync(lcovPath)) continue;
-    let current: Map<number, { max: number; seen: number }> | null = null;
+    // A block only counts once its end_of_record is seen: a truncated write
+    // (crash/disk-full after a green test run) must not register as a
+    // "report" — the disagreement rule would otherwise exempt every real
+    // 0-hit line in files the truncated child loaded.
+    let currentRel: string | null = null;
+    let pending: Map<number, number> | null = null;
     for (const line of readFileSync(lcovPath, 'utf8').split('\n')) {
       if (line.startsWith('SF:')) {
         let rel = line.slice(3);
         if (path.isAbsolute(rel)) rel = path.relative(process.cwd(), rel);
-        if (!rel.startsWith('src/') || isIgnored(rel)) {
-          current = null;
-          continue;
-        }
-        const entry = fileCov.get(rel) ?? { reports: 0, lines: new Map() };
-        entry.reports += 1;
-        fileCov.set(rel, entry);
-        current = entry.lines;
-      } else if (current && line.startsWith('DA:')) {
+        const wanted = rel.startsWith('src/') && !isIgnored(rel);
+        currentRel = wanted ? rel : null;
+        pending = wanted ? new Map() : null;
+      } else if (pending && line.startsWith('DA:')) {
         const [lineNo, count] = line.slice(3).split(',').map(Number);
-        const rec = current.get(lineNo) ?? { max: 0, seen: 0 };
-        rec.max = Math.max(rec.max, count);
-        rec.seen += 1;
-        current.set(lineNo, rec);
+        pending.set(lineNo, Math.max(pending.get(lineNo) ?? 0, count));
+      } else if (line === 'end_of_record' && currentRel && pending) {
+        const entry = fileCov.get(currentRel) ?? { reports: 0, lines: new Map() };
+        entry.reports += 1;
+        for (const [lineNo, count] of pending) {
+          const rec = entry.lines.get(lineNo) ?? { max: 0, seen: 0 };
+          rec.max = Math.max(rec.max, count);
+          rec.seen += 1;
+          entry.lines.set(lineNo, rec);
+        }
+        fileCov.set(currentRel, entry);
+        currentRel = null;
+        pending = null;
       }
     }
   }
@@ -316,7 +373,7 @@ if (wantCoverage || reportOnly) {
     let sourceLines: string[] = [];
     if (zero.length > 0) {
       const source = readFileSync(file, 'utf8');
-      ignoredLines = parseIgnoredLines(source);
+      ignoredLines = parseIgnoredLines(file, source);
       sourceLines = source.split('\n');
     }
     // A 0-hit line only counts as uncovered (or counts at all) when it's
