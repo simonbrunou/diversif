@@ -191,6 +191,55 @@ describe('child/[id] +page.server load', () => {
     expect(out.showWelcomeDialog).toBe(false);
   });
 
+  it('returns per-allergen status (bentoAllergens) with real labels for the dashboard tile', async () => {
+    const { u, c, m } = await setup();
+    const oeuf = (
+      await testDb
+        .insert(foods)
+        .values({
+          name: 'Œuf dur',
+          category: 'oeufs',
+          isMajorAllergen: true,
+          allergenType: 'oeuf',
+          suggestedAgeMonths: 4,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning()
+    )[0];
+    await testDb.insert(foodEntries).values({
+      childId: c.id,
+      foodId: oeuf.id,
+      givenAt: new Date(),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: u.id,
+      createdAt: new Date()
+    });
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        parent: async () => ({
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    // Same shape as the Carnet Allergènes segment: all 12 tracked allergens.
+    expect(out.bentoAllergens).toHaveLength(12);
+    const byId = new Map(out.bentoAllergens.map((a) => [a.id, a]));
+    expect(byId.get('oeuf')?.label).toBe('Œuf');
+    expect(byId.get('oeuf')?.state).toBe('cleared');
+    expect(byId.get('arachide')?.state).toBe('todo');
+  });
+
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
     const { u, c, m, food } = await setup();
     await testDb.insert(foodEntries).values({

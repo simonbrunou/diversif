@@ -12,6 +12,13 @@ describe('CarnetStats', () => {
     expect(screen.getByText('7')).toBeTruthy();
   });
 
+  it('explains what the diversity number counts (categories tasted, all-time)', () => {
+    render(CarnetStats, {
+      props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [3, 5, 2, 8, 4, 1, 0] }
+    });
+    expect(screen.getByText('catégories d’aliments goûtées')).toBeTruthy();
+  });
+
   it('renders the foods total', () => {
     render(CarnetStats, {
       props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [] }

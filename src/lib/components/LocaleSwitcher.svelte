@@ -4,8 +4,17 @@
   import { languageTag, availableLanguageTags } from '$lib/paraglide/runtime';
   import { i18n } from '$lib/i18n';
   import * as m from '$lib/paraglide/messages';
+  import { cn } from '$lib/utils/cn';
+  import { Check } from 'lucide-svelte';
+
+  // 'inline' is the compact header/footer switcher; 'rows' renders
+  // full-width ≥44px row options for /account/locale.
+  let { variant = 'inline' }: { variant?: 'inline' | 'rows' } = $props();
 
   const labels: Record<string, string> = { fr: 'FR', en: 'EN' };
+  // Endonyms (each language named in itself) — the standard for language
+  // pickers, so they are intentionally not run through paraglide.
+  const rowLabels: Record<string, string> = { fr: 'Français', en: 'English' };
 
   // resolveRoute expects the canonical (unprefixed) path. The visible
   // pathname carries the /en prefix on English pages, so pass it through
@@ -22,19 +31,45 @@
   const urlSuffix = $derived(building ? '' : page.url.search + page.url.hash);
 </script>
 
-<nav class="locale-switcher" aria-label={m.chromeLocaleSwitcherLabel()}>
-  {#each availableLanguageTags as locale (locale)}
-    <a
-      href={i18n.resolveRoute(canonicalPath, locale) + urlSuffix}
-      data-active={languageTag() === locale ? 'true' : undefined}
-      aria-current={languageTag() === locale ? 'true' : undefined}
-      hreflang={locale}
-      lang={locale}
-    >
-      {labels[locale] ?? locale.toUpperCase()}
-    </a>
-  {/each}
-</nav>
+{#if variant === 'rows'}
+  <nav class="flex flex-col gap-2" aria-label={m.chromeLocaleSwitcherLabel()}>
+    {#each availableLanguageTags as locale (locale)}
+      {@const active = languageTag() === locale}
+      <a
+        href={i18n.resolveRoute(canonicalPath, locale) + urlSuffix}
+        data-active={active ? 'true' : undefined}
+        aria-current={active ? 'true' : undefined}
+        hreflang={locale}
+        lang={locale}
+        class={cn(
+          'flex min-h-11 items-center justify-between gap-3 rounded-tile border bg-canvas px-3 py-2.5 text-sm shadow-soft',
+          active
+            ? 'border-primary font-semibold text-foreground ring-1 ring-primary'
+            : 'border-border/40 text-ink-soft hover:text-foreground'
+        )}
+      >
+        <span>{rowLabels[locale] ?? locale.toUpperCase()}</span>
+        {#if active}
+          <Check size={16} class="shrink-0 text-primary-strong" aria-hidden="true" />
+        {/if}
+      </a>
+    {/each}
+  </nav>
+{:else}
+  <nav class="locale-switcher" aria-label={m.chromeLocaleSwitcherLabel()}>
+    {#each availableLanguageTags as locale (locale)}
+      <a
+        href={i18n.resolveRoute(canonicalPath, locale) + urlSuffix}
+        data-active={languageTag() === locale ? 'true' : undefined}
+        aria-current={languageTag() === locale ? 'true' : undefined}
+        hreflang={locale}
+        lang={locale}
+      >
+        {labels[locale] ?? locale.toUpperCase()}
+      </a>
+    {/each}
+  </nav>
+{/if}
 
 <style>
   .locale-switcher {
@@ -43,7 +78,7 @@
     font-size: 0.75rem;
   }
   .locale-switcher a {
-    padding: 0.125rem 0.375rem;
+    padding: 0.5rem 0.625rem;
     border-radius: 0.25rem;
     color: hsl(var(--muted-foreground));
     text-decoration: none;

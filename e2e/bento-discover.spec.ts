@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import {
   dismissWelcomeIfPresent,
   expectDialogMatchesViewport,
@@ -11,6 +11,21 @@ import {
 // `_app/*.js` chunk loads mid-click ("Target page ... has been closed"). Block
 // the SW for this spec; see responsive-modals.spec.ts for the full rationale.
 test.use({ serviceWorkers: 'block' });
+
+test('the Découvrir page links to Suggestions and the full public guide @responsive', async ({
+  page
+}) => {
+  const childId = await signUpAndCreateChild(page, 'Léa', '2025-10-01');
+  await dismissWelcomeIfPresent(page);
+
+  await page.goto(`/child/${childId}/guide`);
+  const suggestions = page.getByRole('link', { name: /À proposer bientôt/ });
+  await expect(suggestions).toBeVisible();
+  expect(await suggestions.getAttribute('href')).toBe(`/child/${childId}/suggestions`);
+  const fullGuide = page.getByRole('link', { name: /Consulter le guide complet/ });
+  await expect(fullGuide).toBeVisible();
+  expect(await fullGuide.getAttribute('href')).toBe('/guide');
+});
 
 test('tapping a stage tile opens the StageDetailSheet @responsive', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');

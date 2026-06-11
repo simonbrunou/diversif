@@ -85,6 +85,12 @@ export default defineConfig({
       // Marks this server as an end-to-end run so the signup throttle relaxes
       // its 20/hr cap — a single Playwright suite legitimately creates dozens
       // of accounts from one address, and we'd otherwise lock ourselves out.
+      // NOTE: src/lib/server/e2e.ts (isE2E) only honours E2E=1 when ORIGIN is
+      // a plain-http loopback URL — which the webServer command above sets
+      // (ORIGIN=http://localhost:<port>). NODE_ENV can't be the guard because
+      // this server intentionally runs the production build with
+      // NODE_ENV=production; the ORIGIN requirement is what keeps a stray
+      // E2E=1 inert on a real deployment.
       E2E: '1'
     }
   }

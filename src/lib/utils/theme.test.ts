@@ -50,7 +50,7 @@ function makeBrowserGlobals(opts: { stored: Stored; prefersDark: boolean }) {
     }
   };
 
-  const document = { documentElement: { classList } };
+  const document = { documentElement: { classList }, cookie: '' };
 
   return { store, localStorage, matchMedia, document, classList };
 }
@@ -131,5 +131,18 @@ describe('theme : browser behavior', () => {
     env.store.set('theme', 'dark');
     applyTheme('system');
     expect(env.localStorage.removeItem).toHaveBeenCalledWith('theme');
+  });
+
+  it('applyTheme mirrors the choice in a 1-year SameSite=Lax cookie for SSR', () => {
+    applyTheme('dark');
+    expect(env.document.cookie).toContain('theme=dark');
+    expect(env.document.cookie).toContain('path=/');
+    expect(env.document.cookie).toContain(`max-age=${60 * 60 * 24 * 365}`);
+    expect(env.document.cookie).toContain('samesite=lax');
+  });
+
+  it('applyTheme(system) writes an explicit theme=system cookie', () => {
+    applyTheme('system');
+    expect(env.document.cookie).toContain('theme=system');
   });
 });

@@ -48,8 +48,9 @@ describe('CompteSection', () => {
   });
 
   it('translates the theme meta to French for each value', () => {
+    // « Système » matches the ThemeToggle option label — same word everywhere.
     render(CompteSection, { props: { ...baseProps, theme: 'system' } });
-    expect(screen.getByText('Auto')).toBeTruthy();
+    expect(screen.getByText('Système')).toBeTruthy();
     cleanup();
     render(CompteSection, { props: { ...baseProps, theme: 'light' } });
     expect(screen.getByText('Clair')).toBeTruthy();

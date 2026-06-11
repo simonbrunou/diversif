@@ -51,7 +51,7 @@ mock.module('@sveltejs/kit/hooks', () => ({
     }
 }));
 
-import { handle, handleError } from './hooks.server';
+import { handle, handleError, warnIfAddressHeaderMissing } from './hooks.server';
 import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -64,11 +64,13 @@ type CookieOpts = {
   maxAge?: number;
 };
 
-function makeEvent(token: string | null, pathname = '/') {
+function makeEvent(token: string | null, pathname = '/', themeCookie: string | null = null) {
   const set = mock((_name: string, _value: string, _opts: CookieOpts) => {});
   const del = mock((_name: string, _opts: CookieOpts) => {});
   const cookies = {
-    get: mock((name: string) => (name === SESSION_COOKIE ? token : null)),
+    get: mock((name: string) =>
+      name === SESSION_COOKIE ? token : name === 'theme' ? themeCookie : null
+    ),
     set,
     delete: del
   };
@@ -135,42 +137,47 @@ describe('handle', () => {
     await testDb
       .insert(memberships)
       .values({ userId: user.id, childId: child.id, role: 'owner', createdAt: new Date() });
-    const session = await createSession(user.id);
+    const { token, session } = await createSession(user.id);
 
-    const { event } = makeEvent(session.id);
+    const { event } = makeEvent(token);
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
 
     expect(event.locals.user?.id).toBe(user.id);
+    // locals.sessionId carries the STORED id (sha256 of the cookie token),
+    // never the raw bearer token.
     expect(event.locals.sessionId).toBe(session.id);
+    expect(event.locals.sessionId).not.toBe(token);
     expect(event.locals.memberships.length).toBe(1);
   });
 
   it('renews the cookie when session is close to expiry', async () => {
     const user = await seedUser();
-    const session = await createSession(user.id);
+    const { token, session } = await createSession(user.id);
     // Force expiry into the renewal window.
     await testDb
       .update(sessions)
       .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
       .where(eq(sessions.id, session.id));
 
-    const { event, set } = makeEvent(session.id);
+    const { event, set } = makeEvent(token);
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
 
     expect(set).toHaveBeenCalled();
     const args = set.mock.calls[0];
     expect(args[0]).toBe(SESSION_COOKIE);
-    expect(args[1]).toBe(session.id);
+    // The renewed cookie must re-issue the RAW token — setting the stored
+    // hash would log the user out on their next request.
+    expect(args[1]).toBe(token);
     expect(args[2].path).toBe('/');
     expect(args[2].httpOnly).toBe(true);
   });
 
   it('emits X-Robots-Tag noindex for authenticated responses', async () => {
     const user = await seedUser();
-    const session = await createSession(user.id);
-    const { event } = makeEvent(session.id);
+    const { token } = await createSession(user.id);
+    const { event } = makeEvent(token);
     const resolve = mock(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
@@ -195,12 +202,12 @@ describe('handle', () => {
     process.env.NODE_ENV = 'production';
     try {
       const user = await seedUser();
-      const session = await createSession(user.id);
+      const { token, session } = await createSession(user.id);
       await testDb
         .update(sessions)
         .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
         .where(eq(sessions.id, session.id));
-      const { event, set } = makeEvent(session.id);
+      const { event, set } = makeEvent(token);
       const resolve = mock(async () => new Response('ok'));
       await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
       expect(set.mock.calls[0][2].secure).toBe(true);
@@ -256,6 +263,79 @@ describe('handle', () => {
     const body = await response.text();
     expect(body).toContain('<html lang="en">');
     expect(body).not.toContain('%paraglide.lang%');
+  });
+
+  it('adds class="dark" to <html> when the theme cookie is dark', async () => {
+    const { event } = makeEvent(null, '/', 'dark');
+    const resolve = mock(
+      async (
+        _event,
+        opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
+      ) =>
+        new Response(
+          opts.transformPageChunk({ html: '<html lang="%paraglide.lang%">', done: false })
+        )
+    );
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(await response.text()).toContain('<html class="dark" lang="fr">');
+  });
+
+  it.each(['light', 'system', null] as const)(
+    'does not add class="dark" when the theme cookie is %p',
+    async (theme) => {
+      const { event } = makeEvent(null, '/', theme);
+      const resolve = mock(
+        async (
+          _event,
+          opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
+        ) =>
+          new Response(
+            opts.transformPageChunk({ html: '<html lang="%paraglide.lang%">', done: false })
+          )
+      );
+      const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+      expect(await response.text()).toBe('<html lang="fr">');
+    }
+  );
+});
+
+describe('warnIfAddressHeaderMissing', () => {
+  it('warns when PROTOCOL_HEADER is set without ADDRESS_HEADER', () => {
+    const spy = spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const warned = warnIfAddressHeaderMissing({ PROTOCOL_HEADER: 'x-forwarded-proto' });
+      expect(warned).toBe(true);
+      expect(spy).toHaveBeenCalledOnce();
+      expect(spy.mock.calls[0][0]).toContain('ADDRESS_HEADER');
+      expect(spy.mock.calls[0][0]).toContain('DEPLOY.md');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('stays silent when both headers are configured', () => {
+    const spy = spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(
+        warnIfAddressHeaderMissing({
+          PROTOCOL_HEADER: 'x-forwarded-proto',
+          ADDRESS_HEADER: 'cf-connecting-ip'
+        })
+      ).toBe(false);
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('stays silent when neither header is set (no proxy: socket address is correct)', () => {
+    const spy = spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(warnIfAddressHeaderMissing({})).toBe(false);
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 

@@ -34,12 +34,13 @@
   import type { Icon as LucideIcon } from 'lucide-svelte';
   import { Lightbulb } from 'lucide-svelte';
   import { cn } from '$lib/utils/cn';
+  import * as m from '$lib/paraglide/messages';
   import SourceCitation from './SourceCitation.svelte';
   import type { SourceId } from '$lib/content/sources';
 
   let {
     tone = 'info',
-    eyebrow = 'Conseil',
+    eyebrow = m.tipCardDefaultEyebrow(),
     title,
     body,
     icon = Lightbulb,
