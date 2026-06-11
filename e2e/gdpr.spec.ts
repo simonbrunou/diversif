@@ -1,8 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
-import { unique } from './_helpers';
+import { awaitHydration, unique } from './_helpers';
 
 async function signUp(page: Page, email: string) {
   await page.goto('/signup');
+  await awaitHydration(page);
   await page.getByLabel('Votre prénom').fill('RGPD Tester');
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
@@ -33,6 +34,7 @@ test.describe('signup consent gates', () => {
   test('signup is blocked without the consent checkboxes', async ({ page }) => {
     const email = `${unique('blocked')}@example.com`;
     await page.goto('/signup');
+    await awaitHydration(page);
     await page.getByLabel('Votre prénom').fill('Sans consentement');
     await page.getByLabel('Adresse e-mail').fill(email);
     await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');

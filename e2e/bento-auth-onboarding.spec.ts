@@ -7,11 +7,11 @@ test("signup lands on bento Aujourd'hui", async ({ page }) => {
   await signUp(page, 'phase6');
 
   // Onboarding form renders the bento variant
-  await expect(page.getByLabel('Prénom')).toBeVisible();
+  await expect(page.getByLabel('Prénom', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Inviter un co-parent maintenant')).toBeVisible();
 
   // Complete onboarding without invite
-  await page.getByLabel('Prénom').fill('Léo');
+  await page.getByLabel('Prénom', { exact: true }).fill('Léo');
   await page.getByLabel('Date de naissance').fill('2025-10-01');
   await page.getByRole('button', { name: /^créer$/i }).click();
 
@@ -26,7 +26,7 @@ test('onboarding with inviteCoparent generates a code visible in the redirect qu
 }) => {
   await signUp(page, 'phase6');
 
-  await page.getByLabel('Prénom').fill('Léo');
+  await page.getByLabel('Prénom', { exact: true }).fill('Léo');
   await page.getByLabel('Date de naissance').fill('2025-10-01');
   await page.getByLabel('Inviter un co-parent maintenant').check();
   await page.getByRole('button', { name: /^créer$/i }).click();

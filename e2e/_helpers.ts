@@ -16,12 +16,24 @@ export function uniqueForWorker(prefix: string): string {
 }
 
 /**
+ * Wait for the client render to claim the SSR'd document. The root layout
+ * sets `data-hydrated` on <html> in onMount; filling SSR'd inputs BEFORE
+ * that point can silently lose the typed values when hydration replaces
+ * them — the historical source of the suite's worst flake. Gate every
+ * first-interaction-after-navigation on this instead of retry loops.
+ */
+export async function awaitHydration(page: Page): Promise<void> {
+  await page.locator('html[data-hydrated="true"]').waitFor({ state: 'attached', timeout: 15_000 });
+}
+
+/**
  * Submit the signup form with a generated email and land on /child/new.
  * Use this when you want to drive the onboarding form yourself.
  */
 export async function signUp(page: Page, emailPrefix = 'bento'): Promise<string> {
   const email = `${uniqueForWorker(emailPrefix)}@example.com`;
   await page.goto('/signup');
+  await awaitHydration(page);
   await page.getByLabel('Votre prénom').fill('Parent');
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
@@ -49,25 +61,21 @@ export async function signUpAndCreateChild(
 ): Promise<string> {
   await signUp(page, emailPrefix);
 
-  // Values typed into the SSR'd form before hydration finishes can be lost
-  // when the client render replaces the inputs, so the submit then posts an
-  // empty form. Fill, then require the values to be observed intact on a
-  // LATER toPass attempt. This greatly narrows (does not fully close) the
-  // race — hydration landing after the second read can still clobber — but
-  // the form also echoes values back on failure now, so a residual loss
-  // surfaces as a visible 400 rather than silent data loss.
-  const nameInput = page.getByLabel('Prénom');
+  // The signup submit was enhanced (client-side redirect), so the document
+  // usually stays hydrated — but await it anyway: it's a no-op when the
+  // attribute is already set and covers any full-page navigation fallback.
+  // exact: true is load-bearing — without it getByLabel('Prénom') substring-
+  // matches the signup page's « Votre prénom » field during the navigation
+  // gap (URL flips to /child/new before the DOM swaps under load), so the
+  // fill landed on the dying signup DOM and the onboarding form stayed
+  // empty. This was the suite's longest-lived "hydration" flake; the real
+  // bug was locator ambiguity across the page transition.
+  await awaitHydration(page);
+  const nameInput = page.getByLabel('Prénom', { exact: true });
   const birthInput = page.getByLabel('Date de naissance');
-  let filledOnce = false;
-  await expect(async () => {
-    const intact =
-      (await nameInput.inputValue()) === name && (await birthInput.inputValue()) === birthDate;
-    if (intact && filledOnce) return;
-    await nameInput.fill(name);
-    await birthInput.fill(birthDate);
-    filledOnce = true;
-    throw new Error('waiting for the filled values to survive a re-check');
-  }).toPass({ timeout: 15_000 });
+  await nameInput.fill(name);
+  await birthInput.fill(birthDate);
+  await expect(nameInput).toHaveValue(name);
   await page.getByRole('button', { name: /^créer$/i }).click();
   // Same 15s bump as the signup-step assertion : the /child/new action
   // inserts a child + a membership and redirects to /child/<id>, which

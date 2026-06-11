@@ -1,5 +1,5 @@
 import { expect, test, type Page, type BrowserContext } from '@playwright/test';
-import { signUpAndCreateChild, uniqueForWorker } from './_helpers';
+import { awaitHydration, signUpAndCreateChild, uniqueForWorker } from './_helpers';
 
 async function signUp(
   page: Page,
@@ -7,6 +7,7 @@ async function signUp(
 ): Promise<void> {
   const url = opts.inviteCode ? `/signup?code=${opts.inviteCode}` : '/signup';
   await page.goto(url);
+  await awaitHydration(page);
   await page.getByLabel('Votre prénom').fill(opts.displayName);
   await page.getByLabel('Adresse e-mail').fill(opts.email);
   await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');

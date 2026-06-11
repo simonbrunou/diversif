@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { signUp, uniqueForWorker } from './_helpers';
+import { awaitHydration, signUp, uniqueForWorker } from './_helpers';
 
 test.describe('signup → onboarding', () => {
   test('signup creates an account and redirects to onboarding @responsive', async ({ page }) => {
     const email = `${uniqueForWorker('user')}@example.com`;
     await page.goto('/signup');
+    await awaitHydration(page);
     await page.getByLabel('Votre prénom').fill('Test Parent');
     await page.getByLabel('Adresse e-mail').fill(email);
     await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');

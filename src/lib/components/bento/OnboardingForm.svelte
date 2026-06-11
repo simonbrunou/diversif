@@ -10,6 +10,19 @@
   let { errors, values = null }: { errors: Errors; values?: Values } = $props();
 
   let submitting = $state(false);
+  // bind:value (state seeded from the action's echo) instead of a one-way
+  // value attribute: Svelte re-applies plain value attributes whenever the
+  // element re-renders, and the invalidateAll that follows the signup
+  // redirect re-renders this page LATE under load — wiping whatever the
+  // parent had already typed (seen as real e2e clobbers; same would hit a
+  // fast typist on a slow connection). Bound state survives re-renders; the
+  // no-JS failure path still echoes via SSR seeding these initials.
+  // Seed-once is the point: later prop changes must NOT overwrite what
+  // the parent is typing.
+  // svelte-ignore state_referenced_locally
+  let firstName = $state(values?.firstName ?? '');
+  // svelte-ignore state_referenced_locally
+  let birthDate = $state(values?.birthDate ?? '');
 </script>
 
 <form
@@ -40,7 +53,7 @@
     name="firstName"
     type="text"
     required
-    value={values?.firstName ?? ''}
+    bind:value={firstName}
     aria-invalid={errors?.firstName ? 'true' : undefined}
     aria-describedby={errors?.firstName ? 'firstName-error' : undefined}
     class="mt-1 w-full rounded-tile border border-border bg-canvas px-3 py-2 text-sm"
@@ -55,7 +68,7 @@
     name="birthDate"
     type="date"
     required
-    value={values?.birthDate ?? ''}
+    bind:value={birthDate}
     aria-invalid={errors?.birthDate ? 'true' : undefined}
     aria-describedby={errors?.birthDate ? 'birthDate-error' : undefined}
     class="mt-1 w-full rounded-tile border border-border bg-canvas px-3 py-2 text-sm"
