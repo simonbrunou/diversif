@@ -1,34 +1,38 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
-
-mock.module('$lib/i18n', () => ({
-  i18n: {
-    resolveRoute: (path: string, locale: string) => (locale === 'fr' ? path : `/${locale}${path}`)
-  }
-}));
+import { afterEach, describe, expect, it } from 'bun:test';
 
 import { localizedHref } from './localized-href';
-import { setLanguageTag, sourceLanguageTag } from '$lib/paraglide/runtime';
+import { baseLocale, overwriteGetLocale } from '$lib/paraglide/runtime';
 
 // Don't mock.module('$lib/paraglide/runtime') — bun:test's mock.module is
 // process-global, so the replacement would leak into every subsequent test
-// file (e.g. dates.test.ts) that relies on languageTag() returning 'fr'.
-// Instead, drive the real runtime via setLanguageTag and reset after each.
+// file that relies on getLocale() returning 'fr'. Instead, swap the locale
+// resolver via overwriteGetLocale and reset to the base locale after each.
 
 describe('localizedHref', () => {
-  beforeEach(() => {
-    setLanguageTag('fr');
-  });
-
   afterEach(() => {
-    setLanguageTag(sourceLanguageTag);
+    overwriteGetLocale(() => baseLocale);
   });
 
   it('returns the path unchanged for the FR base locale', () => {
+    overwriteGetLocale(() => 'fr');
     expect(localizedHref('/login')).toBe('/login');
   });
 
   it('prefixes /en for the EN locale', () => {
-    setLanguageTag('en');
+    overwriteGetLocale(() => 'en');
     expect(localizedHref('/login')).toBe('/en/login');
+  });
+
+  it('maps the root path to /en without a trailing slash (1.x parity)', () => {
+    overwriteGetLocale(() => 'en');
+    expect(localizedHref('/')).toBe('/en');
+  });
+
+  it('resolves an explicit locale argument over the active locale', () => {
+    overwriteGetLocale(() => 'fr');
+    expect(localizedHref('/login', 'en')).toBe('/en/login');
+    overwriteGetLocale(() => 'en');
+    expect(localizedHref('/login', 'fr')).toBe('/login');
+    expect(localizedHref('/', 'fr')).toBe('/');
   });
 });

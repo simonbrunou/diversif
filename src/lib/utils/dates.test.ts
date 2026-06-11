@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-import { setLanguageTag, sourceLanguageTag } from '$lib/paraglide/runtime';
+import { baseLocale, overwriteGetLocale } from '$lib/paraglide/runtime';
 import {
   formatRelative,
   formatDateInputValue,
@@ -72,11 +72,11 @@ describe('formatRelative', () => {
 
   describe('locale switching', () => {
     afterEach(() => {
-      setLanguageTag(sourceLanguageTag);
+      overwriteGetLocale(() => baseLocale);
     });
 
     it('returns English strings when paraglide locale is en', () => {
-      setLanguageTag('en');
+      overwriteGetLocale(() => 'en');
       expect(formatRelative(now.getTime() - 5_000, now)).toBe('just now');
       expect(formatRelative(now.getTime() - 5 * 60_000, now)).toBe('5 min ago');
       expect(formatRelative(now.getTime() - 3 * 3_600_000, now)).toBe('3 h ago');
@@ -132,9 +132,9 @@ describe('formatMonthsSince', () => {
   });
 
   it('returns English format when locale is en', () => {
-    setLanguageTag('en');
+    overwriteGetLocale(() => 'en');
     const result = formatMonthsSince('2025-11-01', new Date('2026-05-10T00:00:00Z'));
-    setLanguageTag(sourceLanguageTag);
+    overwriteGetLocale(() => baseLocale);
     expect(result).toBe('6 mo');
   });
 });

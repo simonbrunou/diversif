@@ -10,13 +10,11 @@ import {
 } from '$lib/utils/allergens';
 import { getCategoryLabel, type CategoryId } from '$lib/utils/categories';
 // User-facing copy resolves through paraglide so the EN locale gets English
-// reminders. hooks.server.ts calls setLanguageTag() per request before load
-// functions run, but the tag is a module-level global: concurrent requests
-// with different locales can cross-contaminate each other's SSR output until
-// the paraglide-js 2.x migration (race documented in src/hooks.server.ts).
-// Reminders accept that exposure consciously — it is the same one every other
-// server-rendered string already has (getCategoryLabel / getAllergenLabel,
-// used below).
+// reminders. Since the paraglide-js 2.x migration, hooks.server.ts wraps the
+// request in paraglideMiddleware's AsyncLocalStorage scope, so every m.X()
+// call below resolves the request's own locale — the old setLanguageTag
+// module-global race (concurrent requests cross-contaminating SSR output) is
+// gone.
 import * as m from '$lib/paraglide/messages';
 import type { SourceId } from '$lib/content/sources';
 import { FORBIDDEN_FOODS } from '$lib/content/guidance';

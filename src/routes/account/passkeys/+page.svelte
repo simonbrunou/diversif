@@ -8,7 +8,7 @@
   import { browser } from '$app/environment';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
-  import { languageTag } from '$lib/paraglide/runtime';
+  import { getLocale } from '$lib/paraglide/runtime';
   import { createFormToasts } from '$lib/forms/form-toasts.svelte';
   import type { ActionData, PageData } from './$types';
 
@@ -40,7 +40,7 @@
   createFormToasts(() => form, { successKey: 'passkeySuccessKey', errorKey: 'passkeyErrorKey' });
 
   function formatDate(ts: number): string {
-    return new Date(ts).toLocaleDateString(languageTag() === 'en' ? 'en-GB' : 'fr-FR', {
+    return new Date(ts).toLocaleDateString(getLocale() === 'en' ? 'en-GB' : 'fr-FR', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'

@@ -4,7 +4,7 @@ import 'dayjs/locale/fr';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import calendar from 'dayjs/plugin/calendar';
 import updateLocale from 'dayjs/plugin/updateLocale';
-import { languageTag } from '$lib/paraglide/runtime';
+import { getLocale } from '$lib/paraglide/runtime';
 import * as m from '$lib/paraglide/messages';
 
 dayjs.extend(relativeTime);
@@ -14,12 +14,12 @@ dayjs.extend(updateLocale);
 // Calling dayjs.locale() at module load globalised French for every
 // downstream dayjs() call, including pages rendered for /en/ visitors.
 // Pass the active paraglide tag per call instead so each render picks up
-// the visitor's locale; the helpers below resolve it via languageTag()
+// the visitor's locale; the helpers below resolve it via getLocale()
 // (which hooks.server.ts sets per request and the layout effect keeps in
 // sync after client-side navigations).
 
 export function formatRelative(date: Date | number, now: Date = new Date()): string {
-  const locale = languageTag();
+  const locale = getLocale();
   const d = dayjs(date).locale(locale);
   const n = dayjs(now).locale(locale);
   const diffMin = n.diff(d, 'minute');
@@ -60,7 +60,7 @@ export function localInputToIso(value: string): string {
  * E.g. "6 mois" (FR) or "6 mo" (EN).
  */
 export function formatMonthsSince(birthMonth: string, now: Date = new Date()): string {
-  const locale = languageTag();
+  const locale = getLocale();
   const months = dayjs(now).diff(dayjs(birthMonth), 'month');
   return locale === 'fr' ? `${months} mois` : `${months} mo`;
 }

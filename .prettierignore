@@ -11,3 +11,6 @@ package-lock.json
 graphify-out
 
 project.inlang/modules
+project.inlang/.meta.json
+project.inlang/README.md
+project.inlang/cache

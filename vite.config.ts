@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import tailwindcss from '@tailwindcss/vite';
-import { paraglide } from '@inlang/paraglide-sveltekit/vite';
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
@@ -64,9 +64,16 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     sveltekit(),
-    paraglide({
+    paraglideVitePlugin({
       project: './project.inlang',
-      outdir: './src/lib/paraglide'
+      outdir: './src/lib/paraglide',
+      // MUST stay in sync with the `paraglide` script's --strategy flags in
+      // package.json (CLI compile feeds check/lint/test; this plugin feeds
+      // dev/build). url-only resolution preserves the 1.x behavior exactly:
+      // the locale is a pure function of the pathname (FR at /, EN under
+      // /en), no cookie or Accept-Language negotiation, hence the server
+      // middleware never issues locale redirects.
+      strategy: ['url', 'baseLocale']
     }),
     SvelteKitPWA({
       registerType: 'prompt',

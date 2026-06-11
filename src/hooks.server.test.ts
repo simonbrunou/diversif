@@ -13,45 +13,13 @@ mock.module('@sentry/sveltekit', () => ({
   captureException: captureExceptionMock
 }));
 
-// Paraglide's handle reads event.request.headers (for Accept-Language) and
-// calls event.cookies.set (for the lang cookie). The synthetic test events
-// don't carry a real Request, so we replace i18n.handle() with a plain
-// pass-through to keep all existing handle tests exercising appHandle only.
-mock.module('$lib/i18n', () => ({
-  i18n: {
-    handle:
-      () =>
-      async ({ event, resolve }: Parameters<import('@sveltejs/kit').Handle>[0]) =>
-        resolve(event),
-    reroute: () => ({ ...undefined })
-  }
-}));
-
-const { setLanguageTagMock } = { setLanguageTagMock: mock() };
-
-mock.module('$lib/paraglide/runtime', () => ({
-  setLanguageTag: setLanguageTagMock
-}));
-
-// SvelteKit's sequence() calls get_request_store() which requires a live
-// server context unavailable in unit tests. Replace with a simple chainer
-// that invokes each handler in order with the same event/resolve pair.
-mock.module('@sveltejs/kit/hooks', () => ({
-  sequence:
-    (...handlers: import('@sveltejs/kit').Handle[]) =>
-    async ({ event, resolve }: Parameters<import('@sveltejs/kit').Handle>[0]) => {
-      let i = 0;
-      const next = async (
-        e: Parameters<import('@sveltejs/kit').Handle>[0]['event']
-      ): Promise<Response> => {
-        if (i >= handlers.length) return resolve(e);
-        return handlers[i++]({ event: e, resolve: next });
-      };
-      return next(event);
-    }
-}));
+// The real paraglideMiddleware runs in these tests (no mock): it resolves
+// the locale from the request URL and wraps appHandle in an
+// AsyncLocalStorage scope, so the tests below exercise the actual 2.x
+// per-request locale isolation — see the concurrency regression test.
 
 import { handle, handleError, warnIfAddressHeaderMissing } from './hooks.server';
+import * as m from '$lib/paraglide/messages';
 import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -78,7 +46,9 @@ function makeEvent(token: string | null, pathname = '/', themeCookie: string | n
   const event = {
     cookies,
     url,
-    request: { url: url.toString(), method: 'GET' } as Request,
+    // A real Request: paraglideMiddleware reads request.headers and clones
+    // the request with a de-localized URL before invoking the app handle.
+    request: new Request(url),
     locals: {} as App.Locals
   };
   return { event, set, del, cookies };
@@ -220,21 +190,56 @@ describe('handle', () => {
     const { event } = makeEvent(null, '/mentions-legales');
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
-    expect(setLanguageTagMock).toHaveBeenCalledWith('fr');
+    expect(event.locals.locale).toBe('fr');
   });
 
   it('sets locale to en for /en/ prefixed paths', async () => {
     const { event } = makeEvent(null, '/en/mentions-legales');
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
-    expect(setLanguageTagMock).toHaveBeenCalledWith('en');
+    expect(event.locals.locale).toBe('en');
   });
 
   it('sets locale to en for the bare /en path', async () => {
     const { event } = makeEvent(null, '/en');
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
-    expect(setLanguageTagMock).toHaveBeenCalledWith('en');
+    expect(event.locals.locale).toBe('en');
+  });
+
+  it('de-localizes event.request to match the rerouted event.url', async () => {
+    const { event } = makeEvent(null, '/en/mentions-legales');
+    const resolve = mock(async () => new Response('ok'));
+    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(new URL(event.request.url).pathname).toBe('/mentions-legales');
+  });
+
+  it('isolates concurrent requests with different locales (no SSR cross-contamination)', async () => {
+    // Regression for the 1.x setLanguageTag race (audit item 9): a module
+    // global meant a concurrent FR request could flip an in-flight EN
+    // render to French mid-stream. paraglideMiddleware's AsyncLocalStorage
+    // scope must keep each request's m.X() calls on its own locale even
+    // when the renders interleave across awaited ticks.
+    const tick = () => new Promise((r) => setTimeout(r, 0));
+    const renderWith = async (pathname: string) => {
+      const { event } = makeEvent(null, pathname);
+      const resolve = mock(async () => {
+        const before = m.chromeBack();
+        // Yield the event loop so the other request's middleware runs (and
+        // would have clobbered a module-global locale) before we read again.
+        await tick();
+        await tick();
+        return new Response(`${before}|${m.chromeBack()}`);
+      });
+      const response = await handle({
+        event,
+        resolve
+      } as unknown as Parameters<typeof handle>[0]);
+      return response.text();
+    };
+    const [en, fr] = await Promise.all([renderWith('/en/mentions-legales'), renderWith('/')]);
+    expect(en).toBe('Back|Back');
+    expect(fr).toBe('Retour|Retour');
   });
 
   it('substitutes %paraglide.lang% in the rendered HTML', async () => {

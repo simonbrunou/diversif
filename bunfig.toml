@@ -35,7 +35,6 @@ coveragePathIgnorePatterns = [
   "src/hooks.client.ts",
   "src/lib/paraglide/**",
   "src/hooks.ts",
-  "src/lib/i18n.ts",
   "src/lib/components/ui/use-bottom-sheet-drag.svelte.ts",
   # Route-options only (`export const prerender = true`), no logic to cover.
   "src/routes/offline/+page.ts"

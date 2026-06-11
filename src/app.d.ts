@@ -1,6 +1,6 @@
 /// <reference types="bun" />
 /// <reference types="vite-plugin-pwa/client" />
-import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
+import type { Locale } from '$lib/paraglide/runtime';
 import type { Membership, SafeUser } from '$lib/types';
 
 declare global {
@@ -29,7 +29,7 @@ declare global {
        * attacker. The raw token only ever lives in the cookie.
        */
       sessionId: string | null;
-      locale: AvailableLanguageTag;
+      locale: Locale;
     }
     // interface PageData {}
     interface Error {

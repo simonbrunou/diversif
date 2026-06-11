@@ -1,7 +1,7 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
   import * as m from '$lib/paraglide/messages';
-  import { languageTag } from '$lib/paraglide/runtime';
+  import { getLocale } from '$lib/paraglide/runtime';
 
   let {
     diversityScore,
@@ -27,7 +27,7 @@
   // rollover — otherwise labels would shift one day while the bars stayed
   // put, and SSR/CSR would diverge.
   const dayLabels = $derived.by(() => {
-    const fmt = new Intl.DateTimeFormat(languageTag(), {
+    const fmt = new Intl.DateTimeFormat(getLocale(), {
       weekday: 'narrow',
       timeZone: 'UTC'
     });
