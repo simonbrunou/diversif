@@ -112,14 +112,15 @@
       </main>
 
       {#if showNav}
-        <!-- Mobile bottom nav + FAB (hidden on desktop). FAB is centered
-             vertically on the nav's center (bottom-[calc(0.625rem+safe)] puts
-             its 60px circle around the nav's center at 40px+safe), filling the
-             `w-16` spacer slot in BottomNavBento between tabs 2 and 3. -->
+        <!-- Mobile bottom nav + FAB (hidden on desktop). Nav is h-[3.5rem+SAI]
+             with pb-SAI, so its visual 56px band spans SAI–SAI+56px from the
+             bottom. FAB at bottom-SAI (center=SAI+30px) sits ~2px above the
+             band's centre — close enough to read as centred. Fills the `w-16`
+             spacer slot in BottomNavBento between tabs 2 and 3. -->
         <div data-no-print class="lg:hidden">
           <BottomNavBento currentChildId={navChildId} {currentPath} />
           {#if showLogCta}
-            <div class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] left-1/2 z-40 -translate-x-1/2">
+            <div class="fixed bottom-[env(safe-area-inset-bottom)] left-1/2 z-40 -translate-x-1/2">
               <FabLog onclick={openLog} />
             </div>
           {/if}
