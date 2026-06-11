@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
+import type { Locale } from '$lib/paraglide/runtime';
 
 type RedirectStatus = Parameters<typeof redirect>[0];
 
@@ -14,11 +14,7 @@ type RedirectStatus = Parameters<typeof redirect>[0];
  * Pass paths as unprefixed app paths (e.g. '/', '/login', '/account/deleted').
  * Already /en-prefixed paths and absolute URLs are passed through unchanged.
  */
-export function localizedRedirect(
-  locale: AvailableLanguageTag,
-  status: RedirectStatus,
-  path: string
-): never {
+export function localizedRedirect(locale: Locale, status: RedirectStatus, path: string): never {
   // Treat /en, /en/..., /en?..., /en#... all as already-prefixed so they
   // never get double-stitched into /en/en?... when a caller hand-builds an
   // already-prefixed path.

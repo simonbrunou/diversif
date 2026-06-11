@@ -13,7 +13,8 @@ import {
 } from '$lib/server/auth';
 import * as Sentry from '@sentry/sveltekit';
 import { scrubPathname } from '$lib/sentry';
-import { setLanguageTag, type AvailableLanguageTag } from '$lib/paraglide/runtime';
+import type { Locale } from '$lib/paraglide/runtime';
+import { paraglideMiddleware } from '$lib/paraglide/server';
 
 /**
  * Tag every server-side error with a short id, log a structured stderr line,
@@ -97,32 +98,19 @@ const PERMISSIONS_POLICY =
   'geolocation=(), camera=(), microphone=(), usb=(), payment=(), interest-cohort=()';
 
 /**
- * Resolve the request's locale from the ORIGINAL URL : `event.request.url` is
- * the path the browser actually requested, before SvelteKit's `reroute` (in
- * src/hooks.ts) strips the `/en/` prefix. Using `event.url` here would always
- * see the rerouted path and wrongly default to FR.
+ * The app's request handling, run inside `paraglideMiddleware`'s
+ * AsyncLocalStorage scope so every `m.X()` call during SSR resolves the
+ * request's own locale. This closes the old 1.x cross-contamination race
+ * (audit item 9): `setLanguageTag` mutated a module-level global, and the
+ * session awaits below yield the event loop, so two concurrent requests
+ * with different locales could cross-contaminate each other's SSR output.
+ * With paraglide 2.x the locale lives in per-request async context instead.
  */
-function resolveLocaleFromRequest(event: Parameters<Handle>[0]['event']): AvailableLanguageTag {
-  const path = new URL(event.request.url).pathname;
-  return path === '/en' || path.startsWith('/en/') ? 'en' : 'fr';
-}
-
-export const handle: Handle = async ({ event, resolve }) => {
-  // Set paraglide's runtime tag for SSR (m.X() calls during render + the
-  // %paraglide.lang% placeholder substitution below).
-  //
-  // KNOWN LIMITATION (deliberate): setLanguageTag mutates a module-level
-  // global, and the awaits below (session queries) yield the event loop, so
-  // two concurrent requests with different locales can cross-contaminate each
-  // other's SSR output (audit item 9). The AsyncLocalStorage-based fix —
-  // paraglide-sveltekit's i18n.handle() — can't be adopted here: it reads
-  // event.url AFTER src/hooks.ts reroute() has stripped the /en prefix and so
-  // always resolves 'fr' (same upstream bug that forced the manual
-  // %paraglide.lang% substitution below). Revisit when migrating to
-  // paraglide-js 2.x, whose runtime is AsyncLocalStorage-aware out of the
-  // box.
-  const locale = resolveLocaleFromRequest(event);
-  setLanguageTag(locale);
+const appHandle = async (
+  event: Parameters<Handle>[0]['event'],
+  resolve: Parameters<Handle>[0]['resolve'],
+  locale: Locale
+): Promise<Response> => {
   event.locals.locale = locale;
 
   const token = event.cookies.get(SESSION_COOKIE) ?? '';
@@ -155,13 +143,11 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.memberships = [];
   }
 
-  // Replace %paraglide.lang% in app.html with the resolved locale. Doing this
-  // here (rather than via paraglide-sveltekit's i18n.handle()) avoids a bug
-  // where the upstream handle reads event.url AFTER reroute has stripped the
-  // /en prefix and so always sees 'fr'. Run on every chunk: the placeholder
-  // sits in the opening <html> tag, which can land in any chunk when SvelteKit
-  // streams a response : gating on `done` would leak `%paraglide.lang%` to the
-  // client whenever the head is flushed before the closing chunk.
+  // Replace %paraglide.lang% in app.html with the resolved locale. Run on
+  // every chunk: the placeholder sits in the opening <html> tag, which can
+  // land in any chunk when SvelteKit streams a response : gating on `done`
+  // would leak `%paraglide.lang%` to the client whenever the head is flushed
+  // before the closing chunk.
   //
   // The theme cookie (written by $lib/utils/theme alongside localStorage)
   // lets SSR emit class="dark" on <html> for explicit-dark users, so the
@@ -198,3 +184,22 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return response;
 };
+
+/**
+ * Wrap the app's handle in paraglide's server middleware. The middleware
+ * resolves the locale from the ORIGINAL request URL (`event.request.url` is
+ * the path the browser actually requested, before SvelteKit's `reroute` in
+ * src/hooks.ts strips the `/en` prefix — `event.url` would always look FR),
+ * then runs the callback inside an AsyncLocalStorage scope so concurrent
+ * requests with different locales can no longer cross-contaminate SSR
+ * output. With the url-only strategy (see vite.config.ts) the resolved
+ * locale always matches the URL, so the middleware never issues a locale
+ * redirect — routing behavior is byte-identical to the 1.x setup.
+ */
+export const handle: Handle = ({ event, resolve }) =>
+  paraglideMiddleware(event.request, ({ request, locale }) => {
+    // The middleware hands back a request whose URL is de-localized,
+    // matching what `reroute` already did for `event.url`.
+    event.request = request;
+    return appHandle(event, resolve, locale);
+  });

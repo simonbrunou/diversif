@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import tailwindcss from '@tailwindcss/vite';
-import { paraglide } from '@inlang/paraglide-sveltekit/vite';
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
+import { paraglideCompilerOptions } from './paraglide.config';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
@@ -64,10 +65,9 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     sveltekit(),
-    paraglide({
-      project: './project.inlang',
-      outdir: './src/lib/paraglide'
-    }),
+    // Options shared with scripts/compile-paraglide.ts — see
+    // paraglide.config.ts for the strategy/urlPatterns rationale.
+    paraglideVitePlugin({ ...paraglideCompilerOptions }),
     SvelteKitPWA({
       registerType: 'prompt',
       strategies: 'generateSW',

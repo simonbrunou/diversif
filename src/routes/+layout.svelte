@@ -7,8 +7,7 @@
   import { page } from '$app/state';
   import { onNavigate } from '$app/navigation';
   import { browser } from '$app/environment';
-  import { setLanguageTag } from '$lib/paraglide/runtime';
-  import { i18n } from '$lib/i18n';
+  import { deLocalizeHref } from '$lib/paraglide/runtime';
   import * as m from '$lib/paraglide/messages';
   import { applyTheme, getStoredTheme } from '$lib/utils/theme';
   import PublicHeader from '$lib/components/PublicHeader.svelte';
@@ -27,7 +26,7 @@
   // URL keeps the prefix, but reroute makes the underlying SvelteKit route the
   // same as the FR variant, so shell predicates have to match the unprefixed
   // form to keep `/en/login` etc. on the auth layout instead of the public shell.
-  const unprefixedPath = $derived(i18n.route(page.url.pathname) || '/');
+  const unprefixedPath = $derived(deLocalizeHref(page.url.pathname) || '/');
 
   const isChildRoute = $derived(unprefixedPath.startsWith('/child/'));
 
@@ -53,17 +52,15 @@
     }))
   );
 
-  // Keep paraglide's runtime locale and the <html lang> attribute in sync with
-  // the URL on the client. SvelteKit's reroute strips the /en/ prefix from
-  // event.url before the server hook runs, so we resolve from the original
-  // pathname here (page.url is the visible URL, which still has the prefix).
-  // SSR sets these correctly via hooks.server.ts; this $effect handles all
-  // client-side navigations after hydration.
+  // Keep the <html lang> attribute in sync with the URL on the client. The
+  // paraglide 2.x runtime itself needs no syncing — its `url` strategy
+  // re-reads window.location on every getLocale() call — but the <html lang>
+  // attribute was rendered by SSR (hooks.server.ts) and only this $effect
+  // updates it across client-side navigations after hydration.
   const locale = $derived(unprefixedPath !== page.url.pathname ? 'en' : 'fr');
 
   $effect(() => {
     if (!browser) return;
-    setLanguageTag(locale);
     if (document.documentElement.lang !== locale) {
       document.documentElement.lang = locale;
     }

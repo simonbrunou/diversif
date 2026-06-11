@@ -2,18 +2,11 @@ import * as Sentry from '@sentry/sveltekit';
 import { env } from '$env/dynamic/public';
 import type { HandleClientError } from '@sveltejs/kit';
 import { scrubEvent, filterIncomingBreadcrumb } from '$lib/sentry';
-import { setLanguageTag } from '$lib/paraglide/runtime';
 
-// Initialize paraglide's runtime locale from the URL BEFORE component hydration.
-// hooks.client.ts is evaluated by SvelteKit before any component renders, so
-// the thunk passed to setLanguageTag will be the source of truth for every
-// languageTag() call during hydration. The thunk re-reads window.location on
-// each call, so it stays correct across client navigation without needing an
-// afterNavigate listener (the layout still has one for <html lang> + DOM).
-setLanguageTag(() => {
-  const path = window.location.pathname;
-  return path === '/en' || path.startsWith('/en/') ? 'en' : 'fr';
-});
+// No paraglide bootstrap is needed here since the 2.x migration: the
+// runtime's `url` strategy re-reads window.location on every getLocale()
+// call, so the locale is correct before hydration and across client-side
+// navigations (the layout still syncs <html lang>).
 
 Sentry.init({
   dsn: env.PUBLIC_SENTRY_DSN || '',

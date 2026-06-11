@@ -31,6 +31,13 @@ graphify-out/.graphify_root
 graphify-out/cache/
 # Paraglide-generated runtime — vite plugin regenerates on build/dev.
 src/lib/paraglide/
+# inlang SDK v2 manages project.inlang/ itself: it regenerates its own
+# .gitignore, README.md, .meta.json and cache/ on every compile. Only
+# settings.json and the vendored modules/ stay tracked.
+project.inlang/.gitignore
+project.inlang/.meta.json
+project.inlang/README.md
+project.inlang/cache/
 
 # Visual brainstorm companion
 .superpowers/

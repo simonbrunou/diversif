@@ -11,13 +11,13 @@
   import { CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
   import dayjs from 'dayjs';
   import 'dayjs/locale/fr';
-  import { languageTag } from '$lib/paraglide/runtime';
+  import { getLocale } from '$lib/paraglide/runtime';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
 
   function fmtDay(ts: number): string {
-    return dayjs(ts).locale(languageTag()).format('D MMM YYYY');
+    return dayjs(ts).locale(getLocale()).format('D MMM YYYY');
   }
 
   function reactionIcon(r: 'ras' | 'inconfort' | 'reaction') {
@@ -260,7 +260,7 @@
        English-locale parent doesn't get a French long-date stamp. -->
   <p class="mt-4 hidden text-center text-xs text-muted-foreground print:block">
     {m.reportPrintedOn({
-      date: new Intl.DateTimeFormat(languageTag(), { dateStyle: 'long' }).format(
+      date: new Intl.DateTimeFormat(getLocale(), { dateStyle: 'long' }).format(
         new Date(data.generatedAt)
       )
     })}

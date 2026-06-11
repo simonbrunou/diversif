@@ -6,7 +6,9 @@
 // installs build-time `define` constants that vite would otherwise inline.
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-GlobalRegistrator.register();
+// A real base URL matters since paraglide 2.x: localizeHref() resolves
+// against window.location.href, and `new URL(path, 'about:blank')` throws.
+GlobalRegistrator.register({ url: 'http://localhost/' });
 
 // Svelte compilation loader lives in svelte-loader.preload.ts (listed first
 // in bunfig.toml) so it's active before this file's imports run.
@@ -165,8 +167,21 @@ mock.module('$lib/server/db', () => ({
 // their mocked runtime across the suite — bun:test's mock.module is
 // process-global and there's no per-file isolation. After each file we
 // restore the real exports so a clean default is in place for the next
-// file (and any setLanguageTag-based test works against the real runtime).
+// file (and any overwriteGetLocale-based test works against the real runtime).
 import * as actualParaglide from '$lib/paraglide/runtime';
+
+// Default test locale. Without this, every message call resolves the locale
+// through the runtime's strategy chain — and because happy-dom registers a
+// global `window`, the URL strategy fires against the fake test location and
+// throws ("No locale found" / localizeUrl on about:blank). The override
+// keeps the default's AsyncLocalStorage-first chain (paraglideMiddleware
+// tests depend on per-request isolation) and only replaces the strategy
+// fallback with 'fr'. Tests needing another ambient locale call
+// overwriteGetLocale themselves; per-file processes reset to this default.
+actualParaglide.overwriteGetLocale(
+  () => actualParaglide.serverAsyncLocalStorage?.getStore()?.locale ?? 'fr'
+);
+actualParaglide.overwriteSetLocale(() => {});
 
 function restoreParaglide(): void {
   mock.module('$lib/paraglide/runtime', () => actualParaglide);

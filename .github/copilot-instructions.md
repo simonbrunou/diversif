@@ -53,7 +53,7 @@ DATABASE_URL=postgres://diversif:diversif@localhost:5432/diversif npm run dev
 - **Backend**: SvelteKit server endpoints + Drizzle ORM
 - **Database**: Postgres (dev via Docker, prod via managed host like Coolify)
 - **Auth**: Argon2id password hashing + WebAuthn passkeys (server: `@simplewebauthn/server`, client: `@simplewebauthn/browser`)
-- **i18n**: `@inlang/paraglide-js` + `@inlang/paraglide-sveltekit` (FR default, EN locale)
+- **i18n**: `@inlang/paraglide-js` 2.x (FR default, EN locale; built-in URL strategy + server middleware)
 - **PWA**: `@vite-pwa/sveltekit` with offline log queue (IndexedDB) that replays on reconnect
 - **CSS**: Tailwind + custom CSS (no dark-mode-first; system-driven dark theme for accessibility)
 - **Testing**: Vitest (unit tests with pg-mem) + Playwright (E2E)
@@ -192,7 +192,7 @@ See `src/app.css` for the full Tailwind config and CSS variables.
 - **i18n files**: `project.inlang/` (Inlang configuration)
 - **Message extraction**: `npm run paraglide` compiles messages from `messages/*.json` into `src/lib/paraglide/messages.js`
 - **Usage in components**: Import `{ m }` from `$lib/paraglide/messages` and use `m.message_key()`
-- **Multiple locales**: Default FR, EN variant at `/en/` (handled by `@inlang/paraglide-sveltekit`)
+- **Multiple locales**: Default FR, EN variant at `/en/` (handled by paraglide-js 2.x `deLocalizeUrl` reroute + `paraglideMiddleware`)
 
 ### Security headers
 

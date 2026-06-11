@@ -9,8 +9,8 @@
     "dev": "bun --bun node_modules/vite/bin/vite.js dev",
     "build": "INLANG_TELEMETRY=false bun --bun node_modules/vite/bin/vite.js build",
     "preview": "bun --bun node_modules/vite/bin/vite.js preview",
-    "_paraglide_note": "Verified 2026-05-28: bunx output is byte-identical (sha256) to npx/node output for @inlang/paraglide-js@1.11.8. Use 'bunx' here, NOT 'bun --bun' (bun's runtime can't load the paraglide-js CLI's node-native deps cleanly; bunx defers to node-compatible resolution).",
-    "paraglide": "INLANG_TELEMETRY=false bunx paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
+    "_paraglide_note": "paraglide-js 2.x compiles cleanly under bunx (verified 2026-06-11). The --strategy flags MUST stay in sync with paraglideVitePlugin's `strategy` in vite.config.ts — both compile into the same gitignored outdir, and a drift would make `bun run check/test` exercise a different runtime than `bun run build` ships.",
+    "paraglide": "bun scripts/compile-paraglide.ts",
     "check": "bun run paraglide && bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun --bun node_modules/svelte-check/bin/svelte-check --tsconfig ./tsconfig.json --threshold warning",
     "check:watch": "bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun --bun node_modules/svelte-check/bin/svelte-check --tsconfig ./tsconfig.json --threshold warning --watch",
     "check:budget": "bun run build && bun scripts/check-bundle-size.ts",
@@ -41,7 +41,6 @@
     "@axe-core/playwright": "^4.11.3",
     "@eslint/js": "^10.0.0",
     "@happy-dom/global-registrator": "^20.9.0",
-    "@inlang/paraglide-sveltekit": "^0.16.1",
     "@playwright/test": "^1.59.1",
     "@sentry/vite-plugin": "^5.0.0",
     "@sveltejs/adapter-node": "^5.5.4",
@@ -76,7 +75,7 @@
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.2.9",
     "@fontsource-variable/inter": "^5.2.8",
-    "@inlang/paraglide-js": "^1.11.8",
+    "@inlang/paraglide-js": "^2.0.0",
     "@sentry/sveltekit": "^10.0.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.0",
@@ -99,8 +98,5 @@
   },
   "trustedDependencies": [
     "@sentry/cli"
-  ],
-  "patchedDependencies": {
-    "@inlang/sdk@0.37.0": "patches/@inlang%2Fsdk@0.37.0.patch"
-  }
+  ]
 }

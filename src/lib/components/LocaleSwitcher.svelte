@@ -1,8 +1,8 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { building } from '$app/environment';
-  import { languageTag, availableLanguageTags } from '$lib/paraglide/runtime';
-  import { i18n } from '$lib/i18n';
+  import { getLocale, locales } from '$lib/paraglide/runtime';
+  import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
   import { cn } from '$lib/utils/cn';
   import { Check } from 'lucide-svelte';
@@ -16,9 +16,9 @@
   // pickers, so they are intentionally not run through paraglide.
   const rowLabels: Record<string, string> = { fr: 'Français', en: 'English' };
 
-  // resolveRoute expects the canonical (unprefixed) path. The visible
+  // localizedHref expects the canonical (unprefixed) path. The visible
   // pathname carries the /en prefix on English pages, so pass it through
-  // and resolveRoute would treat /en/login as the route : producing
+  // and it would treat /en/login as the route : producing
   // /en/login for FR (no flip) and /en/en/login for EN (doubled prefix).
   const canonicalPath = $derived(page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/');
 
@@ -33,10 +33,10 @@
 
 {#if variant === 'rows'}
   <nav class="flex flex-col gap-2" aria-label={m.chromeLocaleSwitcherLabel()}>
-    {#each availableLanguageTags as locale (locale)}
-      {@const active = languageTag() === locale}
+    {#each locales as locale (locale)}
+      {@const active = getLocale() === locale}
       <a
-        href={i18n.resolveRoute(canonicalPath, locale) + urlSuffix}
+        href={localizedHref(canonicalPath, locale) + urlSuffix}
         data-active={active ? 'true' : undefined}
         aria-current={active ? 'true' : undefined}
         hreflang={locale}
@@ -57,11 +57,11 @@
   </nav>
 {:else}
   <nav class="locale-switcher" aria-label={m.chromeLocaleSwitcherLabel()}>
-    {#each availableLanguageTags as locale (locale)}
+    {#each locales as locale (locale)}
       <a
-        href={i18n.resolveRoute(canonicalPath, locale) + urlSuffix}
-        data-active={languageTag() === locale ? 'true' : undefined}
-        aria-current={languageTag() === locale ? 'true' : undefined}
+        href={localizedHref(canonicalPath, locale) + urlSuffix}
+        data-active={getLocale() === locale ? 'true' : undefined}
+        aria-current={getLocale() === locale ? 'true' : undefined}
         hreflang={locale}
         lang={locale}
       >
