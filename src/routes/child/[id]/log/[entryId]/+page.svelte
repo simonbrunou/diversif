@@ -115,7 +115,7 @@
       type="button"
       variant="ghost"
       size="sm"
-      class="text-destructive hover:text-destructive"
+      class="text-severe-text hover:text-severe-text"
       onclick={() => (deleteOpen = true)}
     >
       <Trash2 size={16} aria-hidden="true" />
