@@ -72,6 +72,15 @@ function makeReq(opts: { body?: unknown; cookieToken?: string; autofillCookieTok
 }
 
 describe('POST /passkeys/authentication/verify', () => {
+  it('errors 500 when the request origin is outside the RP ID scope', async () => {
+    const event = makeRouteEvent({ url: 'https://evil.example/passkeys/authentication/verify' });
+    const r = await captureFlow(
+      () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(500);
+  });
+
   it('errors 429 when the per-IP rate limit is exceeded', async () => {
     // Saturate the passkey-auth bucket (limit 20 per 5 minutes).
     for (let i = 0; i < 20; i++) {

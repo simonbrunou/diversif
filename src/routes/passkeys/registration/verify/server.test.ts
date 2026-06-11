@@ -76,6 +76,19 @@ describe('POST /passkeys/registration/verify', () => {
     expect(r.kind).toBe('redirect');
   });
 
+  it('errors 500 when the request origin is outside the RP ID scope', async () => {
+    const u = await seedUser();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://evil.example/passkeys/registration/verify'
+    });
+    const r = await captureFlow(
+      () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(500);
+  });
+
   it('errors 400 on invalid JSON', async () => {
     const u = await seedUser();
     const event = makeReq({ user: safeUser(u), body: 'not json' });
