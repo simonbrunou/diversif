@@ -90,6 +90,36 @@ describe('ConfirmModal', () => {
     expect(submit.disabled).toBe(false);
   });
 
+  it('renders hiddenFields as hidden inputs inside the form', () => {
+    render(ConfirmModal, {
+      props: {
+        open: true,
+        title: 'X',
+        action: '?/delete',
+        confirmLabel: 'OK',
+        hiddenFields: { id: 'p1' }
+      }
+    });
+    const hidden = document.querySelector('form input[type="hidden"]') as HTMLInputElement;
+    expect(hidden).not.toBeNull();
+    expect(hidden.name).toBe('id');
+    expect(hidden.value).toBe('p1');
+  });
+
+  it('uses the custom passwordLabel when provided', () => {
+    render(ConfirmModal, {
+      props: {
+        open: true,
+        title: 'X',
+        action: '?/x',
+        confirmLabel: 'OK',
+        requirePassword: true,
+        passwordLabel: 'Mot de passe actuel'
+      }
+    });
+    expect(screen.getByText('Mot de passe actuel')).toBeTruthy();
+  });
+
   it('sets the form action attribute', () => {
     render(ConfirmModal, {
       props: {

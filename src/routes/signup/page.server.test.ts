@@ -78,6 +78,18 @@ describe('signup default action', () => {
     expect(r.data.errorKey).toBe('errorsAuthBadInput');
   });
 
+  it('fails when the email exceeds 254 characters', async () => {
+    // Valid shape, rejected only by the .max(254) bound (RFC 5321 cap).
+    const event = makeRouteEvent({
+      formData: form({ email: `${'a'.repeat(250)}@example.com` })
+    });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsAuthBadInput');
+  });
+
   it('fails on short password', async () => {
     const event = makeRouteEvent({ formData: form({ password: 'short' }) });
     const r = (await actions.default!(

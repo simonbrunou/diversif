@@ -1,6 +1,7 @@
 <script lang="ts">
   import BackHeader from '$components/ui/BackHeader.svelte';
   import Button from '$components/ui/Button.svelte';
+  import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
   import Input from '$components/ui/Input.svelte';
   import Field from '$lib/components/ui/Field.svelte';
   import { invalidateAll } from '$app/navigation';
@@ -16,6 +17,16 @@
   let passkeyName = $state('');
   let currentPassword = $state('');
   let registering = $state(false);
+  // Deleting a key is destructive (the device loses passwordless login) and
+  // fresh-auth-gated server-side, so the button opens a ConfirmModal that
+  // collects the current password instead of submitting directly.
+  let deleteOpen = $state(false);
+  let deleteTargetId = $state('');
+
+  function askDeletePasskey(id: string) {
+    deleteTargetId = id;
+    deleteOpen = true;
+  }
   const unsupported = $derived(
     browser &&
       !(
@@ -29,7 +40,12 @@
     if (form === lastFormSeen) return;
     lastFormSeen = form;
     if (!form) return;
-    if (form.passkeySuccessKey) toast.success(resolveMessageKey(form.passkeySuccessKey));
+    if (form.passkeySuccessKey) {
+      toast.success(resolveMessageKey(form.passkeySuccessKey));
+      // The delete action answers with a success key (no redirect), so the
+      // confirmation modal has to dismiss itself once the server confirms.
+      deleteOpen = false;
+    }
     if (form.passkeyErrorKey) toast.error(resolveMessageKey(form.passkeyErrorKey));
   });
 
@@ -114,12 +130,14 @@
               {m.authAccountPasskeyAddedOn()} {formatDate(p.createdAt)}{#if p.lastUsedAt} {m.authAccountPasskeyLastUsed()} {formatDate(p.lastUsedAt)}{/if}
               {#if p.backedUp} {m.authAccountPasskeySynced()}{/if}
             </span>
-            <form method="POST" action="?/delete">
-              <input type="hidden" name="id" value={p.id} />
-              <Button type="submit" size="sm" variant="destructive">
-                {m.authAccountPasskeyDeleteButton()}
-              </Button>
-            </form>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              onclick={() => askDeletePasskey(p.id)}
+            >
+              {m.authAccountPasskeyDeleteButton()}
+            </Button>
           </div>
         </li>
       {/each}
@@ -155,3 +173,16 @@
     <p class="text-sm text-ink-soft">{m.authAccountPasskeyUnsupported()}</p>
   {/if}
 </div>
+
+<ConfirmModal
+  bind:open={deleteOpen}
+  title={m.authAccountPasskeyDeleteConfirmTitle()}
+  description={m.authAccountPasskeyDeleteConfirmDescription()}
+  action="?/delete"
+  confirmLabel={m.authAccountPasskeyDeleteButton()}
+  loadingLabel={m.authAccountPasskeyDeleting()}
+  destructive
+  requirePassword
+  passwordLabel={m.authAccountPasskeyDeletePasswordLabel()}
+  hiddenFields={{ id: deleteTargetId }}
+/>

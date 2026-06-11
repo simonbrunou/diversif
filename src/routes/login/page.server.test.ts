@@ -6,7 +6,7 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { hashPassword, SESSION_COOKIE } from '$lib/server/auth';
 import { users } from '$lib/server/db/schema';
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
+import { _clearAllRateLimits, peekRateLimit, resetRateLimit } from '$lib/server/rate-limit';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {
@@ -51,9 +51,28 @@ describe('login default action', () => {
     )[0];
   }
 
+  // Mirrors LOGIN_EMAIL_LIMIT in +page.server.ts — only `name` and the key
+  // matter for peeking at the shared bucket; limit drives `remaining`.
+  const EMAIL_LIMIT = { name: 'login-email', limit: 20, windowMs: 60 * 60 * 1000 };
+
   it('fails 400 on invalid email shape', async () => {
     const event = makeRouteEvent({
       formData: { email: 'not-an-email', password: 'whatever' }
+    });
+    const result = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(result.status).toBe(400);
+    expect(result.data.errorKey).toBe('errorsAuthBadInput');
+  });
+
+  it('fails 400 when the email exceeds 254 characters', async () => {
+    // Syntactically valid address that only the .max(254) bound rejects —
+    // the e-mail is the per-account rate-limit key, so its length (and the
+    // bucket-key space an attacker can mint) must be capped.
+    const longEmail = `${'a'.repeat(250)}@example.com`;
+    const event = makeRouteEvent({
+      formData: { email: longEmail, password: 'whatever' }
     });
     const result = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
@@ -143,6 +162,89 @@ describe('login default action', () => {
     )) as { status: number; data: { errorKey: string } };
     expect(result.status).toBe(429);
     expect(result.data.errorKey).toBe('errorsAuthRateLimited');
+  });
+
+  it('returns 429 when the per-account (email) limit is exceeded, even across IPs', async () => {
+    // Simulate a distributed attack: keep the per-IP bucket below its limit
+    // by resetting it between attempts, so only the email bucket can trip.
+    for (let i = 0; i < 20; i++) {
+      resetRateLimit('login', '127.0.0.1');
+      const event = makeRouteEvent({
+        // Mixed case on purpose: the bucket must key on the normalized email.
+        formData: { email: 'Target@Example.com', password: 'whatever' }
+      });
+      await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      );
+    }
+    resetRateLimit('login', '127.0.0.1');
+    const event = makeRouteEvent({
+      formData: { email: 'target@example.com', password: 'whatever' }
+    });
+    const result = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: Record<string, unknown> };
+    expect(result.status).toBe(429);
+    // Byte-identical to the per-IP throttle body: the response must not
+    // reveal which bucket tripped, nor whether the account exists.
+    expect(result.data).toEqual({ email: '', errorKey: 'errorsAuthRateLimited' });
+  });
+
+  it('does not consume the per-email bucket on successful logins', async () => {
+    await seedTestUser();
+    for (let i = 0; i < 3; i++) {
+      resetRateLimit('login', '127.0.0.1');
+      const event = makeRouteEvent({
+        formData: { email: 'parent@example.com', password: 'correct-password' }
+      });
+      const result = await captureFlow(() =>
+        actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+      );
+      expect(result.kind).toBe('redirect');
+    }
+    // Three successes, zero hits recorded: a user logging in 20+ times/hour
+    // (or an attacker replaying the form) can never lock the account this way.
+    expect(peekRateLimit(EMAIL_LIMIT, 'parent@example.com').remaining).toBe(EMAIL_LIMIT.limit);
+  });
+
+  it('consumes the per-email bucket only on failed attempts', async () => {
+    await seedTestUser();
+    const fail1 = makeRouteEvent({
+      formData: { email: 'parent@example.com', password: 'wrong-password' }
+    });
+    await actions.default!(fail1 as unknown as Parameters<NonNullable<typeof actions.default>>[0]);
+    expect(peekRateLimit(EMAIL_LIMIT, 'parent@example.com').remaining).toBe(EMAIL_LIMIT.limit - 1);
+
+    // A subsequent success neither consumes nor resets the failure count.
+    const ok = makeRouteEvent({
+      formData: { email: 'parent@example.com', password: 'correct-password' }
+    });
+    const result = await captureFlow(() =>
+      actions.default!(ok as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(result.kind).toBe('redirect');
+    expect(peekRateLimit(EMAIL_LIMIT, 'parent@example.com').remaining).toBe(EMAIL_LIMIT.limit - 1);
+  });
+
+  it('does not trip the email bucket for attempts on other addresses', async () => {
+    await seedTestUser();
+    for (let i = 0; i < 20; i++) {
+      resetRateLimit('login', '127.0.0.1');
+      const event = makeRouteEvent({
+        formData: { email: 'someone-else@example.com', password: 'whatever' }
+      });
+      await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      );
+    }
+    resetRateLimit('login', '127.0.0.1');
+    const event = makeRouteEvent({
+      formData: { email: 'parent@example.com', password: 'correct-password' }
+    });
+    const result = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(result.kind).toBe('redirect');
   });
 
   it('marks the cookie secure in production', async () => {
