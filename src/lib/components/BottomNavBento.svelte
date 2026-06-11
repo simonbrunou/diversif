@@ -56,7 +56,7 @@
 <nav
   aria-label={m.chromeBottomNavLabel()}
   style="view-transition-name: bottom-nav"
-  class="fixed bottom-0 left-0 right-0 z-40 flex h-14 items-center border-t border-border/40 bg-surface/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+  class="fixed bottom-0 left-0 right-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] items-center border-t border-border/40 bg-surface/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur"
 >
   {#each TABS as tab, i (tab.labelKey)}
     {@const active = tab.matcher(currentPath)}
