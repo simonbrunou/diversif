@@ -3,6 +3,7 @@ import { browser } from '$app/environment';
 export type Theme = 'light' | 'dark' | 'system';
 
 const STORAGE_KEY = 'theme';
+const COOKIE_MAX_AGE_S = 60 * 60 * 24 * 365; // 1 year
 
 export function getStoredTheme(): Theme {
   if (!browser) return 'system';
@@ -23,4 +24,10 @@ export function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle('dark', resolved === 'dark');
   if (theme === 'system') localStorage.removeItem(STORAGE_KEY);
   else localStorage.setItem(STORAGE_KEY, theme);
+  // Mirror the choice in a cookie so the server can render the right
+  // initial state (hooks.server.ts adds class="dark" to <html>) and the
+  // Profil meta row reflects reality. Deliberately NOT HttpOnly: the
+  // client owns this value too. localStorage stays the client-side source;
+  // both are always written together.
+  document.cookie = `${STORAGE_KEY}=${theme}; path=/; max-age=${COOKIE_MAX_AGE_S}; samesite=lax`;
 }

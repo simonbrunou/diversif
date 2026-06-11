@@ -1,7 +1,13 @@
 <script lang="ts">
   import { Check } from 'lucide-svelte';
-  import { REACTIONS, type ReactionId } from '$lib/utils/reactions';
+  import {
+    REACTIONS,
+    getReactionDescription,
+    getReactionLabel,
+    type ReactionId
+  } from '$lib/utils/reactions';
   import { cn } from '$lib/utils/cn';
+  import * as m from '$lib/paraglide/messages';
 
   let {
     name,
@@ -34,7 +40,7 @@
 </script>
 
 <fieldset class="grid grid-cols-3 gap-2">
-  <legend class="sr-only">Réaction</legend>
+  <legend class="sr-only">{m.reactionPickerLegend()}</legend>
   {#each REACTIONS as r (r.id)}
     {@const active = value === r.id}
     {@const s = STYLES[r.id]}
@@ -68,9 +74,11 @@
         </span>
       {/if}
       <Icon size={20} aria-hidden="true" />
-      <span class={cn('text-sm', active ? 'font-semibold' : 'font-medium')}>{r.label}</span>
+      <span class={cn('text-sm', active ? 'font-semibold' : 'font-medium')}>
+        {getReactionLabel(r.id)}
+      </span>
       {#if active}
-        <span class="text-[11px] text-muted-foreground">{r.description}</span>
+        <span class="text-[11px] text-muted-foreground">{getReactionDescription(r.id)}</span>
       {/if}
     </label>
   {/each}

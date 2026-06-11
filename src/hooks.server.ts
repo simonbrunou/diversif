@@ -65,6 +65,30 @@ export const handleError: HandleServerError = ({ error, event, status, message }
   return { message: 'Internal Error', errorId };
 };
 
+/**
+ * Boot-time misconfiguration check. PROTOCOL_HEADER set without
+ * ADDRESS_HEADER almost always means "behind a reverse proxy, but
+ * getClientAddress() still returns the proxy's socket IP" — every per-IP
+ * rate-limit bucket (login, signup, passkeys) then collapses onto one key
+ * and a single abuser can lock out every legitimate user. We only warn
+ * (never default the header in code or in the image): adapter-node throws
+ * on requests lacking the configured header, and a client-supplied
+ * x-forwarded-for is spoofable without a trusted proxy stripping it.
+ * See DEPLOY.md « Pre-launch environment gate ».
+ */
+export function warnIfAddressHeaderMissing(
+  env: Record<string, string | undefined> = process.env
+): boolean {
+  if (env.PROTOCOL_HEADER && !env.ADDRESS_HEADER) {
+    console.warn(
+      '[diversif:boot] PROTOCOL_HEADER is set but ADDRESS_HEADER is not. The app looks like it sits behind a reverse proxy, so every per-IP rate limit currently keys on the proxy address — one abusive client can lock everyone out. Set ADDRESS_HEADER (cf-connecting-ip behind a Cloudflare Tunnel; x-forwarded-for plus XFF_DEPTH behind a directly-exposed proxy). See DEPLOY.md.'
+    );
+    return true;
+  }
+  return false;
+}
+warnIfAddressHeaderMissing();
+
 // `script-src` and `style-src` are emitted as a `<meta>` tag by SvelteKit
 // (see svelte.config.js `kit.csp`), which lets it hash its own inline
 // hydration scripts. The other directives are header-only and complement that
@@ -86,6 +110,17 @@ function resolveLocaleFromRequest(event: Parameters<Handle>[0]['event']): Availa
 export const handle: Handle = async ({ event, resolve }) => {
   // Set paraglide's runtime tag for SSR (m.X() calls during render + the
   // %paraglide.lang% placeholder substitution below).
+  //
+  // KNOWN LIMITATION (deliberate): setLanguageTag mutates a module-level
+  // global, and the awaits below (session queries) yield the event loop, so
+  // two concurrent requests with different locales can cross-contaminate each
+  // other's SSR output (audit item 9). The AsyncLocalStorage-based fix —
+  // paraglide-sveltekit's i18n.handle() — can't be adopted here: it reads
+  // event.url AFTER src/hooks.ts reroute() has stripped the /en prefix and so
+  // always resolves 'fr' (same upstream bug that forced the manual
+  // %paraglide.lang% substitution below). Revisit when migrating to
+  // paraglide-js 2.x, whose runtime is AsyncLocalStorage-aware out of the
+  // box.
   const locale = resolveLocaleFromRequest(event);
   setLanguageTag(locale);
   event.locals.locale = locale;
@@ -99,7 +134,9 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.memberships = await listMembershipsForUser(validated.user.id);
 
     if (validated.renewed) {
-      event.cookies.set(SESSION_COOKIE, validated.session.id, {
+      // Re-set the RAW token from the cookie (not validated.session.id, which
+      // is its sha256 digest) — renewal only extends maxAge, never rotates.
+      event.cookies.set(SESSION_COOKIE, token, {
         path: '/',
         httpOnly: true,
         sameSite: 'lax',
@@ -125,8 +162,19 @@ export const handle: Handle = async ({ event, resolve }) => {
   // sits in the opening <html> tag, which can land in any chunk when SvelteKit
   // streams a response : gating on `done` would leak `%paraglide.lang%` to the
   // client whenever the head is flushed before the closing chunk.
+  //
+  // The theme cookie (written by $lib/utils/theme alongside localStorage)
+  // lets SSR emit class="dark" on <html> for explicit-dark users, so the
+  // first paint is correct without waiting for the inline theme-init script.
+  // 'system' can't be resolved server-side (no prefers-color-scheme on the
+  // request), so that case stays with the inline script.
+  const darkTheme = event.cookies.get('theme') === 'dark';
   const response = await resolve(event, {
-    transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
+    transformPageChunk: ({ html }) => {
+      let out = html.replace('%paraglide.lang%', locale);
+      if (darkTheme) out = out.replace('<html ', '<html class="dark" ');
+      return out;
+    }
   });
 
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');

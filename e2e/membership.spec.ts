@@ -1,8 +1,5 @@
 import { expect, test, type Page, type BrowserContext } from '@playwright/test';
-
-function unique(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-}
+import { signUpAndCreateChild, uniqueForWorker } from './_helpers';
 
 async function signUp(
   page: Page,
@@ -19,21 +16,14 @@ async function signUp(
   await page.getByRole('button', { name: /créer mon compte/i }).click();
 }
 
+// Shared helper so the onboarding fill is hardened against the hydration
+// race (see _helpers.ts) — a local fill+click copy used to flake here.
 async function signUpOwnerAndCreateChild(page: Page, name: string): Promise<{ childId: number }> {
-  const email = `${unique('owner')}@example.com`;
-  await signUp(page, { email, displayName: 'Owner' });
-  await expect(page).toHaveURL(/\/child\/new/);
-
   const sevenMonthsAgo = new Date();
   sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
   const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
-  await page.getByLabel('Prénom').fill(name);
-  await page.getByLabel('Date de naissance').fill(dateStr);
-  await page.getByRole('button', { name: /^créer$/i }).click();
-  await expect(page).toHaveURL(/\/child\/\d+$/);
-  const url = new URL(page.url());
-  const id = Number(url.pathname.split('/').pop());
-  return { childId: id };
+  const childId = Number(await signUpAndCreateChild(page, name, dateStr, 'owner'));
+  return { childId };
 }
 
 async function generateInviteCode(page: Page, childId: number): Promise<string> {
@@ -70,7 +60,7 @@ test.describe('membership permissions', () => {
       const { childId } = await signUpOwnerAndCreateChild(ownerPage, 'Lulu');
       const inviteCode = await generateInviteCode(ownerPage, childId);
 
-      const memberEmail = `${unique('member')}@example.com`;
+      const memberEmail = `${uniqueForWorker('member')}@example.com`;
       await signUp(memberPage, {
         email: memberEmail,
         displayName: 'Co-parent',
@@ -90,6 +80,17 @@ test.describe('membership permissions', () => {
       );
       // But the leave action is offered to non-owners.
       await expect(memberPage.getByRole('button', { name: /quitter cet enfant/i })).toBeVisible();
+
+      // Owner removes the co-parent through the ConfirmModal (no native confirm).
+      await ownerPage.goto(`/child/${childId}/settings`);
+      await expect(ownerPage.locator('body')).toContainText('Co-parent');
+      await ownerPage.getByRole('button', { name: /^Retirer$/ }).click();
+      const dialog = ownerPage.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+      await expect(dialog).toContainText(/Retirer ce membre/);
+      await dialog.getByRole('button', { name: /^Retirer$/ }).click();
+      await expect(dialog).toBeHidden();
+      await expect(ownerPage.locator('body')).not.toContainText('Co-parent');
     } finally {
       await ownerCtx.close();
       await memberCtx.close();

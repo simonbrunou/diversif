@@ -13,12 +13,16 @@ mock.module('$lib/server/audit', () => ({
 
 import { hashPassword } from '$lib/server/auth';
 import { passkeys, users } from '$lib/server/db/schema';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { eq } from 'drizzle-orm';
 import { actions, load } from './+page.server';
 import { captureFlow } from '../../../test/route';
 
 beforeEach(async () => {
   await resetTestDb();
+  // The delete action shares the fresh-auth bucket (keyed on user.id), which
+  // would otherwise accumulate hits across tests and trip spuriously.
+  _clearAllRateLimits();
   auditSpy.mockClear();
 });
 
@@ -124,7 +128,7 @@ describe('account/passkeys delete', () => {
     const u = await seed();
     const event = makeRouteEvent({
       user: safeUser(u),
-      formData: { id: '' }
+      formData: { id: '', currentPassword: 'current-password-12' }
     });
     const r = (await actions.delete!(
       event as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
@@ -132,11 +136,80 @@ describe('account/passkeys delete', () => {
     expect(r.status).toBe(400);
   });
 
+  it('fails with no currentPassword (fresh-auth is mandatory)', async () => {
+    const u = await seed();
+    await seedKey(u.id);
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { id: 'p1' }
+    });
+    const r = (await actions.delete!(
+      event as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
+    )) as { status: number };
+    expect(r.status).toBe(400);
+    const fresh = (await testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).limit(1))[0];
+    expect(fresh).toBeDefined();
+  });
+
+  it('fails 400 with a wrong password and keeps the key', async () => {
+    const u = await seed();
+    await seedKey(u.id);
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { id: 'p1', currentPassword: 'not-the-password' }
+    });
+    const r = (await actions.delete!(
+      event as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
+    )) as { status: number; data: { passkeyErrorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.passkeyErrorKey).toBe('errorsAccountPasswordIncorrect');
+    const fresh = (await testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).limit(1))[0];
+    expect(fresh).toBeDefined();
+    expect(auditSpy).not.toHaveBeenCalled();
+  });
+
+  it('rate-limits repeated wrong-password attempts', async () => {
+    const u = await seed();
+    await seedKey(u.id);
+    for (let i = 0; i < 5; i++) {
+      await actions.delete!(
+        makeRouteEvent({
+          user: safeUser(u),
+          formData: { id: 'p1', currentPassword: 'not-the-password' }
+        }) as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
+      );
+    }
+    const r = (await actions.delete!(
+      makeRouteEvent({
+        user: safeUser(u),
+        formData: { id: 'p1', currentPassword: 'current-password-12' }
+      }) as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
+    )) as { status: number; data: { passkeyErrorKey: string } };
+    expect(r.status).toBe(429);
+    expect(r.data.passkeyErrorKey).toBe('errorsAuthRateLimited');
+  });
+
+  it('redirects to /login when the user row has vanished', async () => {
+    const u = await seed();
+    await seedKey(u.id);
+    await testDb.delete(users).where(eq(users.id, u.id));
+    const r = await captureFlow(() =>
+      actions.delete!(
+        makeRouteEvent({
+          user: safeUser(u),
+          formData: { id: 'p1', currentPassword: 'current-password-12' }
+        }) as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/login');
+  });
+
   it('fails 404 for unknown id', async () => {
     const u = await seed();
     const event = makeRouteEvent({
       user: safeUser(u),
-      formData: { id: 'missing' }
+      formData: { id: 'missing', currentPassword: 'current-password-12' }
     });
     const r = (await actions.delete!(
       event as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
@@ -149,7 +222,7 @@ describe('account/passkeys delete', () => {
     await seedKey(u.id);
     const event = makeRouteEvent({
       user: safeUser(u),
-      formData: { id: 'p1' }
+      formData: { id: 'p1', currentPassword: 'current-password-12' }
     });
     const r = (await actions.delete!(
       event as unknown as Parameters<NonNullable<typeof actions.delete>>[0]

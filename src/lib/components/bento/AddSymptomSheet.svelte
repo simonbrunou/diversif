@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
   import Button from '$lib/components/ui/Button.svelte';
   import Modal from '../ui/Modal.svelte';
   import Label from '$components/ui/Label.svelte';
@@ -13,6 +15,8 @@
   let selected = $state<SymptomLabel | null>(null);
   let note = $state('');
   let observedAt = $state(new Date().toTimeString().slice(0, 5));
+  let submitting = $state(false);
+  let failed = $state(false);
 
   // The sheet stays mounted across opens (only `open` toggles), so reset every
   // form field when it re-opens. Otherwise a dismissed-without-submit selection
@@ -22,6 +26,7 @@
       selected = null;
       note = '';
       observedAt = new Date().toTimeString().slice(0, 5);
+      failed = false;
     }
   });
 
@@ -48,9 +53,26 @@
   <form
     method="POST"
     action={`${action}?/addSymptom`}
-    onsubmit={(e) => {
-      if (selected === null) e.preventDefault();
-    }}
+    use:enhance={trackSubmission(
+      (v) => {
+        submitting = v;
+        if (v) failed = false;
+      },
+      {
+        // The disabled submit button is the visible no-selection gate; this
+        // is the programmatic one (use:enhance submits even when default is
+        // prevented, so an onsubmit guard would be inert).
+        beforeSubmit: () => selected !== null,
+        // Keep what the parent typed when validation fails.
+        reset: false,
+        // Plain POST used to reload the page, which closed the sheet. With
+        // enhance there is no reload, so close it ourselves — before the
+        // refreshed list renders, so sheet content never overlaps the new row.
+        onSuccess: () => (open = false),
+        // The host page doesn't consume `form`, so failures must surface here.
+        onFailure: () => (failed = true)
+      }
+    )}
   >
     <fieldset>
       <legend class="text-xs font-semibold uppercase tracking-wider text-ink-soft">
@@ -104,10 +126,14 @@
       class="mt-1 rounded-tile border border-border bg-canvas px-3 py-2 text-sm"
     />
 
+    {#if failed}
+      <p class="mt-3 text-sm text-severe-text" role="alert">{m.errorsGenericFallback()}</p>
+    {/if}
+
     <Button
       type="submit"
       size="pill"
-      disabled={selected === null}
+      disabled={selected === null || submitting}
       class="mt-5 w-full shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-primary/40 disabled:active:scale-100"
     >
       {m.addSymptomSubmit()}

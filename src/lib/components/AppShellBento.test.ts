@@ -68,6 +68,24 @@ describe('AppShellBento', () => {
     expect(screen.getAllByRole('button', { name: /Enregistrer/ }).length).toBe(2);
   });
 
+  it('hides both log CTAs on the report route but keeps the nav for wayfinding', () => {
+    const { container } = render(AppShellBento, {
+      props: { ...baseProps, currentPath: '/child/a/report' }
+    });
+    // A hand-to-pediatrician document: no mobile FAB, no fixed desktop
+    // « + Enregistrer » button (it overlapped the report at lg widths).
+    expect(screen.queryByLabelText('Enregistrer un aliment')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Enregistrer/ })).toBeNull();
+    // Navigation chrome survives: bottom tabs + desktop rail.
+    expect(screen.getByLabelText('Navigation principale')).toBeTruthy();
+    expect(container.querySelector('nav[aria-label="Navigation latérale"]')).not.toBeNull();
+  });
+
+  it('keeps the log CTAs on non-report child routes', () => {
+    render(AppShellBento, { props: { ...baseProps, currentPath: '/child/a/foods' } });
+    expect(screen.getAllByRole('button', { name: /Enregistrer/ }).length).toBe(2);
+  });
+
   it('renders no rail tabs on auth routes even when kids exist', () => {
     const { container } = render(AppShellBento, {
       props: { ...baseProps, currentPath: '/login', currentChildId: undefined }

@@ -17,7 +17,8 @@ describe('FormError', () => {
     const alert = screen.getByRole('alert');
     expect(alert.className).toContain('border-destructive/30');
     expect(alert.className).toContain('bg-destructive/10');
-    expect(alert.className).toContain('text-destructive');
+    // Text uses the readable ink token, not the bare coral background hue.
+    expect(alert.className).toContain('text-severe-text');
   });
 
   it('forwards an extra class via the class prop', () => {

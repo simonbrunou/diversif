@@ -126,4 +126,20 @@ describe('LocaleSwitcher', () => {
     expect(fr.getAttribute('aria-current')).toBeNull();
     expect(en.getAttribute('aria-current')).toBe('true');
   });
+
+  it('renders ≥44px row options with endonym labels in the rows variant', async () => {
+    const runtime = await import('$lib/paraglide/runtime');
+    runtime.languageTag.mockReturnValue('fr');
+
+    render(LocaleSwitcher, { props: { variant: 'rows' } });
+    const fr = screen.getByRole('link', { name: /Français/ });
+    const en = screen.getByRole('link', { name: /English/ });
+    // min-h-11 = 44px: the /account/locale options are proper tap targets.
+    expect(fr.className).toContain('min-h-11');
+    expect(en.className).toContain('min-h-11');
+    expect(fr.getAttribute('href')).toBe('/login');
+    expect(en.getAttribute('href')).toBe('/en/login');
+    expect(fr.getAttribute('aria-current')).toBe('true');
+    expect(en.getAttribute('aria-current')).toBeNull();
+  });
 });

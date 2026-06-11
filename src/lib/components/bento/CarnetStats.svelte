@@ -53,6 +53,7 @@
     <Card as="article" variant="tile-mint" class="p-4" aria-label={m.carnetBilanDiversity()}>
       <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanDiversity()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{diversityScore}</p>
+      <p class="mt-1 text-[11px] leading-tight text-ink-soft">{m.carnetBilanDiversityCaption()}</p>
     </Card>
     <Card as="article" variant="tile-butter" class="p-4" aria-label={m.carnetBilanFoods()}>
       <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanFoods()}</p>

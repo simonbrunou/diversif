@@ -62,6 +62,37 @@ describe('POST /passkeys/registration/options', () => {
     if (r.kind === 'redirect') expect(r.location).toBe('/login');
   });
 
+  it('errors 500 when the request origin is outside the RP ID scope', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://evil.example/passkeys/registration/options'
+    });
+    withJsonBody(event, { currentPassword: PASSWORD });
+    const r = await captureFlow(
+      () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(500);
+  });
+
+  it('returns 400 when the body is not valid JSON', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      url: 'https://diversif.app/passkeys/registration/options'
+    });
+    (event as { request: Request }).request = new Request(event.url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: 'not json'
+    });
+    const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { error: string }).error).toBe('Mot de passe requis.');
+    expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
+  });
+
   it('errors 401 when the user no longer exists', async () => {
     const u = await seed();
     await testDb.delete(users).where(eq(users.id, u.id));

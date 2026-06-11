@@ -19,7 +19,7 @@
 
   function stateLabel(s: Item['state']): string {
     if (s === 'cleared') return m.aujourdhuiAllergensOk();
-    if (s === 'reaction') return 'réaction';
+    if (s === 'reaction') return m.reactionsLabelReaction();
     if (s === 'fading') return m.aujourdhuiAllergensFading();
     return m.aujourdhuiAllergensTodo();
   }
