@@ -100,6 +100,7 @@ export async function signInWithPasskey(
     ((message: string) =>
       void import('svelte-sonner')
         .then(({ toast }) => void toast.error(message))
+        /* v8 ignore next 4 : chunk-load failure isn't reproducible in unit tests */
         .catch(() => {
           // Toast chunk failed to load (likely the same network blip that
           // failed the ceremony) — nothing better to do than stay silent.
