@@ -9,6 +9,7 @@ import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
 import { computeReminders } from '$lib/server/guidance/reminders';
 import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
+import * as m from '$lib/paraglide/messages';
 import {
   loadCoparentActivity,
   loadDiversityMetrics,
@@ -195,10 +196,10 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       ? {
           key: observationKey,
           severity: 'warn' as const,
-          title: `Surveiller « ${latestNonRasEntry.foodName} »`,
-          body: 'Une réaction a été notée il y a moins de 48 h. Consultez le profil pour noter les symptômes ou ajouter des observations.',
+          title: m.reminderObservationTitle({ food: latestNonRasEntry.foodName }),
+          body: m.reminderObservationBody(),
           cta: {
-            label: 'Voir le profil',
+            label: m.reminderCtaSeeProfile(),
             href: `/child/${childId}/foods/${latestNonRasEntry.id}`
           },
           dismissable: true
