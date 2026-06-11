@@ -98,7 +98,12 @@ export async function signInWithPasskey(
   const showError =
     deps.showError ??
     ((message: string) =>
-      void import('svelte-sonner').then(({ toast }) => void toast.error(message)));
+      void import('svelte-sonner')
+        .then(({ toast }) => void toast.error(message))
+        .catch(() => {
+          // Toast chunk failed to load (likely the same network blip that
+          // failed the ceremony) — nothing better to do than stay silent.
+        }));
   setBusy(true);
   try {
     const result = await authenticate();

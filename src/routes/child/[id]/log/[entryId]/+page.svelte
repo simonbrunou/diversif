@@ -133,4 +133,5 @@
   loadingLabel={m.logEditDeleting()}
   destructive
   hiddenFields={{ from: data.from }}
+  failureMessage={m.errorsGenericFallback()}
 />

@@ -17,7 +17,8 @@
     destructive = false,
     requireText,
     requirePassword = false,
-    hiddenFields
+    hiddenFields,
+    failureMessage
   }: {
     open?: boolean;
     title: string;
@@ -32,6 +33,13 @@
     requirePassword?: boolean;
     /** Extra `<input type="hidden">` fields posted with the confirmation. */
     hiddenFields?: Record<string, string | number>;
+    /**
+     * Shown inside the modal when the action fails. Only set this when the
+     * host page has no error channel of its own (toast/FormError) — pages
+     * that surface the action's specific error must not get a second,
+     * vaguer message next to it.
+     */
+    failureMessage?: string;
   } = $props();
 
   let submitting = $state(false);
@@ -73,9 +81,12 @@
       {
         // Close before the refreshed page renders so non-navigating confirms
         // (member removal, symptom/meal deletion) never overlap their result.
-        onSuccess: () => (open = false),
-        // Failures keep it open so the user can retry (e.g. wrong password) —
-        // with an explicit message, since some host pages have no form UI.
+        // Redirect results keep the modal open: its loading state covers the
+        // in-flight navigation instead of flashing the underlying page.
+        onSuccess: (type) => {
+          if (type === 'success') open = false;
+        },
+        // Failures keep it open so the user can retry (e.g. wrong password).
         onFailure: () => (failed = true)
       }
     )}
@@ -106,8 +117,8 @@
         />
       </Field>
     {/if}
-    {#if failed}
-      <p class="text-sm text-severe-text" role="alert">{m.errorsGenericFallback()}</p>
+    {#if failed && failureMessage}
+      <p class="text-sm text-severe-text" role="alert">{failureMessage}</p>
     {/if}
     <div class="mt-2 flex justify-end gap-2">
       <Button type="button" variant="outline" onclick={close}>{m.commonCancel()}</Button>

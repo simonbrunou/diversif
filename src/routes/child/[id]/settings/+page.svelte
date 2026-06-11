@@ -30,18 +30,11 @@
     removeMemberOpen = true;
   }
 
-  // Drop the stale id once the modal closes so a reopened modal can never
-  // post a previously-selected member, and the {#if} keeps the hidden field
-  // always a real id.
-  $effect(() => {
-    if (!removeMemberOpen) {
-      removeMemberId = null;
-    }
-  });
-
-  // Identity dedup, like createFormToasts: this effect also tracks
-  // `inviteOpen`, so without it a retained `form` would re-toast on every
-  // later invite-modal open/close.
+  // Identity dedup, like createFormToasts: the same retained `form` object
+  // must never re-toast if this effect picks up another dependency later.
+  // (askRemoveMember always assigns the id before opening, so the modal can
+  // never post a stale member; it stays mounted after the first ask so its
+  // exit animation isn't cut off by an unmount.)
   let lastFormSeen: typeof form;
   $effect(() => {
     if (form !== lastFormSeen) {
@@ -52,9 +45,6 @@
       if (form?.error) {
         toast.error(form.error);
       }
-    }
-    if (inviteOpen && form?.code) {
-      inviteOpen = false;
     }
   });
 

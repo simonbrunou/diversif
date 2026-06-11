@@ -74,5 +74,6 @@
     loadingLabel={m.reactionSymptomsDeleting()}
     destructive
     hiddenFields={{ symptomId: id }}
+    failureMessage={m.errorsGenericFallback()}
   />
 </li>

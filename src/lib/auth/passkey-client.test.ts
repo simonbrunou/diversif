@@ -6,9 +6,13 @@ let startAuthenticationImpl: (opts: unknown) => Promise<unknown> = async () => (
 mock.module('@simplewebauthn/browser', () => ({
   startAuthentication: (opts: unknown) => startAuthenticationImpl(opts)
 }));
-// Default toast dep — every signInWithPasskey test injects showError, so the
-// real svelte-sonner (and its transitive deps) never needs to resolve here.
-mock.module('svelte-sonner', () => ({ toast: { error: () => {} } }));
+// The default showError lazily imports svelte-sonner; mock it so the default
+// branch is exercisable without resolving the real package (its nested runed
+// dep only exports the `svelte` condition, absent in this runner).
+let toastErrorCalls: string[] = [];
+mock.module('svelte-sonner', () => ({
+  toast: { error: (message: string) => toastErrorCalls.push(message) }
+}));
 
 import { authenticateWithPasskey, signInWithPasskey } from './passkey-client';
 
@@ -142,15 +146,27 @@ describe('signInWithPasskey', () => {
     expect(navigate).toHaveBeenCalledWith('/', { invalidateAll: true });
   });
 
-  it('surfaces the localized error message on failure', async () => {
+  it('surfaces the resolved errorKey message on failure', async () => {
     const shown: string[] = [];
     await signInWithPasskey(() => {}, {
       authenticate: async () => ({ ok: false, errorKey: 'errorsAccountPasskeyAuthFailed' }),
       navigate: (() => Promise.resolve()) as never,
       showError: (message) => shown.push(message)
     });
-    expect(shown.length).toBe(1);
-    expect(shown[0]!.length).toBeGreaterThan(0);
+    const { errorsAccountPasskeyAuthFailed } = await import('$lib/paraglide/messages');
+    expect(shown).toEqual([errorsAccountPasskeyAuthFailed()]);
+  });
+
+  it('default showError lazily toasts via svelte-sonner', async () => {
+    toastErrorCalls = [];
+    await signInWithPasskey(() => {}, {
+      authenticate: async () => ({ ok: false, errorKey: 'errorsAccountPasskeyGenericError' }),
+      navigate: (() => Promise.resolve()) as never
+    });
+    // The default showError fires-and-forgets a dynamic import; flush it.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const { errorsAccountPasskeyGenericError } = await import('$lib/paraglide/messages');
+    expect(toastErrorCalls).toEqual([errorsAccountPasskeyGenericError()]);
   });
 
   it('stays silent on user cancellation', async () => {
