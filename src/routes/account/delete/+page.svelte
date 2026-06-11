@@ -6,9 +6,9 @@
   import Field from '$lib/components/ui/Field.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import { enhance } from '$app/forms';
-  import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
-  import { trackSubmission, resolveMessageKey } from '$lib/forms/tracked-enhance';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
+  import { createFormToasts } from '$lib/forms/form-toasts.svelte';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -16,13 +16,7 @@
   let confirmDeletePassword = $state('');
   let deletingAccount = $state(false);
 
-  let lastFormSeen: typeof form;
-  $effect(() => {
-    if (form === lastFormSeen) return;
-    lastFormSeen = form;
-    if (!form) return;
-    if (form.deleteErrorKey) toast.error(resolveMessageKey(form.deleteErrorKey));
-  });
+  createFormToasts(() => form, { errorKey: 'deleteErrorKey' });
 </script>
 
 <BackHeader title={m.authAccountDeleteSection()} />

@@ -4,12 +4,10 @@
 // account/delete, child/[id]/settings — each previously declared the same
 // closure inline.
 //
-// `resolveMessageKey` consumers (4): account/password, account/profile,
-// account/passkeys, account/delete — used to surface a paraglide key
-// returned by a server action via toast.
-//
-// (login/signup don't use either: their post-submit state is handled by
-// the form-action error key + a local submitting flag.)
+// `resolveMessageKey` consumers (3): form-toasts.svelte.ts (which surfaces
+// action-returned keys via toast for the account pages) and the login/signup
+// passkey call sites (which surface the errorKey returned by
+// authenticateWithPasskey).
 
 import * as m from '$lib/paraglide/messages';
 

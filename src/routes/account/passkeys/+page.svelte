@@ -8,7 +8,7 @@
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
   import { languageTag } from '$lib/paraglide/runtime';
-  import { resolveMessageKey } from '$lib/forms/tracked-enhance';
+  import { createFormToasts } from '$lib/forms/form-toasts.svelte';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -24,14 +24,7 @@
       )
   );
 
-  let lastFormSeen: typeof form;
-  $effect(() => {
-    if (form === lastFormSeen) return;
-    lastFormSeen = form;
-    if (!form) return;
-    if (form.passkeySuccessKey) toast.success(resolveMessageKey(form.passkeySuccessKey));
-    if (form.passkeyErrorKey) toast.error(resolveMessageKey(form.passkeyErrorKey));
-  });
+  createFormToasts(() => form, { successKey: 'passkeySuccessKey', errorKey: 'passkeyErrorKey' });
 
   function formatDate(ts: number): string {
     return new Date(ts).toLocaleDateString(languageTag() === 'en' ? 'en-GB' : 'fr-FR', {

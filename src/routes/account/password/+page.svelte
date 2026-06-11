@@ -4,21 +4,17 @@
   import Input from '$components/ui/Input.svelte';
   import Field from '$lib/components/ui/Field.svelte';
   import { enhance } from '$app/forms';
-  import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
-  import { trackSubmission, resolveMessageKey } from '$lib/forms/tracked-enhance';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
+  import { createFormToasts } from '$lib/forms/form-toasts.svelte';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();
   let changing = $state(false);
 
-  let lastFormSeen: typeof form;
-  $effect(() => {
-    if (form === lastFormSeen) return;
-    lastFormSeen = form;
-    if (!form) return;
-    if (form.passwordSuccessKey) toast.success(resolveMessageKey(form.passwordSuccessKey));
-    if (form.passwordErrorKey) toast.error(resolveMessageKey(form.passwordErrorKey));
+  createFormToasts(() => form, {
+    successKey: 'passwordSuccessKey',
+    errorKey: 'passwordErrorKey'
   });
 </script>
 
