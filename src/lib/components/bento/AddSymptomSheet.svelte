@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
   import Button from '$lib/components/ui/Button.svelte';
   import Modal from '../ui/Modal.svelte';
   import Label from '$components/ui/Label.svelte';
@@ -13,6 +14,7 @@
   let selected = $state<SymptomLabel | null>(null);
   let note = $state('');
   let observedAt = $state(new Date().toTimeString().slice(0, 5));
+  let submitting = $state(false);
 
   // The sheet stays mounted across opens (only `open` toggles), so reset every
   // form field when it re-opens. Otherwise a dismissed-without-submit selection
@@ -50,6 +52,31 @@
     action={`${action}?/addSymptom`}
     onsubmit={(e) => {
       if (selected === null) e.preventDefault();
+    }}
+    use:enhance={({ cancel }) => {
+      // use:enhance bypasses the onsubmit guard above (it fetches even when
+      // default was prevented), so re-check the no-selection invariant here.
+      if (selected === null) {
+        cancel();
+        return;
+      }
+      submitting = true;
+      return async ({ result, update }) => {
+        // Keep what the parent typed when validation fails. The button
+        // re-enables only after update() so a slow server can't be
+        // double-submitted (duplicate symptom rows); finally so a failed
+        // update can't leave it stuck disabled.
+        try {
+          await update({ reset: false });
+        } finally {
+          submitting = false;
+        }
+        // Plain POST used to reload the page, which closed the sheet. With
+        // enhance there is no reload, so close it ourselves on success.
+        if (result.type === 'success' || result.type === 'redirect') {
+          open = false;
+        }
+      };
     }}
   >
     <fieldset>
@@ -107,7 +134,7 @@
     <Button
       type="submit"
       size="pill"
-      disabled={selected === null}
+      disabled={selected === null || submitting}
       class="mt-5 w-full shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-primary/40 disabled:active:scale-100"
     >
       {m.addSymptomSubmit()}

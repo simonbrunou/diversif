@@ -1,5 +1,13 @@
-import { afterEach, describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
+
+// happy-dom's cloneNode interaction with bits-ui's Portal trips $app/forms'
+// "method must be POST" guard. Stub `enhance` for unit tests; e2e covers the
+// real enhanced submission (e2e/bento-reaction-detail.spec.ts).
+mock.module('$app/forms', () => ({
+  enhance: () => ({ destroy: () => {} })
+}));
+
 import AddSymptomSheet from './AddSymptomSheet.svelte';
 
 afterEach(async () => {
