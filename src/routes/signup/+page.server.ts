@@ -39,7 +39,7 @@ const SIGNUP_LIMIT = {
 const schema = z.object({
   // Same 254-octet bound as login: keeps the stored identifier (and any
   // rate-limit key derived from it) within the RFC 5321 deliverable cap.
-  email: z.string().max(254, 'Adresse e-mail invalide').email('Adresse e-mail invalide'),
+  email: z.email('Adresse e-mail invalide').max(254, 'Adresse e-mail invalide'),
   password: z.string().min(12, 'Mot de passe trop court (12 caractères minimum)'),
   displayName: z.string().min(1, 'Nom requis').max(80),
   inviteCode: z
@@ -47,13 +47,13 @@ const schema = z.object({
     .optional()
     .transform((s) => (s ? s.toUpperCase().trim() : '')),
   acceptTos: z.literal('on', {
-    errorMap: () => ({ message: `Vous devez accepter les conditions générales d'utilisation.` })
+    error: `Vous devez accepter les conditions générales d'utilisation.`
   }),
   acceptPrivacy: z.literal('on', {
-    errorMap: () => ({ message: `Vous devez accepter la politique de confidentialité.` })
+    error: `Vous devez accepter la politique de confidentialité.`
   }),
   confirmAge15: z.literal('on', {
-    errorMap: () => ({ message: `Vous devez confirmer avoir au moins 15 ans.` })
+    error: `Vous devez confirmer avoir au moins 15 ans.`
   })
 });
 

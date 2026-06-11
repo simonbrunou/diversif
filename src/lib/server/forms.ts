@@ -1,4 +1,4 @@
-import type { ZodSchema } from 'zod';
+import type { ZodType } from 'zod';
 import { fail, type ActionFailure } from '@sveltejs/kit';
 
 type ParseFormResult<T> =
@@ -24,7 +24,7 @@ type ParseFormResult<T> =
  */
 export async function parseForm<T>(
   request: Request,
-  schema: ZodSchema<T>
+  schema: ZodType<T>
 ): Promise<ParseFormResult<T>> {
   const formData = await request.formData();
   const values = Object.fromEntries(formData);
@@ -66,7 +66,7 @@ type ParseFormWithKeyResult<T, TField extends string, TEcho extends string> =
  */
 export async function parseFormWithKey<T, TField extends string, TEcho extends string = never>(
   request: Request,
-  schema: ZodSchema<T>,
+  schema: ZodType<T>,
   opts: { field: TField; badInputKey: string; echo?: readonly TEcho[] }
 ): Promise<ParseFormWithKeyResult<T, TField, TEcho>> {
   const formData = await request.formData();

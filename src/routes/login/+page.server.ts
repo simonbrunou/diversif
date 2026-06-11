@@ -31,7 +31,7 @@ const schema = z.object({
   // .max(254) bounds the attacker-chosen key space: the e-mail is the
   // per-account rate-limit bucket key (and 254 octets is the RFC 5321 cap
   // for a deliverable address anyway).
-  email: z.string().max(254, 'Adresse e-mail invalide').email('Adresse e-mail invalide'),
+  email: z.email('Adresse e-mail invalide').max(254, 'Adresse e-mail invalide'),
   password: z.string().min(1, 'Mot de passe requis')
 });
 
