@@ -2,6 +2,7 @@
   import Modal from '$components/ui/Modal.svelte';
   import Button from '$components/ui/Button.svelte';
   import { enhance } from '$app/forms';
+  import { goto } from '$app/navigation';
   import { Heart, Sparkles, BookOpen } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -72,14 +73,31 @@
   </div>
 
   {#snippet footer()}
-    <form method="POST" action={formAction} use:enhance={() => () => close()}>
+    <!-- Both « Plus tard » and « Ouvrir le guide » submit this dismiss form,
+         so the dialog never re-opens on the next dashboard visit whichever
+         exit the user takes. The guide CTA additionally navigates after the
+         dismissal has been persisted (its submitter carries data-then-guide). -->
+    <form
+      id="welcome-dismiss-form"
+      method="POST"
+      action={formAction}
+      use:enhance={({ submitter }) => {
+        const thenGuide = submitter?.getAttribute('data-then-guide') === 'true';
+        return () => {
+          close();
+          if (thenGuide) void goto(localizedHref(`/child/${childId}/guide`));
+        };
+      }}
+    >
       <input type="hidden" name="reminderKey" value="welcome-dialog" />
       <Button variant="ghost" type="submit">{m.dialogsWelcomeButtonDismiss()}</Button>
     </form>
     {#if step < 2}
       <Button onclick={next}>{m.dialogsWelcomeButtonNext()}</Button>
     {:else}
-      <Button href={localizedHref(`/child/${childId}/guide`)}>{m.dialogsWelcomeButtonOpenGuide()}</Button>
+      <Button type="submit" form="welcome-dismiss-form" data-then-guide="true">
+        {m.dialogsWelcomeButtonOpenGuide()}
+      </Button>
     {/if}
   {/snippet}
 </Modal>

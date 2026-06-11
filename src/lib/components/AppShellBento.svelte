@@ -41,6 +41,12 @@
   // CTA — they must never disagree (the rail once used currentChildId while
   // the mobile nav used the fallback, leaving desktop /account chrome-less).
   const showNav = $derived(showChrome && !!navChildId);
+  // /child/[id]/report is a hand-to-pediatrician document: the fixed desktop
+  // « + Enregistrer un aliment » button overlaps the document at lg widths
+  // and the mobile FAB floats over it — both are off-context there. The nav
+  // (rail + bottom tabs) stays for wayfinding; only the log CTAs go.
+  const isReportRoute = $derived(/^\/child\/[^/]+\/report(?:\/|$)/.test(currentPath));
+  const showLogCta = $derived(showNav && !isReportRoute);
 
   function openLog(): void {
     if (!navChildId) return;
@@ -112,9 +118,11 @@
              `w-16` spacer slot in BottomNavBento between tabs 2 and 3. -->
         <div data-no-print class="lg:hidden">
           <BottomNavBento currentChildId={navChildId} {currentPath} />
-          <div class="fixed bottom-[calc(0.625rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
-            <FabLog onclick={openLog} />
-          </div>
+          {#if showLogCta}
+            <div class="fixed bottom-[calc(0.625rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
+              <FabLog onclick={openLog} />
+            </div>
+          {/if}
         </div>
 
         <ChildSwitcherDrawer bind:open={switcherOpen} {kids} currentChildId={navChildId} />
@@ -123,7 +131,7 @@
   </div>
 
   <!-- Desktop top-right log button -->
-  {#if showNav}
+  {#if showLogCta}
     <Button
       type="button"
       size="pill"

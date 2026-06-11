@@ -64,11 +64,13 @@ type CookieOpts = {
   maxAge?: number;
 };
 
-function makeEvent(token: string | null, pathname = '/') {
+function makeEvent(token: string | null, pathname = '/', themeCookie: string | null = null) {
   const set = mock((_name: string, _value: string, _opts: CookieOpts) => {});
   const del = mock((_name: string, _opts: CookieOpts) => {});
   const cookies = {
-    get: mock((name: string) => (name === SESSION_COOKIE ? token : null)),
+    get: mock((name: string) =>
+      name === SESSION_COOKIE ? token : name === 'theme' ? themeCookie : null
+    ),
     set,
     delete: del
   };
@@ -262,6 +264,39 @@ describe('handle', () => {
     expect(body).toContain('<html lang="en">');
     expect(body).not.toContain('%paraglide.lang%');
   });
+
+  it('adds class="dark" to <html> when the theme cookie is dark', async () => {
+    const { event } = makeEvent(null, '/', 'dark');
+    const resolve = mock(
+      async (
+        _event,
+        opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
+      ) =>
+        new Response(
+          opts.transformPageChunk({ html: '<html lang="%paraglide.lang%">', done: false })
+        )
+    );
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(await response.text()).toContain('<html class="dark" lang="fr">');
+  });
+
+  it.each(['light', 'system', null] as const)(
+    'does not add class="dark" when the theme cookie is %p',
+    async (theme) => {
+      const { event } = makeEvent(null, '/', theme);
+      const resolve = mock(
+        async (
+          _event,
+          opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
+        ) =>
+          new Response(
+            opts.transformPageChunk({ html: '<html lang="%paraglide.lang%">', done: false })
+          )
+      );
+      const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+      expect(await response.text()).toBe('<html lang="fr">');
+    }
+  );
 });
 
 describe('warnIfAddressHeaderMissing', () => {
