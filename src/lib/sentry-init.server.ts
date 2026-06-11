@@ -21,9 +21,10 @@ Sentry.init({
   release: __SENTRY_RELEASE__,
   tracesSampleRate: 0,
   // Explicitly opt out of default PII (IP address, cookies, user agent).
-  // This is v8's default but we set it explicitly so a future SDK upgrade
-  // that flips the default doesn't silently leak the prod server's IP into
-  // every event's user.ip_address.
+  // This is v10's default — and since v9 the ingest-side IP inference is
+  // gated on this flag too — but we set it explicitly so a future SDK
+  // upgrade that flips the default doesn't silently leak the prod server's
+  // IP into every event's user.ip_address.
   sendDefaultPii: false,
   // @ts-expect-error - Sentry's `Breadcrumb` type has no string-index
   // signature, so its `ErrorEvent.breadcrumbs` is not structurally assignable
