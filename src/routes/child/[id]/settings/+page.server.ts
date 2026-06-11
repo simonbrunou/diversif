@@ -166,7 +166,10 @@ export const actions: Actions = {
     const { user: owner } = requireOwnership(locals, childId);
     const data = await request.formData();
     const userId = Number(data.get('userId'));
-    if (!Number.isInteger(userId)) return fail(400, { error: 'Utilisateur invalide.' });
+    // > 0 so an empty/zero field fails loudly instead of "removing" nobody
+    // and still reporting success.
+    if (!Number.isInteger(userId) || userId <= 0)
+      return fail(400, { error: 'Utilisateur invalide.' });
     if (userId === owner.id)
       return fail(400, { error: 'Vous ne pouvez pas vous retirer vous-même.' });
 

@@ -5,6 +5,7 @@
   import Textarea from '$components/ui/Textarea.svelte';
   import FormError from '$components/ui/FormError.svelte';
   import BackHeader from '$components/ui/BackHeader.svelte';
+  import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
   import FoodCombobox from '$lib/components/FoodCombobox.svelte';
   import ReactionPicker from '$lib/components/ReactionPicker.svelte';
   import TexturePicker from '$lib/components/TexturePicker.svelte';
@@ -30,7 +31,7 @@
   // svelte-ignore state_referenced_locally
   let notes = $state(data.entry.notes ?? '');
   let saving = $state(false);
-  let deleting = $state(false);
+  let deleteOpen = $state(false);
 
   const backHref = $derived(
     data.from === 'dashboard' ? `/child/${data.child.id}` : `/child/${data.child.id}/foods`
@@ -109,26 +110,28 @@
     </div>
   </form>
 
-  <form
-    method="POST"
-    action="?/delete"
-    class="border-t pt-5"
-    use:enhance={({ cancel }) => {
-      if (!confirm(m.logEditDeleteConfirm())) {
-        cancel();
-        return;
-      }
-      deleting = true;
-      return async ({ update }) => {
-        await update();
-        deleting = false;
-      };
-    }}
-  >
-    <input type="hidden" name="from" value={data.from} />
-    <Button type="submit" variant="ghost" size="sm" class="text-destructive hover:text-destructive" loading={deleting}>
+  <div class="border-t pt-5">
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      class="text-destructive hover:text-destructive"
+      onclick={() => (deleteOpen = true)}
+    >
       <Trash2 size={16} aria-hidden="true" />
-      {deleting ? m.logEditDeleting() : m.logEditDeleteCta()}
+      {m.logEditDeleteCta()}
     </Button>
-  </form>
+  </div>
 </div>
+
+<ConfirmModal
+  bind:open={deleteOpen}
+  title={m.logEditDeleteConfirmTitle()}
+  description={m.logEditDeleteConfirmDescription()}
+  action="?/delete"
+  confirmLabel={m.logEditDeleteCta()}
+  loadingLabel={m.logEditDeleting()}
+  destructive
+  hiddenFields={{ from: data.from }}
+  failureMessage={m.errorsGenericFallback()}
+/>

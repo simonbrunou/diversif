@@ -9,7 +9,7 @@
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
   import { languageTag } from '$lib/paraglide/runtime';
-  import { resolveMessageKey } from '$lib/forms/tracked-enhance';
+  import { createFormToasts } from '$lib/forms/form-toasts.svelte';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -35,19 +35,9 @@
       )
   );
 
-  let lastFormSeen: typeof form;
-  $effect(() => {
-    if (form === lastFormSeen) return;
-    lastFormSeen = form;
-    if (!form) return;
-    if (form.passkeySuccessKey) {
-      toast.success(resolveMessageKey(form.passkeySuccessKey));
-      // The delete action answers with a success key (no redirect), so the
-      // confirmation modal has to dismiss itself once the server confirms.
-      deleteOpen = false;
-    }
-    if (form.passkeyErrorKey) toast.error(resolveMessageKey(form.passkeyErrorKey));
-  });
+  // ConfirmModal self-closes on success results (trackSubmission onSuccess),
+  // so the delete modal needs no manual dismissal here.
+  createFormToasts(() => form, { successKey: 'passkeySuccessKey', errorKey: 'passkeyErrorKey' });
 
   function formatDate(ts: number): string {
     return new Date(ts).toLocaleDateString(languageTag() === 'en' ? 'en-GB' : 'fr-FR', {

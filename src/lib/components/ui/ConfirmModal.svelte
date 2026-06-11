@@ -18,7 +18,8 @@
     requireText,
     requirePassword = false,
     passwordLabel,
-    hiddenFields
+    hiddenFields,
+    failureMessage
   }: {
     open?: boolean;
     title: string;
@@ -33,13 +34,21 @@
     requirePassword?: boolean;
     /** Label for the password field; defaults to the generic « Mot de passe ». */
     passwordLabel?: string;
-    /** Extra hidden inputs submitted with the form (e.g. the target row id). */
-    hiddenFields?: Record<string, string>;
+    /** Extra `<input type="hidden">` fields posted with the confirmation. */
+    hiddenFields?: Record<string, string | number>;
+    /**
+     * Shown inside the modal when the action fails. Only set this when the
+     * host page has no error channel of its own (toast/FormError) — pages
+     * that surface the action's specific error must not get a second,
+     * vaguer message next to it.
+     */
+    failureMessage?: string;
   } = $props();
 
   let submitting = $state(false);
   let confirmText = $state('');
   let confirmPassword = $state('');
+  let failed = $state(false);
 
   const textOk = $derived(requireText ? confirmText === requireText : true);
   const passwordOk = $derived(requirePassword ? confirmPassword.length > 0 : true);
@@ -53,6 +62,7 @@
     if (!open) {
       confirmText = '';
       confirmPassword = '';
+      failed = false;
     }
   });
 
@@ -66,7 +76,23 @@
     method="POST"
     {action}
     class="grid gap-3"
-    use:enhance={trackSubmission((v) => (submitting = v))}
+    use:enhance={trackSubmission(
+      (v) => {
+        submitting = v;
+        if (v) failed = false;
+      },
+      {
+        // Close before the refreshed page renders so non-navigating confirms
+        // (member removal, symptom/meal deletion) never overlap their result.
+        // Redirect results keep the modal open: its loading state covers the
+        // in-flight navigation instead of flashing the underlying page.
+        onSuccess: (type) => {
+          if (type === 'success') open = false;
+        },
+        // Failures keep it open so the user can retry (e.g. wrong password).
+        onFailure: () => (failed = true)
+      }
+    )}
   >
     {#each Object.entries(hiddenFields ?? {}) as [name, value] (name)}
       <input type="hidden" {name} {value} />
@@ -93,6 +119,9 @@
           required
         />
       </Field>
+    {/if}
+    {#if failed && failureMessage}
+      <p class="text-sm text-severe-text" role="alert">{failureMessage}</p>
     {/if}
     <div class="mt-2 flex justify-end gap-2">
       <Button type="button" variant="outline" onclick={close}>{m.commonCancel()}</Button>
