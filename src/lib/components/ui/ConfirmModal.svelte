@@ -1,6 +1,5 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { trackSubmission } from '$lib/forms/tracked-enhance';
   import * as m from '$lib/paraglide/messages';
   import Modal from './Modal.svelte';
   import Button from './Button.svelte';
@@ -16,7 +15,8 @@
     loadingLabel,
     destructive = false,
     requireText,
-    requirePassword = false
+    requirePassword = false,
+    hiddenFields
   }: {
     open?: boolean;
     title: string;
@@ -29,6 +29,8 @@
     requireText?: string;
     /** When true, a `currentPassword` input appears and must be non-empty. */
     requirePassword?: boolean;
+    /** Extra `<input type="hidden">` fields posted with the confirmation. */
+    hiddenFields?: Record<string, string | number>;
   } = $props();
 
   let submitting = $state(false);
@@ -60,8 +62,26 @@
     method="POST"
     {action}
     class="grid gap-3"
-    use:enhance={trackSubmission((v) => (submitting = v))}
+    use:enhance={() => {
+      submitting = true;
+      return async ({ result, update }) => {
+        try {
+          await update();
+        } finally {
+          submitting = false;
+        }
+        // Close after a successful action so non-navigating confirms (member
+        // removal, symptom/meal deletion) don't leave the modal hanging open.
+        // Failures keep it open so the user can retry (e.g. wrong password).
+        if (result.type === 'success' || result.type === 'redirect') {
+          open = false;
+        }
+      };
+    }}
   >
+    {#each Object.entries(hiddenFields ?? {}) as [name, value] (name)}
+      <input type="hidden" {name} {value} />
+    {/each}
     {#if requireText}
       <Field name="confirmText" label={m.commonConfirmTextLabel({ text: requireText })}>
         <Input

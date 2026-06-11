@@ -1,9 +1,8 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages';
+  import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
   import { severityOf, type SymptomLabel } from '$lib/content/symptoms';
   import { cn } from '$lib/utils/cn';
-  import { enhance } from '$app/forms';
-  import { invalidateAll } from '$app/navigation';
   import { X } from 'lucide-svelte';
 
   let {
@@ -21,7 +20,7 @@
   } = $props();
 
   const severity = $derived(severityOf(label));
-  let deleting = $state(false);
+  let confirmOpen = $state(false);
 
   function labelText(l: SymptomLabel): string {
     const key = `symptomsLabel${l
@@ -58,34 +57,22 @@
       <p class="text-xs">{note}</p>
     {/if}
   </span>
-  <form
-    method="post"
-    action={`${action}?/deleteSymptom`}
-    use:enhance={({ cancel }) => {
-      if (!confirm(m.reactionSymptomsDeleteConfirm())) {
-        cancel();
-        return;
-      }
-      deleting = true;
-      return async ({ result, update }) => {
-        if (result.type === 'success') {
-          await invalidateAll();
-        } else {
-          await update();
-        }
-        deleting = false;
-      };
-    }}
+  <button
+    type="button"
+    aria-label={m.reactionSymptomsDelete()}
+    title={m.reactionSymptomsDelete()}
+    onclick={() => (confirmOpen = true)}
+    class="inline-flex h-7 w-7 items-center justify-center rounded-full text-current opacity-60 transition hover:opacity-100"
   >
-    <input type="hidden" name="symptomId" value={id} />
-    <button
-      type="submit"
-      aria-label={m.reactionSymptomsDelete()}
-      title={m.reactionSymptomsDelete()}
-      disabled={deleting}
-      class="inline-flex h-7 w-7 items-center justify-center rounded-full text-current opacity-60 transition hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-30"
-    >
-      <X size={14} aria-hidden="true" />
-    </button>
-  </form>
+    <X size={14} aria-hidden="true" />
+  </button>
+  <ConfirmModal
+    bind:open={confirmOpen}
+    title={m.reactionSymptomsDeleteConfirm()}
+    action={`${action}?/deleteSymptom`}
+    confirmLabel={m.reactionSymptomsDelete()}
+    loadingLabel={m.reactionSymptomsDeleting()}
+    destructive
+    hiddenFields={{ symptomId: id }}
+  />
 </li>

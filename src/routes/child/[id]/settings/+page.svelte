@@ -22,6 +22,13 @@
   let leaveOpen = $state(false);
   let inviteOpen = $state(false);
   let savingChild = $state(false);
+  let removeMemberOpen = $state(false);
+  let removeMemberId = $state<number | null>(null);
+
+  function askRemoveMember(userId: number) {
+    removeMemberId = userId;
+    removeMemberOpen = true;
+  }
 
   $effect(() => {
     if (form?.success) {
@@ -93,10 +100,14 @@
               {member.role === 'owner' ? m.kidPickerRoleOwner() : m.kidPickerRoleMember()}
             </span>
             {#if data.role === 'owner' && member.role !== 'owner'}
-              <form method="POST" action="?/removeMember">
-                <input type="hidden" name="userId" value={member.userId} />
-                <Button type="submit" variant="ghost" size="sm">{m.commonRemove()}</Button>
-              </form>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onclick={() => askRemoveMember(member.userId)}
+              >
+                {m.commonRemove()}
+              </Button>
             {/if}
           </div>
         </li>
@@ -179,6 +190,17 @@
   destructive
   requireText={data.child.name}
   requirePassword
+/>
+
+<ConfirmModal
+  bind:open={removeMemberOpen}
+  title={m.settingsRemoveMemberConfirmTitle()}
+  description={m.settingsRemoveMemberConfirmDescription()}
+  action="?/removeMember"
+  confirmLabel={m.commonRemove()}
+  loadingLabel={m.settingsRemoveMemberLoadingLabel()}
+  destructive
+  hiddenFields={{ userId: removeMemberId ?? '' }}
 />
 
 <ConfirmModal

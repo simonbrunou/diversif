@@ -105,6 +105,24 @@ describe('ConfirmModal', () => {
     expect(form?.getAttribute('method')?.toLowerCase()).toBe('post');
   });
 
+  it('renders hiddenFields as hidden inputs inside the form', () => {
+    render(ConfirmModal, {
+      props: {
+        open: true,
+        title: 'X',
+        action: '?/removeMember',
+        confirmLabel: 'Retirer',
+        hiddenFields: { userId: 42, from: 'dashboard' }
+      }
+    });
+    const form = document.querySelector('form');
+    const userId = form?.querySelector('input[name="userId"]') as HTMLInputElement | null;
+    const from = form?.querySelector('input[name="from"]') as HTMLInputElement | null;
+    expect(userId?.type).toBe('hidden');
+    expect(userId?.value).toBe('42');
+    expect(from?.value).toBe('dashboard');
+  });
+
   it('resets confirmText + confirmPassword when open flips to false', async () => {
     const { rerender } = render(ConfirmModal, {
       props: {
