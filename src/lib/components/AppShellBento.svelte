@@ -119,7 +119,7 @@
         <div data-no-print class="lg:hidden">
           <BottomNavBento currentChildId={navChildId} {currentPath} />
           {#if showLogCta}
-            <div class="fixed bottom-[calc(0.625rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
+            <div class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] left-1/2 z-40 -translate-x-1/2">
               <FabLog onclick={openLog} />
             </div>
           {/if}
