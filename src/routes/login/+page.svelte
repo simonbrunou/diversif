@@ -11,6 +11,8 @@
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
+  import { authenticateWithPasskey } from '$lib/auth/passkey-client';
+  import { resolveMessageKey } from '$lib/forms/tracked-enhance';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData } from './$types';
 
@@ -87,26 +89,13 @@
     if (passkeyLoading) return;
     passkeyLoading = true;
     try {
-      const { startAuthentication } = await import('@simplewebauthn/browser');
-      const optsRes = await fetch('/passkeys/authentication/options', { method: 'POST' });
-      if (!optsRes.ok) throw new Error('Impossible de démarrer la connexion.');
-      const optsJSON = await optsRes.json();
-      const assertion = await startAuthentication({ optionsJSON: optsJSON });
-      const verifyRes = await fetch('/passkeys/authentication/verify', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ response: assertion })
-      });
-      const data = await verifyRes.json().catch(() => ({}));
-      if (!verifyRes.ok || !data?.ok) {
-        toast.error(data?.error ?? 'Connexion échouée.');
+      const result = await authenticateWithPasskey();
+      if (result.ok) {
+        await goto('/', { invalidateAll: true });
         return;
       }
-      await goto('/', { invalidateAll: true });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur';
-      if (!/NotAllowedError|cancel/i.test(message)) {
-        toast.error(message);
+      if (result.errorKey !== null) {
+        toast.error(result.serverError ?? resolveMessageKey(result.errorKey));
       }
     } finally {
       passkeyLoading = false;
