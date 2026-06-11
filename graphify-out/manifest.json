@@ -164,8 +164,8 @@
     "hash": "1e46682b1a4202018112c6bfbc552586"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/scripts/lint-contrast.ts": {
-    "mtime": 1781139829.4695675,
-    "hash": "70d4537486a4f708e669c7c95170cb28"
+    "mtime": 1781149941.46974,
+    "hash": "b5bf66548d17be63aeae81daf55aa932"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/app.d.ts": {
     "mtime": 1781138983.3265967,
@@ -214,10 +214,6 @@
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/types.ts": {
     "mtime": 1781138983.3331864,
     "hash": "c3b67e5be8c301558a2a8a78c79ed762"
-  },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/AllergenInfoDialog.svelte": {
-    "mtime": 1781138983.326803,
-    "hash": "6fa36e9a5666057d91339fc2746ad53f"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/AllergenInfoDialog.test.ts": {
     "mtime": 1781138983.3268504,
@@ -379,13 +375,17 @@
     "mtime": 1781140596.422431,
     "hash": "9770da939f0903d30614955e8d44dcdf"
   },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/ThemeToggle.test.ts": {
-    "mtime": 1781140596.422431,
-    "hash": "5169d0d01f4c7bca731a49c3361fe9de"
-  },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/TipCard.svelte": {
     "mtime": 1781140596.422431,
     "hash": "2f08ef7d892fd7a470a3e984dc478c1a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/AllergenInfoDialog.svelte": {
+    "mtime": 1781149765.5016468,
+    "hash": "18fc982c602d3de9647367927b1b1935"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/ThemeToggle.test.ts": {
+    "mtime": 1781149970.9924202,
+    "hash": "0d737a1659c1e1341cfbae68b3216906"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/bento/AddSymptomSheet.svelte": {
     "mtime": 1781138983.3271863,
@@ -651,17 +651,13 @@
     "mtime": 1781140596.422431,
     "hash": "bb42c3df3625d09d6c2e259182cc8f54"
   },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/bento/ChildCardRow.svelte": {
-    "mtime": 1781140596.422431,
-    "hash": "9865406e7fcfcb3c70b15ae5ce164e29"
-  },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/bento/StageDetailSheet.svelte": {
     "mtime": 1781140596.422431,
     "hash": "abac6e173a21578b2eeae81f3822fb26"
   },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/guide/GuideAllergensSection.svelte": {
-    "mtime": 1781138983.3281863,
-    "hash": "595963979ee5a74d5790aa053f7b513b"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/bento/ChildCardRow.svelte": {
+    "mtime": 1781149894.484249,
+    "hash": "ba47470d3f67cfaa7ca124c23ec14eb5"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/guide/GuideCategoriesSection.svelte": {
     "mtime": 1781138983.3295164,
@@ -694,6 +690,10 @@
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/guide/GuideApproachesSection.svelte": {
     "mtime": 1781140596.4234312,
     "hash": "8c4c895ce7d5682756d087b97f383a36"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/guide/GuideAllergensSection.svelte": {
+    "mtime": 1781149768.7376118,
+    "hash": "9ee43eae8684deb31b599e1e3afd981d"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/components/landing/LandingClosingCtaBento.svelte": {
     "mtime": 1781138983.3295164,
@@ -1123,10 +1123,6 @@
     "mtime": 1781138983.3319857,
     "hash": "049efe9c6c56269b0236934630475c66"
   },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/server/guidance/allergen-status.ts": {
-    "mtime": 1781138983.3319857,
-    "hash": "6e7e4bf1c5b4b6a3ca41a6705b28c4d1"
-  },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/server/guidance/queries.test.ts": {
     "mtime": 1781138983.332892,
     "hash": "1f84e9702411d8db4e0ca56547cca1da"
@@ -1143,9 +1139,13 @@
     "mtime": 1781138983.3329995,
     "hash": "40e076d500458945759c04316b19f0be"
   },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/server/guidance/allergen-status.ts": {
+    "mtime": 1781149801.2122598,
+    "hash": "037c19d6cbcf9e5eac9cf14978a8e401"
+  },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/server/guidance/reminders.ts": {
-    "mtime": 1781140596.4234312,
-    "hash": "e858ae487c7ef2f6f00429834f4825f7"
+    "mtime": 1781149953.2316124,
+    "hash": "747b161e28d659da4af98a17b48439cf"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/server/guidance/queries/dismissals.ts": {
     "mtime": 1781138983.332892,
@@ -1174,14 +1174,6 @@
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/utils/age.ts": {
     "mtime": 1781138983.33412,
     "hash": "441f57f0fe12d653672b47b6296a4c25"
-  },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/utils/allergens.test.ts": {
-    "mtime": 1781138983.33412,
-    "hash": "0e8e884caa303c3b70d77f1f315012f8"
-  },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/utils/allergens.ts": {
-    "mtime": 1781138983.33412,
-    "hash": "ae632dde8b7efffb83cdf594938176a5"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/utils/categories.test.ts": {
     "mtime": 1781138983.33412,
@@ -1287,21 +1279,29 @@
     "mtime": 1781140596.4234312,
     "hash": "ba81366fe5c0b3d16a16b8528d6424cc"
   },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/utils/allergens.ts": {
+    "mtime": 1781149696.2203977,
+    "hash": "0994d681f9c3fc66c22ab5a5b1fd05e2"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/utils/allergens.test.ts": {
+    "mtime": 1781149855.2516742,
+    "hash": "15d9d38c31fce3c649b90358353454d2"
+  },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/paraglide/runtime.js": {
-    "mtime": 1781140871.0604126,
+    "mtime": 1781150220.7124739,
     "hash": "4a313a413da1865c547e103970efc061"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/paraglide/messages.js": {
-    "mtime": 1781140871.0604126,
-    "hash": "afd3d9056a585978b243266b6098b2cc"
+    "mtime": 1781150220.7124739,
+    "hash": "aeab5ac815b7df204cbb245b2e18596f"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1781140871.0604126,
-    "hash": "a80aa67609c7e942dbc1371fe2f98fda"
+    "mtime": 1781150220.7124739,
+    "hash": "edbf189de9ea4a39230b8cc2131d8002"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/lib/paraglide/messages/en.js": {
-    "mtime": 1781140871.0604126,
-    "hash": "5023a43c2969435a481226f415a21e8e"
+    "mtime": 1781150220.7124739,
+    "hash": "b583fe03a41fdba00ec79c120bc347a4"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/+layout.server.ts": {
     "mtime": 1781138983.3348074,
@@ -1447,13 +1447,13 @@
     "mtime": 1781138983.3356907,
     "hash": "d3578a07ef8e970937c9c50a165c1bf3"
   },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/allergens/+page.svelte": {
-    "mtime": 1781138983.3357852,
-    "hash": "3f613f05ca8f86f4b4fb9d52f02dbc17"
-  },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/allergens/page.server.test.ts": {
     "mtime": 1781138983.3357852,
     "hash": "4854f2c6214c13834defeab01f739d73"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/allergens/+page.svelte": {
+    "mtime": 1781149783.9874465,
+    "hash": "a6ed587cdc3ac54410d0b008577444bd"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/cgu/+page.svelte": {
     "mtime": 1781138983.3357852,
@@ -1567,10 +1567,6 @@
     "mtime": 1781140596.4234312,
     "hash": "182a8dcec971f24b2b8efb5f9769c9cc"
   },
-  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/child/[id]/report/+page.server.ts": {
-    "mtime": 1781138983.3367248,
-    "hash": "3d2d67d0aebb1300f6b2a459b27fba93"
-  },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/child/[id]/report/+page.svelte": {
     "mtime": 1781138983.3369708,
     "hash": "935061f830cf30bc51a33cdefa94903a"
@@ -1578,6 +1574,10 @@
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/child/[id]/report/page.server.test.ts": {
     "mtime": 1781138983.3369708,
     "hash": "c1e50bd6c00d6369bbcd10d11b5dd4e8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/child/[id]/report/+page.server.ts": {
+    "mtime": 1781149842.1978157,
+    "hash": "3b27b488516503c1ba30d7da755f4987"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/child/[id]/settings/+page.server.ts": {
     "mtime": 1781138983.3369708,
@@ -1612,8 +1612,8 @@
     "hash": "d9dc31f2cf49a71225cf872584c57555"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/child/[id]/suggestions/+page.svelte": {
-    "mtime": 1781140596.4234312,
-    "hash": "4485555581f823d422d05e4365888214"
+    "mtime": 1781149896.5282269,
+    "hash": "924dbfec94d45f7c31d9cc8a30dbed98"
   },
   "/home/sbrn/Projects/diversif/.claude/worktrees/agent-aef7fbca8239da4cc/src/routes/child/new/+page.server.ts": {
     "mtime": 1781138983.337298,

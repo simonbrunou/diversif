@@ -20,7 +20,11 @@
   </span>
   <span class="flex-1">
     <p class="text-base font-bold leading-tight">{child.name}</p>
-    <p class="text-xs text-ink-soft">{m.childAgeMonths({ months: child.ageMonths })}</p>
+    <p class="text-xs text-ink-soft">
+      {child.ageMonths === 1
+        ? m.childAgeMonthsOne()
+        : m.childAgeMonthsOther({ months: child.ageMonths })}
+    </p>
   </span>
   <ChevronRight size={18} class="text-ink-soft" aria-hidden="true" />
 </LinkRow>

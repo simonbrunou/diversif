@@ -39,7 +39,9 @@
 <div class="mx-auto w-full px-4 max-w-2xl space-y-6 py-6">
   <BackHeader
     title={m.suggestionsTitle()}
-    subtitle={m.suggestionsSubtitle({ name: data.child.name, ageMonths: data.ageMonths })}
+    subtitle={data.ageMonths === 1
+      ? m.suggestionsSubtitleOne({ name: data.child.name })
+      : m.suggestionsSubtitleOther({ name: data.child.name, ageMonths: data.ageMonths })}
     fallback={`/child/${data.child.id}`}
   />
 

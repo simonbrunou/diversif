@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
  * lint-contrast: fails when a bare status/reaction palette token is used as a
- * TEXT color. `text-destructive`, `text-success` and `text-reaction-*` are
- * the BACKGROUND hues of their pairs (coral ≈2.4:1 on canvas — see
- * SectionHeader.svelte), so body/small text set in them fails WCAG AA. Use
- * the documented ink tokens instead: `text-severe-text`,
- * `text-success-foreground`, `text-reaction-*-foreground`, …
+ * TEXT color. `text-destructive`, `text-success`, `text-warning`, `text-info`
+ * and `text-reaction-*` are the BACKGROUND hues of their pairs (coral ≈2.4:1
+ * on canvas — see SectionHeader.svelte; warning/info map to the pastel
+ * butter/sky tiles, even fainter as text — see src/app.css), so body/small
+ * text set in them fails WCAG AA. Use the documented ink tokens instead:
+ * `text-severe-text`, `text-success-foreground`, `text-warning-foreground`,
+ * `text-info-foreground`, `text-reaction-*-foreground`, …
  *
  * Escape hatch: append a `contrast-ok` comment on the same line (with a
  * short justification nearby) for sites that are genuinely fine, e.g. large
@@ -27,7 +29,7 @@ const SOURCE_EXT = /\.(ts|js|svelte)$/;
 // `text-successful`); `/` is intentionally NOT excluded so opacity-modified
 // usages like `text-destructive/80` are still flagged.
 const FORBIDDEN =
-  /(?<![\w-])text-(success|destructive|reaction-ras|reaction-inconfort|reaction-reaction)(?!-foreground|-text|\w)/;
+  /(?<![\w-])text-(success|destructive|warning|info|reaction-ras|reaction-inconfort|reaction-reaction)(?!-foreground|-text|\w)/;
 
 const ESCAPE_MARKER = 'contrast-ok';
 const COMMENT_LINE = /^\s*(\/\/|\/\*|\*|<!--)/;
@@ -60,8 +62,9 @@ if (offenders.length > 0) {
   console.error(`Found ${offenders.length} low-contrast text token(s):`);
   for (const o of offenders) console.error(`  ${o}`);
   console.error(
-    '\nThese tokens are background hues (≈2.4:1 on canvas) — use the ink tokens\n' +
-      'instead (text-severe-text, text-success-foreground, text-reaction-*-foreground).\n' +
+    '\nThese tokens are background hues (≈2.4:1 or worse on canvas) — use the ink tokens\n' +
+      'instead (text-severe-text, text-success-foreground, text-warning-foreground,\n' +
+      'text-info-foreground, text-reaction-*-foreground).\n' +
       'If a site is genuinely fine (large display text), add /* contrast-ok */ on the\n' +
       'same line with a short justification.'
   );

@@ -3,7 +3,14 @@ import { render, fireEvent } from '@testing-library/svelte';
 import { stubGlobal, unstubAllGlobals } from '../../test/bun-test-utils';
 import '../../test/app-stubs';
 import '../../test/component';
+import * as m from '$lib/paraglide/messages';
 import ThemeToggle from './ThemeToggle.svelte';
+
+// Resolve button labels through the paraglide keys (not literals) so the
+// tests survive copy changes to profilCompteThemeValue*.
+const systemLabel = () => m.profilCompteThemeValueSystem();
+const darkLabel = () => m.profilCompteThemeValueDark();
+const lightLabel = () => m.profilCompteThemeValueLight();
 
 describe('ThemeToggle', () => {
   beforeEach(() => {
@@ -38,14 +45,14 @@ describe('ThemeToggle', () => {
   it('marks the system option pressed by default', () => {
     const { container } = render(ThemeToggle, { props: {} });
     const buttons = Array.from(container.querySelectorAll('button'));
-    const sys = buttons.find((b) => b.textContent?.trim() === 'Auto');
+    const sys = buttons.find((b) => b.textContent?.trim() === systemLabel());
     expect(sys?.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('switches to dark when the dark button is clicked', async () => {
     const { container } = render(ThemeToggle, { props: {} });
     const buttons = Array.from(container.querySelectorAll('button'));
-    const dark = buttons.find((b) => b.textContent?.trim() === 'Sombre')!;
+    const dark = buttons.find((b) => b.textContent?.trim() === darkLabel())!;
     await fireEvent.click(dark);
     expect(dark.getAttribute('aria-pressed')).toBe('true');
     expect(localStorage.getItem('theme')).toBe('dark');
@@ -54,7 +61,7 @@ describe('ThemeToggle', () => {
   it('switches to light when the light button is clicked', async () => {
     const { container } = render(ThemeToggle, { props: {} });
     const buttons = Array.from(container.querySelectorAll('button'));
-    const light = buttons.find((b) => b.textContent?.trim() === 'Clair')!;
+    const light = buttons.find((b) => b.textContent?.trim() === lightLabel())!;
     await fireEvent.click(light);
     expect(light.getAttribute('aria-pressed')).toBe('true');
     expect(localStorage.getItem('theme')).toBe('light');
@@ -63,9 +70,9 @@ describe('ThemeToggle', () => {
   it('clears the stored preference when system is selected', async () => {
     const { container } = render(ThemeToggle, { props: {} });
     const buttons = Array.from(container.querySelectorAll('button'));
-    await fireEvent.click(buttons.find((b) => b.textContent?.trim() === 'Sombre')!);
+    await fireEvent.click(buttons.find((b) => b.textContent?.trim() === darkLabel())!);
     expect(localStorage.getItem('theme')).toBe('dark');
-    await fireEvent.click(buttons.find((b) => b.textContent?.trim() === 'Auto')!);
+    await fireEvent.click(buttons.find((b) => b.textContent?.trim() === systemLabel())!);
     expect(localStorage.getItem('theme')).toBeNull();
   });
 });

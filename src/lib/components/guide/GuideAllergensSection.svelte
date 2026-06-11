@@ -3,7 +3,7 @@
   import Badge from '$components/ui/Badge.svelte';
   import SourceCitation from '$lib/components/SourceCitation.svelte';
   import AllergenInfoDialog from '$lib/components/AllergenInfoDialog.svelte';
-  import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
+  import { ALLERGENS, getAllergenLabel, type AllergenId } from '$lib/utils/allergens';
   import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
   import { ShieldCheck } from 'lucide-svelte';
 
@@ -49,7 +49,7 @@
         class="rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <div class="flex items-center justify-between gap-2">
-          <span class="font-medium">{a.label}</span>
+          <span class="font-medium">{getAllergenLabel(a.id)}</span>
           <Badge variant="default" class="shrink-0 text-[10px]">
             Dès {g.recommendedAgeMonths} mois
           </Badge>

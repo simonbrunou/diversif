@@ -4,7 +4,8 @@ import { foodEntries, foods } from '$lib/server/db/schema';
 import {
   ALLERGENS,
   ALLERGEN_MAINTAIN_DAYS,
-  PRIORITY_INTRODUCTION_ALLERGENS
+  PRIORITY_INTRODUCTION_ALLERGENS,
+  getAllergenLabel
 } from '$lib/utils/allergens';
 
 export type AllergenItem = {
@@ -73,7 +74,7 @@ export async function loadAllergenStatus(
     if (!b) {
       return {
         id: a.id,
-        label: a.label,
+        label: getAllergenLabel(a.id),
         triedCount: 0,
         lastTried: null,
         daysSinceLastTried: null,
@@ -92,7 +93,7 @@ export async function loadAllergenStatus(
     }
     return {
       id: a.id,
-      label: a.label,
+      label: getAllergenLabel(a.id),
       triedCount: b.triedCount,
       lastTried: formatDDMMYY(b.latest),
       daysSinceLastTried: daysSince,
