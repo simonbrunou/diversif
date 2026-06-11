@@ -18,6 +18,18 @@
   let submitting = $state(false);
   let showPassword = $state(false);
   let passkeyLoading = $state(false);
+  // bind:value (state seeded from the failure echo) instead of one-way value
+  // attributes — Svelte re-applies plain value attributes on any re-render
+  // of the element, wiping in-progress typing when `form`/`data` settle late
+  // (see OnboardingForm for the full story).
+  // Seed-once is the point: later prop changes must NOT overwrite what
+  // the user is typing.
+  // svelte-ignore state_referenced_locally
+  let displayName = $state(form?.displayName ?? '');
+  // svelte-ignore state_referenced_locally
+  let email = $state(form?.email ?? '');
+  // svelte-ignore state_referenced_locally
+  let inviteCode = $state(form?.inviteCode ?? data.inviteCode);
   const passkeyUnsupported = $derived(
     browser &&
       !(
@@ -57,7 +69,7 @@
         autocomplete="given-name"
         required
         maxlength={80}
-        value={form?.displayName ?? ''}
+        bind:value={displayName}
       />
     </Field>
 
@@ -68,7 +80,7 @@
         type="email"
         autocomplete="email"
         required
-        value={form?.email ?? ''}
+        bind:value={email}
       />
     </Field>
 
@@ -104,7 +116,7 @@
         id="inviteCode"
         name="inviteCode"
         placeholder="BEBE-XXXXXX"
-        value={form?.inviteCode ?? data.inviteCode}
+        bind:value={inviteCode}
         autocomplete="off"
       />
     </Field>

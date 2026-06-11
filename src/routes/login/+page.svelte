@@ -18,6 +18,12 @@
   let { form }: { form: ActionData } = $props();
   let submitting = $state(false);
   let passkeyLoading = $state(false);
+  // bind:value, not a one-way value attribute — re-renders re-apply plain
+  // attributes and can wipe in-progress typing (see OnboardingForm).
+  // Seed-once is the point: later prop changes must NOT overwrite what
+  // the user is typing.
+  // svelte-ignore state_referenced_locally
+  let email = $state(form?.email ?? '');
   const unsupported = $derived(
     browser &&
       !(
@@ -128,7 +134,7 @@
         type="email"
         autocomplete="email webauthn"
         required
-        value={form?.email ?? ''}
+        bind:value={email}
       />
     </Field>
 

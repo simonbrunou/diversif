@@ -101,6 +101,14 @@
   });
 
   onMount(() => {
+    // Deterministic hydration signal: SSR'd inputs can lose values typed
+    // before the client render claims them, which made e2e form fills (and
+    // real users on slow connections) race hydration. Tests gate their
+    // first interaction on this attribute instead of retry loops; it costs
+    // nothing in production and survives client-side navigations (the root
+    // layout never unmounts).
+    document.documentElement.dataset.hydrated = 'true';
+
     // Sync the theme cookie with the localStorage choice once per load:
     // users who picked dark/light before the cookie existed would otherwise
     // keep a stale SSR theme and Profil meta until they re-toggled.
