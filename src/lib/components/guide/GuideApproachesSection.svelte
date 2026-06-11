@@ -3,6 +3,7 @@
   import SourceCitation from '$lib/components/SourceCitation.svelte';
   import { APPROACHES } from '$lib/content/guidance';
   import { Users } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
 </script>
 
 <section id="approches" class="scroll-mt-6 space-y-3">
@@ -15,16 +16,16 @@
       <Card class="p-4">
         <h3 class="text-sm font-semibold">{a.title}</h3>
         <p class="mt-1 text-sm text-foreground/90">{a.body}</p>
-        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-ras">
-          Avantages
+        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-ras-foreground">
+          {m.guideApproachesPros()}
         </h4>
         <ul class="mt-1 list-disc space-y-0.5 pl-5 text-sm">
           {#each a.pros as p, i (i)}
             <li>{p}</li>
           {/each}
         </ul>
-        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-inconfort">
-          Limites
+        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-inconfort-foreground">
+          {m.guideApproachesCons()}
         </h4>
         <ul class="mt-1 list-disc space-y-0.5 pl-5 text-sm">
           {#each a.cons as p, i (i)}

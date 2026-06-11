@@ -25,17 +25,24 @@ describe('logout POST', () => {
         })
         .returning()
     )[0];
-    const session = await createSession(u.id);
+    const { token, session } = await createSession(u.id);
 
+    // The handler invalidates via the raw cookie token (sessions are stored
+    // hashed at rest; locals.sessionId holds the digest, which can't be
+    // replayed through the token-hashing delete path).
     const event = makeRouteEvent({
       user: safeUser(u),
-      sessionId: session.id
+      sessionId: session.id,
+      cookies: { [SESSION_COOKIE]: token }
     });
     const result = await captureFlow(() => POST(event as unknown as Parameters<typeof POST>[0]));
     expect(result.kind).toBe('redirect');
     if (result.kind === 'redirect') expect(result.location).toBe('/login');
-    expect(await validateSession(session.id)).toBeNull();
+    expect(await validateSession(token)).toBeNull();
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
+    // The 303 must carry Clear-Site-Data so Chromium/Firefox wipe the SW
+    // 'pages' cache + IndexedDB even when JS (the client-side purge) is off.
+    expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
   });
 
   it('still clears the cookie when no session is present', async () => {
@@ -43,5 +50,6 @@ describe('logout POST', () => {
     const result = await captureFlow(() => POST(event as unknown as Parameters<typeof POST>[0]));
     expect(result.kind).toBe('redirect');
     expect(event.cookies.delete).toHaveBeenCalled();
+    expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
   });
 });

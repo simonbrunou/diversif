@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { goto } from '$app/navigation';
+  import { localizedHref } from '$lib/utils/localized-href';
   import Button from '$lib/components/ui/Button.svelte';
   import BottomNavBento, { TABS } from './BottomNavBento.svelte';
   import FabLog from './FabLog.svelte';
@@ -36,10 +37,21 @@
   // and the log button have a target. ChildHeaderPill keeps using
   // `currentChild` so the pill stays hidden on /account.
   const navChildId = $derived(currentChildId ?? kids[0]?.id);
+  // Single visibility rule for the rail tabs, mobile nav/FAB and desktop log
+  // CTA — they must never disagree (the rail once used currentChildId while
+  // the mobile nav used the fallback, leaving desktop /account chrome-less).
+  const showNav = $derived(showChrome && !!navChildId);
+  // /child/[id]/report is a hand-to-pediatrician document: the fixed desktop
+  // « + Enregistrer un aliment » button overlaps the document at lg widths
+  // and the mobile FAB floats over it — both are off-context there. The nav
+  // (rail + bottom tabs) stays for wayfinding; only the log CTAs go.
+  const isReportRoute = $derived(/^\/child\/[^/]+\/report(?:\/|$)/.test(currentPath));
+  const showLogCta = $derived(showNav && !isReportRoute);
 
   function openLog(): void {
     if (!navChildId) return;
-    void goto(`/child/${navChildId}/log`);
+    // localizedHref so an EN visitor isn't flipped back to the FR UI.
+    void goto(localizedHref(`/child/${navChildId}/log`));
   }
 </script>
 
@@ -50,12 +62,14 @@
     aria-label={m.chromeLateralNavLabel()}
     class="hidden lg:flex lg:flex-col lg:gap-2 lg:border-r lg:border-border lg:bg-surface lg:p-4"
   >
-    <span class="mb-4 font-display text-2xl italic">diversif</span>
-    {#if currentChildId}
+    <!-- Wordmark links home so chrome-less pages (/child/new) keep a way out
+         on desktop, matching the mobile SharedTopBar brand link. -->
+    <a href={localizedHref('/')} class="mb-4 font-display text-2xl italic">diversif</a>
+    {#if showNav}
       {#each TABS as tab (tab.labelKey)}
         {@const active = tab.matcher(currentPath)}
         <a
-          href={tab.href(currentChildId)}
+          href={tab.href(navChildId)}
           aria-current={active ? 'page' : undefined}
           class={cn(
             'flex items-center gap-3 rounded-tile px-3 py-2 text-sm font-medium transition-colors',
@@ -97,16 +111,18 @@
         {#if children}{@render children()}{/if}
       </main>
 
-      {#if showChrome && navChildId}
+      {#if showNav}
         <!-- Mobile bottom nav + FAB (hidden on desktop). FAB is centered
              vertically on the nav's center (bottom-[calc(0.625rem+safe)] puts
              its 60px circle around the nav's center at 40px+safe), filling the
              `w-16` spacer slot in BottomNavBento between tabs 2 and 3. -->
         <div data-no-print class="lg:hidden">
           <BottomNavBento currentChildId={navChildId} {currentPath} />
-          <div class="fixed bottom-[calc(0.625rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
-            <FabLog onclick={openLog} />
-          </div>
+          {#if showLogCta}
+            <div class="fixed bottom-[calc(0.625rem+env(safe-area-inset-bottom))] left-1/2 z-40 -translate-x-1/2">
+              <FabLog onclick={openLog} />
+            </div>
+          {/if}
         </div>
 
         <ChildSwitcherDrawer bind:open={switcherOpen} {kids} currentChildId={navChildId} />
@@ -115,7 +131,7 @@
   </div>
 
   <!-- Desktop top-right log button -->
-  {#if showChrome && currentChildId}
+  {#if showLogCta}
     <Button
       type="button"
       size="pill"

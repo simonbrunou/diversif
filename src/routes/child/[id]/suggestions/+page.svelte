@@ -13,6 +13,7 @@
   import { getAllergenLabel } from '$lib/utils/allergens';
   import { cn } from '$lib/utils/cn';
   import { Sparkles, Lightbulb } from 'lucide-svelte';
+  import * as m from '$lib/paraglide/messages';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -37,34 +38,43 @@
 
 <div class="mx-auto w-full px-4 max-w-2xl space-y-6 py-6">
   <BackHeader
-    title="Suggestions"
-    subtitle={`À tester ces jours-ci selon l’âge de ${data.child.name} (${data.ageMonths} mois).`}
+    title={m.suggestionsTitle()}
+    subtitle={data.ageMonths === 1
+      ? m.suggestionsSubtitleOne({ name: data.child.name })
+      : m.suggestionsSubtitleOther({ name: data.child.name, ageMonths: data.ageMonths })}
     fallback={`/child/${data.child.id}`}
   />
 
   <TipCard
     tone="info"
     icon={Lightbulb}
-    eyebrow="Bon à savoir"
-    body="Ces suggestions excluent les aliments déjà loggués et privilégient en haut les allergènes pas encore introduits. Reproposez un nouvel aliment jusqu'à 10 fois pour qu'il soit accepté : l'acceptation gustative se construit avec la répétition."
+    eyebrow={m.suggestionsTipEyebrow()}
+    body={m.suggestionsTipBody()}
     sources={['spf-pnns-guide']}
   />
 
   {#if data.priorityAllergens.length === 0 && data.others.length === 0}
-    <CalloutCard icon={Sparkles} title="Vous avez fait le tour du catalogue">
-      Variez les préparations et confirmez les introductions à votre rythme.
+    <CalloutCard icon={Sparkles} title={m.suggestionsEmptyTitle()}>
+      {m.suggestionsEmptyBody()}
     </CalloutCard>
   {:else}
     {#if data.priorityAllergens.length > 0}
       <section>
-        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-reaction-inconfort">
-          Allergènes à introduire
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-reaction-inconfort-foreground">
+          {m.suggestionsAllergensHeading()}
         </h2>
         <div class="grid gap-2 sm:grid-cols-2">
           {#each data.priorityAllergens as f (f.id)}
             <a
               href={logHref(f.id)}
-              aria-label={`Noter ${f.name}, allergène ${getAllergenLabel(f.allergenType) ?? f.allergenType ?? 'inconnu'}, dès ${f.suggestedAgeMonths} mois`}
+              aria-label={m.suggestionsLogAllergenAria({
+                food: f.name,
+                allergen:
+                  getAllergenLabel(f.allergenType) ??
+                  f.allergenType ??
+                  m.suggestionsAllergenUnknown(),
+                months: f.suggestedAgeMonths
+              })}
             >
               <Card class="p-3 transition-colors hover:bg-accent">
                 <div class="flex items-center justify-between gap-2">
@@ -73,7 +83,9 @@
                     {getAllergenLabel(f.allergenType)}
                   </Badge>
                 </div>
-                <div class="text-xs text-muted-foreground">dès {f.suggestedAgeMonths} mois</div>
+                <div class="text-xs text-muted-foreground">
+                  {m.suggestionsFromMonths({ months: f.suggestedAgeMonths })}
+                </div>
               </Card>
             </a>
           {/each}
@@ -99,12 +111,18 @@
           {#each g.items as f (f.id)}
             <a
               href={logHref(f.id)}
-              aria-label={`Noter ${f.name}, dès ${f.suggestedAgeMonths} mois${f.allergenType ? `, ${getAllergenLabel(f.allergenType) ?? f.allergenType}` : ''}`}
+              aria-label={f.allergenType
+                ? m.suggestionsLogFoodAllergenAria({
+                    food: f.name,
+                    months: f.suggestedAgeMonths,
+                    allergen: getAllergenLabel(f.allergenType) ?? f.allergenType
+                  })
+                : m.suggestionsLogFoodAria({ food: f.name, months: f.suggestedAgeMonths })}
             >
               <Card class="p-3 transition-colors hover:bg-accent">
                 <div class="font-medium">{f.name}</div>
                 <div class="text-xs text-muted-foreground">
-                  dès {f.suggestedAgeMonths} mois
+                  {m.suggestionsFromMonths({ months: f.suggestedAgeMonths })}
                   {#if f.allergenType}
                     · {getAllergenLabel(f.allergenType)}
                   {/if}

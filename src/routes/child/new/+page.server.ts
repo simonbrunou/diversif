@@ -34,14 +34,22 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 export const actions: Actions = {
   default: async ({ request, locals }) => {
     const user = requireUser(locals);
+    // Limiter first (matching every other rate-limited action), then a
+    // defensive body parse: a malformed body must not 500 past the limiter,
+    // and even rate-limited requests parse it so the 429 re-render can echo
+    // what was typed instead of wiping the form.
     const rl = checkRateLimit(CHILD_CREATE_LIMIT, `user:${user.id}`);
+    const raw = Object.fromEntries(await request.formData().catch(() => new FormData()));
+    const echo = {
+      firstName: typeof raw.firstName === 'string' ? raw.firstName : /* v8 ignore next */ '',
+      birthDate: typeof raw.birthDate === 'string' ? raw.birthDate : /* v8 ignore next */ ''
+    };
     if (!rl.allowed) {
       return fail(429, {
+        ...echo,
         errors: { firstName: 'Trop de créations récentes. Réessayez dans un moment.' }
       });
     }
-    const formData = await request.formData();
-    const raw = Object.fromEntries(formData);
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
       const issues = parsed.error.issues;
@@ -50,11 +58,7 @@ export const actions: Actions = {
         const field = issue.path[0] as string;
         if (!errors[field]) errors[field] = issue.message;
       }
-      return fail(400, {
-        firstName: typeof raw.firstName === 'string' ? raw.firstName : /* v8 ignore next */ '',
-        birthDate: typeof raw.birthDate === 'string' ? raw.birthDate : /* v8 ignore next */ '',
-        errors
-      });
+      return fail(400, { ...echo, errors });
     }
 
     const now = new Date();
@@ -81,7 +85,7 @@ export const actions: Actions = {
     });
     audit({ type: 'child.created', userId: user.id, childId });
 
-    const inviteCoparent = formData.get('inviteCoparent') === '1';
+    const inviteCoparent = raw.inviteCoparent === '1';
     let redirectQuery = '';
     if (inviteCoparent) {
       const code = await createInvitationForChild({ childId, createdBy: user.id });

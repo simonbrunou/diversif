@@ -1,5 +1,4 @@
-// Timeline-oriented queries: recent entries, streak, co-parent activity,
-// rolling analytics buckets.
+// Timeline-oriented queries: streak and co-parent activity.
 
 import { db } from '$lib/server/db';
 import { execRows } from '$lib/server/db/exec';
@@ -19,33 +18,6 @@ export type EnrichedEntry = {
   reaction: ReactionId;
   givenAt: number;
 };
-
-export async function loadRecentEntries(childId: number, days: number): Promise<EnrichedEntry[]> {
-  const since = new Date(Date.now() - days * DAY_MS);
-  const rows = await db
-    .select({
-      id: foodEntries.id,
-      foodId: foods.id,
-      foodName: foods.name,
-      category: foods.category,
-      allergenType: foods.allergenType,
-      reaction: foodEntries.reaction,
-      givenAt: foodEntries.givenAt
-    })
-    .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(and(eq(foodEntries.childId, childId), gte(foodEntries.givenAt, since)))
-    .orderBy(desc(foodEntries.givenAt));
-  return rows.map((r) => ({
-    id: r.id,
-    foodId: r.foodId,
-    foodName: r.foodName,
-    category: r.category as CategoryId,
-    allergenType: r.allergenType,
-    reaction: r.reaction as ReactionId,
-    givenAt: r.givenAt.getTime()
-  }));
-}
 
 export async function loadStreak(childId: number, now: Date = new Date()): Promise<number> {
   // We bucket by UTC day on purpose. Most parents are within UTC±2 (Europe),
@@ -144,87 +116,4 @@ export async function loadCoparentActivity(
     givenAt: r.givenAt.getTime(),
     loggedByName: r.loggedByName
   }));
-}
-
-export type WeekBucket = {
-  /** Inclusive UTC start of the bucket, ms. */
-  weekStart: number;
-  /** Distinct foods first introduced in this bucket. */
-  introductions: number;
-  /** Reaction counts for entries within this bucket. */
-  reactions: { ras: number; inconfort: number; reaction: number };
-  /** Distinct categories covered through the END of this bucket (excluding 'autre'). */
-  cumulativeCategories: number;
-};
-
-/**
- * Build N rolling 7-day buckets ending "now". The most recent bucket is
- * [now - 7d, now); index 0 in the returned array is the OLDEST bucket so
- * charts read left-to-right chronologically.
- */
-export async function loadAnalyticsBuckets(
-  childId: number,
-  weeks: number = 12,
-  now: Date = new Date()
-): Promise<WeekBucket[]> {
-  const horizonMs = now.getTime() - weeks * 7 * DAY_MS;
-  const horizon = new Date(horizonMs);
-
-  // Per-food first-introduction timestamps + category. One row per distinct
-  // food the child has ever eaten : typically 50-200 rows even for an
-  // active child. Powers BOTH "introductions in bucket" (first_at in window)
-  // and "cumulative categories through bucket end" (categories whose first
-  // intro was before window end). We need history older than horizonMs for
-  // cumulative correctness, but it's a tiny rollup, not the full entry log.
-  const introRows = await db
-    .select({
-      foodId: foods.id,
-      category: foods.category,
-      firstAt: sql<Date>`MIN(${foodEntries.givenAt})`.as('first_at')
-    })
-    .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(eq(foodEntries.childId, childId))
-    .groupBy(foods.id, foods.category);
-
-  // In-horizon entry rows for reaction counts. Cap the scan at the chart
-  // window so years-of-history children don't drag the dashboard down.
-  const horizonRows = await db
-    .select({
-      reaction: foodEntries.reaction,
-      givenAt: foodEntries.givenAt
-    })
-    .from(foodEntries)
-    .where(and(eq(foodEntries.childId, childId), gte(foodEntries.givenAt, horizon)));
-
-  const buckets: WeekBucket[] = [];
-  for (let i = weeks - 1; i >= 0; i--) {
-    const start = now.getTime() - (i + 1) * 7 * DAY_MS;
-    const end = now.getTime() - i * 7 * DAY_MS;
-    let introductions = 0;
-    let ras = 0;
-    let inconfort = 0;
-    let reaction = 0;
-    const cumulativeCategorySet = new Set<string>();
-    for (const r of introRows) {
-      const firstAt = new Date(r.firstAt).getTime();
-      if (firstAt < end && r.category !== 'autre') cumulativeCategorySet.add(r.category);
-      if (firstAt >= start && firstAt < end) introductions += 1;
-    }
-    for (const r of horizonRows) {
-      const ts = r.givenAt.getTime();
-      if (ts >= start && ts < end) {
-        if (r.reaction === 'ras') ras += 1;
-        else if (r.reaction === 'inconfort') inconfort += 1;
-        else if (r.reaction === 'reaction') reaction += 1;
-      }
-    }
-    buckets.push({
-      weekStart: Math.max(start, horizonMs),
-      introductions,
-      reactions: { ras, inconfort, reaction },
-      cumulativeCategories: cumulativeCategorySet.size
-    });
-  }
-  return buckets;
 }

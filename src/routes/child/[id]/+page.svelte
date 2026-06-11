@@ -68,7 +68,7 @@
   streak={data.streak}
   streakRecord={data.streak}
   reminders={data.reminders ?? []}
-  priorityAllergensTodo={[]}
+  allergens={data.bentoAllergens ?? []}
 />
 
 <WelcomeDialog bind:open={welcomeOpen} childId={data.child.id} formAction="?/dismissReminder" />

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
-import { makeRouteEvent, safeUser } from '../../../../test/route';
+import { captureFlow, makeRouteEvent, safeUser } from '../../../../test/route';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
@@ -46,7 +46,7 @@ mock.module('$lib/utils/invites', () => ({
 }));
 
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
-import { invitations } from '$lib/server/db/schema';
+import { invitations, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { actions } from './+page.server';
 import { PASSWORD, setup } from './settings-test-fixtures';
@@ -90,6 +90,26 @@ describe('settings createInvitation action', () => {
     )) as { status: number };
     expect(r.status).toBe(400);
     expect(await testDb.select().from(invitations)).toHaveLength(0);
+  });
+
+  it('redirects to /login when the user row vanished mid-session', async () => {
+    const { u, c, m } = await setup();
+    // Simulate the rare revocation race: the session is still live but the
+    // user row is gone — requireFreshAuth's onMissingUser must redirect.
+    await testDb.delete(users).where(eq(users.id, u.id));
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
+    });
+    const r = await captureFlow(() =>
+      actions.createInvitation!(
+        event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
+      )
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/login');
   });
 
   it('returns the failure key after 5 colliding attempts', async () => {

@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { asc, eq } from 'drizzle-orm';
-import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
 import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import { ageInMonths } from '$lib/utils/age';
@@ -147,7 +147,7 @@ export const load: PageServerLoad = async ({ parent }) => {
     if (!agg) {
       return {
         id: a.id,
-        label: a.label,
+        label: getAllergenLabel(a.id),
         isPriority,
         status: 'untested' as const,
         worst: null,
@@ -158,7 +158,7 @@ export const load: PageServerLoad = async ({ parent }) => {
     }
     return {
       id: a.id,
-      label: a.label,
+      label: getAllergenLabel(a.id),
       isPriority,
       status: 'introduced' as const,
       worst: agg.worst,
@@ -167,7 +167,8 @@ export const load: PageServerLoad = async ({ parent }) => {
       lastGivenAt: agg.last
     };
   }).sort((x, y) => {
-    // Priority allergens first; within each group sort alphabetically (FR).
+    // Priority allergens first; within each group sort alphabetically on the
+    // localized label (FR collation also orders EN labels sensibly).
     const p = Number(!x.isPriority) - Number(!y.isPriority);
     if (p !== 0) return p;
     return x.label.localeCompare(y.label, 'fr');

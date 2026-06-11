@@ -6,4 +6,4 @@
 
 <BackHeader title={m.profilCompteLangue()} />
 
-<LocaleSwitcher />
+<LocaleSwitcher variant="rows" />

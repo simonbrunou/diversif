@@ -1,8 +1,31 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import 'fake-indexeddb/auto';
-import { get } from 'svelte/store';
 
-import { clear, enqueue, flush, pendingCount } from './queue';
+import { clear, enqueue, flush } from './queue';
+
+/** Count rows directly in IDB — the queue module no longer exposes a count. */
+async function countRows(): Promise<number> {
+  const req = indexedDB.open('diversif-offline', 1);
+  const db = await new Promise<IDBDatabase>((res, rej) => {
+    req.onupgradeneeded = () => {
+      const d = req.result;
+      if (!d.objectStoreNames.contains('log')) {
+        const store = d.createObjectStore('log', { keyPath: 'key' });
+        store.createIndex('queuedAt', 'queuedAt', { unique: false });
+      }
+    };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+  const n = await new Promise<number>((res, rej) => {
+    const t = db.transaction('log', 'readonly');
+    const r = t.objectStore('log').count();
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  db.close();
+  return n;
+}
 
 const goodActionResult = (location = '/child/1?logged=1') =>
   new Response(JSON.stringify({ type: 'redirect', location }), {
@@ -34,15 +57,15 @@ describe('queue', () => {
     await clear();
   });
 
-  it('enqueue persists a row and updates pendingCount', async () => {
-    expect(get(pendingCount)).toBe(0);
+  it('enqueue persists a row', async () => {
+    expect(await countRows()).toBe(0);
     await enqueue({
       key: 'k1',
       childId: 1,
       formData: { foodId: '1', reaction: 'ras', givenAt: '2026-01-01T00:00:00Z' },
       queuedAt: 1
     });
-    expect(get(pendingCount)).toBe(1);
+    expect(await countRows()).toBe(1);
   });
 
   it('flush posts each row and removes them on type:redirect', async () => {
@@ -70,7 +93,7 @@ describe('queue', () => {
     expect(init.method).toBe('POST');
     expect((init.headers as Record<string, string>)['Idempotency-Key']).toBe('k1');
     expect((init.headers as Record<string, string>)['x-sveltekit-action']).toBe('true');
-    expect(get(pendingCount)).toBe(0);
+    expect(await countRows()).toBe(0);
   });
 
   it('processes rows in queuedAt order', async () => {
@@ -108,7 +131,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(1);
+    expect(await countRows()).toBe(1);
   });
 
   it('leaves the row queued on type:error 5xx', async () => {
@@ -122,7 +145,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(1);
+    expect(await countRows()).toBe(1);
   });
 
   it('leaves the row queued on type:failure status 409', async () => {
@@ -136,7 +159,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(1);
+    expect(await countRows()).toBe(1);
   });
 
   it('drops the row and emits drop event on type:failure 4xx', async () => {
@@ -152,7 +175,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(0);
+    expect(await countRows()).toBe(0);
     expect(events).toContain('dropped');
     window.removeEventListener('queue:dropped', off as EventListener);
   });
@@ -171,7 +194,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(0);
+    expect(await countRows()).toBe(0);
     expect(events).toContain('expired');
     window.removeEventListener('queue:sessionExpired', handler);
   });
@@ -190,7 +213,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(0);
+    expect(await countRows()).toBe(0);
     expect(events).toContain('expired');
     window.removeEventListener('queue:sessionExpired', handler);
   });
@@ -209,7 +232,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(0);
+    expect(await countRows()).toBe(0);
     expect(events).toContain('expired');
     window.removeEventListener('queue:sessionExpired', handler);
   });
@@ -283,7 +306,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(1);
+    expect(await countRows()).toBe(1);
   });
 
   it('leaves the row queued when response body is not valid JSON', async () => {
@@ -299,7 +322,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(1);
+    expect(await countRows()).toBe(1);
   });
 
   it('drops the row and emits drop event on type:error 4xx', async () => {
@@ -316,7 +339,7 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(get(pendingCount)).toBe(0);
+    expect(await countRows()).toBe(0);
     expect(events).toContain('dropped');
     window.removeEventListener('queue:dropped', handler);
   });
@@ -446,8 +469,6 @@ describe('queue', () => {
     // matters: the post-close re-import returns the same module instance,
     // but the queue's in-memory state is reset by reading fresh from IDB.
     const fresh = await import('./queue');
-    // Wait a tick for module init's refreshCount() to settle
-    await new Promise((res) => setTimeout(res, 0));
     const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ type: 'redirect', location: '/child/1?logged=1' }), {
         status: 200,

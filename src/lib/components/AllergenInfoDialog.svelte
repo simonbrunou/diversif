@@ -6,7 +6,7 @@
   import Badge from '$components/ui/Badge.svelte';
   import SourceCitation from './SourceCitation.svelte';
   import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
-  import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
+  import { getAllergenLabel, type AllergenId } from '$lib/utils/allergens';
   import { CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
 
@@ -20,7 +20,7 @@
 
   const open = $derived(allergenId != null);
   const guidance = $derived(allergenId ? ALLERGEN_GUIDANCE[allergenId] : null);
-  const label = $derived(allergenId ? ALLERGENS.find((a) => a.id === allergenId)?.label : '');
+  const label = $derived(allergenId ? getAllergenLabel(allergenId) : '');
 
   function close() {
     allergenId = null;

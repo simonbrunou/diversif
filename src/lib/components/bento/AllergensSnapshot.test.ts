@@ -8,14 +8,16 @@ describe('AllergensSnapshot', () => {
   const items = [
     { id: 'oeuf', label: 'Œuf', state: 'ok' as const },
     { id: 'arachide', label: 'Arachide', state: 'todo' as const },
-    { id: 'lait', label: 'Lait', state: 'ok' as const }
+    { id: 'lait', label: 'Lait', state: 'fading' as const },
+    { id: 'poisson', label: 'Poisson', state: 'reaction' as const }
   ];
 
-  it('renders one pill per allergen', () => {
+  it('renders one pill per allergen with its real name', () => {
     render(AllergensSnapshot, { props: { items, foodsHref: '/child/1/foods?segment=allergens' } });
     expect(screen.getByText('Œuf')).toBeTruthy();
     expect(screen.getByText('Arachide')).toBeTruthy();
     expect(screen.getByText('Lait')).toBeTruthy();
+    expect(screen.getByText('Poisson')).toBeTruthy();
   });
 
   it('renders the tile as a link to the allergens segment', () => {
@@ -28,7 +30,21 @@ describe('AllergensSnapshot', () => {
 
   it('shows the state suffix for each pill', () => {
     render(AllergensSnapshot, { props: { items, foodsHref: '/child/1/foods?segment=allergens' } });
-    const pills = screen.getAllByText(/à découvrir/);
-    expect(pills.length).toBeGreaterThan(0);
+    expect(screen.getByText(/introduit/)).toBeTruthy();
+    expect(screen.getByText(/à découvrir/)).toBeTruthy();
+    expect(screen.getByText(/à reproposer/)).toBeTruthy();
+    expect(screen.getByText(/réaction/)).toBeTruthy();
+  });
+
+  it('renders the empty state copy when there are no items, still linking through', () => {
+    render(AllergensSnapshot, {
+      props: { items: [], foodsHref: '/child/1/foods?segment=allergens' }
+    });
+    expect(
+      screen.getByText(
+        'Aucun allergène introduit pour l’instant — commencez par l’œuf ou l’arachide.'
+      )
+    ).toBeTruthy();
+    expect(screen.getByRole('link').getAttribute('href')).toBe('/child/1/foods?segment=allergens');
   });
 });

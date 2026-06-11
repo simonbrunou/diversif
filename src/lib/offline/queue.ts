@@ -1,5 +1,3 @@
-import { writable, type Readable } from 'svelte/store';
-
 export interface QueuedSubmit {
   key: string;
   childId: number;
@@ -9,9 +7,6 @@ export interface QueuedSubmit {
 
 const DB_NAME = 'diversif-offline';
 const STORE = 'log';
-
-const _pendingCount = writable(0);
-export const pendingCount: Readable<number> = { subscribe: _pendingCount.subscribe };
 
 let inFlight: Promise<void> | null = null;
 
@@ -69,11 +64,6 @@ function reqAsPromise<T>(req: IDBRequest<T>): Promise<T> {
   });
 }
 
-async function refreshCount(): Promise<void> {
-  const n = await tx('readonly', async (store) => reqAsPromise(store.count()));
-  _pendingCount.set(n);
-}
-
 async function readAllOrdered(): Promise<QueuedSubmit[]> {
   return tx('readonly', async (store) => {
     const idx = store.index('queuedAt');
@@ -86,21 +76,18 @@ async function deleteRow(key: string): Promise<void> {
   await tx('readwrite', async (store) => {
     await reqAsPromise(store.delete(key));
   });
-  await refreshCount();
 }
 
 export async function enqueue(item: QueuedSubmit): Promise<void> {
   await tx('readwrite', async (store) => {
     await reqAsPromise(store.put(item));
   });
-  await refreshCount();
 }
 
 export async function clear(): Promise<void> {
   await tx('readwrite', async (store) => {
     await reqAsPromise(store.clear());
   });
-  await refreshCount();
 }
 
 interface ActionRedirect {
@@ -194,13 +181,4 @@ export function flush(): Promise<void> {
     }
   })();
   return inFlight;
-}
-
-// Module init: hydrate the count from IDB so the badge is accurate after
-// a fresh page load with pre-existing rows.
-if (typeof indexedDB !== 'undefined') {
-  /* v8 ignore next */
-  void refreshCount().catch(() => {
-    // IDB unavailable or fresh; ignore.
-  });
 }

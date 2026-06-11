@@ -8,6 +8,8 @@ import type { ReactionId } from '$lib/utils/reactions';
 import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
 import { computeReminders } from '$lib/server/guidance/reminders';
+import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
+import * as m from '$lib/paraglide/messages';
 import {
   loadCoparentActivity,
   loadDiversityMetrics,
@@ -119,6 +121,11 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   };
   for (const v of worstByAllergen.values()) summary[v] += 1;
 
+  // Per-allergen status (same loader as the Carnet Allergènes segment) so
+  // the "Allergènes prioritaires" tile shows real allergen names, not
+  // synthetic placeholders.
+  const bentoAllergens = await loadAllergenStatus(childId, nowAtLoad);
+
   // Diversity metrics
   const diversity = await loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
   const streak = await loadStreak(childId);
@@ -189,10 +196,10 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       ? {
           key: observationKey,
           severity: 'warn' as const,
-          title: `Surveiller « ${latestNonRasEntry.foodName} »`,
-          body: 'Une réaction a été notée il y a moins de 48 h. Consultez le profil pour noter les symptômes ou ajouter des observations.',
+          title: m.reminderObservationTitle({ food: latestNonRasEntry.foodName }),
+          body: m.reminderObservationBody(),
           cta: {
-            label: 'Voir le profil',
+            label: m.reminderCtaSeeProfile(),
             href: `/child/${childId}/foods/${latestNonRasEntry.id}`
           },
           dismissable: true
@@ -233,6 +240,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       weekCount,
       allergens: summary
     },
+    bentoAllergens,
     diversity,
     streak,
     weeklyRecap,

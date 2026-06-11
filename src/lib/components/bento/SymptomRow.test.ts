@@ -1,8 +1,22 @@
-import { afterEach, describe, expect, it } from 'bun:test';
-import { render, screen, cleanup } from '@testing-library/svelte';
+import { afterEach, describe, expect, it, mock } from 'bun:test';
+import { render, screen, cleanup, fireEvent } from '@testing-library/svelte';
+
+// The delete confirmation is a ConfirmModal (bits-ui Portal): happy-dom's
+// cloneNode interaction with the Portal trips $app/forms' "method must be
+// POST" guard, so stub `enhance` here like ConfirmModal.test.ts does.
+mock.module('$app/forms', () => ({
+  enhance: () => ({ destroy: () => {} })
+}));
+
 import SymptomRow from './SymptomRow.svelte';
 
-afterEach(() => cleanup());
+afterEach(async () => {
+  cleanup();
+  // bits-ui releases its body-scroll lock on a short timeout. Let that cleanup
+  // run while happy-dom's document still exists so it cannot fire after the
+  // test environment has been torn down.
+  await new Promise((resolve) => setTimeout(resolve, 50));
+});
 
 const baseProps = { id: 7, action: '/child/abc/foods/1' };
 
@@ -52,14 +66,22 @@ describe('SymptomRow', () => {
     expect(container.querySelector('[aria-live="polite"]')).toBeTruthy();
   });
 
-  it('renders a delete form with the symptom id and deleteSymptom action', () => {
-    const { container } = render(SymptomRow, {
+  it('opens a confirmation modal instead of submitting directly', async () => {
+    render(SymptomRow, {
       props: { ...baseProps, label: 'rougeur', observedAt: '11:42', note: null }
     });
-    const form = container.querySelector('form');
+    // No form (and no destructive request possible) before confirmation.
+    expect(document.querySelector('form')).toBeNull();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Supprimer ce symptôme' }));
+
+    expect(screen.getByText('Supprimer ce symptôme ?')).toBeTruthy();
+    // bits-ui Portal moves dialog content outside `container`; query document.
+    const form = document.querySelector('form');
     expect(form?.getAttribute('action')).toBe('/child/abc/foods/1?/deleteSymptom');
+    expect(form?.getAttribute('method')?.toLowerCase()).toBe('post');
     const hidden = form?.querySelector('input[name="symptomId"]') as HTMLInputElement | null;
     expect(hidden?.value).toBe('7');
-    expect(screen.getByRole('button', { name: 'Supprimer ce symptôme' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Annuler' })).toBeTruthy();
   });
 });

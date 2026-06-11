@@ -2,6 +2,7 @@
 <script lang="ts">
   import FoodCard from './FoodCard.svelte';
   import EmptyHint from '$components/ui/EmptyHint.svelte';
+  import { CATEGORY_IDS, getCategoryLabel } from '$lib/utils/categories';
   import * as m from '$lib/paraglide/messages';
 
   type Food = {
@@ -21,7 +22,16 @@
     }, {})
   );
 
-  const categories = $derived(Object.keys(grouped).sort());
+  // Curated CATEGORIES order like the combobox and guide — alphabetical raw
+  // ids would scramble once labels are localized. Ids outside CATEGORY_IDS
+  // can't be produced by the server today, but if legacy data carries one it
+  // must still render (at the end) rather than silently hide its foods.
+  const categories = $derived([
+    ...CATEGORY_IDS.filter((id) => id in grouped),
+    ...Object.keys(grouped)
+      .filter((id) => !CATEGORY_IDS.includes(id))
+      .sort()
+  ]);
 </script>
 
 {#if categories.length === 0}
@@ -34,7 +44,7 @@
         class="rounded-tile border border-border/40 bg-canvas p-3 shadow-soft"
       >
         <summary class="cursor-pointer text-sm font-semibold uppercase tracking-wider text-ink-soft">
-          {cat} ({grouped[cat].length})
+          {getCategoryLabel(cat)} ({grouped[cat].length})
         </summary>
         <div class="relative">
           <div class="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto">

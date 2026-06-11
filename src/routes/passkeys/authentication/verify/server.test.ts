@@ -13,7 +13,7 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { SESSION_COOKIE, validateSession } from '$lib/server/auth';
+import { SESSION_COOKIE, hashSessionToken, validateSession } from '$lib/server/auth';
 import { passkeys, sessions, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import {
@@ -72,6 +72,15 @@ function makeReq(opts: { body?: unknown; cookieToken?: string; autofillCookieTok
 }
 
 describe('POST /passkeys/authentication/verify', () => {
+  it('errors 500 when the request origin is outside the RP ID scope', async () => {
+    const event = makeRouteEvent({ url: 'https://evil.example/passkeys/authentication/verify' });
+    const r = await captureFlow(
+      () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+    );
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(500);
+  });
+
   it('errors 429 when the per-IP rate limit is exceeded', async () => {
     // Saturate the passkey-auth bucket (limit 20 per 5 minutes).
     for (let i = 0; i < 20; i++) {
@@ -169,9 +178,14 @@ describe('POST /passkeys/authentication/verify', () => {
     )[0];
     expect(updated?.counter).toBe(5);
 
-    // Sanity check session row exists.
+    // Sanity check session row exists — stored under the token's sha256
+    // digest, never the raw cookie value.
     const row = (
-      await testDb.select().from(sessions).where(eq(sessions.id, sessionToken)).limit(1)
+      await testDb
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, hashSessionToken(sessionToken)))
+        .limit(1)
     )[0];
     expect(row?.userId).toBe(u.id);
   });

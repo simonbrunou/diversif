@@ -37,22 +37,28 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     .innerJoin(users, eq(users.id, memberships.userId))
     .where(eq(memberships.childId, childId));
 
-  const activeInvites = await db
-    .select()
-    .from(invitations)
-    .where(
-      and(
-        eq(invitations.childId, childId),
-        isNull(invitations.usedAt),
-        gt(invitations.expiresAt, new Date())
-      )
-    );
-
   // Owners need email to identify which co-parent to remove from the roster
   // (administrative use). Non-owner members get displayName only : exposing
   // every co-parent's email to every newly-joined member is a PII leak with
   // no operational need.
   const isOwner = membership.role === 'owner';
+
+  // Invite codes are live bearer credentials : only the owner (the sole role
+  // allowed to create/revoke them) gets to see them — don't even query them
+  // for other members. The settings UI already renders the invitations block
+  // under `data.role === 'owner'`.
+  const activeInvites = isOwner
+    ? await db
+        .select()
+        .from(invitations)
+        .where(
+          and(
+            eq(invitations.childId, childId),
+            isNull(invitations.usedAt),
+            gt(invitations.expiresAt, new Date())
+          )
+        )
+    : [];
 
   return {
     members: memberRows.map((m) => ({
@@ -160,7 +166,10 @@ export const actions: Actions = {
     const { user: owner } = requireOwnership(locals, childId);
     const data = await request.formData();
     const userId = Number(data.get('userId'));
-    if (!Number.isInteger(userId)) return fail(400, { error: 'Utilisateur invalide.' });
+    // > 0 so an empty/zero field fails loudly instead of "removing" nobody
+    // and still reporting success.
+    if (!Number.isInteger(userId) || userId <= 0)
+      return fail(400, { error: 'Utilisateur invalide.' });
     if (userId === owner.id)
       return fail(400, { error: 'Vous ne pouvez pas vous retirer vous-même.' });
 
