@@ -23,7 +23,7 @@ describe('localizedHref', () => {
     expect(localizedHref('/login')).toBe('/en/login');
   });
 
-  it('maps the root path to /en without a trailing slash (1.x parity)', () => {
+  it('maps the root path to /en without a trailing slash (deliberate improvement over 1.x, which emitted /en/)', () => {
     overwriteGetLocale(() => 'en');
     expect(localizedHref('/')).toBe('/en');
   });

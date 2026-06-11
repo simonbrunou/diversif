@@ -10,7 +10,7 @@
     "build": "INLANG_TELEMETRY=false bun --bun node_modules/vite/bin/vite.js build",
     "preview": "bun --bun node_modules/vite/bin/vite.js preview",
     "_paraglide_note": "paraglide-js 2.x compiles cleanly under bunx (verified 2026-06-11). The --strategy flags MUST stay in sync with paraglideVitePlugin's `strategy` in vite.config.ts — both compile into the same gitignored outdir, and a drift would make `bun run check/test` exercise a different runtime than `bun run build` ships.",
-    "paraglide": "INLANG_TELEMETRY=false bunx paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --strategy url baseLocale",
+    "paraglide": "bun scripts/compile-paraglide.ts",
     "check": "bun run paraglide && bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun --bun node_modules/svelte-check/bin/svelte-check --tsconfig ./tsconfig.json --threshold warning",
     "check:watch": "bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun --bun node_modules/svelte-check/bin/svelte-check --tsconfig ./tsconfig.json --threshold warning --watch",
     "check:budget": "bun run build && bun scripts/check-bundle-size.ts",

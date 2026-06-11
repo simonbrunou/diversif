@@ -6,12 +6,15 @@ import { getLocale, localizeHref, type Locale } from '$lib/paraglide/runtime';
  * clicking a link stays on `/en/...` and doesn't silently flip the chrome
  * back to FR.
  *
- * paraglide 2.x's localizeHref maps the root path to `/en/` (trailing
- * slash); the 1.x adapter produced `/en` and the app's links are
- * trailing-slash-free (SvelteKit trailingSlash 'never'), so normalize it
- * away to keep emitted hrefs byte-identical.
+ * localizeHref maps the root path to `/en/` (trailing slash); the app's
+ * links are trailing-slash-free (SvelteKit trailingSlash 'never'), so
+ * normalize that one case. (The 1.x adapter emitted `/en/` here too — this
+ * is a deliberate improvement, not parity.)
  */
 export function localizedHref(path: string, locale: Locale = getLocale()): string {
   const href = localizeHref(path, { locale });
-  return href.length > 1 && href.endsWith('/') ? href.slice(0, -1) : href;
+  // Only the EN root needs the normalization — a blanket "strip trailing
+  // slash" would corrupt hrefs whose query/hash legitimately ends in '/'
+  // (e.g. ?redirect=/).
+  return href === '/en/' ? '/en' : href;
 }

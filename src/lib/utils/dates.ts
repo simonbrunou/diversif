@@ -13,10 +13,10 @@ dayjs.extend(updateLocale);
 
 // Calling dayjs.locale() at module load globalised French for every
 // downstream dayjs() call, including pages rendered for /en/ visitors.
-// Pass the active paraglide tag per call instead so each render picks up
-// the visitor's locale; the helpers below resolve it via getLocale()
-// (which hooks.server.ts sets per request and the layout effect keeps in
-// sync after client-side navigations).
+// Pass the active paraglide locale per call instead so each render picks
+// up the visitor's locale; the helpers below resolve it via getLocale()
+// (server: paraglideMiddleware's per-request AsyncLocalStorage scope;
+// client: the url strategy reading window.location).
 
 export function formatRelative(date: Date | number, now: Date = new Date()): string {
   const locale = getLocale();
