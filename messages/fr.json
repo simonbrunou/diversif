@@ -212,6 +212,8 @@
   "aujourdhuiAllergensOk": "introduit",
   "aujourdhuiAllergensTodo": "à découvrir",
   "aujourdhuiAllergensFading": "à reproposer",
+  "aujourdhuiAllergensReaction": "réaction",
+  "aujourdhuiAllergensEmpty": "Aucun allergène introduit pour l’instant — commencez par l’œuf ou l’arachide.",
   "carnetAllergensFadingCaption": "{days} j",
   "preDiversificationTitle": "Diversification à partir de 4 mois",
   "preDiversificationEyebrow": "Pas encore l’heure",

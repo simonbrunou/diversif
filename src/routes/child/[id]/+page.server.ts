@@ -8,6 +8,7 @@ import type { ReactionId } from '$lib/utils/reactions';
 import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
 import { computeReminders } from '$lib/server/guidance/reminders';
+import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
 import {
   loadCoparentActivity,
   loadDiversityMetrics,
@@ -118,6 +119,11 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     reaction: 0
   };
   for (const v of worstByAllergen.values()) summary[v] += 1;
+
+  // Per-allergen status (same loader as the Carnet Allergènes segment) so
+  // the "Allergènes prioritaires" tile shows real allergen names, not
+  // synthetic placeholders.
+  const bentoAllergens = await loadAllergenStatus(childId, nowAtLoad);
 
   // Diversity metrics
   const diversity = await loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
@@ -233,6 +239,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       weekCount,
       allergens: summary
     },
+    bentoAllergens,
     diversity,
     streak,
     weeklyRecap,

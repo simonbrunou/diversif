@@ -212,6 +212,8 @@
   "aujourdhuiAllergensOk": "introduced",
   "aujourdhuiAllergensTodo": "to discover",
   "aujourdhuiAllergensFading": "to re-offer",
+  "aujourdhuiAllergensReaction": "reaction",
+  "aujourdhuiAllergensEmpty": "No allergen introduced yet — start with egg or peanut.",
   "carnetAllergensFadingCaption": "{days} d",
   "preDiversificationTitle": "Diversification starts at 4 months",
   "preDiversificationEyebrow": "Not quite yet",
