@@ -243,6 +243,7 @@
   "carnetCategoriesEmpty": "Aucune catégorie pour l’instant",
   "carnetAllergensEmpty": "Aucun allergène introduit pour l’instant",
   "carnetBilanDiversity": "Diversité",
+  "carnetBilanDiversityCaption": "catégories d’aliments goûtées",
   "carnetBilanFoods": "Aliments",
   "carnetBilanLast7Days": "Sur 7 jours",
   "carnetBilanLogsOne": "1 entrée",

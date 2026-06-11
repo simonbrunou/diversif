@@ -30,16 +30,25 @@ describe('WelcomeDialog', () => {
     expect(screen.getByText('Prêt·e à explorer')).toBeTruthy();
   });
 
-  it('renders the "Ouvrir le guide" CTA on the last step pointing to the child guide', async () => {
+  it('renders the "Ouvrir le guide" CTA on the last step as a submit of the dismiss form', async () => {
     render(WelcomeDialog, {
       props: { open: true, childId: 9, formAction: '?/dismissReminder' }
     });
     await fireEvent.click(screen.getByText('Suivant'));
     await fireEvent.click(screen.getByText('Suivant'));
-    const cta = Array.from(document.querySelectorAll('a')).find((a) =>
-      a.textContent?.includes('Ouvrir le guide')
+    // Not a plain link anymore: the CTA submits the welcome-dismiss form so the
+    // dialog never re-opens on the next dashboard visit, then navigates to the
+    // guide via the enhance callback (data-then-guide).
+    const cta = Array.from(document.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Ouvrir le guide')
     );
-    expect(cta?.getAttribute('href')).toBe('/child/9/guide');
+    expect(cta).toBeTruthy();
+    expect(cta?.getAttribute('type')).toBe('submit');
+    expect(cta?.getAttribute('form')).toBe('welcome-dismiss-form');
+    expect(cta?.getAttribute('data-then-guide')).toBe('true');
+    expect(document.querySelector('form#welcome-dismiss-form')?.getAttribute('action')).toBe(
+      '?/dismissReminder'
+    );
   });
 
   it('renders the welcome-dialog dismiss form', () => {
