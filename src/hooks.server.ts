@@ -86,6 +86,17 @@ function resolveLocaleFromRequest(event: Parameters<Handle>[0]['event']): Availa
 export const handle: Handle = async ({ event, resolve }) => {
   // Set paraglide's runtime tag for SSR (m.X() calls during render + the
   // %paraglide.lang% placeholder substitution below).
+  //
+  // KNOWN LIMITATION (deliberate): setLanguageTag mutates a module-level
+  // global, and the awaits below (session queries) yield the event loop, so
+  // two concurrent requests with different locales can cross-contaminate each
+  // other's SSR output (audit item 9). The AsyncLocalStorage-based fix —
+  // paraglide-sveltekit's i18n.handle() — can't be adopted here: it reads
+  // event.url AFTER src/hooks.ts reroute() has stripped the /en prefix and so
+  // always resolves 'fr' (same upstream bug that forced the manual
+  // %paraglide.lang% substitution below). Revisit when migrating to
+  // paraglide-js 2.x, whose runtime is AsyncLocalStorage-aware out of the
+  // box.
   const locale = resolveLocaleFromRequest(event);
   setLanguageTag(locale);
   event.locals.locale = locale;

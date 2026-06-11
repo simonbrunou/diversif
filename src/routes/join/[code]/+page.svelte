@@ -14,7 +14,7 @@
     <h1 class="text-xl font-semibold">{m.joinTitle()}</h1>
 
     {#if data.error}
-      <p class="mt-3 text-sm text-destructive">{data.error}</p>
+      <p class="mt-3 text-sm text-severe-text">{data.error}</p>
       <div class="mt-6">
         <Button href={localizedHref('/')} variant="outline">{m.joinBack()}</Button>
       </div>

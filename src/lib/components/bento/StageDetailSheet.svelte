@@ -23,7 +23,7 @@
 </script>
 
 <DetailSheet bind:open title={stage.title} intro={stage.oneLiner}>
-  <SheetSection title="Principes">
+  <SheetSection title={m.stageDetailPrinciplesTitle()}>
     <ul class="list-disc space-y-1 pl-5 text-sm">
       {#each stage.principles as p, i (i)}
         <li>{p}</li>
@@ -31,7 +31,7 @@
     </ul>
   </SheetSection>
 
-  <SheetSection title="Aliments à proposer">
+  <SheetSection title={m.stageDetailFoodsTitle()}>
     <ul class="list-disc space-y-1 pl-5 text-sm">
       {#each stage.focus as f, i (i)}
         <li>{f}</li>
@@ -39,21 +39,23 @@
     </ul>
   </SheetSection>
 
-  <SheetSection title="Texture & lait">
+  <SheetSection title={m.stageDetailTextureMilkTitle()}>
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div class="rounded-tile bg-tile-mint/40 p-3 text-sm">
         <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">{m.textureDetailRowLabel()}</p>
         <p class="mt-1">{stage.textures}</p>
       </div>
       <div class="rounded-tile bg-tile-butter/40 p-3 text-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">Lait</p>
+        <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">
+          {m.stageDetailMilkRowLabel()}
+        </p>
         <p class="mt-1">{stage.milkTarget}</p>
       </div>
     </div>
   </SheetSection>
 
   {#if stage.redFlags.length > 0}
-    <SheetSection title="À surveiller">
+    <SheetSection title={m.stageDetailWatchTitle()}>
       <Callout variant="warning">
         <ul class="list-disc space-y-1 pl-5">
           {#each stage.redFlags as f, i (i)}

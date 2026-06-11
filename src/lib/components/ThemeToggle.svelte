@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { applyTheme, getStoredTheme, type Theme } from '$lib/utils/theme';
   import { cn } from '$lib/utils/cn';
+  import * as m from '$lib/paraglide/messages';
 
   let theme = $state<Theme>('system');
 
@@ -15,9 +16,9 @@
   }
 
   const options: { value: Theme; label: string }[] = [
-    { value: 'light', label: 'Clair' },
-    { value: 'dark', label: 'Sombre' },
-    { value: 'system', label: 'Système' }
+    { value: 'light', label: m.profilCompteThemeValueLight() },
+    { value: 'dark', label: m.profilCompteThemeValueDark() },
+    { value: 'system', label: m.profilCompteThemeValueSystem() }
   ];
 </script>
 

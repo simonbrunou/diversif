@@ -38,7 +38,7 @@ describe('ThemeToggle', () => {
   it('marks the system option pressed by default', () => {
     const { container } = render(ThemeToggle, { props: {} });
     const buttons = Array.from(container.querySelectorAll('button'));
-    const sys = buttons.find((b) => b.textContent?.trim() === 'Système');
+    const sys = buttons.find((b) => b.textContent?.trim() === 'Auto');
     expect(sys?.getAttribute('aria-pressed')).toBe('true');
   });
 
@@ -65,7 +65,7 @@ describe('ThemeToggle', () => {
     const buttons = Array.from(container.querySelectorAll('button'));
     await fireEvent.click(buttons.find((b) => b.textContent?.trim() === 'Sombre')!);
     expect(localStorage.getItem('theme')).toBe('dark');
-    await fireEvent.click(buttons.find((b) => b.textContent?.trim() === 'Système')!);
+    await fireEvent.click(buttons.find((b) => b.textContent?.trim() === 'Auto')!);
     expect(localStorage.getItem('theme')).toBeNull();
   });
 });

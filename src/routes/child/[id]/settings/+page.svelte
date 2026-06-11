@@ -142,7 +142,7 @@
   {/if}
 
   <Card class="border-destructive/30 p-4">
-    <h2 class="text-base font-semibold text-destructive">{m.settingsDangerHeading()}</h2>
+    <h2 class="text-base font-semibold text-severe-text">{m.settingsDangerHeading()}</h2>
     {#if data.role === 'owner'}
       <p class="mt-1 text-sm text-muted-foreground">
         {m.settingsDangerOwnerDescription()}

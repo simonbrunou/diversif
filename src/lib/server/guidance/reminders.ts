@@ -9,6 +9,11 @@ import {
   type AllergenId
 } from '$lib/utils/allergens';
 import { getCategoryLabel, type CategoryId } from '$lib/utils/categories';
+// User-facing copy resolves through paraglide so the EN locale gets English
+// reminders. This is safe in server code: hooks.server.ts calls
+// setLanguageTag() per request before load functions run (same pattern as
+// getCategoryLabel / $lib/utils/categories, already used below).
+import * as m from '$lib/paraglide/messages';
 import type { SourceId } from '$lib/content/sources';
 import { FORBIDDEN_FOODS } from '$lib/content/guidance';
 import type { EnrichedEntry } from './queries';
@@ -59,9 +64,9 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     push(out, input.dismissals, {
       key: 'welcome',
       severity: 'important',
-      title: 'Bienvenue sur Diversif',
-      body: 'La diversification commence en douceur dès 4 mois révolus. Lisez le guide pour vous repérer puis enregistrez le premier aliment de bébé.',
-      cta: { label: 'Lire le guide', href: `${childPath}/guide` },
+      title: m.reminderWelcomeTitle(),
+      body: m.reminderWelcomeBody(),
+      cta: { label: m.reminderCtaReadGuide(), href: `${childPath}/guide` },
       sources: ['spf-pnns-guide', 'hcsp-2020'],
       dismissable: false
     });
@@ -78,22 +83,22 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     {
       months: 6,
       key: 'stage-transition:6m',
-      title: 'Bébé a 6 mois : place aux protéines',
-      body: "C'est le moment d'introduire viande, poisson, œuf bien cuit et légumineuses pour le fer. Si ce n'est pas fait, c'est aussi la fenêtre clé pour les allergènes (œuf, arachide, gluten…).",
+      title: m.reminderStage6Title(),
+      body: m.reminderStage6Body(),
       sources: ['hcsp-2020', 'espghan-2017']
     },
     {
       months: 9,
       key: 'stage-transition:9m',
-      title: 'Bébé a 9 mois : premiers morceaux',
-      body: "Bébé pince entre pouce et index. Proposez des bâtonnets de légumes cuits, des lamelles d'avocat, des pâtes bien cuites. Toujours sous surveillance.",
+      title: m.reminderStage9Title(),
+      body: m.reminderStage9Body(),
       sources: ['spf-pnns-guide']
     },
     {
       months: 12,
       key: 'stage-transition:12m',
-      title: 'Bébé a 1 an : repas familiaux adaptés',
-      body: 'Bébé partage progressivement les repas familiaux, en versions adaptées : moins salées, moins sucrées, morceaux découpés. Le lait reste à ~500 mL/jour.',
+      title: m.reminderStage12Title(),
+      body: m.reminderStage12Body(),
       sources: ['spf-pnns-guide', 'hcsp-2020']
     }
   ];
@@ -104,7 +109,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
         severity: 'important',
         title: st.title,
         body: st.body,
-        cta: { label: 'Voir le guide', href: `${childPath}/guide` },
+        cta: { label: m.reminderCtaSeeGuide(), href: `${childPath}/guide` },
         sources: st.sources,
         dismissable: true
       });
@@ -128,9 +133,9 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       push(out, input.dismissals, {
         key: 'stale-diversity',
         severity: 'info',
-        title: `Pas de nouveauté depuis ${daysSinceNewFood} jours`,
-        body: 'Reprenez le rythme : proposez un aliment encore non testé. La variété entretient la curiosité gustative et la tolérance aux allergènes.',
-        cta: { label: 'Voir les suggestions', href: `${childPath}/suggestions` },
+        title: m.reminderStaleDiversityTitle({ days: daysSinceNewFood }),
+        body: m.reminderStaleDiversityBody(),
+        cta: { label: m.reminderCtaSeeSuggestions(), href: `${childPath}/suggestions` },
         sources: ['spf-pnns-guide'],
         dismissable: true
       });
@@ -144,9 +149,9 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       push(out, input.dismissals, {
         key: `pending-allergen:${id}`,
         severity: 'warn',
-        title: `Allergène à introduire : ${getAllergenLabel(id)}`,
-        body: "Plus on attend, plus le risque d'allergie augmente. Introduisez-le sous une forme adaptée à l'âge de bébé.",
-        cta: { label: "Comment l'introduire", href: `${childPath}/guide#allergenes` },
+        title: m.reminderPendingAllergenTitle({ allergen: getAllergenLabel(id) }),
+        body: m.reminderPendingAllergenBody(),
+        cta: { label: m.reminderCtaHowToIntroduce(), href: `${childPath}/guide#allergenes` },
         sources: ['leap-2015', 'eat-2016', 'espghan-2017'],
         dismissable: true
       });
@@ -170,9 +175,9 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     push(out, input.dismissals, {
       key: 'high-risk-window',
       severity: 'warn',
-      title: 'Fenêtre 4–11 mois pour les allergènes',
-      body: "C'est la période-clé pour introduire arachide, œuf, lait, gluten… Reculer ne protège pas : au contraire (LEAP, EAT).",
-      cta: { label: 'Lire le guide', href: `${childPath}/guide#allergenes` },
+      title: m.reminderHighRiskWindowTitle(),
+      body: m.reminderHighRiskWindowBody(),
+      cta: { label: m.reminderCtaReadGuide(), href: `${childPath}/guide#allergenes` },
       sources: ['leap-2015', 'eat-2016'],
       dismissable: true
     });
@@ -195,9 +200,9 @@ export function computeReminders(input: ReminderInput): Reminder[] {
     push(out, input.dismissals, {
       key: `repeat-exposure:${c.foodId}`,
       severity: 'info',
-      title: `Reproposez « ${c.foodName} »`,
-      body: "L'acceptation gustative se construit avec la répétition : jusqu'à 10 fois pour certains aliments. C'est aussi vrai pour entretenir la tolérance aux allergènes.",
-      cta: { label: 'Enregistrer cet aliment', href: `${childPath}/log?foodId=${c.foodId}` },
+      title: m.reminderRepeatExposureTitle({ food: c.foodName }),
+      body: m.reminderRepeatExposureBody(),
+      cta: { label: m.reminderCtaLogThisFood(), href: `${childPath}/log?foodId=${c.foodId}` },
       sources: ['spf-pnns-guide'],
       dismissable: true
     });
@@ -226,9 +231,12 @@ export function computeReminders(input: ReminderInput): Reminder[] {
         push(out, input.dismissals, {
           key: `category-imbalance:${dominant.cat}`,
           severity: 'info',
-          title: 'Pensez à varier les groupes',
-          body: `Plus de ${Math.round(dominant.ratio * 100)} % de vos logs des 14 derniers jours sont dans la catégorie « ${getCategoryLabel(dominant.cat)} ». Diversifiez avec d'autres groupes (protéines, féculents, fruits…).`,
-          cta: { label: 'Voir les suggestions', href: `${childPath}/suggestions` },
+          title: m.reminderCategoryImbalanceTitle(),
+          body: m.reminderCategoryImbalanceBody({
+            percent: Math.round(dominant.ratio * 100),
+            category: getCategoryLabel(dominant.cat)
+          }),
+          cta: { label: m.reminderCtaSeeSuggestions(), href: `${childPath}/suggestions` },
           sources: ['spf-pnns-guide'],
           dismissable: true
         });
@@ -258,7 +266,7 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       key: `forbidden-reminder:${food.id}`,
       severity: 'important',
       title: food.reminderTitle,
-      body: `Un aliment enregistré contient « ${token} ». ${food.reason}`,
+      body: m.reminderForbiddenBody({ token, reason: food.reason }),
       sources: food.sources,
       dismissable: true
     });
@@ -300,9 +308,12 @@ export function computeReminders(input: ReminderInput): Reminder[] {
       push(out, input.dismissals, {
         key: `maintain-allergen:${c.id}:${lastAtDayBucket}`,
         severity: 'info',
-        title: `Reproposez « ${label} »`,
-        body: `Bébé n'a pas eu ${label.toLowerCase()} depuis ${c.daysSince} jours. L'idéal est d'en reproposer 2 à 3 fois par semaine pour entretenir la tolérance.`,
-        cta: { label: 'Voir les allergènes', href: `${childPath}/foods?segment=allergens` },
+        title: m.reminderMaintainAllergenTitle({ allergen: label }),
+        body: m.reminderMaintainAllergenBody({
+          allergen: label.toLowerCase(),
+          days: c.daysSince
+        }),
+        cta: { label: m.reminderCtaSeeAllergens(), href: `${childPath}/foods?segment=allergens` },
         sources: ['leap-2015', 'espghan-2017', 'anses-nourrisson'],
         dismissable: true
       });

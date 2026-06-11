@@ -126,7 +126,7 @@
     }}
   >
     <input type="hidden" name="from" value={data.from} />
-    <Button type="submit" variant="ghost" size="sm" class="text-destructive hover:text-destructive" loading={deleting}>
+    <Button type="submit" variant="ghost" size="sm" class="text-severe-text hover:text-severe-text" loading={deleting}>
       <Trash2 size={16} aria-hidden="true" />
       {deleting ? m.logEditDeleting() : m.logEditDeleteCta()}
     </Button>
