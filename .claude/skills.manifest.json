@@ -1,0 +1,25 @@
+{
+  "$comment": "Curated standalone agent skills relevant to diversif, reproduced by scripts/claude-setup.sh. Each entry: name, repo (github owner/name), skillPath (folder containing SKILL.md), optional ref (default HEAD). This is a curated subset of ~/.agents/.skill-lock.json — Postgres-only skills (postgresql-code-review, postgresql-optimization, supabase-postgres-best-practices, pgmicro-postgres-sqlite) were dropped because diversif is SQLite/Drizzle. Marketplace plugins are NOT listed here; they auto-install from .claude/settings.json. The 'council' skill was promoted to a committed project skill (.claude/skills/council/) because a committed hook depends on it and it must load at launch (incl. on Claude cloud).",
+  "installDir": "~/.claude/skills",
+  "skills": [
+    { "name": "bun-development", "repo": "sickn33/antigravity-awesome-skills", "skillPath": "skills/bun-development" },
+    { "name": "bun-runtime", "repo": "affaan-m/everything-claude-code", "skillPath": "skills/bun-runtime" },
+    { "name": "sveltekit-structure", "repo": "spences10/svelte-skills-kit", "skillPath": "plugins/svelte-skills/skills/sveltekit-structure" },
+    { "name": "i18n-localization", "repo": "sickn33/antigravity-awesome-skills", "skillPath": "skills/i18n-localization" },
+    { "name": "e2e-testing-patterns", "repo": "wshobson/agents", "skillPath": "plugins/developer-essentials/skills/e2e-testing-patterns" },
+    { "name": "webapp-testing", "repo": "anthropics/skills", "skillPath": "skills/webapp-testing" },
+    { "name": "javascript-testing-patterns", "repo": "wshobson/agents", "skillPath": "plugins/javascript-typescript/skills/javascript-testing-patterns" },
+    { "name": "typescript-advanced-types", "repo": "wshobson/agents", "skillPath": "plugins/javascript-typescript/skills/typescript-advanced-types" },
+    { "name": "docker-expert", "repo": "sickn33/antigravity-awesome-skills", "skillPath": "skills/docker-expert" },
+    { "name": "ci-cd-and-automation", "repo": "addyosmani/agent-skills", "skillPath": "skills/ci-cd-and-automation" },
+    { "name": "diagnose-ci-failures", "repo": "warpdotdev/common-skills", "skillPath": ".agents/skills/diagnose-ci-failures" },
+    { "name": "performance", "repo": "addyosmani/web-quality-skills", "skillPath": "skills/performance" },
+    { "name": "design-motion-principles", "repo": "kylezantos/design-motion-principles", "skillPath": "skills/design-motion-principles" },
+    { "name": "resolve-merge-conflicts", "repo": "warpdotdev/common-skills", "skillPath": ".agents/skills/resolve-merge-conflicts" },
+    { "name": "respond-to-pr-comments-in-blocklist", "repo": "warpdotdev/common-skills", "skillPath": ".agents/skills/respond-to-pr-comments-in-blocklist" },
+    { "name": "pr-walkthrough", "repo": "warpdotdev/common-skills", "skillPath": ".agents/skills/pr-walkthrough" },
+    { "name": "find-skills", "repo": "vercel-labs/skills", "skillPath": "skills/find-skills" },
+    { "name": "database", "repo": "sickn33/antigravity-awesome-skills", "skillPath": "skills/database" },
+    { "name": "database-migration", "repo": "sickn33/antigravity-awesome-skills", "skillPath": "skills/database-migration" }
+  ]
+}

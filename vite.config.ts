@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import tailwindcss from '@tailwindcss/vite';
 import { paraglide } from '@inlang/paraglide-sveltekit/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
@@ -61,19 +62,20 @@ export default defineConfig({
       : 'undefined'
   },
   plugins: [
+    tailwindcss(),
     sveltekit(),
     paraglide({
       project: './project.inlang',
       outdir: './src/lib/paraglide'
     }),
     SvelteKitPWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       strategies: 'generateSW',
       manifest: false,
-      injectRegister: 'auto',
+      injectRegister: null,
       workbox: {
         globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-        navigateFallback: '/offline',
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === 'navigate',

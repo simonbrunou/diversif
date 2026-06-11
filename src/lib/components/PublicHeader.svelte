@@ -78,7 +78,7 @@
   {#snippet below()}
     {#if mobileOpen}
       <div id="public-mobile-nav" class="border-t bg-background md:hidden">
-        <div class="container space-y-1 py-3">
+        <div class="mx-auto w-full max-w-[1280px] px-4 space-y-1 py-3">
           <ul class="grid gap-1 text-sm">
             {#each navLinks as l (l.href)}
               <li>

@@ -2,19 +2,22 @@
   import Card from '$components/ui/Card.svelte';
   import Button from '$components/ui/Button.svelte';
   import FormError from '$components/ui/FormError.svelte';
+  import { enhance } from '$app/forms';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
   import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+  let submitting = $state(false);
 </script>
 
-<div class="container flex max-w-md flex-1 flex-col justify-center py-10">
+<div class="mx-auto w-full px-4 flex max-w-md flex-1 flex-col justify-center py-10">
   <Card class="p-6 text-center">
     <h1 class="text-xl font-semibold">{m.joinTitle()}</h1>
 
     {#if data.error}
-      <p class="mt-3 text-sm text-destructive">{data.error}</p>
+      <p class="mt-3 text-sm text-severe-text">{data.error}</p>
       <div class="mt-6">
         <Button href={localizedHref('/')} variant="outline">{m.joinBack()}</Button>
       </div>
@@ -35,9 +38,13 @@
         <FormError class="mt-4">{form.error}</FormError>
       {/if}
 
-      <form method="POST" class="mt-6 flex justify-center gap-2">
+      <form
+        method="POST"
+        class="mt-6 flex justify-center gap-2"
+        use:enhance={trackSubmission((v) => (submitting = v))}
+      >
         <Button href={localizedHref('/')} variant="outline">{m.commonCancel()}</Button>
-        <Button type="submit">{m.joinAcceptCta()}</Button>
+        <Button type="submit" loading={submitting}>{m.joinAcceptCta()}</Button>
       </form>
     {/if}
   </Card>

@@ -36,6 +36,10 @@ describe('RP_ID', () => {
     expect(isOriginAllowedForRPID('https://preview.diversif.app')).toBe(true);
     expect(isOriginAllowedForRPID('https://example.com')).toBe(false);
   });
+
+  it('rejects an origin that is not a parsable URL', () => {
+    expect(isOriginAllowedForRPID('not a url')).toBe(false);
+  });
 });
 
 describe('publicPasskey', () => {

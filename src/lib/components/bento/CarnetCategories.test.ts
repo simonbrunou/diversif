@@ -27,4 +27,29 @@ describe('CarnetCategories', () => {
     render(CarnetCategories, { props: { foods: [] } });
     expect(screen.getByText('Aucune catégorie pour l’instant')).toBeTruthy();
   });
+
+  it('orders sections by the curated CATEGORIES order, localized labels shown', () => {
+    const { container } = render(CarnetCategories, {
+      props: {
+        foods: [
+          {
+            id: 1,
+            name: 'Yaourt',
+            category: 'produits_laitiers',
+            tried: 1,
+            status: 'ras' as const
+          },
+          { id: 2, name: 'Poire', category: 'fruits', tried: 1, status: 'ras' as const },
+          { id: 3, name: 'Carotte', category: 'legumes', tried: 1, status: 'ras' as const }
+        ]
+      }
+    });
+    // Curated order (légumes → fruits → … → produits laitiers), not the
+    // alphabetical raw-id order (fruits, legumes, produits_laitiers).
+    const order = [...container.querySelectorAll('details')].map((d) =>
+      d.getAttribute('data-category')
+    );
+    expect(order).toEqual(['legumes', 'fruits', 'produits_laitiers']);
+    expect(screen.getByText(/Produits laitiers \(1\)/)).toBeTruthy();
+  });
 });

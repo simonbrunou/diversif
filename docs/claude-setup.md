@@ -1,0 +1,135 @@
+# Claude Code setup — reproducible everywhere
+
+This repo carries its Claude Code tooling (plugins, MCP servers, hooks, skills)
+so the same agent setup reproduces on any machine. There are **two** parts:
+what Claude Code restores automatically, and what one script restores.
+
+## TL;DR
+
+```bash
+# On a fresh machine, after cloning:
+scripts/claude-setup.sh         # installs standalone skills, seeds local settings
+# then open the project in Claude Code and trust it → plugins + MCPs auto-install
+```
+
+Prereqs to run `claude-setup.sh`: `git`, `jq`. For the agent tooling itself once
+set up: `bun`, `gh`, `python3` (used by the graphify hook), plus the external
+**graphify** CLI (see below). Tip: in a Claude Code session you can run a command
+yourself by typing `! <command>` at the prompt.
+
+## What reproduces automatically (no script)
+
+`.claude/settings.json` is committed and declares both the marketplaces and the
+plugins to enable. The first time you open this project in Claude Code and trust
+it, Claude Code installs them — and because every MCP server we use is **bundled
+inside a plugin**, installing the plugins also restores the MCP servers.
+
+- **Marketplaces** (`extraKnownMarketplaces`): `claude-plugins-official`
+  (anthropics/claude-plugins-official), `svelte` (sveltejs/ai-tools),
+  `impeccable` (pbakaus/impeccable), `ui-ux-pro-max-skill`
+  (nextlevelbuilder/ui-ux-pro-max-skill).
+- **Plugins** (`enabledPlugins`): the Bun/Svelte/testing/review/UI/git/CI/meta
+  set — superpowers, svelte, github, playwright, chrome-devtools-mcp, context7,
+  code-review, code-simplifier, pr-review-toolkit, commit-commands,
+  feature-dev, claude-md-management, frontend-design, impeccable, ui-ux-pro-max,
+  hookify, plugin-dev, skill-creator, typescript-lsp, security-guidance.
+- **MCP servers** (bundled in those plugins): github, svelte, playwright,
+  chrome-devtools, context7.
+- **Hooks** (`hooks`):
+  - `PreToolUse` (Bash) — graphify: nudges Claude to read `graphify-out/` before
+    grepping raw files.
+  - `PostToolUse` (Bash) → `.claude/hooks/code-review-on-push.sh` — after a
+    `git push` on a branch with an open PR, auto-triggers `/code-review`.
+    Needs `gh` + `jq`; exits cleanly when neither a PR nor `gh` is present.
+  - `PostToolUse` (Write|Edit) → `.claude/hooks/format-edited.sh` — Prettier-formats
+    the just-edited file (local prettier → bunx → npx).
+  - `PostToolUse` (Write|Edit) → `.claude/hooks/council-on-brainstorm.sh` — when a
+    `docs/superpowers/specs/*.md` or `docs/superpowers/plans/*.md` is written, nudges
+    a `council`-skill pressure-test before the spec/plan is presented. Needs `jq`.
+  - `SessionStart` (startup|resume) → `scripts/session-bootstrap.sh` — on Claude
+    cloud only (`CLAUDE_CODE_REMOTE`), runs `bun install` so a fresh clone has its
+    deps; a no-op locally.
+- **Project skills & agent** (committed, project-local — distinct from the standalone
+  skills the setup script installs):
+  - `.claude/skills/migration/` — guided Drizzle/SQLite migration workflow.
+  - `.claude/skills/gen-test/` — generate a `bun:test` test in the house style.
+  - `.claude/skills/council/` — model/perspective-diverse subagent council
+    (vendored, not in the manifest, so the council-on-brainstorm hook has it
+    loaded at launch — including on Claude cloud).
+  - `.claude/agents/security-reviewer.md` — proactive WebAuthn/session/membership
+    security reviewer (auto-discovered as the `security-reviewer` subagent).
+
+**Deliberately excluded** (off-topic for diversif, which is SQLite + self-hosted
+on Coolify/Komodo, no Cloudflare/Discord/Sentry): the `cloudflare`, `discord`,
+`sentry`/`sentry-skills`, and `context-mode` plugins. Re-enable any of them in a
+machine-local `settings.local.json` if you ever need them.
+
+## What the script restores
+
+`scripts/claude-setup.sh` handles the pieces Claude Code can't auto-install:
+
+1. **Standalone agent skills** — the 19 skills in `.claude/skills.manifest.json`
+   (bun, sveltekit-structure, i18n, testing, docker, ci, perf, git/PR helpers,
+   …). These aren't from a Claude marketplace; the script reproduces each by
+   sparse-cloning its source repo and copying the skill folder into
+   `~/.claude/skills/`. Curated subset of `~/.agents/.skill-lock.json`;
+   Postgres-only skills were dropped (diversif is SQLite/Drizzle).
+   - `--force` refreshes existing skills; `--dry-run` previews.
+2. **`settings.local.json`** — copies the committed
+   `settings.local.json.example` to `settings.local.json` if missing, so you can
+   add any machine-local permissions/env.
+
+## Secrets — important
+
+`.claude/settings.local.json` is **gitignored at the repo level** (see
+`.gitignore`) and holds only machine-local permissions/env — keep any future
+secrets there, never in a committed file. GitHub access uses the **`gh` CLI**
+(`gh auth login`), so no personal access token is needed.
+
+## External prerequisite: graphify
+
+The `/graphify` skill and the `graphify` CLI (codebase knowledge graph, output
+committed under `graphify-out/`) are an external tool, not a marketplace plugin.
+Install graphify separately; it provides both the CLI and its own skill. See the
+graphify section in the project `CLAUDE.md`.
+
+## Claude Code on the web (cloud)
+
+A cloud session starts from a **fresh clone** — committed config carries, your
+machine's `~/.claude` does not (cloud is project-only, no persistent user config).
+For diversif:
+
+**Reproduces automatically** (committed → part of the clone):
+
+- the 20 plugins + 4 marketplaces — installed at session start, **provided the
+  environment's network access is Trusted/Custom** (not None);
+- every hook in `.claude/settings.json`, the 2 hookify rules, the project skills
+  (`migration`, `gen-test`, **`council`**) and the `security-reviewer` agent;
+- `bun install` runs automatically via the committed `SessionStart` hook
+  (`scripts/session-bootstrap.sh`, gated on `CLAUDE_CODE_REMOTE`).
+
+**Needs one web-UI step** — point the environment's **Setup Script** field at:
+
+```
+scripts/cloud-setup.sh
+```
+
+It runs once before launch (and is cached) to install the things that can't be
+committed: the standalone skills (`scripts/claude-setup.sh`) and the `gh` CLI
+(the cloud image lacks it; `code-review-on-push` just no-ops without it).
+
+**Still manual:** the external **graphify** CLI has no public installer — install
+it yourself if you want `/graphify` queries. The committed `graphify-out/` is
+readable regardless, so the graphify search-nudge hook still works.
+
+**Secrets:** there's no `settings.local.json` in cloud (gitignored). Supply any
+secrets as **environment variables** in the cloud environment UI. GitHub git
+access is handled by Anthropic's proxy — no token needed.
+
+## Updating the setup
+
+- **Add/remove a plugin or marketplace:** edit `.claude/settings.json`.
+- **Add/remove a standalone skill:** edit `.claude/skills.manifest.json`, then
+  re-run `scripts/claude-setup.sh` (`--force` to refresh).
+- **Add/change a hook:** edit `.claude/settings.json` (shared) or
+  `.claude/hooks/*.sh`; keep machine-local-only hooks in `settings.local.json`.

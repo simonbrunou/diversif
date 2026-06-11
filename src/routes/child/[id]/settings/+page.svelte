@@ -22,16 +22,29 @@
   let leaveOpen = $state(false);
   let inviteOpen = $state(false);
   let savingChild = $state(false);
+  let removeMemberOpen = $state(false);
+  let removeMemberId = $state<number | null>(null);
 
+  function askRemoveMember(userId: number) {
+    removeMemberId = userId;
+    removeMemberOpen = true;
+  }
+
+  // Identity dedup, like createFormToasts: the same retained `form` object
+  // must never re-toast if this effect picks up another dependency later.
+  // (askRemoveMember always assigns the id before opening, so the modal can
+  // never post a stale member; it stays mounted after the first ask so its
+  // exit animation isn't cut off by an unmount.)
+  let lastFormSeen: typeof form;
   $effect(() => {
-    if (form?.success) {
-      toast.success(form.success);
-    }
-    if (form?.error) {
-      toast.error(form.error);
-    }
-    if (inviteOpen && form?.code) {
-      inviteOpen = false;
+    if (form !== lastFormSeen) {
+      lastFormSeen = form;
+      if (form?.success) {
+        toast.success(form.success);
+      }
+      if (form?.error) {
+        toast.error(form.error);
+      }
     }
   });
 
@@ -50,7 +63,7 @@
 
 </script>
 
-<div class="container max-w-2xl space-y-6 py-6">
+<div class="mx-auto w-full px-4 max-w-2xl space-y-6 py-6">
   <BackHeader title={m.settingsTitle()} subtitle={data.child.name} fallback={`/child/${data.child.id}`} />
 
   {#if data.role === 'owner'}
@@ -93,10 +106,14 @@
               {member.role === 'owner' ? m.kidPickerRoleOwner() : m.kidPickerRoleMember()}
             </span>
             {#if data.role === 'owner' && member.role !== 'owner'}
-              <form method="POST" action="?/removeMember">
-                <input type="hidden" name="userId" value={member.userId} />
-                <Button type="submit" variant="ghost" size="sm">{m.commonRemove()}</Button>
-              </form>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onclick={() => askRemoveMember(member.userId)}
+              >
+                {m.commonRemove()}
+              </Button>
             {/if}
           </div>
         </li>
@@ -142,7 +159,7 @@
   {/if}
 
   <Card class="border-destructive/30 p-4">
-    <h2 class="text-base font-semibold text-destructive">{m.settingsDangerHeading()}</h2>
+    <h2 class="text-base font-semibold text-severe-text">{m.settingsDangerHeading()}</h2>
     {#if data.role === 'owner'}
       <p class="mt-1 text-sm text-muted-foreground">
         {m.settingsDangerOwnerDescription()}
@@ -180,6 +197,19 @@
   requireText={data.child.name}
   requirePassword
 />
+
+{#if removeMemberId !== null}
+  <ConfirmModal
+    bind:open={removeMemberOpen}
+    title={m.settingsRemoveMemberConfirmTitle()}
+    description={m.settingsRemoveMemberConfirmDescription()}
+    action="?/removeMember"
+    confirmLabel={m.commonRemove()}
+    loadingLabel={m.settingsRemoveMemberLoadingLabel()}
+    destructive
+    hiddenFields={{ userId: removeMemberId }}
+  />
+{/if}
 
 <ConfirmModal
   bind:open={leaveOpen}

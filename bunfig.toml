@@ -10,15 +10,22 @@ trustedDependencies = ["@sentry/cli"]
 # plugin already active). bunfig.preload.ts then sets up happy-dom, $app/*
 # mocks, jest-dom matchers, and the per-test reset hooks.
 preload = ["./svelte-loader.preload.ts", "./bunfig.preload.ts"]
-# Disable coverage by default; opt in via `bun test --coverage`.
-coverage = false
-coverageReporter = ["text", "lcov"]
-coverageDir = "./coverage"
-# Mirror the previous vitest 100% threshold. bun test's coverage threshold
-# uses 0..1 (vitest used 0..100).
-coverageThreshold = { line = 1.0, function = 1.0, statement = 1.0 }
-# Mirror the previous vitest coverage.exclude list.
+# Coverage stays opt-in via `bun test --coverage` — but do NOT set
+# `coverage = false` here: bun 1.3.14 silently ignores the CLI --coverage
+# flag when bunfig says false (no table, no lcov, exit 0), which left the
+# "100% coverage" gate enforcing nothing. The default is already false.
+# Likewise bun 1.3.14 never enforces coverageThreshold (any spelling), and
+# per-file child processes (see scripts/bun-test.ts) each see only partial
+# coverage anyway — enforcement lives in scripts/bun-test.ts, which merges
+# the children's lcov output and fails below 100% line coverage.
+# Ignore list consumed both by bun's collector and the runner's enforcement.
+# *.svelte is excluded from the LINE gate: bun instruments the
+# plugin-compiled output without source maps, so lcov line numbers don't
+# correspond to .svelte source lines (offsets past end-of-file) and
+# v8-ignore markers can't apply. Components are exercised by their
+# component tests and the Playwright suite; the line gate covers .ts.
 coveragePathIgnorePatterns = [
+  "src/**/*.svelte",
   "src/**/*.test.ts",
   "src/**/*.d.ts",
   "src/test/**",
@@ -29,5 +36,7 @@ coveragePathIgnorePatterns = [
   "src/lib/paraglide/**",
   "src/hooks.ts",
   "src/lib/i18n.ts",
-  "src/lib/components/ui/use-bottom-sheet-drag.svelte.ts"
+  "src/lib/components/ui/use-bottom-sheet-drag.svelte.ts",
+  # Route-options only (`export const prerender = true`), no logic to cover.
+  "src/routes/offline/+page.ts"
 ]

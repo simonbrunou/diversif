@@ -43,7 +43,7 @@
 </script>
 
 {#if data.ageMonths < 4 && data.stats.foodsIntroduced === 0}
-  <div class="container max-w-2xl px-3 pt-3">
+  <div class="mx-auto w-full max-w-2xl px-3 pt-3">
     <TipCard
       tone="info"
       icon={Baby}
@@ -68,7 +68,7 @@
   streak={data.streak}
   streakRecord={data.streak}
   reminders={data.reminders ?? []}
-  priorityAllergensTodo={[]}
+  allergens={data.bentoAllergens ?? []}
 />
 
 <WelcomeDialog bind:open={welcomeOpen} childId={data.child.id} formAction="?/dismissReminder" />

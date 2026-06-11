@@ -74,8 +74,4 @@ export const SOURCES = {
 
 export type SourceId = keyof typeof SOURCES;
 
-export function getSource(id: SourceId): Source {
-  return SOURCES[id];
-}
-
 export const ALL_SOURCE_IDS = Object.keys(SOURCES) as SourceId[];

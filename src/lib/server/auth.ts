@@ -1,6 +1,7 @@
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, gt } from 'drizzle-orm';
 import { db } from './db';
+import { isE2E } from './e2e';
 import { sessions, users, memberships, type Session, type User } from './db/schema';
 import type { SafeUser } from '$lib/types';
 import type { Cookies } from '@sveltejs/kit';
@@ -19,8 +20,18 @@ const ARGON_OPTS = {
   timeCost: 2
 } as const;
 
+// E2E runs the production build with full-cost argon2id. Under two parallel
+// Playwright workers the CPU cost starves the single server process and stalls
+// unrelated requests (the fast child-creation redirect queues past its 15s
+// budget). Relax the cost for E2E only (isE2E() requires both E2E=1 — set in
+// playwright.config.ts — and a loopback http ORIGIN, so a stray E2E=1 on a
+// real deployment can't weaken production hashes) — hash strength is
+// irrelevant against a throwaway test DB, and Bun.password.verify reads each
+// hash's params back from the stored string, so verification is unaffected.
+const ARGON_OPTS_E2E = { algorithm: 'argon2id', memoryCost: 4_096, timeCost: 1 } as const;
+
 export async function hashPassword(plain: string): Promise<string> {
-  return Bun.password.hash(plain, ARGON_OPTS);
+  return Bun.password.hash(plain, isE2E() ? ARGON_OPTS_E2E : ARGON_OPTS);
 }
 
 export async function verifyPassword(hash: string, plain: string): Promise<boolean> {
@@ -72,12 +83,32 @@ function newToken(): string {
   return randomBytes(32).toString('hex');
 }
 
-export async function createSession(userId: number): Promise<Session> {
+/**
+ * Sessions are stored hashed at rest: the cookie carries the raw 256-bit
+ * token, the DB row id is sha256(token) hex. Anyone holding the SQLite file
+ * (or a backup of it) sees only digests — useless as bearer tokens without
+ * the preimage. Plain sha256 (no salt, no argon) is deliberate: the token has
+ * 256 bits of entropy, so rainbow tables and brute force are both moot, and
+ * an unsalted digest keeps validation a single indexed equality lookup.
+ */
+export function hashSessionToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+export type CreatedSession = {
+  /** Raw bearer token — goes in the cookie, never in the database. */
+  token: string;
+  /** The stored row; `session.id` is sha256(token), not the token itself. */
+  session: Session;
+};
+
+export async function createSession(userId: number): Promise<CreatedSession> {
   const now = Date.now();
-  const id = newToken();
+  const token = newToken();
+  const id = hashSessionToken(token);
   const expiresAt = new Date(now + SESSION_DURATION_MS);
   await db.insert(sessions).values({ id, userId, expiresAt });
-  return { id, userId, expiresAt };
+  return { token, session: { id, userId, expiresAt } };
 }
 
 export type ValidatedSession = {
@@ -89,6 +120,8 @@ export type ValidatedSession = {
 export async function validateSession(token: string): Promise<ValidatedSession | null> {
   if (!token) return null;
   const now = Date.now();
+  // The cookie holds the raw token; rows are keyed by its sha256 digest.
+  const id = hashSessionToken(token);
 
   const rows = await db
     .select({
@@ -97,7 +130,7 @@ export async function validateSession(token: string): Promise<ValidatedSession |
     })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
-    .where(and(eq(sessions.id, token), gt(sessions.expiresAt, new Date(now))))
+    .where(and(eq(sessions.id, id), gt(sessions.expiresAt, new Date(now))))
     .limit(1);
   const row = rows[0];
 
@@ -112,7 +145,7 @@ export async function validateSession(token: string): Promise<ValidatedSession |
     // versa). Bumping `last_login_at` keeps retention queries seeing recent
     // activity even when the user never explicitly re-logs in.
     db.transaction((tx) => {
-      tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, token)).run();
+      tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, id)).run();
       tx.update(users)
         .set({ lastLoginAt: new Date(now) })
         .where(eq(users.id, row.user.id))
@@ -139,7 +172,7 @@ export async function validateSession(token: string): Promise<ValidatedSession |
 
 export async function invalidateSession(token: string): Promise<void> {
   if (!token) return;
-  await db.delete(sessions).where(eq(sessions.id, token));
+  await db.delete(sessions).where(eq(sessions.id, hashSessionToken(token)));
 }
 
 export async function invalidateAllUserSessions(userId: number): Promise<void> {
@@ -147,7 +180,16 @@ export async function invalidateAllUserSessions(userId: number): Promise<void> {
 }
 
 export async function listMembershipsForUser(userId: number) {
-  return db.select().from(memberships).where(eq(memberships.userId, userId));
+  // Ordered so kids[0] (the nav fallback target on /account) is stable —
+  // without ORDER BY, SQLite row order is unspecified. createdAt first so an
+  // invite-joiner's own first child stays ahead of an older co-parented child
+  // (childId alone would sort by global creation order across all users);
+  // childId breaks same-millisecond ties deterministically.
+  return db
+    .select()
+    .from(memberships)
+    .where(eq(memberships.userId, userId))
+    .orderBy(memberships.createdAt, memberships.childId);
 }
 
 export async function findUserByEmail(email: string): Promise<User | undefined> {
@@ -161,9 +203,12 @@ export { generateInviteCodeRaw, isValidInviteCodeFormat } from '$lib/utils/invit
  * Set the session cookie with the canonical options used across login, signup,
  * and password-change flows. Centralises the 6-property options object so a
  * single place controls path, httpOnly, sameSite, secure and maxAge.
+ *
+ * `token` is the RAW session token from `createSession().token` — never the
+ * stored `session.id` (which is its sha256 digest and would not validate).
  */
-export function setSessionCookie(cookies: Cookies, sessionId: string): void {
-  cookies.set(SESSION_COOKIE, sessionId, {
+export function setSessionCookie(cookies: Cookies, token: string): void {
+  cookies.set(SESSION_COOKIE, token, {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',

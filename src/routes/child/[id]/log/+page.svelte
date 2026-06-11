@@ -57,7 +57,7 @@
   const tip = $derived(pickRotatingTip(getTipsFor({ ageMonths: months }), data.child.id + 7));
 </script>
 
-<div class="container max-w-xl space-y-5 py-6">
+<div class="mx-auto w-full px-4 max-w-xl space-y-5 py-6">
   <BackHeader
     title={m.logFormTitle()}
     subtitle={m.logFormSubtitle({ name: data.child.name })}
@@ -133,13 +133,13 @@
         </summary>
         <ul class="mt-2 space-y-1.5 pl-4 text-muted-foreground">
           <li>
-            <strong class="text-reaction-ras">{m.logFormReactionHelpRasBold()}</strong> : {m.logFormReactionHelpRasText()}
+            <strong class="text-reaction-ras-foreground">{m.logFormReactionHelpRasBold()}</strong> : {m.logFormReactionHelpRasText()}
           </li>
           <li>
-            <strong class="text-reaction-inconfort">{m.logFormReactionHelpInconfortBold()}</strong> : {m.logFormReactionHelpInconfortText()}
+            <strong class="text-reaction-inconfort-foreground">{m.logFormReactionHelpInconfortBold()}</strong> : {m.logFormReactionHelpInconfortText()}
           </li>
           <li>
-            <strong class="text-reaction-reaction">{m.logFormReactionHelpReactionBold()}</strong> : {m.logFormReactionHelpReactionText1()}
+            <strong class="text-reaction-reaction-foreground">{m.logFormReactionHelpReactionBold()}</strong> : {m.logFormReactionHelpReactionText1()}
             <strong>{m.logFormReactionHelpReactionStopBold()}</strong> {m.logFormReactionHelpReactionText2()}
           </li>
         </ul>

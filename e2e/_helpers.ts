@@ -49,8 +49,25 @@ export async function signUpAndCreateChild(
 ): Promise<string> {
   await signUp(page, emailPrefix);
 
-  await page.getByLabel('Prénom').fill(name);
-  await page.getByLabel('Date de naissance').fill(birthDate);
+  // Values typed into the SSR'd form before hydration finishes can be lost
+  // when the client render replaces the inputs, so the submit then posts an
+  // empty form. Fill, then require the values to be observed intact on a
+  // LATER toPass attempt. This greatly narrows (does not fully close) the
+  // race — hydration landing after the second read can still clobber — but
+  // the form also echoes values back on failure now, so a residual loss
+  // surfaces as a visible 400 rather than silent data loss.
+  const nameInput = page.getByLabel('Prénom');
+  const birthInput = page.getByLabel('Date de naissance');
+  let filledOnce = false;
+  await expect(async () => {
+    const intact =
+      (await nameInput.inputValue()) === name && (await birthInput.inputValue()) === birthDate;
+    if (intact && filledOnce) return;
+    await nameInput.fill(name);
+    await birthInput.fill(birthDate);
+    filledOnce = true;
+    throw new Error('waiting for the filled values to survive a re-check');
+  }).toPass({ timeout: 15_000 });
   await page.getByRole('button', { name: /^créer$/i }).click();
   // Same 15s bump as the signup-step assertion : the /child/new action
   // inserts a child + a membership and redirects to /child/<id>, which
@@ -72,7 +89,21 @@ export async function signUpAndCreateChild(
  */
 export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
   const dismiss = page.getByRole('button', { name: 'Plus tard' });
-  if (await dismiss.isVisible().catch(() => false)) {
+  // The dialog mounts client-side after hydration, so an instantaneous
+  // isVisible() races it : the check returns false, dismissal is skipped, and
+  // the dialog opens mid-test — polluting later assertions and axe sweeps
+  // (which then scan its entry animation and report blended-opacity contrast
+  // failures). Give it a short window to appear before concluding absence;
+  // only a timeout means absence — anything else (page closed, strict-mode
+  // violation) is a real failure that must surface here, not three steps later.
+  const appeared = await dismiss
+    .waitFor({ state: 'visible', timeout: 2_000 })
+    .then(() => true)
+    .catch((e: Error) => {
+      if (e.name === 'TimeoutError') return false;
+      throw e;
+    });
+  if (appeared) {
     await dismiss.click();
     await expect(dismiss).not.toBeVisible();
   }

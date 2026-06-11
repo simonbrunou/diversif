@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import * as m from '$lib/paraglide/messages';
 import { ALLERGENS, getAllergenLabel } from './allergens';
 
 describe('ALLERGENS', () => {
@@ -31,9 +32,11 @@ describe('ALLERGENS', () => {
 });
 
 describe('getAllergenLabel', () => {
-  it('returns the label for a known id', () => {
-    expect(getAllergenLabel('gluten')).toBe('Gluten');
-    expect(getAllergenLabel('oeuf')).toBe('Œuf');
+  it('returns the localized label for a known id', () => {
+    // Assert via the paraglide key (not the literal) so the test survives
+    // copy changes and runs under any default locale.
+    expect(getAllergenLabel('gluten')).toBe(m.allergenGluten());
+    expect(getAllergenLabel('oeuf')).toBe(m.allergenOeuf());
   });
 
   it('returns null for unknown id', () => {

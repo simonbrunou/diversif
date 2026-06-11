@@ -9,7 +9,7 @@
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { articleJsonLd, breadcrumbJsonLd, SITE } from '$lib/seo';
   import { page } from '$app/state';
-  import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
+  import { ALLERGENS, getAllergenLabel, type AllergenId } from '$lib/utils/allergens';
   import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -28,7 +28,7 @@
     itemListElement: ALLERGENS.map((a, i) => ({
       '@type': 'ListItem',
       position: i + 1,
-      name: a.label,
+      name: getAllergenLabel(a.id),
       description: ALLERGEN_GUIDANCE[a.id].why
     }))
   };
@@ -58,7 +58,7 @@
   ])}
 />
 
-<div class="container max-w-4xl space-y-8 py-6 md:py-8">
+<div class="mx-auto w-full px-4 max-w-4xl space-y-8 py-6 md:py-8">
   {#if page.url.pathname.startsWith('/en')}
     <Callout variant="warning">
       {m.commonFrOnlyBannerGuide()}
@@ -107,7 +107,7 @@
         class="rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <div class="flex items-center justify-between gap-2">
-          <span class="font-medium">{a.label}</span>
+          <span class="font-medium">{getAllergenLabel(a.id)}</span>
           <Badge variant="default" class="shrink-0 text-[10px]">
             Dès {g.recommendedAgeMonths} mois
           </Badge>

@@ -1,3 +1,8 @@
+// NOTE: this module is imported by server code (guidance/reminders,
+// allergen-status, the report load) and by tests; keep it free of svelte /
+// lucide-svelte imports. The paraglide messages import is plain TS and safe.
+import * as m from '$lib/paraglide/messages';
+
 // The 12 allergens diversif tracks for the diversification logbook,
 // derived from EU Regulation 1169/2011 Annexe II (14 allergens for
 // food labelling) minus two:
@@ -16,18 +21,18 @@
 // starts generating ingredient labels, this list will need to expand
 // to the EU 14.
 export const ALLERGENS = [
-  { id: 'gluten', label: 'Gluten' },
-  { id: 'oeuf', label: 'Œuf' },
-  { id: 'lait', label: 'Lait' },
-  { id: 'arachide', label: 'Arachide' },
-  { id: 'fruits_a_coque', label: 'Fruits à coque' },
-  { id: 'sesame', label: 'Sésame' },
-  { id: 'soja', label: 'Soja' },
-  { id: 'poisson', label: 'Poisson' },
-  { id: 'crustace', label: 'Crustacés' },
-  { id: 'mollusque', label: 'Mollusques' },
-  { id: 'celeri', label: 'Céleri' },
-  { id: 'moutarde', label: 'Moutarde' }
+  { id: 'gluten' },
+  { id: 'oeuf' },
+  { id: 'lait' },
+  { id: 'arachide' },
+  { id: 'fruits_a_coque' },
+  { id: 'sesame' },
+  { id: 'soja' },
+  { id: 'poisson' },
+  { id: 'crustace' },
+  { id: 'mollusque' },
+  { id: 'celeri' },
+  { id: 'moutarde' }
 ] as const;
 
 export type AllergenId = (typeof ALLERGENS)[number]['id'];
@@ -64,11 +69,32 @@ export type PriorityIntroductionAllergenId = (typeof PRIORITY_INTRODUCTION_ALLER
 // row and the Discover passport) all gate on this same threshold.
 export const ALLERGEN_MAINTAIN_DAYS = 4;
 
+// Allergen labels go through paraglide so the EN locale gets English names
+// (same pattern as REACTION_LABEL_RESOLVERS in $lib/utils/reactions and
+// CATEGORY_LABEL_RESOLVERS in $lib/utils/categories). Adding a new entry to
+// ALLERGENS without adding a resolver here is a compile error (the Record is
+// keyed on AllergenId), which is the desired loud failure.
+// i18n-keep: allergenGluten allergenOeuf allergenLait allergenArachide allergenFruitsACoque allergenSesame allergenSoja allergenPoisson allergenCrustace allergenMollusque allergenCeleri allergenMoutarde
+const ALLERGEN_LABEL_RESOLVERS: Record<AllergenId, () => string> = {
+  gluten: m.allergenGluten,
+  oeuf: m.allergenOeuf,
+  lait: m.allergenLait,
+  arachide: m.allergenArachide,
+  fruits_a_coque: m.allergenFruitsACoque,
+  sesame: m.allergenSesame,
+  soja: m.allergenSoja,
+  poisson: m.allergenPoisson,
+  crustace: m.allergenCrustace,
+  mollusque: m.allergenMollusque,
+  celeri: m.allergenCeleri,
+  moutarde: m.allergenMoutarde
+};
+
 // Typed overload: when called with a known AllergenId we always return a
 // string; the broader signature stays for consumers that pass arbitrary input.
 export function getAllergenLabel(id: AllergenId): string;
 export function getAllergenLabel(id: string | null | undefined): string | null;
 export function getAllergenLabel(id: string | null | undefined): string | null {
   if (!id) return null;
-  return ALLERGENS.find((a) => a.id === id)?.label ?? null;
+  return ALLERGEN_LABEL_RESOLVERS[id as AllergenId]?.() ?? null;
 }

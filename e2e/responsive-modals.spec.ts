@@ -5,6 +5,15 @@ import {
   signUpAndCreateChild
 } from './_helpers';
 
+// E2E runs against the production build, where the PWA service worker is live.
+// This spec opens StageDetailSheet via an authenticated nav to
+// /child/<id>/guide; a just-activated SW can claim the client and abort that
+// navigation's `_app/*.js` chunk loads, surfacing as "Target page, context or
+// browser has been closed" mid-click (intermittent in CI). Nothing here needs
+// the SW, so block it for *this spec only* — a suite-wide block removes the
+// asset cache and worsens the unrelated 2-worker DB-contention redirect flake.
+test.use({ serviceWorkers: 'block' });
+
 /**
  * Locks the Modal primitive's resolved-side behaviour and standard dismiss
  * flows across both project viewports. The carrier is the "stage tile" on

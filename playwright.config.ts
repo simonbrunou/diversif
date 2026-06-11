@@ -11,17 +11,14 @@ export default defineConfig({
   // SQLite file (scripts/reset-e2e-db.ts) before invoking Playwright.
   fullyParallel: false,
   // Two workers: one per project, so desktop and mobile run in parallel.
-  // `fullyParallel: false` is kept so tests within a project still run
-  // serially (the suite assumes one user per test, but several tests share
-  // the same Postgres database).
-  //
-  // Note: Playwright's `workers` setting is GLOBAL — there is no per-project
-  // override. A previous review suggested `workers: 1` per project to avoid
-  // Postgres contention; instead we accept the cross-project contention
-  // (one desktop worker + one mobile worker share a single PG) and absorb it
-  // by bumping the URL-assertion timeouts in `e2e/_helpers.ts` to 15s on the
-  // signup + child-creation redirects. Keep that compensation in mind if
-  // bumping workers further.
+  // `fullyParallel: false` keeps tests within a project serial (one user per
+  // test, shared SQLite DB). The two streams share one webServer + bun:sqlite
+  // connection; a rare cross-stream stall on the child-creation redirect is
+  // mitigated by the E2E argon2id relax (src/lib/server/auth.ts, gated on E2E=1,
+  // which drops signup CPU cost ~10x) plus the 15s URL-assertion timeouts in
+  // e2e/_helpers.ts. (Serializing to `workers: 1` was tried — it doesn't help,
+  // because the rare stalls are server-load-driven, not write-lock contention —
+  // and it roughly doubles wall-clock, so we keep parallelism.)
   workers: 2,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -88,6 +85,12 @@ export default defineConfig({
       // Marks this server as an end-to-end run so the signup throttle relaxes
       // its 20/hr cap — a single Playwright suite legitimately creates dozens
       // of accounts from one address, and we'd otherwise lock ourselves out.
+      // NOTE: src/lib/server/e2e.ts (isE2E) only honours E2E=1 when ORIGIN is
+      // a plain-http loopback URL — which the webServer command above sets
+      // (ORIGIN=http://localhost:<port>). NODE_ENV can't be the guard because
+      // this server intentionally runs the production build with
+      // NODE_ENV=production; the ORIGIN requirement is what keeps a stray
+      // E2E=1 inert on a real deployment.
       E2E: '1'
     }
   }

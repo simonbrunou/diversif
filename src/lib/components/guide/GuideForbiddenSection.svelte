@@ -8,7 +8,7 @@
 
 <section id="eviter" class="scroll-mt-6 space-y-3">
   <div class="flex items-center gap-2">
-    <AlertTriangle size={18} class="text-reaction-inconfort" aria-hidden="true" />
+    <AlertTriangle size={18} class="text-reaction-inconfort-foreground" aria-hidden="true" />
     <h2 class="text-xl font-semibold">Aliments à éviter</h2>
   </div>
   <Card class="overflow-hidden">

@@ -9,8 +9,9 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
+  import { signInWithPasskey } from '$lib/auth/passkey-client';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData } from './$types';
 
@@ -65,7 +66,8 @@
         if (cancelled) return;
         if (verifyRes.ok && data?.ok) {
           if (cancelled) return;
-          await goto('/', { invalidateAll: true });
+          // localizedHref so an EN visitor lands on /en, not the FR home.
+          await goto(localizedHref('/'), { invalidateAll: true });
         }
       } catch {
         // Background flow: aborts, refusals, and network blips stay silent.
@@ -83,34 +85,9 @@
     };
   });
 
-  async function signInWithPasskey() {
+  async function passkeySignIn() {
     if (passkeyLoading) return;
-    passkeyLoading = true;
-    try {
-      const { startAuthentication } = await import('@simplewebauthn/browser');
-      const optsRes = await fetch('/passkeys/authentication/options', { method: 'POST' });
-      if (!optsRes.ok) throw new Error('Impossible de démarrer la connexion.');
-      const optsJSON = await optsRes.json();
-      const assertion = await startAuthentication({ optionsJSON: optsJSON });
-      const verifyRes = await fetch('/passkeys/authentication/verify', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ response: assertion })
-      });
-      const data = await verifyRes.json().catch(() => ({}));
-      if (!verifyRes.ok || !data?.ok) {
-        toast.error(data?.error ?? 'Connexion échouée.');
-        return;
-      }
-      await goto('/', { invalidateAll: true });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur';
-      if (!/NotAllowedError|cancel/i.test(message)) {
-        toast.error(message);
-      }
-    } finally {
-      passkeyLoading = false;
-    }
+    await signInWithPasskey((v) => (passkeyLoading = v));
   }
 </script>
 
@@ -122,7 +99,7 @@
       type="button"
       size="pill"
       loading={passkeyLoading}
-      onclick={signInWithPasskey}
+      onclick={passkeySignIn}
       class="w-full shadow-soft"
     >
       {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeyPrimaryCta()}
@@ -135,13 +112,7 @@
   <form
     method="POST"
     class="grid gap-4"
-    use:enhance={() => {
-      submitting = true;
-      return async ({ update }) => {
-        await update();
-        submitting = false;
-      };
-    }}
+    use:enhance={trackSubmission((v) => (submitting = v))}
   >
     {#if form?.errorKey}
       {@const k = form.errorKey as keyof typeof m}
@@ -179,7 +150,7 @@
   {#if unsupported}
     <button
       type="button"
-      onclick={signInWithPasskey}
+      onclick={passkeySignIn}
       disabled={passkeyLoading}
       class="mt-4 w-full rounded-full border border-dashed border-primary px-4 py-3 text-sm font-bold text-primary-strong disabled:opacity-60"
     >

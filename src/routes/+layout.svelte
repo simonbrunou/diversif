@@ -2,16 +2,19 @@
   import '../app.css';
   import { Toaster, toast } from 'svelte-sonner';
   import { flush } from '$lib/offline/queue';
+  import { purgeClientState } from '$lib/offline/purge';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/state';
   import { onNavigate } from '$app/navigation';
   import { browser } from '$app/environment';
   import { setLanguageTag } from '$lib/paraglide/runtime';
+  import { i18n } from '$lib/i18n';
   import * as m from '$lib/paraglide/messages';
   import { applyTheme, getStoredTheme } from '$lib/utils/theme';
   import PublicHeader from '$lib/components/PublicHeader.svelte';
   import PublicFooter from '$lib/components/PublicFooter.svelte';
   import AppShellBento from '$lib/components/AppShellBento.svelte';
+  import ReloadPrompt from '$lib/components/ReloadPrompt.svelte';
   import JsonLd from '$lib/components/JsonLd.svelte';
   import { organizationJsonLd, websiteJsonLd, SITE } from '$lib/seo';
   import type { LayoutData } from './$types';
@@ -24,9 +27,7 @@
   // URL keeps the prefix, but reroute makes the underlying SvelteKit route the
   // same as the FR variant, so shell predicates have to match the unprefixed
   // form to keep `/en/login` etc. on the auth layout instead of the public shell.
-  const unprefixedPath = $derived(
-    page.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/'
-  );
+  const unprefixedPath = $derived(i18n.route(page.url.pathname) || '/');
 
   const isChildRoute = $derived(unprefixedPath.startsWith('/child/'));
 
@@ -68,6 +69,29 @@
     }
   });
 
+  // Purge the service-worker 'pages' cache + the offline IndexedDB queue when
+  // the session ENDS — i.e. on the authenticated→anonymous transition only.
+  // BACKSTOP for client-side-detected expiry only (e.g. an invalidate/goto
+  // that re-runs the root layout load with user=null mid-session). It does
+  // NOT cover the logout buttons: those are full-document POSTs, the layout
+  // remounts fresh on /login and this effect never observes the transition.
+  // Explicit logout is handled by purgeBeforeSubmit on the forms
+  // (account/sessions/+page.svelte) plus the server's Clear-Site-Data header.
+  // A plain (non-reactive) latch — not $state — so the effect re-runs only
+  // when `data.user` changes. It starts undefined and is seeded by the
+  // effect's first run (right after hydration), so a visitor who lands
+  // logged-out never triggers a purge. $effect never runs during SSR, so this
+  // is browser-only by construction. purgeClientState() is fire-and-forget
+  // and swallows its own failures (see its doc comment).
+  let wasAuthenticated: boolean | undefined;
+  $effect(() => {
+    const authenticated = Boolean(data.user);
+    if (wasAuthenticated === true && !authenticated) {
+      void purgeClientState();
+    }
+    wasAuthenticated = authenticated;
+  });
+
   onNavigate((navigation) => {
     if (!document.startViewTransition) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -80,6 +104,10 @@
   });
 
   onMount(() => {
+    // Sync the theme cookie with the localStorage choice once per load:
+    // users who picked dark/light before the cookie existed would otherwise
+    // keep a stale SSR theme and Profil meta until they re-toggled.
+    applyTheme(getStoredTheme());
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = () => {
       if (getStoredTheme() === 'system') applyTheme('system');
@@ -161,4 +189,7 @@
     </main>
   {/if}
 </div>
+{#if browser}
+  <ReloadPrompt />
+{/if}
 <Toaster richColors position="top-center" />

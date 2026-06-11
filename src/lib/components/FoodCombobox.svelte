@@ -117,7 +117,7 @@
         <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <CategoryTag id={selected.category} size="sm" />
           {#if selected.allergenType}
-            <span class="text-reaction-inconfort">· {getAllergenLabel(selected.allergenType)}</span>
+            <span class="text-reaction-inconfort-foreground">· {getAllergenLabel(selected.allergenType)}</span>
           {/if}
         </div>
       </div>
