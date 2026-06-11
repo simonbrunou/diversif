@@ -17,6 +17,7 @@
     destructive = false,
     requireText,
     requirePassword = false,
+    passwordLabel,
     hiddenFields,
     failureMessage
   }: {
@@ -31,6 +32,8 @@
     requireText?: string;
     /** When true, a `currentPassword` input appears and must be non-empty. */
     requirePassword?: boolean;
+    /** Label for the password field; defaults to the generic « Mot de passe ». */
+    passwordLabel?: string;
     /** Extra `<input type="hidden">` fields posted with the confirmation. */
     hiddenFields?: Record<string, string | number>;
     /**
@@ -106,7 +109,7 @@
       </Field>
     {/if}
     {#if requirePassword}
-      <Field name="currentPassword" label={m.commonPassword()}>
+      <Field name="currentPassword" label={passwordLabel ?? m.commonPassword()}>
         <Input
           id="currentPassword"
           name="currentPassword"

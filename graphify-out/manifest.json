@@ -1,2026 +1,2042 @@
 {
-  "/home/sbrn/Projects/diversif/bunfig.preload.ts": {
-    "mtime": 1780503890.7955794,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/bunfig.preload.ts": {
+    "mtime": 1781138897.5001621,
     "hash": "490395362d71e0a19eeb263ef9ffdcfa"
   },
-  "/home/sbrn/Projects/diversif/drizzle.config.ts": {
-    "mtime": 1780503890.7961779,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/drizzle.config.ts": {
+    "mtime": 1781138897.5027993,
     "hash": "69613f6652f6f802d1433b996040590b"
   },
-  "/home/sbrn/Projects/diversif/svelte-loader.preload.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "d068134e15c395abf95b7b9abfd63427"
-  },
-  "/home/sbrn/Projects/diversif/svelte.config.js": {
-    "mtime": 1780503890.8221776,
-    "hash": "6b6ae545b2dbb59a5959a01fabb7247f"
-  },
-  "/home/sbrn/Projects/diversif/eslint.config.js": {
-    "mtime": 1780557920.4873002,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/eslint.config.js": {
+    "mtime": 1781138897.503876,
     "hash": "7ff49618b2ab8ef713384f8538069ad1"
   },
-  "/home/sbrn/Projects/diversif/vite.config.ts": {
-    "mtime": 1780928372.9855812,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/svelte-loader.preload.ts": {
+    "mtime": 1781138897.53078,
+    "hash": "d068134e15c395abf95b7b9abfd63427"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/svelte.config.js": {
+    "mtime": 1781138897.53078,
+    "hash": "6b6ae545b2dbb59a5959a01fabb7247f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/vite.config.ts": {
+    "mtime": 1781138897.53078,
     "hash": "5547cc82b41275332f394ded35bdc105"
   },
-  "/home/sbrn/Projects/diversif/playwright.config.ts": {
-    "mtime": 1780961736.062148,
-    "hash": "aca4b19267f32fa4c599d4a7472bcac0"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/playwright.config.ts": {
+    "mtime": 1781141620.4080868,
+    "hash": "9b7f2d8ce972ea337cfc4d270781d2c7"
   },
-  "/home/sbrn/Projects/diversif/drizzle/0000_certain_mindworm.sql": {
-    "mtime": 1780503890.7961779,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/drizzle/0000_certain_mindworm.sql": {
+    "mtime": 1781138897.5027993,
     "hash": "07cc10695ec7548f933597815113241b"
   },
-  "/home/sbrn/Projects/diversif/drizzle/0001_neat_the_twelve.sql": {
-    "mtime": 1780510593.1358478,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/drizzle/0001_neat_the_twelve.sql": {
+    "mtime": 1781138897.5036864,
     "hash": "8fae27a37e1fdf27ec3e03d171bef085"
   },
-  "/home/sbrn/Projects/diversif/e2e/i18n.spec.ts": {
-    "mtime": 1778708530.6362705,
-    "hash": "6da77b6accdd9076b9d617b50ec672f3"
-  },
-  "/home/sbrn/Projects/diversif/e2e/bento-auth-onboarding.spec.ts": {
-    "mtime": 1778744614.7976894,
-    "hash": "eff4fb193f40e92fd24108498236c10b"
-  },
-  "/home/sbrn/Projects/diversif/e2e/dashboard.spec.ts": {
-    "mtime": 1778744614.7986896,
-    "hash": "5add86ef62e9447f426c575f48c97a9e"
-  },
-  "/home/sbrn/Projects/diversif/e2e/texture.spec.ts": {
-    "mtime": 1778869839.0136244,
-    "hash": "d099f7cea7afc26e8d16052b614e0088"
-  },
-  "/home/sbrn/Projects/diversif/e2e/report.spec.ts": {
-    "mtime": 1778873431.3931136,
-    "hash": "1045b02a15ea8b0cc9f64504be40c24e"
-  },
-  "/home/sbrn/Projects/diversif/e2e/auth.spec.ts": {
-    "mtime": 1779435611.2964747,
-    "hash": "ceeec8c7df46bbc92890a6dfa6b29ca8"
-  },
-  "/home/sbrn/Projects/diversif/e2e/bento-profil.spec.ts": {
-    "mtime": 1779435611.2974746,
-    "hash": "7c8f21360d8314cd4f44f9c08a396e0c"
-  },
-  "/home/sbrn/Projects/diversif/e2e/bento-reaction-detail.spec.ts": {
-    "mtime": 1779435611.2974746,
-    "hash": "283f8ac28dc15fdf2dae559bfa496db5"
-  },
-  "/home/sbrn/Projects/diversif/e2e/bento-shell.spec.ts": {
-    "mtime": 1779435611.2974746,
-    "hash": "6deb18242c706b389a787774cc0fe0ea"
-  },
-  "/home/sbrn/Projects/diversif/e2e/membership.spec.ts": {
-    "mtime": 1780503890.7961779,
-    "hash": "288ac45680076a87644e7263fa358cef"
-  },
-  "/home/sbrn/Projects/diversif/e2e/responsive-allergen-sheet.spec.ts": {
-    "mtime": 1780503890.7961779,
-    "hash": "63b07378832a2c4d838050288b504270"
-  },
-  "/home/sbrn/Projects/diversif/e2e/a11y-axe.spec.ts": {
-    "mtime": 1780544772.4554207,
-    "hash": "20ecdda5e785458b603b177a8ff41c10"
-  },
-  "/home/sbrn/Projects/diversif/e2e/offline.spec.ts": {
-    "mtime": 1780928372.984581,
-    "hash": "f68c959bbdb5c48da6cc640cf4cd3264"
-  },
-  "/home/sbrn/Projects/diversif/e2e/bento-discover.spec.ts": {
-    "mtime": 1780947045.285421,
-    "hash": "292e5e6b74b5714e5c364838a1836916"
-  },
-  "/home/sbrn/Projects/diversif/e2e/responsive-modals.spec.ts": {
-    "mtime": 1780947045.285421,
-    "hash": "8e4e9ab0e38ec415d88ed6fe03c15491"
-  },
-  "/home/sbrn/Projects/diversif/e2e/_helpers.ts": {
-    "mtime": 1781129740.2339814,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/_helpers.ts": {
+    "mtime": 1781138897.503775,
     "hash": "1716306a75533008c5e862e9fccd6c13"
   },
-  "/home/sbrn/Projects/diversif/e2e/gdpr.spec.ts": {
-    "mtime": 1781129740.2339814,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/a11y-axe.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "20ecdda5e785458b603b177a8ff41c10"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/bento-auth-onboarding.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "eff4fb193f40e92fd24108498236c10b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/bento-discover.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "292e5e6b74b5714e5c364838a1836916"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/bento-profil.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "7c8f21360d8314cd4f44f9c08a396e0c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/bento-reaction-detail.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "283f8ac28dc15fdf2dae559bfa496db5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/bento-shell.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "6deb18242c706b389a787774cc0fe0ea"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/dashboard.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "5add86ef62e9447f426c575f48c97a9e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/gdpr.spec.ts": {
+    "mtime": 1781138897.503876,
     "hash": "8f0713e01aca3aa8aa3fd52ac4107582"
   },
-  "/home/sbrn/Projects/diversif/e2e/locale-nav.spec.ts": {
-    "mtime": 1781129740.2339814,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/i18n.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "6da77b6accdd9076b9d617b50ec672f3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/locale-nav.spec.ts": {
+    "mtime": 1781138897.503876,
     "hash": "a26a42465b2d7e5a88adf3e8bf0da948"
   },
-  "/home/sbrn/Projects/diversif/scripts/normalize-fr-apostrophes.py": {
-    "mtime": 1779393424.33595,
-    "hash": "afb4f6419adcf4885b6a69e3d0b649ad"
-  },
-  "/home/sbrn/Projects/diversif/scripts/bun-test.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "ce37b77f54de984fe47a51fa2f642531"
-  },
-  "/home/sbrn/Projects/diversif/scripts/check-bundle-size.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "b1e3e5466d8f60a9f70fba53b97a9409"
-  },
-  "/home/sbrn/Projects/diversif/scripts/check-i18n-unused.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "82fb43eac801a1db51c94517cc177ed7"
-  },
-  "/home/sbrn/Projects/diversif/scripts/cleanup.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "400ff31c403d26914f866ebd7ae73791"
-  },
-  "/home/sbrn/Projects/diversif/scripts/export-user.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "88a6ad8aa9740707175ad3496515435e"
-  },
-  "/home/sbrn/Projects/diversif/scripts/generate-icons.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "43aa3a20aa2f2797aabc612a2d4e9862"
-  },
-  "/home/sbrn/Projects/diversif/scripts/lint-i18n.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "f7a2e780da54e9ceb3d4295cc6bc3baa"
-  },
-  "/home/sbrn/Projects/diversif/scripts/list-stale-users.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "dd8114ead8e11cb362f39ff9ffa1572c"
-  },
-  "/home/sbrn/Projects/diversif/scripts/reset-e2e-db.ts": {
-    "mtime": 1780503890.8091776,
-    "hash": "622934d2e000470f62cb8edd09b212d3"
-  },
-  "/home/sbrn/Projects/diversif/scripts/verify-backup-restore.ts": {
-    "mtime": 1780510593.1428478,
-    "hash": "1e46682b1a4202018112c6bfbc552586"
-  },
-  "/home/sbrn/Projects/diversif/src/hooks.ts": {
-    "mtime": 1778708530.63204,
-    "hash": "97d2a4f0b7f2e358ee3b3042550349b5"
-  },
-  "/home/sbrn/Projects/diversif/src/hooks.server.ts": {
-    "mtime": 1779477343.8643148,
-    "hash": "c30fd1c9cc8f3d0b14a6aeb36aeaa261"
-  },
-  "/home/sbrn/Projects/diversif/src/hooks.client.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "eef76a289f7555db4521b70cdf6c6045"
-  },
-  "/home/sbrn/Projects/diversif/src/hooks.server.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "754654fdb4892767c2384294cfcc85a1"
-  },
-  "/home/sbrn/Projects/diversif/src/app.d.ts": {
-    "mtime": 1780928372.9855812,
-    "hash": "0cc9b60252a17217e71fbd575ab129dc"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/i18n.ts": {
-    "mtime": 1778708530.644981,
-    "hash": "3153027f34bb5e094fdfcfab0121aca4"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/types.ts": {
-    "mtime": 1779156767.7601178,
-    "hash": "c3b67e5be8c301558a2a8a78c79ed762"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/sentry.ts": {
-    "mtime": 1779477405.937565,
-    "hash": "d54043920318768f2360a74705447a8e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/sentry-init.server.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "862d151f82d9670348ddf3fc54417b57"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/sentry.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "940c0ab5a12a3692610941d89ddf8770"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/seo.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "6cf30e4b5d9f94ff923f377010ef1bd1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/seo.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "2bff5e040ed94770028c6818b1c225ab"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/JsonLd.svelte": {
-    "mtime": 1778708530.6574247,
-    "hash": "ecaaa15392e9c4f81f02b8779167df6c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/SourceCitation.svelte": {
-    "mtime": 1778708530.659687,
-    "hash": "586bcf728c9579b45ba432a3d5e3c6b7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ThemeToggle.svelte": {
-    "mtime": 1778708530.6615505,
-    "hash": "cea81f846c10a4f2f5dcc89df807e89c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/CategoryTag.svelte": {
-    "mtime": 1778708530.6634839,
-    "hash": "11992e8446846b6ba540d80a472bb82d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/StageBadge.svelte": {
-    "mtime": 1778714600.4894998,
-    "hash": "c49b0b0c26bd64e09d88ff1653d133f5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ChildSwitcherDrawer.svelte": {
-    "mtime": 1778789897.5670905,
-    "hash": "ceb5ad86a7bccc22cc50d1981bb5c5d2"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ChildHeaderPill.svelte": {
-    "mtime": 1779253065.3420713,
-    "hash": "085a6229be733c829bbc832ea34101ea"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/FabLog.svelte": {
-    "mtime": 1779253901.8064165,
-    "hash": "385ebf49e9fcb852fed61dffea9c6348"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/GuideStaticSections.svelte": {
-    "mtime": 1779393676.860316,
-    "hash": "4a32889766b4fdf8f6dde3297050d774"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.svelte": {
-    "mtime": 1779393951.0054471,
-    "hash": "6fa36e9a5666057d91339fc2746ad53f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/BottomNavBento.svelte": {
-    "mtime": 1779435611.2974746,
-    "hash": "a39a66cfb9a9b71f8992cc11a8224edb"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ReactionPicker.svelte": {
-    "mtime": 1779449538.223537,
-    "hash": "f95afb166dd88e335b54b35992d040b9"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/TexturePicker.svelte": {
-    "mtime": 1779449538.223537,
-    "hash": "422909f50f36ea4477f7113b58d52f79"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/TipCard.svelte": {
-    "mtime": 1779449538.223537,
-    "hash": "cf2aac16845f87669e0cc8328ea0c9de"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/AllergenInfoDialog.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "a4b391c2996e71932af6eb2380982e55"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/BottomNavBento.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "9f21c0a38ac644db9e02be5fed47d1b3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ChildHeaderPill.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "e2a5e674f38483c9c5bd51a6d75b6c62"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ChildSwitcherDrawer.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "79d6c44c8707806b21a033ec1488c1a8"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/FabLog.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "99cf9e56d32d0edc3e2b82e97382c1ba"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/FoodCombobox.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "69a5e007a1a55fe7b2e24e2c9dcb442d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/GuideStaticSections.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "302ac4c3ef3f5495bbb6e0d7928481c2"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/LocaleSwitcher.svelte": {
-    "mtime": 1780503890.8101778,
-    "hash": "cfc7d9226bf937325ff926e5b3c068ee"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/LocaleSwitcher.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "042b3e107b5df6093039b41a4d03e8a4"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/PrintShell.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "85cae355609283fbb0d307fdc1905cf0"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/PublicFooter.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "40e712e778eb42917bd35684d70fb16d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/PublicHeader.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "bcba253cd469127c539026ef54944902"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ReactionPicker.test.ts": {
-    "mtime": 1780503890.8101778,
-    "hash": "c311eb522f388b4ed312df643ca3a2e6"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/Seo.svelte": {
-    "mtime": 1780503890.8101778,
-    "hash": "9bddad003975d0d60b7c6090aa8d9dc7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/SharedTopBar.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "150a381eef3ba40f4d2ae2beaf25d171"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/SourceCitation.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "ae3ce4040ff81d22fb34edc3b53bbe5b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/StageBadge.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "e64295fc03cb16bb3a3c37d5a1a4190f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ThemeToggle.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "edbec95d1c0c13e01070871155f05879"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/TipCard.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "13d3ce134f3a0d9f04402a5e746bee74"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/WelcomeDialog.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "4b925e78831ed89140705271f6325fd5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/PrintShell.svelte": {
-    "mtime": 1780573232.7130804,
-    "hash": "1fa3c1efe9037baea1c448ad6f294eb7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/PublicFooter.svelte": {
-    "mtime": 1780573232.7130804,
-    "hash": "23d9d71c5bec94312e58c6e0a2bfcaa3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/PublicHeader.svelte": {
-    "mtime": 1780573232.7130804,
-    "hash": "8faaaf5af5c7b44d315a8f936b5ec504"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/SharedTopBar.svelte": {
-    "mtime": 1780573232.7130804,
-    "hash": "4918ac9b15afeb05c6166fa54945fd3b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ReloadPrompt.svelte": {
-    "mtime": 1780928372.9855812,
-    "hash": "e1da8e96905316355508b425e191271e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/WelcomeDialog.svelte": {
-    "mtime": 1780961736.062148,
-    "hash": "70b3034893706ab852136de9502d71ec"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/AppShellBento.svelte": {
-    "mtime": 1781129740.2339814,
-    "hash": "fcb6543c84671f10e51d5b4d816d2778"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/AppShellBento.test.ts": {
-    "mtime": 1781129740.2339814,
-    "hash": "4a68c19692c3788e917c884249ff8886"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/FoodCombobox.svelte": {
-    "mtime": 1781129740.2339814,
-    "hash": "8806fa7fa561ccd3644302fd2b7abae3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingTrustBento.svelte": {
-    "mtime": 1778708530.7517452,
-    "hash": "ea5ff169c8c3b7aa698a1211d0a24a9d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCtaBento.svelte": {
-    "mtime": 1778708530.7532253,
-    "hash": "af8a8e521c3425281ab578b8d64d44fb"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingFeaturesBento.svelte": {
-    "mtime": 1778710035.2714357,
-    "hash": "757db938bb18924ebf2ac49369f253d5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingHeroBento.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "37f5f977f1b1aaa4756b74d0d3505357"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingClosingCtaBento.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "1bdb281e8a05ca87e1341e123edf74bd"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingFeaturesBento.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "ba52fba84b1e3906694ad2397f60c00b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingHeroBento.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "f984e5c99a3878264d4409448c03841f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/landing/LandingTrustBento.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "b646e1700fe9c2bb9e9d48377716712c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Badge.svelte": {
-    "mtime": 1778708530.758289,
-    "hash": "87371f51b879675e663f941dbb9986a3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Input.svelte": {
-    "mtime": 1778708530.7638087,
-    "hash": "848e99a6065c3bb33ccf62744decb735"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Label.svelte": {
-    "mtime": 1778708530.7643838,
-    "hash": "adbf1f72d3ff86ee125889ac9493d932"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Select.svelte": {
-    "mtime": 1778708530.767287,
-    "hash": "20ea8e758f3231a6b627118ca258fb06"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Textarea.svelte": {
-    "mtime": 1778708530.7726095,
-    "hash": "963c9f474a964bb3228386d43a861f17"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/LinkRow.svelte": {
-    "mtime": 1778744164.54867,
-    "hash": "91a102790602513084d5c03a2628398e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/FormError.svelte": {
-    "mtime": 1779156767.759624,
-    "hash": "fd4c9dfaf217af492eb56ef962d4412a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/DashedActionRow.svelte": {
-    "mtime": 1779171462.4497845,
-    "hash": "4f2dec34afe2f5f1569faeae49e2d2d1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/BackHeader.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "6a97cf435a7e993e90635582c0f51b0b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "f4c6ada05ec550fb739557125613be92"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Callout.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "491fa85cfcb327fe8e4789826ebc9c70"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/CalloutCard.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "0ec8bfb90bfa6a0d8ad8168a1e77bd79"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "2e73035ffd430fda36e525b3c3adab5e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/ConfirmModal.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "4498b54e03ed4c4a01d7d28e0210a535"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/EmptyHint.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "77389c35dbfa6d87915738ca52713e54"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Field.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "5f3dc5564ebf523a7b3bbeb418f063e0"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/SheetSection.svelte": {
-    "mtime": 1779392646.4209328,
-    "hash": "0c2526c35fa00e94dbb5a1d3cc1564b8"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/use-bottom-sheet-drag.svelte.ts": {
-    "mtime": 1779393676.8608582,
-    "hash": "d5558092fff31e22cdfd8a7e9e07deba"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/DetailSheet.svelte": {
-    "mtime": 1779393951.0054471,
-    "hash": "76330bf9c854a4b9302d843031d2f059"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.svelte": {
-    "mtime": 1779435611.2974746,
-    "hash": "26556d0baf6b74de88ebb95f4491b2a9"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/SectionHeader.svelte": {
-    "mtime": 1779449538.223537,
-    "hash": "e8123ba55689470e255c414f4c79e723"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Badge.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "d536392ad98f33e056bbdeed2f59f6d6"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Button.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "50248e205518d2c2d467a120a563dd1e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Callout.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "17a33dbbf71334cec1deba005dc0b07f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/CalloutCard.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "f3f721e5be03de71e121c6982c716b9b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Card.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "0eaf4a6798955b0a7dbab77311d7ef53"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/ConfirmModal.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "6d386413d4b7d6f7efbe384d0a50db65"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/DashedActionRow.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "415c114284e356f0afe7569fca3bbef7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/DetailSheet.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "9ad93a9be828fb94d655dcd9990ea6e1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/EmptyHint.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "7b1c5b4cf9c55e14d8a2411349ee48de"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Field.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "951a5e5c61ac6e589c4479e130c4059c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/FormError.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "4d9978326580a706846920c872cf896e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Input.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "50891024237ed2ce7349e3b0325dd078"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Label.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "60e598a3f91e5d2c90757a7b5490273e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/LinkRow.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "a877450b41946a014d24e0c2b9a11a38"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Modal.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "482a7b1df93852f3c61e11471c9c24a8"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/SectionHeader.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "147220e58d849a18e78294c8be1f67e5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Select.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "f8747586adc73178858e723e4c056463"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/SheetSection.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "5266d607ebc28b85996798b205f95b12"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/ui/Textarea.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "88d773e2ce33759257ab84ab79845209"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReassuranceHero.svelte": {
-    "mtime": 1778708530.7946649,
-    "hash": "cb1574ee8c31d7b5dc7ab6e4485b2658"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SevereRail.svelte": {
-    "mtime": 1778708530.7970586,
-    "hash": "3d3f3c2680c66706cf666183017c4dbb"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/BentoAuthLayout.svelte": {
-    "mtime": 1778710035.2704358,
-    "hash": "d83ae25b8e994fdde8c6c5002e404b0b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReminderStrip.svelte": {
-    "mtime": 1778710035.2714357,
-    "hash": "3abafabeecee3233b0156003df052786"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RasCard.svelte": {
-    "mtime": 1778742957.4095016,
-    "hash": "e42bd8e11a06107d64aac91a9a81838f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ChildCardRow.svelte": {
-    "mtime": 1778744164.54767,
-    "hash": "96268b3ac822fd706a030449dff6de49"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetHeader.svelte": {
-    "mtime": 1778788470.5228438,
-    "hash": "27bca8071881215ad3ec0c179c4f39d9"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCard.svelte": {
-    "mtime": 1778869839.0216243,
-    "hash": "9307ffdabc13588cddfc575d01e4c0fb"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCardGrid.svelte": {
-    "mtime": 1778869839.0216243,
-    "hash": "9597b038429bd71425182742d10ef2d3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.svelte": {
-    "mtime": 1778877144.18866,
-    "hash": "f0c787832af15b83076a2872d383e6f9"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RgpdSection.svelte": {
-    "mtime": 1778877144.18866,
-    "hash": "5b2781af68fecee74f3816324712216d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.svelte": {
-    "mtime": 1779127068.6644719,
-    "hash": "2a6ba4ea8d434792c5db50a0cd2b82fb"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.svelte": {
-    "mtime": 1779129282.7928188,
-    "hash": "d25e42f01fe6c1ac0f4b2137ed5237c5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StayCoolCard.svelte": {
-    "mtime": 1779129282.7928188,
-    "hash": "2780c4c08bd8a9a096ae5d1a3e6e9225"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AujourdhuiBento.svelte": {
-    "mtime": 1779142562.4795399,
-    "hash": "f23d248372042c993bb28100ceacd142"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CoparentsSection.svelte": {
-    "mtime": 1779171462.4497845,
-    "hash": "37fb2ed0c160ba0a6884eb5948c293d7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.svelte": {
-    "mtime": 1779171462.4497845,
-    "hash": "db06719082eae35a7b8a4c62324bfec7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/BentoMark.svelte": {
-    "mtime": 1779392646.418933,
-    "hash": "683982ebe694d6ecc3fd9db077c36226"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetTous.svelte": {
-    "mtime": 1779392646.418933,
-    "hash": "937135a7dfa5c87991d38a32c6882732"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/MonitorTimer.svelte": {
-    "mtime": 1779392646.418933,
-    "hash": "c26da64450f2ef5a68a6b7af7475078e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.svelte": {
-    "mtime": 1779392646.4199328,
-    "hash": "edef668ab723d31cbc02e2a87b0700e4"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetSegments.svelte": {
-    "mtime": 1779393424.33595,
-    "hash": "bc3f14b272d0ca8caa9b86aba0c7a542"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetStats.svelte": {
-    "mtime": 1779393424.33595,
-    "hash": "d3c158316f3b2b4556d594e84ae21d8c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StatTiles.svelte": {
-    "mtime": 1779393424.33595,
-    "hash": "e24dc285b4011dc8739ca72d38d261dc"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StagesBentoGrid.svelte": {
-    "mtime": 1780497496.8272977,
-    "hash": "f97abdcccc60f9a4a20d3cf7ae25ecb6"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AllergensSnapshot.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "b39277ff14fe1aa2bb31840ddb7cc831"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AujourdhuiBento.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "3a8a21572358b77e4facee75fdfc3fa8"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/BentoAuthLayout.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "8511da5f09edcd4dc18b021fa4633223"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/BentoMark.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "8f60dc11e7e17c9519df81b391fa3302"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetBento.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "eef0027faf6ee9e6e14edb2caaa8070d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetHeader.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "45e0b821bb04bdfa3af725312efe7bae"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetSegments.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "b77a6afe6151357d439950e83fc7ddc8"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetStats.test.ts": {
-    "mtime": 1780503890.8111777,
-    "hash": "fab237aa7ebf2731cf06a871798a830a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetTous.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "3a77b40d9e261c70e831842c7c51b3ca"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ChildCardRow.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "8ab4665fa7fd73d9a560b4f0e18eebcf"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CompteSection.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "de3b842cbc97b1aa4bf1222cb07ffb3c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CoparentsSection.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "9dd6651dba77892912c4049ca79c04ec"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/DiscoverBento.svelte": {
-    "mtime": 1780503890.8121777,
-    "hash": "7ac5d144d4c41dd9b7cae1ba2c7f73c5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/DiscoverBento.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "43dba2b08bbe25268a8acb75a956e86f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCard.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "a0c82b85938965568f69c773793a7175"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/FoodCardGrid.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "db44dd6f798c84b2d3490115987c08de"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/MonitorTimer.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "657cfd1d1d4f4cd1b5ac02c18d0d21bf"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/OnboardingForm.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "34531409d239a30bc89580b03edde73c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ProfilBento.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "6bccd568f07777f55b4152741021ea47"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RasCard.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "d624c4e38f1b605e184fc28f714e1e26"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReactionDetailBento.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "6c9d412ef43a4b55d595e931e3c857ce"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReassuranceHero.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "979bfe54e00b4a63d71450b1ed6c08dc"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RecentFeed.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "b6b349d22209b7b70dce6a5404725dee"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ReminderStrip.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "d979dd258397a1755937073c4480fda4"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/RgpdSection.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "dd16bff1af404bcc9f382562023ed70f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SevereRail.test.ts": {
-    "mtime": 1780503890.8121777,
-    "hash": "c0891b2a469b105b779c18670f4d1601"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StageDetailSheet.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "cd5d41e90bf86afd2edc5ef5e2939bbf"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StagesBentoGrid.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "41f440f0ea950175ed69cc904e65558a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StatTiles.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "ec9446f2ffecbf0d679b3b7c8edee18b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StayCoolCard.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "9c39fcd503ff60a5e2281c3518ff6ab5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomList.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "1033d7be15da1b8be9e16c1335799034"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/SymptomRow.test.ts": {
-    "mtime": 1780503890.8131776,
-    "hash": "357d787223c97a4378c067fec211a161"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/StageDetailSheet.svelte": {
-    "mtime": 1780510593.1428478,
-    "hash": "f72e214e7f6d82c7e69e081eaf5cb6f7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetAllergens.svelte": {
-    "mtime": 1780539970.246086,
-    "hash": "7f21f90f07982909789f8c25ecffc128"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetAllergens.test.ts": {
-    "mtime": 1780539970.246086,
-    "hash": "0f32b077d86ae87e54a4d0e9d7dd68fa"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetBento.svelte": {
-    "mtime": 1780539970.246086,
-    "hash": "8990de04ca2cb9ffdb66da5a08c388e6"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/ProfilBento.svelte": {
-    "mtime": 1780539970.246086,
-    "hash": "bc53d9bd37c799896f705b7315e04193"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.svelte": {
-    "mtime": 1781129740.2339814,
-    "hash": "fb99ab685594ded418e61dfc882ab309"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AddSymptomSheet.test.ts": {
-    "mtime": 1781129740.2339814,
-    "hash": "1133889b8c34ee5f6db6e4a4e685e32f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/AllergensSnapshot.svelte": {
-    "mtime": 1781129740.2339814,
-    "hash": "74779f1525451785e032cb757d27b80e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetCategories.svelte": {
-    "mtime": 1781129740.2339814,
-    "hash": "d8d9ae0df62d72eadd128029718d7fc8"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/CarnetCategories.test.ts": {
-    "mtime": 1781129740.2339814,
-    "hash": "fca73b8ed389aef1d9dbbfbbec67d396"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/bento/OnboardingForm.svelte": {
-    "mtime": 1781129740.2339814,
-    "hash": "ed64adeed6ae2b2f315536a5888a5572"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideAllergensSection.svelte": {
-    "mtime": 1779393676.860316,
-    "hash": "595963979ee5a74d5790aa053f7b513b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideCategoriesSection.svelte": {
-    "mtime": 1779393676.8608582,
-    "hash": "1b8a349f93d1e0b7077f10d5b45734f2"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideReglesSection.svelte": {
-    "mtime": 1779393676.8608582,
-    "hash": "0ee108af2106b0748893ef0db91ae309"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideSourcesSection.svelte": {
-    "mtime": 1779393676.8608582,
-    "hash": "86ec3fcf4de958f982943067a42d634a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideApproachesSection.svelte": {
-    "mtime": 1781129740.2349813,
-    "hash": "80e93351488338aa663e319a6488c454"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideForbiddenSection.svelte": {
-    "mtime": 1781129740.2349813,
-    "hash": "d5e5f4af09ba2d1f6ef09dc13579929d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideReactionsSection.svelte": {
-    "mtime": 1781129740.2349813,
-    "hash": "3897e244a546b605cbf8dede62d670d3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideStagesSection.svelte": {
-    "mtime": 1781129740.2349813,
-    "hash": "281ebcc03e6e7732778ad9fe67582bed"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/components/guide/GuideTexturesSection.svelte": {
-    "mtime": 1781129740.2349813,
-    "hash": "58a4738eca7cb03e2b3971023bf13a46"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/content/symptoms.ts": {
-    "mtime": 1778708530.691431,
-    "hash": "4fa3ff984c1f4bfdb167e8d04a2abf96"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/content/guidance.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "7ee9b5023fba5ce9a636001724a86c18"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/content/symptoms.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "7440e2d50e1055ea2cab80d82700bada"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/content/guidance.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "9529b89e881067045b3d6cb5a76f49d7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/content/sources.test.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "bbf1fa4e811c115a2ca9adc939ae3670"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/content/sources.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "9f0671c7ea26fa44f7613f97e008fb1f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/redirect.ts": {
-    "mtime": 1778708530.699596,
-    "hash": "0f82cd25a5ea5f8ebf220f3269ee42be"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/invitations.ts": {
-    "mtime": 1778710035.2734356,
-    "hash": "c6789f330134633ae566a14f96481149"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/rate-limit.ts": {
-    "mtime": 1778710035.2734356,
-    "hash": "fb466f5fb3a23c59525d614b950b51da"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/legal.ts": {
-    "mtime": 1779393676.8612838,
-    "hash": "7c282ab0b7f3264a9d99ef568ce9125e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/forms.ts": {
-    "mtime": 1779393951.0054471,
-    "hash": "e48c0e2a429bb995fc76ba5b232ad855"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/fresh-auth.ts": {
-    "mtime": 1779393951.0054471,
-    "hash": "6421af690b64427a504c6d8060ffbcf3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/gdpr-test-fixtures.ts": {
-    "mtime": 1779393951.0054471,
-    "hash": "7344a7d6e5aaf65c3623a64b282572ce"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/passkeys-test-fixtures.ts": {
-    "mtime": 1779393951.0054471,
-    "hash": "6d948a67dedb8e0212712930b9b69193"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/audit.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "47e5a6eb275b66a1826e50e95f2d5988"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/auth.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "85ac8109ac9e5966b1fff763ddd3ba66"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/cleanup.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "4a5ba6d8749d1af78c6da690a4e6da22"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/food-resolution.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "a40e13ffa3334b75fcd8e784c731a3c0"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/food-resolution.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "c1d7fa97ff68d6fccc77fdc8ee26a925"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/forms.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "ddaaf6d6e29ae30fd7e8c35e9bf807ea"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/fresh-auth.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "2740e499546e751b40f8115108caa9a9"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.delete.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "0456f4c708a2bfd1770254d4b69cee84"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.export.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "706d679fc60d208b1f641c10af770265"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/gdpr.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "d2a837dd0c2a85d5310fe06fd1745ba6"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guards.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "b98bcd6107043cb1252582c44e332343"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/idempotency.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "e28f2219a67ee5e65ebae401d6f48dd6"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/idempotency.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "37eeed837ae4d9f976bdf22d426e86b9"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/invitations.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "29cb9b7c7079c998efc57313ee0947f3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/legal.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "71764cc8207cd2e1af57672c815a2fa9"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/passkeys.ceremony.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "a3779beaa8c0a12c7362063212d0ae2c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/passkeys.challenges.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "7bb0482841affb401bb1727b104e9fd2"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/passkeys.helpers.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "da314c0af2447637e5cc7878d8c636cc"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/rate-limit.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "4fc185d02a638b9ebc007fb158365677"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/redirect.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "2bb650e975b48043c79d7b46b2faa7e2"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/shutdown.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "b5c631d96020e586578dddd176221c0f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/shutdown.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "1468272a7837170c51cb22707e383828"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/audit.ts": {
-    "mtime": 1780513416.7578316,
-    "hash": "0980548f47e6c14c72274434323277a4"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/cleanup.ts": {
-    "mtime": 1780513416.7578316,
-    "hash": "9b169a9890cb657e5c1786b963563649"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/passkeys.ts": {
-    "mtime": 1780553191.5722444,
-    "hash": "78eea69ec4be5a1cbbea7d03d275d0b7"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/auth.session.test.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "9291c14b338c5c734ab8109944b1d698"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/auth.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "5947f198e825274b88187c9ccb63cd3a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guards.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "8a7b6f2c8b36a97840ec2b9df69101e5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/errors.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "9fcb0372fa80fa61f301bf09803c17e5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/exec.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "f0c58dba760af0964d95549378172590"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/index.smoke.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "5ee7508930e468626255413085d0cbdf"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/index.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "20ea2f8137238c24c6f9d96cc19ce4f0"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/schema.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "48d0946740ebaa58b20eb09851275306"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/seed.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "730cf0d1c345623e624a97c3cf31ec8d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/seed.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "71278322c636f5ab59f710f9801cd3cd"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.test.ts": {
-    "mtime": 1780503890.8151777,
-    "hash": "00db90cb3b1fea6b7e12dd3609f90c17"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/texture.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "049efe9c6c56269b0236934630475c66"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/symptoms.ts": {
-    "mtime": 1780510593.1428478,
-    "hash": "d7b9c5d17f3255110c7d437b4154d47c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/db/schema.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "2b2b39e6ada9df1b3f27840fc864efbc"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/reminders.ts": {
-    "mtime": 1779173493.3522162,
-    "hash": "d40e333d787faab0b9e41f6ec126346d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/repeat-candidates.ts": {
-    "mtime": 1779173493.3522162,
-    "hash": "40e076d500458945759c04316b19f0be"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/allergen-status.ts": {
-    "mtime": 1779338415.158882,
-    "hash": "6e7e4bf1c5b4b6a3ca41a6705b28c4d1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/reminders.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "1b3999c105c2f2dc4d34e8570627b4ef"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/repeat-candidates.test.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "c477e69655e41ad8d9b2d7da20f4df8c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries.test.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "1f84e9702411d8db4e0ca56547cca1da"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/dismissals.ts": {
-    "mtime": 1779393676.8608582,
-    "hash": "5a4edecd83db9ea817c74172dac10823"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/diversity.ts": {
-    "mtime": 1780503890.8161776,
-    "hash": "19ade215fbd656ab83739e5f046c7647"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/index.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "f0aeaf8b49a2b30f2bb4959be3b4b1ed"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/seasonal.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "4360386e622b39b671c876a57eb89469"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/server/guidance/queries/timeline.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "bfca78cd05edce565c56e6360f421dc3"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/age.ts": {
-    "mtime": 1778708530.7098916,
-    "hash": "441f57f0fe12d653672b47b6296a4c25"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/cn.ts": {
-    "mtime": 1778708530.7107456,
-    "hash": "2d01b535f0be7422af24560c9f31c327"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/search.ts": {
-    "mtime": 1778708530.7133467,
-    "hash": "f2c1c76e1c25718a48bc0fcc526fda2e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/theme.ts": {
-    "mtime": 1778708530.7145817,
-    "hash": "fbbc0c97be40434e0b4c6cd127f0d2c1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/localized-href.ts": {
-    "mtime": 1778708530.7175465,
-    "hash": "55a4f24cde442ce99387662fa585f2fe"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/monitor-timer.ts": {
-    "mtime": 1778708530.720933,
-    "hash": "7a998910fe56d91d99acd54308486521"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/texture-labels.ts": {
-    "mtime": 1778869839.0226243,
-    "hash": "0dedcdde7f389ab87aafc1588062017d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/textures.ts": {
-    "mtime": 1778869839.0226243,
-    "hash": "490edcc055952faad5c12cf6988b6d5c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/milestones.ts": {
-    "mtime": 1779156767.7601178,
-    "hash": "45e103b8670707ae41feac4da96810ba"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/allergens.ts": {
-    "mtime": 1779338415.158882,
-    "hash": "ae632dde8b7efffb83cdf594938176a5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/dates.ts": {
-    "mtime": 1779393951.0064473,
-    "hash": "ef6c3b5eb387524cf14f8401634e8633"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/categories.ts": {
-    "mtime": 1779435611.2984746,
-    "hash": "068990d34a1bcd890bb933554461124c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/age.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "7a41af3e837cee0874e669e99133a30a"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/allergens.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "0e8e884caa303c3b70d77f1f315012f8"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/categories.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "69a827e735e47df08017046dee124923"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/cn.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "f8f60477813d1137ac3a6cbe0d0510e5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/dates.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "3c981d5e46e81f1b71de86b32a7695bd"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/invites.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "d6e9f9e5798d83ed8d87b63be1b759e5"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/invites.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "4484e5ce52b46d233ffc699a91262e8f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/localized-href.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "8eb6cdf7a659506eef4c32a42ab10967"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/milestones.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "0a61d9341041277b7df7c21cb894b2d0"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/monitor-timer.test.ts": {
-    "mtime": 1780503890.8171775,
-    "hash": "ee9df9d0ff2289650c430a72ee9f862e"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/reactions.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "063504ba7fcbea2d24b829a5e52be9df"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/search.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "9948517fad0bb78a4f2ca27ea6ebec08"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/texture-labels.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "dedca990fc25ad5a643de7e54c7fd198"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/textures.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "4dca0c4a410cfa3ef5c6693346a075f1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/theme.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "deecc058c32a20b0591d13a8c61d8d3f"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/reaction-values.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "b1535d0b0caf628d0a638c8ff563bc00"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/reactions.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "4d96c6a3a9454f9ddd2336569a8781c1"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/utils/suggest.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "a2f83c1637994201f23ef931714fa7e0"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/offline/uuid.ts": {
-    "mtime": 1778708530.7254474,
-    "hash": "f2d517b910538065db8afd96946b1119"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/offline/uuid.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "333612d1caccfa72d4db17565012764c"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/offline/queue.test.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "ad115b128cf5af05d608c885dcf28976"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/offline/queue.ts": {
-    "mtime": 1781129740.2349813,
-    "hash": "94182b16b90c19db4c10baf4320e40ab"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/paraglide/runtime.js": {
-    "mtime": 1781129812.6231453,
-    "hash": "4a313a413da1865c547e103970efc061"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/paraglide/messages.js": {
-    "mtime": 1781129812.6231453,
-    "hash": "c5df5889f33db55c8c17c0d14fe2e2ad"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/fr.js": {
-    "mtime": 1781129812.6231453,
-    "hash": "913e13660d99b48eb5e4967995265542"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/paraglide/messages/en.js": {
-    "mtime": 1781129812.6231453,
-    "hash": "ade726327ebb5373eac73b077078d30d"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/forms/tracked-enhance.ts": {
-    "mtime": 1779156767.7601178,
-    "hash": "9bec961b4d626d23dfc1c14af707d49b"
-  },
-  "/home/sbrn/Projects/diversif/src/lib/forms/tracked-enhance.test.ts": {
-    "mtime": 1780503890.8141778,
-    "hash": "51db73f77accaa484908ef7c7586e9e5"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/+page.server.ts": {
-    "mtime": 1778708530.6490004,
-    "hash": "1c5e8e2d596fa8d5feb4a02ffd7b20e2"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/page.server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "67cb7e1721e9132c1a2aa96859fd7920"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/+error.svelte": {
-    "mtime": 1780573232.7130804,
-    "hash": "8a96a51cdb6155572a22429e4bb7f05b"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/+page.svelte": {
-    "mtime": 1780573232.7130804,
-    "hash": "b1c22338353948ef59a56ff7d33c518b"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/+layout.server.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "d8680d81398fb22fd44df8605252eeb7"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/+layout.svelte": {
-    "mtime": 1781129740.2359815,
-    "hash": "99b8ed5241f85a377c3e74bd646f4bae"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/layout.server.test.ts": {
-    "mtime": 1781129740.2369814,
-    "hash": "1403643ecc3d50e565e848e94e18e21f"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/+page.server.ts": {
-    "mtime": 1778877144.18866,
-    "hash": "793f73fa616d0f16c3462a7a5cd3346e"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/+page.svelte": {
-    "mtime": 1778877144.18866,
-    "hash": "8019d663ba8fa96c2eaf10a83108ae06"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/page.server.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "76ebf62c829fe935cb023d2f9b0858eb"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/deleted/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "ae2ece1ab27ce4308efb4407e38625a7"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/export/+server.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "8c275128db8a86884cb650ce92e2d0bb"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/export/server.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "ea7f860ff36f79ff628ef43d4771c077"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/delete/+page.svelte": {
-    "mtime": 1779392912.3942382,
-    "hash": "29c18316ad342315edfe868dfc297cbd"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/delete/+page.server.ts": {
-    "mtime": 1779393951.0064473,
-    "hash": "799812120b487f71fc1a04a30a0e079f"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/delete/page.server.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "8ce50702c7e4e2de657b3a44b97d2360"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/locale/+page.server.ts": {
-    "mtime": 1778877144.1906302,
-    "hash": "136c527be1dc91bcb604eeee326ae05f"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/locale/+page.svelte": {
-    "mtime": 1778877144.1907542,
-    "hash": "e35efe60cbd3ddad90094a15ca73173d"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/locale/page.server.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "14c02d978eaef89b79bd7862bc64d1a3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/passkeys/+page.server.ts": {
-    "mtime": 1779393951.0064473,
-    "hash": "aee327e18a59ac060a43b6c73efab15a"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/passkeys/+page.svelte": {
-    "mtime": 1780503890.8181777,
-    "hash": "9d7c64043efc134836e167247b34c5fc"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/passkeys/page.server.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "0d3c5cca3feade60ddf1cd8142b28211"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/password/+page.svelte": {
-    "mtime": 1779392912.3942382,
-    "hash": "2a3f7f0d4b04d2c4c0c35c71e31686b7"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/password/+page.server.ts": {
-    "mtime": 1779393951.0064473,
-    "hash": "95b6509df2856ef7ce70f91975e61824"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/password/page.server.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "dc59f77290fcd589c7c840dd3f860922"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/profile/+page.svelte": {
-    "mtime": 1779392912.3942382,
-    "hash": "f3b995bf015030277fa4403c66aaac72"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/profile/+page.server.ts": {
-    "mtime": 1779393951.0064473,
-    "hash": "eb6894694fa00c151a64d6360f4f52b3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/profile/page.server.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "d7fbd645e2dad7237b2e2a99ebbcd0f3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/sessions/+page.server.ts": {
-    "mtime": 1778877144.1911533,
-    "hash": "d5ccff35de21b49a7748bb1b7068b8ca"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/sessions/+page.svelte": {
-    "mtime": 1778877144.191258,
-    "hash": "2f2baa4e91da7cf6eacc23e56e159ae4"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/sessions/page.server.test.ts": {
-    "mtime": 1780503890.8181777,
-    "hash": "136acde549bd1d809ec49a36870d38c3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/theme/+page.server.ts": {
-    "mtime": 1778877144.191258,
-    "hash": "136c527be1dc91bcb604eeee326ae05f"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/theme/+page.svelte": {
-    "mtime": 1778877144.191364,
-    "hash": "cd9c3f48f2c0a7ad6222ed1b82fbc46b"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/account/theme/page.server.test.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "7f68b53d94a2e57878a4cfa67402ffd1"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/allergens/+page.server.ts": {
-    "mtime": 1778708530.7300475,
-    "hash": "d3578a07ef8e970937c9c50a165c1bf3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/allergens/page.server.test.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "4854f2c6214c13834defeab01f739d73"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/allergens/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "3f613f05ca8f86f4b4fb9d52f02dbc17"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/cgu/+page.svelte": {
-    "mtime": 1780503890.8191776,
-    "hash": "3f58cccc6027a07e0097a13fbdb3c27b"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.svelte": {
-    "mtime": 1778710035.2744358,
-    "hash": "ed519f57cf49da3689f4deda73f11c71"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+layout.server.ts": {
-    "mtime": 1779393170.9955785,
-    "hash": "39410656854171ac19a95e873cebb8a6"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/layout.server.test.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "322b0b50841cdddb744f46cff4d113db"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.server.ts": {
-    "mtime": 1780539970.247086,
-    "hash": "d1be63c84b7f20ce119fe24c50460e5c"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/page.server.test.ts": {
-    "mtime": 1780539970.247086,
-    "hash": "87ac1d64f0e8f4d743d117f6cc6774f4"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "cca1287df0f6170fd691540c84c5b664"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/+page.server.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "98b0104bb03a8a0c555381ad9df32be4"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/+page.svelte": {
-    "mtime": 1780503890.8191776,
-    "hash": "4dfcbe8a89a2044fc8f439f2299a9bb8"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/foods.bento.test.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "598d78ba04d779ce25700f213a25992e"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/foods.list.test.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "9f0e71ef8288fda2e808cf61e3495b87"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.svelte": {
-    "mtime": 1779127068.6644719,
-    "hash": "edb670a4892a39c5cc8d94e3d6211289"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/+page.server.ts": {
-    "mtime": 1779393951.0064473,
-    "hash": "11d988349e0330fd6de4e08192000774"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/page.server.test.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "8330dbd5cb8962f54bde98b43365be3c"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/print/+page.svelte": {
-    "mtime": 1779179203.1938999,
-    "hash": "899b5ede569d714129d615681807fb18"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/print/+page.server.ts": {
-    "mtime": 1779393170.9965787,
-    "hash": "c13f2c69e3955bbde1347555b944da85"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/foods/[entryId]/print/page.server.test.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "420be509be75b10fa24acd6c0f3635bb"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/guide/+page.server.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "151554fe63bfd52f68d61bbc4237425b"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/guide/page.server.test.ts": {
-    "mtime": 1780503890.8191776,
-    "hash": "28ec99fcdc086ae99e536dd61b8c053a"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/guide/+page.svelte": {
-    "mtime": 1780510593.1428478,
-    "hash": "13e55b9af0c8c7f5e1e5e0d5666c95b1"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/log.create.test.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "f65be0e460f3e29eda194c4f67ec8f15"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/log.idempotency.test.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "bd680a32184511ffc1be5bc34e18aba3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/log.update.test.ts": {
-    "mtime": 1780510593.1438477,
-    "hash": "57f01067040a0fb9a5a614ec5ce425de"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.server.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "877ed8092b0128f9154f9ae039c891f5"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/+page.svelte": {
-    "mtime": 1781129740.2359815,
-    "hash": "b27579839d4b09e439a4cd6d1637f542"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/page.server.test.ts": {
-    "mtime": 1780510593.1438477,
-    "hash": "a7780339423d162208913243eea8ce7c"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "308f67a45059caa7f98ee7e741141bbf"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "3db42aab5ea5f8eba9d8e1bf3a58740a"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/settings-test-fixtures.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "59ae7fe7ae01bb37ebd93b95f85a4e6f"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/settings.membership.test.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "4d0b9960486b09dc8dc17ce0f0a19a50"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/settings.invitations.test.ts": {
-    "mtime": 1780541181.4700987,
-    "hash": "10188cf3e766942f4a5a3f634a4e1433"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "1da8c218dec9cb3c4e45a4204ad161f1"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/+page.server.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "927495a91e872a4cb9429daa52c7c6d5"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/settings/settings.child.test.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "602b5e22c5a06d9a65b9fb70f8b0bafe"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.server.ts": {
-    "mtime": 1779393170.9965787,
-    "hash": "c1ad40705e2eff8675a2ec71b6e2cfcd"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/page.server.test.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "d9dc31f2cf49a71225cf872584c57555"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/suggestions/+page.svelte": {
-    "mtime": 1781129740.2359815,
-    "hash": "226be6b5fda1f5dae93e569b797d3883"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/report/+page.server.ts": {
-    "mtime": 1779393170.9965787,
-    "hash": "3d2d67d0aebb1300f6b2a459b27fba93"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/report/page.server.test.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "c1e50bd6c00d6369bbcd10d11b5dd4e8"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/[id]/report/+page.svelte": {
-    "mtime": 1781129740.2359815,
-    "hash": "935061f830cf30bc51a33cdefa94903a"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/new/page.server.test.ts": {
-    "mtime": 1780544130.25922,
-    "hash": "eefe2a8996953f3aed08b40bb40e2faa"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/new/+page.server.ts": {
-    "mtime": 1781129740.2359815,
-    "hash": "d2ee38b18d9c4b544143b632bf9b8d2c"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/child/new/+page.svelte": {
-    "mtime": 1781129740.2369814,
-    "hash": "36f33de2cfda566ca70cc5d0417367d5"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/cookies/+page.svelte": {
-    "mtime": 1779257799.4649305,
-    "hash": "a7e2cbda42fca7f537756ef0eb90e765"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/guide/+page.svelte": {
-    "mtime": 1781129740.2369814,
-    "hash": "02bb23aace7833b218b195b9a3019185"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/join/[code]/+page.server.ts": {
-    "mtime": 1780539970.247086,
-    "hash": "6223531e5c54170a3716bd65e26229e3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/join/[code]/page.server.test.ts": {
-    "mtime": 1780539970.247086,
-    "hash": "730f313f13e282517e826eb6cb3514f8"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/join/[code]/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "93cbd4a95649f67bba658f3ab3e9c8cb"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/login/+page.svelte": {
-    "mtime": 1780503890.8211775,
-    "hash": "362a520c0371e3219151e915f3f1cd97"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/login/+page.server.ts": {
-    "mtime": 1780513416.7588315,
-    "hash": "6f6ad005c0a123edbf9c11fde457e713"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/login/page.server.test.ts": {
-    "mtime": 1780513416.7588315,
-    "hash": "7b32c4022911a715e4cf85d1ad73e1a3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/logout/server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "6fe2bc64599e2ca65f44caa481ba4af6"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/logout/+server.ts": {
-    "mtime": 1780513416.7588315,
-    "hash": "dcf4ae600c799b41ca0e6108808d7a39"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/mentions-legales/+page.server.ts": {
-    "mtime": 1778708530.7379937,
-    "hash": "8e822653b5e0dd04d475ecd4db94991c"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/mentions-legales/page.server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "07d7d4af475f9457370ef878927f55f7"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/mentions-legales/+page.svelte": {
-    "mtime": 1780544772.4624207,
-    "hash": "15293490f90937c8e68b387c53531574"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/options/+server.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "2f54f4fd6672e1a9fcdac4c5831f1faf"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/options/server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "3f5a5b63e14c50e9134b7004807dffde"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/verify/server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "0186009f899922251ec080261fdc9fb8"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/authentication/verify/+server.ts": {
-    "mtime": 1780513416.7588315,
-    "hash": "f03f75152f471c7731ca72692740a593"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/options/+server.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "85bbabbbcad30d014f7487d7a4e438b0"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/options/server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "d50ecced7dbd23330fef9a03fb7fff29"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/verify/+server.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "fe2c476878cbf62b9515513bb80dd8ee"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/passkeys/registration/verify/server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "86ab2f6491d4bd5b19cac75e8b2799bc"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/politique-confidentialite/+page.server.ts": {
-    "mtime": 1778708530.7399611,
-    "hash": "8e822653b5e0dd04d475ecd4db94991c"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/politique-confidentialite/+page.svelte": {
-    "mtime": 1780503890.8211775,
-    "hash": "871c95e6df3ac785b84992f15aedffd4"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/politique-confidentialite/page.server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "5cbdfe114fc042488af7498dc9fd5ffe"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/robots.txt/+server.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "adfecdd8cbc3514da2873630c0dfec68"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/robots.txt/server.test.ts": {
-    "mtime": 1780503890.8211775,
-    "hash": "b463983495ac14fb982109dbe4fce7ae"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/signup/+page.svelte": {
-    "mtime": 1780503890.8211775,
-    "hash": "a98be93baeaa1996ca52f6fb39a94433"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/signup/+page.server.ts": {
-    "mtime": 1780541181.4700987,
-    "hash": "cbf3bff74e39dea6facc21a7980cb0d7"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/signup/page.server.test.ts": {
-    "mtime": 1780541181.4710987,
-    "hash": "34ce9d95921c359b1b8e3ce70917206c"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/+server.ts": {
-    "mtime": 1780544772.4634206,
-    "hash": "2ffb677bc5f00011dc5f0b480f477952"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/sitemap.xml/server.test.ts": {
-    "mtime": 1780544772.4634206,
-    "hash": "234bf5c4e3fb650b1ab3c570bc6e3f3f"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/sources/+page.server.ts": {
-    "mtime": 1778708530.746243,
-    "hash": "d3578a07ef8e970937c9c50a165c1bf3"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/sources/page.server.test.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "139b7fa9e96b94589a7f8c7af2480465"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/sources/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "0b051b0ce89bfde9b55a0b90c7b1de79"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/healthz/+server.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "c25cf83b720e901c968bbaffc12c07b7"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/healthz/server.test.ts": {
-    "mtime": 1780503890.8201776,
-    "hash": "63ae149b93ad4d7780c1db4394fb290e"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/offline/+page.ts": {
-    "mtime": 1778708530.7497935,
-    "hash": "57ecbf9715a859df15d2507905352014"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/offline/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "5fdd400cc4554c60d69d7a292dc49fe7"
-  },
-  "/home/sbrn/Projects/diversif/src/routes/aide/+page.svelte": {
-    "mtime": 1780573232.7140803,
-    "hash": "868966beec41bacfc659a391683b32a5"
-  },
-  "/home/sbrn/Projects/diversif/src/test/app-stubs.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "f5b7e74d9989ecc8afbdd2b1dea1bc7c"
-  },
-  "/home/sbrn/Projects/diversif/src/test/bun-test-utils.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "1a7b1583c289ba4ef9b6efe31d586724"
-  },
-  "/home/sbrn/Projects/diversif/src/test/component.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "e8f27fe0852f4ea874739bdfb237eead"
-  },
-  "/home/sbrn/Projects/diversif/src/test/db.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "feb70911bd59f3359f99237109846508"
-  },
-  "/home/sbrn/Projects/diversif/src/test/route.ts": {
-    "mtime": 1780503890.8221776,
-    "hash": "4cfc4c1e396f3ddff4da14a59e214384"
-  },
-  "/home/sbrn/Projects/diversif/project.inlang/modules/message-lint-rule-empty-pattern.js": {
-    "mtime": 1778764306.1887553,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/membership.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "288ac45680076a87644e7263fa358cef"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/offline.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "f68c959bbdb5c48da6cc640cf4cd3264"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/report.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "1045b02a15ea8b0cc9f64504be40c24e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/responsive-allergen-sheet.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "63b07378832a2c4d838050288b504270"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/responsive-modals.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "8e4e9ab0e38ec415d88ed6fe03c15491"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/texture.spec.ts": {
+    "mtime": 1781138897.503876,
+    "hash": "d099f7cea7afc26e8d16052b614e0088"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/e2e/auth.spec.ts": {
+    "mtime": 1781150072.2563229,
+    "hash": "c39b2f1b702029af8f3ac5bc11e029ed"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/project.inlang/modules/message-lint-rule-empty-pattern.js": {
+    "mtime": 1781138897.5178766,
     "hash": "2faf91d4bccb4fe3c1b7051370a10c53"
   },
-  "/home/sbrn/Projects/diversif/project.inlang/modules/message-lint-rule-missing-translation.js": {
-    "mtime": 1778764306.1887553,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/project.inlang/modules/message-lint-rule-missing-translation.js": {
+    "mtime": 1781138897.5178766,
     "hash": "5a2dd5fbb003a7eee4c6043540216952"
   },
-  "/home/sbrn/Projects/diversif/project.inlang/modules/plugin-message-format.js": {
-    "mtime": 1778764306.1887553,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/project.inlang/modules/plugin-message-format.js": {
+    "mtime": 1781138897.5178766,
     "hash": "41a1a3595ac3ae680479eddeb71a4656"
   },
-  "/home/sbrn/Projects/diversif/PRODUCT.md": {
-    "mtime": 1778507926.8432157,
-    "hash": "adab05445e6820113bad049d56a5859f"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/bun-test.ts": {
+    "mtime": 1781138897.5178766,
+    "hash": "ce37b77f54de984fe47a51fa2f642531"
   },
-  "/home/sbrn/Projects/diversif/docker-compose.yml": {
-    "mtime": 1780503890.7955794,
-    "hash": "49424957a60c6472100a0295320000ed"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/check-bundle-size.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "b1e3e5466d8f60a9f70fba53b97a9409"
   },
-  "/home/sbrn/Projects/diversif/PARKING_LOT.md": {
-    "mtime": 1780539970.2390862,
-    "hash": "6f6d20fb79c6331ff6340b756ab7ea9d"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/check-i18n-unused.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "82fb43eac801a1db51c94517cc177ed7"
   },
-  "/home/sbrn/Projects/diversif/DEPLOY.md": {
-    "mtime": 1780541181.4630988,
-    "hash": "90614b0fec51e910c85a85823d7d984e"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/cleanup.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "400ff31c403d26914f866ebd7ae73791"
   },
-  "/home/sbrn/Projects/diversif/CLAUDE.md": {
-    "mtime": 1780928372.984581,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/export-user.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "88a6ad8aa9740707175ad3496515435e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/generate-icons.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "43aa3a20aa2f2797aabc612a2d4e9862"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/lint-i18n.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "f7a2e780da54e9ceb3d4295cc6bc3baa"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/list-stale-users.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "dd8114ead8e11cb362f39ff9ffa1572c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/normalize-fr-apostrophes.py": {
+    "mtime": 1781138897.5181906,
+    "hash": "afb4f6419adcf4885b6a69e3d0b649ad"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/reset-e2e-db.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "622934d2e000470f62cb8edd09b212d3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/scripts/verify-backup-restore.ts": {
+    "mtime": 1781138897.5181906,
+    "hash": "1e46682b1a4202018112c6bfbc552586"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/hooks.client.ts": {
+    "mtime": 1781138897.5185926,
+    "hash": "eef76a289f7555db4521b70cdf6c6045"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/hooks.ts": {
+    "mtime": 1781138897.5185926,
+    "hash": "97d2a4f0b7f2e358ee3b3042550349b5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/app.d.ts": {
+    "mtime": 1781141620.4080868,
+    "hash": "bc65b97903ba6be1984bdfc9c5cdbfb1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/hooks.server.ts": {
+    "mtime": 1781150102.7139516,
+    "hash": "fb391678690f1b5f39076238646d42b3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/hooks.server.test.ts": {
+    "mtime": 1781150119.249742,
+    "hash": "bb2797a927e7851ad29d4b8f24188ca8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/i18n.ts": {
+    "mtime": 1781138897.5232885,
+    "hash": "3153027f34bb5e094fdfcfab0121aca4"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/sentry-init.server.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "862d151f82d9670348ddf3fc54417b57"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/sentry.test.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "940c0ab5a12a3692610941d89ddf8770"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/sentry.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "d54043920318768f2360a74705447a8e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/seo.test.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "6cf30e4b5d9f94ff923f377010ef1bd1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/seo.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "2bff5e040ed94770028c6818b1c225ab"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/types.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "c3b67e5be8c301558a2a8a78c79ed762"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/AllergenInfoDialog.svelte": {
+    "mtime": 1781138897.5187652,
+    "hash": "6fa36e9a5666057d91339fc2746ad53f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/AllergenInfoDialog.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "a4b391c2996e71932af6eb2380982e55"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/AppShellBento.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "fcb6543c84671f10e51d5b4d816d2778"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/AppShellBento.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "4a68c19692c3788e917c884249ff8886"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/BottomNavBento.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "a39a66cfb9a9b71f8992cc11a8224edb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/BottomNavBento.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "9f21c0a38ac644db9e02be5fed47d1b3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/CategoryTag.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "11992e8446846b6ba540d80a472bb82d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ChildHeaderPill.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "085a6229be733c829bbc832ea34101ea"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ChildHeaderPill.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "e2a5e674f38483c9c5bd51a6d75b6c62"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ChildSwitcherDrawer.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "ceb5ad86a7bccc22cc50d1981bb5c5d2"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ChildSwitcherDrawer.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "79d6c44c8707806b21a033ec1488c1a8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/FabLog.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "385ebf49e9fcb852fed61dffea9c6348"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/FabLog.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "99cf9e56d32d0edc3e2b82e97382c1ba"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/FoodCombobox.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "8806fa7fa561ccd3644302fd2b7abae3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/FoodCombobox.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "69a5e007a1a55fe7b2e24e2c9dcb442d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/GuideStaticSections.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "4a32889766b4fdf8f6dde3297050d774"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/GuideStaticSections.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "302ac4c3ef3f5495bbb6e0d7928481c2"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/JsonLd.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "ecaaa15392e9c4f81f02b8779167df6c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/LocaleSwitcher.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "cfc7d9226bf937325ff926e5b3c068ee"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/LocaleSwitcher.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "042b3e107b5df6093039b41a4d03e8a4"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/PrintShell.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "1fa3c1efe9037baea1c448ad6f294eb7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/PrintShell.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "85cae355609283fbb0d307fdc1905cf0"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/PublicFooter.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "23d9d71c5bec94312e58c6e0a2bfcaa3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/PublicFooter.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "40e712e778eb42917bd35684d70fb16d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/PublicHeader.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "8faaaf5af5c7b44d315a8f936b5ec504"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/PublicHeader.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "bcba253cd469127c539026ef54944902"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ReactionPicker.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "f95afb166dd88e335b54b35992d040b9"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ReactionPicker.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "c311eb522f388b4ed312df643ca3a2e6"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ReloadPrompt.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "e1da8e96905316355508b425e191271e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/Seo.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "9bddad003975d0d60b7c6090aa8d9dc7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/SharedTopBar.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "4918ac9b15afeb05c6166fa54945fd3b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/SharedTopBar.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "150a381eef3ba40f4d2ae2beaf25d171"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/SourceCitation.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "586bcf728c9579b45ba432a3d5e3c6b7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/SourceCitation.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "ae3ce4040ff81d22fb34edc3b53bbe5b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/StageBadge.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "c49b0b0c26bd64e09d88ff1653d133f5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/StageBadge.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "e64295fc03cb16bb3a3c37d5a1a4190f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/TexturePicker.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "422909f50f36ea4477f7113b58d52f79"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ThemeToggle.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "cea81f846c10a4f2f5dcc89df807e89c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ThemeToggle.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "edbec95d1c0c13e01070871155f05879"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/TipCard.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "cf2aac16845f87669e0cc8328ea0c9de"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/TipCard.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "13d3ce134f3a0d9f04402a5e746bee74"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/WelcomeDialog.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "70b3034893706ab852136de9502d71ec"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/WelcomeDialog.test.ts": {
+    "mtime": 1781138897.518823,
+    "hash": "4b925e78831ed89140705271f6325fd5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/AddSymptomSheet.svelte": {
+    "mtime": 1781138897.518823,
+    "hash": "fb99ab685594ded418e61dfc882ab309"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/AddSymptomSheet.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "1133889b8c34ee5f6db6e4a4e685e32f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/AllergensSnapshot.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "74779f1525451785e032cb757d27b80e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/AllergensSnapshot.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "b39277ff14fe1aa2bb31840ddb7cc831"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/AujourdhuiBento.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "f23d248372042c993bb28100ceacd142"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/AujourdhuiBento.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "3a8a21572358b77e4facee75fdfc3fa8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/BentoAuthLayout.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "d83ae25b8e994fdde8c6c5002e404b0b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/BentoAuthLayout.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "8511da5f09edcd4dc18b021fa4633223"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/BentoMark.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "683982ebe694d6ecc3fd9db077c36226"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/BentoMark.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "8f60dc11e7e17c9519df81b391fa3302"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetAllergens.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "7f21f90f07982909789f8c25ecffc128"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetAllergens.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "0f32b077d86ae87e54a4d0e9d7dd68fa"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetBento.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "8990de04ca2cb9ffdb66da5a08c388e6"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetBento.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "eef0027faf6ee9e6e14edb2caaa8070d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetCategories.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "d8d9ae0df62d72eadd128029718d7fc8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetCategories.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "fca73b8ed389aef1d9dbbfbbec67d396"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetHeader.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "27bca8071881215ad3ec0c179c4f39d9"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetHeader.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "45e0b821bb04bdfa3af725312efe7bae"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetSegments.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "bc3f14b272d0ca8caa9b86aba0c7a542"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetSegments.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "b77a6afe6151357d439950e83fc7ddc8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetStats.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "d3c158316f3b2b4556d594e84ae21d8c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetStats.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "fab237aa7ebf2731cf06a871798a830a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetTous.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "937135a7dfa5c87991d38a32c6882732"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CarnetTous.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "3a77b40d9e261c70e831842c7c51b3ca"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ChildCardRow.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "96268b3ac822fd706a030449dff6de49"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ChildCardRow.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "8ab4665fa7fd73d9a560b4f0e18eebcf"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CompteSection.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "f0c787832af15b83076a2872d383e6f9"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CompteSection.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "de3b842cbc97b1aa4bf1222cb07ffb3c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CoparentsSection.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "37fb2ed0c160ba0a6884eb5948c293d7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/CoparentsSection.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "9dd6651dba77892912c4049ca79c04ec"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/DiscoverBento.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "7ac5d144d4c41dd9b7cae1ba2c7f73c5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/DiscoverBento.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "43dba2b08bbe25268a8acb75a956e86f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/FoodCard.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "9307ffdabc13588cddfc575d01e4c0fb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/FoodCard.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "a0c82b85938965568f69c773793a7175"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/FoodCardGrid.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "9597b038429bd71425182742d10ef2d3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/FoodCardGrid.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "db44dd6f798c84b2d3490115987c08de"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/MonitorTimer.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "c26da64450f2ef5a68a6b7af7475078e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/MonitorTimer.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "657cfd1d1d4f4cd1b5ac02c18d0d21bf"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/OnboardingForm.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "ed64adeed6ae2b2f315536a5888a5572"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/OnboardingForm.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "34531409d239a30bc89580b03edde73c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ProfilBento.svelte": {
+    "mtime": 1781138897.519162,
+    "hash": "bc53d9bd37c799896f705b7315e04193"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ProfilBento.test.ts": {
+    "mtime": 1781138897.519162,
+    "hash": "6bccd568f07777f55b4152741021ea47"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/RasCard.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "e42bd8e11a06107d64aac91a9a81838f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/RasCard.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "d624c4e38f1b605e184fc28f714e1e26"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ReactionDetailBento.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "d25e42f01fe6c1ac0f4b2137ed5237c5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ReactionDetailBento.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "6c9d412ef43a4b55d595e931e3c857ce"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ReassuranceHero.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "cb1574ee8c31d7b5dc7ab6e4485b2658"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ReassuranceHero.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "979bfe54e00b4a63d71450b1ed6c08dc"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/RecentFeed.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "edef668ab723d31cbc02e2a87b0700e4"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/RecentFeed.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "b6b349d22209b7b70dce6a5404725dee"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ReminderStrip.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "3abafabeecee3233b0156003df052786"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/ReminderStrip.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "d979dd258397a1755937073c4480fda4"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/RgpdSection.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "5b2781af68fecee74f3816324712216d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/RgpdSection.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "dd16bff1af404bcc9f382562023ed70f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/SevereRail.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "3d3f3c2680c66706cf666183017c4dbb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/SevereRail.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "c0891b2a469b105b779c18670f4d1601"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/StageDetailSheet.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "f72e214e7f6d82c7e69e081eaf5cb6f7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/StageDetailSheet.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "cd5d41e90bf86afd2edc5ef5e2939bbf"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/StagesBentoGrid.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "f97abdcccc60f9a4a20d3cf7ae25ecb6"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/StagesBentoGrid.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "41f440f0ea950175ed69cc904e65558a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/StatTiles.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "e24dc285b4011dc8739ca72d38d261dc"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/StatTiles.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "ec9446f2ffecbf0d679b3b7c8edee18b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/StayCoolCard.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "2780c4c08bd8a9a096ae5d1a3e6e9225"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/StayCoolCard.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "9c39fcd503ff60a5e2281c3518ff6ab5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/SymptomList.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "db06719082eae35a7b8a4c62324bfec7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/SymptomList.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "1033d7be15da1b8be9e16c1335799034"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/SymptomRow.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "2a6ba4ea8d434792c5db50a0cd2b82fb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/bento/SymptomRow.test.ts": {
+    "mtime": 1781138897.5201619,
+    "hash": "357d787223c97a4378c067fec211a161"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideAllergensSection.svelte": {
+    "mtime": 1781138897.5201619,
+    "hash": "595963979ee5a74d5790aa053f7b513b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideApproachesSection.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "80e93351488338aa663e319a6488c454"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideCategoriesSection.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "1b8a349f93d1e0b7077f10d5b45734f2"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideForbiddenSection.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "d5e5f4af09ba2d1f6ef09dc13579929d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideReactionsSection.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "3897e244a546b605cbf8dede62d670d3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideReglesSection.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "0ee108af2106b0748893ef0db91ae309"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideSourcesSection.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "86ec3fcf4de958f982943067a42d634a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideStagesSection.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "281ebcc03e6e7732778ad9fe67582bed"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/guide/GuideTexturesSection.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "58a4738eca7cb03e2b3971023bf13a46"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/landing/LandingClosingCtaBento.svelte": {
+    "mtime": 1781138897.5215888,
+    "hash": "af8a8e521c3425281ab578b8d64d44fb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/landing/LandingClosingCtaBento.test.ts": {
+    "mtime": 1781138897.5218687,
+    "hash": "1bdb281e8a05ca87e1341e123edf74bd"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/landing/LandingFeaturesBento.svelte": {
+    "mtime": 1781138897.5218687,
+    "hash": "757db938bb18924ebf2ac49369f253d5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/landing/LandingFeaturesBento.test.ts": {
+    "mtime": 1781138897.5218687,
+    "hash": "ba52fba84b1e3906694ad2397f60c00b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/landing/LandingHeroBento.svelte": {
+    "mtime": 1781138897.5218687,
+    "hash": "37f5f977f1b1aaa4756b74d0d3505357"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/landing/LandingHeroBento.test.ts": {
+    "mtime": 1781138897.5218687,
+    "hash": "f984e5c99a3878264d4409448c03841f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/landing/LandingTrustBento.svelte": {
+    "mtime": 1781138897.5218687,
+    "hash": "ea5ff169c8c3b7aa698a1211d0a24a9d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/landing/LandingTrustBento.test.ts": {
+    "mtime": 1781138897.5218687,
+    "hash": "b646e1700fe9c2bb9e9d48377716712c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/BackHeader.svelte": {
+    "mtime": 1781138897.5218687,
+    "hash": "6a97cf435a7e993e90635582c0f51b0b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Badge.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "87371f51b879675e663f941dbb9986a3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Badge.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "d536392ad98f33e056bbdeed2f59f6d6"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Button.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "f4c6ada05ec550fb739557125613be92"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Button.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "50248e205518d2c2d467a120a563dd1e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Callout.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "491fa85cfcb327fe8e4789826ebc9c70"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Callout.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "17a33dbbf71334cec1deba005dc0b07f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/CalloutCard.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "0ec8bfb90bfa6a0d8ad8168a1e77bd79"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/CalloutCard.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "f3f721e5be03de71e121c6982c716b9b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Card.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "2e73035ffd430fda36e525b3c3adab5e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Card.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "0eaf4a6798955b0a7dbab77311d7ef53"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/DashedActionRow.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "4f2dec34afe2f5f1569faeae49e2d2d1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/DashedActionRow.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "415c114284e356f0afe7569fca3bbef7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/DetailSheet.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "76330bf9c854a4b9302d843031d2f059"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/DetailSheet.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "9ad93a9be828fb94d655dcd9990ea6e1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/EmptyHint.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "77389c35dbfa6d87915738ca52713e54"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/EmptyHint.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "7b1c5b4cf9c55e14d8a2411349ee48de"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Field.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "5f3dc5564ebf523a7b3bbeb418f063e0"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Field.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "951a5e5c61ac6e589c4479e130c4059c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/FormError.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "fd4c9dfaf217af492eb56ef962d4412a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/FormError.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "4d9978326580a706846920c872cf896e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Input.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "848e99a6065c3bb33ccf62744decb735"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Input.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "50891024237ed2ce7349e3b0325dd078"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Label.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "adbf1f72d3ff86ee125889ac9493d932"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Label.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "60e598a3f91e5d2c90757a7b5490273e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/LinkRow.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "91a102790602513084d5c03a2628398e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/LinkRow.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "a877450b41946a014d24e0c2b9a11a38"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Modal.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "26556d0baf6b74de88ebb95f4491b2a9"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Modal.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "482a7b1df93852f3c61e11471c9c24a8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/SectionHeader.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "e8123ba55689470e255c414f4c79e723"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/SectionHeader.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "147220e58d849a18e78294c8be1f67e5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Select.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "20ea8e758f3231a6b627118ca258fb06"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Select.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "f8747586adc73178858e723e4c056463"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/SheetSection.svelte": {
+    "mtime": 1781138897.5220635,
+    "hash": "0c2526c35fa00e94dbb5a1d3cc1564b8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/SheetSection.test.ts": {
+    "mtime": 1781138897.5220635,
+    "hash": "5266d607ebc28b85996798b205f95b12"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Textarea.svelte": {
+    "mtime": 1781138897.522162,
+    "hash": "963c9f474a964bb3228386d43a861f17"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/Textarea.test.ts": {
+    "mtime": 1781138897.522162,
+    "hash": "88d773e2ce33759257ab84ab79845209"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/use-bottom-sheet-drag.svelte.ts": {
+    "mtime": 1781138897.522162,
+    "hash": "d5558092fff31e22cdfd8a7e9e07deba"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/ConfirmModal.svelte": {
+    "mtime": 1781141620.4090867,
+    "hash": "72120469c68a66e9cf638405c3cc5936"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/components/ui/ConfirmModal.test.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "d4243a7971662eca0537147b16755d31"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/content/guidance.test.ts": {
+    "mtime": 1781138897.522162,
+    "hash": "7ee9b5023fba5ce9a636001724a86c18"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/content/guidance.ts": {
+    "mtime": 1781138897.523049,
+    "hash": "9529b89e881067045b3d6cb5a76f49d7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/content/sources.test.ts": {
+    "mtime": 1781138897.523049,
+    "hash": "bbf1fa4e811c115a2ca9adc939ae3670"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/content/sources.ts": {
+    "mtime": 1781138897.523049,
+    "hash": "9f0671c7ea26fa44f7613f97e008fb1f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/content/symptoms.test.ts": {
+    "mtime": 1781138897.523049,
+    "hash": "7440e2d50e1055ea2cab80d82700bada"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/content/symptoms.ts": {
+    "mtime": 1781138897.523049,
+    "hash": "4fa3ff984c1f4bfdb167e8d04a2abf96"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/forms/tracked-enhance.test.ts": {
+    "mtime": 1781138897.523049,
+    "hash": "51db73f77accaa484908ef7c7586e9e5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/forms/tracked-enhance.ts": {
+    "mtime": 1781138897.5232885,
+    "hash": "9bec961b4d626d23dfc1c14af707d49b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/offline/queue.test.ts": {
+    "mtime": 1781138897.5232885,
+    "hash": "ad115b128cf5af05d608c885dcf28976"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/offline/queue.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "94182b16b90c19db4c10baf4320e40ab"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/offline/uuid.test.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "333612d1caccfa72d4db17565012764c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/offline/uuid.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "f2d517b910538065db8afd96946b1119"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/offline/purge.ts": {
+    "mtime": 1781149996.464144,
+    "hash": "4ff34a07d9aa3bc4c2cc25cfe9e66102"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/offline/purge.test.ts": {
+    "mtime": 1781150055.547504,
+    "hash": "9f61c6adf10b44317b3c8e01e3de9811"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/audit.test.ts": {
+    "mtime": 1781138897.5233836,
+    "hash": "47e5a6eb275b66a1826e50e95f2d5988"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/audit.ts": {
+    "mtime": 1781138897.5236413,
+    "hash": "0980548f47e6c14c72274434323277a4"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/auth.test.ts": {
+    "mtime": 1781138897.5236413,
+    "hash": "85ac8109ac9e5966b1fff763ddd3ba66"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/cleanup.test.ts": {
+    "mtime": 1781138897.5236413,
+    "hash": "4a5ba6d8749d1af78c6da690a4e6da22"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/cleanup.ts": {
+    "mtime": 1781138897.5236413,
+    "hash": "9b169a9890cb657e5c1786b963563649"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/food-resolution.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "a40e13ffa3334b75fcd8e784c731a3c0"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/food-resolution.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "c1d7fa97ff68d6fccc77fdc8ee26a925"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/forms.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "ddaaf6d6e29ae30fd7e8c35e9bf807ea"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/forms.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "e48c0e2a429bb995fc76ba5b232ad855"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/fresh-auth.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "2740e499546e751b40f8115108caa9a9"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/fresh-auth.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "6421af690b64427a504c6d8060ffbcf3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/gdpr-test-fixtures.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "7344a7d6e5aaf65c3623a64b282572ce"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/gdpr.delete.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "0456f4c708a2bfd1770254d4b69cee84"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/gdpr.export.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "706d679fc60d208b1f641c10af770265"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/gdpr.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "d2a837dd0c2a85d5310fe06fd1745ba6"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guards.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "b98bcd6107043cb1252582c44e332343"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guards.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "8a7b6f2c8b36a97840ec2b9df69101e5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/idempotency.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "e28f2219a67ee5e65ebae401d6f48dd6"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/idempotency.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "37eeed837ae4d9f976bdf22d426e86b9"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/invitations.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "29cb9b7c7079c998efc57313ee0947f3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/invitations.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "c6789f330134633ae566a14f96481149"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/legal.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "71764cc8207cd2e1af57672c815a2fa9"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/legal.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "7c282ab0b7f3264a9d99ef568ce9125e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/passkeys-test-fixtures.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "6d948a67dedb8e0212712930b9b69193"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/passkeys.ceremony.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "a3779beaa8c0a12c7362063212d0ae2c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/passkeys.challenges.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "7bb0482841affb401bb1727b104e9fd2"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/passkeys.helpers.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "da314c0af2447637e5cc7878d8c636cc"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/passkeys.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "78eea69ec4be5a1cbbea7d03d275d0b7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/redirect.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "2bb650e975b48043c79d7b46b2faa7e2"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/redirect.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "0f82cd25a5ea5f8ebf220f3269ee42be"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/shutdown.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "b5c631d96020e586578dddd176221c0f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/shutdown.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "1468272a7837170c51cb22707e383828"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/auth.session.test.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "5c925dfc72382f270aa7c618fa0b5fed"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/auth.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "32e0fada5b2db219eb7223e3f6b40190"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/e2e.test.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "36073b2b8af1675886b81b234901162f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/e2e.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "183f4335ab2db3815bc49a7e906c36ae"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/rate-limit.ts": {
+    "mtime": 1781150172.7470698,
+    "hash": "0d3e94608a56480bc992c196fc2b3d3b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/rate-limit.test.ts": {
+    "mtime": 1781150232.1083333,
+    "hash": "aa1a3c98f059dd2f23879c88187d0908"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/errors.ts": {
+    "mtime": 1781138897.5236413,
+    "hash": "9fcb0372fa80fa61f301bf09803c17e5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/exec.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "f0c58dba760af0964d95549378172590"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/index.smoke.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "5ee7508930e468626255413085d0cbdf"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/index.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "20ea2f8137238c24c6f9d96cc19ce4f0"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/schema.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "48d0946740ebaa58b20eb09851275306"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/schema.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "2b2b39e6ada9df1b3f27840fc864efbc"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/seed.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "730cf0d1c345623e624a97c3cf31ec8d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/seed.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "71278322c636f5ab59f710f9801cd3cd"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/symptoms.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "00db90cb3b1fea6b7e12dd3609f90c17"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/symptoms.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "d7b9c5d17f3255110c7d437b4154d47c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/db/texture.test.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "049efe9c6c56269b0236934630475c66"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/allergen-status.ts": {
+    "mtime": 1781138897.5238864,
+    "hash": "6e7e4bf1c5b4b6a3ca41a6705b28c4d1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/queries.test.ts": {
+    "mtime": 1781138897.524716,
+    "hash": "1f84e9702411d8db4e0ca56547cca1da"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/reminders.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "1b3999c105c2f2dc4d34e8570627b4ef"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/reminders.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "d40e333d787faab0b9e41f6ec126346d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/repeat-candidates.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "c477e69655e41ad8d9b2d7da20f4df8c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/repeat-candidates.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "40e076d500458945759c04316b19f0be"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/queries/dismissals.ts": {
+    "mtime": 1781138897.524716,
+    "hash": "5a4edecd83db9ea817c74172dac10823"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/queries/diversity.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "19ade215fbd656ab83739e5f046c7647"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/queries/index.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "f0aeaf8b49a2b30f2bb4959be3b4b1ed"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/queries/seasonal.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "4360386e622b39b671c876a57eb89469"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/server/guidance/queries/timeline.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "bfca78cd05edce565c56e6360f421dc3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/age.test.ts": {
+    "mtime": 1781138897.5248225,
+    "hash": "7a41af3e837cee0874e669e99133a30a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/age.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "441f57f0fe12d653672b47b6296a4c25"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/allergens.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "0e8e884caa303c3b70d77f1f315012f8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/allergens.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "ae632dde8b7efffb83cdf594938176a5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/categories.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "69a827e735e47df08017046dee124923"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/categories.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "068990d34a1bcd890bb933554461124c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/cn.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "f8f60477813d1137ac3a6cbe0d0510e5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/cn.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "2d01b535f0be7422af24560c9f31c327"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/dates.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "3c981d5e46e81f1b71de86b32a7695bd"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/dates.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "ef6c3b5eb387524cf14f8401634e8633"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/invites.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "d6e9f9e5798d83ed8d87b63be1b759e5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/invites.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "4484e5ce52b46d233ffc699a91262e8f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/localized-href.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "8eb6cdf7a659506eef4c32a42ab10967"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/localized-href.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "55a4f24cde442ce99387662fa585f2fe"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/milestones.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "0a61d9341041277b7df7c21cb894b2d0"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/milestones.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "45e103b8670707ae41feac4da96810ba"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/monitor-timer.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "ee9df9d0ff2289650c430a72ee9f862e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/monitor-timer.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "7a998910fe56d91d99acd54308486521"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/reaction-values.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "b1535d0b0caf628d0a638c8ff563bc00"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/reactions.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "063504ba7fcbea2d24b829a5e52be9df"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/reactions.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "4d96c6a3a9454f9ddd2336569a8781c1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/search.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "9948517fad0bb78a4f2ca27ea6ebec08"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/search.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "f2c1c76e1c25718a48bc0fcc526fda2e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/suggest.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "a2f83c1637994201f23ef931714fa7e0"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/texture-labels.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "dedca990fc25ad5a643de7e54c7fd198"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/texture-labels.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "0dedcdde7f389ab87aafc1588062017d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/textures.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "4dca0c4a410cfa3ef5c6693346a075f1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/textures.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "490edcc055952faad5c12cf6988b6d5c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/theme.test.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "deecc058c32a20b0591d13a8c61d8d3f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/utils/theme.ts": {
+    "mtime": 1781138897.5256891,
+    "hash": "fbbc0c97be40434e0b4c6cd127f0d2c1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/paraglide/runtime.js": {
+    "mtime": 1781150792.6937037,
+    "hash": "4a313a413da1865c547e103970efc061"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/paraglide/messages.js": {
+    "mtime": 1781150792.6937037,
+    "hash": "d645739fe8972ababa242ad47bccb54b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/paraglide/messages/fr.js": {
+    "mtime": 1781150792.6937037,
+    "hash": "754f7b752baf47ff7067d684b0eec278"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/lib/paraglide/messages/en.js": {
+    "mtime": 1781150792.6937037,
+    "hash": "146297eda55a8056b3a662ab8783cea9"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/+error.svelte": {
+    "mtime": 1781138897.5256891,
+    "hash": "8a96a51cdb6155572a22429e4bb7f05b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/+layout.server.ts": {
+    "mtime": 1781138897.5263858,
+    "hash": "d8680d81398fb22fd44df8605252eeb7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/+page.server.ts": {
+    "mtime": 1781138897.5263858,
+    "hash": "1c5e8e2d596fa8d5feb4a02ffd7b20e2"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/+page.svelte": {
+    "mtime": 1781138897.5263858,
+    "hash": "b1c22338353948ef59a56ff7d33c518b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/layout.server.test.ts": {
+    "mtime": 1781138897.529371,
+    "hash": "1403643ecc3d50e565e848e94e18e21f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/page.server.test.ts": {
+    "mtime": 1781138897.529805,
+    "hash": "67cb7e1721e9132c1a2aa96859fd7920"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/+layout.svelte": {
+    "mtime": 1781150013.8669555,
+    "hash": "d34bf17876c277ccc047ce347a200d67"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/+page.server.ts": {
+    "mtime": 1781138897.5263858,
+    "hash": "793f73fa616d0f16c3462a7a5cd3346e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/+page.svelte": {
+    "mtime": 1781138897.5265744,
+    "hash": "8019d663ba8fa96c2eaf10a83108ae06"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/page.server.test.ts": {
+    "mtime": 1781138897.526826,
+    "hash": "76ebf62c829fe935cb023d2f9b0858eb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/delete/+page.server.ts": {
+    "mtime": 1781138897.5265744,
+    "hash": "799812120b487f71fc1a04a30a0e079f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/delete/+page.svelte": {
+    "mtime": 1781138897.526627,
+    "hash": "29c18316ad342315edfe868dfc297cbd"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/delete/page.server.test.ts": {
+    "mtime": 1781138897.526627,
+    "hash": "8ce50702c7e4e2de657b3a44b97d2360"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/deleted/+page.svelte": {
+    "mtime": 1781138897.526627,
+    "hash": "ae2ece1ab27ce4308efb4407e38625a7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/export/+server.ts": {
+    "mtime": 1781138897.526627,
+    "hash": "8c275128db8a86884cb650ce92e2d0bb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/export/server.test.ts": {
+    "mtime": 1781138897.5267625,
+    "hash": "ea7f860ff36f79ff628ef43d4771c077"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/locale/+page.server.ts": {
+    "mtime": 1781138897.5267625,
+    "hash": "136c527be1dc91bcb604eeee326ae05f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/locale/+page.svelte": {
+    "mtime": 1781138897.526826,
+    "hash": "e35efe60cbd3ddad90094a15ca73173d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/locale/page.server.test.ts": {
+    "mtime": 1781138897.526826,
+    "hash": "14c02d978eaef89b79bd7862bc64d1a3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/passkeys/+page.server.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "c80d6df40ab1b2d6d0ba2243c34b5e59"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/passkeys/+page.svelte": {
+    "mtime": 1781141620.4090867,
+    "hash": "e4ad6f96d23a96a94056afd44f9e0ba5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/passkeys/page.server.test.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "cf4073f474611d13792fd93ca3028521"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/password/+page.svelte": {
+    "mtime": 1781138897.527073,
+    "hash": "2a3f7f0d4b04d2c4c0c35c71e31686b7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/password/+page.server.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "8d4f239d7f0e43e86394092d3407dc2e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/password/page.server.test.ts": {
+    "mtime": 1781141620.4090867,
+    "hash": "409ec15ee05d963c55e6cadda1f3a034"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/profile/+page.server.ts": {
+    "mtime": 1781138897.527073,
+    "hash": "eb6894694fa00c151a64d6360f4f52b3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/profile/+page.svelte": {
+    "mtime": 1781138897.527154,
+    "hash": "f3b995bf015030277fa4403c66aaac72"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/profile/page.server.test.ts": {
+    "mtime": 1781138897.527154,
+    "hash": "d7fbd645e2dad7237b2e2a99ebbcd0f3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/sessions/+page.server.ts": {
+    "mtime": 1781149984.382275,
+    "hash": "72f1b76d3f79a32763887ab2de81fb67"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/sessions/+page.svelte": {
+    "mtime": 1781150002.570078,
+    "hash": "6a2b7303dce05aa2693d4704d58256c5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/sessions/page.server.test.ts": {
+    "mtime": 1781150038.6116874,
+    "hash": "db0fe09ad81f9d73a557b4f8b7a77b12"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/theme/+page.server.ts": {
+    "mtime": 1781138897.52724,
+    "hash": "136c527be1dc91bcb604eeee326ae05f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/theme/+page.svelte": {
+    "mtime": 1781138897.5273075,
+    "hash": "cd9c3f48f2c0a7ad6222ed1b82fbc46b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/account/theme/page.server.test.ts": {
+    "mtime": 1781138897.5273075,
+    "hash": "7f68b53d94a2e57878a4cfa67402ffd1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/aide/+page.svelte": {
+    "mtime": 1781138897.5273075,
+    "hash": "868966beec41bacfc659a391683b32a5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/allergens/+page.server.ts": {
+    "mtime": 1781138897.5273075,
+    "hash": "d3578a07ef8e970937c9c50a165c1bf3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/allergens/+page.svelte": {
+    "mtime": 1781138897.5274136,
+    "hash": "3f613f05ca8f86f4b4fb9d52f02dbc17"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/allergens/page.server.test.ts": {
+    "mtime": 1781138897.5274136,
+    "hash": "4854f2c6214c13834defeab01f739d73"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/cgu/+page.svelte": {
+    "mtime": 1781138897.5274136,
+    "hash": "3f58cccc6027a07e0097a13fbdb3c27b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/+layout.server.ts": {
+    "mtime": 1781138897.5275428,
+    "hash": "39410656854171ac19a95e873cebb8a6"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/+layout.svelte": {
+    "mtime": 1781138897.5275803,
+    "hash": "ed519f57cf49da3689f4deda73f11c71"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/+page.server.ts": {
+    "mtime": 1781138897.5275803,
+    "hash": "d1be63c84b7f20ce119fe24c50460e5c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/+page.svelte": {
+    "mtime": 1781138897.5275803,
+    "hash": "cca1287df0f6170fd691540c84c5b664"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/layout.server.test.ts": {
+    "mtime": 1781138897.5281246,
+    "hash": "322b0b50841cdddb744f46cff4d113db"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/page.server.test.ts": {
+    "mtime": 1781138897.5284033,
+    "hash": "87ac1d64f0e8f4d743d117f6cc6774f4"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/+page.server.ts": {
+    "mtime": 1781138897.5275803,
+    "hash": "98b0104bb03a8a0c555381ad9df32be4"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/+page.svelte": {
+    "mtime": 1781138897.5277257,
+    "hash": "4dfcbe8a89a2044fc8f439f2299a9bb8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/foods.bento.test.ts": {
+    "mtime": 1781138897.5279317,
+    "hash": "598d78ba04d779ce25700f213a25992e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/foods.list.test.ts": {
+    "mtime": 1781138897.5279317,
+    "hash": "9f0e71ef8288fda2e808cf61e3495b87"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/[entryId]/+page.server.ts": {
+    "mtime": 1781138897.5277257,
+    "hash": "11d988349e0330fd6de4e08192000774"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/[entryId]/+page.svelte": {
+    "mtime": 1781138897.5278058,
+    "hash": "edb670a4892a39c5cc8d94e3d6211289"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/[entryId]/page.server.test.ts": {
+    "mtime": 1781138897.5278058,
+    "hash": "8330dbd5cb8962f54bde98b43365be3c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/[entryId]/print/+page.server.ts": {
+    "mtime": 1781138897.5278058,
+    "hash": "c13f2c69e3955bbde1347555b944da85"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/[entryId]/print/+page.svelte": {
+    "mtime": 1781138897.5279317,
+    "hash": "899b5ede569d714129d615681807fb18"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/foods/[entryId]/print/page.server.test.ts": {
+    "mtime": 1781138897.5279317,
+    "hash": "420be509be75b10fa24acd6c0f3635bb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/guide/+page.server.ts": {
+    "mtime": 1781138897.5279317,
+    "hash": "151554fe63bfd52f68d61bbc4237425b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/guide/+page.svelte": {
+    "mtime": 1781138897.5281246,
+    "hash": "13e55b9af0c8c7f5e1e5e0d5666c95b1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/guide/page.server.test.ts": {
+    "mtime": 1781138897.5281246,
+    "hash": "28ec99fcdc086ae99e536dd61b8c053a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/log/+page.server.ts": {
+    "mtime": 1781138897.5281246,
+    "hash": "877ed8092b0128f9154f9ae039c891f5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/log/+page.svelte": {
+    "mtime": 1781138897.5283046,
+    "hash": "b27579839d4b09e439a4cd6d1637f542"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/log/log.create.test.ts": {
+    "mtime": 1781138897.5284033,
+    "hash": "f65be0e460f3e29eda194c4f67ec8f15"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/log/log.idempotency.test.ts": {
+    "mtime": 1781138897.5284033,
+    "hash": "bd680a32184511ffc1be5bc34e18aba3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/log/log.update.test.ts": {
+    "mtime": 1781138897.5284033,
+    "hash": "57f01067040a0fb9a5a614ec5ce425de"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/log/[entryId]/+page.server.ts": {
+    "mtime": 1781138897.5283046,
+    "hash": "3db42aab5ea5f8eba9d8e1bf3a58740a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/log/[entryId]/+page.svelte": {
+    "mtime": 1781138897.5284033,
+    "hash": "308f67a45059caa7f98ee7e741141bbf"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/log/[entryId]/page.server.test.ts": {
+    "mtime": 1781138897.5284033,
+    "hash": "a7780339423d162208913243eea8ce7c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/report/+page.server.ts": {
+    "mtime": 1781138897.5284033,
+    "hash": "3d2d67d0aebb1300f6b2a459b27fba93"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/report/+page.svelte": {
+    "mtime": 1781138897.5286403,
+    "hash": "935061f830cf30bc51a33cdefa94903a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/report/page.server.test.ts": {
+    "mtime": 1781138897.5286403,
+    "hash": "c1e50bd6c00d6369bbcd10d11b5dd4e8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/settings/+page.server.ts": {
+    "mtime": 1781138897.5286403,
+    "hash": "927495a91e872a4cb9429daa52c7c6d5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/settings/+page.svelte": {
+    "mtime": 1781138897.5287821,
+    "hash": "1da8c218dec9cb3c4e45a4204ad161f1"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/settings/settings-test-fixtures.ts": {
+    "mtime": 1781138897.5287821,
+    "hash": "59ae7fe7ae01bb37ebd93b95f85a4e6f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/settings/settings.child.test.ts": {
+    "mtime": 1781138897.5287821,
+    "hash": "602b5e22c5a06d9a65b9fb70f8b0bafe"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/settings/settings.invitations.test.ts": {
+    "mtime": 1781138897.5287821,
+    "hash": "10188cf3e766942f4a5a3f634a4e1433"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/settings/settings.membership.test.ts": {
+    "mtime": 1781138897.5287821,
+    "hash": "4d0b9960486b09dc8dc17ce0f0a19a50"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/suggestions/+page.server.ts": {
+    "mtime": 1781138897.5287821,
+    "hash": "c1ad40705e2eff8675a2ec71b6e2cfcd"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/suggestions/+page.svelte": {
+    "mtime": 1781138897.5289803,
+    "hash": "226be6b5fda1f5dae93e569b797d3883"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/[id]/suggestions/page.server.test.ts": {
+    "mtime": 1781138897.5289803,
+    "hash": "d9dc31f2cf49a71225cf872584c57555"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/new/+page.server.ts": {
+    "mtime": 1781138897.5289803,
+    "hash": "d2ee38b18d9c4b544143b632bf9b8d2c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/new/+page.svelte": {
+    "mtime": 1781138897.5291252,
+    "hash": "36f33de2cfda566ca70cc5d0417367d5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/child/new/page.server.test.ts": {
+    "mtime": 1781138897.5291252,
+    "hash": "eefe2a8996953f3aed08b40bb40e2faa"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/cookies/+page.svelte": {
+    "mtime": 1781138897.5291252,
+    "hash": "a7e2cbda42fca7f537756ef0eb90e765"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/guide/+page.svelte": {
+    "mtime": 1781138897.5291252,
+    "hash": "02bb23aace7833b218b195b9a3019185"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/healthz/+server.ts": {
+    "mtime": 1781138897.5291252,
+    "hash": "c25cf83b720e901c968bbaffc12c07b7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/healthz/server.test.ts": {
+    "mtime": 1781138897.5293,
+    "hash": "63ae149b93ad4d7780c1db4394fb290e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/join/[code]/+page.server.ts": {
+    "mtime": 1781138897.52933,
+    "hash": "6223531e5c54170a3716bd65e26229e3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/join/[code]/+page.svelte": {
+    "mtime": 1781138897.529371,
+    "hash": "93cbd4a95649f67bba658f3ab3e9c8cb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/join/[code]/page.server.test.ts": {
+    "mtime": 1781138897.529371,
+    "hash": "730f313f13e282517e826eb6cb3514f8"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/login/+page.svelte": {
+    "mtime": 1781138897.5295215,
+    "hash": "362a520c0371e3219151e915f3f1cd97"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/login/+page.server.ts": {
+    "mtime": 1781150208.4776254,
+    "hash": "ef598045c298aae729281cb95117bf58"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/login/page.server.test.ts": {
+    "mtime": 1781150264.5208113,
+    "hash": "5597a071fcc552f28bbce9ac9733fad5"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/logout/+server.ts": {
+    "mtime": 1781149979.9983225,
+    "hash": "5ebca2d369c994feebbd2927d2542b83"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/logout/server.test.ts": {
+    "mtime": 1781150035.1907246,
+    "hash": "46b7c934ba98819c42f574b2916e978e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/mentions-legales/+page.server.ts": {
+    "mtime": 1781138897.5296302,
+    "hash": "8e822653b5e0dd04d475ecd4db94991c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/mentions-legales/+page.svelte": {
+    "mtime": 1781138897.529719,
+    "hash": "15293490f90937c8e68b387c53531574"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/mentions-legales/page.server.test.ts": {
+    "mtime": 1781138897.529719,
+    "hash": "07d7d4af475f9457370ef878927f55f7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/offline/+page.svelte": {
+    "mtime": 1781138897.529719,
+    "hash": "5fdd400cc4554c60d69d7a292dc49fe7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/offline/+page.ts": {
+    "mtime": 1781138897.529805,
+    "hash": "57ecbf9715a859df15d2507905352014"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/passkeys/authentication/options/+server.ts": {
+    "mtime": 1781138897.5298455,
+    "hash": "2f54f4fd6672e1a9fcdac4c5831f1faf"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/passkeys/authentication/options/server.test.ts": {
+    "mtime": 1781138897.5298953,
+    "hash": "3f5a5b63e14c50e9134b7004807dffde"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/passkeys/authentication/verify/+server.ts": {
+    "mtime": 1781141620.4100869,
+    "hash": "a0f0f852d4048617a9b56b2693ed093b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/passkeys/authentication/verify/server.test.ts": {
+    "mtime": 1781141620.4100869,
+    "hash": "75821d4d146672563ee7e304e376cace"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/passkeys/registration/options/+server.ts": {
+    "mtime": 1781138897.5299973,
+    "hash": "85bbabbbcad30d014f7487d7a4e438b0"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/passkeys/registration/options/server.test.ts": {
+    "mtime": 1781138897.5300348,
+    "hash": "d50ecced7dbd23330fef9a03fb7fff29"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/passkeys/registration/verify/+server.ts": {
+    "mtime": 1781138897.5300348,
+    "hash": "fe2c476878cbf62b9515513bb80dd8ee"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/passkeys/registration/verify/server.test.ts": {
+    "mtime": 1781138897.530111,
+    "hash": "86ab2f6491d4bd5b19cac75e8b2799bc"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/politique-confidentialite/+page.server.ts": {
+    "mtime": 1781138897.530111,
+    "hash": "8e822653b5e0dd04d475ecd4db94991c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/politique-confidentialite/+page.svelte": {
+    "mtime": 1781138897.5301714,
+    "hash": "871c95e6df3ac785b84992f15aedffd4"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/politique-confidentialite/page.server.test.ts": {
+    "mtime": 1781138897.5301714,
+    "hash": "5cbdfe114fc042488af7498dc9fd5ffe"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/robots.txt/+server.ts": {
+    "mtime": 1781138897.5301714,
+    "hash": "adfecdd8cbc3514da2873630c0dfec68"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/robots.txt/server.test.ts": {
+    "mtime": 1781138897.5302675,
+    "hash": "b463983495ac14fb982109dbe4fce7ae"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/signup/+page.svelte": {
+    "mtime": 1781138897.5303519,
+    "hash": "a98be93baeaa1996ca52f6fb39a94433"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/signup/+page.server.ts": {
+    "mtime": 1781150210.9955943,
+    "hash": "9152f23ebcbeee66a07acb650eaec97e"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/signup/page.server.test.ts": {
+    "mtime": 1781150298.569234,
+    "hash": "9bedf1002dac1d48595b2868e0d5e8f3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/sitemap.xml/+server.ts": {
+    "mtime": 1781138897.5303519,
+    "hash": "2ffb677bc5f00011dc5f0b480f477952"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/sitemap.xml/server.test.ts": {
+    "mtime": 1781138897.530428,
+    "hash": "234bf5c4e3fb650b1ab3c570bc6e3f3f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/sources/+page.server.ts": {
+    "mtime": 1781138897.530428,
+    "hash": "d3578a07ef8e970937c9c50a165c1bf3"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/sources/+page.svelte": {
+    "mtime": 1781138897.5304813,
+    "hash": "0b051b0ce89bfde9b55a0b90c7b1de79"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/routes/sources/page.server.test.ts": {
+    "mtime": 1781138897.5304813,
+    "hash": "139b7fa9e96b94589a7f8c7af2480465"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/test/app-stubs.ts": {
+    "mtime": 1781138897.5304813,
+    "hash": "f5b7e74d9989ecc8afbdd2b1dea1bc7c"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/test/bun-test-utils.ts": {
+    "mtime": 1781138897.5305583,
+    "hash": "1a7b1583c289ba4ef9b6efe31d586724"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/test/component.ts": {
+    "mtime": 1781138897.5305583,
+    "hash": "e8f27fe0852f4ea874739bdfb237eead"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/test/db.ts": {
+    "mtime": 1781138897.5305583,
+    "hash": "feb70911bd59f3359f99237109846508"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/test/route.ts": {
+    "mtime": 1781150027.6758058,
+    "hash": "c820492bdb7984adc42fca44ebe8115b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/CLAUDE.md": {
+    "mtime": 1781138897.4997008,
     "hash": "ad2e2225d056414b27bc2894335b25b1"
   },
-  "/home/sbrn/Projects/diversif/README.md": {
-    "mtime": 1781129740.2329814,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/PARKING_LOT.md": {
+    "mtime": 1781138897.4997008,
+    "hash": "6f6d20fb79c6331ff6340b756ab7ea9d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/PRODUCT.md": {
+    "mtime": 1781138897.4997008,
+    "hash": "adab05445e6820113bad049d56a5859f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/README.md": {
+    "mtime": 1781138897.4997008,
     "hash": "7fa016b2293cff69460f5cc0a69cfe7b"
   },
-  "/home/sbrn/Projects/diversif/src/app.html": {
-    "mtime": 1780928372.9855812,
-    "hash": "66dba8665065f6162eb3fd85124bdb8f"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docker-compose.yml": {
+    "mtime": 1781138897.5001621,
+    "hash": "49424957a60c6472100a0295320000ed"
   },
-  "/home/sbrn/Projects/diversif/docs/medical-audit-2026-05-08.md": {
-    "mtime": 1778228438.1926215,
-    "hash": "a96d04acd9474c46ffb9bc0843da68b8"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/DEPLOY.md": {
+    "mtime": 1781150158.2552512,
+    "hash": "af6510c4d9cc0527374ed79e2ccf975c"
   },
-  "/home/sbrn/Projects/diversif/docs/claude-setup.md": {
-    "mtime": 1780944972.694685,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/claude-setup.md": {
+    "mtime": 1781138897.5001621,
     "hash": "f537ed7057466fa10a2a450b544ba5fc"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-06-observability-sentry-design.md": {
-    "mtime": 1778089450.073499,
-    "hash": "04b967d5a2d4652d996f92a0871c7b1b"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/medical-audit-2026-05-08.md": {
+    "mtime": 1781138897.5010874,
+    "hash": "a96d04acd9474c46ffb9bc0843da68b8"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-06-route-loader-perf-design.md": {
-    "mtime": 1778103252.1638653,
-    "hash": "dce0c81c5217f63935b28aff9febdccb"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-07-i18n-scaffolding-design.md": {
-    "mtime": 1778114640.4911416,
-    "hash": "4f6745cc691ae593b89dc4a4d3107b47"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-07-pwa-offline-log-design.md": {
-    "mtime": 1778157630.4956877,
-    "hash": "944c5a30efec0b241e640d5352856919"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-10-ui-ux-redesign-design.md": {
-    "mtime": 1778407329.5859659,
-    "hash": "bc1788bd1a9c02def4b688a18a1208fd"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-11-phase5-decouvrir-profil-reaction-design.md": {
-    "mtime": 1778522892.8019776,
-    "hash": "be68cfaa22b768519306dda646c6bce6"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-11-phase6-auth-onboarding-landing-design.md": {
-    "mtime": 1778565086.2911751,
-    "hash": "c3c6abf731f2ddc12af2aa1a9b042dbd"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-14-late-reaction-promotion-design.md": {
-    "mtime": 1778765041.716073,
-    "hash": "5ee7d1b25c10053ed2106290e7383579"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-15-allergen-maintenance-design.md": {
-    "mtime": 1778844937.2260692,
-    "hash": "b77029a7395e02eada7ca15cabf4f2c0"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-15-texture-and-pediatrician-handoff-design.md": {
-    "mtime": 1778854689.9945452,
-    "hash": "13a25fcd94134b12e1c630fc3fcc363d"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-21-discover-tab-grouped-layout-design.md": {
-    "mtime": 1779359612.335347,
-    "hash": "b31ccc884665ca8c4c980625e2d14e17"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-21-simplify-codebase-design.md": {
-    "mtime": 1779392646.408933,
-    "hash": "41b130df660e71746754d9e1b95f2e00"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-22-i18n-deadkey-trim-design.md": {
-    "mtime": 1779435190.726101,
-    "hash": "34ecca5959c285a9ba53900db59f4187"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-22-ui-regression-coverage-design.md": {
-    "mtime": 1779435611.2964747,
-    "hash": "b6c1c9efeeed983d18df4d955e93f805"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-22-perf-budget-design.md": {
-    "mtime": 1779449258.8298604,
-    "hash": "3453e576fd1b8322a26821ba359f46e7"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-22-a11y-audit-design.md": {
-    "mtime": 1779449538.222537,
-    "hash": "547656255f90c0f164e55e52922a74fb"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-05-29-postgres-to-sqlite-migration-design.md": {
-    "mtime": 1780503890.7961779,
-    "hash": "5274a8755ffb21c9180211d12a679d17"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/specs/2026-06-08-claude-setup-reproducibility-design.md": {
-    "mtime": 1780928372.984581,
-    "hash": "66a9558bf864a6d1f02cdc02c7a1ce88"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-06-observability-sentry.md": {
-    "mtime": 1778089710.4477434,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-06-observability-sentry.md": {
+    "mtime": 1781138897.5011473,
     "hash": "1c0dbba22ba617aa505ec4a4856d251e"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-06-route-loader-perf.md": {
-    "mtime": 1778103474.284453,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-06-route-loader-perf.md": {
+    "mtime": 1781138897.5012274,
     "hash": "df50d8b9833b374b79351b238893be06"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-07-i18n-scaffolding.md": {
-    "mtime": 1778116013.00635,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-07-i18n-scaffolding.md": {
+    "mtime": 1781138897.5012274,
     "hash": "8a6ebb0179e2f608afc0e4d89b187919"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-07-pwa-offline-log.md": {
-    "mtime": 1778158973.834185,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-07-pwa-offline-log.md": {
+    "mtime": 1781138897.5012274,
     "hash": "ff8ad7e53ba7dca2f0e96d680e14e363"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-10-phase3-app-shell.md": {
-    "mtime": 1778416733.0714219,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-10-phase3-app-shell.md": {
+    "mtime": 1781138897.5012274,
     "hash": "66e2af0ba81f413d389d7f0581ac6c3c"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-11-phase5-decouvrir-profil-reaction.md": {
-    "mtime": 1778522892.8019776,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-11-phase5-decouvrir-profil-reaction.md": {
+    "mtime": 1781138897.5012274,
     "hash": "6705e38189d4859ed5b513097e6aadb0"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-11-phase6-auth-onboarding-landing.md": {
-    "mtime": 1778565086.2911751,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-11-phase6-auth-onboarding-landing.md": {
+    "mtime": 1781138897.5012274,
     "hash": "557bd4b11acf3cc1a7a9adca09c1b3ab"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-12-phase7-cleanup-flag-removal.md": {
-    "mtime": 1778567732.512166,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-12-phase7-cleanup-flag-removal.md": {
+    "mtime": 1781138897.5012274,
     "hash": "d78d13c82cb835071802522a2ad5669e"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-14-late-reaction-promotion.md": {
-    "mtime": 1778765477.0830579,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-14-late-reaction-promotion.md": {
+    "mtime": 1781138897.5012274,
     "hash": "e568de9a41ba28b96a9c0140de9c80a2"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-15-allergen-maintenance.md": {
-    "mtime": 1778845162.551502,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-15-allergen-maintenance.md": {
+    "mtime": 1781138897.5012274,
     "hash": "432d1aa137a4715b901e1f42be7c408c"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-15-texture-and-pediatrician-handoff.md": {
-    "mtime": 1778855322.1353447,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-15-texture-and-pediatrician-handoff.md": {
+    "mtime": 1781138897.5012274,
     "hash": "e4e26f7aa906528062a6c75a3ffbdaf2"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-21-discover-tab-grouped-layout.md": {
-    "mtime": 1779359754.2066867,
-    "hash": "d0fd3f1db6ee3c6c7dad0cd0e921cc9a"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-21-bundle-1-foundation-primitives.md": {
-    "mtime": 1779392646.408933,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-21-bundle-1-foundation-primitives.md": {
+    "mtime": 1781138897.5012274,
     "hash": "a1c493cd7540a046c1c75aa325d84ecd"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-21-bundle-2-visual-coherence-sweep.md": {
-    "mtime": 1779392646.408933,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-21-bundle-2-visual-coherence-sweep.md": {
+    "mtime": 1781138897.5012274,
     "hash": "cac4346a652a45e4a31af887d4454e1e"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-22-i18n-deadkey-trim.md": {
-    "mtime": 1779435190.7379224,
-    "hash": "0f71401670c330cce46247dbee08be97"
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-21-discover-tab-grouped-layout.md": {
+    "mtime": 1781138897.5012274,
+    "hash": "d0fd3f1db6ee3c6c7dad0cd0e921cc9a"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-22-ui-regression-coverage.md": {
-    "mtime": 1779435611.2964747,
-    "hash": "dfbedd8c4777384ea3167512ab4b0dd2"
-  },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-22-a11y-audit.md": {
-    "mtime": 1779437694.018181,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-22-a11y-audit.md": {
+    "mtime": 1781138897.5012274,
     "hash": "3b2164b2af225d44c973e8e5a2551d35"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-22-perf-budget.md": {
-    "mtime": 1779449258.8409224,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-22-i18n-deadkey-trim.md": {
+    "mtime": 1781138897.5012274,
+    "hash": "0f71401670c330cce46247dbee08be97"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-22-perf-budget.md": {
+    "mtime": 1781138897.5012274,
     "hash": "0bf7776b4df11895d8bb209f8efa5750"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/plans/2026-05-28-bun-migration.md": {
-    "mtime": 1780503890.7961779,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-22-ui-regression-coverage.md": {
+    "mtime": 1781138897.5012274,
+    "hash": "dfbedd8c4777384ea3167512ab4b0dd2"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/plans/2026-05-28-bun-migration.md": {
+    "mtime": 1781138897.5012274,
     "hash": "5df26b546fa2d76d212e30090b310013"
   },
-  "/home/sbrn/Projects/diversif/docs/superpowers/runbooks/sentry-setup.md": {
-    "mtime": 1778113941.3848512,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/runbooks/sentry-setup.md": {
+    "mtime": 1781138897.5012274,
     "hash": "ae6068b9c3ba02d274fe002a85101bce"
   },
-  "/home/sbrn/Projects/diversif/project.inlang/modules/README.md": {
-    "mtime": 1778764306.187616,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-06-observability-sentry-design.md": {
+    "mtime": 1781138897.5012274,
+    "hash": "04b967d5a2d4652d996f92a0871c7b1b"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-06-route-loader-perf-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "dce0c81c5217f63935b28aff9febdccb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-07-i18n-scaffolding-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "4f6745cc691ae593b89dc4a4d3107b47"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-07-pwa-offline-log-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "944c5a30efec0b241e640d5352856919"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-10-ui-ux-redesign-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "bc1788bd1a9c02def4b688a18a1208fd"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-11-phase5-decouvrir-profil-reaction-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "be68cfaa22b768519306dda646c6bce6"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-11-phase6-auth-onboarding-landing-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "c3c6abf731f2ddc12af2aa1a9b042dbd"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-14-late-reaction-promotion-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "5ee7d1b25c10053ed2106290e7383579"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-15-allergen-maintenance-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "b77029a7395e02eada7ca15cabf4f2c0"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-15-texture-and-pediatrician-handoff-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "13a25fcd94134b12e1c630fc3fcc363d"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-21-discover-tab-grouped-layout-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "b31ccc884665ca8c4c980625e2d14e17"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-21-simplify-codebase-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "41b130df660e71746754d9e1b95f2e00"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-22-a11y-audit-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "547656255f90c0f164e55e52922a74fb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-22-i18n-deadkey-trim-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "34ecca5959c285a9ba53900db59f4187"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-22-perf-budget-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "3453e576fd1b8322a26821ba359f46e7"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-22-ui-regression-coverage-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "b6c1c9efeeed983d18df4d955e93f805"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-05-29-postgres-to-sqlite-migration-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "5274a8755ffb21c9180211d12a679d17"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/docs/superpowers/specs/2026-06-08-claude-setup-reproducibility-design.md": {
+    "mtime": 1781138897.5027993,
+    "hash": "66a9558bf864a6d1f02cdc02c7a1ce88"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/project.inlang/modules/README.md": {
+    "mtime": 1781138897.5178447,
     "hash": "eb0aaa908d5d4906bd5cdbed6d3b79ae"
   },
-  "/home/sbrn/Projects/diversif/graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md": {
-    "mtime": 1777989129.8008497,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/src/app.html": {
+    "mtime": 1781138897.5185926,
+    "hash": "66dba8665065f6162eb3fd85124bdb8f"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/graphify-out/memory/query_20260505_135209_why_does_resettestdb_connect_test_seed_helpers_to.md": {
+    "mtime": 1781138897.516162,
     "hash": "8d44fb3c5405840e5f21060915d15bc9"
   },
-  "/home/sbrn/Projects/diversif/graphify-out/memory/query_20260505_140943_why_do_5__test_files_independently_call_hashpasswo.md": {
-    "mtime": 1777990183.5297256,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/graphify-out/memory/query_20260505_140943_why_do_5__test_files_independently_call_hashpasswo.md": {
+    "mtime": 1781138897.5175028,
     "hash": "24f44a49ae59007336bdfb8a389efd8d"
   },
-  "/home/sbrn/Projects/diversif/static/favicon.svg": {
-    "mtime": 1778416314.1439102,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/static/favicon.svg": {
+    "mtime": 1781138897.5305583,
     "hash": "b92000cca1f1f0f522177ec398593501"
   },
-  "/home/sbrn/Projects/diversif/static/og-image.svg": {
-    "mtime": 1778416314.14491,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/static/og-image.svg": {
+    "mtime": 1781138897.53078,
     "hash": "97775ce4a2dff36af8daff8cbaad45ba"
   },
-  "/home/sbrn/Projects/diversif/static/icons/icon-192.png": {
-    "mtime": 1778416314.1439102,
-    "hash": "8f99b0fbfb52a07ead9972ee40c26fcb"
-  },
-  "/home/sbrn/Projects/diversif/static/icons/icon-512.png": {
-    "mtime": 1778416314.14491,
-    "hash": "a446729f5a29a7a5cab64d0071fb7d2a"
-  },
-  "/home/sbrn/Projects/diversif/static/icons/apple-touch-icon-180.png": {
-    "mtime": 1780928372.9855812,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/static/icons/apple-touch-icon-180.png": {
+    "mtime": 1781138897.5307112,
     "hash": "ac693d0d2cdff70def8f4903636ddf52"
   },
-  "/home/sbrn/Projects/diversif/static/icons/icon-maskable-192.png": {
-    "mtime": 1780928372.9855812,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/static/icons/icon-192.png": {
+    "mtime": 1781138897.53078,
+    "hash": "8f99b0fbfb52a07ead9972ee40c26fcb"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/static/icons/icon-512.png": {
+    "mtime": 1781138897.53078,
+    "hash": "a446729f5a29a7a5cab64d0071fb7d2a"
+  },
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/static/icons/icon-maskable-192.png": {
+    "mtime": 1781138897.53078,
     "hash": "360d145921b16ceb0489ea69cd914ea4"
   },
-  "/home/sbrn/Projects/diversif/static/icons/icon-maskable-512.png": {
-    "mtime": 1780928372.9855812,
+  "/home/sbrn/Projects/diversif/.claude/worktrees/agent-ab3aed60d5b6021c1/static/icons/icon-maskable-512.png": {
+    "mtime": 1781138897.53078,
     "hash": "102fd8158d221282670df322b18653e6"
   }
 }

@@ -4,6 +4,8 @@ import {
   checkRateLimit,
   clientKey,
   evictExpiredRateLimits,
+  peekRateLimit,
+  recordAttempt,
   resetRateLimit
 } from './rate-limit';
 import type { RequestEvent } from '@sveltejs/kit';
@@ -66,6 +68,62 @@ describe('checkRateLimit', () => {
     expect(checkRateLimit(opts, 'a').allowed).toBe(false);
     resetRateLimit(opts.name, 'a');
     expect(checkRateLimit(opts, 'a').allowed).toBe(true);
+  });
+});
+
+describe('peekRateLimit / recordAttempt', () => {
+  const opts = { name: 'peek', limit: 3, windowMs: 60_000 };
+
+  it('peek never consumes: repeated peeks leave the bucket untouched', () => {
+    for (let i = 0; i < 100; i++) {
+      const r = peekRateLimit(opts, 'a');
+      expect(r.allowed).toBe(true);
+      expect(r.remaining).toBe(opts.limit);
+      expect(r.retryAfterSeconds).toBe(0);
+    }
+  });
+
+  it('recordAttempt consumes; peek reflects the recorded hits', () => {
+    recordAttempt(opts, 'a');
+    expect(peekRateLimit(opts, 'a').remaining).toBe(2);
+    recordAttempt(opts, 'a');
+    expect(peekRateLimit(opts, 'a').remaining).toBe(1);
+  });
+
+  it('peek blocks after `limit` recorded attempts — same budget as checkRateLimit', () => {
+    for (let i = 0; i < opts.limit; i++) {
+      expect(peekRateLimit(opts, 'a').allowed).toBe(true);
+      recordAttempt(opts, 'a');
+    }
+    const blocked = peekRateLimit(opts, 'a');
+    expect(blocked.allowed).toBe(false);
+    expect(blocked.remaining).toBe(0);
+    expect(blocked.retryAfterSeconds).toBeGreaterThan(0);
+  });
+
+  it('blocked peeks do not extend the lockout window', () => {
+    setSystemTime(new Date('2024-01-01T00:00:00Z'));
+    for (let i = 0; i < opts.limit; i++) recordAttempt(opts, 'a');
+    // A flood of peeks while blocked must not push the window forward.
+    setSystemTime(new Date('2024-01-01T00:00:30Z'));
+    for (let i = 0; i < 50; i++) expect(peekRateLimit(opts, 'a').allowed).toBe(false);
+    // The original hits age out on schedule despite the peek flood.
+    setSystemTime(new Date('2024-01-01T00:01:01Z'));
+    expect(peekRateLimit(opts, 'a').allowed).toBe(true);
+  });
+
+  it('recorded hits age out after the window', () => {
+    setSystemTime(new Date('2024-01-01T00:00:00Z'));
+    for (let i = 0; i < opts.limit; i++) recordAttempt(opts, 'a');
+    expect(peekRateLimit(opts, 'a').allowed).toBe(false);
+    setSystemTime(new Date('2024-01-01T00:01:01Z'));
+    expect(peekRateLimit(opts, 'a').allowed).toBe(true);
+    expect(peekRateLimit(opts, 'a').remaining).toBe(opts.limit);
+  });
+
+  it('peek and check share the same bucket', () => {
+    for (let i = 0; i < opts.limit; i++) checkRateLimit(opts, 'a');
+    expect(peekRateLimit(opts, 'a').allowed).toBe(false);
   });
 });
 

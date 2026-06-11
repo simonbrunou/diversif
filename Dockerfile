@@ -5,7 +5,12 @@ WORKDIR /app
 # `bun install`. Husky's hook-install path is unnecessary inside the
 # container — we don't commit from here.
 ENV HUSKY=0
+# patches/ must be present before `bun install`: bun.lock references the
+# patchedDependencies entries and install fails with "Couldn't find patch
+# file" without them (broke the image build when the @inlang/sdk patch
+# landed — there is no docker gate in CI to catch it).
 COPY package.json bun.lock ./
+COPY patches ./patches
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     bun install --frozen-lockfile
 COPY . .
@@ -37,6 +42,15 @@ ENV HOST=0.0.0.0
 # them.
 ENV PROTOCOL_HEADER=x-forwarded-proto
 ENV HOST_HEADER=x-forwarded-host
+# ADDRESS_HEADER is deliberately NOT baked into the image:
+#  - adapter-node THROWS on every request that lacks the configured header,
+#    so a baked x-forwarded-for default turns "no proxy in front" into a
+#    total auth outage;
+#  - x-forwarded-for is client-suppliable when no trusted proxy strips it,
+#    letting an attacker mint fresh rate-limit buckets per request.
+# The operator must set ADDRESS_HEADER (and XFF_DEPTH when applicable) for
+# their topology — see DEPLOY.md / .env.example. The server logs a boot
+# warning (src/hooks.server.ts) when PROTOCOL_HEADER is set without it.
 ENV WEBAUTHN_RP_ID=diversif.app
 # SQLite file location. Mount a persistent volume here (Coolify / docker-compose
 # both map /app/data) so the database survives redeploys and image rebuilds.

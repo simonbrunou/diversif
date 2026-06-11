@@ -8,6 +8,7 @@ import {
   SESSION_DURATION_MS,
   SESSION_RENEW_THRESHOLD_MS,
   createSession,
+  hashSessionToken,
   validateSession,
   invalidateSession,
   invalidateAllUserSessions,
@@ -67,13 +68,18 @@ describe('hashPassword / verifyPassword', () => {
 describe('createSession / validateSession', () => {
   it('creates a session row for the user', async () => {
     const user = await seedUser();
-    const session = await createSession(user.id);
+    const { token, session } = await createSession(user.id);
     expect(session.userId).toBe(user.id);
     expect(session.expiresAt.getTime()).toBeGreaterThan(Date.now());
     const stored = (
       await testDb.select().from(sessions).where(eq(sessions.id, session.id)).limit(1)
     )[0];
     expect(stored?.id).toBe(session.id);
+    // At-rest hashing invariant: the DB never holds the raw bearer token —
+    // only its sha256 digest. A leaked SQLite file or backup is then useless
+    // for session hijacking.
+    expect(stored?.id).toBe(hashSessionToken(token));
+    expect(stored?.id).not.toBe(token);
   });
 
   it('validateSession returns null for empty token', async () => {
@@ -84,10 +90,18 @@ describe('createSession / validateSession', () => {
     expect(await validateSession('not-a-token')).toBeNull();
   });
 
+  it('validateSession rejects the stored hash used as a cookie token', async () => {
+    // If someone exfiltrates sessions.id from the DB, replaying it as the
+    // cookie value must NOT authenticate (it gets hashed again and misses).
+    const user = await seedUser();
+    const { session } = await createSession(user.id);
+    expect(await validateSession(session.id)).toBeNull();
+  });
+
   it('validateSession returns the user and session for a fresh token', async () => {
     const user = await seedUser();
-    const session = await createSession(user.id);
-    const result = await validateSession(session.id);
+    const { token, session } = await createSession(user.id);
+    const result = await validateSession(token);
     expect(result).not.toBeNull();
     expect(result!.user.id).toBe(user.id);
     expect(result!.user).not.toHaveProperty('passwordHash');
@@ -101,12 +115,12 @@ describe('createSession / validateSession', () => {
       .update(users)
       .set({ lastLoginAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) })
       .where(eq(users.id, user.id));
-    const session = await createSession(user.id);
+    const { token, session } = await createSession(user.id);
     // Move expiry to 1 hour from now (well inside renewal window).
     const soon = new Date(Date.now() + 60 * 60 * 1000);
     await testDb.update(sessions).set({ expiresAt: soon }).where(eq(sessions.id, session.id));
 
-    const result = await validateSession(session.id);
+    const result = await validateSession(token);
     expect(result?.renewed).toBe(true);
     expect(result!.session.expiresAt.getTime()).toBeGreaterThan(soon.getTime());
     const fresh = (await testDb.select().from(users).where(eq(users.id, user.id)).limit(1))[0];
@@ -115,21 +129,21 @@ describe('createSession / validateSession', () => {
 
   it('validateSession returns null when expired', async () => {
     const user = await seedUser();
-    const session = await createSession(user.id);
+    const { token, session } = await createSession(user.id);
     await testDb
       .update(sessions)
       .set({ expiresAt: new Date(Date.now() - 1000) })
       .where(eq(sessions.id, session.id));
-    expect(await validateSession(session.id)).toBeNull();
+    expect(await validateSession(token)).toBeNull();
   });
 });
 
 describe('invalidateSession', () => {
   it('removes the session row', async () => {
     const user = await seedUser();
-    const session = await createSession(user.id);
-    await invalidateSession(session.id);
-    expect(await validateSession(session.id)).toBeNull();
+    const { token } = await createSession(user.id);
+    await invalidateSession(token);
+    expect(await validateSession(token)).toBeNull();
   });
 
   it('does nothing for empty token', async () => {
@@ -145,8 +159,8 @@ describe('invalidateAllUserSessions', () => {
     const a = await createSession(user.id);
     const b = await createSession(user.id);
     await invalidateAllUserSessions(user.id);
-    expect(await validateSession(a.id)).toBeNull();
-    expect(await validateSession(b.id)).toBeNull();
+    expect(await validateSession(a.token)).toBeNull();
+    expect(await validateSession(b.token)).toBeNull();
   });
 });
 
