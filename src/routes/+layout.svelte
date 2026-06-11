@@ -80,6 +80,10 @@
   });
 
   onMount(() => {
+    // Sync the theme cookie with the localStorage choice once per load:
+    // users who picked dark/light before the cookie existed would otherwise
+    // keep a stale SSR theme and Profil meta until they re-toggled.
+    applyTheme(getStoredTheme());
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = () => {
       if (getStoredTheme() === 'system') applyTheme('system');
