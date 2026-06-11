@@ -50,7 +50,10 @@
 
   let scrollEl: HTMLElement | null = $state(null);
 
-  afterNavigate(() => {
+  afterNavigate((navigation) => {
+    // Only reset on pathname changes — segment switches (CarnetSegments uses
+    // data-sveltekit-noscroll on same-pathname ?segment= links) must not jump to top.
+    if (navigation.from?.url.pathname === navigation.to?.url.pathname) return;
     scrollEl?.scrollTo({ top: 0, behavior: 'instant' });
   });
 
@@ -89,12 +92,12 @@
     {/if}
   </nav>
 
-  <!-- On mobile this column must fill the viewport so the bottom nav sits
-       flush at the bottom edge of the screen. flex-1 on the scrollable
-       content area then fills all available space above the nav, so short
-       pages never leave a gap between content and nav. lg:min-h-0 disables
-       the fixed height on desktop where the grid tracks handle it. -->
-  <div class="flex min-h-dvh flex-col lg:min-h-0">
+  <!-- On mobile this column must be exactly 100dvh so the flex-1 scrollable
+       content area gets a bounded height and overflow-y-auto actually clips
+       (min-h-dvh lets the column grow past dvh, giving the inner div no upper
+       bound and falling back to window scroll). lg:h-auto restores normal
+       content-height sizing on desktop where window scroll is expected. -->
+  <div class="flex h-dvh flex-col lg:h-auto">
     <!-- Mobile brand strip via the shared component, so the chrome
          signature matches PublicHeader exactly across the marketing
          to app boundary. Hidden on lg: the left rail carries the brand
