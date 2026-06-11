@@ -202,8 +202,11 @@ function parseIgnoredLines(file: string, source: string): Set<number> {
         // A marker inline after code (`x ?? /* v8 ignore next */ 0`) exempts
         // only its own line; a standalone marker line exempts the N
         // following lines. Without the distinction, an inline marker would
-        // silently exempt the (unmarked) line after it too.
-        const standalone = line.slice(0, line.indexOf('/*')).trim() === '';
+        // silently exempt the (unmarked) line after it too. Anchor on the
+        // MARKER'S comment opener, not the first '/*' on the line — an
+        // unrelated leading block comment must not promote an inline marker
+        // to standalone.
+        const standalone = line.slice(0, line.search(/\/\*+\s*v8 ignore next/)).trim() === '';
         if (standalone) {
           const span = next[1] ? Number(next[1]) : 1;
           for (let k = 1; k <= span; k++) ignored.add(li + 1 + k);
@@ -274,7 +277,9 @@ if (wantCoverage || reportOnly) {
       process.exit(2);
     }
   } else {
-    Bun.write(manifestPath, JSON.stringify(files));
+    // Awaited: an unawaited write followed by an early process.exit (e.g.
+    // the bunfig assert below) never lands on disk.
+    await Bun.write(manifestPath, JSON.stringify(files));
   }
   // Belt-and-braces: the TOML import is untyped (`any`), so a renamed key
   // would silently yield an empty ignore list.
