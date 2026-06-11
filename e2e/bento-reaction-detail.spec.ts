@@ -48,7 +48,7 @@ test('reaction-detail bento renders for non-RAS entry with all panels @responsiv
   await expect(page.getByRole('button', { name: /Suivre 30 min/ })).toBeVisible();
 });
 
-test('add-symptom flow appends a row to the symptom list @responsive', async ({ page }) => {
+test('add-symptom then delete-symptom via the confirm modal @responsive', async ({ page }) => {
   const childId = await signUpAndCreateChild(page, 'Léo', '2025-10-01');
   await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
@@ -63,7 +63,21 @@ test('add-symptom flow appends a row to the symptom list @responsive', async ({ 
   await page.getByText('Rougeur', { exact: true }).click();
   await page.getByRole('button', { name: 'Enregistrer le symptôme' }).click();
 
-  await expect(page.getByText('Rougeur', { exact: true })).toBeVisible();
+  // The sheet closes before the refreshed list renders, so the only
+  // remaining "Rougeur" is the new list row.
+  await expect(page.getByRole('dialog')).toBeHidden();
+  const row = page.locator('li', { hasText: 'Rougeur' });
+  await expect(row).toBeVisible();
+
+  // Delete it through the ConfirmModal (replaced the native confirm()).
+  await row.getByRole('button', { name: /Supprimer/ }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /^Supprimer/ })
+    .click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.locator('li', { hasText: 'Rougeur' })).toHaveCount(0);
 });
 
 test('print page renders without bento chrome and contains key strings @responsive', async ({

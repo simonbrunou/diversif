@@ -1,5 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
   import * as m from '$lib/paraglide/messages';
   import Modal from './Modal.svelte';
   import Button from './Button.svelte';
@@ -36,6 +37,7 @@
   let submitting = $state(false);
   let confirmText = $state('');
   let confirmPassword = $state('');
+  let failed = $state(false);
 
   const textOk = $derived(requireText ? confirmText === requireText : true);
   const passwordOk = $derived(requirePassword ? confirmPassword.length > 0 : true);
@@ -49,6 +51,7 @@
     if (!open) {
       confirmText = '';
       confirmPassword = '';
+      failed = false;
     }
   });
 
@@ -62,22 +65,20 @@
     method="POST"
     {action}
     class="grid gap-3"
-    use:enhance={() => {
-      submitting = true;
-      return async ({ result, update }) => {
-        try {
-          await update();
-        } finally {
-          submitting = false;
-        }
-        // Close after a successful action so non-navigating confirms (member
-        // removal, symptom/meal deletion) don't leave the modal hanging open.
-        // Failures keep it open so the user can retry (e.g. wrong password).
-        if (result.type === 'success' || result.type === 'redirect') {
-          open = false;
-        }
-      };
-    }}
+    use:enhance={trackSubmission(
+      (v) => {
+        submitting = v;
+        if (v) failed = false;
+      },
+      {
+        // Close before the refreshed page renders so non-navigating confirms
+        // (member removal, symptom/meal deletion) never overlap their result.
+        onSuccess: () => (open = false),
+        // Failures keep it open so the user can retry (e.g. wrong password) —
+        // with an explicit message, since some host pages have no form UI.
+        onFailure: () => (failed = true)
+      }
+    )}
   >
     {#each Object.entries(hiddenFields ?? {}) as [name, value] (name)}
       <input type="hidden" {name} {value} />
@@ -104,6 +105,9 @@
           required
         />
       </Field>
+    {/if}
+    {#if failed}
+      <p class="text-sm text-severe-text" role="alert">{m.errorsGenericFallback()}</p>
     {/if}
     <div class="mt-2 flex justify-end gap-2">
       <Button type="button" variant="outline" onclick={close}>{m.commonCancel()}</Button>

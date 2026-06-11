@@ -90,6 +90,17 @@ test.describe('membership permissions', () => {
       );
       // But the leave action is offered to non-owners.
       await expect(memberPage.getByRole('button', { name: /quitter cet enfant/i })).toBeVisible();
+
+      // Owner removes the co-parent through the ConfirmModal (no native confirm).
+      await ownerPage.goto(`/child/${childId}/settings`);
+      await expect(ownerPage.locator('body')).toContainText('Co-parent');
+      await ownerPage.getByRole('button', { name: /^Retirer$/ }).click();
+      const dialog = ownerPage.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+      await expect(dialog).toContainText(/Retirer ce membre/);
+      await dialog.getByRole('button', { name: /^Retirer$/ }).click();
+      await expect(dialog).toBeHidden();
+      await expect(ownerPage.locator('body')).not.toContainText('Co-parent');
     } finally {
       await ownerCtx.close();
       await memberCtx.close();

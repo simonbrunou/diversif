@@ -6,8 +6,11 @@ let startAuthenticationImpl: (opts: unknown) => Promise<unknown> = async () => (
 mock.module('@simplewebauthn/browser', () => ({
   startAuthentication: (opts: unknown) => startAuthenticationImpl(opts)
 }));
+// Default toast dep — every signInWithPasskey test injects showError, so the
+// real svelte-sonner (and its transitive deps) never needs to resolve here.
+mock.module('svelte-sonner', () => ({ toast: { error: () => {} } }));
 
-import { authenticateWithPasskey } from './passkey-client';
+import { authenticateWithPasskey, signInWithPasskey } from './passkey-client';
 
 type FakeResponse = { ok: boolean; json: () => Promise<unknown> };
 
@@ -55,30 +58,22 @@ describe('authenticateWithPasskey', () => {
     expect(result).toEqual({ ok: false, errorKey: 'errorsAccountPasskeyAuthStartFailed' });
   });
 
-  it('reports errorsAccountPasskeyAuthFailed with the server message when verify fails', async () => {
+  it('reports errorsAccountPasskeyAuthFailed when verify fails (server message ignored)', async () => {
     const fetchFn = fakeFetch({
       options: { ok: true, json: async () => ({}) },
       verify: { ok: false, json: async () => ({ ok: false, error: 'Clé inconnue.' }) }
     });
     const result = await authenticateWithPasskey(fetchFn);
-    expect(result).toEqual({
-      ok: false,
-      errorKey: 'errorsAccountPasskeyAuthFailed',
-      serverError: 'Clé inconnue.'
-    });
+    expect(result).toEqual({ ok: false, errorKey: 'errorsAccountPasskeyAuthFailed' });
   });
 
-  it('reports errorsAccountPasskeyAuthFailed without serverError when verify returns ok:false', async () => {
+  it('reports errorsAccountPasskeyAuthFailed when verify returns ok:false', async () => {
     const fetchFn = fakeFetch({
       options: { ok: true, json: async () => ({}) },
       verify: { ok: true, json: async () => ({ ok: false }) }
     });
     const result = await authenticateWithPasskey(fetchFn);
-    expect(result).toEqual({
-      ok: false,
-      errorKey: 'errorsAccountPasskeyAuthFailed',
-      serverError: undefined
-    });
+    expect(result).toEqual({ ok: false, errorKey: 'errorsAccountPasskeyAuthFailed' });
   });
 
   it('tolerates a verify response with an unparsable body', async () => {
@@ -92,11 +87,7 @@ describe('authenticateWithPasskey', () => {
       }
     });
     const result = await authenticateWithPasskey(fetchFn);
-    expect(result).toEqual({
-      ok: false,
-      errorKey: 'errorsAccountPasskeyAuthFailed',
-      serverError: undefined
-    });
+    expect(result).toEqual({ ok: false, errorKey: 'errorsAccountPasskeyAuthFailed' });
   });
 
   it('returns errorKey null when the user cancels (NotAllowedError name)', async () => {
@@ -135,5 +126,54 @@ describe('authenticateWithPasskey', () => {
     const fetchFn = fakeFetch({ options: { ok: true, json: async () => ({}) } });
     const result = await authenticateWithPasskey(fetchFn);
     expect(result).toEqual({ ok: false, errorKey: 'errorsAccountPasskeyGenericError' });
+  });
+});
+
+describe('signInWithPasskey', () => {
+  it('navigates home on success and flips the busy flag around the flow', async () => {
+    const busy: boolean[] = [];
+    const navigate = mock(() => Promise.resolve());
+    await signInWithPasskey((v) => busy.push(v), {
+      authenticate: async () => ({ ok: true }),
+      navigate: navigate as never,
+      showError: () => {}
+    });
+    expect(busy).toEqual([true, false]);
+    expect(navigate).toHaveBeenCalledWith('/', { invalidateAll: true });
+  });
+
+  it('surfaces the localized error message on failure', async () => {
+    const shown: string[] = [];
+    await signInWithPasskey(() => {}, {
+      authenticate: async () => ({ ok: false, errorKey: 'errorsAccountPasskeyAuthFailed' }),
+      navigate: (() => Promise.resolve()) as never,
+      showError: (message) => shown.push(message)
+    });
+    expect(shown.length).toBe(1);
+    expect(shown[0]!.length).toBeGreaterThan(0);
+  });
+
+  it('stays silent on user cancellation', async () => {
+    const shown: string[] = [];
+    const navigate = mock(() => Promise.resolve());
+    await signInWithPasskey(() => {}, {
+      authenticate: async () => ({ ok: false, errorKey: null }),
+      navigate: navigate as never,
+      showError: (message) => shown.push(message)
+    });
+    expect(shown).toEqual([]);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('resets the busy flag even when navigation throws', async () => {
+    const busy: boolean[] = [];
+    await expect(
+      signInWithPasskey((v) => busy.push(v), {
+        authenticate: async () => ({ ok: true }),
+        navigate: (() => Promise.reject(new Error('nav aborted'))) as never,
+        showError: () => {}
+      })
+    ).rejects.toThrow('nav aborted');
+    expect(busy).toEqual([true, false]);
   });
 });

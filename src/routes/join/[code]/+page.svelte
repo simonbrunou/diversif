@@ -3,6 +3,7 @@
   import Button from '$components/ui/Button.svelte';
   import FormError from '$components/ui/FormError.svelte';
   import { enhance } from '$app/forms';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
   import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
   import type { ActionData, PageData } from './$types';
@@ -40,20 +41,7 @@
       <form
         method="POST"
         class="mt-6 flex justify-center gap-2"
-        use:enhance={() => {
-          submitting = true;
-          return async ({ update }) => {
-            // The button re-enables only after update() so the success
-            // redirect can't be double-submitted while the navigation is in
-            // flight; finally so an aborted navigation can't leave it stuck
-            // disabled.
-            try {
-              await update();
-            } finally {
-              submitting = false;
-            }
-          };
-        }}
+        use:enhance={trackSubmission((v) => (submitting = v))}
       >
         <Button href={localizedHref('/')} variant="outline">{m.commonCancel()}</Button>
         <Button type="submit" loading={submitting}>{m.joinAcceptCta()}</Button>

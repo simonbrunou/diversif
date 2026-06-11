@@ -30,12 +30,28 @@
     removeMemberOpen = true;
   }
 
+  // Drop the stale id once the modal closes so a reopened modal can never
+  // post a previously-selected member, and the {#if} keeps the hidden field
+  // always a real id.
   $effect(() => {
-    if (form?.success) {
-      toast.success(form.success);
+    if (!removeMemberOpen) {
+      removeMemberId = null;
     }
-    if (form?.error) {
-      toast.error(form.error);
+  });
+
+  // Identity dedup, like createFormToasts: this effect also tracks
+  // `inviteOpen`, so without it a retained `form` would re-toast on every
+  // later invite-modal open/close.
+  let lastFormSeen: typeof form;
+  $effect(() => {
+    if (form !== lastFormSeen) {
+      lastFormSeen = form;
+      if (form?.success) {
+        toast.success(form.success);
+      }
+      if (form?.error) {
+        toast.error(form.error);
+      }
     }
     if (inviteOpen && form?.code) {
       inviteOpen = false;
@@ -192,16 +208,18 @@
   requirePassword
 />
 
-<ConfirmModal
-  bind:open={removeMemberOpen}
-  title={m.settingsRemoveMemberConfirmTitle()}
-  description={m.settingsRemoveMemberConfirmDescription()}
-  action="?/removeMember"
-  confirmLabel={m.commonRemove()}
-  loadingLabel={m.settingsRemoveMemberLoadingLabel()}
-  destructive
-  hiddenFields={{ userId: removeMemberId ?? '' }}
-/>
+{#if removeMemberId !== null}
+  <ConfirmModal
+    bind:open={removeMemberOpen}
+    title={m.settingsRemoveMemberConfirmTitle()}
+    description={m.settingsRemoveMemberConfirmDescription()}
+    action="?/removeMember"
+    confirmLabel={m.commonRemove()}
+    loadingLabel={m.settingsRemoveMemberLoadingLabel()}
+    destructive
+    hiddenFields={{ userId: removeMemberId }}
+  />
+{/if}
 
 <ConfirmModal
   bind:open={leaveOpen}

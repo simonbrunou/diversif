@@ -9,10 +9,9 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { toast } from 'svelte-sonner';
   import * as m from '$lib/paraglide/messages';
-  import { authenticateWithPasskey } from '$lib/auth/passkey-client';
-  import { resolveMessageKey } from '$lib/forms/tracked-enhance';
+  import { signInWithPasskey } from '$lib/auth/passkey-client';
+  import { trackSubmission } from '$lib/forms/tracked-enhance';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { ActionData } from './$types';
 
@@ -67,7 +66,8 @@
         if (cancelled) return;
         if (verifyRes.ok && data?.ok) {
           if (cancelled) return;
-          await goto('/', { invalidateAll: true });
+          // localizedHref so an EN visitor lands on /en, not the FR home.
+          await goto(localizedHref('/'), { invalidateAll: true });
         }
       } catch {
         // Background flow: aborts, refusals, and network blips stay silent.
@@ -85,21 +85,9 @@
     };
   });
 
-  async function signInWithPasskey() {
+  async function passkeySignIn() {
     if (passkeyLoading) return;
-    passkeyLoading = true;
-    try {
-      const result = await authenticateWithPasskey();
-      if (result.ok) {
-        await goto('/', { invalidateAll: true });
-        return;
-      }
-      if (result.errorKey !== null) {
-        toast.error(result.serverError ?? resolveMessageKey(result.errorKey));
-      }
-    } finally {
-      passkeyLoading = false;
-    }
+    await signInWithPasskey((v) => (passkeyLoading = v));
   }
 </script>
 
@@ -111,7 +99,7 @@
       type="button"
       size="pill"
       loading={passkeyLoading}
-      onclick={signInWithPasskey}
+      onclick={passkeySignIn}
       class="w-full shadow-soft"
     >
       {passkeyLoading ? m.authLoginPasskeyLoading() : m.authLoginPasskeyPrimaryCta()}
@@ -124,13 +112,7 @@
   <form
     method="POST"
     class="grid gap-4"
-    use:enhance={() => {
-      submitting = true;
-      return async ({ update }) => {
-        await update();
-        submitting = false;
-      };
-    }}
+    use:enhance={trackSubmission((v) => (submitting = v))}
   >
     {#if form?.errorKey}
       {@const k = form.errorKey as keyof typeof m}
@@ -168,7 +150,7 @@
   {#if unsupported}
     <button
       type="button"
-      onclick={signInWithPasskey}
+      onclick={passkeySignIn}
       disabled={passkeyLoading}
       class="mt-4 w-full rounded-full border border-dashed border-primary px-4 py-3 text-sm font-bold text-primary-strong disabled:opacity-60"
     >
