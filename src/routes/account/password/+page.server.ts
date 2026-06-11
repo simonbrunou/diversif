@@ -52,8 +52,8 @@ export const actions: Actions = {
     // any) and re-issue one for this tab so the user stays logged in on the
     // device they used to change their password.
     await invalidateAllUserSessions(user.id);
-    const session = await createSession(user.id);
-    setSessionCookie(cookies, session.id);
+    const { token } = await createSession(user.id);
+    setSessionCookie(cookies, token);
 
     audit({ type: 'account.password_changed', userId: user.id });
     return { passwordSuccessKey: 'errorsAccountPasswordSuccess' };

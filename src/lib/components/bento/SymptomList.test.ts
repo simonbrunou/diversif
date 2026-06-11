@@ -1,8 +1,20 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
+
+// Rows render their delete confirmation through ConfirmModal (bits-ui
+// Portal): stub `enhance` like ConfirmModal.test.ts does, since happy-dom's
+// cloneNode interaction with the Portal trips $app/forms' POST guard.
+mock.module('$app/forms', () => ({
+  enhance: () => ({ destroy: () => {} })
+}));
+
 import SymptomList from './SymptomList.svelte';
 
-afterEach(() => cleanup());
+afterEach(async () => {
+  cleanup();
+  // Let bits-ui's body-scroll-lock timeout run before happy-dom tears down.
+  await new Promise((resolve) => setTimeout(resolve, 50));
+});
 
 describe('SymptomList', () => {
   const symptoms = [
@@ -30,15 +42,19 @@ describe('SymptomList', () => {
     expect(onAdd).toHaveBeenCalled();
   });
 
-  it('passes the delete action and symptom id to each row', () => {
-    const { container } = render(SymptomList, {
+  it('passes the delete action and symptom id to each row via its confirm modal', async () => {
+    render(SymptomList, {
       props: { symptoms, onAdd: () => {}, action }
     });
-    const forms = container.querySelectorAll(`form[action="${action}?/deleteSymptom"]`);
-    expect(forms.length).toBe(symptoms.length);
-    const ids = Array.from(forms).map(
-      (f) => (f.querySelector('input[name="symptomId"]') as HTMLInputElement | null)?.value
-    );
-    expect(ids).toEqual(symptoms.map((s) => String(s.id)));
+    // Each row exposes a delete button; the form only exists once the
+    // row's ConfirmModal is opened (bits-ui portals it onto document).
+    const deleteButtons = screen.getAllByRole('button', { name: 'Supprimer ce symptôme' });
+    expect(deleteButtons.length).toBe(symptoms.length);
+
+    await fireEvent.click(deleteButtons[1]!);
+    const form = document.querySelector(`form[action="${action}?/deleteSymptom"]`);
+    expect(form).not.toBeNull();
+    const hidden = form?.querySelector('input[name="symptomId"]') as HTMLInputElement | null;
+    expect(hidden?.value).toBe(String(symptoms[1]!.id));
   });
 });

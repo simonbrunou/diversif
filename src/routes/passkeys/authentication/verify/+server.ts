@@ -77,8 +77,8 @@ export const POST: RequestHandler = async (event) => {
 
   await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, result.userId));
 
-  const session = await createSession(result.userId);
-  cookies.set(SESSION_COOKIE, session.id, {
+  const { token } = await createSession(result.userId);
+  cookies.set(SESSION_COOKIE, token, {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',

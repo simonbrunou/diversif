@@ -26,6 +26,8 @@ export type RouteEventOptions = {
   user?: SafeUser | null;
   memberships?: Membership[];
   sessionId?: string | null;
+  /** Initial request cookies (e.g. the raw session token for logout flows). */
+  cookies?: Record<string, string>;
   params?: Record<string, string>;
   url?: string; // full URL
   formData?: Record<string, string>;
@@ -36,7 +38,7 @@ export type RouteEventOptions = {
 
 export function makeRouteEvent(opts: RouteEventOptions = {}) {
   const url = new URL(opts.url ?? 'http://localhost/');
-  const cookies = makeCookies();
+  const cookies = makeCookies(opts.cookies);
   const formData = new FormData();
   if (opts.formData) {
     for (const [k, v] of Object.entries(opts.formData)) formData.append(k, v);
@@ -59,7 +61,10 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     url,
     request,
     parent: opts.parent ?? (async () => ({})),
-    getClientAddress: () => '127.0.0.1'
+    getClientAddress: () => '127.0.0.1',
+    // Mirrors event.setHeaders: headers accumulated here are merged onto the
+    // final response by SvelteKit (including thrown-redirect responses).
+    setHeaders: mock((_headers: Record<string, string>) => {})
   };
   return event;
 }

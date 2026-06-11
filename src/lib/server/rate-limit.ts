@@ -88,6 +88,51 @@ export function checkRateLimit(opts: RateLimitOptions, key: string): RateLimitRe
   return { allowed, remaining, retryAfterSeconds };
 }
 
+/**
+ * Read-only variant of `checkRateLimit`: trims the window and reports the
+ * decision WITHOUT recording a hit. Pair it with `recordAttempt` when the
+ * bucket must count only certain outcomes — e.g. the per-email login
+ * throttle counts only FAILED authentications, otherwise 20 successful
+ * logins (or junk POSTs from anyone who knows the address) would lock the
+ * account's password login.
+ *
+ * Semantics match the check-and-consume path: a key that has recorded
+ * `limit` in-window hits is blocked, so peek+record allows exactly `limit`
+ * recorded attempts per window — the same budget `checkRateLimit` grants.
+ * Blocked peeks deliberately record nothing: a flood of over-limit requests
+ * must not extend the lockout chosen by the recorded failures.
+ */
+export function peekRateLimit(opts: RateLimitOptions, key: string): RateLimitResult {
+  const now = Date.now();
+  const windowStart = now - opts.windowMs;
+  const bucket = store.get(bucketKey(opts.name, key));
+  if (!bucket) {
+    return { allowed: true, remaining: opts.limit, retryAfterSeconds: 0 };
+  }
+  // Trim in place so a peek also keeps the stored bucket tidy.
+  while (bucket.hits.length > 0 && bucket.hits[0] < windowStart) {
+    bucket.hits.shift();
+  }
+
+  const blocked = bucket.hits.length >= opts.limit;
+  const remaining = Math.max(0, opts.limit - bucket.hits.length);
+  const oldest = bucket.hits[0];
+  const retryAfterSeconds =
+    blocked && oldest !== undefined
+      ? Math.max(1, Math.ceil((oldest + opts.windowMs - now) / 1000))
+      : 0;
+  return { allowed: !blocked, remaining, retryAfterSeconds };
+}
+
+/**
+ * Record a hit without caring about the decision — the write half of the
+ * `peekRateLimit` / `recordAttempt` split. Delegates to `checkRateLimit`,
+ * so the window trim and the `limit + 1` memory cap apply identically.
+ */
+export function recordAttempt(opts: RateLimitOptions, key: string): void {
+  checkRateLimit(opts, key);
+}
+
 /** Forget a specific key (e.g. on successful login, to reset the counter). */
 export function resetRateLimit(name: string, key: string): void {
   store.delete(bucketKey(name, key));

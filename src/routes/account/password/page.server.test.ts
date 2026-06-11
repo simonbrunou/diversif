@@ -135,8 +135,8 @@ describe('account/password changePassword', () => {
     });
     await actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0]);
 
-    expect(await validateSession(a.id)).toBeNull();
-    expect(await validateSession(b.id)).toBeNull();
+    expect(await validateSession(a.token)).toBeNull();
+    expect(await validateSession(b.token)).toBeNull();
 
     const setCalls = (event.cookies.set as ReturnType<typeof mock>).mock.calls;
     expect(setCalls.length).toBeGreaterThanOrEqual(1);

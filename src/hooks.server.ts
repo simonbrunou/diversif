@@ -65,6 +65,30 @@ export const handleError: HandleServerError = ({ error, event, status, message }
   return { message: 'Internal Error', errorId };
 };
 
+/**
+ * Boot-time misconfiguration check. PROTOCOL_HEADER set without
+ * ADDRESS_HEADER almost always means "behind a reverse proxy, but
+ * getClientAddress() still returns the proxy's socket IP" — every per-IP
+ * rate-limit bucket (login, signup, passkeys) then collapses onto one key
+ * and a single abuser can lock out every legitimate user. We only warn
+ * (never default the header in code or in the image): adapter-node throws
+ * on requests lacking the configured header, and a client-supplied
+ * x-forwarded-for is spoofable without a trusted proxy stripping it.
+ * See DEPLOY.md « Pre-launch environment gate ».
+ */
+export function warnIfAddressHeaderMissing(
+  env: Record<string, string | undefined> = process.env
+): boolean {
+  if (env.PROTOCOL_HEADER && !env.ADDRESS_HEADER) {
+    console.warn(
+      '[diversif:boot] PROTOCOL_HEADER is set but ADDRESS_HEADER is not. The app looks like it sits behind a reverse proxy, so every per-IP rate limit currently keys on the proxy address — one abusive client can lock everyone out. Set ADDRESS_HEADER (cf-connecting-ip behind a Cloudflare Tunnel; x-forwarded-for plus XFF_DEPTH behind a directly-exposed proxy). See DEPLOY.md.'
+    );
+    return true;
+  }
+  return false;
+}
+warnIfAddressHeaderMissing();
+
 // `script-src` and `style-src` are emitted as a `<meta>` tag by SvelteKit
 // (see svelte.config.js `kit.csp`), which lets it hash its own inline
 // hydration scripts. The other directives are header-only and complement that
@@ -110,7 +134,9 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.memberships = await listMembershipsForUser(validated.user.id);
 
     if (validated.renewed) {
-      event.cookies.set(SESSION_COOKIE, validated.session.id, {
+      // Re-set the RAW token from the cookie (not validated.session.id, which
+      // is its sha256 digest) — renewal only extends maxAge, never rotates.
+      event.cookies.set(SESSION_COOKIE, token, {
         path: '/',
         httpOnly: true,
         sameSite: 'lax',
