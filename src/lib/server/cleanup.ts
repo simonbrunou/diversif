@@ -56,6 +56,7 @@ export function startCleanupTimer(): void {
     console.error('[cleanup] initial run failed:', err);
     Sentry.captureException(err, { tags: { subsystem: 'cleanup' } });
   });
+  /* v8 ignore next 4 : interval body fires only after CLEANUP_INTERVAL_MS — bun:test has no fake timers; the initial-run path above exercises the same runCleanup + error-capture shape */
   timer = setInterval(() => {
     void runCleanup().catch((err) => {
       console.error('[cleanup] scheduled run failed:', err);
