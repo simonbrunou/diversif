@@ -13,7 +13,7 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { SESSION_COOKIE, validateSession } from '$lib/server/auth';
+import { SESSION_COOKIE, hashSessionToken, validateSession } from '$lib/server/auth';
 import { passkeys, sessions, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import {
@@ -169,9 +169,14 @@ describe('POST /passkeys/authentication/verify', () => {
     )[0];
     expect(updated?.counter).toBe(5);
 
-    // Sanity check session row exists.
+    // Sanity check session row exists — stored under the token's sha256
+    // digest, never the raw cookie value.
     const row = (
-      await testDb.select().from(sessions).where(eq(sessions.id, sessionToken)).limit(1)
+      await testDb
+        .select()
+        .from(sessions)
+        .where(eq(sessions.id, hashSessionToken(sessionToken)))
+        .limit(1)
     )[0];
     expect(row?.userId).toBe(u.id);
   });

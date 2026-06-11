@@ -17,6 +17,12 @@ import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
 const LOGIN_LIMIT = { name: 'login', limit: 10, windowMs: 5 * 60 * 1000 };
+// Second bucket keyed on the TARGETED account (normalized email), so a
+// distributed credential-stuffing run rotating through many IPs still can't
+// hammer one mailbox past 20 attempts/hour. The bucket is keyed on whatever
+// email was submitted — registered or not — so tripping it reveals nothing
+// about whether the address is on file.
+const LOGIN_EMAIL_LIMIT = { name: 'login-email', limit: 20, windowMs: 60 * 60 * 1000 };
 
 const schema = z.object({
   email: z.string().email('Adresse e-mail invalide'),
@@ -48,6 +54,19 @@ export const actions: Actions = {
     if (!parsed.ok) return parsed.failure;
 
     const { email, password } = parsed.data;
+
+    // Per-account throttle, checked in addition to the per-IP bucket above.
+    // The failure body is byte-identical to the per-IP 429 — same status,
+    // same keys, same empty email echo — so the response can't be used to
+    // distinguish which bucket tripped (or whether the account exists).
+    const emailRl = checkRateLimit(LOGIN_EMAIL_LIMIT, email.toLowerCase());
+    if (!emailRl.allowed) {
+      return fail(429, {
+        email: '',
+        errorKey: 'errorsAuthRateLimited'
+      });
+    }
+
     const user = await findUserByEmail(email);
     // verifyPasswordOrDecoy keeps the wall-clock time identical between the
     // "no such email" and "wrong password" branches so an unauthenticated
@@ -71,8 +90,8 @@ export const actions: Actions = {
 
     await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
 
-    const session = await createSession(user.id);
-    setSessionCookie(cookies, session.id);
+    const { token } = await createSession(user.id);
+    setSessionCookie(cookies, token);
     audit({ type: 'auth.login_succeeded', userId: user.id, method: 'password' });
 
     throw localizedRedirect(event.locals.locale, 303, '/');

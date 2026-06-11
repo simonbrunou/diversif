@@ -67,8 +67,8 @@ describe('account/sessions logoutEverywhere', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe('/login');
-    expect(await validateSession(a.id)).toBeNull();
-    expect(await validateSession(b.id)).toBeNull();
+    expect(await validateSession(a.token)).toBeNull();
+    expect(await validateSession(b.token)).toBeNull();
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
     expect(auditSpy).toHaveBeenCalledWith({ type: 'account.sessions_revoked', userId: u.id });
   });

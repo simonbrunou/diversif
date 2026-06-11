@@ -2,6 +2,7 @@
   import '../app.css';
   import { Toaster, toast } from 'svelte-sonner';
   import { flush } from '$lib/offline/queue';
+  import { purgeClientState } from '$lib/offline/purge';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/state';
   import { onNavigate } from '$app/navigation';
@@ -66,6 +67,25 @@
     if (document.documentElement.lang !== locale) {
       document.documentElement.lang = locale;
     }
+  });
+
+  // Purge the service-worker 'pages' cache + the offline IndexedDB queue when
+  // the session ENDS — i.e. on the authenticated→anonymous transition only.
+  // Covers both logout paths (POST /logout and ?/logoutEverywhere) and session
+  // expiry, since all of them re-run the root layout load with user=null.
+  // A plain (non-reactive) latch — not $state — so the effect re-runs only
+  // when `data.user` changes. It starts undefined and is seeded by the
+  // effect's first run (right after hydration), so a visitor who lands
+  // logged-out never triggers a purge. $effect never runs during SSR, so this
+  // is browser-only by construction. purgeClientState() is fire-and-forget
+  // and swallows its own failures (see its doc comment).
+  let wasAuthenticated: boolean | undefined;
+  $effect(() => {
+    const authenticated = Boolean(data.user);
+    if (wasAuthenticated === true && !authenticated) {
+      void purgeClientState();
+    }
+    wasAuthenticated = authenticated;
   });
 
   onNavigate((navigation) => {

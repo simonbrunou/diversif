@@ -99,7 +99,9 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.memberships = await listMembershipsForUser(validated.user.id);
 
     if (validated.renewed) {
-      event.cookies.set(SESSION_COOKIE, validated.session.id, {
+      // Re-set the RAW token from the cookie (not validated.session.id, which
+      // is its sha256 digest) — renewal only extends maxAge, never rotates.
+      event.cookies.set(SESSION_COOKIE, token, {
         path: '/',
         httpOnly: true,
         sameSite: 'lax',

@@ -135,42 +135,47 @@ describe('handle', () => {
     await testDb
       .insert(memberships)
       .values({ userId: user.id, childId: child.id, role: 'owner', createdAt: new Date() });
-    const session = await createSession(user.id);
+    const { token, session } = await createSession(user.id);
 
-    const { event } = makeEvent(session.id);
+    const { event } = makeEvent(token);
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
 
     expect(event.locals.user?.id).toBe(user.id);
+    // locals.sessionId carries the STORED id (sha256 of the cookie token),
+    // never the raw bearer token.
     expect(event.locals.sessionId).toBe(session.id);
+    expect(event.locals.sessionId).not.toBe(token);
     expect(event.locals.memberships.length).toBe(1);
   });
 
   it('renews the cookie when session is close to expiry', async () => {
     const user = await seedUser();
-    const session = await createSession(user.id);
+    const { token, session } = await createSession(user.id);
     // Force expiry into the renewal window.
     await testDb
       .update(sessions)
       .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
       .where(eq(sessions.id, session.id));
 
-    const { event, set } = makeEvent(session.id);
+    const { event, set } = makeEvent(token);
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
 
     expect(set).toHaveBeenCalled();
     const args = set.mock.calls[0];
     expect(args[0]).toBe(SESSION_COOKIE);
-    expect(args[1]).toBe(session.id);
+    // The renewed cookie must re-issue the RAW token — setting the stored
+    // hash would log the user out on their next request.
+    expect(args[1]).toBe(token);
     expect(args[2].path).toBe('/');
     expect(args[2].httpOnly).toBe(true);
   });
 
   it('emits X-Robots-Tag noindex for authenticated responses', async () => {
     const user = await seedUser();
-    const session = await createSession(user.id);
-    const { event } = makeEvent(session.id);
+    const { token } = await createSession(user.id);
+    const { event } = makeEvent(token);
     const resolve = mock(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
@@ -195,12 +200,12 @@ describe('handle', () => {
     process.env.NODE_ENV = 'production';
     try {
       const user = await seedUser();
-      const session = await createSession(user.id);
+      const { token, session } = await createSession(user.id);
       await testDb
         .update(sessions)
         .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
         .where(eq(sessions.id, session.id));
-      const { event, set } = makeEvent(session.id);
+      const { event, set } = makeEvent(token);
       const resolve = mock(async () => new Response('ok'));
       await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
       expect(set.mock.calls[0][2].secure).toBe(true);

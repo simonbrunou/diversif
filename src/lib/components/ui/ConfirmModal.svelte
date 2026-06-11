@@ -16,7 +16,9 @@
     loadingLabel,
     destructive = false,
     requireText,
-    requirePassword = false
+    requirePassword = false,
+    passwordLabel,
+    hiddenFields
   }: {
     open?: boolean;
     title: string;
@@ -29,6 +31,10 @@
     requireText?: string;
     /** When true, a `currentPassword` input appears and must be non-empty. */
     requirePassword?: boolean;
+    /** Label for the password field; defaults to the generic « Mot de passe ». */
+    passwordLabel?: string;
+    /** Extra hidden inputs submitted with the form (e.g. the target row id). */
+    hiddenFields?: Record<string, string>;
   } = $props();
 
   let submitting = $state(false);
@@ -62,6 +68,9 @@
     class="grid gap-3"
     use:enhance={trackSubmission((v) => (submitting = v))}
   >
+    {#each Object.entries(hiddenFields ?? {}) as [name, value] (name)}
+      <input type="hidden" {name} {value} />
+    {/each}
     {#if requireText}
       <Field name="confirmText" label={m.commonConfirmTextLabel({ text: requireText })}>
         <Input
@@ -74,7 +83,7 @@
       </Field>
     {/if}
     {#if requirePassword}
-      <Field name="currentPassword" label={m.commonPassword()}>
+      <Field name="currentPassword" label={passwordLabel ?? m.commonPassword()}>
         <Input
           id="currentPassword"
           name="currentPassword"

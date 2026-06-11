@@ -16,6 +16,7 @@ import {
 import { requireGuest } from '$lib/server/guards';
 import { parseFormWithKey } from '$lib/server/forms';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
+import { isE2E } from '$lib/server/e2e';
 import type { Actions, PageServerLoad } from './$types';
 
 // Per-IP signup ceiling. 20/hour comfortably accommodates shared egress
@@ -26,11 +27,12 @@ import type { Actions, PageServerLoad } from './$types';
 // noisy client.
 const SIGNUP_LIMIT = {
   name: 'signup',
-  // Playwright sets E2E=1 in its webServer env; the suite legitimately runs
-  // dozens of signups from one address in a few minutes, so the throttle
-  // relaxes there. Production traffic keeps the 20/hour ceiling.
+  // Playwright sets E2E=1 + ORIGIN=http://localhost in its webServer env; the
+  // suite legitimately runs dozens of signups from one address in a few
+  // minutes, so the throttle relaxes there. isE2E() requires both signals, so
+  // a stray E2E=1 on a real deployment keeps the 20/hour ceiling.
   /* v8 ignore next : E2E branch covered by the Playwright suite */
-  limit: process.env.E2E === '1' ? 200 : 20,
+  limit: isE2E() ? 200 : 20,
   windowMs: 60 * 60 * 1000
 };
 
@@ -236,8 +238,8 @@ export const actions: Actions = {
       throw err;
     }
 
-    const session = await createSession(userId);
-    setSessionCookie(cookies, session.id);
+    const { token } = await createSession(userId);
+    setSessionCookie(cookies, token);
     audit({ type: 'auth.signup', userId, viaInvite: invitationChildId !== null });
     if (invitationChildId !== null) {
       audit({ type: 'invite.redeemed', userId, childId: invitationChildId });

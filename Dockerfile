@@ -5,7 +5,12 @@ WORKDIR /app
 # `bun install`. Husky's hook-install path is unnecessary inside the
 # container — we don't commit from here.
 ENV HUSKY=0
+# patches/ must be present before `bun install`: bun.lock references the
+# patchedDependencies entries and install fails with "Couldn't find patch
+# file" without them (broke the image build when the @inlang/sdk patch
+# landed — there is no docker gate in CI to catch it).
 COPY package.json bun.lock ./
+COPY patches ./patches
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     bun install --frozen-lockfile
 COPY . .
@@ -37,6 +42,15 @@ ENV HOST=0.0.0.0
 # them.
 ENV PROTOCOL_HEADER=x-forwarded-proto
 ENV HOST_HEADER=x-forwarded-host
+# Without ADDRESS_HEADER, getClientAddress() returns the proxy's socket IP and
+# every per-IP rate-limit bucket collapses onto one key — a single abuser then
+# locks out every legitimate user. Bake the standard proxy default into the
+# image so a forgotten env var fails safe; behind Cloudflare prefer overriding
+# with ADDRESS_HEADER=cf-connecting-ip (see DEPLOY.md / .env.example).
+# XFF_DEPTH=1 reads the rightmost x-forwarded-for entry — the one appended by
+# the trusted proxy in front of the app, the only one a client can't forge.
+ENV ADDRESS_HEADER=x-forwarded-for
+ENV XFF_DEPTH=1
 ENV WEBAUTHN_RP_ID=diversif.app
 # SQLite file location. Mount a persistent volume here (Coolify / docker-compose
 # both map /app/data) so the database survives redeploys and image rebuilds.
