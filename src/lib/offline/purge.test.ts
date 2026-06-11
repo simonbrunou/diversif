@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import 'fake-indexeddb/auto';
 
-import { purgeClientState } from './purge';
+import { purgeBeforeSubmit, purgeClientState } from './purge';
 import { clear, enqueue } from './queue';
 
 type CachesLike = { delete: (name: string) => Promise<boolean> };
@@ -94,5 +94,59 @@ describe('purgeClientState', () => {
   it('is a no-op for caches when CacheStorage is undefined (non-secure context)', async () => {
     delete globalWithCaches.caches;
     await expect(purgeClientState()).resolves.toBeUndefined();
+  });
+});
+
+describe('purgeBeforeSubmit', () => {
+  function makeSubmitEvent() {
+    let submitted = false;
+    const form = {
+      submit: () => {
+        submitted = true;
+      }
+    };
+    let prevented = false;
+    const event = {
+      currentTarget: form,
+      preventDefault: () => {
+        prevented = true;
+      }
+    } as unknown as SubmitEvent;
+    return { event, wasPrevented: () => prevented, wasSubmitted: () => submitted };
+  }
+
+  it('purges client state BEFORE re-submitting the form natively', async () => {
+    const deleted: string[] = [];
+    let deletedBeforeSubmit = false;
+    const { event, wasPrevented, wasSubmitted } = makeSubmitEvent();
+    globalWithCaches.caches = {
+      delete: async (name: string) => {
+        deleted.push(name);
+        return true;
+      }
+    };
+    // Re-wrap form.submit to observe ordering: the purge must complete first.
+    const form = event.currentTarget as unknown as { submit: () => void };
+    const origSubmit = form.submit;
+    form.submit = () => {
+      deletedBeforeSubmit = deleted.includes('pages');
+      origSubmit();
+    };
+
+    purgeBeforeSubmit(event);
+    expect(wasPrevented()).toBe(true);
+
+    // The handler is sync; the purge + submit run on the microtask queue.
+    await new Promise((r) => setTimeout(r, 0));
+    expect(wasSubmitted()).toBe(true);
+    expect(deletedBeforeSubmit).toBe(true);
+  });
+
+  it('still submits when the purge machinery is unavailable', async () => {
+    delete globalWithCaches.caches;
+    const { event, wasSubmitted } = makeSubmitEvent();
+    purgeBeforeSubmit(event);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(wasSubmitted()).toBe(true);
   });
 });

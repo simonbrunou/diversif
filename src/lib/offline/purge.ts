@@ -33,3 +33,27 @@ export async function purgeClientState(): Promise<void> {
     // Same reasoning as above for IndexedDB.
   }
 }
+
+/**
+ * `onsubmit` handler for the logout forms: purge client state FIRST, then
+ * let the native full-document POST proceed via `form.submit()` (which
+ * skips this handler, so no recursion).
+ *
+ * Why not `use:enhance`? The « Se déconnecter » form posts to the
+ * `/logout` +server.ts endpoint, which doesn't speak the form-action JSON
+ * protocol enhance expects; and the full-document navigation is exactly
+ * what we want — the server's `Clear-Site-Data` rides on the 303 and the
+ * root layout remounts logged-out. This client-side purge exists because
+ * Safari/iOS PWA doesn't honour Clear-Site-Data reliably; on Chromium and
+ * Firefox the header would suffice.
+ *
+ * Without JavaScript the handler never runs and the form submits natively —
+ * the server header still covers Chromium/Firefox.
+ */
+export function purgeBeforeSubmit(event: SubmitEvent): void {
+  const form = event.currentTarget as HTMLFormElement;
+  event.preventDefault();
+  // purgeClientState() never rejects (it swallows its own failures), but
+  // `.finally` keeps the submit unconditional even if that invariant breaks.
+  void purgeClientState().finally(() => form.submit());
+}

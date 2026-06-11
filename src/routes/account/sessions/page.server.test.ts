@@ -71,5 +71,8 @@ describe('account/sessions logoutEverywhere', () => {
     expect(await validateSession(b.token)).toBeNull();
     expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
     expect(auditSpy).toHaveBeenCalledWith({ type: 'account.sessions_revoked', userId: u.id });
+    // Same Clear-Site-Data contract as POST /logout : the redirect response
+    // must instruct the browser to wipe CacheStorage + storage.
+    expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
   });
 });

@@ -71,8 +71,12 @@
 
   // Purge the service-worker 'pages' cache + the offline IndexedDB queue when
   // the session ENDS — i.e. on the authenticated→anonymous transition only.
-  // Covers both logout paths (POST /logout and ?/logoutEverywhere) and session
-  // expiry, since all of them re-run the root layout load with user=null.
+  // BACKSTOP for client-side-detected expiry only (e.g. an invalidate/goto
+  // that re-runs the root layout load with user=null mid-session). It does
+  // NOT cover the logout buttons: those are full-document POSTs, the layout
+  // remounts fresh on /login and this effect never observes the transition.
+  // Explicit logout is handled by purgeBeforeSubmit on the forms
+  // (account/sessions/+page.svelte) plus the server's Clear-Site-Data header.
   // A plain (non-reactive) latch — not $state — so the effect re-runs only
   // when `data.user` changes. It starts undefined and is seeded by the
   // effect's first run (right after hydration), so a visitor who lands

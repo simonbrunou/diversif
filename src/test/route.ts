@@ -61,7 +61,10 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     url,
     request,
     parent: opts.parent ?? (async () => ({})),
-    getClientAddress: () => '127.0.0.1'
+    getClientAddress: () => '127.0.0.1',
+    // Mirrors event.setHeaders: headers accumulated here are merged onto the
+    // final response by SvelteKit (including thrown-redirect responses).
+    setHeaders: mock((_headers: Record<string, string>) => {})
   };
   return event;
 }

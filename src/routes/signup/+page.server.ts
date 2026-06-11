@@ -37,7 +37,9 @@ const SIGNUP_LIMIT = {
 };
 
 const schema = z.object({
-  email: z.string().email('Adresse e-mail invalide'),
+  // Same 254-octet bound as login: keeps the stored identifier (and any
+  // rate-limit key derived from it) within the RFC 5321 deliverable cap.
+  email: z.string().max(254, 'Adresse e-mail invalide').email('Adresse e-mail invalide'),
   password: z.string().min(12, 'Mot de passe trop court (12 caractères minimum)'),
   displayName: z.string().min(1, 'Nom requis').max(80),
   inviteCode: z

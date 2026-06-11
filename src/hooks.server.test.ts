@@ -51,7 +51,7 @@ mock.module('@sveltejs/kit/hooks', () => ({
     }
 }));
 
-import { handle, handleError } from './hooks.server';
+import { handle, handleError, warnIfAddressHeaderMissing } from './hooks.server';
 import { createSession, SESSION_COOKIE } from '$lib/server/auth';
 import { users, memberships, children, sessions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -261,6 +261,46 @@ describe('handle', () => {
     const body = await response.text();
     expect(body).toContain('<html lang="en">');
     expect(body).not.toContain('%paraglide.lang%');
+  });
+});
+
+describe('warnIfAddressHeaderMissing', () => {
+  it('warns when PROTOCOL_HEADER is set without ADDRESS_HEADER', () => {
+    const spy = spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const warned = warnIfAddressHeaderMissing({ PROTOCOL_HEADER: 'x-forwarded-proto' });
+      expect(warned).toBe(true);
+      expect(spy).toHaveBeenCalledOnce();
+      expect(spy.mock.calls[0][0]).toContain('ADDRESS_HEADER');
+      expect(spy.mock.calls[0][0]).toContain('DEPLOY.md');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('stays silent when both headers are configured', () => {
+    const spy = spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(
+        warnIfAddressHeaderMissing({
+          PROTOCOL_HEADER: 'x-forwarded-proto',
+          ADDRESS_HEADER: 'cf-connecting-ip'
+        })
+      ).toBe(false);
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('stays silent when neither header is set (no proxy: socket address is correct)', () => {
+    const spy = spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(warnIfAddressHeaderMissing({})).toBe(false);
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 
