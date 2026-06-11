@@ -125,8 +125,19 @@ export const handle: Handle = async ({ event, resolve }) => {
   // sits in the opening <html> tag, which can land in any chunk when SvelteKit
   // streams a response : gating on `done` would leak `%paraglide.lang%` to the
   // client whenever the head is flushed before the closing chunk.
+  //
+  // The theme cookie (written by $lib/utils/theme alongside localStorage)
+  // lets SSR emit class="dark" on <html> for explicit-dark users, so the
+  // first paint is correct without waiting for the inline theme-init script.
+  // 'system' can't be resolved server-side (no prefers-color-scheme on the
+  // request), so that case stays with the inline script.
+  const darkTheme = event.cookies.get('theme') === 'dark';
   const response = await resolve(event, {
-    transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
+    transformPageChunk: ({ html }) => {
+      let out = html.replace('%paraglide.lang%', locale);
+      if (darkTheme) out = out.replace('<html ', '<html class="dark" ');
+      return out;
+    }
   });
 
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');

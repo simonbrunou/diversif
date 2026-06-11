@@ -275,7 +275,7 @@
   "profilComptePasskeysDevicesPlural": "{count} devices",
   "profilCompteLangue": "Language",
   "profilCompteTheme": "Theme",
-  "profilCompteThemeValueSystem": "Auto",
+  "profilCompteThemeValueSystem": "System",
   "profilCompteThemeValueLight": "Light",
   "profilCompteThemeValueDark": "Dark",
   "profilComptePassword": "Password",
