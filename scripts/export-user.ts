@@ -1,72 +1,115 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * Exporte les données d'un utilisateur au format JSON pour répondre
  * manuellement à une demande RGPD article 15 / 20 (en cas de besoin
  * d'agir en lieu et place de l'utilisateur).
  *
- * Usage: DATABASE_URL=postgres://… node scripts/export-user.mjs <email>
- *   ou : DATABASE_URL=… node scripts/export-user.mjs --id <userId>
+ * Usage: DATABASE_PATH=/app/data/diversif.db bun scripts/export-user.ts <email>
+ *   ou : DATABASE_PATH=… bun scripts/export-user.ts --id <userId>
  */
-import pg from 'pg';
+import { Database } from 'bun:sqlite';
 
 const args = process.argv.slice(2);
-let userId = null;
-let email = null;
+let userId: number | null = null;
+let email: string | null = null;
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--id') userId = Number.parseInt(args[++i], 10);
   else if (!email) email = args[i];
 }
 
 if (!userId && !email) {
-  console.error('Usage: node scripts/export-user.mjs <email> | --id <userId>');
+  console.error('Usage: bun scripts/export-user.ts <email> | --id <userId>');
   process.exit(1);
 }
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  console.error('DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif)');
+const databasePath = process.env.DATABASE_PATH;
+if (!databasePath) {
+  console.error('DATABASE_PATH is required (e.g. /app/data/diversif.db)');
   process.exit(1);
 }
 
-const client = new pg.Client({ connectionString: databaseUrl });
-await client.connect();
+// Raw SQLite rows: columns come back snake_case (the names declared in schema.ts)
+// and `timestamp_ms` columns are plain epoch-ms integers.
+type UserRow = {
+  id: number;
+  email: string;
+  display_name: string;
+  created_at: number | null;
+  tos_accepted_at: number | null;
+  privacy_accepted_at: number | null;
+  age_confirmed_at: number | null;
+  last_login_at: number | null;
+};
+type MembershipRow = { user_id: number; child_id: number; role: string; created_at: number | null };
+type ChildRow = { id: number; name: string; birth_date: string; created_at: number | null };
+type EntryRow = {
+  id: number;
+  child_id: number;
+  food_id: number;
+  food_name: string;
+  given_at: number | null;
+  reaction: string;
+  notes: string | null;
+  logged_by: number | null;
+  created_at: number | null;
+};
+type PasskeyRow = {
+  id: string;
+  name: string;
+  device_type: string;
+  backed_up: number;
+  transports: string | null;
+  created_at: number | null;
+  last_used_at: number | null;
+};
 
-const userRes = userId
-  ? await client.query('SELECT * FROM users WHERE id = $1', [userId])
-  : await client.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
-const user = userRes.rows[0];
+const db = new Database(databasePath, { readonly: true });
+
+const user = (
+  userId
+    ? db.query('SELECT * FROM users WHERE id = ?').get(userId)
+    : db.query('SELECT * FROM users WHERE email = ?').get(email!.toLowerCase())
+) as UserRow | null;
 
 if (!user) {
   console.error('Utilisateur introuvable.');
-  await client.end();
+  db.close();
   process.exit(2);
 }
 
-const membershipsRes = await client.query('SELECT * FROM memberships WHERE user_id = $1', [
-  user.id
-]);
-const memberships = membershipsRes.rows;
+const memberships = db
+  .query('SELECT * FROM memberships WHERE user_id = ?')
+  .all(user.id) as MembershipRow[];
 const childIds = memberships.map((m) => m.child_id);
+// SQLite has no array params, so expand `IN (?, ?, …)` to one placeholder per id.
+const inList = childIds.map(() => '?').join(',');
 
 const children = childIds.length
-  ? (await client.query('SELECT * FROM children WHERE id = ANY($1::int[])', [childIds])).rows
+  ? (db.query(`SELECT * FROM children WHERE id IN (${inList})`).all(...childIds) as ChildRow[])
   : [];
 const entries = childIds.length
-  ? (
-      await client.query(
+  ? (db
+      .query(
         `SELECT fe.*, f.name AS food_name
            FROM food_entries fe
            JOIN foods f ON f.id = fe.food_id
-          WHERE fe.child_id = ANY($1::int[])
-          ORDER BY fe.given_at ASC`,
-        [childIds]
+          WHERE fe.child_id IN (${inList})
+          ORDER BY fe.given_at ASC`
       )
-    ).rows
+      .all(...childIds) as EntryRow[])
   : [];
-const passkeysRes = await client.query('SELECT * FROM passkeys WHERE user_id = $1', [user.id]);
-const passkeys = passkeysRes.rows;
+const passkeys = db.query('SELECT * FROM passkeys WHERE user_id = ?').all(user.id) as PasskeyRow[];
 
-const iso = (v) => (v == null ? null : new Date(v).toISOString());
+const iso = (v: number | null) => (v == null ? null : new Date(v).toISOString());
+const parseTransports = (v: string | null): string[] => {
+  if (!v) return [];
+  try {
+    const parsed: unknown = JSON.parse(v);
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+};
 
 const payload = {
   exportedAt: new Date().toISOString(),
@@ -89,7 +132,7 @@ const payload = {
       name: c.name,
       birthDate: c.birth_date,
       createdAt: iso(c.created_at),
-      membership: { role: m?.role ?? 'member', joinedAt: iso(m?.created_at) },
+      membership: { role: m?.role ?? 'member', joinedAt: iso(m?.created_at ?? null) },
       foodEntries: entries
         .filter((e) => e.child_id === c.id)
         .map((e) => ({
@@ -109,11 +152,11 @@ const payload = {
     name: p.name,
     deviceType: p.device_type,
     backedUp: !!p.backed_up,
-    transports: p.transports,
+    transports: parseTransports(p.transports),
     createdAt: iso(p.created_at),
     lastUsedAt: iso(p.last_used_at)
   }))
 };
 
 console.log(JSON.stringify(payload, null, 2));
-await client.end();
+db.close();

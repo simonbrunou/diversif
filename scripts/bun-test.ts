@@ -182,6 +182,22 @@ if (!reportOnly) {
 // it would otherwise silently exempt the rest of the file).
 // ---------------------------------------------------------------------------
 
+// Handle a `v8 ignore next [N]` marker on a single line. A marker inline after
+// code (`x ?? /* v8 ignore next */ 0`) exempts only its own line; a standalone
+// marker line exempts the N following lines. Without the distinction, an inline
+// marker would silently exempt the (unmarked) line after it too. Anchor on the
+// MARKER'S comment opener, not the first '/*' on the line — an unrelated leading
+// block comment must not promote an inline marker to standalone.
+function applyNextMarker(ignored: Set<number>, line: string, lineNo: number): void {
+  const next = line.match(/v8 ignore next(?:\s+(\d+))?/);
+  if (!next) return;
+  ignored.add(lineNo);
+  const standalone = line.slice(0, line.search(/\/\*+\s*v8 ignore next/)).trim() === '';
+  if (!standalone) return;
+  const span = next[1] ? Number(next[1]) : 1;
+  for (let k = 1; k <= span; k++) ignored.add(lineNo + k);
+}
+
 function parseIgnoredLines(file: string, source: string): Set<number> {
   const ignored = new Set<number>();
   const lines = source.split('\n');
@@ -196,22 +212,7 @@ function parseIgnoredLines(file: string, source: string): Set<number> {
       inBlock = false;
       ignored.add(li + 1);
     } else {
-      const next = line.match(/v8 ignore next(?:\s+(\d+))?/);
-      if (next) {
-        ignored.add(li + 1);
-        // A marker inline after code (`x ?? /* v8 ignore next */ 0`) exempts
-        // only its own line; a standalone marker line exempts the N
-        // following lines. Without the distinction, an inline marker would
-        // silently exempt the (unmarked) line after it too. Anchor on the
-        // MARKER'S comment opener, not the first '/*' on the line — an
-        // unrelated leading block comment must not promote an inline marker
-        // to standalone.
-        const standalone = line.slice(0, line.search(/\/\*+\s*v8 ignore next/)).trim() === '';
-        if (standalone) {
-          const span = next[1] ? Number(next[1]) : 1;
-          for (let k = 1; k <= span; k++) ignored.add(li + 1 + k);
-        }
-      }
+      applyNextMarker(ignored, line, li + 1);
     }
   }
   if (inBlock) {

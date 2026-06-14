@@ -1,0 +1,76 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+
+  // SvelteKit routes/hooks are discovered by fallow's built-in Svelte plugin.
+  // These four are operational CLIs invoked manually via `bun scripts/<x>.ts`
+  // (documented in README.md), so they have no package.json script entry and
+  // must be declared as entry points or they look like unused files.
+  "entry": [
+    "scripts/cleanup.ts",
+    "scripts/export-user.ts",
+    "scripts/generate-icons.ts",
+    "scripts/list-stale-users.ts"
+  ],
+
+  // Runtime-essential but never imported in source:
+  // Prettier auto-loads both plugins from node_modules (verified: `prettier
+  // --check` formats .svelte files and sorts Tailwind classes with no explicit
+  // `plugins` entry in .prettierrc), so static analysis cannot see the edge.
+  "ignoreDependencies": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+
+  "ignoreExports": [
+    {
+      // SvelteKit page options (`export const prerender`, `ssr`, `csr`, ...) are
+      // a framework contract consumed by the build, never imported by name.
+      "file": "src/routes/**/+*.ts",
+      "exports": ["prerender", "ssr", "csr", "trailingSlash", "config", "entries"]
+    },
+    {
+      // Each UI primitive declares its own component-scoped `Variant` prop union.
+      // Same name, different types by design — not a shared barrel to dedupe.
+      "file": "src/lib/components/ui/*.svelte",
+      "exports": ["Variant"]
+    },
+    {
+      // src/test/db.ts is a test double that deliberately mirrors the prod
+      // `schema` export from src/lib/server/db/index.ts. Keep db/index.ts as the
+      // canonical location; exclude the mirror from duplicate-export grouping.
+      "file": "src/test/db.ts",
+      "exports": ["schema"]
+    }
+  ],
+
+  "duplicates": {
+    // Hide pair-only clones; focus on widespread copy-paste worth refactoring.
+    "minOccurrences": 3
+  },
+
+  "health": {
+    // Cyclomatic + cognitive are the ENFORCED complexity gates (fallow defaults).
+    // New code must come in under these; the audit gate (below) enforces it on
+    // changed files only.
+    "maxCyclomatic": 20,
+    "maxCognitive": 15,
+    // CRAP = complexity² · (1−coverage)³ + complexity. Accurate CRAP needs
+    // Istanbul `coverage-final.json`, but this repo's Bun test runner emits
+    // lcov/v8 (and .svelte has no source maps under bun coverage), so fallow can
+    // only ever *estimate* coverage from the module graph — which scores every
+    // Svelte DOM handler and build script as "uncovered" and inflates CRAP for
+    // code that is within the cyclomatic gate. We therefore defer CRAP to the
+    // cyclomatic gate: a function at the cyclomatic ceiling (20) with 0 estimated
+    // coverage scores exactly 20² + 20 = 420, so maxCrap=420 makes CRAP fire only
+    // when cyclomatic (20) already would. Complexity is gated by cyclomatic +
+    // cognitive; CRAP stays informational until real Istanbul coverage exists.
+    "maxCrap": 420.0
+  },
+
+  "audit": {
+    // PR gate fails only on findings the changeset INTRODUCES; pre-existing
+    // (inherited) findings are reported but don't block. Lets us ratchet.
+    "gate": "new-only"
+  },
+
+  "rules": {
+    "unused-dependencies": "warn"
+  }
+}

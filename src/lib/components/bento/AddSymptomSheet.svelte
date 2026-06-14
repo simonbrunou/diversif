@@ -5,7 +5,12 @@
   import Modal from '../ui/Modal.svelte';
   import Label from '$components/ui/Label.svelte';
   import * as m from '$lib/paraglide/messages';
-  import { SYMPTOM_LABELS, severityOf, type SymptomLabel } from '$lib/content/symptoms';
+  import {
+    SYMPTOM_LABELS,
+    severityOf,
+    symptomLabelText,
+    type SymptomLabel
+  } from '$lib/content/symptoms';
 
   let {
     open = $bindable(false),
@@ -30,23 +35,6 @@
     }
   });
 
-  function labelText(l: SymptomLabel): string {
-    const key = `symptomsLabel${l
-      .split('-')
-      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-      .join('')}` as
-      | 'symptomsLabelRougeur'
-      | 'symptomsLabelUrticaire'
-      | 'symptomsLabelEczema'
-      | 'symptomsLabelVomissement'
-      | 'symptomsLabelDiarrhee'
-      | 'symptomsLabelGonflement'
-      | 'symptomsLabelToux'
-      | 'symptomsLabelDetresseRespiratoire'
-      | 'symptomsLabelLevresBleues'
-      | 'symptomsLabelAutre';
-    return m[key]();
-  }
 </script>
 
 <Modal bind:open title={m.addSymptomTitle()} side="auto" scrollableBody>
@@ -100,7 +88,7 @@
             {#if isSevere}
               <span class="sr-only">{m.addSymptomSeveritySevereSrPrefix()} </span>
             {/if}
-            {labelText(label)}
+            {symptomLabelText(label)}
           </label>
         {/each}
       </div>

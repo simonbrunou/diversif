@@ -27,20 +27,29 @@ const keys = Object.keys(data).filter((k) => k !== '$schema');
 const sources = [];
 const keepTokens = new Set();
 
+function collectKeepTokens(text) {
+  for (const match of text.matchAll(KEEP_DIRECTIVE)) {
+    for (const token of match[1].trim().split(/\s+/)) {
+      if (token) keepTokens.add(token);
+    }
+  }
+}
+
+function ingestSourceFile(full, name) {
+  if (!SOURCE_EXT.test(name)) return;
+  const text = fs.readFileSync(full, 'utf8');
+  sources.push(text);
+  collectKeepTokens(text);
+}
+
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDED_DIRS.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       walk(full);
-    } else if (entry.isFile() && SOURCE_EXT.test(entry.name)) {
-      const text = fs.readFileSync(full, 'utf8');
-      sources.push(text);
-      for (const match of text.matchAll(KEEP_DIRECTIVE)) {
-        for (const token of match[1].trim().split(/\s+/)) {
-          if (token) keepTokens.add(token);
-        }
-      }
+    } else if (entry.isFile()) {
+      ingestSourceFile(full, entry.name);
     }
   }
 }

@@ -77,6 +77,10 @@ if (!building && process.env.NODE_ENV !== 'test' && !process.env.BUN_TEST) {
   // seconds of boot). Cleanup stays dynamic to avoid pulling its setInterval
   // into test envs; beforeExit captures stopCleanupTimer once the module loads.
   let stopCleanupTimer: (() => void) | null = null;
+  // Intentional lazy import: cleanup.ts statically imports `db` from here, so this
+  // dynamic import is exactly what breaks the cycle at module-init time (and keeps
+  // the cleanup setInterval out of tests).
+  // fallow-ignore-next-line circular-dependency
   void import('../cleanup').then((mod) => {
     stopCleanupTimer = mod.stopCleanupTimer;
     mod.startCleanupTimer();

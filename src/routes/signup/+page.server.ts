@@ -62,6 +62,91 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   return { inviteCode: url.searchParams.get('code')?.toUpperCase() ?? '' };
 };
 
+class InviteRace extends Error {}
+
+// Resolve an optional invite code to its child id. Validated BEFORE the
+// duplicate-email check so a bad invite always wins regardless of whether the
+// email is registered — otherwise an attacker could XOR the generic
+// "impossible" (registered email) against the specific invite error
+// (unregistered email) to enumerate registered addresses.
+async function resolveInviteChild(
+  inviteCode: string | undefined
+): Promise<{ ok: true; childId: number | null } | { ok: false; errorKey: string }> {
+  if (!inviteCode) return { ok: true, childId: null };
+  if (!isValidInviteCodeFormat(inviteCode)) {
+    return { ok: false, errorKey: 'errorsAuthInvalidInvite' };
+  }
+  const inv = (
+    await db
+      .select()
+      .from(invitations)
+      .where(
+        and(
+          eq(invitations.code, inviteCode),
+          isNull(invitations.usedAt),
+          gt(invitations.expiresAt, new Date())
+        )
+      )
+      .limit(1)
+  )[0];
+  if (!inv) return { ok: false, errorKey: 'errorsAuthInvalidInviteExpired' };
+  return { ok: true, childId: inv.childId };
+}
+
+// User insert + optional invitation consumption + membership, committed
+// atomically (a crash mid-way would otherwise orphan the account from the child
+// it was invited to). The invitation read in resolveInviteChild is unlocked, so
+// two concurrent signups sharing a code can both pass it; we condition the
+// UPDATE on `used_at IS NULL` and throw InviteRace (rolling back the whole tx,
+// leaving no phantom account) when we lose the race.
+function insertSignupUser(params: {
+  lowerEmail: string;
+  passwordHash: string;
+  displayName: string;
+  now: Date;
+  inviteCode: string | undefined;
+  invitationChildId: number | null;
+}): number {
+  const { lowerEmail, passwordHash, displayName, now, inviteCode, invitationChildId } = params;
+  return db.transaction((tx) => {
+    const inserted = tx
+      .insert(users)
+      .values({
+        email: lowerEmail,
+        passwordHash,
+        displayName,
+        createdAt: now,
+        tosAcceptedAt: now,
+        privacyAcceptedAt: now,
+        ageConfirmedAt: now,
+        lastLoginAt: now
+      })
+      .returning({ id: users.id })
+      .all()[0];
+    const id = inserted.id;
+
+    if (invitationChildId !== null && inviteCode) {
+      const result = tx
+        .update(invitations)
+        .set({ usedAt: now, usedBy: id })
+        .where(and(eq(invitations.code, inviteCode), isNull(invitations.usedAt)))
+        .returning({ code: invitations.code })
+        .all();
+      if (result.length === 0) throw new InviteRace();
+      tx.insert(memberships)
+        .values({
+          userId: id,
+          childId: invitationChildId,
+          role: 'member',
+          createdAt: now
+        })
+        .run();
+    }
+
+    return id;
+  });
+}
+
 export const actions: Actions = {
   default: async (event) => {
     const { request, cookies } = event;
@@ -89,45 +174,17 @@ export const actions: Actions = {
     const formInvite = inviteCode;
     const lowerEmail = email.toLowerCase();
 
-    // Validate the invite code BEFORE checking the duplicate email. If we
-    // returned the generic "Inscription impossible" for a registered email
-    // but a more specific "Code d'invitation invalide" for an unregistered
-    // one (when both sent the same bad invite), an attacker could XOR the
-    // two responses to enumerate registered addresses. Running invite
-    // validation first means a bad invite always wins regardless of email.
-    let invitationChildId: number | null = null;
-    if (inviteCode) {
-      if (!isValidInviteCodeFormat(inviteCode)) {
-        return fail(400, {
-          email: formEmail,
-          displayName: formDisplayName,
-          inviteCode: formInvite,
-          errorKey: 'errorsAuthInvalidInvite'
-        });
-      }
-      const inv = (
-        await db
-          .select()
-          .from(invitations)
-          .where(
-            and(
-              eq(invitations.code, inviteCode),
-              isNull(invitations.usedAt),
-              gt(invitations.expiresAt, new Date())
-            )
-          )
-          .limit(1)
-      )[0];
-      if (!inv) {
-        return fail(400, {
-          email: formEmail,
-          displayName: formDisplayName,
-          inviteCode: formInvite,
-          errorKey: 'errorsAuthInvalidInviteExpired'
-        });
-      }
-      invitationChildId = inv.childId;
-    }
+    const failWith = (status: number, errorKey: string) =>
+      fail(status, {
+        email: formEmail,
+        displayName: formDisplayName,
+        inviteCode: formInvite,
+        errorKey
+      });
+
+    const invite = await resolveInviteChild(inviteCode);
+    if (!invite.ok) return failWith(400, invite.errorKey);
+    const invitationChildId = invite.childId;
 
     // Invite-only mode (opt-in via INVITE_ONLY=true): registration requires a
     // valid, unexpired invite. Checked AFTER invite resolution but BEFORE the
@@ -135,12 +192,7 @@ export const actions: Actions = {
     // email is registered (same enumeration-safety reasoning as the
     // invite-first ordering above). Unset/anything-else keeps signup open.
     if (process.env.INVITE_ONLY === 'true' && invitationChildId === null) {
-      return fail(403, {
-        email: formEmail,
-        displayName: formDisplayName,
-        inviteCode: formInvite,
-        errorKey: 'errorsAuthInviteRequired'
-      });
+      return failWith(403, 'errorsAuthInviteRequired');
     }
 
     if (await findUserByEmail(lowerEmail)) {
@@ -151,92 +203,30 @@ export const actions: Actions = {
       // exists between this 400 and the success-redirect for an
       // unregistered email; closing it fully would require an email
       // confirmation flow, which we don't have yet.
-      return fail(400, {
-        email: formEmail,
-        displayName: formDisplayName,
-        inviteCode: formInvite,
-        errorKey: 'errorsAuthSignupImpossible'
-      });
+      return failWith(400, 'errorsAuthSignupImpossible');
     }
 
     const passwordHash = await hashPassword(password);
     const now = new Date();
 
-    // Transaction: user insert + membership + invitation consumption must
-    // commit atomically. Without it a crash between steps would leave a
-    // user account that can't reach the child it was invited to, with the
-    // invitation either already consumed (orphaned access) or still claimable
-    // (lets a stranger reuse the code).
-    //
-    // The invitation read above is unlocked, so two concurrent signups
-    // sharing the same code can both pass it. Condition the UPDATE on
-    // `used_at IS NULL` and check `rowCount` to detect the race; if we lose
-    // we throw a sentinel that rolls the whole transaction back (no phantom
-    // account left behind) and surface the same expired-invite error the
-    // read path uses.
-    class InviteRace extends Error {}
-
     let userId: number;
     try {
-      userId = db.transaction((tx) => {
-        const inserted = tx
-          .insert(users)
-          .values({
-            email: lowerEmail,
-            passwordHash,
-            displayName,
-            createdAt: now,
-            tosAcceptedAt: now,
-            privacyAcceptedAt: now,
-            ageConfirmedAt: now,
-            lastLoginAt: now
-          })
-          .returning({ id: users.id })
-          .all()[0];
-        const id = inserted.id;
-
-        if (invitationChildId !== null && inviteCode) {
-          const result = tx
-            .update(invitations)
-            .set({ usedAt: now, usedBy: id })
-            .where(and(eq(invitations.code, inviteCode), isNull(invitations.usedAt)))
-            .returning({ code: invitations.code })
-            .all();
-          if (result.length === 0) throw new InviteRace();
-          tx.insert(memberships)
-            .values({
-              userId: id,
-              childId: invitationChildId,
-              role: 'member',
-              createdAt: now
-            })
-            .run();
-        }
-
-        return id;
+      userId = insertSignupUser({
+        lowerEmail,
+        passwordHash,
+        displayName,
+        now,
+        inviteCode,
+        invitationChildId
       });
     } catch (err) {
-      if (err instanceof InviteRace) {
-        return fail(400, {
-          email: formEmail,
-          displayName: formDisplayName,
-          inviteCode: formInvite,
-          errorKey: 'errorsAuthInvalidInviteExpired'
-        });
-      }
+      if (err instanceof InviteRace) return failWith(400, 'errorsAuthInvalidInviteExpired');
       // The findUserByEmail check above is unlocked, so two concurrent signups
       // with the same email can both pass it; the loser hits users.email's
-      // UNIQUE constraint at INSERT time. Map the resulting 23505 to the same
-      // generic "signup impossible" 400 used for the read path so a normal
-      // double-submit doesn't surface as a 500.
-      if (isUniqueViolation(err)) {
-        return fail(400, {
-          email: formEmail,
-          displayName: formDisplayName,
-          inviteCode: formInvite,
-          errorKey: 'errorsAuthSignupImpossible'
-        });
-      }
+      // UNIQUE constraint at INSERT time. Map the resulting unique violation to
+      // the same generic "signup impossible" 400 used for the read path so a
+      // normal double-submit doesn't surface as a 500.
+      if (isUniqueViolation(err)) return failWith(400, 'errorsAuthSignupImpossible');
       throw err;
     }
 

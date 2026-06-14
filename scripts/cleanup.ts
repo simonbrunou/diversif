@@ -1,34 +1,39 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * Manuellement purge les sessions, invitations et défis WebAuthn expirés.
- * Usage: DATABASE_URL=postgres://… node scripts/cleanup.mjs
+ * Usage: DATABASE_PATH=/app/data/diversif.db bun scripts/cleanup.ts
+ *
+ * Équivalent ponctuel de la tâche périodique `src/lib/server/cleanup.ts`,
+ * pour un déclenchement manuel hors process applicatif.
  */
-import pg from 'pg';
+import { Database } from 'bun:sqlite';
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  console.error('DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif)');
+const databasePath = process.env.DATABASE_PATH;
+if (!databasePath) {
+  console.error('DATABASE_PATH is required (e.g. /app/data/diversif.db)');
   process.exit(1);
 }
 
-const client = new pg.Client({ connectionString: databaseUrl });
-await client.connect();
-const now = new Date();
+const db = new Database(databasePath);
+// Wait (don't throw SQLITE_BUSY) if the app's single writer is briefly held.
+db.exec('PRAGMA busy_timeout = 5000;');
 
-const sessions = await client.query('DELETE FROM sessions WHERE expires_at < $1', [now]);
-const invitations = await client.query('DELETE FROM invitations WHERE expires_at < $1', [now]);
-const challenges = await client.query('DELETE FROM webauthn_challenges WHERE expires_at < $1', [
-  now
-]);
+// Timestamps are stored as epoch-ms integers (Drizzle `timestamp_ms`), so the
+// expiry comparison is a plain integer compare against Date.now().
+const now = Date.now();
+
+const sessions = db.query('DELETE FROM sessions WHERE expires_at < ?').run(now);
+const invitations = db.query('DELETE FROM invitations WHERE expires_at < ?').run(now);
+const challenges = db.query('DELETE FROM webauthn_challenges WHERE expires_at < ?').run(now);
 
 console.log(
   JSON.stringify(
     {
-      databaseUrl: databaseUrl.replace(/:[^:@]*@/, ':***@'),
+      databasePath,
       deleted: {
-        sessions: sessions.rowCount ?? 0,
-        invitations: invitations.rowCount ?? 0,
-        challenges: challenges.rowCount ?? 0
+        sessions: sessions.changes,
+        invitations: invitations.changes,
+        challenges: challenges.changes
       }
     },
     null,
@@ -36,4 +41,4 @@ console.log(
   )
 );
 
-await client.end();
+db.close();

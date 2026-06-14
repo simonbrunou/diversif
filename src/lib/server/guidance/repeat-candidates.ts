@@ -24,7 +24,7 @@ export const REPEAT_CANDIDATE_MAX_COUNT = 2;
 export const REPEAT_CANDIDATE_MAX_WORST_RANK = 1;
 
 /** Numeric rank used for the CASE WHEN ... in SQL and Math.max(...) in JS. */
-export const REACTION_RANK: Record<ReactionId, number> = {
+const REACTION_RANK: Record<ReactionId, number> = {
   ras: 0,
   inconfort: 1,
   reaction: 2

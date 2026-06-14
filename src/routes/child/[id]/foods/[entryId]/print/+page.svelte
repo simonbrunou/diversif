@@ -1,7 +1,7 @@
 <script lang="ts">
   import PrintShell from '$lib/components/PrintShell.svelte';
   import * as m from '$lib/paraglide/messages';
-  import { severityOf, type SymptomLabel } from '$lib/content/symptoms';
+  import { severityOf, symptomLabelText, type SymptomLabel } from '$lib/content/symptoms';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -13,23 +13,6 @@
     return m.printSeverityNeutral();
   }
 
-  function symptomLabelText(l: SymptomLabel): string {
-    const key = `symptomsLabel${l
-      .split('-')
-      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-      .join('')}` as
-      | 'symptomsLabelRougeur'
-      | 'symptomsLabelUrticaire'
-      | 'symptomsLabelEczema'
-      | 'symptomsLabelVomissement'
-      | 'symptomsLabelDiarrhee'
-      | 'symptomsLabelGonflement'
-      | 'symptomsLabelToux'
-      | 'symptomsLabelDetresseRespiratoire'
-      | 'symptomsLabelLevresBleues'
-      | 'symptomsLabelAutre';
-    return m[key]();
-  }
 </script>
 
 <PrintShell title={m.printDocumentTitle()}>

@@ -1,7 +1,7 @@
 // Authoritative references cited by the in-app guidance. Each claim shown to
 // the user can be traced back here via SourceId. URLs are stable as of 2026.
 
-export type Source = {
+type Source = {
   label: string;
   org: string;
   year: number;

@@ -7,7 +7,7 @@ import { CATEGORIES, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
-import { computeReminders } from '$lib/server/guidance/reminders';
+import { computeReminders, type Reminder } from '$lib/server/guidance/reminders';
 import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
 import * as m from '$lib/paraglide/messages';
 import {
@@ -24,13 +24,71 @@ import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-export type AllergenSummary = {
+type AllergenSummary = {
   introduced: number;
   total: number;
   ras: number;
   inconfort: number;
   reaction: number;
 };
+
+const ALLERGEN_RANK = { ras: 0, inconfort: 1, reaction: 2 } as const;
+
+// Worst reaction seen per allergen, plus the introduced / per-reaction summary.
+function summarizeAllergens(rows: { allergenType: string | null; reaction: string }[]): {
+  worstByAllergen: Map<string, 'ras' | 'inconfort' | 'reaction'>;
+  summary: AllergenSummary;
+} {
+  const worstByAllergen = new Map<string, 'ras' | 'inconfort' | 'reaction'>();
+  for (const r of rows) {
+    /* v8 ignore next : query already filters allergenType IS NOT NULL */
+    if (!r.allergenType) continue;
+    const cur = worstByAllergen.get(r.allergenType);
+    const next = r.reaction as 'ras' | 'inconfort' | 'reaction';
+    if (!cur || ALLERGEN_RANK[next] > ALLERGEN_RANK[cur]) {
+      worstByAllergen.set(r.allergenType, next);
+    }
+  }
+  const summary: AllergenSummary = {
+    introduced: worstByAllergen.size,
+    total: ALLERGENS.length,
+    ras: 0,
+    inconfort: 0,
+    reaction: 0
+  };
+  for (const v of worstByAllergen.values()) summary[v] += 1;
+  return { worstByAllergen, summary };
+}
+
+// Observation-window reminder: if there's a non-RAS entry within the last
+// 48 hours, surface a "check the profile" reminder pointing directly to
+// that entry's reaction-detail page. This lets the user quickly review
+// notes and symptoms without hunting through the log.
+function buildObservationReminder(
+  entries: EnrichedEntry[],
+  dismissals: Set<string>,
+  childId: number,
+  nowMs: number
+): Reminder | null {
+  const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
+  const latest = entries.find(
+    (e) => e.reaction !== 'ras' && nowMs - e.givenAt <= FORTY_EIGHT_HOURS_MS
+  );
+  if (!latest) return null;
+  const key = `observation-window:${latest.id}`;
+  if (dismissals.has(key)) return null;
+  return {
+    key,
+    severity: 'warn',
+    title: m.reminderObservationTitle({ food: latest.foodName }),
+    body: m.reminderObservationBody(),
+    cta: {
+      label: m.reminderCtaSeeProfile(),
+      href: `/child/${childId}/foods/${latest.id}`
+    },
+    dismissable: true
+  };
+}
 
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
   // Same ordering as the layout: redirect guests to /login *before* a
@@ -98,28 +156,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)));
 
-  const worstByAllergen = new Map<string, 'ras' | 'inconfort' | 'reaction'>();
-  for (const r of allergenRows) {
-    /* v8 ignore next : query already filters allergenType IS NOT NULL */
-    if (!r.allergenType) continue;
-    const cur = worstByAllergen.get(r.allergenType);
-    const next = r.reaction as 'ras' | 'inconfort' | 'reaction';
-    if (!cur) {
-      worstByAllergen.set(r.allergenType, next);
-    } else {
-      const rank = { ras: 0, inconfort: 1, reaction: 2 } as const;
-      if (rank[next] > rank[cur]) worstByAllergen.set(r.allergenType, next);
-    }
-  }
-
-  const summary: AllergenSummary = {
-    introduced: worstByAllergen.size,
-    total: ALLERGENS.length,
-    ras: 0,
-    inconfort: 0,
-    reaction: 0
-  };
-  for (const v of worstByAllergen.values()) summary[v] += 1;
+  const { worstByAllergen, summary } = summarizeAllergens(allergenRows);
 
   // Per-allergen status (same loader as the Carnet Allergènes segment) so
   // the "Allergènes prioritaires" tile shows real allergen names, not
@@ -182,29 +219,12 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     now: nowAtLoad.getTime()
   });
 
-  // Observation-window reminder: if there's a non-RAS entry within the last
-  // 48 hours, surface a "check the profile" reminder pointing directly to
-  // that entry's reaction-detail page. This lets the user quickly review
-  // notes and symptoms without hunting through the log.
-  const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
-  const latestNonRasEntry = entriesNormalized.find(
-    (e) => e.reaction !== 'ras' && nowAtLoad.getTime() - e.givenAt <= FORTY_EIGHT_HOURS_MS
+  const observationReminder = buildObservationReminder(
+    entriesNormalized,
+    dismissals,
+    childId,
+    nowAtLoad.getTime()
   );
-  const observationKey = latestNonRasEntry ? `observation-window:${latestNonRasEntry.id}` : null;
-  const observationReminder =
-    latestNonRasEntry && observationKey && !dismissals.has(observationKey)
-      ? {
-          key: observationKey,
-          severity: 'warn' as const,
-          title: m.reminderObservationTitle({ food: latestNonRasEntry.foodName }),
-          body: m.reminderObservationBody(),
-          cta: {
-            label: m.reminderCtaSeeProfile(),
-            href: `/child/${childId}/foods/${latestNonRasEntry.id}`
-          },
-          dismissable: true
-        }
-      : null;
 
   // Prepend the observation reminder (highest priority) then cap total at 4.
   const reminders = (

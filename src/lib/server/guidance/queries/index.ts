@@ -4,18 +4,6 @@
 // this barrel re-export.
 
 export { loadTexturesTried } from './seasonal';
-export {
-  loadDiversityMetrics,
-  loadRepeatCandidates,
-  loadWeeklyRecap,
-  type DiversityMetrics,
-  type RepeatCandidate,
-  type WeeklyRecap
-} from './diversity';
-export {
-  loadStreak,
-  loadCoparentActivity,
-  type EnrichedEntry,
-  type CoparentEntry
-} from './timeline';
+export { loadDiversityMetrics, loadRepeatCandidates, loadWeeklyRecap } from './diversity';
+export { loadStreak, loadCoparentActivity, type EnrichedEntry } from './timeline';
 export { loadDismissals, dismissReminder } from './dismissals';

@@ -5,7 +5,6 @@
 import type { AllergenId } from '$lib/utils/allergens';
 import type { CategoryId } from '$lib/utils/categories';
 import type { SourceId } from './sources';
-import { ALL_SOURCE_IDS } from './sources';
 
 // ---------------------------------------------------------------------------
 // Stages
@@ -1085,6 +1084,3 @@ export function getAllStagesForBento(): BentoStage[] {
     sources: [...s.sources]
   }));
 }
-
-// Re-export for components that want the full list of source IDs.
-export { ALL_SOURCE_IDS };

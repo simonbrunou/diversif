@@ -233,6 +233,39 @@ export function useBottomSheetDrag(options: BottomSheetDragOptions): BottomSheet
     }
   }
 
+  // Content has touch-action: none, so native scroll is off — drive
+  // the scrollable manually in both directions. The setter clamps to
+  // [0, scrollHeight - clientHeight], so an extra downward pull at
+  // the top (or an extra upward pull at the bottom) just stays put.
+  // Once scrollTop is pinned at 0 and the finger is still pulling
+  // down, hand off to the drag-to-dismiss gesture.
+  function driveScrollHandoff(currentY: number, incrementalDy: number) {
+    if (!activeScrollable) return;
+    activeScrollable.scrollTop -= incrementalDy;
+    if (activeScrollable.scrollTop <= 0 && currentY > startY) {
+      gestureMode = 'pending';
+      startY = currentY;
+      startTime = performance.now();
+    }
+  }
+
+  // Resolve a pending gesture against the trigger distance: commit to a
+  // drag once the finger has moved DRAG_TRIGGER_PX downward, bail out on
+  // an equivalent upward move (not our gesture), or stay pending. Returns
+  // true when the move should continue into the drag branch.
+  function commitPendingGesture(dy: number): boolean {
+    if (dy >= DRAG_TRIGGER_PX) {
+      gestureMode = 'drag';
+      dragging = true;
+      return true;
+    }
+    if (dy <= -DRAG_TRIGGER_PX) {
+      // Upward movement before drag was committed: not our gesture.
+      resetGesture();
+    }
+    return false;
+  }
+
   function onSheetPointerMove(e: PointerEvent) {
     if (!options.active()) return;
     if (gestureMode === 'idle') return;
@@ -243,20 +276,7 @@ export function useBottomSheetDrag(options: BottomSheetDragOptions): BottomSheet
     lastMoveY = currentY;
 
     if (gestureMode === 'scroll') {
-      // Content has touch-action: none, so native scroll is off — drive
-      // the scrollable manually in both directions. The setter clamps to
-      // [0, scrollHeight - clientHeight], so an extra downward pull at
-      // the top (or an extra upward pull at the bottom) just stays put.
-      // Once scrollTop is pinned at 0 and the finger is still pulling
-      // down, hand off to the drag-to-dismiss gesture.
-      if (activeScrollable) {
-        activeScrollable.scrollTop -= incrementalDy;
-        if (activeScrollable.scrollTop <= 0 && currentY > startY) {
-          gestureMode = 'pending';
-          startY = currentY;
-          startTime = performance.now();
-        }
-      }
+      driveScrollHandoff(currentY, incrementalDy);
       return;
     }
 
@@ -267,18 +287,7 @@ export function useBottomSheetDrag(options: BottomSheetDragOptions): BottomSheet
 
     const dy = currentY - startY;
 
-    if (gestureMode === 'pending') {
-      if (dy >= DRAG_TRIGGER_PX) {
-        gestureMode = 'drag';
-        dragging = true;
-      } else if (dy <= -DRAG_TRIGGER_PX) {
-        // Upward movement before drag was committed: not our gesture.
-        resetGesture();
-        return;
-      } else {
-        return;
-      }
-    }
+    if (gestureMode === 'pending' && !commitPendingGesture(dy)) return;
 
     if (gestureMode === 'drag') {
       dragY = Math.max(0, dy);

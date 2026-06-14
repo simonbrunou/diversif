@@ -1,11 +1,11 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * Liste les comptes inactifs depuis plus de RETENTION_INACTIVE_DAYS jours
  * (ou la valeur par défaut de 1095 jours, soit 3 ans). N'effectue AUCUNE
  * suppression. Utilisez ces résultats pour décider d'un suivi manuel.
  *
- * Usage: DATABASE_URL=postgres://… node scripts/list-stale-users.mjs
- *   ou : RETENTION_INACTIVE_DAYS=730 DATABASE_URL=… node scripts/list-stale-users.mjs
+ * Usage: DATABASE_PATH=/app/data/diversif.db bun scripts/list-stale-users.ts
+ *   ou : RETENTION_INACTIVE_DAYS=730 DATABASE_PATH=… bun scripts/list-stale-users.ts
  *
  * L'inactivité se mesure sur le maximum de :
  *   - users.last_login_at (mis à jour à chaque connexion ET à chaque
@@ -15,61 +15,74 @@
  *   - users.created_at (filet de sécurité pour les très vieux comptes
  *     n'ayant jamais ouvert de session).
  */
-import pg from 'pg';
+import { Database } from 'bun:sqlite';
 
 const DEFAULT_DAYS = 1095;
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30;
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  console.error('DATABASE_URL is required (e.g. postgres://user:pass@host:5432/diversif)');
+const databasePath = process.env.DATABASE_PATH;
+if (!databasePath) {
+  console.error('DATABASE_PATH is required (e.g. /app/data/diversif.db)');
   process.exit(1);
 }
 
 const rawDays = process.env.RETENTION_INACTIVE_DAYS;
 const parsedDays = rawDays !== undefined ? Number.parseInt(rawDays, 10) : NaN;
 const days = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : DEFAULT_DAYS;
-const threshold = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+const thresholdMs = Date.now() - days * 24 * 60 * 60 * 1000;
 
-const client = new pg.Client({ connectionString: databaseUrl });
-await client.connect();
+const db = new Database(databasePath, { readonly: true });
 
-const sessionDurationInterval = `${SESSION_DURATION_MS} milliseconds`;
+type StaleRow = {
+  id: number;
+  email: string;
+  displayName: string;
+  createdAt: number | null;
+  lastLoginAt: number | null;
+  latestSessionExpiresAt: number | null;
+  lastActiveAt: number;
+};
 
-const res = await client.query(
-  `SELECT u.id, u.email, u.display_name, u.created_at, u.last_login_at,
-          (SELECT MAX(s.expires_at) FROM sessions s WHERE s.user_id = u.id) AS latest_session_expires_at,
-          GREATEST(
-            COALESCE(u.last_login_at, 'epoch'::timestamptz),
-            COALESCE(u.created_at, 'epoch'::timestamptz),
-            COALESCE(
-              (SELECT MAX(s.expires_at) FROM sessions s WHERE s.user_id = u.id) - $1::interval,
-              'epoch'::timestamptz
-            )
-          ) AS last_active_at
-     FROM users u
-     ORDER BY last_active_at ASC`,
-  [sessionDurationInterval]
-);
+// Timestamps are epoch-ms integers, so SQLite's scalar `max(a, b, c)` plus plain
+// arithmetic replaces Postgres GREATEST + interval. `last_active_at` is the most
+// recent of last_login_at, created_at, and (latest session expiry − one session
+// duration). created_at is NOT NULL, so the COALESCE(..., 0) floor is only a
+// guard and never actually selected.
+const rows = db
+  .query(
+    `SELECT u.id,
+            u.email,
+            u.display_name AS displayName,
+            u.created_at AS createdAt,
+            u.last_login_at AS lastLoginAt,
+            (SELECT MAX(s.expires_at) FROM sessions s WHERE s.user_id = u.id) AS latestSessionExpiresAt,
+            max(
+              COALESCE(u.last_login_at, 0),
+              COALESCE(u.created_at, 0),
+              COALESCE((SELECT MAX(s.expires_at) FROM sessions s WHERE s.user_id = u.id) - ?, 0)
+            ) AS lastActiveAt
+       FROM users u
+       ORDER BY lastActiveAt ASC`
+  )
+  .all(SESSION_DURATION_MS) as StaleRow[];
 
-const stale = res.rows.filter((u) => u.last_active_at && new Date(u.last_active_at) < threshold);
+const stale = rows.filter((u) => u.lastActiveAt < thresholdMs);
+const iso = (ms: number | null) => (ms == null ? null : new Date(ms).toISOString());
 
 console.log(
   JSON.stringify(
     {
-      databaseUrl: databaseUrl.replace(/:[^:@]*@/, ':***@'),
+      databasePath,
       retentionDays: days,
-      thresholdIso: threshold.toISOString(),
+      thresholdIso: new Date(thresholdMs).toISOString(),
       count: stale.length,
       users: stale.map((u) => ({
         id: u.id,
         email: u.email,
-        displayName: u.display_name,
-        createdAt: u.created_at ? new Date(u.created_at).toISOString() : null,
-        lastLoginAt: u.last_login_at ? new Date(u.last_login_at).toISOString() : null,
-        latestSessionExpiresAt: u.latest_session_expires_at
-          ? new Date(u.latest_session_expires_at).toISOString()
-          : null
+        displayName: u.displayName,
+        createdAt: iso(u.createdAt),
+        lastLoginAt: iso(u.lastLoginAt),
+        latestSessionExpiresAt: iso(u.latestSessionExpiresAt)
       }))
     },
     null,
@@ -77,4 +90,4 @@ console.log(
   )
 );
 
-await client.end();
+db.close();

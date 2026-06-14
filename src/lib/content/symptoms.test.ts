@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { SYMPTOM_LABELS, severityOf, type SymptomLabel } from './symptoms';
+import { SYMPTOM_LABELS, severityOf, symptomLabelText, type SymptomLabel } from './symptoms';
 
 describe('symptom vocabulary', () => {
   it('exposes 10 picklist labels', () => {
@@ -27,5 +27,20 @@ describe('severityOf', () => {
     ['autre', 'neutral']
   ] as const)('maps %s → %s', (label, expected) => {
     expect(severityOf(label as SymptomLabel)).toBe(expected);
+  });
+});
+
+describe('symptomLabelText', () => {
+  it('returns a non-empty localized label for every symptom', () => {
+    for (const label of SYMPTOM_LABELS) {
+      expect(symptomLabelText(label).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('PascalCases hyphenated labels into the paraglide key (no raw key leaks)', () => {
+    // A missing/mis-derived key would surface the key string itself; assert the
+    // resolved copy differs from the constructed key for a hyphenated label.
+    expect(symptomLabelText('detresse-respiratoire')).not.toBe('symptomsLabelDetresseRespiratoire');
+    expect(symptomLabelText('levres-bleues')).not.toBe('symptomsLabelLevresBleues');
   });
 });
