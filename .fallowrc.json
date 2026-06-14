@@ -12,11 +12,19 @@
     "scripts/list-stale-users.ts"
   ],
 
-  // Runtime-essential but never imported in source:
-  // Prettier auto-loads both plugins from node_modules (verified: `prettier
-  // --check` formats .svelte files and sorts Tailwind classes with no explicit
-  // `plugins` entry in .prettierrc), so static analysis cannot see the edge.
-  "ignoreDependencies": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+  // Runtime-essential but never imported from JS, so static analysis can't see
+  // the edge:
+  //  - Prettier auto-loads both plugins from node_modules (verified: `prettier
+  //    --check` formats .svelte files and sorts Tailwind classes with no
+  //    explicit `plugins` entry in .prettierrc).
+  //  - The two @fontsource-variable packages are pulled in via `@import` in
+  //    src/app.css (CSS-only), never imported from a module.
+  "ignoreDependencies": [
+    "prettier-plugin-svelte",
+    "prettier-plugin-tailwindcss",
+    "@fontsource-variable/inter",
+    "@fontsource-variable/fraunces"
+  ],
 
   "ignoreExports": [
     {

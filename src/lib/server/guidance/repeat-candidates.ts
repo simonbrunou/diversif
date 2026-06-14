@@ -9,7 +9,7 @@
 // loadRepeatCandidates list, /child/[id]/foods?repeat=1 filter) and the
 // in-JS form (reminders.ts rule 6) can never drift apart again.
 
-import type { ReactionId } from '$lib/utils/reactions';
+import { REACTION_RANK } from '$lib/utils/reaction-values';
 import type { AllergenId } from '$lib/utils/allergens';
 import type { EnrichedEntry } from './queries';
 
@@ -22,13 +22,6 @@ export const REPEAT_CANDIDATE_MAX_COUNT = 2;
  * "reproposez" prompts.
  */
 export const REPEAT_CANDIDATE_MAX_WORST_RANK = 1;
-
-/** Numeric rank used for the CASE WHEN ... in SQL and Math.max(...) in JS. */
-const REACTION_RANK: Record<ReactionId, number> = {
-  ras: 0,
-  inconfort: 1,
-  reaction: 2
-};
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

@@ -3,8 +3,11 @@
  * Manuellement purge les sessions, invitations et défis WebAuthn expirés.
  * Usage: DATABASE_PATH=/app/data/diversif.db bun scripts/cleanup.ts
  *
- * Équivalent ponctuel de la tâche périodique `src/lib/server/cleanup.ts`,
- * pour un déclenchement manuel hors process applicatif.
+ * Couvre le sous-ensemble « en base » de la tâche périodique
+ * `src/lib/server/cleanup.ts` (sessions / invitations / défis WebAuthn), pour
+ * un déclenchement manuel hors process applicatif. La tâche périodique purge en
+ * plus les clés d'idempotence et les compteurs de rate-limit (ces derniers en
+ * mémoire du process, donc non purgeables depuis un script séparé).
  */
 import { Database } from 'bun:sqlite';
 

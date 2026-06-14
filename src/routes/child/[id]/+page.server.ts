@@ -5,6 +5,7 @@ import { desc, eq, sql, and, isNotNull } from 'drizzle-orm';
 import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import { CATEGORIES, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
+import { REACTION_RANK } from '$lib/utils/reaction-values';
 import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
 import { computeReminders, type Reminder } from '$lib/server/guidance/reminders';
@@ -32,8 +33,6 @@ type AllergenSummary = {
   reaction: number;
 };
 
-const ALLERGEN_RANK = { ras: 0, inconfort: 1, reaction: 2 } as const;
-
 // Worst reaction seen per allergen, plus the introduced / per-reaction summary.
 function summarizeAllergens(rows: { allergenType: string | null; reaction: string }[]): {
   worstByAllergen: Map<string, 'ras' | 'inconfort' | 'reaction'>;
@@ -45,7 +44,7 @@ function summarizeAllergens(rows: { allergenType: string | null; reaction: strin
     if (!r.allergenType) continue;
     const cur = worstByAllergen.get(r.allergenType);
     const next = r.reaction as 'ras' | 'inconfort' | 'reaction';
-    if (!cur || ALLERGEN_RANK[next] > ALLERGEN_RANK[cur]) {
+    if (!cur || REACTION_RANK[next] > REACTION_RANK[cur]) {
       worstByAllergen.set(r.allergenType, next);
     }
   }

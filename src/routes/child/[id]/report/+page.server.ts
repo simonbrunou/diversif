@@ -4,6 +4,7 @@ import { asc, eq } from 'drizzle-orm';
 import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
 import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
+import { REACTION_RANK } from '$lib/utils/reaction-values';
 import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
 import { getStageForAgeMonths, type Stage } from '$lib/content/guidance';
@@ -44,8 +45,6 @@ type AllergenReportRow = {
   lastGivenAt: number | null;
 };
 
-const REACTION_RANK_REPORT: Record<ReactionId, number> = { ras: 0, inconfort: 1, reaction: 2 };
-
 // Aggregate per food (first/last/count/worst), bucket by category, drop empty
 // categories. `byFood` is returned too so callers can read its size for totals.
 function aggregateFoods(entries: ReportEntry[]): {
@@ -69,7 +68,7 @@ function aggregateFoods(entries: ReportEntry[]): {
     } else {
       cur.lastGivenAt = e.givenAt;
       cur.exposures += 1;
-      if (REACTION_RANK_REPORT[e.reaction] > REACTION_RANK_REPORT[cur.worstReaction]) {
+      if (REACTION_RANK[e.reaction] > REACTION_RANK[cur.worstReaction]) {
         cur.worstReaction = e.reaction;
       }
     }
@@ -111,8 +110,7 @@ function buildAllergenRows(entries: ReportEntry[]): AllergenReportRow[] {
       cur.exposures += 1;
       cur.first = Math.min(cur.first, e.givenAt);
       cur.last = Math.max(cur.last, e.givenAt);
-      if (REACTION_RANK_REPORT[e.reaction] > REACTION_RANK_REPORT[cur.worst])
-        cur.worst = e.reaction;
+      if (REACTION_RANK[e.reaction] > REACTION_RANK[cur.worst]) cur.worst = e.reaction;
     }
   }
 
