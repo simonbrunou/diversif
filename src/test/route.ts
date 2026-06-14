@@ -6,9 +6,7 @@ type Membership = typeof schema.memberships.$inferSelect;
 
 type CookieRecord = { value: string; opts: Record<string, unknown> };
 
-export type FakeCookies = ReturnType<typeof makeCookies>;
-
-export function makeCookies(initial: Record<string, string> = {}) {
+function makeCookies(initial: Record<string, string> = {}) {
   const store = new Map<string, CookieRecord>();
   for (const [k, v] of Object.entries(initial)) store.set(k, { value: v, opts: {} });
 
@@ -161,18 +159,4 @@ export function safeUser(u: Omit<typeof schema.users.$inferSelect, 'passwordHash
     lastLoginAt: u.lastLoginAt ?? null,
     lastExportAt: u.lastExportAt ?? null
   };
-}
-
-/**
- * SvelteKit's generated `PageServerLoad` infers a return type of
- * `void | <data>` because `parent()` may resolve to nothing. In tests we
- * always return data, so this helper narrows the union for ergonomic
- * downstream assertions.
- */
-export async function callLoad<T>(
-  loadFn: (e: never) => Promise<T> | T,
-  event: unknown
-): Promise<NonNullable<Awaited<T>>> {
-  const out = await loadFn(event as never);
-  return out as NonNullable<Awaited<T>>;
 }

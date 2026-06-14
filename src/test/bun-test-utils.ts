@@ -48,41 +48,58 @@ export function stubGlobal(name: string, value: unknown): void {
   }
 }
 
-export function unstubAllGlobals(): void {
-  for (const name of stubbedKeys) {
-    const orig = stubbedOriginals.get(name);
-    if (orig === undefined) {
-      delete (globalThis as Record<string, unknown>)[name];
-      try {
-        const w = (globalThis as Record<string, unknown>).window as
-          | Record<string, unknown>
-          | undefined;
-        if (w) delete w[name];
-      } catch {
-        // ignored
-      }
-    } else {
-      Object.defineProperty(globalThis, name, {
+// Resolve happy-dom's `window` (mirrored onto globalThis) if it exists.
+// Returns undefined when no window object is present (e.g. node-only runs).
+function getWindow(): Record<string, unknown> | undefined {
+  const w = (globalThis as Record<string, unknown>).window as Record<string, unknown> | undefined;
+  return w && typeof w === 'object' ? w : undefined;
+}
+
+// Delete `name` from globalThis and, if present, from the mirrored window.
+// Used when the original was absent (undefined), so unstubbing removes the
+// property entirely rather than restoring a value.
+function deleteGlobal(name: string): void {
+  delete (globalThis as Record<string, unknown>)[name];
+  try {
+    const w = getWindow();
+    if (w) delete w[name];
+  } catch {
+    // window may not exist or property may be locked — ignored.
+  }
+}
+
+// Restore `name` to `orig` on globalThis and, if present, on the mirrored
+// window. Uses defineProperty so we round-trip past happy-dom's non-writable
+// globals (see stubGlobal).
+function restoreGlobal(name: string, orig: unknown): void {
+  Object.defineProperty(globalThis, name, {
+    value: orig,
+    writable: true,
+    configurable: true,
+    enumerable: true
+  });
+  try {
+    const w = getWindow();
+    if (w) {
+      Object.defineProperty(w, name, {
         value: orig,
         writable: true,
         configurable: true,
         enumerable: true
       });
-      try {
-        const w = (globalThis as Record<string, unknown>).window as
-          | Record<string, unknown>
-          | undefined;
-        if (w && typeof w === 'object') {
-          Object.defineProperty(w, name, {
-            value: orig,
-            writable: true,
-            configurable: true,
-            enumerable: true
-          });
-        }
-      } catch {
-        // ignored
-      }
+    }
+  } catch {
+    // window may not exist or property may be locked — ignored.
+  }
+}
+
+export function unstubAllGlobals(): void {
+  for (const name of stubbedKeys) {
+    const orig = stubbedOriginals.get(name);
+    if (orig === undefined) {
+      deleteGlobal(name);
+    } else {
+      restoreGlobal(name, orig);
     }
   }
   stubbedKeys.clear();

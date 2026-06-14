@@ -96,63 +96,95 @@ export function filterIncomingBreadcrumb<B extends { category?: string }>(b: B):
   return b;
 }
 
+// Strip free-form text that may contain user input. The errorId tag is
+// still attached, and the full Error message + stack live in the
+// [diversif:error] stderr line indexed by that token.
+const REDACTED = '[redacted: see errorId in stderr]';
+
+/** Compute the route pattern used to scrub request/breadcrumb URLs. */
+function eventRoute(event: ScrubbableEvent): string | null {
+  if (typeof event.tags?.route === 'string') return event.tags.route as string;
+  return event.transaction ?? null;
+}
+
+/**
+ * Rewrite the request URL through the route pattern and drop every field that
+ * can carry PII: body data, cookies, headers, and the raw query string.
+ */
+function scrubRequest(
+  request: NonNullable<ScrubbableEvent['request']>,
+  route: string | null
+): void {
+  if (typeof request.url === 'string') {
+    request.url = scrubUrlString(request.url, route);
+  }
+  delete request.data;
+  delete request.cookies;
+  delete request.headers;
+  delete request.query_string;
+}
+
+/**
+ * Redact exception messages (which may quote user input) and drop stack frame
+ * locals (`vars`), which can capture in-scope PII.
+ */
+function scrubException(exception: NonNullable<ScrubbableEvent['exception']>): void {
+  if (!Array.isArray(exception.values)) return;
+  for (const ex of exception.values) {
+    if (typeof ex.value === 'string') ex.value = REDACTED;
+    const frames = ex.stacktrace?.frames;
+    if (Array.isArray(frames)) {
+      for (const frame of frames) {
+        delete frame.vars;
+      }
+    }
+  }
+}
+
+/** Scrub the URL-bearing keys of a single breadcrumb's data object. */
+function scrubBreadcrumbData(data: Record<string, unknown>): Record<string, unknown> {
+  const scrubbed = { ...data };
+  for (const key of ['url', 'from', 'to']) {
+    if (typeof scrubbed[key] === 'string') {
+      scrubbed[key] = scrubUrlString(scrubbed[key] as string);
+    }
+  }
+  return scrubbed;
+}
+
+/**
+ * Drop the SDK-collected breadcrumbs we never want sent (see
+ * filterIncomingBreadcrumb) and scrub URLs in the survivors' data.
+ */
+function scrubBreadcrumbs(
+  breadcrumbs: NonNullable<ScrubbableEvent['breadcrumbs']>
+): NonNullable<ScrubbableEvent['breadcrumbs']> {
+  return breadcrumbs
+    .filter(
+      (b) => b.category !== 'ui.click' && b.category !== 'ui.input' && b.category !== 'console'
+    )
+    .map((b) =>
+      b.data && typeof b.data === 'object'
+        ? { ...b, data: scrubBreadcrumbData(b.data as Record<string, unknown>) }
+        : b
+    );
+}
+
 export function scrubEvent<E extends ScrubbableEvent>(event: E): E | null {
   try {
     if (!event || typeof event !== 'object') return null;
 
-    const route =
-      typeof event.tags?.route === 'string'
-        ? (event.tags.route as string)
-        : (event.transaction ?? null);
+    const route = eventRoute(event);
 
-    if (event.request) {
-      if (typeof event.request.url === 'string') {
-        event.request.url = scrubUrlString(event.request.url, route);
-      }
-      delete event.request.data;
-      delete event.request.cookies;
-      delete event.request.headers;
-      delete event.request.query_string;
-    }
+    if (event.request) scrubRequest(event.request, route);
 
     delete event.user;
 
-    // Strip free-form text that may contain user input. The errorId tag is
-    // still attached, and the full Error message + stack live in the
-    // [diversif:error] stderr line indexed by that token.
-    const REDACTED = '[redacted: see errorId in stderr]';
-    if (typeof event.message === 'string') {
-      event.message = REDACTED;
-    }
-    if (event.exception && Array.isArray(event.exception.values)) {
-      for (const ex of event.exception.values) {
-        if (typeof ex.value === 'string') ex.value = REDACTED;
-        const frames = ex.stacktrace?.frames;
-        if (Array.isArray(frames)) {
-          for (const frame of frames) {
-            delete frame.vars;
-          }
-        }
-      }
-    }
+    if (typeof event.message === 'string') event.message = REDACTED;
+    if (event.exception) scrubException(event.exception);
 
     if (Array.isArray(event.breadcrumbs)) {
-      event.breadcrumbs = event.breadcrumbs
-        .filter(
-          (b) => b.category !== 'ui.click' && b.category !== 'ui.input' && b.category !== 'console'
-        )
-        .map((b) => {
-          if (b.data && typeof b.data === 'object') {
-            const data = { ...(b.data as Record<string, unknown>) };
-            for (const key of ['url', 'from', 'to']) {
-              if (typeof data[key] === 'string') {
-                data[key] = scrubUrlString(data[key] as string);
-              }
-            }
-            return { ...b, data };
-          }
-          return b;
-        });
+      event.breadcrumbs = scrubBreadcrumbs(event.breadcrumbs);
     }
 
     return event;

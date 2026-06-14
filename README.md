@@ -108,7 +108,7 @@ RETENTION_INACTIVE_DAYS=1095
 Une tâche déclenchée au démarrage du process (puis toutes les 6 heures) supprime les sessions, invitations et défis WebAuthn expirés (`src/lib/server/cleanup.ts`). Pour un déclenchement manuel :
 
 ```bash
-bun scripts/cleanup.ts
+DATABASE_PATH=/app/data/diversif.db bun scripts/cleanup.ts
 ```
 
 `scripts/list-stale-users.ts` liste (sans supprimer) les comptes inactifs depuis plus de `RETENTION_INACTIVE_DAYS` jours. L'inactivité est mesurée sur le maximum de `users.last_login_at` (mis à jour à la connexion **et** lors du renouvellement automatique de la session), de la dernière session encore en base (moins 30 jours) et de `users.created_at`. Aucune suppression automatique des comptes inactifs n'est effectuée en v1.
@@ -118,7 +118,7 @@ bun scripts/cleanup.ts
 Pour répondre manuellement à une demande RGPD article 15 / 20 (par exemple si l'utilisateur ne peut pas se connecter) :
 
 ```bash
-bun scripts/export-user.ts user@example.com
+DATABASE_PATH=/app/data/diversif.db bun scripts/export-user.ts user@example.com
 ```
 
 ## Internationalisation

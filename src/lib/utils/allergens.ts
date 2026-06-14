@@ -58,8 +58,6 @@ export const PRIORITY_INTRODUCTION_ALLERGENS = [
   'sesame'
 ] as const satisfies readonly AllergenId[];
 
-export type PriorityIntroductionAllergenId = (typeof PRIORITY_INTRODUCTION_ALLERGENS)[number];
-
 // Days after which a previously-introduced priority allergen is considered
 // "fading" / needs maintenance re-exposure. Anchored to LEAP/ESPGHAN's
 // 2-3 exposures/week target. Single source of truth: the dashboard

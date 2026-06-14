@@ -4,11 +4,9 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { requireChildContext } from '$lib/server/guards';
 import { toEpochMs } from '$lib/utils/dates';
 import { loadRepeatCandidates, loadTexturesTried } from '$lib/server/guidance/queries';
-import { loadAllergenStatus, type AllergenItem } from '$lib/server/guidance/allergen-status';
+import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
 import type { TextureKey } from '$lib/utils/textures';
 import type { PageServerLoad } from './$types';
-
-export type { AllergenItem };
 
 async function loadWeeklyEntries(
   childId: number,
@@ -53,6 +51,66 @@ async function loadWeeklyEntries(
   return { counts, anchorUtc };
 }
 
+type BentoFood = {
+  id: number;
+  name: string;
+  category: string;
+  tried: number;
+  status: 'ras' | 'inconfort' | 'reaction';
+  lastEntryId: number;
+  lastTexture: TextureKey | null;
+};
+
+type BentoSourceRow = {
+  id: number;
+  foodId: number;
+  foodName: string;
+  category: string;
+  reaction: 'ras' | 'inconfort' | 'reaction';
+  texture: TextureKey | null;
+};
+
+// Base WHERE for the carnet query: always scoped to the child, plus the
+// optional category / reaction facet filters.
+function buildFoodFilters(childId: number, category: string, reaction: string) {
+  const conditions = [eq(foodEntries.childId, childId)];
+  if (category) conditions.push(eq(foods.category, category));
+  if (reaction === 'ras' || reaction === 'inconfort' || reaction === 'reaction') {
+    conditions.push(eq(foodEntries.reaction, reaction));
+  }
+  return conditions;
+}
+
+// Collapse the entry rows into one card per food (tried count + worst reaction),
+// sorted alphabetically. Rows are ordered DESC givenAt, so the first occurrence
+// of each foodId is the most recent entry : capture its id as `lastEntryId` so
+// non-RAS food cards can link to the reaction-detail page.
+// Note: when a `?reaction=` filter is active, `lastEntryId` and `lastTexture`
+// reflect the most recent entry within the filter, not the absolute latest.
+function aggregateBentoFoods(rows: BentoSourceRow[]): BentoFood[] {
+  const foodMap = new Map<number, BentoFood>();
+  const severity = { ras: 0, inconfort: 1, reaction: 2 } as const;
+  for (const r of rows) {
+    const reaction = r.reaction;
+    const existing = foodMap.get(r.foodId);
+    if (existing) {
+      existing.tried += 1;
+      if (severity[reaction] > severity[existing.status]) existing.status = reaction;
+    } else {
+      foodMap.set(r.foodId, {
+        id: r.foodId,
+        name: r.foodName,
+        category: r.category,
+        tried: 1,
+        status: reaction,
+        lastEntryId: r.id,
+        lastTexture: r.texture ?? null
+      });
+    }
+  }
+  return Array.from(foodMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export const load: PageServerLoad = async ({ params, url, locals }) => {
   const { childId } = requireChildContext(locals, params);
 
@@ -61,11 +119,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const reaction = url.searchParams.get('reaction') ?? '';
   const repeat = url.searchParams.get('repeat') === '1';
 
-  const conditions = [eq(foodEntries.childId, childId)];
-  if (category) conditions.push(eq(foods.category, category));
-  if (reaction === 'ras' || reaction === 'inconfort' || reaction === 'reaction') {
-    conditions.push(eq(foodEntries.reaction, reaction));
-  }
+  const conditions = buildFoodFilters(childId, category, reaction);
 
   if (repeat) {
     // Foods given <= 2 times whose worst reaction is RAS or Inconfort. Shares
@@ -123,43 +177,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     rows = rows.filter((r) => normalize(r.foodName).includes(nq));
   }
 
-  // Rows are ordered DESC givenAt, so the first occurrence of each foodId is
-  // the most recent entry : capture its id as `lastEntryId` so non-RAS food
-  // cards can link to the reaction-detail page.
-  // Note: when a `?reaction=` filter is active, `lastEntryId` and `lastTexture`
-  // reflect the most recent entry within the filter, not the absolute latest.
-  const foodMap = new Map<
-    number,
-    {
-      id: number;
-      name: string;
-      category: string;
-      tried: number;
-      status: 'ras' | 'inconfort' | 'reaction';
-      lastEntryId: number;
-      lastTexture: TextureKey | null;
-    }
-  >();
-  const severity = { ras: 0, inconfort: 1, reaction: 2 } as const;
-  for (const r of rows) {
-    const reaction = r.reaction as 'ras' | 'inconfort' | 'reaction';
-    const existing = foodMap.get(r.foodId);
-    if (existing) {
-      existing.tried += 1;
-      if (severity[reaction] > severity[existing.status]) existing.status = reaction;
-    } else {
-      foodMap.set(r.foodId, {
-        id: r.foodId,
-        name: r.foodName,
-        category: r.category,
-        tried: 1,
-        status: reaction,
-        lastEntryId: r.id,
-        lastTexture: r.texture ?? null
-      });
-    }
-  }
-  const bentoFoods = Array.from(foodMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  const bentoFoods = aggregateBentoFoods(rows);
   const foodCount = bentoFoods.length;
   const categoryCount = new Set(bentoFoods.map((f) => f.category)).size;
 

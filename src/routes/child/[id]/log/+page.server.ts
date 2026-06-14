@@ -58,6 +58,96 @@ class LogActionAbort extends Error {
   }
 }
 
+type LogTx = NonNullable<Parameters<typeof resolveOrInsertFood>[1]>;
+
+// Categories covered for a child, excluding the `autre` bucket so this count
+// shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
+function countCategoriesCovered(tx: LogTx, childId: number): number {
+  return (
+    tx
+      .select({ n: sql<number>`count(distinct ${foods.category})` })
+      .from(foodEntries)
+      .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+      .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
+      .limit(1)
+      .all()[0]?.n /* v8 ignore next */ ?? 0
+  );
+}
+
+type PriorLogState = {
+  priorEntryCount: number;
+  priorCategoriesCovered: number;
+  priorAllergenCount: number | null;
+  priorAllergensIntroduced: number;
+};
+
+// Snapshot pre-insert counts so the caller can detect milestones (first food,
+// first allergen, all-allergens) after the new entry is inserted.
+function snapshotPriorState(
+  tx: LogTx,
+  childId: number,
+  allergenType: string | null
+): PriorLogState {
+  const priorEntryCount =
+    tx
+      .select({ n: sql<number>`count(*)` })
+      .from(foodEntries)
+      .where(eq(foodEntries.childId, childId))
+      .limit(1)
+      .all()[0]?.n /* v8 ignore next */ ?? 0;
+
+  const priorAllergenCount =
+    allergenType != null
+      ? (tx
+          .select({ n: sql<number>`count(*)` })
+          .from(foodEntries)
+          .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+          .where(and(eq(foodEntries.childId, childId), eq(foods.allergenType, allergenType)))
+          .limit(1)
+          .all()[0]?.n /* v8 ignore next */ ?? 0)
+      : null;
+
+  // Distinct allergens introduced for this child, pre-insert. Used to detect
+  // crossing the "all 12 allergens" finish line on the *new* introduction.
+  const priorAllergensIntroduced =
+    tx
+      .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
+      .from(foodEntries)
+      .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+      .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`))
+      .limit(1)
+      .all()[0]?.n /* v8 ignore next */ ?? 0;
+
+  return {
+    priorEntryCount,
+    priorCategoriesCovered: countCategoriesCovered(tx, childId),
+    priorAllergenCount,
+    priorAllergensIntroduced
+  };
+}
+
+// Build the post-log redirect URL, encoding the milestones the dashboard
+// celebrates (first entry, first allergen, all-allergens, category progress).
+function buildLogRedirect(
+  childId: number,
+  opts: {
+    priorEntryCount: number;
+    isFirstAllergen: boolean;
+    allergenType: string | null;
+    allAllergensJustCompleted: boolean;
+    categoriesNowCovered: number;
+    priorCategoriesCovered: number;
+  }
+): { redirect: string } {
+  const search = new URLSearchParams({ logged: '1' });
+  if (opts.priorEntryCount === 0) search.set('first', '1');
+  if (opts.isFirstAllergen) search.set('allergen', opts.allergenType as string);
+  if (opts.allAllergensJustCompleted) search.set('allAllergens', '1');
+  search.set('categories', String(opts.categoriesNowCovered));
+  search.set('prevCategories', String(opts.priorCategoriesCovered));
+  return { redirect: `/child/${childId}?${search.toString()}` };
+}
+
 export const actions: Actions = {
   default: async ({ request, params, locals }) => {
     const { user, childId } = requireChildContext(locals, params);
@@ -114,48 +204,7 @@ export const actions: Actions = {
 
           // Snapshot pre-insert state so we can detect milestones (first food,
           // first allergen, all-allergens) after the insert below.
-          const priorEntryCount =
-            tx
-              .select({ n: sql<number>`count(*)` })
-              .from(foodEntries)
-              .where(eq(foodEntries.childId, childId))
-              .limit(1)
-              .all()[0]?.n /* v8 ignore next */ ?? 0;
-
-          // Mirror loadDiversityMetrics: exclude the `autre` bucket so this count
-          // shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
-          const priorCategoriesCovered =
-            tx
-              .select({ n: sql<number>`count(distinct ${foods.category})` })
-              .from(foodEntries)
-              .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-              .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
-              .limit(1)
-              .all()[0]?.n /* v8 ignore next */ ?? 0;
-
-          const priorAllergenCount =
-            food.allergenType != null
-              ? (tx
-                  .select({ n: sql<number>`count(*)` })
-                  .from(foodEntries)
-                  .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-                  .where(
-                    and(eq(foodEntries.childId, childId), eq(foods.allergenType, food.allergenType))
-                  )
-                  .limit(1)
-                  .all()[0]?.n /* v8 ignore next */ ?? 0)
-              : null;
-
-          // Distinct allergens introduced for this child, pre-insert. Used to detect
-          // crossing the "all 12 allergens" finish line on the *new* introduction.
-          const priorAllergensIntroduced =
-            tx
-              .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
-              .from(foodEntries)
-              .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-              .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`))
-              .limit(1)
-              .all()[0]?.n /* v8 ignore next */ ?? 0;
+          const prior = snapshotPriorState(tx, childId, food.allergenType);
 
           tx.insert(foodEntries)
             .values({
@@ -172,26 +221,19 @@ export const actions: Actions = {
             .run();
           didInsert = true;
 
-          const categoriesNowCovered =
-            tx
-              .select({ n: sql<number>`count(distinct ${foods.category})` })
-              .from(foodEntries)
-              .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-              .where(and(eq(foodEntries.childId, childId), ne(foods.category, 'autre')))
-              .limit(1)
-              .all()[0]?.n /* v8 ignore next */ ?? 0;
-
-          const isFirstAllergen = priorAllergenCount === 0 && food.allergenType != null;
+          const categoriesNowCovered = countCategoriesCovered(tx, childId);
+          const isFirstAllergen = prior.priorAllergenCount === 0 && food.allergenType != null;
           const allAllergensJustCompleted =
-            isFirstAllergen && priorAllergensIntroduced + 1 === ALLERGENS.length;
+            isFirstAllergen && prior.priorAllergensIntroduced + 1 === ALLERGENS.length;
 
-          const search = new URLSearchParams({ logged: '1' });
-          if (priorEntryCount === 0) search.set('first', '1');
-          if (isFirstAllergen) search.set('allergen', food.allergenType as string);
-          if (allAllergensJustCompleted) search.set('allAllergens', '1');
-          search.set('categories', String(categoriesNowCovered));
-          search.set('prevCategories', String(priorCategoriesCovered));
-          return { redirect: `/child/${childId}?${search.toString()}` };
+          return buildLogRedirect(childId, {
+            priorEntryCount: prior.priorEntryCount,
+            isFirstAllergen,
+            allergenType: food.allergenType,
+            allAllergensJustCompleted,
+            categoriesNowCovered,
+            priorCategoriesCovered: prior.priorCategoriesCovered
+          });
         };
 
         if (idempotencyKey) {
