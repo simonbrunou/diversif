@@ -18,7 +18,7 @@ import { localizedHref } from '$lib/utils/localized-href';
  * Literal union (not string) so a renamed paraglide key is a compile error
  * instead of a runtime fallback toast.
  */
-export type PasskeyErrorKey =
+type PasskeyErrorKey =
   | 'errorsAccountPasskeyAuthStartFailed'
   | 'errorsAccountPasskeyAuthFailed'
   | 'errorsAccountPasskeyGenericError';

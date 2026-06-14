@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
-import { makeRouteEvent, seedChild, seedUser } from '../../../../test/route';
+import {
+  makeRouteEvent,
+  safeUser,
+  seedChild,
+  seedMembership,
+  seedUser
+} from '../../../../test/route';
 import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
@@ -23,6 +29,10 @@ async function setup(opts: { ageMonths?: number } = {}) {
     birthDate = birth.toISOString().slice(0, 10);
   }
   const c = await seedChild({ createdBy: u.id, birthDate });
+  // Owner membership so the load's requireChildContext(locals, params) prelude
+  // resolves. `guard` is spread into every makeRouteEvent below to supply the
+  // authenticated user, the matching child id param, and the membership row.
+  const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
   // Provide childId and foodId helpers for test convenience
   const food = await testDb
     .insert(foods)
@@ -43,7 +53,7 @@ async function setup(opts: { ageMonths?: number } = {}) {
     childId: c.id,
     foodId: food[0].id,
     testDb,
-    locals: { user: u, memberships: [], sessionId: 'sess-id', locale: 'fr' as const }
+    guard: { user: safeUser(u), params: { id: String(c.id) }, memberships: [m] }
   };
 }
 
@@ -91,8 +101,9 @@ async function logEntry(
 
 describe('child/[id]/report load', () => {
   it('returns zeroed totals and empty groups for a fresh child', async () => {
-    const { c } = await setup();
+    const { c, guard } = await setup();
     const event = makeRouteEvent({
+      ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
@@ -106,7 +117,7 @@ describe('child/[id]/report load', () => {
   });
 
   it('aggregates per-food (count, first/last, worst reaction) and groups by category', async () => {
-    const { u, c } = await setup();
+    const { u, c, guard } = await setup();
     const carrot = await seedFood('Carotte', 'legumes');
     const apple = await seedFood('Pomme', 'fruits');
 
@@ -115,6 +126,7 @@ describe('child/[id]/report load', () => {
     await logEntry(c.id, apple.id, u.id, new Date('2024-05-10T10:00:00Z'), 'ras');
 
     const event = makeRouteEvent({
+      ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
@@ -130,12 +142,13 @@ describe('child/[id]/report load', () => {
   });
 
   it('marks only introduced allergens as such and bubbles the worst reaction to the row', async () => {
-    const { u, c } = await setup();
+    const { u, c, guard } = await setup();
     const peanut = await seedFood('Beurre cacahuète', 'allergenes', 'arachide');
     await logEntry(c.id, peanut.id, u.id, new Date('2024-05-01T10:00:00Z'), 'ras');
     await logEntry(c.id, peanut.id, u.id, new Date('2024-05-05T10:00:00Z'), 'inconfort');
 
     const event = makeRouteEvent({
+      ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
@@ -154,7 +167,7 @@ describe('child/[id]/report load', () => {
   });
 
   it('returns every non-RAS entry in the notable timeline (no silent cap)', async () => {
-    const { u, c } = await setup();
+    const { u, c, guard } = await setup();
     const f = await seedFood('Pomme', 'fruits');
     const N = 35; // larger than the previous 30-entry cap we removed
     const start = Date.UTC(2024, 4, 1, 10);
@@ -163,6 +176,7 @@ describe('child/[id]/report load', () => {
       await logEntry(c.id, f.id, u.id, new Date(start + i * DAY), 'inconfort');
     }
     const event = makeRouteEvent({
+      ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
@@ -170,7 +184,7 @@ describe('child/[id]/report load', () => {
   });
 
   it('surfaces only non-RAS reactions in the notable timeline and includes notes', async () => {
-    const { u, c } = await setup();
+    const { u, c, guard } = await setup();
     const banana = await seedFood('Banane', 'fruits');
     const fish = await seedFood('Saumon', 'poissons', 'poisson');
 
@@ -192,6 +206,7 @@ describe('child/[id]/report load', () => {
     );
 
     const event = makeRouteEvent({
+      ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
@@ -202,7 +217,7 @@ describe('child/[id]/report load', () => {
   });
 
   it('aggregates allergens from a mixed entries fixture', async () => {
-    const { u, c } = await setup();
+    const { u, c, guard } = await setup();
     const oeuf = await seedFood('Œuf', 'proteines', 'oeuf');
     const arachide = await seedFood('Arachide', 'proteines', 'arachide');
     const carotte = await seedFood('Carotte', 'legumes', null);
@@ -219,8 +234,7 @@ describe('child/[id]/report load', () => {
 
     const data = await load(
       makeRouteEvent({
-        user: u,
-        params: { id: String(c.id) },
+        ...guard,
         parent: async () => ({ child: c })
       }) as unknown as Parameters<typeof load>[0]
     );
@@ -246,8 +260,9 @@ describe('child/[id]/report load', () => {
   });
 
   it('orders allergens priority-first, then non-priority, alphabetical within each group', async () => {
-    const { c } = await setup();
+    const { c, guard } = await setup();
     const event = makeRouteEvent({
+      ...guard,
       parent: async () => ({ child: c })
     });
     const data = await load(event as unknown as Parameters<typeof load>[0]);
@@ -281,8 +296,9 @@ describe('child/[id]/report load', () => {
   });
 
   it('flags isPriority on every allergen row', async () => {
-    const { c } = await setup();
+    const { c, guard } = await setup();
     const event = makeRouteEvent({
+      ...guard,
       parent: async () => ({ child: c })
     });
     const data = await load(event as unknown as Parameters<typeof load>[0]);
@@ -296,6 +312,7 @@ describe('child/[id]/report load', () => {
   it('returns the current diversification stage based on child age', async () => {
     const ctx = await setup({ ageMonths: 10 });
     const event = makeRouteEvent({
+      ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
     const data = await load(event as unknown as Parameters<typeof load>[0]);
@@ -336,6 +353,7 @@ describe('child/[id]/report load', () => {
       }
     ]);
     const event = makeRouteEvent({
+      ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
     const data = await load(event as unknown as Parameters<typeof load>[0]);
@@ -345,6 +363,7 @@ describe('child/[id]/report load', () => {
   it('returns null mostAdvancedTexture when no texture is logged', async () => {
     const ctx = await setup({ ageMonths: 7 });
     const event = makeRouteEvent({
+      ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
     const data = await load(event as unknown as Parameters<typeof load>[0]);
@@ -405,8 +424,7 @@ describe('child/[id]/report load', () => {
       }
     ]);
     const event = makeRouteEvent({
-      params: { id: String(ctx.childId) },
-      locals: ctx.locals,
+      ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
     const data = await load(event as unknown as Parameters<typeof load>[0]);
@@ -422,8 +440,7 @@ describe('child/[id]/report load', () => {
   it('returns zero totals when no textures logged in the last 30 days', async () => {
     const ctx = await setup({ ageMonths: 10 });
     const event = makeRouteEvent({
-      params: { id: String(ctx.childId) },
-      locals: ctx.locals,
+      ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
     const data = await load(event as unknown as Parameters<typeof load>[0]);
@@ -462,8 +479,7 @@ describe('child/[id]/report load', () => {
       }
     ]);
     const event = makeRouteEvent({
-      params: { id: String(ctx.childId) },
-      locals: ctx.locals,
+      ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
     const data = await load(event as unknown as Parameters<typeof load>[0]);

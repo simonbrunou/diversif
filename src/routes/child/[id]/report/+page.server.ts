@@ -9,6 +9,7 @@ import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
 import { getStageForAgeMonths, type Stage } from '$lib/content/guidance';
 import { TEXTURE_VALUES, type TextureKey, isTextureKey } from '$lib/utils/textures';
+import { requireChildContext } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
 type ReportEntry = {
@@ -187,7 +188,12 @@ function computeTextureDistribution(entries: ReportEntry[]): {
   return { counts, totalWithTexture };
 }
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, locals, params }) => {
+  // Explicit in-file membership guard. The +layout.server.ts guard already
+  // runs via `await parent()` below, but re-asserting here keeps the tenant
+  // check auditable in this file and resilient to any future refactor that
+  // decouples the load chain.
+  requireChildContext(locals, params);
   const { child } = await parent();
   const childId = child.id;
 
