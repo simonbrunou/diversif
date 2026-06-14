@@ -45,13 +45,15 @@ jobs:
       # resolve $lib / $app / ./$types aliases while analyzing changed files.
       - run: bun run paraglide
       - run: bun --bun node_modules/@sveltejs/kit/src/cli.js sync
-      # Pinned to match the version the policy was authored against; bump
-      # deliberately. Use --format sarif to feed GitHub code scanning if desired.
+      # fallow is a pinned devDependency, installed above via frozen-lockfile,
+      # so this runs the cached local binary — no registry fetch at audit time
+      # (a yanked version or npm outage can't break the gate). Bump via Renovate.
+      # Use --format sarif to feed GitHub code scanning if desired.
       # FALLOW_AUDIT_BASE pins the diff base to the PR target: without it,
       # fallow resolves the base to the branch's own upstream (the PR head),
       # yielding 0 changed files and a vacuous pass.
       - name: Fallow audit
-        run: bunx fallow@2.96.0 audit --format compact
+        run: node_modules/.bin/fallow audit --format compact
         env:
           FALLOW_AUDIT_BASE: origin/${{ github.base_ref }}
 
