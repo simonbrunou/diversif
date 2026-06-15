@@ -1,4 +1,3 @@
-import { error } from '@sveltejs/kit';
 import { and, asc, eq, lte, sql } from 'drizzle-orm';
 import { db } from './index';
 import { foodEntries, symptoms } from './schema';
@@ -36,7 +35,14 @@ export async function insertSymptom(input: InsertSymptomInput): Promise<InsertSy
       .limit(1)
       .all();
     if (owner.length === 0) {
-      throw error(404, 'Food entry not found');
+      // This is a "should never happen" invariant violation — every caller
+      // pre-verifies ownership (e.g. loadEntryForChild) before reaching here.
+      // Throw a plain Error (not a SvelteKit `error()`): a DB helper shouldn't
+      // depend on the web layer, and a caller that skipped its guard is a bug,
+      // not a 404 to render. The throw rolls back the transaction.
+      throw new Error(
+        `insertSymptom: food entry ${input.foodEntryId} does not belong to child ${input.childId}`
+      );
     }
 
     const [row] = tx

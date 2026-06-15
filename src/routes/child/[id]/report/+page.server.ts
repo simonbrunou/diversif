@@ -189,13 +189,14 @@ function computeTextureDistribution(entries: ReportEntry[]): {
 }
 
 export const load: PageServerLoad = async ({ parent, locals, params }) => {
-  // Explicit in-file membership guard. The +layout.server.ts guard already
-  // runs via `await parent()` below, but re-asserting here keeps the tenant
-  // check auditable in this file and resilient to any future refactor that
-  // decouples the load chain.
-  requireChildContext(locals, params);
+  // In-file membership guard, consistent with the sibling child routes
+  // (foods/log/suggestions/settings all guard in their own load). childId comes
+  // straight from the guard so this call is load-bearing — not removable
+  // duplication of the layout guard — and the tenant check stays resilient to
+  // any future refactor that decouples the load chain. `child` (name/birthDate)
+  // still comes from the layout via parent().
+  const { childId } = requireChildContext(locals, params);
   const { child } = await parent();
-  const childId = child.id;
 
   // Pull all entries with their food join, ordered chronologically.
   const rows = await db
