@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import {
   generateKeyPairSync,
   randomBytes,
@@ -54,6 +55,37 @@ export function isOriginAllowedForRPID(origin: string, rpID: string = RP_ID): bo
   } catch {
     return false;
   }
+}
+
+/**
+ * Guard shared by both WebAuthn verify endpoints: refuse a request whose origin
+ * is outside the RP ID scope (a 500 — it means the host is misconfigured, not
+ * that the user did anything wrong).
+ */
+export function assertRpidOrigin(origin: string): void {
+  if (!isOriginAllowedForRPID(origin)) {
+    throw error(500, 'Configuration WebAuthn invalide pour cet hôte.');
+  }
+}
+
+/**
+ * Parse + validate the JSON body shared by both verify endpoints. Returns the
+ * ceremony `response` object (and the optional `name`, used only by
+ * registration). Throws a 400 on malformed JSON or a missing response.
+ */
+export async function parsePasskeyResponseBody(
+  request: Request
+): Promise<{ response: object; name?: unknown }> {
+  let body: { response?: unknown; name?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    throw error(400, 'JSON invalide');
+  }
+  if (!body.response || typeof body.response !== 'object') {
+    throw error(400, 'Réponse manquante');
+  }
+  return { response: body.response, name: body.name };
 }
 export const PASSKEY_CHALLENGE_COOKIE = 'wa_challenge';
 // Conditional-UI ceremonies fire automatically on page load and would otherwise

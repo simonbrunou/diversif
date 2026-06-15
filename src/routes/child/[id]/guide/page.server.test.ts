@@ -16,14 +16,26 @@ beforeEach(async () => {
   await resetTestDb();
 });
 
+// Seed a user + child + owner membership, and return a guard context that
+// satisfies the load's requireChildContext(locals, params) prelude (user,
+// matching params.id, and a membership row for that child).
+async function seedGuarded() {
+  const u = await seedUser();
+  const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+  const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+  return {
+    u,
+    c,
+    guard: { user: safeUser(u), params: { id: String(c.id) }, memberships: [m] }
+  };
+}
+
 describe('child/[id]/guide load', () => {
   it('returns currentStageId for the child', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const { c, guard } = await seedGuarded();
 
     const event = makeRouteEvent({
-      user: safeUser(u),
+      ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
@@ -31,13 +43,11 @@ describe('child/[id]/guide load', () => {
   });
 
   it('returns 4-6 stage for a very young child', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const { c, guard } = await seedGuarded();
     const recent = new Date();
     const dateStr = `${recent.getFullYear()}-${String(recent.getMonth() + 1).padStart(2, '0')}-${String(recent.getDate()).padStart(2, '0')}`;
     const event = makeRouteEvent({
-      user: safeUser(u),
+      ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: dateStr } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
@@ -45,12 +55,10 @@ describe('child/[id]/guide load', () => {
   });
 
   it('returns stages array with expected shape', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const { c, guard } = await seedGuarded();
 
     const event = makeRouteEvent({
-      user: safeUser(u),
+      ...guard,
       url: 'http://localhost/',
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
@@ -73,12 +81,10 @@ describe('child/[id]/guide load', () => {
   });
 
   it('currentStageId reflects child age', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const { c, guard } = await seedGuarded();
 
     const event = makeRouteEvent({
-      user: safeUser(u),
+      ...guard,
       url: 'http://localhost/',
       parent: async () => ({ child: { id: c.id, birthDate: '2022-01-01' } })
     });

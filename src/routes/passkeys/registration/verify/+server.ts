@@ -2,9 +2,10 @@ import { error, json } from '@sveltejs/kit';
 import {
   PASSKEY_CHALLENGE_COOKIE,
   RP_ID,
+  assertRpidOrigin,
   consumeChallenge,
   finishRegistration,
-  isOriginAllowedForRPID,
+  parsePasskeyResponseBody,
   publicPasskey
 } from '$lib/server/passkeys';
 import { requireUser } from '$lib/server/guards';
@@ -13,20 +14,9 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
   const user = requireUser(locals);
-  if (!isOriginAllowedForRPID(url.origin)) {
-    throw error(500, 'Configuration WebAuthn invalide pour cet hôte.');
-  }
+  assertRpidOrigin(url.origin);
 
-  let body: { response?: unknown; name?: unknown };
-  try {
-    body = await request.json();
-  } catch {
-    throw error(400, 'JSON invalide');
-  }
-
-  if (!body.response || typeof body.response !== 'object') {
-    throw error(400, 'Réponse manquante');
-  }
+  const { response, name: rawName } = await parsePasskeyResponseBody(request);
 
   const token = cookies.get(PASSKEY_CHALLENGE_COOKIE) ?? '';
   cookies.delete(PASSKEY_CHALLENGE_COOKIE, { path: '/' });
@@ -36,11 +26,11 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
     throw error(400, 'Challenge expiré ou invalide');
   }
 
-  const name = typeof body.name === 'string' ? body.name : 'Passkey';
+  const name = typeof rawName === 'string' ? rawName : 'Passkey';
 
   const result = await finishRegistration({
     userId: user.id,
-    response: body.response as Parameters<typeof finishRegistration>[0]['response'],
+    response: response as Parameters<typeof finishRegistration>[0]['response'],
     expectedChallenge: challenge.challenge,
     // expectedOrigin must match what the browser sent (the page's origin),
     // which is the per-request URL — preserved by adapter-node when

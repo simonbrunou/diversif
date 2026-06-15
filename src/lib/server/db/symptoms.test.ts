@@ -86,7 +86,7 @@ describe('symptoms queries', () => {
         createdBy: u.id
       }
     ]);
-    const list = await listSymptomsByEntry(entry.id);
+    const list = await listSymptomsByEntry(entry.id, c.id);
     expect(list).toHaveLength(2);
     expect(list[0].label).toBe('rougeur');
     expect(list[1].label).toBe('vomissement');
@@ -112,7 +112,7 @@ describe('symptoms queries', () => {
       createdBy: u.id,
       currentReaction: 'reaction'
     });
-    const list = await listSymptomsByEntry(entry.id);
+    const list = await listSymptomsByEntry(entry.id, c.id);
     expect(list).toHaveLength(1);
     expect(list[0].note).toBe('joue gauche');
   });
@@ -137,7 +137,7 @@ describe('symptoms queries', () => {
       createdBy: u.id,
       currentReaction: 'reaction'
     });
-    const list = await listSymptomsByEntry(entry.id);
+    const list = await listSymptomsByEntry(entry.id, c.id);
     expect(list[0].note).toBeNull();
   });
 
@@ -167,13 +167,83 @@ describe('symptoms queries', () => {
       reaction: 'reaction',
       loggedBy: u.id
     });
-    expect(await countNthExposition(e1.id)).toBe(1);
-    expect(await countNthExposition(e2.id)).toBe(2);
-    expect(await countNthExposition(e3.id)).toBe(3);
+    expect(await countNthExposition(e1.id, c.id)).toBe(1);
+    expect(await countNthExposition(e2.id, c.id)).toBe(2);
+    expect(await countNthExposition(e3.id, c.id)).toBe(3);
   });
 
   it('countNthExposition returns 0 for unknown entry id', async () => {
-    expect(await countNthExposition(99999)).toBe(0);
+    expect(await countNthExposition(99999, 1)).toBe(0);
+  });
+
+  it('countNthExposition returns 0 when the entry belongs to another child', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    const other = await seedChild({ name: 'Autre', createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const food = await seedFood('Poire');
+    const entry = await seedFoodEntry({
+      childId: c.id,
+      foodId: food.id,
+      reaction: 'ras',
+      loggedBy: u.id
+    });
+    // Real entry, wrong child → the childId-anchored lookup finds no row.
+    expect(await countNthExposition(entry.id, other.id)).toBe(0);
+  });
+
+  it('listSymptomsByEntry ignores symptoms when the entry belongs to another child', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    const other = await seedChild({ name: 'Autre', createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const food = await seedFood('Poire');
+    const entry = await seedFoodEntry({
+      childId: c.id,
+      foodId: food.id,
+      reaction: 'reaction',
+      loggedBy: u.id
+    });
+    await testDb.insert(symptoms).values({
+      foodEntryId: entry.id,
+      childId: c.id,
+      observedAt: new Date(),
+      label: 'rougeur',
+      note: null,
+      createdBy: u.id
+    });
+    // The symptom exists for child c's entry, but a query scoped to `other`
+    // must not surface it.
+    expect(await listSymptomsByEntry(entry.id, other.id)).toHaveLength(0);
+    expect(await listSymptomsByEntry(entry.id, c.id)).toHaveLength(1);
+  });
+
+  it('insertSymptom refuses an entry that belongs to another child', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    const other = await seedChild({ name: 'Autre', createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    const food = await seedFood('Poire');
+    const entry = await seedFoodEntry({
+      childId: c.id,
+      foodId: food.id,
+      reaction: 'reaction',
+      loggedBy: u.id
+    });
+    // Guarded childId (other) + foreign foodEntryId (c's entry) → the
+    // in-transaction ownership assertion throws and nothing is written.
+    await expect(
+      insertSymptom({
+        foodEntryId: entry.id,
+        childId: other.id,
+        observedAt: new Date(),
+        label: 'rougeur',
+        note: null,
+        createdBy: u.id,
+        currentReaction: 'reaction'
+      })
+    ).rejects.toThrow();
+    expect(await testDb.select().from(symptoms)).toHaveLength(0);
   });
 
   it('deleteSymptomById removes a row scoped to entry + child', async () => {

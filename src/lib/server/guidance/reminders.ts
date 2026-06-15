@@ -21,7 +21,7 @@ import { FORBIDDEN_FOODS } from '$lib/content/guidance';
 import type { EnrichedEntry } from './queries';
 import { findRepeatCandidates } from './repeat-candidates';
 
-export type Severity = 'info' | 'warn' | 'important';
+type Severity = 'info' | 'warn' | 'important';
 
 export type Reminder = {
   key: string;

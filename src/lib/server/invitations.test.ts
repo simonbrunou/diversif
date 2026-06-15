@@ -4,6 +4,13 @@ import { seedChild, seedUser, seedMembership } from '../../test/route';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
+// Force the code generator to a single deterministic value so the
+// collision-exhaustion path can be exercised: with every attempt producing
+// the same code, pre-seeding that code makes all 5 inserts collide.
+mock.module('$lib/utils/invites', () => ({
+  generateInviteCodeRaw: () => 'BEBE-AAAAAA'
+}));
+
 import { invitations } from './db/schema';
 import { createInvitationForChild } from './invitations';
 
@@ -39,5 +46,26 @@ describe('createInvitationForChild', () => {
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
     expect(expiresAtMs - before).toBeGreaterThan(sevenDaysMs - 60_000);
     expect(expiresAtMs - before).toBeLessThan(sevenDaysMs + 60_000);
+  });
+
+  it('returns null after 5 colliding code generations', async () => {
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+    // Pre-seed the (now deterministic) code so every one of the 5 insert
+    // attempts hits the unique-violation retry and the loop exhausts.
+    await testDb.insert(invitations).values({
+      code: 'BEBE-AAAAAA',
+      childId: c.id,
+      createdBy: u.id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 86400_000),
+      usedAt: null,
+      usedBy: null
+    });
+    const code = await createInvitationForChild({ childId: c.id, createdBy: u.id });
+    expect(code).toBeNull();
+    // No extra rows were written (still just the pre-seeded one).
+    expect(await testDb.select().from(invitations)).toHaveLength(1);
   });
 });

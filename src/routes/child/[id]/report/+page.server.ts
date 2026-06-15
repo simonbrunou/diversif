@@ -9,6 +9,7 @@ import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
 import { getStageForAgeMonths, type Stage } from '$lib/content/guidance';
 import { TEXTURE_VALUES, type TextureKey, isTextureKey } from '$lib/utils/textures';
+import { requireChildContext } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
 
 type ReportEntry = {
@@ -187,9 +188,15 @@ function computeTextureDistribution(entries: ReportEntry[]): {
   return { counts, totalWithTexture };
 }
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, locals, params }) => {
+  // In-file membership guard, consistent with the sibling child routes
+  // (foods/log/suggestions/settings all guard in their own load). childId comes
+  // straight from the guard so this call is load-bearing — not removable
+  // duplication of the layout guard — and the tenant check stays resilient to
+  // any future refactor that decouples the load chain. `child` (name/birthDate)
+  // still comes from the layout via parent().
+  const { childId } = requireChildContext(locals, params);
   const { child } = await parent();
-  const childId = child.id;
 
   // Pull all entries with their food join, ordered chronologically.
   const rows = await db

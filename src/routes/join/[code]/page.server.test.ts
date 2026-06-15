@@ -121,6 +121,38 @@ describe('join/[code] load', () => {
     expect(out.inviter).toBe(owner.displayName);
   });
 
+  it('treats a real expired invite as inactive (exercises the expiresAt filter)', async () => {
+    const owner = await seedUser({ email: 'owner@example.com' });
+    const me = await seedUser({ email: 'me@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    // A row that exists but expired one second ago — distinct from the
+    // "no row at all" path (BEBE-ZZZZZZ) the other tests exercise.
+    await seedInvite({
+      code: 'BEBE-ABCDEF',
+      childId: child.id,
+      createdBy: owner.id,
+      expiresAt: new Date(Date.now() - 1000)
+    });
+    const event = makeRouteEvent({ user: safeUser(me), params: { code: 'BEBE-ABCDEF' } });
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out).toMatchObject({ error: expect.stringMatching(/introuvable|expir/i), child: null });
+  });
+
+  it('treats an already-redeemed invite as inactive (exercises the usedAt filter)', async () => {
+    const owner = await seedUser({ email: 'owner@example.com' });
+    const me = await seedUser({ email: 'me@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    await seedInvite({
+      code: 'BEBE-ABCDEF',
+      childId: child.id,
+      createdBy: owner.id,
+      usedAt: new Date()
+    });
+    const event = makeRouteEvent({ user: safeUser(me), params: { code: 'BEBE-ABCDEF' } });
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(out).toMatchObject({ error: expect.stringMatching(/introuvable|expir/i), child: null });
+  });
+
   it('rate-limits authenticated invite lookups', async () => {
     const u = await seedUser();
     for (let i = 0; i < 20; i++) {
@@ -260,5 +292,90 @@ describe('join/[code] default action', () => {
     } finally {
       txSpy.mockRestore();
     }
+  });
+
+  it('fails for a real expired invite and creates no membership', async () => {
+    const owner = await seedUser({ email: 'o@example.com' });
+    const me = await seedUser({ email: 'm@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    await seedInvite({
+      code: 'BEBE-ABCDEF',
+      childId: child.id,
+      createdBy: owner.id,
+      expiresAt: new Date(Date.now() - 1000)
+    });
+    const event = makeRouteEvent({ user: safeUser(me), params: { code: 'BEBE-ABCDEF' } });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { error: string } };
+    expect(r.status).toBe(400);
+    const memb = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
+    expect(memb).toHaveLength(0);
+  });
+
+  it('fails for an already-redeemed invite and creates no membership', async () => {
+    const owner = await seedUser({ email: 'o@example.com' });
+    const me = await seedUser({ email: 'm@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    await seedInvite({
+      code: 'BEBE-ABCDEF',
+      childId: child.id,
+      createdBy: owner.id,
+      usedAt: new Date()
+    });
+    const event = makeRouteEvent({ user: safeUser(me), params: { code: 'BEBE-ABCDEF' } });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { error: string } };
+    expect(r.status).toBe(400);
+    const memb = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
+    expect(memb).toHaveLength(0);
+  });
+
+  it('lets the owner redeem their own code without duplicating membership or consuming the invite', async () => {
+    const owner = await seedUser({ email: 'o@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    await seedMembership({ userId: owner.id, childId: child.id, role: 'owner' });
+    await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
+
+    const event = makeRouteEvent({ user: safeUser(owner), params: { code: 'BEBE-ABCDEF' } });
+    const r = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    // Already-a-member short-circuit redirects to the child without touching state.
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe(`/child/${child.id}`);
+
+    const memb = await testDb.select().from(memberships).where(eq(memberships.childId, child.id));
+    expect(memb).toHaveLength(1); // still just the owner, no second row
+    const inv = (
+      await testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ABCDEF')).limit(1)
+    )[0];
+    expect(inv?.usedAt).toBeNull(); // the code was NOT consumed
+  });
+
+  it('rejects a second redemption of the same code by the same user', async () => {
+    const owner = await seedUser({ email: 'o@example.com' });
+    const me = await seedUser({ email: 'm@example.com' });
+    const child = await seedChild({ createdBy: owner.id });
+    await seedInvite({ code: 'BEBE-ABCDEF', childId: child.id, createdBy: owner.id });
+
+    const mkEvent = () =>
+      makeRouteEvent({
+        user: safeUser(me),
+        params: { code: 'BEBE-ABCDEF' }
+      }) as unknown as Parameters<NonNullable<typeof actions.default>>[0];
+
+    // First redemption joins the child.
+    const first = await captureFlow(() => actions.default!(mkEvent()));
+    expect(first.kind).toBe('redirect');
+
+    // Second redemption: the invite is now consumed (usedAt set), so
+    // findActiveInvitation returns nothing → fail(400), and no second
+    // membership row is created.
+    const second = (await actions.default!(mkEvent())) as { status: number };
+    expect(second.status).toBe(400);
+    const memb = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
+    expect(memb).toHaveLength(1);
   });
 });

@@ -146,7 +146,19 @@ export const actions: Actions = {
       const result = tx
         .update(invitations)
         .set({ usedAt: now, usedBy: locals.user!.id })
-        .where(and(eq(invitations.code, code), isNull(invitations.usedAt)))
+        // Re-check expiry inside the claim alongside `usedAt IS NULL`: the
+        // read in findActiveInvitation can't bind the row for the later write,
+        // so an invite that expires between read and claim must still be
+        // rejected here (defense-in-depth; the read→write gap is tiny under
+        // bun:sqlite's synchronous transactions but the guard makes the
+        // consume self-contained rather than time-of-check dependent).
+        .where(
+          and(
+            eq(invitations.code, code),
+            isNull(invitations.usedAt),
+            gt(invitations.expiresAt, now)
+          )
+        )
         .returning({ code: invitations.code })
         .all();
       if (result.length === 0) return;
