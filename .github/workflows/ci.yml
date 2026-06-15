@@ -46,6 +46,24 @@ jobs:
       - name: dependency-cruiser
         run: bun run depcruise
 
+  knip:
+    name: Knip (unused files/exports/deps — advisory)
+    # Advisory only: knip overlaps the Fallow gate and is informational, so it
+    # reports but never blocks a merge (continue-on-error).
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      # knip resolves $lib/$app aliases and skips generated output, so it needs
+      # paraglide's messages + SvelteKit's synced tsconfig/$types present first.
+      - run: bun run paraglide
+      - run: bun --bun node_modules/@sveltejs/kit/src/cli.js sync
+      - run: bun run knip
+
   fallow-audit:
     name: Fallow audit (changed-file health gate)
     # PR-only: the audit attributes findings to the PR's diff against its base

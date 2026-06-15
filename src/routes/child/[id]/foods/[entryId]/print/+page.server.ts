@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   )[0];
   if (!row) throw error(404, 'Food entry not found');
 
-  const sList = await listSymptomsByEntry(entryId);
+  const sList = await listSymptomsByEntry(entryId, childId);
   const locale = (locals.locale ?? 'fr') as 'fr' | 'en';
   const dtf = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
     dateStyle: 'long',

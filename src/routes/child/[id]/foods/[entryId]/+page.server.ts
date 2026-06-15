@@ -43,13 +43,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   const row = await loadEntryForChild(entryId, childId);
 
   const intlLocale = (locals.locale ?? 'fr') === 'fr' ? 'fr-FR' : 'en-GB';
-  const sList = (await listSymptomsByEntry(entryId)).map((s) => ({
+  const sList = (await listSymptomsByEntry(entryId, childId)).map((s) => ({
     id: s.id,
     label: s.label,
     observedAt: formatTime(s.observedAt, intlLocale),
     note: s.note
   }));
-  const nth = await countNthExposition(entryId);
+  const nth = await countNthExposition(entryId, childId);
 
   return {
     childId,
