@@ -96,9 +96,32 @@ exposing the instance to anyone outside the maintainers.
 | `ADDRESS_HEADER` / `PROTOCOL_HEADER` / `HOST_HEADER`                                                              | Behind a proxy, without `ADDRESS_HEADER` the per-IP rate limits see the proxy as one client and one bad actor can lock everyone out — see README "Reverse proxy". The image deliberately bakes **no** default: adapter-node throws on requests lacking the configured header (a baked `x-forwarded-for` would take down any deploy without a proxy), and client-supplied `x-forwarded-for` is spoofable. Set `ADDRESS_HEADER=cf-connecting-ip` behind a Cloudflare Tunnel; `ADDRESS_HEADER=x-forwarded-for` + `XFF_DEPTH=<trusted proxies>` behind a directly-exposed proxy; leave it unset only when clients hit the container **directly** (socket address is then correct). The server logs a `[diversif:boot]` warning when `PROTOCOL_HEADER` is set without `ADDRESS_HEADER`. |
 | `SENTRY_DSN` (+ `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`)                                                           | Errors in the wild reach you instead of dying silently.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
-Schedule the off-box backup cron (`VACUUM INTO` → encrypted object storage) and
-periodically run `bun run db:verify-backup` against a pulled-back copy so the
-restore path is exercised, not assumed.
+### Launch ops backlog (deferred from [`TOOLING_AUDIT.md`](./TOOLING_AUDIT.md))
+
+Two deployment-side items are **not yet done** and must be closed before opening
+the instance to other families. They are infra/config, not code, so they live
+here rather than in the repo — and intentionally **not** in `PARKING_LOT.md`,
+which is for maybe-never work; these are required.
+
+- [ ] **B1 — Off-box, continuous backups.** Today the only off-box copy is the
+      manual pre-deploy `VACUUM INTO` snapshot above; the recurring cron is
+      unscheduled. For a single-file SQLite DB holding other families' data,
+      adopt **Litestream** streaming replication to an S3-compatible target
+      (e.g. Cloudflare R2): it gives point-in-time recovery (seconds of RPO vs.
+      up to 24 h for daily snapshots), needs no app changes, and its
+      prerequisite — WAL mode — is **already enabled**
+      (`src/lib/server/db/index.ts`). Keep the pre-deploy `VACUUM INTO` snapshot
+      as the belt-and-braces pre-migration copy, and periodically run
+      `bun run db:verify-backup` against a pulled-back replica so the restore
+      path is exercised, not assumed.
+- [ ] **O1 — Self-hosted error monitoring (optional, data-sovereignty).** The app
+      already ships the Sentry SDK (`@sentry/sveltekit`); **GlitchTip** is
+      Sentry-SDK wire-compatible, so adopting it is a config swap, not a code
+      change: point `SENTRY_DSN` / `PUBLIC_SENTRY_DSN` at a self-hosted GlitchTip
+      instance and **add its ingest origin to the CSP `connect-src`** in
+      `svelte.config.js` (which currently allow-lists `*.ingest.*.sentry.io`).
+      No hook/SDK changes needed. GlitchTip omits some Sentry features (Seer/AI,
+      certain performance views) but covers error capture.
 
 **Pre-migration backups carry raw session tokens.** Sessions are now stored as
 sha256 digests at rest, but any backup taken **before** the session-hashing
