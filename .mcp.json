@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sqlite": {
+      "command": "npx",
+      "args": ["-y", "mcp-server-sqlite-npx@0.8.0", "./local.db"]
+    }
+  }
+}

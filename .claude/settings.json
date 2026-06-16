@@ -70,33 +70,18 @@
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/fallow-gate.sh"
+            "command": "\"$HOME\"/.claude/hooks/fallow-gate.sh"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/code-review-on-push.sh",
-            "timeout": 30,
-            "statusMessage": "Checking PR for /code-review trigger"
-          }
-        ]
-      },
-      {
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/format-edited.sh"
-          },
-          {
-            "type": "command",
-            "command": ".claude/hooks/council-on-brainstorm.sh"
+            "command": "\"$HOME\"/.claude/hooks/format-edited.sh"
           }
         ]
       }
