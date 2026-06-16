@@ -82,10 +82,6 @@
           {
             "type": "command",
             "command": "\"$HOME\"/.claude/hooks/format-edited.sh"
-          },
-          {
-            "type": "command",
-            "command": ".claude/hooks/council-on-brainstorm.sh"
           }
         ]
       }
