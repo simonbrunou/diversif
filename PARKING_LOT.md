@@ -18,6 +18,21 @@ recovery, (b) open signup proves abusable in practice, or (c) we switch to
 requiring email confirmation. Until a sender exists, email verification is not
 buildable.
 
+## Off-box backup scheduling (Litestream → R2)
+
+**Carried over 2026-06-17** from the removed `TOOLING_AUDIT.md` (item B1). The
+pre-deploy `VACUUM INTO` snapshot + `bun run db:verify-backup` method is documented
+in `DEPLOY.md`, but a _scheduled_ off-box / continuous backup is not yet configured.
+The single-file SQLite DB holds other families' data, so this matters before a
+fully-open launch.
+
+Recommended: **Litestream → R2** for continuous streaming replication — WAL mode is
+already enabled (its prerequisite), giving point-in-time recovery with seconds of
+RPO vs. up to 24h for daily snapshots, and needs no app changes. Keep the documented
+`VACUUM INTO` pre-deploy snapshot as belt-and-braces. ⚠️ Backups taken _before_ the
+session-token-hashing migration contain raw session tokens — handle as a secrets
+file until they age out (also noted in `DEPLOY.md`).
+
 ## Explicitly out of scope for the hardening pass
 
 Carried over from the checklist's parking lot — do not start these during
