@@ -42,3 +42,5 @@ project.inlang/cache/
 # Visual brainstorm companion
 .superpowers/
 .fallow/
+.direnv/
+result
