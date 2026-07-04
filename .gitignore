@@ -27,8 +27,10 @@ graphify-out/cost.json
 graphify-out/.graphify_python
 graphify-out/.graphify_root
 # AST cache regenerates on every graphify run; not worth the churn.
-# GRAPH_REPORT.md and graph.json stay tracked.
+# GRAPH_REPORT.md, graph.json, graph.html, manifest.json stay tracked.
 graphify-out/cache/
+# Dated snapshot backups regenerate each run — churn, not history.
+graphify-out/????-??-??/
 # Paraglide-generated runtime — vite plugin regenerates on build/dev.
 src/lib/paraglide/
 # inlang SDK v2 manages project.inlang/ itself: it regenerates its own

@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "src/lib/components/BottomNavBento.svelte": {
-    "mtime": 1781197508.9963527,
-    "ast_hash": "99d79ce9ee77f584aa5564f4464542e1",
+    "mtime": 1783183688.8861213,
+    "ast_hash": "2558637894ceef690a45a687725ff63c",
     "semantic_hash": ""
   },
   "src/lib/components/TexturePicker.svelte": {
@@ -315,8 +315,8 @@
     "semantic_hash": ""
   },
   "src/lib/components/BottomNavBento.test.ts": {
-    "mtime": 1780503890.8101778,
-    "ast_hash": "9f21c0a38ac644db9e02be5fed47d1b3",
+    "mtime": 1783183678.3262281,
+    "ast_hash": "7e5c20f0c58ded85aa0bf303f452c079",
     "semantic_hash": ""
   },
   "src/lib/components/ChildHeaderPill.test.ts": {
@@ -1000,8 +1000,8 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/AujourdhuiBento.svelte": {
-    "mtime": 1781163542.0153785,
-    "ast_hash": "2ab318af1ac8179b7dc0550c8cf1f530",
+    "mtime": 1783183699.1770172,
+    "ast_hash": "84de725acf7b7a7e5be8cb9f0bb0f228",
     "semantic_hash": ""
   },
   "src/lib/components/bento/AujourdhuiBento.test.ts": {
@@ -5215,8 +5215,8 @@
     "semantic_hash": ""
   },
   "PRODUCT.md": {
-    "mtime": 1778507926.8432157,
-    "ast_hash": "adab05445e6820113bad049d56a5859f",
+    "mtime": 1783166646.3251915,
+    "ast_hash": "43b19b8d9791af9465a8e827dd96c845",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
@@ -5655,13 +5655,13 @@
     "semantic_hash": ""
   },
   "messages/en.json": {
-    "mtime": 1781163542.0131238,
-    "ast_hash": "9e94c1d23295a4bff522ca9b52ce835b",
+    "mtime": 1783180832.1677518,
+    "ast_hash": "8b6a2d5386e717794855054026aef8df",
     "semantic_hash": ""
   },
   "messages/fr.json": {
-    "mtime": 1781163542.0131238,
-    "ast_hash": "37374cc5af9fca3f85721b814c9fc470",
+    "mtime": 1783180827.3618011,
+    "ast_hash": "5eb6bfaf0244e247aff641140fbca62a",
     "semantic_hash": ""
   },
   "package.json": {
@@ -5827,6 +5827,81 @@
   "docs/superpowers/specs/2026-07-04-quantities-and-meal-engine-design.md": {
     "mtime": 1783155669.720074,
     "ast_hash": "ac72befbb79076b834420429c411afd2",
+    "semantic_hash": ""
+  },
+  "src/lib/components/menu/MenuDay.svelte": {
+    "mtime": 1783181425.9656663,
+    "ast_hash": "74da3966a4bff4b3085132bc1338e979",
+    "semantic_hash": ""
+  },
+  "src/lib/components/menu/MenuDay.test.ts": {
+    "mtime": 1783182974.7423434,
+    "ast_hash": "d4f3ca1849dfbe404176c4b07dec0b64",
+    "semantic_hash": ""
+  },
+  "src/lib/components/menu/QuantitiesCard.svelte": {
+    "mtime": 1783180883.5012252,
+    "ast_hash": "b33248e7d2bfd060208610419cc80763",
+    "semantic_hash": ""
+  },
+  "src/lib/components/menu/QuantitiesCard.test.ts": {
+    "mtime": 1783180890.2781558,
+    "ast_hash": "4a8c750b83d7a6dab479be4a16f9d3af",
+    "semantic_hash": ""
+  },
+  "src/lib/server/menu/day.test.ts": {
+    "mtime": 1783167489.5907218,
+    "ast_hash": "b913faa21d4d223bfd41810880010b97",
+    "semantic_hash": ""
+  },
+  "src/lib/server/menu/day.ts": {
+    "mtime": 1783167499.789645,
+    "ast_hash": "dc2424e67c7fdf4e0f77dc267ab1b31a",
+    "semantic_hash": ""
+  },
+  "src/lib/server/menu/engine.test.ts": {
+    "mtime": 1783182942.8336654,
+    "ast_hash": "fa5e6824b5735fcc00eab1b0e3c3849f",
+    "semantic_hash": ""
+  },
+  "src/lib/server/menu/engine.ts": {
+    "mtime": 1783180577.3203678,
+    "ast_hash": "3cb617f5adef4d7ba63073d380ba00b4",
+    "semantic_hash": ""
+  },
+  "src/lib/server/menu/rotation.test.ts": {
+    "mtime": 1783166812.705422,
+    "ast_hash": "f1e5eb1dd53695239bb467beee1b431c",
+    "semantic_hash": ""
+  },
+  "src/lib/server/menu/rotation.ts": {
+    "mtime": 1783166821.8083253,
+    "ast_hash": "bdfe667da4d23ed3e47d60bc29f74f2f",
+    "semantic_hash": ""
+  },
+  "src/lib/server/menu/tables.test.ts": {
+    "mtime": 1783170109.8042479,
+    "ast_hash": "12f6e0842d99dd90cda22a763c65df9b",
+    "semantic_hash": ""
+  },
+  "src/lib/server/menu/tables.ts": {
+    "mtime": 1783184443.7474763,
+    "ast_hash": "ed3f42d8f235bf71f3c4af797bcb53dd",
+    "semantic_hash": ""
+  },
+  "src/routes/child/[id]/menu/+page.server.ts": {
+    "mtime": 1783179897.7453785,
+    "ast_hash": "d00eaaf14ee5a8627015266c1e6097d7",
+    "semantic_hash": ""
+  },
+  "src/routes/child/[id]/menu/+page.svelte": {
+    "mtime": 1783181148.3975098,
+    "ast_hash": "d4b58946df0f441ca584cb7d27951404",
+    "semantic_hash": ""
+  },
+  "src/routes/child/[id]/menu/page.server.test.ts": {
+    "mtime": 1783179875.928605,
+    "ast_hash": "4df753e332c2f4372410e2a275756d91",
     "semantic_hash": ""
   }
 }

@@ -21,7 +21,6 @@ const FULL_DAY: { id: MealId; roles: RoleId[] }[] = [
 ];
 
 // Consumed by the meal engine (Task 7); this task only adds the data.
-// fallow-ignore-next-line unused-export
 export const MEAL_TEMPLATES: Record<StageId, { id: MealId; roles: RoleId[] }[]> = {
   '4-6': [{ id: 'midi', roles: ['legume'] }], // engine degrades to a single food
   '6-9': FULL_DAY,
@@ -50,7 +49,6 @@ export const PROTEIN_WEEK: CategoryId[] = [
   'legumineuses'
 ];
 // Consumed by the meal engine (Task 7-9); this task only adds the data.
-// fallow-ignore-next-line unused-export
 export const OILY_FISH = ['Saumon', 'Sardine', 'Maquereau', 'Truite'];
 
 // Role-bearing food categories the proactive non-allergen novelty may draw from.
@@ -67,21 +65,17 @@ export const NOVELTY_CATEGORIES: CategoryId[] = [
 
 // Nut oil is a fruits_a_coque allergen; never rotate it into the silent fat slot.
 // Consumed by the meal engine (Task 7-9); this task only adds the data.
-// fallow-ignore-next-line unused-export
 export const FAT_EXCLUDE = ['Huile de noix'];
 
 // Charcuterie (salt/processed) stays out of the composable protéine pool at ALL ages.
 // Plain "Porc" is a fine cooked protein, so it is NOT here — it's excluded only by the
 // `porc` dietary preference (PORC_MATCHERS). Both matchers are consumed by the meal
 // engine (Task 7-9); this task only adds the data.
-// fallow-ignore-next-line unused-export
 export const CHARCUTERIE_MATCHERS = ['Jambon'];
-// fallow-ignore-next-line unused-export
 export const PORC_MATCHERS = ['Porc', 'Jambon']; // the `porc` dietary exclusion
 
 // Soft/fresh cheeses that must carry a pasteurised caveat on the menu. Consumed by
 // the meal engine (Task 7-9); this task only adds the data.
-// fallow-ignore-next-line unused-export
 export const SOFT_CHEESE = ['Camembert', 'Chèvre frais', 'Brebis (fromage)'];
 
 // Curated seed-name → choking rule. Keys MUST match FOODS_SEED names exactly
