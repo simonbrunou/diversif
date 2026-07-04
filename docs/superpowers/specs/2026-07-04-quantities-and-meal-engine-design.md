@@ -342,7 +342,7 @@ different OS zones can't diverge). The `YYYY-MM-DD → ordinal` step must treat 
 civil date** (parse at UTC-midnight or map y/m/d → day-number) and **must not re-apply a tz
 offset** (a hand-rolled `Date.now() + (+1/+2h)` breaks twice a year). DST is otherwise safe:
 the civil date flips at local midnight; spring-forward skips 02:00–03:00 and fall-back repeats
-it, neither touching midnight. `weekday` is Monday-origin (`(dayIndex + 4) % 7`, since epoch
+it, neither touching midnight. `weekday` is Monday-origin (`(dayIndex + 3) % 7`, since epoch
 day 0 is a Thursday), used for `PROTEIN_WEEK`. Menu flips at Paris local midnight; co-parents
 agree (same instant → same civil date).
 
