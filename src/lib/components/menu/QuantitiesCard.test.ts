@@ -16,4 +16,11 @@ describe('QuantitiesCard', () => {
     render(QuantitiesCard, { props: { quantities: QUANTITIES['4-6'] } });
     expect(screen.queryByText('Œuf')).toBeNull();
   });
+
+  it('surfaces the stage sources as cited references, not silently dropped', () => {
+    render(QuantitiesCard, { props: { quantities: QUANTITIES['6-9'] } });
+    // QUANTITIES['6-9'].sources includes 'spf-pnns-guide'; SourceCitation's
+    // inline mode renders "<org> (<year>)" per source.
+    expect(screen.getByText('Santé publique France / PNNS (2021)')).toBeTruthy();
+  });
 });

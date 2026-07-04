@@ -1,5 +1,6 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
+  import SourceCitation from '$lib/components/SourceCitation.svelte';
   import type { StageQuantities } from '$lib/content/quantities';
   import * as m from '$lib/paraglide/messages';
 
@@ -31,4 +32,9 @@
     {/if}
   </dl>
   <p class="mt-3 text-xs text-ink-soft">{m.quantitiesSatiety()}</p>
+  {#if quantities.sources.length > 0}
+    <div class="mt-2">
+      <SourceCitation ids={quantities.sources} inline />
+    </div>
+  {/if}
 </Card>
