@@ -18,6 +18,7 @@ import {
   type Passkey
 } from './db/schema';
 import type { TextureKey } from '$lib/utils/textures';
+import { parseDietExclusions, type DietExclusion } from '$lib/utils/diet';
 
 export type DeletionSummary = {
   deletedChildren: number;
@@ -124,6 +125,7 @@ export type ExportedUser = {
     name: string;
     birthDate: string;
     createdAt: string;
+    dietaryExclusions: DietExclusion[];
     membership: { role: Membership['role']; joinedAt: string };
     foodEntries: Array<{
       id: number;
@@ -362,6 +364,7 @@ export async function exportUserData(
         name: c.name,
         birthDate: c.birthDate,
         createdAt: isoOrThrow(c.createdAt),
+        dietaryExclusions: parseDietExclusions(c.dietaryExclusions),
         membership: {
           /* v8 ignore next */
           role: m?.role ?? 'member',

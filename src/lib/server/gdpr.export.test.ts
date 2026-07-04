@@ -15,7 +15,7 @@ mock.module('./audit', () => ({
 }));
 
 import { ExportTooLargeError, exportUserData } from './gdpr';
-import { invitations, passkeys, tipDismissals, users } from './db/schema';
+import { children, invitations, passkeys, tipDismissals, users } from './db/schema';
 import { eq } from 'drizzle-orm';
 import {
   insertChild,
@@ -69,6 +69,7 @@ describe('exportUserData', () => {
     expect(out.profile.lastExportAt).toBe('2026-04-01T00:00:00.000Z');
     expect(out.children).toHaveLength(1);
     expect(out.children[0].name).toBe('Léa');
+    expect(out.children[0].dietaryExclusions).toEqual([]); // column default
     expect(out.children[0].membership.role).toBe('owner');
     expect(out.children[0].foodEntries).toHaveLength(1);
     expect(out.children[0].foodEntries[0].foodName).toBe('Banane');
@@ -80,6 +81,19 @@ describe('exportUserData', () => {
     expect(serialized).not.toContain('SECRET-PUBLIC-KEY');
     expect(serialized).not.toContain('passwordHash');
     expect(serialized).not.toContain('counter');
+  });
+
+  it("includes the child's dietaryExclusions (RGPD art. 15/20 completeness)", async () => {
+    const u = await insertUser('diet-export@example.com');
+    const c = await insertChild('Léa', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    await testDb
+      .update(children)
+      .set({ dietaryExclusions: ['vegetarien', 'porc'] })
+      .where(eq(children.id, c.id));
+
+    const out = await exportUserData(u.id);
+    expect(out.children[0].dietaryExclusions).toEqual(['vegetarien', 'porc']);
   });
 
   it('returns empty children list when user has no memberships', async () => {
