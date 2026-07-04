@@ -182,13 +182,14 @@ describe('child/[id]/menu load', () => {
     expect(items.some((i) => i.food.id === riz.id)).toBe(false);
   });
 
-  it('vegetarien excludes viandes and poissons from every meal slot', async () => {
+  it('vegetarien excludes viandes and poissons but keeps légumineuses/œufs in the protein slot', async () => {
     const ctx = await setup();
 
-    // Poulet/Cabillaud are the ONLY introduced protein-pool candidates (viandes/
-    // poissons/oeufs/legumineuses), so pickProtein deterministically serves one
-    // of them absent diet filtering — proving the exclusion actually runs,
-    // rather than relying on a rotation-dependent fluke.
+    // Poulet/Cabillaud are viandes/poissons candidates that must be excluded;
+    // Lentilles/Œuf are the non-meat protein candidates that must survive —
+    // without them, the protéine slot would just go empty and "no viandes/
+    // poissons item appears" would pass vacuously regardless of whether the
+    // exclusion actually distinguishes meat/fish from légumineuses/œufs.
     const poulet = await insertFood({ name: 'Poulet', category: 'viandes', age: 6 });
     const cabillaud = await insertFood({
       name: 'Cabillaud',
@@ -196,12 +197,14 @@ describe('child/[id]/menu load', () => {
       age: 6,
       allergen: 'poisson'
     });
+    const lentilles = await insertFood({ name: 'Lentilles', category: 'legumineuses', age: 8 });
+    const oeuf = await insertFood({ name: 'Œuf', category: 'oeufs', age: 6, allergen: 'oeuf' });
     const carotte = await insertFood({ name: 'Carotte', category: 'legumes', age: 4 });
     const pomme = await insertFood({ name: 'Pomme', category: 'fruits', age: 4 });
     const riz = await insertFood({ name: 'Riz', category: 'feculents', age: 6 });
     const yaourt = await insertFood({ name: 'Yaourt', category: 'produits_laitiers', age: 6 });
     const huile = await insertFood({ name: "Huile d'olive", category: 'matieres_grasses', age: 6 });
-    for (const food of [poulet, cabillaud, carotte, pomme, riz, yaourt, huile]) {
+    for (const food of [poulet, cabillaud, lentilles, oeuf, carotte, pomme, riz, yaourt, huile]) {
       await logEntry({ childId: ctx.c.id, foodId: food.id, loggedBy: ctx.u.id, reaction: 'ras' });
     }
     await setDiet(ctx.c.id, ['vegetarien']);
@@ -212,6 +215,12 @@ describe('child/[id]/menu load', () => {
     expect(items.some((i) => i.food.category === 'viandes' || i.food.category === 'poissons')).toBe(
       false
     );
+    // Proves vegetarien excludes only meat/fish, not the whole protéine role:
+    // the slot is filled from the surviving légumineuses/œufs pool, not left
+    // empty.
+    expect(
+      items.some((i) => i.food.category === 'legumineuses' || i.food.category === 'oeufs')
+    ).toBe(true);
   });
 
   it('porc excludes a plain-pork food, not just charcuterie, from the protein slot', async () => {

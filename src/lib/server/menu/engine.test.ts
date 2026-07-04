@@ -253,6 +253,10 @@ test('at most one new food per day; every unbadged item is already introduced', 
   );
   const items = menu.meals.flatMap((mo) => mo.items);
   expect(items.filter((i) => !intro.has(i.food.id)).length).toBeLessThanOrEqual(1);
+  // A novelty IS actually produced in this arranged scenario (the whole légumes
+  // category is un-introduced) — guards against pickNoveltyCandidate silently
+  // returning null and the ≤1 check above passing vacuously on zero novelties.
+  expect(items.some((i) => i.isNew)).toBe(true);
   for (const i of items) if (!intro.has(i.food.id)) expect(i.isNew).toBe(true); // no covert novelty
 });
 
@@ -328,6 +332,9 @@ test('reaction to Saumon blocks all poisson', () => {
 });
 
 test('allergenFocus.maintain re-offers only an introduced food', () => {
+  // Every priority allergen is already introduced (dueList is empty), so
+  // pickDueAllergenFood always returns null and the maintain branch is the ONLY
+  // path that can populate allergenFocus — deterministic, not conditional on it.
   const intro = new Set(CATALOG.map((f) => f.id));
   const menu = buildMenu(
     baseInput({
@@ -335,15 +342,17 @@ test('allergenFocus.maintain re-offers only an introduced food', () => {
       introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
     })
   );
-  if (menu.allergenFocus?.mode === 'maintain') {
-    expect(intro.has(menu.allergenFocus.food.id)).toBe(true);
-  }
+  expect(menu.allergenFocus?.mode).toBe('maintain');
+  expect(intro.has(menu.allergenFocus!.food.id)).toBe(true);
 });
 
 test('sans_poisson never shows poisson as allergène du jour', () => {
   const menu = buildMenu(
     baseInput({ dietaryExclusions: ['sans_poisson'], introducedAllergens: new Set() })
   );
+  // Non-null pins down that a real substitute allergen was surfaced, not an
+  // accidental null the `.food.allergenType` check below would pass vacuously.
+  expect(menu.allergenFocus).not.toBeNull();
   expect(menu.allergenFocus?.food.allergenType).not.toBe('poisson');
 });
 

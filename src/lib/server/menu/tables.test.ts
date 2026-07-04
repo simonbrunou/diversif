@@ -2,7 +2,6 @@ import { test, expect } from 'bun:test';
 import {
   PROTEIN_WEEK,
   CHOKING_BY_FOOD,
-  ROLE_POOLS,
   NOVELTY_CATEGORIES,
   CHARCUTERIE_MATCHERS,
   PORC_MATCHERS,
@@ -47,9 +46,14 @@ test('known choke-relevant foods are covered (incl. whole round berries)', () =>
   }
 });
 
-test('matière grasse pool excludes the nut oil', () => {
-  expect(ROLE_POOLS.matiereGrasse).toContain('matieres_grasses');
-  // Huile de noix exclusion is enforced in the engine by name; assert the category is fat-only
+test('FAT_EXCLUDE names the nut oil (the engine enforces the exclusion by name)', () => {
+  // The former version of this test only checked ROLE_POOLS.matiereGrasse
+  // pool-membership by category, which passes regardless of FAT_EXCLUDE's
+  // contents — it never actually asserted the nut oil is excluded. The
+  // engine-level exclusion test (engine.test.ts: "safeForRole(matiereGrasse)
+  // excludes the nut oil") is the real behavioral guard; this one just pins
+  // down the data this table declares.
+  expect(FAT_EXCLUDE).toContain('Huile de noix');
 });
 
 test('novelty categories are role-bearing only (no allergenes/aromates)', () => {
