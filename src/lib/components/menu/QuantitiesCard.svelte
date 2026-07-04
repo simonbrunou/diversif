@@ -3,11 +3,7 @@
   import type { StageQuantities } from '$lib/content/quantities';
   import * as m from '$lib/paraglide/messages';
 
-  // ageMonths is part of the component's public interface (consumed by a future
-  // task) but not yet used in this presentational card — kept as a prop so
-  // callers don't need to change when that lands.
-  let { quantities, ageMonths: _ageMonths }: { quantities: StageQuantities; ageMonths: number } =
-    $props();
+  let { quantities }: { quantities: StageQuantities } = $props();
 </script>
 
 <Card class="p-4">
