@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import {
-  captureFlow,
+  expectForbidden,
   makeRouteEvent,
   safeUser,
   seedChild,
@@ -81,12 +81,9 @@ describe('settings setDiet action', () => {
       .where(eq(children.id, childB.id));
 
     const event = eventWithDiet(userA, [membershipA], childB.id, ['vegetarien']);
-    const r = await captureFlow(() =>
+    await expectForbidden(() =>
       actions.setDiet!(event as unknown as Parameters<NonNullable<typeof actions.setDiet>>[0])
     );
-
-    expect(r.kind).toBe('error');
-    if (r.kind === 'error') expect(r.status).toBe(403);
 
     const freshB = (
       await testDb.select().from(children).where(eq(children.id, childB.id)).limit(1)

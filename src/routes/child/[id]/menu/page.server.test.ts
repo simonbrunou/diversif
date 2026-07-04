@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import {
-  captureFlow,
+  expectForbidden,
   makeRouteEvent,
   safeUser,
   seedChild,
@@ -317,7 +317,8 @@ describe('child/[id]/menu load', () => {
       reaction: 'ras'
     });
 
-    const r = await captureFlow(() =>
+    // Must throw 403 — never fall through to a return carrying child B's menu/entries.
+    await expectForbidden(() =>
       load(
         makeRouteEvent({
           user: safeUser(ctx.u),
@@ -327,9 +328,5 @@ describe('child/[id]/menu load', () => {
         }) as unknown as Parameters<typeof load>[0]
       )
     );
-
-    // Must throw 403 — never fall through to a return carrying child B's menu/entries.
-    expect(r.kind).toBe('error');
-    if (r.kind === 'error') expect(r.status).toBe(403);
   });
 });

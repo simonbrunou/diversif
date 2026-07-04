@@ -1,4 +1,4 @@
-import { mock } from 'bun:test';
+import { expect, mock } from 'bun:test';
 import { testDb, schema } from './db';
 import type { SafeUser } from '$lib/types';
 
@@ -93,6 +93,20 @@ export async function captureFlow<T>(
     }
     throw e;
   }
+}
+
+/**
+ * Shared assertion for the "wrong child" isolation contract: a load/action
+ * call must reject with a 403, never fall through to a value carrying
+ * another child's data. Centralizing this (rather than repeating
+ * `captureFlow` + the two-line status check at every call site) keeps
+ * per-handler isolation tests both consistent and free of copy-pasted
+ * boilerplate as more of them get added.
+ */
+export async function expectForbidden(fn: () => unknown): Promise<void> {
+  const r = await captureFlow(fn);
+  expect(r.kind).toBe('error');
+  if (r.kind === 'error') expect(r.status).toBe(403);
 }
 
 export async function seedUser(
