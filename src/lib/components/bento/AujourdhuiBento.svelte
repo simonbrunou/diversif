@@ -9,7 +9,7 @@
   import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
   import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
-  import { FileText, ChevronRight } from 'lucide-svelte';
+  import { FileText, ChevronRight, UtensilsCrossed } from 'lucide-svelte';
 
   type Stats = {
     foodsIntroduced: number;
@@ -94,6 +94,21 @@
     foodsHref={localizedHref(`/child/${childId}/foods?segment=allergens`)}
   />
   <RecentFeed entries={recent} {childId} />
+
+  <a
+    href={localizedHref(`/child/${childId}/menu`)}
+    class="mb-3 flex items-center justify-between gap-3 rounded-tile border border-border/40 bg-canvas px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+  >
+    <span class="flex items-center gap-3">
+      <span
+        class="flex h-9 w-9 items-center justify-center rounded-full bg-accent-lilac/30 text-tile-lilac-foreground dark:bg-accent-lilac/20"
+      >
+        <UtensilsCrossed size={18} aria-hidden="true" />
+      </span>
+      <span class="text-sm font-bold leading-tight">{m.menuTitle()}</span>
+    </span>
+    <ChevronRight size={16} class="text-ink-soft" aria-hidden="true" />
+  </a>
 
   <a
     href={localizedHref(`/child/${childId}/report`)}

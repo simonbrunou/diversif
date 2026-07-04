@@ -34,6 +34,11 @@ describe('BottomNavBento', () => {
     expect(screen.getByText('Découvrir').closest('a')!.getAttribute('aria-current')).toBe('page');
   });
 
+  it('marks Découvrir active when on /child/[id]/menu', () => {
+    render(BottomNavBento, { props: makeProps('/child/abc/menu') });
+    expect(screen.getByText('Découvrir').closest('a')!.getAttribute('aria-current')).toBe('page');
+  });
+
   it('marks Profil active when on /account', () => {
     render(BottomNavBento, { props: makeProps('/account') });
     expect(screen.getByText('Profil').closest('a')!.getAttribute('aria-current')).toBe('page');
