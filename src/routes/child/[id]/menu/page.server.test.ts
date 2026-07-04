@@ -131,4 +131,44 @@ describe('child/[id]/menu load', () => {
     // dropped every viandes food, so Poulet surviving proves no filtering ran.
     expect(items.some((i) => i.food.id === poulet.id)).toBe(true);
   });
+
+  it('excludes an inconfort-tier food from its meal slot (avoidFoodIds population)', async () => {
+    const ctx = await setup();
+
+    // Fill every meal role EXCEPT feculent with a reaction-free introduced food,
+    // so the assembled menu stays non-empty whether or not the feculent slot fills.
+    const carotte = await insertFood({ name: 'Carotte', category: 'legumes', age: 4 });
+    const poulet = await insertFood({ name: 'Poulet', category: 'viandes', age: 6 });
+    const pomme = await insertFood({ name: 'Pomme', category: 'fruits', age: 4 });
+    const yaourt = await insertFood({ name: 'Yaourt', category: 'produits_laitiers', age: 6 });
+    const huile = await insertFood({ name: "Huile d'olive", category: 'matieres_grasses', age: 6 });
+    for (const food of [carotte, poulet, pomme, yaourt, huile]) {
+      await logEntry({ childId: ctx.c.id, foodId: food.id, loggedBy: ctx.u.id, reaction: 'ras' });
+    }
+
+    // The SOLE introduced feculent, with NO allergenType, logged at 'inconfort'.
+    // It is dropped from safeForRole('feculent') ONLY by the loader's
+    // `avoidFoodIds.add(e.foodId)` line: it has no allergenType (so the
+    // reactedAllergens gate can't touch it) and inconfort < reaction (so the
+    // reactionTierFoodIds gate can't touch it either). This makes the test a
+    // targeted, non-flaky guard for that one line, independent of parisDay's
+    // real dayIndex:
+    //   WITH avoidFoodIds populated → feculent pool empty → slot skipped → absent every day.
+    //   WITHOUT it → sole introduced feculent → picked in every feculent slot → present.
+    // (It's introduced, so pickNoveltyCandidate — which requires NOT-introduced —
+    // can never re-surface it as the day's novelty either.)
+    const riz = await insertFood({ name: 'Riz', category: 'feculents', age: 6 });
+    await logEntry({
+      childId: ctx.c.id,
+      foodId: riz.id,
+      loggedBy: ctx.u.id,
+      reaction: 'inconfort'
+    });
+
+    const out = await loadFor(ctx);
+
+    const items = out.menu.meals.flatMap((meal) => meal.items);
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.some((i) => i.food.id === riz.id)).toBe(false);
+  });
 });
