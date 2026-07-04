@@ -411,6 +411,11 @@ test('a due allergen with no safe catalog food falls through to maintain + novel
   const badged = menu.meals.flatMap((mo) => mo.items).filter((i) => i.isNew);
   expect(badged.length).toBe(1);
   expect(badged[0].food.category).toBe('legumes');
+  // The novelty légume was INSERTED into midi's empty légume slot (placeNovelty), so midi no
+  // longer wants a légume — the whole point of discoverRoles. soir's légume slot stays genuinely
+  // empty (no introduced légume, and the one novelty was spent on midi) → still prompted.
+  expect(menu.meals.find((mo) => mo.id === 'midi')!.discoverRoles).not.toContain('legume');
+  expect(menu.meals.find((mo) => mo.id === 'soir')!.discoverRoles).toContain('legume');
 });
 
 test('discoverRoles lists template roles that have no introduced food', () => {

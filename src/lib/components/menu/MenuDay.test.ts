@@ -26,7 +26,7 @@ function makeFood(over: Partial<Food> = {}): Food {
 // isNew: true), a non-empty discoverRoles (féculent still "à découvrir"),
 // and a set allergenFocus (Œuf, mode 'introduce') — enough to exercise every
 // MenuDay branch in a single render.
-function makeMenu(): Menu {
+function makeMenu(over: Partial<Menu> = {}): Menu {
   const carotte = makeFood({ id: 1, name: 'Carotte', category: 'legumes' });
   const poulet = makeFood({ id: 2, name: 'Poulet', category: 'viandes', suggestedAgeMonths: 6 });
   const oeuf = makeFood({
@@ -45,7 +45,8 @@ function makeMenu(): Menu {
     redFlags: [],
     noveltyFoodId: poulet.id,
     allergenFocus: { food: oeuf, mode: 'introduce' },
-    meals: [
+    ...over,
+    meals: over.meals ?? [
       {
         id: 'midi',
         label: 'Carotte · Poulet',
@@ -92,5 +93,11 @@ describe('MenuDay', () => {
 
     // The already-introduced item renders too, without a novelty badge.
     expect(screen.getByText('Carotte')).toBeTruthy();
+  });
+
+  it('renders the redFlags safety callout when the stage has watch-for signs', () => {
+    const flag = 'Signe X : consulter un médecin.';
+    render(MenuDay, { props: { menu: makeMenu({ redFlags: [flag] }), childId: 7 } });
+    expect(screen.getByText(flag)).toBeTruthy();
   });
 });
