@@ -7,6 +7,15 @@ const names = new Set(FOODS_SEED.map((f) => f.name));
 test('PROTEIN_WEEK has 7 days with fish twice', () => {
   expect(PROTEIN_WEEK).toHaveLength(7);
   expect(PROTEIN_WEEK.filter((c) => c === 'poissons')).toHaveLength(2);
+  expect(PROTEIN_WEEK).toEqual([
+    'viandes',
+    'poissons',
+    'legumineuses',
+    'oeufs',
+    'poissons',
+    'viandes',
+    'legumineuses'
+  ]);
 });
 
 test('CHOKING_BY_FOOD keys all exist in the seed (no orphans)', () => {
