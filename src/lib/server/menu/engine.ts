@@ -329,7 +329,13 @@ function applyAllergenFocusAndNovelty(base: Menu, input: MenuInput, stage: Stage
 
 // Intra-day dedup, over the introduced base picks only (never the novelty): when a later slot
 // would repeat an earlier slot's food, swap it for an alternate from its introduced pool.
-function dedupSlot(slot: MenuItem, meal: Meal, input: MenuInput, seen: Set<number>): void {
+function dedupSlot(
+  slot: MenuItem,
+  meal: Meal,
+  input: MenuInput,
+  quantities: StageQuantities,
+  seen: Set<number>
+): void {
   if (slot.isNew) {
     seen.add(slot.food.id);
     return;
@@ -346,6 +352,10 @@ function dedupSlot(slot: MenuItem, meal: Meal, input: MenuInput, seen: Set<numbe
       slot.food = alt;
       slot.caution = cautionFor(alt);
       slot.allergenType = alt.allergenType;
+      // Re-derive the hint from the NEW food: dessert's hint depends on the
+      // resolved food's category (fruit vs laitier), so a swap that crosses
+      // categories must not leave the replaced food's stale hint behind.
+      slot.amountHint = amountFor(slot.role, quantities, alt);
     }
   }
   seen.add(slot.food.id);
@@ -354,7 +364,7 @@ function dedupSlot(slot: MenuItem, meal: Meal, input: MenuInput, seen: Set<numbe
 function dedupMealItems(base: Menu, input: MenuInput): void {
   const seen = new Set<number>();
   for (const meal of base.meals) {
-    for (const slot of meal.items) dedupSlot(slot, meal, input, seen);
+    for (const slot of meal.items) dedupSlot(slot, meal, input, base.quantities, seen);
     meal.label = meal.items.map((i) => i.food.name).join(' · ');
   }
 }

@@ -432,6 +432,30 @@ test('a same-day duplicate with no remaining alternate is left as-is', () => {
   expect(soirLegume.food.id).toBe(carotte.id);
 });
 
+test("a dessert dedup swap recomputes amountHint for the swapped-in food's category", () => {
+  // Pomme/Poire (fruits) + Yaourt nature (produits_laitiers) are the ONLY
+  // introduced dessert-pool (fruits ∪ produits_laitiers) candidates. matin's
+  // laitier/fruit slots consume Yaourt nature and Poire first, so by the time
+  // midi's dessert slot is deduped, its initial (dairy) pick is already "seen"
+  // and gets swapped for Pomme — a cross-category (dairy→fruit) swap. Known via
+  // the rotation hash at baseInput()'s default childId/dayIndex/weekday.
+  const pomme = CATALOG.find((f) => f.name === 'Pomme')!;
+  const poire = CATALOG.find((f) => f.name === 'Poire')!;
+  const yaourt = CATALOG.find((f) => f.name === 'Yaourt nature')!;
+  const nonDessert = CATALOG.filter(
+    (f) => f.category !== 'fruits' && f.category !== 'produits_laitiers'
+  ).map((f) => f.id);
+  const intro = new Set([...nonDessert, pomme.id, poire.id, yaourt.id]);
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
+  const midiDessert = menu.meals
+    .find((m) => m.id === 'midi')!
+    .items.find((i) => i.role === 'dessert')!;
+  expect(midiDessert.food.id).toBe(pomme.id); // confirms the swap actually happened
+  // amountHint must follow the NEW food's category (fruit), not the replaced
+  // dairy food's laitier hint.
+  expect(midiDessert.amountHint).toBe(menu.quantities.portions.fruit);
+});
+
 test('a due allergen with no safe catalog food falls through to maintain + novelty', () => {
   // arachide is due, but its one catalog food is on the avoid list → catalogSafe rejects it →
   // pickDueAllergenFood returns null, and the flow must fall through to branch 2 instead of
