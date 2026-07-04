@@ -38,9 +38,10 @@ test('a 3-month-old gets zero solids', () => {
   expect(menu.meals.flatMap((mo) => mo.items)).toHaveLength(0);
 });
 
-// NOTE: brief's "a 4-5 month-old gets a single food" test is deferred to Task 8.
-// At Task 7, buildMenu's 4-6 branch returns the empty `base` (rotation/assembly
-// lands in Task 8), so that assertion would be RED here.
+test('a 4-5 month-old gets a single food', () => {
+  const menu = buildMenu(baseInput({ ageMonths: 5 }));
+  expect(menu.meals.flatMap((mo) => mo.items)).toHaveLength(1);
+});
 
 test('never suggests a food above the child age', () => {
   const menu = buildMenu(baseInput({ ageMonths: 6 }));
@@ -53,6 +54,44 @@ test('Jambon is never a protéine at any age', () => {
   const menu = buildMenu(baseInput({ ageMonths: 12 }));
   const proteins = menu.meals.flatMap((mo) => mo.items).filter((i) => i.role === 'proteine');
   expect(proteins.some((p) => p.food.name.includes('Jambon'))).toBe(false);
+});
+
+// ---------------------------------------------------------------------------
+// Rotation + meal assembly (Task 8)
+// ---------------------------------------------------------------------------
+
+test('determinism: same input → deep-equal, order-independent', () => {
+  const a = buildMenu(baseInput());
+  const shuffled = baseInput({ catalog: [...CATALOG].reverse() });
+  expect(buildMenu(shuffled)).toEqual(a);
+});
+
+test('no consecutive-day repeat in the midi légume slot (introduced pool large)', () => {
+  const prev = buildMenu(baseInput({ dayIndex: 100 }));
+  const next = buildMenu(baseInput({ dayIndex: 101 }));
+  const leg = (mn: ReturnType<typeof buildMenu>) =>
+    mn.meals.find((x) => x.id === 'midi')!.items.find((i) => i.role === 'legume')!.food.id;
+  expect(leg(prev)).not.toBe(leg(next));
+});
+
+test('fish appears >= 2x incl. one oily over a Mon-Sun week', () => {
+  const fishNames: string[] = [];
+  for (let w = 0; w < 7; w++) {
+    const mn = buildMenu(baseInput({ dayIndex: 100 + w, weekday: w }));
+    const p = mn.meals.find((x) => x.id === 'midi')!.items.find((i) => i.role === 'proteine');
+    if (p && p.food.category === 'poissons') fishNames.push(p.food.name);
+  }
+  expect(fishNames.length).toBeGreaterThanOrEqual(2);
+  expect(fishNames.some((n) => ['Saumon', 'Sardine', 'Maquereau', 'Truite'].includes(n))).toBe(
+    true
+  );
+});
+
+test('a new account with no introduced foods yields an all-empty menu (à découvrir)', () => {
+  const menu = buildMenu(baseInput({ introducedFoodIds: new Set() }));
+  expect(menu.meals.flatMap((mo) => mo.items)).toHaveLength(0);
+  // meals still exist as empty slots for the 4 templates
+  expect(menu.meals.length).toBeGreaterThan(0);
 });
 
 test('every raw-milk cheese seed food carries a pasteurised caution', () => {
