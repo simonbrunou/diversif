@@ -84,8 +84,10 @@ describe('MenuDay', () => {
     expect(screen.getByText('Nouveauté')).toBeTruthy();
     expect(screen.getByText('Une nouveauté à la fois, en début de repas.')).toBeTruthy();
 
-    // à-découvrir: one line per meal.discoverRoles entry, role label resolved.
-    expect(screen.getByText(/À découvrir : un Féculent/)).toBeTruthy();
+    // à-découvrir: one line per meal.discoverRoles entry, role label resolved,
+    // no forced article (drops "un/une" — it can't agree with every role's
+    // gender/number).
+    expect(screen.getByText(/Féculent · à découvrir/)).toBeTruthy();
 
     // Allergène du jour card, sourced from menu.allergenFocus.
     expect(screen.getByText('Allergène du jour')).toBeTruthy();

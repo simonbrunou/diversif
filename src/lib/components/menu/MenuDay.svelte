@@ -20,12 +20,14 @@
   const mealLabel = (id: MealId) => MEAL_LABELS[id]();
 
   // Every RoleId has an explicit resolver so the map stays exhaustive and
-  // TS-enforced (mirrors engine.ts's amountFor style). 'fruit' has no
-  // dedicated menuRoleFruit key — it reuses the existing category label.
-  // i18n-keep: menuRoleLegume menuRoleProteine menuRoleFeculent menuRoleMatiereGrasse menuRoleDessert menuRoleLaitier
+  // TS-enforced (mirrors engine.ts's amountFor style). 'fruit' uses the
+  // singular menuRoleFruit label — the dessert role reuses the plural
+  // categoryFruits/menuRoleDessert wording, but a lone "discover" slot needs
+  // "Fruit", not "Fruits".
+  // i18n-keep: menuRoleLegume menuRoleProteine menuRoleFeculent menuRoleMatiereGrasse menuRoleDessert menuRoleLaitier menuRoleFruit
   const ROLE_LABELS: Record<RoleId, () => string> = {
     legume: m.menuRoleLegume,
-    fruit: m.categoryFruits,
+    fruit: m.menuRoleFruit,
     proteine: m.menuRoleProteine,
     feculent: m.menuRoleFeculent,
     matiereGrasse: m.menuRoleMatiereGrasse,
@@ -97,7 +99,7 @@
               href={`/child/${childId}/suggestions`}
               class="text-xs text-ink-soft underline decoration-dotted underline-offset-2"
             >
-              {m.menuDiscoverSlot({ role: roleLabel(role) })}
+              {roleLabel(role)} · {m.menuDiscoverSlot()}
             </a>
           </li>
         {/each}

@@ -622,10 +622,11 @@
   "menuRoleMatiereGrasse": "Matière grasse",
   "menuRoleDessert": "Fruit ou laitage",
   "menuRoleLaitier": "Laitage",
+  "menuRoleFruit": "Fruit",
   "menuNovelty": "Nouveauté",
   "menuNoveltyHint": "Une nouveauté à la fois, en début de repas.",
   "menuAllergenOfDay": "Allergène du jour",
   "menuMilkPrimary": "Le lait reste le repas principal à cet âge.",
-  "menuDiscoverSlot": "À découvrir : un {role} — voir les suggestions",
+  "menuDiscoverSlot": "à découvrir",
   "menuSatiety": "Ce sont des repères : ne jamais forcer."
 }

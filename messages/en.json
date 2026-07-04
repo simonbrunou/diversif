@@ -622,10 +622,11 @@
   "menuRoleMatiereGrasse": "Fat",
   "menuRoleDessert": "Fruit or dairy",
   "menuRoleLaitier": "Dairy",
+  "menuRoleFruit": "Fruit",
   "menuNovelty": "New food",
   "menuNoveltyHint": "One new food at a time.",
   "menuAllergenOfDay": "Allergen of the day",
   "menuMilkPrimary": "Milk is still the main meal at this age.",
-  "menuDiscoverSlot": "Discover a {role} — see suggestions",
+  "menuDiscoverSlot": "to introduce",
   "menuSatiety": "These are guides — never force."
 }
