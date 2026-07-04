@@ -446,3 +446,34 @@ test('an introduced allergen with no matching introduced food yields no maintain
   const badged = menu.meals.flatMap((mo) => mo.items).filter((i) => i.isNew);
   expect(badged.length).toBe(1);
 });
+
+// ---------------------------------------------------------------------------
+// dessert amountHint follows the food's actual category (ROLE_POOLS.dessert =
+// fruits ∪ produits_laitiers), not a role-wide laitier default.
+// ---------------------------------------------------------------------------
+
+test('a fruit in the dessert slot shows the fruit portion hint, not the laitier one', () => {
+  // No produits_laitiers food is introduced, so the dessert pool (fruits ∪
+  // produits_laitiers) can only resolve to a fruit.
+  const intro = new Set(CATALOG.filter((f) => f.category !== 'produits_laitiers').map((f) => f.id));
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
+  const dessertItems = menu.meals.flatMap((mo) => mo.items).filter((i) => i.role === 'dessert');
+  expect(dessertItems.length).toBeGreaterThan(0);
+  for (const item of dessertItems) {
+    expect(item.food.category).toBe('fruits');
+    expect(item.amountHint).toBe(menu.quantities.portions.fruit);
+  }
+});
+
+test('a dairy food in the dessert slot shows the laitier portion hint', () => {
+  // No fruits food is introduced, so the dessert pool can only resolve to a
+  // produits_laitiers food.
+  const intro = new Set(CATALOG.filter((f) => f.category !== 'fruits').map((f) => f.id));
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
+  const dessertItems = menu.meals.flatMap((mo) => mo.items).filter((i) => i.role === 'dessert');
+  expect(dessertItems.length).toBeGreaterThan(0);
+  for (const item of dessertItems) {
+    expect(item.food.category).toBe('produits_laitiers');
+    expect(item.amountHint).toBe(menu.quantities.portions.laitier);
+  }
+});

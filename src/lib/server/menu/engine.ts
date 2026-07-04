@@ -31,7 +31,7 @@ export type MenuInput = {
   reactionTierFoodIds: Set<number>;
   introducedAllergens: Set<string>;
   reactedAllergens: Set<string>;
-  dietaryExclusions: string[]; // DietExclusion[] once Phase 3 lands
+  dietaryExclusions: string[]; // string[], not DietExclusion[] — keeps the engine decoupled from the diet-enum module
 };
 
 export type MenuItem = {
@@ -135,8 +135,11 @@ function pickProtein(input: MenuInput): Food | null {
 }
 
 // Per-role amount hint, sourced from the stage's quantities. A plain lookup (not a branching
-// chain) — every RoleId is an explicit key, so TS itself enforces exhaustiveness.
-function amountFor(role: RoleId, quantities: StageQuantities): string | null {
+// chain) — every RoleId is an explicit key, so TS itself enforces exhaustiveness. `dessert`
+// draws from TWO categories (ROLE_POOLS.dessert = fruits ∪ produits_laitiers), so its hint
+// follows the resolved food's actual category rather than a single role-wide default —
+// otherwise a fruit dessert would render the laitier hint (e.g. "Pomme · 1 laitage").
+function amountFor(role: RoleId, quantities: StageQuantities, food: Food): string | null {
   const q = quantities.portions;
   const byRole: Record<RoleId, string | null> = {
     proteine: quantities.proteinPerDay,
@@ -144,7 +147,7 @@ function amountFor(role: RoleId, quantities: StageQuantities): string | null {
     fruit: q.fruit,
     feculent: q.feculent,
     laitier: q.laitier,
-    dessert: q.laitier,
+    dessert: food.category === 'fruits' ? q.fruit : q.laitier,
     matiereGrasse: q.matiereGrasse
   };
   return byRole[role];
@@ -170,7 +173,7 @@ function buildStarterMeal(
       {
         id: 'midi',
         label: food.name,
-        items: [mkItem(role, food, stage.textures, amountFor(role, quantities), isNew)],
+        items: [mkItem(role, food, stage.textures, amountFor(role, quantities, food), isNew)],
         discoverRoles: []
       }
     ],
@@ -192,7 +195,8 @@ function assembleFullDayMeals(input: MenuInput, stage: Stage, quantities: StageQ
               `${input.childId}:${t.id}:${role}`,
               input.dayIndex
             );
-      if (food) items.push(mkItem(role, food, stage.textures, amountFor(role, quantities), false));
+      if (food)
+        items.push(mkItem(role, food, stage.textures, amountFor(role, quantities, food), false));
       // null → empty slot; MenuDay renders an "à découvrir" prompt for the missing role.
     }
     meals.push({ id: t.id, label: '', items, discoverRoles: [] });

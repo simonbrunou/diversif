@@ -11,8 +11,10 @@ export type RoleId =
   | 'dessert';
 export type MealId = 'matin' | 'midi' | 'gouter' | 'soir';
 
-// Meal templates by stage. `4-6` and `<4` are handled by the engine's age branch
-// (single food / no solids); this table drives 6-9, 9-12, 12-36.
+// Meal templates by stage. `<4` (zero solids) has no table entry — the engine's age branch
+// returns before ever consulting this table. `4-6` DOES have an entry below, but the engine
+// degrades it to a single starter food (buildStarterMeal) instead of iterating its roles; only
+// 6-9/9-12/12-36 actually iterate this FULL_DAY shape.
 const FULL_DAY: { id: MealId; roles: RoleId[] }[] = [
   { id: 'matin', roles: ['laitier', 'fruit'] },
   { id: 'midi', roles: ['legume', 'proteine', 'feculent', 'matiereGrasse', 'dessert'] },
