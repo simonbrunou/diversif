@@ -10,7 +10,9 @@ import {
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
+import { children, foodEntries, foods } from '$lib/server/db/schema';
+import type { DietExclusion } from '$lib/utils/diet';
 import { load } from './+page.server';
 
 beforeEach(async () => {
@@ -55,6 +57,13 @@ async function logEntry(opts: {
     loggedBy: opts.loggedBy,
     createdAt: new Date()
   });
+}
+
+async function setDiet(childId: number, exclusions: DietExclusion[]) {
+  await testDb
+    .update(children)
+    .set({ dietaryExclusions: exclusions })
+    .where(eq(children.id, childId));
 }
 
 async function setup() {
@@ -126,8 +135,8 @@ describe('child/[id]/menu load', () => {
     // allergen food never appears in any assembled meal slot.
     expect(items.some((i) => i.food.id === oeuf.id)).toBe(false);
 
-    // dietaryExclusions defaults to [] (Phase 2 : the column doesn't exist yet)
-    // so nothing diet-filters the catalog — a 'vegetarien' exclusion would have
+    // No dietaryExclusions set for this child (column defaults to []), so
+    // nothing diet-filters the catalog — a 'vegetarien' exclusion would have
     // dropped every viandes food, so Poulet surviving proves no filtering ran.
     expect(items.some((i) => i.food.id === poulet.id)).toBe(true);
   });
@@ -170,5 +179,117 @@ describe('child/[id]/menu load', () => {
     const items = out.menu.meals.flatMap((meal) => meal.items);
     expect(items.length).toBeGreaterThan(0);
     expect(items.some((i) => i.food.id === riz.id)).toBe(false);
+  });
+
+  it('vegetarien excludes viandes and poissons from every meal slot', async () => {
+    const ctx = await setup();
+
+    // Poulet/Cabillaud are the ONLY introduced protein-pool candidates (viandes/
+    // poissons/oeufs/legumineuses), so pickProtein deterministically serves one
+    // of them absent diet filtering — proving the exclusion actually runs,
+    // rather than relying on a rotation-dependent fluke.
+    const poulet = await insertFood({ name: 'Poulet', category: 'viandes', age: 6 });
+    const cabillaud = await insertFood({
+      name: 'Cabillaud',
+      category: 'poissons',
+      age: 6,
+      allergen: 'poisson'
+    });
+    const carotte = await insertFood({ name: 'Carotte', category: 'legumes', age: 4 });
+    const pomme = await insertFood({ name: 'Pomme', category: 'fruits', age: 4 });
+    const riz = await insertFood({ name: 'Riz', category: 'feculents', age: 6 });
+    const yaourt = await insertFood({ name: 'Yaourt', category: 'produits_laitiers', age: 6 });
+    const huile = await insertFood({ name: "Huile d'olive", category: 'matieres_grasses', age: 6 });
+    for (const food of [poulet, cabillaud, carotte, pomme, riz, yaourt, huile]) {
+      await logEntry({ childId: ctx.c.id, foodId: food.id, loggedBy: ctx.u.id, reaction: 'ras' });
+    }
+    await setDiet(ctx.c.id, ['vegetarien']);
+
+    const out = await loadFor(ctx);
+    const items = out.menu.meals.flatMap((meal) => meal.items);
+
+    expect(items.some((i) => i.food.category === 'viandes' || i.food.category === 'poissons')).toBe(
+      false
+    );
+  });
+
+  it('porc excludes a plain-pork food, not just charcuterie, from the protein slot', async () => {
+    const ctx = await setup();
+
+    // 'Porc' mirrors FOODS_SEED's plain-pork entry: matched by PORC_MATCHERS
+    // (name includes 'Porc') but NOT by CHARCUTERIE_MATCHERS (only 'Jambon'), so
+    // its absence can only be explained by the diet exclusion actually running —
+    // never by the unconditional charcuterie filter (a Jambon-only assertion
+    // would pass vacuously even with the exclusion still inert). It's the SOLE
+    // protein-pool candidate, so pickProtein serves it deterministically absent
+    // diet filtering.
+    const porc = await insertFood({ name: 'Porc', category: 'viandes', age: 6 });
+    const carotte = await insertFood({ name: 'Carotte', category: 'legumes', age: 4 });
+    const pomme = await insertFood({ name: 'Pomme', category: 'fruits', age: 4 });
+    const riz = await insertFood({ name: 'Riz', category: 'feculents', age: 6 });
+    const yaourt = await insertFood({ name: 'Yaourt', category: 'produits_laitiers', age: 6 });
+    const huile = await insertFood({ name: "Huile d'olive", category: 'matieres_grasses', age: 6 });
+    for (const food of [porc, carotte, pomme, riz, yaourt, huile]) {
+      await logEntry({ childId: ctx.c.id, foodId: food.id, loggedBy: ctx.u.id, reaction: 'ras' });
+    }
+    await setDiet(ctx.c.id, ['porc']);
+
+    const out = await loadFor(ctx);
+    const items = out.menu.meals.flatMap((meal) => meal.items);
+
+    expect(items.some((i) => i.food.id === porc.id)).toBe(false);
+  });
+
+  it('sans_poisson keeps poisson out of the allergène-du-jour focus', async () => {
+    const ctx = await setup();
+
+    // Every OTHER priority allergen is already introduced, so 'poisson' is the
+    // sole due allergen absent diet filtering — a deterministic proof,
+    // independent of parisDay's real dayIndex/weekday. Cabillaud stays
+    // un-introduced so it remains eligible to be (wrongly) picked as the due
+    // allergen food while the exclusion is inert.
+    const oeuf = await insertFood({ name: 'Œuf', category: 'oeufs', age: 6, allergen: 'oeuf' });
+    const arachide = await insertFood({
+      name: 'Beurre de cacahuète',
+      category: 'allergenes',
+      age: 6,
+      allergen: 'arachide'
+    });
+    const lait = await insertFood({
+      name: 'Yaourt nature',
+      category: 'produits_laitiers',
+      age: 6,
+      allergen: 'lait'
+    });
+    const gluten = await insertFood({
+      name: 'Pain',
+      category: 'feculents',
+      age: 6,
+      allergen: 'gluten'
+    });
+    const fruitsACoque = await insertFood({
+      name: "Purée d'amande",
+      category: 'allergenes',
+      age: 6,
+      allergen: 'fruits_a_coque'
+    });
+    const sesame = await insertFood({
+      name: 'Tahin',
+      category: 'allergenes',
+      age: 6,
+      allergen: 'sesame'
+    });
+    await insertFood({ name: 'Cabillaud', category: 'poissons', age: 6, allergen: 'poisson' });
+    for (const food of [oeuf, arachide, lait, gluten, fruitsACoque, sesame]) {
+      await logEntry({ childId: ctx.c.id, foodId: food.id, loggedBy: ctx.u.id, reaction: 'ras' });
+    }
+    await setDiet(ctx.c.id, ['sans_poisson']);
+
+    const out = await loadFor(ctx);
+
+    // Non-null pins down that a real substitute (an already-introduced
+    // allergen) was surfaced, not an accidental null from an unrelated gap.
+    expect(out.menu.allergenFocus).not.toBeNull();
+    expect(out.menu.allergenFocus?.food.allergenType).not.toBe('poisson');
   });
 });

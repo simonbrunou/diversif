@@ -1,8 +1,9 @@
 import { db } from '$lib/server/db';
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { children, foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, lte, sql } from 'drizzle-orm';
 import { ageInMonths } from '$lib/utils/age';
 import { REACTION_RANK } from '$lib/utils/reaction-values';
+import { parseDietExclusions } from '$lib/utils/diet';
 import { requireChildContext } from '$lib/server/guards';
 import { buildMenu } from '$lib/server/menu/engine';
 import { parisDay } from '$lib/server/menu/day';
@@ -45,9 +46,21 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     .orderBy(sql`${foods.id} ASC`);
 
   const { dayIndex, weekday } = parisDay(Date.now());
-  // Phase 2: the column doesn't exist yet, so cast the row (not the value) to reach the
-  // optional property without a "does not exist" typecheck error. Phase 3 drops the cast.
-  const dietaryExclusions = (child as { dietaryExclusions?: string[] }).dietaryExclusions ?? [];
+  // Hand-picked projection (just the column the engine needs) rather than
+  // reusing the +layout.server.ts child object, which every child/[id]/*
+  // route consumes : keeping this query local avoids widening that shared
+  // shape for a field only this page needs — mirrors the settings loader's
+  // childDiet query.
+  const [dietRow] = await db
+    .select({ dietaryExclusions: children.dietaryExclusions })
+    .from(children)
+    .where(eq(children.id, childId))
+    .limit(1);
+  // Re-validate on READ (not just on write): parseDietExclusions returns []
+  // for a missing row and drops any stale/foreign tag a future enum rename,
+  // manual DB edit, or restore might leave in the JSON — same rationale as
+  // the settings loader's read-side re-validation.
+  const dietaryExclusions = parseDietExclusions(dietRow?.dietaryExclusions);
 
   const menu = buildMenu({
     childId,
