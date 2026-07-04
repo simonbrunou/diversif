@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
-import { makeRouteEvent, safeUser } from '../../../../test/route';
+import {
+  captureFlow,
+  makeRouteEvent,
+  safeUser,
+  seedChild,
+  seedMembership,
+  seedUser
+} from '../../../../test/route';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
@@ -56,6 +63,35 @@ describe('settings setDiet action', () => {
     expect(r).toBeTruthy();
     const fresh = (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0];
     expect(fresh?.dietaryExclusions).toEqual(['vegetarien', 'sans_poisson']);
+  });
+
+  it('rejects a member of child A calling setDiet with child B’s id, leaving B unchanged (cross-child isolation)', async () => {
+    // Defense-in-depth: the isolation audit found requireChildContext already
+    // enforces this transitively, but a per-handler test locks the invariant
+    // against a future refactor that bypasses the guard.
+    const { u: userA, m: membershipA } = await setup(); // owner of child A
+
+    const ownerB = await seedUser({ email: 'owner-b@example.com' });
+    const childB = await seedChild({ createdBy: ownerB.id, name: 'Bébé B' });
+    await seedMembership({ userId: ownerB.id, childId: childB.id, role: 'owner' });
+    // Non-default starting value so a silent overwrite is observable.
+    await testDb
+      .update(children)
+      .set({ dietaryExclusions: ['porc'] })
+      .where(eq(children.id, childB.id));
+
+    const event = eventWithDiet(userA, [membershipA], childB.id, ['vegetarien']);
+    const r = await captureFlow(() =>
+      actions.setDiet!(event as unknown as Parameters<NonNullable<typeof actions.setDiet>>[0])
+    );
+
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(403);
+
+    const freshB = (
+      await testDb.select().from(children).where(eq(children.id, childB.id)).limit(1)
+    )[0];
+    expect(freshB?.dietaryExclusions).toEqual(['porc']); // untouched by the rejected call
   });
 });
 

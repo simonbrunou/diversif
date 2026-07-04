@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import {
+  captureFlow,
   makeRouteEvent,
   safeUser,
   seedChild,
@@ -291,5 +292,44 @@ describe('child/[id]/menu load', () => {
     // allergen) was surfaced, not an accidental null from an unrelated gap.
     expect(out.menu.allergenFocus).not.toBeNull();
     expect(out.menu.allergenFocus?.food.allergenType).not.toBe('poisson');
+  });
+
+  it('rejects a caller who is a member of child A but not child B (cross-child isolation)', async () => {
+    // Defense-in-depth: the isolation audit found requireChildContext already
+    // enforces this transitively, but a per-handler test locks the invariant
+    // against a future refactor that bypasses the guard.
+    const ctx = await setup(); // user A, owner of child A
+
+    const ownerB = await seedUser({ email: 'owner-b@example.com' });
+    const birth = new Date();
+    birth.setMonth(birth.getMonth() - 8);
+    const dateStr = `${birth.getFullYear()}-${String(birth.getMonth() + 1).padStart(2, '0')}-${String(birth.getDate()).padStart(2, '0')}`;
+    const childB = await seedChild({ createdBy: ownerB.id, birthDate: dateStr });
+    await seedMembership({ userId: ownerB.id, childId: childB.id, role: 'owner' });
+
+    // Give child B a real logged food, so a guard bypass would leak an
+    // observable entry rather than passing vacuously against an empty menu.
+    const carotte = await insertFood({ name: 'Carotte', category: 'legumes', age: 4 });
+    await logEntry({
+      childId: childB.id,
+      foodId: carotte.id,
+      loggedBy: ownerB.id,
+      reaction: 'ras'
+    });
+
+    const r = await captureFlow(() =>
+      load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m], // user A's own membership is for child A, NOT child B
+          params: { id: String(childB.id) },
+          parent: async () => ({ child: { id: childB.id, birthDate: dateStr } })
+        }) as unknown as Parameters<typeof load>[0]
+      )
+    );
+
+    // Must throw 403 — never fall through to a return carrying child B's menu/entries.
+    expect(r.kind).toBe('error');
+    if (r.kind === 'error') expect(r.status).toBe(403);
   });
 });
