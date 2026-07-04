@@ -11,4 +11,9 @@ describe('QuantitiesCard', () => {
     expect(screen.getByText('~500 mL/j')).toBeTruthy();
     expect(screen.getByText('4')).toBeTruthy();
   });
+
+  it('omits the egg row for a stage with no egg guidance', () => {
+    render(QuantitiesCard, { props: { quantities: QUANTITIES['4-6'], ageMonths: 5 } });
+    expect(screen.queryByText('Œuf')).toBeNull();
+  });
 });
