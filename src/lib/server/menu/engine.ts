@@ -19,6 +19,7 @@ import {
 } from './tables';
 import { rotatePick } from './rotation';
 import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import type { DietExclusion } from '$lib/utils/diet';
 
 export type MenuInput = {
   childId: number;
@@ -31,7 +32,9 @@ export type MenuInput = {
   reactionTierFoodIds: Set<number>;
   introducedAllergens: Set<string>;
   reactedAllergens: Set<string>;
-  dietaryExclusions: string[]; // string[], not DietExclusion[] — keeps the engine decoupled from the diet-enum module
+  // Typed against $lib/utils/diet's enum (not a bare string[]) so a DIET_EXCLUSIONS
+  // rename/removal is a compile error at every literal match site below.
+  dietaryExclusions: DietExclusion[];
 };
 
 export type MenuItem = {
@@ -65,7 +68,7 @@ function forbiddenAtAge(f: Food, ageMonths: number): boolean {
   return false;
 }
 
-function excludedByDiet(f: Food, exclusions: string[]): boolean {
+function excludedByDiet(f: Food, exclusions: DietExclusion[]): boolean {
   if (exclusions.includes('porc') && PORC_MATCHERS.some((m) => f.name.includes(m))) return true;
   if (exclusions.includes('vegetarien') && (f.category === 'viandes' || f.category === 'poissons'))
     return true;
@@ -73,25 +76,33 @@ function excludedByDiet(f: Food, exclusions: string[]): boolean {
   return false;
 }
 
+// Role-independent safety gates shared by EVERY food-surfacing path (role pools
+// via safeForRole, AND the allergen/novelty catalog scan via catalogSafe): age
+// window, ¬custom, ¬forbidden-at-age, ¬diet-excluded, ¬avoid/reaction-blocked.
+// Charcuterie and FAT_EXCLUDE are deliberately NOT here — they're role-scoped
+// (safeForRole only applies them for proteine/matiereGrasse) or defense-in-depth
+// (catalogSafe applies them unconditionally) — each caller layers them on itself.
+function safeFood(f: Food, input: MenuInput): boolean {
+  return (
+    !f.isCustom &&
+    f.suggestedAgeMonths <= Math.max(input.ageMonths, 4) &&
+    !forbiddenAtAge(f, input.ageMonths) &&
+    !excludedByDiet(f, input.dietaryExclusions) &&
+    // reaction avoidance: per-food for inconfort, per-allergen for reaction tier
+    !input.avoidFoodIds.has(f.id) &&
+    !input.reactionTierFoodIds.has(f.id) &&
+    !(f.allergenType && input.reactedAllergens.has(f.allergenType))
+  );
+}
+
 /** Age-eligible ∩ ¬forbidden ∩ ¬diet ∩ ¬reaction-blocked, for a role, sorted by id. */
 function safeForRole(role: RoleId, input: MenuInput): Food[] {
   const cats = new Set<CategoryId>(ROLE_POOLS[role]);
-  const ageMax = Math.max(input.ageMonths, 4);
   return input.catalog
-    .filter((f) => !f.isCustom)
     .filter((f) => cats.has(f.category as CategoryId))
-    .filter((f) => f.suggestedAgeMonths <= ageMax)
-    .filter((f) => !forbiddenAtAge(f, input.ageMonths))
-    .filter((f) => !excludedByDiet(f, input.dietaryExclusions))
+    .filter((f) => safeFood(f, input))
     .filter((f) => (role === 'matiereGrasse' ? !FAT_EXCLUDE.includes(f.name) : true))
     .filter((f) => (role === 'proteine' ? !CHARCUTERIE(f) : true))
-    .filter((f) => {
-      // reaction avoidance: per-food for inconfort, per-allergen for reaction tier
-      if (input.avoidFoodIds.has(f.id) && !input.reactionTierFoodIds.has(f.id)) return false;
-      if (f.allergenType && input.reactedAllergens.has(f.allergenType)) return false;
-      if (input.reactionTierFoodIds.has(f.id)) return false;
-      return true;
-    })
     .sort((a, b) => a.id - b.id);
 }
 
@@ -213,17 +224,7 @@ function allowedAllergen(input: MenuInput, a: string): boolean {
 // defence-in-depth: matieres_grasses isn't in NOVELTY_CATEGORIES today, so it's currently
 // unreachable — but adding it there must never turn butter into a novelty.
 function catalogSafe(f: Food, input: MenuInput): boolean {
-  return (
-    f.suggestedAgeMonths <= Math.max(input.ageMonths, 4) &&
-    !f.isCustom &&
-    !forbiddenAtAge(f, input.ageMonths) &&
-    !excludedByDiet(f, input.dietaryExclusions) &&
-    !CHARCUTERIE(f) &&
-    !FAT_EXCLUDE.includes(f.name) &&
-    !input.avoidFoodIds.has(f.id) &&
-    !input.reactionTierFoodIds.has(f.id) &&
-    !(f.allergenType && input.reactedAllergens.has(f.allergenType))
-  );
+  return safeFood(f, input) && !CHARCUTERIE(f) && !FAT_EXCLUDE.includes(f.name);
 }
 
 // A priority allergen due? Rotate the "allergène du jour" by dayIndex. It IS the day's one
