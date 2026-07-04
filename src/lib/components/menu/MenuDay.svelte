@@ -43,6 +43,9 @@
   <Card variant="tile-lilac" class="mb-4 p-4">
     <div class="text-xs font-semibold uppercase tracking-wider">{m.menuAllergenOfDay()}</div>
     <div class="font-medium">{menu.allergenFocus.food.name}</div>
+    {#if menu.allergenFocus.caution}
+      <span class="mt-0.5 block text-xs text-ink-soft">{menu.allergenFocus.caution}</span>
+    {/if}
   </Card>
 {/if}
 

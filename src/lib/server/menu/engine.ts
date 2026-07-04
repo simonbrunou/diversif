@@ -50,7 +50,7 @@ export type Menu = {
   textures: string;
   redFlags: string[];
   meals: Meal[];
-  allergenFocus: { food: Food; mode: 'introduce' | 'maintain' } | null;
+  allergenFocus: { food: Food; mode: 'introduce' | 'maintain'; caution: string | null } | null;
   noveltyFoodId: number | null;
 };
 
@@ -315,12 +315,17 @@ function placeNovelty(menu: Menu, role: RoleId, food: Food, stageTexture: string
 function applyAllergenFocusAndNovelty(base: Menu, input: MenuInput, stage: Stage): void {
   const dueFood = pickDueAllergenFood(input);
   if (dueFood) {
-    base.allergenFocus = { food: dueFood, mode: 'introduce' };
+    base.allergenFocus = { food: dueFood, mode: 'introduce', caution: cautionFor(dueFood) };
     base.noveltyFoodId = dueFood.id; // card-only; never inserted into a meal slot
     return;
   }
   const maintainFood = pickMaintainAllergenFood(input);
-  if (maintainFood) base.allergenFocus = { food: maintainFood, mode: 'maintain' };
+  if (maintainFood)
+    base.allergenFocus = {
+      food: maintainFood,
+      mode: 'maintain',
+      caution: cautionFor(maintainFood)
+    };
   const novelty = pickNoveltyCandidate(input);
   base.noveltyFoodId = novelty?.id ?? null;
   if (!novelty) return;

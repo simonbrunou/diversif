@@ -44,7 +44,7 @@ function makeMenu(over: Partial<Menu> = {}): Menu {
     textures: 'Purée grumeleuse',
     redFlags: [],
     noveltyFoodId: poulet.id,
-    allergenFocus: { food: oeuf, mode: 'introduce' },
+    allergenFocus: { food: oeuf, mode: 'introduce', caution: null },
     ...over,
     meals: over.meals ?? [
       {
@@ -101,5 +101,25 @@ describe('MenuDay', () => {
     const flag = 'Signe X : consulter un médecin.';
     render(MenuDay, { props: { menu: makeMenu({ redFlags: [flag] }), childId: 7 } });
     expect(screen.getByText(flag)).toBeTruthy();
+  });
+
+  it('renders the allergène-du-jour caution when the focus food carries one', () => {
+    const oeuf = makeFood({
+      id: 3,
+      name: 'Œuf',
+      category: 'oeufs',
+      allergenType: 'oeuf',
+      isMajorAllergen: true,
+      suggestedAgeMonths: 6
+    });
+    render(MenuDay, {
+      props: {
+        menu: makeMenu({
+          allergenFocus: { food: oeuf, mode: 'introduce', caution: 'Texture lisse, sans morceaux.' }
+        }),
+        childId: 7
+      }
+    });
+    expect(screen.getByText('Texture lisse, sans morceaux.')).toBeTruthy();
   });
 });

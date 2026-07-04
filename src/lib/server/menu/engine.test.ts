@@ -266,6 +266,21 @@ test('orphan allergen (arachide) is card-only, never a meal slot', () => {
   expect(menu.noveltyFoodId).toBe(peanut.id);
 });
 
+test("allergenFocus carries the food's prep/choking caution (never skips cautionFor)", () => {
+  // 'poisson' is the sole due priority allergen; ANY catalogSafe poissons-category
+  // food carries the "Bien cuit, sans arêtes." category caution via cautionFor —
+  // the allergenFocus card must surface it, like every other food-surfacing path.
+  const intro = new Set(CATALOG.filter((f) => f.category !== 'poissons').map((f) => f.id));
+  const introducedAllergens = new Set(
+    PRIORITY_INTRODUCTION_ALLERGENS.filter((a) => a !== 'poisson')
+  );
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro, introducedAllergens }));
+  expect(menu.allergenFocus?.mode).toBe('introduce');
+  expect(menu.allergenFocus?.food.category).toBe('poissons');
+  expect(menu.allergenFocus?.caution).toBe(cautionFor(menu.allergenFocus!.food));
+  expect(menu.allergenFocus?.caution).toContain('arêtes');
+});
+
 test('charcuterie (Jambon) is never surfaced as a protein novelty', () => {
   const jambon = CATALOG.find((f) => f.name.includes('Jambon'))!;
   // everything introduced EXCEPT Jambon, all allergens introduced → the novelty path runs and
