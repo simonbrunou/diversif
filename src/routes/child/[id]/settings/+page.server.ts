@@ -87,9 +87,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       expiresAt: (i.expiresAt as Date).getTime()
     })),
     role: membership.role,
-    // Coerced to [] on the (very unlikely) race where the child row vanished
-    // between +layout.server.ts's own existence check and this query.
-    dietaryExclusions: childDiet?.dietaryExclusions ?? []
+    // Re-validate on READ (not just on write): parseDietExclusions returns []
+    // for a missing row (the unlikely race after +layout.server.ts's existence
+    // check) AND drops any stale/foreign tag a future enum rename, manual DB
+    // edit, or restore might leave in the JSON. Design spec requires both
+    // halves (write + read); the write half lives in the setDiet action.
+    dietaryExclusions: parseDietExclusions(childDiet?.dietaryExclusions)
   };
 };
 

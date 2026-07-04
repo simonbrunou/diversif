@@ -6,7 +6,7 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { eq } from 'drizzle-orm';
 import { children } from '$lib/server/db/schema';
-import { actions } from './+page.server';
+import { actions, load } from './+page.server';
 import { setup } from './settings-test-fixtures';
 
 beforeEach(async () => {
@@ -56,5 +56,28 @@ describe('settings setDiet action', () => {
     expect(r).toBeTruthy();
     const fresh = (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0];
     expect(fresh?.dietaryExclusions).toEqual(['vegetarien', 'sans_poisson']);
+  });
+});
+
+describe('settings load dietaryExclusions', () => {
+  it('re-validates on read : drops stale/foreign tags left in the JSON column', async () => {
+    const { u, c, m } = await setup();
+    // Write a value that bypasses the setDiet action's write-side validation
+    // (e.g. a future enum rename, a manual DB edit, or a restore) directly into
+    // the column, then prove the load re-filters it rather than trusting the DB.
+    await testDb
+      .update(children)
+      .set({ dietaryExclusions: ['porc', 'stale'] as never })
+      .where(eq(children.id, c.id));
+
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) }
+      }) as unknown as Parameters<typeof load>[0]
+    );
+
+    expect(out.dietaryExclusions).toEqual(['porc']);
   });
 });
