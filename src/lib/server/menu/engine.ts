@@ -43,7 +43,7 @@ export type MenuItem = {
   isNew: boolean;
   allergenType: string | null;
 };
-export type Meal = { id: MealId; label: string; items: MenuItem[] };
+export type Meal = { id: MealId; label: string; items: MenuItem[]; discoverRoles: RoleId[] };
 export type Menu = {
   stageId: StageId;
   quantities: StageQuantities;
@@ -170,7 +170,8 @@ function buildStarterMeal(
       {
         id: 'midi',
         label: food.name,
-        items: [mkItem(role, food, stage.textures, amountFor(role, quantities), isNew)]
+        items: [mkItem(role, food, stage.textures, amountFor(role, quantities), isNew)],
+        discoverRoles: []
       }
     ],
     noveltyFoodId: isNew ? food.id : null
@@ -194,7 +195,7 @@ function assembleFullDayMeals(input: MenuInput, stage: Stage, quantities: StageQ
       if (food) items.push(mkItem(role, food, stage.textures, amountFor(role, quantities), false));
       // null → empty slot; MenuDay renders an "à découvrir" prompt for the missing role.
     }
-    meals.push({ id: t.id, label: '', items });
+    meals.push({ id: t.id, label: '', items, discoverRoles: [] });
   }
   return meals;
 }
@@ -389,6 +390,13 @@ export function buildMenu(input: MenuInput): Menu {
 
   base.meals = assembleFullDayMeals(input, stage, quantities);
   applyDayNovelty(base, input, stage);
+
+  for (const meal of base.meals) {
+    const wanted = MEAL_TEMPLATES[stage.id].find((t) => t.id === meal.id)?.roles ?? [];
+    const have = new Set(meal.items.map((i) => i.role));
+    meal.discoverRoles = wanted.filter((r) => !have.has(r));
+  }
+
   return base;
 }
 

@@ -413,6 +413,14 @@ test('a due allergen with no safe catalog food falls through to maintain + novel
   expect(badged[0].food.category).toBe('legumes');
 });
 
+test('discoverRoles lists template roles that have no introduced food', () => {
+  const intro = new Set(CATALOG.filter((f) => f.category !== 'feculents').map((f) => f.id));
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
+  const midi = menu.meals.find((mo) => mo.id === 'midi')!;
+  expect(midi.discoverRoles).toContain('feculent'); // no féculent introduced → wanted-but-empty
+  expect(midi.discoverRoles).not.toContain('legume'); // légume introduced → filled, not listed
+});
+
 test('an introduced allergen with no matching introduced food yields no maintain card', () => {
   // Every priority-allergen-tagged food is un-introduced, even though all 7 allergens are
   // flagged introduced → pickMaintainAllergenFood must find nothing for any candidate allergen,
