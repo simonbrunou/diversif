@@ -14,6 +14,7 @@ import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 import { TEXTURE_VALUES } from '../../utils/textures';
 import { REACTION_VALUES } from '../../utils/reaction-values';
 import { SYMPTOM_LABELS } from '../../content/symptoms';
+import type { DietExclusion } from '../../utils/diet';
 
 // SQLite type conventions used throughout this schema:
 //   - serial PK            -> integer().primaryKey({ autoIncrement: true })
@@ -68,7 +69,11 @@ export const children = sqliteTable('children', {
   // exists so a write is at least auditable / surfaceable rather than silent,
   // and so optimistic-locking can be layered on later without another schema
   // migration. Every write path sets it; backfilled to createdAt for old rows.
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }),
+  dietaryExclusions: text('dietary_exclusions', { mode: 'json' })
+    .$type<DietExclusion[]>()
+    .notNull()
+    .default(sql`'[]'`)
 });
 
 export const memberships = sqliteTable(
