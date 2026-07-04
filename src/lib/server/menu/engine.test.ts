@@ -316,6 +316,21 @@ test('sans_poisson never shows poisson as allergène du jour', () => {
   expect(menu.allergenFocus?.food.allergenType).not.toBe('poisson');
 });
 
+test('a reaction-tier food is never surfaced as a novelty, even if not in avoidFoodIds', () => {
+  // defense-in-depth: a genuine reaction must never be re-offered as "Nouveauté"
+  const carotte = CATALOG.find((f) => f.name === 'Carotte')!; // no allergenType
+  const intro = new Set(CATALOG.filter((f) => f.id !== carotte.id).map((f) => f.id));
+  const menu = buildMenu(
+    baseInput({
+      introducedFoodIds: intro,
+      introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS),
+      reactionTierFoodIds: new Set([carotte.id]) // deliberately NOT in avoidFoodIds
+    })
+  );
+  expect(menu.noveltyFoodId).not.toBe(carotte.id);
+  expect(menu.meals.flatMap((mo) => mo.items).some((i) => i.food.id === carotte.id)).toBe(false);
+});
+
 // ---------------------------------------------------------------------------
 // Task 9 — tricky branches the 7 tests above don't reach: placeNovelty's
 // REPLACE path, the dedup loop's alt-found/alt-null outcomes, and the two

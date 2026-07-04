@@ -223,6 +223,7 @@ function catalogSafe(f: Food, input: MenuInput): boolean {
     !CHARCUTERIE(f) &&
     !FAT_EXCLUDE.includes(f.name) &&
     !input.avoidFoodIds.has(f.id) &&
+    !input.reactionTierFoodIds.has(f.id) &&
     !(f.allergenType && input.reactedAllergens.has(f.allergenType))
   );
 }
