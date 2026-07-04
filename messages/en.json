@@ -599,5 +599,11 @@
   "joinInviteIntroNamed": "{inviter} is inviting you to help track {child}.",
   "joinInviteIntroAnon": "You’ve been invited to help track {child}.",
   "joinInviteExplainer": "By accepting, you’ll be able to view and log {child}’s meals, reactions and milestones, and follow their diversification together.",
-  "joinAcceptCta": "Accept invitation"
+  "joinAcceptCta": "Accept invitation",
+  "quantitiesHeading": "How much to give?",
+  "quantitiesMilk": "Milk",
+  "quantitiesMeals": "Meals",
+  "quantitiesProtein": "Meat · fish · egg",
+  "quantitiesEgg": "Egg",
+  "quantitiesSatiety": "These are guides — never force."
 }

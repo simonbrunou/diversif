@@ -599,5 +599,11 @@
   "joinInviteIntroNamed": "{inviter} vous invite à rejoindre le suivi de {child}.",
   "joinInviteIntroAnon": "Vous êtes invité·e à rejoindre le suivi de {child}.",
   "joinInviteExplainer": "En acceptant, vous pourrez consulter et noter les repas, les réactions et les étapes de {child}, et suivre sa diversification à deux.",
-  "joinAcceptCta": "Accepter l’invitation"
+  "joinAcceptCta": "Accepter l’invitation",
+  "quantitiesHeading": "Combien lui donner ?",
+  "quantitiesMilk": "Lait",
+  "quantitiesMeals": "Repas",
+  "quantitiesProtein": "Viande · poisson · œuf",
+  "quantitiesEgg": "Œuf",
+  "quantitiesSatiety": "Ce sont des repères : ne jamais forcer."
 }
