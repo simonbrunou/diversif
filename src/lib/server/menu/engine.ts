@@ -106,17 +106,6 @@ function cautionFor(f: Food): string | null {
   return null;
 }
 
-function proteinOccurrence(cat: CategoryId, dayIndex: number, weekday: number): number {
-  // Count same-category protein-weekdays in [0, dayIndex] in the single Monday frame, so a
-  // category's successive appearances stride by exactly 1 (even for a hypothetical k=3 pool).
-  const startMonday = dayIndex - weekday; // dayIndex of this week's Monday
-  const fullWeeks = Math.max(0, Math.floor(startMonday / 7)); // dayIndex >= 0 in prod
-  const perWeek = PROTEIN_WEEK.filter((c) => c === cat).length;
-  let occ = fullWeeks * perWeek;
-  for (let d = 0; d <= weekday; d++) if (PROTEIN_WEEK[d] === cat) occ++;
-  return occ;
-}
-
 // INTRODUCED-ONLY. Empty weekday-category (or vegetarien/sans_poisson) → the whole
 // introduced-safe protein pool. NEVER an un-introduced food — that would be a covert second
 // novelty (the one-novelty hazard). null → "à découvrir" when no protein is introduced yet.
@@ -130,8 +119,12 @@ function pickProtein(input: MenuInput): Food | null {
   if (pool.length === 0) return null;
   const oily = input.weekday === 1 ? pool.filter((f) => OILY_FISH.includes(f.name)) : [];
   const list = oily.length ? oily : pool;
-  const occ = proteinOccurrence(cat, input.dayIndex, input.weekday);
-  return list[((occ % list.length) + list.length) % list.length];
+  // rotatePick (not an occurrence counter): on a FIXED weekday, dayIndex strides
+  // by 7 across weeks, so this index strides by 7 mod n — a full cycle of the
+  // whole pool for any n coprime with 7 (every realistic pool size), unlike an
+  // occurrence counter whose fixed parity on a fixed weekday only ever reaches
+  // half an even-sized pool.
+  return rotatePick(list, `${input.childId}:proteine`, input.dayIndex);
 }
 
 // Per-role amount hint, sourced from the stage's quantities. A plain lookup (not a branching

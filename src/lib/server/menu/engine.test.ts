@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
 import { buildMenu, cautionFor, safeForRole, mkItem, type MenuInput } from './engine';
-import { SOFT_CHEESE } from './tables';
+import { SOFT_CHEESE, OILY_FISH } from './tables';
 import { FOODS_SEED } from '$lib/server/db/seed';
 import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
 
@@ -92,6 +92,22 @@ test('fish appears >= 2x incl. one oily over a Mon-Sun week', () => {
   expect(fishNames.some((n) => ['Saumon', 'Sardine', 'Maquereau', 'Truite'].includes(n))).toBe(
     true
   );
+});
+
+test('all 4 oily fish are reachable on the fixed oily weekday across enough weeks', () => {
+  // Regression guard: on a FIXED weekday, an occurrence-counter index has fixed
+  // parity, so `occ % list.length` only ever hits half an even-sized pool (2 of
+  // 4 oily fish, forever). rotatePick's index strides by dayIndex (steps of 7
+  // across weeks) mod n, which is coprime with 7 for every realistic pool size
+  // (n=4 here), so the whole pool cycles.
+  const seen = new Set<string>();
+  for (let w = 0; w < 8; w++) {
+    const dayIndex = 1 + w * 7; // weekday=1 (the oily day) fixed; dayIndex strides by 7
+    const menu = buildMenu(baseInput({ dayIndex, weekday: 1 }));
+    const p = menu.meals.find((mo) => mo.id === 'midi')!.items.find((i) => i.role === 'proteine');
+    if (p) seen.add(p.food.name);
+  }
+  for (const name of OILY_FISH) expect(seen.has(name)).toBe(true);
 });
 
 test('a new account with no introduced foods yields an all-empty menu (à découvrir)', () => {
