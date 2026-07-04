@@ -11,6 +11,7 @@
   import { toast } from 'svelte-sonner';
   import { trackSubmission } from '$lib/forms/tracked-enhance';
   import * as m from '$lib/paraglide/messages';
+  import { DIET_EXCLUSIONS, type DietExclusion } from '$lib/utils/diet';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -18,10 +19,18 @@
     form
   }: { data: PageData; form: ActionData } = $props();
 
+  // i18n-keep: settingsDietPorc settingsDietVegetarien settingsDietSansPoisson
+  const DIET_LABELS: Record<DietExclusion, () => string> = {
+    porc: m.settingsDietPorc,
+    vegetarien: m.settingsDietVegetarien,
+    sans_poisson: m.settingsDietSansPoisson
+  };
+
   let deleteOpen = $state(false);
   let leaveOpen = $state(false);
   let inviteOpen = $state(false);
   let savingChild = $state(false);
+  let savingDiet = $state(false);
   let removeMemberOpen = $state(false);
   let removeMemberId = $state<number | null>(null);
 
@@ -89,6 +98,36 @@
       </form>
     </Card>
   {/if}
+
+  <Card class="p-4">
+    <h2 class="text-base font-semibold">{m.settingsDietHeading()}</h2>
+    <form
+      method="POST"
+      action="?/setDiet"
+      class="mt-3 grid gap-3"
+      use:enhance={trackSubmission((v) => (savingDiet = v))}
+    >
+      <div class="grid gap-2 text-sm">
+        {#each DIET_EXCLUSIONS as value (value)}
+          <label class="flex items-start gap-2">
+            <input
+              type="checkbox"
+              name="diet"
+              {value}
+              checked={data.dietaryExclusions.includes(value)}
+              class="mt-0.5"
+            />
+            <span>{DIET_LABELS[value]()}</span>
+          </label>
+        {/each}
+      </div>
+      <div>
+        <Button type="submit" loading={savingDiet}>
+          {savingDiet ? m.logFormSubmitting() : m.commonSave()}
+        </Button>
+      </div>
+    </form>
+  </Card>
 
   <Card class="p-4">
     <h2 class="text-base font-semibold">{m.settingsMembersHeading()}</h2>

@@ -14,6 +14,7 @@ import {
   requireUser
 } from '$lib/server/guards';
 import { isValidBirthDate } from '$lib/utils/dates';
+import { parseDietExclusions } from '$lib/utils/diet';
 import type { Actions, PageServerLoad } from './$types';
 
 // Cap on simultaneously-active (unused, unexpired) invites per child. A parent
@@ -60,6 +61,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
         )
     : [];
 
+  // Hand-picked projection (just the column the diet toggles need) rather
+  // than reusing the +layout.server.ts child object, which every child/[id]/*
+  // route consumes : keeping this query local avoids widening that shared
+  // shape for a field only this page renders.
+  const childDiet = (
+    await db
+      .select({ dietaryExclusions: children.dietaryExclusions })
+      .from(children)
+      .where(eq(children.id, childId))
+      .limit(1)
+  )[0];
+
   return {
     members: memberRows.map((m) => ({
       userId: m.userId,
@@ -73,7 +86,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       code: i.code,
       expiresAt: (i.expiresAt as Date).getTime()
     })),
-    role: membership.role
+    role: membership.role,
+    // Coerced to [] on the (very unlikely) race where the child row vanished
+    // between +layout.server.ts's own existence check and this query.
+    dietaryExclusions: childDiet?.dietaryExclusions ?? []
   };
 };
 
@@ -100,6 +116,21 @@ export const actions: Actions = {
       })
       .where(eq(children.id, childId));
     return { success: 'Enfant mis à jour.' };
+  },
+
+  // Member-allowed (NOT requireOwnership) : a co-parent setting "no pork" or
+  // "vegetarian" is caregiving info, not an ownership-gated account change —
+  // unlike updateChild (name/birthDate) just above. childId comes from the
+  // guard, never a raw param, so the UPDATE can't be pointed at another child.
+  setDiet: async ({ params, request, locals }) => {
+    const { childId } = requireChildContext(locals, params);
+    const form = await request.formData();
+    const chosen = parseDietExclusions(form.getAll('diet'));
+    await db
+      .update(children)
+      .set({ dietaryExclusions: chosen, updatedAt: new Date() })
+      .where(eq(children.id, childId));
+    return { success: 'Régime alimentaire mis à jour.' };
   },
 
   createInvitation: async ({ params, request, locals }) => {
