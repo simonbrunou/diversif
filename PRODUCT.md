@@ -35,6 +35,11 @@ Built by Simon Brunou as a personal-but-public side project, deployable in one c
 
 The app is deliberately small. We don't ship dashboards, gamification mechanics, social feeds, or AI-generated meal plans. If a parent's question is "is this normal?" the answer is a calm copy of the relevant pediatric guidance, not a chatbot.
 
+> **Carve-out (2026-07):** A _deterministic, source-cited daily meal-idea surface_ —
+> composed only from the curated catalog, framed as _repères_ not prescriptions, LLM-free and
+> telemetry-free — is an accepted extension of `/suggestions`, distinct from the rejected
+> "AI-generated meal plans" (which meant non-deterministic, cloud, authored-content plans).
+
 ---
 
 ## Tone & voice
