@@ -37,7 +37,7 @@ export type MenuInput = {
   dietaryExclusions: DietExclusion[];
 };
 
-export type MenuItem = {
+type MenuItem = {
   role: RoleId;
   food: Food;
   amountHint: string | null;
@@ -46,7 +46,7 @@ export type MenuItem = {
   isNew: boolean;
   allergenType: string | null;
 };
-export type Meal = { id: MealId; label: string; items: MenuItem[]; discoverRoles: RoleId[] };
+type Meal = { id: MealId; label: string; items: MenuItem[]; discoverRoles: RoleId[] };
 export type Menu = {
   stageId: StageId;
   quantities: StageQuantities;
