@@ -2,7 +2,6 @@ import { test, expect } from 'bun:test';
 import {
   PROTEIN_WEEK,
   CHOKING_BY_FOOD,
-  NOVELTY_CATEGORIES,
   CHARCUTERIE_MATCHERS,
   PORC_MATCHERS,
   FAT_EXCLUDE,
@@ -54,11 +53,6 @@ test('FAT_EXCLUDE names the nut oil (the engine enforces the exclusion by name)'
   // excludes the nut oil") is the real behavioral guard; this one just pins
   // down the data this table declares.
   expect(FAT_EXCLUDE).toContain('Huile de noix');
-});
-
-test('novelty categories are role-bearing only (no allergenes/aromates)', () => {
-  expect(NOVELTY_CATEGORIES).not.toContain('allergenes');
-  expect(NOVELTY_CATEGORIES).not.toContain('aromates');
 });
 
 // ---------------------------------------------------------------------------

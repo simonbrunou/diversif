@@ -43,7 +43,6 @@ function makeMenu(over: Partial<Menu> = {}): Menu {
     quantities: QUANTITIES['6-9'],
     textures: 'Purée grumeleuse',
     redFlags: [],
-    noveltyFoodId: poulet.id,
     allergenFocus: { food: oeuf, mode: 'introduce', caution: null },
     ...over,
     meals: over.meals ?? [
