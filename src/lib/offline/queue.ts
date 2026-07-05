@@ -1,7 +1,7 @@
 export interface QueuedSubmit {
   key: string;
   childId: number;
-  formData: Record<string, string>;
+  formData: Record<string, string | string[]>;
   queuedAt: number;
 }
 
@@ -111,8 +111,17 @@ function emit(name: string, detail?: unknown): void {
   }
 }
 
+export function buildBody(form: Record<string, string | string[]>): URLSearchParams {
+  const body = new URLSearchParams();
+  for (const [k, v] of Object.entries(form)) {
+    if (Array.isArray(v)) for (const item of v) body.append(k, item);
+    else body.append(k, v);
+  }
+  return body;
+}
+
 async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry'> {
-  const body = new URLSearchParams(row.formData);
+  const body = buildBody(row.formData);
   let res: Response;
   try {
     res = await fetch(`/child/${row.childId}/log`, {
