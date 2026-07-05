@@ -2,11 +2,12 @@ import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import RecentFeed from './RecentFeed.svelte';
 import * as m from '$lib/paraglide/messages';
+import type { RecentEntry } from '$lib/types';
 
 afterEach(() => cleanup());
 
 describe('RecentFeed', () => {
-  const entries = [
+  const entries: RecentEntry[] = [
     {
       id: 1,
       foodId: 10,
@@ -35,7 +36,7 @@ describe('RecentFeed', () => {
   });
 
   it('renders one row per entry, capped at 5', () => {
-    const many = Array.from({ length: 8 }, (_, i) => ({
+    const many: RecentEntry[] = Array.from({ length: 8 }, (_, i) => ({
       id: i,
       foodId: i,
       foodName: `Food ${i}`,
@@ -60,7 +61,7 @@ describe('RecentFeed', () => {
   });
 
   it('wraps every entry in a link to the food entry detail page', () => {
-    const mixed = [
+    const mixed: RecentEntry[] = [
       {
         id: 99,
         foodId: 20,
@@ -98,7 +99,7 @@ describe('RecentFeed', () => {
   });
 
   it('shows the texture chip when texture is set, hides it when null', () => {
-    const withTexture = [
+    const withTexture: RecentEntry[] = [
       {
         id: 3,
         foodId: 12,
@@ -129,7 +130,7 @@ describe('RecentFeed', () => {
     // Three ingredients sharing a mealId, contiguous (as the loader's
     // givenAt-desc/id-asc ordering guarantees) — ras/inconfort/reaction should
     // fold into ONE card whose badge shows the worst of the three: 'reaction'.
-    const meal = [
+    const meal: RecentEntry[] = [
       {
         id: 1,
         foodId: 1,
@@ -161,7 +162,7 @@ describe('RecentFeed', () => {
         mealId: 'meal-1'
       }
     ];
-    const singleton = {
+    const singleton: RecentEntry = {
       id: 4,
       foodId: 4,
       foodName: 'Pomme',
@@ -201,7 +202,7 @@ describe('RecentFeed', () => {
     const now = Date.now();
     // 1 meal of 3 ingredients (most recent) + 6 singletons older than it, all
     // pre-sorted givenAt desc as the loader would produce: 9 rows, 7 groups.
-    const meal = [
+    const meal: RecentEntry[] = [
       {
         id: 1,
         foodId: 1,
@@ -233,7 +234,7 @@ describe('RecentFeed', () => {
         mealId: 'meal-1'
       }
     ];
-    const singles = Array.from({ length: 6 }, (_, i) => ({
+    const singles: RecentEntry[] = Array.from({ length: 6 }, (_, i) => ({
       id: 10 + i,
       foodId: 10 + i,
       foodName: `Single ${i}`,

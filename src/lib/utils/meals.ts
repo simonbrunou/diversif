@@ -18,7 +18,13 @@ export function groupByMeal<
   const groups: MealGroup<T>[] = [];
   for (const r of rows) {
     const last = groups[groups.length - 1];
-    if (r.mealId !== null && last && last.mealId === r.mealId) {
+    // Loose `!= null` is deliberate and fail-safe. For the typed value space
+    // (`string | null`) it is identical to `!== null`, but a contract-violating
+    // `undefined` mealId is forced to its own singleton instead of silently
+    // merging with an adjacent `undefined` row (`undefined === undefined`).
+    // Matches the doc comment above ("Null-mealId rows are singletons"). Do NOT
+    // tighten to `!==` — see the fail-safe test in meals.test.ts.
+    if (r.mealId != null && last && last.mealId === r.mealId) {
       last.members.push(r);
       if (REACTION_RANK[r.reaction] > REACTION_RANK[last.worst]) last.worst = r.reaction;
     } else {

@@ -1,5 +1,6 @@
 import { test, expect } from 'bun:test';
 import { groupByMeal } from './meals';
+import type { RecentEntry } from '$lib/types';
 
 const row = (id: number, mealId: string | null, reaction: 'ras' | 'inconfort' | 'reaction') => ({
   id,
@@ -27,4 +28,18 @@ test('two distinct meals sharing a givenAt stay separate', () => {
     { id: 6, mealId: 'b', reaction: 'ras' as const, givenAt: 999 }
   ]);
   expect(groups.map((g) => g.mealId)).toEqual(['a', 'b']);
+});
+
+test('two consecutive rows with an undefined mealId stay separate singletons (fail-safe)', () => {
+  // `mealId` is typed `string | null`; an `undefined` is a contract violation
+  // (cast through unknown to simulate it, e.g. a fixture that forgot the field).
+  // The loose `!= null` guard must force each such row to its OWN singleton and
+  // never collapse two unrelated rows into one merged "meal". This locks the
+  // fail-safe against a future re-tightening to `!==`, which would compare
+  // `undefined === undefined` and wrongly merge them.
+  const undef = (id: number) =>
+    ({ id, mealId: undefined, reaction: 'ras', givenAt: 1000 - id }) as unknown as RecentEntry;
+  const groups = groupByMeal([undef(1), undef(2)]);
+  expect(groups.length).toBe(2);
+  expect(groups.map((g) => g.members.map((m) => m.id))).toEqual([[1], [2]]);
 });
