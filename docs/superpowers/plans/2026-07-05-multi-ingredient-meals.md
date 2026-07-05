@@ -14,12 +14,18 @@ Council review: 2 rounds (implementation/testability + architect/correctness, co
 
 ## Global Constraints
 
-- **Runtime:** Bun only. Run tests with `bun test`; run Node-shebang tools with `bun --bun` (e.g. `bun --bun node_modules/drizzle-kit/bin.cjs generate`, or the script `bun run db:generate`).
+- **Runtime & commands (BINDING — these override any `bun test`/`svelte-check` command written in a task below):**
+  - Tests: **`bun run test`** (NOT bare `bun test` — that loads ~403 pre-existing component tests without `--conditions=browser` and they fail). Focused run: `bun run test <path>`. Coverage: `bun run test:coverage`. The repo's `test` script wraps `scripts/bun-test.ts` (paraglide + kit sync + coverage gate).
+  - Typecheck: **`bun run check`** (NOT bare `svelte-check` — the script runs paraglide + kit sync first).
+  - i18n keys: add via the `i18n-add-key` skill to `messages/fr.json` + `messages/en.json`; verify with `bun run lint:i18n` (note: it checks apostrophes + unused keys, NOT FR/EN parity — parity is verified by eye).
+  - Migrations / Node-shebang tools: `bun --bun` (e.g. `bun run db:generate`).
+  - `.svelte` edits: validate with the Svelte MCP `svelte-autofixer` before committing.
+  - **Do NOT run `graphify update .`** in a task — the controller runs it once at the end (keeps per-task review diffs clean).
 - **French UI, no anglicisms.** Every new user-facing string goes in BOTH `messages/fr.json` and `messages/en.json` (FR is the source of truth). Use the `i18n-add-key` skill. "repas" not "meal", "ingrédient" not "ingredient", "nouveaux aliments" for never-tried.
 - **Pre-commit:** husky runs lint-staged (prettier + eslint). Do NOT bypass with `--no-verify`.
 - **Reaction is per-ingredient.** Never write `reaction` across a meal's rows with one shared value (symptom promotion mutates one row — a shared write erases a recorded allergy signal). This is the load-bearing safety rule.
 - **`mealId != null` ⇔ member of a multi-ingredient meal.** A meal always has ≥2 members. Created only when >1 food resolves; when a meal shrinks to 1 member, the survivor's `mealId` is nulled.
-- **After changing code files, run `graphify update .`** to keep the graph current (AST-only, no API cost).
+- **graphify:** the controller runs `graphify update .` ONCE at branch end (not per task) — see the commands block above.
 
 ---
 
