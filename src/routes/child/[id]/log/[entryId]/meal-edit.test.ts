@@ -101,49 +101,90 @@ describe('child/[id]/log/[entryId] +page.svelte — meal mode', () => {
     expect(checked502?.value).toBe('inconfort');
   });
 
-  it('wires the three action targets: ?/update, a per-row ?/removeIngredient with the right removeId, and ?/deleteMeal', async () => {
+  it('posts ?/update and structurally cannot delete an ingredient on Enter (no removeIngredient submit in the update form; first submit routes to ?/update)', () => {
     const { container } = render(Page, { props: { data: makeMealData(), form: null } });
 
-    // Main submit -> ?/update. Every reaction.{id}/reactionLoaded.{id} lives
-    // inside this same form.
-    const updateForm = container.querySelector('form[action="?/update"]');
+    // Main submit -> ?/update; every reaction.{id}/reactionLoaded.{id} lives
+    // inside this one form.
+    const updateForm = container.querySelector('form[action="?/update"]')!;
     expect(updateForm).not.toBeNull();
-    expect(container.querySelectorAll('input[name^="reaction."]').length).toBeGreaterThan(0);
+    expect(updateForm.querySelectorAll('input[name^="reaction."]').length).toBeGreaterThan(0);
 
-    // Each row's "Retirer" is a button carrying its own removeId as a
-    // name/value pair (not a per-row hidden input -- see the comment in
-    // +page.svelte on why: a hidden input duplicated per row would collide,
-    // since FormData.get() always resolves to the FIRST same-named field
-    // regardless of which row's button was clicked).
-    const removeButtons = Array.from(
-      container.querySelectorAll<HTMLButtonElement>('button[formaction="?/removeIngredient"]')
+    // The Critical regression this locks out: a per-row "Retirer" rendered as a
+    // type="submit" with formaction="?/removeIngredient" would sit BEFORE
+    // "Enregistrer" in tree order, so it would be the form's implicit default
+    // submit -- pressing Enter in the datetime-local field would fire it and
+    // silently DELETE the first ingredient (native implicit submission; enhance
+    // doesn't change event.submitter). happy-dom can't fire native implicit
+    // submit, so we lock the invariant structurally instead:
+    //   (a) no button in the update form targets ?/removeIngredient, and
+    //   (b) the first (here: only) submit button carries no formaction override,
+    //       so Enter routes to the form's own ?/update.
+    expect(updateForm.querySelectorAll('button[formaction="?/removeIngredient"]').length).toBe(0);
+    const submitButtons = Array.from(
+      updateForm.querySelectorAll<HTMLButtonElement>('button[type="submit"]')
     );
-    expect(removeButtons.length).toBe(2);
-    expect(removeButtons.every((b) => b.name === 'removeId')).toBe(true);
-    expect(removeButtons.map((b) => b.value).sort()).toEqual(['501', '502']);
-    // Every remove button lives inside the SAME form as the reaction pickers
-    // (required so a real submit carries them together; also required for
-    // valid HTML -- a nested <form> would be broken markup). Asserted via one
-    // compound descendant-combinator query rather than comparing two separate
-    // querySelector() results by reference: happy-dom returns reference-
-    // distinct (but content-identical) nodes for the same live element across
-    // separate queries/`.closest()` calls in this harness, so a `===` identity
-    // check across two independent lookups is not reliable here.
-    expect(container.querySelectorAll('form').length).toBe(1);
-    expect(
-      container.querySelectorAll('form[action="?/update"] button[formaction="?/removeIngredient"]')
-        .length
-    ).toBe(2);
+    expect(submitButtons.length).toBeGreaterThan(0);
+    expect(submitButtons[0].getAttribute('formaction')).toBeNull();
+    expect(submitButtons.every((b) => b.getAttribute('formaction') === null)).toBe(true);
 
-    // "Supprimer le repas" reuses the single-entry edit's ConfirmModal
-    // affordance, targeting ?/deleteMeal.
+    // The per-row "Retirer" controls still exist -- as plain type="button"
+    // triggers (they open a confirm), NOT submit buttons.
+    const retirerButtons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('button')
+    ).filter((b) => b.type === 'button' && b.textContent?.includes('Retirer'));
+    expect(retirerButtons.length).toBe(2);
+  });
+
+  it('clicking "Retirer" opens a confirm dialog instead of submitting immediately', async () => {
+    const { container } = render(Page, { props: { data: makeMealData(), form: null } });
+
+    // No removeIngredient form exists before the click (the confirm is closed).
+    expect(document.querySelector('form[action="?/removeIngredient"]')).toBeNull();
+
+    const retirerButtons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('button')
+    ).filter((b) => b.type === 'button' && b.textContent?.includes('Retirer'));
+    expect(retirerButtons.length).toBe(2);
+
+    await fireEvent.click(retirerButtons[0]);
+
+    // The click opens the confirm modal, which portals a ?/removeIngredient
+    // form into the document (bits-ui Portal renders outside `container`) --
+    // no POST happens until the user confirms.
+    expect(document.querySelector('form[action="?/removeIngredient"]')).not.toBeNull();
+  });
+
+  it("confirming the remove dialog posts ?/removeIngredient with the clicked row's removeId + from", async () => {
+    const { container } = render(Page, { props: { data: makeMealData(), form: null } });
+    // Guard against a stale portal leaking from a prior test.
+    expect(document.querySelector('form[action="?/removeIngredient"]')).toBeNull();
+
+    const retirerButtons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('button')
+    ).filter((b) => b.type === 'button' && b.textContent?.includes('Retirer'));
+    // Click the SECOND row (member 502) to prove the dialog is parameterized by
+    // which ingredient was chosen -- not hard-wired to the first row.
+    await fireEvent.click(retirerButtons[1]);
+
+    const removeForm = document.querySelector('form[action="?/removeIngredient"]')!;
+    expect(removeForm).not.toBeNull();
+    const removeId = removeForm.querySelector<HTMLInputElement>('input[name="removeId"]');
+    expect(removeId?.value).toBe('502');
+    // `from` threads through the same way the other actions forward it.
+    const from = removeForm.querySelector<HTMLInputElement>('input[name="from"]');
+    expect(from?.value).toBe('foods');
+  });
+
+  it('"Supprimer le repas" opens a ?/deleteMeal confirm (reusing the single-entry ConfirmModal affordance)', async () => {
+    const { container } = render(Page, { props: { data: makeMealData(), form: null } });
+
     const deleteTrigger = Array.from(container.querySelectorAll('button')).find((b) =>
       b.textContent?.includes('Supprimer le repas')
     )!;
     expect(deleteTrigger).not.toBeUndefined();
     await fireEvent.click(deleteTrigger);
     // bits-ui's Portal moves dialog content outside `container`; query the document.
-    const deleteForm = document.querySelector('form[action="?/deleteMeal"]');
-    expect(deleteForm).not.toBeNull();
+    expect(document.querySelector('form[action="?/deleteMeal"]')).not.toBeNull();
   });
 });

@@ -55,6 +55,21 @@
   let mealSaving = $state(false);
   let mealDeleteOpen = $state(false);
 
+  // Per-ingredient "Retirer" is a destructive DELETE, so it goes through a
+  // confirm dialog (like "Supprimer le repas") rather than an in-form submit
+  // button. Critically, it must NOT be a `type="submit"` inside the update
+  // form: a per-row submit button renders BEFORE "Enregistrer", so it would be
+  // the form's implicit default submit — pressing Enter in the date field
+  // would fire the FIRST submit button in tree order and silently DELETE the
+  // first ingredient (native implicit submission; enhance doesn't change
+  // event.submitter). `pendingRemoveId` records which row the caregiver chose;
+  // the actual POST goes through the dedicated ConfirmModal form below.
+  let pendingRemoveId = $state<number | null>(null);
+  let removeOpen = $state(false);
+  const pendingRemoveFood = $derived(
+    mealMembers.find((mem) => mem.id === pendingRemoveId)?.foodName ?? ''
+  );
+
   const backHref = $derived(
     data.from === 'dashboard' ? `/child/${data.child.id}` : `/child/${data.child.id}/foods`
   );
@@ -130,24 +145,21 @@
               >
                 {member.foodName}
               </a>
-              <!-- name+value ON THE BUTTON (not a per-row hidden input): every
-                   row's ReactionPicker/reactionLoaded shares this one form, so a
-                   hidden input named "removeId" in each row would collide --
-                   FormData always resolves to the FIRST same-named field,
-                   regardless of which row's button was clicked. A submit
-                   button's own name/value pair is only included for the button
-                   that actually triggered the submit (SvelteKit's enhance builds
-                   `new FormData(form, event.submitter)`; native no-JS submission
-                   follows the same rule), so this is the one carrier that can't
-                   collide across rows. -->
+              <!-- type="button", NOT a submit: a per-row submit button here
+                   renders before "Enregistrer", so Enter in the date field
+                   would fire it (implicit default submit = first submit button
+                   in tree order) and silently DELETE this ingredient. Opening a
+                   confirm dialog instead both removes that hazard and matches
+                   the confirm affordance the other destructive actions
+                   (?/delete, ?/deleteMeal) already use. -->
               <Button
-                type="submit"
-                name="removeId"
-                value={member.id}
-                formaction="?/removeIngredient"
-                formnovalidate
+                type="button"
                 variant="ghost"
                 size="sm"
+                onclick={() => {
+                  pendingRemoveId = member.id;
+                  removeOpen = true;
+                }}
               >
                 <X size={14} aria-hidden="true" />
                 {m.mealEditRemoveIngredient()}
@@ -186,6 +198,22 @@
       </Button>
     </div>
   </div>
+
+  <!-- Dedicated remove-ingredient form (like the deleteMeal ConfirmModal
+       below), carrying the chosen row's removeId + the forwarded `from`. This
+       lives OUTSIDE the update form, so its submit button can never become the
+       update form's implicit default submit. -->
+  <ConfirmModal
+    bind:open={removeOpen}
+    title={m.mealEditRemoveConfirmTitle({ food: pendingRemoveFood })}
+    description={m.mealEditRemoveConfirmDescription()}
+    action="?/removeIngredient"
+    confirmLabel={m.mealEditRemoveIngredient()}
+    loadingLabel={m.logEditDeleting()}
+    destructive
+    hiddenFields={{ removeId: pendingRemoveId ?? '', from: data.from }}
+    failureMessage={m.errorsGenericFallback()}
+  />
 
   <ConfirmModal
     bind:open={mealDeleteOpen}

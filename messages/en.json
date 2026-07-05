@@ -573,6 +573,8 @@
   "mealEditRemoveIngredient": "Remove",
   "mealEditDelete": "Delete meal",
   "mealEditIngredientReactionLabel": "Reaction for {food}",
+  "mealEditRemoveConfirmTitle": "Remove {food} from the meal?",
+  "mealEditRemoveConfirmDescription": "This ingredient will be removed from the meal. This cannot be undone.",
   "settingsTitle": "Settings",
   "settingsInformationsHeading": "Information",
   "settingsDietHeading": "Diet",

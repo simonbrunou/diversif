@@ -573,6 +573,8 @@
   "mealEditRemoveIngredient": "Retirer",
   "mealEditDelete": "Supprimer le repas",
   "mealEditIngredientReactionLabel": "Réaction pour {food}",
+  "mealEditRemoveConfirmTitle": "Retirer {food} du repas ?",
+  "mealEditRemoveConfirmDescription": "Cet ingrédient sera supprimé du repas. L’opération est définitive.",
   "settingsTitle": "Paramètres",
   "settingsInformationsHeading": "Informations",
   "settingsDietHeading": "Régime alimentaire",
