@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { getTableConfig } from 'drizzle-orm/sqlite-core';
+import { testDb, resetTestDb } from '../../../test/db';
 import {
   users,
   sessions,
@@ -83,5 +85,65 @@ describe('symptoms table', () => {
     const idxNames = cfg.indexes.map((i) => i.config.name).sort();
     expect(idxNames).toContain('symptoms_food_entry_id_idx');
     expect(idxNames).toContain('symptoms_child_id_observed_at_idx');
+  });
+});
+
+describe('children.dietaryExclusions', () => {
+  beforeEach(async () => {
+    await resetTestDb();
+  });
+
+  async function seedUserId(): Promise<number> {
+    const [user] = await testDb
+      .insert(users)
+      .values({
+        email: `schema-test-${Math.random()}@example.com`,
+        displayName: 'Parent',
+        passwordHash: 'x',
+        createdAt: new Date()
+      })
+      .returning({ id: users.id });
+    return user.id;
+  }
+
+  it('defaults to [] when omitted on insert (proves the migration default applied)', async () => {
+    const createdBy = await seedUserId();
+    const [child] = await testDb
+      .insert(children)
+      .values({ name: 'Bébé', birthDate: '2024-01-01', createdBy, createdAt: new Date() })
+      .returning();
+    expect(child.dietaryExclusions).toEqual([]);
+  });
+
+  it('round-trips an explicit value on insert', async () => {
+    const createdBy = await seedUserId();
+    const [child] = await testDb
+      .insert(children)
+      .values({
+        name: 'Bébé',
+        birthDate: '2024-01-01',
+        createdBy,
+        createdAt: new Date(),
+        dietaryExclusions: ['porc']
+      })
+      .returning();
+    expect(child.dietaryExclusions).toEqual(['porc']);
+  });
+
+  it('round-trips a written value on update', async () => {
+    const createdBy = await seedUserId();
+    const [child] = await testDb
+      .insert(children)
+      .values({ name: 'Bébé', birthDate: '2024-01-01', createdBy, createdAt: new Date() })
+      .returning();
+    expect(child.dietaryExclusions).toEqual([]);
+
+    await testDb
+      .update(children)
+      .set({ dietaryExclusions: ['porc'] })
+      .where(eq(children.id, child.id));
+
+    const [updated] = await testDb.select().from(children).where(eq(children.id, child.id));
+    expect(updated.dietaryExclusions).toEqual(['porc']);
   });
 });

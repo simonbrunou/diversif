@@ -25,7 +25,7 @@
     {
       href: (id) => localizedHref(`/child/${id}/guide`),
       labelKey: 'chromeTabsDecouvrir',
-      matcher: (p) => /^\/child\/[^/]+\/(guide|suggestions)/.test(p) || p === '/sources',
+      matcher: (p) => /^\/child\/[^/]+\/(guide|suggestions|menu)/.test(p) || p === '/sources',
       icon: Sparkles
     },
     {

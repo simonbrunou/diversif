@@ -1,0 +1,1 @@
+ALTER TABLE `children` ADD `dietary_exclusions` text DEFAULT '[]' NOT NULL;
