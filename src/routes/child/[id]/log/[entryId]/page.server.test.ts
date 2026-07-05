@@ -591,6 +591,47 @@ describe('child/[id]/log/[entryId] meal mode', () => {
     expect(rows.find((r) => r.id === ids[1])!.reaction).toBe('reaction');
   });
 
+  test('a genuine reaction edit that raced a promotion no-ops on the guarded WHERE (does not overwrite the promotion)', async () => {
+    // Distinguishing test for the optimistic guard: unlike the two tests above
+    // (which submit reaction == reactionLoaded, so the dirty-only `submitted
+    // !== loaded` check short-circuits and NO update is ever issued), here the
+    // user genuinely CHANGES ids[1]'s reaction, so an UPDATE *is* attempted —
+    // and the `eq(reaction, loaded)` term is the only thing that stops it from
+    // clobbering the concurrent promotion. Delete that term and this test goes
+    // red (survivor becomes 'inconfort').
+    const { child, m1, ids } = await seedMeal(['ras', 'ras']);
+    // The form loaded with both at 'ras'. A co-parent then promotes ids[1] to
+    // 'reaction' (a symptom fired) after the form was rendered.
+    await testDb
+      .update(schema.foodEntries)
+      .set({ reaction: 'reaction' })
+      .where(eq(schema.foodEntries.id, ids[1]));
+    // The user, unaware, edits ids[1]'s reaction from its LOADED 'ras' to
+    // 'inconfort'. submitted('inconfort') !== loaded('ras') ⇒ a write is
+    // attempted; but the guard's WHERE reaction='ras' matches nothing (the row
+    // is now 'reaction'), so the stale demote no-ops and the promotion stands.
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: {
+        givenAt: new Date().toISOString(),
+        [`reaction.${ids[0]}`]: 'ras',
+        [`reactionLoaded.${ids[0]}`]: 'ras',
+        [`reaction.${ids[1]}`]: 'inconfort',
+        [`reactionLoaded.${ids[1]}`]: 'ras'
+      }
+    });
+    await captureFlow(() => actions.update(ev as never));
+    const rows = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.mealId, m1));
+    // The promotion survives: not the stale 'inconfort' the form tried to write,
+    // and not the original 'ras' either.
+    expect(rows.find((r) => r.id === ids[1])!.reaction).toBe('reaction');
+  });
+
   test('removeIngredient down to one nulls the survivor mealId', async () => {
     const { child, ids } = await seedMeal(['ras', 'ras']);
     const ev = makeRouteEvent({
