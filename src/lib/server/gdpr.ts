@@ -136,6 +136,7 @@ export type ExportedUser = {
       notes: string | null;
       texture: TextureKey | null;
       loggedByMe: boolean;
+      mealId: string | null;
       createdAt: string;
     }>;
   }>;
@@ -276,6 +277,7 @@ export async function exportUserData(
             notes: foodEntries.notes,
             texture: foodEntries.texture,
             loggedBy: foodEntries.loggedBy,
+            mealId: foodEntries.mealId,
             createdAt: foodEntries.createdAt
           })
           .from(foodEntries)
@@ -380,6 +382,7 @@ export async function exportUserData(
           notes: e.notes,
           texture: e.texture ?? null,
           loggedByMe: e.loggedBy === userId,
+          mealId: e.mealId ?? null,
           createdAt: isoOrThrow(e.createdAt)
         }))
       };
