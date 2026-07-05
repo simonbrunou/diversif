@@ -83,6 +83,19 @@ async function setupThreeFoods() {
   return { user, child, foodIds: inserted.map((f) => f.id) };
 }
 
+// Inserts a minimal food_entries row directly (bypassing the action) so load
+// tests can seed "already tried" state without exercising the whole action.
+async function logOneFood(childId: number, foodId: number) {
+  await testDb.insert(foodEntries).values({
+    childId,
+    foodId,
+    givenAt: new Date('2024-05-01T10:00:00Z'),
+    reaction: 'ras',
+    notes: null,
+    createdAt: new Date()
+  });
+}
+
 async function seedAllergenFood(allergenId: string) {
   return (
     await testDb
@@ -183,6 +196,20 @@ describe('child/[id]/log load', () => {
     expect(names).toContain('Carotte');
     expect(names).toContain('Mon plat');
     expect(names).not.toContain('Plat ailleurs');
+  });
+
+  it("returns the child's already-tried foodIds", async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    await logOneFood(child.id, foodIds[0]);
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) }
+    });
+    const data = await load(ev as unknown as Parameters<typeof load>[0]);
+    expect(data.introducedFoodIds).toContain(foodIds[0]);
+    // Untried foods must NOT show up as already-introduced.
+    expect(data.introducedFoodIds).not.toContain(foodIds[1]);
   });
 });
 

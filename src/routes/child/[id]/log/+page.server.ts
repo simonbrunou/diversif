@@ -49,7 +49,14 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     .where(or(isNull(foods.customForChildId), eq(foods.customForChildId, childId)))
     .orderBy(foods.name);
 
-  return { foods: list };
+  // Distinct foodIds already logged for this child, so the picker can badge
+  // a "never tried" hint when several brand-new foods are selected together.
+  const introduced = await db
+    .selectDistinct({ foodId: foodEntries.foodId })
+    .from(foodEntries)
+    .where(eq(foodEntries.childId, childId));
+
+  return { foods: list, introducedFoodIds: introduced.map((r) => r.foodId) };
 };
 
 class LogActionAbort extends Error {

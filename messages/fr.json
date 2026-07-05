@@ -546,6 +546,8 @@
   "foodComboboxCustomScopeHint": "Cet aliment ne sera visible que pour cet enfant.",
   "logFormTitle": "Noter un repas",
   "logFormSubtitle": "Pour {name}",
+  "logFormMultiSelectHelp": "Ajoutez tous les ingrédients du repas.",
+  "logFormNeverTriedHint": "Introduisez les nouveaux aliments un par un pour repérer plus facilement une réaction.",
   "logFormGivenAtLabel": "Quand ?",
   "logFormReactionLegend": "Comment bébé a réagi ?",
   "logFormReactionHelpToggle": "Comment choisir ?",

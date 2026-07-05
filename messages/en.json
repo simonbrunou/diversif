@@ -546,6 +546,8 @@
   "foodComboboxCustomScopeHint": "This food will only be visible for this child.",
   "logFormTitle": "Log a meal",
   "logFormSubtitle": "For {name}",
+  "logFormMultiSelectHelp": "Add every ingredient of the meal.",
+  "logFormNeverTriedHint": "Introduce new foods one at a time so a reaction is easier to trace.",
   "logFormGivenAtLabel": "When?",
   "logFormReactionLegend": "How did baby react?",
   "logFormReactionHelpToggle": "How to choose?",

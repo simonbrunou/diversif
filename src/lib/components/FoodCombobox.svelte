@@ -24,7 +24,6 @@
     customName = 'customFood',
     initialFoodId = null,
     multiple = false,
-    introducedFoodIds: _introducedFoodIds,
     onCustomToggle,
     onSelectionChange
   }: {
@@ -33,7 +32,6 @@
     customName?: string;
     initialFoodId?: number | null;
     multiple?: boolean;
-    introducedFoodIds?: Set<number>;
     onCustomToggle?: (open: boolean) => void;
     onSelectionChange?: (ids: number[]) => void;
   } = $props();
