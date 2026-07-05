@@ -513,6 +513,7 @@
   "reportFoodsByCategoryHeading": "Aliments introduits par famille",
   "reportFoodsByCategoryEmpty": "Aucun aliment encore noté.",
   "reportNotableHeading": "Réactions à signaler",
+  "reportNotableInMeal": "dans un repas",
   "reportFooterDisclaimer": "Édité depuis Diversif : application de suivi de la diversification alimentaire. Ce récap n’est pas un avis médical : présentez-le à votre pédiatre ou médecin pour discussion.",
   "guideMedicalDisclaimer": "Diversif n’est pas un avis médical individuel. En cas de doute sur l’introduction d’un aliment, consultez votre pédiatre ou un allergologue.",
   "aideNavLabel": "Aide",
