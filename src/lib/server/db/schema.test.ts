@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { getTableConfig } from 'drizzle-orm/sqlite-core';
 import { testDb, resetTestDb } from '../../../test/db';
+import { seedUser, seedChild } from '../../../test/route';
 import {
   users,
   sessions,
@@ -145,5 +146,58 @@ describe('children.dietaryExclusions', () => {
 
     const [updated] = await testDb.select().from(children).where(eq(children.id, child.id));
     expect(updated.dietaryExclusions).toEqual(['porc']);
+  });
+});
+
+describe('food_entries.mealId', () => {
+  beforeEach(async () => {
+    await resetTestDb();
+  });
+
+  // The test harness (src/test/db.ts) only runs migrations — it does not call
+  // the app's seedFoods() (that's src/lib/server/db/index.ts, prod-only) — so
+  // every *.test.ts here seeds its own food row, same as symptoms.test.ts.
+  async function seedFood() {
+    const [row] = await testDb
+      .insert(foods)
+      .values({
+        name: 'Carotte',
+        category: 'legumes',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning();
+    return row;
+  }
+
+  it('accepts a mealId group token and rejects duplicate (mealId, foodId)', async () => {
+    const user = await seedUser();
+    const child = await seedChild({ createdBy: user.id });
+    const food = await seedFood();
+    const foodId = food.id;
+
+    const base = {
+      childId: child.id,
+      foodId,
+      givenAt: new Date(),
+      reaction: 'ras' as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      mealId: 'meal-abc'
+    };
+    await testDb.insert(foodEntries).values(base);
+
+    // same (mealId, foodId) must violate the partial unique index. Wrap in an
+    // async IIFE so bun:test's .rejects sees a real Promise — Drizzle's
+    // insert builder is thenable but bun checks isPromise() before awaiting
+    // (see texture.test.ts).
+    await expect((async () => await testDb.insert(foodEntries).values(base))()).rejects.toThrow();
+
+    // a standalone row (mealId null) with the same foodId is fine (repeat logging)
+    await testDb.insert(foodEntries).values({ ...base, mealId: null });
   });
 });
