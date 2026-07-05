@@ -528,6 +528,32 @@ describe('child/[id]/log/[entryId] meal mode', () => {
     return { child, m1, ids };
   }
 
+  test('load returns meal siblings when the entry belongs to a >=2-ingredient meal', async () => {
+    const { child, m1, ids } = await seedMeal(['ras', 'ras', 'inconfort']);
+    const out = await load(
+      makeRouteEvent({
+        user,
+        memberships,
+        params: { id: String(child.id), entryId: String(ids[0]) },
+        url: `http://localhost/child/${child.id}/log/${ids[0]}`
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.meal).not.toBeNull();
+    expect(out.meal!.mealId).toBe(m1);
+    expect(out.meal!.members.length).toBe(3);
+    expect(out.meal!.members.map((mem) => mem.id)).toEqual(ids);
+
+    const [rawSibling] = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.id, ids[1]));
+    const sibling = out.meal!.members.find((mem) => mem.id === ids[1])!;
+    expect(sibling.foodId).toBe(rawSibling.foodId);
+    expect(sibling.foodName).toBe('Ingrédient 1');
+    expect(sibling.reaction).toBe('ras');
+    expect(out.meal!.members.find((mem) => mem.id === ids[2])!.reaction).toBe('inconfort');
+  });
+
   test('meal-mode update writes shared fields to all siblings and does not touch unchanged reactions', async () => {
     const { child, m1, ids } = await seedMeal(['ras', 'ras']); // helper: 2-ingredient meal, both ras
     // promote one sibling out-of-band (simulates a symptom)
@@ -586,6 +612,36 @@ describe('child/[id]/log/[entryId] meal mode', () => {
       .from(schema.foodEntries)
       .where(eq(schema.foodEntries.mealId, m1));
     expect(rows.every((row) => row.notes === null)).toBe(true);
+  });
+
+  test('meal-mode update rejects an invalid texture and leaves siblings unchanged', async () => {
+    const { child, m1, ids } = await seedMeal(['ras', 'ras']);
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: {
+        givenAt: new Date().toISOString(),
+        texture: 'pas-une-texture',
+        notes: 'x',
+        [`reaction.${ids[0]}`]: 'ras',
+        [`reactionLoaded.${ids[0]}`]: 'ras',
+        [`reaction.${ids[1]}`]: 'ras',
+        [`reactionLoaded.${ids[1]}`]: 'ras'
+      }
+    });
+    const r = await captureFlow(() => actions.update(ev as never));
+    expect(r.kind).toBe('return');
+    if (r.kind === 'return') {
+      const value = r.value as { status: number; data: { error: string } };
+      expect(value.status).toBe(400);
+      expect(value.data.error).toBe('Texture invalide.');
+    }
+    const rows = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.mealId, m1));
+    expect(rows.every((row) => row.texture === null && row.notes === null)).toBe(true);
   });
 
   test('a stale date-only edit does not clobber a concurrently-promoted reaction', async () => {
@@ -673,6 +729,27 @@ describe('child/[id]/log/[entryId] meal mode', () => {
       await testDb.select().from(schema.foodEntries).where(eq(schema.foodEntries.id, ids[1]))
     )[0];
     expect(survivor.mealId).toBeNull();
+  });
+
+  test('removeIngredient on a standalone (non-meal) entry fails 400', async () => {
+    const { u, c, m, entry } = await setup();
+    const ev = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: { removeId: String(entry.id) }
+    });
+    const r = await captureFlow(() => actions.removeIngredient(ev as never));
+    expect(r.kind).toBe('return');
+    if (r.kind === 'return') {
+      const value = r.value as { status: number; data: { error: string } };
+      expect(value.status).toBe(400);
+      expect(value.data.error).toBe('Requête invalide.');
+    }
+    const fresh = (
+      await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).limit(1)
+    )[0];
+    expect(fresh).toBeDefined();
   });
 
   test('deleteMeal removes all siblings', async () => {
