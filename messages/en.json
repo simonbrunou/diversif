@@ -329,6 +329,8 @@
   "profilCoparentsTitle": "Co-parents",
   "profilCoparentsInvite": "Invite a co-parent",
   "profilCoparentsEmpty": "No co-parents invited yet.",
+  "profilCoparentsActivityEntry": "{name} logged {food}",
+  "profilCoparentsActivityMeal": "{name} logged {count} ingredients",
   "profilCompteTitle": "Account",
   "profilComptePasskeys": "Passkeys",
   "profilComptePasskeysDeviceSingular": "1 device",
