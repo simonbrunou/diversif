@@ -52,6 +52,18 @@
     return Number.isInteger(v) && v > 0 ? v : null;
   })();
 
+  // Selection + custom-in-progress state, fed by FoodCombobox's callbacks
+  // (never the component's internal state directly — see FoodCombobox.svelte).
+  // Seeded from ?foodId= so a deep link (menu / suggestions / reminders CTA)
+  // still starts pre-selected and counts toward the hint below.
+  let selectedIds = $state<number[]>(initialFoodId ? [initialFoodId] : []);
+  let customActive = $state(false);
+  const introducedSet = $derived(new Set(data.introducedFoodIds));
+  // A custom food being added is, by definition, never-tried.
+  const neverTriedCount = $derived(
+    selectedIds.filter((id) => !introducedSet.has(id)).length + (customActive ? 1 : 0)
+  );
+
   // Surface a stage-relevant tip below the form
   const months = $derived(ageInMonths(data.child.birthDate));
   const tip = $derived(pickRotatingTip(getTipsFor({ ageMonths: months }), data.child.id + 7));
@@ -79,10 +91,14 @@
       }
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
         cancel();
-        const formObj: Record<string, string> = {};
-        formData.forEach((value, key) => {
-          if (typeof value === 'string') formObj[key] = value;
-        });
+        // getAll-aware capture: formData.forEach (or Object.fromEntries) is
+        // last-wins on repeated keys, so a multi-ingredient meal's repeated
+        // `foodId` entries would silently collapse to just the last one.
+        const formObj: Record<string, string | string[]> = {};
+        for (const key of new Set([...formData.keys()])) {
+          const all = formData.getAll(key).filter((v): v is string => typeof v === 'string');
+          formObj[key] = all.length > 1 ? all : all[0];
+        }
         void (async () => {
           try {
             await enqueue({
@@ -117,7 +133,17 @@
       <FormError>{form.error}</FormError>
     {/if}
 
-    <FoodCombobox foods={data.foods} {initialFoodId} />
+    <FoodCombobox
+      foods={data.foods}
+      multiple
+      {initialFoodId}
+      onSelectionChange={(ids) => (selectedIds = ids)}
+      onCustomToggle={(open) => (customActive = open)}
+    />
+    <p class="text-xs text-muted-foreground">{m.logFormMultiSelectHelp()}</p>
+    {#if neverTriedCount >= 2}
+      <p class="text-xs text-muted-foreground">{m.logFormNeverTriedHint()}</p>
+    {/if}
 
     <Field name="givenAt" label={m.logFormGivenAtLabel()}>
       <Input id="givenAt" name="givenAt" type="datetime-local" bind:value={givenAt} required />

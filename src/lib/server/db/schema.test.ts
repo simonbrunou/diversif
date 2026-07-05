@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { getTableConfig } from 'drizzle-orm/sqlite-core';
 import { testDb, resetTestDb } from '../../../test/db';
+import { seedUser, seedChild } from '../../../test/route';
 import {
   users,
   sessions,
@@ -145,5 +146,73 @@ describe('children.dietaryExclusions', () => {
 
     const [updated] = await testDb.select().from(children).where(eq(children.id, child.id));
     expect(updated.dietaryExclusions).toEqual(['porc']);
+  });
+});
+
+describe('food_entries.mealId', () => {
+  beforeEach(async () => {
+    await resetTestDb();
+  });
+
+  // The test harness (src/test/db.ts) only runs migrations — it does not call
+  // the app's seedFoods() (that's src/lib/server/db/index.ts, prod-only) — so
+  // every *.test.ts here seeds its own food row, same as symptoms.test.ts.
+  async function seedFood(name = 'Carotte') {
+    const [row] = await testDb
+      .insert(foods)
+      .values({
+        name,
+        category: 'legumes',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning();
+    return row;
+  }
+
+  it('accepts a mealId group token and rejects duplicate (mealId, foodId)', async () => {
+    const user = await seedUser();
+    const child = await seedChild({ createdBy: user.id });
+    const food = await seedFood();
+    const foodId = food.id;
+
+    const base = {
+      childId: child.id,
+      foodId,
+      givenAt: new Date(),
+      reaction: 'ras' as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      mealId: 'meal-abc'
+    };
+    await testDb.insert(foodEntries).values(base);
+
+    // same (mealId, foodId) must violate the partial unique index. Wrap in an
+    // async IIFE so bun:test's .rejects sees a real Promise — Drizzle's
+    // insert builder is thenable but bun checks isPromise() before awaiting
+    // (see texture.test.ts).
+    await expect((async () => await testDb.insert(foodEntries).values(base))()).rejects.toThrow();
+
+    // a standalone row (mealId null) with the same foodId is fine (repeat logging)
+    await testDb.insert(foodEntries).values({ ...base, mealId: null });
+  });
+
+  it('ships the unique index as a PARTIAL one (predicate present in the DDL)', () => {
+    // The insert-based test above cannot distinguish a partial index from a
+    // full UNIQUE(meal_id, food_id): SQLite treats NULLs as distinct in a
+    // unique index regardless of any WHERE clause, so both would let the
+    // mealId-null repeat through and reject the duplicate. If a future
+    // db:generate silently dropped the `.where(...)`, that test would stay
+    // green while standalone repeat-logging broke in prod. Guard the predicate
+    // directly by reading the shipped index DDL from sqlite_master.
+    const rows = testDb.all(
+      sql`SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'food_entries_meal_food_uq'`
+    ) as Array<{ sql: string }>;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].sql).toMatch(/is not null/i);
   });
 });

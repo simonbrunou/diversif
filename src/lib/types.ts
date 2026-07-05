@@ -22,6 +22,7 @@ export type RecentEntry = {
   reaction: ReactionId;
   givenAt: number;
   texture: TextureKey | null;
+  mealId: string | null;
 };
 
 export type SymptomEntry = {

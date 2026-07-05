@@ -22,6 +22,7 @@ type ReportEntry = {
   givenAt: number;
   notes: string | null;
   texture: TextureKey | null;
+  mealId: string | null;
 };
 
 type ReportFood = {
@@ -209,7 +210,8 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
       reaction: foodEntries.reaction,
       givenAt: foodEntries.givenAt,
       notes: foodEntries.notes,
-      texture: foodEntries.texture
+      texture: foodEntries.texture,
+      mealId: foodEntries.mealId
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
@@ -225,7 +227,8 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
     reaction: r.reaction as ReactionId,
     givenAt: toEpochMs(r.givenAt as Date | number | string),
     notes: r.notes,
-    texture: isTextureKey(r.texture) ? r.texture : null
+    texture: isTextureKey(r.texture) ? r.texture : null,
+    mealId: r.mealId
   }));
 
   const { byFood, categoryGroups } = aggregateFoods(entries);

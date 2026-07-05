@@ -3,7 +3,7 @@
 import { db } from '$lib/server/db';
 import { execRows } from '$lib/server/db/exec';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
-import { and, desc, eq, gte, ne, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ne, sql } from 'drizzle-orm';
 import type { CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 
@@ -72,6 +72,7 @@ export type CoparentEntry = {
   reaction: ReactionId;
   givenAt: number;
   loggedByName: string;
+  mealId: string | null;
 };
 
 /**
@@ -93,7 +94,8 @@ export async function loadCoparentActivity(
       category: foods.category,
       reaction: foodEntries.reaction,
       givenAt: foodEntries.givenAt,
-      loggedByName: users.displayName
+      loggedByName: users.displayName,
+      mealId: foodEntries.mealId
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
@@ -105,7 +107,12 @@ export async function loadCoparentActivity(
         gte(foodEntries.givenAt, since)
       )
     )
-    .orderBy(desc(foodEntries.givenAt))
+    // Secondary `asc(id)` tiebreaker (same contract as the dashboard `recent`
+    // query, Task 3): a multi-ingredient meal's rows share the same givenAt,
+    // so without a deterministic tiebreaker their relative order — and thus
+    // adjacency once run through groupByMeal — would be unspecified. Do NOT
+    // drop the primary `desc(givenAt)` sort; this is additive only.
+    .orderBy(desc(foodEntries.givenAt), asc(foodEntries.id))
     .limit(limit);
 
   return rows.map((r) => ({
@@ -114,6 +121,7 @@ export async function loadCoparentActivity(
     category: r.category as CategoryId,
     reaction: r.reaction as ReactionId,
     givenAt: r.givenAt.getTime(),
-    loggedByName: r.loggedByName
+    loggedByName: r.loggedByName,
+    mealId: r.mealId
   }));
 }

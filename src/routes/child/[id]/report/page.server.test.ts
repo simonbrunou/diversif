@@ -8,6 +8,7 @@ import {
   seedUser
 } from '../../../../test/route';
 import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import { newId } from '$lib/offline/uuid';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
@@ -214,6 +215,64 @@ describe('child/[id]/report load', () => {
     expect(out.notable.length).toBe(1);
     expect(out.notable[0].foodName).toBe('Saumon');
     expect(out.notable[0].notes).toBe('urticaire 30min');
+  });
+
+  it('does not collapse a meal with two differently-reacted ingredients into one notable line', async () => {
+    const { u, c, guard } = await setup();
+    const carrot = await seedFood('Carotte', 'legumes');
+    const fish = await seedFood('Saumon', 'poissons', 'poisson');
+    const standalone = await seedFood('Poire', 'fruits');
+    const sharedMealId = newId();
+
+    // Two ingredients of the SAME meal, each with its OWN (different) reaction.
+    await testDb.insert(foodEntries).values([
+      {
+        childId: c.id,
+        foodId: carrot.id,
+        givenAt: new Date('2024-06-01T10:00:00Z'),
+        reaction: 'inconfort',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date(),
+        mealId: sharedMealId
+      },
+      {
+        childId: c.id,
+        foodId: fish.id,
+        givenAt: new Date('2024-06-01T10:00:00Z'),
+        reaction: 'reaction',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date(),
+        mealId: sharedMealId
+      }
+    ]);
+    // A standalone (non-meal) reacted entry, for contrast.
+    await logEntry(c.id, standalone.id, u.id, new Date('2024-06-02T10:00:00Z'), 'inconfort');
+
+    const event = makeRouteEvent({
+      ...guard,
+      parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
+    });
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+
+    // The whole point of this app: two DIFFERENT reactions logged in the same
+    // meal must stay as TWO distinct notable lines — grouping them would hide
+    // a distinct reaction from the pediatrician. Assert all 3 lines are
+    // present (no collapsing whatsoever), each with its own reaction.
+    expect(out.notable).toHaveLength(3);
+    const carrotLine = out.notable.find((e) => e.foodName === 'Carotte');
+    const fishLine = out.notable.find((e) => e.foodName === 'Saumon');
+    const standaloneLine = out.notable.find((e) => e.foodName === 'Poire');
+
+    expect(carrotLine?.reaction).toBe('inconfort');
+    expect(fishLine?.reaction).toBe('reaction');
+    // Both meal ingredients carry the shared mealId so the UI can tag them
+    // "in a meal" without merging their (different) reactions.
+    expect(carrotLine?.mealId).toBe(sharedMealId);
+    expect(fishLine?.mealId).toBe(sharedMealId);
+    // The standalone entry is not part of a meal.
+    expect(standaloneLine?.mealId).toBeNull();
   });
 
   it('aggregates allergens from a mixed entries fixture', async () => {

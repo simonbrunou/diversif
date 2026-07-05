@@ -28,18 +28,26 @@ export type RouteEventOptions = {
   cookies?: Record<string, string>;
   params?: Record<string, string>;
   url?: string; // full URL
-  formData?: Record<string, string>;
+  formData?: Record<string, string | string[]>;
   headers?: Record<string, string>;
   parent?: () => Promise<unknown>;
   locale?: 'fr' | 'en';
 };
+
+function appendFormValue(formData: FormData, key: string, value: string | string[]) {
+  if (Array.isArray(value)) {
+    for (const item of value) formData.append(key, item);
+  } else {
+    formData.append(key, value);
+  }
+}
 
 export function makeRouteEvent(opts: RouteEventOptions = {}) {
   const url = new URL(opts.url ?? 'http://localhost/');
   const cookies = makeCookies(opts.cookies);
   const formData = new FormData();
   if (opts.formData) {
-    for (const [k, v] of Object.entries(opts.formData)) formData.append(k, v);
+    for (const [k, v] of Object.entries(opts.formData)) appendFormValue(formData, k, v);
   }
   const request = new Request(url, {
     method: 'POST',

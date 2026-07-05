@@ -13,6 +13,7 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { eq, sql } from 'drizzle-orm';
+import { ALLERGENS } from '$lib/utils/allergens';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {
@@ -39,6 +40,110 @@ async function setup() {
       .returning()
   )[0];
   return { u, c, m, food };
+}
+
+async function setupThreeFoods() {
+  const user = await seedUser();
+  const child = await seedChild({ createdBy: user.id });
+  const inserted = await testDb
+    .insert(foods)
+    .values([
+      {
+        name: 'Carotte',
+        category: 'legumes',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      },
+      {
+        name: 'Pomme',
+        category: 'fruits',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      },
+      {
+        name: 'Riz',
+        category: 'feculents',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      }
+    ])
+    .returning();
+  return { user, child, foodIds: inserted.map((f) => f.id) };
+}
+
+// Inserts a minimal food_entries row directly (bypassing the action) so load
+// tests can seed "already tried" state without exercising the whole action.
+async function logOneFood(childId: number, foodId: number) {
+  await testDb.insert(foodEntries).values({
+    childId,
+    foodId,
+    givenAt: new Date('2024-05-01T10:00:00Z'),
+    reaction: 'ras',
+    notes: null,
+    createdAt: new Date()
+  });
+}
+
+async function seedAllergenFood(allergenId: string) {
+  return (
+    await testDb
+      .insert(foods)
+      .values({
+        name: `food-${allergenId}`,
+        category: 'allergenes',
+        isMajorAllergen: true,
+        allergenType: allergenId,
+        suggestedAgeMonths: 6,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+  )[0];
+}
+
+// Seeds a user + child with 10 of the 12 tracked allergens already introduced
+// as separate, already-logged foods : leaves exactly two allergen types
+// (the last two in ALLERGENS declaration order) unintroduced, for tests that
+// need to cross the "all 12 allergens" finish line with a two-food meal.
+async function seedTenAllergensIntroduced() {
+  const user = await seedUser();
+  const child = await seedChild({ createdBy: user.id });
+  const tenIds = ALLERGENS.slice(0, 10).map((a) => a.id);
+  for (const id of tenIds) {
+    const f = await seedAllergenFood(id);
+    await testDb.insert(foodEntries).values({
+      childId: child.id,
+      foodId: f.id,
+      givenAt: new Date('2024-05-01T10:00:00Z'),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: user.id,
+      createdAt: new Date()
+    });
+  }
+  return { user, child };
+}
+
+// Two brand-new foods carrying the 11th + 12th (final) allergen types, not
+// yet logged for any child.
+async function twoNewAllergenFoodIds(): Promise<[number, number]> {
+  const [idA, idB] = ALLERGENS.slice(10, 12).map((a) => a.id);
+  const foodA = await seedAllergenFood(idA);
+  const foodB = await seedAllergenFood(idB);
+  return [foodA.id, foodB.id];
 }
 
 describe('child/[id]/log load', () => {
@@ -92,6 +197,20 @@ describe('child/[id]/log load', () => {
     expect(names).toContain('Mon plat');
     expect(names).not.toContain('Plat ailleurs');
   });
+
+  it("returns the child's already-tried foodIds", async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    await logOneFood(child.id, foodIds[0]);
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) }
+    });
+    const data = await load(ev as unknown as Parameters<typeof load>[0]);
+    expect(data.introducedFoodIds).toContain(foodIds[0]);
+    // Untried foods must NOT show up as already-introduced.
+    expect(data.introducedFoodIds).not.toContain(foodIds[1]);
+  });
 });
 
 describe('child/[id]/log default action', () => {
@@ -107,6 +226,27 @@ describe('child/[id]/log default action', () => {
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
     )) as { status: number; data: { error: string } };
     expect(r.status).toBe(400);
+  });
+
+  it('fails when more than 20 foodIds are submitted (array cap)', async () => {
+    const { u, c, m } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        // 21 ids > the schema's max(20). Validation fails before any
+        // resolveOrInsertFood round-trip, so the ids need not exist.
+        foodId: Array.from({ length: 21 }, (_, i) => String(i + 1)),
+        givenAt: '2024-06-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { error: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.error).toMatch(/20/);
   });
 
   it('fails on invalid date string', async () => {
@@ -311,6 +451,36 @@ describe('child/[id]/log default action', () => {
     }
   });
 
+  it('a meal introducing the final two allergens fires allAllergens', async () => {
+    const { user, child } = await seedTenAllergensIntroduced();
+    // f11 -> celeri (ALLERGENS[10]), f12 -> moutarde (ALLERGENS[11]).
+    const [f11, f12] = await twoNewAllergenFoodIds();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: {
+        // Submit in REVERSE of ALLERGENS order (moutarde before celeri) so the
+        // assertion actually discriminates the determinism property: a pick by
+        // ALLERGENS declaration order yields celeri; a pick by meal/insertion
+        // order would yield moutarde and fail this test.
+        foodId: [String(f12), String(f11)],
+        givenAt: new Date().toISOString(),
+        reaction: 'ras'
+      }
+    });
+    const res = await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(res.kind).toBe('redirect');
+    if (res.kind === 'redirect') {
+      expect(res.location).toContain('allAllergens=1');
+      // Earlier in ALLERGENS declaration order wins (celeri before moutarde),
+      // regardless of submission order above.
+      expect(res.location).toContain('allergen=celeri');
+    }
+  });
+
   it('creates a custom food when only customFood.name is provided (and uses "autre" category by default)', async () => {
     const { u, c, m } = await setup();
     const event = makeRouteEvent({
@@ -420,5 +590,63 @@ describe('child/[id]/log default action', () => {
     // Assert: no entry committed for this child
     const entries = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
     expect(entries).toEqual([]);
+  });
+
+  it('logs several foodIds as one meal sharing a mealId', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: {
+        foodId: foodIds.map(String), // 3 ids
+        givenAt: new Date().toISOString(),
+        reaction: 'ras'
+      }
+    });
+    await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, child.id));
+    expect(rows.length).toBe(3);
+    const mealIds = new Set(rows.map((r) => r.mealId));
+    expect(mealIds.size).toBe(1);
+    expect([...mealIds][0]).not.toBeNull();
+  });
+
+  it('logs a single foodId with mealId null (unchanged behaviour)', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: { foodId: String(foodIds[0]), givenAt: new Date().toISOString(), reaction: 'ras' }
+    });
+    await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, child.id));
+    expect(rows.length).toBe(1);
+    expect(rows[0].mealId).toBeNull();
+  });
+
+  it('deduplicates a repeated foodId into one row', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: {
+        foodId: [String(foodIds[0]), String(foodIds[0])],
+        givenAt: new Date().toISOString(),
+        reaction: 'ras'
+      }
+    });
+    await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, child.id));
+    expect(rows.length).toBe(1);
   });
 });

@@ -232,6 +232,9 @@
                 <span class="text-xs text-muted-foreground"
                   >· {getCategoryLabel(e.category)}</span
                 >
+                {#if e.mealId}
+                  <span class="text-xs text-muted-foreground">· {m.reportNotableInMeal()}</span>
+                {/if}
                 {#if e.notes}
                   <span class="mt-0.5 block whitespace-pre-wrap text-xs text-muted-foreground">
                     {e.notes}

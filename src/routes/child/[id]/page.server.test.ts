@@ -13,6 +13,8 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods, tipDismissals } from '$lib/server/db/schema';
 import { load, actions } from './+page.server';
+import { groupByMeal } from '$lib/utils/meals';
+import { newId } from '$lib/offline/uuid';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -189,6 +191,65 @@ describe('child/[id] +page.server load', () => {
     expect(out.recent.length).toBe(3);
     expect(out.stats.foodsIntroduced).toBe(1);
     expect(out.showWelcomeDialog).toBe(false);
+  });
+
+  // Characterization test: Task 3 already made `recent` carry mealId (sorted
+  // givenAt desc / id asc) and `groupByMeal` already folds contiguous
+  // same-mealId rows into one group — this pins that loader→grouping contract
+  // (GREEN by construction) so Task 11's RecentFeed grouping UI has a fixed
+  // target to render against.
+  it('logging a 3-ingredient meal yields one groupByMeal group of 3 sharing a mealId', async () => {
+    const { u, c, m } = await setup();
+    const sharedMealId = newId();
+    const ingredientNames = ['Poire', 'Banane', 'Poulet'];
+    for (const name of ingredientNames) {
+      const ingredient = (
+        await testDb
+          .insert(foods)
+          .values({
+            name,
+            category: 'legumes',
+            isMajorAllergen: false,
+            allergenType: null,
+            suggestedAgeMonths: 4,
+            notes: null,
+            isCustom: false,
+            customForChildId: null
+          })
+          .returning()
+      )[0];
+      await testDb.insert(foodEntries).values({
+        childId: c.id,
+        foodId: ingredient.id,
+        givenAt: new Date('2024-06-01T10:00:00Z'),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date(),
+        mealId: sharedMealId
+      });
+    }
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(u),
+        memberships: [m],
+        params: { id: String(c.id) },
+        parent: async () => ({
+          child: {
+            id: c.id,
+            name: c.name,
+            birthDate: c.birthDate,
+            createdAt: c.createdAt.getTime()
+          }
+        })
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    expect(out.recent).toHaveLength(3);
+    const groups = groupByMeal(out.recent);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].members).toHaveLength(3);
+    expect(groups[0].mealId).toBe(sharedMealId);
+    expect(groups[0].members.every((entry) => entry.mealId === sharedMealId)).toBe(true);
   });
 
   it('returns per-allergen status (bentoAllergens) with real labels for the dashboard tile', async () => {

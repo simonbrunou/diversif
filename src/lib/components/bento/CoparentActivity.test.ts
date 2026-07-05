@@ -1,42 +1,12 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
-import CoparentsSection from './CoparentsSection.svelte';
+import CoparentActivity from './CoparentActivity.svelte';
 import * as m from '$lib/paraglide/messages';
 import type { CoparentEntry } from '$lib/server/guidance/queries/timeline';
 
 afterEach(() => cleanup());
 
-describe('CoparentsSection', () => {
-  it('renders an entry per coparent', () => {
-    render(CoparentsSection, {
-      props: {
-        childName: 'Léo',
-        coparents: [
-          { id: '1', displayName: 'Alice', role: 'co-parent' },
-          { id: '2', displayName: 'Bob', role: 'caregiver' }
-        ],
-        inviteHref: '/child/abc/settings#invite'
-      }
-    });
-    expect(screen.getByText('Alice')).toBeTruthy();
-    expect(screen.getByText('Bob')).toBeTruthy();
-  });
-
-  it('shows the empty message when no coparents are present', () => {
-    render(CoparentsSection, {
-      props: { childName: 'Léo', coparents: [], inviteHref: '/child/abc/settings#invite' }
-    });
-    expect(screen.getByText('Aucun co-parent invité pour l’instant.')).toBeTruthy();
-  });
-
-  it('always renders the invite link', () => {
-    render(CoparentsSection, {
-      props: { childName: 'Léo', coparents: [], inviteHref: '/child/abc/settings#invite' }
-    });
-    const invite = screen.getByText('Inviter un co-parent').closest('a');
-    expect(invite?.getAttribute('href')).toBe('/child/abc/settings#invite');
-  });
-
+describe('CoparentActivity', () => {
   it('groups a co-parent 3-ingredient meal into ONE "N ingrédients" line, singleton unchanged', () => {
     // Three ingredients sharing a mealId (contiguous, per the loader's
     // givenAt-desc/id-asc ordering) must fold into ONE line showing a count —
@@ -79,14 +49,7 @@ describe('CoparentsSection', () => {
         mealId: null
       }
     ];
-    render(CoparentsSection, {
-      props: {
-        childName: 'Léo',
-        coparents: [],
-        inviteHref: '/child/abc/settings#invite',
-        activity
-      }
-    });
+    render(CoparentActivity, { props: { activity } });
 
     // ONE grouped line for the whole meal, not 3 separate ingredient lines.
     expect(
@@ -102,10 +65,8 @@ describe('CoparentsSection', () => {
     ).toBeTruthy();
   });
 
-  it('renders nothing extra for the activity feed when no activity is passed', () => {
-    render(CoparentsSection, {
-      props: { childName: 'Léo', coparents: [], inviteHref: '/child/abc/settings#invite' }
-    });
-    expect(screen.queryByText(/ingrédients/)).toBeNull();
+  it('renders nothing when activity is empty', () => {
+    const { container } = render(CoparentActivity, { props: { activity: [] } });
+    expect(container.textContent?.trim() ?? '').toBe('');
   });
 });

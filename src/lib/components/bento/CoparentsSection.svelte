@@ -1,8 +1,10 @@
 <script lang="ts">
+  import CoparentActivity from './CoparentActivity.svelte';
   import DashedActionRow from '$components/ui/DashedActionRow.svelte';
   import EmptyHint from '$components/ui/EmptyHint.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
   import * as m from '$lib/paraglide/messages';
+  import type { CoparentEntry } from '$lib/server/guidance/queries/timeline';
   import { UserPlus } from 'lucide-svelte';
 
   type Coparent = { id: string; displayName: string; role: string };
@@ -10,8 +12,14 @@
   let {
     childName,
     coparents,
-    inviteHref
-  }: { childName: string; coparents: Coparent[]; inviteHref: string } = $props();
+    inviteHref,
+    activity = []
+  }: {
+    childName: string;
+    coparents: Coparent[];
+    inviteHref: string;
+    activity?: CoparentEntry[];
+  } = $props();
 </script>
 
 <section class="mb-3">
@@ -31,6 +39,7 @@
       {/each}
     </ul>
   {/if}
+  <CoparentActivity {activity} />
   <DashedActionRow href={inviteHref} icon={UserPlus} class="mt-2 flex">
     {m.profilCoparentsInvite()}
   </DashedActionRow>

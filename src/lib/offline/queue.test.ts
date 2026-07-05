@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import 'fake-indexeddb/auto';
 
-import { clear, enqueue, flush } from './queue';
+import { buildBody, clear, enqueue, flush } from './queue';
 
 /** Count rows directly in IDB — the queue module no longer exposes a count. */
 async function countRows(): Promise<number> {
@@ -66,6 +66,12 @@ describe('queue', () => {
       queuedAt: 1
     });
     expect(await countRows()).toBe(1);
+  });
+
+  it('buildBody expands array values into repeated params', () => {
+    const body = buildBody({ foodId: ['1', '2'], reaction: 'ras' });
+    expect(body.getAll('foodId')).toEqual(['1', '2']);
+    expect(body.get('reaction')).toBe('ras');
   });
 
   it('flush posts each row and removes them on type:redirect', async () => {

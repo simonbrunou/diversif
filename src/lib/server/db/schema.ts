@@ -163,10 +163,21 @@ export const foodEntries = sqliteTable(
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
     // Last-write-wins across co-parents (see children.updatedAt). Set on insert
     // and bumped on every edit (entry update + symptom reaction promotion).
-    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }),
+    // Group token for multi-ingredient meals: NULL = standalone entry; a shared
+    // UUID = ingredients logged together. Not an FK — reaction/texture/notes
+    // stay on the row (reaction is per-ingredient; symptom promotion mutates one
+    // row). See docs/superpowers/specs/2026-07-05-multi-ingredient-meals-design.md
+    mealId: text('meal_id')
   },
   (t) => ({
     childIdx: index('food_entries_child_idx').on(t.childId, t.givenAt),
+    mealIdx: index('food_entries_meal_idx').on(t.mealId),
+    // A meal never contains the same food twice. Partial so standalone rows
+    // (mealId NULL) can still repeat a food across days.
+    mealFoodUnique: uniqueIndex('food_entries_meal_food_uq')
+      .on(t.mealId, t.foodId)
+      .where(sql`${t.mealId} is not null`),
     // CHECK mirrors the texture enum so the value space is enforced at the DB
     // level, not just by Drizzle's TS type.
     textureCheck: check(
