@@ -1,7 +1,9 @@
 <script lang="ts">
   import AujourdhuiBento from '$lib/components/bento/AujourdhuiBento.svelte';
+  import CoparentActivity from '$lib/components/bento/CoparentActivity.svelte';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
   import TipCard from '$lib/components/TipCard.svelte';
+  import SectionHeader from '$components/ui/SectionHeader.svelte';
   import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
   import { celebrate, pickMilestoneFromQuery } from '$lib/utils/milestones';
@@ -70,5 +72,12 @@
   reminders={data.reminders ?? []}
   allergens={data.bentoAllergens ?? []}
 />
+
+{#if data.coparentActivity.length > 0}
+  <section class="mx-auto w-full max-w-2xl px-3">
+    <SectionHeader>{m.dashboardCoparentActivityTitle()}</SectionHeader>
+    <CoparentActivity activity={data.coparentActivity} />
+  </section>
+{/if}
 
 <WelcomeDialog bind:open={welcomeOpen} childId={data.child.id} formAction="?/dismissReminder" />

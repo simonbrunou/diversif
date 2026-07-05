@@ -331,6 +331,7 @@
   "profilCoparentsEmpty": "Aucun co-parent invité pour l’instant.",
   "profilCoparentsActivityEntry": "{name} a enregistré {food}",
   "profilCoparentsActivityMeal": "{name} a enregistré {count} ingrédients",
+  "dashboardCoparentActivityTitle": "Activité des co-parents",
   "profilCompteTitle": "Compte",
   "profilComptePasskeys": "Clés d’accès",
   "profilComptePasskeysDeviceSingular": "1 appareil",
