@@ -7,6 +7,7 @@ import { foodEntries, foods } from '$lib/server/db/schema';
 import { requireChildContext } from '$lib/server/guards';
 import { audit } from '$lib/server/audit';
 import { resolveOrInsertFood } from '$lib/server/food-resolution';
+import { newId } from '$lib/offline/uuid';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
 import { ALLERGENS } from '$lib/utils/allergens';
@@ -19,7 +20,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 const schema = z
   .object({
-    foodId: z.coerce.number().int().positive().optional(),
+    foodIds: z.array(z.coerce.number().int().positive()).default([]),
     'customFood.name': z.string().min(1).max(80).optional(),
     'customFood.category': z.string().optional(),
     givenAt: z.string().min(1, 'Date requise'),
@@ -27,7 +28,7 @@ const schema = z
     texture: z.enum(TEXTURE_VALUES).optional(),
     notes: z.string().max(2000).optional()
   })
-  .refine((d) => !!d.foodId || !!d['customFood.name'], {
+  .refine((d) => d.foodIds.length > 0 || !!d['customFood.name'], {
     message: 'Choisissez un aliment ou créez-en un.'
   });
 
@@ -126,6 +127,47 @@ function snapshotPriorState(
   };
 }
 
+// Resolve every posted foodId (deduped) plus an optional single custom food
+// into the list of foods this submit will insert as one meal. Extracted out
+// of the action's work() so each function stays under the repo's cognitive-
+// complexity gate: this owns the "loop + validate + dedupe" branching on its
+// own budget instead of nesting it inside work()'s.
+function resolveMealFoods(
+  tx: LogTx,
+  childId: number,
+  foodIds: number[],
+  customName: string | undefined,
+  customCategory: string | undefined
+): { food: typeof foods.$inferSelect; foodId: number }[] {
+  const resolvedFoods: { food: typeof foods.$inferSelect; foodId: number }[] = [];
+  const seen = new Set<number>();
+
+  for (const id of foodIds) {
+    const r = resolveOrInsertFood({ foodId: id, childId }, tx);
+    if (!r.ok)
+      throw new LogActionAbort(
+        400,
+        r.reason === 'not-found' ? 'Aliment introuvable.' : 'Aliment invalide.'
+      );
+    if (!seen.has(r.foodId)) {
+      seen.add(r.foodId);
+      resolvedFoods.push({ food: r.food, foodId: r.foodId });
+    }
+  }
+
+  if (customName) {
+    const r = resolveOrInsertFood({ customName, customCategory, childId }, tx);
+    if (!r.ok) throw new LogActionAbort(400, 'Aliment invalide.');
+    if (!seen.has(r.foodId)) {
+      seen.add(r.foodId);
+      resolvedFoods.push({ food: r.food, foodId: r.foodId });
+    }
+  }
+
+  if (resolvedFoods.length === 0) throw new LogActionAbort(400, 'Aucun aliment sélectionné.');
+  return resolvedFoods;
+}
+
 // Build the post-log redirect URL, encoding the milestones the dashboard
 // celebrates (first entry, first allergen, all-allergens, category progress).
 function buildLogRedirect(
@@ -160,7 +202,11 @@ export const actions: Actions = {
       return fail(400, { error: 'Idempotency-Key invalide' });
     }
 
-    const raw = Object.fromEntries(await request.formData());
+    const fd = await request.formData();
+    // Object.fromEntries(fd) would silently drop repeated `foodId` fields
+    // (later keys overwrite earlier ones), so multi-ingredient submits must
+    // read them via getAll instead.
+    const raw = { ...Object.fromEntries(fd), foodIds: fd.getAll('foodId').map(String) };
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
       return fail(400, {
@@ -178,49 +224,49 @@ export const actions: Actions = {
     // commit doesn't double-count an idempotent offline-queue replay (which
     // returns the cached redirect without inserting a row).
     let didInsert = false;
+    // Count of distinct food_entries rows actually inserted, for the audit
+    // event below. Same closure-capture pattern as didInsert.
+    let insertedCount = 0;
     try {
       // bun:sqlite transactions are synchronous: the callback (and `work`)
       // run inline with no awaits; the database serializes writers for us.
       redirectPath = db.transaction((tx) => {
         const work = (): { redirect: string } => {
-          const resolved = resolveOrInsertFood(
-            {
-              foodId: parsed.data.foodId ?? null,
-              customName: parsed.data['customFood.name'],
-              customCategory: parsed.data['customFood.category'],
-              childId
-            },
-            tx
+          const resolvedFoods = resolveMealFoods(
+            tx,
+            childId,
+            parsed.data.foodIds,
+            parsed.data['customFood.name'],
+            parsed.data['customFood.category']
           );
-          if (!resolved.ok) {
-            throw new LogActionAbort(
-              400,
-              resolved.reason === 'not-found'
-                ? 'Aliment introuvable.'
-                : 'Aucun aliment sélectionné.'
-            );
+
+          // Snapshot BEFORE any insert so milestones compare pre/post state. (Task 5
+          // replaces this single-food call with a set-based snapshot.)
+          const prior = snapshotPriorState(tx, childId, resolvedFoods[0].food.allergenType);
+
+          const mealId = resolvedFoods.length > 1 ? newId() : null;
+          for (const { foodId } of resolvedFoods) {
+            tx.insert(foodEntries)
+              .values({
+                childId,
+                foodId,
+                givenAt: givenAtDate,
+                reaction: parsed.data.reaction,
+                texture: parsed.data.texture ?? null,
+                notes: parsed.data.notes?.trim() || null,
+                loggedBy: user.id,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                mealId
+              })
+              .run();
           }
-          const { food, foodId } = resolved;
-
-          // Snapshot pre-insert state so we can detect milestones (first food,
-          // first allergen, all-allergens) after the insert below.
-          const prior = snapshotPriorState(tx, childId, food.allergenType);
-
-          tx.insert(foodEntries)
-            .values({
-              childId,
-              foodId,
-              givenAt: givenAtDate,
-              reaction: parsed.data.reaction,
-              texture: parsed.data.texture ?? null,
-              notes: parsed.data.notes?.trim() || null,
-              loggedBy: user.id,
-              createdAt: new Date(),
-              updatedAt: new Date()
-            })
-            .run();
           didInsert = true;
+          insertedCount = resolvedFoods.length;
 
+          // Milestones: today's single-food logic off the first food (Task 5 makes this
+          // set-based). Keeps the existing first-food / first-allergen tests green.
+          const food = resolvedFoods[0].food;
           const categoriesNowCovered = countCategoriesCovered(tx, childId);
           const isFirstAllergen = prior.priorAllergenCount === 0 && food.allergenType != null;
           const allAllergensJustCompleted =
@@ -259,7 +305,8 @@ export const actions: Actions = {
       throw e;
     }
 
-    if (didInsert) audit({ type: 'food_entry.created', userId: user.id, childId });
+    if (didInsert)
+      audit({ type: 'food_entry.created', userId: user.id, childId, count: insertedCount });
     throw localizedRedirect(locals.locale, 303, redirectPath);
   }
 };

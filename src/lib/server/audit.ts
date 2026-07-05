@@ -87,7 +87,9 @@ export type AuditEvent =
   // Core write path — the literal "it broke when I tapped log" surface. created
   // omits entryId (the insert is inside an idempotency/milestone transaction
   // that doesn't surface the row id); update/delete have it from the route.
-  | { type: 'food_entry.created'; userId: number; childId: number }
+  // count: number of food_entries rows inserted by this action call (>1 for a
+  // multi-ingredient meal sharing one mealId).
+  | { type: 'food_entry.created'; userId: number; childId: number; count?: number }
   | { type: 'food_entry.updated'; userId: number; childId: number; entryId: number }
   | { type: 'food_entry.deleted'; userId: number; childId: number; entryId: number }
   | { type: 'child.created'; userId: number; childId: number }

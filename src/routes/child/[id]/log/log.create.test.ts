@@ -41,6 +41,47 @@ async function setup() {
   return { u, c, m, food };
 }
 
+async function setupThreeFoods() {
+  const user = await seedUser();
+  const child = await seedChild({ createdBy: user.id });
+  const inserted = await testDb
+    .insert(foods)
+    .values([
+      {
+        name: 'Carotte',
+        category: 'legumes',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      },
+      {
+        name: 'Pomme',
+        category: 'fruits',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      },
+      {
+        name: 'Riz',
+        category: 'feculents',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      }
+    ])
+    .returning();
+  return { user, child, foodIds: inserted.map((f) => f.id) };
+}
+
 describe('child/[id]/log load', () => {
   it('redirects guests', async () => {
     const r = await captureFlow(() =>
@@ -420,5 +461,63 @@ describe('child/[id]/log default action', () => {
     // Assert: no entry committed for this child
     const entries = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
     expect(entries).toEqual([]);
+  });
+
+  it('logs several foodIds as one meal sharing a mealId', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: {
+        foodId: foodIds.map(String), // 3 ids
+        givenAt: new Date().toISOString(),
+        reaction: 'ras'
+      }
+    });
+    await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, child.id));
+    expect(rows.length).toBe(3);
+    const mealIds = new Set(rows.map((r) => r.mealId));
+    expect(mealIds.size).toBe(1);
+    expect([...mealIds][0]).not.toBeNull();
+  });
+
+  it('logs a single foodId with mealId null (unchanged behaviour)', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: { foodId: String(foodIds[0]), givenAt: new Date().toISOString(), reaction: 'ras' }
+    });
+    await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, child.id));
+    expect(rows.length).toBe(1);
+    expect(rows[0].mealId).toBeNull();
+  });
+
+  it('deduplicates a repeated foodId into one row', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: {
+        foodId: [String(foodIds[0]), String(foodIds[0])],
+        givenAt: new Date().toISOString(),
+        reaction: 'ras'
+      }
+    });
+    await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, child.id));
+    expect(rows.length).toBe(1);
   });
 });
