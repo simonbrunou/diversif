@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../../../test/component';
 
@@ -7,8 +7,20 @@ import '../../../../test/component';
 // LocaleSwitcher.test.ts (each bun:test file runs in its own isolated
 // process — scripts/bun-test.ts — so these process-global mocks don't leak
 // into other test files).
+//
+// page.url is exposed through a getter reading this mutable `pageUrl`, so a
+// test can drive the ?foodId= deep-link path by reassigning it before
+// render() (the component reads page.url in its instance script on every
+// mount). beforeEach resets it to the no-query default so the other tests
+// see a bare /log URL.
+const DEFAULT_URL = 'http://localhost/child/1/log';
+let pageUrl = new URL(DEFAULT_URL);
 mock.module('$app/state', () => ({
-  page: { url: new URL('http://localhost/child/1/log') }
+  page: {
+    get url() {
+      return pageUrl;
+    }
+  }
 }));
 mock.module('$app/forms', () => ({
   enhance: () => ({ destroy: () => {} })
@@ -60,6 +72,16 @@ async function clickFood(container: HTMLElement, name: string) {
 const HINT_TEXT =
   'Introduisez les nouveaux aliments un par un pour repérer plus facilement une réaction.';
 
+function hiddenFoodIdValues(container: HTMLElement): string[] {
+  return Array.from(container.querySelectorAll('input[type="hidden"][name="foodId"]')).map(
+    (el) => el.getAttribute('value')!
+  );
+}
+
+beforeEach(() => {
+  pageUrl = new URL(DEFAULT_URL);
+});
+
 describe('log +page.svelte — multi-select help + never-tried hint', () => {
   it('renders the multi-select help text unconditionally', () => {
     const { container } = render(Page, { props: { data: makeData([]), form: null } });
@@ -95,6 +117,29 @@ describe('log +page.svelte — multi-select help + never-tried hint', () => {
       b.textContent?.includes('hors catalogue')
     )!;
     await fireEvent.click(addCustomBtn); // opens the custom-food form -> +1
+    expect(container.textContent).toContain(HINT_TEXT);
+  });
+
+  it('seeds a ?foodId= deep link into the multiple picker: hidden input present + counts toward the hint at mount', async () => {
+    // Deep-link to a NEVER-TRIED food (id 3 / Riz — not in introducedFoodIds).
+    // This is the menu / suggestions / reminders "log this now" CTA path, which
+    // now renders through FoodCombobox's *multiple* branch. Regression guard:
+    // dropping {initialFoodId} from <FoodCombobox> (as "redundant") would leave
+    // no chip and no hidden foodId input, silently omitting the deep-linked
+    // food from submission.
+    pageUrl = new URL('http://localhost/child/1/log?foodId=3');
+    const { container } = render(Page, { props: { data: makeData([]), form: null } });
+
+    // (a) The deep-linked food actually submits: a hidden foodId input carries id 3.
+    expect(hiddenFoodIdValues(container)).toContain('3');
+    // Only one never-tried food so far, so the hint is still hidden.
+    expect(container.textContent).not.toContain(HINT_TEXT);
+
+    // (b) Clicking exactly ONE more never-tried food trips the hint — proving the
+    // deep-linked food already counted at mount (page selectedIds and the
+    // combobox's internal set agree from the start, not after a user re-click).
+    await clickFood(container, 'Carotte');
+    expect(hiddenFoodIdValues(container).sort()).toEqual(['1', '3']);
     expect(container.textContent).toContain(HINT_TEXT);
   });
 });
