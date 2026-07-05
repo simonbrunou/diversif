@@ -59,7 +59,12 @@
   const isCapped = $derived(filteredAll.length > MAX_VISIBLE);
 
   const selected = $derived(foods.find((f) => f.id === selectedId) ?? null);
-  const selectedFoods = $derived(foods.filter((f) => selectedIds.has(f.id)));
+  // Insertion (click) order so chips, hidden inputs, and onSelectionChange agree.
+  const selectedFoods = $derived(
+    [...selectedIds]
+      .map((id) => foods.find((f) => f.id === id))
+      .filter((f): f is FoodOption => f !== undefined)
+  );
 
   function pick(id: number) {
     selectedId = id;
@@ -128,12 +133,13 @@
   </div>
 {/snippet}
 
-{#snippet foodList(onPick: (id: number) => void)}
+{#snippet foodList(onPick: (id: number) => void, isSelected?: (id: number) => boolean)}
   <ul class="max-h-72 divide-y overflow-y-auto rounded-md border bg-card">
     {#each filtered as f (f.id)}
       <li>
         <button
           type="button"
+          aria-pressed={isSelected ? isSelected(f.id) : undefined}
           class="flex w-full items-center justify-between px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
           onclick={() => onPick(f.id)}
         >
@@ -257,7 +263,7 @@
       </ul>
     {/if}
 
-    {@render foodList(toggle)}
+    {@render foodList(toggle, (id) => selectedIds.has(id))}
     {@render customFoodSection()}
 
     {#each selectedFoods as f (f.id)}
