@@ -150,6 +150,27 @@ describe('child/[id]/log default action', () => {
     expect(r.status).toBe(400);
   });
 
+  it('fails when more than 20 foodIds are submitted (array cap)', async () => {
+    const { u, c, m } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        // 21 ids > the schema's max(20). Validation fails before any
+        // resolveOrInsertFood round-trip, so the ids need not exist.
+        foodId: Array.from({ length: 21 }, (_, i) => String(i + 1)),
+        givenAt: '2024-06-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { error: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.error).toMatch(/20/);
+  });
+
   it('fails on invalid date string', async () => {
     const { u, c, m, food } = await setup();
     const event = makeRouteEvent({

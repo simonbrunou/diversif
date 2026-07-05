@@ -20,7 +20,10 @@ import type { Actions, PageServerLoad } from './$types';
 
 const schema = z
   .object({
-    foodIds: z.array(z.coerce.number().int().positive()).default([]),
+    foodIds: z
+      .array(z.coerce.number().int().positive())
+      .max(20, 'Un repas ne peut pas contenir plus de 20 aliments.')
+      .default([]),
     'customFood.name': z.string().min(1).max(80).optional(),
     'customFood.category': z.string().optional(),
     givenAt: z.string().min(1, 'Date requise'),
