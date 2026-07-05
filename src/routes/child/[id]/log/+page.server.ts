@@ -81,17 +81,17 @@ function countCategoriesCovered(tx: LogTx, childId: number): number {
 type PriorLogState = {
   priorEntryCount: number;
   priorCategoriesCovered: number;
-  priorAllergenCount: number | null;
-  priorAllergensIntroduced: number;
+  priorTypes: Set<string>; // allergen types already introduced, pre-insert
+  priorAllergensIntroduced: number; // = priorTypes.size, kept for readability
 };
 
-// Snapshot pre-insert counts so the caller can detect milestones (first food,
-// first allergen, all-allergens) after the new entry is inserted.
-function snapshotPriorState(
-  tx: LogTx,
-  childId: number,
-  allergenType: string | null
-): PriorLogState {
+// Snapshot pre-insert state so the caller can detect milestones (first food,
+// first allergen(s), all-allergens, category progress) once the meal's
+// entries are inserted. priorTypes MUST be read here, before any insert in
+// this transaction: querying allergen types after the insert loop would
+// include the meal's own just-inserted rows, so every "first allergen" would
+// look already-seen and the celebration would never fire.
+function snapshotPriorState(tx: LogTx, childId: number): PriorLogState {
   const priorEntryCount =
     tx
       .select({ n: sql<number>`count(*)` })
@@ -100,34 +100,38 @@ function snapshotPriorState(
       .limit(1)
       .all()[0]?.n /* v8 ignore next */ ?? 0;
 
-  const priorAllergenCount =
-    allergenType != null
-      ? (tx
-          .select({ n: sql<number>`count(*)` })
-          .from(foodEntries)
-          .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-          .where(and(eq(foodEntries.childId, childId), eq(foods.allergenType, allergenType)))
-          .limit(1)
-          .all()[0]?.n /* v8 ignore next */ ?? 0)
-      : null;
-
-  // Distinct allergens introduced for this child, pre-insert. Used to detect
-  // crossing the "all 12 allergens" finish line on the *new* introduction.
-  const priorAllergensIntroduced =
+  const priorTypes = new Set(
     tx
-      .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
+      .select({ t: foods.allergenType })
       .from(foodEntries)
       .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-      .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} IS NOT NULL`))
-      .limit(1)
-      .all()[0]?.n /* v8 ignore next */ ?? 0;
+      .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} is not null`))
+      .all()
+      .map((r) => r.t as string)
+  );
 
   return {
     priorEntryCount,
     priorCategoriesCovered: countCategoriesCovered(tx, childId),
-    priorAllergenCount,
-    priorAllergensIntroduced
+    priorTypes,
+    priorAllergensIntroduced: priorTypes.size
   };
+}
+
+// Distinct allergen types introduced for this child, post-insert. Paired with
+// the pre-insert snapshot's priorAllergensIntroduced, this detects a meal
+// batch crossing the "all 12 allergens" finish line even when it introduces
+// more than one new type at once.
+function distinctAllergensIntroduced(tx: LogTx, childId: number): number {
+  return (
+    tx
+      .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
+      .from(foodEntries)
+      .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+      .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} is not null`))
+      .limit(1)
+      .all()[0]?.n /* v8 ignore next */ ?? 0
+  );
 }
 
 // Resolve every posted foodId (deduped) plus an optional single custom food
@@ -193,6 +197,33 @@ function buildLogRedirect(
   return { redirect: `/child/${childId}?${search.toString()}` };
 }
 
+// Compute this meal's milestones set-based across every resolved food (not
+// just the first) and build the redirect. Extracted out of work() to keep
+// its cognitive complexity under the repo's fallow gate.
+function buildMealMilestoneRedirect(
+  tx: LogTx,
+  childId: number,
+  resolvedFoods: { food: typeof foods.$inferSelect; foodId: number }[],
+  prior: PriorLogState
+): { redirect: string } {
+  const afterDistinct = distinctAllergensIntroduced(tx, childId); // post-insert
+  const mealTypes = resolvedFoods.map((r) => r.food.allergenType).filter((t): t is string => !!t);
+  const newTypes = mealTypes.filter((t) => !prior.priorTypes.has(t));
+  // Deterministic pick: first in ALLERGENS declaration order among the
+  // meal's newly-introduced types.
+  const firstAllergen = ALLERGENS.map((a) => a.id).find((id) => newTypes.includes(id)) ?? null;
+
+  return buildLogRedirect(childId, {
+    priorEntryCount: prior.priorEntryCount,
+    isFirstAllergen: firstAllergen !== null,
+    allergenType: firstAllergen,
+    allAllergensJustCompleted:
+      afterDistinct === ALLERGENS.length && prior.priorAllergensIntroduced < ALLERGENS.length,
+    categoriesNowCovered: countCategoriesCovered(tx, childId),
+    priorCategoriesCovered: prior.priorCategoriesCovered
+  });
+}
+
 export const actions: Actions = {
   default: async ({ request, params, locals }) => {
     const { user, childId } = requireChildContext(locals, params);
@@ -243,9 +274,9 @@ export const actions: Actions = {
             parsed.data['customFood.category']
           );
 
-          // Snapshot BEFORE any insert so milestones compare pre/post state. (Task 5
-          // replaces this single-food call with a set-based snapshot.)
-          const prior = snapshotPriorState(tx, childId, resolvedFoods[0].food.allergenType);
+          // Snapshot BEFORE any insert so milestones compare pre/post state,
+          // across every food in the meal (not just the first).
+          const prior = snapshotPriorState(tx, childId);
 
           const mealId = resolvedFoods.length > 1 ? newId() : null;
           for (const { foodId } of resolvedFoods) {
@@ -267,22 +298,7 @@ export const actions: Actions = {
           didInsert = true;
           insertedCount = resolvedFoods.length;
 
-          // Milestones: today's single-food logic off the first food (Task 5 makes this
-          // set-based). Keeps the existing first-food / first-allergen tests green.
-          const food = resolvedFoods[0].food;
-          const categoriesNowCovered = countCategoriesCovered(tx, childId);
-          const isFirstAllergen = prior.priorAllergenCount === 0 && food.allergenType != null;
-          const allAllergensJustCompleted =
-            isFirstAllergen && prior.priorAllergensIntroduced + 1 === ALLERGENS.length;
-
-          return buildLogRedirect(childId, {
-            priorEntryCount: prior.priorEntryCount,
-            isFirstAllergen,
-            allergenType: food.allergenType,
-            allAllergensJustCompleted,
-            categoriesNowCovered,
-            priorCategoriesCovered: prior.priorCategoriesCovered
-          });
+          return buildMealMilestoneRedirect(tx, childId, resolvedFoods, prior);
         };
 
         if (idempotencyKey) {

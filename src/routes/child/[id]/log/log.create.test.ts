@@ -13,6 +13,7 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { eq, sql } from 'drizzle-orm';
+import { ALLERGENS } from '$lib/utils/allergens';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {
@@ -80,6 +81,56 @@ async function setupThreeFoods() {
     ])
     .returning();
   return { user, child, foodIds: inserted.map((f) => f.id) };
+}
+
+async function seedAllergenFood(allergenId: string) {
+  return (
+    await testDb
+      .insert(foods)
+      .values({
+        name: `food-${allergenId}`,
+        category: 'allergenes',
+        isMajorAllergen: true,
+        allergenType: allergenId,
+        suggestedAgeMonths: 6,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning()
+  )[0];
+}
+
+// Seeds a user + child with 10 of the 12 tracked allergens already introduced
+// as separate, already-logged foods : leaves exactly two allergen types
+// (the last two in ALLERGENS declaration order) unintroduced, for tests that
+// need to cross the "all 12 allergens" finish line with a two-food meal.
+async function seedTenAllergensIntroduced() {
+  const user = await seedUser();
+  const child = await seedChild({ createdBy: user.id });
+  const tenIds = ALLERGENS.slice(0, 10).map((a) => a.id);
+  for (const id of tenIds) {
+    const f = await seedAllergenFood(id);
+    await testDb.insert(foodEntries).values({
+      childId: child.id,
+      foodId: f.id,
+      givenAt: new Date('2024-05-01T10:00:00Z'),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: user.id,
+      createdAt: new Date()
+    });
+  }
+  return { user, child };
+}
+
+// Two brand-new foods carrying the 11th + 12th (final) allergen types, not
+// yet logged for any child.
+async function twoNewAllergenFoodIds(): Promise<[number, number]> {
+  const [idA, idB] = ALLERGENS.slice(10, 12).map((a) => a.id);
+  const foodA = await seedAllergenFood(idA);
+  const foodB = await seedAllergenFood(idB);
+  return [foodA.id, foodB.id];
 }
 
 describe('child/[id]/log load', () => {
@@ -370,6 +421,31 @@ describe('child/[id]/log default action', () => {
     if (r.kind === 'redirect') {
       expect(r.location).toContain('allergen=moutarde');
       expect(r.location).toContain('allAllergens=1');
+    }
+  });
+
+  it('a meal introducing the final two allergens fires allAllergens', async () => {
+    const { user, child } = await seedTenAllergensIntroduced();
+    const [f11, f12] = await twoNewAllergenFoodIds();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: {
+        foodId: [String(f11), String(f12)],
+        givenAt: new Date().toISOString(),
+        reaction: 'ras'
+      }
+    });
+    const res = await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(res.kind).toBe('redirect');
+    if (res.kind === 'redirect') {
+      expect(res.location).toContain('allAllergens=1');
+      // Deterministic pick among the meal's newly-introduced types: the
+      // earlier one in ALLERGENS declaration order (celeri before moutarde).
+      expect(res.location).toContain('allergen=celeri');
     }
   });
 
