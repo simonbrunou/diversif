@@ -426,13 +426,18 @@ describe('child/[id]/log default action', () => {
 
   it('a meal introducing the final two allergens fires allAllergens', async () => {
     const { user, child } = await seedTenAllergensIntroduced();
+    // f11 -> celeri (ALLERGENS[10]), f12 -> moutarde (ALLERGENS[11]).
     const [f11, f12] = await twoNewAllergenFoodIds();
     const ev = makeRouteEvent({
       user: safeUser(user),
       memberships: [await seedMembership({ userId: user.id, childId: child.id })],
       params: { id: String(child.id) },
       formData: {
-        foodId: [String(f11), String(f12)],
+        // Submit in REVERSE of ALLERGENS order (moutarde before celeri) so the
+        // assertion actually discriminates the determinism property: a pick by
+        // ALLERGENS declaration order yields celeri; a pick by meal/insertion
+        // order would yield moutarde and fail this test.
+        foodId: [String(f12), String(f11)],
         givenAt: new Date().toISOString(),
         reaction: 'ras'
       }
@@ -443,8 +448,8 @@ describe('child/[id]/log default action', () => {
     expect(res.kind).toBe('redirect');
     if (res.kind === 'redirect') {
       expect(res.location).toContain('allAllergens=1');
-      // Deterministic pick among the meal's newly-introduced types: the
-      // earlier one in ALLERGENS declaration order (celeri before moutarde).
+      // Earlier in ALLERGENS declaration order wins (celeri before moutarde),
+      // regardless of submission order above.
       expect(res.location).toContain('allergen=celeri');
     }
   });
