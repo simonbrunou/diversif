@@ -57,6 +57,9 @@ export type Menu = {
 
 const CHARCUTERIE = (f: Food) => CHARCUTERIE_MATCHERS.some((m) => f.name.includes(m));
 
+// Matches the Set-based lookup pattern in allergen-status.ts / AujourdhuiBento.svelte.
+const PRIORITY_ALLERGEN_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
+
 function forbiddenAtAge(f: Food, ageMonths: number): boolean {
   for (const ff of FORBIDDEN_FOODS) {
     if (ff.untilMonths == null || !ff.nameMatchers) continue;
@@ -111,7 +114,7 @@ function slotEligible(f: Food, input: MenuInput): boolean {
   if (input.introducedFoodIds.has(f.id)) return true;
   return !(
     f.allergenType &&
-    (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(f.allergenType) &&
+    PRIORITY_ALLERGEN_SET.has(f.allergenType) &&
     !input.introducedAllergens.has(f.allergenType)
   );
 }
