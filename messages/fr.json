@@ -534,6 +534,7 @@
   "foodComboboxFilterAll": "Tous",
   "foodComboboxChange": "Changer",
   "foodComboboxChangeAria": "Changer l’aliment sélectionné (actuellement {name})",
+  "foodComboboxRemoveAria": "Retirer {name} de la sélection",
   "foodComboboxApproximate": "(approchant)",
   "foodComboboxNoneTitle": "Aucun aliment trouvé",
   "foodComboboxNoneForQuery": "Aucune correspondance pour « {query} ». Essayez un autre terme ou ajoutez-le au catalogue ci-dessous.",
