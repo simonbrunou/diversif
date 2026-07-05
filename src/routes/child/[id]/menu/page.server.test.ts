@@ -165,8 +165,8 @@ describe('child/[id]/menu load', () => {
     // real dayIndex:
     //   WITH avoidFoodIds populated → feculent pool empty → slot skipped → absent every day.
     //   WITHOUT it → sole introduced feculent → picked in every feculent slot → present.
-    // (It's introduced, so pickNoveltyCandidate — which requires NOT-introduced —
-    // can never re-surface it as the day's novelty either.)
+    // (safeFood's avoidFoodIds gate strips it from slotPool on every path — the
+    // meal slots and the dedup swap — so full-variety can't re-surface it either.)
     const riz = await insertFood({ name: 'Riz', category: 'feculents', age: 6 });
     await logEntry({
       childId: ctx.c.id,
