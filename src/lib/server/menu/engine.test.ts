@@ -114,21 +114,21 @@ test('all 4 oily fish are reachable on the fixed oily weekday across enough week
 test('a new account with no introduced foods still fills non-allergen slots, badged Nouveauté', () => {
   // Full-variety: slots draw from the whole safe catalog, not just introduced foods, so a
   // brand-new account is no longer an all-empty menu — only priority-allergen-only
-  // categories (fully un-introduced) stay gated to "à découvrir".
+  // categories (fully un-introduced) stay gated to "à découvrir". produits_laitiers is shrunk
+  // to Yaourt nature ALONE: it's the sole (un-introduced, 'lait'-tagged) laitier candidate, so
+  // if slotEligible's allergen clause were disabled it would be FORCED into the matin/gouter
+  // laitier slot — a bigger dairy pool would let rotatePick just dodge it by chance.
+  const yaourt = CATALOG.find((f) => f.name === 'Yaourt nature')!;
+  const catalog = CATALOG.filter((f) => f.category !== 'produits_laitiers' || f.id === yaourt.id);
   const menu = buildMenu(
-    baseInput({ introducedFoodIds: new Set(), introducedAllergens: new Set() })
+    baseInput({ catalog, introducedFoodIds: new Set(), introducedAllergens: new Set() })
   );
   const items = menu.meals.flatMap((mo) => mo.items);
   expect(items.length).toBeGreaterThan(0);
-  for (const i of items) {
-    expect(i.isNew).toBe(true); // nothing is introduced yet
-    // defense-in-depth: no slot item may be an un-introduced priority allergen.
-    if (i.food.allergenType) {
-      expect(
-        (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(i.food.allergenType)
-      ).toBe(false);
-    }
-  }
+  for (const i of items) expect(i.isNew).toBe(true); // nothing is introduced yet
+  // defense-in-depth: the sole un-introduced priority-allergen candidate never fills a slot —
+  // it stays gated to the allergène-du-jour card instead.
+  expect(items.some((i) => i.food.id === yaourt.id)).toBe(false);
 });
 
 test('every raw-milk cheese seed food carries a pasteurised caution', () => {
@@ -329,12 +329,15 @@ test("allergenFocus carries the food's prep/choking caution (never skips caution
 });
 
 test('charcuterie (Jambon) is never surfaced as a protéine, even un-introduced', () => {
-  // Everything introduced EXCEPT Jambon: full-variety would otherwise make an un-introduced
-  // Jambon a perfectly eligible (non-allergen) slot pick on its own weekday — this exercises
-  // safeForRole's CHARCUTERIE exclusion, which slotPool inherits unconditionally.
+  // Shrink every protéine-pool category (viandes/poissons/oeufs/legumineuses) down to Jambon
+  // ALONE: it's the SOLE protéine candidate, so if safeForRole's CHARCUTERIE exclusion were
+  // deleted it would be FORCED into the slot — a bigger pool would let rotatePick dodge it and
+  // pass by luck even with the exclusion gone.
   const jambon = CATALOG.find((f) => f.name.includes('Jambon'))!;
-  const intro = new Set(CATALOG.filter((f) => f.id !== jambon.id).map((f) => f.id));
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
+  const proteineCats = new Set(['viandes', 'poissons', 'oeufs', 'legumineuses']);
+  const catalog = CATALOG.filter((f) => !proteineCats.has(f.category) || f.id === jambon.id);
+  const intro = new Set(catalog.filter((f) => f.id !== jambon.id).map((f) => f.id));
+  const menu = buildMenu(baseInput({ catalog, introducedFoodIds: intro }));
   expect(menu.meals.flatMap((mo) => mo.items).some((i) => i.food.id === jambon.id)).toBe(false);
   const proteins = menu.meals.flatMap((mo) => mo.items).filter((i) => i.role === 'proteine');
   expect(proteins.some((p) => p.food.name.includes('Jambon'))).toBe(false);
@@ -380,12 +383,15 @@ test('sans_poisson never shows poisson as allergène du jour', () => {
 });
 
 test('a reaction-tier food is never surfaced in a meal slot, even though otherwise slot-eligible', () => {
-  // defense-in-depth: a genuine reaction must never be re-offered, even though full-variety
-  // would otherwise make this un-introduced, non-allergen légume a perfectly eligible pick.
+  // defense-in-depth: a genuine reaction must never be re-offered. Shrink the légumes category
+  // to Carotte ALONE so it's the SOLE légume candidate — a bigger pool would let rotatePick
+  // simply dodge Carotte by chance, passing even if the reaction-tier exclusion were deleted.
   const carotte = CATALOG.find((f) => f.name === 'Carotte')!; // no allergenType
-  const intro = new Set(CATALOG.filter((f) => f.id !== carotte.id).map((f) => f.id));
+  const catalog = CATALOG.filter((f) => f.category !== 'legumes' || f.id === carotte.id);
+  const intro = new Set(catalog.filter((f) => f.id !== carotte.id).map((f) => f.id));
   const menu = buildMenu(
     baseInput({
+      catalog,
       introducedFoodIds: intro,
       reactionTierFoodIds: new Set([carotte.id]) // deliberately NOT in avoidFoodIds
     })
