@@ -34,8 +34,9 @@ function baseInput(over: Partial<MenuInput> = {}): MenuInput {
   };
 }
 
-// Shared by several Task 9 tests: every food introduced except the whole légumes category,
-// so the novelty path always has exactly the légumes pool to draw an un-introduced pick from.
+// Shared by several tests below: every food introduced except the whole légumes category (not
+// a priority-allergen category), so the légume role always has exactly the un-introduced whole
+// légumes pool to draw a "Nouveauté"-badged pick from.
 function introExceptLegumes(): Set<number> {
   return new Set(CATALOG.filter((f) => f.category !== 'legumes').map((f) => f.id));
 }
@@ -110,11 +111,24 @@ test('all 4 oily fish are reachable on the fixed oily weekday across enough week
   for (const name of OILY_FISH) expect(seen.has(name)).toBe(true);
 });
 
-test('a new account with no introduced foods yields an all-empty menu (à découvrir)', () => {
-  const menu = buildMenu(baseInput({ introducedFoodIds: new Set() }));
-  expect(menu.meals.flatMap((mo) => mo.items)).toHaveLength(0);
-  // meals still exist as empty slots for the 4 templates
-  expect(menu.meals.length).toBeGreaterThan(0);
+test('a new account with no introduced foods still fills non-allergen slots, badged Nouveauté', () => {
+  // Full-variety: slots draw from the whole safe catalog, not just introduced foods, so a
+  // brand-new account is no longer an all-empty menu — only priority-allergen-only
+  // categories (fully un-introduced) stay gated to "à découvrir".
+  const menu = buildMenu(
+    baseInput({ introducedFoodIds: new Set(), introducedAllergens: new Set() })
+  );
+  const items = menu.meals.flatMap((mo) => mo.items);
+  expect(items.length).toBeGreaterThan(0);
+  for (const i of items) {
+    expect(i.isNew).toBe(true); // nothing is introduced yet
+    // defense-in-depth: no slot item may be an un-introduced priority allergen.
+    if (i.food.allergenType) {
+      expect(
+        (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(i.food.allergenType)
+      ).toBe(false);
+    }
+  }
 });
 
 test('every raw-milk cheese seed food carries a pasteurised caution', () => {
@@ -240,10 +254,33 @@ test('cautionFor: poissons and viandes get a category caution; a plain fruit get
 });
 
 // ---------------------------------------------------------------------------
-// One proactive novelty, allergen focus, dedup, labels (Task 9)
+// Full-variety slots + THE allergen safety gate (most important test in this
+// file — see full-variety-brief.md). Meal slots now draw from the whole
+// age-appropriate safe catalog, badging an un-introduced pick "Nouveauté" —
+// EXCEPT an un-introduced priority allergen, which stays gated to the
+// allergène-du-jour card. There is no single proactive novelty anymore.
 // ---------------------------------------------------------------------------
 
-test('at most one new food per day; every unbadged item is already introduced', () => {
+test('THE safety gate: an un-introduced priority-allergen food never appears in a meal slot', () => {
+  // 'oeufs' is 100%-tagged allergenType 'oeuf' in the seed, and 'oeuf' is a
+  // priority allergen. weekday=3 is PROTEIN_WEEK's 'oeufs' day, so — absent
+  // slotEligible's allergen clause — pickProtein's weekday-category branch
+  // would draw straight from the (un-introduced) œuf foods.
+  const oeufFoods = CATALOG.filter((f) => f.allergenType === 'oeuf');
+  expect(oeufFoods.length).toBeGreaterThan(0);
+  const intro = new Set(CATALOG.filter((f) => f.allergenType !== 'oeuf').map((f) => f.id));
+  const introducedAllergens = new Set(PRIORITY_INTRODUCTION_ALLERGENS.filter((a) => a !== 'oeuf'));
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro, introducedAllergens, weekday: 3 }));
+  const slotFoodIds = new Set(menu.meals.flatMap((mo) => mo.items).map((i) => i.food.id));
+  for (const f of oeufFoods) expect(slotFoodIds.has(f.id)).toBe(false);
+  // Sanity: the scenario is non-vacuous — oeuf IS due, and surfaces card-only.
+  expect(menu.allergenFocus?.food.allergenType).toBe('oeuf');
+});
+
+test('an un-introduced non-allergen food fills a slot directly, badged Nouveauté', () => {
+  // Only the légumes category (never a priority allergen) is un-introduced: both the midi
+  // and soir légume slots draw directly from the whole légumes catalog and get badged —
+  // there's no single sacred novelty anymore, so more than one slot may be new in a day.
   const intro = introExceptLegumes();
   const menu = buildMenu(
     baseInput({
@@ -252,28 +289,19 @@ test('at most one new food per day; every unbadged item is already introduced', 
     })
   );
   const items = menu.meals.flatMap((mo) => mo.items);
-  expect(items.filter((i) => !intro.has(i.food.id)).length).toBeLessThanOrEqual(1);
-  // A novelty IS actually produced in this arranged scenario (the whole légumes
-  // category is un-introduced) — guards against pickNoveltyCandidate silently
-  // returning null and the ≤1 check above passing vacuously on zero novelties.
-  expect(items.some((i) => i.isNew)).toBe(true);
-  for (const i of items) if (!intro.has(i.food.id)) expect(i.isNew).toBe(true); // no covert novelty
+  const badged = items.filter((i) => i.isNew);
+  expect(badged.length).toBe(2); // midi + soir légume — the only role touching that category
+  for (const i of badged) {
+    expect(i.food.category).toBe('legumes');
+    expect(intro.has(i.food.id)).toBe(false);
+  }
+  for (const i of items) if (!badged.includes(i)) expect(intro.has(i.food.id)).toBe(true);
 });
 
-test('the non-allergen novelty is rendered even if its role had no introduced food', () => {
-  // no légume introduced; all allergens introduced → the non-allergen novelty path runs
-  const intro = introExceptLegumes();
-  const menu = buildMenu(
-    baseInput({
-      introducedFoodIds: intro,
-      introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
-    })
-  );
-  const badged = menu.meals.flatMap((mo) => mo.items).filter((i) => i.isNew);
-  expect(badged.length).toBe(1);
-  expect(badged[0].food.category).toBe('legumes'); // inserted into midi even with no introduced légume
-  expect(menu.noveltyFoodId).toBe(badged[0].food.id);
-});
+// ---------------------------------------------------------------------------
+// Allergen-focus card: due → introduce, else → maintain. Unchanged by the
+// full-variety change other than dropping noveltyFoodId, which it used to set.
+// ---------------------------------------------------------------------------
 
 test('orphan allergen (arachide) is card-only, never a meal slot', () => {
   const peanut = CATALOG.find((f) => f.allergenType === 'arachide')!;
@@ -283,7 +311,6 @@ test('orphan allergen (arachide) is card-only, never a meal slot', () => {
   expect(menu.allergenFocus?.food.allergenType).toBe('arachide');
   expect(menu.allergenFocus?.mode).toBe('introduce');
   expect(menu.meals.flatMap((mo) => mo.items).some((i) => i.food.id === peanut.id)).toBe(false);
-  expect(menu.noveltyFoodId).toBe(peanut.id);
 });
 
 test("allergenFocus carries the food's prep/choking caution (never skips cautionFor)", () => {
@@ -301,18 +328,14 @@ test("allergenFocus carries the food's prep/choking caution (never skips caution
   expect(menu.allergenFocus?.caution).toContain('arêtes');
 });
 
-test('charcuterie (Jambon) is never surfaced as a protein novelty', () => {
+test('charcuterie (Jambon) is never surfaced as a protéine, even un-introduced', () => {
+  // Everything introduced EXCEPT Jambon: full-variety would otherwise make an un-introduced
+  // Jambon a perfectly eligible (non-allergen) slot pick on its own weekday — this exercises
+  // safeForRole's CHARCUTERIE exclusion, which slotPool inherits unconditionally.
   const jambon = CATALOG.find((f) => f.name.includes('Jambon'))!;
-  // everything introduced EXCEPT Jambon, all allergens introduced → the novelty path runs and
-  // Jambon is the sole un-introduced viandes candidate; catalogSafe must still reject it.
   const intro = new Set(CATALOG.filter((f) => f.id !== jambon.id).map((f) => f.id));
-  const menu = buildMenu(
-    baseInput({
-      introducedFoodIds: intro,
-      introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
-    })
-  );
-  expect(menu.noveltyFoodId).not.toBe(jambon.id);
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
+  expect(menu.meals.flatMap((mo) => mo.items).some((i) => i.food.id === jambon.id)).toBe(false);
   const proteins = menu.meals.flatMap((mo) => mo.items).filter((i) => i.role === 'proteine');
   expect(proteins.some((p) => p.food.name.includes('Jambon'))).toBe(false);
 });
@@ -356,110 +379,24 @@ test('sans_poisson never shows poisson as allergène du jour', () => {
   expect(menu.allergenFocus?.food.allergenType).not.toBe('poisson');
 });
 
-test('a reaction-tier food is never surfaced as a novelty, even if not in avoidFoodIds', () => {
-  // defense-in-depth: a genuine reaction must never be re-offered as "Nouveauté"
+test('a reaction-tier food is never surfaced in a meal slot, even though otherwise slot-eligible', () => {
+  // defense-in-depth: a genuine reaction must never be re-offered, even though full-variety
+  // would otherwise make this un-introduced, non-allergen légume a perfectly eligible pick.
   const carotte = CATALOG.find((f) => f.name === 'Carotte')!; // no allergenType
   const intro = new Set(CATALOG.filter((f) => f.id !== carotte.id).map((f) => f.id));
   const menu = buildMenu(
     baseInput({
       introducedFoodIds: intro,
-      introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS),
       reactionTierFoodIds: new Set([carotte.id]) // deliberately NOT in avoidFoodIds
     })
   );
-  expect(menu.noveltyFoodId).not.toBe(carotte.id);
   expect(menu.meals.flatMap((mo) => mo.items).some((i) => i.food.id === carotte.id)).toBe(false);
 });
 
-// ---------------------------------------------------------------------------
-// Task 9 — tricky branches the 7 tests above don't reach: placeNovelty's
-// REPLACE path, the dedup loop's alt-found/alt-null outcomes, and the two
-// allergen-focus fallthroughs. Constructed so each genuinely exercises the
-// behavior (not coverage-gaming): see engine.ts for the invariants asserted.
-// ---------------------------------------------------------------------------
-
-test('placeNovelty replaces an already-filled role slot rather than duplicating it', () => {
-  const carotte = CATALOG.find((f) => f.name === 'Carotte')!;
-  const intro = new Set(CATALOG.filter((f) => f.id !== carotte.id).map((f) => f.id));
-  const menu = buildMenu(
-    baseInput({
-      introducedFoodIds: intro,
-      introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
-    })
-  );
-  expect(menu.noveltyFoodId).toBe(carotte.id);
-  const midi = menu.meals.find((m) => m.id === 'midi')!;
-  const legumeItems = midi.items.filter((i) => i.role === 'legume');
-  expect(legumeItems).toHaveLength(1); // replaced in place, never duplicated alongside it
-  expect(legumeItems[0].food.id).toBe(carotte.id);
-  expect(legumeItems[0].isNew).toBe(true);
-});
-
-test('a same-day duplicate pick is swapped for an alternate from the introduced pool', () => {
-  // Exactly 2 introduced légumes: midi and soir's légume slots are known (via the rotation
-  // hash) to land on the SAME food, forcing the dedup pass to swap the later (soir) one.
-  const carotte = CATALOG.find((f) => f.name === 'Carotte')!;
-  const courgette = CATALOG.find((f) => f.name === 'Courgette (épluchée, épépinée)')!;
-  const nonLegumes = CATALOG.filter((f) => f.category !== 'legumes').map((f) => f.id);
-  const intro = new Set([...nonLegumes, carotte.id, courgette.id]);
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
-  const midiLegume = menu.meals
-    .find((m) => m.id === 'midi')!
-    .items.find((i) => i.role === 'legume')!;
-  const soirLegume = menu.meals
-    .find((m) => m.id === 'soir')!
-    .items.find((i) => i.role === 'legume')!;
-  expect(midiLegume.food.id).not.toBe(soirLegume.food.id); // swapped, not a silent repeat
-  expect(new Set([midiLegume.food.id, soirLegume.food.id])).toEqual(
-    new Set([carotte.id, courgette.id])
-  );
-});
-
-test('a same-day duplicate with no remaining alternate is left as-is', () => {
-  // Exactly 1 introduced légume: midi and soir both resolve to it, and no safe alternate
-  // exists once it's already "seen" — the dedup pass must leave the repeat rather than blank it.
-  const carotte = CATALOG.find((f) => f.name === 'Carotte')!;
-  const nonLegumes = CATALOG.filter((f) => f.category !== 'legumes').map((f) => f.id);
-  const intro = new Set([...nonLegumes, carotte.id]);
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
-  const midiLegume = menu.meals
-    .find((m) => m.id === 'midi')!
-    .items.find((i) => i.role === 'legume')!;
-  const soirLegume = menu.meals
-    .find((m) => m.id === 'soir')!
-    .items.find((i) => i.role === 'legume')!;
-  expect(midiLegume.food.id).toBe(carotte.id);
-  expect(soirLegume.food.id).toBe(carotte.id);
-});
-
-test("a dessert dedup swap recomputes amountHint for the swapped-in food's category", () => {
-  // Pomme/Poire (fruits) + Yaourt nature (produits_laitiers) are the ONLY
-  // introduced dessert-pool (fruits ∪ produits_laitiers) candidates. matin's
-  // laitier/fruit slots consume Yaourt nature and Poire first, so by the time
-  // midi's dessert slot is deduped, its initial (dairy) pick is already "seen"
-  // and gets swapped for Pomme — a cross-category (dairy→fruit) swap. Known via
-  // the rotation hash at baseInput()'s default childId/dayIndex/weekday.
-  const pomme = CATALOG.find((f) => f.name === 'Pomme')!;
-  const poire = CATALOG.find((f) => f.name === 'Poire')!;
-  const yaourt = CATALOG.find((f) => f.name === 'Yaourt nature')!;
-  const nonDessert = CATALOG.filter(
-    (f) => f.category !== 'fruits' && f.category !== 'produits_laitiers'
-  ).map((f) => f.id);
-  const intro = new Set([...nonDessert, pomme.id, poire.id, yaourt.id]);
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
-  const midiDessert = menu.meals
-    .find((m) => m.id === 'midi')!
-    .items.find((i) => i.role === 'dessert')!;
-  expect(midiDessert.food.id).toBe(pomme.id); // confirms the swap actually happened
-  // amountHint must follow the NEW food's category (fruit), not the replaced
-  // dairy food's laitier hint.
-  expect(midiDessert.amountHint).toBe(menu.quantities.portions.fruit);
-});
-
-test('a due allergen with no safe catalog food falls through to maintain + novelty', () => {
+test('a due allergen with no safe catalog food falls through to maintain, slots stay full-variety', () => {
   // arachide is due, but its one catalog food is on the avoid list → catalogSafe rejects it →
-  // pickDueAllergenFood returns null, and the flow must fall through to branch 2 instead of
-  // leaving the day with no allergen card and no novelty.
+  // pickDueAllergenFood returns null, and the flow must fall through to the maintain branch
+  // instead of leaving the day with no allergen card.
   const peanut = CATALOG.find((f) => f.allergenType === 'arachide')!;
   const introAll = new Set(PRIORITY_INTRODUCTION_ALLERGENS.filter((a) => a !== 'arachide'));
   const intro = introExceptLegumes();
@@ -472,28 +409,23 @@ test('a due allergen with no safe catalog food falls through to maintain + novel
   );
   expect(menu.allergenFocus?.food.allergenType).not.toBe('arachide');
   expect(menu.allergenFocus?.mode).toBe('maintain');
-  const badged = menu.meals.flatMap((mo) => mo.items).filter((i) => i.isNew);
-  expect(badged.length).toBe(1);
-  expect(badged[0].food.category).toBe('legumes');
-  // The novelty légume was INSERTED into midi's empty légume slot (placeNovelty), so midi no
-  // longer wants a légume — the whole point of discoverRoles. soir's légume slot stays genuinely
-  // empty (no introduced légume, and the one novelty was spent on midi) → still prompted.
+  // légumes is the only wholly-un-introduced (non-allergen) category: BOTH midi's and soir's
+  // légume slots fill directly from it, badged — neither is left as an empty discover prompt.
+  const badgedLegumes = menu.meals
+    .flatMap((mo) => mo.items)
+    .filter((i) => i.isNew && i.food.category === 'legumes');
+  expect(badgedLegumes.length).toBe(2);
   expect(menu.meals.find((mo) => mo.id === 'midi')!.discoverRoles).not.toContain('legume');
-  expect(menu.meals.find((mo) => mo.id === 'soir')!.discoverRoles).toContain('legume');
+  expect(menu.meals.find((mo) => mo.id === 'soir')!.discoverRoles).not.toContain('legume');
 });
 
-test('discoverRoles lists template roles that have no introduced food', () => {
-  const intro = new Set(CATALOG.filter((f) => f.category !== 'feculents').map((f) => f.id));
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
-  const midi = menu.meals.find((mo) => mo.id === 'midi')!;
-  expect(midi.discoverRoles).toContain('feculent'); // no féculent introduced → wanted-but-empty
-  expect(midi.discoverRoles).not.toContain('legume'); // légume introduced → filled, not listed
-});
-
-test('an introduced allergen with no matching introduced food yields no maintain card', () => {
+test('an introduced allergen with no matching introduced food yields no maintain card, but its other foods are ordinary novelties', () => {
   // Every priority-allergen-tagged food is un-introduced, even though all 7 allergens are
-  // flagged introduced → pickMaintainAllergenFood must find nothing for any candidate allergen,
-  // yet the ordinary (non-allergen) novelty still runs.
+  // flagged introduced at the tracking level → pickMaintainAllergenFood finds no INDIVIDUAL
+  // introduced food for any candidate allergen, so allergenFocus stays null. But slotEligible
+  // only gates a food until its ALLERGEN's first exposure — once introducedAllergens already
+  // has it, other un-introduced foods of that same allergen are ordinary slot novelties, not
+  // held back for the card.
   const priority: readonly string[] = PRIORITY_INTRODUCTION_ALLERGENS;
   const allergenFoodIds = new Set(
     CATALOG.filter((f) => f.allergenType && priority.includes(f.allergenType)).map((f) => f.id)
@@ -506,9 +438,109 @@ test('an introduced allergen with no matching introduced food yields no maintain
     })
   );
   expect(menu.allergenFocus).toBeNull();
-  expect(menu.noveltyFoodId).not.toBeNull();
   const badged = menu.meals.flatMap((mo) => mo.items).filter((i) => i.isNew);
-  expect(badged.length).toBe(1);
+  expect(badged.length).toBeGreaterThan(0);
+  for (const i of badged) {
+    expect(i.food.allergenType).not.toBeNull();
+    expect(priority.includes(i.food.allergenType!)).toBe(true); // its allergen is already "introduced"
+    expect(intro.has(i.food.id)).toBe(false); // yet this specific food isn't
+  }
+});
+
+test('discoverRoles lists template roles with no slot-eligible food (produits_laitiers wholly gated)', () => {
+  // produits_laitiers is 100%-tagged 'lait' in the seed, and 'lait' is a priority allergen: with
+  // none introduced, EVERY dairy food is gated out of the laitier slot pool — unlike légume/
+  // fruit/viande pools, which have no priority-allergen members at all and stay full.
+  const intro = new Set(CATALOG.filter((f) => f.category !== 'produits_laitiers').map((f) => f.id));
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
+  const matin = menu.meals.find((mo) => mo.id === 'matin')!;
+  expect(matin.discoverRoles).toContain('laitier'); // wholly gated → wanted-but-empty
+  expect(matin.discoverRoles).not.toContain('fruit'); // fruits are never allergen-gated → filled
+});
+
+// ---------------------------------------------------------------------------
+// Intra-day dedup: a later slot repeating an earlier slot's food gets swapped for an
+// alternate from its full slot pool (not introduced-only anymore), and isNew is re-badged
+// for whichever food the slot resolves to.
+// ---------------------------------------------------------------------------
+
+test('a same-day duplicate pick is swapped for an alternate from the slot pool, re-badging isNew', () => {
+  // Catalog shrunk to exactly 2 légumes: rotatePick's index depends only on the pool's SIZE
+  // (not which foods occupy it), so midi and soir's légume slots are known — via the same
+  // rotation hash as before the full-variety change — to land on the SAME food initially,
+  // forcing the dedup pass to swap the later (soir) one for the other. Only Courgette is
+  // introduced, so the swap must also re-badge isNew for whichever food ends up where.
+  const carotte = CATALOG.find((f) => f.name === 'Carotte')!;
+  const courgette = CATALOG.find((f) => f.name === 'Courgette (épluchée, épépinée)')!;
+  const legumeIds = new Set([carotte.id, courgette.id]);
+  const catalog = CATALOG.filter((f) => f.category !== 'legumes' || legumeIds.has(f.id));
+  const intro = new Set([
+    ...catalog.filter((f) => f.category !== 'legumes').map((f) => f.id),
+    courgette.id
+  ]);
+  const menu = buildMenu(baseInput({ catalog, introducedFoodIds: intro }));
+  const midiLegume = menu.meals
+    .find((m) => m.id === 'midi')!
+    .items.find((i) => i.role === 'legume')!;
+  const soirLegume = menu.meals
+    .find((m) => m.id === 'soir')!
+    .items.find((i) => i.role === 'legume')!;
+  expect(midiLegume.food.id).not.toBe(soirLegume.food.id); // swapped, not a silent repeat
+  expect(new Set([midiLegume.food.id, soirLegume.food.id])).toEqual(
+    new Set([carotte.id, courgette.id])
+  );
+  for (const item of [midiLegume, soirLegume]) {
+    expect(item.isNew).toBe(item.food.id === carotte.id); // re-badged for the RESOLVED food
+  }
+});
+
+test('a same-day duplicate with no remaining alternate is left as-is', () => {
+  // Catalog shrunk to exactly 1 légume: midi and soir both resolve to it (it's the only
+  // candidate, full stop), and no alternate exists once it's already "seen" — the dedup pass
+  // must leave the repeat rather than blank the slot.
+  const carotte = CATALOG.find((f) => f.name === 'Carotte')!;
+  const catalog = CATALOG.filter((f) => f.category !== 'legumes' || f.id === carotte.id);
+  const menu = buildMenu(baseInput({ catalog, introducedFoodIds: new Set() }));
+  const midiLegume = menu.meals
+    .find((m) => m.id === 'midi')!
+    .items.find((i) => i.role === 'legume')!;
+  const soirLegume = menu.meals
+    .find((m) => m.id === 'soir')!
+    .items.find((i) => i.role === 'legume')!;
+  expect(midiLegume.food.id).toBe(carotte.id);
+  expect(soirLegume.food.id).toBe(carotte.id);
+  expect(midiLegume.isNew).toBe(true); // un-introduced, and the repeat is left untouched
+  expect(soirLegume.isNew).toBe(true);
+});
+
+test("a dessert dedup swap recomputes amountHint for the swapped-in food's category", () => {
+  // Catalog shrunk to 2 fruits (Pomme, Poire) so the fruit/dessert pools stay exactly the size
+  // they were pre-full-variety; only Yaourt nature is introduced among produits_laitiers (the
+  // rest are un-introduced 'lait' and stay gated by slotEligible, just like the old introduced-
+  // only pool). matin's laitier/fruit slots consume Yaourt nature and Poire first, so by the
+  // time midi's dessert slot is deduped, its initial (dairy) pick is already "seen" and gets
+  // swapped for Pomme — a cross-category (dairy→fruit) swap. Known via the rotation hash at
+  // baseInput()'s default childId/dayIndex/weekday (rotatePick's index depends only on pool
+  // size, not on which specific foods occupy it, so shrinking the catalog this way reproduces
+  // the exact same collision as before the full-variety change).
+  const pomme = CATALOG.find((f) => f.name === 'Pomme')!;
+  const poire = CATALOG.find((f) => f.name === 'Poire')!;
+  const yaourt = CATALOG.find((f) => f.name === 'Yaourt nature')!;
+  const catalog = CATALOG.filter(
+    (f) => f.category !== 'fruits' || f.id === pomme.id || f.id === poire.id
+  );
+  const nonDessert = catalog
+    .filter((f) => f.category !== 'fruits' && f.category !== 'produits_laitiers')
+    .map((f) => f.id);
+  const intro = new Set([...nonDessert, pomme.id, poire.id, yaourt.id]);
+  const menu = buildMenu(baseInput({ catalog, introducedFoodIds: intro }));
+  const midiDessert = menu.meals
+    .find((m) => m.id === 'midi')!
+    .items.find((i) => i.role === 'dessert')!;
+  expect(midiDessert.food.id).toBe(pomme.id); // confirms the swap actually happened
+  // amountHint must follow the NEW food's category (fruit), not the replaced
+  // dairy food's laitier hint.
+  expect(midiDessert.amountHint).toBe(menu.quantities.portions.fruit);
 });
 
 // ---------------------------------------------------------------------------
@@ -517,8 +549,9 @@ test('an introduced allergen with no matching introduced food yields no maintain
 // ---------------------------------------------------------------------------
 
 test('a fruit in the dessert slot shows the fruit portion hint, not the laitier one', () => {
-  // No produits_laitiers food is introduced, so the dessert pool (fruits ∪
-  // produits_laitiers) can only resolve to a fruit.
+  // No produits_laitiers food is introduced, so — since produits_laitiers is wholly
+  // 'lait'-tagged and gated by slotEligible — the dessert pool (fruits ∪ produits_laitiers)
+  // can only resolve to a fruit.
   const intro = new Set(CATALOG.filter((f) => f.category !== 'produits_laitiers').map((f) => f.id));
   const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
   const dessertItems = menu.meals.flatMap((mo) => mo.items).filter((i) => i.role === 'dessert');
@@ -530,10 +563,14 @@ test('a fruit in the dessert slot shows the fruit portion hint, not the laitier 
 });
 
 test('a dairy food in the dessert slot shows the laitier portion hint', () => {
-  // No fruits food is introduced, so the dessert pool can only resolve to a
-  // produits_laitiers food.
-  const intro = new Set(CATALOG.filter((f) => f.category !== 'fruits').map((f) => f.id));
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
+  // Fruits removed from the catalog entirely — not just un-introduced, since fruits are never
+  // allergen-gated and an un-introduced fruit would still be slot-eligible and could win the
+  // dessert pick. With no fruits at all, the dessert pool (fruits ∪ produits_laitiers) can only
+  // resolve to an introduced dairy food.
+  const catalog = CATALOG.filter((f) => f.category !== 'fruits');
+  const menu = buildMenu(
+    baseInput({ catalog, introducedFoodIds: new Set(catalog.map((f) => f.id)) })
+  );
   const dessertItems = menu.meals.flatMap((mo) => mo.items).filter((i) => i.role === 'dessert');
   expect(dessertItems.length).toBeGreaterThan(0);
   for (const item of dessertItems) {

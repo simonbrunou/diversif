@@ -53,18 +53,6 @@ export const PROTEIN_WEEK: CategoryId[] = [
 // Consumed by the meal engine (Task 7-9); this task only adds the data.
 export const OILY_FISH = ['Saumon', 'Sardine', 'Maquereau', 'Truite'];
 
-// Role-bearing food categories the proactive non-allergen novelty may draw from.
-export const NOVELTY_CATEGORIES: CategoryId[] = [
-  'legumes',
-  'fruits',
-  'feculents',
-  'legumineuses',
-  'viandes',
-  'poissons',
-  'oeufs',
-  'produits_laitiers'
-];
-
 // Nut oil is a fruits_a_coque allergen; never rotate it into the silent fat slot.
 // Consumed by the meal engine (Task 7-9); this task only adds the data.
 export const FAT_EXCLUDE = ['Huile de noix'];

@@ -13,7 +13,6 @@ import {
   MEAL_TEMPLATES,
   PROTEIN_WEEK,
   OILY_FISH,
-  NOVELTY_CATEGORIES,
   type RoleId,
   type MealId
 } from './tables';
@@ -54,7 +53,6 @@ export type Menu = {
   redFlags: string[];
   meals: Meal[];
   allergenFocus: { food: Food; mode: 'introduce' | 'maintain'; caution: string | null } | null;
-  noveltyFoodId: number | null;
 };
 
 const CHARCUTERIE = (f: Food) => CHARCUTERIE_MATCHERS.some((m) => f.name.includes(m));
@@ -77,7 +75,7 @@ function excludedByDiet(f: Food, exclusions: DietExclusion[]): boolean {
 }
 
 // Role-independent safety gates shared by EVERY food-surfacing path (role pools
-// via safeForRole, AND the allergen/novelty catalog scan via catalogSafe): age
+// via safeForRole, AND the allergen-focus catalog scan via catalogSafe): age
 // window, ¬custom, ¬forbidden-at-age, ¬diet-excluded, ¬avoid/reaction-blocked.
 // Charcuterie and FAT_EXCLUDE are deliberately NOT here — they're role-scoped
 // (safeForRole only applies them for proteine/matiereGrasse) or defense-in-depth
@@ -106,6 +104,23 @@ function safeForRole(role: RoleId, input: MenuInput): Food[] {
     .sort((a, b) => a.id - b.id);
 }
 
+// Un-introduced priority-allergen foods stay gated to the one-a-day allergène card
+// (several new allergens in one day breaks the one-at-a-time safety line). Introduced
+// foods (allergen or not) and un-introduced NON-priority-allergen foods fill slots freely.
+function slotEligible(f: Food, input: MenuInput): boolean {
+  if (input.introducedFoodIds.has(f.id)) return true;
+  return !(
+    f.allergenType &&
+    (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(f.allergenType) &&
+    !input.introducedAllergens.has(f.allergenType)
+  );
+}
+
+/** safeForRole, further gated so an un-introduced priority allergen never fills a meal slot. */
+function slotPool(role: RoleId, input: MenuInput): Food[] {
+  return safeForRole(role, input).filter((f) => slotEligible(f, input));
+}
+
 const textureFor = (f: Food): string | null => CHOKING_BY_FOOD[f.name] ?? null;
 
 function cautionFor(f: Food): string | null {
@@ -117,16 +132,15 @@ function cautionFor(f: Food): string | null {
   return null;
 }
 
-// INTRODUCED-ONLY. Empty weekday-category (or vegetarien/sans_poisson) → the whole
-// introduced-safe protein pool. NEVER an un-introduced food — that would be a covert second
-// novelty (the one-novelty hazard). null → "à découvrir" when no protein is introduced yet.
+// Full-variety pool (slotPool), not introduced-only: an un-introduced protein CAN win here,
+// badged as the day's novelty by the caller — EXCEPT an un-introduced priority allergen, which
+// slotPool already excludes. Empty weekday-category (or vegetarien/sans_poisson) → the whole
+// slot-eligible protein pool. null → "à découvrir" when no protein is eligible at all yet.
 function pickProtein(input: MenuInput): Food | null {
   const cat = PROTEIN_WEEK[input.weekday];
-  const introducedSafe = safeForRole('proteine', input).filter((f) =>
-    input.introducedFoodIds.has(f.id)
-  );
-  const inCat = introducedSafe.filter((f) => f.category === cat);
-  const pool = inCat.length ? inCat : introducedSafe;
+  const pickable = slotPool('proteine', input);
+  const inCat = pickable.filter((f) => f.category === cat);
+  const pool = inCat.length ? inCat : pickable;
   if (pool.length === 0) return null;
   const oily = input.weekday === 1 ? pool.filter((f) => OILY_FISH.includes(f.name)) : [];
   const list = oily.length ? oily : pool;
@@ -157,35 +171,30 @@ function amountFor(role: RoleId, quantities: StageQuantities, food: Food): strin
   return byRole[role];
 }
 
-// 4-6: exactly one first food (introduced-preferred; a genuine first food may be new and is
-// then badged as the day's novelty).
-function buildStarterMeal(
-  input: MenuInput,
-  stage: Stage,
-  quantities: StageQuantities
-): { meals: Meal[]; noveltyFoodId: number | null } {
-  const pool = [...safeForRole('legume', input), ...safeForRole('fruit', input)].sort(
+// 4-6: exactly one first food, drawn from the full slot-eligible legume+fruit pool (a
+// genuine first food may be new and is then badged as a novelty).
+function buildStarterMeal(input: MenuInput, stage: Stage, quantities: StageQuantities): Meal[] {
+  const pool = [...slotPool('legume', input), ...slotPool('fruit', input)].sort(
     (a, b) => a.id - b.id
   );
-  const intro = pool.filter((f) => input.introducedFoodIds.has(f.id));
-  const food = rotatePick(intro.length ? intro : pool, `${input.childId}:starter`, input.dayIndex);
-  if (!food) return { meals: [], noveltyFoodId: null };
+  const food = rotatePick(pool, `${input.childId}:starter`, input.dayIndex);
+  if (!food) return [];
   const role: RoleId = food.category === 'fruits' ? 'fruit' : 'legume';
   const isNew = !input.introducedFoodIds.has(food.id);
-  return {
-    meals: [
-      {
-        id: 'midi',
-        label: food.name,
-        items: [mkItem(role, food, stage.textures, amountFor(role, quantities, food), isNew)],
-        discoverRoles: []
-      }
-    ],
-    noveltyFoodId: isNew ? food.id : null
-  };
+  return [
+    {
+      id: 'midi',
+      label: food.name,
+      items: [mkItem(role, food, stage.textures, amountFor(role, quantities, food), isNew)],
+      discoverRoles: []
+    }
+  ];
 }
 
-// 6-9 / 9-12 / 12-36: each slot picks from its INTRODUCED-safe foods only.
+// 6-9 / 9-12 / 12-36: each slot picks from its full slot-eligible pool (slotPool) — the whole
+// age-appropriate safe catalog, not just introduced foods — badging an un-introduced pick as
+// the day's "Nouveauté". slotPool already keeps an un-introduced priority allergen out of every
+// slot (gated to the allergène-du-jour card instead).
 function assembleFullDayMeals(input: MenuInput, stage: Stage, quantities: StageQuantities): Meal[] {
   const meals: Meal[] = [];
   for (const t of MEAL_TEMPLATES[stage.id]) {
@@ -194,13 +203,11 @@ function assembleFullDayMeals(input: MenuInput, stage: Stage, quantities: StageQ
       const food =
         role === 'proteine'
           ? pickProtein(input)
-          : rotatePick(
-              safeForRole(role, input).filter((f) => input.introducedFoodIds.has(f.id)),
-              `${input.childId}:${t.id}:${role}`,
-              input.dayIndex
-            );
-      if (food)
-        items.push(mkItem(role, food, stage.textures, amountFor(role, quantities, food), false));
+          : rotatePick(slotPool(role, input), `${input.childId}:${t.id}:${role}`, input.dayIndex);
+      if (food) {
+        const isNew = !input.introducedFoodIds.has(food.id);
+        items.push(mkItem(role, food, stage.textures, amountFor(role, quantities, food), isNew));
+      }
       // null → empty slot; MenuDay renders an "à découvrir" prompt for the missing role.
     }
     meals.push({ id: t.id, label: '', items, discoverRoles: [] });
@@ -208,7 +215,7 @@ function assembleFullDayMeals(input: MenuInput, stage: Stage, quantities: StageQ
   return meals;
 }
 
-// ---- allergen focus + ONE proactive novelty (meals are already introduced-only) ----
+// ---- allergen-du-jour focus card (meal slots carry their own novelties directly) ----
 
 function allowedAllergen(input: MenuInput, a: string): boolean {
   return (
@@ -218,11 +225,12 @@ function allowedAllergen(input: MenuInput, a: string): boolean {
   );
 }
 
-// The novelty path uses THIS predicate, not safeForRole — so it must repeat every
-// role-independent safety gate safeForRole applies, or an un-safe food slips in as a badged
-// "Nouveauté". Charcuterie (Jambon) is never a protéine AND never a novelty. FAT_EXCLUDE is
-// defence-in-depth: matieres_grasses isn't in NOVELTY_CATEGORIES today, so it's currently
-// unreachable — but adding it there must never turn butter into a novelty.
+// The allergen-focus card scans the WHOLE catalog by allergenType, not a role pool, so it uses
+// THIS predicate rather than safeForRole — which means it must repeat every role-independent
+// safety gate safeForRole applies, or an un-safe food slips onto the card. Charcuterie (Jambon)
+// is never a protéine AND never card-eligible. FAT_EXCLUDE is defence-in-depth: no allergen-
+// tagged food is matieres_grasses today except the already-FAT_EXCLUDEd nut oil, but this must
+// never let butter (or any future fat) surface as an allergen-focus food.
 function catalogSafe(f: Food, input: MenuInput): boolean {
   return safeFood(f, input) && !CHARCUTERIE(f) && !FAT_EXCLUDE.includes(f.name);
 }
@@ -260,57 +268,13 @@ function pickMaintainAllergenFood(input: MenuInput): Food | null {
   );
 }
 
-// Feature ONE not-yet-tried role-bearing food in a meal slot (never an allergen-card food —
-// those are handled, and stay card-only, above).
-function pickNoveltyCandidate(input: MenuInput): Food | null {
-  const candidates = input.catalog
-    .filter((f) => NOVELTY_CATEGORIES.includes(f.category as CategoryId))
-    .filter((f) => !input.introducedFoodIds.has(f.id))
-    .filter((f) => catalogSafe(f, input))
-    .sort((a, b) => a.id - b.id);
-  return rotatePick(candidates, `${input.childId}:novelty`, input.dayIndex);
-}
-
-function roleForCategory(cat: CategoryId): RoleId | null {
-  const map: Partial<Record<CategoryId, RoleId>> = {
-    legumes: 'legume',
-    fruits: 'fruit',
-    feculents: 'feculent',
-    legumineuses: 'proteine',
-    viandes: 'proteine',
-    poissons: 'proteine',
-    oeufs: 'proteine',
-    produits_laitiers: 'laitier',
-    matieres_grasses: 'matiereGrasse'
-  };
-  return map[cat] ?? null;
-}
-
-// Feature the novelty in the EARLIEST meal whose TEMPLATE lists its role. Replace that role's
-// introduced base pick if present; otherwise INSERT a new item (the slot was empty because no
-// food of that role is introduced yet), so the one proactive novelty is never silently dropped.
-function placeNovelty(menu: Menu, role: RoleId, food: Food, stageTexture: string): void {
-  for (const t of MEAL_TEMPLATES[menu.stageId]) {
-    if (!t.roles.includes(role)) continue;
-    const meal = menu.meals.find((mo) => mo.id === t.id);
-    if (!meal) continue;
-    const item = mkItem(role, food, stageTexture, null, true);
-    const existing = meal.items.find((i) => i.role === role);
-    if (existing) Object.assign(existing, item);
-    else meal.items.push(item);
-    return;
-  }
-}
-
-// Resolve the day's allergen-focus card + the one proactive novelty, and place the novelty in
-// its meal slot. An allergen due for introduction always wins and is card-only (never placed);
-// otherwise an introduced allergen is maintained on the card AND a non-allergen novelty is
-// placed in a meal slot.
-function applyAllergenFocusAndNovelty(base: Menu, input: MenuInput, stage: Stage): void {
+// Resolve the day's allergen-focus card. An allergen due for introduction always wins and is
+// card-only (meal slots never carry an un-introduced priority allergen — see slotEligible);
+// otherwise an already-introduced allergen is maintained on the card.
+function applyAllergenFocus(base: Menu, input: MenuInput): void {
   const dueFood = pickDueAllergenFood(input);
   if (dueFood) {
     base.allergenFocus = { food: dueFood, mode: 'introduce', caution: cautionFor(dueFood) };
-    base.noveltyFoodId = dueFood.id; // card-only; never inserted into a meal slot
     return;
   }
   const maintainFood = pickMaintainAllergenFood(input);
@@ -320,15 +284,10 @@ function applyAllergenFocusAndNovelty(base: Menu, input: MenuInput, stage: Stage
       mode: 'maintain',
       caution: cautionFor(maintainFood)
     };
-  const novelty = pickNoveltyCandidate(input);
-  base.noveltyFoodId = novelty?.id ?? null;
-  if (!novelty) return;
-  const role = roleForCategory(novelty.category as CategoryId);
-  if (role) placeNovelty(base, role, novelty, stage.textures);
 }
 
-// Intra-day dedup, over the introduced base picks only (never the novelty): when a later slot
-// would repeat an earlier slot's food, swap it for an alternate from its introduced pool.
+// Intra-day dedup: when a later slot would repeat an earlier slot's food (novelty or not —
+// there's no single sacred novelty anymore), swap it for an alternate from its slot pool.
 function dedupSlot(
   slot: MenuItem,
   meal: Meal,
@@ -336,15 +295,9 @@ function dedupSlot(
   quantities: StageQuantities,
   seen: Set<number>
 ): void {
-  if (slot.isNew) {
-    seen.add(slot.food.id);
-    return;
-  }
   if (seen.has(slot.food.id)) {
     const alt = rotatePick(
-      safeForRole(slot.role, input).filter(
-        (f) => input.introducedFoodIds.has(f.id) && !seen.has(f.id)
-      ),
+      slotPool(slot.role, input).filter((f) => !seen.has(f.id)),
       `${input.childId}:${meal.id}:${slot.role}:dedup`,
       input.dayIndex
     );
@@ -352,6 +305,7 @@ function dedupSlot(
       slot.food = alt;
       slot.caution = cautionFor(alt);
       slot.allergenType = alt.allergenType;
+      slot.isNew = !input.introducedFoodIds.has(alt.id); // re-badge for the RESOLVED food
       // Re-derive the hint from the NEW food: dessert's hint depends on the
       // resolved food's category (fruit vs laitier), so a swap that crosses
       // categories must not leave the replaced food's stale hint behind.
@@ -369,11 +323,11 @@ function dedupMealItems(base: Menu, input: MenuInput): void {
   }
 }
 
-// Entry point for Task 9's post-assembly pass: allergen focus, the one proactive novelty, and
-// the intra-day dedup + middot labels. Split into small helpers (rather than inlined here) to
-// stay under fallow's per-function complexity gate.
-function applyDayNovelty(base: Menu, input: MenuInput, stage: Stage): void {
-  applyAllergenFocusAndNovelty(base, input, stage);
+// Entry point for the post-assembly pass: allergen focus, then intra-day dedup + middot
+// labels. Split into small helpers (rather than inlined here) to stay under fallow's
+// per-function complexity gate.
+function applyAllergenFocusAndDedup(base: Menu, input: MenuInput): void {
+  applyAllergenFocus(base, input);
   dedupMealItems(base, input);
 }
 
@@ -386,23 +340,20 @@ export function buildMenu(input: MenuInput): Menu {
     textures: stage.textures,
     redFlags: [...stage.redFlags],
     meals: [],
-    allergenFocus: null,
-    noveltyFoodId: null
+    allergenFocus: null
   };
 
   // Age branch FIRST (getStageForAgeMonths clamps <4 to '4-6').
   if (input.ageMonths < 4) return base; // zero solids, milk message only
 
-  // Returns BEFORE the full-day assembly + novelty pass.
+  // Returns BEFORE the full-day assembly + allergen-focus/dedup pass.
   if (stage.id === '4-6') {
-    const starter = buildStarterMeal(input, stage, quantities);
-    base.meals = starter.meals;
-    base.noveltyFoodId = starter.noveltyFoodId;
+    base.meals = buildStarterMeal(input, stage, quantities);
     return base;
   }
 
   base.meals = assembleFullDayMeals(input, stage, quantities);
-  applyDayNovelty(base, input, stage);
+  applyAllergenFocusAndDedup(base, input);
 
   for (const meal of base.meals) {
     const wanted = MEAL_TEMPLATES[stage.id].find((t) => t.id === meal.id)?.roles ?? [];
