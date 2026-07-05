@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeEach, describe, expect, it, test, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../../test/db';
 import {
   captureFlow,
@@ -12,7 +12,11 @@ import {
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '$lib/server/db/schema';
+import * as schema from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { newId } from '$lib/offline/uuid';
+import type { Membership, SafeUser } from '$lib/types';
+import type { ReactionId } from '$lib/utils/reaction-values';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {
@@ -464,5 +468,173 @@ describe('child/[id]/log/[entryId] delete action', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe(`/child/${c.id}/foods`);
+  });
+});
+
+describe('child/[id]/log/[entryId] meal mode', () => {
+  // Populated by seedMeal() for each test — every meal-mode test seeds its own
+  // user/child/meal, so these are assigned (not module-level fixtures) before
+  // each read.
+  let user!: SafeUser;
+  let memberships!: Membership[];
+
+  // Seeds a child + one meal of `reactions.length` ingredients sharing a
+  // mealId (mirrors the production insert path in log/+page.server.ts, which
+  // mints mealId via the same newId() helper). Returns the pieces each test
+  // needs; `user`/`memberships` are assigned onto the enclosing closure so
+  // callers can pass them straight into makeRouteEvent.
+  async function seedMeal(reactions: ReactionId[]) {
+    const u = await seedUser();
+    user = safeUser(u);
+    const child = await seedChild({ createdBy: u.id });
+    const m = await seedMembership({ userId: u.id, childId: child.id, role: 'owner' });
+    memberships = [m];
+
+    const m1 = newId();
+    const ids: number[] = [];
+    for (const [i, reaction] of reactions.entries()) {
+      const food = (
+        await testDb
+          .insert(foods)
+          .values({
+            name: `Ingrédient ${i}`,
+            category: 'legumes',
+            isMajorAllergen: false,
+            allergenType: null,
+            suggestedAgeMonths: 4,
+            notes: null,
+            isCustom: false,
+            customForChildId: null
+          })
+          .returning()
+      )[0];
+      const entry = (
+        await testDb
+          .insert(foodEntries)
+          .values({
+            childId: child.id,
+            foodId: food.id,
+            givenAt: new Date('2024-06-01T10:00:00Z'),
+            reaction,
+            loggedBy: u.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            mealId: m1
+          })
+          .returning()
+      )[0];
+      ids.push(entry.id);
+    }
+    return { child, m1, ids };
+  }
+
+  test('meal-mode update writes shared fields to all siblings and does not touch unchanged reactions', async () => {
+    const { child, m1, ids } = await seedMeal(['ras', 'ras']); // helper: 2-ingredient meal, both ras
+    // promote one sibling out-of-band (simulates a symptom)
+    await testDb
+      .update(schema.foodEntries)
+      .set({ reaction: 'reaction' })
+      .where(eq(schema.foodEntries.id, ids[1]));
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: {
+        givenAt: new Date().toISOString(),
+        texture: 'lisse',
+        notes: 'x',
+        // each ingredient submits reaction == reactionLoaded (nothing changed), so
+        // the dirty-only guard issues zero reaction writes
+        [`reaction.${ids[0]}`]: 'ras',
+        [`reactionLoaded.${ids[0]}`]: 'ras',
+        [`reaction.${ids[1]}`]: 'reaction',
+        [`reactionLoaded.${ids[1]}`]: 'reaction'
+      }
+    });
+    await captureFlow(() => actions.update(ev as never));
+    const rows = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.mealId, m1));
+    expect(rows.every((r) => r.notes === 'x' && r.texture === 'lisse')).toBe(true);
+    expect(rows.find((r) => r.id === ids[1])!.reaction).toBe('reaction'); // promotion preserved
+  });
+
+  test('a stale date-only edit does not clobber a concurrently-promoted reaction', async () => {
+    const { child, m1, ids } = await seedMeal(['ras', 'ras']);
+    // The form loaded with both at 'ras'. A co-parent then promotes sibling ids[1].
+    await testDb
+      .update(schema.foodEntries)
+      .set({ reaction: 'reaction' })
+      .where(eq(schema.foodEntries.id, ids[1]));
+    // The user submits the stale form: date/notes changed, reactions still the LOADED 'ras'.
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: {
+        givenAt: new Date().toISOString(),
+        notes: 'new note',
+        [`reaction.${ids[0]}`]: 'ras',
+        [`reactionLoaded.${ids[0]}`]: 'ras',
+        [`reaction.${ids[1]}`]: 'ras',
+        [`reactionLoaded.${ids[1]}`]: 'ras'
+      }
+    });
+    await captureFlow(() => actions.update(ev as never));
+    const rows = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.mealId, m1));
+    // Shared field applied to all; the promotion on ids[1] survived (guarded WHERE reaction='ras' no-op).
+    expect(rows.every((r) => r.notes === 'new note')).toBe(true);
+    expect(rows.find((r) => r.id === ids[1])!.reaction).toBe('reaction');
+  });
+
+  test('removeIngredient down to one nulls the survivor mealId', async () => {
+    const { child, ids } = await seedMeal(['ras', 'ras']);
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: { removeId: String(ids[0]) }
+    });
+    await captureFlow(() => actions.removeIngredient(ev as never));
+    const survivor = (
+      await testDb.select().from(schema.foodEntries).where(eq(schema.foodEntries.id, ids[1]))
+    )[0];
+    expect(survivor.mealId).toBeNull();
+  });
+
+  test('deleteMeal removes all siblings', async () => {
+    const { child, m1, ids } = await seedMeal(['ras', 'ras', 'ras']);
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: {}
+    });
+    await captureFlow(() => actions.deleteMeal(ev as never));
+    const rows = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.mealId, m1));
+    expect(rows.length).toBe(0);
+  });
+
+  test('removeIngredient on the anchor redirects to a surviving entry, not a 404', async () => {
+    const { child, ids } = await seedMeal(['ras', 'ras', 'ras']);
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: { removeId: String(ids[0]) } // remove the anchor itself
+    });
+    const res = await captureFlow(() => actions.removeIngredient(ev as never));
+    expect(res.kind).toBe('redirect');
+    if (res.kind === 'redirect') {
+      expect(res.location).not.toContain(`/log/${ids[0]}`);
+      expect(res.location).toContain(`/log/${ids[1]}`);
+    }
   });
 });
