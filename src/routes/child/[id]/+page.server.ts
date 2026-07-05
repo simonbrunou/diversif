@@ -1,7 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
-import { desc, eq, sql, and, isNotNull } from 'drizzle-orm';
+import { asc, desc, eq, sql, and, isNotNull } from 'drizzle-orm';
 import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import { CATEGORIES, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
@@ -109,6 +109,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       reaction: foodEntries.reaction,
       notes: foodEntries.notes,
       texture: foodEntries.texture,
+      mealId: foodEntries.mealId,
       foodId: foods.id,
       foodName: foods.name,
       category: foods.category,
@@ -118,7 +119,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .leftJoin(users, eq(users.id, foodEntries.loggedBy))
     .where(eq(foodEntries.childId, childId))
-    .orderBy(desc(foodEntries.givenAt))
+    .orderBy(desc(foodEntries.givenAt), asc(foodEntries.id))
     .limit(20);
 
   const distinctFoods = Number(
@@ -252,7 +253,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       category: r.category as CategoryId,
       reaction: r.reaction as ReactionId,
       loggedByName: r.loggedByName ?? 'Compte supprimé',
-      givenAt: toEpochMs(r.givenAt as Date | number | string)
+      givenAt: toEpochMs(r.givenAt as Date | number | string),
+      mealId: r.mealId
     })),
     stats: {
       foodsIntroduced: distinctFoods,
