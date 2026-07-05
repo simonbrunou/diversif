@@ -137,6 +137,11 @@ async function updateMeal(opts: {
   }
   const texture = rawTexture as (typeof TEXTURE_VALUES)[number] | null;
   const notes = String(raw.notes ?? '').trim() || null;
+  // Mirror the single-entry path's zod `z.string().max(2000)`: this meal
+  // payload is hand-validated (no schema), so without this check a crafted
+  // request bypasses the client `maxlength` and writes unbounded text to
+  // every sibling.
+  if (notes && notes.length > 2000) return fail(400, { error: 'Note trop longue.' });
 
   const members = await db
     .select({ id: foodEntries.id, reaction: foodEntries.reaction })

@@ -253,8 +253,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       category: r.category as CategoryId,
       reaction: r.reaction as ReactionId,
       loggedByName: r.loggedByName ?? 'Compte supprimé',
-      givenAt: toEpochMs(r.givenAt as Date | number | string),
-      mealId: r.mealId
+      givenAt: toEpochMs(r.givenAt as Date | number | string)
     })),
     stats: {
       foodsIntroduced: distinctFoods,

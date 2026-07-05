@@ -560,6 +560,34 @@ describe('child/[id]/log/[entryId] meal mode', () => {
     expect(rows.find((r) => r.id === ids[1])!.reaction).toBe('reaction'); // promotion preserved
   });
 
+  test('meal-mode update rejects notes over 2000 chars and leaves siblings unchanged', async () => {
+    const { child, m1, ids } = await seedMeal(['ras', 'ras']);
+    const longNotes = 'x'.repeat(2001);
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: {
+        givenAt: new Date().toISOString(),
+        notes: longNotes,
+        [`reaction.${ids[0]}`]: 'ras',
+        [`reactionLoaded.${ids[0]}`]: 'ras',
+        [`reaction.${ids[1]}`]: 'ras',
+        [`reactionLoaded.${ids[1]}`]: 'ras'
+      }
+    });
+    const r = await captureFlow(() => actions.update(ev as never));
+    expect(r.kind).toBe('return');
+    if (r.kind === 'return') {
+      expect((r.value as { status: number }).status).toBe(400);
+    }
+    const rows = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.mealId, m1));
+    expect(rows.every((row) => row.notes === null)).toBe(true);
+  });
+
   test('a stale date-only edit does not clobber a concurrently-promoted reaction', async () => {
     const { child, m1, ids } = await seedMeal(['ras', 'ras']);
     // The form loaded with both at 'ras'. A co-parent then promotes sibling ids[1].
