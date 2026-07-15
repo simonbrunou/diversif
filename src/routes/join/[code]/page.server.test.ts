@@ -47,7 +47,7 @@ describe('join/[code] load', () => {
       params: { code: 'not-valid' }
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out).toMatchObject({ error: expect.stringMatching(/invalide/i) });
+    expect(out).toMatchObject({ errorKey: 'errorsAuthInvalidInvite' });
   });
 
   it('rejects legacy 4-character invite codes as malformed', async () => {
@@ -57,7 +57,7 @@ describe('join/[code] load', () => {
       params: { code: 'BEBE-ABCD' }
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out).toMatchObject({ error: expect.stringMatching(/invalide/i) });
+    expect(out).toMatchObject({ errorKey: 'errorsAuthInvalidInvite' });
   });
 
   it('redirects guests to /signup with the code', async () => {
@@ -78,7 +78,7 @@ describe('join/[code] load', () => {
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
     expect(out).toMatchObject({
-      error: expect.stringMatching(/introuvable|expir/i)
+      errorKey: 'errorsAuthInvalidInviteExpired'
     });
   });
 
@@ -109,12 +109,12 @@ describe('join/[code] load', () => {
       params: { code: 'BEBE-ABCDEF' }
     });
     const out = (await load(event as unknown as Parameters<typeof load>[0])) as {
-      error: null;
+      errorKey: null;
       code: string;
       child: { id: number; name: string };
       inviter: string | null;
     };
-    expect(out.error).toBeNull();
+    expect(out.errorKey).toBeNull();
     expect(out.code).toBe('BEBE-ABCDEF');
     expect(out.child.id).toBe(child.id);
     // The invitee sees WHO invited them (createdBy → displayName), not an anonymous code.
@@ -135,7 +135,7 @@ describe('join/[code] load', () => {
     });
     const event = makeRouteEvent({ user: safeUser(me), params: { code: 'BEBE-ABCDEF' } });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out).toMatchObject({ error: expect.stringMatching(/introuvable|expir/i), child: null });
+    expect(out).toMatchObject({ errorKey: 'errorsAuthInvalidInviteExpired', child: null });
   });
 
   it('treats an already-redeemed invite as inactive (exercises the usedAt filter)', async () => {
@@ -150,7 +150,7 @@ describe('join/[code] load', () => {
     });
     const event = makeRouteEvent({ user: safeUser(me), params: { code: 'BEBE-ABCDEF' } });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out).toMatchObject({ error: expect.stringMatching(/introuvable|expir/i), child: null });
+    expect(out).toMatchObject({ errorKey: 'errorsAuthInvalidInviteExpired', child: null });
   });
 
   it('rate-limits authenticated invite lookups', async () => {
@@ -185,8 +185,9 @@ describe('join/[code] default action', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsAuthInvalidInvite');
   });
 
   it('redirects guests to /signup', async () => {
@@ -209,8 +210,9 @@ describe('join/[code] default action', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsAuthInvalidInviteExpired');
   });
 
   it('redirects when user is already a member', async () => {
@@ -283,9 +285,9 @@ describe('join/[code] default action', () => {
       });
       const r = (await actions.default!(
         event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-      )) as { status: number; data: { error: string } };
+      )) as { status: number; data: { errorKey: string } };
       expect(r.status).toBe(400);
-      expect(r.data.error).toMatch(/introuvable|expiré/i);
+      expect(r.data.errorKey).toBe('errorsAuthInvalidInviteExpired');
 
       const memb = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
       expect(memb).toHaveLength(0);
@@ -307,7 +309,7 @@ describe('join/[code] default action', () => {
     const event = makeRouteEvent({ user: safeUser(me), params: { code: 'BEBE-ABCDEF' } });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
     const memb = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
     expect(memb).toHaveLength(0);
@@ -326,7 +328,7 @@ describe('join/[code] default action', () => {
     const event = makeRouteEvent({ user: safeUser(me), params: { code: 'BEBE-ABCDEF' } });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
     const memb = await testDb.select().from(memberships).where(eq(memberships.userId, me.id));
     expect(memb).toHaveLength(0);

@@ -30,6 +30,15 @@
   --radius-xl: calc(var(--radius-lg) + 4px);
   --radius-tile: 1.125rem;
   --radius-hero: 1.5rem;
+
+  /* Type scale below Tailwind's built-in `text-xs` (12px), for captions,
+     eyebrows and badges that need to sit smaller than body copy:
+       - 2xs → 11px
+       - 3xs → 10px
+     Font-size only, no line-height override — same as the arbitrary values
+     they replace. */
+  --text-2xs: 0.6875rem;
+  --text-3xs: 0.625rem;
 }
 
 /* Semantic tokens mapped to the runtime CSS variables below. `inline` makes

@@ -22,5 +22,36 @@ services:
       # (without -v) and image rebuilds. Losing this volume loses all data.
       - data:/app/data
 
+  litestream:
+    # Off-box continuous backup sidecar for DEPLOY.md "B1". SCAFFOLDED, NOT
+    # DEPLOYED: it only starts with the `backup` profile
+    # (`docker compose --profile backup up`) once the LITESTREAM_* variables
+    # below point at a real S3-compatible bucket (Cloudflare R2 recommended)
+    # — see DEPLOY.md B1 for the setup steps. Ordinary `docker compose up`
+    # for local dev is unaffected.
+    image: litestream/litestream:0.3.13
+    profiles: [backup]
+    container_name: diversif-litestream
+    command: replicate
+    restart: unless-stopped
+    environment:
+      DATABASE_PATH: /app/data/diversif.db
+      # Defaults are blank on purpose: Compose interpolates every service's
+      # variables up front even when its profile isn't active, so a hard
+      # `:?required` here would break plain `docker compose up` (no
+      # `--profile backup`) for everyone, not just people enabling backups.
+      # Litestream itself fails loudly (see its container logs) if it
+      # actually runs with these unset — set real values in a `.env` file
+      # or the shell environment before using `--profile backup`.
+      LITESTREAM_S3_ENDPOINT: ${LITESTREAM_S3_ENDPOINT:-}
+      LITESTREAM_S3_BUCKET: ${LITESTREAM_S3_BUCKET:-}
+      LITESTREAM_ACCESS_KEY_ID: ${LITESTREAM_ACCESS_KEY_ID:-}
+      LITESTREAM_SECRET_ACCESS_KEY: ${LITESTREAM_SECRET_ACCESS_KEY:-}
+    volumes:
+      - data:/app/data
+      - ./litestream.yml:/etc/litestream.yml:ro
+    depends_on:
+      - app
+
 volumes:
   data:

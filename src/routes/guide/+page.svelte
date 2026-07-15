@@ -44,10 +44,11 @@
 </script>
 
 <Seo
-  title="Guide de la diversification alimentaire : bébé de 4 mois à 3 ans · Diversif"
-  description="Guide complet et sourcé : 10 règles d'or, 4 étapes par âge, 12 allergènes prioritaires, textures, aliments à éviter, réactions allergiques. Sources HCSP, Santé publique France, ESPGHAN, OMS, études LEAP et EAT."
+  title={m.guideSeoTitle()}
+  description={m.guideSeoDescription()}
   path="/guide"
   ogType="article"
+  alternateLocales={['en']}
 />
 <JsonLd
   data={articleJsonLd(siteUrl, {

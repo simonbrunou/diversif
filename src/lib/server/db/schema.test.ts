@@ -62,6 +62,77 @@ describe('schema exports', () => {
     const idx = cfg.indexes.find((i) => i.config.name === 'passkeys_user_idx');
     expect(idx).toBeDefined();
   });
+
+  it('sessions exposes a user_id index', () => {
+    const cfg = getTableConfig(sessions);
+    const idx = cfg.indexes.find((i) => i.config.name === 'sessions_user_id_idx');
+    expect(idx).toBeDefined();
+  });
+
+  it('memberships exposes a child_id index', () => {
+    const cfg = getTableConfig(memberships);
+    const idx = cfg.indexes.find((i) => i.config.name === 'memberships_child_id_idx');
+    expect(idx).toBeDefined();
+  });
+
+  it('invitations exposes created_by and used_by indexes', () => {
+    const cfg = getTableConfig(invitations);
+    const idxNames = cfg.indexes.map((i) => i.config.name);
+    expect(idxNames).toContain('invitations_created_by_idx');
+    expect(idxNames).toContain('invitations_used_by_idx');
+  });
+
+  it('rejects an invalid food_entries.reaction value via CHECK constraint', async () => {
+    await resetTestDb();
+    const u = await seedUser();
+    const c = await seedChild({ createdBy: u.id });
+    const [food] = await testDb
+      .insert(foods)
+      .values({
+        name: 'Poire',
+        category: 'fruits',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 4,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning();
+
+    // Wrap in an async IIFE so bun:test's .rejects sees a real Promise —
+    // Drizzle's insert builder is thenable but bun checks isPromise() before
+    // awaiting (see texture.test.ts).
+    await expect(
+      (async () =>
+        await testDb.insert(foodEntries).values({
+          childId: c.id,
+          foodId: food.id,
+          givenAt: new Date(),
+          reaction: 'not-a-reaction' as never,
+          notes: null,
+          loggedBy: u.id,
+          createdAt: new Date()
+        }))()
+    ).rejects.toThrow();
+
+    // Control: the same FK values with a valid reaction must succeed, so the
+    // failure above is proven to be the CHECK constraint and not a stray
+    // FK/NOT-NULL problem.
+    const [control] = await testDb
+      .insert(foodEntries)
+      .values({
+        childId: c.id,
+        foodId: food.id,
+        givenAt: new Date(),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      })
+      .returning();
+    expect(control.reaction).toBe('ras');
+  });
 });
 
 describe('symptoms table', () => {

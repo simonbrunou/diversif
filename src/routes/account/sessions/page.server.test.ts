@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
-import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
+import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
@@ -12,7 +12,6 @@ mock.module('$lib/server/audit', () => ({
 }));
 
 import { hashPassword, SESSION_COOKIE, validateSession, createSession } from '$lib/server/auth';
-import { users } from '$lib/server/db/schema';
 import { actions, load } from './+page.server';
 
 beforeEach(async () => {
@@ -21,19 +20,10 @@ beforeEach(async () => {
 });
 
 async function seed() {
-  const passwordHash = await hashPassword('current-password-12');
-  const u = (
-    await testDb
-      .insert(users)
-      .values({
-        email: 'p@example.com',
-        passwordHash,
-        displayName: 'Parent',
-        createdAt: new Date()
-      })
-      .returning()
-  )[0];
-  return u;
+  return seedUser({
+    email: 'p@example.com',
+    passwordHash: await hashPassword('current-password-12')
+  });
 }
 
 describe('account/sessions load', () => {

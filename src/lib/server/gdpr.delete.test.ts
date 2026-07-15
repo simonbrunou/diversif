@@ -195,6 +195,28 @@ describe('deleteUserAccount', () => {
     expect(await testDb.select().from(tipDismissals)).toHaveLength(0);
   });
 
+  it("removes a departing member's tip dismissal via the userId FK, leaving the surviving child and the other member's dismissal untouched", async () => {
+    // tipDismissals cascades on BOTH userId and childId. The child must survive
+    // this deletion so the row can only vanish through the userId FK — proving
+    // that cascade independently of childId's.
+    const owner = await insertUser('o@example.com');
+    const member = await insertUser('m@example.com');
+    const c = await insertChild('Bébé', owner.id);
+    await insertMembership(owner.id, c.id, 'owner');
+    await insertMembership(member.id, c.id, 'member');
+    await testDb.insert(tipDismissals).values([
+      { userId: owner.id, childId: c.id, reminderKey: 'k', dismissedAt: new Date() },
+      { userId: member.id, childId: c.id, reminderKey: 'k', dismissedAt: new Date() }
+    ]);
+
+    await deleteUserAccount(member.id);
+
+    expect(await testDb.select().from(children)).toHaveLength(1);
+    const remaining = await testDb.select().from(tipDismissals);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].userId).toBe(owner.id);
+  });
+
   it('frees the email for re-signup', async () => {
     const u = await insertUser('reuse@example.com');
     await deleteUserAccount(u.id);

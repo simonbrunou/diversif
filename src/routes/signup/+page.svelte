@@ -12,6 +12,7 @@
   import { signInWithPasskey } from '$lib/auth/passkey-client';
   import { trackSubmission } from '$lib/forms/tracked-enhance';
   import { localizedHref } from '$lib/utils/localized-href';
+  import { PASSWORD_MIN_LENGTH } from '$lib/utils/password';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -92,7 +93,7 @@
           type={showPassword ? 'text' : 'password'}
           autocomplete="new-password"
           required
-          minlength={12}
+          minlength={PASSWORD_MIN_LENGTH}
           class="pr-12"
         />
         <button

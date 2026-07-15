@@ -1,5 +1,6 @@
 import type { toast as Toast } from 'svelte-sonner';
 import { PRIORITY_INTRODUCTION_ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
+import * as m from '$lib/paraglide/messages';
 
 const TOAST_CLASS = 'bg-celebrate/15 border-celebrate/30 text-celebrate-foreground';
 
@@ -46,39 +47,46 @@ export function celebrate(toast: typeof Toast, milestone: MilestoneKind): void {
   switch (milestone.kind) {
     case 'all-allergens':
       toast.success(
-        `Les ${PRIORITY_INTRODUCTION_ALLERGENS.length} allergènes prioritaires sont introduits : formidable !`,
+        m.milestoneAllAllergensTitle({ count: PRIORITY_INTRODUCTION_ALLERGENS.length }),
         {
-          description: 'Maintenez une exposition régulière pour consolider la tolérance.',
+          description: m.milestoneAllAllergensDescription(),
           class: TOAST_CLASS
         }
       );
       return;
     case 'first-food':
-      toast.success('Premier repas noté : c’est parti !', {
-        description: 'Le carnet vit maintenant au rythme de bébé.',
+      toast.success(m.milestoneFirstFoodTitle(), {
+        description: m.milestoneFirstFoodDescription(),
         class: TOAST_CLASS
       });
       return;
     case 'first-allergen':
-      toast.success(`${getAllergenLabel(milestone.allergenType)} introduit·e : étape clé !`, {
-        description: 'Continuez à reproposer pour consolider la tolérance.',
-        class: TOAST_CLASS
-      });
+      toast.success(
+        m.milestoneFirstAllergenTitle({
+          allergen: getAllergenLabel(milestone.allergenType) ?? milestone.allergenType
+        }),
+        {
+          description: m.milestoneFirstAllergenDescription(),
+          class: TOAST_CLASS
+        }
+      );
       return;
     case 'category-milestone':
       if (milestone.covered >= milestone.total) {
-        toast.success('Toutes les familles couvertes : diversité au top !', {
+        toast.success(m.milestoneAllCategoriesTitle(), {
           class: TOAST_CLASS
         });
       } else {
-        toast.success(`${milestone.covered} groupes couverts : superbe !`, {
-          description: `Plus que ${milestone.total - milestone.covered} pour faire le tour.`,
+        toast.success(m.milestoneCategoryTitle({ covered: milestone.covered }), {
+          description: m.milestoneCategoryDescription({
+            remaining: milestone.total - milestone.covered
+          }),
           class: TOAST_CLASS
         });
       }
       return;
     case 'generic':
-      toast.success('C’est noté : bon repas.');
+      toast.success(m.milestoneGenericTitle());
       return;
   }
 }

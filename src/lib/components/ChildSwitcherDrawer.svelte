@@ -23,7 +23,10 @@
           aria-current={child.id === currentChildId ? 'page' : undefined}
           onclick={() => (open = false)}
         >
-          <span class="bg-avatar-tile flex h-11 w-11 items-center justify-center rounded-full">
+          <span
+            class="bg-avatar-tile flex h-11 w-11 items-center justify-center rounded-full"
+            aria-hidden="true"
+          >
             {child.avatarSeed}
           </span>
           <span class="flex-1 font-bold">{child.name}</span>

@@ -8,6 +8,7 @@ package-lock.json
 *.svelte
 .claude
 .devin
+.impeccable
 graphify-out
 
 project.inlang/modules

@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import { Toaster, toast } from 'svelte-sonner';
-  import { flush } from '$lib/offline/queue';
+  import { flush, count as pendingQueueCount } from '$lib/offline/queue';
   import { purgeClientState } from '$lib/offline/purge';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/state';
@@ -121,6 +121,30 @@
     return () => media.removeEventListener('change', handler);
   });
 
+  // Persistent "N entries pending sync" toast, upserted in place (same id, so
+  // it never stacks) instead of the app only ever showing one-shot toasts for
+  // queue/dequeue events. Without this, a caregiver who logs a meal offline,
+  // misses the one-shot "saved offline" toast, or reopens the app later has
+  // no way to see anything is still waiting to sync.
+  const PENDING_TOAST_ID = 'offline-pending';
+  function refreshPendingIndicator(): void {
+    void pendingQueueCount()
+      .then((n) => {
+        if (n <= 0) {
+          toast.dismiss(PENDING_TOAST_ID);
+          return;
+        }
+        toast(n === 1 ? m.offlineQueuePendingOne() : m.offlineQueuePendingOther({ count: n }), {
+          id: PENDING_TOAST_ID,
+          duration: Infinity
+        });
+      })
+      .catch(() => {
+        // Best-effort indicator only — IndexedDB being briefly unavailable
+        // must never surface as an error toast of its own.
+      });
+  }
+
   onMount(() => {
     const handleOnline = () => {
       void flush();
@@ -129,17 +153,25 @@
       toast.success(m.offlineSyncedToast());
     };
     const handleDropped = () => {
-      toast.error(m.offlineDroppedToast());
+      // Longer duration than the default: a dropped, un-recoverable entry is
+      // more consequential than a routine success toast and deserves more
+      // time to actually be read before it fades.
+      toast.error(m.offlineDroppedToast(), { duration: 6000 });
     };
     const handleSessionExpired = () => {
-      toast.error(m.offlineSessionExpiredToast());
+      toast.error(m.offlineSessionExpiredToast(), { duration: 6000 });
     };
+    // Fired by queue.ts on every enqueue/delete/clear — keeps the pending
+    // count current in real time (not just after the next flush poll).
+    const handleQueueChanged = () => refreshPendingIndicator();
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('queue:synced', handleSynced);
     window.addEventListener('queue:dropped', handleDropped);
     window.addEventListener('queue:sessionExpired', handleSessionExpired);
+    window.addEventListener('queue:changed', handleQueueChanged);
 
+    refreshPendingIndicator();
     if (navigator.onLine) void flush();
     const interval = window.setInterval(() => {
       if (navigator.onLine) void flush();
@@ -150,6 +182,7 @@
       window.removeEventListener('queue:synced', handleSynced);
       window.removeEventListener('queue:dropped', handleDropped);
       window.removeEventListener('queue:sessionExpired', handleSessionExpired);
+      window.removeEventListener('queue:changed', handleQueueChanged);
       window.clearInterval(interval);
     };
   });

@@ -15,6 +15,7 @@
   import type { TextureKey } from '$lib/utils/textures';
   import { enhance } from '$app/forms';
   import { Trash2, X } from 'lucide-svelte';
+  import { resolveMessageKey } from '$lib/forms/tracked-enhance';
   import * as m from '$lib/paraglide/messages';
   import type { ActionData, PageData } from './$types';
 
@@ -99,8 +100,8 @@
         };
       }}
     >
-      {#if form?.error}
-        <FormError>{form.error}</FormError>
+      {#if form?.errorKey}
+        <FormError>{resolveMessageKey(form.errorKey)}</FormError>
       {/if}
 
       <input type="hidden" name="from" value={data.from} />
@@ -250,8 +251,8 @@
         };
       }}
     >
-      {#if form?.error}
-        <FormError>{form.error}</FormError>
+      {#if form?.errorKey}
+        <FormError>{resolveMessageKey(form.errorKey)}</FormError>
       {/if}
 
       <input type="hidden" name="from" value={data.from} />

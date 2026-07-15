@@ -36,6 +36,13 @@
       "when": 1783252112218,
       "tag": "0004_curly_prodigy",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1784145896672,
+      "tag": "0005_chubby_night_thrasher",
+      "breakpoints": true
     }
   ]
 }

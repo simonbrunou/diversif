@@ -50,7 +50,7 @@
       >
         <div class="flex items-center justify-between gap-2">
           <span class="font-medium">{getAllergenLabel(a.id)}</span>
-          <Badge variant="default" class="shrink-0 text-[10px]">
+          <Badge variant="default" class="shrink-0 text-3xs">
             Dès {g.recommendedAgeMonths} mois
           </Badge>
         </div>

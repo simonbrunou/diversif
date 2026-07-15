@@ -8,7 +8,7 @@
 </script>
 
 {#if inline}
-  <span class="inline-flex flex-wrap gap-1 text-[11px] text-muted-foreground">
+  <span class="inline-flex flex-wrap gap-1 text-2xs text-muted-foreground">
     {#each sources as s, i (s.id)}
       <a
         href={s.url}
@@ -22,7 +22,7 @@
     {/each}
   </span>
 {:else}
-  <ul class="mt-2 space-y-1 text-[11px] text-muted-foreground">
+  <ul class="mt-2 space-y-1 text-2xs text-muted-foreground">
     {#each sources as s (s.id)}
       <li>
         <a

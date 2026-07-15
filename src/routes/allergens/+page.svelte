@@ -35,10 +35,11 @@
 </script>
 
 <Seo
-  title="Les 12 allergènes prioritaires en diversification alimentaire bébé · Diversif"
-  description="Œuf, arachide, fruits à coque, lait, sésame, soja, gluten, poisson, crustacés, mollusques, céleri, moutarde : quand introduire, comment, signes d'allergie à surveiller. Sources LEAP, EAT, ESPGHAN, HCSP."
+  title={m.allergensSeoTitle()}
+  description={m.allergensSeoDescription()}
   path="/allergens"
   ogType="article"
+  alternateLocales={['en']}
 />
 <JsonLd
   data={articleJsonLd(siteUrl, {
@@ -108,7 +109,7 @@
       >
         <div class="flex items-center justify-between gap-2">
           <span class="font-medium">{getAllergenLabel(a.id)}</span>
-          <Badge variant="default" class="shrink-0 text-[10px]">
+          <Badge variant="default" class="shrink-0 text-3xs">
             Dès {g.recommendedAgeMonths} mois
           </Badge>
         </div>

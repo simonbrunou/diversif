@@ -6,7 +6,7 @@
   import { localizedHref } from '$lib/utils/localized-href';
 
   const status = $derived(page.status);
-  const message = $derived(page.error?.message ?? 'Une erreur est survenue.');
+  const message = $derived(page.error?.message ?? m.errorsGenericFallback());
   const title = $derived(status === 404 ? m.errorsGenericTitle404() : m.errorsGenericTitleDefault());
 </script>
 

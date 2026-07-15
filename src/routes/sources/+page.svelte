@@ -35,9 +35,10 @@
 </script>
 
 <Seo
-  title="Sources et références : diversification alimentaire bébé · Diversif"
-  description="Les 10 sources qui font autorité derrière Diversif : HCSP, Santé publique France, ANSES, ESPGHAN, OMS, Société Française de Pédiatrie, études LEAP et EAT."
+  title={m.sourcesSeoTitle()}
+  description={m.sourcesSeoDescription()}
   path="/sources"
+  alternateLocales={['en']}
 />
 <JsonLd data={sourcesItemList} />
 <JsonLd

@@ -6,6 +6,32 @@ import { foods } from './db/schema';
 import type * as schema from './db/schema';
 import { CATEGORY_IDS } from '$lib/utils/categories';
 
+/**
+ * A food is visible to a child if it's in the global catalog (no owner) or
+ * was created as a custom food for this specific child.
+ *
+ * Extracted so the predicate lives in exactly one place: it used to be
+ * inlined verbatim in both log/+page.server.ts and log/[entryId]/+page.server.ts's
+ * loaders, plus a third copy right here.
+ */
+export function visibleToChild(childId: number) {
+  return or(isNull(foods.customForChildId), eq(foods.customForChildId, childId));
+}
+
+/** The food list a child's log/edit pickers show: global catalog + this child's own custom foods. */
+export async function loadVisibleFoodsForChild(childId: number) {
+  return db
+    .select({
+      id: foods.id,
+      name: foods.name,
+      category: foods.category,
+      allergenType: foods.allergenType
+    })
+    .from(foods)
+    .where(visibleToChild(childId))
+    .orderBy(foods.name);
+}
+
 // Accepts either the bare db handle or a transaction handle so the insert can
 // participate in an outer transaction. bun:sqlite is synchronous, so this runs
 // inline inside the caller's sync `db.transaction((tx) => ...)`.
@@ -39,7 +65,7 @@ export type ResolveFoodResult =
  *
  * Usage:
  *   const result = resolveOrInsertFood({ foodId, customName, customCategory, childId }, tx);
- *   if (!result.ok) return fail(400, { error: result.reason === 'not-found' ? 'Aliment introuvable.' : 'Aliment invalide.' });
+ *   if (!result.ok) return fail(400, { errorKey: result.reason === 'not-found' ? 'errorsLogFoodNotFound' : 'errorsLogFoodInvalid' });
  *   const { food, foodId: resolvedId } = result;
  */
 export function resolveOrInsertFood(input: ResolveFoodInput, tx: Executor = db): ResolveFoodResult {
@@ -78,16 +104,11 @@ export function resolveOrInsertFood(input: ResolveFoodInput, tx: Executor = db):
   }
 
   // Verify the food is accessible: either from the global catalog or owned by
-  // this child. This is the same guard used in log/+page.server.ts.
+  // this child.
   const food = tx
     .select()
     .from(foods)
-    .where(
-      and(
-        eq(foods.id, resolvedId),
-        or(isNull(foods.customForChildId), eq(foods.customForChildId, input.childId))
-      )
-    )
+    .where(and(eq(foods.id, resolvedId), visibleToChild(input.childId)))
     .limit(1)
     .all()[0];
 

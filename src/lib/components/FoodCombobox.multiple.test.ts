@@ -128,4 +128,28 @@ describe('FoodCombobox — multiple mode', () => {
     expect(container.querySelector('ul')).toBeNull();
     expect(container.textContent).toContain('Changer');
   });
+
+  it('lets the user close the custom-food panel via "Annuler" without losing already-picked foods', async () => {
+    const onCustomToggle = mock();
+    const { container } = render(FoodCombobox, {
+      props: { foods, multiple: true, onCustomToggle }
+    });
+    await clickFoodInList(container, 'Carotte');
+    const addBtn = Array.from(container.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('hors catalogue')
+    )!;
+    await fireEvent.click(addBtn);
+    expect(container.querySelector('input[name="customFood.name"]')).not.toBeNull();
+
+    const cancelBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Annuler'
+    )!;
+    await fireEvent.click(cancelBtn);
+
+    expect(onCustomToggle).toHaveBeenLastCalledWith(false);
+    // The required custom-name field is gone, so it no longer blocks submission...
+    expect(container.querySelector('input[name="customFood.name"]')).toBeNull();
+    // ...and the foods already picked before opening the panel are untouched.
+    expect(hiddenFoodIdValues(container)).toEqual(['1']);
+  });
 });

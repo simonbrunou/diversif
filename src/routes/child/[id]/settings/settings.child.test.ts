@@ -191,8 +191,9 @@ describe('settings updateChild action', () => {
     });
     const r = (await actions.updateChild!(
       event as unknown as Parameters<NonNullable<typeof actions.updateChild>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsAuthBadInput');
   });
 
   it('fails on empty name', async () => {
@@ -237,8 +238,9 @@ describe('settings leaveChild action', () => {
     });
     const r = (await actions.leaveChild!(
       event as unknown as Parameters<NonNullable<typeof actions.leaveChild>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsSettingsOwnerCannotLeave');
   });
 
   it('member can leave + redirects /', async () => {

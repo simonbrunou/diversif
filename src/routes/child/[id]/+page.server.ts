@@ -1,7 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
-import { asc, desc, eq, sql, and, isNotNull } from 'drizzle-orm';
+import { asc, desc, eq, sql, and } from 'drizzle-orm';
 import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import { CATEGORIES, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
@@ -9,7 +9,7 @@ import { REACTION_RANK } from '$lib/utils/reaction-values';
 import { ageInMonths } from '$lib/utils/age';
 import { toEpochMs } from '$lib/utils/dates';
 import { computeReminders, type Reminder } from '$lib/server/guidance/reminders';
-import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
+import { loadAllergenRows, summarizeAllergenRows } from '$lib/server/guidance/allergen-status';
 import * as m from '$lib/paraglide/messages';
 import {
   loadCoparentActivity,
@@ -24,6 +24,15 @@ import { requireChildContext } from '$lib/server/guards';
 import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+// ponytail: caps the reminders scan instead of leaving it truly unbounded.
+// The stale-diversity/repeat-exposure/maintain-allergen rules need each
+// food's/allergen's lifetime first-and-last exposure, so this can't be a
+// short date window without silently breaking those rules for long-time
+// families. 5000 rows comfortably covers years of active logging for the
+// app's target 4-12mo+toddler window; raise it (or move to a materialized
+// per-child summary) if real usage ever gets close to it.
+const REMINDERS_SCAN_LIMIT = 5000;
 
 type AllergenSummary = {
   introduced: number;
@@ -147,21 +156,17 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
   );
 
-  const allergenRows = await db
-    .select({
-      allergenType: foods.allergenType,
-      reaction: foodEntries.reaction
-    })
-    .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)));
+  // Fetched once and reused for both the worst-reaction summary below and the
+  // per-allergen status tile: loadAllergenStatus ran the exact same join+where
+  // a second time for the same request before this was deduplicated.
+  const allergenRows = await loadAllergenRows(childId);
 
   const { worstByAllergen, summary } = summarizeAllergens(allergenRows);
 
-  // Per-allergen status (same loader as the Carnet Allergènes segment) so
+  // Per-allergen status (same shape as the Carnet Allergènes segment) so
   // the "Allergènes prioritaires" tile shows real allergen names, not
   // synthetic placeholders.
-  const bentoAllergens = await loadAllergenStatus(childId, nowAtLoad);
+  const bentoAllergens = summarizeAllergenRows(allergenRows, nowAtLoad);
 
   // Diversity metrics
   const diversity = await loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
@@ -169,9 +174,10 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   const weeklyRecap = await loadWeeklyRecap(childId);
   const coparentActivity = await loadCoparentActivity(childId, user.id);
 
-  // Reminders: full history is required so first-introduction and
+  // Reminders: (near-)full history is required so first-introduction and
   // exposure-count rules (stale-diversity, repeat-exposure) are correct
-  // for active children with logs older than 90 days.
+  // for active children with logs older than 90 days — see
+  // REMINDERS_SCAN_LIMIT above for the cap this is bounded to.
   const recentForReminders = await db
     .select({
       id: foodEntries.id,
@@ -185,7 +191,8 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(eq(foodEntries.childId, childId))
-    .orderBy(desc(foodEntries.givenAt));
+    .orderBy(desc(foodEntries.givenAt))
+    .limit(REMINDERS_SCAN_LIMIT);
 
   const entriesNormalized: EnrichedEntry[] = recentForReminders.map((r) => ({
     id: r.id,
@@ -232,8 +239,9 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   ).slice(0, 4);
 
   // Welcome dialog: show only if not dismissed and the child has no entries
-  // *all-time* : `entriesNormalized` only covers the last 90 days, so basing
-  // this on that set would re-trigger onboarding for older children that
+  // *all-time* : `entriesNormalized` is capped at REMINDERS_SCAN_LIMIT rows,
+  // so basing this on that set (instead of `distinctFoods`, an unfiltered
+  // COUNT) would risk re-triggering onboarding for older children that
   // simply went silent for a quarter.
   //
   // Gate on ageMonths >= 4 so the onboarding (which nudges "log a first food")
@@ -277,7 +285,7 @@ export const actions: Actions = {
     const data = await request.formData();
     const key = data.get('reminderKey');
     if (typeof key !== 'string' || key.length === 0 || key.length > 100) {
-      return fail(400, { error: 'Clé invalide' });
+      return fail(400, { errorKey: 'errorsLogInvalidRequest' });
     }
     await dismissReminder(user.id, childId, key);
     return { ok: true };

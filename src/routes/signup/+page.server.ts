@@ -11,6 +11,7 @@ import {
   findUserByEmail,
   hashPassword,
   isValidInviteCodeFormat,
+  PASSWORD_MIN_LENGTH,
   setSessionCookie
 } from '$lib/server/auth';
 import { requireGuest } from '$lib/server/guards';
@@ -40,7 +41,12 @@ const schema = z.object({
   // Same 254-octet bound as login: keeps the stored identifier (and any
   // rate-limit key derived from it) within the RFC 5321 deliverable cap.
   email: z.email('Adresse e-mail invalide').max(254, 'Adresse e-mail invalide'),
-  password: z.string().min(12, 'Mot de passe trop court (12 caractères minimum)'),
+  password: z
+    .string()
+    .min(
+      PASSWORD_MIN_LENGTH,
+      `Mot de passe trop court (${PASSWORD_MIN_LENGTH} caractères minimum)`
+    ),
   displayName: z.string().min(1, 'Nom requis').max(80),
   inviteCode: z
     .string()

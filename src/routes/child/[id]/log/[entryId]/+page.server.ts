@@ -1,14 +1,15 @@
 import { error, fail } from '@sveltejs/kit';
 import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
-import { and, asc, eq, isNull, or } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { audit } from '$lib/server/audit';
-import { resolveOrInsertFood } from '$lib/server/food-resolution';
+import { loadVisibleFoodsForChild, resolveOrInsertFood } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
+import * as m from '$lib/paraglide/messages';
 import type { SafeUser } from '$lib/types';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -26,6 +27,16 @@ const schema = z
     message: 'Choisissez un aliment ou créez-en un.'
   });
 
+// Map the first zod issue to a localizable errorKey — see the twin helper in
+// log/+page.server.ts (this route's schema has no `foodIds` array cap, so
+// there's one branch fewer).
+function schemaErrorKey(issue: { path: PropertyKey[] } | undefined): string {
+  const field = issue?.path[0];
+  if (field === 'givenAt') return 'errorsLogDateRequired';
+  if (issue && issue.path.length === 0) return 'errorsLogNoFoodSelected'; // the .refine()
+  return 'errorsAuthBadInput';
+}
+
 async function loadEntry(entryId: number, childId: number) {
   const row = (
     await db
@@ -34,7 +45,9 @@ async function loadEntry(entryId: number, childId: number) {
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)))
       .limit(1)
   )[0];
-  if (!row) throw error(404, 'Entrée introuvable');
+  // error() renders through +error.svelte, which shows the message verbatim —
+  // resolve it here (paraglide's per-request locale context) same as join/[code].
+  if (!row) throw error(404, m.errorsFoodEntryNotFound());
   return row;
 }
 
@@ -44,16 +57,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 
   const entry = await loadEntry(entryId, childId);
 
-  const list = await db
-    .select({
-      id: foods.id,
-      name: foods.name,
-      category: foods.category,
-      allergenType: foods.allergenType
-    })
-    .from(foods)
-    .where(or(isNull(foods.customForChildId), eq(foods.customForChildId, childId)))
-    .orderBy(foods.name);
+  const list = await loadVisibleFoodsForChild(childId);
 
   // Drizzle's timestamp_ms mode always materializes givenAt as a Date.
   const givenAt = entry.givenAt as Date;
@@ -126,14 +130,14 @@ async function updateMeal(opts: {
   const { raw, mealId, entryId, childId, user, locals } = opts;
 
   const givenAtDate = new Date(String(raw.givenAt));
-  if (Number.isNaN(givenAtDate.getTime())) return fail(400, { error: 'Date invalide.' });
+  if (Number.isNaN(givenAtDate.getTime())) return fail(400, { errorKey: 'errorsLogDateInvalid' });
 
   // Validate texture against the enum — an unchecked value hits the DB CHECK
   // and 500s instead of returning a graceful 400 (the single-entry path uses
   // a zod enum; mirror it here since the meal-mode payload is hand-validated).
   const rawTexture = raw.texture === '' || raw.texture == null ? null : String(raw.texture);
   if (rawTexture !== null && !TEXTURE_VALUES.includes(rawTexture as never)) {
-    return fail(400, { error: 'Texture invalide.' });
+    return fail(400, { errorKey: 'errorsLogTextureInvalid' });
   }
   const texture = rawTexture as (typeof TEXTURE_VALUES)[number] | null;
   const notes = String(raw.notes ?? '').trim() || null;
@@ -141,7 +145,7 @@ async function updateMeal(opts: {
   // payload is hand-validated (no schema), so without this check a crafted
   // request bypasses the client `maxlength` and writes unbounded text to
   // every sibling.
-  if (notes && notes.length > 2000) return fail(400, { error: 'Note trop longue.' });
+  if (notes && notes.length > 2000) return fail(400, { errorKey: 'errorsLogNoteTooLong' });
 
   const members = await db
     .select({ id: foodEntries.id, reaction: foodEntries.reaction })
@@ -206,9 +210,7 @@ export const actions: Actions = {
 
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
-      return fail(400, {
-        error: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides'
-      });
+      return fail(400, { errorKey: schemaErrorKey(parsed.error.issues[0]) });
     }
 
     const resolved = await resolveOrInsertFood({
@@ -219,15 +221,15 @@ export const actions: Actions = {
     });
     if (!resolved.ok) {
       return fail(400, {
-        error:
-          resolved.reason === 'not-found' ? 'Aliment introuvable.' : 'Aucun aliment sélectionné.'
+        errorKey:
+          resolved.reason === 'not-found' ? 'errorsLogFoodNotFound' : 'errorsLogNoFoodResolved'
       });
     }
     const { foodId } = resolved;
 
     const givenAtDate = new Date(parsed.data.givenAt);
     if (Number.isNaN(givenAtDate.getTime())) {
-      return fail(400, { error: 'Date invalide.' });
+      return fail(400, { errorKey: 'errorsLogDateInvalid' });
     }
 
     const textureValue =
@@ -273,7 +275,7 @@ export const actions: Actions = {
     const { user, childId } = requireChildContext(locals, params);
     const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
     const entry = await loadEntry(entryId, childId);
-    if (!entry.mealId) return fail(400, { error: 'Repas introuvable.' });
+    if (!entry.mealId) return fail(400, { errorKey: 'errorsLogMealNotFound' });
 
     await db
       .delete(foodEntries)
@@ -292,7 +294,7 @@ export const actions: Actions = {
     const removeId = Number(fd.get('removeId'));
     const entry = await loadEntry(entryId, childId);
     if (!entry.mealId || !Number.isInteger(removeId)) {
-      return fail(400, { error: 'Requête invalide.' });
+      return fail(400, { errorKey: 'errorsLogInvalidRequest' });
     }
 
     // db.transaction returns the callback's value SYNCHRONOUSLY under

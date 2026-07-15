@@ -78,7 +78,7 @@
         {getReactionLabel(r.id)}
       </span>
       {#if active}
-        <span class="text-[11px] text-muted-foreground">{getReactionDescription(r.id)}</span>
+        <span class="text-2xs text-muted-foreground">{getReactionDescription(r.id)}</span>
       {/if}
     </label>
   {/each}

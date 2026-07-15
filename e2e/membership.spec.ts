@@ -1,21 +1,5 @@
 import { expect, test, type Page, type BrowserContext } from '@playwright/test';
-import { awaitHydration, signUpAndCreateChild, uniqueForWorker } from './_helpers';
-
-async function signUp(
-  page: Page,
-  opts: { email: string; displayName: string; inviteCode?: string }
-): Promise<void> {
-  const url = opts.inviteCode ? `/signup?code=${opts.inviteCode}` : '/signup';
-  await page.goto(url);
-  await awaitHydration(page);
-  await page.getByLabel('Votre prénom').fill(opts.displayName);
-  await page.getByLabel('Adresse e-mail').fill(opts.email);
-  await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
-  await page.getByLabel(/au moins 15 ans/i).check();
-  await page.getByLabel(/conditions générales/i).check();
-  await page.getByLabel(/politique de confidentialité/i).check();
-  await page.getByRole('button', { name: /créer mon compte/i }).click();
-}
+import { signUp, signUpAndCreateChild } from './_helpers';
 
 // Shared helper so the onboarding fill is hardened against the hydration
 // race (see _helpers.ts) — a local fill+click copy used to flake here.
@@ -61,9 +45,7 @@ test.describe('membership permissions', () => {
       const { childId } = await signUpOwnerAndCreateChild(ownerPage, 'Lulu');
       const inviteCode = await generateInviteCode(ownerPage, childId);
 
-      const memberEmail = `${uniqueForWorker('member')}@example.com`;
-      await signUp(memberPage, {
-        email: memberEmail,
+      await signUp(memberPage, 'member', {
         displayName: 'Co-parent',
         inviteCode
       });

@@ -47,11 +47,8 @@ jobs:
         run: bun run depcruise
 
   knip:
-    name: Knip (unused files/exports/deps — advisory)
-    # Advisory only: knip overlaps the Fallow gate and is informational, so it
-    # reports but never blocks a merge (continue-on-error).
+    name: Knip (unused files/exports/deps)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
@@ -125,10 +122,10 @@ jobs:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
       - name: Install Playwright browsers
-        run: bun --bun node_modules/playwright/cli.js install --with-deps chromium
+        run: bun run test:e2e:install
       # The webServer (playwright.config.ts) boots against a throwaway SQLite
       # file at DATABASE_PATH and migrates/seeds on start — no DB service needed.
-      - run: bun --bun node_modules/playwright/cli.js test
+      - run: bun run test:e2e
         env:
           CI: 'true'
           DATABASE_PATH: ${{ runner.temp }}/diversif-e2e.db
@@ -152,5 +149,14 @@ jobs:
       # The build's prerender uses an in-memory SQLite stub (see
       # src/lib/server/db/index.ts: `building` -> :memory:), so no DB service
       # or DATABASE_PATH is needed at build time.
-      - run: bun run build
-      - run: bun scripts/check-bundle-size.ts
+      - run: bun run check:budget
+
+  docker-build:
+    name: Docker build (smoke test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      # No push, just proves the image still builds — the runtime stage has
+      # broken before (missing patches/ dir, see Dockerfile) with nothing in
+      # CI to catch it.
+      - run: docker build --tag diversif:ci-smoke .

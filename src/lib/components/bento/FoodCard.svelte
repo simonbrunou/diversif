@@ -41,7 +41,7 @@
     {isUntried ? m.carnetFoodCardUntried() : m.carnetFoodCardTried({ count: String(tried) })}
     {#if texture && !isUntried}
       <!-- Chip treatment for inline contexts; entry-detail headers use a labelled row instead. -->
-      · <span class="text-[11px] uppercase tracking-wide">{getTextureLabel(texture)}</span>
+      · <span class="text-2xs uppercase tracking-wide">{getTextureLabel(texture)}</span>
     {/if}
   </p>
 {/snippet}

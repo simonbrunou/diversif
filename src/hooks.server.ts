@@ -182,6 +182,18 @@ const appHandle = async (
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
 
+  // Belt-and-braces (2): the service worker's own runtime-caching config
+  // (vite.config.ts) is the primary defense against a shared/offline device
+  // replaying a previous user's authenticated HTML — it never writes /child,
+  // /account or /join responses to CacheStorage in the first place. This
+  // header is the secondary layer for surfaces Workbox doesn't cover: the
+  // browser's plain HTTP cache and back/forward cache. Every response for a
+  // signed-in request can embed session data (e.g. the root layout's child
+  // list), so the check isn't limited to specific route prefixes.
+  if (event.locals.user) {
+    response.headers.set('Cache-Control', 'no-store');
+  }
+
   return response;
 };
 

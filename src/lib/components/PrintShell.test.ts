@@ -42,4 +42,11 @@ describe('PrintShell', () => {
     expect(spy).toHaveBeenCalledOnce();
     spy.mockRestore();
   });
+
+  it('carries the print-shell hook class the @media print block pins to light-mode CSS vars', () => {
+    const { container } = render(PrintShell, {
+      props: { title: 'Doc', children: textSnippet('body') }
+    });
+    expect(container.querySelector('.print-shell')).toBeTruthy();
+  });
 });

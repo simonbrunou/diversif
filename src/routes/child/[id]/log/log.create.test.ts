@@ -224,8 +224,9 @@ describe('child/[id]/log default action', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogNoFoodSelected');
   });
 
   it('fails when more than 20 foodIds are submitted (array cap)', async () => {
@@ -244,9 +245,9 @@ describe('child/[id]/log default action', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/20/);
+    expect(r.data.errorKey).toBe('errorsLogTooManyFoods');
   });
 
   it('fails on invalid date string', async () => {
@@ -263,9 +264,9 @@ describe('child/[id]/log default action', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/date/i);
+    expect(r.data.errorKey).toBe('errorsLogDateInvalid');
   });
 
   it('fails when foodId references an inaccessible food', async () => {
@@ -299,9 +300,9 @@ describe('child/[id]/log default action', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/introuvable/i);
+    expect(r.data.errorKey).toBe('errorsLogFoodNotFound');
   });
 
   it('logs an entry from the global catalog and redirects', async () => {
@@ -521,9 +522,9 @@ describe('child/[id]/log default action', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/aliment/i);
+    expect(r.data.errorKey).toBe('errorsLogFoodInvalid');
   });
 
   it('creates a custom food in a known category', async () => {

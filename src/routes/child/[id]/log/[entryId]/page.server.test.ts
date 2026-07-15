@@ -14,7 +14,6 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 import { foodEntries, foods } from '$lib/server/db/schema';
 import * as schema from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { newId } from '$lib/offline/uuid';
 import type { Membership, SafeUser } from '$lib/types';
 import type { ReactionId } from '$lib/utils/reaction-values';
 import { load, actions } from './+page.server';
@@ -215,9 +214,9 @@ describe('child/[id]/log/[entryId] update action', () => {
     });
     const r = (await actions.update!(
       event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/date/i);
+    expect(r.data.errorKey).toBe('errorsLogDateInvalid');
   });
 
   it('fails when neither foodId nor customFood.name provided', async () => {
@@ -230,8 +229,9 @@ describe('child/[id]/log/[entryId] update action', () => {
     });
     const r = (await actions.update!(
       event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogNoFoodSelected');
   });
 
   it('fails when foodId not accessible', async () => {
@@ -264,8 +264,9 @@ describe('child/[id]/log/[entryId] update action', () => {
     });
     const r = (await actions.update!(
       event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogFoodNotFound');
   });
 
   it('bumps updatedAt on a successful edit so the change is not silent', async () => {
@@ -309,9 +310,9 @@ describe('child/[id]/log/[entryId] update action', () => {
     });
     const r = (await actions.update!(
       event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/aliment/i);
+    expect(r.data.errorKey).toBe('errorsLogNoFoodResolved');
   });
 
   it('creates a custom food with default category=autre when category unknown', async () => {
@@ -480,7 +481,7 @@ describe('child/[id]/log/[entryId] meal mode', () => {
 
   // Seeds a child + one meal of `reactions.length` ingredients sharing a
   // mealId (mirrors the production insert path in log/+page.server.ts, which
-  // mints mealId via the same newId() helper). Returns the pieces each test
+  // mints mealId via crypto.randomUUID()). Returns the pieces each test
   // needs; `user`/`memberships` are assigned onto the enclosing closure so
   // callers can pass them straight into makeRouteEvent.
   async function seedMeal(reactions: ReactionId[]) {
@@ -490,7 +491,7 @@ describe('child/[id]/log/[entryId] meal mode', () => {
     const m = await seedMembership({ userId: u.id, childId: child.id, role: 'owner' });
     memberships = [m];
 
-    const m1 = newId();
+    const m1 = crypto.randomUUID();
     const ids: number[] = [];
     for (const [i, reaction] of reactions.entries()) {
       const food = (
@@ -633,9 +634,9 @@ describe('child/[id]/log/[entryId] meal mode', () => {
     const r = await captureFlow(() => actions.update(ev as never));
     expect(r.kind).toBe('return');
     if (r.kind === 'return') {
-      const value = r.value as { status: number; data: { error: string } };
+      const value = r.value as { status: number; data: { errorKey: string } };
       expect(value.status).toBe(400);
-      expect(value.data.error).toBe('Texture invalide.');
+      expect(value.data.errorKey).toBe('errorsLogTextureInvalid');
     }
     const rows = await testDb
       .select()
@@ -742,9 +743,9 @@ describe('child/[id]/log/[entryId] meal mode', () => {
     const r = await captureFlow(() => actions.removeIngredient(ev as never));
     expect(r.kind).toBe('return');
     if (r.kind === 'return') {
-      const value = r.value as { status: number; data: { error: string } };
+      const value = r.value as { status: number; data: { errorKey: string } };
       expect(value.status).toBe(400);
-      expect(value.data.error).toBe('Requête invalide.');
+      expect(value.data.errorKey).toBe('errorsLogInvalidRequest');
     }
     const fresh = (
       await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).limit(1)

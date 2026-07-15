@@ -9,7 +9,7 @@
   import { enhance } from '$app/forms';
   import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
-  import { trackSubmission } from '$lib/forms/tracked-enhance';
+  import { resolveMessageKey, trackSubmission } from '$lib/forms/tracked-enhance';
   import * as m from '$lib/paraglide/messages';
   import { DIET_EXCLUSIONS, type DietExclusion } from '$lib/utils/diet';
   import type { ActionData, PageData } from './$types';
@@ -51,8 +51,8 @@
       if (form?.success) {
         toast.success(form.success);
       }
-      if (form?.error) {
-        toast.error(form.error);
+      if (form?.errorKey) {
+        toast.error(resolveMessageKey(form.errorKey));
       }
     }
   });

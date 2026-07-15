@@ -44,7 +44,7 @@
           )}
         >
           <span>{item.label}</span>
-          <span class="text-[10px]">· {stateLabel(item.state)}</span>
+          <span class="text-3xs">· {stateLabel(item.state)}</span>
         </li>
       {/each}
     </ul>

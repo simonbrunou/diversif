@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
-import { makeRouteEvent, safeUser } from '../../../test/route';
+import { makeRouteEvent, safeUser, seedUser } from '../../../test/route';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
@@ -27,19 +27,10 @@ beforeEach(async () => {
 });
 
 async function seed() {
-  const passwordHash = await hashPassword('current-password-12');
-  const u = (
-    await testDb
-      .insert(users)
-      .values({
-        email: 'p@example.com',
-        passwordHash,
-        displayName: 'Parent',
-        createdAt: new Date()
-      })
-      .returning()
-  )[0];
-  return u;
+  return seedUser({
+    email: 'p@example.com',
+    passwordHash: await hashPassword('current-password-12')
+  });
 }
 
 async function seedKey(userId: number, id = 'p1', name = 'Old') {

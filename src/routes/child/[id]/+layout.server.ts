@@ -3,6 +3,7 @@ import { db } from '$lib/server/db';
 import { children } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireChildContext } from '$lib/server/guards';
+import * as m from '$lib/paraglide/messages';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals, params }) => {
@@ -11,7 +12,9 @@ export const load: LayoutServerLoad = async ({ locals, params }) => {
   const { childId, membership } = requireChildContext(locals, params);
 
   const child = (await db.select().from(children).where(eq(children.id, childId)).limit(1))[0];
-  if (!child) throw error(404, 'Enfant introuvable');
+  // error() renders through +error.svelte, which shows the message verbatim —
+  // resolve it here (paraglide's per-request locale context) same as join/[code].
+  if (!child) throw error(404, m.errorsChildNotFound());
 
   return {
     child: {
