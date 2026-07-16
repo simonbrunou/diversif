@@ -177,6 +177,7 @@ describe('offline queue replay against a real server response', () => {
 
     expect(await count()).toBe(0);
     expect(dropped).toEqual([{ reason: 'failure', status: 400 }]);
+    window.removeEventListener('queue:dropped', handler);
 
     const n =
       (

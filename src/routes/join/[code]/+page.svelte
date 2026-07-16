@@ -35,7 +35,12 @@
       <p class="mt-2 text-xs text-muted-foreground">{m.joinCodeLine()} <span class="font-mono">{data.code}</span></p>
 
       {#if form?.errorKey}
-        <FormError class="mt-4">{resolveMessageKey(form.errorKey)}</FormError>
+        {@const retry = 'retryAfterSeconds' in form ? form.retryAfterSeconds : null}
+        <FormError class="mt-4">
+          {retry != null
+            ? m.errorsAuthRateLimitedSeconds({ seconds: retry })
+            : resolveMessageKey(form.errorKey)}
+        </FormError>
       {/if}
 
       <form
