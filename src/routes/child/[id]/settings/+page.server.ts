@@ -6,7 +6,7 @@ import { db } from '$lib/server/db';
 import { children, invitations, memberships, users } from '$lib/server/db/schema';
 import { createInvitationForChild } from '$lib/server/invitations';
 import { audit } from '$lib/server/audit';
-import { requireFreshAuth } from '$lib/server/fresh-auth';
+import { requireFreshAuthWithKey } from '$lib/server/fresh-auth';
 import {
   parseChildIdParam,
   requireChildContext,
@@ -108,7 +108,7 @@ export const actions: Actions = {
     requireOwnership(locals, childId);
     const raw = Object.fromEntries(await request.formData());
     const parsed = updateSchema.safeParse(raw);
-    if (!parsed.success) return fail(400, { error: 'Champs invalides.' });
+    if (!parsed.success) return fail(400, { errorKey: 'errorsAuthBadInput' });
 
     await db
       .update(children)
@@ -158,24 +158,24 @@ export const actions: Actions = {
         )
     )[0]!.n;
     if (activeInvites >= MAX_ACTIVE_INVITES_PER_CHILD) {
-      return fail(429, {
-        error:
-          'Trop d’invitations actives pour cet enfant. Révoquez-en une avant d’en générer une nouvelle.'
-      });
+      return fail(429, { errorKey: 'errorsSettingsInviteCapReached' });
     }
 
     const data = await request.formData();
     const currentPassword = String(data.get('currentPassword') ?? '');
 
-    const fresh = await requireFreshAuth(user, currentPassword, {
+    const fresh = await requireFreshAuthWithKey(user, currentPassword, {
+      field: 'errorKey',
+      rateLimitedKey: 'errorsAuthRateLimited',
+      incorrectKey: 'errorsAccountPasswordIncorrect',
       onMissingUser: () => {
         throw localizedRedirect(locals.locale, 303, '/login');
       }
     });
-    if (!fresh.ok) return fresh.error;
+    if (!fresh.ok) return fresh.failure;
 
     const code = await createInvitationForChild({ childId, createdBy: user.id });
-    if (!code) return fail(500, { error: 'Impossible de générer un code unique.' });
+    if (!code) return fail(500, { errorKey: 'errorsSettingsInviteGenerationFailed' });
     audit({ type: 'invite.created', userId: user.id, childId });
     return { success: 'Code généré.', code };
   },
@@ -186,7 +186,7 @@ export const actions: Actions = {
     const { user } = requireOwnership(locals, childId);
     const data = await request.formData();
     const code = String(data.get('code') ?? '');
-    if (!code) return fail(400, { error: 'Code manquant.' });
+    if (!code) return fail(400, { errorKey: 'errorsSettingsInviteCodeMissing' });
     await db
       .delete(invitations)
       .where(and(eq(invitations.code, code), eq(invitations.childId, childId)));
@@ -203,9 +203,8 @@ export const actions: Actions = {
     // > 0 so an empty/zero field fails loudly instead of "removing" nobody
     // and still reporting success.
     if (!Number.isInteger(userId) || userId <= 0)
-      return fail(400, { error: 'Utilisateur invalide.' });
-    if (userId === owner.id)
-      return fail(400, { error: 'Vous ne pouvez pas vous retirer vous-même.' });
+      return fail(400, { errorKey: 'errorsSettingsMemberInvalid' });
+    if (userId === owner.id) return fail(400, { errorKey: 'errorsSettingsMemberSelfRemoval' });
 
     await db
       .delete(memberships)
@@ -217,9 +216,7 @@ export const actions: Actions = {
   leaveChild: async ({ params, locals }) => {
     const { user, childId, membership } = requireChildContext(locals, params);
     if (membership.role === 'owner') {
-      return fail(400, {
-        error: 'Le créateur ne peut pas quitter, supprimez l’enfant à la place.'
-      });
+      return fail(400, { errorKey: 'errorsSettingsOwnerCannotLeave' });
     }
     await db
       .delete(memberships)
@@ -239,7 +236,7 @@ export const actions: Actions = {
     const child = (await db.select().from(children).where(eq(children.id, childId)).limit(1))[0];
     if (!child) throw localizedRedirect(locals.locale, 303, '/');
     if (confirmText !== child.name) {
-      return fail(400, { error: 'Saisissez le prénom exact pour confirmer.' });
+      return fail(400, { errorKey: 'errorsSettingsDeleteConfirmMismatch' });
     }
 
     // Fresh-auth: typed name is visible on the page; require the current
@@ -247,12 +244,15 @@ export const actions: Actions = {
     // session cookie. `onMissingUser` localizes the /login redirect on the
     // rare race where the owner row vanished between requireOwnership and
     // now (helper would otherwise throw a plain Error → unhandled 500).
-    const fresh = await requireFreshAuth(user, currentPassword, {
+    const fresh = await requireFreshAuthWithKey(user, currentPassword, {
+      field: 'errorKey',
+      rateLimitedKey: 'errorsAuthRateLimited',
+      incorrectKey: 'errorsAccountPasswordIncorrect',
       onMissingUser: () => {
         throw localizedRedirect(locals.locale, 303, '/login');
       }
     });
-    if (!fresh.ok) return fresh.error;
+    if (!fresh.ok) return fresh.failure;
 
     await db.delete(children).where(eq(children.id, childId));
     throw localizedRedirect(locals.locale, 303, '/');

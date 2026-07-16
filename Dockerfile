@@ -1,16 +1,16 @@
 # syntax=docker/dockerfile:1
-FROM oven/bun:1.3-debian AS builder
+FROM oven/bun:1.3.14-debian AS builder
 WORKDIR /app
 # HUSKY=0 stops the `prepare` script from running `husky install` during
 # `bun install`. Husky's hook-install path is unnecessary inside the
 # container — we don't commit from here.
 ENV HUSKY=0
-# patches/ must be present before `bun install`: bun.lock references the
-# patchedDependencies entries and install fails with "Couldn't find patch
-# file" without them (broke the image build when the @inlang/sdk patch
-# landed — there is no docker gate in CI to catch it).
+# If bun.lock ever gains a patchedDependencies entry again, add
+# `COPY patches ./patches` back here before `bun install` — it fails with
+# "Couldn't find patch file" without it (this broke the image build when the
+# @inlang/sdk patch landed; the patch — and this COPY — were later removed
+# once the paraglide-js v2 migration made it unnecessary).
 COPY package.json bun.lock ./
-COPY patches ./patches
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     bun install --frozen-lockfile
 COPY . .
@@ -20,16 +20,35 @@ COPY . .
 # `define`. No runtime SHA file or entrypoint mirroring required.
 RUN bun run build
 
-FROM oven/bun:1.3-debian
+# Separate, --production-only install: the runtime image must not ship the
+# builder's devDependencies (vite, svelte-check, playwright, ...) — they're
+# needed to build but not to run the built server.
+FROM oven/bun:1.3.14-debian AS prod-deps
+WORKDIR /app
+COPY package.json bun.lock ./
+# --ignore-scripts: this stage only needs node_modules for the runtime copy,
+# not a build — running the root `prepare` script (husky) here fails anyway
+# because --production excludes husky itself (a devDependency).
+RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
+    bun install --frozen-lockfile --production --ignore-scripts
+
+FROM oven/bun:1.3.14-debian
 WORKDIR /app
 
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+# Run as a dedicated non-root user. Without this the server (and the
+# /app/data SQLite volume it creates) runs as root inside the container.
+RUN groupadd --gid 1001 diversif \
+    && useradd --uid 1001 --gid diversif --system --no-create-home diversif \
+    && mkdir -p /app/data \
+    && chown -R diversif:diversif /app
+
+COPY --from=builder --chown=diversif:diversif /app/build ./build
+COPY --from=prod-deps --chown=diversif:diversif /app/node_modules ./node_modules
+COPY --from=builder --chown=diversif:diversif /app/package.json ./package.json
 # drizzle/ holds the SQL migrations that the server applies on boot
 # (src/lib/server/db/index.ts → migrate()). They must travel with the
 # runtime image, not just CI.
-COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder --chown=diversif:diversif /app/drizzle ./drizzle
 
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -63,5 +82,7 @@ EXPOSE 3000
 # migrations room before the first probe counts.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/healthz | grep -q '"ok":true' || exit 1
+
+USER diversif
 
 CMD ["bun", "build/index.js"]

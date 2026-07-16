@@ -40,9 +40,9 @@ describe('settings removeMember action', () => {
     });
     const r = (await actions.removeMember!(
       event as unknown as Parameters<NonNullable<typeof actions.removeMember>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/vous-même/i);
+    expect(r.data.errorKey).toBe('errorsSettingsMemberSelfRemoval');
   });
 
   it('removes another member', async () => {

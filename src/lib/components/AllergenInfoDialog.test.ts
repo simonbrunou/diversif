@@ -32,7 +32,9 @@ describe('AllergenInfoDialog', () => {
   it('calls onclose when the Fermer button is clicked', async () => {
     const onclose = mock();
     render(AllergenInfoDialog, { props: { allergenId: 'oeuf', onclose } });
-    await fireEvent.click(screen.getByText('Fermer'));
+    // Modal renders a single "Fermer" close control (top-right icon button,
+    // aria-label "Fermer"); the dialog no longer adds its own footer button.
+    await fireEvent.click(screen.getByRole('button', { name: 'Fermer' }));
     expect(onclose).toHaveBeenCalled();
   });
 

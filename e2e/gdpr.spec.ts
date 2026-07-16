@@ -1,18 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-import { awaitHydration, unique } from './_helpers';
-
-async function signUp(page: Page, email: string) {
-  await page.goto('/signup');
-  await awaitHydration(page);
-  await page.getByLabel('Votre prénom').fill('RGPD Tester');
-  await page.getByLabel('Adresse e-mail').fill(email);
-  await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
-  await page.getByLabel(/au moins 15 ans/i).check();
-  await page.getByLabel(/conditions générales/i).check();
-  await page.getByLabel(/politique de confidentialité/i).check();
-  await page.getByRole('button', { name: /créer mon compte/i }).click();
-  await expect(page).toHaveURL(/\/child\/new/);
-}
+import { test, expect } from '@playwright/test';
+import { awaitHydration, signUp, unique } from './_helpers';
 
 test.describe('legal pages', () => {
   test('public legal pages are reachable from the footer', async ({ page }) => {
@@ -46,8 +33,7 @@ test.describe('signup consent gates', () => {
 
 test.describe('account deletion', () => {
   test('user can delete their account and the email is reusable', async ({ page }) => {
-    const email = `${unique('rgpd')}@example.com`;
-    await signUp(page, email);
+    const email = await signUp(page, 'rgpd', { displayName: 'RGPD Tester' });
 
     await page.goto('/account/delete');
     await page.getByLabel(/Saisissez votre adresse e-mail/i).fill(email);
@@ -56,14 +42,13 @@ test.describe('account deletion', () => {
     await expect(page).toHaveURL(/\/account\/deleted/);
 
     await page.context().clearCookies();
-    await signUp(page, email);
+    await signUp(page, 'rgpd', { displayName: 'RGPD Tester', email });
   });
 });
 
 test.describe('data export', () => {
   test('export endpoint returns JSON for the authenticated user', async ({ page }) => {
-    const email = `${unique('export')}@example.com`;
-    await signUp(page, email);
+    const email = await signUp(page, 'export', { displayName: 'RGPD Tester' });
 
     const response = await page.request.get('/account/export');
     expect(response.status()).toBe(200);

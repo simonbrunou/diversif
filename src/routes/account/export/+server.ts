@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { ExportTooLargeError, exportUserData } from '$lib/server/gdpr';
 import { requireUser } from '$lib/server/guards';
+import * as m from '$lib/paraglide/messages';
 import type { RequestHandler } from './$types';
 
 const EXPORT_THROTTLE_MS = 60_000;
@@ -28,7 +29,10 @@ export const GET: RequestHandler = async ({ locals }) => {
     .returning({ id: users.id });
 
   if (claimed.length === 0) {
-    throw error(429, 'Export déjà demandé récemment, veuillez réessayer dans une minute.');
+    // This is a direct top-level link navigation (not a fetch), so SvelteKit
+    // renders +error.svelte with this message verbatim — resolve it here
+    // (paraglide's per-request locale context) same as join/[code].
+    throw error(429, m.errorsAccountExportRateLimited());
   }
 
   let payload;
@@ -39,10 +43,7 @@ export const GET: RequestHandler = async ({ locals }) => {
     // to be complete. If the dataset is unrealistically large we tell the
     // user explicitly so they can ask for a manual export.
     if (err instanceof ExportTooLargeError) {
-      throw error(
-        413,
-        'Export trop volumineux pour le téléchargement direct. Contactez-nous pour récupérer vos données.'
-      );
+      throw error(413, m.errorsAccountExportTooLarge());
     }
     throw err;
   }

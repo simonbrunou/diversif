@@ -18,6 +18,12 @@ export type AllergenItem = {
   state: 'cleared' | 'todo' | 'reaction' | 'fading';
 };
 
+export type AllergenRow = {
+  allergenType: string | null;
+  givenAt: Date | number | string;
+  reaction: string;
+};
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
@@ -28,16 +34,11 @@ function formatDDMMYY(d: Date): string {
   return `${dd}/${mm}/${yy}`;
 }
 
-/**
- * For each of the 12 tracked allergens, returns trial count, last-tried date,
- * days-since, and a derived state (cleared / todo / reaction / fading).
- * Shared between the carnet allergens segment and the Discover passport.
- */
-export async function loadAllergenStatus(
-  childId: number,
-  now: Date = new Date()
-): Promise<AllergenItem[]> {
-  const rows = await db
+// Raw allergen-tagged join, factored out so callers that also need the worst-
+// reaction summary (the dashboard) can fetch it once and reuse the rows for
+// both, instead of running this same join+where twice per request.
+export async function loadAllergenRows(childId: number): Promise<AllergenRow[]> {
+  return db
     .select({
       allergenType: foods.allergenType,
       givenAt: foodEntries.givenAt,
@@ -46,7 +47,14 @@ export async function loadAllergenStatus(
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)));
+}
 
+/**
+ * For each of the 12 tracked allergens, returns trial count, last-tried date,
+ * days-since, and a derived state (cleared / todo / reaction / fading).
+ * Shared between the carnet allergens segment and the Discover passport.
+ */
+export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date()): AllergenItem[] {
   const byAllergen = new Map<string, { triedCount: number; latest: Date; hasReaction: boolean }>();
   for (const r of rows) {
     // SQL filters `allergenType IS NOT NULL`; the guard is a TS narrowing
@@ -100,4 +108,12 @@ export async function loadAllergenStatus(
       state
     };
   });
+}
+
+/** Convenience wrapper for callers that don't already have the rows (fetches then summarizes). */
+export async function loadAllergenStatus(
+  childId: number,
+  now: Date = new Date()
+): Promise<AllergenItem[]> {
+  return summarizeAllergenRows(await loadAllergenRows(childId), now);
 }

@@ -198,6 +198,7 @@ export async function findUserByEmail(email: string): Promise<User | undefined> 
 }
 
 export { generateInviteCodeRaw, isValidInviteCodeFormat } from '$lib/utils/invites';
+export { PASSWORD_MIN_LENGTH } from '$lib/utils/password';
 
 /**
  * Set the session cookie with the canonical options used across login, signup,

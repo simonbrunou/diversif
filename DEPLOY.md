@@ -114,6 +114,45 @@ which is for maybe-never work; these are required.
       as the belt-and-braces pre-migration copy, and periodically run
       `bun run db:verify-backup` against a pulled-back replica so the restore
       path is exercised, not assumed.
+
+      **Status: scaffolded, not deployed.** [`litestream.yml`](./litestream.yml)
+      (config template, no real secrets) and a `litestream` sidecar service in
+      [`docker-compose.yml`](./docker-compose.yml) exist in the repo but the
+      sidecar is gated behind the `backup` Compose profile — plain
+      `docker compose up` (local dev) ignores it. Nothing replicates until an
+      operator does the following:
+
+      1. **Create the bucket + credentials.** In the Cloudflare dashboard: R2 →
+         create a bucket (e.g. `diversif-backups`) → Manage R2 API Tokens →
+         create a token scoped to Object Read & Write on that bucket only. Note
+         the account's R2 endpoint (`https://<account_id>.r2.cloudflarestorage.com`),
+         the bucket name, and the token's access key ID / secret access key.
+      2. **Self-hosting with `docker-compose.yml`**: set
+         `LITESTREAM_S3_ENDPOINT`, `LITESTREAM_S3_BUCKET`,
+         `LITESTREAM_ACCESS_KEY_ID`, `LITESTREAM_SECRET_ACCESS_KEY` (shell
+         environment or an untracked `.env` next to the compose file — never
+         commit them), then start the sidecar explicitly:
+         `docker compose --profile backup up -d litestream`.
+      3. **Coolify**: the reference deploy is a single Railpack container, not
+         Compose, so the sidecar needs its own resource — either switch the
+         Coolify service to a Docker Compose deployment (reusing
+         `docker-compose.yml` with the `backup` profile against the same
+         `/app/data` volume) or add a second Coolify service running
+         `litestream/litestream:0.3.13 replicate -config /etc/litestream.yml`
+         mounted read-write on the same volume as the app, with the same four
+         `LITESTREAM_*` variables set in its environment tab. This wiring is an
+         operator TODO, not automated by this repo.
+      4. **Verify replication is actually happening**: `litestream databases`
+         and `litestream generations -config litestream.yml <path>` (run inside
+         the `litestream` container, e.g.
+         `docker compose exec litestream litestream generations -config /etc/litestream.yml /app/data/diversif.db`)
+         should list a generation once the app has written data.
+      5. **Exercise the restore path** periodically —
+         `litestream restore -config litestream.yml -o /tmp/restored.db <path>`,
+         then `DATABASE_PATH=/tmp/restored.db bun run db:verify-backup` — same
+         discipline as the manual `VACUUM INTO` snapshot, so a bucket that's
+         silently stopped receiving writes is caught before it's needed.
+
 - [ ] **O1 — Self-hosted error monitoring (optional, data-sovereignty).** The app
       already ships the Sentry SDK (`@sentry/sveltekit`); **GlitchTip** is
       Sentry-SDK wire-compatible, so adopting it is a config swap, not a code

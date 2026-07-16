@@ -8,9 +8,10 @@
 </script>
 
 <Seo
-  title="Aide & à propos · Diversif"
-  description="Comment fonctionne Diversif, comment partager le suivi avec l’autre parent, et pourquoi faire confiance à ses repères."
+  title={m.aideSeoTitle()}
+  description={m.aideSeoDescription()}
   path="/aide"
+  alternateLocales={['en']}
 />
 
 <div class="mx-auto w-full px-4 flex max-w-2xl flex-1 flex-col gap-4 py-8">

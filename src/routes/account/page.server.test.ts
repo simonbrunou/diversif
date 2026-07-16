@@ -6,7 +6,7 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { hashPassword } from '$lib/server/auth';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
-import { passkeys, users } from '$lib/server/db/schema';
+import { passkeys } from '$lib/server/db/schema';
 import { load } from './+page.server';
 import { seedChild, seedMembership } from '../../test/route';
 
@@ -16,19 +16,10 @@ beforeEach(async () => {
 });
 
 async function seed() {
-  const passwordHash = await hashPassword('current-password-12');
-  const u = (
-    await testDb
-      .insert(users)
-      .values({
-        email: 'p@example.com',
-        passwordHash,
-        displayName: 'Parent',
-        createdAt: new Date()
-      })
-      .returning()
-  )[0];
-  return u;
+  return seedUser({
+    email: 'p@example.com',
+    passwordHash: await hashPassword('current-password-12')
+  });
 }
 
 describe('account load', () => {

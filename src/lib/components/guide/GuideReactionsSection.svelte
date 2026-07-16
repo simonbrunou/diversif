@@ -17,7 +17,7 @@
           : 'p-4'}
       >
         <h3 class="text-sm font-semibold">{r.title}</h3>
-        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h4 class="mt-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           Signes
         </h4>
         <ul class="mt-1 list-disc space-y-1 pl-5 text-sm text-foreground/90">
@@ -25,7 +25,7 @@
             <li>{s}</li>
           {/each}
         </ul>
-        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h4 class="mt-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           Conduite à tenir
         </h4>
         <p class="mt-1 text-sm text-foreground/90">{r.whatToDo}</p>

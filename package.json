@@ -87,7 +87,6 @@
     "@simplewebauthn/server": "^13.3.0",
     "bits-ui": "^2.18.1",
     "clsx": "^2.1.1",
-    "dayjs": "^1.11.13",
     "drizzle-orm": "^0.45.2",
     "lucide-svelte": "^1.0.0",
     "svelte-sonner": "^1.1.1",
@@ -96,7 +95,8 @@
   },
   "overrides": {
     "cookie": "^1.0.0",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.1",
+    "@opentelemetry/core": "^2.8.0",
     "devalue": "^5.6.4",
     "sha.js": "^2.4.12",
     "solid-js": "^1.9.4"

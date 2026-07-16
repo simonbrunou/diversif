@@ -2,7 +2,6 @@
   import DetailSheet from '$lib/components/ui/DetailSheet.svelte';
   import SheetSection from '$lib/components/ui/SheetSection.svelte';
   import Callout from '$lib/components/ui/Callout.svelte';
-  import Button from '$components/ui/Button.svelte';
   import Badge from '$components/ui/Badge.svelte';
   import SourceCitation from './SourceCitation.svelte';
   import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
@@ -79,8 +78,4 @@
       </SheetSection>
     </div>
   {/if}
-
-  {#snippet footer()}
-    <Button variant="outline" onclick={close}>{m.allergenDialogClose()}</Button>
-  {/snippet}
 </DetailSheet>

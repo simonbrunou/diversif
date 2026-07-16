@@ -1,13 +1,16 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
-import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, ne, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { requireChildContext } from '$lib/server/guards';
 import { audit } from '$lib/server/audit';
-import { resolveOrInsertFood } from '$lib/server/food-resolution';
-import { newId } from '$lib/offline/uuid';
+import {
+  loadVisibleFoodsForChild,
+  resolveOrInsertFood,
+  visibleToChild
+} from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
 import { ALLERGENS } from '$lib/utils/allergens';
@@ -35,19 +38,22 @@ const schema = z
     message: 'Choisissez un aliment ou créez-en un.'
   });
 
+// Map the first zod issue to a localizable errorKey. Keyed on the failing
+// field's path rather than reusing `issue.message` (which is French-only and
+// not routed through paraglide) — see resolveMessageKey/errorKey pattern
+// already used by login/signup.
+function schemaErrorKey(issue: { path: PropertyKey[] } | undefined): string {
+  const field = issue?.path[0];
+  if (field === 'foodIds') return 'errorsLogTooManyFoods';
+  if (field === 'givenAt') return 'errorsLogDateRequired';
+  if (issue && issue.path.length === 0) return 'errorsLogNoFoodSelected'; // the .refine()
+  return 'errorsAuthBadInput';
+}
+
 export const load: PageServerLoad = async ({ locals, params }) => {
   const { childId } = requireChildContext(locals, params);
 
-  const list = await db
-    .select({
-      id: foods.id,
-      name: foods.name,
-      category: foods.category,
-      allergenType: foods.allergenType
-    })
-    .from(foods)
-    .where(or(isNull(foods.customForChildId), eq(foods.customForChildId, childId)))
-    .orderBy(foods.name);
+  const list = await loadVisibleFoodsForChild(childId);
 
   // Distinct foodIds already logged for this child, so the picker can badge
   // a "never tried" hint when several brand-new foods are selected together.
@@ -62,9 +68,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 class LogActionAbort extends Error {
   constructor(
     public readonly status: number,
-    public readonly userMessage: string
+    public readonly errorKey: string
   ) {
-    super(userMessage);
+    super(errorKey);
     this.name = 'LogActionAbort';
   }
 }
@@ -156,29 +162,36 @@ function resolveMealFoods(
   const resolvedFoods: { food: typeof foods.$inferSelect; foodId: number }[] = [];
   const seen = new Set<number>();
 
-  for (const id of foodIds) {
-    const r = resolveOrInsertFood({ foodId: id, childId }, tx);
-    if (!r.ok)
-      throw new LogActionAbort(
-        400,
-        r.reason === 'not-found' ? 'Aliment introuvable.' : 'Aliment invalide.'
-      );
-    if (!seen.has(r.foodId)) {
-      seen.add(r.foodId);
-      resolvedFoods.push({ food: r.food, foodId: r.foodId });
+  // One batched lookup instead of a resolveOrInsertFood() call per foodId:
+  // every id here is a plain (non-custom) lookup, so a single
+  // `WHERE id IN (...)` covers what used to be up to 20 round trips.
+  if (foodIds.length > 0) {
+    const rows = tx
+      .select()
+      .from(foods)
+      .where(and(inArray(foods.id, [...new Set(foodIds)]), visibleToChild(childId)))
+      .all();
+    const byId = new Map(rows.map((f) => [f.id, f]));
+
+    for (const id of foodIds) {
+      if (seen.has(id)) continue;
+      const food = byId.get(id);
+      if (!food) throw new LogActionAbort(400, 'errorsLogFoodNotFound');
+      seen.add(id);
+      resolvedFoods.push({ food, foodId: id });
     }
   }
 
   if (customName) {
     const r = resolveOrInsertFood({ customName, customCategory, childId }, tx);
-    if (!r.ok) throw new LogActionAbort(400, 'Aliment invalide.');
+    if (!r.ok) throw new LogActionAbort(400, 'errorsLogFoodInvalid');
     if (!seen.has(r.foodId)) {
       seen.add(r.foodId);
       resolvedFoods.push({ food: r.food, foodId: r.foodId });
     }
   }
 
-  if (resolvedFoods.length === 0) throw new LogActionAbort(400, 'Aucun aliment sélectionné.');
+  if (resolvedFoods.length === 0) throw new LogActionAbort(400, 'errorsLogNoFoodResolved');
   return resolvedFoods;
 }
 
@@ -240,7 +253,7 @@ export const actions: Actions = {
       idempotencyKey != null &&
       (idempotencyKey.length > 100 || !/^[A-Za-z0-9_-]+$/.test(idempotencyKey))
     ) {
-      return fail(400, { error: 'Idempotency-Key invalide' });
+      return fail(400, { errorKey: 'errorsLogIdempotencyKeyInvalid' });
     }
 
     const fd = await request.formData();
@@ -250,14 +263,12 @@ export const actions: Actions = {
     const raw = { ...Object.fromEntries(fd), foodIds: fd.getAll('foodId').map(String) };
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
-      return fail(400, {
-        error: parsed.error.issues[0]?.message ?? /* v8 ignore next */ 'Champs invalides'
-      });
+      return fail(400, { errorKey: schemaErrorKey(parsed.error.issues[0]) });
     }
 
     const givenAtDate = new Date(parsed.data.givenAt);
     if (Number.isNaN(givenAtDate.getTime())) {
-      return fail(400, { error: 'Date invalide.' });
+      return fail(400, { errorKey: 'errorsLogDateInvalid' });
     }
 
     let redirectPath: string;
@@ -285,7 +296,7 @@ export const actions: Actions = {
           // across every food in the meal (not just the first).
           const prior = snapshotPriorState(tx, childId);
 
-          const mealId = resolvedFoods.length > 1 ? newId() : null;
+          const mealId = resolvedFoods.length > 1 ? crypto.randomUUID() : null;
           for (const { foodId } of resolvedFoods) {
             tx.insert(foodEntries)
               .values({
@@ -323,10 +334,10 @@ export const actions: Actions = {
       });
     } catch (e) {
       if (e instanceof LogActionAbort) {
-        return fail(e.status, { error: e.userMessage });
+        return fail(e.status, { errorKey: e.errorKey });
       }
       if (e instanceof IdempotencyInFlight || e instanceof IdempotencyScopeMismatch) {
-        return fail(409, { error: "Conflit de clé d'idempotence" });
+        return fail(409, { errorKey: 'errorsLogIdempotencyConflict' });
       }
       throw e;
     }

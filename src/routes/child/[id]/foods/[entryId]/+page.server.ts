@@ -13,6 +13,7 @@ import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
 import { formatDate, formatTime } from '$lib/utils/dates';
+import * as m from '$lib/paraglide/messages';
 import type { Actions, PageServerLoad } from './$types';
 
 async function loadEntryForChild(entryId: number, childId: number) {
@@ -32,7 +33,9 @@ async function loadEntryForChild(entryId: number, childId: number) {
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)))
       .limit(1)
   )[0];
-  if (!row) throw error(404, 'Food entry not found');
+  // error() renders through +error.svelte, which shows the message verbatim —
+  // resolve it here (paraglide's per-request locale context) same as join/[code].
+  if (!row) throw error(404, m.errorsFoodEntryNotFound());
   return row;
 }
 

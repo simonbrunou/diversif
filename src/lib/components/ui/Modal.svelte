@@ -8,6 +8,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { Dialog as DialogPrimitive } from 'bits-ui';
+  import { X } from 'lucide-svelte';
   import { cn } from '$lib/utils/cn';
   import * as m from '$lib/paraglide/messages';
   import { useBottomSheetDrag } from './use-bottom-sheet-drag.svelte';
@@ -136,6 +137,12 @@
       onpointerup={drag.onSheetPointerUp}
       onpointercancel={drag.onSheetPointerCancel}
     >
+      <DialogPrimitive.Close
+        aria-label={m.allergenDialogClose()}
+        class="tap-target absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface-2 hover:text-foreground active:scale-95"
+      >
+        <X size={18} aria-hidden="true" />
+      </DialogPrimitive.Close>
       {#if resolvedSide === 'bottom'}
         <div
           class="tap-target -mt-2 mb-1 flex cursor-grab items-center justify-center py-2 active:cursor-grabbing"
@@ -145,7 +152,7 @@
         </div>
       {/if}
       {#if title}
-        <DialogPrimitive.Title class="font-display text-xl italic leading-tight">
+        <DialogPrimitive.Title class="pr-8 font-display text-xl italic leading-tight">
           {title}
         </DialogPrimitive.Title>
       {:else}
@@ -160,7 +167,21 @@
       {/if}
       {#if children}
         {#if scrollableBody}
-          <div class="max-h-[70vh] overflow-y-auto">{@render children()}</div>
+          <!-- tabindex + role/aria-label: axe's scrollable-region-focusable rule
+               fails when this overflow-y-auto region's content has no focusable
+               descendant (e.g. StageDetailSheet's plain text lists) — a keyboard
+               user would have no way to scroll it. This is the standard WCAG
+               technique (SCR29); svelte's a11y checker doesn't special-case
+               scrollable regions, hence the ignore. -->
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <div
+            class="max-h-[70vh] overflow-y-auto"
+            tabindex="0"
+            role="region"
+            aria-label={title ?? m.modalDialogFallbackTitle()}
+          >
+            {@render children()}
+          </div>
         {:else}
           {@render children()}
         {/if}

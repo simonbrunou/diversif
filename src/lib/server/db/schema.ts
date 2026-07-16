@@ -54,7 +54,8 @@ export const sessions = sqliteTable(
     expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
-    expiresIdx: index('sessions_expires_at_idx').on(t.expiresAt)
+    expiresIdx: index('sessions_expires_at_idx').on(t.expiresAt),
+    userIdx: index('sessions_user_id_idx').on(t.userId)
   })
 );
 
@@ -89,7 +90,8 @@ export const memberships = sqliteTable(
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.userId, t.childId] })
+    pk: primaryKey({ columns: [t.userId, t.childId] }),
+    childIdx: index('memberships_child_id_idx').on(t.childId)
   })
 );
 
@@ -107,7 +109,9 @@ export const invitations = sqliteTable(
     usedBy: integer('used_by').references(() => users.id, { onDelete: 'set null' })
   },
   (t) => ({
-    expiresIdx: index('invitations_expires_at_idx').on(t.expiresAt)
+    expiresIdx: index('invitations_expires_at_idx').on(t.expiresAt),
+    createdByIdx: index('invitations_created_by_idx').on(t.createdBy),
+    usedByIdx: index('invitations_used_by_idx').on(t.usedBy)
   })
 );
 
@@ -178,11 +182,20 @@ export const foodEntries = sqliteTable(
     mealFoodUnique: uniqueIndex('food_entries_meal_food_uq')
       .on(t.mealId, t.foodId)
       .where(sql`${t.mealId} is not null`),
-    // CHECK mirrors the texture enum so the value space is enforced at the DB
-    // level, not just by Drizzle's TS type.
+    // CHECK mirrors the texture/reaction enums so the value space is enforced
+    // at the DB level, not just by Drizzle's TS type. Column names are written
+    // unqualified (not `${t.texture}`) because SQLite's ALTER TABLE ... RENAME
+    // TO (used by drizzle-kit's add-a-check-constraint rebuild) fails to
+    // resolve a table-qualified column reference inside a CHECK constraint
+    // post-rename ("no such column: __new_food_entries.texture") — reproduced
+    // directly against sqlite3 3.51, independent of bun:sqlite.
     textureCheck: check(
       'food_entries_texture_check',
-      sql`${t.texture} in ('lisse', 'moulinee', 'ecrasee', 'petits-morceaux', 'morceaux', 'finger')`
+      sql`texture in ('lisse', 'moulinee', 'ecrasee', 'petits-morceaux', 'morceaux', 'finger')`
+    ),
+    reactionCheck: check(
+      'food_entries_reaction_check',
+      sql`reaction in ('ras', 'inconfort', 'reaction')`
     )
   })
 );

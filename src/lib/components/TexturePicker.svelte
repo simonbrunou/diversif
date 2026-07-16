@@ -106,7 +106,7 @@
 </fieldset>
 
 {#if pristine && ageMonths != null}
-  <p class="mt-1 text-[11px] text-muted-foreground">
+  <p class="mt-1 text-2xs text-muted-foreground">
     {m.textureDefaultHint({ ageMonths: String(Math.floor(ageMonths)) })}
   </p>
 {/if}
@@ -115,7 +115,7 @@
   type="button"
   onclick={onClear}
   disabled={value == null}
-  class="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40"
+  class="mt-1 inline-flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground disabled:opacity-40"
   aria-label={m.textureClearAria()}
 >
   <X size={11} />

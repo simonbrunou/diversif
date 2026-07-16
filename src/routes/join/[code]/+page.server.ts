@@ -6,6 +6,7 @@ import { isValidInviteCodeFormat } from '$lib/utils/invites';
 import { localizedRedirect } from '$lib/server/redirect';
 import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import { audit } from '$lib/server/audit';
+import * as m from '$lib/paraglide/messages';
 import type { Actions, PageServerLoad } from './$types';
 
 type ActiveInvite = {
@@ -22,6 +23,10 @@ const JOIN_INVITE_LOOKUP_LIMIT = {
   windowMs: 5 * 60 * 1000
 };
 
+// Returns the errorKey to surface, not a formatted message — see
+// resolveMessageKey/errorKey pattern used by login/signup. The load() 429
+// (a SvelteKit error(), not a form action) resolves it to text itself since
+// +error.svelte just renders page.error.message verbatim.
 function checkJoinInviteLookupLimit(event: RequestEvent): string | null {
   const keys = [`ip:${clientKey(event)}`];
   if (event.locals.user) keys.push(`user:${event.locals.user.id}`);
@@ -29,7 +34,7 @@ function checkJoinInviteLookupLimit(event: RequestEvent): string | null {
   for (const key of keys) {
     const rl = checkRateLimit(JOIN_INVITE_LOOKUP_LIMIT, key);
     if (!rl.allowed) {
-      return `Trop de tentatives. Réessayez dans ${rl.retryAfterSeconds}s.`;
+      return 'errorsAuthRateLimited';
     }
   }
   return null;
@@ -80,7 +85,7 @@ export const load: PageServerLoad = async (event) => {
   const code = params.code.toUpperCase();
 
   if (!isValidInviteCodeFormat(code)) {
-    return { error: 'Code d’invitation invalide.' as const, code, child: null, inviter: null };
+    return { errorKey: 'errorsAuthInvalidInvite' as const, code, child: null, inviter: null };
   }
 
   if (!locals.user) {
@@ -88,12 +93,15 @@ export const load: PageServerLoad = async (event) => {
   }
 
   const limited = checkJoinInviteLookupLimit(event);
-  if (limited) throw error(429, limited);
+  // error() renders through +error.svelte, which just shows the message
+  // verbatim — resolve it here (paraglide's per-request locale context) since
+  // there's no client-side errorKey resolution on that pathway.
+  if (limited) throw error(429, m.errorsAuthRateLimited());
 
   const inv = await findActiveInvitation(code);
   if (!inv) {
     return {
-      error: 'Code d’invitation introuvable ou expiré.' as const,
+      errorKey: 'errorsAuthInvalidInviteExpired' as const,
       code,
       child: null,
       inviter: null
@@ -105,7 +113,7 @@ export const load: PageServerLoad = async (event) => {
   }
 
   return {
-    error: null,
+    errorKey: null,
     code,
     child: { id: inv.childId, name: inv.childName },
     inviter: inv.inviterName
@@ -117,18 +125,18 @@ export const actions: Actions = {
     const { params, locals } = event;
     const code = params.code.toUpperCase();
     if (!isValidInviteCodeFormat(code)) {
-      return fail(400, { error: 'Code d’invitation invalide.' });
+      return fail(400, { errorKey: 'errorsAuthInvalidInvite' });
     }
     if (!locals.user) {
       throw localizedRedirect(locals.locale, 303, `/signup?code=${encodeURIComponent(code)}`);
     }
 
     const limited = checkJoinInviteLookupLimit(event);
-    if (limited) return fail(429, { error: limited });
+    if (limited) return fail(429, { errorKey: limited });
 
     const inv = await findActiveInvitation(code);
     if (!inv) {
-      return fail(400, { error: 'Code d’invitation introuvable ou expiré.' });
+      return fail(400, { errorKey: 'errorsAuthInvalidInviteExpired' });
     }
 
     if (await userHasMembership(locals.user.id, inv.childId)) {
@@ -169,7 +177,7 @@ export const actions: Actions = {
     });
 
     if (!consumed) {
-      return fail(400, { error: 'Code d’invitation introuvable ou expiré.' });
+      return fail(400, { errorKey: 'errorsAuthInvalidInviteExpired' });
     }
 
     audit({ type: 'invite.redeemed', userId: locals.user.id, childId: inv.childId });

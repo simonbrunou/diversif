@@ -167,6 +167,22 @@ describe('handle', () => {
     expect(response.headers.get('X-Robots-Tag')).toBeNull();
   });
 
+  it('sets Cache-Control: no-store for authenticated responses', async () => {
+    const user = await seedUser();
+    const { token } = await createSession(user.id);
+    const { event } = makeEvent(token, '/child/1');
+    const resolve = mock(async () => new Response('ok'));
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+  });
+
+  it('does not set Cache-Control for anonymous public pages', async () => {
+    const { event } = makeEvent(null, '/');
+    const resolve = mock(async () => new Response('ok'));
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(response.headers.get('Cache-Control')).toBeNull();
+  });
+
   it('marks the cookie secure in production', async () => {
     const orig = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';

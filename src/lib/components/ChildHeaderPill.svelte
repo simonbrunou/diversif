@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages';
   import { ChevronDown } from 'lucide-svelte';
-  import { formatMonthsSince } from '$lib/utils/dates';
+  import { ageInMonths } from '$lib/utils/age';
 
   type Child = {
     id: string;
@@ -15,7 +15,10 @@
     onSwitch
   }: { child: Child; onSwitch: () => void } = $props();
 
-  const ageLabel = $derived(formatMonthsSince(child.birthMonth));
+  const ageMonths = $derived(ageInMonths(child.birthMonth));
+  const ageLabel = $derived(
+    ageMonths === 1 ? m.childAgeMonthsOne() : m.childAgeMonthsOther({ months: ageMonths })
+  );
 </script>
 
 <button

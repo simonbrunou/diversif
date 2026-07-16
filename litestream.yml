@@ -1,0 +1,23 @@
+# Litestream replication config — SCAFFOLDED, NOT YET DEPLOYED.
+#
+# Closes DEPLOY.md "B1 — Off-box, continuous backups": streams the SQLite
+# WAL to an S3-compatible bucket (Cloudflare R2 is the intended target) for
+# point-in-time recovery, on top of the existing manual pre-deploy
+# `VACUUM INTO` snapshot. WAL mode is already enabled
+# (src/lib/server/db/index.ts) — Litestream's only prerequisite.
+#
+# No real credentials belong in this file or in git: every value below is
+# read from the environment (Litestream expands ${VAR} at load time), and
+# the docker-compose `litestream` service fails fast if any are unset. See
+# DEPLOY.md B1 for how to create the R2 bucket + API token and wire them in.
+
+dbs:
+  - path: ${DATABASE_PATH}
+    replicas:
+      - type: s3
+        endpoint: ${LITESTREAM_S3_ENDPOINT}
+        bucket: ${LITESTREAM_S3_BUCKET}
+        path: diversif
+        region: auto
+        access-key-id: ${LITESTREAM_ACCESS_KEY_ID}
+        secret-access-key: ${LITESTREAM_SECRET_ACCESS_KEY}

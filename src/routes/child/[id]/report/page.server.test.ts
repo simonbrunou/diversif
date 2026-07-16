@@ -8,7 +8,6 @@ import {
   seedUser
 } from '../../../../test/route';
 import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
-import { newId } from '$lib/offline/uuid';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
@@ -222,7 +221,7 @@ describe('child/[id]/report load', () => {
     const carrot = await seedFood('Carotte', 'legumes');
     const fish = await seedFood('Saumon', 'poissons', 'poisson');
     const standalone = await seedFood('Poire', 'fruits');
-    const sharedMealId = newId();
+    const sharedMealId = crypto.randomUUID();
 
     // Two ingredients of the SAME meal, each with its OWN (different) reaction.
     await testDb.insert(foodEntries).values([

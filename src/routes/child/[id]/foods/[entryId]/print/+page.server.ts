@@ -5,6 +5,7 @@ import { children, foodEntries, foods } from '$lib/server/db/schema';
 import { listSymptomsByEntry } from '$lib/server/db/symptoms';
 import { requireChildContext } from '$lib/server/guards';
 import { ageInMonths } from '$lib/utils/age';
+import * as m from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -26,7 +27,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)))
       .limit(1)
   )[0];
-  if (!row) throw error(404, 'Food entry not found');
+  // error() renders through +error.svelte, which shows the message verbatim —
+  // resolve it here (paraglide's per-request locale context) same as join/[code].
+  if (!row) throw error(404, m.errorsFoodEntryNotFound());
 
   const sList = await listSymptomsByEntry(entryId, childId);
   const locale = (locals.locale ?? 'fr') as 'fr' | 'en';

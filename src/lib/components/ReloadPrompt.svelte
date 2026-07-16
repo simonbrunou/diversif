@@ -4,6 +4,10 @@
   import * as m from '$lib/paraglide/messages';
 
   let swRegistration = $state<ServiceWorkerRegistration | undefined>();
+  // Set once the user dismisses the update toast, so it stops reappearing
+  // for the rest of the session — re-nagging every 30s indefinitely had no
+  // opt-out.
+  let dismissedForSession = false;
 
   const { needRefresh, updateServiceWorker } = useRegisterSW({
     onRegisteredSW(_url, registration) {
@@ -28,14 +32,12 @@
       },
       duration: Infinity,
       onDismiss: () => {
-        // Re-show after 30 s so the user doesn't lose the update prompt
-        // if they swipe the toast away by accident.
-        setTimeout(showUpdateToast, 30_000);
+        dismissedForSession = true;
       }
     });
   }
 
   $effect(() => {
-    if ($needRefresh) showUpdateToast();
+    if ($needRefresh && !dismissedForSession) showUpdateToast();
   });
 </script>

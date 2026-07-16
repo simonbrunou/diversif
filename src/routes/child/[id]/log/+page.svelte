@@ -19,8 +19,8 @@
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
   import { enqueue } from '$lib/offline/queue';
-  import { newId } from '$lib/offline/uuid';
   import { localizedHref } from '$lib/utils/localized-href';
+  import { resolveMessageKey } from '$lib/forms/tracked-enhance';
   import * as m from '$lib/paraglide/messages';
   import { Info } from 'lucide-svelte';
   import type { ActionData, PageData } from './$types';
@@ -102,7 +102,7 @@
         void (async () => {
           try {
             await enqueue({
-              key: newId(),
+              key: crypto.randomUUID(),
               childId: data.child.id,
               formData: formObj,
               queuedAt: Date.now()
@@ -129,8 +129,8 @@
       };
     }}
   >
-    {#if form?.error}
-      <FormError>{form.error}</FormError>
+    {#if form?.errorKey}
+      <FormError>{resolveMessageKey(form.errorKey)}</FormError>
     {/if}
 
     <FoodCombobox

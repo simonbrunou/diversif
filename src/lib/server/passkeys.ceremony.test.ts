@@ -164,6 +164,15 @@ describe('finishRegistration', () => {
     // Empty name falls back to "Passkey".
     expect(result.passkey.name).toBe('Passkey');
     expect(result.passkey.transports).toEqual(['internal']);
+    // The challenge/origin/RP ID passed into finishRegistration must actually
+    // reach the crypto verifier, not just be accepted and ignored.
+    expect(mocks.verifyRegistrationResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expectedChallenge: 'ch',
+        expectedOrigin: 'https://example.com',
+        expectedRPID: 'example.com'
+      })
+    );
   });
 
   it('defaults transports to []', async () => {
@@ -295,6 +304,47 @@ describe('finishAuthentication', () => {
     expect(result.passkey.backedUp).toBe(true);
     expect(result.passkey.lastUsedAt).toBeInstanceOf(Date);
     expect(result.userId).toBe(u.id);
+    // The challenge/origin/RP ID passed into finishAuthentication must
+    // actually reach the crypto verifier, not just be accepted and ignored.
+    expect(mocks.verifyAuthenticationResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expectedChallenge: 'ch',
+        expectedOrigin: 'https://example.com',
+        expectedRPID: 'example.com'
+      })
+    );
+  });
+
+  it('succeeds when the authenticator reports no user verification (documented requireUserVerification:false policy)', async () => {
+    const u = await seedUser();
+    await seedPasskey(u.id);
+    mocks.verifyAuthenticationResponse.mockResolvedValue({
+      verified: true,
+      authenticationInfo: {
+        credentialID: 'cred-id',
+        newCounter: 1,
+        userVerified: false,
+        credentialDeviceType: 'singleDevice',
+        credentialBackedUp: false,
+        origin: 'https://example.com',
+        rpID: 'example.com'
+      }
+    });
+
+    const result = await finishAuthentication({
+      response: authResponse(),
+      expectedChallenge: 'ch',
+      expectedOrigin: 'https://example.com',
+      expectedRPID: 'example.com'
+    });
+
+    // finishAuthentication passes requireUserVerification: false to the
+    // verifier by design (possession-only proof is accepted); a userVerified:
+    // false authenticationInfo must still result in success.
+    expect(result.ok).toBe(true);
+    expect(mocks.verifyAuthenticationResponse).toHaveBeenCalledWith(
+      expect.objectContaining({ requireUserVerification: false })
+    );
   });
 
   it('rejects unknown credentials', async () => {

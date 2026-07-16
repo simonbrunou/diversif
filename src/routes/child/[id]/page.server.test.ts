@@ -14,7 +14,6 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 import { foodEntries, foods, tipDismissals } from '$lib/server/db/schema';
 import { load, actions } from './+page.server';
 import { groupByMeal } from '$lib/utils/meals';
-import { newId } from '$lib/offline/uuid';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -200,7 +199,7 @@ describe('child/[id] +page.server load', () => {
   // target to render against.
   it('logging a 3-ingredient meal yields one groupByMeal group of 3 sharing a mealId', async () => {
     const { u, c, m } = await setup();
-    const sharedMealId = newId();
+    const sharedMealId = crypto.randomUUID();
     const ingredientNames = ['Poire', 'Banane', 'Poulet'];
     for (const name of ingredientNames) {
       const ingredient = (
@@ -545,8 +544,9 @@ describe('child/[id] dismissReminder action', () => {
     });
     const r = (await actions.dismissReminder!(
       event as unknown as Parameters<NonNullable<typeof actions.dismissReminder>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogInvalidRequest');
   });
 
   it('rejects long key', async () => {
@@ -559,8 +559,9 @@ describe('child/[id] dismissReminder action', () => {
     });
     const r = (await actions.dismissReminder!(
       event as unknown as Parameters<NonNullable<typeof actions.dismissReminder>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogInvalidRequest');
   });
 
   it('persists the dismissal on success', async () => {

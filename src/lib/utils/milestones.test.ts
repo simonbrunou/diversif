@@ -1,4 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test';
+import * as m from '$lib/paraglide/messages';
+import { getAllergenLabel } from '$lib/utils/allergens';
 import { celebrate, pickMilestoneFromQuery } from './milestones';
 
 function fakeToast() {
@@ -83,12 +85,15 @@ describe('pickMilestoneFromQuery', () => {
   });
 });
 
+// Assert via paraglide keys (not literals) so these survive copy changes
+// and run under any default locale — same pattern as allergens.test.ts.
 describe('celebrate', () => {
   it('fires the first-food toast', () => {
     const { toast, success } = fakeToast();
     celebrate(toast, { kind: 'first-food' });
     expect(success).toHaveBeenCalledOnce();
-    expect(success.mock.calls[0][0]).toContain('Premier repas');
+    expect(success.mock.calls[0][0]).toBe(m.milestoneFirstFoodTitle());
+    expect(success.mock.calls[0][1]?.description).toBe(m.milestoneFirstFoodDescription());
     expect(success.mock.calls[0][1]?.class).toContain('celebrate');
   });
 
@@ -96,34 +101,38 @@ describe('celebrate', () => {
     const { toast, success } = fakeToast();
     celebrate(toast, { kind: 'first-allergen', allergenType: 'arachide' });
     expect(success).toHaveBeenCalledOnce();
-    expect(success.mock.calls[0][0].toLowerCase()).toContain('arachide');
+    expect(success.mock.calls[0][0]).toBe(
+      m.milestoneFirstAllergenTitle({ allergen: getAllergenLabel('arachide') })
+    );
   });
 
   it('fires the all-allergens completion toast', () => {
     const { toast, success } = fakeToast();
     celebrate(toast, { kind: 'all-allergens' });
     expect(success).toHaveBeenCalledOnce();
-    expect(success.mock.calls[0][0]).toContain('7 allergènes');
+    expect(success.mock.calls[0][0]).toBe(m.milestoneAllAllergensTitle({ count: 7 }));
     expect(success.mock.calls[0][1]?.class).toContain('celebrate');
   });
 
   it('fires the all-covered variant when covered === total', () => {
     const { toast, success } = fakeToast();
     celebrate(toast, { kind: 'category-milestone', covered: 11, total: 11 });
-    expect(success.mock.calls[0][0]).toContain('Toutes les familles couvertes');
+    expect(success.mock.calls[0][0]).toBe(m.milestoneAllCategoriesTitle());
   });
 
   it('fires the partial-covered variant when covered < total', () => {
     const { toast, success } = fakeToast();
     celebrate(toast, { kind: 'category-milestone', covered: 5, total: 11 });
-    expect(success.mock.calls[0][0]).toContain('5 groupes');
-    expect(success.mock.calls[0][1]?.description).toContain('6');
+    expect(success.mock.calls[0][0]).toBe(m.milestoneCategoryTitle({ covered: 5 }));
+    expect(success.mock.calls[0][1]?.description).toBe(
+      m.milestoneCategoryDescription({ remaining: 6 })
+    );
   });
 
   it('fires the generic toast for the generic kind', () => {
     const { toast, success } = fakeToast();
     celebrate(toast, { kind: 'generic' });
     expect(success).toHaveBeenCalledOnce();
-    expect(success.mock.calls[0][0]).toContain('noté');
+    expect(success.mock.calls[0][0]).toBe(m.milestoneGenericTitle());
   });
 });

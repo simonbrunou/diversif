@@ -37,4 +37,14 @@ describe('CarnetTous', () => {
     render(CarnetTous, { props: { foods: [] } });
     expect(screen.getByText('Aucun aliment ici')).toBeTruthy();
   });
+
+  it('renders the empty-state CTA with a high-contrast variant, not bg-primary', () => {
+    // bg-primary/text-primary-foreground sits right at the 4.5:1 AA floor;
+    // axe caught it dipping under threshold on this button (a11y-axe.spec.ts).
+    // tile-mint has ~7.2:1 headroom — assert the fix stays in place.
+    render(CarnetTous, { props: { foods: [], childId: '1' } });
+    const cta = screen.getByRole('link', { name: 'Ajouter un repas' });
+    expect(cta.className).toContain('bg-tile-mint');
+    expect(cta.className).not.toContain('bg-primary');
+  });
 });

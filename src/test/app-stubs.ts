@@ -49,7 +49,9 @@ mock.module('$app/environment', () => ({
 mock.module('$app/navigation', () => ({
   goto: mock(() => {}),
   invalidate: mock(() => {}),
-  invalidateAll: mock(() => {})
+  invalidateAll: mock(() => {}),
+  afterNavigate: mock(() => {}),
+  beforeNavigate: mock(() => {})
 }));
 
 export function setPagePathname(pathname: string) {
