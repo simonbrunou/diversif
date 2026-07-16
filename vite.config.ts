@@ -126,7 +126,22 @@ export default defineConfig({
               cacheName: 'pages',
               networkTimeoutSeconds: 3,
               expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              precacheFallback: { fallbackURL: '/offline' }
+              precacheFallback: { fallbackURL: '/offline' },
+              // Authoritative session gate: hooks.server.ts stamps
+              // `Cache-Control: no-store` on EVERY authenticated response
+              // (driven by locals.user, not a route list), so refuse to write
+              // any such response to CacheStorage. This catches routes the
+              // SESSION_GATED_PATH deny-list above can't — notably `/` and
+              // `/en`, which render the multi-child picker (names/ages/roles)
+              // for signed-in users — and any future authenticated route,
+              // with no regex to maintain. Workbox's NetworkFirst calls
+              // cache.put() manually and otherwise ignores Cache-Control.
+              plugins: [
+                {
+                  cacheWillUpdate: async ({ response }: { response: Response }) =>
+                    response.headers.get('cache-control')?.includes('no-store') ? null : response
+                }
+              ]
             }
           },
           {

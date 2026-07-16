@@ -10,6 +10,7 @@
   import { cn } from '$lib/utils/cn';
   import { X } from 'lucide-svelte';
   import { SvelteSet } from 'svelte/reactivity';
+  import { tick } from 'svelte';
   import * as m from '$lib/paraglide/messages';
 
   type FoodOption = {
@@ -86,10 +87,16 @@
     onCustomToggle?.(true);
   }
 
-  function closeCustom() {
+  async function closeCustom() {
     customOpen = false;
     customNameValue = '';
     onCustomToggle?.(false);
+    // The panel (and the "Annuler" button that triggered this) unmounts on the
+    // next tick; without moving focus it falls to <body>. Restore it to the
+    // always-present search input. Applies in both single- and multi-select
+    // mode — the focus $effect below only covers the pick/"Changer" swap.
+    await tick();
+    rootEl?.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
   }
 
   // Single-select mode swaps the food list for a summary card (and back) on
