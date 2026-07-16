@@ -219,6 +219,28 @@ describe('child/[id]/log/[entryId] update action', () => {
     expect(r.data.errorKey).toBe('errorsLogDateInvalid');
   });
 
+  it('fails with a generic bad-input key on an out-of-enum field (e.g. reaction)', async () => {
+    // Exercises schemaErrorKey's fallback branch: a schema issue whose path is
+    // neither `givenAt` nor the zero-length `.refine()` (here an invalid
+    // reaction) maps to the generic errorsAuthBadInput.
+    const { u, c, m, entry, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2024-06-02T10:00',
+        reaction: 'pas-une-reaction'
+      }
+    });
+    const r = (await actions.update!(
+      event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsAuthBadInput');
+  });
+
   it('fails when neither foodId nor customFood.name provided', async () => {
     const { u, c, m, entry } = await setup();
     const event = makeRouteEvent({
