@@ -23,18 +23,18 @@ const JOIN_INVITE_LOOKUP_LIMIT = {
   windowMs: 5 * 60 * 1000
 };
 
-// Returns the errorKey to surface, not a formatted message — see
-// resolveMessageKey/errorKey pattern used by login/signup. The load() 429
-// (a SvelteKit error(), not a form action) resolves it to text itself since
-// +error.svelte just renders page.error.message verbatim.
-function checkJoinInviteLookupLimit(event: RequestEvent): string | null {
+// Returns the retry-after delay (seconds) when rate-limited, else null. Callers
+// surface it via the errorsAuthRateLimitedSeconds message so the user sees the
+// countdown — the load() 429 resolves it server-side (+error.svelte renders
+// page.error.message verbatim), the action passes seconds to the client.
+function checkJoinInviteLookupLimit(event: RequestEvent): number | null {
   const keys = [`ip:${clientKey(event)}`];
   if (event.locals.user) keys.push(`user:${event.locals.user.id}`);
 
   for (const key of keys) {
     const rl = checkRateLimit(JOIN_INVITE_LOOKUP_LIMIT, key);
     if (!rl.allowed) {
-      return 'errorsAuthRateLimited';
+      return rl.retryAfterSeconds;
     }
   }
   return null;
@@ -96,7 +96,7 @@ export const load: PageServerLoad = async (event) => {
   // error() renders through +error.svelte, which just shows the message
   // verbatim — resolve it here (paraglide's per-request locale context) since
   // there's no client-side errorKey resolution on that pathway.
-  if (limited) throw error(429, m.errorsAuthRateLimited());
+  if (limited !== null) throw error(429, m.errorsAuthRateLimitedSeconds({ seconds: limited }));
 
   const inv = await findActiveInvitation(code);
   if (!inv) {
@@ -132,7 +132,8 @@ export const actions: Actions = {
     }
 
     const limited = checkJoinInviteLookupLimit(event);
-    if (limited) return fail(429, { errorKey: limited });
+    if (limited !== null)
+      return fail(429, { errorKey: 'errorsAuthRateLimited' as const, retryAfterSeconds: limited });
 
     const inv = await findActiveInvitation(code);
     if (!inv) {

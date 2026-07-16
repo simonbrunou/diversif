@@ -103,6 +103,7 @@
   "legalCookiesUpdated": "Dernière mise à jour : 20 mai 2026.",
   "errorsGenericFallback": "Une erreur s’est produite.",
   "errorsAuthRateLimited": "Trop de tentatives. Réessayez plus tard.",
+  "errorsAuthRateLimitedSeconds": "Trop de tentatives. Réessayez dans {seconds} s.",
   "errorsAuthBadInput": "Champs invalides.",
   "errorsAuthInvalidCredentials": "Adresse e-mail ou mot de passe incorrect.",
   "errorsAuthInvalidInvite": "Code d’invitation invalide.",

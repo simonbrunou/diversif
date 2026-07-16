@@ -164,12 +164,15 @@
       {/each}
     </div>
   </div>
+  <!-- Announce the count actually reachable in the list (capped at MAX_VISIBLE),
+       not filteredAll — otherwise a screen reader hears "5000 résultats" while
+       only 200 are navigable. The visible foodComboboxCapped note flags the cap. -->
   <p aria-live="polite" class="sr-only">
-    {filteredAll.length === 0
+    {filtered.length === 0
       ? m.foodComboboxNoneTitle()
-      : filteredAll.length === 1
+      : filtered.length === 1
         ? m.foodComboboxResultsCountOne()
-        : m.foodComboboxResultsCountOther({ count: filteredAll.length })}
+        : m.foodComboboxResultsCountOther({ count: filtered.length })}
   </p>
 {/snippet}
 

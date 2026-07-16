@@ -190,6 +190,22 @@ describe('join/[code] default action', () => {
     expect(r.data.errorKey).toBe('errorsAuthInvalidInvite');
   });
 
+  it('rate-limits the redeem action and surfaces the retry countdown', async () => {
+    const u = await seedUser();
+    let r: { status: number; data: { errorKey: string; retryAfterSeconds?: number } } | undefined;
+    for (let i = 0; i < 21; i++) {
+      r = (await actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          params: { code: 'BEBE-ZZZZZZ' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )) as { status: number; data: { errorKey: string; retryAfterSeconds?: number } };
+    }
+    expect(r?.status).toBe(429);
+    expect(r?.data.errorKey).toBe('errorsAuthRateLimited');
+    expect(r?.data.retryAfterSeconds).toBeGreaterThan(0);
+  });
+
   it('redirects guests to /signup', async () => {
     const event = makeRouteEvent({
       user: null,
