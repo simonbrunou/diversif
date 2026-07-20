@@ -94,7 +94,7 @@
     "zod": "^4.0.0"
   },
   "overrides": {
-    "cookie": "^1.0.0",
+    "cookie": "^2.0.0",
     "esbuild": "^0.28.1",
     "@opentelemetry/core": "^2.8.0",
     "devalue": "^5.6.4",
