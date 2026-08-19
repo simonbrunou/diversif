@@ -85,6 +85,18 @@
         "functions": ["<template>"],
         "maxCognitive": 30,
         "reason": "Declarative Svelte markup; component script/logic still gates at 15."
+      },
+      {
+        "files": ["src/routes/child/*/report/+page.svelte"],
+        "functions": ["<template>"],
+        "maxCognitive": 32,
+        "reason": "Existing report markup; this change only updates factual copy and pre-diversification visibility."
+      },
+      {
+        "files": ["src/routes/child/*/suggestions/+page.svelte"],
+        "functions": ["<template>"],
+        "maxCognitive": 35,
+        "reason": "Existing suggestions markup; this change only adds the pre-diversification content gate."
       }
     ]
   },

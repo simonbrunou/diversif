@@ -66,20 +66,13 @@ export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date(
     if (!r.allergenType) continue;
     const givenAt =
       r.givenAt instanceof Date ? r.givenAt : /* v8 ignore next */ new Date(Number(r.givenAt));
-    const bucket = byAllergen.get(r.allergenType);
-    if (bucket) {
-      bucket.triedCount += 1;
-      if (givenAt.getTime() > bucket.latest.getTime()) bucket.latest = givenAt;
-      if (r.reaction === 'inconfort') bucket.hasInconfort = true;
-      if (r.reaction === 'reaction') bucket.hasReaction = true;
-    } else {
-      byAllergen.set(r.allergenType, {
-        triedCount: 1,
-        latest: givenAt,
-        hasInconfort: r.reaction === 'inconfort',
-        hasReaction: r.reaction === 'reaction'
-      });
-    }
+    const previous = byAllergen.get(r.allergenType);
+    byAllergen.set(r.allergenType, {
+      triedCount: (previous?.triedCount ?? 0) + 1,
+      latest: previous && previous.latest.getTime() > givenAt.getTime() ? previous.latest : givenAt,
+      hasInconfort: (previous?.hasInconfort ?? false) || r.reaction === 'inconfort',
+      hasReaction: (previous?.hasReaction ?? false) || r.reaction === 'reaction'
+    });
   }
 
   return ALLERGENS.map((a) => {
