@@ -18,11 +18,11 @@
   const guideFaq = [
     {
       q: "Comment démarrer la diversification à 4 mois ?",
-      a: "Proposez 1 cuillère le midi, en complément du lait, d'un aliment à la fois pendant 2–3 jours pour repérer une éventuelle réaction. Commencez par des légumes ou fruits cuits écrasés très fins. Le lait reste l'apport principal."
+      a: "Proposez quelques cuillères au déjeuner, en complément du lait, puis augmentez selon l’appétit. Commencez par des aliments en purée lisse. Le lait reste l’apport principal."
     },
     {
       q: "À quel âge introduire les allergènes ?",
-      a: "Entre 4 et 11 mois, sans retarder. La fenêtre d'opportunité immunologique se referme après 12 mois. Étude LEAP : -86 % de risque d'allergie à l'arachide chez les bébés à risque introduits tôt."
+      a: "Une fois la diversification commencée entre 4 et 6 mois, ne retardez pas les allergènes. La prévention est surtout étayée pour l’œuf bien cuit et l’arachide ; chez les enfants à haut risque, demandez un avis médical."
     },
     {
       q: "Quelles textures à quel âge ?",
@@ -30,15 +30,15 @@
     },
     {
       q: "Que faire en cas de réaction allergique ?",
-      a: "Réaction légère (rougeurs autour de la bouche, vomissement isolé) : arrêter l'aliment, surveiller, consulter le pédiatre. Réaction sévère (œdème, gêne respiratoire, urticaire généralisée, perte de tonus) : appeler le 15 sans délai."
+      a: "Après un symptôme léger, arrêtez l’aliment et demandez rapidement un avis médical avant de le reproposer. En cas de gêne respiratoire, d’œdème des lèvres ou de la langue, de malaise ou de plusieurs symptômes associés, appelez le 15 ou le 112 sans délai."
     },
     {
-      q: "Quels aliments sont interdits avant 1 an ?",
-      a: "Miel (botulisme infantile), lait de vache en boisson principale, sel ajouté, sucre ajouté, édulcorants, jus de fruits, charcuterie crue, fromages au lait cru, œufs crus ou peu cuits."
+      q: "Quels aliments faut-il éviter ?",
+      a: "Pas de miel avant 1 an. Le lait de vache ne remplace pas le lait maternel ou infantile avant 1 an. Avant 3 ans, évitez le sel ajouté et le soja. Avant 5 ans, évitez le lait cru, les œufs, viandes, poissons et coquillages crus ou peu cuits, ainsi que les fruits à coque entiers. Adaptez et découpez toujours les aliments ronds ou durs pour prévenir l’étouffement."
     },
     {
       q: "DME ou purées classiques : que choisir ?",
-      a: "Les deux approches sont reconnues par la SFP (2022). La DME demande une vigilance accrue sur la sécurité (étouffement) ; les purées contrôlent mieux les quantités. L'approche mixte combine les avantages des deux."
+      a: "La SFP ne privilégie pas une approche. La DME demande des capacités motrices suffisantes, des textures sûres, une surveillance constante et une attention particulière aux apports en fer et en énergie."
     }
   ];
 </script>
@@ -54,10 +54,10 @@
   data={articleJsonLd(siteUrl, {
     title: 'Guide de la diversification alimentaire : bébé de 4 mois à 3 ans',
     description:
-      "Guide complet et sourcé : 10 règles d'or, 4 étapes par âge, 12 allergènes prioritaires, textures, aliments à éviter, réactions allergiques.",
+      "Guide complet et sourcé : 10 règles d’or, 4 étapes par âge, 12 allergènes suivis, textures, aliments à éviter et réactions allergiques.",
     path: '/guide',
     datePublished: '2025-01-01',
-    dateModified: '2026-05-03'
+    dateModified: '2026-08-19'
   })}
 />
 <JsonLd data={faqPageJsonLd(guideFaq)} />

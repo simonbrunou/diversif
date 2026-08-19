@@ -7,7 +7,7 @@ afterEach(() => cleanup());
 describe('SevereRail', () => {
   it('renders the severe rail body', () => {
     render(SevereRail, {});
-    expect(screen.getByText(/Difficulté à respirer/)).toBeTruthy();
+    expect(screen.getByText(/Gêne respiratoire/)).toBeTruthy();
   });
 
   it('uses role="alert" so screen readers announce it', () => {

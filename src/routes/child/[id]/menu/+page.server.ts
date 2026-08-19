@@ -32,10 +32,12 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   for (const e of entries) {
     introducedFoodIds.add(e.foodId);
     if (e.allergenType) introducedAllergens.add(e.allergenType);
-    if (REACTION_RANK[e.reaction] >= REACTION_RANK['inconfort']) avoidFoodIds.add(e.foodId);
+    if (REACTION_RANK[e.reaction] >= REACTION_RANK['inconfort']) {
+      avoidFoodIds.add(e.foodId);
+      if (e.allergenType) reactedAllergens.add(e.allergenType);
+    }
     if (REACTION_RANK[e.reaction] >= REACTION_RANK['reaction']) {
       reactionTierFoodIds.add(e.foodId);
-      if (e.allergenType) reactedAllergens.add(e.allergenType);
     }
   }
 

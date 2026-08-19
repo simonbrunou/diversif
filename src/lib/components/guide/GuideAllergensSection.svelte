@@ -13,21 +13,21 @@
 <section id="allergenes" class="scroll-mt-6 space-y-3">
   <div class="flex items-center gap-2">
     <ShieldCheck size={18} class="text-primary" aria-hidden="true" />
-    <h2 class="text-xl font-semibold">Les 12 allergènes majeurs</h2>
+    <h2 class="text-xl font-semibold">Les 12 allergènes suivis</h2>
   </div>
   <Card class="p-4 md:p-5">
     <p class="text-sm text-foreground/90">
       Les recommandations actuelles sont claires : <strong
         >ne plus retarder l'introduction</strong
       >
-      des allergènes prioritaires (œuf, arachide, lait, gluten, poisson, fruits à coque, sésame). La
-      fenêtre 4–11 mois est clé pour réduire le risque d'allergie.
+      des allergènes une fois la diversification commencée entre 4 et 6 mois. L’effet préventif
+      est surtout démontré pour l’œuf bien cuit et l’arachide.
     </p>
     <p class="mt-2 text-sm text-foreground/90">
-      L'étude <strong>LEAP</strong> a montré que l'introduction précoce de l'arachide réduisait de
-      86 % le risque d'allergie chez les nourrissons à risque. L'étude
-      <strong>EAT</strong>, portant sur 6 allergènes (arachide, œuf, lait, sésame, poisson, blé)
-      introduits dès 3–4 mois, a divisé par 3 la prévalence d'allergies alimentaires.
+      Dans l’étude <strong>LEAP</strong>, l’introduction précoce de l’arachide a réduit le risque
+      jusqu’à 86 % dans un sous-groupe de nourrissons à haut risque. Dans <strong>EAT</strong>,
+      l’analyse principale n’était pas significative ; un bénéfice a été observé chez les enfants
+      ayant suivi le protocole.
     </p>
     <p class="mt-2 text-sm text-foreground/90">
       <strong>Cas particuliers.</strong> Le <strong>soja</strong> est tracé ici pour le suivi mais HCSP
@@ -36,7 +36,7 @@
       (règlement UE 1169/2011), sans recommandation d'introduction précoce spécifique.
     </p>
     <div class="mt-3">
-      <SourceCitation ids={['leap-2015', 'eat-2016', 'espghan-2017', 'hcsp-2020']} inline />
+      <SourceCitation ids={['hcsp-2020', 'eaaci-2020', 'leap-2015', 'eat-2016', 'eu-1169-2011']} inline />
     </div>
   </Card>
 
@@ -50,8 +50,8 @@
       >
         <div class="flex items-center justify-between gap-2">
           <span class="font-medium">{getAllergenLabel(a.id)}</span>
-          <Badge variant="default" class="shrink-0 text-3xs">
-            Dès {g.recommendedAgeMonths} mois
+            <Badge variant="default" class="shrink-0 text-3xs">
+              {g.timing}
           </Badge>
         </div>
         <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">{g.why}</p>

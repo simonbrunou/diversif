@@ -1,13 +1,12 @@
-// Structured, source-cited per-stage amounts. Figures lifted from guidance.ts —
-// no new medical claims. One source of truth for the totals card and the
-// per-item repères shown on the menu.
+// Structured, source-cited per-stage amounts. One source of truth for the
+// totals card and the per-item repères shown on the menu.
 import type { StageId } from './guidance';
 import type { SourceId } from './sources';
 
 export type StageQuantities = {
   stageId: StageId;
   milkPerDay: string;
-  meals: number;
+  meals: string;
   proteinPerDay: string;
   eggFraction: string | null;
   fishPerWeek: string | null;
@@ -25,71 +24,71 @@ export type StageQuantities = {
 export const QUANTITIES: Record<StageId, StageQuantities> = {
   '4-6': {
     stageId: '4-6',
-    milkPerDay: '~600–800 mL/j',
-    meals: 2,
-    proteinPerDay: 'premières protéines vers 6 mois',
+    milkPerDay: 'à la demande ou selon les conseils du professionnel de santé',
+    meals: 'quelques cuillères à un repas',
+    proteinPerDay: 'petites quantités possibles',
     eggFraction: null,
     fishPerWeek: null,
     portions: {
-      legume: '~1–3 c. à café',
-      fruit: '~1–3 c. à café',
-      feculent: 'quelques c. à café',
-      laitier: '—',
-      matiereGrasse: '1 c. à café'
+      legume: 'quelques cuillères',
+      fruit: 'quelques cuillères',
+      feculent: 'quelques cuillères',
+      laitier: 'possible, sans remplacer le lait',
+      matiereGrasse: '1 c. à café/jour au total'
     },
-    notes: ['Le lait reste le repas principal.', 'Une nouvelle saveur à la fois.'],
-    sources: ['spf-pnns-guide', 'hcsp-2020', '1000-jours']
+    notes: ['Le lait reste l’aliment principal.', 'Respecter l’appétit, sans forcer.'],
+    sources: ['spf-pnns-guide', 'spf-meal-memo', 'hcsp-2020', '1000-jours']
   },
   '6-9': {
     stageId: '6-9',
-    milkPerDay: '~500 mL/j',
-    meals: 4,
-    proteinPerDay: '10–20 g/j (1×)',
+    milkPerDay: 'environ 500 mL/j',
+    meals: 'rythme évoluant souvent vers 4 repas autour de 8 mois',
+    proteinPerDay: '10 g/j (1×)',
     eggFraction: '¼',
     fishPerWeek: '2×/sem. dont un gras',
     portions: {
-      legume: '~130 g',
-      fruit: '~1 au goûter',
-      feculent: '2–3 c. à soupe',
-      laitier: '1 laitage',
-      matiereGrasse: '1 c. à café/repas'
+      legume: '½ de la purée',
+      fruit: 'selon l’appétit',
+      feculent: '½ de la purée',
+      laitier: 'en option, sans remplacer le lait',
+      matiereGrasse: '1 c. à café/jour au total'
     },
     notes: ['Viande / poisson / œuf une fois par jour.'],
-    sources: ['spf-pnns-guide', 'hcsp-2020', 'espghan-2017']
+    sources: ['spf-pnns-guide', 'spf-meal-memo', 'hcsp-2020']
   },
   '9-12': {
     stageId: '9-12',
-    milkPerDay: '~500 mL/j',
-    meals: 4,
-    proteinPerDay: '20–30 g/j (1×)',
+    milkPerDay: 'environ 500 mL/j',
+    meals: '4 repas',
+    proteinPerDay: '10 g/j (1×)',
     eggFraction: '¼',
     fishPerWeek: '2×/sem. dont un gras',
     portions: {
-      legume: '~150 g',
-      fruit: '~1 au goûter',
-      feculent: '3–4 c. à soupe',
-      laitier: '1 laitage',
-      matiereGrasse: '1 c. à café/repas'
+      legume: '½ de la purée',
+      fruit: 'selon l’appétit',
+      feculent: '½ de la purée',
+      laitier: 'en option, sans remplacer le lait',
+      matiereGrasse: '1 c. à café/jour au total'
     },
     notes: ['Le tiers d’œuf commence après 1 an.'],
-    sources: ['spf-pnns-guide', 'hcsp-2020']
+    sources: ['spf-pnns-guide', 'spf-meal-memo', 'hcsp-2020']
   },
   '12-36': {
     stageId: '12-36',
-    milkPerDay: '~500 mL/j (lait de croissance)',
-    meals: 4,
-    proteinPerDay: '30 g/j → 50 g vers 3 ans',
+    milkPerDay: '~500 mL/j ; max. 800 mL lait + équivalents laitiers',
+    meals: '4 repas',
+    proteinPerDay: '20 g/j (1–2 ans), 30 g/j (2–3 ans)',
     eggFraction: '⅓–½',
     fishPerWeek: '2×/sem. dont un gras',
     portions: {
-      legume: 'à chaque repas',
-      fruit: 'à chaque repas',
-      feculent: 'à chaque repas',
-      laitier: '2–3/j',
-      matiereGrasse: '1 c. à café/repas'
+      legume: 'selon l’appétit',
+      fruit: 'selon l’appétit',
+      feculent: '3–4 c. à soupe/jour',
+      laitier: 'en option selon le repas',
+      matiereGrasse: '2 c. à café/jour au total'
     },
     notes: ['Sel et sucre ajoutés restent à limiter.'],
-    sources: ['spf-pnns-guide', 'hcsp-2020']
+    sources: ['spf-pnns-guide', 'spf-meal-memo', 'hcsp-2020']
   }
 };
 

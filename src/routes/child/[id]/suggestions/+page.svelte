@@ -39,27 +39,34 @@
 <div class="mx-auto w-full px-4 max-w-2xl space-y-6 py-6">
   <BackHeader
     title={m.suggestionsTitle()}
-    subtitle={data.ageMonths === 1
-      ? m.suggestionsSubtitleOne({ name: data.child.name })
-      : m.suggestionsSubtitleOther({ name: data.child.name, ageMonths: data.ageMonths })}
+    subtitle={data.ageMonths < 4
+      ? m.menuMilkPrimary()
+      : data.ageMonths === 1
+        ? m.suggestionsSubtitleOne({ name: data.child.name })
+        : m.suggestionsSubtitleOther({ name: data.child.name, ageMonths: data.ageMonths })}
     fallback={`/child/${data.child.id}`}
   />
 
-  <TipCard
-    tone="info"
-    icon={Lightbulb}
-    eyebrow={m.suggestionsTipEyebrow()}
-    body={m.suggestionsTipBody()}
-    sources={['spf-pnns-guide']}
-  />
-
-  {#if data.priorityAllergens.length === 0 && data.others.length === 0}
-    <CalloutCard icon={Sparkles} title={m.suggestionsEmptyTitle()}>
-      {m.suggestionsEmptyBody()}
+  {#if data.ageMonths < 4}
+    <CalloutCard icon={Sparkles} title={m.preDiversificationTitle()}>
+      {m.preDiversificationBody()}
     </CalloutCard>
   {:else}
-    {#if data.priorityAllergens.length > 0}
-      <section>
+    <TipCard
+      tone="info"
+      icon={Lightbulb}
+      eyebrow={m.suggestionsTipEyebrow()}
+      body={m.suggestionsTipBody()}
+      sources={['spf-pnns-guide']}
+    />
+
+    {#if data.priorityAllergens.length === 0 && data.others.length === 0}
+      <CalloutCard icon={Sparkles} title={m.suggestionsEmptyTitle()}>
+        {m.suggestionsEmptyBody()}
+      </CalloutCard>
+    {:else}
+      {#if data.priorityAllergens.length > 0}
+        <section>
         <h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-reaction-inconfort-foreground">
           {m.suggestionsAllergensHeading()}
         </h2>
@@ -90,10 +97,10 @@
             </a>
           {/each}
         </div>
-      </section>
-    {/if}
+        </section>
+      {/if}
 
-    {#each otherGroups as g (g.id)}
+      {#each otherGroups as g (g.id)}
       {@const cls = getCategoryClasses(g.id)}
       {@const Icon = getCategoryIcon(g.id)}
       <section>
@@ -132,6 +139,7 @@
           {/each}
         </div>
       </section>
-    {/each}
+      {/each}
+    {/if}
   {/if}
 </div>

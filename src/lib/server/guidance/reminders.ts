@@ -45,8 +45,7 @@ export type ReminderInput = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// "Plus on attend, plus le risque d'allergie augmente" + LEAP/EAT/ESPGHAN
-// sources are only valid for the early-introduction priority set. See
+// These are the common allergens French guidance says not to delay. See
 // PRIORITY_INTRODUCTION_ALLERGENS for which allergens are in scope and why
 // the others (soja, céleri, moutarde, crustacés, mollusques) are excluded.
 const ALLERGEN_PRIORITY: readonly AllergenId[] = PRIORITY_INTRODUCTION_ALLERGENS;
@@ -67,7 +66,6 @@ const RULES: ReadonlyArray<(ctx: RuleContext) => Reminder[]> = [
   ruleStageTransitions,
   ruleStaleDiversity,
   rulePendingAllergens,
-  ruleHighRiskWindow,
   ruleRepeatExposure,
   ruleCategoryImbalance,
   ruleForbiddenFoods,
@@ -180,9 +178,9 @@ function ruleStaleDiversity({ input, now, childPath }: RuleContext): Reminder[] 
   ];
 }
 
-// 4. Pending allergens : age >= 6 mo and allergen not yet introduced
+// 4. Pending allergens: once diversification has started, allergen not yet introduced
 function rulePendingAllergens({ input, childPath }: RuleContext): Reminder[] {
-  if (input.ageMonths < 6) return [];
+  if (input.ageMonths < 4 || input.entries.length === 0) return [];
   const missing = ALLERGEN_PRIORITY.filter((id) => !input.introducedAllergens.has(id));
   return missing.slice(0, 3).map(
     (id): Reminder => ({
@@ -191,43 +189,13 @@ function rulePendingAllergens({ input, childPath }: RuleContext): Reminder[] {
       title: m.reminderPendingAllergenTitle({ allergen: getAllergenLabel(id) }),
       body: m.reminderPendingAllergenBody(),
       cta: { label: m.reminderCtaHowToIntroduce(), href: `${childPath}/guide#allergenes` },
-      sources: ['leap-2015', 'eat-2016', 'espghan-2017'],
+      sources: ['hcsp-2020', 'eaaci-2020'],
       dismissable: true
     })
   );
 }
 
-// 5. High-risk window 4-11 mo with no priority allergen introduced.
-// Note: gates on the priority subset, not the full ALLERGENS set:
-// logging a log-completeness allergen (céleri, moutarde, crustacés,
-// mollusques) or soja shouldn't suppress the LEAP/EAT framing, since
-// those weren't covered by either trial.
-function ruleHighRiskWindow({ input, childPath }: RuleContext): Reminder[] {
-  const priorityIntroduced = PRIORITY_INTRODUCTION_ALLERGENS.some((id) =>
-    input.introducedAllergens.has(id)
-  );
-  if (
-    input.ageMonths < 4 ||
-    input.ageMonths > 11 ||
-    priorityIntroduced ||
-    input.entries.length === 0
-  ) {
-    return [];
-  }
-  return [
-    {
-      key: 'high-risk-window',
-      severity: 'warn',
-      title: m.reminderHighRiskWindowTitle(),
-      body: m.reminderHighRiskWindowBody(),
-      cta: { label: m.reminderCtaReadGuide(), href: `${childPath}/guide#allergenes` },
-      sources: ['leap-2015', 'eat-2016'],
-      dismissable: true
-    }
-  ];
-}
-
-// 6. Repeat exposure : food given exactly 1× with reaction ras|inconfort,
+// 5. Repeat exposure: food given exactly 1× with reaction ras,
 // > 3 days ago, and not a priority allergen (rule 9 owns those). Stricter
 // than the broad "1-2× & worst<=1" predicate used by the carnet's repeat
 // filter and loadDiversityMetrics; both share findRepeatCandidates as the
@@ -254,7 +222,7 @@ function ruleRepeatExposure({ input, now, childPath }: RuleContext): Reminder[] 
   );
 }
 
-// 7. Category imbalance : last 14 days dominated by 1 category > 60 %
+// 6. Category imbalance : last 14 days dominated by 1 category > 60 %
 function ruleCategoryImbalance({ input, now, childPath }: RuleContext): Reminder[] {
   if (input.entries.length < 5) return [];
   const since = now - 14 * DAY_MS;
@@ -291,7 +259,7 @@ function ruleCategoryImbalance({ input, now, childPath }: RuleContext): Reminder
   ];
 }
 
-// 8. Forbidden food matched in entries (e.g., custom food named "Miel"
+// 7. Forbidden food matched in entries (e.g., custom food named "Miel"
 // before 12 mo). Iterates FORBIDDEN_FOODS so the age gate + name pattern
 // come from a single source; an item must set ALL of `untilMonths`,
 // `nameMatchers` (non-empty), and `reminderTitle` to surface as a runtime
@@ -323,31 +291,29 @@ function ruleForbiddenFoods({ input }: RuleContext): Reminder[] {
   return out;
 }
 
-// 9. Maintain priority allergens: once a priority allergen has been
-// introduced, surface a calm nudge if more than four days have passed
-// since the last exposure. Anchored to the LEAP/ESPGHAN target of
-// 2-3 times per week. Reaction-bearing allergens are suppressed here so
-// we never compete with the reaction surfaces.
+// 8. Maintain priority allergens: once a priority allergen has been
+// introduced and tolerated, surface a calm nudge once a week has elapsed. Any allergen
+// associated with discomfort or a reaction is suppressed so an automated
+// prompt never advises re-exposure before medical review.
 type MaintainCandidate = { id: AllergenId; daysSince: number; lastAt: number };
 
 // Per priority allergen: newest exposure timestamp, and whether any exposure
-// triggered a frank reaction (a reaction suppresses the maintain nudge so we
-// never compete with the reaction surfaces).
+// triggered symptoms (which suppress the maintain nudge).
 function summarizePriorityAllergens(entries: EnrichedEntry[]): {
   lastByAllergen: Map<AllergenId, number>;
-  hasReactionByAllergen: Map<AllergenId, boolean>;
+  hasSymptomsByAllergen: Map<AllergenId, boolean>;
 } {
   const lastByAllergen = new Map<AllergenId, number>();
-  const hasReactionByAllergen = new Map<AllergenId, boolean>();
+  const hasSymptomsByAllergen = new Map<AllergenId, boolean>();
   for (const e of entries) {
     if (!e.allergenType) continue;
     const aid = e.allergenType as AllergenId;
     if (!ALLERGEN_PRIORITY.includes(aid)) continue;
     const cur = lastByAllergen.get(aid);
     if (cur == null || e.givenAt > cur) lastByAllergen.set(aid, e.givenAt);
-    if (e.reaction === 'reaction') hasReactionByAllergen.set(aid, true);
+    if (e.reaction !== 'ras') hasSymptomsByAllergen.set(aid, true);
   }
-  return { lastByAllergen, hasReactionByAllergen };
+  return { lastByAllergen, hasSymptomsByAllergen };
 }
 
 // Introduced, reaction-free priority allergens whose last exposure is older than
@@ -356,16 +322,16 @@ function selectMaintainCandidates(
   input: ReminderInput,
   now: number,
   lastByAllergen: Map<AllergenId, number>,
-  hasReactionByAllergen: Map<AllergenId, boolean>
+  hasSymptomsByAllergen: Map<AllergenId, boolean>
 ): MaintainCandidate[] {
   const candidates: MaintainCandidate[] = [];
   for (const id of ALLERGEN_PRIORITY) {
     if (!input.introducedAllergens.has(id)) continue;
-    if (hasReactionByAllergen.get(id)) continue;
+    if (hasSymptomsByAllergen.get(id)) continue;
     const lastAt = lastByAllergen.get(id);
     if (lastAt == null) continue; // introduced but no allergenType-tagged entry in window
     const daysSince = Math.max(0, Math.floor((now - lastAt) / DAY_MS));
-    if (daysSince > ALLERGEN_MAINTAIN_DAYS) {
+    if (daysSince >= ALLERGEN_MAINTAIN_DAYS) {
       candidates.push({ id, daysSince, lastAt });
     }
   }
@@ -375,8 +341,8 @@ function selectMaintainCandidates(
 
 function ruleMaintainAllergens({ input, now, childPath }: RuleContext): Reminder[] {
   if (input.ageMonths < 4) return [];
-  const { lastByAllergen, hasReactionByAllergen } = summarizePriorityAllergens(input.entries);
-  const candidates = selectMaintainCandidates(input, now, lastByAllergen, hasReactionByAllergen);
+  const { lastByAllergen, hasSymptomsByAllergen } = summarizePriorityAllergens(input.entries);
+  const candidates = selectMaintainCandidates(input, now, lastByAllergen, hasSymptomsByAllergen);
   // Cap to MAINTAIN_CARD_CAP.
   return candidates.slice(0, MAINTAIN_CARD_CAP).map((c): Reminder => {
     const label = getAllergenLabel(c.id);
@@ -390,7 +356,7 @@ function ruleMaintainAllergens({ input, now, childPath }: RuleContext): Reminder
         days: c.daysSince
       }),
       cta: { label: m.reminderCtaSeeAllergens(), href: `${childPath}/foods?segment=allergens` },
-      sources: ['leap-2015', 'espghan-2017', 'anses-nourrisson'],
+      sources: ['ascia-2026'],
       dismissable: true
     };
   });

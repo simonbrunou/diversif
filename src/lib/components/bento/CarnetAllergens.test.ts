@@ -52,7 +52,7 @@ describe('CarnetAllergens', () => {
 
   it('renders the state per card', () => {
     render(CarnetAllergens, { props: { items } });
-    expect(screen.getAllByText(/à découvrir/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/non noté/).length).toBeGreaterThan(0);
   });
 
   it("renders the 'fading' state with à reproposer pill and days caption", () => {
@@ -62,7 +62,7 @@ describe('CarnetAllergens', () => {
         label: 'Œuf',
         triedCount: 1,
         lastTried: '2026-04-30',
-        daysSinceLastTried: 5,
+        daysSinceLastTried: 8,
         state: 'fading' as const
       }
     ];
@@ -70,6 +70,6 @@ describe('CarnetAllergens', () => {
     expect(screen.getByText('Œuf')).toBeTruthy();
     expect(screen.getByText(/à reproposer/i)).toBeTruthy();
     // Caption substitutes the date with the days-since suffix.
-    expect(screen.getByText(/5 j/)).toBeTruthy();
+    expect(screen.getByText(/8 j/)).toBeTruthy();
   });
 });

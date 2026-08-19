@@ -364,24 +364,32 @@ describe('child/[id]/foods load', () => {
       return { ...base, egg, celery };
     }
 
-    it("returns 'fading' for a priority allergen logged > 4 days ago with no reaction", async () => {
+    it("returns 'fading' for a priority allergen logged at least 7 days ago with no reaction", async () => {
       const ctx = await setupEgg();
-      await ctx.log(ctx.egg.id, 'ras', /* daysAgo */ 5);
+      await ctx.log(ctx.egg.id, 'ras', /* daysAgo */ 7);
       const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');
       const oeuf = res.bentoAllergens.find((a: { id: string }) => a.id === 'oeuf');
       expect(oeuf?.state).toBe('fading');
-      expect(oeuf?.daysSinceLastTried).toBe(5);
+      expect(oeuf?.daysSinceLastTried).toBe(7);
     });
 
-    it("returns 'cleared' for a priority allergen logged <= 4 days ago", async () => {
+    it("returns 'cleared' for a priority allergen logged less than 7 days ago", async () => {
       const ctx = await setupEgg();
-      await ctx.log(ctx.egg.id, 'ras', 3);
+      await ctx.log(ctx.egg.id, 'ras', 6);
       const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');
       const oeuf = res.bentoAllergens.find((a: { id: string }) => a.id === 'oeuf');
       expect(oeuf?.state).toBe('cleared');
     });
 
-    it("keeps 'reaction' state even if last log is > 4 days ago (reaction trumps fading)", async () => {
+    it("keeps 'inconfort' state instead of treating the allergen as cleared", async () => {
+      const ctx = await setupEgg();
+      await ctx.log(ctx.egg.id, 'inconfort', 8);
+      const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');
+      const oeuf = res.bentoAllergens.find((a: { id: string }) => a.id === 'oeuf');
+      expect(oeuf?.state).toBe('inconfort');
+    });
+
+    it("keeps 'reaction' state even if last log is > 7 days ago (reaction trumps fading)", async () => {
       const ctx = await setupEgg();
       await ctx.log(ctx.egg.id, 'reaction', 8);
       const res = await loadFor(ctx, 'http://x/child/1/foods?segment=allergens');

@@ -10,9 +10,9 @@ import * as m from '$lib/paraglide/messages';
 //   - sulphites: a preservative, not a food group; mostly in dried
 //     fruit and wine : out of scope for infant diversification.
 //
-// HCSP 2020 (avis du 30/06/2020) specifically names produits laitiers,
-// œuf, arachide, fruits à coque and gluten as introduction priorities
-// in the 4–6 mois window. The other entries here (poisson, sésame,
+// French guidance says not to delay allergenic foods once diversification
+// has started; prevention evidence is strongest for well-cooked egg and
+// peanut. The other entries here (poisson, sésame,
 // soja, céleri, moutarde, crustacés, mollusques) are tracked for
 // log-completeness against EU labelling, not because HCSP names them
 // as priority introduction allergens.
@@ -37,9 +37,9 @@ export const ALLERGENS = [
 
 export type AllergenId = (typeof ALLERGENS)[number]['id'];
 
-// Allergens for which LEAP (2015), EAT (2016), ESPGHAN 2017 and HCSP 2020
-// support early introduction in the 4–11 mo window. Surfacing reminders or
-// suggestion-list "à introduire" prompts is only justified for this subset.
+// Common food allergens that French guidance says not to delay once
+// diversification has started. Evidence for allergy prevention is not equal
+// across this list; it is strongest for well-cooked egg and peanut.
 //
 // Intentionally absent:
 //   - soja: HCSP 2020 + ANSES discourage soja products before 3 ans
@@ -58,14 +58,13 @@ export const PRIORITY_INTRODUCTION_ALLERGENS = [
   'sesame'
 ] as const satisfies readonly AllergenId[];
 
-// Days after which a previously-introduced priority allergen is considered
-// "fading" / needs maintenance re-exposure. Anchored to LEAP/ESPGHAN's
-// 2-3 exposures/week target. Single source of truth: the dashboard
+// Days after which a previously-tolerated allergen gets a maintenance nudge.
+// Current ASCIA consensus recommends at least weekly exposure. Single source of truth: the dashboard
 // `fading` badge in /child/[id]/foods, the `maintain-allergen` reminder
 // in lib/server/guidance/reminders, and the `loadAllergenStatus` function
 // in lib/server/guidance/allergen-status (powers both the carnet allergens
 // row and the Discover passport) all gate on this same threshold.
-export const ALLERGEN_MAINTAIN_DAYS = 4;
+export const ALLERGEN_MAINTAIN_DAYS = 7;
 
 // Allergen labels go through paraglide so the EN locale gets English names
 // (same pattern as REACTION_LABEL_RESOLVERS in $lib/utils/reactions and

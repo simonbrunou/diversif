@@ -52,7 +52,9 @@
       {data.child.name}
     </h1>
     <p class="text-sm text-muted-foreground">
-      {formatAge(data.child.birthDate)} · {data.stage.title}
+      {formatAge(data.child.birthDate)} · {data.ageMonths < 4
+        ? m.preDiversificationTitle()
+        : data.stage.title}
     </p>
   </header>
 
@@ -103,11 +105,16 @@
   <!-- Stage status -->
   <section class="space-y-2 rounded-lg border bg-card p-4">
     <h2 class="text-lg font-semibold">{m.reportStageHeading()}</h2>
-    <p class="text-sm text-muted-foreground">{data.stage.title}</p>
-    <p class="text-sm">{data.stage.oneLiner}</p>
-    <p class="text-sm">
-      <span class="text-muted-foreground">{m.reportStageExpectedTextures()} : </span>{data.stage.textures}
-    </p>
+    {#if data.ageMonths < 4}
+      <p class="text-sm text-muted-foreground">{m.preDiversificationTitle()}</p>
+      <p class="text-sm">{m.preDiversificationBody()}</p>
+    {:else}
+      <p class="text-sm text-muted-foreground">{data.stage.title}</p>
+      <p class="text-sm">{data.stage.oneLiner}</p>
+      <p class="text-sm">
+        <span class="text-muted-foreground">{m.reportStageExpectedTextures()} : </span>{data.stage.textures}
+      </p>
+    {/if}
     {#if data.mostAdvancedTexture}
       <p class="text-sm">
         <span class="text-muted-foreground">{m.reportStageMostAdvancedTexture()} : </span>

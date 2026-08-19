@@ -13,8 +13,14 @@ export const SOURCES = {
     label:
       'Pas à pas, votre enfant mange comme un grand : Le petit guide de la diversification alimentaire',
     org: 'Santé publique France / PNNS',
-    year: 2021,
-    url: 'https://www.mangerbouger.fr/content/show/1500/file/Brochure-SPF-Mangerbougerfr.pdf'
+    year: 2022,
+    url: 'https://www.mangerbouger.fr/content/show/1500/file/Brochure_diversification_alimentaire_Pas_a_pas_votre_enfant_mange_comme_un_grand.pdf'
+  },
+  'spf-meal-memo': {
+    label: 'Fiches mémo diversification : des repas-types de 4 mois à 3 ans',
+    org: 'Santé publique France / PNNS',
+    year: 2025,
+    url: 'https://www.mangerbouger.fr/content/show/2253/file/1011-Spf_fiches%20memo%20diversification.pdf'
   },
   'spf-recos': {
     label: "Recommandations sur la diversification alimentaire des enfants jusqu'à 3 ans",
@@ -52,6 +58,37 @@ export const SOURCES = {
     year: 2016,
     url: 'https://www.nejm.org/doi/full/10.1056/NEJMoa1514210'
   },
+  'eaaci-2020': {
+    label:
+      'EAACI guideline: Preventing the development of food allergy in infants and young children — 2020 update',
+    org: 'European Academy of Allergy and Clinical Immunology',
+    year: 2021,
+    url: 'https://eaaci.org/guidelines-position-papers/eaaci-guideline-preventing-the-development-of-food-allergy-in-infants-and-young-children-2020-update/'
+  },
+  'ascia-2026': {
+    label: 'ASCIA Guidelines: Infant Feeding for Food Allergy Prevention',
+    org: 'Australasian Society of Clinical Immunology and Allergy',
+    year: 2026,
+    url: 'https://www.allergy.org.au/hp/papers/infant-feeding-and-allergy-prevention'
+  },
+  'eu-1169-2011': {
+    label: 'Règlement (UE) n° 1169/2011, annexe II — substances provoquant des allergies',
+    org: 'Union européenne',
+    year: 2011,
+    url: 'https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32011R1169'
+  },
+  'ameli-allergie': {
+    label: 'Allergie alimentaire : définition et symptômes',
+    org: 'Assurance Maladie',
+    year: 2025,
+    url: 'https://www.ameli.fr/assure/sante/themes/allergie-alimentaire/definition-symptomes'
+  },
+  'ameli-oedeme': {
+    label: 'Œdème de Quincke : situations urgentes et numéros à appeler',
+    org: 'Assurance Maladie',
+    year: 2026,
+    url: 'https://www.ameli.fr/assure/sante/urgence/pathologies/oedeme-quincke'
+  },
   'sfp-dme': {
     label: "La diversification alimentaire menée par l'enfant : position du Comité de nutrition",
     org: 'Société Française de Pédiatrie (Bocquet et al.)',
@@ -68,7 +105,7 @@ export const SOURCES = {
     label: 'Repères alimentaires pour les nourrissons',
     org: 'ANSES',
     year: 2019,
-    url: 'https://www.anses.fr/fr/content/alimentation-des-enfants-de-0-3-ans'
+    url: 'https://www.anses.fr/fr/system/files/NUT2017SA0145.pdf'
   }
 } as const satisfies Record<string, Source>;
 

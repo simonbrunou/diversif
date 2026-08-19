@@ -22,7 +22,7 @@
   const allergensItemList = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Les 12 allergènes prioritaires en diversification alimentaire',
+    name: 'Les 12 allergènes suivis en diversification alimentaire',
     itemListOrder: 'https://schema.org/ItemListOrderAscending',
     numberOfItems: ALLERGENS.length,
     itemListElement: ALLERGENS.map((a, i) => ({
@@ -43,12 +43,12 @@
 />
 <JsonLd
   data={articleJsonLd(siteUrl, {
-    title: 'Les 12 allergènes prioritaires en diversification alimentaire bébé',
+    title: 'Les 12 allergènes suivis en diversification alimentaire bébé',
     description:
-      "Quand et comment introduire chacun des 12 allergènes alimentaires majeurs entre 4 et 11 mois, signes d'allergie à surveiller, conduite à tenir.",
+      "Repères et formes adaptées pour les 12 allergènes suivis, signes d'allergie à surveiller et conduite à tenir.",
     path: '/allergens',
     datePublished: '2025-01-01',
-    dateModified: '2026-05-03'
+    dateModified: '2026-08-19'
   })}
 />
 <JsonLd data={allergensItemList} />
@@ -72,20 +72,20 @@
       <ShieldCheck size={14} aria-hidden="true" />
       Allergènes
     </div>
-    <h1 class="text-2xl font-semibold leading-tight md:text-3xl">Les 12 allergènes majeurs</h1>
+    <h1 class="text-2xl font-semibold leading-tight md:text-3xl">Les 12 allergènes suivis</h1>
     <p class="max-w-2xl text-sm text-muted-foreground">
       Les recommandations actuelles sont claires : ne plus retarder l'introduction des allergènes
-      prioritaires (œuf, arachide, lait, gluten, poisson, fruits à coque, sésame). La fenêtre 4–11
-      mois est clé pour réduire le risque d'allergie.
+      une fois la diversification commencée entre 4 et 6 mois. L’effet préventif est surtout
+      démontré pour l’œuf bien cuit et l’arachide.
     </p>
   </header>
 
   <Card class="p-4 md:p-5">
     <p class="text-sm text-foreground/90">
-      L'étude <strong>LEAP</strong> a montré que l'introduction précoce de l'arachide réduisait de
-      86 % le risque d'allergie chez les nourrissons à risque. L'étude <strong>EAT</strong>,
-      portant sur 6 allergènes (arachide, œuf, lait, sésame, poisson, blé) introduits dès 3–4
-      mois, a divisé par 3 la prévalence d'allergies alimentaires.
+      Dans l’étude <strong>LEAP</strong>, l’introduction précoce de l’arachide a réduit le risque
+      jusqu’à 86 % dans un sous-groupe de nourrissons à haut risque. Dans <strong>EAT</strong>,
+      l’analyse principale n’était pas significative ; un bénéfice a été observé chez les enfants
+      ayant suivi le protocole.
     </p>
     <p class="mt-2 text-sm text-foreground/90">
       <strong>Cas particuliers.</strong> Le <strong>soja</strong> est tracé ici pour le suivi mais
@@ -95,7 +95,7 @@
       spécifique.
     </p>
     <div class="mt-3">
-      <SourceCitation ids={['leap-2015', 'eat-2016', 'espghan-2017', 'hcsp-2020']} inline />
+      <SourceCitation ids={['hcsp-2020', 'eaaci-2020', 'leap-2015', 'eat-2016', 'eu-1169-2011']} inline />
     </div>
   </Card>
 
@@ -109,8 +109,8 @@
       >
         <div class="flex items-center justify-between gap-2">
           <span class="font-medium">{getAllergenLabel(a.id)}</span>
-          <Badge variant="default" class="shrink-0 text-3xs">
-            Dès {g.recommendedAgeMonths} mois
+            <Badge variant="default" class="shrink-0 text-3xs">
+              {g.timing}
           </Badge>
         </div>
         <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">{g.why}</p>
@@ -121,9 +121,8 @@
   <Card padding="lg" class="text-center mt-8">
     <h2 class="text-base font-semibold">Suivre l'introduction des allergènes</h2>
     <p class="mt-1 text-sm text-ink-soft">
-      Diversif suit l'introduction des 12 allergènes du carnet et vous rappelle les allergènes
-      prioritaires (œuf, arachide, lait, gluten, poisson, fruits à coque, sésame) qui restent à
-      proposer dans la fenêtre 4–11 mois.
+      Diversif suit 12 allergènes du carnet et vous aide à ne pas retarder les allergènes courants
+      une fois la diversification commencée.
     </p>
     <div class="mt-4 flex flex-wrap justify-center gap-3">
       <Button href={localizedHref('/signup')}>Créer un compte pour les suivre</Button>

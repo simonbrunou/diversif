@@ -15,7 +15,7 @@ export type AllergenItem = {
   lastTried: string | null;
   /** Days since the most recent log. Null only when the allergen has never been logged ('todo'). Consumed by the 'fading' caption; populated for other states for symmetry but not surfaced. */
   daysSinceLastTried: number | null;
-  state: 'cleared' | 'todo' | 'reaction' | 'fading';
+  state: 'cleared' | 'todo' | 'inconfort' | 'reaction' | 'fading';
 };
 
 export type AllergenRow = {
@@ -51,11 +51,14 @@ export async function loadAllergenRows(childId: number): Promise<AllergenRow[]> 
 
 /**
  * For each of the 12 tracked allergens, returns trial count, last-tried date,
- * days-since, and a derived state (cleared / todo / reaction / fading).
+ * days-since, and a derived state (cleared / todo / discomfort / reaction / fading).
  * Shared between the carnet allergens segment and the Discover passport.
  */
 export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date()): AllergenItem[] {
-  const byAllergen = new Map<string, { triedCount: number; latest: Date; hasReaction: boolean }>();
+  const byAllergen = new Map<
+    string,
+    { triedCount: number; latest: Date; hasInconfort: boolean; hasReaction: boolean }
+  >();
   for (const r of rows) {
     // SQL filters `allergenType IS NOT NULL`; the guard is a TS narrowing
     // affordance and unreachable at runtime.
@@ -67,11 +70,13 @@ export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date(
     if (bucket) {
       bucket.triedCount += 1;
       if (givenAt.getTime() > bucket.latest.getTime()) bucket.latest = givenAt;
+      if (r.reaction === 'inconfort') bucket.hasInconfort = true;
       if (r.reaction === 'reaction') bucket.hasReaction = true;
     } else {
       byAllergen.set(r.allergenType, {
         triedCount: 1,
         latest: givenAt,
+        hasInconfort: r.reaction === 'inconfort',
         hasReaction: r.reaction === 'reaction'
       });
     }
@@ -94,7 +99,9 @@ export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date(
     let state: AllergenItem['state'];
     if (b.hasReaction) {
       state = 'reaction';
-    } else if (isPriority && daysSince > ALLERGEN_MAINTAIN_DAYS) {
+    } else if (b.hasInconfort) {
+      state = 'inconfort';
+    } else if (isPriority && daysSince >= ALLERGEN_MAINTAIN_DAYS) {
       state = 'fading';
     } else {
       state = 'cleared';

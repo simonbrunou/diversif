@@ -8,10 +8,12 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
   // belt-and-braces alongside the layout guard reached via `await parent()`.
   requireChildContext(locals, params);
   const { child } = await parent();
-  const currentStageId = getStageForAgeMonths(ageInMonths(child.birthDate)).id;
+  const ageMonths = ageInMonths(child.birthDate);
+  const currentStageId = ageMonths < 4 ? '' : getStageForAgeMonths(ageMonths).id;
   const stages = getAllStagesForBento();
 
   return {
+    ageMonths,
     currentStageId,
     stages
   };

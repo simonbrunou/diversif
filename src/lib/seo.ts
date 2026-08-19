@@ -21,14 +21,14 @@ export const SITE = {
   ogImageWidth: 1200,
   ogImageHeight: 630,
   description:
-    'Suivez la diversification alimentaire de votre bébé de 4 mois à 3 ans : étapes par âge, 12 allergènes prioritaires, textures, aliments à éviter, conduite à tenir en cas de réaction. Guide sourcé HCSP, Santé publique France, ANSES, ESPGHAN, OMS, études LEAP et EAT. Self-hosted, sans publicité, open source.',
+    'Suivez la diversification alimentaire de votre bébé de 4 mois à 3 ans : étapes par âge, 12 allergènes suivis, textures, aliments à éviter et conduite à tenir en cas de réaction. Guide sourcé HCSP, Santé publique France, ANSES, EAACI et OMS. Self-hosted, sans publicité, open source.',
   shortDescription:
     'Diversification alimentaire bébé : guide sourcé, suivi des allergènes, partage à deux parents, adossé HCSP, Santé publique France, ESPGHAN.',
   keywords: [
     'diversification alimentaire',
     'diversification bébé',
     'allergènes bébé',
-    'allergènes prioritaires',
+    'allergènes alimentaires',
     'introduction des allergènes',
     'DME',
     'diversification menée par enfant',

@@ -178,7 +178,7 @@ describe('child/[id]/suggestions load', () => {
     expect(out.priorityAllergens.find((f) => f.id === egg.id)).toBeDefined();
   });
 
-  it('clamps minimum age threshold to 4 months', async () => {
+  it('does not suggest complementary foods before 4 months', async () => {
     const u = await seedUser({ email: 'young@example.com' });
     const veryYoung = new Date();
     veryYoung.setMonth(veryYoung.getMonth() - 1);
@@ -194,6 +194,37 @@ describe('child/[id]/suggestions load', () => {
         parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
       }) as unknown as Parameters<typeof load>[0]
     );
-    expect(out.others.find((f) => f.id === okFood.id)).toBeDefined();
+    expect(out.priorityAllergens).toEqual([]);
+    expect(out.others.find((f) => f.id === okFood.id)).toBeUndefined();
+  });
+
+  it('blocks an allergen family after any reported symptoms', async () => {
+    const ctx = await setup();
+    const firstMilk = await insertFood({
+      name: 'Yaourt',
+      category: 'produits_laitiers',
+      age: 4,
+      allergen: 'lait'
+    });
+    const otherMilk = await insertFood({
+      name: 'Fromage',
+      category: 'produits_laitiers',
+      age: 4,
+      allergen: 'lait'
+    });
+    await testDb.insert(foodEntries).values({
+      childId: ctx.c.id,
+      foodId: firstMilk.id,
+      givenAt: new Date(),
+      reaction: 'inconfort',
+      notes: null,
+      loggedBy: ctx.u.id,
+      createdAt: new Date()
+    });
+
+    const out = await loadFor(ctx);
+
+    expect(out.priorityAllergens.some((f) => f.id === otherMilk.id)).toBe(false);
+    expect(out.others.some((f) => f.id === otherMilk.id)).toBe(false);
   });
 });

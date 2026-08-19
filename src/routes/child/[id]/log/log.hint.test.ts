@@ -70,7 +70,7 @@ async function clickFood(container: HTMLElement, name: string) {
 }
 
 const HINT_TEXT =
-  'Introduisez les nouveaux aliments un par un pour repérer plus facilement une réaction.';
+  'Plusieurs aliments jamais notés sont sélectionnés : enregistrez précisément chacun et la réaction observée.';
 
 function hiddenFoodIdValues(container: HTMLElement): string[] {
   return Array.from(container.querySelectorAll('input[type="hidden"][name="foodId"]')).map(

@@ -42,7 +42,7 @@ describe('child/[id]/guide load', () => {
     expect(out.currentStageId).toMatch(/4-6|6-9|9-12|12-36/);
   });
 
-  it('returns 4-6 stage for a very young child', async () => {
+  it('does not label the 4-6 month stage as current before 4 months', async () => {
     const { c, guard } = await seedGuarded();
     const recent = new Date();
     const dateStr = `${recent.getFullYear()}-${String(recent.getMonth() + 1).padStart(2, '0')}-${String(recent.getDate()).padStart(2, '0')}`;
@@ -51,7 +51,8 @@ describe('child/[id]/guide load', () => {
       parent: async () => ({ child: { id: c.id, birthDate: dateStr } })
     });
     const out = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(out.currentStageId).toBe('4-6');
+    expect(out.currentStageId).toBe('');
+    expect(out.ageMonths).toBeLessThan(4);
   });
 
   it('returns stages array with expected shape', async () => {

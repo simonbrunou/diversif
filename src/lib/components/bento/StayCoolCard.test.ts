@@ -8,7 +8,7 @@ describe('StayCoolCard', () => {
   it('renders title, body, and reactions guide link to /guide#reactions', () => {
     render(StayCoolCard);
     expect(screen.getByText('Respirez')).toBeTruthy();
-    expect(screen.getByText(/Une réaction localisée/)).toBeTruthy();
+    expect(screen.getByText(/demandez rapidement un avis médical/)).toBeTruthy();
     const link = screen.getByText('Voir le guide réactions').closest('a');
     expect(link?.getAttribute('href')).toBe('/guide#reactions');
   });

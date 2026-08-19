@@ -246,10 +246,12 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
   const textureDistribution = computeTextureDistribution(entries);
 
   // Current diversification stage derived from child age at report time.
-  const stage: Stage = getStageForAgeMonths(ageInMonths(child.birthDate));
+  const ageMonths = ageInMonths(child.birthDate);
+  const stage: Stage = getStageForAgeMonths(ageMonths);
 
   return {
     generatedAt: Date.now(),
+    ageMonths,
     stage,
     mostAdvancedTexture,
     textureDistribution,

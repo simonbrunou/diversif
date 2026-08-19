@@ -37,7 +37,7 @@
     <div class="text-sm">
       <div class="flex items-center gap-2">
         <Badge variant="default">
-          {m.allergenDialogBadgeFromMonths({ months: guidance.recommendedAgeMonths })}
+          {guidance.timing}
         </Badge>
         <span class="text-xs text-muted-foreground">{m.allergenDialogSeverityMajor()}</span>
       </div>
