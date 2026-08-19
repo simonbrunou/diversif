@@ -131,7 +131,12 @@ export const FOODS_SEED: SeedFood[] = [
   // Matières grasses
   { name: "Huile d'olive", category: 'matieres_grasses', age: 4 },
   { name: 'Huile de colza', category: 'matieres_grasses', age: 4 },
-  { name: 'Huile de noix', category: 'matieres_grasses', age: 4 },
+  {
+    name: 'Huile de noix',
+    category: 'matieres_grasses',
+    age: 4,
+    allergen: 'fruits_a_coque'
+  },
 
   // Aromates
   { name: 'Persil', category: 'aromates', age: 4 },

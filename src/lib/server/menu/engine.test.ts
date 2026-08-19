@@ -158,12 +158,12 @@ test('safeForRole(proteine) excludes charcuterie and is sorted ascending by id',
   expect(ids).toEqual([...ids].sort((a, b) => a - b));
 });
 
-test('safeForRole(matiereGrasse) allows nut oil without using it as an allergen exposure', () => {
-  const result = safeForRole('matiereGrasse', baseInput());
-  expect(result.length).toBeGreaterThan(0);
-  const oil = result.find((f) => f.name === 'Huile de noix');
-  expect(oil).toBeDefined();
-  expect(oil?.allergenType).toBeNull();
+test('safeForRole(matiereGrasse) blocks walnut oil after tree-nut symptoms', () => {
+  const result = safeForRole(
+    'matiereGrasse',
+    baseInput({ reactedAllergens: new Set(['fruits_a_coque']) })
+  );
+  expect(result.some((food) => food.name === 'Huile de noix')).toBe(false);
 });
 
 test('vegetarien excludes viandes and poissons but keeps eggs and legumes in the protéine pool', () => {

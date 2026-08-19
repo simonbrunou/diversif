@@ -44,9 +44,9 @@ test('known choke-relevant foods are covered (incl. whole round berries)', () =>
   }
 });
 
-test('nut oil is not treated as a reliable tree-nut allergen exposure', () => {
+test('walnut oil retains its tree-nut safety tag', () => {
   const oil = FOODS_SEED.find((food) => food.name === 'Huile de noix');
-  expect(oil?.allergen).toBeUndefined();
+  expect(oil?.allergen).toBe('fruits_a_coque');
 });
 
 // ---------------------------------------------------------------------------

@@ -72,6 +72,20 @@ describe('applySeedCorrections', () => {
     expect(butter.allergenType).toBe('lait');
   });
 
+  it('restores the tree-nut allergen tag on walnut oil', async () => {
+    await seedFoods(testDb);
+    await testDb
+      .update(foods)
+      .set({ isMajorAllergen: false, allergenType: null })
+      .where(eq(foods.name, 'Huile de noix'));
+
+    await applySeedCorrections(testDb);
+
+    const [oil] = await testDb.select().from(foods).where(eq(foods.name, 'Huile de noix'));
+    expect(oil.isMajorAllergen).toBe(true);
+    expect(oil.allergenType).toBe('fruits_a_coque');
+  });
+
   it('raises stale Tofu age from 6 to 36', async () => {
     await seedFoods(testDb);
     await testDb.update(foods).set({ suggestedAgeMonths: 6 }).where(eq(foods.name, 'Tofu'));
