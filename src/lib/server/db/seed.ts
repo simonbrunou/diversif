@@ -119,7 +119,7 @@ export const FOODS_SEED: SeedFood[] = [
   { name: 'Emmental', category: 'produits_laitiers', age: 4, allergen: 'lait' },
   { name: 'Chèvre frais pasteurisé', category: 'produits_laitiers', age: 4, allergen: 'lait' },
   { name: 'Fromage de brebis pasteurisé', category: 'produits_laitiers', age: 4, allergen: 'lait' },
-  { name: 'Beurre', category: 'matieres_grasses', age: 4 },
+  { name: 'Beurre', category: 'matieres_grasses', age: 4, allergen: 'lait' },
 
   // Allergènes à introduire tôt
   { name: 'Beurre de cacahuète (lisse)', category: 'allergenes', age: 4, allergen: 'arachide' },

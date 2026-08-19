@@ -166,10 +166,23 @@ test('safeForRole(matiereGrasse) allows nut oil without using it as an allergen 
   expect(oil?.allergenType).toBeNull();
 });
 
-test('vegetarien excludes viandes and poissons from the protéine pool', () => {
+test('vegetarien excludes viandes and poissons but keeps eggs and legumes in the protéine pool', () => {
   const result = safeForRole('proteine', baseInput({ dietaryExclusions: ['vegetarien'] }));
-  expect(result.length).toBeGreaterThan(0); // eggs remain
+  expect(result.some((f) => f.category === 'oeufs')).toBe(true);
+  expect(result.some((f) => f.category === 'legumineuses')).toBe(true);
   expect(result.some((f) => f.category === 'viandes' || f.category === 'poissons')).toBe(false);
+});
+
+test('vegetarien with egg symptoms gets a legume protein without a meat/fish/egg gram hint', () => {
+  const menu = buildMenu(
+    baseInput({ dietaryExclusions: ['vegetarien'], reactedAllergens: new Set(['oeuf']) })
+  );
+  const protein = menu.meals
+    .find((meal) => meal.id === 'midi')
+    ?.items.find((item) => item.role === 'proteine');
+
+  expect(protein?.food.category).toBe('legumineuses');
+  expect(protein?.amountHint).toBeNull();
 });
 
 test('sans_poisson excludes poissons only', () => {
@@ -250,6 +263,17 @@ test('menu fat slots add up to the daily stage amount', () => {
 
   expect(fatHints(infant).map((item) => item.amountHint)).toEqual(['1 c. à café']);
   expect(fatHints(toddler).map((item) => item.amountHint)).toEqual(['1 c. à café', '1 c. à café']);
+});
+
+test('toddler daily starch allowance stays in totals instead of repeating on every meal', () => {
+  const menu = buildMenu({ ...baseInput(), ageMonths: 18 });
+  const starches = menu.meals
+    .flatMap((meal) => meal.items)
+    .filter((item) => item.role === 'feculent');
+
+  expect(starches.length).toBeGreaterThan(1);
+  expect(starches.every((item) => item.amountHint === null)).toBe(true);
+  expect(menu.quantities.portions.feculent).toBe('3–4 c. à soupe/jour');
 });
 
 // ---------------------------------------------------------------------------

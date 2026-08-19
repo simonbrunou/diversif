@@ -36,7 +36,7 @@ export const MEAL_TEMPLATES: Record<StageId, { id: MealId; roles: RoleId[] }[]> 
 export const ROLE_POOLS: Record<RoleId, CategoryId[]> = {
   legume: ['legumes'],
   fruit: ['fruits'],
-  proteine: ['viandes', 'poissons', 'oeufs'],
+  proteine: ['viandes', 'poissons', 'oeufs', 'legumineuses'],
   feculent: ['feculents', 'legumineuses'],
   matiereGrasse: ['matieres_grasses'],
   laitier: ['produits_laitiers'],

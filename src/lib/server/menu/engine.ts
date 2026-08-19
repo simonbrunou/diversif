@@ -172,13 +172,15 @@ function pickStarch(input: MenuInput, stage: Stage, mealId: MealId): Food | null
 // draws from TWO categories (ROLE_POOLS.dessert = fruits ∪ produits_laitiers), so its hint
 // follows the resolved food's actual category rather than a single role-wide default —
 // otherwise a fruit dessert would render the laitier hint (e.g. "Pomme · 1 laitage").
+// Legume protein fallbacks do not use the meat/fish/egg gram allowance, and daily toddler
+// starch totals stay in the quantities card instead of being repeated on every meal.
 function amountFor(role: RoleId, quantities: StageQuantities, food: Food): string | null {
   const q = quantities.portions;
   const byRole: Record<RoleId, string | null> = {
-    proteine: quantities.proteinPerDay,
+    proteine: food.category === 'legumineuses' ? null : quantities.proteinPerDay,
     legume: q.legume,
     fruit: q.fruit,
-    feculent: q.feculent,
+    feculent: quantities.stageId === '12-36' ? null : q.feculent,
     laitier: q.laitier,
     dessert: food.category === 'fruits' ? q.fruit : q.laitier,
     matiereGrasse: '1 c. à café'
