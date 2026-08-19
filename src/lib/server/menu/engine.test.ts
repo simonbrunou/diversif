@@ -364,6 +364,27 @@ test("allergenFocus carries the food's prep/choking caution (never skips caution
   expect(menu.allergenFocus?.caution).toContain('arêtes');
 });
 
+test('allergenic fats never become introduction or maintenance focus foods', () => {
+  const fats = CATALOG.filter(
+    (food) => food.category === 'matieres_grasses' && food.allergenType != null
+  );
+  expect(fats.length).toBeGreaterThan(0);
+  const catalog = CATALOG.filter((food) => !food.allergenType || fats.includes(food));
+  const introducedFoodIds = new Set(catalog.map((food) => food.id));
+
+  for (let dayIndex = 0; dayIndex < PRIORITY_INTRODUCTION_ALLERGENS.length; dayIndex++) {
+    const menu = buildMenu(
+      baseInput({
+        catalog,
+        dayIndex,
+        introducedFoodIds,
+        introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
+      })
+    );
+    expect(menu.allergenFocus).toBeNull();
+  }
+});
+
 test('charcuterie (Jambon) is never surfaced as a protéine, even un-introduced', () => {
   // Shrink every protéine-pool category (viandes/poissons/oeufs/legumineuses) down to Jambon
   // ALONE: it's the SOLE protéine candidate, so if safeForRole's CHARCUTERIE exclusion were

@@ -349,6 +349,18 @@ describe('computeReminders', () => {
       expect(card?.severity).toBe('info');
     });
 
+    it('does not treat an allergenic fat as a maintenance exposure', () => {
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['lait']),
+          entries: [allergenEntry('lait', 8, { category: 'matieres_grasses' })]
+        })
+      );
+      expect(out.find((reminder) => reminder.key.startsWith('maintain-allergen:lait'))).toBe(
+        undefined
+      );
+    });
+
     it('caps at 2 cards sorted oldest-exposure-first', () => {
       // Use isolated() default (ALL_ALLERGENS) so rule 4 pending-allergen does
       // not fire for the other priority allergens and crowd the rail.

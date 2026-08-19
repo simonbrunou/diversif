@@ -374,6 +374,42 @@ describe('child/[id]/log default action', () => {
     }
   });
 
+  it('does not count an allergenic fat as a first allergen exposure', async () => {
+    const { u, c, m } = await setup();
+    const butter = (
+      await testDb
+        .insert(foods)
+        .values({
+          name: 'Beurre',
+          category: 'matieres_grasses',
+          isMajorAllergen: true,
+          allergenType: 'lait',
+          suggestedAgeMonths: 4,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning()
+    )[0];
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(butter.id),
+        givenAt: '2024-06-01T10:00',
+        reaction: 'ras'
+      }
+    });
+
+    const result = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+
+    expect(result.kind).toBe('redirect');
+    if (result.kind === 'redirect') expect(result.location).not.toContain('allergen=');
+  });
+
   it('emits allAllergens=1 when the 12th and final allergen is introduced', async () => {
     const { u, c, m } = await setup();
     // Seed 11 of the 12 tracked allergens as already introduced.

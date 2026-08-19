@@ -1,8 +1,9 @@
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { and, eq, isNotNull, ne, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import {
   ALLERGENS,
+  ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY,
   ALLERGEN_MAINTAIN_DAYS,
   PRIORITY_INTRODUCTION_ALLERGENS,
   getAllergenLabel
@@ -46,7 +47,13 @@ export async function loadAllergenRows(childId: number): Promise<AllergenRow[]> 
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)));
+    .where(
+      and(
+        eq(foodEntries.childId, childId),
+        isNotNull(foods.allergenType),
+        or(ne(foods.category, ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY), ne(foodEntries.reaction, 'ras'))
+      )
+    );
 }
 
 /**

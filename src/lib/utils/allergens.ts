@@ -66,6 +66,19 @@ export const PRIORITY_INTRODUCTION_ALLERGENS = [
 // row and the Discover passport) all gate on this same threshold.
 export const ALLERGEN_MAINTAIN_DAYS = 7;
 
+// Fat products retain their allergen tag for reaction safety, but their
+// variable/low protein content does not make them a reliable introduction or
+// maintenance exposure. Use the tag for blocking; use this predicate for
+// progress, milestones, and automated exposure prompts.
+export const ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY = 'matieres_grasses';
+
+export function countsAsAllergenExposure(food: {
+  allergenType: string | null | undefined;
+  category: string;
+}): boolean {
+  return food.allergenType != null && food.category !== ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY;
+}
+
 // Allergen labels go through paraglide so the EN locale gets English names
 // (same pattern as REACTION_LABEL_RESOLVERS in $lib/utils/reactions and
 // CATEGORY_LABEL_RESOLVERS in $lib/utils/categories). Adding a new entry to

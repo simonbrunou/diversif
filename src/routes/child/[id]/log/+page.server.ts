@@ -13,7 +13,12 @@ import {
 } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
-import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import {
+  ALLERGENS,
+  ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY,
+  PRIORITY_INTRODUCTION_ALLERGENS,
+  countsAsAllergenExposure
+} from '$lib/utils/allergens';
 import {
   IdempotencyInFlight,
   IdempotencyScopeMismatch,
@@ -122,6 +127,7 @@ function snapshotPriorState(tx: LogTx, childId: number): PriorLogState {
         and(
           eq(foodEntries.childId, childId),
           eq(foodEntries.reaction, 'ras'),
+          ne(foods.category, ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY),
           sql`${foods.allergenType} is not null`
         )
       )
@@ -151,6 +157,7 @@ function distinctAllergensIntroduced(tx: LogTx, childId: number): number {
         and(
           eq(foodEntries.childId, childId),
           eq(foodEntries.reaction, 'ras'),
+          ne(foods.category, ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY),
           sql`${foods.allergenType} is not null`
         )
       )
@@ -240,7 +247,9 @@ function buildMealMilestoneRedirect(
   tolerated: boolean
 ): { redirect: string } {
   const afterDistinct = distinctAllergensIntroduced(tx, childId); // post-insert
-  const mealTypes = resolvedFoods.map((r) => r.food.allergenType).filter((t): t is string => !!t);
+  const mealTypes = resolvedFoods
+    .filter((row) => countsAsAllergenExposure(row.food))
+    .map((row) => row.food.allergenType as string);
   const newTypes = tolerated ? mealTypes.filter((t) => !prior.priorTypes.has(t)) : [];
   // Celebrate only allergens for which the app actually recommends prompt
   // introduction; the wider 12-item EU tracking list includes soja and

@@ -16,7 +16,7 @@ import {
   type MealId
 } from './tables';
 import { rotatePick } from './rotation';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '$lib/utils/allergens';
 import type { DietExclusion } from '$lib/utils/diet';
 
 export type MenuInput = {
@@ -249,7 +249,7 @@ function allowedAllergen(input: MenuInput, a: string): boolean {
 // safety gate safeForRole applies, or an unsafe food slips onto the card. Charcuterie (Jambon)
 // is never a protéine and never card-eligible.
 function catalogSafe(f: Food, input: MenuInput): boolean {
-  return safeFood(f, input) && !CHARCUTERIE(f);
+  return safeFood(f, input) && !CHARCUTERIE(f) && countsAsAllergenExposure(f);
 }
 
 // A priority allergen due? Rotate the "allergène du jour" by dayIndex. It IS the day's one

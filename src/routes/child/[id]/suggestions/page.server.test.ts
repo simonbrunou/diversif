@@ -178,6 +178,43 @@ describe('child/[id]/suggestions load', () => {
     expect(out.priorityAllergens.find((f) => f.id === egg.id)).toBeDefined();
   });
 
+  it('does not count allergenic fats as introduction foods', async () => {
+    const ctx = await setup();
+    const butter = await insertFood({
+      name: 'Beurre',
+      category: 'matieres_grasses',
+      age: 4,
+      allergen: 'lait'
+    });
+    const yogurt = await insertFood({
+      name: 'Yaourt',
+      category: 'produits_laitiers',
+      age: 4,
+      allergen: 'lait'
+    });
+
+    const before = await loadFor(ctx);
+    expect(before.priorityAllergens.some((food) => food.id === butter.id)).toBe(false);
+    expect(before.others.some((food) => food.id === butter.id)).toBe(true);
+    expect(before.priorityAllergens.some((food) => food.id === yogurt.id)).toBe(true);
+
+    await testDb.insert(foodEntries).values({
+      childId: ctx.c.id,
+      foodId: butter.id,
+      givenAt: new Date(),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: ctx.u.id,
+      createdAt: new Date()
+    });
+
+    const after = await loadFor(ctx);
+
+    expect(after.priorityAllergens.some((food) => food.id === butter.id)).toBe(false);
+    expect(after.others.some((food) => food.id === butter.id)).toBe(false);
+    expect(after.priorityAllergens.some((food) => food.id === yogurt.id)).toBe(true);
+  });
+
   it('does not suggest complementary foods before 4 months', async () => {
     const u = await seedUser({ email: 'young@example.com' });
     const veryYoung = new Date();

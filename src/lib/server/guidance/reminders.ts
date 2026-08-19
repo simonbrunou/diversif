@@ -5,6 +5,7 @@
 import {
   ALLERGEN_MAINTAIN_DAYS,
   PRIORITY_INTRODUCTION_ALLERGENS,
+  countsAsAllergenExposure,
   getAllergenLabel,
   type AllergenId
 } from '$lib/utils/allergens';
@@ -307,6 +308,7 @@ function summarizePriorityAllergens(entries: EnrichedEntry[]): {
   const hasSymptomsByAllergen = new Map<AllergenId, boolean>();
   for (const e of entries) {
     if (!e.allergenType) continue;
+    if (e.reaction === 'ras' && !countsAsAllergenExposure(e)) continue;
     const aid = e.allergenType as AllergenId;
     if (!ALLERGEN_PRIORITY.includes(aid)) continue;
     const cur = lastByAllergen.get(aid);

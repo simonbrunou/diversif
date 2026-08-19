@@ -1,7 +1,12 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { asc, eq } from 'drizzle-orm';
-import { ALLERGENS, PRIORITY_INTRODUCTION_ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
+import {
+  ALLERGENS,
+  PRIORITY_INTRODUCTION_ALLERGENS,
+  countsAsAllergenExposure,
+  getAllergenLabel
+} from '$lib/utils/allergens';
 import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
 import { REACTION_RANK } from '$lib/utils/reaction-values';
@@ -100,6 +105,7 @@ function buildAllergenRows(entries: ReportEntry[]): AllergenReportRow[] {
   >();
   for (const e of entries) {
     if (e.allergenType == null) continue;
+    if (e.reaction === 'ras' && !countsAsAllergenExposure(e)) continue;
     const cur = allergenAggMap.get(e.allergenType);
     if (!cur) {
       allergenAggMap.set(e.allergenType, {

@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, lte, notInArray, sql } from 'drizzle-orm';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '$lib/utils/allergens';
 import { ageInMonths } from '$lib/utils/age';
 import { requireChildContext } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
@@ -21,11 +21,16 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   ).map((r) => r.id);
 
   const allergenEntries = await db
-    .selectDistinct({ allergenType: foods.allergenType, reaction: foodEntries.reaction })
+    .selectDistinct({
+      allergenType: foods.allergenType,
+      category: foods.category,
+      reaction: foodEntries.reaction
+    })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(eq(foodEntries.childId, childId));
   const introducedAllergens = allergenEntries
+    .filter(countsAsAllergenExposure)
     .map((row) => row.allergenType)
     .filter((value): value is string => !!value);
 
@@ -58,10 +63,12 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     (food) => !food.allergenType || !blockedAllergenSet.has(food.allergenType)
   );
   const priority = safeCandidates.filter(
-    (food) => food.allergenType && allergenSet.has(food.allergenType)
+    (food) =>
+      countsAsAllergenExposure(food) && food.allergenType && allergenSet.has(food.allergenType)
   );
   const others = safeCandidates.filter(
-    (food) => !food.allergenType || !allergenSet.has(food.allergenType)
+    (food) =>
+      !countsAsAllergenExposure(food) || !food.allergenType || !allergenSet.has(food.allergenType)
   );
 
   return {
