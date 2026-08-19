@@ -5,7 +5,7 @@ test('texture picker defaults to age-appropriate value and surfaces on the feed'
   page
 }) => {
   // Compute a birth date that keeps the child always ~8 months old at test run time,
-  // so the expected default texture stays "ecrasee" (threshold: age < 9 months).
+  // so the expected default texture stays "petits-morceaux" (threshold: age < 10 months).
   const today = new Date();
   const birthDate = new Date(today);
   birthDate.setMonth(birthDate.getMonth() - 8);
@@ -36,8 +36,8 @@ test('texture picker defaults to age-appropriate value and surfaces on the feed'
   await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
 
   // Navigate to the foods feed and verify the age-appropriate texture chip is visible.
-  // For an ~8-month-old the expected default is "ecrasee" → label "Écrasée".
+  // For an ~8-month-old the expected default is "petits-morceaux" → label "Petits morceaux".
   // getByText matches the underlying DOM text; CSS uppercases it visually.
   await page.goto(`/child/${childId}/foods`);
-  await expect(page.getByText(/ÉCRASÉE/i)).toBeVisible();
+  await expect(page.getByText(/PETITS MORCEAUX/i)).toBeVisible();
 });
