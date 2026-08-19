@@ -20,7 +20,7 @@ function entry(overrides: Partial<EnrichedEntry> = {}): EnrichedEntry {
 }
 
 describe('findRepeatCandidates', () => {
-  it('returns foods given 1-2× with worst <= inconfort by default', () => {
+  it('returns only foods given 1-2× with no symptoms by default', () => {
     const out = findRepeatCandidates(
       [
         entry({ foodId: 1, foodName: 'Carotte', reaction: 'ras' }),
@@ -29,10 +29,10 @@ describe('findRepeatCandidates', () => {
       ],
       { now: NOW }
     );
-    expect(out.map((c) => c.foodId).sort()).toEqual([1, 2]);
+    expect(out.map((c) => c.foodId)).toEqual([1]);
   });
 
-  it('aggregates count and worstRank per food', () => {
+  it('excludes an aggregated food if any exposure had discomfort', () => {
     const out = findRepeatCandidates(
       [
         entry({ foodId: 1, reaction: 'ras', givenAt: NOW - 5 * DAY }),
@@ -40,13 +40,7 @@ describe('findRepeatCandidates', () => {
       ],
       { now: NOW }
     );
-    expect(out).toHaveLength(1);
-    expect(out[0]).toMatchObject({
-      foodId: 1,
-      count: 2,
-      worstRank: 1,
-      lastGivenAt: NOW - 2 * DAY
-    });
+    expect(out).toEqual([]);
   });
 
   it('excludes foods given more than maxCount times', () => {

@@ -13,7 +13,12 @@ import {
 } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
-import { ALLERGENS } from '$lib/utils/allergens';
+import {
+  ALLERGENS,
+  ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY,
+  PRIORITY_INTRODUCTION_ALLERGENS,
+  countsAsAllergenExposure
+} from '$lib/utils/allergens';
 import {
   IdempotencyInFlight,
   IdempotencyScopeMismatch,
@@ -118,7 +123,14 @@ function snapshotPriorState(tx: LogTx, childId: number): PriorLogState {
       .select({ t: foods.allergenType })
       .from(foodEntries)
       .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-      .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} is not null`))
+      .where(
+        and(
+          eq(foodEntries.childId, childId),
+          eq(foodEntries.reaction, 'ras'),
+          ne(foods.category, ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY),
+          sql`${foods.allergenType} is not null`
+        )
+      )
       .all()
       .map((r) => r.t as string)
   );
@@ -141,7 +153,14 @@ function distinctAllergensIntroduced(tx: LogTx, childId: number): number {
       .select({ n: sql<number>`count(distinct ${foods.allergenType})` })
       .from(foodEntries)
       .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-      .where(and(eq(foodEntries.childId, childId), sql`${foods.allergenType} is not null`))
+      .where(
+        and(
+          eq(foodEntries.childId, childId),
+          eq(foodEntries.reaction, 'ras'),
+          ne(foods.category, ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY),
+          sql`${foods.allergenType} is not null`
+        )
+      )
       .limit(1)
       .all()[0]?.n /* v8 ignore next */ ?? 0
   );
@@ -224,14 +243,18 @@ function buildMealMilestoneRedirect(
   tx: LogTx,
   childId: number,
   resolvedFoods: { food: typeof foods.$inferSelect; foodId: number }[],
-  prior: PriorLogState
+  prior: PriorLogState,
+  tolerated: boolean
 ): { redirect: string } {
   const afterDistinct = distinctAllergensIntroduced(tx, childId); // post-insert
-  const mealTypes = resolvedFoods.map((r) => r.food.allergenType).filter((t): t is string => !!t);
-  const newTypes = mealTypes.filter((t) => !prior.priorTypes.has(t));
-  // Deterministic pick: first in ALLERGENS declaration order among the
-  // meal's newly-introduced types.
-  const firstAllergen = ALLERGENS.map((a) => a.id).find((id) => newTypes.includes(id)) ?? null;
+  const mealTypes = resolvedFoods
+    .filter((row) => countsAsAllergenExposure(row.food))
+    .map((row) => row.food.allergenType as string);
+  const newTypes = tolerated ? mealTypes.filter((t) => !prior.priorTypes.has(t)) : [];
+  // Celebrate only allergens for which the app actually recommends prompt
+  // introduction; the wider 12-item EU tracking list includes soja and
+  // allergens with no preventive introduction calendar.
+  const firstAllergen = PRIORITY_INTRODUCTION_ALLERGENS.find((id) => newTypes.includes(id)) ?? null;
 
   return buildLogRedirect(childId, {
     priorEntryCount: prior.priorEntryCount,
@@ -316,7 +339,13 @@ export const actions: Actions = {
           didInsert = true;
           insertedCount = resolvedFoods.length;
 
-          return buildMealMilestoneRedirect(tx, childId, resolvedFoods, prior);
+          return buildMealMilestoneRedirect(
+            tx,
+            childId,
+            resolvedFoods,
+            prior,
+            parsed.data.reaction === 'ras'
+          );
         };
 
         if (idempotencyKey) {

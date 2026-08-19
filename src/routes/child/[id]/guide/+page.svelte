@@ -10,6 +10,12 @@
   let { data }: { data: PageData } = $props();
 </script>
 
+{#if data.ageMonths < 4}
+  <Callout variant="info" class="mb-3">
+    <strong>{m.preDiversificationTitle()}</strong> {m.preDiversificationBody()}
+  </Callout>
+{/if}
+
 <DiscoverBento
   stages={data.stages}
   activeStageId={data.currentStageId}

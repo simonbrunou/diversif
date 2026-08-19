@@ -4,6 +4,7 @@ import { and, eq, lte, sql } from 'drizzle-orm';
 import { ageInMonths } from '$lib/utils/age';
 import { REACTION_RANK } from '$lib/utils/reaction-values';
 import { parseDietExclusions } from '$lib/utils/diet';
+import { countsAsAllergenExposure } from '$lib/utils/allergens';
 import { requireChildContext } from '$lib/server/guards';
 import { buildMenu } from '$lib/server/menu/engine';
 import { parisDay } from '$lib/server/menu/day';
@@ -18,7 +19,8 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     .select({
       foodId: foodEntries.foodId,
       reaction: foodEntries.reaction,
-      allergenType: foods.allergenType
+      allergenType: foods.allergenType,
+      category: foods.category
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
@@ -31,11 +33,13 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const reactedAllergens = new Set<string>();
   for (const e of entries) {
     introducedFoodIds.add(e.foodId);
-    if (e.allergenType) introducedAllergens.add(e.allergenType);
-    if (REACTION_RANK[e.reaction] >= REACTION_RANK['inconfort']) avoidFoodIds.add(e.foodId);
+    if (countsAsAllergenExposure(e)) introducedAllergens.add(e.allergenType!);
+    if (REACTION_RANK[e.reaction] >= REACTION_RANK['inconfort']) {
+      avoidFoodIds.add(e.foodId);
+      if (e.allergenType) reactedAllergens.add(e.allergenType);
+    }
     if (REACTION_RANK[e.reaction] >= REACTION_RANK['reaction']) {
       reactionTierFoodIds.add(e.foodId);
-      if (e.allergenType) reactedAllergens.add(e.allergenType);
     }
   }
 

@@ -75,10 +75,10 @@ describe('AujourdhuiBento', () => {
     });
     expect(
       screen.getByText(
-        'Aucun allergène introduit pour l’instant — commencez par l’œuf ou l’arachide.'
+        'Aucun allergène noté pour l’instant. Une fois la diversification commencée, ne retardez pas les allergènes courants comme l’œuf bien cuit et l’arachide.'
       )
     ).toBeTruthy();
-    // No "à découvrir" wall when nothing is introduced.
+    // No unlogged-allergen wall when nothing is introduced.
     expect(screen.queryByText('Œuf')).toBeNull();
   });
 

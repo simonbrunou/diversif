@@ -12,13 +12,14 @@
     triedCount: number;
     lastTried: string | null;
     daysSinceLastTried: number | null;
-    state: 'cleared' | 'todo' | 'reaction' | 'fading';
+    state: 'cleared' | 'todo' | 'inconfort' | 'reaction' | 'fading';
   };
 
   let { items, childId }: { items: Item[]; childId?: string } = $props();
 
   function stateLabel(s: Item['state']): string {
     if (s === 'cleared') return m.aujourdhuiAllergensOk();
+    if (s === 'inconfort') return m.reactionsLabelInconfort();
     if (s === 'reaction') return m.reactionsLabelReaction();
     if (s === 'fading') return m.aujourdhuiAllergensFading();
     return m.aujourdhuiAllergensTodo();
@@ -51,6 +52,7 @@
         class={cn(
           'flex items-center justify-between rounded-tile border border-border/40 bg-canvas p-3 shadow-soft',
           item.state === 'reaction' && 'border-severe/40 bg-reaction-reaction/20',
+          item.state === 'inconfort' && 'border-reaction-inconfort/40 bg-reaction-inconfort/10',
           item.state === 'fading' && 'border-tile-peach-foreground/30 bg-tile-peach/20'
         )}
       >
@@ -66,6 +68,8 @@
             item.state === 'cleared' && 'bg-tile-mint',
             item.state === 'todo' && 'bg-tile-butter',
             item.state === 'reaction' && 'bg-reaction-reaction text-reaction-reaction-foreground',
+            item.state === 'inconfort' &&
+              'bg-reaction-inconfort/20 text-reaction-inconfort-foreground',
             item.state === 'fading' && 'bg-tile-peach text-tile-peach-foreground'
           )}
         >

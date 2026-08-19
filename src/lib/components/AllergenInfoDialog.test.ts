@@ -12,7 +12,7 @@ describe('AllergenInfoDialog', () => {
   it('renders the guidance for a known allergen', () => {
     render(AllergenInfoDialog, { props: { allergenId: 'oeuf' } });
     expect(document.body.textContent).toMatch(/Œuf/);
-    expect(screen.getByText(/Pourquoi tôt/)).toBeTruthy();
+    expect(screen.getByText(/Repère/)).toBeTruthy();
     expect(screen.getByText(/Comment l’introduire/)).toBeTruthy();
     expect(screen.getByText(/Premiers signes/)).toBeTruthy();
     expect(screen.getByText(/Sources/)).toBeTruthy();

@@ -23,7 +23,13 @@ const SEVERE: ReadonlySet<SymptomLabel> = new Set([
   'levres-bleues'
 ]);
 
-const WARN: ReadonlySet<SymptomLabel> = new Set(['urticaire', 'eczema', 'vomissement', 'diarrhee']);
+const WARN: ReadonlySet<SymptomLabel> = new Set([
+  'urticaire',
+  'eczema',
+  'vomissement',
+  'diarrhee',
+  'toux'
+]);
 
 export function severityOf(label: SymptomLabel): Severity {
   if (SEVERE.has(label)) return 'severe';

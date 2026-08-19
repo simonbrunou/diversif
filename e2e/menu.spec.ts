@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 // A birth date that keeps the child ~8 months old at run time — lands in the
-// '6-9' stage, which uses the full-day meal templates (matin/midi/goûter/
-// soir) rather than the <4-month "milk only" branch, matching the pattern
+// '6-9' stage, which uses the solid-food meal templates (midi/goûter/soir)
+// rather than the <4-month "milk only" branch, matching the pattern
 // used by cross-tenant-isolation.spec.ts / report.spec.ts.
 function eightMonthsAgo(): string {
   const d = new Date();
@@ -30,7 +30,7 @@ test.describe('menu du jour', () => {
     // The quantities card and at least one meal slot render from the seeded
     // catalog even with no food logged yet (full-variety discover slots).
     await expect(page.getByText('Combien lui donner ?')).toBeVisible();
-    await expect(page.getByText('Matin', { exact: true })).toBeVisible();
+    await expect(page.getByText('Midi', { exact: true })).toBeVisible();
 
     // Clicking a suggested food routes into the log flow for that food,
     // proving MenuDay's per-item links are actually wired end to end.
@@ -44,6 +44,8 @@ test.describe('menu du jour', () => {
     const childId = await signUpAndCreateChild(page, 'Tiny', twoMonthsAgo());
     await page.goto(`/child/${childId}/menu`);
 
-    await expect(page.getByText('Le lait reste le repas principal à cet âge.')).toBeVisible();
+    await expect(
+      page.getByText('Avant 4 mois révolus, le lait maternel ou infantile est le seul aliment.')
+    ).toBeVisible();
   });
 });

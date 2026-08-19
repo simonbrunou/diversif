@@ -9,7 +9,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 function ttlForReminderKey(key: string): number | null {
   // Conventions:
   //   important reminders are 'welcome', 'stage-transition:*', 'forbidden-reminder:*' → no TTL until conditions clear
-  //   warn reminders are 'pending-allergen:*', 'high-risk-window' → 90 days
+  //   warn reminders are 'pending-allergen:*' → 90 days
   //   info reminders are everything else → 30 days
   if (
     key === 'welcome' ||
@@ -19,7 +19,7 @@ function ttlForReminderKey(key: string): number | null {
   ) {
     return null;
   }
-  if (key.startsWith('pending-allergen:') || key === 'high-risk-window') {
+  if (key.startsWith('pending-allergen:')) {
     return 90 * DAY_MS;
   }
   return 30 * DAY_MS;

@@ -79,17 +79,17 @@ describe('MenuDay', () => {
   it('renders the novelty badge, the à-découvrir prompt, and the allergène-du-jour card', () => {
     render(MenuDay, { props: { menu: makeMenu(), childId: 7 } });
 
-    // Novelty: badge + its one-time hint, attached to the badged item (Poulet).
+    // Novelty: badge + its no-pressure hint, attached to the badged item (Poulet).
     expect(screen.getByText('Nouveauté')).toBeTruthy();
-    expect(screen.getByText('Une nouveauté à la fois, en début de repas.')).toBeTruthy();
+    expect(screen.getByText('Nouvel aliment : proposez sans forcer.')).toBeTruthy();
 
     // à-découvrir: one line per meal.discoverRoles entry, role label resolved,
     // no forced article (drops "un/une" — it can't agree with every role's
     // gender/number).
     expect(screen.getByText(/Féculent · à découvrir/)).toBeTruthy();
 
-    // Allergène du jour card, sourced from menu.allergenFocus.
-    expect(screen.getByText('Allergène du jour')).toBeTruthy();
+    // Allergen guidance card, sourced from menu.allergenFocus.
+    expect(screen.getByText('Repère allergène')).toBeTruthy();
     expect(screen.getByText('Œuf')).toBeTruthy();
 
     // The already-introduced item renders too, without a novelty badge.

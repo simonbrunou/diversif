@@ -4,7 +4,6 @@ import {
   CHOKING_BY_FOOD,
   CHARCUTERIE_MATCHERS,
   PORC_MATCHERS,
-  FAT_EXCLUDE,
   OILY_FISH
 } from './tables';
 import { FOODS_SEED } from '$lib/server/db/seed';
@@ -17,11 +16,11 @@ test('PROTEIN_WEEK has 7 days with fish twice', () => {
   expect(PROTEIN_WEEK).toEqual([
     'viandes',
     'poissons',
-    'legumineuses',
     'oeufs',
-    'poissons',
     'viandes',
-    'legumineuses'
+    'poissons',
+    'oeufs',
+    'viandes'
   ]);
 });
 
@@ -45,14 +44,9 @@ test('known choke-relevant foods are covered (incl. whole round berries)', () =>
   }
 });
 
-test('FAT_EXCLUDE names the nut oil (the engine enforces the exclusion by name)', () => {
-  // The former version of this test only checked ROLE_POOLS.matiereGrasse
-  // pool-membership by category, which passes regardless of FAT_EXCLUDE's
-  // contents — it never actually asserted the nut oil is excluded. The
-  // engine-level exclusion test (engine.test.ts: "safeForRole(matiereGrasse)
-  // excludes the nut oil") is the real behavioral guard; this one just pins
-  // down the data this table declares.
-  expect(FAT_EXCLUDE).toContain('Huile de noix');
+test('walnut oil retains its tree-nut safety tag', () => {
+  const oil = FOODS_SEED.find((food) => food.name === 'Huile de noix');
+  expect(oil?.allergen).toBe('fruits_a_coque');
 });
 
 // ---------------------------------------------------------------------------
@@ -72,9 +66,6 @@ test('CHARCUTERIE_MATCHERS/PORC_MATCHERS substrings still match a seed food (ren
   }
 });
 
-test('FAT_EXCLUDE/OILY_FISH exact names still match a seed food (rename-drift guard)', () => {
-  // Both are EXACT-name matchers (array.includes(f.name)) — assert each
-  // entry equals a real seed food name.
-  for (const name of FAT_EXCLUDE) expect(names.has(name)).toBe(true);
+test('OILY_FISH exact names still match a seed food (rename-drift guard)', () => {
   for (const name of OILY_FISH) expect(names.has(name)).toBe(true);
 });

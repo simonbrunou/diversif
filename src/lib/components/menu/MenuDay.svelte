@@ -39,6 +39,8 @@
   const logHref = (foodId: number) => `/child/${childId}/log?foodId=${foodId}`;
 </script>
 
+<p class="mb-3 text-xs text-ink-soft">{m.menuMilkComplement()}</p>
+
 {#if menu.allergenFocus}
   <Card variant="tile-lilac" class="mb-4 p-4">
     <div class="text-xs font-semibold uppercase tracking-wider">{m.menuAllergenOfDay()}</div>

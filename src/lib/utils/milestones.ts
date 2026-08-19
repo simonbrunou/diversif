@@ -1,5 +1,5 @@
 import type { toast as Toast } from 'svelte-sonner';
-import { PRIORITY_INTRODUCTION_ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
+import { ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
 import * as m from '$lib/paraglide/messages';
 
 const TOAST_CLASS = 'bg-celebrate/15 border-celebrate/30 text-celebrate-foreground';
@@ -46,13 +46,10 @@ export function pickMilestoneFromQuery(
 export function celebrate(toast: typeof Toast, milestone: MilestoneKind): void {
   switch (milestone.kind) {
     case 'all-allergens':
-      toast.success(
-        m.milestoneAllAllergensTitle({ count: PRIORITY_INTRODUCTION_ALLERGENS.length }),
-        {
-          description: m.milestoneAllAllergensDescription(),
-          class: TOAST_CLASS
-        }
-      );
+      toast.success(m.milestoneAllAllergensTitle({ count: ALLERGENS.length }), {
+        description: m.milestoneAllAllergensDescription(),
+        class: TOAST_CLASS
+      });
       return;
     case 'first-food':
       toast.success(m.milestoneFirstFoodTitle(), {

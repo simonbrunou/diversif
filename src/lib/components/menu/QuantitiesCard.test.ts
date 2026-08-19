@@ -8,8 +8,8 @@ afterEach(() => cleanup());
 describe('QuantitiesCard', () => {
   it('renders the daily totals for the stage', () => {
     render(QuantitiesCard, { props: { quantities: QUANTITIES['6-9'] } });
-    expect(screen.getByText('~500 mL/j')).toBeTruthy();
-    expect(screen.getByText('4')).toBeTruthy();
+    expect(screen.getByText('environ 500 mL/j')).toBeTruthy();
+    expect(screen.getByText(/4 repas autour de 8 mois/)).toBeTruthy();
   });
 
   it('omits the egg row for a stage with no egg guidance', () => {
@@ -19,8 +19,8 @@ describe('QuantitiesCard', () => {
 
   it('surfaces the stage sources as cited references, not silently dropped', () => {
     render(QuantitiesCard, { props: { quantities: QUANTITIES['6-9'] } });
-    // QUANTITIES['6-9'].sources includes 'spf-pnns-guide'; SourceCitation's
-    // inline mode renders "<org> (<year>)" per source.
-    expect(screen.getByText('Santé publique France / PNNS (2021)')).toBeTruthy();
+    expect(screen.getByText('Santé publique France / PNNS (2022)')).toBeTruthy();
+    expect(screen.getByText('Santé publique France / PNNS (2025)')).toBeTruthy();
+    expect(screen.getByText('HCSP (2020)')).toBeTruthy();
   });
 });

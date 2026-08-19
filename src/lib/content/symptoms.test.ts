@@ -23,7 +23,7 @@ describe('severityOf', () => {
     ['vomissement', 'warn'],
     ['diarrhee', 'warn'],
     ['rougeur', 'neutral'],
-    ['toux', 'neutral'],
+    ['toux', 'warn'],
     ['autre', 'neutral']
   ] as const)('maps %s → %s', (label, expected) => {
     expect(severityOf(label as SymptomLabel)).toBe(expected);

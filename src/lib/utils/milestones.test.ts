@@ -110,7 +110,7 @@ describe('celebrate', () => {
     const { toast, success } = fakeToast();
     celebrate(toast, { kind: 'all-allergens' });
     expect(success).toHaveBeenCalledOnce();
-    expect(success.mock.calls[0][0]).toBe(m.milestoneAllAllergensTitle({ count: 7 }));
+    expect(success.mock.calls[0][0]).toBe(m.milestoneAllAllergensTitle({ count: 12 }));
     expect(success.mock.calls[0][1]?.class).toContain('celebrate');
   });
 

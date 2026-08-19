@@ -374,9 +374,45 @@ describe('child/[id]/log default action', () => {
     }
   });
 
+  it('does not count an allergenic fat as a first allergen exposure', async () => {
+    const { u, c, m } = await setup();
+    const butter = (
+      await testDb
+        .insert(foods)
+        .values({
+          name: 'Beurre',
+          category: 'matieres_grasses',
+          isMajorAllergen: true,
+          allergenType: 'lait',
+          suggestedAgeMonths: 4,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning()
+    )[0];
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(butter.id),
+        givenAt: '2024-06-01T10:00',
+        reaction: 'ras'
+      }
+    });
+
+    const result = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+
+    expect(result.kind).toBe('redirect');
+    if (result.kind === 'redirect') expect(result.location).not.toContain('allergen=');
+  });
+
   it('emits allAllergens=1 when the 12th and final allergen is introduced', async () => {
     const { u, c, m } = await setup();
-    // Seed 11 of the 12 priority allergens as already-introduced.
+    // Seed 11 of the 12 tracked allergens as already introduced.
     const eleven = [
       'gluten',
       'oeuf',
@@ -447,24 +483,19 @@ describe('child/[id]/log default action', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') {
-      expect(r.location).toContain('allergen=moutarde');
       expect(r.location).toContain('allAllergens=1');
+      expect(r.location).not.toContain('allergen=');
     }
   });
 
   it('a meal introducing the final two allergens fires allAllergens', async () => {
     const { user, child } = await seedTenAllergensIntroduced();
-    // f11 -> celeri (ALLERGENS[10]), f12 -> moutarde (ALLERGENS[11]).
     const [f11, f12] = await twoNewAllergenFoodIds();
     const ev = makeRouteEvent({
       user: safeUser(user),
       memberships: [await seedMembership({ userId: user.id, childId: child.id })],
       params: { id: String(child.id) },
       formData: {
-        // Submit in REVERSE of ALLERGENS order (moutarde before celeri) so the
-        // assertion actually discriminates the determinism property: a pick by
-        // ALLERGENS declaration order yields celeri; a pick by meal/insertion
-        // order would yield moutarde and fail this test.
         foodId: [String(f12), String(f11)],
         givenAt: new Date().toISOString(),
         reaction: 'ras'
@@ -476,9 +507,7 @@ describe('child/[id]/log default action', () => {
     expect(res.kind).toBe('redirect');
     if (res.kind === 'redirect') {
       expect(res.location).toContain('allAllergens=1');
-      // Earlier in ALLERGENS declaration order wins (celeri before moutarde),
-      // regardless of submission order above.
-      expect(res.location).toContain('allergen=celeri');
+      expect(res.location).not.toContain('allergen=');
     }
   });
 

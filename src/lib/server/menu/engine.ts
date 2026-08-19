@@ -5,7 +5,6 @@ import { getQuantitiesForStage, type StageQuantities } from '$lib/content/quanti
 import { FORBIDDEN_FOODS } from '$lib/content/guidance';
 import {
   ROLE_POOLS,
-  FAT_EXCLUDE,
   CHARCUTERIE_MATCHERS,
   PORC_MATCHERS,
   SOFT_CHEESE,
@@ -17,7 +16,7 @@ import {
   type MealId
 } from './tables';
 import { rotatePick } from './rotation';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '$lib/utils/allergens';
 import type { DietExclusion } from '$lib/utils/diet';
 
 export type MenuInput = {
@@ -80,16 +79,15 @@ function excludedByDiet(f: Food, exclusions: DietExclusion[]): boolean {
 // Role-independent safety gates shared by EVERY food-surfacing path (role pools
 // via safeForRole, AND the allergen-focus catalog scan via catalogSafe): age
 // window, ¬custom, ¬forbidden-at-age, ¬diet-excluded, ¬avoid/reaction-blocked.
-// Charcuterie and FAT_EXCLUDE are deliberately NOT here — they're role-scoped
-// (safeForRole only applies them for proteine/matiereGrasse) or defense-in-depth
-// (catalogSafe applies them unconditionally) — each caller layers them on itself.
+// Charcuterie is deliberately not here because it is role-scoped; callers that
+// surface proteins or allergen cards layer that rule on top.
 function safeFood(f: Food, input: MenuInput): boolean {
   return (
     !f.isCustom &&
     f.suggestedAgeMonths <= Math.max(input.ageMonths, 4) &&
     !forbiddenAtAge(f, input.ageMonths) &&
     !excludedByDiet(f, input.dietaryExclusions) &&
-    // reaction avoidance: per-food for inconfort, per-allergen for reaction tier
+    // symptom avoidance: per-food and per-allergen for any non-RAS observation
     !input.avoidFoodIds.has(f.id) &&
     !input.reactionTierFoodIds.has(f.id) &&
     !(f.allergenType && input.reactedAllergens.has(f.allergenType))
@@ -102,7 +100,6 @@ function safeForRole(role: RoleId, input: MenuInput): Food[] {
   return input.catalog
     .filter((f) => cats.has(f.category as CategoryId))
     .filter((f) => safeFood(f, input))
-    .filter((f) => (role === 'matiereGrasse' ? !FAT_EXCLUDE.includes(f.name) : true))
     .filter((f) => (role === 'proteine' ? !CHARCUTERIE(f) : true))
     .sort((a, b) => a.id - b.id);
 }
@@ -155,21 +152,38 @@ function pickProtein(input: MenuInput): Food | null {
   return rotatePick(list, `${input.childId}:proteine`, input.dayIndex);
 }
 
+// After 1 year, schedule legumes at two lunches per week; otherwise use a
+// cereal/starch. This keeps legumes in their official >=2/week role instead
+// of counting them as the daily meat/fish/egg portion.
+function pickStarch(input: MenuInput, stage: Stage, mealId: MealId): Food | null {
+  const pickable = slotPool('feculent', input);
+  const wantsLegume = stage.id === '12-36' && mealId === 'midi' && [2, 5].includes(input.weekday);
+  const category = wantsLegume ? 'legumineuses' : 'feculents';
+  const preferred = pickable.filter((f) => f.category === category);
+  return rotatePick(
+    preferred.length ? preferred : pickable,
+    `${input.childId}:${mealId}:feculent`,
+    input.dayIndex
+  );
+}
+
 // Per-role amount hint, sourced from the stage's quantities. A plain lookup (not a branching
 // chain) — every RoleId is an explicit key, so TS itself enforces exhaustiveness. `dessert`
 // draws from TWO categories (ROLE_POOLS.dessert = fruits ∪ produits_laitiers), so its hint
 // follows the resolved food's actual category rather than a single role-wide default —
 // otherwise a fruit dessert would render the laitier hint (e.g. "Pomme · 1 laitage").
+// Legume protein fallbacks do not use the meat/fish/egg gram allowance, and daily toddler
+// starch totals stay in the quantities card instead of being repeated on every meal.
 function amountFor(role: RoleId, quantities: StageQuantities, food: Food): string | null {
   const q = quantities.portions;
   const byRole: Record<RoleId, string | null> = {
-    proteine: quantities.proteinPerDay,
+    proteine: food.category === 'legumineuses' ? null : quantities.proteinPerDay,
     legume: q.legume,
     fruit: q.fruit,
-    feculent: q.feculent,
+    feculent: quantities.stageId === '12-36' ? null : q.feculent,
     laitier: q.laitier,
     dessert: food.category === 'fruits' ? q.fruit : q.laitier,
-    matiereGrasse: q.matiereGrasse
+    matiereGrasse: '1 c. à café'
   };
   return byRole[role];
 }
@@ -206,7 +220,9 @@ function assembleFullDayMeals(input: MenuInput, stage: Stage, quantities: StageQ
       const food =
         role === 'proteine'
           ? pickProtein(input)
-          : rotatePick(slotPool(role, input), `${input.childId}:${t.id}:${role}`, input.dayIndex);
+          : role === 'feculent'
+            ? pickStarch(input, stage, t.id)
+            : rotatePick(slotPool(role, input), `${input.childId}:${t.id}:${role}`, input.dayIndex);
       if (food) {
         const isNew = !input.introducedFoodIds.has(food.id);
         items.push(mkItem(role, food, stage.textures, amountFor(role, quantities, food), isNew));
@@ -230,12 +246,10 @@ function allowedAllergen(input: MenuInput, a: string): boolean {
 
 // The allergen-focus card scans the WHOLE catalog by allergenType, not a role pool, so it uses
 // THIS predicate rather than safeForRole — which means it must repeat every role-independent
-// safety gate safeForRole applies, or an un-safe food slips onto the card. Charcuterie (Jambon)
-// is never a protéine AND never card-eligible. FAT_EXCLUDE is defence-in-depth: no allergen-
-// tagged food is matieres_grasses today except the already-FAT_EXCLUDEd nut oil, but this must
-// never let butter (or any future fat) surface as an allergen-focus food.
+// safety gate safeForRole applies, or an unsafe food slips onto the card. Charcuterie (Jambon)
+// is never a protéine and never card-eligible.
 function catalogSafe(f: Food, input: MenuInput): boolean {
-  return safeFood(f, input) && !CHARCUTERIE(f) && !FAT_EXCLUDE.includes(f.name);
+  return safeFood(f, input) && !CHARCUTERIE(f) && countsAsAllergenExposure(f);
 }
 
 // A priority allergen due? Rotate the "allergène du jour" by dayIndex. It IS the day's one
@@ -352,6 +366,7 @@ export function buildMenu(input: MenuInput): Menu {
   // Returns BEFORE the full-day assembly + allergen-focus/dedup pass.
   if (stage.id === '4-6') {
     base.meals = buildStarterMeal(input, stage, quantities);
+    applyAllergenFocusAndDedup(base, input);
     return base;
   }
 
