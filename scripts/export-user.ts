@@ -63,6 +63,7 @@ type PreparedMealRow = {
   created_at: number | null;
   updated_at: number | null;
 };
+type FoodNameRow = { id: number; name: string };
 type PasskeyRow = {
   id: string;
   name: string;
@@ -133,6 +134,17 @@ const parseFoodIds = (v: string): number[] => {
     return [];
   }
 };
+const preparedMealFoodIds = [
+  ...new Set(preparedMeals.flatMap((meal) => parseFoodIds(meal.ingredient_food_ids)))
+];
+const preparedMealFoodRows = preparedMealFoodIds.length
+  ? (db
+      .query(
+        `SELECT id, name FROM foods WHERE id IN (${preparedMealFoodIds.map(() => '?').join(',')})`
+      )
+      .all(...preparedMealFoodIds) as FoodNameRow[])
+  : [];
+const preparedMealFoodNames = new Map(preparedMealFoodRows.map((food) => [food.id, food.name]));
 
 const payload = {
   exportedAt: new Date().toISOString(),
@@ -174,7 +186,10 @@ const payload = {
           id: meal.id,
           brand: meal.brand,
           name: meal.name,
-          ingredientFoodIds: parseFoodIds(meal.ingredient_food_ids),
+          ingredients: parseFoodIds(meal.ingredient_food_ids).map((foodId) => ({
+            foodId,
+            foodName: preparedMealFoodNames.get(foodId) ?? null
+          })),
           lastUsedAt: iso(meal.last_used_at),
           createdAt: iso(meal.created_at),
           updatedAt: iso(meal.updated_at)

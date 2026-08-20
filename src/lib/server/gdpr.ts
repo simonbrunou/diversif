@@ -144,7 +144,7 @@ export type ExportedUser = {
       id: number;
       brand: string;
       name: string;
-      ingredientFoodIds: number[];
+      ingredients: Array<{ foodId: number; foodName: string | null }>;
       lastUsedAt: string | null;
       createdAt: string;
       updatedAt: string;
@@ -304,6 +304,18 @@ export async function exportUserData(
           .where(inArray(preparedMeals.childId, childIds))
           .orderBy(asc(preparedMeals.createdAt));
 
+  const preparedMealFoodIds = [
+    ...new Set(preparedMealRows.flatMap((meal) => meal.ingredientFoodIds))
+  ];
+  const preparedMealFoodRows =
+    preparedMealFoodIds.length === 0
+      ? []
+      : await db
+          .select({ id: foods.id, name: foods.name })
+          .from(foods)
+          .where(inArray(foods.id, preparedMealFoodIds));
+  const preparedMealFoodNames = new Map(preparedMealFoodRows.map((food) => [food.id, food.name]));
+
   const userPasskeys = await db.select().from(passkeys).where(eq(passkeys.userId, userId));
 
   // Invitations the user generated OR consumed. The `relationship` field
@@ -415,7 +427,10 @@ export async function exportUserData(
           id: meal.id,
           brand: meal.brand,
           name: meal.name,
-          ingredientFoodIds: meal.ingredientFoodIds,
+          ingredients: meal.ingredientFoodIds.map((foodId) => ({
+            foodId,
+            foodName: preparedMealFoodNames.get(foodId) ?? null
+          })),
           lastUsedAt: isoOrNull(meal.lastUsedAt),
           createdAt: isoOrThrow(meal.createdAt),
           updatedAt: isoOrThrow(meal.updatedAt)

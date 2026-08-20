@@ -199,8 +199,14 @@
         foods={data.foods}
         multiple
         initialFoodIds={selectedIds}
-        onSelectionChange={(ids) => (selectedIds = ids)}
-        onCustomToggle={(open) => (customActive = open)}
+        onSelectionChange={(ids) => {
+          selectedIds = ids;
+          selectedPreparedMealId = null;
+        }}
+        onCustomToggle={(open) => {
+          customActive = open;
+          if (open) selectedPreparedMealId = null;
+        }}
       />
     {/key}
     <p class="text-xs text-muted-foreground">{m.logFormMultiSelectHelp()}</p>

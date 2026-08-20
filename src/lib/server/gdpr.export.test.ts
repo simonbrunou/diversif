@@ -15,7 +15,15 @@ mock.module('./audit', () => ({
 }));
 
 import { ExportTooLargeError, exportUserData } from './gdpr';
-import { children, invitations, passkeys, preparedMeals, tipDismissals, users } from './db/schema';
+import {
+  children,
+  foodEntries,
+  invitations,
+  passkeys,
+  preparedMeals,
+  tipDismissals,
+  users
+} from './db/schema';
 import { eq } from 'drizzle-orm';
 import {
   insertChild,
@@ -83,7 +91,11 @@ describe('exportUserData', () => {
     expect(out.children[0].foodEntries[0].foodName).toBe('Banane');
     expect(out.children[0].foodEntries[0].loggedByMe).toBe(true);
     expect(out.children[0].preparedMeals).toEqual([
-      expect.objectContaining({ brand: 'Yooji', name: 'Banane bio', ingredientFoodIds: [food.id] })
+      expect.objectContaining({
+        brand: 'Yooji',
+        name: 'Banane bio',
+        ingredients: [{ foodId: food.id, foodName: 'Banane' }]
+      })
     ]);
     expect(out.passkeys).toHaveLength(1);
     expect(out.passkeys[0].id).toBe('pk-export');
@@ -92,6 +104,29 @@ describe('exportUserData', () => {
     expect(serialized).not.toContain('SECRET-PUBLIC-KEY');
     expect(serialized).not.toContain('passwordHash');
     expect(serialized).not.toContain('counter');
+  });
+
+  it('keeps prepared-meal ingredients readable after the related log is deleted', async () => {
+    const u = await insertUser('preset-export@example.com');
+    const c = await insertChild('Léa', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Carotte');
+    await insertEntry(c.id, food.id, u.id);
+    await testDb.insert(preparedMeals).values({
+      childId: c.id,
+      brand: 'Babybio',
+      name: 'Carottes',
+      ingredientFoodIds: [food.id],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    await testDb.delete(foodEntries).where(eq(foodEntries.childId, c.id));
+
+    const out = await exportUserData(u.id);
+    expect(out.children[0].foodEntries).toEqual([]);
+    expect(out.children[0].preparedMeals[0].ingredients).toEqual([
+      { foodId: food.id, foodName: 'Carotte' }
+    ]);
   });
 
   it("includes the child's dietaryExclusions (RGPD art. 15/20 completeness)", async () => {

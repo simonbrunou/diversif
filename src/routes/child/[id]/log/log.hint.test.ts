@@ -171,5 +171,10 @@ describe('log +page.svelte — multi-select help + never-tried hint', () => {
     expect(
       container.querySelector('input[type="hidden"][name="preparedMealId"]')?.getAttribute('value')
     ).toBe('7');
+
+    await fireEvent.click(
+      container.querySelector('button[aria-label="Retirer Carotte de la sélection"]')!
+    );
+    expect(container.querySelector('input[type="hidden"][name="preparedMealId"]')).toBeNull();
   });
 });
