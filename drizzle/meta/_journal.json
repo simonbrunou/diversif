@@ -43,6 +43,13 @@
       "when": 1784145896672,
       "tag": "0005_chubby_night_thrasher",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1787232710383,
+      "tag": "0006_talented_whiplash",
+      "breakpoints": true
     }
   ]
 }

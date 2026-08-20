@@ -120,6 +120,13 @@ describe('FoodCombobox — multiple mode', () => {
     expect(container.querySelector('ul')).not.toBeNull();
   });
 
+  it('seeds several ingredients from initialFoodIds', () => {
+    const { container } = render(FoodCombobox, {
+      props: { foods, multiple: true, initialFoodIds: [2, 1] }
+    });
+    expect(hiddenFoodIdValues(container)).toEqual(['2', '1']);
+  });
+
   it('regression: without multiple, selecting a food still collapses to the single summary with exactly one hidden input', async () => {
     const { container } = render(FoodCombobox, { props: { foods } });
     await clickFoodInList(container, 'Carotte');

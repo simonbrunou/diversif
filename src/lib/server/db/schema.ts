@@ -200,6 +200,32 @@ export const foodEntries = sqliteTable(
   })
 );
 
+export const preparedMeals = sqliteTable(
+  'prepared_meals',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    childId: integer('child_id')
+      .notNull()
+      .references(() => children.id, { onDelete: 'cascade' }),
+    brand: text('brand').notNull(),
+    name: text('name').notNull(),
+    // Every referenced food is also logged when the preset is created, so the
+    // food_entries RESTRICT FK keeps these ids stable without a second join table.
+    ingredientFoodIds: text('ingredient_food_ids', { mode: 'json' }).$type<number[]>().notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+    lastUsedAt: integer('last_used_at', { mode: 'timestamp_ms' })
+  },
+  (t) => ({
+    childLastUsedIdx: index('prepared_meals_child_last_used_idx').on(t.childId, t.lastUsedAt),
+    childBrandNameUnique: uniqueIndex('prepared_meals_child_brand_name_uq').on(
+      t.childId,
+      t.brand,
+      t.name
+    )
+  })
+);
+
 export const tipDismissals = sqliteTable(
   'tip_dismissals',
   {
@@ -308,6 +334,7 @@ export type Membership = typeof memberships.$inferSelect;
 export type Invitation = typeof invitations.$inferSelect;
 export type Food = typeof foods.$inferSelect;
 export type FoodEntry = typeof foodEntries.$inferSelect;
+export type PreparedMeal = typeof preparedMeals.$inferSelect;
 export type TipDismissal = typeof tipDismissals.$inferSelect;
 export type Passkey = typeof passkeys.$inferSelect;
 export type WebAuthnChallenge = typeof webauthnChallenges.$inferSelect;
@@ -317,6 +344,7 @@ export type NewUser = typeof users.$inferInsert;
 export type NewChild = typeof children.$inferInsert;
 export type NewFood = typeof foods.$inferInsert;
 export type NewFoodEntry = typeof foodEntries.$inferInsert;
+export type NewPreparedMeal = typeof preparedMeals.$inferInsert;
 export type NewIdempotencyKey = typeof idempotencyKeys.$inferInsert;
 export type NewPasskey = typeof passkeys.$inferInsert;
 export type NewTipDismissal = typeof tipDismissals.$inferInsert;

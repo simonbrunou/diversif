@@ -54,11 +54,15 @@ const foods = [
   { id: 3, name: 'Riz', category: 'feculents', allergenType: null }
 ];
 
-function makeData(introducedFoodIds: number[]): PageData {
+function makeData(
+  introducedFoodIds: number[],
+  preparedMeals: PageData['preparedMeals'] = []
+): PageData {
   return {
     child: { id: 1, name: 'Bébé', birthDate: '2024-01-01' },
     foods,
-    introducedFoodIds
+    introducedFoodIds,
+    preparedMeals
   } as unknown as PageData;
 }
 
@@ -124,7 +128,7 @@ describe('log +page.svelte — multi-select help + never-tried hint', () => {
     // Deep-link to a NEVER-TRIED food (id 3 / Riz — not in introducedFoodIds).
     // This is the menu / suggestions / reminders "log this now" CTA path, which
     // now renders through FoodCombobox's *multiple* branch. Regression guard:
-    // dropping {initialFoodId} from <FoodCombobox> (as "redundant") would leave
+    // dropping initialFoodIds from <FoodCombobox> (as "redundant") would leave
     // no chip and no hidden foodId input, silently omitting the deep-linked
     // food from submission.
     pageUrl = new URL('http://localhost/child/1/log?foodId=3');
@@ -141,5 +145,36 @@ describe('log +page.svelte — multi-select help + never-tried hint', () => {
     await clickFood(container, 'Carotte');
     expect(hiddenFoodIdValues(container).sort()).toEqual(['1', '3']);
     expect(container.textContent).toContain(HINT_TEXT);
+  });
+
+  it('prefills every ingredient when a saved prepared meal is selected', async () => {
+    const data = makeData(
+      [],
+      [
+        {
+          id: 7,
+          brand: 'Blédina',
+          name: 'Légumes et riz',
+          foodIds: [1, 3],
+          lastUsedAt: null
+        }
+      ]
+    );
+    const { container } = render(Page, { props: { data, form: null } });
+
+    const mealButton = Array.from(container.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Légumes et riz')
+    )!;
+    await fireEvent.click(mealButton);
+
+    expect(hiddenFoodIdValues(container)).toEqual(['1', '3']);
+    expect(
+      container.querySelector('input[type="hidden"][name="preparedMealId"]')?.getAttribute('value')
+    ).toBe('7');
+
+    await fireEvent.click(
+      container.querySelector('button[aria-label="Retirer Carotte de la sélection"]')!
+    );
+    expect(container.querySelector('input[type="hidden"][name="preparedMealId"]')).toBeNull();
   });
 });

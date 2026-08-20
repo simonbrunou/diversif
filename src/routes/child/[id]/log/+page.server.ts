@@ -1,9 +1,9 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
-import { and, eq, inArray, ne, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods, preparedMeals } from '$lib/server/db/schema';
 import { requireChildContext } from '$lib/server/guards';
 import { audit } from '$lib/server/audit';
 import {
@@ -34,6 +34,9 @@ const schema = z
       .default([]),
     'customFood.name': z.string().min(1).max(80).optional(),
     'customFood.category': z.string().optional(),
+    preparedMealId: z.coerce.number().int().positive().optional(),
+    'preparedMeal.brand': z.string().trim().max(60).optional(),
+    'preparedMeal.name': z.string().trim().max(100).optional(),
     givenAt: z.string().min(1, 'Date requise'),
     reaction: z.enum(REACTION_VALUES),
     texture: z.enum(TEXTURE_VALUES).optional(),
@@ -41,6 +44,10 @@ const schema = z
   })
   .refine((d) => d.foodIds.length > 0 || !!d['customFood.name'], {
     message: 'Choisissez un aliment ou créez-en un.'
+  })
+  .refine((d) => !!d['preparedMeal.brand'] === !!d['preparedMeal.name'], {
+    message: 'Renseignez la marque et le nom du plat préparé.',
+    path: ['preparedMeal']
   });
 
 // Map the first zod issue to a localizable errorKey. Keyed on the failing
@@ -67,7 +74,23 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     .from(foodEntries)
     .where(eq(foodEntries.childId, childId));
 
-  return { foods: list, introducedFoodIds: introduced.map((r) => r.foodId) };
+  const savedPreparedMeals = await db
+    .select({
+      id: preparedMeals.id,
+      brand: preparedMeals.brand,
+      name: preparedMeals.name,
+      foodIds: preparedMeals.ingredientFoodIds,
+      lastUsedAt: preparedMeals.lastUsedAt
+    })
+    .from(preparedMeals)
+    .where(eq(preparedMeals.childId, childId))
+    .orderBy(asc(preparedMeals.lastUsedAt), asc(preparedMeals.brand), asc(preparedMeals.name));
+
+  return {
+    foods: list,
+    introducedFoodIds: introduced.map((r) => r.foodId),
+    preparedMeals: savedPreparedMeals
+  };
 };
 
 class LogActionAbort extends Error {
@@ -214,6 +237,51 @@ function resolveMealFoods(
   return resolvedFoods;
 }
 
+function recordPreparedMeal(
+  tx: LogTx,
+  childId: number,
+  foodIds: number[],
+  givenAt: Date,
+  preparedMealId: number | undefined,
+  brand: string | undefined,
+  name: string | undefined
+): void {
+  const now = new Date();
+  const latestUse = sql`max(coalesce(${preparedMeals.lastUsedAt}, 0), ${givenAt.getTime()})`;
+
+  if (brand && name) {
+    tx.insert(preparedMeals)
+      .values({
+        childId,
+        brand,
+        name,
+        ingredientFoodIds: foodIds,
+        createdAt: now,
+        updatedAt: now,
+        lastUsedAt: givenAt
+      })
+      .onConflictDoUpdate({
+        target: [preparedMeals.childId, preparedMeals.brand, preparedMeals.name],
+        set: { ingredientFoodIds: foodIds, updatedAt: now, lastUsedAt: latestUse }
+      })
+      .run();
+    return;
+  }
+
+  if (!preparedMealId) return;
+  const owned = tx
+    .select({ id: preparedMeals.id })
+    .from(preparedMeals)
+    .where(and(eq(preparedMeals.id, preparedMealId), eq(preparedMeals.childId, childId)))
+    .limit(1)
+    .all()[0];
+  if (!owned) throw new LogActionAbort(400, 'errorsAuthBadInput');
+  tx.update(preparedMeals)
+    .set({ updatedAt: now, lastUsedAt: latestUse })
+    .where(and(eq(preparedMeals.id, preparedMealId), eq(preparedMeals.childId, childId)))
+    .run();
+}
+
 // Build the post-log redirect URL, encoding the milestones the dashboard
 // celebrates (first entry, first allergen, all-allergens, category progress).
 function buildLogRedirect(
@@ -336,6 +404,15 @@ export const actions: Actions = {
               })
               .run();
           }
+          recordPreparedMeal(
+            tx,
+            childId,
+            resolvedFoods.map((r) => r.foodId),
+            givenAtDate,
+            parsed.data.preparedMealId,
+            parsed.data['preparedMeal.brand'],
+            parsed.data['preparedMeal.name']
+          );
           didInsert = true;
           insertedCount = resolvedFoods.length;
 

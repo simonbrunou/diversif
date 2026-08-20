@@ -11,7 +11,7 @@ import {
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods, preparedMeals } from '$lib/server/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { ALLERGENS } from '$lib/utils/allergens';
 import { load, actions } from './+page.server';
@@ -643,6 +643,99 @@ describe('child/[id]/log default action', () => {
     const mealIds = new Set(rows.map((r) => r.mealId));
     expect(mealIds.size).toBe(1);
     expect([...mealIds][0]).not.toBeNull();
+  });
+
+  it('saves a prepared meal once and returns it from the log loader', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const membership = await seedMembership({ userId: user.id, childId: child.id });
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [membership],
+      params: { id: String(child.id) },
+      formData: {
+        foodId: foodIds.slice(0, 2).map(String),
+        'preparedMeal.brand': 'Babybio',
+        'preparedMeal.name': 'Légumes et riz',
+        givenAt: '2024-06-01T10:00:00Z',
+        reaction: 'ras'
+      }
+    });
+    await captureFlow(() =>
+      actions.default!(ev as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+
+    const saved = await testDb.select().from(preparedMeals);
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({
+      childId: child.id,
+      brand: 'Babybio',
+      name: 'Légumes et riz',
+      ingredientFoodIds: foodIds.slice(0, 2)
+    });
+
+    const data = await load(ev as unknown as Parameters<typeof load>[0]);
+    expect(data.preparedMeals).toHaveLength(1);
+    expect(data.preparedMeals[0]).toMatchObject({
+      brand: 'Babybio',
+      name: 'Légumes et riz',
+      foodIds: foodIds.slice(0, 2)
+    });
+  });
+
+  it('rejects a prepared meal belonging to another child and rolls back the log', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const otherChild = await seedChild({ createdBy: user.id, birthDate: '2023-01-01' });
+    const [foreignMeal] = await testDb
+      .insert(preparedMeals)
+      .values({
+        childId: otherChild.id,
+        brand: 'Yooji',
+        name: 'Purée verte',
+        ingredientFoodIds: [foodIds[0]],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: {
+        foodId: String(foodIds[0]),
+        preparedMealId: String(foreignMeal.id),
+        givenAt: '2024-06-01T10:00:00Z',
+        reaction: 'ras'
+      }
+    });
+
+    const result = (await actions.default!(
+      ev as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(result.status).toBe(400);
+    expect(result.data.errorKey).toBe('errorsAuthBadInput');
+    expect(await testDb.select().from(foodEntries)).toHaveLength(0);
+  });
+
+  it('rejects an incomplete prepared meal name without logging', async () => {
+    const { user, child, foodIds } = await setupThreeFoods();
+    const ev = makeRouteEvent({
+      user: safeUser(user),
+      memberships: [await seedMembership({ userId: user.id, childId: child.id })],
+      params: { id: String(child.id) },
+      formData: {
+        foodId: String(foodIds[0]),
+        'preparedMeal.brand': 'Yooji',
+        givenAt: '2024-06-01T10:00:00Z',
+        reaction: 'ras'
+      }
+    });
+
+    const result = (await actions.default!(
+      ev as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(result.status).toBe(400);
+    expect(result.data.errorKey).toBe('errorsAuthBadInput');
+    expect(await testDb.select().from(foodEntries)).toHaveLength(0);
   });
 
   it('logs a single foodId with mealId null (unchanged behaviour)', async () => {
