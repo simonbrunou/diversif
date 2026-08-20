@@ -1,8 +1,9 @@
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { and, eq, isNotNull, ne, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import {
   ALLERGENS,
+  ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY,
   ALLERGEN_MAINTAIN_DAYS,
   PRIORITY_INTRODUCTION_ALLERGENS,
   getAllergenLabel
@@ -15,7 +16,13 @@ export type AllergenItem = {
   lastTried: string | null;
   /** Days since the most recent log. Null only when the allergen has never been logged ('todo'). Consumed by the 'fading' caption; populated for other states for symmetry but not surfaced. */
   daysSinceLastTried: number | null;
-  state: 'cleared' | 'todo' | 'reaction' | 'fading';
+  state: 'cleared' | 'todo' | 'inconfort' | 'reaction' | 'fading';
+};
+
+export type AllergenRow = {
+  allergenType: string | null;
+  givenAt: Date | number | string;
+  reaction: string;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -28,16 +35,11 @@ function formatDDMMYY(d: Date): string {
   return `${dd}/${mm}/${yy}`;
 }
 
-/**
- * For each of the 12 tracked allergens, returns trial count, last-tried date,
- * days-since, and a derived state (cleared / todo / reaction / fading).
- * Shared between the carnet allergens segment and the Discover passport.
- */
-export async function loadAllergenStatus(
-  childId: number,
-  now: Date = new Date()
-): Promise<AllergenItem[]> {
-  const rows = await db
+// Raw allergen-tagged join, factored out so callers that also need the worst-
+// reaction summary (the dashboard) can fetch it once and reuse the rows for
+// both, instead of running this same join+where twice per request.
+export async function loadAllergenRows(childId: number): Promise<AllergenRow[]> {
+  return db
     .select({
       allergenType: foods.allergenType,
       givenAt: foodEntries.givenAt,
@@ -45,9 +47,25 @@ export async function loadAllergenStatus(
     })
     .from(foodEntries)
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)));
+    .where(
+      and(
+        eq(foodEntries.childId, childId),
+        isNotNull(foods.allergenType),
+        or(ne(foods.category, ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY), ne(foodEntries.reaction, 'ras'))
+      )
+    );
+}
 
-  const byAllergen = new Map<string, { triedCount: number; latest: Date; hasReaction: boolean }>();
+/**
+ * For each of the 12 tracked allergens, returns trial count, last-tried date,
+ * days-since, and a derived state (cleared / todo / discomfort / reaction / fading).
+ * Shared between the carnet allergens segment and the Discover passport.
+ */
+export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date()): AllergenItem[] {
+  const byAllergen = new Map<
+    string,
+    { triedCount: number; latest: Date; hasInconfort: boolean; hasReaction: boolean }
+  >();
   for (const r of rows) {
     // SQL filters `allergenType IS NOT NULL`; the guard is a TS narrowing
     // affordance and unreachable at runtime.
@@ -55,18 +73,13 @@ export async function loadAllergenStatus(
     if (!r.allergenType) continue;
     const givenAt =
       r.givenAt instanceof Date ? r.givenAt : /* v8 ignore next */ new Date(Number(r.givenAt));
-    const bucket = byAllergen.get(r.allergenType);
-    if (bucket) {
-      bucket.triedCount += 1;
-      if (givenAt.getTime() > bucket.latest.getTime()) bucket.latest = givenAt;
-      if (r.reaction === 'reaction') bucket.hasReaction = true;
-    } else {
-      byAllergen.set(r.allergenType, {
-        triedCount: 1,
-        latest: givenAt,
-        hasReaction: r.reaction === 'reaction'
-      });
-    }
+    const previous = byAllergen.get(r.allergenType);
+    byAllergen.set(r.allergenType, {
+      triedCount: (previous?.triedCount ?? 0) + 1,
+      latest: previous && previous.latest.getTime() > givenAt.getTime() ? previous.latest : givenAt,
+      hasInconfort: (previous?.hasInconfort ?? false) || r.reaction === 'inconfort',
+      hasReaction: (previous?.hasReaction ?? false) || r.reaction === 'reaction'
+    });
   }
 
   return ALLERGENS.map((a) => {
@@ -86,7 +99,9 @@ export async function loadAllergenStatus(
     let state: AllergenItem['state'];
     if (b.hasReaction) {
       state = 'reaction';
-    } else if (isPriority && daysSince > ALLERGEN_MAINTAIN_DAYS) {
+    } else if (b.hasInconfort) {
+      state = 'inconfort';
+    } else if (isPriority && daysSince >= ALLERGEN_MAINTAIN_DAYS) {
       state = 'fading';
     } else {
       state = 'cleared';
@@ -100,4 +115,12 @@ export async function loadAllergenStatus(
       state
     };
   });
+}
+
+/** Convenience wrapper for callers that don't already have the rows (fetches then summarizes). */
+export async function loadAllergenStatus(
+  childId: number,
+  now: Date = new Date()
+): Promise<AllergenItem[]> {
+  return summarizeAllergenRows(await loadAllergenRows(childId), now);
 }

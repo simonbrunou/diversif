@@ -8,11 +8,16 @@ import { isValidBirthDate } from '$lib/utils/dates';
 import { createInvitationForChild } from '$lib/server/invitations';
 import { audit } from '$lib/server/audit';
 import { checkRateLimit } from '$lib/server/rate-limit';
+import * as m from '$lib/paraglide/messages';
 import type { Actions, PageServerLoad } from './$types';
 
+// No custom zod messages here on purpose: they'd be evaluated once at module
+// load (outside any request's locale context), so they'd always resolve to
+// the base locale regardless of the visitor's actual locale. Field errors are
+// mapped to paraglide messages inside the action instead (request-scoped).
 const schema = z.object({
-  firstName: z.string().min(1, 'Prénom requis').max(80),
-  birthDate: z.string().refine(isValidBirthDate, 'Date invalide')
+  firstName: z.string().min(1).max(80),
+  birthDate: z.string().refine(isValidBirthDate)
 });
 
 // Per-account ceiling on child creation. 10/hour is far above any real
@@ -20,6 +25,19 @@ const schema = z.object({
 // stops an authenticated account from spraying unbounded child + invitation
 // rows — the open-signup threat model. Keyed by user id, not IP.
 const CHILD_CREATE_LIMIT = { name: 'child-create', limit: 10, windowMs: 60 * 60 * 1000 };
+
+// Request-scoped issue→message mapping (see the schema comment above for why
+// this can't live in the schema itself).
+function fieldErrors(issues: z.ZodError['issues']): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const issue of issues) {
+    const field = issue.path[0] as string;
+    if (errors[field]) continue;
+    errors[field] =
+      field === 'birthDate' ? m.errorsLogDateInvalid() : m.errorsOnboardingFirstNameInvalid();
+  }
+  return errors;
+}
 
 export const load: PageServerLoad = async ({ locals, parent }) => {
   requireUser(locals);
@@ -47,18 +65,12 @@ export const actions: Actions = {
     if (!rl.allowed) {
       return fail(429, {
         ...echo,
-        errors: { firstName: 'Trop de créations récentes. Réessayez dans un moment.' }
+        errors: { firstName: m.errorsOnboardingRateLimited() }
       });
     }
     const parsed = schema.safeParse(raw);
     if (!parsed.success) {
-      const issues = parsed.error.issues;
-      const errors: Record<string, string> = {};
-      for (const issue of issues) {
-        const field = issue.path[0] as string;
-        if (!errors[field]) errors[field] = issue.message;
-      }
-      return fail(400, { ...echo, errors });
+      return fail(400, { ...echo, errors: fieldErrors(parsed.error.issues) });
     }
 
     const now = new Date();

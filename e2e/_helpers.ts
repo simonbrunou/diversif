@@ -29,23 +29,43 @@ export async function awaitHydration(page: Page): Promise<void> {
 /**
  * Submit the signup form with a generated email and land on /child/new.
  * Use this when you want to drive the onboarding form yourself.
+ *
+ * `opts` covers the variations other specs need instead of re-implementing
+ * the fill sequence locally: a fixed `email`/`displayName`, joining via
+ * `inviteCode`, or a `beforeSubmit` hook for assertions that must run after
+ * the form is filled but before the click (e.g. viewport checks on mobile).
  */
-export async function signUp(page: Page, emailPrefix = 'bento'): Promise<string> {
-  const email = `${uniqueForWorker(emailPrefix)}@example.com`;
-  await page.goto('/signup');
+export async function signUp(
+  page: Page,
+  emailPrefix = 'bento',
+  opts: {
+    displayName?: string;
+    email?: string;
+    inviteCode?: string;
+    beforeSubmit?: () => Promise<void>;
+  } = {}
+): Promise<string> {
+  const email = opts.email ?? `${uniqueForWorker(emailPrefix)}@example.com`;
+  const url = opts.inviteCode ? `/signup?code=${opts.inviteCode}` : '/signup';
+  await page.goto(url);
   await awaitHydration(page);
-  await page.getByLabel('Votre prénom').fill('Parent');
+  await page.getByLabel('Votre prénom').fill(opts.displayName ?? 'Parent');
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
   await page.getByLabel(/politique de confidentialité/i).check();
+  if (opts.beforeSubmit) await opts.beforeSubmit();
   await page.getByRole('button', { name: /créer mon compte/i }).click();
   // Bumped from the 5s default : with workers:2 the signup action contends
   // with parallel-project requests on a shared Postgres, and a slow CI
   // runner can push the POST + 303-follow over 5s. Keep the assertion
   // bounded so a genuinely stuck redirect still fails, just not flakily.
-  await expect(page).toHaveURL(/\/child\/new/, { timeout: 15_000 });
+  // Joining via an invite code lands directly on the shared child's
+  // dashboard (the child already exists) instead of the /child/new
+  // onboarding step a fresh signup goes through.
+  const expectedUrl = opts.inviteCode ? /\/child\/\d+$/ : /\/child\/new/;
+  await expect(page).toHaveURL(expectedUrl, { timeout: 15_000 });
   return email;
 }
 

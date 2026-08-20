@@ -4,7 +4,6 @@ import {
   formatRelative,
   formatDateInputValue,
   isValidBirthDate,
-  formatMonthsSince,
   localInputToIso,
   formatDate,
   formatTime,
@@ -121,21 +120,6 @@ describe('localInputToIso', () => {
   it('returns the input unchanged for invalid strings', () => {
     expect(localInputToIso('not-a-date')).toBe('not-a-date');
     expect(localInputToIso('')).toBe('');
-  });
-});
-
-describe('formatMonthsSince', () => {
-  it('returns months since the birth month (FR)', () => {
-    // birthMonth 2025-11-01, now 2026-05-10 → 6 months
-    const result = formatMonthsSince('2025-11-01', new Date('2026-05-10T00:00:00Z'));
-    expect(result).toBe('6 mois');
-  });
-
-  it('returns English format when locale is en', () => {
-    overwriteGetLocale(() => 'en');
-    const result = formatMonthsSince('2025-11-01', new Date('2026-05-10T00:00:00Z'));
-    overwriteGetLocale(() => baseLocale);
-    expect(result).toBe('6 mo');
   });
 });
 

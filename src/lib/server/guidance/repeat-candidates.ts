@@ -3,8 +3,8 @@
 // metric.
 //
 // A food counts as a "repeat candidate" when it has been logged few times
-// AND its worst reaction so far has been tolerable (ras or inconfort) — the
-// kind of food worth re-offering to consolidate acceptance. The predicate
+// AND every observation was "ras". A food associated with discomfort must
+// not be re-offered by an automated prompt without medical advice. The predicate
 // lives here so the three SQL forms (loadDiversityMetrics count,
 // loadRepeatCandidates list, /child/[id]/foods?repeat=1 filter) and the
 // in-JS form (reminders.ts rule 6) can never drift apart again.
@@ -18,10 +18,9 @@ export const REPEAT_CANDIDATE_MAX_COUNT = 2;
 
 /**
  * Maximum worst-reaction rank (inclusive). 0=ras, 1=inconfort, 2=reaction;
- * <=1 means foods that triggered a frank reaction are excluded from
- * "reproposez" prompts.
+ * Only 0 (ras) is eligible for automated "reproposez" prompts.
  */
-export const REPEAT_CANDIDATE_MAX_WORST_RANK = 1;
+export const REPEAT_CANDIDATE_MAX_WORST_RANK = 0;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

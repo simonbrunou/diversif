@@ -30,7 +30,7 @@
         </summary>
         <div class="space-y-4 border-t p-4 text-sm">
           <div>
-            <h4 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <h4 class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
               Principes
             </h4>
             <ul class="mt-1 list-disc space-y-1 pl-5">
@@ -40,7 +40,7 @@
             </ul>
           </div>
           <div>
-            <h4 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <h4 class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
               Aliments à proposer
             </h4>
             <ul class="mt-1 list-disc space-y-1 pl-5">
@@ -51,13 +51,13 @@
           </div>
           <div class="grid gap-3 sm:grid-cols-2">
             <div class="rounded-md border bg-muted/40 p-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Texture
               </div>
               <p class="mt-1">{s.textures}</p>
             </div>
             <div class="rounded-md border bg-muted/40 p-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div class="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Lait
               </div>
               <p class="mt-1">{s.milkTarget}</p>
@@ -66,7 +66,7 @@
           {#if s.redFlags.length > 0}
             <div class="rounded-md border border-reaction-inconfort/30 bg-reaction-inconfort/5 p-3">
               <div
-                class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-reaction-inconfort-foreground"
+                class="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-reaction-inconfort-foreground"
               >
                 <AlertTriangle size={12} aria-hidden="true" />
                 À surveiller

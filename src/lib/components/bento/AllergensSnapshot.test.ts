@@ -31,7 +31,7 @@ describe('AllergensSnapshot', () => {
   it('shows the state suffix for each pill', () => {
     render(AllergensSnapshot, { props: { items, foodsHref: '/child/1/foods?segment=allergens' } });
     expect(screen.getByText(/introduit/)).toBeTruthy();
-    expect(screen.getByText(/à découvrir/)).toBeTruthy();
+    expect(screen.getByText(/non noté/)).toBeTruthy();
     expect(screen.getByText(/à reproposer/)).toBeTruthy();
     expect(screen.getByText(/réaction/)).toBeTruthy();
   });
@@ -42,7 +42,7 @@ describe('AllergensSnapshot', () => {
     });
     expect(
       screen.getByText(
-        'Aucun allergène introduit pour l’instant — commencez par l’œuf ou l’arachide.'
+        'Aucun allergène noté pour l’instant. Une fois la diversification commencée, ne retardez pas les allergènes courants comme l’œuf bien cuit et l’arachide.'
       )
     ).toBeTruthy();
     expect(screen.getByRole('link').getAttribute('href')).toBe('/child/1/foods?segment=allergens');

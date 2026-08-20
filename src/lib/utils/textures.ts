@@ -20,7 +20,7 @@ export function isTextureKey(value: unknown): value is TextureKey {
 export function defaultTextureForAgeMonths(months: number): TextureKey {
   if (months < 6) return 'lisse';
   if (months < 7) return 'moulinee';
-  if (months < 9) return 'ecrasee';
-  if (months < 12) return 'petits-morceaux';
+  if (months < 8) return 'ecrasee';
+  if (months < 10) return 'petits-morceaux';
   return 'morceaux';
 }

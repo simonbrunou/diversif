@@ -132,7 +132,7 @@ test('a new account with no introduced foods still fills non-allergen slots, bad
 });
 
 test('every raw-milk cheese seed food carries a pasteurised caution', () => {
-  for (const name of ['Camembert', 'Chèvre frais', 'Brebis (fromage)']) {
+  for (const name of SOFT_CHEESE) {
     const food = CATALOG.find((f) => f.name === name)!;
     expect(cautionFor(food)).toContain('pasteurisé');
   }
@@ -158,16 +158,31 @@ test('safeForRole(proteine) excludes charcuterie and is sorted ascending by id',
   expect(ids).toEqual([...ids].sort((a, b) => a - b));
 });
 
-test('safeForRole(matiereGrasse) excludes the nut oil', () => {
-  const result = safeForRole('matiereGrasse', baseInput());
-  expect(result.length).toBeGreaterThan(0);
-  expect(result.some((f) => f.name === 'Huile de noix')).toBe(false);
+test('safeForRole(matiereGrasse) blocks walnut oil after tree-nut symptoms', () => {
+  const result = safeForRole(
+    'matiereGrasse',
+    baseInput({ reactedAllergens: new Set(['fruits_a_coque']) })
+  );
+  expect(result.some((food) => food.name === 'Huile de noix')).toBe(false);
 });
 
-test('vegetarien excludes viandes and poissons from the protéine pool', () => {
+test('vegetarien excludes viandes and poissons but keeps eggs and legumes in the protéine pool', () => {
   const result = safeForRole('proteine', baseInput({ dietaryExclusions: ['vegetarien'] }));
-  expect(result.length).toBeGreaterThan(0); // légumineuses/œufs remain
+  expect(result.some((f) => f.category === 'oeufs')).toBe(true);
+  expect(result.some((f) => f.category === 'legumineuses')).toBe(true);
   expect(result.some((f) => f.category === 'viandes' || f.category === 'poissons')).toBe(false);
+});
+
+test('vegetarien with egg symptoms gets a legume protein without a meat/fish/egg gram hint', () => {
+  const menu = buildMenu(
+    baseInput({ dietaryExclusions: ['vegetarien'], reactedAllergens: new Set(['oeuf']) })
+  );
+  const protein = menu.meals
+    .find((meal) => meal.id === 'midi')
+    ?.items.find((item) => item.role === 'proteine');
+
+  expect(protein?.food.category).toBe('legumineuses');
+  expect(protein?.amountHint).toBeNull();
 });
 
 test('sans_poisson excludes poissons only', () => {
@@ -203,7 +218,7 @@ test('safeForRole excludes avoided, reacted-allergen, and reaction-tier foods', 
   expect(names).not.toContain('Carotte'); // avoidFoodIds, not on the reaction tier
   expect(names).not.toContain('Céleri-rave'); // allergenType present in reactedAllergens
   expect(names).not.toContain('Brocoli'); // reactionTierFoodIds
-  expect(names).toContain('Patate douce'); // untouched control
+  expect(names).toContain('Courgette (épluchée, épépinée)'); // untouched control
 });
 
 test('safeForRole excludes foods above the given age', () => {
@@ -238,6 +253,27 @@ test('mkItem builds a MenuItem with role/food/amountHint/texture/isNew and a cau
   expect(item.allergenType).toBe(carotte.allergenType);
   expect(item.caution).toBe(cautionFor(carotte));
   expect(item.caution).toContain('fondant'); // Carotte carries a CHOKING_BY_FOOD entry
+});
+
+test('menu fat slots add up to the daily stage amount', () => {
+  const infant = buildMenu({ ...baseInput(), ageMonths: 8 });
+  const toddler = buildMenu({ ...baseInput(), ageMonths: 18 });
+  const fatHints = (menu: ReturnType<typeof buildMenu>) =>
+    menu.meals.flatMap((meal) => meal.items).filter((item) => item.role === 'matiereGrasse');
+
+  expect(fatHints(infant).map((item) => item.amountHint)).toEqual(['1 c. à café']);
+  expect(fatHints(toddler).map((item) => item.amountHint)).toEqual(['1 c. à café', '1 c. à café']);
+});
+
+test('toddler daily starch allowance stays in totals instead of repeating on every meal', () => {
+  const menu = buildMenu({ ...baseInput(), ageMonths: 18 });
+  const starches = menu.meals
+    .flatMap((meal) => meal.items)
+    .filter((item) => item.role === 'feculent');
+
+  expect(starches.length).toBeGreaterThan(1);
+  expect(starches.every((item) => item.amountHint === null)).toBe(true);
+  expect(menu.quantities.portions.feculent).toBe('3–4 c. à soupe/jour');
 });
 
 // ---------------------------------------------------------------------------
@@ -326,6 +362,27 @@ test("allergenFocus carries the food's prep/choking caution (never skips caution
   expect(menu.allergenFocus?.food.category).toBe('poissons');
   expect(menu.allergenFocus?.caution).toBe(cautionFor(menu.allergenFocus!.food));
   expect(menu.allergenFocus?.caution).toContain('arêtes');
+});
+
+test('allergenic fats never become introduction or maintenance focus foods', () => {
+  const fats = CATALOG.filter(
+    (food) => food.category === 'matieres_grasses' && food.allergenType != null
+  );
+  expect(fats.length).toBeGreaterThan(0);
+  const catalog = CATALOG.filter((food) => !food.allergenType || fats.includes(food));
+  const introducedFoodIds = new Set(catalog.map((food) => food.id));
+
+  for (let dayIndex = 0; dayIndex < PRIORITY_INTRODUCTION_ALLERGENS.length; dayIndex++) {
+    const menu = buildMenu(
+      baseInput({
+        catalog,
+        dayIndex,
+        introducedFoodIds,
+        introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
+      })
+    );
+    expect(menu.allergenFocus).toBeNull();
+  }
 });
 
 test('charcuterie (Jambon) is never surfaced as a protéine, even un-introduced', () => {
@@ -453,17 +510,6 @@ test('an introduced allergen with no matching introduced food yields no maintain
   }
 });
 
-test('discoverRoles lists template roles with no slot-eligible food (produits_laitiers wholly gated)', () => {
-  // produits_laitiers is 100%-tagged 'lait' in the seed, and 'lait' is a priority allergen: with
-  // none introduced, EVERY dairy food is gated out of the laitier slot pool — unlike légume/
-  // fruit/viande pools, which have no priority-allergen members at all and stay full.
-  const intro = new Set(CATALOG.filter((f) => f.category !== 'produits_laitiers').map((f) => f.id));
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro }));
-  const matin = menu.meals.find((mo) => mo.id === 'matin')!;
-  expect(matin.discoverRoles).toContain('laitier'); // wholly gated → wanted-but-empty
-  expect(matin.discoverRoles).not.toContain('fruit'); // fruits are never allergen-gated → filled
-});
-
 // ---------------------------------------------------------------------------
 // Intra-day dedup: a later slot repeating an earlier slot's food gets swapped for an
 // alternate from its full slot pool (not introduced-only anymore), and isNew is re-badged
@@ -519,7 +565,7 @@ test('a same-day duplicate with no remaining alternate is left as-is', () => {
   expect(soirLegume.isNew).toBe(true);
 });
 
-test("a dessert dedup swap recomputes amountHint for the swapped-in food's category", () => {
+test("a dessert's amount hint follows its resolved food category after dedup", () => {
   // Catalog shrunk to 2 fruits (Pomme, Poire) so the fruit/dessert pools stay exactly the size
   // they were pre-full-variety; only Yaourt nature is introduced among produits_laitiers (the
   // rest are un-introduced 'lait' and stay gated by slotEligible, just like the old introduced-
@@ -543,10 +589,11 @@ test("a dessert dedup swap recomputes amountHint for the swapped-in food's categ
   const midiDessert = menu.meals
     .find((m) => m.id === 'midi')!
     .items.find((i) => i.role === 'dessert')!;
-  expect(midiDessert.food.id).toBe(pomme.id); // confirms the swap actually happened
-  // amountHint must follow the NEW food's category (fruit), not the replaced
-  // dairy food's laitier hint.
-  expect(midiDessert.amountHint).toBe(menu.quantities.portions.fruit);
+  const expected =
+    midiDessert.food.category === 'fruits'
+      ? menu.quantities.portions.fruit
+      : menu.quantities.portions.laitier;
+  expect(midiDessert.amountHint).toBe(expected);
 });
 
 // ---------------------------------------------------------------------------

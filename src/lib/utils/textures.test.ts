@@ -27,10 +27,11 @@ describe('textures', () => {
     expect(defaultTextureForAgeMonths(6)).toBe('moulinee');
     expect(defaultTextureForAgeMonths(6.9)).toBe('moulinee');
     expect(defaultTextureForAgeMonths(7)).toBe('ecrasee');
-    expect(defaultTextureForAgeMonths(8.9)).toBe('ecrasee');
+    expect(defaultTextureForAgeMonths(7.9)).toBe('ecrasee');
+    expect(defaultTextureForAgeMonths(8)).toBe('petits-morceaux');
     expect(defaultTextureForAgeMonths(9)).toBe('petits-morceaux');
-    expect(defaultTextureForAgeMonths(11.9)).toBe('petits-morceaux');
-    expect(defaultTextureForAgeMonths(12)).toBe('morceaux');
+    expect(defaultTextureForAgeMonths(9.9)).toBe('petits-morceaux');
+    expect(defaultTextureForAgeMonths(10)).toBe('morceaux');
     expect(defaultTextureForAgeMonths(36)).toBe('morceaux');
   });
 

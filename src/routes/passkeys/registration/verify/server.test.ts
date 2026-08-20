@@ -22,7 +22,7 @@ mock.module('@simplewebauthn/server', () => mocks);
 import { POST } from './+server';
 import { users, webauthnChallenges, passkeys } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { PASSKEY_CHALLENGE_COOKIE, createChallenge } from '$lib/server/passkeys';
+import { PASSKEY_CHALLENGE_COOKIE, RP_ID, createChallenge } from '$lib/server/passkeys';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -181,6 +181,15 @@ describe('POST /passkeys/registration/verify', () => {
       userId: u.id,
       passkeyId: 'new-cred'
     });
+    // The consumed challenge and the request's own origin/RP ID must reach
+    // the crypto verifier, not just be accepted by the route and dropped.
+    expect(mocks.verifyRegistrationResponse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expectedChallenge: 'ch',
+        expectedOrigin: 'https://diversif.app',
+        expectedRPID: RP_ID
+      })
+    );
   });
 
   it('returns 400 when verification fails', async () => {

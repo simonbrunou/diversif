@@ -44,8 +44,9 @@ test('reaction-detail bento renders for non-RAS entry with all panels @responsiv
 
   await expect(page.getByText(/On vous accompagne/)).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Symptômes observés' })).toBeVisible();
-  await expect(page.getByText(/Difficulté à respirer/)).toBeVisible();
-  await expect(page.getByRole('button', { name: /Suivre 30 min/ })).toBeVisible();
+  const emergencyAlert = page.getByRole('alert');
+  await expect(emergencyAlert).toContainText('Gêne respiratoire');
+  await expect(emergencyAlert).toContainText(/15 ou le 112/);
 });
 
 test('add-symptom then delete-symptom via the confirm modal @responsive', async ({ page }) => {

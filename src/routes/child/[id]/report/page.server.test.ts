@@ -8,7 +8,6 @@ import {
   seedUser
 } from '../../../../test/route';
 import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
-import { newId } from '$lib/offline/uuid';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
@@ -222,7 +221,7 @@ describe('child/[id]/report load', () => {
     const carrot = await seedFood('Carotte', 'legumes');
     const fish = await seedFood('Saumon', 'poissons', 'poisson');
     const standalone = await seedFood('Poire', 'fruits');
-    const sharedMealId = newId();
+    const sharedMealId = crypto.randomUUID();
 
     // Two ingredients of the SAME meal, each with its OWN (different) reaction.
     await testDb.insert(foodEntries).values([
@@ -352,6 +351,27 @@ describe('child/[id]/report load', () => {
         nonPriorityRows[i - 1].label.localeCompare(nonPriorityRows[i].label, 'fr')
       ).toBeLessThanOrEqual(0);
     }
+  });
+
+  it('counts allergenic fats only when they carry symptoms', async () => {
+    const { u, c, guard } = await setup();
+    const butter = await seedFood('Beurre', 'matieres_grasses', 'lait');
+    await logEntry(c.id, butter.id, u.id, new Date('2026-05-01T10:00:00Z'), 'ras');
+    const event = makeRouteEvent({ ...guard, parent: async () => ({ child: c }) });
+
+    const tolerated = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(tolerated.allergens.find((row) => row.id === 'lait')).toMatchObject({
+      status: 'untested',
+      exposures: 0
+    });
+
+    await logEntry(c.id, butter.id, u.id, new Date('2026-05-02T10:00:00Z'), 'reaction');
+    const symptomatic = await load(event as unknown as Parameters<typeof load>[0]);
+    expect(symptomatic.allergens.find((row) => row.id === 'lait')).toMatchObject({
+      status: 'introduced',
+      worst: 'reaction',
+      exposures: 1
+    });
   });
 
   it('flags isPriority on every allergen row', async () => {

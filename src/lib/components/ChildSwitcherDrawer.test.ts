@@ -32,6 +32,14 @@ describe('ChildSwitcherDrawer', () => {
     expect(add.closest('a')!.getAttribute('href')).toBe('/child/new');
   });
 
+  it('hides the decorative avatar emoji from screen readers', () => {
+    render(ChildSwitcherDrawer, {
+      props: { open: true, kids, currentChildId: 'a' }
+    });
+    const emoji = screen.getByText('🌱');
+    expect(emoji.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('hides everything when not open', () => {
     render(ChildSwitcherDrawer, {
       props: { open: false, kids, currentChildId: 'a' }

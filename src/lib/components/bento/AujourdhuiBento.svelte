@@ -29,7 +29,7 @@
   type AllergenStatusItem = {
     id: string;
     label: string;
-    state: 'cleared' | 'todo' | 'reaction' | 'fading';
+    state: 'cleared' | 'todo' | 'inconfort' | 'reaction' | 'fading';
   };
 
   let {
@@ -53,7 +53,7 @@
   const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
   // Real allergen names from loadAllergenStatus. Attention-worthy states
-  // first (reaction, fading), then a few introduced ones for reassurance,
+  // first (reaction, discomfort, fading), then a few introduced ones for reassurance,
   // then the next priority allergens to try. When nothing has been
   // introduced yet, an empty list makes the snapshot render its
   // "commencez par l'œuf ou l'arachide" empty state instead of a wall of
@@ -62,6 +62,7 @@
     const introduced = allergens.filter((a) => a.state !== 'todo');
     if (introduced.length === 0) return [];
     const reaction = introduced.filter((a) => a.state === 'reaction');
+    const inconfort = introduced.filter((a) => a.state === 'inconfort');
     const fading = introduced.filter((a) => a.state === 'fading');
     const cleared = introduced.filter((a) => a.state === 'cleared').slice(0, 3);
     const nextToTry = allergens
@@ -74,6 +75,7 @@
     });
     return [
       ...reaction.map((a) => toPill(a, 'reaction')),
+      ...inconfort.map((a) => toPill(a, 'inconfort')),
       ...fading.map((a) => toPill(a, 'fading')),
       ...cleared.map((a) => toPill(a, 'ok')),
       ...nextToTry.map((a) => toPill(a, 'todo'))

@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { and, eq, lte, notInArray, sql } from 'drizzle-orm';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '$lib/utils/allergens';
 import { ageInMonths } from '$lib/utils/age';
 import { requireChildContext } from '$lib/server/guards';
 import type { PageServerLoad } from './$types';
@@ -11,6 +11,8 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const { child } = await parent();
   const months = ageInMonths(child.birthDate);
 
+  if (months < 4) return { ageMonths: months, priorityAllergens: [], others: [] };
+
   const introducedIds = (
     await db
       .selectDistinct({ id: foodEntries.foodId })
@@ -18,20 +20,29 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
       .where(eq(foodEntries.childId, childId))
   ).map((r) => r.id);
 
-  const introducedAllergens = (
-    await db
-      .selectDistinct({ allergenType: foods.allergenType })
-      .from(foodEntries)
-      .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-      .where(eq(foodEntries.childId, childId))
-  )
-    .map((r) => r.allergenType)
-    .filter((x): x is string => !!x);
+  const allergenEntries = await db
+    .selectDistinct({
+      allergenType: foods.allergenType,
+      category: foods.category,
+      reaction: foodEntries.reaction
+    })
+    .from(foodEntries)
+    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
+    .where(eq(foodEntries.childId, childId));
+  const introducedAllergens = allergenEntries
+    .filter(countsAsAllergenExposure)
+    .map((row) => row.allergenType)
+    .filter((value): value is string => !!value);
 
   const introducedAllergenSet = new Set(introducedAllergens);
+  const blockedAllergenSet = new Set(
+    allergenEntries
+      .filter((row) => row.reaction !== 'ras')
+      .map((row) => row.allergenType)
+      .filter((value): value is string => !!value)
+  );
 
-  const ageThreshold = Math.max(months, 4);
-  const conditions = [lte(foods.suggestedAgeMonths, ageThreshold), eq(foods.isCustom, false)];
+  const conditions = [lte(foods.suggestedAgeMonths, months), eq(foods.isCustom, false)];
   if (introducedIds.length > 0) {
     conditions.push(notInArray(foods.id, introducedIds));
   }
@@ -42,16 +53,23 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     .where(and(...conditions))
     .orderBy(sql`${foods.suggestedAgeMonths} ASC, ${foods.name} ASC`);
 
-  // Only surface "Allergènes à introduire" prompts for the priority subset
-  // (LEAP/EAT/ESPGHAN-supported). Soja and the EU-1169-only allergens
-  // (céleri, moutarde, crustacés, mollusques) are intentionally excluded
-  // : see PRIORITY_INTRODUCTION_ALLERGENS for the reasoning.
+  // Common allergens not to delay are grouped first. Any allergen associated
+  // with symptoms is excluded entirely pending medical review.
   const allergenSet = new Set<string>(
     PRIORITY_INTRODUCTION_ALLERGENS.filter((id) => !introducedAllergenSet.has(id))
   );
 
-  const priority = candidates.filter((f) => f.allergenType && allergenSet.has(f.allergenType));
-  const others = candidates.filter((f) => !f.allergenType || !allergenSet.has(f.allergenType));
+  const safeCandidates = candidates.filter(
+    (food) => !food.allergenType || !blockedAllergenSet.has(food.allergenType)
+  );
+  const priority = safeCandidates.filter(
+    (food) =>
+      countsAsAllergenExposure(food) && food.allergenType && allergenSet.has(food.allergenType)
+  );
+  const others = safeCandidates.filter(
+    (food) =>
+      !countsAsAllergenExposure(food) || !food.allergenType || !allergenSet.has(food.allergenType)
+  );
 
   return {
     ageMonths: months,

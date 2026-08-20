@@ -47,6 +47,23 @@ function resolveSentryRelease(): string | undefined {
 // release tag attached to runtime errors).
 const SENTRY_RELEASE_RESOLVED = resolveSentryRelease();
 
+// Routes gated by requireUser()/requireChildContext() (see
+// src/lib/server/guards.ts) — their rendered HTML embeds session-specific
+// data (child health records under /child, account settings under
+// /account, invite/child names under /join) and must never be written to
+// the service worker's CacheStorage, or a later visitor on a shared/offline
+// device could read a previous user's data straight out of the cache with
+// no session check. Covers both the bare path and its /en/ localized
+// counterpart (see paraglide.config.ts urlPatterns).
+const SESSION_GATED_PATH = /^\/(en\/)?(child|account|join)(\/|$)/;
+
+// A build-stable cache-busting token for the /offline precache entry below:
+// reuses the same release resolution as Sentry so the offline fallback page
+// is refetched on every real deploy (new git SHA) without needing its own
+// versioning scheme. Falls back to the build wall-clock time so local/CI
+// builds without any of the SHA sources still get a changing revision.
+const OFFLINE_FALLBACK_REVISION = SENTRY_RELEASE_RESOLVED ?? String(Date.now());
+
 export default defineConfig({
   define: {
     // Inlined at build time into every bundle. Replaces the runtime
@@ -75,15 +92,56 @@ export default defineConfig({
       injectRegister: null,
       workbox: {
         globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
+        // navigateFallback (Workbox's built-in NavigationRoute) always wins
+        // for every navigation, online or offline, which would break this
+        // SSR app's normal routing — see e2e/offline.spec.ts. The /offline
+        // page is instead reached per-route via the `precacheFallback`
+        // option below (a handlerDidError hook), which only kicks in once
+        // the matched strategy itself has failed (network down + nothing
+        // cached), so it never intercepts a normal online navigation. It
+        // still needs to be in the precache manifest to be servable
+        // offline — added explicitly since it's an SSR route, not a static
+        // build asset covered by globPatterns above.
         navigateFallback: null,
+        additionalManifestEntries: [{ url: '/offline', revision: OFFLINE_FALLBACK_REVISION }],
         runtimeCaching: [
           {
+            // /child, /account, /join render session-specific HTML — never
+            // persist it to CacheStorage (see SESSION_GATED_PATH above).
+            // NetworkOnly still benefits from the same offline fallback via
+            // precacheFallback, it just never reads/writes a cache first.
+            urlPattern: ({ request, url }) =>
+              request.mode === 'navigate' && SESSION_GATED_PATH.test(url.pathname),
+            handler: 'NetworkOnly',
+            options: {
+              precacheFallback: { fallbackURL: '/offline' }
+            }
+          },
+          {
+            // Everything else navigable (landing, guide, login, etc.) — no
+            // per-user secrets, safe to keep available offline.
             urlPattern: ({ request }) => request.mode === 'navigate',
             handler: 'NetworkFirst',
             options: {
               cacheName: 'pages',
               networkTimeoutSeconds: 3,
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 }
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              precacheFallback: { fallbackURL: '/offline' },
+              // Authoritative session gate: hooks.server.ts stamps
+              // `Cache-Control: no-store` on EVERY authenticated response
+              // (driven by locals.user, not a route list), so refuse to write
+              // any such response to CacheStorage. This catches routes the
+              // SESSION_GATED_PATH deny-list above can't — notably `/` and
+              // `/en`, which render the multi-child picker (names/ages/roles)
+              // for signed-in users — and any future authenticated route,
+              // with no regex to maintain. Workbox's NetworkFirst calls
+              // cache.put() manually and otherwise ignores Cache-Control.
+              plugins: [
+                {
+                  cacheWillUpdate: async ({ response }: { response: Response }) =>
+                    response.headers.get('cache-control')?.includes('no-store') ? null : response
+                }
+              ]
             }
           },
           {

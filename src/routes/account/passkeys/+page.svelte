@@ -59,7 +59,11 @@
       });
       const optsJSON = await optsRes.json().catch(() => ({}));
       if (!optsRes.ok || optsJSON?.ok === false) {
-        throw new Error(optsJSON?.error ?? m.errorsAccountPasskeyRegisterStartFailed());
+        // The server's raw error string is deliberately ignored (same as the
+        // login/signup passkey flow in passkey-client.ts): it isn't run
+        // through paraglide, so the localized fallback is strictly better for
+        // EN users.
+        throw new Error(m.errorsAccountPasskeyRegisterStartFailed());
       }
       const attResp = await startRegistration({ optionsJSON: optsJSON });
       const verifyRes = await fetch('/passkeys/registration/verify', {
@@ -72,7 +76,8 @@
       });
       const data = await verifyRes.json().catch(() => ({}));
       if (!verifyRes.ok || !data?.ok) {
-        toast.error(data?.error ?? m.errorsAccountPasskeyRegisterFailed());
+        // Same rationale as above: the server's raw string isn't localized.
+        toast.error(m.errorsAccountPasskeyRegisterFailed());
         return;
       }
       passkeyName = '';

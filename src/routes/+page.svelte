@@ -45,9 +45,10 @@
 
 {#if data.kind === 'landing'}
   <Seo
-    title="Diversif : Diversification alimentaire bébé : guide, suivi, partage parents"
-    description={SITE.description}
+    title={m.landingSeoTitle()}
+    description={m.landingSeoDescription()}
     path="/"
+    alternateLocales={['en']}
   />
   <JsonLd data={webApplicationJsonLd(siteUrl)} />
   <JsonLd data={faqPageJsonLd(landingFaq)} />

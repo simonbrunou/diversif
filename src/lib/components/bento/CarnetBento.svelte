@@ -24,7 +24,7 @@
     triedCount: number;
     lastTried: string | null;
     daysSinceLastTried: number | null;
-    state: 'cleared' | 'todo' | 'reaction' | 'fading';
+    state: 'cleared' | 'todo' | 'inconfort' | 'reaction' | 'fading';
   };
 
   let {

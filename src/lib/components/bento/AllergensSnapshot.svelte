@@ -1,10 +1,12 @@
 <script lang="ts" module>
-  export type AllergenPillState = 'ok' | 'todo' | 'fading' | 'reaction';
+  export type AllergenPillState = 'ok' | 'todo' | 'fading' | 'inconfort' | 'reaction';
 
   const PILL_CLASSES: Record<AllergenPillState, string> = {
     ok: 'border-success/40 bg-tile-mint text-tile-mint-foreground',
     todo: 'border-border bg-canvas text-ink-soft',
     fading: 'border-tile-peach-foreground/30 bg-tile-peach text-tile-peach-foreground',
+    inconfort:
+      'border-reaction-inconfort/40 bg-reaction-inconfort/15 text-reaction-inconfort-foreground',
     reaction: 'border-severe/40 bg-reaction-reaction text-reaction-reaction-foreground'
   };
 </script>
@@ -20,6 +22,7 @@
   function stateLabel(state: AllergenPillState): string {
     if (state === 'ok') return m.aujourdhuiAllergensOk();
     if (state === 'fading') return m.aujourdhuiAllergensFading();
+    if (state === 'inconfort') return m.reactionsLabelInconfort();
     if (state === 'reaction') return m.aujourdhuiAllergensReaction();
     return m.aujourdhuiAllergensTodo();
   }
@@ -44,7 +47,7 @@
           )}
         >
           <span>{item.label}</span>
-          <span class="text-[10px]">· {stateLabel(item.state)}</span>
+          <span class="text-3xs">· {stateLabel(item.state)}</span>
         </li>
       {/each}
     </ul>

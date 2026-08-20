@@ -7,6 +7,7 @@ import {
   createSession,
   hashPassword,
   invalidateAllUserSessions,
+  PASSWORD_MIN_LENGTH,
   setSessionCookie
 } from '$lib/server/auth';
 import { requireUser } from '$lib/server/guards';
@@ -17,7 +18,9 @@ import type { Actions, PageServerLoad } from './$types';
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(12, 'Mot de passe trop court (12 caractères minimum)')
+  newPassword: z
+    .string()
+    .min(PASSWORD_MIN_LENGTH, `Mot de passe trop court (${PASSWORD_MIN_LENGTH} caractères minimum)`)
 });
 
 export const load: PageServerLoad = async ({ locals }) => {

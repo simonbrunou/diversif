@@ -1,21 +1,18 @@
 import { test, expect } from '@playwright/test';
-import { awaitHydration, signUp, uniqueForWorker } from './_helpers';
+import { signUp } from './_helpers';
 
 test.describe('signup → onboarding', () => {
   test('signup creates an account and redirects to onboarding @responsive', async ({ page }) => {
-    const email = `${uniqueForWorker('user')}@example.com`;
-    await page.goto('/signup');
-    await awaitHydration(page);
-    await page.getByLabel('Votre prénom').fill('Test Parent');
-    await page.getByLabel('Adresse e-mail').fill(email);
-    await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
-    await page.getByLabel(/au moins 15 ans/i).check();
-    await page.getByLabel(/conditions générales/i).check();
-    await page.getByLabel(/politique de confidentialité/i).check();
     const submitButton = page.getByRole('button', { name: /créer mon compte/i });
-    await expect(submitButton).toBeInViewport();
-    await submitButton.click();
-    await expect(page).toHaveURL(/\/child\/new/);
+    await signUp(page, 'user', {
+      displayName: 'Test Parent',
+      // Assert right before the click, after the form is filled — this is
+      // what actually catches a mobile on-screen keyboard pushing the
+      // submit button out of view.
+      beforeSubmit: async () => {
+        await expect(submitButton).toBeInViewport();
+      }
+    });
   });
 
   test('rejects invalid login @responsive', async ({ page }) => {

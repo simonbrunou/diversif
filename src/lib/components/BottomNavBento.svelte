@@ -64,7 +64,7 @@
       href={tab.href(currentChildId)}
       aria-current={active ? 'page' : undefined}
       class={cn(
-        'flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors duration-base ease-soft',
+        'flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-2xs font-medium transition-colors duration-base ease-soft',
         active ? 'text-primary-strong' : 'text-foreground/70 hover:text-foreground'
       )}
     >

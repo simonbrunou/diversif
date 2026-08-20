@@ -3,7 +3,7 @@
   import Button from '$components/ui/Button.svelte';
   import FormError from '$components/ui/FormError.svelte';
   import { enhance } from '$app/forms';
-  import { trackSubmission } from '$lib/forms/tracked-enhance';
+  import { resolveMessageKey, trackSubmission } from '$lib/forms/tracked-enhance';
   import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
   import type { ActionData, PageData } from './$types';
@@ -16,8 +16,8 @@
   <Card class="p-6 text-center">
     <h1 class="text-xl font-semibold">{m.joinTitle()}</h1>
 
-    {#if data.error}
-      <p class="mt-3 text-sm text-severe-text">{data.error}</p>
+    {#if data.errorKey}
+      <p class="mt-3 text-sm text-severe-text">{resolveMessageKey(data.errorKey)}</p>
       <div class="mt-6">
         <Button href={localizedHref('/')} variant="outline">{m.joinBack()}</Button>
       </div>
@@ -34,8 +34,13 @@
       </p>
       <p class="mt-2 text-xs text-muted-foreground">{m.joinCodeLine()} <span class="font-mono">{data.code}</span></p>
 
-      {#if form?.error}
-        <FormError class="mt-4">{form.error}</FormError>
+      {#if form?.errorKey}
+        {@const retry = 'retryAfterSeconds' in form ? form.retryAfterSeconds : null}
+        <FormError class="mt-4">
+          {retry != null
+            ? m.errorsAuthRateLimitedSeconds({ seconds: retry })
+            : resolveMessageKey(form.errorKey)}
+        </FormError>
       {/if}
 
       <form

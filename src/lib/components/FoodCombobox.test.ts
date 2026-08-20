@@ -85,4 +85,64 @@ describe('FoodCombobox', () => {
     await fireEvent.input(search, { target: { value: 'crt' } });
     expect(container.textContent).toContain('approchant');
   });
+
+  it('has a persistent accessible label on the search input', () => {
+    const { container } = render(FoodCombobox, { props: { foods } });
+    const search = container.querySelector('input[type="search"]') as HTMLInputElement;
+    expect(search.getAttribute('aria-label')).toBeTruthy();
+  });
+
+  it('moves focus to the "Changer" button after selecting a food (no focus loss to body)', async () => {
+    const { container } = render(FoodCombobox, { props: { foods } });
+    const carrotBtn = Array.from(container.querySelectorAll('ul button')).find((b) =>
+      b.textContent?.includes('Carotte')
+    )!;
+    await fireEvent.click(carrotBtn);
+    const changeBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Changer'
+    )!;
+    expect(document.activeElement).toBe(changeBtn);
+  });
+
+  it('moves focus back to the search input after clicking "Changer" (no focus loss to body)', async () => {
+    const { container } = render(FoodCombobox, { props: { foods, initialFoodId: 1 } });
+    const changeBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Changer'
+    )!;
+    await fireEvent.click(changeBtn);
+    const search = container.querySelector('input[type="search"]');
+    expect(document.activeElement).toBe(search);
+  });
+
+  it('announces the result count in an aria-live region as the user types', async () => {
+    const { container } = render(FoodCombobox, { props: { foods } });
+    const status = container.querySelector('[aria-live="polite"]') as HTMLElement;
+    expect(status).not.toBeNull();
+    const search = container.querySelector('input[type="search"]') as HTMLInputElement;
+    await fireEvent.input(search, { target: { value: 'Pomme' } });
+    expect(status.textContent).toContain('1 aliment trouvé');
+    await fireEvent.input(search, { target: { value: 'zzzzqqqq' } });
+    expect(status.textContent).toContain('Aucun aliment trouvé');
+  });
+
+  it('closes the custom-food panel via the "Annuler" button, clearing the required name field', async () => {
+    const onCustomToggle = mock();
+    const { container } = render(FoodCombobox, {
+      props: { foods, onCustomToggle }
+    });
+    const addBtn = Array.from(container.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('hors catalogue')
+    )!;
+    await fireEvent.click(addBtn);
+    const nameInput = container.querySelector('input[name="customFood.name"]') as HTMLInputElement;
+    await fireEvent.input(nameInput, { target: { value: 'Kiwi' } });
+
+    const cancelBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Annuler'
+    )!;
+    await fireEvent.click(cancelBtn);
+
+    expect(onCustomToggle).toHaveBeenLastCalledWith(false);
+    expect(container.querySelector('input[name="customFood.name"]')).toBeNull();
+  });
 });

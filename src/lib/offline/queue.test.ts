@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import 'fake-indexeddb/auto';
 
-import { buildBody, clear, enqueue, flush } from './queue';
+import { buildBody, clear, count, enqueue, flush } from './queue';
 
-/** Count rows directly in IDB — the queue module no longer exposes a count. */
+/** Count rows directly in IDB, bypassing the module's own count() export. */
 async function countRows(): Promise<number> {
   const req = indexedDB.open('diversif-offline', 1);
   const db = await new Promise<IDBDatabase>((res, rej) => {
@@ -66,6 +66,44 @@ describe('queue', () => {
       queuedAt: 1
     });
     expect(await countRows()).toBe(1);
+  });
+
+  it('count() reports the number of rows still queued', async () => {
+    expect(await count()).toBe(0);
+    await enqueue({
+      key: 'k1',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    await enqueue({
+      key: 'k2',
+      childId: 1,
+      formData: { foodId: '2', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 2
+    });
+    expect(await count()).toBe(2);
+  });
+
+  it('emits queue:changed on enqueue, and again once flush drops the row', async () => {
+    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult());
+    const events: string[] = [];
+    const handler = () => events.push('changed');
+    window.addEventListener('queue:changed', handler);
+
+    await enqueue({
+      key: 'k1',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    expect(events).toEqual(['changed']);
+
+    await flush();
+    expect(events).toEqual(['changed', 'changed']);
+    expect(await count()).toBe(0);
+
+    window.removeEventListener('queue:changed', handler);
   });
 
   it('buildBody expands array values into repeated params', () => {

@@ -4,7 +4,6 @@
   import AddSymptomSheet from './AddSymptomSheet.svelte';
   import StayCoolCard from './StayCoolCard.svelte';
   import SevereRail from './SevereRail.svelte';
-  import MonitorTimer from './MonitorTimer.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
   import { type TextureKey } from '$lib/utils/textures';
@@ -66,7 +65,6 @@
   <SymptomList {symptoms} onAdd={() => (addOpen = true)} action={entryAction} />
   <StayCoolCard />
   <SevereRail />
-  <MonitorTimer entryId={String(entryId)} />
 
   <a
     href={printHref}

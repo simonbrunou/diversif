@@ -1,5 +1,6 @@
 <script lang="ts">
   import Card from '$components/ui/Card.svelte';
+  import SourceCitation from '$lib/components/SourceCitation.svelte';
   import { REACTION_GUIDANCE, EMERGENCY_NUMBER } from '$lib/content/guidance';
   import { HeartPulse, Phone } from 'lucide-svelte';
 </script>
@@ -17,7 +18,7 @@
           : 'p-4'}
       >
         <h3 class="text-sm font-semibold">{r.title}</h3>
-        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h4 class="mt-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           Signes
         </h4>
         <ul class="mt-1 list-disc space-y-1 pl-5 text-sm text-foreground/90">
@@ -25,10 +26,11 @@
             <li>{s}</li>
           {/each}
         </ul>
-        <h4 class="mt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h4 class="mt-2 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
           Conduite à tenir
         </h4>
         <p class="mt-1 text-sm text-foreground/90">{r.whatToDo}</p>
+        <div class="mt-2"><SourceCitation ids={r.sources} inline /></div>
       </Card>
     {/each}
   </div>
@@ -44,8 +46,8 @@
           Urgence : appeler le {EMERGENCY_NUMBER}
         </h3>
         <p class="text-sm text-foreground/90">
-          Œdème de la gorge ou des lèvres, gêne respiratoire, vomissements répétés, perte de tonus,
-          urticaire généralisée → SAMU sans délai.
+          Gêne respiratoire, œdème des lèvres ou de la langue, malaise ou plusieurs symptômes
+          associés → appel sans délai.
         </p>
       </div>
     </div>

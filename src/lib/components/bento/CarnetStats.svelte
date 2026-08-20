@@ -53,7 +53,7 @@
     <Card as="article" variant="tile-mint" class="p-4" aria-label={m.carnetBilanDiversity()}>
       <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanDiversity()}</p>
       <p class="mt-1 font-display text-3xl italic leading-none">{diversityScore}</p>
-      <p class="mt-1 text-[11px] leading-tight text-ink-soft">{m.carnetBilanDiversityCaption()}</p>
+      <p class="mt-1 text-2xs leading-tight text-ink-soft">{m.carnetBilanDiversityCaption()}</p>
     </Card>
     <Card as="article" variant="tile-butter" class="p-4" aria-label={m.carnetBilanFoods()}>
       <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanFoods()}</p>
@@ -77,7 +77,7 @@
           ></div>
         {/each}
       </div>
-      <div class="mt-1 flex gap-1 text-[10px] uppercase text-ink-soft">
+      <div class="mt-1 flex gap-1 text-3xs uppercase text-ink-soft">
         {#each weeklyEntries as _, i (i)}
           <span data-day class="flex-1 text-center">{dayLabels[i]}</span>
         {/each}

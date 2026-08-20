@@ -1,45 +1,47 @@
-import dayjs from 'dayjs';
-import 'dayjs/locale/fr';
-// dayjs ships English as the built-in default locale, so no separate import.
-import relativeTime from 'dayjs/plugin/relativeTime';
-import calendar from 'dayjs/plugin/calendar';
-import updateLocale from 'dayjs/plugin/updateLocale';
 import { getLocale } from '$lib/paraglide/runtime';
 import * as m from '$lib/paraglide/messages';
 
-dayjs.extend(relativeTime);
-dayjs.extend(calendar);
-dayjs.extend(updateLocale);
+function pad2(n: number): string {
+  return String(n).padStart(2, '0');
+}
 
-// Calling dayjs.locale() at module load globalised French for every
-// downstream dayjs() call, including pages rendered for /en/ visitors.
-// Pass the active paraglide locale per call instead so each render picks
-// up the visitor's locale; the helpers below resolve it via getLocale()
-// (server: paraglideMiddleware's per-request AsyncLocalStorage scope;
-// client: the url strategy reading window.location).
+function formatHHmm(d: Date): string {
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
 
 export function formatRelative(date: Date | number, now: Date = new Date()): string {
   const locale = getLocale();
-  const d = dayjs(date).locale(locale);
-  const n = dayjs(now).locale(locale);
-  const diffMin = n.diff(d, 'minute');
-  const diffHour = n.diff(d, 'hour');
+  const d = date instanceof Date ? date : new Date(date);
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  const diffHour = Math.floor(diffMs / 3_600_000);
 
   if (diffMin < 1) return m.dateRelativeNow();
   if (diffMin < 60) return m.dateRelativeMinutes({ min: String(diffMin) });
-  if (diffHour < 12 && d.isSame(n, 'day')) return m.dateRelativeHours({ hour: String(diffHour) });
+  if (diffHour < 12 && isSameDay(d, now)) return m.dateRelativeHours({ hour: String(diffHour) });
 
-  if (d.isSame(n, 'day')) return m.dateRelativeToday({ time: d.format('HH:mm') });
-  if (d.isSame(n.subtract(1, 'day'), 'day'))
-    return m.dateRelativeYesterday({ time: d.format('HH:mm') });
+  if (isSameDay(d, now)) return m.dateRelativeToday({ time: formatHHmm(d) });
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  if (isSameDay(d, yesterday)) return m.dateRelativeYesterday({ time: formatHHmm(d) });
 
-  if (d.isSame(n, 'year')) return d.format('ddd D MMM HH:mm');
-  return d.format('D MMM YYYY HH:mm');
+  const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(d);
+  const month = new Intl.DateTimeFormat(locale, { month: 'short' }).format(d);
+  if (d.getFullYear() === now.getFullYear())
+    return `${weekday} ${d.getDate()} ${month} ${formatHHmm(d)}`;
+  return `${d.getDate()} ${month} ${d.getFullYear()} ${formatHHmm(d)}`;
 }
 
 export function formatDateInputValue(date: Date = new Date()): string {
   // YYYY-MM-DDTHH:mm for <input type="datetime-local">
-  return dayjs(date).format('YYYY-MM-DDTHH:mm');
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${formatHHmm(date)}`;
 }
 
 // <input type="datetime-local"> produces TZ-naive strings ("2026-05-17T12:27").
@@ -53,16 +55,6 @@ export function localInputToIso(value: string): string {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   return d.toISOString();
-}
-
-/**
- * Returns a locale-aware age in months since birthMonth.
- * E.g. "6 mois" (FR) or "6 mo" (EN).
- */
-export function formatMonthsSince(birthMonth: string, now: Date = new Date()): string {
-  const locale = getLocale();
-  const months = dayjs(now).diff(dayjs(birthMonth), 'month');
-  return locale === 'fr' ? `${months} mois` : `${months} mo`;
 }
 
 /**

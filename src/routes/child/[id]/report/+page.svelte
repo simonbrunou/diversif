@@ -9,15 +9,14 @@
   import { TEXTURE_VALUES } from '$lib/utils/textures';
   import * as m from '$lib/paraglide/messages';
   import { CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
-  import dayjs from 'dayjs';
-  import 'dayjs/locale/fr';
+  import { formatDate } from '$lib/utils/dates';
   import { getLocale } from '$lib/paraglide/runtime';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
 
   function fmtDay(ts: number): string {
-    return dayjs(ts).locale(getLocale()).format('D MMM YYYY');
+    return formatDate(ts, getLocale() === 'en' ? 'en-GB' : 'fr-FR');
   }
 
   function reactionIcon(r: 'ras' | 'inconfort' | 'reaction') {
@@ -53,32 +52,34 @@
       {data.child.name}
     </h1>
     <p class="text-sm text-muted-foreground">
-      {formatAge(data.child.birthDate)} · {data.stage.title}
+      {formatAge(data.child.birthDate)} · {data.ageMonths < 4
+        ? m.preDiversificationTitle()
+        : data.stage.title}
     </p>
   </header>
 
   <!-- Summary stats -->
   <section class="grid grid-cols-2 gap-3 sm:grid-cols-4 print:grid-cols-4">
     <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+      <div class="text-2xs uppercase tracking-wider text-muted-foreground">
         {m.reportTotalsFoodsLabel()}
       </div>
       <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
         {data.totals.foods}
       </div>
-      <div class="mt-1 text-[11px] text-muted-foreground">{m.reportTotalsFoodsCaption()}</div>
+      <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsFoodsCaption()}</div>
     </div>
     <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+      <div class="text-2xs uppercase tracking-wider text-muted-foreground">
         {m.reportTotalsEntriesLabel()}
       </div>
       <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
         {data.totals.entries}
       </div>
-      <div class="mt-1 text-[11px] text-muted-foreground">{m.reportTotalsEntriesCaption()}</div>
+      <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsEntriesCaption()}</div>
     </div>
     <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+      <div class="text-2xs uppercase tracking-wider text-muted-foreground">
         {m.reportTotalsCategoriesLabel()}
       </div>
       <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
@@ -86,10 +87,10 @@
           / {data.totals.categoriesTotal}</span
         >
       </div>
-      <div class="mt-1 text-[11px] text-muted-foreground">{m.reportTotalsCategoriesCaption()}</div>
+      <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsCategoriesCaption()}</div>
     </div>
     <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+      <div class="text-2xs uppercase tracking-wider text-muted-foreground">
         {m.reportTotalsAllergensLabel()}
       </div>
       <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
@@ -97,18 +98,23 @@
           / {data.totals.allergensTotal}</span
         >
       </div>
-      <div class="mt-1 text-[11px] text-muted-foreground">{m.reportTotalsAllergensCaption()}</div>
+      <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsAllergensCaption()}</div>
     </div>
   </section>
 
   <!-- Stage status -->
   <section class="space-y-2 rounded-lg border bg-card p-4">
     <h2 class="text-lg font-semibold">{m.reportStageHeading()}</h2>
-    <p class="text-sm text-muted-foreground">{data.stage.title}</p>
-    <p class="text-sm">{data.stage.oneLiner}</p>
-    <p class="text-sm">
-      <span class="text-muted-foreground">{m.reportStageExpectedTextures()} : </span>{data.stage.textures}
-    </p>
+    {#if data.ageMonths < 4}
+      <p class="text-sm text-muted-foreground">{m.preDiversificationTitle()}</p>
+      <p class="text-sm">{m.preDiversificationBody()}</p>
+    {:else}
+      <p class="text-sm text-muted-foreground">{data.stage.title}</p>
+      <p class="text-sm">{data.stage.oneLiner}</p>
+      <p class="text-sm">
+        <span class="text-muted-foreground">{m.reportStageExpectedTextures()} : </span>{data.stage.textures}
+      </p>
+    {/if}
     {#if data.mostAdvancedTexture}
       <p class="text-sm">
         <span class="text-muted-foreground">{m.reportStageMostAdvancedTexture()} : </span>
@@ -254,7 +260,7 @@
   {/if}
 
   <!-- Footer -->
-  <footer class="space-y-1 border-t pt-3 text-[11px] text-muted-foreground print:border-black/20">
+  <footer class="space-y-1 border-t pt-3 text-2xs text-muted-foreground print:border-black/20">
     <p>{m.reportFooterDisclaimer()}</p>
     <p>{m.reportFooterSources()}</p>
   </footer>

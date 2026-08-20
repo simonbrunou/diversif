@@ -162,9 +162,9 @@ describe('settings createInvitation action', () => {
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
-    )) as { status: number; data: { error: string } };
+    )) as { status: number; data: { errorKey: string } };
     expect(r.status).toBe(429);
-    expect(r.data.error).toMatch(/invitations actives/i);
+    expect(r.data.errorKey).toBe('errorsSettingsInviteCapReached');
     expect(await testDb.select().from(invitations)).toHaveLength(10);
   });
 

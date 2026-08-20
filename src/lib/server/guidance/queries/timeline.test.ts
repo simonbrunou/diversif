@@ -13,7 +13,6 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 import { loadCoparentActivity } from './timeline';
 import { children, foods, foodEntries, users } from '$lib/server/db/schema';
 import { groupByMeal } from '$lib/utils/meals';
-import { newId } from '$lib/offline/uuid';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -76,7 +75,7 @@ describe('loadCoparentActivity — meal grouping (Task 12)', () => {
   it("carries mealId and keeps a co-parent's 3-ingredient meal adjacent so groupByMeal folds it into ONE group of 3", async () => {
     const { user, child } = await seedUserAndChild();
     const partner = await seedPartner();
-    const sharedMealId = newId();
+    const sharedMealId = crypto.randomUUID();
     // loadCoparentActivity defaults to a 7-day window, so entries must be
     // recent relative to "now" (unlike the mealId/adjacency-only fixtures
     // elsewhere that use a fixed calendar date).

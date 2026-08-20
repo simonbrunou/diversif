@@ -79,6 +79,7 @@ test.describe('cross-tenant data isolation', () => {
         `/child/${childIdA}/log`,
         `/child/${childIdA}/report`,
         `/child/${childIdA}/guide`,
+        `/child/${childIdA}/menu`,
         `/child/${childIdA}/suggestions`,
         `/child/${childIdA}/settings`,
         `/child/${childIdA}/foods/${entryIdA}`,

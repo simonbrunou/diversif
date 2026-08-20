@@ -8,6 +8,12 @@ import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
  * and mobile Playwright projects pick it up; auth routes share one signup
  * per worker via test.step for speed.
  *
+ * The static-route sweep is a page.goto() + axe pass only, so it never
+ * scans an open drawer/sheet or a FoodCombobox mid-interaction — those
+ * DOM states are exercised by dedicated test.step blocks at the end of
+ * the auth-routes test (ChildSwitcherDrawer, a confirm dialog, FoodCombobox
+ * search + selection).
+ *
  * Hard gate: any violation fails the test. The companion Lighthouse layer
  * (a11y/best-practices/SEO scores) was deferred — see the spec doc's
  * "Status" section for the playwright-lighthouse NO_FCP backstory.
@@ -92,5 +98,50 @@ test.describe('a11y axe — auth routes @responsive', () => {
         await axeSweep(page);
       });
     }
+
+    // The static-route sweep above only ever does page.goto() + axe — it
+    // never opens a drawer/sheet or types into FoodCombobox, so none of
+    // those DOM states get scanned. Exercise each explicitly.
+    //
+    // Every axeSweep() below that follows a dialog-open click waits 500ms
+    // first: axe-core reads computed styles synchronously, and without the
+    // wait it can sample colors mid fade-in/zoom-in (Modal's `animate-in`),
+    // reporting a fabricated low-contrast violation for a still-transitioning
+    // element. Same class of flake already documented in dismissWelcomeIfPresent
+    // above (_helpers.ts) — wait for the entrance transition to settle before
+    // asserting, don't scan mid-animation.
+    await test.step('axe: ChildSwitcherDrawer open', async () => {
+      await page.goto(`/child/${childId}`);
+      await page.getByRole('button', { name: /changer/i }).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(500);
+      await axeSweep(page);
+      await page.keyboard.press('Escape');
+    });
+
+    await test.step('axe: "Se déconnecter partout" confirm dialog open', async () => {
+      await page.goto('/account/sessions');
+      await page.getByRole('button', { name: 'Se déconnecter partout' }).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(500);
+      await axeSweep(page);
+      await page.keyboard.press('Escape');
+    });
+
+    await test.step('axe: FoodCombobox search + selection', async () => {
+      await page.goto(`/child/${childId}/log`);
+      const search = page.getByPlaceholder('Rechercher un aliment…');
+      await search.fill('poire');
+      // The result-count live region (the companion a11y fix) should
+      // announce a match count, not just silently re-render the list.
+      // Scoped to `p[aria-live]` — svelte-sonner's toast region is also
+      // aria-live="polite" and would otherwise make this locator ambiguous.
+      await expect(page.locator('p[aria-live="polite"]')).toContainText(/trouv/i);
+      await page
+        .getByRole('button', { name: /^Poire/ })
+        .first()
+        .click();
+      await axeSweep(page);
+    });
   });
 });

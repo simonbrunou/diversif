@@ -91,7 +91,13 @@ export default defineConfig({
       // this server intentionally runs the production build with
       // NODE_ENV=production; the ORIGIN requirement is what keeps a stray
       // E2E=1 inert on a real deployment.
-      E2E: '1'
+      E2E: '1',
+      // src/lib/server/passkeys.ts's resolveRPID() defaults to "diversif.app";
+      // the e2e webServer runs on localhost, so the WebAuthn RP ID must match
+      // that effective domain or Chromium's navigator.credentials.create()/
+      // get() rejects before any request reaches the app (see e2e/passkeys.spec.ts).
+      // Scoped to this webServer only — production's default is untouched.
+      WEBAUTHN_RP_ID: 'localhost'
     }
   }
 });

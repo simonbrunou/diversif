@@ -76,18 +76,26 @@ async function deleteRow(key: string): Promise<void> {
   await tx('readwrite', async (store) => {
     await reqAsPromise(store.delete(key));
   });
+  emit('queue:changed');
 }
 
 export async function enqueue(item: QueuedSubmit): Promise<void> {
   await tx('readwrite', async (store) => {
     await reqAsPromise(store.put(item));
   });
+  emit('queue:changed');
 }
 
 export async function clear(): Promise<void> {
   await tx('readwrite', async (store) => {
     await reqAsPromise(store.clear());
   });
+  emit('queue:changed');
+}
+
+/** Number of rows still queued — feeds the persistent "N pending" indicator. */
+export async function count(): Promise<number> {
+  return tx('readonly', async (store) => reqAsPromise(store.count()));
 }
 
 interface ActionRedirect {

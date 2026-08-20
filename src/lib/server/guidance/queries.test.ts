@@ -286,7 +286,7 @@ describe('loadRepeatCandidates', () => {
     const out = await loadRepeatCandidates(child.id, 2);
     expect(out.length).toBe(2);
     expect(out[0].foodName).toBe('A'); // oldest first
-    expect(out[1].foodName).toBe('B');
+    expect(out[1].foodName).toBe('C');
   });
 
   it('uses default limit of 5', async () => {
@@ -326,8 +326,8 @@ describe('loadDismissals / dismissReminder', () => {
 
   it('upserts dismissal on conflict (no duplicate row)', async () => {
     const { user, child } = await seedUserAndChild();
-    await dismissReminder(user.id, child.id, 'high-risk-window');
-    await dismissReminder(user.id, child.id, 'high-risk-window');
+    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf');
+    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf');
     const rows = await testDb.select().from(tipDismissals).where(eq(tipDismissals.userId, user.id));
     expect(rows.length).toBe(1);
   });

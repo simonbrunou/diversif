@@ -42,12 +42,7 @@ describe('ReactionDetailBento', () => {
 
   it('renders the severe rail', () => {
     render(ReactionDetailBento, { props: baseProps });
-    expect(screen.getByText(/Difficulté à respirer/)).toBeTruthy();
-  });
-
-  it('renders the monitor timer start CTA', () => {
-    render(ReactionDetailBento, { props: baseProps });
-    expect(screen.getByRole('button', { name: /Suivre 30 min/ })).toBeTruthy();
+    expect(screen.getByText(/Gêne respiratoire/)).toBeTruthy();
   });
 
   it('renders the export CTA linking to the print href in a new tab', () => {

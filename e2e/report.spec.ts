@@ -2,12 +2,6 @@ import { test, expect } from '@playwright/test';
 import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 test.describe('Bilan pour le pédiatre — print', () => {
-  // Firefox print emulation is less reliable; covered by Chromium + WebKit.
-  test.skip(
-    ({ browserName }) => browserName === 'firefox',
-    'Print smoke covered by Chromium + WebKit'
-  );
-
   test('hides app chrome and shows the printed footer under print emulation', async ({ page }) => {
     // 8-month-old via dynamic birth date — avoids time-bomb regressions.
     const today = new Date();

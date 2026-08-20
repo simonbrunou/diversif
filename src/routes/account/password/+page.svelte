@@ -7,6 +7,7 @@
   import * as m from '$lib/paraglide/messages';
   import { trackSubmission } from '$lib/forms/tracked-enhance';
   import { createFormToasts } from '$lib/forms/form-toasts.svelte';
+  import { PASSWORD_MIN_LENGTH } from '$lib/utils/password';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();
@@ -36,7 +37,7 @@
       name="newPassword"
       type="password"
       required
-      minlength={12}
+      minlength={PASSWORD_MIN_LENGTH}
       autocomplete="new-password"
     />
   </Field>

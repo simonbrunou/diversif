@@ -51,7 +51,7 @@
     <p class="text-sm font-bold leading-tight">
       {entry.foodName}
       {#if entry.texture}
-        <span class="text-[11px] uppercase tracking-wide text-muted-foreground">
+        <span class="text-2xs uppercase tracking-wide text-muted-foreground">
           · {getTextureLabel(entry.texture)}
         </span>
       {/if}

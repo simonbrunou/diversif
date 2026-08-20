@@ -33,24 +33,25 @@ export const STAGES = [
     ageMax: 6,
     title: '4–6 mois · Le démarrage en douceur',
     oneLiner:
-      "On lance la diversification entre 4 mois révolus et 6 mois, dès que bébé tient sa tête, s'intéresse au repas et ouvre la bouche.",
+      'On lance la diversification entre 4 mois révolus et 6 mois, lorsque le développement de bébé le permet.',
     principles: [
-      'Une nouvelle saveur à la fois, en petite quantité (cuillères), au moment du repas familial.',
+      'Commencer par quelques cuillères puis augmenter selon l’appétit, sans forcer.',
       'Tous les groupes peuvent être proposés, y compris les allergènes : gluten, œuf, arachide en purée, lait sous forme de yaourt/fromage.',
-      "Le lait (maternel ou infantile) reste l'aliment principal : environ 600–800 mL/jour.",
-      'Ne pas saler, ne pas sucrer, ajouter une cuillère de matière grasse aux préparations maison.'
+      'Le lait maternel à la demande ou le lait infantile reste l’aliment principal.',
+      'Ne pas saler, ne pas sucrer ; ajouter au total une cuillère à café de matière grasse par jour.'
     ],
     focus: [
-      'Légumes cuits écrasés ou en purée lisse (carotte, courgette épluchée, patate douce, potiron, panais).',
+      'Légumes cuits écrasés ou en purée lisse (carotte, courgette épluchée, haricot vert, potiron, panais).',
       'Fruits cuits ou bien mûrs en purée (pomme, poire, banane, avocat).',
-      'Premières protéines vers 6 mois : viande / poisson / œuf bien cuit / légumineuses bien cuites.',
+      'Viande, poisson, œuf bien cuit et légumineuses bien cuites peuvent être proposés dès le début, en petite quantité.',
       "Premiers allergènes en purée lisse : œuf bien cuit, beurre de cacahuète dilué, purée d'amande."
     ],
     textures: 'Purée lisse, sans morceaux. À la cuillère.',
-    milkTarget: 'Lait maternel à la demande, ou ~600–800 mL de lait infantile / jour.',
+    milkTarget:
+      'Lait maternel à la demande, ou biberons habituels de lait infantile selon l’appétit.',
     redFlags: [
       'Ne pas démarrer avant 4 mois révolus (système digestif et rénal immatures).',
-      'Ne pas dépasser 6 mois sans diversifier (risque de carence en fer, fenêtre allergique).'
+      'Ne pas attendre après 6 mois pour commencer la diversification.'
     ],
     sources: ['spf-pnns-guide', 'hcsp-2020', '1000-jours', 'espghan-2017']
   },
@@ -60,22 +61,22 @@ export const STAGES = [
     ageMax: 9,
     title: '6–9 mois · On élargit, on apporte du fer',
     oneLiner:
-      "On introduit toutes les familles d'aliments. Priorité au fer : viande, poisson, œuf, légumineuses dès 6 mois.",
+      'On poursuit toutes les familles d’aliments, avec une petite portion quotidienne de viande, poisson ou œuf.',
     principles: [
       'Tous les groupes en routine : légumes, fruits, féculents, légumineuses, viande, poisson, œuf, produits laitiers, allergènes.',
-      'Augmenter progressivement la quantité ; passer à 4 repas (matin, midi, goûter, soir).',
+      'Augmenter progressivement la quantité ; le rythme évolue souvent vers 4 repas autour de 8 mois.',
       "Continuer à proposer un aliment refusé jusqu'à ~10 fois : l'acceptation gustative se construit.",
-      "Toujours ajouter des matières grasses crues à la fin de la cuisson (huile de colza, huile de noix, huile d'olive ; beurre en petite quantité possible)."
+      'Ajouter au total une cuillère à café de matière grasse par jour, crue à la fin de la cuisson (huiles variées ; beurre de temps en temps).'
     ],
     focus: [
-      'Viande / poisson : 10–20 g par jour (≈ 2 cuillères à café). Poisson 2 fois par semaine dont un gras (saumon, sardine).',
+      'Viande / poisson / œuf : 10 g par jour au total (≈ 2 cuillères à café). Poisson 2 fois par semaine dont un gras (saumon, sardine).',
       "Œuf entier bien cuit (jaune + blanc) : ~1/4 d'œuf, à augmenter après 1 an (1/3 entre 1–2 ans, 1/2 entre 2–3 ans).",
-      "Allergènes : à 6–9 mois, terminer l'introduction des allergènes courants à cet âge (œuf, arachide, fruits à coque en purée, sésame, gluten, poisson, lait). Le soja n'est pas dans cette liste : HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans.",
+      'Allergènes : une fois la diversification commencée, ne pas retarder œuf bien cuit, arachide et fruits à coque en purée, gluten, poisson, lait et sésame. Les produits à base de soja sont déconseillés avant 3 ans.',
       'Légumineuses cuites bien écrasées (lentilles corail, pois chiches, haricots blancs).'
     ],
     textures:
       'Mouliné fin → écrasé fondant. Premiers petits morceaux fondants vers 8 mois (banane, avocat, courgette cuite).',
-    milkTarget: 'Lait maternel à la demande ou ~500 mL/jour de lait 2ᵉ âge.',
+    milkTarget: 'Lait maternel à la demande ou environ 500 mL/jour de lait 2ᵉ âge.',
     redFlags: [
       'Pas de lait de vache liquide en boisson principale avant 1 an (yaourts/fromages OK).',
       'Pas de miel.',
@@ -99,11 +100,11 @@ export const STAGES = [
     focus: [
       'Variété de céréales et féculents (riz, pâtes, semoule, polenta, sarrasin, quinoa, pomme de terre).',
       'Fromages variés (à pâte pressée cuite type comté, emmental ; pâtes molles type camembert pasteurisé).',
-      "Continuer l'exposition régulière aux allergènes déjà introduits : la tolérance s'entretient."
+      'Une fois un allergène toléré, continuer à le proposer régulièrement, au moins chaque semaine.'
     ],
     textures:
       'Petits morceaux fondants ; aliments à saisir (bâtonnets, lamelles). Toujours sous surveillance.',
-    milkTarget: "~500 mL/jour de lait 2ᵉ âge ou poursuite de l'allaitement.",
+    milkTarget: "Environ 500 mL/jour de lait 2ᵉ âge ou poursuite de l'allaitement.",
     redFlags: [
       "Pas d'aliments durs et ronds (raisins entiers, tomates cerises entières, saucisses rondes, carotte crue) : découper.",
       'Toujours assis, toujours surveillé pendant les repas.'
@@ -118,19 +119,20 @@ export const STAGES = [
     oneLiner:
       'Bébé partage les repas familiaux en versions adaptées : moins salées, moins sucrées, morceaux découpés.',
     principles: [
-      'Repas familiaux adaptés : moins de sel, pas de sucre ajouté, gras de qualité.',
-      'Maintenir la variété : un aliment de chaque groupe à chaque repas idéalement.',
-      "Lait de croissance ou poursuite de l'allaitement, ou ≥ 500 mL d'équivalents laitiers.",
+      'Repas familiaux adaptés : sans sel ajouté, peu de produits sucrés, gras de qualité.',
+      'Maintenir la variété sur la journée et la semaine, en respectant l’appétit.',
+      'Poursuite de l’allaitement ou environ 500 mL/jour de lait adapté ; lait et équivalents laitiers ne dépassent pas 800 mL/jour.',
       'Continuer à proposer les aliments refusés : la fenêtre néophobique (~18–24 mois) est normale.'
     ],
     focus: [
       'Poisson 2 fois par semaine dont un gras.',
       'Légumes et fruits à chaque repas, frais ou surgelés natures.',
-      "Viande, poisson ou œuf : ~30 g/jour à 1 an, jusqu'à 50 g vers 3 ans.",
+      'Viande, poisson ou œuf : 20 g/jour de 1 à 2 ans, puis 30 g/jour de 2 à 3 ans.',
       'Eau à volonté, en seule boisson.'
     ],
     textures: 'Toutes textures, en morceaux adaptés à la taille de la bouche.',
-    milkTarget: '~500 mL/jour de lait de croissance ou équivalents laitiers.',
+    milkTarget:
+      'Environ 500 mL/jour ; au maximum 800 mL de lait + équivalents laitiers, ou poursuite de l’allaitement.',
     redFlags: [
       'Sel et sucre ajoutés restent à limiter strictement.',
       'Boissons végétales (amande, riz, avoine) ne remplacent pas le lait.',
@@ -155,14 +157,14 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
   {
     id: 'window-4-6',
     title: 'Démarrer entre 4 mois révolus et 6 mois',
-    body: "Pas avant 4 mois (digestion et reins immatures). Pas après 6 mois (risque de carence en fer, fenêtre de tolérance allergique). On démarre quand bébé tient sa tête, s'intéresse au repas, ouvre la bouche à la cuillère.",
+    body: 'Pas avant 4 mois révolus. Après 6 mois révolus, le lait seul ne couvre plus tous les besoins nutritionnels ni les stimulations nécessaires au développement. Commencer entre 4 et 6 mois lorsque le développement de bébé le permet.',
     sources: ['hcsp-2020', 'spf-pnns-guide', '1000-jours']
   },
   {
     id: 'allergens-early',
-    title: 'Introduire les allergènes tôt et sans tarder',
-    body: "Dès que la diversification est lancée, proposer œuf bien cuit, arachide (en purée fine), lait (yaourt/fromage), gluten, poisson, fruits à coque (en purée), sésame. L'introduction précoce réduit le risque d'allergie alimentaire (LEAP, EAT). Le soja n'entre pas dans cette liste : HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans.",
-    sources: ['leap-2015', 'eat-2016', 'espghan-2017', 'hcsp-2020']
+    title: 'Ne pas retarder les allergènes',
+    body: 'Dès que la diversification est lancée, proposer sous une forme adaptée œuf bien cuit, arachide, lait, gluten, poisson, fruits à coque et sésame. L’effet préventif est surtout démontré pour l’œuf bien cuit et l’arachide ; l’essai EAT n’était concluant que dans l’analyse des enfants ayant suivi le protocole. Les produits au soja sont déconseillés avant 3 ans.',
+    sources: ['hcsp-2020', 'eaaci-2020', 'leap-2015', 'eat-2016']
   },
   {
     id: 'repeat-10',
@@ -173,7 +175,7 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
   {
     id: 'add-fats',
     title: 'Ajouter des matières grasses systématiquement',
-    body: "Une cuillère d'huile de colza, d'huile d'olive ou une noix de beurre cru à la fin de la cuisson, dans chaque préparation maison. Apporte des acides gras essentiels au développement cérébral.",
+    body: "Avant 1 an : au total une cuillère à café d'huile par jour, ou de temps en temps une noisette de beurre, ajoutée après cuisson. De 1 à 3 ans : deux cuillères à café par jour.",
     sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   {
@@ -184,8 +186,8 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
   },
   {
     id: 'no-added-salt',
-    title: 'Pas de sel ajouté avant 1 an',
-    body: 'Les reins du nourrisson éliminent mal le sel (besoins < 1 g/jour). Ne pas saler les plats, éviter charcuterie, fromages très salés, plats préparés.',
+    title: 'Pas de sel ajouté avant 3 ans',
+    body: 'Ne pas saler les plats et limiter les aliments très salés comme la charcuterie, certains fromages et les plats préparés.',
     sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   {
@@ -197,13 +199,13 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
   {
     id: 'milk-stays',
     title: "Le lait reste l'aliment principal jusqu'à 1 an",
-    body: 'Lait maternel à la demande ou lait infantile (~500 mL/jour à 6 mois). La diversification complète, elle ne remplace pas.',
+    body: 'Lait maternel à la demande ou environ 500 mL/jour de lait infantile entre 6 et 12 mois. La diversification complète le lait, elle ne le remplace pas.',
     sources: ['hcsp-2020', 'who-cf']
   },
   {
     id: 'cook-thoroughly',
     title: 'Cuissons à cœur',
-    body: 'Viande, poisson, œuf : toujours bien cuits (pas de tartare, sushi, œuf coulant, mayo maison). Risque de listeria, salmonelle, toxoplasmose.',
+    body: 'Viande, poisson et œuf : toujours bien cuits (pas de tartare, sushi, œuf coulant ni mayonnaise maison) afin de réduire les risques infectieux et parasitaires.',
     sources: ['spf-pnns-guide', 'anses-nourrisson']
   },
   {
@@ -220,7 +222,7 @@ export const KEY_PRINCIPLES: readonly KeyPrinciple[] = [
 
 export type AllergenGuidance = {
   id: AllergenId;
-  recommendedAgeMonths: number;
+  timing: string;
   why: string;
   howToOffer: string[];
   firstSigns: string[];
@@ -229,15 +231,17 @@ export type AllergenGuidance = {
   sources: SourceId[];
 };
 
+const ALLERGY_SAFETY_SOURCES = ['ameli-allergie', 'ameli-oedeme'] as const;
+
 export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
   oeuf: {
     id: 'oeuf',
-    recommendedAgeMonths: 6,
-    why: "L'œuf est l'un des allergènes majeurs chez l'enfant. Une introduction précoce, dès 4–6 mois, réduit significativement le risque d'allergie (étude EAT).",
+    timing: 'Dès 4–6 mois',
+    why: 'L’œuf est un allergène majeur. Les recommandations européennes conseillent l’œuf bien cuit pendant la diversification, avec un bénéfice préventif surtout documenté lorsqu’il est introduit vers 4–6 mois.',
     howToOffer: [
       'Œuf entier bien cuit (jaune et blanc), durs ou en omelette bien cuite.',
       "~1/4 d'œuf entier (jaune + blanc) écrasé dans une purée à 6–12 mois, puis ~1/3 à 1–2 ans, puis ~1/2 à 2–3 ans (HCSP 2020).",
-      "Pas d'œuf cru (mayo maison, mousse au chocolat) avant 3 ans."
+      "Pas d'œuf cru ou peu cuit (mayo maison, mousse au chocolat) avant 5 ans."
     ],
     firstSigns: [
       'Rougeurs autour de la bouche',
@@ -250,18 +254,18 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
       'Vomissements répétés, perte de tonus, urticaire généralisée'
     ],
     whatToDo:
-      'Signes légers : arrêter, noter, consulter le médecin avant la prochaine exposition. Signes sévères : appeler le 15 immédiatement.',
-    sources: ['eat-2016', 'espghan-2017', 'hcsp-2020']
+      'Arrêter l’aliment. Demander rapidement un avis médical avant toute nouvelle exposition. En cas de signe sévère, appeler immédiatement le 15 ou le 112.',
+    sources: ['eaaci-2020', 'hcsp-2020', ...ALLERGY_SAFETY_SOURCES]
   },
   arachide: {
     id: 'arachide',
-    recommendedAgeMonths: 6,
-    why: "L'introduction précoce de l'arachide dès 4–11 mois réduit jusqu'à 86 % le risque d'allergie chez les nourrissons à risque (étude LEAP). À introduire chez tous les enfants.",
+    timing: 'Dès 4–6 mois',
+    why: 'Chez des nourrissons à haut risque, l’étude LEAP a montré une réduction allant jusqu’à 86 % de l’allergie à l’arachide dans un sous-groupe. En France, l’arachide ne doit pas être retardée une fois la diversification commencée.',
     howToOffer: [
       'Beurre de cacahuète **lisse** (sans morceaux) dilué dans une purée, un yaourt ou un peu de lait.',
-      'Commencer par une demi-cuillère à café diluée, puis augmenter.',
+      'Commencer par une petite quantité bien diluée, puis augmenter progressivement si elle est tolérée.',
       '**Jamais** de cacahuètes entières avant 5 ans (étouffement).',
-      "Si bébé a un eczéma sévère ou une allergie à l'œuf : consulter un allergologue **et** introduire dans la fenêtre 4–11 mois après évaluation (ESPGHAN 2017). Ne pas retarder au-delà."
+      "Si bébé a un eczéma sévère ou une allergie à l'œuf : demander un avis médical avant l’introduction."
     ],
     firstSigns: ['Rougeurs locales', 'Démangeaisons buccales', "Plaques d'urticaire"],
     severeSigns: [
@@ -270,13 +274,13 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
       'Pâleur, perte de tonus, vomissements répétés'
     ],
     whatToDo:
-      "Signes légers : arrêter et consulter avant ré-exposition. Signes sévères / suspicion d'anaphylaxie : 15 immédiatement.",
-    sources: ['leap-2015', 'espghan-2017']
+      'Arrêter l’aliment et demander rapidement un avis médical avant toute ré-exposition. En cas de suspicion d’anaphylaxie : appeler immédiatement le 15 ou le 112.',
+    sources: ['leap-2015', 'eaaci-2020', 'hcsp-2020', ...ALLERGY_SAFETY_SOURCES]
   },
   lait: {
     id: 'lait',
-    recommendedAgeMonths: 6,
-    why: "Les protéines de lait de vache font partie des allergènes majeurs. L'introduction sous forme transformée (yaourt, fromage) dès 6 mois est recommandée.",
+    timing: 'Dès 4–6 mois',
+    why: 'Les protéines de lait de vache font partie des allergènes majeurs. Yaourt nature et fromage pasteurisé peuvent être proposés dès le début de la diversification, sans remplacer le lait maternel ou infantile.',
     howToOffer: [
       'Yaourt nature au lait entier, fromage blanc, petit-suisse, fromages à pâte pressée cuite.',
       'Le **lait de vache liquide** ne remplace pas le lait infantile avant 1 an (apport en fer insuffisant).',
@@ -293,13 +297,13 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
       'Œdème, gêne respiratoire, urticaire généralisée'
     ],
     whatToDo:
-      "Signes légers : noter, arrêter, consulter. Signes sévères : 15. Si APLV connue, suivre l'éviction prescrite.",
-    sources: ['hcsp-2020', 'espghan-2017']
+      'Arrêter et demander rapidement un avis médical avant toute ré-exposition. En cas de signe sévère, appeler le 15 ou le 112. Si une APLV est connue, suivre l’éviction prescrite.',
+    sources: ['hcsp-2020', 'spf-pnns-guide', ...ALLERGY_SAFETY_SOURCES]
   },
   gluten: {
     id: 'gluten',
-    recommendedAgeMonths: 6,
-    why: "Le gluten s'introduit entre 4 et 12 mois. Éviter de très grandes quantités d'emblée : introduire progressivement.",
+    timing: 'Dès 4–6 mois',
+    why: 'Les céréales, y compris celles contenant du gluten, peuvent être proposées dès le début de la diversification. Éviter de très grandes quantités d’emblée.',
     howToOffer: [
       'Petites quantités de blé : pâtes bien cuites, semoule fine, pain, biscottes ramollies.',
       "L'allaitement au moment de l'introduction du gluten ne protège pas spécifiquement de la maladie cœliaque (donnée mise à jour ESPGHAN).",
@@ -313,25 +317,25 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     severeSigns: ['Stagnation pondérale persistante avec signes digestifs'],
     whatToDo:
       'Devant une cassure pondérale ou des troubles digestifs persistants après introduction du gluten, consulter : la maladie cœliaque se diagnostique par sérologie sous régime gluten.',
-    sources: ['espghan-2017', 'hcsp-2020']
+    sources: ['espghan-2017', 'hcsp-2020', ...ALLERGY_SAFETY_SOURCES]
   },
   fruits_a_coque: {
     id: 'fruits_a_coque',
-    recommendedAgeMonths: 6,
-    why: 'Les fruits à coque (amande, noisette, noix de cajou, noix) sont des allergènes majeurs. Introduction précoce recommandée : uniquement en purée fine.',
+    timing: 'Dès 4–6 mois',
+    why: 'Les fruits à coque sont des allergènes majeurs qui ne doivent pas être retardés une fois la diversification commencée. Les proposer uniquement en purée 100 % lisse.',
     howToOffer: [
-      "Purée d'amande / de noisette / de cajou (rayon bio ou allégés sans sucre), diluée dans une purée ou un yaourt.",
+      'Purée 100 % amande, noisette ou cajou, sans sucre ni sel, diluée dans une purée ou un yaourt.',
       '**Jamais** de fruit à coque entier avant 5 ans (étouffement) : toujours sous forme de purée fine.'
     ],
     firstSigns: ['Rougeurs', 'Démangeaisons buccales', 'Urticaire localisée'],
     severeSigns: ['Œdème, gêne respiratoire, urticaire généralisée'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['espghan-2017', 'hcsp-2020']
+    sources: ['hcsp-2020', 'spf-pnns-guide', ...ALLERGY_SAFETY_SOURCES]
   },
   sesame: {
     id: 'sesame',
-    recommendedAgeMonths: 6,
-    why: 'Le sésame est devenu un allergène majeur, à introduire dès la diversification.',
+    timing: 'Dès 4–6 mois',
+    why: 'Le sésame figure parmi les allergènes à déclaration obligatoire dans l’Union européenne. Il n’a pas à être retardé une fois la diversification commencée, mais son effet préventif est moins établi que celui de l’œuf et de l’arachide.',
     howToOffer: [
       'Tahin (purée de sésame) dilué dans une purée ou un houmous écrasé.',
       'Pas de graines de sésame entières avant que la mastication soit acquise.'
@@ -339,12 +343,12 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     firstSigns: ['Rougeurs locales', 'Urticaire'],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['eat-2016', 'espghan-2017']
+    sources: ['eu-1169-2011', 'hcsp-2020', 'eat-2016', ...ALLERGY_SAFETY_SOURCES]
   },
   soja: {
     id: 'soja',
-    recommendedAgeMonths: 36,
-    why: "Le soja contient des phyto-œstrogènes. HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans (tofu, boissons végétales, yaourts au soja). Le soja n'est pas un allergène à introduction prioritaire dans la fenêtre 4–11 mois ; il est suivi ici pour la complétude du carnet, pas en tant qu'allergène à introduire tôt.",
+    timing: 'À éviter avant 3 ans',
+    why: 'Le soja contient des phyto-œstrogènes. HCSP 2020 et ANSES déconseillent les produits à base de soja avant 3 ans (tofu, boissons végétales, yaourts au soja). Il est suivi ici pour la complétude du carnet, pas comme un aliment à proposer tôt.',
     howToOffer: [
       'Avant 3 ans : éviter les produits à base de soja (tofu, yaourts au soja, boissons végétales au soja).',
       'Les boissons végétales au soja ne remplacent jamais le lait infantile.',
@@ -353,26 +357,26 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     firstSigns: ['Diarrhée, vomissements', "Plaques d'urticaire"],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['hcsp-2020', 'anses-nourrisson']
+    sources: ['hcsp-2020', 'anses-nourrisson', ...ALLERGY_SAFETY_SOURCES]
   },
   poisson: {
     id: 'poisson',
-    recommendedAgeMonths: 6,
-    why: 'Le poisson est riche en oméga-3 (DHA), essentiel au développement cérébral. À proposer 2 fois par semaine, dont un poisson gras.',
+    timing: 'Dès 4–6 mois',
+    why: 'Le poisson apporte notamment des protéines, de l’iode et, pour les poissons gras, des oméga-3. Le repère est 2 fois par semaine, dont un poisson gras, en variant les espèces.',
     howToOffer: [
       'Cabillaud, sole, merlu, saumon, sardine, maquereau, truite : bien cuits, sans arêtes.',
-      'Varier les espèces. Limiter les gros prédateurs (espadon, requin, marlin) : méthylmercure.',
+      'Varier les espèces. Avant 3 ans, éviter espadon, marlin, siki, requin et lamproie ; limiter les autres poissons sauvages prédateurs.',
       'Privilégier les petits poissons gras (sardine, maquereau) plutôt que le thon.'
     ],
     firstSigns: ['Rougeurs autour de la bouche', 'Urticaire'],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['anses-nourrisson', 'hcsp-2020']
+    sources: ['anses-nourrisson', 'hcsp-2020', ...ALLERGY_SAFETY_SOURCES]
   },
   crustace: {
     id: 'crustace',
-    recommendedAgeMonths: 12,
-    why: 'Les crustacés peuvent être introduits dès la fin de la 1ʳᵉ année : sans urgence, sous formes adaptées.',
+    timing: 'Pas de calendrier spécifique',
+    why: 'Les crustacés sont des allergènes à déclaration obligatoire. Il n’existe pas de calendrier français spécifique ni de preuve comparable à l’œuf ou à l’arachide pour une introduction préventive ciblée.',
     howToOffer: [
       'Petits morceaux de crevette, langoustine, crabe bien cuits.',
       "Bien vérifier l'absence de coquille / fragments durs."
@@ -380,25 +384,25 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     firstSigns: ['Démangeaisons', 'Urticaire'],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['anses-nourrisson']
+    sources: ['eu-1169-2011', 'hcsp-2020', ...ALLERGY_SAFETY_SOURCES]
   },
   mollusque: {
     id: 'mollusque',
-    recommendedAgeMonths: 12,
-    why: 'Les mollusques (moules, huîtres, coquilles Saint-Jacques) sont des allergènes majeurs.',
+    timing: 'Pas de calendrier spécifique',
+    why: 'Les mollusques sont des allergènes à déclaration obligatoire, sans calendrier français spécifique d’introduction préventive.',
     howToOffer: [
       'Coquille Saint-Jacques bien cuite, finement coupée.',
-      'Éviter les huîtres crues avant plusieurs années (risque infectieux).'
+      'Pas d’huîtres crues avant 5 ans (risque infectieux).'
     ],
     firstSigns: ['Rougeurs', 'Urticaire'],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['anses-nourrisson']
+    sources: ['eu-1169-2011', 'hcsp-2020', ...ALLERGY_SAFETY_SOURCES]
   },
   celeri: {
     id: 'celeri',
-    recommendedAgeMonths: 6,
-    why: 'Le céleri (rave et branche) est un allergène majeur, fréquemment associé aux allergies aux pollens.',
+    timing: 'Pas de calendrier spécifique',
+    why: 'Le céleri figure parmi les allergènes à déclaration obligatoire, sans calendrier français spécifique d’introduction préventive.',
     howToOffer: [
       'Céleri-rave cuit, écrasé en purée mélangée à un autre légume.',
       'Petits morceaux fondants ensuite.'
@@ -406,20 +410,20 @@ export const ALLERGEN_GUIDANCE: Record<AllergenId, AllergenGuidance> = {
     firstSigns: ['Démangeaisons buccales', 'Rougeurs'],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['anses-nourrisson']
+    sources: ['eu-1169-2011', 'hcsp-2020', ...ALLERGY_SAFETY_SOURCES]
   },
   moutarde: {
     id: 'moutarde',
-    recommendedAgeMonths: 9,
-    why: 'Allergène majeur en France et en Europe, à introduire prudemment dans des préparations.',
+    timing: 'Pas de calendrier spécifique',
+    why: 'La moutarde figure parmi les allergènes à déclaration obligatoire, sans calendrier français spécifique d’introduction préventive.',
     howToOffer: [
-      'Une pointe de moutarde douce dans une vinaigrette ou un plat à partir de 9–12 mois.',
-      'Pas de moutarde forte avant plusieurs années.'
+      'Une petite quantité incorporée à un plat, sous une forme adaptée et peu salée.',
+      'Éviter les moutardes très salées ou très fortes.'
     ],
     firstSigns: ['Démangeaisons buccales', 'Rougeurs'],
     severeSigns: ['Œdème, gêne respiratoire'],
     whatToDo: 'Signes légers : arrêter et consulter. Signes sévères : 15.',
-    sources: ['anses-nourrisson']
+    sources: ['eu-1169-2011', 'hcsp-2020', ...ALLERGY_SAFETY_SOURCES]
   }
 };
 
@@ -441,46 +445,47 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
     id: 'legumes',
     why: "Variété, fibres, vitamines, minéraux. Le bon point d'entrée gustatif.",
     whenStart: 'Dès 4 mois, en purée lisse.',
-    cadence: 'À chaque repas du midi et du soir.',
-    examples: ['Carotte', 'Courgette épluchée', 'Patate douce', 'Potiron', 'Panais', 'Brocoli'],
+    cadence: 'Selon l’appétit, notamment au déjeuner et au dîner.',
+    examples: ['Carotte', 'Courgette épluchée', 'Haricot vert', 'Potiron', 'Panais', 'Brocoli'],
     sources: ['spf-pnns-guide']
   },
   fruits: {
     id: 'fruits',
     why: 'Vitamines, fibres, hydratation. Goûts naturellement appréciés.',
     whenStart: 'Dès 4 mois, en purée ou bien mûrs et écrasés.',
-    cadence: 'Au goûter principalement, parfois en dessert.',
+    cadence: 'Selon l’appétit, notamment au goûter ou en dessert.',
     examples: ['Pomme', 'Poire', 'Banane', 'Avocat', 'Pêche'],
     sources: ['spf-pnns-guide']
   },
   feculents: {
     id: 'feculents',
     why: 'Apport en énergie. Indispensables pour soutenir la croissance.',
-    whenStart: 'Riz et pomme de terre dès 4 mois ; pâtes/pain (gluten) dès 6 mois.',
+    whenStart: 'Dès 4–6 mois, y compris les céréales contenant du gluten.',
     cadence: 'Un féculent à chaque repas principal.',
-    examples: ['Riz', 'Semoule', 'Pâtes bien cuites', 'Quinoa', 'Polenta'],
+    examples: ['Pomme de terre', 'Patate douce', 'Riz', 'Semoule', 'Pâtes bien cuites'],
     sources: ['spf-pnns-guide', 'espghan-2017']
   },
   legumineuses: {
     id: 'legumineuses',
     why: 'Protéines végétales et fer. Excellent complément à la viande.',
-    whenStart: 'Dès 6 mois, bien cuites et écrasées (lentilles corail en purée).',
-    cadence: '1–2 fois par semaine, en alternance avec viande/poisson.',
+    whenStart: 'Dès 4–6 mois, bien cuites et écrasées.',
+    cadence: 'À proposer régulièrement ; au moins 2 fois par semaine après 1 an.',
     examples: ['Lentilles corail', 'Pois chiches', 'Haricots blancs', 'Fèves'],
     sources: ['spf-pnns-guide']
   },
   viandes: {
     id: 'viandes',
     why: 'Apport majeur en fer (forme bien assimilée), zinc, vitamine B12.',
-    whenStart: 'Dès 6 mois, mixée puis hachée.',
-    cadence: "~10–20 g/jour à 6 mois, jusqu'à 30 g à 1 an.",
+    whenStart: 'Dès 4–6 mois, mixée puis hachée.',
+    cadence:
+      'Avec poisson et œuf : 10 g/j de 6 à 12 mois, 20 g/j de 1 à 2 ans, puis 30 g/j de 2 à 3 ans.',
     examples: ['Poulet', 'Dinde', 'Bœuf', 'Veau', 'Agneau'],
     sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   poissons: {
     id: 'poissons',
     why: 'Oméga-3 (DHA) essentiels au cerveau, iode, vitamine D.',
-    whenStart: 'Dès 6 mois.',
+    whenStart: 'Dès 4–6 mois, bien cuit et sans arêtes.',
     cadence: '2 fois par semaine, dont un gras (saumon, sardine, maquereau).',
     examples: ['Cabillaud', 'Saumon', 'Sole', 'Sardine'],
     sources: ['anses-nourrisson', 'hcsp-2020']
@@ -488,41 +493,42 @@ export const CATEGORY_GUIDANCE: Record<CategoryId, CategoryGuidance> = {
   oeufs: {
     id: 'oeufs',
     why: 'Protéines complètes, fer, vitamines. Allergène majeur à introduire tôt.',
-    whenStart: 'Dès 6 mois, œuf entier bien cuit.',
-    cadence: '2–3 fois par semaine en alternance avec viande/poisson.',
+    whenStart: 'Dès 4–6 mois, œuf entier bien cuit.',
+    cadence:
+      'Compte dans la portion quotidienne viande/poisson/œuf : ¼ avant 1 an, ⅓ de 1 à 2 ans, ½ de 2 à 3 ans.',
     examples: ['Œuf dur écrasé', 'Omelette bien cuite', 'Œuf brouillé'],
-    sources: ['eat-2016', 'espghan-2017']
+    sources: ['eaaci-2020', 'hcsp-2020']
   },
   produits_laitiers: {
     id: 'produits_laitiers',
     why: "Calcium, protéines. Le lait reste l'aliment principal jusqu'à 1 an.",
     whenStart:
-      'Yaourt nature, fromage blanc dès 6 mois. Lait de vache **liquide** : pas avant 1 an.',
-    cadence: '2–3 produits laitiers par jour en plus du lait infantile.',
+      'Yaourt nature et fromage pasteurisé dès 4–6 mois. Le lait de vache **liquide** ne remplace pas le lait infantile avant 1 an.',
+    cadence: 'En option selon les repas, sans remplacer le lait maternel ou infantile.',
     examples: ['Yaourt nature', 'Fromage blanc', 'Comté', 'Camembert pasteurisé'],
     sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   allergenes: {
     id: 'allergenes',
-    why: "Catégorie pivot : ces aliments sont à introduire tôt pour réduire le risque d'allergie (LEAP, EAT).",
+    why: 'Une fois la diversification commencée, les allergènes ne doivent pas être retardés. L’effet préventif est surtout démontré pour l’œuf bien cuit et l’arachide.',
     whenStart: 'Dès 4–6 mois, en formes adaptées (purée fine).',
-    cadence:
-      "Une fois introduit, **maintenir l'exposition régulière** (1–2 fois par semaine) pour entretenir la tolérance.",
+    cadence: 'Une fois toléré, **continuer à le proposer régulièrement**, au moins chaque semaine.',
     examples: ['Beurre de cacahuète lisse', "Purée d'amande", 'Tahin (sésame)', 'Œuf bien cuit'],
-    sources: ['leap-2015', 'eat-2016', 'espghan-2017']
+    sources: ['hcsp-2020', 'eaaci-2020', 'leap-2015', 'ascia-2026']
   },
   matieres_grasses: {
     id: 'matieres_grasses',
     why: 'Acides gras essentiels au développement cérébral. À ajouter systématiquement aux préparations maison.',
     whenStart: 'Dès le démarrage de la diversification.',
-    cadence: 'Une cuillère à café à chaque repas principal.',
-    examples: ['Huile de colza', "Huile d'olive", 'Beurre cru', 'Huile de noix'],
+    cadence:
+      'Au total par jour : 1 cuillère à café avant 1 an, puis 2 cuillères à café de 1 à 3 ans.',
+    examples: ['Huile de colza', "Huile d'olive", 'Beurre pasteurisé', 'Huile de noix'],
     sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   aromates: {
     id: 'aromates',
     why: 'Diversifier les goûts sans saler. Habituer bébé à la richesse aromatique.',
-    whenStart: 'Dès 6 mois.',
+    whenStart: 'Dès 4–6 mois, en petite quantité.',
     cadence: 'À volonté, en petite quantité.',
     examples: ['Persil', 'Basilic', 'Thym', 'Cumin', 'Curcuma'],
     sources: ['spf-pnns-guide']
@@ -566,15 +572,15 @@ export const TEXTURE_PROGRESSION: readonly TextureStep[] = [
     markers: ['Tient assis avec un soutien', "Manifeste de l'intérêt pour les aliments"]
   },
   {
-    ageMonths: 7,
-    texture: 'Mouliné fin → écrasé fondant à la fourchette.',
-    examples: ['Légumes écrasés + huile', 'Poulet haché + carotte écrasée'],
-    markers: ['Tient assis seul brièvement', 'Mâchonne avec les gencives']
+    ageMonths: 8,
+    texture: 'Morceaux très mous et fondants, qui s’écrasent entre les doigts ou sur le palais.',
+    examples: ['Banane très mûre', 'Avocat mûr', 'Légumes très cuits'],
+    markers: ['Tient sa tête et son dos droits', 'Mâchonne avec les gencives']
   },
   {
-    ageMonths: 9,
-    texture: 'Petits morceaux fondants. Premiers aliments à saisir sécurisés.',
-    examples: ['Bâtonnets de courgette cuite', "Lamelles d'avocat mûr", 'Pâtes bien cuites'],
+    ageMonths: 10,
+    texture: 'Morceaux adaptés à croquer et à mâcher, en progressant selon les capacités.',
+    examples: ['Petits morceaux de légumes cuits', 'Fruits mûrs', 'Pâtes bien cuites'],
     markers: [
       'Pince entre pouce et index',
       'Porte les aliments à la bouche',
@@ -586,7 +592,7 @@ export const TEXTURE_PROGRESSION: readonly TextureStep[] = [
     texture:
       "Morceaux variés, repas familiaux adaptés. Découper les aliments à risque d'étouffement.",
     examples: ['Petits dés de légumes', 'Morceaux de fruits mûrs', 'Pâtes, riz, semoule'],
-    markers: ['Bouche fermée pendant la mastication', 'Coordination main-bouche maîtrisée']
+    markers: ['Mâche des textures variées', 'Porte les aliments à la bouche']
   },
   {
     ageMonths: 24,
@@ -657,9 +663,10 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
   {
     id: 'sel',
     name: 'Sel ajouté',
-    until: '< 12 mois',
+    until: '< 3 ans',
+    untilMonths: 36,
     reason:
-      'Reins immatures (besoins < 1 g/jour). Ne pas saler les plats, éviter charcuterie et plats préparés.',
+      'Ne pas saler les plats et limiter les aliments très salés comme la charcuterie et les plats préparés.',
     sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   {
@@ -673,7 +680,7 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
   {
     id: 'oeuf-cru',
     name: 'Œuf cru ou peu cuit',
-    until: '< 3 ans',
+    until: '< 5 ans',
     reason:
       'Risque de salmonellose. Pas de mayonnaise maison, mousse au chocolat, œuf coulant, tiramisu.',
     sources: ['hcsp-2020', 'anses-nourrisson']
@@ -683,7 +690,7 @@ export const FORBIDDEN_FOODS: readonly ForbiddenFood[] = [
     name: 'Viande et poisson crus ou peu cuits',
     until: 'Toujours bien cuits',
     reason:
-      'Risque listeria, salmonelle, toxoplasmose, anisakis. Pas de tartare, sushi, carpaccio, viande rosée.',
+      'Risque infectieux ou parasitaire. Pas de tartare, sushi, carpaccio ni viande peu cuite.',
     sources: ['anses-nourrisson']
   },
   {
@@ -728,7 +735,7 @@ export type ChokingHazard = {
 };
 
 export const CHOKING_HAZARDS: readonly ChokingHazard[] = [
-  { food: 'Raisin', rule: "Couper en 4 dans la longueur jusqu'à au moins 4 ans." },
+  { food: 'Raisin', rule: 'Écraser ou couper en 4 dans la longueur, selon les capacités.' },
   { food: 'Tomate cerise', rule: 'Couper en 4 dans la longueur.' },
   { food: 'Saucisse, hot-dog', rule: 'Couper en lamelles dans la longueur, jamais en rondelles.' },
   {
@@ -758,24 +765,26 @@ export type ReactionGuidance = {
   title: string;
   signs: string[];
   whatToDo: string;
+  sources: SourceId[];
 };
 
 export const REACTION_GUIDANCE: readonly ReactionGuidance[] = [
   {
     level: 'inconfort',
-    title: 'Inconfort digestif ou cutané léger',
+    title: 'Symptôme léger après un aliment',
     signs: [
-      'Régurgitation un peu plus marquée',
-      'Selles molles ou plus nombreuses sur 24 h',
-      'Rougeur autour de la bouche, légère plaque sur le menton',
-      'Inconfort transitoire (gaz, ronchonnements)'
+      'Rougeur autour de la bouche ou petite plaque localisée',
+      'Urticaire localisée',
+      'Vomissement isolé peu après la prise',
+      'Symptôme digestif inhabituel et reproductible'
     ],
     whatToDo:
-      "Noter l'aliment et le contexte. Ne pas conclure trop vite : réintroduire à distance, en petite quantité, sur un repas sans nouveauté. Si récidive systématique, en parler au pédiatre."
+      'Arrêter l’aliment, noter l’heure et les symptômes, puis demander rapidement un avis médical avant de le reproposer. Surveiller l’apparition d’autres signes.',
+    sources: ['ameli-allergie', 'ameli-oedeme']
   },
   {
     level: 'reaction',
-    title: 'Réaction allergique probable',
+    title: 'Symptômes pouvant évoquer une réaction allergique',
     signs: [
       'Urticaire (plaques rouges et démangeaisons) localisée ou diffuse',
       'Œdème des lèvres, des paupières, du visage',
@@ -785,11 +794,12 @@ export const REACTION_GUIDANCE: readonly ReactionGuidance[] = [
       'Pâleur, hypotonie, somnolence inhabituelle'
     ],
     whatToDo:
-      "Arrêter immédiatement l'aliment. Consulter rapidement (médecin, urgences). En cas de signes respiratoires, d'œdème de la gorge, de malaise, **appeler le 15 sans attendre** : il peut s'agir d'une anaphylaxie. Ne pas réintroduire l'aliment sans avis médical."
+      'Arrêter immédiatement l’aliment. En cas de gêne respiratoire, d’œdème des lèvres ou de la langue, de malaise, ou de plusieurs symptômes associés, **appeler le 15 ou le 112 sans attendre**. Ne pas réintroduire sans avis médical.',
+    sources: ['ameli-allergie', 'ameli-oedeme']
   }
 ];
 
-export const EMERGENCY_NUMBER = '15 (SAMU)';
+export const EMERGENCY_NUMBER = '15 (SAMU) ou 112';
 
 // ---------------------------------------------------------------------------
 // DME / approaches
@@ -798,30 +808,26 @@ export const EMERGENCY_NUMBER = '15 (SAMU)';
 export const APPROACHES = {
   classique: {
     title: 'Diversification classique',
-    body: 'On démarre par des purées lisses à la cuillère puis on évolue vers des morceaux. Approche maîtrisée, recommandée par défaut.',
-    pros: [
-      'Apport en fer plus contrôlé',
-      'Quantités quantifiables',
-      'Bien étudiée scientifiquement'
-    ],
+    body: 'On démarre par des purées à la cuillère puis on fait évoluer rapidement les textures selon les capacités de l’enfant.',
+    pros: ['Quantités faciles à ajuster', 'Progression graduelle des textures'],
     cons: ['Transition aux morceaux à anticiper'],
     sources: ['spf-pnns-guide', 'sfp-dme'] as SourceId[]
   },
   dme: {
     title: "Diversification menée par l'enfant (DME / BLW)",
-    body: "Bébé mange à la table familiale dès 6 mois en se servant lui-même de morceaux adaptés. Position SFP : pas de préférence par rapport à la diversification classique, attention à l'apport en fer et à la sécurité.",
+    body: "Vers 6 mois, lorsque bébé tient bien assis, attrape et porte à la bouche, il peut se servir de morceaux adaptés. Position SFP : pas de préférence par rapport à la diversification classique, attention à l'apport en fer et à la sécurité.",
     pros: ['Autonomie', 'Repas familiaux partagés', 'Découverte des textures'],
     cons: [
       "Risque d'apport insuffisant en fer, zinc, énergie si mal cadré",
       'Surveillance permanente indispensable',
-      "À éviter en cas d'antécédent respiratoire ou de retard moteur"
+      'Nécessite des capacités motrices et oro-motrices suffisantes ; demander un avis professionnel en cas de doute'
     ],
     sources: ['sfp-dme'] as SourceId[]
   },
   mixte: {
     title: 'Approche mixte',
-    body: "Combiner cuillère parentale et morceaux pris à la main. C'est en pratique l'approche la plus fréquente et celle qui sécurise les apports nutritionnels.",
-    pros: ['Flexibilité', 'Couvre les besoins en fer/énergie', 'Permet de partager les repas'],
+    body: 'Combiner cuillère parentale et morceaux fondants pris à la main, selon les capacités de l’enfant.',
+    pros: ['Flexibilité', 'Permet de varier les textures', 'Permet de partager les repas'],
     cons: ["Nécessite d'adapter les textures à chaque âge"],
     sources: ['sfp-dme', 'spf-pnns-guide'] as SourceId[]
   }
@@ -848,13 +854,13 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'add-fats',
-    body: "Ajoutez une cuillère d'huile de colza ou d'olive crue à chaque préparation maison. Indispensable pour le cerveau.",
+    body: "Ajoutez au total une cuillère à café d'huile crue par jour avant 1 an, puis deux cuillères à café par jour de 1 à 3 ans.",
     sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   {
     id: 'no-salt',
-    body: 'Pas de sel ajouté avant 1 an : les reins de bébé éliminent mal le sel.',
-    sources: ['spf-pnns-guide']
+    body: 'Pas de sel ajouté avant 3 ans ; limitez aussi la charcuterie et les plats préparés.',
+    sources: ['spf-pnns-guide', 'hcsp-2020']
   },
   {
     id: 'no-sugar',
@@ -863,21 +869,21 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'iron-6m',
-    body: "Dès 6 mois, viande / poisson / œuf / légumineuses sont essentiels pour l'apport en fer.",
+    body: 'Avant 1 an, proposez chaque jour 10 g au total de viande, poisson ou œuf, en variant les sources de fer.',
     stages: ['6-9'],
     sources: ['hcsp-2020']
   },
   {
     id: 'milk-stays',
-    body: "Le lait (maternel ou infantile) reste l'aliment principal jusqu'à 1 an. Comptez ~500 mL/jour à 6 mois.",
+    body: 'Le lait maternel ou infantile reste l’aliment principal jusqu’à 1 an : environ 500 mL/jour de lait infantile entre 6 et 12 mois.',
     stages: ['4-6', '6-9', '9-12'],
     sources: ['hcsp-2020']
   },
   {
     id: 'allergens-window',
-    body: 'La fenêtre 4–11 mois est clé pour introduire les allergènes (œuf, arachide, lait, gluten…). Ne pas la rater.',
+    body: 'Une fois la diversification commencée entre 4 et 6 mois, ne retardez pas les allergènes. La prévention est surtout étayée pour l’œuf bien cuit et l’arachide.',
     stages: ['4-6', '6-9'],
-    sources: ['leap-2015', 'eat-2016', 'espghan-2017']
+    sources: ['hcsp-2020', 'eaaci-2020', 'leap-2015']
   },
   {
     id: 'peanut-form',
@@ -887,7 +893,7 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'egg-fully-cooked',
-    body: "Toujours œuf bien cuit (jaune et blanc fermes). Pas d'œuf coulant ni de mayo maison avant 3 ans.",
+    body: "Toujours œuf bien cuit (jaune et blanc fermes). Pas d'œuf coulant ni de mayo maison avant 5 ans.",
     allergens: ['oeuf'],
     sources: ['hcsp-2020', 'anses-nourrisson']
   },
@@ -905,14 +911,14 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'maintain-allergens',
-    body: 'Une fois un allergène introduit, ré-exposez-le 1 à 2 fois par semaine pour entretenir la tolérance.',
-    sources: ['eat-2016', 'espghan-2017']
+    body: 'Une fois un allergène toléré, continuez à le proposer régulièrement, au moins chaque semaine.',
+    sources: ['ascia-2026']
   },
   {
     id: 'one-novelty',
-    body: 'Une nouveauté à la fois, en début de repas, pour pouvoir attribuer une éventuelle réaction.',
+    body: 'Pour un allergène courant, introduisez un seul nouvel allergène par repas. Les autres aliments peuvent être variés sans calendrier d’attente fixe.',
     stages: ['4-6'],
-    sources: ['spf-pnns-guide']
+    sources: ['ascia-2026', 'hcsp-2020']
   },
   {
     id: 'sit-up',
@@ -933,7 +939,7 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'category-balance',
-    body: 'Variez les groupes : un légume et un féculent à chaque repas, viande/poisson/œuf/légumineuses en alternance.',
+    body: 'Variez les groupes sur la journée et la semaine ; les légumineuses sont à proposer au moins 2 fois par semaine après 1 an.',
     sources: ['spf-pnns-guide']
   },
   {
@@ -976,13 +982,13 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'eat-study',
-    body: "L'étude EAT a montré qu'introduire 6 allergènes dès 3–4 mois divise par 3 le risque d'allergie alimentaire.",
+    body: 'Dans l’étude EAT, l’analyse principale n’a pas montré de baisse significative ; une baisse a été observée chez les enfants ayant suivi le protocole d’introduction de 6 allergènes.',
     stages: ['4-6'],
     sources: ['eat-2016']
   },
   {
     id: 'leap-study',
-    body: "L'étude LEAP : chez les bébés à risque, l'introduction précoce de l'arachide a réduit l'allergie de 86 %.",
+    body: 'Dans l’étude LEAP, chez des bébés à haut risque, l’introduction précoce de l’arachide a réduit le risque jusqu’à 86 % dans un sous-groupe.',
     stages: ['4-6', '6-9'],
     sources: ['leap-2015']
   },
@@ -1000,7 +1006,7 @@ export const TIPS: readonly Tip[] = [
   },
   {
     id: 'mercury-fish',
-    body: 'Limitez les gros poissons prédateurs (espadon, requin, marlin) : méthylmercure. Privilégiez sardine, maquereau, saumon.',
+    body: 'Avant 3 ans, évitez espadon, marlin, siki, requin et lamproie ; limitez les autres poissons sauvages prédateurs.',
     categories: ['poissons'],
     sources: ['anses-nourrisson']
   }

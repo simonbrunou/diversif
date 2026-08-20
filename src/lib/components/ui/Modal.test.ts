@@ -87,6 +87,27 @@ describe('Modal', () => {
     expect(screen.getByText('Sous-titre')).toBeTruthy();
   });
 
+  it('renders a visible close button with an accessible label', () => {
+    render(Modal, { props: { open: true, children: text('x') } });
+    expect(screen.getByRole('button', { name: 'Fermer' })).toBeTruthy();
+  });
+
+  it('closes the modal when the close button is clicked', async () => {
+    let lastOpen: boolean | undefined;
+    render(Modal, {
+      props: {
+        open: true,
+        onOpenChange: (v) => {
+          lastOpen = v;
+        },
+        children: text('x')
+      }
+    });
+    screen.getByRole('button', { name: 'Fermer' }).click();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(lastOpen).toBe(false);
+  });
+
   it('renders footer snippet when provided', () => {
     render(Modal, {
       props: { open: true, children: text('body'), footer: text('actions') }
@@ -110,12 +131,24 @@ describe('Modal', () => {
     // `findScrollable` walk; this wrapper is what makes that walk succeed
     // for AllergenInfoDialog / StageDetailSheet.
     render(Modal, {
-      props: { open: true, side: 'auto', scrollableBody: true, children: text('long body') }
+      props: {
+        open: true,
+        side: 'auto',
+        title: 'Lait',
+        scrollableBody: true,
+        children: text('long body')
+      }
     });
     const wrapper = document.querySelector('[role="dialog"] .max-h-\\[70vh\\].overflow-y-auto');
     expect(wrapper).not.toBeNull();
     // Children land inside the wrapper, not as a sibling.
     expect(wrapper?.textContent).toContain('long body');
+    // axe's scrollable-region-focusable rule: the region must be keyboard
+    // focusable and named, since content like StageDetailSheet's text lists
+    // has no focusable descendant of its own.
+    expect(wrapper?.getAttribute('tabindex')).toBe('0');
+    expect(wrapper?.getAttribute('role')).toBe('region');
+    expect(wrapper?.getAttribute('aria-label')).toBe('Lait');
   });
 
   function getSheetTargets() {

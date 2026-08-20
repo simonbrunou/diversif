@@ -68,7 +68,7 @@
   </div>
   <div class="min-w-0 flex-1">
     {#if eyebrow}
-      <div class={cn('text-[11px] font-semibold uppercase tracking-wider', t.eyebrow)}>
+      <div class={cn('text-2xs font-semibold uppercase tracking-wider', t.eyebrow)}>
         {eyebrow}
       </div>
     {/if}
