@@ -101,7 +101,7 @@
           onclick={() => (showPassword = !showPassword)}
           aria-label={showPassword ? m.authSignupPasswordHide() : m.authSignupPasswordShow()}
           aria-pressed={showPassword}
-          class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-2 text-ink-soft hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          class="tap-target absolute right-0 top-1/2 flex -translate-y-1/2 items-center justify-center rounded text-ink-soft hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {#if showPassword}
             <EyeOff size={18} aria-hidden="true" />

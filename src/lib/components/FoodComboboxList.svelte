@@ -33,7 +33,7 @@
       <button
         type="button"
         aria-pressed={isSelected ? isSelected(f.id) : undefined}
-        class="flex w-full items-center justify-between px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        class="flex min-h-11 w-full items-center justify-between px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
         onclick={() => onPick(f.id)}
       >
         <span class="min-w-0 truncate">

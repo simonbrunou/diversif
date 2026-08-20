@@ -205,7 +205,7 @@
         <button
           type="button"
           bind:this={changeButtonEl}
-          class="rounded-sm text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          class="inline-flex min-h-11 items-center rounded-sm text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={m.foodComboboxChangeAria({ name: selected.name })}
           onclick={() => pick(0)}
         >
@@ -222,11 +222,11 @@
       <ul class="flex flex-wrap gap-1.5">
         {#each selectedFoods as f (f.id)}
           <li>
-            <Badge variant="secondary" class="gap-1 py-1 pl-2.5 pr-1">
+            <Badge variant="secondary" class="gap-1 py-0 pl-2.5 pr-0">
               {f.name}
               <button
                 type="button"
-                class="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                class="tap-target inline-flex items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={m.foodComboboxRemoveAria({ name: f.name })}
                 onclick={() => toggle(f.id)}
               >

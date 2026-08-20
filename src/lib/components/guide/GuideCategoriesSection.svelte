@@ -19,15 +19,18 @@
           <h3 class="text-sm font-semibold">{c.label}</h3>
           <p class="mt-1 text-sm text-foreground/90">{g.why}</p>
           <dl class="mt-2 grid grid-cols-1 gap-1 text-xs text-muted-foreground">
-            <div><span class="font-medium text-foreground/80">Quand :</span> {g.whenStart}</div>
             <div>
-              <span class="font-medium text-foreground/80">Fréquence :</span>
-              {g.cadence}
+              <dt class="inline font-medium text-foreground/80">Quand :</dt>
+              <dd class="inline">{g.whenStart}</dd>
+            </div>
+            <div>
+              <dt class="inline font-medium text-foreground/80">Fréquence :</dt>
+              <dd class="inline">{g.cadence}</dd>
             </div>
             {#if g.examples.length > 0}
               <div>
-                <span class="font-medium text-foreground/80">Exemples :</span>
-                {g.examples.join(', ')}
+                <dt class="inline font-medium text-foreground/80">Exemples :</dt>
+                <dd class="inline">{g.examples.join(', ')}</dd>
               </div>
             {/if}
           </dl>

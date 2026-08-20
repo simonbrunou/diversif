@@ -23,7 +23,7 @@
 
 <button
   type="button"
-  class="rounded-sm text-left text-sm text-primary-strong hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+  class="inline-flex min-h-11 items-center rounded-sm text-left text-sm text-primary-strong hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
   onclick={onOpen}
 >
   {m.foodComboboxAddCustomCta()}

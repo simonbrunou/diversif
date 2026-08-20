@@ -115,7 +115,7 @@
   type="button"
   onclick={onClear}
   disabled={value == null}
-  class="mt-1 inline-flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+  class="mt-1 inline-flex min-h-11 items-center gap-1 text-2xs text-muted-foreground hover:text-foreground disabled:opacity-40"
   aria-label={m.textureClearAria()}
 >
   <X size={11} />

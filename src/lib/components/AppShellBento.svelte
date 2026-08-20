@@ -97,7 +97,7 @@
        (min-h-dvh lets the column grow past dvh, giving the inner div no upper
        bound and falling back to window scroll). lg:h-auto restores normal
        content-height sizing on desktop where window scroll is expected. -->
-  <div class="flex h-dvh flex-col lg:h-auto">
+  <div class="flex min-w-0 h-dvh flex-col lg:h-auto">
     <!-- Mobile brand strip via the shared component, so the chrome
          signature matches PublicHeader exactly across the marketing
          to app boundary. Hidden on lg: the left rail carries the brand

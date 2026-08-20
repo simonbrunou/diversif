@@ -153,7 +153,7 @@
       <Label>{m.logFormReactionLegend()}</Label>
       <ReactionPicker name="reaction" bind:value={reaction} />
       <details class="mt-1 rounded-md border bg-muted/40 p-2 text-xs">
-        <summary class="flex cursor-pointer items-center gap-1.5 font-medium text-foreground/80">
+        <summary class="flex min-h-11 cursor-pointer items-center gap-1.5 font-medium text-foreground/80">
           <Info size={12} aria-hidden="true" />
           {m.logFormReactionHelpToggle()}
         </summary>

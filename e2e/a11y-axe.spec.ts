@@ -55,6 +55,9 @@ const PUBLIC_ROUTES = [
   '/mentions-legales',
   '/politique-confidentialite',
   '/cookies',
+  '/guide',
+  '/en/guide',
+  '/allergens',
   '/sources',
   '/aide',
   '/offline'
