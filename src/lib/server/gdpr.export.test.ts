@@ -15,7 +15,7 @@ mock.module('./audit', () => ({
 }));
 
 import { ExportTooLargeError, exportUserData } from './gdpr';
-import { children, invitations, passkeys, tipDismissals, users } from './db/schema';
+import { children, invitations, passkeys, preparedMeals, tipDismissals, users } from './db/schema';
 import { eq } from 'drizzle-orm';
 import {
   insertChild,
@@ -41,6 +41,14 @@ describe('exportUserData', () => {
     await insertMembership(u.id, c.id, 'owner');
     const food = await insertFood('Banane');
     await insertEntry(c.id, food.id, u.id);
+    await testDb.insert(preparedMeals).values({
+      childId: c.id,
+      brand: 'Yooji',
+      name: 'Banane bio',
+      ingredientFoodIds: [food.id],
+      createdAt: new Date('2026-03-01T00:00:00Z'),
+      updatedAt: new Date('2026-03-01T00:00:00Z')
+    });
     await testDb.insert(passkeys).values({
       id: 'pk-export',
       userId: u.id,
@@ -74,6 +82,9 @@ describe('exportUserData', () => {
     expect(out.children[0].foodEntries).toHaveLength(1);
     expect(out.children[0].foodEntries[0].foodName).toBe('Banane');
     expect(out.children[0].foodEntries[0].loggedByMe).toBe(true);
+    expect(out.children[0].preparedMeals).toEqual([
+      expect.objectContaining({ brand: 'Yooji', name: 'Banane bio', ingredientFoodIds: [food.id] })
+    ]);
     expect(out.passkeys).toHaveLength(1);
     expect(out.passkeys[0].id).toBe('pk-export');
     // Public key, counter and password hash must NOT be in the export.

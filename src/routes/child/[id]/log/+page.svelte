@@ -21,8 +21,9 @@
   import { enqueue } from '$lib/offline/queue';
   import { localizedHref } from '$lib/utils/localized-href';
   import { resolveMessageKey } from '$lib/forms/tracked-enhance';
+  import { normalize } from '$lib/utils/search';
   import * as m from '$lib/paraglide/messages';
-  import { Info } from 'lucide-svelte';
+  import { Info, PackageOpen } from 'lucide-svelte';
   import type { ActionData, PageData } from './$types';
 
   let {
@@ -38,6 +39,10 @@
   );
   let texturePristine = $state(true);
   let submitting = $state(false);
+  let preparedMealQuery = $state('');
+  let selectedPreparedMealId = $state<number | null>(null);
+  let foodComboboxKey = $state(0);
+  let savePreparedMeal = $state(false);
 
   $effect(() => {
     // While the user hasn't touched the picker, follow the meal date.
@@ -58,6 +63,11 @@
   // still starts pre-selected and counts toward the hint below.
   let selectedIds = $state<number[]>(initialFoodId ? [initialFoodId] : []);
   let customActive = $state(false);
+  const filteredPreparedMeals = $derived(
+    data.preparedMeals.filter((meal) =>
+      normalize(`${meal.brand} ${meal.name}`).includes(normalize(preparedMealQuery))
+    )
+  );
   const introducedSet = $derived(new Set(data.introducedFoodIds));
   // A custom food being added is, by definition, never-tried.
   const neverTriedCount = $derived(
@@ -67,6 +77,13 @@
   // Surface a stage-relevant tip below the form
   const months = $derived(ageInMonths(data.child.birthDate));
   const tip = $derived(pickRotatingTip(getTipsFor({ ageMonths: months }), data.child.id + 7));
+
+  function choosePreparedMeal(meal: PageData['preparedMeals'][number]) {
+    selectedPreparedMealId = meal.id;
+    selectedIds = [...meal.foodIds];
+    customActive = false;
+    foodComboboxKey += 1;
+  }
 </script>
 
 <div class="mx-auto w-full px-4 max-w-xl space-y-5 py-6">
@@ -133,17 +150,93 @@
       <FormError>{resolveMessageKey(form.errorKey)}</FormError>
     {/if}
 
-    <FoodCombobox
-      foods={data.foods}
-      multiple
-      {initialFoodId}
-      onSelectionChange={(ids) => (selectedIds = ids)}
-      onCustomToggle={(open) => (customActive = open)}
-    />
+    {#if data.preparedMeals.length > 0}
+      <fieldset class="grid gap-3 rounded-lg border bg-card p-4">
+        <legend class="px-1 text-sm font-semibold">{m.logPreparedMealsTitle()}</legend>
+        <p class="text-xs text-muted-foreground">{m.logPreparedMealsHelp()}</p>
+        <Input
+          type="search"
+          bind:value={preparedMealQuery}
+          placeholder={m.logPreparedMealsSearchPlaceholder()}
+          aria-label={m.logPreparedMealsSearchLabel()}
+          autocomplete="off"
+        />
+        <div class="grid max-h-52 gap-2 overflow-y-auto">
+          {#each filteredPreparedMeals as meal (meal.id)}
+            <button
+              type="button"
+              class={[
+                'flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                selectedPreparedMealId === meal.id && 'bg-accent'
+              ]}
+              aria-pressed={selectedPreparedMealId === meal.id}
+              onclick={() => choosePreparedMeal(meal)}
+            >
+              <PackageOpen size={18} class="shrink-0 text-primary" aria-hidden="true" />
+              <span class="min-w-0">
+                <span class="block truncate text-xs text-muted-foreground">{meal.brand}</span>
+                <span class="block truncate text-sm font-medium">{meal.name}</span>
+              </span>
+              <span class="ml-auto shrink-0 text-xs text-muted-foreground">
+                {m.logPreparedMealsIngredientCount({ count: meal.foodIds.length })}
+              </span>
+            </button>
+          {:else}
+            <p class="py-3 text-center text-sm text-muted-foreground">
+              {m.logPreparedMealsNone()}
+            </p>
+          {/each}
+        </div>
+      </fieldset>
+    {/if}
+
+    {#if selectedPreparedMealId}
+      <input type="hidden" name="preparedMealId" value={selectedPreparedMealId} />
+    {/if}
+
+    {#key foodComboboxKey}
+      <FoodCombobox
+        foods={data.foods}
+        multiple
+        initialFoodIds={selectedIds}
+        onSelectionChange={(ids) => (selectedIds = ids)}
+        onCustomToggle={(open) => (customActive = open)}
+      />
+    {/key}
     <p class="text-xs text-muted-foreground">{m.logFormMultiSelectHelp()}</p>
     {#if neverTriedCount >= 2}
       <p class="text-xs text-muted-foreground">{m.logFormNeverTriedHint()}</p>
     {/if}
+
+    <div class="grid gap-3 rounded-lg border bg-muted/30 p-4">
+      <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-medium">
+        <input type="checkbox" bind:checked={savePreparedMeal} class="h-4 w-4" />
+        {m.logPreparedMealsSaveToggle()}
+      </label>
+      {#if savePreparedMeal}
+        <div class="grid gap-3 sm:grid-cols-2">
+          <Field name="preparedMeal.brand" label={m.logPreparedMealsBrandLabel()}>
+            <Input
+              id="preparedMeal.brand"
+              name="preparedMeal.brand"
+              maxlength={60}
+              placeholder={m.logPreparedMealsBrandPlaceholder()}
+              required
+            />
+          </Field>
+          <Field name="preparedMeal.name" label={m.logPreparedMealsNameLabel()}>
+            <Input
+              id="preparedMeal.name"
+              name="preparedMeal.name"
+              maxlength={100}
+              placeholder={m.logPreparedMealsNamePlaceholder()}
+              required
+            />
+          </Field>
+        </div>
+        <p class="text-xs text-muted-foreground">{m.logPreparedMealsSaveHelp()}</p>
+      {/if}
+    </div>
 
     <Field name="givenAt" label={m.logFormGivenAtLabel()}>
       <Input id="givenAt" name="givenAt" type="datetime-local" bind:value={givenAt} required />

@@ -40,6 +40,7 @@ applyMigrations();
 const TRUNCATE_ORDER = [
   'tip_dismissals',
   'symptoms',
+  'prepared_meals',
   'food_entries',
   'invitations',
   'memberships',

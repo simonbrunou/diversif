@@ -53,6 +53,16 @@ type EntryRow = {
   logged_by: number | null;
   created_at: number | null;
 };
+type PreparedMealRow = {
+  id: number;
+  child_id: number;
+  brand: string;
+  name: string;
+  ingredient_food_ids: string;
+  last_used_at: number | null;
+  created_at: number | null;
+  updated_at: number | null;
+};
 type PasskeyRow = {
   id: string;
   name: string;
@@ -98,6 +108,11 @@ const entries = childIds.length
       )
       .all(...childIds) as EntryRow[])
   : [];
+const preparedMeals = childIds.length
+  ? (db
+      .query(`SELECT * FROM prepared_meals WHERE child_id IN (${inList}) ORDER BY created_at ASC`)
+      .all(...childIds) as PreparedMealRow[])
+  : [];
 const passkeys = db.query('SELECT * FROM passkeys WHERE user_id = ?').all(user.id) as PasskeyRow[];
 
 const iso = (v: number | null) => (v == null ? null : new Date(v).toISOString());
@@ -106,6 +121,14 @@ const parseTransports = (v: string | null): string[] => {
   try {
     const parsed: unknown = JSON.parse(v);
     return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+};
+const parseFoodIds = (v: string): number[] => {
+  try {
+    const parsed: unknown = JSON.parse(v);
+    return Array.isArray(parsed) ? parsed.filter((id): id is number => Number.isInteger(id)) : [];
   } catch {
     return [];
   }
@@ -144,6 +167,17 @@ const payload = {
           notes: e.notes,
           loggedByMe: e.logged_by === user.id,
           createdAt: iso(e.created_at)
+        })),
+      preparedMeals: preparedMeals
+        .filter((meal) => meal.child_id === c.id)
+        .map((meal) => ({
+          id: meal.id,
+          brand: meal.brand,
+          name: meal.name,
+          ingredientFoodIds: parseFoodIds(meal.ingredient_food_ids),
+          lastUsedAt: iso(meal.last_used_at),
+          createdAt: iso(meal.created_at),
+          updatedAt: iso(meal.updated_at)
         }))
     };
   }),

@@ -25,6 +25,7 @@
     name = 'foodId',
     customName = 'customFood',
     initialFoodId = null,
+    initialFoodIds = [],
     multiple = false,
     onCustomToggle,
     onSelectionChange
@@ -33,6 +34,7 @@
     name?: string;
     customName?: string;
     initialFoodId?: number | null;
+    initialFoodIds?: number[];
     multiple?: boolean;
     onCustomToggle?: (open: boolean) => void;
     onSelectionChange?: (ids: number[]) => void;
@@ -43,7 +45,9 @@
   // svelte-ignore state_referenced_locally
   let selectedId = $state<number | null>(initialFoodId);
   // svelte-ignore state_referenced_locally
-  const selectedIds = new SvelteSet<number>(initialFoodId ? [initialFoodId] : []);
+  const selectedIds = new SvelteSet<number>(
+    initialFoodIds.length > 0 ? initialFoodIds : initialFoodId ? [initialFoodId] : []
+  );
   let customOpen = $state(false);
   let customNameValue = $state('');
   let customCategory = $state<string>('autre');

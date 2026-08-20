@@ -9,6 +9,7 @@ import {
   invitations,
   memberships,
   passkeys,
+  preparedMeals,
   sessions,
   tipDismissals,
   users,
@@ -138,6 +139,15 @@ export type ExportedUser = {
       loggedByMe: boolean;
       mealId: string | null;
       createdAt: string;
+    }>;
+    preparedMeals: Array<{
+      id: number;
+      brand: string;
+      name: string;
+      ingredientFoodIds: number[];
+      lastUsedAt: string | null;
+      createdAt: string;
+      updatedAt: string;
     }>;
   }>;
   passkeys: Array<{
@@ -285,6 +295,15 @@ export async function exportUserData(
           .where(inArray(foodEntries.childId, childIds))
           .orderBy(asc(foodEntries.givenAt));
 
+  const preparedMealRows =
+    childIds.length === 0
+      ? []
+      : await db
+          .select()
+          .from(preparedMeals)
+          .where(inArray(preparedMeals.childId, childIds))
+          .orderBy(asc(preparedMeals.createdAt));
+
   const userPasskeys = await db.select().from(passkeys).where(eq(passkeys.userId, userId));
 
   // Invitations the user generated OR consumed. The `relationship` field
@@ -340,6 +359,12 @@ export async function exportUserData(
     list.push(e);
     entriesByChildId.set(e.childId, list);
   }
+  const preparedMealsByChildId = new Map<number, typeof preparedMealRows>();
+  for (const meal of preparedMealRows) {
+    const list = preparedMealsByChildId.get(meal.childId) ?? [];
+    list.push(meal);
+    preparedMealsByChildId.set(meal.childId, list);
+  }
 
   audit({ type: 'account.exported', userId, foodEntryCount: entryRows.length });
 
@@ -361,6 +386,7 @@ export async function exportUserData(
     children: childRows.map((c) => {
       const m = membershipByChildId.get(c.id);
       const entries = entriesByChildId.get(c.id) ?? [];
+      const childPreparedMeals = preparedMealsByChildId.get(c.id) ?? [];
       return {
         id: c.id,
         name: c.name,
@@ -384,6 +410,15 @@ export async function exportUserData(
           loggedByMe: e.loggedBy === userId,
           mealId: e.mealId ?? null,
           createdAt: isoOrThrow(e.createdAt)
+        })),
+        preparedMeals: childPreparedMeals.map((meal) => ({
+          id: meal.id,
+          brand: meal.brand,
+          name: meal.name,
+          ingredientFoodIds: meal.ingredientFoodIds,
+          lastUsedAt: isoOrNull(meal.lastUsedAt),
+          createdAt: isoOrThrow(meal.createdAt),
+          updatedAt: isoOrThrow(meal.updatedAt)
         }))
       };
     }),
