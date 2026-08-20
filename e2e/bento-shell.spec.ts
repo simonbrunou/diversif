@@ -13,6 +13,38 @@ import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 // and the stage-rotating tip card. The HeroTile suggestion CTA uses the
 // same destination.
 test.describe('Bento shell : tab navigation @mobile-only', () => {
+  test('320px shell reflows and core controls stay thumb-sized', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 700 });
+
+    await page.goto('/signup');
+    const passwordToggle = page.getByRole('button', { name: 'Afficher le mot de passe' });
+    await expect(passwordToggle).toBeVisible();
+    expect((await passwordToggle.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+
+    const childId = await signUpAndCreateChild(page, 'Léo', '2026-01-20');
+    await dismissWelcomeIfPresent(page);
+
+    for (const route of [`/child/${childId}/foods`, `/child/${childId}/log`]) {
+      await page.goto(route);
+      const widths = await page.evaluate(() => ({
+        client: document.documentElement.clientWidth,
+        scroll: document.documentElement.scrollWidth
+      }));
+      expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+    }
+
+    const targets = [
+      page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link').first(),
+      page.getByRole('button', { name: /^Abricot/ }),
+      page.getByRole('button', { name: 'Ajouter un aliment hors catalogue' }),
+      page.getByText('Comment choisir ?'),
+      page.getByRole('button', { name: 'Effacer la texture' })
+    ];
+    for (const target of targets) {
+      expect((await target.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    }
+  });
+
   test('switches between the four tabs', async ({ page }) => {
     const sevenMonthsAgo = new Date();
     sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
