@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM oven/bun:1.3.14-debian AS builder
+FROM oven/bun:1.4.2-debian AS builder
 WORKDIR /app
 # HUSKY=0 stops the `prepare` script from running `husky install` during
 # `bun install`. Husky's hook-install path is unnecessary inside the
@@ -23,7 +23,7 @@ RUN bun run build
 # Separate, --production-only install: the runtime image must not ship the
 # builder's devDependencies (vite, svelte-check, playwright, ...) — they're
 # needed to build but not to run the built server.
-FROM oven/bun:1.3.14-debian AS prod-deps
+FROM oven/bun:1.4.2-debian AS prod-deps
 WORKDIR /app
 COPY package.json bun.lock ./
 # --ignore-scripts: this stage only needs node_modules for the runtime copy,
@@ -32,7 +32,7 @@ COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     bun install --frozen-lockfile --production --ignore-scripts
 
-FROM oven/bun:1.3.14-debian
+FROM oven/bun:1.4.2-debian
 WORKDIR /app
 
 # Run as a dedicated non-root user. Without this the server (and the
