@@ -7,12 +7,10 @@ import { isUniqueViolation } from '$lib/server/db/errors';
 import { audit } from '$lib/server/audit';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import {
-  createSession,
   findUserByEmail,
   hashPassword,
   isValidInviteCodeFormat,
-  PASSWORD_MIN_LENGTH,
-  setSessionCookie
+  PASSWORD_MIN_LENGTH
 } from '$lib/server/auth';
 import { requireGuest } from '$lib/server/guards';
 import { parseFormWithKey } from '$lib/server/forms';
@@ -155,7 +153,7 @@ function insertSignupUser(params: {
 
 export const actions: Actions = {
   default: async (event) => {
-    const { request, cookies } = event;
+    const { request } = event;
     const ip = clientKey(event);
     const rl = checkRateLimit(SIGNUP_LIMIT, ip);
     if (!rl.allowed) {
@@ -201,15 +199,28 @@ export const actions: Actions = {
       return failWith(403, 'errorsAuthInviteRequired');
     }
 
+    // Built once, from state resolved BEFORE the duplicate-email branch
+    // below, and used identically by every path that follows (existing
+    // account, freshly created account, or a lost insert-time race) : same
+    // status, same Location, no Set-Cookie, same '?created=1' flash flag.
+    // Neither branch mints a session here — see #302. `next` only depends
+    // on whether an invite targeted a child, never on whether the email
+    // was already registered, so it can't itself become a second oracle.
+    // login/+page.server.ts validates `next` against an allowlist before
+    // ever using it as a redirect target.
+    const redirectParams = new URLSearchParams({ created: '1' });
+    if (invitationChildId !== null) redirectParams.set('next', `/child/${invitationChildId}`);
+    const redirectTarget = `/login?${redirectParams}`;
+
     if (await findUserByEmail(lowerEmail)) {
-      // Generic message : the previous "compte existe déjà" wording let an
-      // attacker enumerate registered addresses by attempting to sign up.
-      // The new copy gently nudges existing users towards /login without
-      // confirming whether the address is on file. A residual leak still
-      // exists between this 400 and the success-redirect for an
-      // unregistered email; closing it fully would require an email
-      // confirmation flow, which we don't have yet.
-      return failWith(400, 'errorsAuthSignupImpossible');
+      // Timing parity with the create branch below : hashPassword's
+      // Argon2id cost is a function of its tuning parameters, not of the
+      // input, so paying it here too (result discarded) means response
+      // latency can't distinguish "already registered" from "just
+      // created" — the same reasoning as verifyPasswordOrDecoy in
+      // login/+page.server.ts, applied to hashing instead of verifying.
+      await hashPassword(password);
+      throw localizedRedirect(event.locals.locale, 303, redirectTarget);
     }
 
     const passwordHash = await hashPassword(password);
@@ -229,24 +240,18 @@ export const actions: Actions = {
       if (err instanceof InviteRace) return failWith(400, 'errorsAuthInvalidInviteExpired');
       // The findUserByEmail check above is unlocked, so two concurrent signups
       // with the same email can both pass it; the loser hits users.email's
-      // UNIQUE constraint at INSERT time. Map the resulting unique violation to
-      // the same generic "signup impossible" 400 used for the read path so a
-      // normal double-submit doesn't surface as a 500.
-      if (isUniqueViolation(err)) return failWith(400, 'errorsAuthSignupImpossible');
+      // UNIQUE constraint at INSERT time. Same redirect as the read-path
+      // duplicate-email branch above — a normal double-submit must look
+      // identical to it, not surface as a distinct 400.
+      if (isUniqueViolation(err)) throw localizedRedirect(event.locals.locale, 303, redirectTarget);
       throw err;
     }
 
-    const { token } = await createSession(userId);
-    setSessionCookie(cookies, token);
     audit({ type: 'auth.signup', userId, viaInvite: invitationChildId !== null });
     if (invitationChildId !== null) {
       audit({ type: 'invite.redeemed', userId, childId: invitationChildId });
     }
 
-    throw localizedRedirect(
-      event.locals.locale,
-      303,
-      invitationChildId !== null ? `/child/${invitationChildId}` : '/'
-    );
+    throw localizedRedirect(event.locals.locale, 303, redirectTarget);
   }
 };

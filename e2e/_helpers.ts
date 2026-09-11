@@ -46,24 +46,48 @@ export async function signUp(
   } = {}
 ): Promise<string> {
   const email = opts.email ?? `${uniqueForWorker(emailPrefix)}@example.com`;
+  const password = 'hunter2-very-long';
   const url = opts.inviteCode ? `/signup?code=${opts.inviteCode}` : '/signup';
   await page.goto(url);
   await awaitHydration(page);
   await page.getByLabel('Votre prénom').fill(opts.displayName ?? 'Parent');
   await page.getByLabel('Adresse e-mail').fill(email);
-  await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
+  await page.getByLabel('Mot de passe', { exact: true }).fill(password);
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
   await page.getByLabel(/politique de confidentialité/i).check();
   if (opts.beforeSubmit) await opts.beforeSubmit();
   await page.getByRole('button', { name: /créer mon compte/i }).click();
-  // Bumped from the 5s default : with workers:2 the signup action contends
-  // with parallel-project requests on a shared Postgres, and a slow CI
-  // runner can push the POST + 303-follow over 5s. Keep the assertion
-  // bounded so a genuinely stuck redirect still fails, just not flakily.
-  // Joining via an invite code lands directly on the shared child's
-  // dashboard (the child already exists) instead of the /child/new
-  // onboarding step a fresh signup goes through.
+  // Signup no longer auto-authenticates (#302): a fresh account and a
+  // collision with an existing one both redirect to /login with the same
+  // generic "compte créé" banner and no session cookie, so this helper
+  // logs in with the password it just chose before landing where the old
+  // auto-login used to land — every caller keeps working unchanged.
+  await expect(page).toHaveURL(/\/login(?:[?#]|$)/, { timeout: 15_000 });
+  // awaitHydration() alone is NOT enough here : the flag it checks is set
+  // once at initial hydration and never cleared on later client-side
+  // navigations (the root layout never unmounts — see +layout.svelte), so
+  // it's already true from the signup page and doesn't prove /login's OWN
+  // component has mounted yet. Signup and login share the exact label text
+  // ("Adresse e-mail" / "Mot de passe"), so filling by label right after
+  // the URL flips can land on the dying signup DOM instead of the new
+  // login form — the same class of race signUpAndCreateChild's own comment
+  // below describes for the /child/new transition. Wait for a locator
+  // unique to the login page (its submit button's distinct text) before
+  // touching any field, so the whole login form is guaranteed mounted.
+  const loginSubmit = page.getByRole('button', { name: 'Se connecter', exact: true });
+  await loginSubmit.waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByLabel('Adresse e-mail').fill(email);
+  await page.getByLabel('Mot de passe', { exact: true }).fill(password);
+  await loginSubmit.click();
+  // Bumped from the 5s default : with workers:2 the signup + login actions
+  // contend with parallel-project requests on a shared Postgres, and a
+  // slow CI runner can push either POST + 303-follow over 5s. Keep the
+  // assertion bounded so a genuinely stuck redirect still fails, just not
+  // flakily. Joining via an invite code lands directly on the shared
+  // child's dashboard (the child already exists, and /login honors the
+  // ?next= signup set) instead of the /child/new onboarding step a fresh
+  // signup goes through.
   const expectedUrl = opts.inviteCode ? /\/child\/\d+$/ : /\/child\/new/;
   await expect(page).toHaveURL(expectedUrl, { timeout: 15_000 });
   return email;

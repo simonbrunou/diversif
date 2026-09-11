@@ -4,10 +4,12 @@
   import Field from '$lib/components/ui/Field.svelte';
   import BentoAuthLayout from '$lib/components/bento/BentoAuthLayout.svelte';
   import FormError from '$components/ui/FormError.svelte';
+  import Callout from '$lib/components/ui/Callout.svelte';
   import Seo from '$lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import { onMount } from 'svelte';
   import * as m from '$lib/paraglide/messages';
   import { signInWithPasskey } from '$lib/auth/passkey-client';
@@ -24,6 +26,10 @@
   // the user is typing.
   // svelte-ignore state_referenced_locally
   let email = $state(form?.email ?? '');
+  // Byte-identical for a duplicate-email signup and a freshly created
+  // account (see signup/+page.server.ts) : the banner text must never
+  // reveal which of the two happened, only that the user should sign in.
+  const justSignedUp = $derived(page.url.searchParams.get('created') === '1');
   const unsupported = $derived(
     browser &&
       !(
@@ -100,6 +106,12 @@
 <Seo title={m.authLoginTitle()} path="/login" noindex alternateLocales={['en']} />
 
 <BentoAuthLayout title={m.authLoginTitleBento()} subtitle="">
+  {#if justSignedUp}
+    <Callout variant="success" class="mb-4">
+      {m.authSignupCreatedBanner()}
+    </Callout>
+  {/if}
+
   {#if !unsupported}
     <Button
       type="button"

@@ -6,7 +6,6 @@ mock.module('$lib/server/db', () => ({ db: testDb }));
 
 import { invitations, memberships, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { SESSION_COOKIE } from '$lib/server/auth';
 import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { load, actions } from './+page.server';
 
@@ -141,14 +140,21 @@ describe('signup default action', () => {
     expect(r1.data.errorKey).toBe('errorsAuthInvalidInvite');
   });
 
-  it('fails generically when email already exists (no enumeration leak)', async () => {
+  it('redirects to /login exactly like a fresh signup when email already exists (no enumeration leak)', async () => {
     await seedUser({ email: 'taken@example.com' });
     const event = makeRouteEvent({ formData: form({ email: 'taken@example.com' }) });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { errorKey: string } };
-    expect(r.status).toBe(400);
-    expect(r.data.errorKey).toBe('errorsAuthSignupImpossible');
+    const r = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/login?created=1');
+    // No session is minted for either branch (#302) : a duplicate-email
+    // submission must never come with a live cookie any more than a
+    // fresh signup's redirect does.
+    expect(event.cookies.set).not.toHaveBeenCalled();
+    // No second row : the existing account is untouched.
+    const rows = await testDb.select().from(users).where(eq(users.email, 'taken@example.com'));
+    expect(rows).toHaveLength(1);
   });
 
   it('fails when invite code format is invalid', async () => {
@@ -169,22 +175,21 @@ describe('signup default action', () => {
     expect(r.data.errorKey).toBe('errorsAuthInvalidInviteExpired');
   });
 
-  it('succeeds without invite : sets cookie + redirects /', async () => {
+  it('creates the account without a cookie and redirects to /login?created=1 (no auto-login, #302)', async () => {
     const event = makeRouteEvent({ formData: form() });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
     );
     expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe('/');
-    expect(event.cookies.set).toHaveBeenCalled();
-    expect(event.cookies.set.mock.calls[0][0]).toBe(SESSION_COOKIE);
+    if (r.kind === 'redirect') expect(r.location).toBe('/login?created=1');
+    expect(event.cookies.set).not.toHaveBeenCalled();
     const created = (
       await testDb.select().from(users).where(eq(users.email, 'new@example.com')).limit(1)
     )[0];
     expect(created).toBeDefined();
   });
 
-  it('succeeds with valid invite : adds membership and redirects to /child/{id}', async () => {
+  it('succeeds with valid invite : adds membership, no cookie, redirects to /login?created=1&next=/child/{id}', async () => {
     const owner = await seedUser({ email: 'owner@example.com' });
     const child = await seedChild({ createdBy: owner.id });
     await testDb.insert(invitations).values({
@@ -204,7 +209,12 @@ describe('signup default action', () => {
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
     );
     expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe(`/child/${child.id}`);
+    // The invited child is preserved through the extra login step via a
+    // validated `next` param, not by auto-authenticating here (#302).
+    if (r.kind === 'redirect') {
+      expect(r.location).toBe(`/login?created=1&next=%2Fchild%2F${child.id}`);
+    }
+    expect(event.cookies.set).not.toHaveBeenCalled();
 
     const newUser = (
       await testDb.select().from(users).where(eq(users.email, 'new@example.com')).limit(1)
@@ -291,11 +301,11 @@ describe('signup default action', () => {
     }
   });
 
-  it('returns the generic signup-impossible error when a concurrent insert wins the email race', async () => {
+  it('redirects to /login like every other duplicate-email path when a concurrent insert wins the email race', async () => {
     // Plant the conflicting row mid-transaction so the inner INSERT races on
     // the users.email unique constraint and raises 23505. The handler should
-    // map that to the same opaque "signup impossible" 400 the registered-email
-    // read path returns, NOT a 500.
+    // map that to the exact same /login redirect the registered-email read
+    // path returns, NOT a 500 and NOT a distinct error response.
     const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce((fn) => {
       testDb
         .insert(users)
@@ -311,11 +321,11 @@ describe('signup default action', () => {
 
     try {
       const event = makeRouteEvent({ formData: form() });
-      const r = (await actions.default!(
-        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-      )) as { status: number; data: { errorKey: string } };
-      expect(r.status).toBe(400);
-      expect(r.data.errorKey).toBe('errorsAuthSignupImpossible');
+      const r = await captureFlow(() =>
+        actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+      );
+      expect(r.kind).toBe('redirect');
+      if (r.kind === 'redirect') expect(r.location).toBe('/login?created=1');
 
       // Only one row exists for the email : the planted one.
       const rows = await testDb.select().from(users).where(eq(users.email, 'new@example.com'));
