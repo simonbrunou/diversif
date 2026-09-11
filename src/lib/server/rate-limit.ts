@@ -92,9 +92,18 @@ export function checkRateLimit(opts: RateLimitOptions, key: string): RateLimitRe
  * Read-only variant of `checkRateLimit`: trims the window and reports the
  * decision WITHOUT recording a hit. Pair it with `recordAttempt` when the
  * bucket must count only certain outcomes — e.g. the per-email login
- * throttle counts only FAILED authentications, otherwise 20 successful
- * logins (or junk POSTs from anyone who knows the address) would lock the
- * account's password login.
+ * throttle counts only FAILED authentications, so 20 successful logins
+ * never spend the budget.
+ *
+ * A "blocked" peek result is a budget check, not by itself a verdict to act
+ * on: a caller gating a sensitive action (e.g. password verification)
+ * behind this bucket must still perform that action and only translate the
+ * peek into a rejection if the action ALSO fails on its own merits.
+ * Actioning the peek unconditionally — rejecting before the real check runs
+ * — would let anyone who merely knows the bucket's key (e.g. an account's
+ * email address) lock out its legitimate owner with junk requests, which
+ * defeats the throttle's purpose instead of serving it (see
+ * src/routes/login/+page.server.ts and issue #301).
  *
  * Semantics match the check-and-consume path: a key that has recorded
  * `limit` in-window hits is blocked, so peek+record allows exactly `limit`
