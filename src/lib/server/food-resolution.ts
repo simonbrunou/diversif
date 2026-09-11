@@ -5,6 +5,7 @@ import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import { foods } from './db/schema';
 import type * as schema from './db/schema';
 import { CATEGORY_IDS } from '$lib/utils/categories';
+import { normalize } from '$lib/utils/search';
 
 /**
  * A food is visible to a child if it's in the global catalog (no owner) or
@@ -78,27 +79,45 @@ export function resolveOrInsertFood(input: ResolveFoodInput, tx: Executor = db):
   if (input.foodId) {
     resolvedId = input.foodId;
   } else if (customName) {
-    const category =
-      input.customCategory?.trim() && CATEGORY_IDS.includes(input.customCategory.trim())
-        ? input.customCategory.trim()
-        : 'autre';
+    // Dedup guard: a retried submit (double-tap, resubmit after an error) must
+    // reuse the child's existing custom food instead of inserting a second
+    // row with the same name and splitting its tried-count/allergen history
+    // across two indistinguishable cards. Scoped to this child's own custom
+    // foods only (mirrors visibleToChild's customForChildId = childId leg) —
+    // global-catalog matches go through the foodId path instead.
+    const nName = normalize(customName);
+    const existingCustom = tx
+      .select({ id: foods.id, name: foods.name })
+      .from(foods)
+      .where(eq(foods.customForChildId, input.childId))
+      .all()
+      .find((f) => normalize(f.name) === nName);
 
-    const inserted = tx
-      .insert(foods)
-      .values({
-        name: customName,
-        category,
-        isMajorAllergen: false,
-        allergenType: null,
-        suggestedAgeMonths: 0,
-        notes: null,
-        isCustom: true,
-        customForChildId: input.childId
-      })
-      .returning({ id: foods.id })
-      .all()[0];
+    if (existingCustom) {
+      resolvedId = existingCustom.id;
+    } else {
+      const category =
+        input.customCategory?.trim() && CATEGORY_IDS.includes(input.customCategory.trim())
+          ? input.customCategory.trim()
+          : 'autre';
 
-    resolvedId = inserted.id;
+      const inserted = tx
+        .insert(foods)
+        .values({
+          name: customName,
+          category,
+          isMajorAllergen: false,
+          allergenType: null,
+          suggestedAgeMonths: 0,
+          notes: null,
+          isCustom: true,
+          customForChildId: input.childId
+        })
+        .returning({ id: foods.id })
+        .all()[0];
+
+      resolvedId = inserted.id;
+    }
   } else {
     return { ok: false, reason: 'invalid-custom' };
   }
