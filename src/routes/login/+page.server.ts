@@ -22,9 +22,14 @@ const LOGIN_LIMIT = { name: 'login', limit: 10, windowMs: 5 * 60 * 1000 };
 // hammer one mailbox past 20 FAILED attempts/hour. The bucket is keyed on
 // whatever email was submitted — registered or not — so tripping it reveals
 // nothing about whether the address is on file. Only failures are recorded
-// (peek before verification, record on failure): counting every POST would
-// let 20 successful logins lock the account, and would let anyone who knows
-// the address lock its password login with junk POSTs.
+// (peeked once, actioned only if the same request's password also turns
+// out wrong — see the action below): counting every POST would spend the
+// budget on legitimate successful logins for no reason, and gating the
+// 429 on the peek alone (regardless of the submitted password) would let
+// anyone who merely knows the address lock the real owner out of password
+// login with junk guesses. Once tripped, further WRONG guesses are
+// throttled, but a correct password from the genuine owner always
+// succeeds (#301).
 const LOGIN_EMAIL_LIMIT = { name: 'login-email', limit: 20, windowMs: 60 * 60 * 1000 };
 
 const schema = z.object({
@@ -62,19 +67,16 @@ export const actions: Actions = {
     const { email, password } = parsed.data;
 
     // Per-account throttle, checked in addition to the per-IP bucket above.
-    // PEEK only — the attempt is recorded further down, and only when
-    // authentication fails. The failure body is byte-identical to the
-    // per-IP 429 — same status, same keys, same empty email echo — so the
-    // response can't be used to distinguish which bucket tripped (or
-    // whether the account exists).
+    // PEEK only, and — unlike the per-IP check above — deliberately NOT
+    // actioned yet: it's only applied below if THIS request's password also
+    // turns out wrong (#301), so a tripped bucket can never block a correct
+    // password from the genuine owner. Peeking here (a cheap in-memory
+    // lookup) rather than after verifyPasswordOrDecoy costs nothing
+    // measurable next to an Argon2id hash either way; verification always
+    // runs regardless of the peek result, so its wall-clock cost can't be
+    // used to tell a hot bucket from a cold one.
     const emailKey = email.toLowerCase();
     const emailRl = peekRateLimit(LOGIN_EMAIL_LIMIT, emailKey);
-    if (!emailRl.allowed) {
-      return fail(429, {
-        email: '',
-        errorKey: 'errorsAuthRateLimited'
-      });
-    }
 
     const user = await findUserByEmail(email);
     // verifyPasswordOrDecoy keeps the wall-clock time identical between the
@@ -87,6 +89,17 @@ export const actions: Actions = {
       // failed guesses, never from legitimate successful logins.
       recordAttempt(LOGIN_EMAIL_LIMIT, emailKey);
       audit({ type: 'auth.login_failed', method: 'password' });
+      // The bucket was already saturated with prior wrong guesses AND this
+      // guess is also wrong: 429, matching the per-IP failure body exactly
+      // (same status, same keys, same empty email echo) so the response
+      // can't be used to distinguish which bucket tripped or whether the
+      // account exists.
+      if (!emailRl.allowed) {
+        return fail(429, {
+          email: '',
+          errorKey: 'errorsAuthRateLimited'
+        });
+      }
       return fail(400, {
         email,
         errorKey: 'errorsAuthInvalidCredentials'

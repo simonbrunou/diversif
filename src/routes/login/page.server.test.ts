@@ -226,6 +226,56 @@ describe('login default action', () => {
     expect(peekRateLimit(EMAIL_LIMIT, 'parent@example.com').remaining).toBe(EMAIL_LIMIT.limit - 1);
   });
 
+  // Regression for #301 (F-S3): the per-email bucket was being actioned
+  // BEFORE password verification, so once someone who merely knows the
+  // address (e.g. an estranged co-parent) tripped it with 20 wrong
+  // guesses, the genuine owner's own correct password was rejected too.
+  it('a correct password from the genuine owner still succeeds after the per-email bucket trips', async () => {
+    await seedTestUser();
+    for (let i = 0; i < 20; i++) {
+      resetRateLimit('login', '127.0.0.1');
+      const event = makeRouteEvent({
+        formData: { email: 'parent@example.com', password: 'wrong-password' }
+      });
+      await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      );
+    }
+    expect(peekRateLimit(EMAIL_LIMIT, 'parent@example.com').allowed).toBe(false);
+
+    resetRateLimit('login', '127.0.0.1');
+    const event = makeRouteEvent({
+      formData: { email: 'parent@example.com', password: 'correct-password' }
+    });
+    const result = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(result.kind).toBe('redirect');
+    if (result.kind === 'redirect') expect(result.location).toBe('/');
+  });
+
+  it('a further wrong guess against a real account still 429s once its bucket trips (throttle stays intact)', async () => {
+    await seedTestUser();
+    for (let i = 0; i < 20; i++) {
+      resetRateLimit('login', '127.0.0.1');
+      const event = makeRouteEvent({
+        formData: { email: 'parent@example.com', password: 'wrong-password' }
+      });
+      await actions.default!(
+        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      );
+    }
+    resetRateLimit('login', '127.0.0.1');
+    const event = makeRouteEvent({
+      formData: { email: 'parent@example.com', password: 'still-wrong' }
+    });
+    const result = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: Record<string, unknown> };
+    expect(result.status).toBe(429);
+    expect(result.data).toEqual({ email: '', errorKey: 'errorsAuthRateLimited' });
+  });
+
   it('does not trip the email bucket for attempts on other addresses', async () => {
     await seedTestUser();
     for (let i = 0; i < 20; i++) {
