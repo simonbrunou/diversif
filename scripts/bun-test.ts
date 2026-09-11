@@ -249,7 +249,7 @@ function isNonExecutable(sourceLine: string): boolean {
 function compactRanges(nums: number[]): string {
   const sorted = [...nums].sort((a, b) => a - b);
   const parts: string[] = [];
-  for (let s = 0; s < sorted.length; ) {
+  for (let s = 0; s < sorted.length;) {
     let e = s;
     while (e + 1 < sorted.length && sorted[e + 1] === sorted[e] + 1) e++;
     parts.push(s === e ? `${sorted[s]}` : `${sorted[s]}-${sorted[e]}`);

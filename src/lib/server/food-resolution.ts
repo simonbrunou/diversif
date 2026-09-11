@@ -36,8 +36,7 @@ export async function loadVisibleFoodsForChild(childId: number) {
 // participate in an outer transaction. bun:sqlite is synchronous, so this runs
 // inline inside the caller's sync `db.transaction((tx) => ...)`.
 type Executor =
-  | DB
-  | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+  DB | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 export type ResolveFoodInput = {
   /** ID of an existing food from the global catalog or this child's custom foods. */

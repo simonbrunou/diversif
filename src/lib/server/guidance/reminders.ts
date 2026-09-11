@@ -138,17 +138,15 @@ function ruleStageTransitions({ input, childPath }: RuleContext): Reminder[] {
   ];
   return stageTransitions
     .filter((st) => input.ageMonths >= st.months && input.ageMonths < st.months + 2)
-    .map(
-      (st): Reminder => ({
-        key: st.key,
-        severity: 'important',
-        title: st.title,
-        body: st.body,
-        cta: { label: m.reminderCtaSeeGuide(), href: `${childPath}/guide` },
-        sources: st.sources,
-        dismissable: true
-      })
-    );
+    .map((st): Reminder => ({
+      key: st.key,
+      severity: 'important',
+      title: st.title,
+      body: st.body,
+      cta: { label: m.reminderCtaSeeGuide(), href: `${childPath}/guide` },
+      sources: st.sources,
+      dismissable: true
+    }));
 }
 
 // 3. Stale diversity : no *new* food in 14 days (and child has any entries)
@@ -183,17 +181,15 @@ function ruleStaleDiversity({ input, now, childPath }: RuleContext): Reminder[] 
 function rulePendingAllergens({ input, childPath }: RuleContext): Reminder[] {
   if (input.ageMonths < 4 || input.entries.length === 0) return [];
   const missing = ALLERGEN_PRIORITY.filter((id) => !input.introducedAllergens.has(id));
-  return missing.slice(0, 3).map(
-    (id): Reminder => ({
-      key: `pending-allergen:${id}`,
-      severity: 'warn',
-      title: m.reminderPendingAllergenTitle({ allergen: getAllergenLabel(id) }),
-      body: m.reminderPendingAllergenBody(),
-      cta: { label: m.reminderCtaHowToIntroduce(), href: `${childPath}/guide#allergenes` },
-      sources: ['hcsp-2020', 'eaaci-2020'],
-      dismissable: true
-    })
-  );
+  return missing.slice(0, 3).map((id): Reminder => ({
+    key: `pending-allergen:${id}`,
+    severity: 'warn',
+    title: m.reminderPendingAllergenTitle({ allergen: getAllergenLabel(id) }),
+    body: m.reminderPendingAllergenBody(),
+    cta: { label: m.reminderCtaHowToIntroduce(), href: `${childPath}/guide#allergenes` },
+    sources: ['hcsp-2020', 'eaaci-2020'],
+    dismissable: true
+  }));
 }
 
 // 5. Repeat exposure: food given exactly 1× with reaction ras,
@@ -210,17 +206,15 @@ function ruleRepeatExposure({ input, now, childPath }: RuleContext): Reminder[] 
     now
   });
   repeatCandidates.sort((a, b) => a.lastGivenAt - b.lastGivenAt);
-  return repeatCandidates.slice(0, 2).map(
-    (c): Reminder => ({
-      key: `repeat-exposure:${c.foodId}`,
-      severity: 'info',
-      title: m.reminderRepeatExposureTitle({ food: c.foodName }),
-      body: m.reminderRepeatExposureBody(),
-      cta: { label: m.reminderCtaLogThisFood(), href: `${childPath}/log?foodId=${c.foodId}` },
-      sources: ['spf-pnns-guide'],
-      dismissable: true
-    })
-  );
+  return repeatCandidates.slice(0, 2).map((c): Reminder => ({
+    key: `repeat-exposure:${c.foodId}`,
+    severity: 'info',
+    title: m.reminderRepeatExposureTitle({ food: c.foodName }),
+    body: m.reminderRepeatExposureBody(),
+    cta: { label: m.reminderCtaLogThisFood(), href: `${childPath}/log?foodId=${c.foodId}` },
+    sources: ['spf-pnns-guide'],
+    dismissable: true
+  }));
 }
 
 // 6. Category imbalance : last 14 days dominated by 1 category > 60 %

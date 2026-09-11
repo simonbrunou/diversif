@@ -10,8 +10,8 @@ const foods = [
 ];
 
 function hiddenFoodIdValues(container: HTMLElement): string[] {
-  return Array.from(container.querySelectorAll('input[type="hidden"][name="foodId"]')).map(
-    (el) => el.getAttribute('value')!
+  return Array.from(container.querySelectorAll('input[type="hidden"][name="foodId"]')).map((el) =>
+    el.getAttribute('value')!
   );
 }
 

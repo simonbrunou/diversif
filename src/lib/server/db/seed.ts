@@ -9,8 +9,7 @@ import type { AllergenId } from '$lib/utils/allergens';
 
 type AnyDb = BunSQLiteDatabase<typeof schema>;
 type Tx =
-  | AnyDb
-  | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+  AnyDb | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 type SeedFood = {
   name: string;

@@ -77,8 +77,8 @@ const HINT_TEXT =
   'Plusieurs aliments jamais notés sont sélectionnés : enregistrez précisément chacun et la réaction observée.';
 
 function hiddenFoodIdValues(container: HTMLElement): string[] {
-  return Array.from(container.querySelectorAll('input[type="hidden"][name="foodId"]')).map(
-    (el) => el.getAttribute('value')!
+  return Array.from(container.querySelectorAll('input[type="hidden"][name="foodId"]')).map((el) =>
+    el.getAttribute('value')!
   );
 }
 

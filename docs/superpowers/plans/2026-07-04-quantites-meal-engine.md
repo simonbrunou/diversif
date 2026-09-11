@@ -544,13 +544,7 @@ import type { CategoryId } from '$lib/utils/categories';
 import type { StageId } from '$lib/content/guidance';
 
 export type RoleId =
-  | 'legume'
-  | 'fruit'
-  | 'proteine'
-  | 'feculent'
-  | 'matiereGrasse'
-  | 'laitier'
-  | 'dessert';
+  'legume' | 'fruit' | 'proteine' | 'feculent' | 'matiereGrasse' | 'laitier' | 'dessert';
 export type MealId = 'matin' | 'midi' | 'gouter' | 'soir';
 
 // Meal templates by stage. `4-6` and `<4` are handled by the engine's age branch

@@ -97,9 +97,7 @@ async function seedMeal(reactions: ('ras' | 'inconfort' | 'reaction')[]) {
     child,
     m1,
     ids,
-    memberships: [
-      /* build via seedMembership+safeUser as other tests do */
-    ]
+    memberships: [/* build via seedMembership+safeUser as other tests do */]
   };
 }
 ```
@@ -851,9 +849,7 @@ test("log load returns the child's already-tried foodIds", async () => {
   await logOneFood(child.id, foodIds[0]); // helper inserts a food_entries row
   const ev = makeRouteEvent({
     user: safeUser(user),
-    memberships: [
-      /*owner*/
-    ],
+    memberships: [/*owner*/],
     params: { id: String(child.id) }
   });
   const data = await load(ev as never);
