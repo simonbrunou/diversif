@@ -40,6 +40,19 @@ const schema = z.object({
   password: z.string().min(1, 'Mot de passe requis')
 });
 
+// Post-login destination override, set by signup/+page.server.ts when an
+// invite targeted a child (?next=/child/<id>) so a user who just redeemed
+// an invite lands there instead of the generic home after this extra login
+// step (see #302). `next` is attacker-influenceable (anyone can put any
+// value in the query string of a page with no auth requirement), so it's
+// checked against a strict allowlist — never used verbatim — to rule out
+// an open redirect to an off-site or unexpected same-origin URL.
+const NEXT_PATH_RE = /^\/child\/\d+$/;
+function safeNextPath(url: URL): string {
+  const next = url.searchParams.get('next');
+  return next !== null && NEXT_PATH_RE.test(next) ? next : '/';
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
   requireGuest(locals);
   return {};
@@ -120,6 +133,6 @@ export const actions: Actions = {
     setSessionCookie(cookies, token);
     audit({ type: 'auth.login_succeeded', userId: user.id, method: 'password' });
 
-    throw localizedRedirect(event.locals.locale, 303, '/');
+    throw localizedRedirect(event.locals.locale, 303, safeNextPath(event.url));
   }
 };

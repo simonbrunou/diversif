@@ -144,6 +144,46 @@ describe('login default action', () => {
     if (result.kind === 'redirect') expect(result.location).toBe('/en');
   });
 
+  // Regression for #302 : signup now defers login and asks /login to
+  // redirect back to the invited child afterward via ?next=. Login must
+  // honor a well-formed next path...
+  it('redirects to a valid ?next=/child/<id> after a successful login', async () => {
+    await seedTestUser();
+    const event = makeRouteEvent({
+      url: 'http://localhost/login?created=1&next=%2Fchild%2F42',
+      formData: { email: 'parent@example.com', password: 'correct-password' }
+    });
+    const result = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(result.kind).toBe('redirect');
+    if (result.kind === 'redirect') expect(result.location).toBe('/child/42');
+  });
+
+  // ...and MUST NOT be usable as an open redirect : anything outside the
+  // strict /child/<id> shape (off-site URLs, protocol-relative //host,
+  // unexpected same-origin paths) falls back to '/'.
+  for (const badNext of [
+    'https://evil.example/phish',
+    '//evil.example/phish',
+    '/account/delete',
+    'javascript:alert(1)',
+    '/child/not-a-number'
+  ]) {
+    it(`falls back to / for an unsafe next value (${badNext})`, async () => {
+      await seedTestUser();
+      const event = makeRouteEvent({
+        url: `http://localhost/login?next=${encodeURIComponent(badNext)}`,
+        formData: { email: 'parent@example.com', password: 'correct-password' }
+      });
+      const result = await captureFlow(() =>
+        actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+      );
+      expect(result.kind).toBe('redirect');
+      if (result.kind === 'redirect') expect(result.location).toBe('/');
+    });
+  }
+
   it('returns 429 when the per-IP rate limit is exceeded', async () => {
     // Hit the bucket exactly `limit` times so the next call trips it.
     for (let i = 0; i < 10; i++) {

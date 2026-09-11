@@ -46,24 +46,36 @@ export async function signUp(
   } = {}
 ): Promise<string> {
   const email = opts.email ?? `${uniqueForWorker(emailPrefix)}@example.com`;
+  const password = 'hunter2-very-long';
   const url = opts.inviteCode ? `/signup?code=${opts.inviteCode}` : '/signup';
   await page.goto(url);
   await awaitHydration(page);
   await page.getByLabel('Votre prénom').fill(opts.displayName ?? 'Parent');
   await page.getByLabel('Adresse e-mail').fill(email);
-  await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
+  await page.getByLabel('Mot de passe', { exact: true }).fill(password);
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
   await page.getByLabel(/politique de confidentialité/i).check();
   if (opts.beforeSubmit) await opts.beforeSubmit();
   await page.getByRole('button', { name: /créer mon compte/i }).click();
-  // Bumped from the 5s default : with workers:2 the signup action contends
-  // with parallel-project requests on a shared Postgres, and a slow CI
-  // runner can push the POST + 303-follow over 5s. Keep the assertion
-  // bounded so a genuinely stuck redirect still fails, just not flakily.
-  // Joining via an invite code lands directly on the shared child's
-  // dashboard (the child already exists) instead of the /child/new
-  // onboarding step a fresh signup goes through.
+  // Signup no longer auto-authenticates (#302): a fresh account and a
+  // collision with an existing one both redirect to /login with the same
+  // generic "compte créé" banner and no session cookie, so this helper
+  // logs in with the password it just chose before landing where the old
+  // auto-login used to land — every caller keeps working unchanged.
+  await expect(page).toHaveURL(/\/login(?:[?#]|$)/, { timeout: 15_000 });
+  await awaitHydration(page);
+  await page.getByLabel('Adresse e-mail').fill(email);
+  await page.getByLabel('Mot de passe', { exact: true }).fill(password);
+  await page.getByRole('button', { name: /se connecter/i }).click();
+  // Bumped from the 5s default : with workers:2 the signup + login actions
+  // contend with parallel-project requests on a shared Postgres, and a
+  // slow CI runner can push either POST + 303-follow over 5s. Keep the
+  // assertion bounded so a genuinely stuck redirect still fails, just not
+  // flakily. Joining via an invite code lands directly on the shared
+  // child's dashboard (the child already exists, and /login honors the
+  // ?next= signup set) instead of the /child/new onboarding step a fresh
+  // signup goes through.
   const expectedUrl = opts.inviteCode ? /\/child\/\d+$/ : /\/child\/new/;
   await expect(page).toHaveURL(expectedUrl, { timeout: 15_000 });
   return email;
