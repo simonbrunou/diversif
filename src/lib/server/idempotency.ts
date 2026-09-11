@@ -38,7 +38,17 @@ export function withIdempotencyKey<T extends { redirect: string }>(
   const existing = tx.select().from(idempotencyKeys).where(eq(idempotencyKeys.key, args.key)).get();
 
   if (existing) {
-    if (existing.scope !== args.scope) {
+    // `key` is the table's bare primary key, so folding a userId equality
+    // into the SELECT's WHERE would make a legitimate cross-user collision
+    // look identical to "no existing row" — the code below would then try
+    // to INSERT a second row with the same PK and blow up with an unhandled
+    // constraint violation instead of the clean 409 callers already expect.
+    // Compare userId explicitly instead, and fold it into the same
+    // IdempotencyScopeMismatch branch: a mismatched owner is the same class
+    // of "this key doesn't belong to this caller's context" collision as a
+    // mismatched scope, and callers already map that error to a 409 with no
+    // changes needed here.
+    if (existing.scope !== args.scope || existing.userId !== args.userId) {
       throw new IdempotencyScopeMismatch(`scope mismatch for key ${args.key}`);
     }
     if (existing.redirect == null) {

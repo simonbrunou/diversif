@@ -283,6 +283,59 @@ describe('Idempotency-Key', () => {
       expect((r2.value as { status: number }).status).toBe(409);
     }
   });
+  it("same key, same scope, different co-parent users : second user is NOT served the first user's replay", async () => {
+    const { u: userA, c, m: mA, food } = await setup();
+    const userB = await seedUser({ email: 'coparent@example.com' });
+    const mB = await seedMembership({ userId: userB.id, childId: c.id, role: 'member' });
+
+    const formData = {
+      foodId: String(food.id),
+      givenAt: '2026-05-07T10:00:00.000Z',
+      reaction: 'ras'
+    };
+
+    const r1 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(userA),
+          memberships: [mA],
+          params: { id: String(c.id) },
+          formData,
+          headers: { 'Idempotency-Key': 'shared-key-1' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+    expect(r1.kind).toBe('redirect');
+
+    const r2 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(userB),
+          memberships: [mB],
+          params: { id: String(c.id) },
+          formData,
+          headers: { 'Idempotency-Key': 'shared-key-1' }
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+
+    // userB must not silently receive userA's cached redirect: either a
+    // conflict, or (at minimum) userB's own row must exist. The bug this
+    // guards against is r2 being kind:'redirect' with zero rows inserted
+    // for userB.
+    expect(r2.kind).toBe('return');
+    if (r2.kind === 'return') {
+      expect((r2.value as { status: number }).status).toBe(409);
+    }
+
+    const rows = await testDb
+      .select({ loggedBy: foodEntries.loggedBy })
+      .from(foodEntries)
+      .where(eq(foodEntries.childId, c.id));
+    // Only userA's entry exists — the bug's failure mode is userB's request
+    // silently resolving as a no-op "replay" with no error and no row.
+    expect(rows.map((r) => r.loggedBy)).toEqual([userA.id]);
+  });
 
   it('no header : existing behaviour : two calls produce two food_entries rows', async () => {
     const { u, c, m, food } = await setup();

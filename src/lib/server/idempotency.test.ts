@@ -90,6 +90,24 @@ describe('withIdempotencyKey', () => {
     ).toThrow(IdempotencyScopeMismatch);
     expect(doWork).not.toHaveBeenCalled();
   });
+  it('throws IdempotencyScopeMismatch when a row exists for a different userId (same scope)', async () => {
+    await seedUser(2);
+    await testDb.insert(idempotencyKeys).values({
+      key: 'k5',
+      userId: 2,
+      scope: SCOPE,
+      redirect: '/child/1?logged=1',
+      createdAt: new Date()
+    });
+
+    const doWork = mock();
+    expect(() =>
+      testDb.transaction((tx) =>
+        withIdempotencyKey(tx, { key: 'k5', userId: 1, scope: SCOPE }, doWork)
+      )
+    ).toThrow(IdempotencyScopeMismatch);
+    expect(doWork).not.toHaveBeenCalled();
+  });
 
   it('rolls back the inserted key row when doWork throws', async () => {
     const err = new Error('boom');
