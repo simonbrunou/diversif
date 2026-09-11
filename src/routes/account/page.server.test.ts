@@ -81,6 +81,38 @@ describe('account load : bento data', () => {
     expect(Array.isArray(out.passkeys)).toBe(true);
   });
 
+  it('includes a child with no co-parents with an empty coparents array', async () => {
+    const u = await seed();
+    const child = await seedChild({ name: 'Solo', birthDate: '2024-06-01', createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: child.id, role: 'owner' });
+
+    const event = makeRouteEvent({ user: safeUser(u) });
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+
+    expect(out.children.length).toBe(1);
+    expect(out.children[0].name).toBe('Solo');
+    expect(out.children[0].coparents).toEqual([]);
+  });
+
+  it('batches co-parents across multiple children without dropping the childless-of-coparents one', async () => {
+    const u = await seed();
+    const coparent = await seedUser({ email: 'coparent2@example.com', displayName: 'Coparent2' });
+    const shared = await seedChild({ name: 'Partagé', birthDate: '2023-01-01', createdBy: u.id });
+    const solo = await seedChild({ name: 'Solo2', birthDate: '2024-06-01', createdBy: u.id });
+    await seedMembership({ userId: u.id, childId: shared.id, role: 'owner' });
+    await seedMembership({ userId: coparent.id, childId: shared.id, role: 'member' });
+    await seedMembership({ userId: u.id, childId: solo.id, role: 'owner' });
+
+    const event = makeRouteEvent({ user: safeUser(u) });
+    const out = await load(event as unknown as Parameters<typeof load>[0]);
+
+    expect(out.children.length).toBe(2);
+    const sharedOut = out.children.find((c) => c.name === 'Partagé');
+    const soloOut = out.children.find((c) => c.name === 'Solo2');
+    expect(sharedOut?.coparents.map((c) => c.displayName)).toEqual(['Coparent2']);
+    expect(soloOut?.coparents).toEqual([]);
+  });
+
   it('picks up locale from locals', async () => {
     const u = await seed();
     const event = makeRouteEvent({ user: safeUser(u), locale: 'en' });
