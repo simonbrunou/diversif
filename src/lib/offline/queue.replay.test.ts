@@ -20,7 +20,7 @@ mock.module('$lib/server/audit', () => ({ audit: mock() }));
 import { eq, sql } from 'drizzle-orm';
 import { foodEntries, foods } from '$lib/server/db/schema';
 import { actions } from '../../routes/child/[id]/log/+page.server';
-import { clear, count, enqueue, flush } from './queue';
+import { clear, count, enqueue, flush, needsReauthCount } from './queue';
 
 /**
  * This file closes the gap named in the audit: queue.test.ts's flush()
@@ -303,5 +303,64 @@ describe('offline queue replay against a real server response', () => {
 
     window.removeEventListener('queue:accessRevoked', onRevoked);
     window.removeEventListener('queue:dropped', onDropped);
+  });
+
+  // Regression for #308: requireUser throws a REAL localizedRedirect(...,
+  // '/login') when locals.user is null — exactly what an expired session
+  // looks like server-side. Drives the actual action (not a fabricated
+  // redirect) through that expiry, then flips to an authenticated identity
+  // to prove the row is retained and only cleared by a later successful
+  // replay — the end-to-end contract #308 asks for, with no fabricated
+  // envelope standing in for the real one.
+  it('flush() retains the row on a real session-expiry redirect, then clears it once a later replay succeeds', async () => {
+    const { u, c, m, food } = await setup();
+    let authenticated = false;
+    spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const match = String(input).match(/^\/child\/(\d+)\/log$/);
+      if (!match) throw new Error(`unexpected fetch url: ${String(input)}`);
+      const headers = init!.headers as Record<string, string>;
+      const formData = formDataFromBody(init!.body as URLSearchParams);
+      const outcome = (await captureFlow(() =>
+        actions.default!(
+          makeRouteEvent({
+            user: authenticated ? safeUser(u) : null, // null: expired session
+            memberships: authenticated ? [m] : [],
+            params: { id: String(c.id) },
+            formData,
+            headers: { 'Idempotency-Key': headers['Idempotency-Key'] }
+          }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+        )
+      )) as FlowOutcome;
+      return toEnvelopeResponse(outcome);
+    });
+
+    const needsReauth: unknown[] = [];
+    const onNeedsReauth = (e: Event) => needsReauth.push((e as CustomEvent).detail);
+    window.addEventListener('queue:needsReauth', onNeedsReauth);
+
+    await enqueue({
+      key: 'reauth-real-1',
+      childId: c.id,
+      formData: { foodId: String(food.id), givenAt: '2026-05-07T10:00:00.000Z', reaction: 'ras' },
+      queuedAt: 1
+    });
+
+    await flush(); // session expired: real requireUser -> localizedRedirect
+
+    expect(await count()).toBe(1);
+    expect(await needsReauthCount()).toBe(1);
+    expect(needsReauth).toEqual([{ key: 'reauth-real-1' }]);
+
+    authenticated = true; // the user re-authenticates elsewhere
+    await flush(); // next replay runs the real action to completion
+
+    expect(await count()).toBe(0);
+    expect(await needsReauthCount()).toBe(0);
+
+    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
+    expect(rows).toHaveLength(1);
+    expect(rows[0].foodId).toBe(food.id);
+
+    window.removeEventListener('queue:needsReauth', onNeedsReauth);
   });
 });

@@ -3,6 +3,11 @@ export interface QueuedSubmit {
   childId: number;
   formData: Record<string, string | string[]>;
   queuedAt: number;
+  // Set when a replay redirected to /login: the row is retained (not
+  // deleted) instead of being lost with the rest of the session, surfaced
+  // via a persistent "log back in to sync" affordance, and only cleared
+  // once a subsequent replay actually succeeds — see #308.
+  status?: 'needs-reauth';
 }
 
 const DB_NAME = 'diversif-offline';
@@ -79,6 +84,14 @@ async function deleteRow(key: string): Promise<void> {
   emit('queue:changed');
 }
 
+async function markNeedsReauth(row: QueuedSubmit): Promise<void> {
+  await tx('readwrite', async (store) => {
+    await reqAsPromise(store.put({ ...row, status: 'needs-reauth' }));
+  });
+  emit('queue:changed');
+  emit('queue:needsReauth', { key: row.key });
+}
+
 export async function enqueue(item: QueuedSubmit): Promise<void> {
   await tx('readwrite', async (store) => {
     await reqAsPromise(store.put(item));
@@ -96,6 +109,17 @@ export async function clear(): Promise<void> {
 /** Number of rows still queued — feeds the persistent "N pending" indicator. */
 export async function count(): Promise<number> {
   return tx('readonly', async (store) => reqAsPromise(store.count()));
+}
+
+/**
+ * Rows retained pending re-authentication — feeds the "log back in to sync"
+ * persistent affordance. A subset of count(), which stays meaningful (never
+ * silently drops to zero) because these rows are never deleted; only a
+ * subsequent successful replay clears them.
+ */
+export async function needsReauthCount(): Promise<number> {
+  const rows = await readAllOrdered();
+  return rows.filter((r) => r.status === 'needs-reauth').length;
 }
 
 interface ActionRedirect {
@@ -149,7 +173,7 @@ function dropRow(status: number, reason: 'error' | 'failure'): 'drop' {
   return 'drop';
 }
 
-async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry'> {
+async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry' | 'needs-reauth'> {
   const body = buildBody(row.formData);
   let res: Response;
   try {
@@ -176,10 +200,12 @@ async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry'> {
   if (result.type === 'redirect') {
     // Match every locale-prefixed login redirect (paraglide rewrites bare
     // /login to /en/login for English-locale users). Bare /login covers FR
-    // since FR is the unprefixed default.
+    // since FR is the unprefixed default. The session expired before this
+    // row could replay — the action never ran, so the row must be kept
+    // (never deleted) until a later replay actually succeeds; flush()
+    // handles retaining + surfacing it.
     if (/^\/(?:[a-z]{2}\/)?login(?:\?|$)/.test(result.location)) {
-      emit('queue:sessionExpired');
-      return 'drop';
+      return 'needs-reauth';
     }
     const m = result.location.match(/^\/(?:[a-z]{2}\/)?child\/(\d+)\?(.+)$/);
     if (m) {
@@ -209,9 +235,22 @@ export function flush(): Promise<void> {
         const outcome = await postOne(row);
         if (outcome === 'ok' || outcome === 'drop') {
           await deleteRow(row.key);
-        }
-        if (outcome === 'retry') {
-          // Stop processing; subsequent rows will be tried on the next flush.
+        } else if (outcome === 'needs-reauth') {
+          // Retained, not deleted (see the QueuedSubmit.status comment).
+          // Only write + emit on the actual transition, so re-attempting
+          // an already-marked row on every subsequent flush poll doesn't
+          // spam queue:changed while the user is still logged out. Continue
+          // to the next row instead of `break`ing like 'retry' below: every
+          // other queued row shares the same expired session and deserves
+          // its own chance to be marked/surfaced in this same pass, not be
+          // wedged behind this one until it happens to succeed first.
+          if (row.status !== 'needs-reauth') {
+            await markNeedsReauth(row);
+          }
+        } else {
+          // 'retry': a transient/systemic failure (network drop, 5xx,
+          // 409/429) — stop processing; subsequent rows will be tried on
+          // the next flush.
           break;
         }
       }
