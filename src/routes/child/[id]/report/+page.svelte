@@ -1,35 +1,19 @@
 <script lang="ts">
-  import CategoryTag from '$lib/components/CategoryTag.svelte';
   import PrintShell from '$lib/components/PrintShell.svelte';
-  import { getCategoryLabel } from '$lib/utils/categories';
-  import { getReactionLabel } from '$lib/utils/reactions';
+  import ReportSummaryStats from '$lib/components/report/ReportSummaryStats.svelte';
+  import ReportStageStatus from '$lib/components/report/ReportStageStatus.svelte';
+  import ReportTextureDistribution from '$lib/components/report/ReportTextureDistribution.svelte';
+  import ReportAllergensGrid from '$lib/components/report/ReportAllergensGrid.svelte';
+  import ReportFoodsByCategory from '$lib/components/report/ReportFoodsByCategory.svelte';
+  import ReportNotableReactions from '$lib/components/report/ReportNotableReactions.svelte';
   import { formatAge } from '$lib/utils/age';
   import { localizedHref } from '$lib/utils/localized-href';
-  import { getTextureLabel } from '$lib/utils/texture-labels';
-  import { TEXTURE_VALUES } from '$lib/utils/textures';
+  import { formatReportDay } from '$lib/utils/report';
   import * as m from '$lib/paraglide/messages';
-  import { CheckCircle2, AlertCircle, OctagonAlert, CircleDashed } from 'lucide-svelte';
-  import { formatDate } from '$lib/utils/dates';
   import { getLocale } from '$lib/paraglide/runtime';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
-
-  function fmtDay(ts: number): string {
-    return formatDate(ts, getLocale() === 'en' ? 'en-GB' : 'fr-FR');
-  }
-
-  function reactionIcon(r: 'ras' | 'inconfort' | 'reaction') {
-    return r === 'ras' ? CheckCircle2 : r === 'inconfort' ? AlertCircle : OctagonAlert;
-  }
-
-  function reactionClass(r: 'ras' | 'inconfort' | 'reaction'): string {
-    return r === 'ras'
-      ? 'text-reaction-ras-foreground'
-      : r === 'inconfort'
-        ? 'text-reaction-inconfort-foreground'
-        : 'text-reaction-reaction-foreground';
-  }
 </script>
 
 <PrintShell title="{m.reportHandoffTitle()} : {data.child.name} · Diversif">
@@ -44,9 +28,11 @@
 
   <!-- Document header -->
   <header class="space-y-2 border-b pb-4">
-    <div class="flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground">
+    <div
+      class="flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground"
+    >
       <span>{m.reportHeaderEyebrow()}</span>
-      <span>{m.reportHeaderEditedOn({ date: fmtDay(data.generatedAt) })}</span>
+      <span>{m.reportHeaderEditedOn({ date: formatReportDay(data.generatedAt) })}</span>
     </div>
     <h1 class="font-display text-3xl font-semibold leading-tight md:text-4xl">
       {data.child.name}
@@ -58,205 +44,22 @@
     </p>
   </header>
 
-  <!-- Summary stats -->
-  <section class="grid grid-cols-2 gap-3 sm:grid-cols-4 print:grid-cols-4">
-    <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-2xs uppercase tracking-wider text-muted-foreground">
-        {m.reportTotalsFoodsLabel()}
-      </div>
-      <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
-        {data.totals.foods}
-      </div>
-      <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsFoodsCaption()}</div>
-    </div>
-    <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-2xs uppercase tracking-wider text-muted-foreground">
-        {m.reportTotalsEntriesLabel()}
-      </div>
-      <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
-        {data.totals.entries}
-      </div>
-      <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsEntriesCaption()}</div>
-    </div>
-    <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-2xs uppercase tracking-wider text-muted-foreground">
-        {m.reportTotalsCategoriesLabel()}
-      </div>
-      <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
-        {data.totals.categoriesCovered}<span class="text-sm font-normal text-muted-foreground">
-          / {data.totals.categoriesTotal}</span
-        >
-      </div>
-      <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsCategoriesCaption()}</div>
-    </div>
-    <div class="rounded-md border p-3 print:border-black/20">
-      <div class="text-2xs uppercase tracking-wider text-muted-foreground">
-        {m.reportTotalsAllergensLabel()}
-      </div>
-      <div class="mt-1 font-display text-xl font-semibold leading-none tabular-nums">
-        {data.totals.allergensIntroduced}<span class="text-sm font-normal text-muted-foreground">
-          / {data.totals.allergensTotal}</span
-        >
-      </div>
-      <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsAllergensCaption()}</div>
-    </div>
-  </section>
+  <ReportSummaryStats totals={data.totals} />
 
-  <!-- Stage status -->
-  <section class="space-y-2 rounded-lg border bg-card p-4">
-    <h2 class="text-lg font-semibold">{m.reportStageHeading()}</h2>
-    {#if data.ageMonths < 4}
-      <p class="text-sm text-muted-foreground">{m.preDiversificationTitle()}</p>
-      <p class="text-sm">{m.preDiversificationBody()}</p>
-    {:else}
-      <p class="text-sm text-muted-foreground">{data.stage.title}</p>
-      <p class="text-sm">{data.stage.oneLiner}</p>
-      <p class="text-sm">
-        <span class="text-muted-foreground">{m.reportStageExpectedTextures()} : </span>{data.stage.textures}
-      </p>
-    {/if}
-    {#if data.mostAdvancedTexture}
-      <p class="text-sm">
-        <span class="text-muted-foreground">{m.reportStageMostAdvancedTexture()} : </span>
-        {getTextureLabel(data.mostAdvancedTexture)}
-      </p>
-    {/if}
-  </section>
+  <ReportStageStatus
+    ageMonths={data.ageMonths}
+    stage={data.stage}
+    mostAdvancedTexture={data.mostAdvancedTexture}
+  />
 
-  <!-- Texture distribution (30-day window) -->
-  <section class="space-y-2 rounded-lg border bg-card p-4">
-    <h2 class="text-lg font-semibold">{m.reportTextureDistributionHeading()}</h2>
-    {#if data.textureDistribution.totalWithTexture === 0}
-      <p class="text-sm text-muted-foreground">{m.reportTextureDistributionEmpty()}</p>
-    {:else}
-      <ul class="space-y-1.5">
-        {#each TEXTURE_VALUES as k (k)}
-          {@const n = data.textureDistribution.counts[k]}
-          {@const pct = Math.round((n / data.textureDistribution.totalWithTexture) * 100)}
-          <li class="grid grid-cols-[10ch_1fr_3ch] items-center gap-2 text-sm">
-            <span class="text-muted-foreground">{getTextureLabel(k)}</span>
-            <span class="h-2 rounded-full bg-muted">
-              <span class="block h-2 rounded-full bg-foreground/70" style="width: {pct}%"></span>
-            </span>
-            <span class="text-right tabular-nums">{n}</span>
-          </li>
-        {/each}
-      </ul>
-    {/if}
-  </section>
+  <ReportTextureDistribution textureDistribution={data.textureDistribution} />
 
-  <!-- Allergens grid -->
-  <section class="space-y-3 break-inside-avoid">
-    <h2 class="font-display text-xl font-semibold">{m.reportAllergensHeading()}</h2>
-    <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 print:grid-cols-2">
-      {#each data.allergens as a (a.id)}
-        {@const Icon = a.status === 'untested' ? CircleDashed : reactionIcon(a.worst!)}
-        <li
-          class="flex items-center justify-between gap-3 rounded-md border p-2.5 text-sm print:border-black/20"
-        >
-          <div class="flex min-w-0 items-center gap-2">
-            <Icon
-              size={14}
-              class={a.status === 'untested' ? 'text-muted-foreground/60' : reactionClass(a.worst!)}
-              aria-hidden="true"
-            />
-            <span class="truncate font-medium">{a.label}</span>
-          </div>
-          {#if a.status === 'introduced'}
-            <span class="shrink-0 text-xs text-muted-foreground">
-              {m.reportExposuresSince({
-                count: String(a.exposures),
-                date: fmtDay(a.firstGivenAt!)
-              })}
-            </span>
-          {:else}
-            <span class="shrink-0 text-xs text-muted-foreground">{m.reportAllergenUntested()}</span>
-          {/if}
-        </li>
-      {/each}
-    </ul>
-  </section>
+  <ReportAllergensGrid allergens={data.allergens} />
 
-  <!-- Foods by category -->
-  <section class="space-y-3">
-    <h2 class="font-display text-xl font-semibold">{m.reportFoodsByCategoryHeading()}</h2>
-    {#if data.categoryGroups.length === 0}
-      <p class="text-sm text-muted-foreground">{m.reportFoodsByCategoryEmpty()}</p>
-    {:else}
-      <div class="space-y-3">
-        {#each data.categoryGroups as g (g.id)}
-          <div class="break-inside-avoid space-y-1.5">
-            <div class="flex items-center gap-2">
-              <CategoryTag id={g.id} size="sm" />
-              <span class="text-xs text-muted-foreground">{g.foods.length}</span>
-            </div>
-            <ul class="grid gap-1 pl-1 text-sm sm:grid-cols-2 print:grid-cols-2">
-              {#each g.foods as f (f.foodId)}
-                {@const FoodIcon = reactionIcon(f.worstReaction)}
-                <li
-                  class="flex items-baseline justify-between gap-2 border-b pb-0.5 print:break-inside-avoid print:border-black/15"
-                >
-                  <span class="flex min-w-0 items-baseline gap-1.5">
-                    <FoodIcon size={11} class={reactionClass(f.worstReaction)} aria-hidden="true" />
-                    <!-- Truncate on screen to keep the grid tidy, but allow wrapping
-                         in print so a long custom food name (e.g. "Purée de
-                         courgette maison aux oignons") isn't silently ellipsis'd
-                         out of the pediatric report. -->
-                    <span class="truncate print:overflow-visible print:whitespace-normal">
-                      {f.foodName}
-                    </span>
-                  </span>
-                  <span class="shrink-0 text-xs text-muted-foreground">
-                    {m.reportExposuresSince({
-                      count: String(f.exposures),
-                      date: fmtDay(f.firstGivenAt)
-                    })}
-                  </span>
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </section>
+  <ReportFoodsByCategory categoryGroups={data.categoryGroups} />
 
-  <!-- Notable reactions -->
   {#if data.notable.length > 0}
-    <section class="space-y-3">
-      <h2 class="font-display text-xl font-semibold">{m.reportNotableHeading()}</h2>
-      <ul class="space-y-2 text-sm">
-        {#each data.notable as e (e.id)}
-          {@const Icon = reactionIcon(e.reaction)}
-          <li
-            class="flex flex-col gap-1 border-b pb-1.5 print:break-inside-avoid print:border-black/15 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3"
-          >
-            <span class="flex min-w-0 items-baseline gap-1.5">
-              <Icon size={12} class={reactionClass(e.reaction)} aria-hidden="true" />
-              <span class="min-w-0">
-                <strong>{e.foodName}</strong>
-                <span class="text-xs text-muted-foreground"
-                  >· {getCategoryLabel(e.category)}</span
-                >
-                {#if e.mealId}
-                  <span class="text-xs text-muted-foreground">· {m.reportNotableInMeal()}</span>
-                {/if}
-                {#if e.notes}
-                  <span class="mt-0.5 block whitespace-pre-wrap text-xs text-muted-foreground">
-                    {e.notes}
-                  </span>
-                {/if}
-              </span>
-            </span>
-            <span
-              class="shrink-0 whitespace-nowrap text-xs text-muted-foreground sm:self-baseline"
-            >
-              {fmtDay(e.givenAt)} · {getReactionLabel(e.reaction)}
-            </span>
-          </li>
-        {/each}
-      </ul>
-    </section>
+    <ReportNotableReactions notable={data.notable} />
   {/if}
 
   <!-- Footer -->
