@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import 'fake-indexeddb/auto';
 
-import { buildBody, clear, count, enqueue, flush } from './queue';
+import { buildBody, clear, count, enqueue, flush, needsReauthCount } from './queue';
 
 /** Count rows directly in IDB, bypassing the module's own count() export. */
 async function countRows(): Promise<number> {
@@ -235,11 +235,17 @@ describe('queue', () => {
     window.removeEventListener('queue:dropped', off as EventListener);
   });
 
-  it('drops the row and emits sessionExpired on type:redirect to /login', async () => {
+  // Regression for F-P5 (#308): the row must survive a session-expiry
+  // redirect — the action never ran, so deleting it would lose data the
+  // parent typed with nothing to show for it. It's retained with
+  // status:'needs-reauth' and surfaced via the persistent affordance
+  // (queue:needsReauth + needsReauthCount()), not the one-shot toast the
+  // old 'sessionExpired' event drove.
+  it('retains the row (not dropped) and emits needsReauth on type:redirect to /login', async () => {
     spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/login'));
-    const events: string[] = [];
-    const handler = () => events.push('expired');
-    window.addEventListener('queue:sessionExpired', handler);
+    const events: unknown[] = [];
+    const handler = (e: Event) => events.push((e as CustomEvent).detail);
+    window.addEventListener('queue:needsReauth', handler);
 
     await enqueue({
       key: 'k1',
@@ -249,16 +255,17 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(await countRows()).toBe(0);
-    expect(events).toContain('expired');
-    window.removeEventListener('queue:sessionExpired', handler);
+    expect(await countRows()).toBe(1);
+    expect(await needsReauthCount()).toBe(1);
+    expect(events).toEqual([{ key: 'k1' }]);
+    window.removeEventListener('queue:needsReauth', handler);
   });
 
   it('treats /en/login (paraglide locale prefix) the same as /login', async () => {
     spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login'));
-    const events: string[] = [];
-    const handler = () => events.push('expired');
-    window.addEventListener('queue:sessionExpired', handler);
+    const events: unknown[] = [];
+    const handler = (e: Event) => events.push((e as CustomEvent).detail);
+    window.addEventListener('queue:needsReauth', handler);
 
     await enqueue({
       key: 'k1-en',
@@ -268,16 +275,17 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(await countRows()).toBe(0);
-    expect(events).toContain('expired');
-    window.removeEventListener('queue:sessionExpired', handler);
+    expect(await countRows()).toBe(1);
+    expect(await needsReauthCount()).toBe(1);
+    expect(events).toEqual([{ key: 'k1-en' }]);
+    window.removeEventListener('queue:needsReauth', handler);
   });
 
-  it('also fires sessionExpired on /en/login?next=...', async () => {
+  it('also fires needsReauth on /en/login?next=...', async () => {
     spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login?next=/child/1'));
-    const events: string[] = [];
-    const handler = () => events.push('expired');
-    window.addEventListener('queue:sessionExpired', handler);
+    const events: unknown[] = [];
+    const handler = (e: Event) => events.push((e as CustomEvent).detail);
+    window.addEventListener('queue:needsReauth', handler);
 
     await enqueue({
       key: 'k1-en-qs',
@@ -287,9 +295,80 @@ describe('queue', () => {
     });
     await flush();
 
+    expect(await countRows()).toBe(1);
+    expect(await needsReauthCount()).toBe(1);
+    expect(events).toEqual([{ key: 'k1-en-qs' }]);
+    window.removeEventListener('queue:needsReauth', handler);
+  });
+
+  it('does not re-mark or re-emit on a second flush while still needs-reauth (no queue:changed spam)', async () => {
+    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/login'));
+    const changed: number[] = [];
+    const handler = () => changed.push(1);
+    window.addEventListener('queue:changed', handler);
+
+    await enqueue({
+      key: 'k1',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    changed.length = 0; // drop the enqueue's own queue:changed
+
+    await flush(); // first pass: transitions to needs-reauth, emits once
+    expect(changed).toEqual([1]);
+
+    await flush(); // still logged out: same outcome, already marked — no-op
+    expect(changed).toEqual([1]);
+    expect(await countRows()).toBe(1);
+
+    window.removeEventListener('queue:changed', handler);
+  });
+
+  it('processes a later, different row in the same pass instead of stopping at the first needs-reauth row', async () => {
+    // Guards against re-introducing 'retry'-style break-the-loop semantics
+    // for needs-reauth, which would wedge every row queued after the first
+    // session-expired one until it happens to succeed.
+    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/login'));
+
+    await enqueue({
+      key: 'first',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    await enqueue({
+      key: 'second',
+      childId: 1,
+      formData: { foodId: '2', reaction: 'ras', givenAt: 'y' },
+      queuedAt: 2
+    });
+
+    await flush();
+
+    expect(await countRows()).toBe(2);
+    expect(await needsReauthCount()).toBe(2);
+  });
+
+  it('a successful replay after re-authentication clears a needs-reauth row', async () => {
+    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValueOnce(goodActionResult('/login'));
+
+    await enqueue({
+      key: 'k1',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    await flush(); // marks needs-reauth, retained
+    expect(await countRows()).toBe(1);
+    expect(await needsReauthCount()).toBe(1);
+
+    // Simulate the user re-authenticating: the next replay succeeds.
+    fetchSpy.mockResolvedValue(goodActionResult());
+    await flush();
+
     expect(await countRows()).toBe(0);
-    expect(events).toContain('expired');
-    window.removeEventListener('queue:sessionExpired', handler);
+    expect(await needsReauthCount()).toBe(0);
   });
 
   it('emits queue:synced with milestone qs on success', async () => {

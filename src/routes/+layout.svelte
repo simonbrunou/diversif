@@ -1,11 +1,11 @@
 <script lang="ts">
   import '../app.css';
   import { Toaster, toast } from 'svelte-sonner';
-  import { flush, count as pendingQueueCount } from '$lib/offline/queue';
+  import { flush, count as pendingQueueCount, needsReauthCount } from '$lib/offline/queue';
   import { purgeClientState } from '$lib/offline/purge';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/state';
-  import { onNavigate } from '$app/navigation';
+  import { goto, onNavigate } from '$app/navigation';
   import { browser } from '$app/environment';
   import { deLocalizeHref } from '$lib/paraglide/runtime';
   import * as m from '$lib/paraglide/messages';
@@ -145,6 +145,39 @@
       });
   }
 
+  // Persistent "N entries need you to log back in" toast, upserted in place
+  // like PENDING_TOAST_ID above. Replaces a one-shot 6s "session expired"
+  // toast a parent could easily miss while the retained, sync-pending entry
+  // sits invisible in IndexedDB — see #308. The action button jumps
+  // straight to /login; once the session cookie is valid again, the next
+  // automatic flush (on 'online' or the periodic interval) replays the row
+  // and clears it with no further action needed.
+  const NEEDS_REAUTH_TOAST_ID = 'offline-needs-reauth';
+  function refreshNeedsReauthIndicator(): void {
+    void needsReauthCount()
+      .then((n) => {
+        if (n <= 0) {
+          toast.dismiss(NEEDS_REAUTH_TOAST_ID);
+          return;
+        }
+        toast.error(
+          n === 1 ? m.offlineNeedsReauthOne() : m.offlineNeedsReauthOther({ count: n }),
+          {
+            id: NEEDS_REAUTH_TOAST_ID,
+            duration: Infinity,
+            action: {
+              label: m.offlineNeedsReauthAction(),
+              onClick: () => void goto('/login')
+            }
+          }
+        );
+      })
+      .catch(() => {
+        // Best-effort indicator only — IndexedDB being briefly unavailable
+        // must never surface as an error toast of its own.
+      });
+  }
+
   onMount(() => {
     const handleOnline = () => {
       void flush();
@@ -158,9 +191,6 @@
       // time to actually be read before it fades.
       toast.error(m.offlineDroppedToast(), { duration: 6000 });
     };
-    const handleSessionExpired = () => {
-      toast.error(m.offlineSessionExpiredToast(), { duration: 6000 });
-    };
     const handleAccessRevoked = () => {
       // Distinct from handleDropped: the entry wasn't dropped for a generic
       // 4xx/malformed-request reason, but because requireChildContext
@@ -168,18 +198,23 @@
       // was removed while the entry sat in the queue.
       toast.error(m.offlineAccessRevokedToast(), { duration: 6000 });
     };
-    // Fired by queue.ts on every enqueue/delete/clear — keeps the pending
-    // count current in real time (not just after the next flush poll).
-    const handleQueueChanged = () => refreshPendingIndicator();
+    // Fired by queue.ts on every enqueue/delete/clear/mark-needs-reauth —
+    // keeps both persistent indicators current in real time (not just
+    // after the next flush poll).
+    const handleQueueChanged = () => {
+      refreshPendingIndicator();
+      refreshNeedsReauthIndicator();
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('queue:synced', handleSynced);
     window.addEventListener('queue:dropped', handleDropped);
     window.addEventListener('queue:accessRevoked', handleAccessRevoked);
-    window.addEventListener('queue:sessionExpired', handleSessionExpired);
     window.addEventListener('queue:changed', handleQueueChanged);
 
     refreshPendingIndicator();
+    refreshNeedsReauthIndicator();
+
     if (navigator.onLine) void flush();
     const interval = window.setInterval(() => {
       if (navigator.onLine) void flush();
@@ -190,7 +225,6 @@
       window.removeEventListener('queue:synced', handleSynced);
       window.removeEventListener('queue:dropped', handleDropped);
       window.removeEventListener('queue:accessRevoked', handleAccessRevoked);
-      window.removeEventListener('queue:sessionExpired', handleSessionExpired);
       window.removeEventListener('queue:changed', handleQueueChanged);
       window.clearInterval(interval);
     };
