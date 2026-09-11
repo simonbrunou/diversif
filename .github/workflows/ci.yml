@@ -205,3 +205,68 @@ jobs:
       # broken before (missing patches/ dir, see Dockerfile) with nothing in
       # CI to catch it.
       - run: docker build --tag diversif:ci-smoke .
+
+  bun-audit:
+    name: Dependency vulnerability audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.14
+      # Two tiers: a strict production-dependency audit (only what ships in
+      # the Docker runtime image) and a looser all-dependencies audit
+      # (production + dev/build tooling). Both are set to `high` — the
+      # tightest level either scope actually needs today, since the
+      # `overrides` block in package.json (brace-expansion, browserslist,
+      # baseline-browser-mapping, nanoid, postcss, postcss-selector-parser,
+      # fast-uri — added for #318 after #317 left them unresolved) forces
+      # every transitive package whose parent (eslint / vite /
+      # @sentry/vite-plugin / @vite-pwa/sveltekit) hadn't repinned yet up to
+      # its first patched release. `bun audit` is clean (0 findings) on both
+      # scopes even at `--audit-level=low` as of this PR — `high` leaves
+      # headroom for low/moderate advisories in dev-only tooling that don't
+      # block a release, while still catching anything that actually
+      # matters. If a future advisory can't be cleared by an override (no
+      # fixed release yet, or an override that breaks the build), that's the
+      # trigger to raise a tier's threshold back up — document the specific
+      # package and reason next to the override, not by lowering this
+      # comment's confidence silently.
+      #
+      # `bun audit` has no built-in prod/dev split (verified against this
+      # exact bun version's `--help`: only --json, --audit-level, --ignore
+      # exist) and always reads the full lockfile regardless of what's
+      # actually installed in node_modules — a `--production` install does
+      # NOT scope it. The production-only step below works around that by
+      # auditing a from-scratch install of a package.json with
+      # devDependencies stripped, so only the packages that really end up in
+      # the Docker runtime image's node_modules (see Dockerfile's prod-deps
+      # stage) are considered.
+      #
+      # Note: @sentry/sveltekit (a real production dependency) declares
+      # @sentry/vite-plugin as a hard `dependency` rather than a
+      # devDependency/optionalDependency upstream, so it ships in
+      # prod-deps' node_modules even though nothing at runtime imports it —
+      # grep confirms `sentryVitePlugin` is only ever imported from
+      # vite.config.ts, a build-time-only file never bundled into
+      # build/index.js. It pulled in brace-expansion/browserslist/
+      # baseline-browser-mapping transitively before the overrides above
+      # fixed those; harmless dead weight either way, but worth knowing why
+      # it's there if `bun audit` ever flags something in that chain again.
+      - name: Production dependencies (strict — ships in the runtime image)
+        run: |
+          set -e
+          mkdir -p /tmp/prod-audit
+          bun -e "
+            const pkg = require('./package.json');
+            delete pkg.devDependencies;
+            require('fs').writeFileSync('/tmp/prod-audit/package.json', JSON.stringify(pkg));
+          "
+          cd /tmp/prod-audit
+          bun install --ignore-scripts
+          bun audit --audit-level=high
+      - name: All dependencies (dev + build tooling included)
+        run: |
+          set -e
+          bun install --frozen-lockfile
+          bun audit --audit-level=high
