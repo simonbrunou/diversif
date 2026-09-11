@@ -109,7 +109,13 @@ interface ActionFailure {
 }
 interface ActionError {
   type: 'error';
-  error: { message: string; status?: number };
+  // SvelteKit's `handle_action_json_request` puts the real numeric status
+  // only on the HTTP Response (get_status(err)); the JSON body's `error`
+  // object never carries a `status` field — this app's own
+  // src/hooks.server.ts:handleError explicitly strips it, returning only
+  // `{ message: 'Internal Error', errorId }` for every status < 500. Reading
+  // `error.status` here would always be `undefined`.
+  error: { message: string };
 }
 type ActionResult = ActionRedirect | ActionFailure | ActionError;
 
@@ -126,6 +132,21 @@ export function buildBody(form: Record<string, string | string[]>): URLSearchPar
     else body.append(k, v);
   }
   return body;
+}
+
+// 401/403/404 mean the requireChildContext guard rejected a replay because
+// the child was deleted or this user's access was revoked while the entry
+// sat in the queue — not a transient or malformed-request failure. Surface
+// that distinctly (queue:accessRevoked) so the parent understands the
+// entry is gone because the carnet is gone, not because of an unexplained
+// bug; every other non-retriable status keeps the generic queue:dropped.
+function dropRow(status: number, reason: 'error' | 'failure'): 'drop' {
+  if (status === 401 || status === 403 || status === 404) {
+    emit('queue:accessRevoked', { status });
+  } else {
+    emit('queue:dropped', { reason, status });
+  }
+  return 'drop';
 }
 
 async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry'> {
@@ -167,15 +188,16 @@ async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry'> {
     return 'ok';
   }
   if (result.type === 'error') {
-    const status = result.error.status ?? 500;
-    if (status >= 500) return 'retry';
-    emit('queue:dropped', { reason: 'error', status });
-    return 'drop';
+    // The real status lives on the HTTP response, not the JSON body — see
+    // the ActionError interface comment above. Mirror what SvelteKit's own
+    // client deserialize() does for the redirect/success paths: read it off
+    // `res`, never off the (always status-less) body.
+    if (res.status >= 500) return 'retry';
+    return dropRow(res.status, 'error');
   }
   // type === 'failure'
   if (result.status === 409 || result.status === 429) return 'retry';
-  emit('queue:dropped', { reason: 'failure', status: result.status });
-  return 'drop';
+  return dropRow(result.status, 'failure');
 }
 
 export function flush(): Promise<void> {

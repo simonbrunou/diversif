@@ -224,6 +224,7 @@
   "commonFrOnlyBannerLanding": "Diversif n’est pour l’instant disponible qu’en français. Le contenu pédiatrique ci-dessous est en français.",
   "commonFrOnlyBannerLegal": "Cette page concerne le droit français et n’est disponible qu’en français.",
   "commonFrOnlyBannerSources": "Bibliographie en français.",
+  "offlineAccessRevokedToast": "Ce carnet n’est plus accessible. L’entrée n’a pas été synchronisée.",
   "offlineDroppedToast": "Une entrée n’a pas pu être synchronisée.",
   "offlineFallbackBody": "Vous êtes hors-ligne. Vos entrées en attente seront synchronisées dès le retour de la connexion.",
   "offlineFallbackRetry": "Réessayer",

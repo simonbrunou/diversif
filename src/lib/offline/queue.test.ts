@@ -39,11 +39,22 @@ const failureActionResult = (status: number, data: Record<string, unknown> = {})
     headers: { 'content-type': 'application/json' }
   });
 
+// Mirrors what the real server actually sends for a thrown action error:
+// SvelteKit's handle_action_json_request puts the numeric status ONLY on
+// the HTTP response (never in the JSON body), and this app's own
+// hooks.server.ts:handleError strips the message down to a generic
+// 'Internal Error' + errorId for every status < 500 — see the ActionError
+// interface comment in queue.ts. A body-level `status` field, or an HTTP
+// response hardcoded to 200 regardless of the intended status, would be a
+// fictional envelope the real server can never produce.
 const errorActionResult = (status: number) =>
-  new Response(JSON.stringify({ type: 'error', error: { message: 'boom', status } }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' }
-  });
+  new Response(
+    JSON.stringify({ type: 'error', error: { message: 'Internal Error', errorId: 'deadbeef' } }),
+    {
+      status,
+      headers: { 'content-type': 'application/json' }
+    }
+  );
 
 const networkFailure = () => Promise.reject(new TypeError('Failed to fetch'));
 
@@ -334,13 +345,13 @@ describe('queue', () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('leaves the row queued on type:error with no status (defaults to 500)', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ type: 'error', error: { message: 'boom' } }), {
-        status: 200,
-        headers: { 'content-type': 'application/json' }
-      })
-    );
+  it('leaves the row queued on type:error with a real HTTP 500 (unhandled server exception)', async () => {
+    // Regression for #307's review: the real server never puts a `status`
+    // field in the error body (hooks.server.ts:handleError always returns
+    // `{ message: 'Internal Error', errorId }`) — only the HTTP response
+    // itself carries the real status. errorActionResult(500) reproduces
+    // exactly that shape.
+    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(500));
 
     await enqueue({
       key: 'k1',
@@ -386,6 +397,83 @@ describe('queue', () => {
     expect(await countRows()).toBe(0);
     expect(events).toContain('dropped');
     window.removeEventListener('queue:dropped', handler);
+  });
+
+  // Regression for F-P6 (#307): requireChildContext rejects a queued
+  // replay with 401/403/404 when the child was deleted or this user's
+  // access was revoked while the entry sat offline. That must be
+  // distinguishable from every other 4xx (malformed request, etc.) so the
+  // parent gets an explanatory message instead of the generic drop toast.
+  it('drops the row and emits accessRevoked (not dropped) on type:error 403', async () => {
+    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(403));
+    const droppedEvents: string[] = [];
+    const revokedEvents: unknown[] = [];
+    const onDropped = () => droppedEvents.push('dropped');
+    const onRevoked = (e: Event) => revokedEvents.push((e as CustomEvent).detail);
+    window.addEventListener('queue:dropped', onDropped);
+    window.addEventListener('queue:accessRevoked', onRevoked);
+
+    await enqueue({
+      key: 'k1',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    await flush();
+
+    expect(await countRows()).toBe(0);
+    expect(droppedEvents).toEqual([]);
+    expect(revokedEvents).toEqual([{ status: 403 }]);
+    window.removeEventListener('queue:dropped', onDropped);
+    window.removeEventListener('queue:accessRevoked', onRevoked);
+  });
+
+  it('drops the row and emits accessRevoked (not dropped) on type:error 404', async () => {
+    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(404));
+    const droppedEvents: string[] = [];
+    const revokedEvents: unknown[] = [];
+    const onDropped = () => droppedEvents.push('dropped');
+    const onRevoked = (e: Event) => revokedEvents.push((e as CustomEvent).detail);
+    window.addEventListener('queue:dropped', onDropped);
+    window.addEventListener('queue:accessRevoked', onRevoked);
+
+    await enqueue({
+      key: 'k1',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    await flush();
+
+    expect(await countRows()).toBe(0);
+    expect(droppedEvents).toEqual([]);
+    expect(revokedEvents).toEqual([{ status: 404 }]);
+    window.removeEventListener('queue:dropped', onDropped);
+    window.removeEventListener('queue:accessRevoked', onRevoked);
+  });
+
+  it('drops the row and emits accessRevoked (not dropped) on type:failure 401', async () => {
+    spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(401));
+    const droppedEvents: string[] = [];
+    const revokedEvents: unknown[] = [];
+    const onDropped = () => droppedEvents.push('dropped');
+    const onRevoked = (e: Event) => revokedEvents.push((e as CustomEvent).detail);
+    window.addEventListener('queue:dropped', onDropped);
+    window.addEventListener('queue:accessRevoked', onRevoked);
+
+    await enqueue({
+      key: 'k1',
+      childId: 1,
+      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+      queuedAt: 1
+    });
+    await flush();
+
+    expect(await countRows()).toBe(0);
+    expect(droppedEvents).toEqual([]);
+    expect(revokedEvents).toEqual([{ status: 401 }]);
+    window.removeEventListener('queue:dropped', onDropped);
+    window.removeEventListener('queue:accessRevoked', onRevoked);
   });
 
   it('enqueue rejects when indexedDB.open fires onerror', async () => {

@@ -161,6 +161,13 @@
     const handleSessionExpired = () => {
       toast.error(m.offlineSessionExpiredToast(), { duration: 6000 });
     };
+    const handleAccessRevoked = () => {
+      // Distinct from handleDropped: the entry wasn't dropped for a generic
+      // 4xx/malformed-request reason, but because requireChildContext
+      // rejected the replay — the child was deleted or this user's access
+      // was removed while the entry sat in the queue.
+      toast.error(m.offlineAccessRevokedToast(), { duration: 6000 });
+    };
     // Fired by queue.ts on every enqueue/delete/clear — keeps the pending
     // count current in real time (not just after the next flush poll).
     const handleQueueChanged = () => refreshPendingIndicator();
@@ -168,6 +175,7 @@
     window.addEventListener('online', handleOnline);
     window.addEventListener('queue:synced', handleSynced);
     window.addEventListener('queue:dropped', handleDropped);
+    window.addEventListener('queue:accessRevoked', handleAccessRevoked);
     window.addEventListener('queue:sessionExpired', handleSessionExpired);
     window.addEventListener('queue:changed', handleQueueChanged);
 
@@ -181,6 +189,7 @@
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('queue:synced', handleSynced);
       window.removeEventListener('queue:dropped', handleDropped);
+      window.removeEventListener('queue:accessRevoked', handleAccessRevoked);
       window.removeEventListener('queue:sessionExpired', handleSessionExpired);
       window.removeEventListener('queue:changed', handleQueueChanged);
       window.clearInterval(interval);
