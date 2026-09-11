@@ -224,6 +224,7 @@
   "commonFrOnlyBannerLanding": "Diversif is currently only available in French. The paediatric content below is in French.",
   "commonFrOnlyBannerLegal": "This page concerns French law and is only available in French.",
   "commonFrOnlyBannerSources": "Bibliography in French.",
+  "offlineAccessRevokedToast": "This child's journal is no longer accessible. The entry was not synced.",
   "offlineDroppedToast": "An entry could not be synced.",
   "offlineFallbackBody": "You're offline. Your pending entries will sync as soon as you reconnect.",
   "offlineFallbackRetry": "Retry",

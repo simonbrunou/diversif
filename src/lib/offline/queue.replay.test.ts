@@ -35,7 +35,11 @@ import { clear, count, enqueue, flush } from './queue';
  * The one piece we can't reproduce without a real Vite-served request is
  * that SvelteKit's real JSON envelope ships `data` devalue-encoded rather
  * than as a plain object — irrelevant here since postOne() never reads
- * `.data`, only `type` / `status` / `location` / `error.status`.
+ * `.data`. For an error result specifically, postOne() reads the numeric
+ * status off the HTTP Response, never the body (see the ActionError
+ * interface comment in queue.ts): toEnvelopeResponse() below reconstructs
+ * that split deliberately rather than flattening `status` into the body
+ * like a fabricated envelope would.
  */
 type FlowOutcome =
   | { kind: 'redirect'; status: number; location: string }
@@ -44,10 +48,22 @@ type FlowOutcome =
 
 function toEnvelopeResponse(outcome: FlowOutcome): Response {
   let body: unknown;
+  let status = 200;
   if (outcome.kind === 'redirect') {
+    // handle_action_json_request never sets a Response-level status for a
+    // redirect result either — the real status travels in the body only.
     body = { type: 'redirect', status: outcome.status, location: outcome.location };
   } else if (outcome.kind === 'error') {
-    body = { type: 'error', error: { message: outcome.message, status: outcome.status } };
+    // Mirror the real network envelope: handle_action_json_request puts the
+    // numeric status ONLY on the HTTP Response (never in the JSON body),
+    // and this app's hooks.server.ts:handleError strips the message down to
+    // a generic 'Internal Error' + errorId for every status — see the
+    // ActionError interface comment in queue.ts. Reconstructing the body
+    // with outcome.status/outcome.message (the raw pre-handleError values
+    // captureFlow observed) would be an envelope the real server can never
+    // produce.
+    body = { type: 'error', error: { message: 'Internal Error', errorId: 'deadbeef' } };
+    status = outcome.status;
   } else {
     const value = outcome.value as { status?: number; data?: unknown } | undefined;
     if (typeof value?.status !== 'number') {
@@ -56,7 +72,7 @@ function toEnvelopeResponse(outcome: FlowOutcome): Response {
     body = { type: 'failure', status: value.status, data: value.data };
   }
   return new Response(JSON.stringify(body), {
-    status: 200,
+    status,
     headers: { 'content-type': 'application/json' }
   });
 }
@@ -226,5 +242,66 @@ describe('offline queue replay against a real server response', () => {
           .limit(1)
       )[0]?.n ?? 0;
     expect(Number(n)).toBe(1);
+  });
+
+  // Regression for #307's review: the real requireMembership guard throws
+  // `error(403, 'Accès refusé')` when this user's membership on the child
+  // is gone — exactly what "access revoked while the entry sat offline"
+  // means. Drives the REAL action (not a hand-typed envelope) with no
+  // membership row for this user/child, so the 403 — and its journey
+  // through handle_action_json_request + hooks.server.ts:handleError +
+  // toEnvelopeResponse — is the same one production would produce.
+  it('flush() surfaces access-revoked (not the generic drop) when the real action 403s a removed membership', async () => {
+    const { u, c, food } = await setup();
+    spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const match = String(input).match(/^\/child\/(\d+)\/log$/);
+      if (!match) throw new Error(`unexpected fetch url: ${String(input)}`);
+      const headers = init!.headers as Record<string, string>;
+      const formData = formDataFromBody(init!.body as URLSearchParams);
+      const outcome = (await captureFlow(() =>
+        actions.default!(
+          makeRouteEvent({
+            user: safeUser(u),
+            memberships: [], // revoked: no membership row matches this child
+            params: { id: String(c.id) },
+            formData,
+            headers: { 'Idempotency-Key': headers['Idempotency-Key'] }
+          }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+        )
+      )) as FlowOutcome;
+      return toEnvelopeResponse(outcome);
+    });
+
+    const revoked: unknown[] = [];
+    const dropped: string[] = [];
+    const onRevoked = (e: Event) => revoked.push((e as CustomEvent).detail);
+    const onDropped = () => dropped.push('dropped');
+    window.addEventListener('queue:accessRevoked', onRevoked);
+    window.addEventListener('queue:dropped', onDropped);
+
+    await enqueue({
+      key: 'revoked-1',
+      childId: c.id,
+      formData: { foodId: String(food.id), givenAt: '2026-05-07T10:00:00.000Z', reaction: 'ras' },
+      queuedAt: 1
+    });
+
+    await flush();
+
+    expect(await count()).toBe(0);
+    expect(revoked).toEqual([{ status: 403 }]);
+    expect(dropped).toEqual([]);
+
+    const n =
+      (
+        await testDb
+          .select({ n: sql<number>`count(*)` })
+          .from(foodEntries)
+          .limit(1)
+      )[0]?.n ?? 0;
+    expect(Number(n)).toBe(0);
+
+    window.removeEventListener('queue:accessRevoked', onRevoked);
+    window.removeEventListener('queue:dropped', onDropped);
   });
 });
