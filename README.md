@@ -7,7 +7,7 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 ## Stack
 
 - Bun 1.3+ runtime (dev, test, build, prod server)
-- SvelteKit (Svelte 5 + TypeScript) on `svelte-adapter-bun`
+- SvelteKit (Svelte 5 + TypeScript) on `@sveltejs/adapter-node`
 - SQLite via `bun:sqlite` + Drizzle ORM (in-memory `bun:sqlite` in tests)
 - Tailwind CSS, in-house auth (`Bun.password` Argon2id sessions, WebAuthn passkeys)
 - i18n via `@inlang/paraglide-js` 2.x (FR default, `/en/` for English; URL-based locale, AsyncLocalStorage on the server)
@@ -44,7 +44,7 @@ The repo's `docker-compose.yml` is a **local-dev / self-hosting example** — it
 
 ### Reverse proxy / Cloudflare Tunnel
 
-When the app sits behind a proxy (Coolify/Traefik, a Cloudflare Tunnel, nginx, etc.), `svelte-adapter-bun` needs a few env vars to recover the real client IP and scheme. Without them the per-IP rate limits on `/signup` and `/login` see the proxy as a single client, so one bad actor can lock everyone out.
+When the app sits behind a proxy (Coolify/Traefik, a Cloudflare Tunnel, nginx, etc.), `@sveltejs/adapter-node` needs a few env vars to recover the real client IP and scheme. Without them the per-IP rate limits on `/signup` and `/login` see the proxy as a single client, so one bad actor can lock everyone out.
 
 For a Cloudflare Tunnel terminating at Coolify (the reference deploy):
 
