@@ -1,4 +1,4 @@
-import { parisDateParts } from './paris-date';
+import { parisDateParts, parisDayIndex } from './paris-date';
 
 export function ageInMonths(birthDate: string, now: Date = new Date()): number {
   const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
@@ -10,14 +10,22 @@ export function ageInMonths(birthDate: string, now: Date = new Date()): number {
 }
 
 export function formatAge(birthDate: string, now: Date = new Date()): string {
-  const birth = new Date(`${birthDate}T00:00:00Z`);
-  if (now < birth) return 'à venir';
+  const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
+  const birthDayIndex = Math.floor(Date.UTC(birthYear, birthMonth - 1, birthDay) / 86_400_000);
+  const nowDayIndex = parisDayIndex(now.getTime());
+  if (nowDayIndex < birthDayIndex) return 'à venir';
 
   const months = ageInMonths(birthDate, now);
 
-  const cursor = new Date(birth);
-  cursor.setUTCMonth(cursor.getUTCMonth() + months);
-  const days = Math.floor((now.getTime() - cursor.getTime()) / 86_400_000);
+  // Day index of the birth date rolled forward by `months` — mirrors the
+  // month-overflow semantics `Date#setUTCMonth` gave the previous
+  // UTC-anchored implementation (e.g. 31 Jan + 1 month lands on 3 March),
+  // now expressed purely in civil-day-index space so it stays consistent
+  // with `nowDayIndex`, which is derived from the Paris civil day.
+  const cursorDayIndex = Math.floor(
+    Date.UTC(birthYear, birthMonth - 1 + months, birthDay) / 86_400_000
+  );
+  const days = nowDayIndex - cursorDayIndex;
 
   if (months < 1) {
     if (days <= 0) return 'aujourd’hui';
