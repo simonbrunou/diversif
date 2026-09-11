@@ -106,8 +106,15 @@
       if (typeof rawGivenAt === 'string') {
         formData.set('givenAt', localInputToIso(rawGivenAt));
       }
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        cancel();
+      // One key per submission attempt, reused as both the online request's
+      // idempotency key and the offline-queue row key if it ends up queued
+      // (precheck or post-attempt transport failure below). That way a
+      // request that actually reached the server before the client saw a
+      // failure can't double-insert when the queued copy is replayed.
+      const idempotencyKey = crypto.randomUUID();
+      formData.set('idempotencyKey', idempotencyKey);
+
+      const queueOffline = () => {
         // getAll-aware capture: formData.forEach (or Object.fromEntries) is
         // last-wins on repeated keys, so a multi-ingredient meal's repeated
         // `foodId` entries would silently collapse to just the last one.
@@ -119,7 +126,7 @@
         void (async () => {
           try {
             await enqueue({
-              key: crypto.randomUUID(),
+              key: idempotencyKey,
               childId: data.child.id,
               formData: formObj,
               queuedAt: Date.now()
@@ -138,9 +145,29 @@
             /* best-effort navigation */
           });
         })();
+      };
+
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        cancel();
+        queueOffline();
         return async () => {};
       }
-      return async ({ update }) => {
+
+      return async ({ result, update }) => {
+        // A thrown fetch (DNS failure, weak signal, connected-but-no-internet
+        // wifi, timeout, captive portal…) is normalized by SvelteKit into
+        // `{ type: 'error', error }` with no `status` set — `status` is only
+        // attached once a real response came back (see
+        // @sveltejs/kit forms.js). Treat the status-less case as a transport
+        // failure and degrade to the same durable offline queue instead of
+        // letting the default `update()` hand it to `applyAction`, which
+        // would unmount the form and wipe it via the nearest error boundary.
+        // A genuine server-side error (uncaught exception -> 500) DOES carry
+        // a status and must still surface normally, not be swallowed here.
+        if (result.type === 'error' && result.status === undefined) {
+          queueOffline();
+          return;
+        }
         await update();
         submitting = false;
       };

@@ -325,4 +325,55 @@ describe('Idempotency-Key', () => {
       )[0]?.n ?? 0;
     expect(Number(count)).toBe(2);
   });
+
+  // Regression for F-P4 (#306): use:enhance's built-in fetch can't set
+  // custom headers, so the normal same-page online submit now sends the
+  // idempotency key as a `idempotencyKey` form field instead of a header.
+  // Without the header fallback in +page.server.ts, this degrades to the
+  // "no header" behaviour above (two rows) instead of deduping.
+  it('idempotencyKey form field (no header) : same key replay dedupes like the header path', async () => {
+    const { u, c, m, food } = await setup();
+    const formData = {
+      foodId: String(food.id),
+      givenAt: '2026-05-07T10:00:00.000Z',
+      reaction: 'ras',
+      idempotencyKey: 'key-field-1'
+    };
+
+    const r1 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+    const r2 = await captureFlow(() =>
+      actions.default!(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          formData
+        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+      )
+    );
+
+    expect(r1.kind).toBe('redirect');
+    expect(r2.kind).toBe('redirect');
+    if (r1.kind === 'redirect' && r2.kind === 'redirect') {
+      expect(r1.location).toBe(r2.location);
+    }
+
+    const count =
+      (
+        await testDb
+          .select({ n: sql<number>`count(*)` })
+          .from(foodEntries)
+          .limit(1)
+      )[0]?.n ?? 0;
+    expect(Number(count)).toBe(1);
+  });
 });

@@ -339,7 +339,19 @@ export const actions: Actions = {
   default: async ({ request, params, locals }) => {
     const { user, childId } = requireChildContext(locals, params);
 
-    const idempotencyKey = request.headers.get('Idempotency-Key');
+    const fd = await request.formData();
+    // The offline-queue replay (src/lib/offline/queue.ts) sends the key as
+    // an `Idempotency-Key` header. The normal same-page `use:enhance`
+    // submission goes through SvelteKit's built-in fetch, which doesn't let
+    // us set custom headers, so it sends the same key as a `idempotencyKey`
+    // form field instead — falling back to the header keeps both paths
+    // consistent (and lets a client-perceived transport failure on the
+    // online submit be safely replayed later under the same key without
+    // double-inserting).
+    const idempotencyKeyField = fd.get('idempotencyKey');
+    const idempotencyKey =
+      request.headers.get('Idempotency-Key') ??
+      (typeof idempotencyKeyField === 'string' ? idempotencyKeyField : null);
     if (
       idempotencyKey != null &&
       (idempotencyKey.length > 100 || !/^[A-Za-z0-9_-]+$/.test(idempotencyKey))
@@ -347,7 +359,6 @@ export const actions: Actions = {
       return fail(400, { errorKey: 'errorsLogIdempotencyKeyInvalid' });
     }
 
-    const fd = await request.formData();
     // Object.fromEntries(fd) would silently drop repeated `foodId` fields
     // (later keys overwrite earlier ones), so multi-ingredient submits must
     // read them via getAll instead.
