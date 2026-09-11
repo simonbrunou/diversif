@@ -8,7 +8,7 @@ _Council review: passed (2 rounds). R1 fixed: weekday `+3`, introduced-only `pic
 
 **Architecture:** Pure, source-cited content modules (`quantities.ts`) + a pure, DB-free engine (`engine.ts`) that composes a day of meal ideas from the child's **introduced-and-safe** catalog, rotating each slot over its compacted introduced list, featuring exactly one proactive new food/day (on the "Allergène du jour" card or a meal slot), and attaching age-appropriate texture/choking/forbidden-food safety caveats. A SvelteKit route (`/child/[id]/menu`) loads DB state and calls the engine; a JSON column on `children` stores dietary exclusions.
 
-**Tech Stack:** Bun + SvelteKit (Svelte 5 runes) on `svelte-adapter-bun`, `bun:sqlite` + Drizzle, `bun:test`, paraglide i18n (FR default + `/en/`).
+**Tech Stack:** Bun + SvelteKit (Svelte 5 runes) on `@sveltejs/adapter-node`, `bun:sqlite` + Drizzle, `bun:test`, paraglide i18n (FR default + `/en/`).
 
 ## Global Constraints
 
