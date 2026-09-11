@@ -54,7 +54,7 @@
     "@types/bun": "^1.4.2",
     "@types/node": "^25.9.6",
     "@vite-pwa/sveltekit": "^1.1.0",
-    "dependency-cruiser": "^17.4.3",
+    "dependency-cruiser": "^18.0.0",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
