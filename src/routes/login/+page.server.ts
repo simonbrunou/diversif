@@ -14,9 +14,22 @@ import { audit } from '$lib/server/audit';
 import { requireGuest } from '$lib/server/guards';
 import { parseFormWithKey } from '$lib/server/forms';
 import { checkRateLimit, clientKey, peekRateLimit, recordAttempt } from '$lib/server/rate-limit';
+import { isE2E } from '$lib/server/e2e';
 import type { Actions, PageServerLoad } from './$types';
 
-const LOGIN_LIMIT = { name: 'login', limit: 10, windowMs: 5 * 60 * 1000 };
+// Per-IP login ceiling. Since #302, every e2e signup also drives a real
+// login (the extra step that closed the signup email-enumeration oracle —
+// see signup/+page.server.ts), so the suite now legitimately submits this
+// action ~1:1 with every signup instead of rarely. Relax it the same way
+// signup/+page.server.ts's SIGNUP_LIMIT already does : isE2E() requires
+// both E2E=1 (set in playwright.config.ts) and a loopback ORIGIN, so a
+// stray E2E=1 on a real deployment keeps the strict 10/5min ceiling.
+const LOGIN_LIMIT = {
+  name: 'login',
+  /* v8 ignore next : E2E branch covered by the Playwright suite */
+  limit: isE2E() ? 500 : 10,
+  windowMs: 5 * 60 * 1000
+};
 // Second bucket keyed on the TARGETED account (normalized email), so a
 // distributed credential-stuffing run rotating through many IPs still can't
 // hammer one mailbox past 20 FAILED attempts/hour. The bucket is keyed on

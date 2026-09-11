@@ -64,10 +64,22 @@ export async function signUp(
   // logs in with the password it just chose before landing where the old
   // auto-login used to land — every caller keeps working unchanged.
   await expect(page).toHaveURL(/\/login(?:[?#]|$)/, { timeout: 15_000 });
-  await awaitHydration(page);
+  // awaitHydration() alone is NOT enough here : the flag it checks is set
+  // once at initial hydration and never cleared on later client-side
+  // navigations (the root layout never unmounts — see +layout.svelte), so
+  // it's already true from the signup page and doesn't prove /login's OWN
+  // component has mounted yet. Signup and login share the exact label text
+  // ("Adresse e-mail" / "Mot de passe"), so filling by label right after
+  // the URL flips can land on the dying signup DOM instead of the new
+  // login form — the same class of race signUpAndCreateChild's own comment
+  // below describes for the /child/new transition. Wait for a locator
+  // unique to the login page (its submit button's distinct text) before
+  // touching any field, so the whole login form is guaranteed mounted.
+  const loginSubmit = page.getByRole('button', { name: 'Se connecter', exact: true });
+  await loginSubmit.waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByLabel('Adresse e-mail').fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill(password);
-  await page.getByRole('button', { name: /se connecter/i }).click();
+  await loginSubmit.click();
   // Bumped from the 5s default : with workers:2 the signup + login actions
   // contend with parallel-project requests on a shared Postgres, and a
   // slow CI runner can push either POST + 303-follow over 5s. Keep the
