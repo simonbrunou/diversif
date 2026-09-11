@@ -1,14 +1,11 @@
 <script lang="ts">
   import { fuzzyMatch } from '$lib/utils/search';
   import { CATEGORIES, getCategoryClasses, getCategoryIcon } from '$lib/utils/categories';
-  import { getAllergenLabel } from '$lib/utils/allergens';
-  import CategoryTag from '$lib/components/CategoryTag.svelte';
-  import FoodComboboxList from '$lib/components/FoodComboboxList.svelte';
   import FoodComboboxCustomPanel from '$lib/components/FoodComboboxCustomPanel.svelte';
-  import Badge from '$components/ui/Badge.svelte';
+  import FoodComboboxSingleSelect from '$lib/components/FoodComboboxSingleSelect.svelte';
+  import FoodComboboxMultiSelect from '$lib/components/FoodComboboxMultiSelect.svelte';
   import Input from '$components/ui/Input.svelte';
   import { cn } from '$lib/utils/cn';
-  import { X } from 'lucide-svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import { tick } from 'svelte';
   import * as m from '$lib/paraglide/messages';
@@ -103,6 +100,10 @@
     rootEl?.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
   }
 
+  function isSelectedFood(id: number): boolean {
+    return selectedIds.has(id);
+  }
+
   // Single-select mode swaps the food list for a summary card (and back) on
   // every pick/"Changer" click, unmounting the button the user just activated.
   // Move focus to the replacement content so it doesn't silently fall to <body>.
@@ -195,64 +196,26 @@
   {@render searchBar()}
 
   {#if !multiple}
-    {#if selected}
-      <div class="flex items-center justify-between rounded-md border bg-accent/40 p-3">
-        <div class="min-w-0">
-          <div class="truncate font-medium">{selected.name}</div>
-          <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-            <CategoryTag id={selected.category} size="sm" />
-            {#if selected.allergenType}
-              <span class="text-reaction-inconfort-foreground">· {getAllergenLabel(selected.allergenType)}</span>
-            {/if}
-          </div>
-        </div>
-        <button
-          type="button"
-          bind:this={changeButtonEl}
-          class="inline-flex min-h-11 items-center rounded-sm text-sm text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          aria-label={m.foodComboboxChangeAria({ name: selected.name })}
-          onclick={() => pick(0)}
-        >
-          {m.foodComboboxChange()}
-        </button>
-      </div>
-      <input type="hidden" {name} value={selected.id} />
-    {:else}
-      <FoodComboboxList {filtered} {isCapped} {query} onPick={pick} />
-      {@render customFoodSection()}
-    {/if}
-  {:else}
-    {#if selectedFoods.length > 0}
-      <ul class="flex flex-wrap gap-1.5">
-        {#each selectedFoods as f (f.id)}
-          <li>
-            <Badge variant="secondary" class="gap-1 py-0 pl-2.5 pr-0">
-              {f.name}
-              <button
-                type="button"
-                class="tap-target inline-flex items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={m.foodComboboxRemoveAria({ name: f.name })}
-                onclick={() => toggle(f.id)}
-              >
-                <X size={12} aria-hidden="true" />
-              </button>
-            </Badge>
-          </li>
-        {/each}
-      </ul>
-    {/if}
-
-    <FoodComboboxList
+    <FoodComboboxSingleSelect
+      {selected}
+      {name}
       {filtered}
       {isCapped}
       {query}
-      onPick={toggle}
-      isSelected={(id) => selectedIds.has(id)}
+      onPick={pick}
+      bind:changeButtonEl
+      {customFoodSection}
     />
-    {@render customFoodSection()}
-
-    {#each selectedFoods as f (f.id)}
-      <input type="hidden" {name} value={f.id} />
-    {/each}
+  {:else}
+    <FoodComboboxMultiSelect
+      {name}
+      {selectedFoods}
+      {filtered}
+      {isCapped}
+      {query}
+      onToggle={toggle}
+      isSelected={isSelectedFood}
+      {customFoodSection}
+    />
   {/if}
 </div>
