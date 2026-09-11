@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, setSystemTime } from 'bun:test';
 import {
   _clearAllRateLimits,
+  _rateLimitStoreSize,
   checkRateLimit,
   clientKey,
   evictExpiredRateLimits,
@@ -68,6 +69,52 @@ describe('checkRateLimit', () => {
     expect(checkRateLimit(opts, 'a').allowed).toBe(false);
     resetRateLimit(opts.name, 'a');
     expect(checkRateLimit(opts, 'a').allowed).toBe(true);
+  });
+
+  // Regression for #303 (F-S4): the store must not grow without bound
+  // between the 6-hourly evictExpiredRateLimits sweeps.
+  it('caps the store at RATE_LIMIT_MAX_ENTRIES distinct buckets', () => {
+    const capOpts = { name: 'capacity', limit: 1000, windowMs: 60_000 };
+    for (let i = 0; i < 10_000; i++) {
+      checkRateLimit(capOpts, `key-${i}`);
+    }
+    expect(_rateLimitStoreSize()).toBe(10_000);
+    // One more distinct key exceeds the cap : still capped, not 10_001.
+    checkRateLimit(capOpts, 'key-10000');
+    expect(_rateLimitStoreSize()).toBe(10_000);
+  });
+
+  // The property that actually matters (per review): eviction must target
+  // whichever bucket was hit LEAST recently, never whichever bucket merely
+  // happens to be the busiest / most recently hit — otherwise an attacker
+  // could mint enough throwaway keys to evict their own hot bucket and get
+  // a free reset. A naive FIFO/insertion-order cap would fail this test.
+  it('evicts the least-recently-hit bucket when the cap is exceeded, never a bucket that was just re-hit', () => {
+    const lruOpts = { name: 'lru', limit: 1000, windowMs: 60_000 };
+    // 'first' and 'second' are inserted before any filler key — under a
+    // naive insertion-order cap, 'first' would be the very first evicted.
+    checkRateLimit(lruOpts, 'first');
+    checkRateLimit(lruOpts, 'second');
+    for (let i = 0; i < 9_998; i++) {
+      checkRateLimit(lruOpts, `filler-${i}`);
+    }
+    expect(_rateLimitStoreSize()).toBe(10_000);
+
+    // Re-hit 'first' : a real attacker actively hammering this bucket right
+    // now. It must become the most-recently-used entry, not stay the
+    // stalest one just because it was created first.
+    checkRateLimit(lruOpts, 'first');
+
+    // One more distinct key exceeds the cap by one.
+    checkRateLimit(lruOpts, 'one-more');
+
+    expect(_rateLimitStoreSize()).toBe(10_000);
+    // 'first' survived with its accumulated hits intact — not silently
+    // reset to a fresh bucket, and its live throttle wasn't weakened.
+    expect(peekRateLimit(lruOpts, 'first').remaining).toBe(lruOpts.limit - 2);
+    // 'second' — untouched since its single initial hit — was the actual
+    // stalest bucket and is the one evicted; peeking it now looks fresh.
+    expect(peekRateLimit(lruOpts, 'second').remaining).toBe(lruOpts.limit);
   });
 });
 
