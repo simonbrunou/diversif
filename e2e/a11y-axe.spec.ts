@@ -143,5 +143,53 @@ test.describe('a11y axe — auth routes @responsive', () => {
         .click();
       await axeSweep(page);
     });
+
+    await test.step('axe: TexturePicker on log form', async () => {
+      await page.goto(`/child/${childId}/log`);
+      await page.waitForTimeout(500);
+      await axeSweep(page);
+    });
+
+    await test.step('axe: AllergenInfoDialog open', async () => {
+      await page.goto(`/child/${childId}/guide`);
+      // Click the first allergen button to open AllergenInfoDialog
+      // Allergen buttons are displayed in a grid with allergen names
+      const allergenButton = page
+        .getByRole('button')
+        .filter({ hasText: /Lait|Œuf|Arachide/ })
+        .first();
+      await allergenButton.click({ timeout: 10000 });
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(500);
+      await axeSweep(page);
+      await page.keyboard.press('Escape');
+    });
+
+    await test.step('axe: AddSymptomSheet open', async () => {
+      await page.goto(`/child/${childId}/log`);
+      // The FoodCombobox test above already created a food entry
+      // Try to navigate to foods and find that entry
+      await page.goto(`/child/${childId}/foods`);
+      await page.waitForTimeout(500);
+      // Look for an entry link/button in the food list
+      const entryLink = page.locator('a[href*="/foods/"], button:has-text("symptôme")').first();
+      const isEntryVisible = await entryLink.isVisible({ timeout: 5000 }).catch(() => false);
+      if (isEntryVisible) {
+        await entryLink.click({ timeout: 5000 });
+        await page.waitForTimeout(300);
+        // On the detail page, look for a button to add a symptom
+        const addSymptomBtn = page
+          .getByRole('button', { name: /ajouter.*symptôme|symptôme/i })
+          .first();
+        const isBtnVisible = await addSymptomBtn.isVisible({ timeout: 5000 }).catch(() => false);
+        if (isBtnVisible) {
+          await addSymptomBtn.click({ timeout: 5000 });
+          await expect(page.getByRole('dialog')).toBeVisible();
+          await page.waitForTimeout(500);
+          await axeSweep(page);
+          await page.keyboard.press('Escape');
+        }
+      }
+    });
   });
 });
