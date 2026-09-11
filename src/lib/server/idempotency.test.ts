@@ -87,7 +87,7 @@ describe('withIdempotencyKey', () => {
       testDb.transaction((tx) =>
         withIdempotencyKey(tx, { key: 'k4', userId: 1, scope: SCOPE }, doWork)
       )
-    ).toThrow(IdempotencyScopeMismatch);
+    ).toThrow(new IdempotencyScopeMismatch('scope mismatch for key k4'));
     expect(doWork).not.toHaveBeenCalled();
   });
   it('throws IdempotencyScopeMismatch when a row exists for a different userId (same scope)', async () => {
@@ -105,7 +105,7 @@ describe('withIdempotencyKey', () => {
       testDb.transaction((tx) =>
         withIdempotencyKey(tx, { key: 'k5', userId: 1, scope: SCOPE }, doWork)
       )
-    ).toThrow(IdempotencyScopeMismatch);
+    ).toThrow(new IdempotencyScopeMismatch('owner mismatch for key k5'));
     expect(doWork).not.toHaveBeenCalled();
   });
 

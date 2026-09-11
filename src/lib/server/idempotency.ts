@@ -48,8 +48,11 @@ export function withIdempotencyKey<T extends { redirect: string }>(
     // of "this key doesn't belong to this caller's context" collision as a
     // mismatched scope, and callers already map that error to a 409 with no
     // changes needed here.
-    if (existing.scope !== args.scope || existing.userId !== args.userId) {
+    if (existing.scope !== args.scope) {
       throw new IdempotencyScopeMismatch(`scope mismatch for key ${args.key}`);
+    }
+    if (existing.userId !== args.userId) {
+      throw new IdempotencyScopeMismatch(`owner mismatch for key ${args.key}`);
     }
     if (existing.redirect == null) {
       throw new IdempotencyInFlight(`in-flight key ${args.key}`);
