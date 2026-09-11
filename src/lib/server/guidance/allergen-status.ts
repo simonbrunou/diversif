@@ -1,6 +1,7 @@
 import { and, eq, isNotNull, ne, or } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { foodEntries, foods } from '$lib/server/db/schema';
+import { parisDateParts } from '$lib/utils/paris-date';
 import {
   ALLERGENS,
   ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY,
@@ -29,9 +30,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 function formatDDMMYY(d: Date): string {
-  const dd = String(d.getUTCDate()).padStart(2, '0');
-  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const yy = String(d.getUTCFullYear() % 100).padStart(2, '0');
+  const { year, month, day } = parisDateParts(d.getTime());
+  const dd = String(day).padStart(2, '0');
+  const mm = String(month).padStart(2, '0');
+  const yy = String(year % 100).padStart(2, '0');
   return `${dd}/${mm}/${yy}`;
 }
 

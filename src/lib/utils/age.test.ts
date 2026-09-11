@@ -17,6 +17,12 @@ describe('ageInMonths', () => {
   it('clamps negative ages to 0', () => {
     expect(ageInMonths('2024-05-03', new Date('2024-04-30T00:00:00Z'))).toBe(0);
   });
+  it('uses the Europe/Paris civil day, not UTC, near midnight', () => {
+    // 2026-01-10T00:30:00+01:00 (CET) == 2026-01-09T23:30:00Z: already
+    // local-Jan-10 in Paris (6-month birthday), but still UTC-Jan-9.
+    const now = new Date(Date.UTC(2026, 0, 9, 23, 30, 0));
+    expect(ageInMonths('2025-07-10', now)).toBe(6);
+  });
 });
 
 describe('formatAge', () => {
@@ -50,5 +56,19 @@ describe('formatAge', () => {
   });
   it('returns "X ans et Y mois" when not a whole year', () => {
     expect(formatAge('2022-01-01', new Date('2024-05-03T00:00:00Z'))).toBe('2 ans et 4 mois');
+  });
+  it('does not go negative when the birthday falls right after Paris midnight', () => {
+    // 2026-01-10T00:30:00+01:00 (CET) == 2026-01-09T23:30:00Z: the child's
+    // 6-month birthday has already arrived by the Paris calendar, but the
+    // instant is still UTC-Jan-9. Mixing a UTC day cursor with a
+    // Paris-anchored month count must not produce "6 mois et -1 jours".
+    const now = new Date(Date.UTC(2026, 0, 9, 23, 30, 0));
+    expect(formatAge('2025-07-10', now)).toBe('6 mois');
+  });
+  it('treats the birth date as arrived once the Paris civil day matches, not the UTC day', () => {
+    // 2026-01-10T00:30:00+01:00 (CET) == 2026-01-09T23:30:00Z: born "today"
+    // by the parent's Paris calendar, still UTC-Jan-9.
+    const now = new Date(Date.UTC(2026, 0, 9, 23, 30, 0));
+    expect(formatAge('2026-01-10', now)).toBe('aujourd’hui');
   });
 });
