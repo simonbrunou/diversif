@@ -45,7 +45,7 @@
     aria-label={m.reactionSymptomsDelete()}
     title={m.reactionSymptomsDelete()}
     onclick={() => (confirmOpen = true)}
-    class="inline-flex h-7 w-7 items-center justify-center rounded-full text-current opacity-60 transition hover:opacity-100"
+    class="inline-flex tap-target items-center justify-center rounded-full text-current opacity-60 transition hover:opacity-100"
   >
     <X size={14} aria-hidden="true" />
   </button>
