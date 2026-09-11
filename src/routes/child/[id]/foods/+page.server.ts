@@ -109,6 +109,12 @@ function aggregateBentoFoods(rows: BentoSourceRow[]): BentoFood[] {
   return Array.from(foodMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+// Rendered per-entry history list is capped for page weight; the search
+// filter, bento food/category aggregation, and their counts are computed
+// from the *unbounded* row set (see load()) so a food logged earlier than
+// this window is still found and counted correctly.
+const MAX_RENDERED_ENTRIES = 200;
+
 export const load: PageServerLoad = async ({ params, url, locals }) => {
   const { childId } = requireChildContext(locals, params);
 
@@ -148,6 +154,15 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     conditions.push(inArray(foodEntries.foodId, ids));
   }
 
+  // Unbounded on purpose: the LIMIT used to sit here, before the `q` text
+  // filter ran in JS, so a food logged earlier than the 200 most recent
+  // entries could never match a search and never counted toward
+  // foodCount/categoryCount. SQLite's LIKE/LOWER can't reproduce
+  // normalize()'s NFD diacritic-folding (no ICU/unicode61 collation
+  // available in bun:sqlite), so the `q` filter stays in JS — it just now
+  // runs over every matching row for this child instead of a truncated
+  // window. Row count is bounded by one child's total entry history
+  // (childId is indexed), not the whole table.
   let rows = await db
     .select({
       id: foodEntries.id,
@@ -166,8 +181,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .leftJoin(users, eq(users.id, foodEntries.loggedBy))
     .where(and(...conditions))
-    .orderBy(desc(foodEntries.givenAt))
-    .limit(200);
+    .orderBy(desc(foodEntries.givenAt));
 
   if (q) {
     const { normalize } = await import('$lib/utils/search');
@@ -186,7 +200,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   ]);
 
   return {
-    entries: rows.map((r) => ({
+    entries: rows.slice(0, MAX_RENDERED_ENTRIES).map((r) => ({
       ...r,
       loggedByName: r.loggedByName ?? 'Compte supprimé',
       givenAt: toEpochMs(r.givenAt as Date | number | string)
