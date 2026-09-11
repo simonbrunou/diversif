@@ -212,4 +212,40 @@ describe('child/[id]/foods load', () => {
     expect(out.entries).toHaveLength(1);
     expect(out.entries[0].loggedByName).toBe('Compte supprimé');
   });
+
+  it('finds a food older than the 200 most recent entries and counts it unbounded', async () => {
+    const ctx = await setup();
+    const [epinard] = await testDb
+      .insert(foods)
+      .values({
+        name: 'Épinard',
+        category: 'legumes',
+        isMajorAllergen: false,
+        allergenType: null,
+        suggestedAgeMonths: 6,
+        notes: null,
+        isCustom: false,
+        customForChildId: null
+      })
+      .returning();
+    // The épinard entry is the oldest of all: 205 more-recent carrot entries
+    // push it out of any "200 most recent" window.
+    await ctx.log(epinard.id, 'ras', 300);
+    for (let i = 0; i < 205; i++) {
+      await ctx.log(ctx.carrot.id, 'ras', i);
+    }
+
+    // Accent/case-insensitive search (matches $lib/utils/search's normalize())
+    // must still find it despite it being outside the top-200-by-recency
+    // window.
+    const searched = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?q=epinard`);
+    expect(searched.entries.map((e) => e.foodName)).toEqual(['Épinard']);
+
+    // foodCount/categoryCount must reflect the full unbounded history, not
+    // just the capped rendered-entries window.
+    const all = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    expect(all.foodCount).toBe(2); // Carotte + Épinard
+    expect(all.categoryCount).toBe(1); // both are 'legumes'
+    expect(all.entries.length).toBe(200); // rendered list still capped
+  });
 });
