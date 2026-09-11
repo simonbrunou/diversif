@@ -12,7 +12,8 @@ import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
  * scans an open drawer/sheet or a FoodCombobox mid-interaction — those
  * DOM states are exercised by dedicated test.step blocks at the end of
  * the auth-routes test (ChildSwitcherDrawer, a confirm dialog, FoodCombobox
- * search + selection).
+ * search + selection, TexturePicker tile selection, AddSymptomSheet), plus
+ * a standalone AllergenInfoDialog test for the public /allergens route.
  *
  * Hard gate: any violation fails the test. The companion Lighthouse layer
  * (a11y/best-practices/SEO scores) was deferred — see the spec doc's
@@ -69,6 +70,17 @@ for (const route of PUBLIC_ROUTES) {
     await axeSweep(page);
   });
 }
+
+// The public-route sweep above only does page.goto() + axe on /allergens,
+// so it never opens AllergenInfoDialog. Click an allergen tile to put the
+// dialog into its actual open/populated DOM state before scanning.
+test('a11y axe: AllergenInfoDialog open @responsive', async ({ page }) => {
+  await page.goto('/allergens');
+  await page.getByRole('button', { name: /Arachide/ }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.waitForTimeout(500);
+  await axeSweep(page);
+});
 
 test.describe('a11y axe — auth routes @responsive', () => {
   test('walks the signed-in surface', async ({ page }) => {
@@ -141,6 +153,40 @@ test.describe('a11y axe — auth routes @responsive', () => {
         .getByRole('button', { name: /^Poire/ })
         .first()
         .click();
+      await axeSweep(page);
+    });
+
+    await test.step('axe: TexturePicker tile selected', async () => {
+      // Put the picker into an actual selected state — clicking a
+      // non-default tile — instead of relying on the age-derived default,
+      // so the checked/ring-highlighted DOM state is what gets scanned.
+      await page.locator('fieldset').getByText('Écrasée', { exact: true }).click();
+      await expect(page.getByRole('radio', { name: 'Écrasée' })).toBeChecked();
+      await page.waitForTimeout(500);
+      await axeSweep(page);
+    });
+
+    await test.step('axe: AddSymptomSheet open', async () => {
+      // AddSymptomSheet only renders reachably for a non-RAS entry (the
+      // "Ajouter un symptôme" trigger lives on ReactionDetailBento) — log
+      // a real reaction, then navigate to its detail page and open the sheet.
+      await page.goto(`/child/${childId}/log`);
+      await page.getByPlaceholder('Rechercher un aliment…').fill('poire');
+      await page
+        .getByRole('button', { name: /^Poire/ })
+        .first()
+        .click();
+      await page.locator('fieldset').getByText('Réaction marquée', { exact: true }).click();
+      await page.getByRole('button', { name: 'Noter ce repas' }).click();
+      await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
+
+      await page.goto(`/child/${childId}/foods`);
+      await page.getByRole('link', { name: /Poire/i }).first().click();
+      await expect(page).toHaveURL(/\/child\/\d+\/foods\/\d+$/);
+
+      await page.getByRole('button', { name: 'Ajouter un symptôme' }).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(500);
       await axeSweep(page);
     });
   });
