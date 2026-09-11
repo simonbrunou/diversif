@@ -20,19 +20,20 @@
   const max = $derived(weeklyEntries.length === 0 ? 1 : Math.max(1, ...weeklyEntries));
 
   // Single-letter weekday in the active locale, one per bucket. The server
-  // (loadWeeklyEntries) buckets by UTC calendar day with the last bucket
-  // pinned to `anchorUtc` (UTC midnight of "today" at request time). Format
-  // the labels off that same anchor so the bars and their labels describe
-  // the same UTC dates even when the page hydrates after a UTC midnight
-  // rollover — otherwise labels would shift one day while the bars stayed
-  // put, and SSR/CSR would diverge.
+  // (loadWeeklyEntries) buckets by Europe/Paris calendar day with the last
+  // bucket pinned to `anchorUtc` (the epoch-ms Paris dayIndex of "today" at
+  // request time — see $lib/utils/paris-date). Format the labels off that
+  // same anchor, in the same Europe/Paris zone, so the bars and their labels
+  // describe the same civil dates even when the page hydrates after a
+  // midnight rollover — otherwise labels would shift one day while the bars
+  // stayed put, and SSR/CSR would diverge.
   const dayLabels = $derived.by(() => {
     const fmt = new Intl.DateTimeFormat(getLocale(), {
       weekday: 'narrow',
-      timeZone: 'UTC'
+      timeZone: 'Europe/Paris'
     });
     // Fallback: standalone use without an anchor (isolated tests, future
-    // consumers). The current UTC date still produces sensible labels, just
+    // consumers). The current date still produces sensible labels, just
     // with the original drift risk.
     const now = new Date();
     const todayUTC =

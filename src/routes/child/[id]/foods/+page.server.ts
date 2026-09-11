@@ -3,6 +3,7 @@ import { foodEntries, foods, users } from '$lib/server/db/schema';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { requireChildContext } from '$lib/server/guards';
 import { toEpochMs } from '$lib/utils/dates';
+import { parisDayIndex } from '$lib/utils/paris-date';
 import { loadRepeatCandidates, loadTexturesTried } from '$lib/server/guidance/queries';
 import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
 import type { TextureKey } from '$lib/utils/textures';
@@ -13,13 +14,20 @@ async function loadWeeklyEntries(
   now: Date = new Date()
 ): Promise<{ counts: number[]; anchorUtc: number }> {
   // 7 daily buckets: oldest at index 0, today at index 6. Buckets are
-  // UTC calendar days starting 6 days ago at 00:00 UTC through end-of-day today.
-  // anchorUtc pins the "today" the buckets were computed against so the client
-  // can label each bar against the same UTC date (and not drift if hydration
-  // crosses a UTC midnight relative to render).
-  const anchorUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0);
-  const start = new Date(anchorUtc - 6 * 86400_000);
-  const end = new Date(anchorUtc + 86400_000); // exclusive upper bound
+  // Europe/Paris calendar days, so a food logged right after local midnight
+  // lands in "today"'s bucket even though the server clock (and SQLite
+  // storage) is UTC. anchorUtc pins the epoch-ms representation of today's
+  // Paris dayIndex (see $lib/utils/paris-date) so the client can label each
+  // bar against the same civil date without SSR/CSR hydration drift.
+  const anchorIndex = parisDayIndex(now.getTime());
+  const anchorUtc = anchorIndex * 86400_000;
+  const startIndex = anchorIndex - 6;
+  // SQL pre-filter only needs to be a superset: real Paris-midnight instants
+  // can be up to ~2h off from the pseudo-UTC anchorUtc value, so pad a full
+  // extra day on each side; exact bucketing below re-derives each row's
+  // Paris civil day and is authoritative regardless of this margin.
+  const start = new Date(anchorUtc - 7 * 86400_000);
+  const end = new Date(anchorUtc + 2 * 86400_000);
 
   const rows = await db
     .select({ givenAt: foodEntries.givenAt })
@@ -34,23 +42,13 @@ async function loadWeeklyEntries(
 
   const counts = [0, 0, 0, 0, 0, 0, 0];
   for (const r of rows) {
-    const givenAt =
-      r.givenAt instanceof Date ? r.givenAt : /* v8 ignore next */ new Date(Number(r.givenAt));
-    const day = Date.UTC(
-      givenAt.getUTCFullYear(),
-      givenAt.getUTCMonth(),
-      givenAt.getUTCDate(),
-      0,
-      0,
-      0,
-      0
-    );
-    const idx = Math.floor((day - start.getTime()) / 86400_000);
+    const givenAtMs =
+      r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt);
+    const idx = parisDayIndex(givenAtMs) - startIndex;
     if (idx >= 0 && idx < 7) counts[idx] += 1;
   }
   return { counts, anchorUtc };
 }
-
 type BentoFood = {
   id: number;
   name: string;

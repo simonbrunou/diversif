@@ -328,6 +328,36 @@ describe('child/[id]/foods load', () => {
     }
   });
 
+  it('buckets a just-after-midnight entry into the Paris "today" column, not UTC yesterday', async () => {
+    // 2026-01-10T00:20:00+01:00 (CET, winter) == 2026-01-09T23:20:00Z. This
+    // instant is still UTC-Jan-9 but is already local-Jan-10 in Paris; a
+    // food logged "now" here must land in today's (Paris) bucket.
+    const nowMs = Date.UTC(2026, 0, 9, 23, 20, 0);
+    setSystemTime(new Date(nowMs));
+    try {
+      const ctx = await setup();
+      await testDb.insert(foodEntries).values({
+        childId: ctx.c.id,
+        foodId: ctx.carrot.id,
+        givenAt: new Date(nowMs),
+        reaction: 'ras',
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date(nowMs)
+      });
+
+      const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+      if (!('weeklyEntries' in out)) throw new Error('expected weeklyEntries in load result');
+      // anchorUtc must reflect the Paris civil day (Jan 10), not the UTC
+      // civil day (Jan 9) `now` still falls on.
+      expect(out.weeklyEntries.anchorUtc).toBe(Date.UTC(2026, 0, 10));
+      expect(out.weeklyEntries.counts[6]).toBe(1); // today (Paris Jan 10)
+      expect(out.weeklyEntries.counts[5]).toBe(0); // not yesterday (Paris Jan 9)
+    } finally {
+      setSystemTime(null);
+    }
+  });
+
   describe('bentoAllergens fading state', () => {
     async function setupEgg() {
       const base = await setup();

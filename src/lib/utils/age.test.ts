@@ -17,6 +17,12 @@ describe('ageInMonths', () => {
   it('clamps negative ages to 0', () => {
     expect(ageInMonths('2024-05-03', new Date('2024-04-30T00:00:00Z'))).toBe(0);
   });
+  it('uses the Europe/Paris civil day, not UTC, near midnight', () => {
+    // 2026-01-10T00:30:00+01:00 (CET) == 2026-01-09T23:30:00Z: already
+    // local-Jan-10 in Paris (6-month birthday), but still UTC-Jan-9.
+    const now = new Date(Date.UTC(2026, 0, 9, 23, 30, 0));
+    expect(ageInMonths('2025-07-10', now)).toBe(6);
+  });
 });
 
 describe('formatAge', () => {

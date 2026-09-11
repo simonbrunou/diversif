@@ -1,8 +1,11 @@
+import { parisDateParts } from './paris-date';
+
 export function ageInMonths(birthDate: string, now: Date = new Date()): number {
-  const birth = new Date(`${birthDate}T00:00:00Z`);
-  let months = (now.getUTCFullYear() - birth.getUTCFullYear()) * 12;
-  months += now.getUTCMonth() - birth.getUTCMonth();
-  if (now.getUTCDate() < birth.getUTCDate()) months -= 1;
+  const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
+  const { year, month, day } = parisDateParts(now.getTime());
+  let months = (year - birthYear) * 12;
+  months += month - birthMonth;
+  if (day < birthDay) months -= 1;
   return Math.max(0, months);
 }
 
