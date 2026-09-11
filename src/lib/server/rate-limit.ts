@@ -1,8 +1,25 @@
 // Lightweight in-memory rate limiter for auth-adjacent endpoints. Backed by a
-// per-key sliding window so login, signup and passkey-verify can defend against
-// credential-stuffing without depending on a separate datastore. SQLite-backed
-// app, single-process deploy assumed; if we ever scale horizontally this will
-// need to move to a shared store.
+// per-key sliding window so login, signup, join, and passkey-verify can
+// defend against credential-stuffing without depending on a separate
+// datastore. SQLite-backed app, single-process deploy assumed.
+//
+// Two known limitations of the in-memory-Map design, both interim until a
+// shared/persisted store (Redis, or a rate_limit_hits table alongside the
+// idempotency_keys/webauthn_challenges cleanup pattern) replaces it:
+//   - every process restart/redeploy resets every bucket to zero — a normal
+//     operational event (Coolify redeploys this app's container on every
+//     push), not something an attacker can trigger on demand, but it does
+//     lower the throttle's real-world effectiveness on an actively
+//     redeployed instance;
+//   - the store is capped at RATE_LIMIT_MAX_ENTRIES distinct keys (#303):
+//     once exceeded, the least-recently-hit bucket is evicted to make room
+//     for a new one. This bounds worst-case memory against a botnet
+//     spreading across many source IPs/emails between the 6-hourly
+//     evictExpiredRateLimits sweeps, without weakening throttling for any
+//     bucket an attacker is actively still hammering: eviction always
+//     targets the STALEST bucket by its own newest recorded hit, never the
+//     busiest one, so a live attack can't buy itself a free reset by
+//     minting enough throwaway keys to push its own hot bucket out.
 
 import type { RequestEvent } from '@sveltejs/kit';
 
@@ -16,6 +33,18 @@ type Bucket = {
   // Sorted list of millisecond timestamps. Trimmed on every check.
   hits: number[];
 };
+
+// Interim mitigation for #303: bounds the Map's worst-case size against a
+// botnet spread across many distinct IPs/emails, each individually staying
+// under its own per-key ceiling so nothing here ever blocks them, minting a
+// fresh bucket per key between the 6-hourly evictExpiredRateLimits sweeps.
+// 10k entries comfortably covers legitimate traffic for the single-
+// container deployment this module is built for (an actively-developed,
+// non-hyperscale family app) while staying trivial in memory — each bucket
+// is a short string key plus up to ~21 numbers (the largest limit + 1, for
+// LOGIN_EMAIL_LIMIT), so 10k entries is on the order of a few MB, not a
+// real constraint on a container that also runs the whole app.
+const RATE_LIMIT_MAX_ENTRIES = 10_000;
 
 const store = new Map<string, Bucket>();
 
@@ -52,6 +81,16 @@ function bucketKey(name: string, key: string): string {
  * cap, a single attacker hitting at 1k+ req/s for windowMs seconds would
  * grow the array to hundreds of thousands of entries and turn the trim
  * loop's repeated `shift()` calls into a quadratic CPU sink.
+ *
+ * The store as a whole is bounded at `RATE_LIMIT_MAX_ENTRIES` distinct
+ * buckets (#303). Every hit re-inserts its key at the Map's most-recently-
+ * used end (`delete` then `set` — `set` alone on an existing key updates
+ * the value but does NOT move it in iteration order), so once the cap is
+ * exceeded, evicting the FIRST key in iteration order evicts the bucket
+ * whose own newest recorded hit is oldest relative to every other bucket —
+ * i.e. the stalest one, never whichever bucket an attacker is actively
+ * hammering right now (that bucket is always freshly re-inserted at the
+ * MRU end on every one of its hits).
  */
 export function checkRateLimit(opts: RateLimitOptions, key: string): RateLimitResult {
   const now = Date.now();
@@ -70,7 +109,12 @@ export function checkRateLimit(opts: RateLimitOptions, key: string): RateLimitRe
   if (bucket.hits.length <= opts.limit) {
     bucket.hits.push(now);
   }
+  store.delete(k);
   store.set(k, bucket);
+  if (store.size > RATE_LIMIT_MAX_ENTRIES) {
+    const stalest = store.keys().next().value;
+    if (stalest !== undefined) store.delete(stalest);
+  }
 
   const overLimit = bucket.hits.length > opts.limit;
   const allowed = !overLimit;
@@ -172,6 +216,11 @@ export function evictExpiredRateLimits(maxAgeMs: number, now: number = Date.now(
 /** Test-only: wipe the entire store. */
 export function _clearAllRateLimits(): void {
   store.clear();
+}
+
+/** Test-only: number of distinct buckets currently held. */
+export function _rateLimitStoreSize(): number {
+  return store.size;
 }
 
 /**
