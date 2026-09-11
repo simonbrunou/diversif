@@ -218,7 +218,7 @@ jobs:
       # the Docker runtime image) and a looser all-dependencies audit
       # (production + dev/build tooling). Both are set to `high` — the
       # tightest level either scope actually needs today, since the
-      # `overrides` block in package.json (brace-expansion, browserslist,
+      # `overrides` block in package.json (browserslist,
       # baseline-browser-mapping, nanoid, postcss, postcss-selector-parser,
       # fast-uri — added for #318 after #317 left them unresolved) forces
       # every transitive package whose parent (eslint / vite /
@@ -232,6 +232,21 @@ jobs:
       # trigger to raise a tier's threshold back up — document the specific
       # package and reason next to the override, not by lowering this
       # comment's confidence silently.
+      #
+      # `brace-expansion` was in this list too until it was found to be
+      # exactly the "override that breaks the build" case above: it forced
+      # every consumer onto brace-expansion@2.x, including
+      # @vite-pwa/sveltekit's workbox-build chain (minimatch@10.x), which
+      # actually depends on brace-expansion@5.x's different export shape —
+      # silently collapsing the PWA precache manifest to ~1 entry with only
+      # a swallowed build warning (`check:budget` never caught it: it reads
+      # the client JS bundle, not the service worker's precache manifest).
+      # bun's natural resolution already keeps the one real vulnerable
+      # chain patched without the override (nested under `filelist`'s old
+      # minimatch@5), so it was dropped rather than scoped — this
+      # `bun audit --audit-level=high` gate is what now covers the risk it
+      # was meant to address. Don't re-add it without re-checking resolved
+      # versions the way this comment describes for its neighbors.
       #
       # `bun audit` has no built-in prod/dev split (verified against this
       # exact bun version's `--help`: only --json, --audit-level, --ignore
