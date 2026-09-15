@@ -120,8 +120,8 @@
       <h2 class="text-base font-semibold">{m.aujourdhuiRecentEmpty()}</h2>
       <p class="mt-1 max-w-sm text-sm text-ink-soft">{m.aujourdhuiRecentEmptyBody()}</p>
       <!--
-        tile-mint rather than the default sage: ink on sage measures 4.78:1
-        against a 4.5 floor (0.28 of headroom), while the mint pair has
+        tile-mint rather than the default sage: ink on sage measures 4.73:1
+        against a 4.5 floor (0.23 of headroom), while the mint pair has
         7.32:1. The carnet's own empty-state CTA already made this choice,
         so the two match.
       -->

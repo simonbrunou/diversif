@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-09-15)
 
 ## Corpus Check
-- 608 files · ~462,708 words
+- 608 files · ~462,865 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4553 nodes · 7771 edges · 256 communities (214 shown, 42 thin omitted)
+- 4553 nodes · 7771 edges · 255 communities (213 shown, 42 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 58 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `48521def`
+- Built from commit: `71e4b49e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -42,7 +42,7 @@
 - Foundation: Bento Tokens + shadcn-svelte Primitives — Implementation Plan
 - queue.ts
 - passkeys.ts
-- guards.ts
+- @axe-core/playwright
 - Fallow: Critical Gotchas
 - textures.ts
 - TSchema
@@ -183,7 +183,6 @@
 - create-migration/SKILL.md
 - renovate.json
 - log.hint.test.ts
-- @sveltejs/adapter-node
 - `audit`: Changed-File Quality Gate
 - Debugging False Positives
 - Incremental Adoption with Baselines
@@ -278,7 +277,7 @@
 ## Import Cycles
 - 3-file cycle: `src/lib/server/guidance/queries/diversity.ts -> src/lib/server/guidance/repeat-candidates.ts -> src/lib/server/guidance/queries/index.ts -> src/lib/server/guidance/queries/diversity.ts`
 
-## Communities (256 total, 42 thin omitted)
+## Communities (255 total, 42 thin omitted)
 
 ### Community 0 - "en.json"
 Cohesion: 0.00
@@ -341,8 +340,8 @@ Cohesion: 0.10
 Nodes (28): ALLERGEN_GUIDANCE, AllergenGuidance, ALLERGY_SAFETY_SOURCES, APPROACHES, BentoStage, CATEGORY_GUIDANCE, CategoryGuidance, CHOKING_HAZARDS (+20 more)
 
 ### Community 15 - "db/index.ts"
-Cohesion: 0.07
-Nodes (39): hasUniqueShape(), isUniqueViolation(), db, drizzleDb, pool, sqlite, children, memberships (+31 more)
+Cohesion: 0.04
+Nodes (63): App, Error, Locals, db, drizzleDb, pool, sqlite, children (+55 more)
 
 ### Community 16 - "db.ts"
 Cohesion: 0.07
@@ -385,12 +384,8 @@ Cohesion: 0.12
 Nodes (24): purgeBeforeSubmit(), purgeClientState(), CachesLike, globalWithCaches, ActionError, ActionFailure, ActionRedirect, ActionResult (+16 more)
 
 ### Community 26 - "passkeys.ts"
-Cohesion: 0.07
-Nodes (49): audit(), webauthnChallenges, assertRpidOrigin(), AuthenticationResult, base64UrlToBuffer(), bufferToBase64Url(), buildAuthenticationOptions(), buildRegistrationOptions() (+41 more)
-
-### Community 27 - "guards.ts"
-Cohesion: 0.08
-Nodes (31): App, Error, Locals, Membership, User, fakeUser, deleteUserAccount(), parseChildIdParam() (+23 more)
+Cohesion: 0.06
+Nodes (59): audit(), webauthnChallenges, requireUser(), assertRpidOrigin(), AuthenticationResult, base64UrlToBuffer(), bufferToBase64Url(), buildAuthenticationOptions() (+51 more)
 
 ### Community 28 - "Fallow: Critical Gotchas"
 Cohesion: 0.06
@@ -418,7 +413,7 @@ Nodes (9): SEVERE, Severity, severityOf(), SYMPTOM_LABELS, SymptomLabel, symptom
 
 ### Community 34 - "auth.ts"
 Cohesion: 0.08
-Nodes (38): appHandle(), handle(), handleError(), { captureExceptionMock, initMock }, CookieOpts, warnIfAddressHeaderMissing(), AuditEvent, ARGON_OPTS (+30 more)
+Nodes (40): appHandle(), handle(), handleError(), { captureExceptionMock, initMock }, CookieOpts, warnIfAddressHeaderMissing(), AuditEvent, ARGON_OPTS (+32 more)
 
 ### Community 35 - "Diversif"
 Cohesion: 0.08
@@ -562,7 +557,7 @@ Nodes (8): Migration plan (seven phases, every commit shippable), Phase 1 — Fo
 
 ### Community 70 - "rate-limit.ts"
 Cohesion: 0.06
-Nodes (49): verifyPassword(), FRESH_AUTH_LIMIT, requireFreshAuth(), requireFreshAuthWithKey(), Result, requireGuest(), Bucket, bucketKey() (+41 more)
+Nodes (44): verifyPassword(), hasUniqueShape(), isUniqueViolation(), isE2E(), FRESH_AUTH_LIMIT, requireFreshAuth(), requireFreshAuthWithKey(), Result (+36 more)
 
 ### Community 71 - "DEPLOY.md"
 Cohesion: 0.17
@@ -706,7 +701,7 @@ Nodes (7): recordLabel, showRecord, streakUnit, weekLabel, cn(), localizedHref()
 
 ### Community 106 - "devDependencies"
 Cohesion: 0.06
-Nodes (33): @axe-core/playwright, drizzle-kit, eslint-config-prettier, globals, happy-dom, @happy-dom/global-registrator, lint-staged, devDependencies (+25 more)
+Nodes (33): drizzle-kit, eslint-config-prettier, globals, happy-dom, @happy-dom/global-registrator, lint-staged, devDependencies, drizzle-kit (+25 more)
 
 ### Community 107 - "webauthn-auth-reviewer subagent"
 Cohesion: 0.18
@@ -1053,11 +1048,11 @@ Cohesion: 0.67
 Nodes (3): Graphify memory: hashPassword fan-out query, hashPassword (src/lib/server/auth.ts), seedUser (src/test/route.ts)
 
 ## Ambiguous Edges - Review These
-- `PWA Offline Log Queue Implementation Plan` → `Use Bun, not npm/Node convention`  [AMBIGUOUS]
-  CLAUDE.md · relation: conceptually_related_to
 - `Bundle 1 — Foundation primitives Implementation Plan` → `Use Bun, not npm/Node convention`  [AMBIGUOUS]
   CLAUDE.md · relation: conceptually_related_to
 - `Sentry Observability Implementation Plan` → `Use Bun, not npm/Node convention`  [AMBIGUOUS]
+  CLAUDE.md · relation: conceptually_related_to
+- `PWA Offline Log Queue Implementation Plan` → `Use Bun, not npm/Node convention`  [AMBIGUOUS]
   CLAUDE.md · relation: conceptually_related_to
 - `scripts/check-i18n-unused.mjs` → `scripts/check-i18n-unused.ts`  [AMBIGUOUS]
   project.inlang/modules/README.md · relation: references
@@ -1072,17 +1067,17 @@ Nodes (3): Graphify memory: hashPassword fan-out query, hashPassword (src/lib/se
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `PWA Offline Log Queue Implementation Plan` and `Use Bun, not npm/Node convention`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `Bundle 1 — Foundation primitives Implementation Plan` and `Use Bun, not npm/Node convention`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `Sentry Observability Implementation Plan` and `Use Bun, not npm/Node convention`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **What is the exact relationship between `PWA Offline Log Queue Implementation Plan` and `Use Bun, not npm/Node convention`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `scripts/check-i18n-unused.mjs` and `scripts/check-i18n-unused.ts`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
 - **What is the exact relationship between `scripts/lint-i18n.mjs` and `scripts/lint-i18n.ts`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
 - **Why does `CLAUDE.md hard rules` connect `CLAUDE.md hard rules` to `PRODUCT.md — Diversif product register`, `i18n-add-key/SKILL.md`, `Sentry Observability Implementation Plan`, `DEPLOY.md`?**
-  _High betweenness centrality (0.092) - this node is a cross-community bridge._
+  _High betweenness centrality (0.091) - this node is a cross-community bridge._
 - **Why does `hookify: block-no-verify` connect `CLAUDE.md hard rules` to `Fallow: Common Workflow Patterns & Recipes`?**
   _High betweenness centrality (0.055) - this node is a cross-community bridge._

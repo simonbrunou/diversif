@@ -71,7 +71,7 @@
               </Button>
             {:else if childId}
               <!-- variant="tile-mint" not "default": bg-primary/text-primary-foreground
-                   sits right at the 4.5:1 AA floor (~4.76:1 in theory) and axe measured
+                   sits right at the 4.5:1 AA floor (4.73:1) and axe measured
                    it dipping under threshold here (rounded-lg corner anti-aliasing +
                    this button's tight px-3 padding). tile-mint gives ~7.2:1, comfortable
                    headroom instead of a new color. -->

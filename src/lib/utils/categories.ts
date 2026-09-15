@@ -129,15 +129,16 @@ export function getCategoryClasses(id: string): CategoryClasses {
  * The category filter chip, defined once.
  *
  * Two screens filter by category — the log screen's food picker and the
- * carnet's "Tous" list — and they are the same control, so they must not
- * carry two recipes. They did: one at `px-3 font-semibold` with a press
- * scale, the other at `px-2.5 font-medium` without, in rows with different
- * gaps. Anything that should differ between the two belongs in the caller;
- * anything that defines the control belongs here.
+ * carnet's all-foods segment — and they are the same control, so the anatomy
+ * lives here rather than in each caller. Anything that legitimately differs
+ * between the two (which categories are offered, what the row wraps in)
+ * belongs to the caller; anything that defines the control belongs here.
  *
- * Pass `category` for a tinted chip (the tint identifies which family it is)
- * and omit it for the neutral "all" chip. `selected` wins over both: the sage
- * fill marks the active filter, matching every other selected control.
+ * Pass `category` for a tinted chip, where the tint identifies which family
+ * it is; omit it for the neutral "all" chip. `selected` wins over both: the
+ * sage fill marks the active filter, matching every other selected control.
+ * Callers must still supply `aria-pressed` — the fill alone tells a
+ * screen-reader user nothing.
  */
 export function getCategoryFilterChipClass(opts: { selected: boolean; category?: string }): string {
   const base =
