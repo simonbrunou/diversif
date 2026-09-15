@@ -1,11 +1,10 @@
 <script lang="ts">
   import { fuzzyMatch } from '$lib/utils/search';
-  import { CATEGORIES, getCategoryClasses, getCategoryIcon } from '$lib/utils/categories';
+  import { CATEGORIES, getCategoryIcon, getCategoryFilterChipClass } from '$lib/utils/categories';
   import FoodComboboxCustomPanel from '$lib/components/FoodComboboxCustomPanel.svelte';
   import FoodComboboxSingleSelect from '$lib/components/FoodComboboxSingleSelect.svelte';
   import FoodComboboxMultiSelect from '$lib/components/FoodComboboxMultiSelect.svelte';
   import Input from '$components/ui/Input.svelte';
-  import { cn } from '$lib/utils/cn';
   import { SvelteSet } from 'svelte/reactivity';
   import { tick } from 'svelte';
   import * as m from '$lib/paraglide/messages';
@@ -138,28 +137,20 @@
     >
       <button
         type="button"
-        class={cn(
-          'inline-flex min-h-11 items-center rounded-full border px-2.5 text-xs font-medium transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-          activeCategory === '' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-        )}
+        class={getCategoryFilterChipClass({ selected: activeCategory === '' })}
         aria-pressed={activeCategory === ''}
         onclick={() => (activeCategory = '')}
       >
         {m.foodComboboxFilterAll()}
       </button>
       {#each CATEGORIES as c (c.id)}
-        {@const cls = getCategoryClasses(c.id)}
         {@const Icon = getCategoryIcon(c.id)}
         <button
           type="button"
-          class={cn(
-            'inline-flex min-h-11 items-center gap-1 rounded-full border px-2.5 text-xs font-medium transition-colors',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            activeCategory === c.id
-              ? 'bg-primary text-primary-foreground'
-              : cn(cls.tint, cls.text, 'hover:brightness-95 dark:hover:brightness-110')
-          )}
+          class={getCategoryFilterChipClass({
+            selected: activeCategory === c.id,
+            category: c.id
+          })}
           aria-pressed={activeCategory === c.id}
           onclick={() => (activeCategory = activeCategory === c.id ? '' : c.id)}
         >

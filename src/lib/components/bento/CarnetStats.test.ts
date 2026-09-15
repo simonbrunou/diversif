@@ -44,6 +44,23 @@ describe('CarnetStats', () => {
     }
   });
 
+  it('gives every bar an accessible name that names a distinct day', () => {
+    // The visual axis is aria-hidden, so a bar's accessible name is the only
+    // thing that tells a screen-reader user which day it is. Built from the
+    // narrow weekday format it could not: French narrow weekdays are
+    // L M M J V S D, so mardi and mercredi both render "M" and two of the
+    // seven bars become indistinguishable.
+    const { container } = render(CarnetStats, {
+      props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [3, 5, 2, 8, 4, 1, 0] }
+    });
+    const names = [...container.querySelectorAll('[data-bar]')].map((b) =>
+      b.getAttribute('aria-label')
+    );
+    expect(names.length).toBe(7);
+    expect(names.every((n) => n && n.trim().length > 0)).toBe(true);
+    expect(new Set(names).size).toBe(7);
+  });
+
   it('anchors labels to anchorUtc when provided (no drift across hydration)', () => {
     // 2026-05-14 was a Thursday in UTC. With anchorUtc pinned to that day,
     // the last bucket must always read "J" (jeudi narrow) regardless of the

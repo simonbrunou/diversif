@@ -11,9 +11,11 @@
     ok: 'bg-tile-mint text-tile-mint-foreground',
     todo: 'bg-surface text-ink-soft',
     fading: 'bg-tile-butter text-tile-butter-foreground',
-    // The border here encodes state (the only visual difference from
-    // 'todo' once both are white on bg-surface), not elevation — do not
-    // remove it as a "redundant" Single Channel violation.
+    // The border here is the primary state cue, not elevation — do not
+    // remove it as a "redundant" Single Channel violation. Text colour
+    // (text-ink-soft vs text-tile-butter-foreground) also differs between
+    // 'todo' and 'inconfort', but it should not be relied on alone to
+    // carry the state.
     inconfort: 'border border-tile-butter-foreground/50 bg-surface text-tile-butter-foreground',
     reaction: 'bg-reaction-reaction text-reaction-reaction-foreground'
   };
