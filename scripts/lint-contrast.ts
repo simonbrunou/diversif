@@ -219,170 +219,225 @@ const VOID_ELEMENTS = new Set([
 type ContrastOffender = { file: string; line: number; detail: string };
 const contrastOffenders: ContrastOffender[] = [];
 
-function checkSvelteFile(full: string, themes: { light: TokenTable; dark: TokenTable }): void {
-  const relPath = path.relative(ROOT, full);
+type Themes = { light: TokenTable; dark: TokenTable };
+/** A background token, `null` for "not set here", `'unknown'` for "set but unresolvable". */
+type Background = string | null | 'unknown';
+type Frame = { tag: string; bg: Background };
+
+/** Strip a Tailwind variant chain (`dark:hover:bg-x` -> `bg-x`). */
+function bareUtility(raw: string): string {
+  return raw.includes(':') ? raw.slice(raw.lastIndexOf(':') + 1) : raw;
+}
+
+function isResolvableToken(token: string, themes: Themes): boolean {
+  return themes.light.has(token) || themes.dark.has(token);
+}
+
+/** The `bg-*` utility on this element's own class attribute, if any. */
+function backgroundFromClass(classStr: string, themes: Themes): Background {
+  for (const raw of classStr.split(/\s+/)) {
+    if (!raw) continue;
+    const part = bareUtility(raw);
+    if (!part.startsWith('bg-')) continue;
+    // `bg-x/NN` alpha-blends x over whatever sits under it via color-mix — not
+    // the solid token color our HSL table has. Treating it as opaque would
+    // fabricate a ratio, so it is unresolvable rather than skipped-with-a-guess.
+    if (/\/\d+$/.test(part)) return 'unknown';
+    const token = part.slice(3);
+    return isResolvableToken(token, themes) ? token : 'unknown';
+  }
+  return null;
+}
+
+/** `<Card variant="tile-butter">` carries a background the class attribute doesn't. */
+function backgroundFromCardVariant(attrs: string, themes: Themes): Background {
+  const variantMatch = /\bvariant\s*=\s*"([^"]*)"/.exec(attrs);
+  if (variantMatch) {
+    const token = variantMatch[1];
+    return isResolvableToken(token, themes) ? token : 'unknown';
+  }
+  // Dynamic variant — can't resolve, don't guess.
+  return /\bvariant\s*=\s*\{/.test(attrs) ? 'unknown' : null;
+}
+
+/**
+ * Only elements with a direct text node / `{expression}` before their next
+ * child tag are "text" for our purposes. A wrapper whose first child is itself
+ * a tag (`<span class="text-primary"><Heart /></span>`) sets currentColor for
+ * an SVG, not a text color, and WCAG text-contrast math does not apply to it.
+ */
+function hasDirectTextAfter(template: string, endIndex: number): boolean {
+  const after = template.slice(endIndex);
+  const nextTagAt = after.indexOf('<');
+  return /\S/.test(nextTagAt === -1 ? after : after.slice(0, nextTagAt));
+}
+
+type TextStyle = { size: number; weight: number; tokens: string[] };
+
+function parseTextStyle(classStr: string, themes: Themes): TextStyle {
+  const style: TextStyle = { size: 16, weight: 400, tokens: [] };
+  for (const raw of classStr.split(/\s+/)) {
+    if (!raw) continue;
+    const part = bareUtility(raw);
+    const sizeMatch = /^text-(3xs|2xs|xs|sm|base|lg|xl|2xl|3xl)$/.exec(part);
+    if (sizeMatch) {
+      style.size = FONT_SIZE_PX[sizeMatch[1]];
+      continue;
+    }
+    const arbSize = /^text-\[(\d+(?:\.\d+)?)px\]$/.exec(part);
+    if (arbSize) {
+      style.size = parseFloat(arbSize[1]);
+      continue;
+    }
+    const weightMatch = /^font-(medium|semibold|bold|extrabold)$/.exec(part);
+    if (weightMatch) {
+      style.weight = FONT_WEIGHT[weightMatch[1]];
+      continue;
+    }
+    // `text-x/NN` alpha-blends over the background via color-mix — not the
+    // solid token color; unresolvable, so skip rather than assume opaque.
+    if (part.startsWith('text-') && !/\/\d+$/.test(part)) {
+      const token = part.slice(5);
+      if (isResolvableToken(token, themes)) style.tokens.push(token);
+    }
+  }
+  return style;
+}
+
+type PairSite = {
+  relPath: string;
+  line: number;
+  lineText: string;
+  background: string;
+  style: TextStyle;
+  themes: Themes;
+};
+
+function recordFailingPairs(site: PairSite): void {
+  const { style } = site;
+  const required = style.size >= 24 || (style.size >= 18.66 && style.weight >= 700) ? 3 : 4.5;
+  const tables = [
+    ['light', site.themes.light],
+    ['dark', site.themes.dark]
+  ] as const;
+  for (const token of style.tokens) {
+    for (const [themeName, table] of tables) {
+      const fg = resolveHsl(table, token);
+      const bg = resolveHsl(table, site.background);
+      // Alias chain / literal we can't resolve — skip, don't guess.
+      if (!fg || !bg) continue;
+      const ratio = contrastRatio(fg, bg);
+      if (ratio >= required) continue;
+      contrastOffenders.push({
+        file: site.relPath,
+        line: site.line,
+        detail: `text-${token} on bg-${site.background} (${themeName} theme): ${ratio.toFixed(2)}:1 at ${style.size}px/${style.weight}, needs ${required}:1 — ${site.lineText.trim()}`
+      });
+    }
+  }
+}
+
+/** Unwind the stack to just before the most recent matching open tag. */
+function closeTag(stack: Frame[], tagName: string): void {
+  for (let i = stack.length - 1; i >= 0; i--) {
+    if (stack[i].tag === tagName) {
+      stack.length = i;
+      return;
+    }
+  }
+}
+
+const TAG_RE = /<(\/?)([A-Za-z][\w.:-]*)((?:"[^"]*"|'[^']*'|\{[^{}]*\}|[^>])*?)(\/?)>/g;
+
+type FileContext = {
+  relPath: string;
+  template: string;
+  sourceLines: string[];
+  themes: Themes;
+  stack: Frame[];
+};
+
+/**
+ * The background this element sets on itself, if any.
+ *
+ * Dynamic class (`class={...}`) can't be statically resolved — a false
+ * positive in a pre-commit gate is worse than a miss, so such an element
+ * contributes nothing of its own while still letting children inherit the
+ * stacked background. This under-reports dynamic-class cases; it never
+ * fabricates a ratio for one.
+ */
+function ownBackground(
+  tagName: string,
+  attrs: string,
+  classStr: string | null,
+  themes: Themes
+): Background {
+  const fromClass = classStr ? backgroundFromClass(classStr, themes) : null;
+  if (fromClass !== null) return fromClass;
+  return tagName === 'Card' ? backgroundFromCardVariant(attrs, themes) : null;
+}
+
+function reportTextPairs(
+  ctx: FileContext,
+  match: RegExpExecArray,
+  classStr: string,
+  background: string
+): void {
+  if (!hasDirectTextAfter(ctx.template, match.index + match[0].length)) return;
+  const line = ctx.template.slice(0, match.index).split('\n').length;
+  const lineText = ctx.sourceLines[line - 1] ?? '';
+  if (lineText.includes(ESCAPE_MARKER) || COMMENT_LINE.test(lineText)) return;
+  recordFailingPairs({
+    relPath: ctx.relPath,
+    line,
+    lineText,
+    background,
+    style: parseTextStyle(classStr, ctx.themes),
+    themes: ctx.themes
+  });
+}
+
+function visitOpenTag(ctx: FileContext, match: RegExpExecArray): void {
+  const [, , tagName, attrs, selfSlash] = match;
+  const isDynamic = /\bclass\s*=\s*\{/.test(attrs);
+  const classMatch = /\bclass\s*=\s*"([^"]*)"/.exec(attrs);
+  const classStr = classMatch ? classMatch[1] : null;
+
+  const own = isDynamic ? null : ownBackground(tagName, attrs, classStr, ctx.themes);
+  const inherited = ctx.stack.at(-1)?.bg ?? null;
+  const effectiveBg = own ?? inherited;
+
+  const isDecorative = /\baria-hidden\s*=\s*(?:"true"|\{true\})/.test(attrs);
+  if (classStr && !isDynamic && !isDecorative && effectiveBg && effectiveBg !== 'unknown') {
+    reportTextPairs(ctx, match, classStr, effectiveBg);
+  }
+
+  if (selfSlash !== '/' && !VOID_ELEMENTS.has(tagName.toLowerCase())) {
+    ctx.stack.push({ tag: tagName, bg: effectiveBg });
+  }
+}
+
+function checkSvelteFile(full: string, themes: Themes): void {
   const original = fs.readFileSync(full, 'utf8');
   // Blank out <script> / <style> bodies (keep newlines so line numbers stay
   // correct) so we never mistake JS/CSS braces or strings for markup.
   const template = original.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, (block) =>
     block.replace(/[^\n]/g, ' ')
   );
-
-  const lineOf = (idx: number) => template.slice(0, idx).split('\n').length;
-  const sourceLines = original.split('\n');
-
-  type Frame = { tag: string; bg: string | null | 'unknown' };
-  const stack: Frame[] = [];
-
-  const tagRe = /<(\/?)([A-Za-z][\w.:-]*)((?:"[^"]*"|'[^']*'|\{[^{}]*\}|[^>])*?)(\/?)>/g;
+  const ctx: FileContext = {
+    relPath: path.relative(ROOT, full),
+    template,
+    sourceLines: original.split('\n'),
+    themes,
+    stack: []
+  };
+  const tagRe = new RegExp(TAG_RE.source, 'g');
   let match: RegExpExecArray | null;
 
   try {
     while ((match = tagRe.exec(template))) {
-      const [, closingSlash, tagName, attrs, selfSlash] = match;
-      const lineNo = lineOf(match.index);
-      const isClosing = closingSlash === '/';
-
-      if (isClosing) {
-        for (let i = stack.length - 1; i >= 0; i--) {
-          if (stack[i].tag === tagName) {
-            stack.length = i;
-            break;
-          }
-        }
-        continue;
-      }
-
-      const isSelfClosing = selfSlash === '/' || VOID_ELEMENTS.has(tagName.toLowerCase());
-      // `text-<token>` on a wrapper around an icon component sets
-      // currentColor for the SVG, not a text color — WCAG text-contrast
-      // math doesn't apply to it (icons get the separate, looser 3:1
-      // non-text-contrast rule, and this linter doesn't attempt that).
-      // Only elements with a direct text node / `{expression}` before
-      // their next child tag are "text" for our purposes; a wrapper whose
-      // first child is itself a tag (e.g. `<span ...><Heart /></span>`)
-      // has none.
-      const afterTag = template.slice(match.index + match[0].length);
-      const nextTagAt = afterTag.indexOf('<');
-      const directText = nextTagAt === -1 ? afterTag : afterTag.slice(0, nextTagAt);
-      const hasDirectText = /\S/.test(directText);
-
-      // Dynamic class (`class={...}` / uses cn(...) with expressions) can't
-      // be statically resolved — a false positive in a pre-commit gate is
-      // worse than a miss, so we skip detecting anything *about this
-      // element* (neither its own bg nor its own text pairing), while still
-      // letting its children inherit whatever background is already on the
-      // stack. This under-reports dynamic-class cases; it never fabricates
-      // a ratio for one.
-      const hasDynamicClass = /\bclass\s*=\s*\{/.test(attrs);
-      const classMatch = /\bclass\s*=\s*"([^"]*)"/.exec(attrs);
-      const classStr = classMatch ? classMatch[1] : null;
-
-      let ownBg: string | null | 'unknown' = null;
-      if (!hasDynamicClass && classStr) {
-        for (const raw of classStr.split(/\s+/)) {
-          if (!raw) continue;
-          const part = raw.includes(':') ? raw.slice(raw.lastIndexOf(':') + 1) : raw;
-          if (part.startsWith('bg-')) {
-            // `bg-x/NN` alpha-blends x over whatever sits under it via
-            // color-mix — not the solid token color our HSL table has.
-            // Treating it as opaque would fabricate a ratio, so it's
-            // unresolvable rather than skipped-with-a-guess.
-            if (/\/\d+$/.test(part)) {
-              ownBg = 'unknown';
-              break;
-            }
-            const token = part.slice(3);
-            const resolvable = themes.light.has(token) || themes.dark.has(token);
-            ownBg = resolvable ? token : 'unknown';
-            break;
-          }
-        }
-      }
-      if (ownBg === null && !hasDynamicClass && tagName === 'Card') {
-        const variantMatch = /\bvariant\s*=\s*"([^"]*)"/.exec(attrs);
-        if (variantMatch) {
-          const token = variantMatch[1];
-          const resolvable = themes.light.has(token) || themes.dark.has(token);
-          ownBg = resolvable ? token : 'unknown';
-        } else if (/\bvariant\s*=\s*\{/.test(attrs)) {
-          ownBg = 'unknown'; // dynamic variant — can't resolve, don't guess
-        }
-      }
-
-      const inherited = stack.length > 0 ? stack[stack.length - 1].bg : null;
-      const effectiveBg = ownBg !== null ? ownBg : inherited;
-
-      const isDecorative = /\baria-hidden\s*=\s*(?:"true"|\{true\})/.test(attrs);
-      if (
-        !isDecorative &&
-        hasDirectText &&
-        !hasDynamicClass &&
-        classStr &&
-        effectiveBg &&
-        effectiveBg !== 'unknown'
-      ) {
-        let size = 16;
-        let weight = 400;
-        const textTokens: string[] = [];
-        for (const raw of classStr.split(/\s+/)) {
-          if (!raw) continue;
-          const part = raw.includes(':') ? raw.slice(raw.lastIndexOf(':') + 1) : raw;
-          const sizeMatch = /^text-(3xs|2xs|xs|sm|base|lg|xl|2xl|3xl)$/.exec(part);
-          if (sizeMatch) {
-            size = FONT_SIZE_PX[sizeMatch[1]];
-            continue;
-          }
-          const arbSize = /^text-\[(\d+(?:\.\d+)?)px\]$/.exec(part);
-          if (arbSize) {
-            size = parseFloat(arbSize[1]);
-            continue;
-          }
-          const weightMatch = /^font-(medium|semibold|bold|extrabold)$/.exec(part);
-          if (weightMatch) {
-            weight = FONT_WEIGHT[weightMatch[1]];
-            continue;
-          }
-          if (part.startsWith('text-') && !/\/\d+$/.test(part)) {
-            // `text-x/NN` alpha-blends over the background via color-mix —
-            // not the solid token color; unresolvable, so skip rather than
-            // assume opaque.
-            const token = part.slice(5);
-            if (themes.light.has(token) || themes.dark.has(token)) {
-              textTokens.push(token);
-            }
-          }
-        }
-
-        const lineText = sourceLines[lineNo - 1] ?? '';
-        const skip = lineText.includes(ESCAPE_MARKER) || COMMENT_LINE.test(lineText);
-
-        if (!skip) {
-          for (const token of textTokens) {
-            const required = size >= 24 || (size >= 18.66 && weight >= 700) ? 3 : 4.5;
-            for (const [themeName, table] of [
-              ['light', themes.light],
-              ['dark', themes.dark]
-            ] as const) {
-              const fg = resolveHsl(table, token);
-              const bg = resolveHsl(table, effectiveBg);
-              if (!fg || !bg) continue; // alias chain / literal we can't resolve — skip, don't guess
-              const ratio = contrastRatio(fg, bg);
-              if (ratio < required) {
-                contrastOffenders.push({
-                  file: relPath,
-                  line: lineNo,
-                  detail: `text-${token} on bg-${effectiveBg} (${themeName} theme): ${ratio.toFixed(2)}:1 at ${size}px/${weight}, needs ${required}:1 — ${lineText.trim()}`
-                });
-              }
-            }
-          }
-        }
-      }
-
-      if (!isSelfClosing) {
-        stack.push({ tag: tagName, bg: effectiveBg });
-      }
+      if (match[1] === '/') closeTag(ctx.stack, match[2]);
+      else visitOpenTag(ctx, match);
     }
   } catch {
     // Any parse surprise on this file → skip it silently rather than risk a
