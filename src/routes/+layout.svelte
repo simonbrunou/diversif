@@ -47,8 +47,7 @@
     data.children.map((c) => ({
       id: String(c.id),
       name: c.name,
-      birthMonth: c.birthDate,
-      avatarSeed: '🌱'
+      birthMonth: c.birthDate
     }))
   );
 

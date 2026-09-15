@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ArrowLeft } from 'lucide-svelte';
   import PrintShell from '$lib/components/PrintShell.svelte';
   import ReportSummaryStats from '$lib/components/report/ReportSummaryStats.svelte';
   import ReportStageStatus from '$lib/components/report/ReportStageStatus.svelte';
@@ -20,19 +21,20 @@
   {#snippet toolbarStart()}
     <a
       href={localizedHref(`/child/${data.child.id}`)}
-      class="text-sm text-muted-foreground hover:underline"
+      class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline"
     >
-      ← {m.reportBackToDashboard()}
+      <ArrowLeft size={16} aria-hidden="true" />
+      {m.reportBackToDashboard()}
     </a>
   {/snippet}
 
   <!-- Document header -->
   <header class="space-y-2 border-b pb-4">
     <div
-      class="flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground"
+      class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs uppercase tracking-wider text-muted-foreground"
     >
       <span>{m.reportHeaderEyebrow()}</span>
-      <span>{m.reportHeaderEditedOn({ date: formatReportDay(data.generatedAt) })}</span>
+      <span class="whitespace-nowrap">{m.reportHeaderEditedOn({ date: formatReportDay(data.generatedAt) })}</span>
     </div>
     <h1 class="font-display text-3xl font-semibold leading-tight md:text-4xl">
       {data.child.name}

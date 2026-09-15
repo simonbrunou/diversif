@@ -157,7 +157,7 @@ Five pastels over a warm cream canvas, with one sage brand voice and one quarant
 ### Primary
 
 - **Sage** (`{colors.sage}`): The brand's only voice. It appears on the log FAB, primary buttons, the brand mark and every focus ring — and essentially nowhere else. Carried over from the previous brand so returning parents still recognise the app.
-- **Deep Sage** (`{colors.sage-strong}`): Sage is too light to be legible as text; this is its text-safe sibling, used exclusively for sage-coloured type on light surfaces. Never used as a fill.
+- **Deep Sage** (`{colors.sage-strong}`): Sage is too light to be legible as text; this is its text-safe sibling, used for sage-coloured type on light surfaces. Never a _surface_ fill — it never becomes a compartment or a button — but it carries the three places that need sage at legible strength against a background the system does not control: the text selection highlight, the fallback focus outline, and `accent-color` on native checkboxes and radios.
 
 ### Secondary
 
@@ -199,8 +199,8 @@ The five tile tints are the system's structural vocabulary. Each is a compartmen
 
 ### Hierarchy
 
-- **Display** (Fraunces italic, 500, 32/38, -0.02em): Reassurance and brand moments only. Never a data label.
-- **Headline** (Inter, 700, 22/28, -0.015em): Page and section headings.
+- **Display** (Fraunces italic, 500, 32/38, -0.02em): Page titles, reassurance, and brand moments. Every page `h1` is set here — `BackHeader`, `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout` — which is what gives each screen a human voice before any data appears. Never a data label and never a counter.
+- **Headline** (Inter, 700, 22/28, -0.015em): Section headings inside a page. The split is strict: the page is named in the serif, its contents are organised in Inter.
 - **Title** (Inter, 700, 14/1.25): Row and card titles — a food name, a reminder headline.
 - **Numeric** (Inter, 800, 28/1, tabular figures): Every live counter.
 - **Body** (Inter, 400, 14/21): Guidance copy and descriptions.
@@ -304,6 +304,39 @@ Borders are rare. Where one exists it is a warm hairline doing a job a fill cann
 
 A 60px sage disc with a plus glyph, fixed over the centre slot of the mobile bar and floating ~23px above it. It carries a visible French caption beneath the disc, because the product's secondary user is a co-parent who opens the app cold on a child that already has data — so the onboarding dialog never fires for them, and an unlabelled green circle is the primary action of the entire app. Focus is a 4px sage ring with a 2px cream offset. This is the one control in the system that gets a bespoke focus treatment.
 
+### Focus
+
+Two treatments, and the difference is not cosmetic.
+
+A control that declares its own ring gets sage (`--ring`) with a 2px canvas
+offset band. The band is load-bearing, not padding: an `outline` sits directly
+against the surface behind it, and a bare sage ring measures **2.65–2.80:1**
+against peach, mint, sky, lilac and the reaction tint — under WCAG 1.4.11's 3:1
+floor for non-text contrast. The band puts cream between ring and tint.
+
+Anything that does _not_ declare a ring falls through to one global
+`:focus-visible` rule in deep sage (`--primary-strong`), which measures
+**5.07–6.99:1** on every surface in light and **4.08–6.95:1** in dark, so it
+needs no band. Pair a Tailwind ring with `focus-visible:outline-none` to opt a
+control out of it; never leave a control with neither, or it inherits the
+browser's own near-black `outline: auto`.
+
+### Browser surfaces
+
+The parts of the interface the app never draws still carry the design. Theme
+each from the palette:
+
+- **Text selection:** deep sage with canvas-coloured text. A selection
+  highlight has to separate from the surface it covers — butter measures
+  **1.11:1** against the cream canvas and is invisible. Selection is an
+  interaction state, so it takes the brand voice like focus does.
+- **Native control accents:** `accent-color` is deep sage, not sage. The
+  browser derives the checkmark colour from the accent's luminance, and sage at
+  49% lightness sits at the flip point, leaving the glyph at 3.66:1.
+- **Scrollbars:** the warm hairline on a transparent track.
+- **Underline offset:** 0.15em, because the default runs the rule through
+  descenders on the hover-underlined links.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -316,6 +349,9 @@ A 60px sage disc with a plus glyph, fixed over the centre slot of the mobile bar
 - **Do** re-compose the grid at `lg` rather than widening the mobile stack.
 - **Do** keep primary actions inside the thumb arc with ≥8px of clearance from neighbours.
 - **Do** let a long label wrap. A wrapped heading is better than an ellipsis, and an ellipsis is better than an overflow.
+- **Do** set a measurement — a texture, a count suffix, a unit — as data: body scale, sentence case, no tracking. The Label treatment belongs to compartment labels and eyebrows; applied to a fact it shouts, and `PETITS MORCEAUX` wraps mid-phrase in a 390px row.
+- **Do** give a toggle `aria-pressed`. A filter chip that only changes colour tells a screen-reader user nothing about which filter is on.
+- **Do** give every empty state a way out of itself. A state that describes what will happen without offering the action is a dead end on the one screen whose whole job is the first entry.
 
 ### Don't:
 
@@ -329,3 +365,22 @@ A 60px sage disc with a plus glyph, fixed over the centre slot of the mobile bar
 - **Don't** reach for bounce or elastic easing for ambient motion. Overshoot belongs to the single celebration curve; everything else decelerates exponentially.
 - **Don't** put an eyebrow above a heading. Where a label is the compartment's only heading it is doing real work; stacked above a title it is decoration.
 - **Don't** use an emoji or a unicode glyph where an icon belongs. Icons are drawn, from one library, at one stroke weight.
+
+### Documented deviations
+
+Three places knowingly depart from the rules above. Each is narrow, and each is
+here so it does not get "fixed" later.
+
+- **Allergen chips are 32px, not 44px.** Secondary inline chips only. At 44px
+  they wrapped to three rows and pushed the parent's actual data below the fold
+  on a 390×844 screen. 32px with 8px separation still clears WCAG 2.5.8's 24px
+  floor.
+- **The pediatrician summary carries a document header above its heading.**
+  This is the one eyebrow in the product. It is letterhead on a print-first
+  artifact — a sheet handed across a desk has to say what it is and when it was
+  edited — not a kicker decorating a screen title.
+- **The print stylesheet leaves the palette.** `PrintShell` sets 11pt type,
+  pure `#000` on `#fff`, and a 12px print body size. Ink on paper is a
+  different medium: the pastel compartments waste toner and read worse than
+  black type, and physical point sizes are not the screen ramp. The detector
+  flags these as off-scale; they are print-only and deliberate.

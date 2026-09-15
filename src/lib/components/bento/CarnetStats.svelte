@@ -50,34 +50,62 @@
 
 <div class="flex flex-col gap-3">
   <div class="grid grid-cols-3 gap-3">
+    <!--
+      Counters are Inter 800 with tabular figures, not the display serif:
+      Fraunces has no tabular variant, so these jittered on increment, and
+      DESIGN.md reserves the italic serif for feeling rather than facts.
+      Labels take each tile's own -foreground instead of ink-soft — grey on
+      butter measured 4.73:1 in dark against a 4.5 floor, 0.23 of headroom,
+      which is precisely what The Paired Foreground Rule exists to prevent.
+    -->
     <Card as="article" variant="tile-mint" class="p-4" aria-label={m.carnetBilanDiversity()}>
-      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanDiversity()}</p>
-      <p class="mt-1 font-display text-3xl italic leading-none">{diversityScore}</p>
-      <p class="mt-1 text-2xs leading-tight text-ink-soft">{m.carnetBilanDiversityCaption()}</p>
+      <p class="text-xs font-medium uppercase tracking-wider text-tile-mint-foreground">
+        {m.carnetBilanDiversity()}
+      </p>
+      <p class="mt-1 text-3xl font-extrabold leading-none tabular-nums">{diversityScore}</p>
+      <p class="mt-1 text-2xs leading-tight text-tile-mint-foreground">
+        {m.carnetBilanDiversityCaption()}
+      </p>
     </Card>
     <Card as="article" variant="tile-butter" class="p-4" aria-label={m.carnetBilanFoods()}>
-      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanFoods()}</p>
-      <p class="mt-1 font-display text-3xl italic leading-none">{distinctFoods}</p>
+      <p class="text-xs font-medium uppercase tracking-wider text-tile-butter-foreground">
+        {m.carnetBilanFoods()}
+      </p>
+      <p class="mt-1 text-3xl font-extrabold leading-none tabular-nums">{distinctFoods}</p>
     </Card>
     <Card as="article" variant="tile-sky" class="p-4" aria-label={m.carnetBilanTextures()}>
-      <p class="text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanTextures()}</p>
-      <p class="mt-1 font-display text-3xl italic leading-none">{texturesTried}<span class="text-base">/6</span></p>
+      <p class="text-xs font-medium uppercase tracking-wider text-tile-sky-foreground">
+        {m.carnetBilanTextures()}
+      </p>
+      <p class="mt-1 text-3xl font-extrabold leading-none tabular-nums">
+        {texturesTried}<span class="text-base font-normal">/6</span>
+      </p>
     </Card>
   </div>
   {#if weeklyEntries.length > 0}
     <article class="rounded-tile bg-canvas p-4 shadow-soft">
       <p class="mb-3 text-xs font-medium uppercase tracking-wider text-ink-soft">{m.carnetBilanLast7Days()}</p>
-      <div class="flex h-20 items-end gap-1">
+      <!--
+        role="list"/"listitem" is required, not decoration: axe flagged
+        `aria-prohibited-attr` (serious, 7 nodes) because `aria-label` on a
+        bare <div> is discarded, so every one of these per-day counts was
+        silently unavailable to a screen reader. listitem permits naming, and
+        a list is what this actually is — seven daily totals.
+      -->
+      <div role="list" class="flex h-20 items-end gap-1">
         {#each weeklyEntries as count, i (i)}
           <div
             data-bar
+            role="listitem"
             class="flex-1 rounded-t bg-primary/60"
             style={`height: ${Math.max(2, (count / max) * 100)}%`}
-            aria-label={logsLabel(count)}
+            aria-label="{dayLabels[i]} · {logsLabel(count)}"
           ></div>
         {/each}
       </div>
-      <div class="mt-1 flex gap-1 text-3xs uppercase text-ink-soft">
+      <!-- Each bar's accessible name already carries its day, so this visual
+           axis would otherwise be announced a second time. -->
+      <div aria-hidden="true" class="mt-1 flex gap-1 text-3xs uppercase text-ink-soft">
         {#each weeklyEntries as _, i (i)}
           <span data-day class="flex-1 text-center">{dayLabels[i]}</span>
         {/each}

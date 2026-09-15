@@ -86,7 +86,7 @@
               class="sr-only"
             />
             {#if isSevere}
-              <span class="sr-only">{m.addSymptomSeveritySevereSrPrefix()} </span>
+              <span class="sr-only">{m.addSymptomSeveritySevereSrPrefix()}&nbsp;</span>
             {/if}
             {symptomLabelText(label)}
           </label>

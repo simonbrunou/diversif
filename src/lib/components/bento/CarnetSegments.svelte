@@ -28,7 +28,7 @@
 
 <nav
   aria-label={m.carnetSegmentsAriaLabel()}
-  class="mb-3 flex gap-1 rounded-full border border-border/40 bg-canvas p-1"
+  class="mb-3 flex gap-1 rounded-full bg-surface-2 p-1"
 >
   {#each SEGMENTS as seg (seg.id)}
     {@const active = seg.id === currentSegment}

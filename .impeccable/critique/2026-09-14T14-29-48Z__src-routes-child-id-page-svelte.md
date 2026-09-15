@@ -10,6 +10,7 @@ target_fingerprint: "sha256:25d3eef7b5c33cf087821441797daa93f07e6229a1d29e31c3c2
 target_path: /home/sbrn/Projects/diversif/src/routes/child/[id]/+page.svelte
 timestamp: 2026-09-14T14-29-48Z
 slug: src-routes-child-id-page-svelte
+closed: true
 ---
 # Critique — /child/[id] (Aujourd'hui)
 
