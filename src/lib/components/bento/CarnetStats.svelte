@@ -28,20 +28,31 @@
   // describe the same civil dates even when the page hydrates after a
   // midnight rollover — otherwise labels would shift one day while the bars
   // stayed put, and SSR/CSR would diverge.
-  const dayLabels = $derived.by(() => {
-    const fmt = new Intl.DateTimeFormat(getLocale(), {
-      weekday: 'narrow',
-      timeZone: 'Europe/Paris'
-    });
+  //
+  // Two formats off the same anchor: `narrow` for the visual axis, where seven
+  // single letters are the point, and `long` for each bar's accessible name.
+  // French narrow weekdays are L M M J V S D — mardi and mercredi are both
+  // "M" — so an accessible name built from the narrow form leaves two of every
+  // seven bars indistinguishable, and the visual axis that would disambiguate
+  // them is aria-hidden.
+  const dayFormats = $derived.by(() => {
+    const opts = { timeZone: 'Europe/Paris' } as const;
+    const narrow = new Intl.DateTimeFormat(getLocale(), { weekday: 'narrow', ...opts });
+    const long = new Intl.DateTimeFormat(getLocale(), { weekday: 'long', ...opts });
     // Fallback: standalone use without an anchor (isolated tests, future
     // consumers). Still Europe/Paris-anchored, just recomputed from the
     // current instant instead of the server-provided anchor.
     const todayUTC = anchorUtc ?? parisDayIndex(Date.now()) * 86400_000;
-    return Array.from({ length: weeklyEntries.length }, (_, i) => {
-      const d = new Date(todayUTC - (weeklyEntries.length - 1 - i) * 86400_000);
-      return fmt.format(d);
-    });
+    const days = Array.from(
+      { length: weeklyEntries.length },
+      (_, i) => new Date(todayUTC - (weeklyEntries.length - 1 - i) * 86400_000)
+    );
+    return {
+      narrow: days.map((d) => narrow.format(d)),
+      long: days.map((d) => long.format(d))
+    };
   });
+  const dayLabels = $derived(dayFormats.narrow);
 
   function logsLabel(count: number): string {
     return count === 1 ? m.carnetBilanLogsOne() : m.carnetBilanLogsOther({ count: String(count) });
@@ -62,7 +73,7 @@
       <p class="text-xs font-medium uppercase tracking-wider text-tile-mint-foreground">
         {m.carnetBilanDiversity()}
       </p>
-      <p class="mt-1 text-3xl font-extrabold leading-none tabular-nums">{diversityScore}</p>
+      <p class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">{diversityScore}</p>
       <p class="mt-1 text-2xs leading-tight text-tile-mint-foreground">
         {m.carnetBilanDiversityCaption()}
       </p>
@@ -71,14 +82,14 @@
       <p class="text-xs font-medium uppercase tracking-wider text-tile-butter-foreground">
         {m.carnetBilanFoods()}
       </p>
-      <p class="mt-1 text-3xl font-extrabold leading-none tabular-nums">{distinctFoods}</p>
+      <p class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">{distinctFoods}</p>
     </Card>
     <Card as="article" variant="tile-sky" class="p-4" aria-label={m.carnetBilanTextures()}>
       <p class="text-xs font-medium uppercase tracking-wider text-tile-sky-foreground">
         {m.carnetBilanTextures()}
       </p>
-      <p class="mt-1 text-3xl font-extrabold leading-none tabular-nums">
-        {texturesTried}<span class="text-base font-normal">/6</span>
+      <p class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">
+        {texturesTried}<span class="text-sm font-normal">/6</span>
       </p>
     </Card>
   </div>
@@ -99,7 +110,7 @@
             role="listitem"
             class="flex-1 rounded-t bg-primary/60"
             style={`height: ${Math.max(2, (count / max) * 100)}%`}
-            aria-label="{dayLabels[i]} · {logsLabel(count)}"
+            aria-label="{dayFormats.long[i]} · {logsLabel(count)}"
           ></div>
         {/each}
       </div>

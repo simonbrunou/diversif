@@ -20,7 +20,7 @@
     <div class="text-2xs uppercase tracking-wider text-muted-foreground">
       {m.reportTotalsFoodsLabel()}
     </div>
-    <div class="mt-1 text-2xl font-extrabold leading-none tabular-nums">
+    <div class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">
       {totals.foods}
     </div>
     <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsFoodsCaption()}</div>
@@ -29,7 +29,7 @@
     <div class="text-2xs uppercase tracking-wider text-muted-foreground">
       {m.reportTotalsEntriesLabel()}
     </div>
-    <div class="mt-1 text-2xl font-extrabold leading-none tabular-nums">
+    <div class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">
       {totals.entries}
     </div>
     <div class="mt-1 text-2xs text-muted-foreground">{m.reportTotalsEntriesCaption()}</div>
@@ -38,7 +38,7 @@
     <div class="text-2xs uppercase tracking-wider text-muted-foreground">
       {m.reportTotalsCategoriesLabel()}
     </div>
-    <div class="mt-1 text-2xl font-extrabold leading-none tabular-nums">
+    <div class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">
       {totals.categoriesCovered}<span class="text-sm font-normal text-muted-foreground"
         >/{totals.categoriesTotal}</span
       >
@@ -49,7 +49,7 @@
     <div class="text-2xs uppercase tracking-wider text-muted-foreground">
       {m.reportTotalsAllergensLabel()}
     </div>
-    <div class="mt-1 text-2xl font-extrabold leading-none tabular-nums">
+    <div class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">
       {totals.allergensIntroduced}<span class="text-sm font-normal text-muted-foreground"
         >/{totals.allergensTotal}</span
       >

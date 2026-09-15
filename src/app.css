@@ -204,9 +204,12 @@
     --primary-foreground: 0 0% 10%;
     /* Darker sage for use as text color on light backgrounds. --primary at 49%
        lightness fails 4.5:1 on white (3.89) and on bg-tile-peach (2.82). 32%
-       lightness gives 7.5:1 on white and 6.0:1 on peach. Only consumed by
-       `text-primary-strong`; `bg-primary` / focus ring / icon usage keep using
-       --primary so the brand mark color is unchanged. */
+       lightness gives 7.5:1 on white and 6.0:1 on peach. Consumed by
+       `text-primary-strong`, and by the three places that need sage at legible
+       strength against a surface the system does not control: `accent-color`
+       on native checkboxes, `::selection`, and the fallback `:focus-visible`
+       outline. `bg-primary` and the declared Tailwind focus rings keep using
+       --primary, so the brand mark and button fills are unchanged. */
     --primary-strong: 120 18% 32%;
 
     /* secondary / accent neutrals */

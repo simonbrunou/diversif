@@ -39,10 +39,10 @@ describe('ChildSwitcherDrawer', () => {
     // Was asserted against a literal emoji; the avatar is a lucide glyph now,
     // but the contract is unchanged: it is decoration, so it must not be
     // announced, and a child row's accessible name is the child's name alone.
-    // Queried off the document because Modal portals out of `container`.
-    const row = screen.getByText('Léo').closest('a')!;
+    // getByRole is accessibility-aware where textContent is not — it would see
+    // an aria-label or <title> added to the glyph, and ignores aria-hidden.
+    const row = screen.getByRole('link', { name: 'Léo' });
     expect(row.querySelector('[aria-hidden="true"] svg')).toBeTruthy();
-    expect(row.textContent!.trim()).toBe('Léo');
   });
 
   it('hides everything when not open', () => {

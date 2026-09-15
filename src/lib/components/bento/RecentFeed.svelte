@@ -67,11 +67,12 @@
       {entry.foodName}
       {#if entry.texture}
         <!--
-          The texture is a fact about the meal, so it is set as data: body
-          scale, normal weight, sentence case. It used to carry the Label
-          treatment (uppercase + 0.08em tracking), which DESIGN.md reserves
-          for compartment labels and eyebrows — so "PETITS MORCEAUX" shouted
-          alongside the food name and wrapped mid-phrase in a 390px row.
+          The texture is a fact about the meal, so it is set as data: caption
+          scale (12px, matching the timestamp line below), normal weight,
+          sentence case. It used to carry the Label treatment (uppercase +
+          0.08em tracking), which DESIGN.md reserves for compartment labels and
+          eyebrows — so "PETITS MORCEAUX" shouted alongside the food name and
+          wrapped mid-phrase in a 390px row.
         -->
         <span class="text-xs font-normal text-ink-soft">
           · {getTextureLabel(entry.texture)}

@@ -156,7 +156,7 @@ Five pastels over a warm cream canvas, with one sage brand voice and one quarant
 
 ### Primary
 
-- **Sage** (`{colors.sage}`): The brand's only voice. It appears on the log FAB, primary buttons, the brand mark and every focus ring — and essentially nowhere else. Carried over from the previous brand so returning parents still recognise the app.
+- **Sage** (`{colors.sage}`): The brand's only voice. It appears on the log FAB, primary buttons, the brand mark and every _declared_ focus ring — and essentially nowhere else. Carried over from the previous brand so returning parents still recognise the app. Where a control declares no ring of its own, the fallback outline below carries the voice instead.
 - **Deep Sage** (`{colors.sage-strong}`): Sage is too light to be legible as text; this is its text-safe sibling, used for sage-coloured type on light surfaces. Never a _surface_ fill — it never becomes a compartment or a button — but it carries the three places that need sage at legible strength against a background the system does not control: the text selection highlight, the fallback focus outline, and `accent-color` on native checkboxes and radios.
 
 ### Secondary
@@ -199,11 +199,12 @@ The five tile tints are the system's structural vocabulary. Each is a compartmen
 
 ### Hierarchy
 
-- **Display** (Fraunces italic, 500, 32/38, -0.02em): Page titles, reassurance, and brand moments. Every page `h1` is set here — `BackHeader`, `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout` — which is what gives each screen a human voice before any data appears. Never a data label and never a counter.
-- **Headline** (Inter, 700, 22/28, -0.015em): Section headings inside a page. The split is strict: the page is named in the serif, its contents are organised in Inter.
+- **Display** (Fraunces italic): Reassurance and brand moments, and the page title inside the signed-in app shell — `BackHeader`, `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout`, which is what gives each screen a human voice before any data appears. Those four set it at `text-3xl`/`text-xl` rather than a single size, so treat the serif as the voice and let the surface pick the step. Public, marketing and utility routes (`/aide`, `/allergens`, `/guide`, `/sources`, `/offline`, `+error`, the child picker) title themselves in Inter instead — they are read before the product has any warmth to earn. Never a data label and never a counter.
+- **Headline** (Inter, 700, 22/28, -0.015em): Section headings, and the page title everywhere outside the app shell. The report is the one place that runs the other way: its section headings are Fraunces because the whole surface is set as a printed document.
 - **Title** (Inter, 700, 14/1.25): Row and card titles — a food name, a reminder headline.
 - **Numeric** (Inter, 800, 28/1, tabular figures): Every live counter.
 - **Body** (Inter, 400, 14/21): Guidance copy and descriptions.
+- **Caption** (Inter, 400/600, 12/1.33): Row metadata and secondary facts — a texture, a relative timestamp, a count suffix. The most-used step in the product (61 files) and the one the first scan of this system missed; it sits between Body and Label deliberately, because a fact that supports a title should be smaller than the title without dropping to the 11px label size.
 - **Label** (Inter, 600, 11, 0.08em, uppercase): Compartment labels and eyebrows.
 
 ### Named Rules
@@ -349,7 +350,7 @@ each from the palette:
 - **Do** re-compose the grid at `lg` rather than widening the mobile stack.
 - **Do** keep primary actions inside the thumb arc with ≥8px of clearance from neighbours.
 - **Do** let a long label wrap. A wrapped heading is better than an ellipsis, and an ellipsis is better than an overflow.
-- **Do** set a measurement — a texture, a count suffix, a unit — as data: body scale, sentence case, no tracking. The Label treatment belongs to compartment labels and eyebrows; applied to a fact it shouts, and `PETITS MORCEAUX` wraps mid-phrase in a 390px row.
+- **Do** set a measurement — a texture, a count suffix, a unit — as data: caption or body scale, sentence case, no tracking. The Label treatment belongs to compartment labels and eyebrows; applied to a fact it shouts, and `PETITS MORCEAUX` wraps mid-phrase in a 390px row.
 - **Do** give a toggle `aria-pressed`. A filter chip that only changes colour tells a screen-reader user nothing about which filter is on.
 - **Do** give every empty state a way out of itself. A state that describes what will happen without offering the action is a dead end on the one screen whose whole job is the first entry.
 
@@ -375,10 +376,14 @@ here so it does not get "fixed" later.
   they wrapped to three rows and pushed the parent's actual data below the fold
   on a 390×844 screen. 32px with 8px separation still clears WCAG 2.5.8's 24px
   floor.
-- **The pediatrician summary carries a document header above its heading.**
-  This is the one eyebrow in the product. It is letterhead on a print-first
-  artifact — a sheet handed across a desk has to say what it is and when it was
-  edited — not a kicker decorating a screen title.
+- **The pediatrician summary carries a document header above its heading.** It
+  is letterhead on a print-first artifact — a sheet handed across a desk has to
+  say what it is and when it was edited — not a kicker decorating a screen
+  title, so it is the one eyebrow this system endorses. It is not the only one
+  shipping: `+error.svelte`, `/guide`, `/allergens` and `/sources` each stack an
+  uppercase tracked kicker above their `h1`, and the last three set it in
+  `text-primary-strong`, which is also sage on a non-action. Those four are
+  unjustified and outstanding, not deviations.
 - **The print stylesheet leaves the palette.** `PrintShell` sets 11pt type,
   pure `#000` on `#fff`, and a 12px print body size. Ink on paper is a
   different medium: the pastel compartments waste toner and read worse than

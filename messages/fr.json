@@ -590,7 +590,7 @@
   "foodComboboxApproximate": "(approchant)",
   "foodComboboxNoneTitle": "Aucun aliment trouvé",
   "foodComboboxNoneForQuery": "Aucune correspondance pour « {query} ». Essayez un autre terme ou ajoutez-le au catalogue ci-dessous.",
-  "foodComboboxNoneInCategory": "Aucun aliment dans cette catégorie. Choisissez « Tous » ou ajoutez un aliment hors catalogue.",
+  "foodComboboxNoneInCategory": "Aucun aliment dans cette catégorie. Choisissez « Toutes » ou ajoutez un aliment hors catalogue.",
   "foodComboboxCapped": "Affinez la recherche pour voir d’autres aliments…",
   "foodComboboxResultsCountOne": "1 aliment trouvé",
   "foodComboboxResultsCountOther": "{count} aliments trouvés",
