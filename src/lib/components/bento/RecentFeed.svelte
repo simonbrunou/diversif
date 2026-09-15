@@ -1,5 +1,6 @@
 <script lang="ts">
   import SectionHeader from '$components/ui/SectionHeader.svelte';
+  import Button from '$components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
   import { formatRelative } from '$lib/utils/dates';
   import { getCategoryIcon } from '$lib/utils/categories';
@@ -8,7 +9,7 @@
   import type { RecentEntry } from '$lib/types';
   import { getTextureLabel } from '$lib/utils/texture-labels';
   import { groupByMeal, type MealGroup } from '$lib/utils/meals';
-  import { UtensilsCrossed, ChevronRight, Pencil } from 'lucide-svelte';
+  import { UtensilsCrossed, ChevronRight, Pencil, Plus } from 'lucide-svelte';
 
   let { entries, childId }: { entries: RecentEntry[]; childId: string } = $props();
 
@@ -35,9 +36,9 @@
   }
 
   function reactionPillClass(r: RecentEntry['reaction']): string {
-    if (r === 'inconfort') return 'bg-tile-butter';
+    if (r === 'inconfort') return 'bg-tile-butter text-tile-butter-foreground';
     if (r === 'reaction') return 'bg-reaction-reaction text-reaction-reaction-foreground';
-    return 'bg-tile-mint';
+    return 'bg-tile-mint text-tile-mint-foreground';
   }
 </script>
 
@@ -65,7 +66,15 @@
     <p class="text-sm font-bold leading-tight">
       {entry.foodName}
       {#if entry.texture}
-        <span class="text-2xs uppercase tracking-wide text-muted-foreground">
+        <!--
+          The texture is a fact about the meal, so it is set as data: caption
+          scale (12px, matching the timestamp line below), normal weight,
+          sentence case. It used to carry the Label treatment (uppercase +
+          0.08em tracking), which DESIGN.md reserves for compartment labels and
+          eyebrows — so "PETITS MORCEAUX" shouted alongside the food name and
+          wrapped mid-phrase in a 390px row.
+        -->
+        <span class="text-xs font-normal text-ink-soft">
           · {getTextureLabel(entry.texture)}
         </span>
       {/if}
@@ -111,6 +120,25 @@
       </span>
       <h2 class="text-base font-semibold">{m.aujourdhuiRecentEmpty()}</h2>
       <p class="mt-1 max-w-sm text-sm text-ink-soft">{m.aujourdhuiRecentEmptyBody()}</p>
+      <!--
+        This state described what would happen and offered no way to make it
+        happen: the only route out was the log FAB, which a first-time parent
+        has no reason to read as "start here". A freshly created child landed
+        on a dead end on the one screen whose entire job is the first log.
+
+        tile-mint rather than the default sage, matching the carnet's own
+        empty-state CTA: sage-on-ink measures 4.78:1 against a 4.5 floor and
+        axe already caught that pairing dipping under threshold on the sibling
+        button. The mint pair has 7.32:1.
+      -->
+      <Button
+        href={localizedHref(`/child/${childId}/log`)}
+        variant="tile-mint"
+        class="mt-4 gap-1.5"
+      >
+        <Plus size={16} aria-hidden="true" />
+        {m.aujourdhuiRecentEmptyCta()}
+      </Button>
     </div>
   {:else}
     <ul class="flex flex-col gap-2">

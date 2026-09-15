@@ -5,7 +5,7 @@ import ChildHeaderPill from './ChildHeaderPill.svelte';
 afterEach(() => cleanup());
 
 describe('ChildHeaderPill', () => {
-  const child = { id: 'abc', name: 'Léo', birthMonth: '2025-11-01', avatarSeed: '🌱' };
+  const child = { id: 'abc', name: 'Léo', birthMonth: '2025-11-01' };
 
   it('renders the child name', () => {
     render(ChildHeaderPill, { props: { child, onSwitch: () => {} } });

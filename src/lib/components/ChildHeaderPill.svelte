@@ -1,13 +1,12 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages';
-  import { ChevronDown } from 'lucide-svelte';
+  import { ChevronDown, Sprout } from 'lucide-svelte';
   import { ageInMonths } from '$lib/utils/age';
 
   type Child = {
     id: string;
     name: string;
     birthMonth: string;
-    avatarSeed: string;
   };
 
   let {
@@ -27,11 +26,17 @@
   style="view-transition-name: child-header-pill"
   class="mx-auto mb-3 flex w-full max-w-md items-center gap-3 rounded-tile border border-border/60 bg-canvas px-3 py-2 text-left transition-colors duration-base ease-soft hover:bg-surface-2"
 >
+  <!--
+    Was a sprout emoji, hardcoded identically for every child in
+    +layout.svelte via an `avatarSeed` prop — so it carried no identity, and
+    an emoji renders as a different drawing on every OS. A lucide glyph keeps
+    the warmth and the system's single stroke weight.
+  -->
   <span
-    class="bg-avatar-tile flex h-9 w-9 items-center justify-center rounded-full text-base"
+    class="bg-avatar-tile flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-primary-strong"
     aria-hidden="true"
   >
-    {child.avatarSeed}
+    <Sprout size={18} />
   </span>
   <span class="flex flex-col">
     <span class="text-sm font-bold leading-tight">{child.name}</span>

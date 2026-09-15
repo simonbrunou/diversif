@@ -40,8 +40,13 @@
   <p class="text-xs text-ink-soft">
     {isUntried ? m.carnetFoodCardUntried() : m.carnetFoodCardTried({ count: String(tried) })}
     {#if texture && !isUntried}
-      <!-- Chip treatment for inline contexts; entry-detail headers use a labelled row instead. -->
-      · <span class="text-2xs uppercase tracking-wide">{getTextureLabel(texture)}</span>
+      <!--
+        Set as data, matching the dashboard feed. The Label treatment
+        (uppercase + tracking) belongs to compartment labels and eyebrows, not
+        to a fact about the food; across a 14-card grid it read as 14 shouted
+        eyebrows under the food names.
+      -->
+      · <span>{getTextureLabel(texture)}</span>
     {/if}
   </p>
 {/snippet}

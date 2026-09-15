@@ -24,13 +24,16 @@
     <p class="text-sm text-muted-foreground">{stage.title}</p>
     <p class="text-sm">{stage.oneLiner}</p>
     <p class="text-sm">
-      <span class="text-muted-foreground">{m.reportStageExpectedTextures()} : </span>{stage.textures}
+      <span class="text-muted-foreground">{m.reportStageExpectedTextures()} :&nbsp;</span>{stage.textures}
     </p>
   {/if}
   {#if mostAdvancedTexture}
     <p class="text-sm">
-      <span class="text-muted-foreground">{m.reportStageMostAdvancedTexture()} : </span>
-      {getTextureLabel(mostAdvancedTexture)}
+      <!-- Value kept on the same line as the closing tag: a newline here
+           collapses to a second space that the &nbsp; cannot absorb. -->
+      <span class="text-muted-foreground">{m.reportStageMostAdvancedTexture()} :&nbsp;</span>{getTextureLabel(
+        mostAdvancedTexture
+      )}
     </p>
   {/if}
 </section>

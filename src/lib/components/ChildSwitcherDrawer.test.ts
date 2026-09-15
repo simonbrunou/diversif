@@ -12,8 +12,8 @@ afterEach(async () => {
 
 describe('ChildSwitcherDrawer', () => {
   const kids = [
-    { id: 'a', name: 'Léo', birthMonth: '2025-11-01', avatarSeed: '🌱' },
-    { id: 'b', name: 'Mia', birthMonth: '2024-04-01', avatarSeed: '🐝' }
+    { id: 'a', name: 'Léo', birthMonth: '2025-11-01' },
+    { id: 'b', name: 'Mia', birthMonth: '2024-04-01' }
   ];
 
   it('renders child names when open', () => {
@@ -32,12 +32,17 @@ describe('ChildSwitcherDrawer', () => {
     expect(add.closest('a')!.getAttribute('href')).toBe('/child/new');
   });
 
-  it('hides the decorative avatar emoji from screen readers', () => {
+  it('keeps the decorative avatar out of the accessibility tree', () => {
     render(ChildSwitcherDrawer, {
       props: { open: true, kids, currentChildId: 'a' }
     });
-    const emoji = screen.getByText('🌱');
-    expect(emoji.getAttribute('aria-hidden')).toBe('true');
+    // Was asserted against a literal emoji; the avatar is a lucide glyph now,
+    // but the contract is unchanged: it is decoration, so it must not be
+    // announced, and a child row's accessible name is the child's name alone.
+    // getByRole is accessibility-aware where textContent is not — it would see
+    // an aria-label or <title> added to the glyph, and ignores aria-hidden.
+    const row = screen.getByRole('link', { name: 'Léo' });
+    expect(row.querySelector('[aria-hidden="true"] svg')).toBeTruthy();
   });
 
   it('hides everything when not open', () => {

@@ -204,9 +204,12 @@
     --primary-foreground: 0 0% 10%;
     /* Darker sage for use as text color on light backgrounds. --primary at 49%
        lightness fails 4.5:1 on white (3.89) and on bg-tile-peach (2.82). 32%
-       lightness gives 7.5:1 on white and 6.0:1 on peach. Only consumed by
-       `text-primary-strong`; `bg-primary` / focus ring / icon usage keep using
-       --primary so the brand mark color is unchanged. */
+       lightness gives 7.5:1 on white and 6.0:1 on peach. Consumed by
+       `text-primary-strong`, and by the three places that need sage at legible
+       strength against a surface the system does not control: `accent-color`
+       on native checkboxes, `::selection`, and the fallback `:focus-visible`
+       outline. `bg-primary` and the declared Tailwind focus rings keep using
+       --primary, so the brand mark and button fills are unchanged. */
     --primary-strong: 120 18% 32%;
 
     /* secondary / accent neutrals */
@@ -433,6 +436,64 @@
   input[type='datetime-local']::-webkit-date-and-time-value,
   input[type='time']::-webkit-date-and-time-value {
     text-align: left;
+  }
+
+  /* ---- Browser surfaces ----
+     The parts of the interface the app never draws still ship with the
+     browser's defaults, and those belong to no design system: a cold blue
+     tick on native checkboxes inside a sage product, a blue text selection
+     over a warm cream canvas, and a near-black `outline: auto` focus ring on
+     every control that does not spell out a Tailwind ring. Theme them from
+     the palette so the chrome the app inherits still reads as the app. */
+
+  /* Native checkbox and radio ticks. --primary-strong, not --primary: the
+     browser paints a white glyph inside the accent colour, and sage at 49%
+     lightness leaves that glyph at 3.66:1. Deep sage puts it at 6.99:1. */
+  html {
+    accent-color: hsl(var(--primary-strong));
+    /* Scroll containers: the warm hairline instead of the platform grey. */
+    scrollbar-color: hsl(var(--border)) transparent;
+    scrollbar-width: thin;
+  }
+
+  /* Selection is an interaction state, so it takes the brand voice like focus
+     does. Butter was the intuitive pick and measured 1.11:1 against the cream
+     canvas — a highlight you cannot see. Deep sage reads at 6.65:1 in light
+     and 6.95:1 in dark, and because both tokens flip per theme the pair needs
+     no dark override. */
+  ::selection {
+    background-color: hsl(var(--primary-strong));
+    color: hsl(var(--canvas));
+  }
+
+  /* Fallback focus ring for controls that do not declare their own
+     `focus-visible:ring-*`. Deep sage rather than --ring because an outline
+     sits directly against whatever surface is behind it, with no offset band
+     in between: a bare sage ring measures 2.65-2.80:1 against peach, mint,
+     sky, lilac and the reaction tint, under WCAG 1.4.11's 3:1 floor for
+     non-text contrast. --primary-strong measures 5.07-6.99:1 on every surface
+     in the system. Components that do set a Tailwind ring always pair it with
+     `focus-visible:outline-none`, so they keep the sage ring and its canvas
+     offset band and are untouched by this rule. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary-strong));
+    outline-offset: 2px;
+  }
+
+  /* SvelteKit resets focus to the navigation target (tabindex -1) after a
+     client-side navigation, and Chrome matches :focus-visible on it when the
+     navigation was keyboard-initiated — measured: body[tabindex="-1"] picking
+     up `outline: solid 2px` after tabbing to a nav link and pressing Enter,
+     i.e. a deep-sage box around the whole page. Programmatic focus targets are
+     not controls and get no ring. */
+  body:focus-visible,
+  [tabindex='-1']:focus-visible {
+    outline: none;
+  }
+
+  /* Links underline on hover; the default offset runs through descenders. */
+  a {
+    text-underline-offset: 0.15em;
   }
 }
 

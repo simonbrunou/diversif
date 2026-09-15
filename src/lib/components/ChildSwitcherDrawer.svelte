@@ -2,9 +2,9 @@
   import Modal from './ui/Modal.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
-  import { Plus, Check } from 'lucide-svelte';
+  import { Plus, Check, Sprout } from 'lucide-svelte';
 
-  type Child = { id: string; name: string; birthMonth: string; avatarSeed: string };
+  type Child = { id: string; name: string; birthMonth: string };
 
   let {
     open = $bindable(false),
@@ -24,10 +24,10 @@
           onclick={() => (open = false)}
         >
           <span
-            class="bg-avatar-tile flex h-11 w-11 items-center justify-center rounded-full"
+            class="bg-avatar-tile flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-primary-strong"
             aria-hidden="true"
           >
-            {child.avatarSeed}
+            <Sprout size={20} />
           </span>
           <span class="flex-1 font-bold">{child.name}</span>
           {#if child.id === currentChildId}

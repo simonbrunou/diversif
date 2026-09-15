@@ -12,7 +12,7 @@
   import { cn } from '$lib/utils/cn';
   import * as m from '$lib/paraglide/messages';
 
-  type Child = { id: string; name: string; birthMonth: string; avatarSeed: string };
+  type Child = { id: string; name: string; birthMonth: string };
 
   let {
     user: _user,

@@ -9,8 +9,11 @@
   // butter pair (the brief's own token for reminders) at tile strength.
   const PILL_CLASSES: Record<AllergenPillState, string> = {
     ok: 'bg-tile-mint text-tile-mint-foreground',
-    todo: 'border border-border bg-surface text-ink-soft',
+    todo: 'bg-surface text-ink-soft',
     fading: 'bg-tile-butter text-tile-butter-foreground',
+    // The border here encodes state (the only visual difference from
+    // 'todo' once both are white on bg-surface), not elevation — do not
+    // remove it as a "redundant" Single Channel violation.
     inconfort: 'border border-tile-butter-foreground/50 bg-surface text-tile-butter-foreground',
     reaction: 'bg-reaction-reaction text-reaction-reaction-foreground'
   };

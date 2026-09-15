@@ -75,11 +75,11 @@
   .locale-switcher {
     display: inline-flex;
     gap: 0.25rem;
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
   }
   .locale-switcher a {
     padding: 0.5rem 0.625rem;
-    border-radius: 0.25rem;
+    border-radius: 0.375rem;
     color: hsl(var(--muted-foreground));
     text-decoration: none;
   }
