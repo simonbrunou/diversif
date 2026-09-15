@@ -84,6 +84,15 @@ test('a11y axe: AllergenInfoDialog open @responsive', async ({ page }) => {
 
 test.describe('a11y axe — auth routes @responsive', () => {
   test('walks the signed-in surface', async ({ page }) => {
+    // This single test does signup + child creation, 12 route sweeps, a real
+    // log submission, and 7 more axe passes over opened dialogs/sheets — 9
+    // test.step blocks, each running the full WCAG + best-practice ruleset.
+    // It measured 30.0s against the config's 30s budget on the run that added
+    // the populated-dashboard sweep: passing by a rounding error, i.e. already
+    // a guaranteed intermittent failure. test.slow() triples the budget for
+    // this test only, rather than relaxing the global timeout and blinding
+    // every other spec to a genuine hang.
+    test.slow();
     const childId = await signUpAndCreateChild(page, 'A11y', '2025-08-01');
     await dismissWelcomeIfPresent(page);
 
