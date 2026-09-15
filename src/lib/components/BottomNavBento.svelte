@@ -72,8 +72,10 @@
       <span>{m[tab.labelKey]()}</span>
     </a>
     {#if i === 1}
-      <!-- spacer for FAB -->
-      <div class="w-16" aria-hidden="true"></div>
+      <!-- Spacer for the fixed FAB: 80px reserves ≥10px clearance on each
+           side of the 60px FAB (measured at 390px viewport) so the two
+           adjacent tap targets (Carnet / Découvrir) never touch it. -->
+      <div class="w-20" aria-hidden="true"></div>
     {/if}
   {/each}
 </nav>

@@ -30,7 +30,9 @@ test('queues a log submission while offline', async ({ page }) => {
     Object.defineProperty(navigator, 'onLine', { get: () => false, configurable: true });
   });
 
-  await page.getByRole('button', { name: /noter ce repas/i }).click();
+  // Anchored: the submit is now exactly "Enregistrer", while the rail CTA and
+  // the mobile FAB both carry "Enregistrer un repas".
+  await page.getByRole('button', { name: /^enregistrer$/i }).click();
 
   await expect(
     page.getByText('Enregistré hors-ligne, sera synchronisé.', { exact: false })
@@ -93,7 +95,7 @@ test('a transport failure while online queues the entry instead of wiping the fo
     return route.continue();
   });
 
-  await page.getByRole('button', { name: /noter ce repas/i }).click();
+  await page.getByRole('button', { name: /^enregistrer$/i }).click();
 
   // Must degrade to the offline-queue toast, never the error boundary.
   await expect(

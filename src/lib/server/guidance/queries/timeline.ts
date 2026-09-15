@@ -19,7 +19,18 @@ export type EnrichedEntry = {
   givenAt: number;
 };
 
-export async function loadStreak(childId: number, now: Date = new Date()): Promise<number> {
+/**
+ * Current consecutive-day streak and the all-time longest one.
+ *
+ * Both come out of the SAME query : it already returns every distinct logging
+ * day in descending order, so the record is a second pass over rows we have
+ * in hand rather than a second round-trip. Before this, the dashboard passed
+ * `streak` as its own `streakRecord`, which made "record" unconditionally
+ * true for any streak >= 1 and told a first-timer that one day was her best.
+ */
+export type StreakStats = { current: number; record: number };
+
+export async function loadStreak(childId: number, now: Date = new Date()): Promise<StreakStats> {
   // We bucket by UTC day on purpose. Most parents are within UTC±2 (Europe),
   // and a UTC-day boundary differs from local-day by at most ~2 hours : well
   // outside the normal awake window for logging baby meals (basically nobody
@@ -39,30 +50,41 @@ export async function loadStreak(childId: number, now: Date = new Date()): Promi
         WHERE ${foodEntries.childId} = ${childId}
         ORDER BY day DESC`
   );
-  const rows = res.map((r) => ({ day: Number(r.day) }));
-  if (rows.length === 0) return 0;
+  const days = res.map((r) => Number(r.day));
+  if (days.length === 0) return { current: 0, record: 0 };
+
+  // Longest run of consecutive days anywhere in the history. `days` is
+  // DISTINCT and descending, so a run breaks the moment the gap to the next
+  // day is not exactly 1.
+  let record = 1;
+  let run = 1;
+  for (let i = 1; i < days.length; i += 1) {
+    run = days[i] === days[i - 1] - 1 ? run + 1 : 1;
+    if (run > record) record = run;
+  }
 
   const today = Math.floor(now.getTime() / DAY_MS);
   let cursor = today;
   // Allow the streak to start "yesterday" if the user has not logged today yet.
-  if (rows[0].day !== today) {
-    if (rows[0].day === today - 1) {
+  if (days[0] !== today) {
+    if (days[0] === today - 1) {
       cursor = today - 1;
     } else {
-      return 0;
+      // No current streak, but the record still stands.
+      return { current: 0, record };
     }
   }
 
-  let streak = 0;
-  for (const r of rows) {
-    if (r.day === cursor) {
-      streak += 1;
+  let current = 0;
+  for (const day of days) {
+    if (day === cursor) {
+      current += 1;
       cursor -= 1;
-    } else if (r.day < cursor) {
+    } else if (day < cursor) {
       break;
     }
   }
-  return streak;
+  return { current, record };
 }
 
 export type CoparentEntry = {

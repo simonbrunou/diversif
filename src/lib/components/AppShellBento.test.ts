@@ -3,6 +3,7 @@ import { render, screen, cleanup } from '@testing-library/svelte';
 import { textSnippet } from '../../test/component';
 import AppShellBento from './AppShellBento.svelte';
 import { TABS } from './BottomNavBento.svelte';
+import * as m from '$lib/paraglide/messages';
 
 mock.module('$app/forms', () => ({
   enhance: () => ({ destroy: () => {} })
@@ -31,7 +32,7 @@ describe('AppShellBento', () => {
 
   it('renders the FAB with the right aria-label', () => {
     render(AppShellBento, { props: baseProps });
-    expect(screen.getByLabelText('Enregistrer un aliment')).toBeTruthy();
+    expect(screen.getByLabelText(m.chromeFabLog())).toBeTruthy();
   });
 
   it('renders the child header pill with the current child name', () => {
@@ -45,7 +46,7 @@ describe('AppShellBento', () => {
     render(AppShellBento, {
       props: { ...baseProps, currentPath: '/login', currentChildId: undefined }
     });
-    expect(screen.queryByLabelText('Enregistrer un aliment')).toBeNull();
+    expect(screen.queryByLabelText(m.chromeFabLog())).toBeNull();
     expect(screen.queryByLabelText('Navigation principale')).toBeNull();
   });
 
@@ -64,7 +65,7 @@ describe('AppShellBento', () => {
     // fallback as the mobile nav.
     const links = [...rail!.querySelectorAll('a')].map((a) => a.getAttribute('href'));
     expect(links).toEqual(['/', ...TABS.map((t) => t.href('a'))]);
-    // Log CTAs (mobile FAB + desktop fixed button) also survive on /account.
+    // Log CTAs (mobile FAB + desktop rail CTA) also survive on /account.
     expect(screen.getAllByRole('button', { name: /Enregistrer/ }).length).toBe(2);
   });
 
@@ -72,9 +73,8 @@ describe('AppShellBento', () => {
     const { container } = render(AppShellBento, {
       props: { ...baseProps, currentPath: '/child/a/report' }
     });
-    // A hand-to-pediatrician document: no mobile FAB, no fixed desktop
-    // « + Enregistrer » button (it overlapped the report at lg widths).
-    expect(screen.queryByLabelText('Enregistrer un aliment')).toBeNull();
+    // A hand-to-pediatrician document: no mobile FAB and no rail CTA.
+    expect(screen.queryByLabelText(m.chromeFabLog())).toBeNull();
     expect(screen.queryByRole('button', { name: /Enregistrer/ })).toBeNull();
     // Navigation chrome survives: bottom tabs + desktop rail.
     expect(screen.getByLabelText('Navigation principale')).toBeTruthy();

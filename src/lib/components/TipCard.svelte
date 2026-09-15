@@ -34,13 +34,16 @@
   import type { Icon as LucideIcon } from 'lucide-svelte';
   import { Lightbulb } from 'lucide-svelte';
   import { cn } from '$lib/utils/cn';
-  import * as m from '$lib/paraglide/messages';
   import SourceCitation from './SourceCitation.svelte';
   import type { SourceId } from '$lib/content/sources';
 
   let {
     tone = 'info',
-    eyebrow = m.tipCardDefaultEyebrow(),
+    // Opt-in, and never alongside a title. An eyebrow above a heading is
+    // decoration: the heading already carries its own weight. The two
+    // title-less callers (the log-form tip, the suggestions tip) use it as
+    // that card's only label, which is a legitimate use.
+    eyebrow,
     title,
     body,
     icon = Lightbulb,

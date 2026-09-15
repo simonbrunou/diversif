@@ -13,7 +13,7 @@ async function logFoodWithReaction(
   foodName: string,
   reactionLabel: string
 ): Promise<void> {
-  await page.getByRole('button', { name: 'Enregistrer un aliment' }).click();
+  await page.getByRole('button', { name: 'Enregistrer un repas' }).click();
   await expect(page).toHaveURL(/\/child\/\d+\/log$/);
   await page.getByPlaceholder('Rechercher un aliment…').fill(foodName);
   await page
@@ -24,7 +24,7 @@ async function logFoodWithReaction(
   // severity-helper <details> panel below it echoes the same labels in <strong>
   // tags ("Comment choisir ?" copy on /log).
   await page.locator('fieldset').getByText(reactionLabel, { exact: true }).click();
-  await page.getByRole('button', { name: 'Noter ce repas' }).click();
+  await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   // Server redirects back to /child/<id> after a successful log.
   await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
 }

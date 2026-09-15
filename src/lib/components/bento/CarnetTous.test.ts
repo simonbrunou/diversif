@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import CarnetTous from './CarnetTous.svelte';
+import * as m from '$lib/paraglide/messages';
 
 afterEach(() => cleanup());
 
@@ -43,7 +44,7 @@ describe('CarnetTous', () => {
     // axe caught it dipping under threshold on this button (a11y-axe.spec.ts).
     // tile-mint has ~7.2:1 headroom — assert the fix stays in place.
     render(CarnetTous, { props: { foods: [], childId: '1' } });
-    const cta = screen.getByRole('link', { name: 'Ajouter un repas' });
+    const cta = screen.getByRole('link', { name: m.carnetTousEmptyAllCta() });
     expect(cta.className).toContain('bg-tile-mint');
     expect(cta.className).not.toContain('bg-primary');
   });

@@ -12,15 +12,24 @@
   } = $props();
 </script>
 
-<button
-  type="button"
-  {onclick}
-  aria-label={m.chromeFabLog()}
-  class={cn(
-    'flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft transition-transform duration-base ease-spring hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-    className
-  )}
-  style="height: 60px; width: 60px; view-transition-name: fab-log;"
->
-  <Plus size={28} aria-hidden="true" />
-</button>
+<div class="flex flex-col items-center gap-1">
+  <button
+    type="button"
+    {onclick}
+    aria-label={m.chromeFabLog()}
+    class={cn(
+      'flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft transition-transform duration-base ease-spring hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      className
+    )}
+    style="height: 60px; width: 60px; view-transition-name: fab-log;"
+  >
+    <Plus size={28} aria-hidden="true" />
+  </button>
+  <!-- Visible caption for the co-parent who opens the app cold (welcome
+       dialog never fires for them — it requires a zero-entry child). The
+       button's aria-label already carries the accessible name, so this is
+       hidden from AT to avoid a double announcement. -->
+  <span aria-hidden="true" class="text-2xs font-medium leading-none text-primary-strong">
+    {m.chromeFabLogShort()}
+  </span>
+</div>

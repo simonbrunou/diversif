@@ -18,7 +18,7 @@ test("signup lands on bento Aujourd'hui", async ({ page }) => {
   await expect(page).toHaveURL(/\/child\/\d+$/);
 
   // Bento chrome renders
-  await expect(page.getByRole('button', { name: 'Enregistrer un aliment' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Enregistrer un repas' })).toBeVisible();
 });
 
 test('onboarding with inviteCoparent generates a code visible in the redirect query', async ({

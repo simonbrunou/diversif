@@ -15,6 +15,14 @@
 
   let step = $state(0);
 
+  const stepTitle = $derived(
+    step === 0
+      ? m.dialogsWelcomeStep0Title()
+      : step === 1
+        ? m.dialogsWelcomeStep1Title()
+        : m.dialogsWelcomeStep2Title()
+  );
+
   function next() {
     step += 1;
   }
@@ -25,13 +33,12 @@
   }
 </script>
 
-<Modal bind:open onclose={close} side="center" class="max-w-md">
+<Modal bind:open onclose={close} side="center" class="max-w-md" title={stepTitle}>
   <div class="space-y-3 text-sm">
     {#if step === 0}
-      <div class="flex items-center gap-2">
-        <Heart size={20} class="text-primary" aria-hidden="true" />
-        <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep0Title()}</h2>
-      </div>
+      <span class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-primary">
+        <Heart size={20} aria-hidden="true" />
+      </span>
       <p class="text-foreground">
         {m.dialogsWelcomeStep0Body()}
       </p>
@@ -47,10 +54,9 @@
         </li>
       </ul>
     {:else if step === 1}
-      <div class="flex items-center gap-2">
-        <Sparkles size={20} class="text-primary" aria-hidden="true" />
-        <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep1Title()}</h2>
-      </div>
+      <span class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-primary">
+        <Sparkles size={20} aria-hidden="true" />
+      </span>
       <ul class="list-disc space-y-1.5 pl-5 text-foreground">
         <li><strong>{m.dialogsWelcomeStep1Bullet1Bold()}</strong>{m.dialogsWelcomeStep1Bullet1After()}</li>
         <li><strong>{m.dialogsWelcomeStep1Bullet2Bold()}</strong>{m.dialogsWelcomeStep1Bullet2After()}</li>
@@ -59,10 +65,9 @@
         <li><strong>{m.dialogsWelcomeStep1Bullet5Bold()}</strong>{m.dialogsWelcomeStep1Bullet5After()}</li>
       </ul>
     {:else}
-      <div class="flex items-center gap-2">
-        <BookOpen size={20} class="text-primary" aria-hidden="true" />
-        <h2 class="text-lg font-semibold">{m.dialogsWelcomeStep2Title()}</h2>
-      </div>
+      <span class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-primary">
+        <BookOpen size={20} aria-hidden="true" />
+      </span>
       <p class="text-foreground">
         {m.dialogsWelcomeStep2Body1()}
       </p>
@@ -90,12 +95,17 @@
       }}
     >
       <input type="hidden" name="reminderKey" value="welcome-dialog" />
-      <Button variant="ghost" type="submit">{m.dialogsWelcomeButtonDismiss()}</Button>
+      <Button variant="ghost" type="submit" class="min-h-11">{m.dialogsWelcomeButtonDismiss()}</Button>
     </form>
     {#if step < 2}
-      <Button onclick={next}>{m.dialogsWelcomeButtonNext()}</Button>
+      <Button onclick={next} class="min-h-11">{m.dialogsWelcomeButtonNext()}</Button>
     {:else}
-      <Button type="submit" form="welcome-dismiss-form" data-then-guide="true">
+      <Button
+        type="submit"
+        form="welcome-dismiss-form"
+        data-then-guide="true"
+        class="min-h-11"
+      >
         {m.dialogsWelcomeButtonOpenGuide()}
       </Button>
     {/if}

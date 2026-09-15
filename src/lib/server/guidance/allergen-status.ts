@@ -18,9 +18,18 @@ export type AllergenItem = {
   /** Days since the most recent log. Null only when the allergen has never been logged ('todo'). Consumed by the 'fading' caption; populated for other states for symmetry but not surfaced. */
   daysSinceLastTried: number | null;
   state: 'cleared' | 'todo' | 'inconfort' | 'reaction' | 'fading';
+  /**
+   * `food_entries.id` of the entry that produced this allergen's worst
+   * reaction — `reaction` outranks `inconfort`, most recent wins a tie. Null
+   * for every other state. Lets the dashboard link a 'réaction' pill straight
+   * at the entry page that carries the reassurance copy, instead of dumping
+   * the parent on the allergen segment index to go hunting.
+   */
+  worstEntryId: number | null;
 };
 
 export type AllergenRow = {
+  entryId: number;
   allergenType: string | null;
   givenAt: Date | number | string;
   reaction: string;
@@ -43,6 +52,7 @@ function formatDDMMYY(d: Date): string {
 export async function loadAllergenRows(childId: number): Promise<AllergenRow[]> {
   return db
     .select({
+      entryId: foodEntries.id,
       allergenType: foods.allergenType,
       givenAt: foodEntries.givenAt,
       reaction: foodEntries.reaction
@@ -64,9 +74,21 @@ export async function loadAllergenRows(childId: number): Promise<AllergenRow[]> 
  * Shared between the carnet allergens segment and the Discover passport.
  */
 export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date()): AllergenItem[] {
+  // Severity ladder for picking the entry a 'réaction' / 'inconfort' pill
+  // should link to. Higher wins; ties go to the most recent entry.
+  const SEVERITY: Record<string, number> = { ras: 0, inconfort: 1, reaction: 2 };
+
   const byAllergen = new Map<
     string,
-    { triedCount: number; latest: Date; hasInconfort: boolean; hasReaction: boolean }
+    {
+      triedCount: number;
+      latest: Date;
+      hasInconfort: boolean;
+      hasReaction: boolean;
+      worstEntryId: number | null;
+      worstSeverity: number;
+      worstAt: number;
+    }
   >();
   for (const r of rows) {
     // SQL filters `allergenType IS NOT NULL`; the guard is a TS narrowing
@@ -76,11 +98,21 @@ export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date(
     const givenAt =
       r.givenAt instanceof Date ? r.givenAt : /* v8 ignore next */ new Date(Number(r.givenAt));
     const previous = byAllergen.get(r.allergenType);
+    const severity = SEVERITY[r.reaction] ?? 0;
+    const at = givenAt.getTime();
+    const beatsWorst =
+      severity > 0 &&
+      (!previous ||
+        severity > previous.worstSeverity ||
+        (severity === previous.worstSeverity && at > previous.worstAt));
     byAllergen.set(r.allergenType, {
       triedCount: (previous?.triedCount ?? 0) + 1,
-      latest: previous && previous.latest.getTime() > givenAt.getTime() ? previous.latest : givenAt,
+      latest: previous && previous.latest.getTime() > at ? previous.latest : givenAt,
       hasInconfort: (previous?.hasInconfort ?? false) || r.reaction === 'inconfort',
-      hasReaction: (previous?.hasReaction ?? false) || r.reaction === 'reaction'
+      hasReaction: (previous?.hasReaction ?? false) || r.reaction === 'reaction',
+      worstEntryId: beatsWorst ? r.entryId : (previous?.worstEntryId ?? null),
+      worstSeverity: beatsWorst ? severity : (previous?.worstSeverity ?? 0),
+      worstAt: beatsWorst ? at : (previous?.worstAt ?? 0)
     });
   }
 
@@ -93,7 +125,8 @@ export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date(
         triedCount: 0,
         lastTried: null,
         daysSinceLastTried: null,
-        state: 'todo' as const
+        state: 'todo' as const,
+        worstEntryId: null
       };
     }
     const daysSince = Math.max(0, Math.floor((now.getTime() - b.latest.getTime()) / DAY_MS));
@@ -114,7 +147,8 @@ export function summarizeAllergenRows(rows: AllergenRow[], now: Date = new Date(
       triedCount: b.triedCount,
       lastTried: formatDDMMYY(b.latest),
       daysSinceLastTried: daysSince,
-      state
+      state,
+      worstEntryId: b.worstEntryId
     };
   });
 }
