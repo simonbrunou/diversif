@@ -240,14 +240,14 @@
     "semantic_hash": ""
   },
   "messages/en.json": {
-    "mtime": 1789456512.6106255,
-    "seen": 1789458119.181108,
+    "mtime": 1789462636.1691244,
+    "seen": 1789463325.0631645,
     "ast_hash": "b528d53f089af5692da734bb9c8db2e3",
     "semantic_hash": ""
   },
   "messages/fr.json": {
-    "mtime": 1789462049.004419,
-    "seen": 1789462240.1896243,
+    "mtime": 1789462636.1703076,
+    "seen": 1789463325.0631652,
     "ast_hash": "e71284947931acded89f7dc6c915106a",
     "semantic_hash": ""
   },
@@ -450,14 +450,14 @@
     "semantic_hash": ""
   },
   "src/lib/components/AppShellBento.svelte": {
-    "mtime": 1789456855.440976,
-    "seen": 1789458119.1819375,
+    "mtime": 1789462636.17049,
+    "seen": 1789463325.0638943,
     "ast_hash": "861430aea80343bf671da67c057f5754",
     "semantic_hash": ""
   },
   "src/lib/components/AppShellBento.test.ts": {
-    "mtime": 1789456887.0026407,
-    "seen": 1789458119.1819382,
+    "mtime": 1789462636.1705742,
+    "seen": 1789463325.0638947,
     "ast_hash": "8f356253927dba8d76d47cf6a85a4aac",
     "semantic_hash": ""
   },
@@ -480,27 +480,27 @@
     "semantic_hash": ""
   },
   "src/lib/components/ChildHeaderPill.svelte": {
-    "mtime": 1789458326.6626906,
-    "seen": 1789459264.8051758,
-    "ast_hash": "9db908c8e074af1c0e07a0b5316e8a57",
+    "mtime": 1789462853.3128345,
+    "seen": 1789463325.0639791,
+    "ast_hash": "c6cc1ad6236fdb3fba211989ffe7f442",
     "semantic_hash": ""
   },
   "src/lib/components/ChildHeaderPill.test.ts": {
-    "mtime": 1789456874.359775,
-    "seen": 1789458119.1820233,
+    "mtime": 1789462636.170736,
+    "seen": 1789463325.06398,
     "ast_hash": "d0fbdddf985ac08f1365829f4183d8c1",
     "semantic_hash": ""
   },
   "src/lib/components/ChildSwitcherDrawer.svelte": {
-    "mtime": 1789458332.2736363,
-    "seen": 1789459264.805209,
+    "mtime": 1789462636.1708045,
+    "seen": 1789463325.0639813,
     "ast_hash": "9aebade8347b85e0ccac37524a36dc4f",
     "semantic_hash": ""
   },
   "src/lib/components/ChildSwitcherDrawer.test.ts": {
-    "mtime": 1789462078.9211204,
-    "seen": 1789462240.1905727,
-    "ast_hash": "b21a18ae53779d8cacdbd47ea56d50bf",
+    "mtime": 1789462855.66481,
+    "seen": 1789463325.063982,
+    "ast_hash": "bfb560ec3ce309c9541eddf4ed9e4e36",
     "semantic_hash": ""
   },
   "src/lib/components/FabLog.svelte": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/FoodCombobox.svelte": {
-    "mtime": 1789452638.8757167,
-    "seen": 1789454270.3243766,
-    "ast_hash": "34b624d3fedf1e1aca43e7ba55209440",
+    "mtime": 1789462928.924359,
+    "seen": 1789463325.0640638,
+    "ast_hash": "162f709975a32db9130a28c288e5b6b8",
     "semantic_hash": ""
   },
   "src/lib/components/FoodCombobox.test.ts": {
@@ -576,8 +576,8 @@
     "semantic_hash": ""
   },
   "src/lib/components/LocaleSwitcher.svelte": {
-    "mtime": 1789456613.1065536,
-    "seen": 1789458119.1823492,
+    "mtime": 1789462636.1709561,
+    "seen": 1789463325.0642781,
     "ast_hash": "b1ea32cac91d2a102c642d060b8c138f",
     "semantic_hash": ""
   },
@@ -732,8 +732,8 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/AddSymptomSheet.svelte": {
-    "mtime": 1789456613.1085534,
-    "seen": 1789458119.1830134,
+    "mtime": 1789462636.1710396,
+    "seen": 1789463325.06493,
     "ast_hash": "02c0b66f94a27b49e1134b371c6c0097",
     "semantic_hash": ""
   },
@@ -744,9 +744,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/AllergensSnapshot.svelte": {
-    "mtime": 1789456613.1025536,
-    "seen": 1789458119.183044,
-    "ast_hash": "1da2c3f89805077fe99aabd08154c966",
+    "mtime": 1789462851.0458584,
+    "seen": 1789463325.0649602,
+    "ast_hash": "12c5aa7e623757559cdd3b7845cb557b",
     "semantic_hash": ""
   },
   "src/lib/components/bento/AllergensSnapshot.test.ts": {
@@ -840,8 +840,8 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/CarnetSegments.svelte": {
-    "mtime": 1789456613.0985537,
-    "seen": 1789458119.1834817,
+    "mtime": 1789462636.1711988,
+    "seen": 1789463325.065393,
     "ast_hash": "9305f1480e4530d08234133b368af778",
     "semantic_hash": ""
   },
@@ -852,26 +852,26 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/CarnetStats.svelte": {
-    "mtime": 1789462072.5921836,
-    "seen": 1789462240.1921535,
+    "mtime": 1789462636.1712687,
+    "seen": 1789463325.0654228,
     "ast_hash": "943d8e29139ee777cb134a046ce2bfc2",
     "semantic_hash": ""
   },
   "src/lib/components/bento/CarnetStats.test.ts": {
-    "mtime": 1781163542.0153785,
-    "seen": 1789454270.3244073,
-    "ast_hash": "d4afd8e3fb7905cd3ec43adeacfa0302",
+    "mtime": 1789462941.6199117,
+    "seen": 1789463325.0654237,
+    "ast_hash": "b68fee45a87fe341b98e9768edc28a83",
     "semantic_hash": ""
   },
   "src/lib/components/bento/CarnetTous.svelte": {
-    "mtime": 1789457264.263642,
-    "seen": 1789458119.1835697,
-    "ast_hash": "0b91b46ee4021017b0162569f56769ba",
+    "mtime": 1789462931.5030172,
+    "seen": 1789463325.0654244,
+    "ast_hash": "aec1cc2fb1445171395efe07155c1ec4",
     "semantic_hash": ""
   },
   "src/lib/components/bento/CarnetTous.test.ts": {
-    "mtime": 1789457622.066857,
-    "seen": 1789458119.1835706,
+    "mtime": 1789462636.1714292,
+    "seen": 1789463325.065425,
     "ast_hash": "4d62dcdf409939ac6a8cdd2d684700bb",
     "semantic_hash": ""
   },
@@ -936,9 +936,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/FoodCard.svelte": {
-    "mtime": 1789456751.5930793,
-    "seen": 1789458119.1838655,
-    "ast_hash": "6c72fa83ad6d03250ad4a267b542b096",
+    "mtime": 1789462846.6119049,
+    "seen": 1789463325.0657115,
+    "ast_hash": "4aa7d704aed6256b2c93381c3c8a08e7",
     "semantic_hash": ""
   },
   "src/lib/components/bento/FoodCard.test.ts": {
@@ -996,9 +996,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/ReactionDetailBento.svelte": {
-    "mtime": 1789120473.3078332,
-    "seen": 1789454270.3244205,
-    "ast_hash": "fe15892b6ae1827e835c7d93dc637b6e",
+    "mtime": 1789462848.5488844,
+    "seen": 1789463325.065973,
+    "ast_hash": "863fe2db915b3b919fed6d9afabcf01a",
     "semantic_hash": ""
   },
   "src/lib/components/bento/ReactionDetailBento.test.ts": {
@@ -1020,9 +1020,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/RecentFeed.svelte": {
-    "mtime": 1789462107.6068337,
-    "seen": 1789462240.192917,
-    "ast_hash": "bf40319a202996264fbbcbde4434c405",
+    "mtime": 1789462844.293929,
+    "seen": 1789463325.0660605,
+    "ast_hash": "58ef8b9c657eafc2072fb2ad3e2a45a9",
     "semantic_hash": ""
   },
   "src/lib/components/bento/RecentFeed.test.ts": {
@@ -1284,14 +1284,14 @@
     "semantic_hash": ""
   },
   "src/lib/components/report/ReportStageStatus.svelte": {
-    "mtime": 1789457118.280188,
-    "seen": 1789458119.1854813,
+    "mtime": 1789462636.1716669,
+    "seen": 1789463325.0672941,
     "ast_hash": "f0886e58f02b2d12133d78041f0997eb",
     "semantic_hash": ""
   },
   "src/lib/components/report/ReportSummaryStats.svelte": {
-    "mtime": 1789461951.0457366,
-    "seen": 1789462240.1943161,
+    "mtime": 1789462636.1717336,
+    "seen": 1789463325.0672956,
     "ast_hash": "f687d09120326ee8e1e4a25b44bed830",
     "semantic_hash": ""
   },
@@ -2166,9 +2166,9 @@
     "semantic_hash": ""
   },
   "src/lib/utils/categories.ts": {
-    "mtime": 1779435611.2984746,
-    "seen": 1789454270.3245316,
-    "ast_hash": "068990d34a1bcd890bb933554461124c",
+    "mtime": 1789462970.9845624,
+    "seen": 1789463325.0715005,
+    "ast_hash": "dcc6671a127e741f5bc0a7be91f2d932",
     "semantic_hash": ""
   },
   "src/lib/utils/cn.test.ts": {
@@ -2358,8 +2358,8 @@
     "semantic_hash": ""
   },
   "src/routes/+layout.svelte": {
-    "mtime": 1789456818.3163702,
-    "seen": 1789458119.19036,
+    "mtime": 1789462636.1718144,
+    "seen": 1789463325.072328,
     "ast_hash": "4cc9034cba69cd1e6afeffff85c298d6",
     "semantic_hash": ""
   },
@@ -2772,8 +2772,8 @@
     "semantic_hash": ""
   },
   "src/routes/child/[id]/report/+page.svelte": {
-    "mtime": 1789456602.5986655,
-    "seen": 1789458119.1923926,
+    "mtime": 1789462636.1719253,
+    "seen": 1789463325.0743651,
     "ast_hash": "9aa7edf3c7e30a96acbaffaa7414012d",
     "semantic_hash": ""
   },
@@ -3282,8 +3282,8 @@
     "semantic_hash": ""
   },
   ".impeccable/critique/2026-09-14T14-29-48Z__src-routes-child-id-page-svelte.md": {
-    "mtime": 1789455437.8760068,
-    "seen": 1789458119.1946409,
+    "mtime": 1789462636.1600444,
+    "seen": 1789463325.076643,
     "ast_hash": "e4157e7ae5e29bcf43487fa9f787f5f8",
     "semantic_hash": ""
   },
@@ -3300,9 +3300,9 @@
     "semantic_hash": ""
   },
   "DESIGN.md": {
-    "mtime": 1789462100.5049047,
-    "seen": 1789462240.2037666,
-    "ast_hash": "340849f7408b3bcc3583ea3dbf0a155a",
+    "mtime": 1789462970.858607,
+    "seen": 1789463325.076685,
+    "ast_hash": "6f72c04f0a1cb09b817e652155e4dcb3",
     "semantic_hash": ""
   },
   "PARKING_LOT.md": {
@@ -3672,8 +3672,8 @@
     "semantic_hash": ""
   },
   ".impeccable/config.json": {
-    "mtime": 1789458438.5325985,
-    "seen": 1789459264.8034751,
+    "mtime": 1789462636.1591244,
+    "seen": 1789463325.062364,
     "ast_hash": "57f96e07ca45a4de817c933f130c9095",
     "semantic_hash": ""
   }
