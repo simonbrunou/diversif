@@ -3,6 +3,7 @@
   import { goto, afterNavigate } from '$app/navigation';
   import { localizedHref } from '$lib/utils/localized-href';
   import Button from '$lib/components/ui/Button.svelte';
+  import { Plus } from 'lucide-svelte';
   import BottomNavBento, { TABS } from './BottomNavBento.svelte';
   import FabLog from './FabLog.svelte';
   import ChildHeaderPill from './ChildHeaderPill.svelte';
@@ -41,10 +42,10 @@
   // CTA — they must never disagree (the rail once used currentChildId while
   // the mobile nav used the fallback, leaving desktop /account chrome-less).
   const showNav = $derived(showChrome && !!navChildId);
-  // /child/[id]/report is a hand-to-pediatrician document: the fixed desktop
-  // « + Enregistrer un aliment » button overlaps the document at lg widths
-  // and the mobile FAB floats over it — both are off-context there. The nav
-  // (rail + bottom tabs) stays for wayfinding; only the log CTAs go.
+  // /child/[id]/report is a hand-to-pediatrician document: the rail's log
+  // CTA and the mobile FAB both float over the document at their
+  // respective widths — both are off-context there. The nav (rail + bottom
+  // tabs) stays for wayfinding; only the log CTAs go.
   const isReportRoute = $derived(/^\/child\/[^/]+\/report(?:\/|$)/.test(currentPath));
   const showLogCta = $derived(showNav && !isReportRoute);
 
@@ -65,6 +66,19 @@
 </script>
 
 <div class="grid min-h-screen lg:grid-cols-[220px_1fr]">
+  {#if showLogCta}
+    <!-- Rendered first in DOM (fixed positioning keeps it visually anchored
+         to the nav's centre slot) so keyboard/AT users reach the app's
+         single most-used control before the rail, content, and bottom nav
+         instead of after all of it. Desktop-hidden: the rail CTA below
+         covers lg+. -->
+    <div
+      data-no-print
+      class="fixed bottom-[calc(env(safe-area-inset-bottom)+4px)] left-1/2 z-40 -translate-x-1/2 lg:hidden"
+    >
+      <FabLog onclick={openLog} />
+    </div>
+  {/if}
   <!-- Desktop left rail sidebar -->
   <nav
     data-no-print
@@ -74,6 +88,21 @@
     <!-- Wordmark links home so chrome-less pages (/child/new) keep a way out
          on desktop, matching the mobile SharedTopBar brand link. -->
     <a href={localizedHref('/')} class="mb-4 font-display text-2xl italic">diversif</a>
+    {#if showLogCta}
+      <!-- Desktop's persistent primary action: docked in the rail (not
+           floating in the content gutter) and styled as a filled pill so it
+           reads as an action, distinct from the plain-text wayfinding links
+           below it. -->
+      <Button
+        type="button"
+        onclick={openLog}
+        data-no-print
+        class="mb-2 flex items-center justify-center gap-2 rounded-full shadow-soft"
+      >
+        <Plus size={18} aria-hidden="true" />
+        {m.chromeFabLog()}
+      </Button>
+    {/if}
     {#if showNav}
       {#each TABS as tab (tab.labelKey)}
         {@const active = tab.matcher(currentPath)}
@@ -110,7 +139,10 @@
       class="flex-1 overflow-y-auto"
       data-variant="responsive"
     >
-      <div class="mx-auto w-full max-w-md px-3 pb-4 pt-3 lg:max-w-3xl lg:pb-3">
+      <!-- pb-12 on mobile clears the FAB: it now floats 23px above the nav
+           band, so the old pb-4 left the last scrolled row sitting underneath
+           it. Desktop has no FAB, hence the lg override. -->
+      <div class="mx-auto w-full max-w-md px-3 pb-12 pt-3 lg:max-w-3xl lg:pb-3">
         {#if showChrome && currentChild}
           <div data-no-print>
             <ChildHeaderPill child={currentChild} onSwitch={() => (switcherOpen = true)} />
@@ -135,32 +167,13 @@
     {#if showNav}
       <!-- Bottom nav is in normal document flow (not fixed/floating) so it
            sits flush below the scrollable content rather than overlaying it.
-           The FAB stays fixed so it can float over the nav's centre slot. -->
+           The FAB (rendered earlier in this file, see above) stays fixed so
+           it can float over the nav's centre slot regardless of DOM order. -->
       <div data-no-print class="lg:hidden">
         <BottomNavBento currentChildId={navChildId} {currentPath} />
-        {#if showLogCta}
-          <!-- FAB at bottom-SAI centres it on the nav's 56px visual band
-               (SAI+30px ≈ SAI+28px band centre, 2px above). -->
-          <div class="fixed bottom-[env(safe-area-inset-bottom)] left-1/2 z-40 -translate-x-1/2">
-            <FabLog onclick={openLog} />
-          </div>
-        {/if}
       </div>
 
       <ChildSwitcherDrawer bind:open={switcherOpen} {kids} currentChildId={navChildId} />
     {/if}
   </div>
-
-  <!-- Desktop top-right log button -->
-  {#if showLogCta}
-    <Button
-      type="button"
-      size="pill"
-      data-no-print
-      onclick={openLog}
-      class="fixed right-4 top-4 z-30 hidden shadow-soft lg:flex lg:items-center lg:gap-1"
-    >
-      + {m.chromeFabLog()}
-    </Button>
-  {/if}
 </div>

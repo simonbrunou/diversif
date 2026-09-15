@@ -14,9 +14,14 @@ describe('TipCard', () => {
     expect(container.textContent).toContain('World');
   });
 
-  it('renders the eyebrow by default ("Conseil")', () => {
-    const { container } = render(TipCard, { props: {} });
-    expect(container.textContent).toContain('Conseil');
+  it('renders no eyebrow unless one is asked for', () => {
+    const { container } = render(TipCard, { props: { title: 'Hello' } });
+    expect(container.textContent?.trim()).toBe('Hello');
+  });
+
+  it('renders an eyebrow when given one', () => {
+    const { container } = render(TipCard, { props: { eyebrow: 'Astuce' } });
+    expect(container.textContent).toContain('Astuce');
   });
 
   it.each(['info', 'warn', 'important'] as const)('applies tone=%s', (tone) => {

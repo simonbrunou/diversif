@@ -408,7 +408,10 @@ describe('loadDismissals / dismissReminder', () => {
 describe('loadStreak', () => {
   it('returns 0 when no entries exist', async () => {
     const { child } = await seedUserAndChild();
-    expect(await loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toBe(0);
+    expect(await loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toEqual({
+      current: 0,
+      record: 0
+    });
   });
 
   it('returns 0 when last entry is older than yesterday', async () => {
@@ -421,7 +424,12 @@ describe('loadStreak', () => {
       givenAt: new Date('2024-06-05T10:00:00Z'),
       reaction: 'ras'
     });
-    expect(await loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toBe(0);
+    // The streak is broken, but a one-day run still happened and the record
+    // has to survive it — that is the whole point of tracking it separately.
+    expect(await loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toEqual({
+      current: 0,
+      record: 1
+    });
   });
 
   it('counts a single same-day entry as a 1-day streak', async () => {
@@ -434,7 +442,10 @@ describe('loadStreak', () => {
       givenAt: new Date('2024-06-10T08:00:00Z'),
       reaction: 'ras'
     });
-    expect(await loadStreak(child.id, new Date('2024-06-10T20:00:00Z'))).toBe(1);
+    expect(await loadStreak(child.id, new Date('2024-06-10T20:00:00Z'))).toEqual({
+      current: 1,
+      record: 1
+    });
   });
 
   it('allows the streak to start yesterday when nothing logged today yet', async () => {
@@ -454,7 +465,10 @@ describe('loadStreak', () => {
       givenAt: new Date('2024-06-09T10:00:00Z'),
       reaction: 'ras'
     });
-    expect(await loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toBe(2);
+    expect(await loadStreak(child.id, new Date('2024-06-10T12:00:00Z'))).toEqual({
+      current: 2,
+      record: 2
+    });
   });
 
   it('counts consecutive UTC days and stops at the first gap', async () => {
@@ -471,7 +485,32 @@ describe('loadStreak', () => {
       });
     }
     // Today=10, yesterday=9, day before=8 → 3 in a row, then gap at day 7.
-    expect(await loadStreak(child.id, new Date('2024-06-10T15:00:00Z'))).toBe(3);
+    // Nothing earlier beats it (3-4 is a 2-day run, 6 stands alone), so the
+    // record equals the current streak here.
+    expect(await loadStreak(child.id, new Date('2024-06-10T15:00:00Z'))).toEqual({
+      current: 3,
+      record: 3
+    });
+  });
+
+  it('keeps a longer past run as the record while the current streak is shorter', async () => {
+    const { user, child } = await seedUserAndChild();
+    const f = await seedFood({ name: 'A', category: 'legumes' });
+    // A 4-day run early in the month, then a gap, then 2 days up to today.
+    for (const day of [1, 2, 3, 4, 9, 10]) {
+      const dd = String(day).padStart(2, '0');
+      await logEntry({
+        childId: child.id,
+        foodId: f.id,
+        userId: user.id,
+        givenAt: new Date(`2024-06-${dd}T10:00:00Z`),
+        reaction: 'ras'
+      });
+    }
+    expect(await loadStreak(child.id, new Date('2024-06-10T15:00:00Z'))).toEqual({
+      current: 2,
+      record: 4
+    });
   });
 });
 

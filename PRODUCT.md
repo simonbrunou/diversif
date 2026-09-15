@@ -1,5 +1,7 @@
 # PRODUCT.md — Diversif
 
+<!-- impeccable:product-schema 1 -->
+
 **Register:** `product`
 
 > The interface SERVES the product (an app UI, not a marketing surface). Design quality is in service of helping parents do a recurring, sometimes-anxious task with confidence.
@@ -11,6 +13,47 @@
 Diversif is a self-hosted web app for tracking a baby's food diversification (introducing solids between ~4–12 months), with co-parent sharing. Single-Docker, French-default UI with an `/en/` locale variant. Offline-first PWA — the log queue replays when the parent comes back online.
 
 Built by Simon Brunou as a personal-but-public side project, deployable in one container, telemetry-free aside from strict-PII-scrubbed Sentry error reporting. No analytics. No tracking. Pediatric expert content (LEAP, EAT, ESPGHAN, ANSES, HCSP) is reused as-is from peer-reviewed sources; the app does not author medical opinions.
+
+---
+
+## Platform
+
+web
+
+---
+
+## Positioning
+
+**Curated and source-cited, never generated.** Every age window, allergen instruction and reassurance line on screen traces to a named peer-reviewed source and is reused as-is. `src/lib/content/sources.ts` holds 16 of them — `leap-2015`, `eat-2016`, `espghan-2017`, `hcsp-2020`, `eaaci-2020`, `anses-nourrisson`, `spf-pnns-guide`, `ascia-2026` and the rest — and every piece of guidance the user sees can be traced back to one via its `SourceId`.
+
+A neighbouring tracker can bolt on a chatbot in a sprint. It cannot truthfully claim that nothing on the screen was generated, so nothing can drift, hallucinate, or quietly change between releases. That is the claim to protect.
+
+The 2026-07 meal-idea carve-out holds to the same rule and is not an exception to it: deterministic, composed only from the curated catalog, framed as _repères_ rather than prescriptions, LLM-free.
+
+---
+
+## Operating Context
+
+- **The logging scene.** One-handed on a phone, baby in the other arm, several times a day. The FAB is centred in the bottom nav for thumb reach; reaction defaults to RAS because that is the overwhelmingly common case.
+- **The review scene.** A calm moment a few times a week, often on a larger screen — "did we introduce enough variety?", "have we tried the priority allergens?".
+- **The 11pm scene.** Low ambient light, a non-RAS reaction in the feed, a parent who needs reassurance before information. The system-driven dark theme exists for this, not for aesthetics.
+- **The cold-open scene.** A co-parent invited by link (`memberships`) opens the app having never seen it, on a child that already has data — so the onboarding dialog never fires for them and the screen has to explain itself.
+- **The handoff.** `/child/<id>/report` and the print route exist to be handed to or printed for a pediatrician; they are documents, not dashboards.
+- **Deployment.** One Docker container, SQLite on a mounted volume, behind a reverse proxy / Cloudflare Tunnel. The operator is usually also the user.
+
+---
+
+## Capabilities and Constraints
+
+- Food log with reaction (`ras` / `inconfort` / `reaction`), texture, notes, and multi-ingredient meals grouped by a shared `mealId`.
+- 12 tracked allergens with derived state (`cleared` / `todo` / `fading` / `inconfort` / `reaction`); priority-introduction set follows LEAP/EAT/ESPGHAN, not EU labelling.
+- Deterministic reminder engine (`src/lib/server/guidance/reminders.ts`): pure derivation from the child's data plus dismissals, sorted by severity and capped at 4.
+- Offline-first PWA: writes queue in IndexedDB and replay with idempotency keys.
+- Auth: WebAuthn passkeys plus `Bun.password` Argon2id. Co-parent sharing by single-use invite code, 7-day expiry.
+- RGPD: account deletion and export are both one form away and actually delete the row plus related entries.
+- **Terminology is load-bearing.** `aliment` is the catalog item; `repas` is the logged event. The action verb is always _enregistrer_. `Régularité`, never "streak"; `Bilan`, never "stats"; `Adresse e-mail`, never "email".
+- Telemetry-free by constraint: no analytics, no third-party fonts, no tracking pixels. Only outbound traffic is Sentry with strict PII scrubbing.
+- The app authors no medical opinion. Curation only.
 
 ---
 
@@ -107,6 +150,26 @@ Fraunces Variable (italic) for the emotional / hero register. Inter Variable for
 6. **Telemetry-free.** No analytics, no GA, no tracking pixels, no third-party fonts. The only outbound traffic is Sentry error reporting with strict PII scrubbing.
 7. **Self-hosted = the user owns their data.** Account deletion (RGPD) is one form away and actually deletes the row + all related entries. Export is a button on the same screen.
 8. **Pediatric content is not authored by us.** All allergen guidance, age windows, and clinical-style text comes from cited peer-reviewed sources (LEAP, EAT, ESPGHAN, ANSES, HCSP). We curate; we don't opine.
+
+---
+
+## Evidence on Hand
+
+**Real, citable:** the 16 peer-reviewed sources in `src/lib/content/sources.ts`, surfaced through `SourceCitation` and `/sources`. Every clinical-sounding string in the product is traceable to one of them. The curated food catalog (103 rows seeded, with `suggested_age_months` and `allergen_type`) is likewise real product data.
+
+**Nothing else exists, and future work must not invent it.** There are no user counts, no testimonials, no case studies, no press, no ratings, no "trusted by N parents", no benchmarks. This is not modesty — it is a constraint: the product is telemetry-free by design, so there is no analytics anywhere that could confirm or contradict such a claim. A fabricated number here could never be checked, which is exactly why it must never be written.
+
+Copy may cite guidance. It may not cite popularity.
+
+---
+
+## Accessibility & Inclusion
+
+**WCAG 2.1 AA is binding, not aspirational.** It is enforced in CI, not just intended: `e2e/a11y-axe.spec.ts` runs axe-core with `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa`/`best-practice` across the signed-in surface — empty _and_ populated states — and hard-fails on any violation. `scripts/lint-contrast.ts` computes real WCAG ratios for token pairs in both themes. A change that drops below AA is a defect, not a tradeoff.
+
+**Plus a physical constraint the standard does not cover: one-handed reach.** The primary user is holding a baby. Primary actions stay in the thumb arc, `min-h-11` (44px) is the target floor for anything a parent taps while feeding, and adjacent targets keep real separation. Where a secondary inline chip cannot afford 44px, the floor is WCAG 2.5.8's 24px with ≥8px separation — a deliberate, documented deviation, never an accident.
+
+Dark theme is part of this: it exists because parents feed babies at 3am in low-light rooms. The decision is physical, not aesthetic.
 
 ---
 

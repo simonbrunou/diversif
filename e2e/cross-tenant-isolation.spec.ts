@@ -32,7 +32,7 @@ async function logFoodAndGetEntryId(
     .getByRole('button', { name: new RegExp(`^${foodName}`) })
     .first()
     .click();
-  await page.getByRole('button', { name: 'Noter ce repas' }).click();
+  await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   // Successful log redirects back to /child/<id>.
   await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
 

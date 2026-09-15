@@ -55,7 +55,7 @@ function makeData(coparentActivity: CoparentEntry[]): PageData {
     },
     bentoAllergens: [],
     diversity: { totalCategories: 8 },
-    streak: 3,
+    streak: { current: 3, record: 6 },
     weeklyRecap: null,
     reminders: [],
     coparentActivity,

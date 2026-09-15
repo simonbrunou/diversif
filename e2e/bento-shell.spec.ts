@@ -100,9 +100,9 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     await dismissWelcomeIfPresent(page);
 
     // FAB navigates to the full /log page rather than opening a sheet.
-    await page.getByRole('button', { name: 'Enregistrer un aliment' }).click();
+    await page.getByRole('button', { name: 'Enregistrer un repas' }).click();
     await expect(page).toHaveURL(/\/child\/\d+\/log$/);
-    await expect(page.getByRole('heading', { name: 'Noter un repas' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Enregistrer un repas' })).toBeVisible();
 
     // FoodCombobox search.
     await page.getByPlaceholder('Rechercher un aliment…').fill('poire');
@@ -112,7 +112,7 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
       .first()
       .click();
 
-    await page.getByRole('button', { name: 'Noter ce repas' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     // Server redirects back to /child/<id>; recent feed surfaces the new entry.
     await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);

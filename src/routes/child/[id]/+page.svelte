@@ -10,9 +10,9 @@
   import { localizedHref } from '$lib/utils/localized-href';
   import * as m from '$lib/paraglide/messages';
   import { Baby } from 'lucide-svelte';
-  import type { PageData } from './$types';
+  import type { ActionData, PageData } from './$types';
 
-  let { data }: { data: PageData } = $props();
+  let { data, form }: { data: PageData; form: ActionData } = $props();
 
   // Initial state only : once the user closes the dialog (or any other form
   // action runs and re-fires `data`), we must NOT re-open the welcome modal.
@@ -44,12 +44,20 @@
   });
 </script>
 
+{#if form?.errorKey}
+  <!-- ?/dismissReminder can fail(400) on a malformed key. Before this the
+       page destructured only `data`, so the reminder simply stayed put with
+       no explanation. -->
+  <div class="mx-auto w-full max-w-2xl px-3 pt-3" role="alert">
+    <TipCard tone="warn" title={m.errorsLogInvalidRequest()} />
+  </div>
+{/if}
+
 {#if data.ageMonths < 4 && data.stats.foodsIntroduced === 0}
   <div class="mx-auto w-full max-w-2xl px-3 pt-3">
     <TipCard
       tone="info"
       icon={Baby}
-      eyebrow={m.preDiversificationEyebrow()}
       title={m.preDiversificationTitle()}
       body={m.preDiversificationBody()}
     >
@@ -67,8 +75,8 @@
   childId={String(data.child.id)}
   recent={data.recent}
   stats={data.stats}
-  streak={data.streak}
-  streakRecord={data.streak}
+  streak={data.streak.current}
+  streakRecord={data.streak.record}
   reminders={data.reminders ?? []}
   allergens={data.bentoAllergens ?? []}
 />

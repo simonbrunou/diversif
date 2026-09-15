@@ -30,7 +30,7 @@ test('texture picker defaults to age-appropriate value and surfaces on the feed'
     .click();
 
   // Submit the log entry (texture default is already selected)
-  await page.getByRole('button', { name: 'Noter ce repas' }).click();
+  await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
   // Server redirects back to /child/<id> after a successful log
   await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);

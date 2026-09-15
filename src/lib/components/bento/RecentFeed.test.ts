@@ -16,7 +16,8 @@ describe('RecentFeed', () => {
       reaction: 'ras' as const,
       givenAt: Date.now() - 1000,
       texture: null,
-      mealId: null
+      mealId: null,
+      loggedByName: 'Alice'
     },
     {
       id: 2,
@@ -26,13 +27,14 @@ describe('RecentFeed', () => {
       reaction: 'ras' as const,
       givenAt: Date.now() - 2000,
       texture: null,
-      mealId: null
+      mealId: null,
+      loggedByName: 'Alice'
     }
   ];
 
   it('renders the section header', () => {
     render(RecentFeed, { props: { entries, childId: '5' } });
-    expect(screen.getByText('Cette semaine')).toBeTruthy();
+    expect(screen.getByText(m.aujourdhuiRecentTitle())).toBeTruthy();
   });
 
   it('renders one row per entry, capped at 5', () => {
@@ -44,7 +46,8 @@ describe('RecentFeed', () => {
       reaction: 'ras' as const,
       givenAt: Date.now() - i * 1000,
       texture: null,
-      mealId: null
+      mealId: null,
+      loggedByName: 'Alice'
     }));
     render(RecentFeed, { props: { entries: many, childId: '5' } });
     expect(screen.getAllByRole('listitem').length).toBe(5);
@@ -52,12 +55,12 @@ describe('RecentFeed', () => {
 
   it('renders the empty placeholder when entries is empty', () => {
     render(RecentFeed, { props: { entries: [], childId: '5' } });
-    expect(screen.getByText('Rien cette semaine')).toBeTruthy();
+    expect(screen.getByText(m.aujourdhuiRecentEmpty())).toBeTruthy();
   });
 
   it('renders the reaction pill text', () => {
     render(RecentFeed, { props: { entries, childId: '5' } });
-    expect(screen.getAllByText('OK').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(m.reactionsLabelRas()).length).toBeGreaterThan(0);
   });
 
   it('wraps every entry in a link to the food entry detail page', () => {
@@ -70,7 +73,8 @@ describe('RecentFeed', () => {
         reaction: 'reaction' as const,
         givenAt: Date.now() - 3000,
         texture: null,
-        mealId: null
+        mealId: null,
+        loggedByName: 'Alice'
       },
       {
         id: 100,
@@ -80,7 +84,8 @@ describe('RecentFeed', () => {
         reaction: 'inconfort' as const,
         givenAt: Date.now() - 4000,
         texture: null,
-        mealId: null
+        mealId: null,
+        loggedByName: 'Alice'
       }
     ];
     const { container } = render(RecentFeed, { props: { entries: mixed, childId: '7' } });
@@ -108,7 +113,8 @@ describe('RecentFeed', () => {
         reaction: 'ras' as const,
         givenAt: Date.now() - 1000,
         texture: 'ecrasee' as const,
-        mealId: null
+        mealId: null,
+        loggedByName: 'Alice'
       },
       {
         id: 4,
@@ -118,7 +124,8 @@ describe('RecentFeed', () => {
         reaction: 'ras' as const,
         givenAt: Date.now() - 2000,
         texture: null,
-        mealId: null
+        mealId: null,
+        loggedByName: 'Alice'
       }
     ];
     render(RecentFeed, { props: { entries: withTexture, childId: '5' } });
@@ -139,7 +146,8 @@ describe('RecentFeed', () => {
         reaction: 'ras' as const,
         givenAt: Date.now(),
         texture: null,
-        mealId: 'meal-1'
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
       },
       {
         id: 2,
@@ -149,7 +157,8 @@ describe('RecentFeed', () => {
         reaction: 'inconfort' as const,
         givenAt: Date.now(),
         texture: null,
-        mealId: 'meal-1'
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
       },
       {
         id: 3,
@@ -159,7 +168,8 @@ describe('RecentFeed', () => {
         reaction: 'reaction' as const,
         givenAt: Date.now(),
         texture: null,
-        mealId: 'meal-1'
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
       }
     ];
     const singleton: RecentEntry = {
@@ -170,7 +180,8 @@ describe('RecentFeed', () => {
       reaction: 'ras' as const,
       givenAt: Date.now() - 5000,
       texture: null,
-      mealId: null
+      mealId: null,
+      loggedByName: 'Alice'
     };
     const { container } = render(RecentFeed, {
       props: { entries: [...meal, singleton], childId: '9' }
@@ -211,7 +222,8 @@ describe('RecentFeed', () => {
         reaction: 'ras' as const,
         givenAt: now,
         texture: null,
-        mealId: 'meal-1'
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
       },
       {
         id: 2,
@@ -221,7 +233,8 @@ describe('RecentFeed', () => {
         reaction: 'ras' as const,
         givenAt: now,
         texture: null,
-        mealId: 'meal-1'
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
       },
       {
         id: 3,
@@ -231,7 +244,8 @@ describe('RecentFeed', () => {
         reaction: 'ras' as const,
         givenAt: now,
         texture: null,
-        mealId: 'meal-1'
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
       }
     ];
     const singles: RecentEntry[] = Array.from({ length: 6 }, (_, i) => ({
@@ -242,7 +256,8 @@ describe('RecentFeed', () => {
       reaction: 'ras' as const,
       givenAt: now - (i + 1) * 1000,
       texture: null,
-      mealId: null
+      mealId: null,
+      loggedByName: 'Alice'
     }));
     render(RecentFeed, { props: { entries: [...meal, ...singles], childId: '5' } });
 
@@ -257,5 +272,130 @@ describe('RecentFeed', () => {
     expect(screen.getByText('Single 3')).toBeTruthy();
     expect(screen.queryByText('Single 4')).toBeNull();
     expect(screen.queryByText('Single 5')).toBeNull();
+  });
+
+  it('hides the author when every visible row was logged by the same person', () => {
+    render(RecentFeed, { props: { entries, childId: '5' } });
+    expect(screen.queryByText(m.aujourdhuiRecentLoggedBy({ name: 'Alice' }))).toBeNull();
+  });
+
+  it('shows the author on each row once the visible feed mixes loggers', () => {
+    const mixed: RecentEntry[] = [
+      {
+        id: 1,
+        foodId: 10,
+        foodName: 'Poire',
+        category: 'fruits' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now() - 1000,
+        texture: null,
+        mealId: null,
+        loggedByName: 'Alice'
+      },
+      {
+        id: 2,
+        foodId: 11,
+        foodName: 'Banane',
+        category: 'fruits' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now() - 2000,
+        texture: null,
+        mealId: null,
+        loggedByName: 'Bob'
+      }
+    ];
+    render(RecentFeed, { props: { entries: mixed, childId: '5' } });
+    expect(screen.getByText(m.aujourdhuiRecentLoggedBy({ name: 'Alice' }))).toBeTruthy();
+    expect(screen.getByText(m.aujourdhuiRecentLoggedBy({ name: 'Bob' }))).toBeTruthy();
+  });
+
+  it('uses the first member as the shown author for a meal group', () => {
+    const meal: RecentEntry[] = [
+      {
+        id: 1,
+        foodId: 1,
+        foodName: 'Carotte',
+        category: 'legumes' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now(),
+        texture: null,
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
+      },
+      {
+        id: 2,
+        foodId: 2,
+        foodName: 'Poire',
+        category: 'fruits' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now(),
+        texture: null,
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
+      },
+      {
+        id: 3,
+        foodId: 3,
+        foodName: 'Pomme',
+        category: 'fruits' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now() - 5000,
+        texture: null,
+        mealId: null,
+        loggedByName: 'Bob'
+      }
+    ];
+    render(RecentFeed, { props: { entries: meal, childId: '5' } });
+    expect(screen.getByText(m.aujourdhuiRecentLoggedBy({ name: 'Alice' }))).toBeTruthy();
+    expect(screen.getByText(m.aujourdhuiRecentLoggedBy({ name: 'Bob' }))).toBeTruthy();
+  });
+
+  it('routes a single entry to the detail page and a meal group to the editor, marked distinctly', () => {
+    const meal: RecentEntry[] = [
+      {
+        id: 1,
+        foodId: 1,
+        foodName: 'Carotte',
+        category: 'legumes' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now(),
+        texture: null,
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
+      },
+      {
+        id: 2,
+        foodId: 2,
+        foodName: 'Poire',
+        category: 'fruits' as const,
+        reaction: 'ras' as const,
+        givenAt: Date.now(),
+        texture: null,
+        mealId: 'meal-1',
+        loggedByName: 'Alice'
+      }
+    ];
+    const singleton: RecentEntry = {
+      id: 3,
+      foodId: 3,
+      foodName: 'Pomme',
+      category: 'fruits' as const,
+      reaction: 'ras' as const,
+      givenAt: Date.now() - 5000,
+      texture: null,
+      mealId: null,
+      loggedByName: 'Alice'
+    };
+    const { container } = render(RecentFeed, {
+      props: { entries: [...meal, singleton], childId: '5' }
+    });
+    const editRow = container.querySelector('[data-testid="feed-row-edit"]');
+    const detailRow = container.querySelector('[data-testid="feed-row-detail"]');
+    expect(editRow?.getAttribute('href')).toBe('/child/5/log/1?from=dashboard');
+    expect(detailRow?.getAttribute('href')).toBe('/child/5/foods/3');
+    // Different destinations are marked with different affordance icons so
+    // the two visually-similar rows never imply the same action.
+    expect(editRow?.querySelector('svg.lucide-pencil')).toBeTruthy();
+    expect(detailRow?.querySelector('svg.lucide-chevron-right')).toBeTruthy();
   });
 });

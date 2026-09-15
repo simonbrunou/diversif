@@ -111,6 +111,34 @@ test.describe('a11y axe — auth routes @responsive', () => {
       });
     }
 
+    // The route sweep above only ever visits a zero-entry dashboard, so it
+    // structurally cannot see the one real violation that shows up once a
+    // child has data: with no entries, AllergensSnapshot renders a plain
+    // paragraph instead of its overflow-x-auto pill scroller, and that
+    // scroller is where axe reports scrollable-region-focusable. Log an
+    // allergen food with a non-RAS reaction so both the allergen pill strip
+    // and the reaction pill render, then sweep the populated dashboard too
+    // — the empty sweep above stays, since the empty state is real and
+    // must stay covered.
+    await test.step('axe: populated /child/<id> (allergen entry + reaction)', async () => {
+      await page.goto(`/child/${childId}/log`);
+      // "Œuf entier", not "Œuf": the category filter row contains a button
+      // labelled "Œufs", which /^Œuf/ also matches — and it sorts before the
+      // results, so .first() clicked the filter chip, left the combobox
+      // unselected, and the submit bounced with "Choisissez un aliment".
+      await page.getByPlaceholder('Rechercher un aliment…').fill('Œuf entier');
+      await page
+        .getByRole('button', { name: /^Œuf entier/ })
+        .first()
+        .click();
+      await page.locator('fieldset').getByText('Réaction marquée', { exact: true }).click();
+      await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
+      await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
+
+      await page.goto(`/child/${childId}`);
+      await axeSweep(page);
+    });
+
     // The static-route sweep above only ever does page.goto() + axe — it
     // never opens a drawer/sheet or types into FoodCombobox, so none of
     // those DOM states get scanned. Exercise each explicitly.
@@ -177,7 +205,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
         .first()
         .click();
       await page.locator('fieldset').getByText('Réaction marquée', { exact: true }).click();
-      await page.getByRole('button', { name: 'Noter ce repas' }).click();
+      await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
       await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
 
       await page.goto(`/child/${childId}/foods`);

@@ -1,7 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { foodEntries, foods, users } from '$lib/server/db/schema';
-import { asc, desc, eq, sql, and } from 'drizzle-orm';
+import { asc, desc, eq, sql } from 'drizzle-orm';
 import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
 import { CATEGORIES, type CategoryId } from '$lib/utils/categories';
 import type { ReactionId } from '$lib/utils/reactions';
@@ -141,16 +141,25 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
   );
 
+  // Foods whose FIRST-EVER log falls inside the window — i.e. genuinely new
+  // to this child this week. This used to be a plain count(*) of entries,
+  // which sat under `distinctFoods` as "+N cette semaine" and so claimed a
+  // delta on a distinct-food total while counting repeats: 8 entries covering
+  // 7 new foods rendered "32" above "+8 cette semaine". The HAVING clause is
+  // what makes it honest — group every entry by food, keep only the groups
+  // whose earliest entry is inside the window.
   const weekCount = Number(
     (
       await db
         .select({ count: sql<number>`count(*)` })
-        .from(foodEntries)
-        .where(
-          and(
-            eq(foodEntries.childId, childId),
-            sql`${foodEntries.givenAt} >= ${sevenDaysAgo.getTime()}`
-          )
+        .from(
+          db
+            .select({ foodId: foodEntries.foodId })
+            .from(foodEntries)
+            .where(eq(foodEntries.childId, childId))
+            .groupBy(foodEntries.foodId)
+            .having(sql`min(${foodEntries.givenAt}) >= ${sevenDaysAgo.getTime()}`)
+            .as('new_foods')
         )
         .limit(1)
     )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0

@@ -259,9 +259,18 @@
     --ds-shadow-lifted: 0 18px 36px -10px hsl(28 50% 30% / 0.22);
     --ds-shadow-glow: 0 0 0 4px hsl(47 100% 84%), 0 8px 20px -4px hsl(40 90% 50% / 0.4);
 
-    /* motion */
+    /* motion
+       --ease-spring drives ambient work : every modal/bottom-sheet entrance
+       and the FAB's hover/active scale. It used to overshoot to 1.4, which
+       put a visible wobble on a 60px button the parent taps several times a
+       day — bounce reads as dated when it isn't a celebration. It is now an
+       exponential ease-out (quint): fast departure, smooth settle, no
+       overshoot.
+       --ease-celebrate keeps its overshoot on purpose. It fires only on the
+       milestone pop, where the bounce IS the content ("cheer everywhere"),
+       and the reduced-motion block below flattens all three to linear. */
     --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
-    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-celebrate: cubic-bezier(0.16, 1.6, 0.3, 1);
     --dur-fast: 120ms;
     --dur-base: 200ms;
@@ -308,7 +317,12 @@
     --tile-butter-foreground: 47 100% 84%;
     --tile-mint: 142 31% 17%;
     --tile-mint-foreground: 142 35% 84%;
-    --tile-sky: 218 50% 20%;
+    /* Desaturated from 50% : at full saturation this reads as Doctolib navy,
+       and it is the background of the allergen tile — the one module that
+       most needs to feel calm was the most institutional thing on the 3am
+       screen. 30% keeps it clearly a blue compartment against the warm
+       near-black canvas without the clinical-portal association. */
+    --tile-sky: 214 30% 21%;
     --tile-sky-foreground: 213 100% 89%;
     --tile-lilac: 261 40% 22%;
     --tile-lilac-foreground: 257 100% 92%;
