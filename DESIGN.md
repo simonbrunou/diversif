@@ -199,8 +199,8 @@ The five tile tints are the system's structural vocabulary. Each is a compartmen
 
 ### Hierarchy
 
-- **Display** (Fraunces italic): Reassurance and brand moments, and the page title inside the signed-in app shell — `BackHeader`, `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout`, which is what gives each screen a human voice before any data appears. Those four set it at `text-3xl`/`text-xl` rather than a single size, so treat the serif as the voice and let the surface pick the step. Public, marketing and utility routes (`/aide`, `/allergens`, `/guide`, `/sources`, `/offline`, `+error`, the child picker) title themselves in Inter instead — they are read before the product has any warmth to earn. Never a data label and never a counter.
-- **Headline** (Inter, 700, 22/28, -0.015em): Section headings, and the page title everywhere outside the app shell. The report is the one place that runs the other way: its section headings are Fraunces because the whole surface is set as a printed document.
+- **Display** (Fraunces italic): Reassurance and brand moments, the landing hero, and the page title inside the signed-in app shell — `BackHeader`, `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout`. Those set it at `text-3xl`/`text-xl` (and `text-4xl`/`text-5xl` on the landing hero) rather than one size, so treat the serif as the voice and let the surface pick the step. Never a data label and never a counter.
+- **Headline** (Inter, 700, 22/28, -0.015em): Section headings, and the page title on the public utility routes — `/aide`, `/allergens`, `/guide`, `/sources`, `/offline`, `+error`, the child picker, `account/deleted`, `join/[code]`. Those are read to answer a question, not to be charmed. Two surfaces run the other way and set their _section_ headings in Fraunces: the pediatrician report, because the whole surface is composed as a printed document, and the landing page, because it is still a brand moment below the fold.
 - **Title** (Inter, 700, 14/1.25): Row and card titles — a food name, a reminder headline.
 - **Numeric** (Inter, 800, 28/1, tabular figures): Every live counter.
 - **Body** (Inter, 400, 14/21): Guidance copy and descriptions.
@@ -268,7 +268,7 @@ Borders are rare. Where one exists it is a warm hairline doing a job a fill cann
 ### Buttons
 
 - **Shape:** Gently curved (`{rounded.lg}`, 14px); the `pill` size goes fully round.
-- **Primary:** Sage fill with near-black ink — not white. White-on-sage measured 3.88:1 in light and 2.62:1 in dark, both failing AA; dark ink gives 5.4:1 and 8.3:1 and sits better in the warm palette.
+- **Primary:** Sage fill with near-black ink — not white. White-on-sage measures 3.66:1 light and 2.62:1 dark, both failing AA; ink on sage measures **4.78:1 light and 6.67:1 dark** and sits better in the warm palette. Light mode clears the 4.5 floor by 0.28, which is the whole margin: a primary button is safe, but anything that wants headroom — an empty-state CTA, a call to action on a tinted compartment — takes a tile variant instead (mint is 7.32:1). This is why the two empty-state CTAs are mint and not sage.
 - **Hover / Focus:** Colour-only transition at 200ms on the soft easing curve; no lift, no scale. Focus is a 2px sage ring at a 2px offset.
 - **Tile variants:** Each of the five tints is available as a button fill with its paired foreground, for actions that live inside a compartment of that colour.
 - **Secondary / Outline / Ghost:** Warm sand fill, warm hairline on white, or transparent-until-hover respectively.
@@ -379,11 +379,8 @@ here so it does not get "fixed" later.
 - **The pediatrician summary carries a document header above its heading.** It
   is letterhead on a print-first artifact — a sheet handed across a desk has to
   say what it is and when it was edited — not a kicker decorating a screen
-  title, so it is the one eyebrow this system endorses. It is not the only one
-  shipping: `+error.svelte`, `/guide`, `/allergens` and `/sources` each stack an
-  uppercase tracked kicker above their `h1`, and the last three set it in
-  `text-primary-strong`, which is also sage on a non-action. Those four are
-  unjustified and outstanding, not deviations.
+  title. It is the only eyebrow this system endorses; any other is a defect,
+  not a precedent.
 - **The print stylesheet leaves the palette.** `PrintShell` sets 11pt type,
   pure `#000` on `#fff`, and a 12px print body size. Ink on paper is a
   different medium: the pastel compartments waste toner and read worse than

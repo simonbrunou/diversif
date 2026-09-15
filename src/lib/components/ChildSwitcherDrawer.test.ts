@@ -36,11 +36,10 @@ describe('ChildSwitcherDrawer', () => {
     render(ChildSwitcherDrawer, {
       props: { open: true, kids, currentChildId: 'a' }
     });
-    // Was asserted against a literal emoji; the avatar is a lucide glyph now,
-    // but the contract is unchanged: it is decoration, so it must not be
-    // announced, and a child row's accessible name is the child's name alone.
-    // getByRole is accessibility-aware where textContent is not — it would see
-    // an aria-label or <title> added to the glyph, and ignores aria-hidden.
+    // The avatar is decoration, so it must not be announced, and a child
+    // row's accessible name is the child's name alone. getByRole is
+    // accessibility-aware where textContent is not — it would see an
+    // aria-label or <title> added to the glyph, and ignores aria-hidden.
     const row = screen.getByRole('link', { name: 'Léo' });
     expect(row.querySelector('[aria-hidden="true"] svg')).toBeTruthy();
   });

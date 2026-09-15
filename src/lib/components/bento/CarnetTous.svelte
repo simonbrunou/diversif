@@ -3,8 +3,11 @@
   import CalloutCard from '$components/ui/CalloutCard.svelte';
   import Button from '$components/ui/Button.svelte';
   import * as m from '$lib/paraglide/messages';
-  import { cn } from '$lib/utils/cn';
-  import { getCategoryLabel, getCategoryClasses, getCategoryIcon } from '$lib/utils/categories';
+  import {
+    getCategoryLabel,
+    getCategoryIcon,
+    getCategoryFilterChipClass
+  } from '$lib/utils/categories';
   import { localizedHref } from '$lib/utils/localized-href';
   import type { TextureKey } from '$lib/utils/textures';
   import { Salad } from 'lucide-svelte';
@@ -30,40 +33,27 @@
 
 <div>
   <!--
-    These filter chips are the same control as the log screen's category
-    filter (FoodCombobox), so they use its anatomy rather than a second one:
-    each category carries its own tint and icon, selection is the sage fill,
-    and `aria-pressed` announces toggle state — which this row previously
-    omitted entirely, so a screen reader heard four plain buttons with no
-    indication of which filter was active.
+    The same control as the log screen's category filter, so both call
+    getCategoryFilterChipClass rather than keeping two recipes that drift.
+    `aria-pressed` is what tells a screen-reader user which filter is on; the
+    tint alone says nothing.
   -->
-  <div role="group" aria-label={m.foodComboboxFilterAriaLabel()} class="mb-3 flex flex-wrap gap-2">
+  <div role="group" aria-label={m.foodComboboxFilterAriaLabel()} class="mb-3 flex flex-wrap gap-1">
     <button
       type="button"
       aria-pressed={active === ''}
       onclick={() => (active = '')}
-      class={cn(
-        'inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors duration-fast ease-soft active:scale-[0.97]',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        active === '' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-      )}
+      class={getCategoryFilterChipClass({ selected: active === '' })}
     >
       {m.carnetTousFilterAll()}
     </button>
     {#each categories as cat (cat)}
-      {@const cls = getCategoryClasses(cat)}
       {@const Icon = getCategoryIcon(cat)}
       <button
         type="button"
         aria-pressed={active === cat}
         onclick={() => (active = active === cat ? '' : cat)}
-        class={cn(
-          'inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors duration-fast ease-soft active:scale-[0.97]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-          active === cat
-            ? 'bg-primary text-primary-foreground'
-            : cn(cls.tint, cls.text, 'hover:brightness-95 dark:hover:brightness-110')
-        )}
+        class={getCategoryFilterChipClass({ selected: active === cat, category: cat })}
       >
         <Icon size={12} aria-hidden="true" />
         {getCategoryLabel(cat)}

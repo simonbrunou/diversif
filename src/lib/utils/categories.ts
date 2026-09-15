@@ -124,3 +124,26 @@ const CLASS_MAP: Record<CategoryColor, CategoryClasses> = {
 export function getCategoryClasses(id: string): CategoryClasses {
   return CLASS_MAP[getCategoryColor(id)];
 }
+
+/**
+ * The category filter chip, defined once.
+ *
+ * Two screens filter by category — the log screen's food picker and the
+ * carnet's "Tous" list — and they are the same control, so they must not
+ * carry two recipes. They did: one at `px-3 font-semibold` with a press
+ * scale, the other at `px-2.5 font-medium` without, in rows with different
+ * gaps. Anything that should differ between the two belongs in the caller;
+ * anything that defines the control belongs here.
+ *
+ * Pass `category` for a tinted chip (the tint identifies which family it is)
+ * and omit it for the neutral "all" chip. `selected` wins over both: the sage
+ * fill marks the active filter, matching every other selected control.
+ */
+export function getCategoryFilterChipClass(opts: { selected: boolean; category?: string }): string {
+  const base =
+    'inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+  if (opts.selected) return `${base} bg-primary text-primary-foreground`;
+  if (!opts.category) return `${base} hover:bg-accent`;
+  const cls = getCategoryClasses(opts.category);
+  return `${base} ${cls.tint} ${cls.text} hover:brightness-95 dark:hover:brightness-110`;
+}

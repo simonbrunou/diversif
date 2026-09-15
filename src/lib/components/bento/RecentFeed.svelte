@@ -67,12 +67,11 @@
       {entry.foodName}
       {#if entry.texture}
         <!--
-          The texture is a fact about the meal, so it is set as data: caption
-          scale (12px, matching the timestamp line below), normal weight,
-          sentence case. It used to carry the Label treatment (uppercase +
-          0.08em tracking), which DESIGN.md reserves for compartment labels and
-          eyebrows — so "PETITS MORCEAUX" shouted alongside the food name and
-          wrapped mid-phrase in a 390px row.
+          A texture is a fact about the meal, so it is set as data: caption
+          scale, normal weight, sentence case. The Label treatment
+          (uppercase + tracking) is reserved for compartment labels and
+          eyebrows; applied to a fact, it shouts and wraps mid-phrase in a
+          narrow row.
         -->
         <span class="text-xs font-normal text-ink-soft">
           · {getTextureLabel(entry.texture)}
@@ -121,15 +120,10 @@
       <h2 class="text-base font-semibold">{m.aujourdhuiRecentEmpty()}</h2>
       <p class="mt-1 max-w-sm text-sm text-ink-soft">{m.aujourdhuiRecentEmptyBody()}</p>
       <!--
-        This state described what would happen and offered no way to make it
-        happen: the only route out was the log FAB, which a first-time parent
-        has no reason to read as "start here". A freshly created child landed
-        on a dead end on the one screen whose entire job is the first log.
-
-        tile-mint rather than the default sage, matching the carnet's own
-        empty-state CTA: sage-on-ink measures 4.78:1 against a 4.5 floor and
-        axe already caught that pairing dipping under threshold on the sibling
-        button. The mint pair has 7.32:1.
+        tile-mint rather than the default sage: ink on sage measures 4.78:1
+        against a 4.5 floor (0.28 of headroom), while the mint pair has
+        7.32:1. The carnet's own empty-state CTA already made this choice,
+        so the two match.
       -->
       <Button
         href={localizedHref(`/child/${childId}/log`)}
