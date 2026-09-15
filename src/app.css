@@ -198,9 +198,11 @@
     /* primary brand */
     --primary: 120 14% 49%; /* sage #6b8e6b */
     /* Near-black ink, not white: white-on-sage measures 3.66:1 light and
-       2.62:1 dark, both failing WCAG AA 4.5:1. Ink on sage measures 4.78:1
-       light and 6.67:1 dark, recomputed from these two tokens. Light mode has
-       only 0.28 above the floor, so this pairing has no room to absorb a
+       2.62:1 dark, both failing WCAG AA 4.5:1. Ink on sage measures 4.73:1
+       light and 6.63:1 dark, computed from these two tokens the way a
+       browser does — HSL rounded to 8-bit sRGB, not kept as floats (floats
+       give 4.78, and scripts/lint-contrast.ts uses the rounded path). Light mode has
+       only 0.23 above the floor, so this pairing has no room to absorb a
        darker tint or a lighter ink — anything that needs comfortable headroom
        on a sage fill should use a tile variant instead (mint is 7.32:1). */
     --primary-foreground: 0 0% 10%;
@@ -509,8 +511,12 @@
   .skip-link {
     @apply absolute left-2 top-2 z-50 -translate-y-16 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-card transition-transform focus:translate-y-0;
   }
-  /* Kid emoji-tile background. Single source of truth for the peach→butter
-     gradient shared by ChildHeaderPill, ChildSwitcherDrawer, and ui/Avatar. */
+  /* Child avatar tile. Single source of truth for the peach→butter gradient,
+     consumed by ChildHeaderPill and ChildSwitcherDrawer. The glyph on top is
+     deep sage rather than the tint's own foreground: it is a decorative,
+     aria-hidden mark inside a control, not text on a compartment, so The
+     Paired Foreground Rule does not reach it and it carries the brand voice
+     like the chevron beside it. */
   .bg-avatar-tile {
     background-image: linear-gradient(
       to bottom right,

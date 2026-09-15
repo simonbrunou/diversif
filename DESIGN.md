@@ -215,6 +215,8 @@ The five tile tints are the system's structural vocabulary. Each is a compartmen
 
 **The Unit Is Not The Number Rule.** A value with a unit splits the two — the figure at numeric scale, the unit at body scale on a shared baseline. "6 jours" set as one 28px run overflows a narrow compartment and reads as a sentence rather than a measurement.
 
+**The One Dash Rule.** An age range is set with an en dash and no spaces — `4–6 mois`, `9–12 mois` — in both locales. This is a deliberate choice against the stricter French convention, which prefers a trait d'union or `de 4 à 6 mois` and treats the demi-cadratin for ranges as an anglicism. The product's largest body of French copy, `src/lib/content/guidance.ts`, already sets all 24 of its ranges with an en dash, so matching it keeps one convention across the catalogue, the reminders and the stage titles; diverging would mean a parent seeing both forms on the same screen. Revisit as a whole if ever, never key by key.
+
 ## Layout
 
 A single mobile column that becomes a genuine tray on desktop, not a widened stack.
@@ -268,7 +270,7 @@ Borders are rare. Where one exists it is a warm hairline doing a job a fill cann
 ### Buttons
 
 - **Shape:** Gently curved (`{rounded.lg}`, 14px); the `pill` size goes fully round.
-- **Primary:** Sage fill with near-black ink — not white. White-on-sage measures 3.66:1 light and 2.62:1 dark, both failing AA; ink on sage measures **4.78:1 light and 6.67:1 dark** and sits better in the warm palette. Light mode clears the 4.5 floor by 0.28, which is the whole margin: a primary button is safe, but anything that wants headroom — an empty-state CTA, a call to action on a tinted compartment — takes a tile variant instead (mint is 7.32:1). This is why the two empty-state CTAs are mint and not sage.
+- **Primary:** Sage fill with near-black ink — not white. White-on-sage measures 3.66:1 light and 2.62:1 dark, both failing AA; ink on sage measures **4.73:1 light and 6.63:1 dark** and sits better in the warm palette. Light mode clears the 4.5 floor by 0.23, which is the whole margin: a primary button is safe, but anything that wants headroom — an empty-state CTA, a call to action on a tinted compartment — takes a tile variant instead (mint is 7.32:1). This is why the two empty-state CTAs are mint and not sage.
 - **Hover / Focus:** Colour-only transition at 200ms on the soft easing curve; no lift, no scale. Focus is a 2px sage ring at a 2px offset.
 - **Tile variants:** Each of the five tints is available as a button fill with its paired foreground, for actions that live inside a compartment of that colour.
 - **Secondary / Outline / Ghost:** Warm sand fill, warm hairline on white, or transparent-until-hover respectively.

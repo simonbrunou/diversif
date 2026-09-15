@@ -44,12 +44,15 @@ describe('CarnetStats', () => {
     }
   });
 
-  it('gives every bar an accessible name that names a distinct day', () => {
+  it('names a distinct day in every bar, not a narrow letter that repeats', () => {
     // The visual axis is aria-hidden, so a bar's accessible name is the only
-    // thing that tells a screen-reader user which day it is. Built from the
-    // narrow weekday format it could not: French narrow weekdays are
-    // L M M J V S D, so mardi and mercredi both render "M" and two of the
-    // seven bars become indistinguishable.
+    // thing telling a screen-reader user which day it is. Built from the
+    // narrow weekday format it cannot: French narrow weekdays are L M M J V S
+    // D, so mardi and mercredi both render "M".
+    //
+    // Assert the *day* part, not the whole label. Distinct counts make the
+    // full strings distinct on their own ("M · 3 entrées" vs "M · 5 entrées"),
+    // so a whole-label assertion passes on the very bug this defends against.
     const { container } = render(CarnetStats, {
       props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [3, 5, 2, 8, 4, 1, 0] }
     });
@@ -57,8 +60,9 @@ describe('CarnetStats', () => {
       b.getAttribute('aria-label')
     );
     expect(names.length).toBe(7);
-    expect(names.every((n) => n && n.trim().length > 0)).toBe(true);
-    expect(new Set(names).size).toBe(7);
+    expect(names.every((n) => n && n.includes(' · '))).toBe(true);
+    const days = names.map((n) => n!.split(' · ')[0]);
+    expect(new Set(days).size).toBe(7);
   });
 
   it('anchors labels to anchorUtc when provided (no drift across hydration)', () => {
