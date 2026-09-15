@@ -927,6 +927,32 @@
       "source_location": "L42"
     },
     {
+      "id": "src_app_d_error",
+      "label": "Error",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "error",
+      "source_file": "src/app.d.ts",
+      "source_location": "L35"
+    },
+    {
+      "id": "src_app_d_locals",
+      "label": "Locals",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "locals",
+      "source_file": "src/app.d.ts",
+      "source_location": "L23"
+    },
+    {
       "id": "src_lib_server_db_index_db",
       "label": "db",
       "_callable": true,
@@ -938,6 +964,84 @@
       "norm_label": "db",
       "source_file": "src/lib/server/db/index.ts",
       "source_location": "L66"
+    },
+    {
+      "id": "src_lib_server_db_schema_membership",
+      "label": "Membership",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "membership",
+      "source_file": "src/lib/server/db/schema.ts",
+      "source_location": "L333"
+    },
+    {
+      "id": "src_lib_server_db_schema_user",
+      "label": "User",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "user",
+      "source_file": "src/lib/server/db/schema.ts",
+      "source_location": "L330"
+    },
+    {
+      "id": "src_lib_server_redirect_redirectstatus",
+      "label": "RedirectStatus",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "redirectstatus",
+      "source_file": "src/lib/server/redirect.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_lib_types_childsummary",
+      "label": "ChildSummary",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "childsummary",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_lib_types_safeuser",
+      "label": "SafeUser",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "safeuser",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_lib_types_symptomentry",
+      "label": "SymptomEntry",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "symptomentry",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L35"
     },
     {
       "id": "src_lib_utils_diet_dietexclusion",
@@ -1447,97 +1551,6 @@
       "source_location": "L140"
     },
     {
-      "id": "src_app_d_error",
-      "label": "Error",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "error",
-      "source_file": "src/app.d.ts",
-      "source_location": "L35"
-    },
-    {
-      "id": "src_app_d_locals",
-      "label": "Locals",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "locals",
-      "source_file": "src/app.d.ts",
-      "source_location": "L23"
-    },
-    {
-      "id": "src_lib_server_db_schema_membership",
-      "label": "Membership",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "membership",
-      "source_file": "src/lib/server/db/schema.ts",
-      "source_location": "L333"
-    },
-    {
-      "id": "src_lib_server_db_schema_user",
-      "label": "User",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "user",
-      "source_file": "src/lib/server/db/schema.ts",
-      "source_location": "L330"
-    },
-    {
-      "id": "src_lib_types_childsummary",
-      "label": "ChildSummary",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "childsummary",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_lib_types_safeuser",
-      "label": "SafeUser",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "safeuser",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_lib_types_symptomentry",
-      "label": "SymptomEntry",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "symptomentry",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L35"
-    },
-    {
       "id": "src_lib_utils_textures_texturekey",
       "label": "TextureKey",
       "_callable": true,
@@ -1939,19 +1952,6 @@
       "norm_label": "ratelimitresult",
       "source_file": "src/lib/server/rate-limit.ts",
       "source_location": "L26"
-    },
-    {
-      "id": "src_lib_server_redirect_redirectstatus",
-      "label": "RedirectStatus",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "redirectstatus",
-      "source_file": "src/lib/server/redirect.ts",
-      "source_location": "L4"
     },
     {
       "id": "src_routes_join_code_page_server_activeinvite",
@@ -3253,7 +3253,7 @@
       "file_type": "code",
       "norm_label": "getcategoryfilterchipclass()",
       "source_file": "src/lib/utils/categories.ts",
-      "source_location": "L142"
+      "source_location": "L143"
     },
     {
       "id": "src_lib_utils_categories_getcategoryicon",
@@ -3724,30 +3724,6 @@
       "source_location": "L17"
     },
     {
-      "id": "src_lib_server_db_errors_hasuniqueshape",
-      "label": "hasUniqueShape()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 15,
-      "community_name": "db/index.ts",
-      "file_type": "code",
-      "norm_label": "hasuniqueshape()",
-      "source_file": "src/lib/server/db/errors.ts",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_lib_server_db_errors_isuniqueviolation",
-      "label": "isUniqueViolation()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 15,
-      "community_name": "db/index.ts",
-      "file_type": "code",
-      "norm_label": "isuniqueviolation()",
-      "source_file": "src/lib/server/db/errors.ts",
-      "source_location": "L7"
-    },
-    {
       "id": "src_lib_server_db_index_resolvedatabasepath",
       "label": "resolveDatabasePath()",
       "_callable": true,
@@ -3844,6 +3820,30 @@
       "source_location": "L13"
     },
     {
+      "id": "src_lib_server_fresh_auth_test_insertuserwithpassword",
+      "label": "insertUserWithPassword()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "insertuserwithpassword()",
+      "source_file": "src/lib/server/fresh-auth.test.ts",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_lib_server_gdpr_deleteuseraccount",
+      "label": "deleteUserAccount()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "deleteuseraccount()",
+      "source_file": "src/lib/server/gdpr.ts",
+      "source_location": "L40"
+    },
+    {
       "id": "src_lib_server_gdpr_test_setuptestdata",
       "label": "setupTestData()",
       "_callable": true,
@@ -3854,6 +3854,30 @@
       "norm_label": "setuptestdata()",
       "source_file": "src/lib/server/gdpr.test.ts",
       "source_location": "L12"
+    },
+    {
+      "id": "src_lib_server_guards_parsechildidparam",
+      "label": "parseChildIdParam()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "parsechildidparam()",
+      "source_file": "src/lib/server/guards.ts",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_lib_server_guards_parsechildidparamornull",
+      "label": "parseChildIdParamOrNull()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "parsechildidparamornull()",
+      "source_file": "src/lib/server/guards.ts",
+      "source_location": "L24"
     },
     {
       "id": "src_lib_server_guards_parseintparam",
@@ -3880,16 +3904,88 @@
       "source_location": "L84"
     },
     {
-      "id": "src_lib_server_invitations_createinvitationforchild",
-      "label": "createInvitationForChild()",
+      "id": "src_lib_server_guards_requiremembership",
+      "label": "requireMembership()",
       "_callable": true,
       "_origin": "ast",
       "community": 15,
       "community_name": "db/index.ts",
       "file_type": "code",
-      "norm_label": "createinvitationforchild()",
-      "source_file": "src/lib/server/invitations.ts",
-      "source_location": "L8"
+      "norm_label": "requiremembership()",
+      "source_file": "src/lib/server/guards.ts",
+      "source_location": "L49"
+    },
+    {
+      "id": "src_lib_server_guards_requireownership",
+      "label": "requireOwnership()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "requireownership()",
+      "source_file": "src/lib/server/guards.ts",
+      "source_location": "L61"
+    },
+    {
+      "id": "src_lib_server_guards_test_expecterror",
+      "label": "expectError()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "expecterror()",
+      "source_file": "src/lib/server/guards.test.ts",
+      "source_location": "L40"
+    },
+    {
+      "id": "src_lib_server_guards_test_expectredirect",
+      "label": "expectRedirect()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "expectredirect()",
+      "source_file": "src/lib/server/guards.test.ts",
+      "source_location": "L28"
+    },
+    {
+      "id": "src_lib_server_guards_test_makelocals",
+      "label": "makeLocals()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "makelocals()",
+      "source_file": "src/lib/server/guards.test.ts",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_lib_server_redirect_localizedredirect",
+      "label": "localizedRedirect()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "localizedredirect()",
+      "source_file": "src/lib/server/redirect.ts",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_lib_server_redirect_test_captureredirect",
+      "label": "captureRedirect()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "captureredirect()",
+      "source_file": "src/lib/server/redirect.test.ts",
+      "source_location": "L4"
     },
     {
       "id": "src_lib_utils_diet_parsedietexclusions",
@@ -3902,6 +3998,18 @@
       "norm_label": "parsedietexclusions()",
       "source_file": "src/lib/utils/diet.ts",
       "source_location": "L13"
+    },
+    {
+      "id": "src_routes_account_delete_page_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/account/delete/+page.server.ts",
+      "source_location": "L9"
     },
     {
       "id": "src_routes_child_id_foods_entryid_page_server_load",
@@ -4000,6 +4108,66 @@
       "source_location": "L9"
     },
     {
+      "id": "src_routes_child_id_log_entryid_page_server_destinationfor",
+      "label": "destinationFor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "destinationfor()",
+      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
+      "source_location": "L105"
+    },
+    {
+      "id": "src_routes_child_id_log_entryid_page_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
+      "source_location": "L54"
+    },
+    {
+      "id": "src_routes_child_id_log_entryid_page_server_loadentry",
+      "label": "loadEntry()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "loadentry()",
+      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
+      "source_location": "L40"
+    },
+    {
+      "id": "src_routes_child_id_log_entryid_page_server_schemaerrorkey",
+      "label": "schemaErrorKey()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "schemaerrorkey()",
+      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
+      "source_location": "L33"
+    },
+    {
+      "id": "src_routes_child_id_log_entryid_page_server_updatemeal",
+      "label": "updateMeal()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "updatemeal()",
+      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
+      "source_location": "L122"
+    },
+    {
       "id": "src_routes_child_id_menu_page_server_load",
       "label": "load()",
       "_callable": true,
@@ -4058,6 +4226,30 @@
       "norm_label": "load()",
       "source_file": "src/routes/child/new/+page.server.ts",
       "source_location": "L42"
+    },
+    {
+      "id": "src_routes_layout_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/+layout.server.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_routes_page_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L4"
     },
     {
       "id": "src_lib_server_legal_getlegalidentity",
@@ -6100,6 +6292,18 @@
       "source_location": "L101"
     },
     {
+      "id": "src_lib_server_guards_requireuser",
+      "label": "requireUser()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "requireuser()",
+      "source_file": "src/lib/server/guards.ts",
+      "source_location": "L36"
+    },
+    {
       "id": "src_lib_server_passkeys_assertrpidorigin",
       "label": "assertRpidOrigin()",
       "_callable": true,
@@ -6268,6 +6472,18 @@
       "source_location": "L51"
     },
     {
+      "id": "src_lib_server_passkeys_listpasskeys",
+      "label": "listPasskeys()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "listpasskeys()",
+      "source_file": "src/lib/server/passkeys.ts",
+      "source_location": "L194"
+    },
+    {
       "id": "src_lib_server_passkeys_newtoken",
       "label": "newToken()",
       "_callable": true,
@@ -6290,6 +6506,18 @@
       "norm_label": "parsepasskeyresponsebody()",
       "source_file": "src/lib/server/passkeys.ts",
       "source_location": "L76"
+    },
+    {
+      "id": "src_lib_server_passkeys_publicpasskey",
+      "label": "publicPasskey()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "publicpasskey()",
+      "source_file": "src/lib/server/passkeys.ts",
+      "source_location": "L400"
     },
     {
       "id": "src_lib_server_passkeys_purgeexpiredchallenges",
@@ -6362,6 +6590,54 @@
       "norm_label": "timingdecoyverify()",
       "source_file": "src/lib/server/passkeys.ts",
       "source_location": "L106"
+    },
+    {
+      "id": "src_routes_account_locale_page_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/account/locale/+page.server.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_routes_account_page_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_routes_account_passkeys_page_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/account/passkeys/+page.server.ts",
+      "source_location": "L24"
+    },
+    {
+      "id": "src_routes_account_theme_page_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/account/theme/+page.server.ts",
+      "source_location": "L4"
     },
     {
       "id": "src_routes_passkeys_authentication_options_server_post",
@@ -6506,246 +6782,6 @@
       "norm_label": "seeduser()",
       "source_file": "src/routes/passkeys/registration/verify/server.test.ts",
       "source_location": "L33"
-    },
-    {
-      "id": "src_lib_server_fresh_auth_test_insertuserwithpassword",
-      "label": "insertUserWithPassword()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "insertuserwithpassword()",
-      "source_file": "src/lib/server/fresh-auth.test.ts",
-      "source_location": "L27"
-    },
-    {
-      "id": "src_lib_server_gdpr_deleteuseraccount",
-      "label": "deleteUserAccount()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "deleteuseraccount()",
-      "source_file": "src/lib/server/gdpr.ts",
-      "source_location": "L40"
-    },
-    {
-      "id": "src_lib_server_guards_parsechildidparam",
-      "label": "parseChildIdParam()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "parsechildidparam()",
-      "source_file": "src/lib/server/guards.ts",
-      "source_location": "L30"
-    },
-    {
-      "id": "src_lib_server_guards_parsechildidparamornull",
-      "label": "parseChildIdParamOrNull()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "parsechildidparamornull()",
-      "source_file": "src/lib/server/guards.ts",
-      "source_location": "L24"
-    },
-    {
-      "id": "src_lib_server_guards_requiremembership",
-      "label": "requireMembership()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "requiremembership()",
-      "source_file": "src/lib/server/guards.ts",
-      "source_location": "L49"
-    },
-    {
-      "id": "src_lib_server_guards_requireownership",
-      "label": "requireOwnership()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "requireownership()",
-      "source_file": "src/lib/server/guards.ts",
-      "source_location": "L61"
-    },
-    {
-      "id": "src_lib_server_guards_requireuser",
-      "label": "requireUser()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "requireuser()",
-      "source_file": "src/lib/server/guards.ts",
-      "source_location": "L36"
-    },
-    {
-      "id": "src_lib_server_guards_test_expecterror",
-      "label": "expectError()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "expecterror()",
-      "source_file": "src/lib/server/guards.test.ts",
-      "source_location": "L40"
-    },
-    {
-      "id": "src_lib_server_guards_test_expectredirect",
-      "label": "expectRedirect()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "expectredirect()",
-      "source_file": "src/lib/server/guards.test.ts",
-      "source_location": "L28"
-    },
-    {
-      "id": "src_lib_server_guards_test_makelocals",
-      "label": "makeLocals()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "makelocals()",
-      "source_file": "src/lib/server/guards.test.ts",
-      "source_location": "L20"
-    },
-    {
-      "id": "src_lib_server_passkeys_listpasskeys",
-      "label": "listPasskeys()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "listpasskeys()",
-      "source_file": "src/lib/server/passkeys.ts",
-      "source_location": "L194"
-    },
-    {
-      "id": "src_lib_server_passkeys_publicpasskey",
-      "label": "publicPasskey()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "publicpasskey()",
-      "source_file": "src/lib/server/passkeys.ts",
-      "source_location": "L400"
-    },
-    {
-      "id": "src_routes_account_delete_page_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/account/delete/+page.server.ts",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_routes_account_locale_page_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/account/locale/+page.server.ts",
-      "source_location": "L4"
-    },
-    {
-      "id": "src_routes_account_page_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L11"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/account/passkeys/+page.server.ts",
-      "source_location": "L24"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server_test_seed",
-      "label": "seed()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "seed()",
-      "source_file": "src/routes/account/passkeys/page.server.test.ts",
-      "source_location": "L29"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server_test_seedkey",
-      "label": "seedKey()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "seedkey()",
-      "source_file": "src/routes/account/passkeys/page.server.test.ts",
-      "source_location": "L36"
-    },
-    {
-      "id": "src_routes_account_theme_page_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/account/theme/+page.server.ts",
-      "source_location": "L4"
-    },
-    {
-      "id": "src_routes_layout_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/+layout.server.ts",
-      "source_location": "L8"
     },
     {
       "id": "scripts_normalize_fr_apostrophes_main",
@@ -7948,28 +7984,28 @@
       "source_location": "L71"
     },
     {
-      "id": "src_lib_server_e2e_ise2e",
-      "label": "isE2E()",
+      "id": "src_routes_account_passkeys_page_server_test_seed",
+      "label": "seed()",
       "_callable": true,
       "_origin": "ast",
       "community": 34,
       "community_name": "auth.ts",
       "file_type": "code",
-      "norm_label": "ise2e()",
-      "source_file": "src/lib/server/e2e.ts",
-      "source_location": "L15"
+      "norm_label": "seed()",
+      "source_file": "src/routes/account/passkeys/page.server.test.ts",
+      "source_location": "L29"
     },
     {
-      "id": "src_lib_server_e2e_test_setenv",
-      "label": "setEnv()",
+      "id": "src_routes_account_passkeys_page_server_test_seedkey",
+      "label": "seedKey()",
       "_callable": true,
       "_origin": "ast",
       "community": 34,
       "community_name": "auth.ts",
       "file_type": "code",
-      "norm_label": "setenv()",
-      "source_file": "src/lib/server/e2e.test.ts",
-      "source_location": "L7"
+      "norm_label": "seedkey()",
+      "source_file": "src/routes/account/passkeys/page.server.test.ts",
+      "source_location": "L36"
     },
     {
       "id": "src_routes_account_password_page_server_load",
@@ -10000,6 +10036,54 @@
       "source_location": "L37"
     },
     {
+      "id": "src_lib_server_db_errors_hasuniqueshape",
+      "label": "hasUniqueShape()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "hasuniqueshape()",
+      "source_file": "src/lib/server/db/errors.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_lib_server_db_errors_isuniqueviolation",
+      "label": "isUniqueViolation()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "isuniqueviolation()",
+      "source_file": "src/lib/server/db/errors.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_lib_server_e2e_ise2e",
+      "label": "isE2E()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "ise2e()",
+      "source_file": "src/lib/server/e2e.ts",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_lib_server_e2e_test_setenv",
+      "label": "setEnv()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "setenv()",
+      "source_file": "src/lib/server/e2e.test.ts",
+      "source_location": "L7"
+    },
+    {
       "id": "src_lib_server_fresh_auth_requirefreshauth",
       "label": "requireFreshAuth()",
       "_callable": true,
@@ -10034,6 +10118,18 @@
       "norm_label": "requireguest()",
       "source_file": "src/lib/server/guards.ts",
       "source_location": "L43"
+    },
+    {
+      "id": "src_lib_server_invitations_createinvitationforchild",
+      "label": "createInvitationForChild()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "createinvitationforchild()",
+      "source_file": "src/lib/server/invitations.ts",
+      "source_location": "L8"
     },
     {
       "id": "src_lib_server_rate_limit_bucketkey",
@@ -10120,30 +10216,6 @@
       "source_location": "L190"
     },
     {
-      "id": "src_lib_server_redirect_localizedredirect",
-      "label": "localizedRedirect()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "localizedredirect()",
-      "source_file": "src/lib/server/redirect.ts",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_lib_server_redirect_test_captureredirect",
-      "label": "captureRedirect()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "captureredirect()",
-      "source_file": "src/lib/server/redirect.test.ts",
-      "source_location": "L4"
-    },
-    {
       "id": "src_lib_utils_invites_generateinvitecoderaw",
       "label": "generateInviteCodeRaw()",
       "_callable": true,
@@ -10166,66 +10238,6 @@
       "norm_label": "isvalidinvitecodeformat()",
       "source_file": "src/lib/utils/invites.ts",
       "source_location": "L19"
-    },
-    {
-      "id": "src_routes_child_id_log_entryid_page_server_destinationfor",
-      "label": "destinationFor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "destinationfor()",
-      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
-      "source_location": "L105"
-    },
-    {
-      "id": "src_routes_child_id_log_entryid_page_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
-      "source_location": "L54"
-    },
-    {
-      "id": "src_routes_child_id_log_entryid_page_server_loadentry",
-      "label": "loadEntry()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "loadentry()",
-      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
-      "source_location": "L40"
-    },
-    {
-      "id": "src_routes_child_id_log_entryid_page_server_schemaerrorkey",
-      "label": "schemaErrorKey()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "schemaerrorkey()",
-      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
-      "source_location": "L33"
-    },
-    {
-      "id": "src_routes_child_id_log_entryid_page_server_updatemeal",
-      "label": "updateMeal()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "updatemeal()",
-      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
-      "source_location": "L122"
     },
     {
       "id": "src_routes_join_code_page_server_checkjoininvitelookuplimit",
@@ -10310,18 +10322,6 @@
       "norm_label": "seedtestuser()",
       "source_file": "src/routes/login/page.server.test.ts",
       "source_location": "L39"
-    },
-    {
-      "id": "src_routes_page_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L4"
     },
     {
       "id": "src_routes_signup_page_server_insertsignupuser",
@@ -23176,7 +23176,7 @@
       "node_kind": "heading",
       "norm_label": "browser surfaces",
       "source_file": "DESIGN.md",
-      "source_location": "L325"
+      "source_location": "L327"
     },
     {
       "id": "design_buttons",
@@ -23188,7 +23188,7 @@
       "node_kind": "heading",
       "norm_label": "buttons",
       "source_file": "DESIGN.md",
-      "source_location": "L268"
+      "source_location": "L270"
     },
     {
       "id": "design_cards_containers",
@@ -23200,7 +23200,7 @@
       "node_kind": "heading",
       "norm_label": "cards / containers",
       "source_file": "DESIGN.md",
-      "source_location": "L283"
+      "source_location": "L285"
     },
     {
       "id": "design_chips",
@@ -23212,7 +23212,7 @@
       "node_kind": "heading",
       "norm_label": "chips",
       "source_file": "DESIGN.md",
-      "source_location": "L277"
+      "source_location": "L279"
     },
     {
       "id": "design_colors",
@@ -23236,7 +23236,7 @@
       "node_kind": "heading",
       "norm_label": "components",
       "source_file": "DESIGN.md",
-      "source_location": "L266"
+      "source_location": "L268"
     },
     {
       "id": "design_design_system_diversif",
@@ -23260,7 +23260,7 @@
       "node_kind": "heading",
       "norm_label": "do:",
       "source_file": "DESIGN.md",
-      "source_location": "L343"
+      "source_location": "L345"
     },
     {
       "id": "design_do_s_and_don_ts",
@@ -23272,7 +23272,7 @@
       "node_kind": "heading",
       "norm_label": "do's and don'ts",
       "source_file": "DESIGN.md",
-      "source_location": "L341"
+      "source_location": "L343"
     },
     {
       "id": "design_documented_deviations",
@@ -23284,7 +23284,7 @@
       "node_kind": "heading",
       "norm_label": "documented deviations",
       "source_file": "DESIGN.md",
-      "source_location": "L370"
+      "source_location": "L372"
     },
     {
       "id": "design_don_t",
@@ -23296,7 +23296,7 @@
       "node_kind": "heading",
       "norm_label": "don't:",
       "source_file": "DESIGN.md",
-      "source_location": "L357"
+      "source_location": "L359"
     },
     {
       "id": "design_elevation_depth",
@@ -23308,7 +23308,7 @@
       "node_kind": "heading",
       "norm_label": "elevation & depth",
       "source_file": "DESIGN.md",
-      "source_location": "L236"
+      "source_location": "L238"
     },
     {
       "id": "design_focus",
@@ -23320,7 +23320,7 @@
       "node_kind": "heading",
       "norm_label": "focus",
       "source_file": "DESIGN.md",
-      "source_location": "L308"
+      "source_location": "L310"
     },
     {
       "id": "design_hierarchy",
@@ -23344,7 +23344,7 @@
       "node_kind": "heading",
       "norm_label": "inputs / fields",
       "source_file": "DESIGN.md",
-      "source_location": "L291"
+      "source_location": "L293"
     },
     {
       "id": "design_layout",
@@ -23356,7 +23356,7 @@
       "node_kind": "heading",
       "norm_label": "layout",
       "source_file": "DESIGN.md",
-      "source_location": "L218"
+      "source_location": "L220"
     },
     {
       "id": "design_named_rules",
@@ -23383,7 +23383,7 @@
       "source_location": "L210"
     },
     {
-      "id": "design_named_rules_228",
+      "id": "design_named_rules_230",
       "label": "Named Rules",
       "_origin": "ast",
       "community": 10,
@@ -23392,10 +23392,10 @@
       "node_kind": "heading",
       "norm_label": "named rules",
       "source_file": "DESIGN.md",
-      "source_location": "L228"
+      "source_location": "L230"
     },
     {
-      "id": "design_named_rules_250",
+      "id": "design_named_rules_252",
       "label": "Named Rules",
       "_origin": "ast",
       "community": 10,
@@ -23404,10 +23404,10 @@
       "node_kind": "heading",
       "norm_label": "named rules",
       "source_file": "DESIGN.md",
-      "source_location": "L250"
+      "source_location": "L252"
     },
     {
-      "id": "design_named_rules_262",
+      "id": "design_named_rules_264",
       "label": "Named Rules",
       "_origin": "ast",
       "community": 10,
@@ -23416,7 +23416,7 @@
       "node_kind": "heading",
       "norm_label": "named rules",
       "source_file": "DESIGN.md",
-      "source_location": "L262"
+      "source_location": "L264"
     },
     {
       "id": "design_navigation",
@@ -23428,7 +23428,7 @@
       "node_kind": "heading",
       "norm_label": "navigation",
       "source_file": "DESIGN.md",
-      "source_location": "L298"
+      "source_location": "L300"
     },
     {
       "id": "design_neutral",
@@ -23488,7 +23488,7 @@
       "node_kind": "heading",
       "norm_label": "shadow vocabulary",
       "source_file": "DESIGN.md",
-      "source_location": "L240"
+      "source_location": "L242"
     },
     {
       "id": "design_shapes",
@@ -23500,7 +23500,7 @@
       "node_kind": "heading",
       "norm_label": "shapes",
       "source_file": "DESIGN.md",
-      "source_location": "L254"
+      "source_location": "L256"
     },
     {
       "id": "design_tertiary",
@@ -23524,7 +23524,7 @@
       "node_kind": "heading",
       "norm_label": "the log fab (signature)",
       "source_file": "DESIGN.md",
-      "source_location": "L304"
+      "source_location": "L306"
     },
     {
       "id": "design_typography",
@@ -24540,17 +24540,6 @@
       "source_location": "L42"
     },
     {
-      "id": "package_devdependencies_axe_core_playwright",
-      "label": "@axe-core/playwright",
-      "_origin": "ast",
-      "community": 106,
-      "community_name": "devDependencies",
-      "file_type": "code",
-      "norm_label": "@axe-core/playwright",
-      "source_file": "package.json",
-      "source_location": "L43"
-    },
-    {
       "id": "package_devdependencies_drizzle_kit",
       "label": "drizzle-kit",
       "_origin": "ast",
@@ -24650,6 +24639,17 @@
       "source_location": "L74"
     },
     {
+      "id": "package_devdependencies_sveltejs_adapter_node",
+      "label": "@sveltejs/adapter-node",
+      "_origin": "ast",
+      "community": 106,
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "@sveltejs/adapter-node",
+      "source_file": "package.json",
+      "source_location": "L48"
+    },
+    {
       "id": "package_devdependencies_sveltejs_kit",
       "label": "@sveltejs/kit",
       "_origin": "ast",
@@ -24714,17 +24714,6 @@
       "norm_label": "@types/node",
       "source_file": "package.json",
       "source_location": "L55"
-    },
-    {
-      "id": "axe_core_playwright",
-      "label": "@axe-core/playwright",
-      "_origin": "ast",
-      "community": 106,
-      "community_name": "devDependencies",
-      "file_type": "concept",
-      "norm_label": "@axe-core/playwright",
-      "source_file": "package.json",
-      "source_location": "L43"
     },
     {
       "id": "drizzle_kit",
@@ -24824,6 +24813,17 @@
       "norm_label": "svelte-check",
       "source_file": "package.json",
       "source_location": "L74"
+    },
+    {
+      "id": "sveltejs_adapter_node",
+      "label": "@sveltejs/adapter-node",
+      "_origin": "ast",
+      "community": 106,
+      "community_name": "devDependencies",
+      "file_type": "concept",
+      "norm_label": "@sveltejs/adapter-node",
+      "source_file": "package.json",
+      "source_location": "L48"
     },
     {
       "id": "sveltejs_kit",
@@ -28746,15 +28746,26 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_server_db_errors",
-      "label": "errors.ts",
+      "id": "src_app_d",
+      "label": "app.d.ts",
       "_origin": "ast",
       "community": 15,
       "community_name": "db/index.ts",
       "file_type": "code",
-      "norm_label": "errors.ts",
-      "source_file": "src/lib/server/db/errors.ts",
+      "norm_label": "app.d.ts",
+      "source_file": "src/app.d.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "src_app_d_app",
+      "label": "App",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "app",
+      "source_file": "src/app.d.ts",
+      "source_location": "L22"
     },
     {
       "id": "src_lib_server_db_index",
@@ -28878,6 +28889,28 @@
       "source_location": "L1"
     },
     {
+      "id": "src_lib_server_fresh_auth_test",
+      "label": "fresh-auth.test.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "fresh-auth.test.ts",
+      "source_file": "src/lib/server/fresh-auth.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_server_fresh_auth_test_fakeuser",
+      "label": "fakeUser",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "fakeuser",
+      "source_file": "src/lib/server/fresh-auth.test.ts",
+      "source_location": "L16"
+    },
+    {
       "id": "src_lib_server_gdpr_test",
       "label": "gdpr.test.ts",
       "_origin": "ast",
@@ -28889,14 +28922,69 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_server_invitations",
-      "label": "invitations.ts",
+      "id": "src_lib_server_guards",
+      "label": "guards.ts",
       "_origin": "ast",
       "community": 15,
       "community_name": "db/index.ts",
       "file_type": "code",
-      "norm_label": "invitations.ts",
-      "source_file": "src/lib/server/invitations.ts",
+      "norm_label": "guards.ts",
+      "source_file": "src/lib/server/guards.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_server_guards_test",
+      "label": "guards.test.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "guards.test.ts",
+      "source_file": "src/lib/server/guards.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_server_guards_test_fakeuser",
+      "label": "fakeUser",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "fakeuser",
+      "source_file": "src/lib/server/guards.test.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_lib_server_redirect",
+      "label": "redirect.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "redirect.ts",
+      "source_file": "src/lib/server/redirect.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_server_redirect_test",
+      "label": "redirect.test.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "redirect.test.ts",
+      "source_file": "src/lib/server/redirect.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_types",
+      "label": "types.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "types.ts",
+      "source_file": "src/lib/types.ts",
       "source_location": "L1"
     },
     {
@@ -28931,6 +29019,28 @@
       "norm_label": "diet.test.ts",
       "source_file": "src/lib/utils/diet.test.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "src_routes_account_delete_page_server",
+      "label": "delete/+page.server.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "delete/+page.server.ts",
+      "source_file": "src/routes/account/delete/+page.server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_account_delete_page_server_actions",
+      "label": "actions",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "actions",
+      "source_file": "src/routes/account/delete/+page.server.ts",
+      "source_location": "L14"
     },
     {
       "id": "src_routes_child_id_foods_entryid_page_server",
@@ -28997,6 +29107,39 @@
       "norm_label": "[id]/+layout.server.ts",
       "source_file": "src/routes/child/[id]/+layout.server.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "src_routes_child_id_log_entryid_page_server",
+      "label": "log/[entryId]/+page.server.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "log/[entryid]/+page.server.ts",
+      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_child_id_log_entryid_page_server_actions",
+      "label": "actions",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "actions",
+      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
+      "source_location": "L197"
+    },
+    {
+      "id": "src_routes_child_id_log_entryid_page_server_schema",
+      "label": "schema",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "schema",
+      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
+      "source_location": "L16"
     },
     {
       "id": "src_routes_child_id_menu_page_server",
@@ -29095,6 +29238,28 @@
       "file_type": "code",
       "norm_label": "new/page.server.test.ts",
       "source_file": "src/routes/child/new/page.server.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_layout_server",
+      "label": "routes/+layout.server.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "routes/+layout.server.ts",
+      "source_file": "src/routes/+layout.server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_page_server",
+      "label": "routes/+page.server.ts",
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "db/index.ts",
+      "file_type": "code",
+      "norm_label": "routes/+page.server.ts",
+      "source_file": "src/routes/+page.server.ts",
       "source_location": "L1"
     },
     {
@@ -31039,28 +31204,6 @@
       "norm_label": "pageurl",
       "source_file": "src/routes/child/[id]/log/log.hint.test.ts",
       "source_location": "L17"
-    },
-    {
-      "id": "package_devdependencies_sveltejs_adapter_node",
-      "label": "@sveltejs/adapter-node",
-      "_origin": "ast",
-      "community": 169,
-      "community_name": "@sveltejs/adapter-node",
-      "file_type": "code",
-      "norm_label": "@sveltejs/adapter-node",
-      "source_file": "package.json",
-      "source_location": "L48"
-    },
-    {
-      "id": "sveltejs_adapter_node",
-      "label": "@sveltejs/adapter-node",
-      "_origin": "ast",
-      "community": 169,
-      "community_name": "@sveltejs/adapter-node",
-      "file_type": "concept",
-      "norm_label": "@sveltejs/adapter-node",
-      "source_file": "package.json",
-      "source_location": "L48"
     },
     {
       "id": "claude_skills_fallow_skill_agent_rules",
@@ -36415,6 +36558,83 @@
       "source_location": "L1"
     },
     {
+      "id": "src_routes_account_locale_page_server",
+      "label": "locale/+page.server.ts",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "locale/+page.server.ts",
+      "source_file": "src/routes/account/locale/+page.server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_account_page_server",
+      "label": "account/+page.server.ts",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "account/+page.server.ts",
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_account_page_server_valid_themes",
+      "label": "VALID_THEMES",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "valid_themes",
+      "source_file": "src/routes/account/+page.server.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_routes_account_passkeys_page_server",
+      "label": "passkeys/+page.server.ts",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "passkeys/+page.server.ts",
+      "source_file": "src/routes/account/passkeys/+page.server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_account_passkeys_page_server_deleteschema",
+      "label": "deleteSchema",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "deleteschema",
+      "source_file": "src/routes/account/passkeys/+page.server.ts",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_routes_account_passkeys_page_server_renameschema",
+      "label": "renameSchema",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "renameschema",
+      "source_file": "src/routes/account/passkeys/+page.server.ts",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_routes_account_theme_page_server",
+      "label": "theme/+page.server.ts",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "passkeys.ts",
+      "file_type": "code",
+      "norm_label": "theme/+page.server.ts",
+      "source_file": "src/routes/account/theme/+page.server.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_routes_passkeys_authentication_options_server",
       "label": "authentication/options/+server.ts",
       "_origin": "ast",
@@ -36679,235 +36899,26 @@
       "source_location": "L51"
     },
     {
-      "id": "src_app_d",
-      "label": "app.d.ts",
+      "id": "package_devdependencies_axe_core_playwright",
+      "label": "@axe-core/playwright",
       "_origin": "ast",
       "community": 27,
-      "community_name": "guards.ts",
+      "community_name": "@axe-core/playwright",
       "file_type": "code",
-      "norm_label": "app.d.ts",
-      "source_file": "src/app.d.ts",
-      "source_location": "L1"
+      "norm_label": "@axe-core/playwright",
+      "source_file": "package.json",
+      "source_location": "L43"
     },
     {
-      "id": "src_app_d_app",
-      "label": "App",
+      "id": "axe_core_playwright",
+      "label": "@axe-core/playwright",
       "_origin": "ast",
       "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "app",
-      "source_file": "src/app.d.ts",
-      "source_location": "L22"
-    },
-    {
-      "id": "src_lib_server_fresh_auth_test",
-      "label": "fresh-auth.test.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "fresh-auth.test.ts",
-      "source_file": "src/lib/server/fresh-auth.test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_fresh_auth_test_fakeuser",
-      "label": "fakeUser",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "fakeuser",
-      "source_file": "src/lib/server/fresh-auth.test.ts",
-      "source_location": "L16"
-    },
-    {
-      "id": "src_lib_server_guards",
-      "label": "guards.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "guards.ts",
-      "source_file": "src/lib/server/guards.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_guards_test",
-      "label": "guards.test.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "guards.test.ts",
-      "source_file": "src/lib/server/guards.test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_guards_test_fakeuser",
-      "label": "fakeUser",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "fakeuser",
-      "source_file": "src/lib/server/guards.test.ts",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_lib_types",
-      "label": "types.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "types.ts",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_account_delete_page_server",
-      "label": "delete/+page.server.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "delete/+page.server.ts",
-      "source_file": "src/routes/account/delete/+page.server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_account_delete_page_server_actions",
-      "label": "actions",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "actions",
-      "source_file": "src/routes/account/delete/+page.server.ts",
-      "source_location": "L14"
-    },
-    {
-      "id": "src_routes_account_locale_page_server",
-      "label": "locale/+page.server.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "locale/+page.server.ts",
-      "source_file": "src/routes/account/locale/+page.server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_account_page_server",
-      "label": "account/+page.server.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "account/+page.server.ts",
-      "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_account_page_server_valid_themes",
-      "label": "VALID_THEMES",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "valid_themes",
-      "source_file": "src/routes/account/+page.server.ts",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server",
-      "label": "passkeys/+page.server.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "passkeys/+page.server.ts",
-      "source_file": "src/routes/account/passkeys/+page.server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server_actions",
-      "label": "actions",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "actions",
-      "source_file": "src/routes/account/passkeys/+page.server.ts",
-      "source_location": "L30"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server_deleteschema",
-      "label": "deleteSchema",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "deleteschema",
-      "source_file": "src/routes/account/passkeys/+page.server.ts",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server_renameschema",
-      "label": "renameSchema",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "renameschema",
-      "source_file": "src/routes/account/passkeys/+page.server.ts",
-      "source_location": "L11"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server_test",
-      "label": "passkeys/page.server.test.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "passkeys/page.server.test.ts",
-      "source_file": "src/routes/account/passkeys/page.server.test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_account_passkeys_page_server_test_auditspy",
-      "label": "auditSpy",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "auditspy",
-      "source_file": "src/routes/account/passkeys/page.server.test.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_routes_account_theme_page_server",
-      "label": "theme/+page.server.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "theme/+page.server.ts",
-      "source_file": "src/routes/account/theme/+page.server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_layout_server",
-      "label": "routes/+layout.server.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "guards.ts",
-      "file_type": "code",
-      "norm_label": "routes/+layout.server.ts",
-      "source_file": "src/routes/+layout.server.ts",
-      "source_location": "L1"
+      "community_name": "@axe-core/playwright",
+      "file_type": "concept",
+      "norm_label": "@axe-core/playwright",
+      "source_file": "package.json",
+      "source_location": "L43"
     },
     {
       "id": "package_devdependencies_types_bun",
@@ -38923,28 +38934,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_server_e2e",
-      "label": "e2e.ts",
-      "_origin": "ast",
-      "community": 34,
-      "community_name": "auth.ts",
-      "file_type": "code",
-      "norm_label": "e2e.ts",
-      "source_file": "src/lib/server/e2e.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_e2e_test",
-      "label": "e2e.test.ts",
-      "_origin": "ast",
-      "community": 34,
-      "community_name": "auth.ts",
-      "file_type": "code",
-      "norm_label": "e2e.test.ts",
-      "source_file": "src/lib/server/e2e.test.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_lib_utils_password_password_min_length",
       "label": "PASSWORD_MIN_LENGTH",
       "_origin": "ast",
@@ -38954,6 +38943,39 @@
       "norm_label": "password_min_length",
       "source_file": "src/lib/utils/password.ts",
       "source_location": "L3"
+    },
+    {
+      "id": "src_routes_account_passkeys_page_server_actions",
+      "label": "actions",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "auth.ts",
+      "file_type": "code",
+      "norm_label": "actions",
+      "source_file": "src/routes/account/passkeys/+page.server.ts",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_routes_account_passkeys_page_server_test",
+      "label": "passkeys/page.server.test.ts",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "auth.ts",
+      "file_type": "code",
+      "norm_label": "passkeys/page.server.test.ts",
+      "source_file": "src/routes/account/passkeys/page.server.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_account_passkeys_page_server_test_auditspy",
+      "label": "auditSpy",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "auth.ts",
+      "file_type": "code",
+      "norm_label": "auditspy",
+      "source_file": "src/routes/account/passkeys/page.server.test.ts",
+      "source_location": "L7"
     },
     {
       "id": "src_routes_account_password_page_server",
@@ -46439,6 +46461,39 @@
       "source_location": "L1"
     },
     {
+      "id": "src_lib_server_db_errors",
+      "label": "errors.ts",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "errors.ts",
+      "source_file": "src/lib/server/db/errors.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_server_e2e",
+      "label": "e2e.ts",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "e2e.ts",
+      "source_file": "src/lib/server/e2e.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_server_e2e_test",
+      "label": "e2e.test.ts",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "e2e.test.ts",
+      "source_file": "src/lib/server/e2e.test.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_lib_server_fresh_auth",
       "label": "fresh-auth.ts",
       "_origin": "ast",
@@ -46459,6 +46514,17 @@
       "norm_label": "fresh_auth_limit",
       "source_file": "src/lib/server/fresh-auth.ts",
       "source_location": "L13"
+    },
+    {
+      "id": "src_lib_server_invitations",
+      "label": "invitations.ts",
+      "_origin": "ast",
+      "community": 70,
+      "community_name": "rate-limit.ts",
+      "file_type": "code",
+      "norm_label": "invitations.ts",
+      "source_file": "src/lib/server/invitations.ts",
+      "source_location": "L1"
     },
     {
       "id": "src_lib_server_rate_limit",
@@ -46494,28 +46560,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_server_redirect",
-      "label": "redirect.ts",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "redirect.ts",
-      "source_file": "src/lib/server/redirect.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_redirect_test",
-      "label": "redirect.test.ts",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "redirect.test.ts",
-      "source_file": "src/lib/server/redirect.test.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_lib_utils_invites",
       "label": "invites.ts",
       "_origin": "ast",
@@ -46536,39 +46580,6 @@
       "norm_label": "invites.test.ts",
       "source_file": "src/lib/utils/invites.test.ts",
       "source_location": "L1"
-    },
-    {
-      "id": "src_routes_child_id_log_entryid_page_server",
-      "label": "log/[entryId]/+page.server.ts",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "log/[entryid]/+page.server.ts",
-      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_child_id_log_entryid_page_server_actions",
-      "label": "actions",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "actions",
-      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
-      "source_location": "L197"
-    },
-    {
-      "id": "src_routes_child_id_log_entryid_page_server_schema",
-      "label": "schema",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "schema",
-      "source_file": "src/routes/child/[id]/log/[entryId]/+page.server.ts",
-      "source_location": "L16"
     },
     {
       "id": "src_routes_join_code_page_server",
@@ -46667,17 +46678,6 @@
       "file_type": "code",
       "norm_label": "login/page.server.test.ts",
       "source_file": "src/routes/login/page.server.test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_page_server",
-      "label": "routes/+page.server.ts",
-      "_origin": "ast",
-      "community": 70,
-      "community_name": "rate-limit.ts",
-      "file_type": "code",
-      "norm_label": "routes/+page.server.ts",
-      "source_file": "src/routes/+page.server.ts",
       "source_location": "L1"
     },
     {
@@ -61275,7 +61275,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/utils/categories.ts",
-      "source_location": "L147",
+      "source_location": "L148",
       "weight": 1.0
     },
     {
@@ -96264,7 +96264,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L268",
+      "source_location": "L270",
       "weight": 1.0
     },
     {
@@ -96275,7 +96275,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L277",
+      "source_location": "L279",
       "weight": 1.0
     },
     {
@@ -96286,7 +96286,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L283",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -96297,7 +96297,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L291",
+      "source_location": "L293",
       "weight": 1.0
     },
     {
@@ -96308,7 +96308,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L298",
+      "source_location": "L300",
       "weight": 1.0
     },
     {
@@ -96319,7 +96319,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L304",
+      "source_location": "L306",
       "weight": 1.0
     },
     {
@@ -96330,7 +96330,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L308",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
@@ -96341,7 +96341,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L325",
+      "source_location": "L327",
       "weight": 1.0
     },
     {
@@ -96385,7 +96385,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L218",
+      "source_location": "L220",
       "weight": 1.0
     },
     {
@@ -96396,7 +96396,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L236",
+      "source_location": "L238",
       "weight": 1.0
     },
     {
@@ -96407,7 +96407,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L254",
+      "source_location": "L256",
       "weight": 1.0
     },
     {
@@ -96418,7 +96418,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L266",
+      "source_location": "L268",
       "weight": 1.0
     },
     {
@@ -96429,7 +96429,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L341",
+      "source_location": "L343",
       "weight": 1.0
     },
     {
@@ -96440,7 +96440,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L343",
+      "source_location": "L345",
       "weight": 1.0
     },
     {
@@ -96451,7 +96451,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L357",
+      "source_location": "L359",
       "weight": 1.0
     },
     {
@@ -96462,7 +96462,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L370",
+      "source_location": "L372",
       "weight": 1.0
     },
     {
@@ -96473,40 +96473,40 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L240",
+      "source_location": "L242",
       "weight": 1.0
     },
     {
       "source": "design_elevation_depth",
-      "target": "design_named_rules_250",
+      "target": "design_named_rules_252",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L250",
+      "source_location": "L252",
       "weight": 1.0
     },
     {
       "source": "design_layout",
-      "target": "design_named_rules_228",
+      "target": "design_named_rules_230",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L228",
+      "source_location": "L230",
       "weight": 1.0
     },
     {
       "source": "design_shapes",
-      "target": "design_named_rules_262",
+      "target": "design_named_rules_264",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "DESIGN.md",
-      "source_location": "L262",
+      "source_location": "L264",
       "weight": 1.0
     },
     {
@@ -128241,7 +128241,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/utils/categories.ts",
-      "source_location": "L142",
+      "source_location": "L143",
       "weight": 1.0
     },
     {
@@ -141330,5 +141330,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "48521def4bbe5750058aa52ca561c8b465843acf"
+  "built_at_commit": "71e4b49e4c420e86405a575c902958a956e78e2f"
 }
