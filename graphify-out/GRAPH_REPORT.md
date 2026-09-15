@@ -1,16 +1,16 @@
 # Graph Report - diversif  (2026-09-15)
 
 ## Corpus Check
-- 608 files · ~462,268 words
+- 608 files · ~462,603 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4549 nodes · 7767 edges · 256 communities (211 shown, 45 thin omitted)
+- 4552 nodes · 7771 edges · 255 communities (212 shown, 43 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 58 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a87d141f`
+- Built from commit: `dc69e3a4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,13 +19,13 @@
 - fr.json
 - localized-href.ts
 - component.ts
-- Migration from knip
-- Button.svelte
+- Key screens
+- log/+page.svelte
 - engine.ts
 - "../../../node_modules/.pnpm/@sinclair+typebox@0.31.28/node_modules/@sinclair/typebox/typebox.js"
 - Bento UI/UX Redesign ("Joyful Bento") — Design
 - i18n Scaffolding (paraglide-sveltekit, FR + EN) Implementation Plan
-- Design System: Diversif
+- Components
 - _helpers.ts
 - schema.ts
 - tables.ts
@@ -35,7 +35,7 @@
 - Common Workflows
 - enabledPlugins
 - Tasks
-- routes/+layout.svelte
+- BackHeader.svelte
 - Card.svelte
 - bun-test-utils.ts
 - medical-audit-2026-05-08.md
@@ -48,14 +48,14 @@
 - TSchema
 - plugin-message-format.js
 - Observability — Sentry (server + client) — Design
-- reaction-values.ts
+- report.ts
 - auth.ts
 - Diversif
 - ignoreDependencies
 - scripts
 - Tasks
 - .fallowrc.json
-- quantities.ts
+- sources.ts
 - dependencies
 - allergens.ts
 - Fallow CLI Reference
@@ -66,10 +66,10 @@
 - Multi-ingredient Meals Implementation Plan
 - Allergen maintenance tracking
 - Critique — /child/[id] (Aujourd'hui)
-- FoodCombobox.svelte
+- categories.ts
 - Texture progression + Bilan pour le pédiatre
 - Visit
-- foods/+page.server.ts
+- dates.ts
 - Key screens
 - Fallow: Common Workflow Patterns & Recipes
 - PWA Offline Log Queue Implementation Plan
@@ -85,7 +85,7 @@
 - compilerOptions
 - bun-test.ts
 - Migration plan (seven phases, every commit shippable)
-- rate-limit.ts
+- signup/+page.server.ts
 - DEPLOY.md
 - PRODUCT.md — Diversif product register
 - Bundle 1 — Foundation primitives (Implementation Plan)
@@ -104,8 +104,8 @@
 - Codebase simplification — 6-bundle DRY/coherence pass
 - UI regression coverage — design
 - TLiteral
-- hooks.server.test.ts
-- categories.ts
+- sentry.ts
+- Design tokens
 - Testing & accessibility
 - Allergen maintenance tracking Implementation Plan
 - Texture Progression + Bilan pour le pédiatre Design
@@ -123,7 +123,7 @@
 - cn.ts
 - devDependencies
 - webauthn-auth-reviewer subagent
-- SectionHeader.svelte
+- Testing & accessibility
 - PR 1 — Texture progression
 - Discover tab grouped layout — Implementation Plan
 - Phase 5 — Test framework migration (the big one)
@@ -133,13 +133,13 @@
 - Reproducible Claude Code setup — design
 - check-bundle-size.ts
 - reminders.ts
-- timeline.ts
+- CoparentsSection.svelte
 - Phase 5 — Découvrir + Profil + Reaction Detail Implementation Plan
 - Perf budget Implementation Plan
 - UI Regression Coverage Implementation Plan
 - A11y audit — design
 - project.inlang/settings.json
-- AujourdhuiBento.svelte
+- Key screens
 - passkey-client.ts
 - seed.ts
 - CLAUDE.md hard rules
@@ -153,21 +153,20 @@
 - Phase 6 — Auth + Onboarding + Landing + Legal — Design Spec
 - Perf budget — design
 - [id]/+page.server.ts
-- profile/page.server.test.ts
 - typescript-eslint
 - Testing Diversif Locally
 - `license`: Manage Continuous Runtime License
 - `health`: Function Complexity & File Health Analysis
-- PrintShell.svelte
+- Custom Plugin Setup
 - Claude Code setup — reproducible everywhere
 - Phase 6 — Auth + Onboarding + Landing + Legal Implementation Plan
 - Perf Budget Implementation Plan
 - package.json
 - verify-backup-restore.ts
+- @axe-core/playwright
 - getLegalIdentity
-- ageInMonths
+- parisDayIndex
 - Bundle 2 — Visual coherence sweep (Implementation Plan)
-- log.hint.test.ts
 - Monorepo Analysis
 - dependency-cruiser
 - Use Bun, not npm/Node convention
@@ -234,7 +233,6 @@
 - @playwright/test
 - prettier
 - @sentry/vite-plugin
-- @sveltejs/adapter-node
 - @sveltejs/vite-plugin-svelte
 - @tailwindcss/vite
 - @types/bun
@@ -279,7 +277,7 @@
 ## Import Cycles
 - 3-file cycle: `src/lib/server/guidance/queries/diversity.ts -> src/lib/server/guidance/repeat-candidates.ts -> src/lib/server/guidance/queries/index.ts -> src/lib/server/guidance/queries/diversity.ts`
 
-## Communities (256 total, 45 thin omitted)
+## Communities (255 total, 43 thin omitted)
 
 ### Community 0 - "en.json"
 Cohesion: 0.00
@@ -290,38 +288,38 @@ Cohesion: 0.00
 Nodes (500): addSymptomLabel, addSymptomNote, addSymptomNotePlaceholder, addSymptomObservedAt, addSymptomSeveritySevereSrPrefix, addSymptomSubmit, addSymptomTitle, allergenArachide (+492 more)
 
 ### Community 2 - "localized-href.ts"
-Cohesion: 0.07
-Nodes (9): Icon, string, localizedHref(), ./$types, ./$types, ./$types, ./$types, ./$types (+1 more)
+Cohesion: 0.06
+Nodes (9): Icon, string, ./$types, ./$types, ./$types, ./$types, ./$types, ./$types (+1 more)
 
 ### Community 3 - "component.ts"
-Cohesion: 0.11
-Nodes (4): user, page, setPagePathname(), textSnippet()
+Cohesion: 0.08
+Nodes (4): i(), foods, pageUrl, textSnippet()
 
-### Community 4 - "Migration from knip"
-Cohesion: 0.40
-Nodes (5): Migration from knip, Step 1: Preview migration, Step 2: Apply migration, Step 3: Compare results, Step 4: Remove knip config
+### Community 4 - "Key screens"
+Cohesion: 0.29
+Nodes (7): `/child/new` (`OnboardingForm`), Key screens, `/` (landing) — bento restyle, Legacy Aujourd'hui — `BentoOptInBanner`, Legal pages, `/login` (wrapped in `BentoAuthLayout`), `/signup` (wrapped in `BentoAuthLayout`)
 
-### Community 5 - "Button.svelte"
+### Community 5 - "log/+page.svelte"
 Cohesion: 0.07
-Nodes (19): createFormToasts(), KeysOf, error, success, resolveMessageKey(), noCancel, trackSubmission(), ./$types (+11 more)
+Nodes (17): createFormToasts(), KeysOf, error, success, resolveMessageKey(), noCancel, trackSubmission(), ./$types (+9 more)
 
 ### Community 6 - "engine.ts"
 Cohesion: 0.16
-Nodes (29): allowedAllergen(), amountFor(), applyAllergenFocus(), applyAllergenFocusAndDedup(), assembleFullDayMeals(), buildMenu(), buildStarterMeal(), catalogSafe() (+21 more)
+Nodes (28): allowedAllergen(), amountFor(), applyAllergenFocus(), applyAllergenFocusAndDedup(), assembleFullDayMeals(), buildStarterMeal(), catalogSafe(), cautionFor() (+20 more)
 
 ### Community 7 - ""../../../node_modules/.pnpm/@sinclair+typebox@0.31.28/node_modules/@sinclair/typebox/typebox.js""
 Cohesion: 0.06
 Nodes (36): "../../../node_modules/.pnpm/@sinclair+typebox@0.31.28/node_modules/@sinclair/typebox/typebox.js"(), Capitalize(), Check(), IntrinsicLiteral(), IsBoolean(), IsControlCharacterFree(), IsIntersectOptional(), IsNumber() (+28 more)
 
 ### Community 8 - "Bento UI/UX Redesign ("Joyful Bento") — Design"
-Cohesion: 0.12
-Nodes (17): Bento UI/UX Redesign ("Joyful Bento") — Design, Brand mark, Brand & visual identity, Color tokens (dark), Color tokens (light), Components — impact table, Dark mode strategy, Design tokens (+9 more)
+Cohesion: 0.17
+Nodes (12): Bento UI/UX Redesign ("Joyful Bento") — Design, Brand mark, Brand & visual identity, Components — impact table, Dark mode strategy, Goal, Non-goals, Open questions (+4 more)
 
 ### Community 9 - "i18n Scaffolding (paraglide-sveltekit, FR + EN) Implementation Plan"
 Cohesion: 0.04
 Nodes (45): i18n Scaffolding (paraglide-sveltekit, FR+EN) Implementation Plan, File map, Final verification, i18n Scaffolding (paraglide-sveltekit, FR + EN) Implementation Plan, Message-key naming convention, Task 1 — Infrastructure pilot, Task 2 — LocaleSwitcher component (TDD), Task 3 — Chrome + dialogs + error + cookies (string extraction) (+37 more)
 
-### Community 10 - "Design System: Diversif"
+### Community 10 - "Components"
 Cohesion: 0.06
 Nodes (31): Browser surfaces, Buttons, Cards / Containers, Chips, Colors, Components, Design System: Diversif, Do: (+23 more)
 
@@ -330,20 +328,20 @@ Cohesion: 0.10
 Nodes (15): axeSweep(), AxeViolation, formatViolations(), PUBLIC_ROUTES, TAGS, awaitHydration(), dismissWelcomeIfPresent(), expectBottomSheet() (+7 more)
 
 ### Community 12 - "schema.ts"
-Cohesion: 0.06
-Nodes (42): Child, children, FoodEntry, IdempotencyKey, Invitation, memberships, NewChild, NewFood (+34 more)
+Cohesion: 0.05
+Nodes (56): CleanupResult, runCleanup(), startCleanupTimer(), stopCleanupTimer(), execRows(), Executor, Child, children (+48 more)
 
 ### Community 13 - "tables.ts"
-Cohesion: 0.18
-Nodes (13): StageId, CHARCUTERIE_MATCHERS, CHOKING_BY_FOOD, INFANT_DAY, MEAL_TEMPLATES, MealId, OILY_FISH, PORC_MATCHERS (+5 more)
+Cohesion: 0.14
+Nodes (15): MenuInput, CATALOG, CHARCUTERIE_MATCHERS, CHOKING_BY_FOOD, INFANT_DAY, MEAL_TEMPLATES, MealId, OILY_FISH (+7 more)
 
 ### Community 14 - "guidance.ts"
 Cohesion: 0.10
-Nodes (28): ALLERGEN_GUIDANCE, AllergenGuidance, ALLERGY_SAFETY_SOURCES, APPROACHES, BentoStage, CATEGORY_GUIDANCE, CategoryGuidance, CHOKING_HAZARDS (+20 more)
+Nodes (25): ALLERGEN_GUIDANCE, AllergenGuidance, ALLERGY_SAFETY_SOURCES, APPROACHES, BentoStage, CATEGORY_GUIDANCE, CategoryGuidance, CHOKING_HAZARDS (+17 more)
 
 ### Community 15 - "foods/[entryId]/+page.server.ts"
-Cohesion: 0.17
-Nodes (19): SEVERE, Severity, severityOf(), SYMPTOM_LABELS, SymptomLabel, symptomLabelText(), WARN, countNthExposition() (+11 more)
+Cohesion: 0.19
+Nodes (17): SEVERE, Severity, severityOf(), SYMPTOM_LABELS, SymptomLabel, symptomLabelText(), WARN, countNthExposition() (+9 more)
 
 ### Community 16 - "db.ts"
 Cohesion: 0.07
@@ -361,13 +359,13 @@ Nodes (37): source, enabledPlugins, chrome-devtools-mcp@claude-plugins-official,
 Cohesion: 0.05
 Nodes (38): Task 10: DiscoverBento composer, Task 11: ChildCardRow component, Task 12: CoparentsSection component, Task 13: CompteSection component, Task 14: RgpdSection component, Task 15: ProfilBento composer, Task 16: monitor-timer utility + hook, Task 17: ReassuranceHero component (+30 more)
 
-### Community 20 - "routes/+layout.svelte"
-Cohesion: 0.14
-Nodes (8): needRefresh, toastFn, updateServiceWorker, bentoKids, firstChildId, isAccountRoute, locale, refreshNeedsReauthIndicator()
+### Community 20 - "BackHeader.svelte"
+Cohesion: 0.08
+Nodes (11): needRefresh, toastFn, updateServiceWorker, ./$types, ./$types, bentoKids, firstChildId, isAccountRoute (+3 more)
 
 ### Community 21 - "Card.svelte"
-Cohesion: 0.10
-Nodes (7): sources, ALL_SOURCE_IDS, Source, SOURCES, ./$types, ./$types, ./$types
+Cohesion: 0.12
+Nodes (6): recordLabel, showRecord, streakUnit, weekLabel, sources, ./$types
 
 ### Community 22 - "bun-test-utils.ts"
 Cohesion: 0.08
@@ -386,20 +384,20 @@ Cohesion: 0.12
 Nodes (24): purgeBeforeSubmit(), purgeClientState(), CachesLike, globalWithCaches, ActionError, ActionFailure, ActionRedirect, ActionResult (+16 more)
 
 ### Community 26 - "passkeys.ts"
-Cohesion: 0.06
-Nodes (59): createSession(), newToken(), setSessionCookie(), Passkey, requireFreshAuth(), assertRpidOrigin(), AuthenticationResult, base64UrlToBuffer() (+51 more)
+Cohesion: 0.05
+Nodes (64): Passkey, FRESH_AUTH_LIMIT, requireFreshAuth(), Result, fakeUser, AuthenticationResult, base64UrlToBuffer(), bufferToBase64Url() (+56 more)
 
 ### Community 27 - "db/index.ts"
-Cohesion: 0.09
-Nodes (29): App, Error, Locals, db, drizzleDb, pool, sqlite, Membership (+21 more)
+Cohesion: 0.07
+Nodes (42): App, Error, Locals, getAllStagesForBento(), getStageForAgeMonths(), db, drizzleDb, pool (+34 more)
 
 ### Community 28 - "Fallow: Critical Gotchas"
 Cohesion: 0.06
 Nodes (33): Baseline Comparison Tracks Issue Identity, `--changed-since` Shows Only New Issues, Class Instance Members Are Tracked, Decorated Members Are Skipped By Default, Don't Create Config Unless Needed, Duplication Modes Affect What's Detected, Dynamically Loaded Files: Use `dynamicallyLoaded`, Exit Code 1 vs 2 (+25 more)
 
 ### Community 29 - "types.ts"
-Cohesion: 0.07
-Nodes (10): baseClass, ChildSummary, RecentEntry, SymptomEntry, getTextureLabel(), LABEL_FNS, defaultTextureForAgeMonths(), TEXTURE_VALUES (+2 more)
+Cohesion: 0.06
+Nodes (14): filtered, baseClass, user, User, RecentEntry, SymptomEntry, getTextureLabel(), LABEL_FNS (+6 more)
 
 ### Community 30 - "TSchema"
 Cohesion: 0.27
@@ -413,13 +411,13 @@ Nodes (24): escapeMarkupLiteral(), escapePatternText(), findPlaceholderClosingIn
 Cohesion: 0.08
 Nodes (28): Sentry Setup Operator Runbook, 1. Create the Sentry project, 2. Create an internal integration auth token, 3. Wire env vars in Coolify, 4. Configure an alert rule, 5. Smoke test, 6. Privacy policy ack, Sentry New-Issue Alert Rule (+20 more)
 
-### Community 33 - "reaction-values.ts"
-Cohesion: 0.13
-Nodes (13): FoodIcon, #each(), formatDate(), MealGroup, REACTION_RANK, getReactionLabel(), REACTION_DESCRIPTION_RESOLVERS, REACTION_LABEL_RESOLVERS (+5 more)
+### Community 33 - "report.ts"
+Cohesion: 0.14
+Nodes (8): FoodIcon, #each(), formatDate(), formatReportDay(), reportReactionClass(), reportReactionIcon(), ./$types, ./$types
 
 ### Community 34 - "auth.ts"
-Cohesion: 0.07
-Nodes (42): audit(), AuditEvent, ARGON_OPTS, ARGON_OPTS_E2E, CreatedSession, findUserByEmail(), getDecoyHash(), hashPassword() (+34 more)
+Cohesion: 0.06
+Nodes (53): appHandle(), handle(), handleError(), { captureExceptionMock, initMock }, CookieOpts, warnIfAddressHeaderMissing(), audit(), AuditEvent (+45 more)
 
 ### Community 35 - "Diversif"
 Cohesion: 0.08
@@ -441,9 +439,9 @@ Nodes (24): Task 10: Extend `/child/new` action — call `createInvitationForChi
 Cohesion: 0.08
 Nodes (23): audit, gate, duplicates, minOccurrences, entry, health, maxCognitive, maxCrap (+15 more)
 
-### Community 40 - "quantities.ts"
-Cohesion: 0.23
-Nodes (8): makeFood(), makeMenu(), getQuantitiesForStage(), QUANTITIES, StageQuantities, SourceId, Food, Menu
+### Community 40 - "sources.ts"
+Cohesion: 0.17
+Nodes (12): makeFood(), makeMenu(), StageId, getQuantitiesForStage(), QUANTITIES, StageQuantities, ALL_SOURCE_IDS, Source (+4 more)
 
 ### Community 41 - "dependencies"
 Cohesion: 0.08
@@ -485,9 +483,9 @@ Nodes (20): Allergen maintenance tracking, Audit / event log, Components, Data f
 Cohesion: 0.12
 Nodes (16): Cognitive Load — 6 of 8 FAIL → HIGH (critical), Critique — /child/[id] (Aujourd'hui), Design Health Score — 23/40 (Acceptable), Design Specificity Verdict, Emotional Journey, Measured evidence, Minor Observations, [P1] A 60-day undismissable banner structurally outranks every actionable reminder (+8 more)
 
-### Community 51 - "FoodCombobox.svelte"
-Cohesion: 0.13
-Nodes (5): foods, foods, customFoodSection(), fuzzyMatch(), normalize()
+### Community 51 - "categories.ts"
+Cohesion: 0.09
+Nodes (14): foods, foods, customFoodSection(), getCategoryIcon(), CATEGORIES, CATEGORY_IDS, CATEGORY_LABEL_RESOLVERS, CategoryClasses (+6 more)
 
 ### Community 52 - "Texture progression + Bilan pour le pédiatre"
 Cohesion: 0.11
@@ -497,9 +495,9 @@ Nodes (19): Additions, Carnet & entry detail, CarnetStats — _« Textures explo
 Cohesion: 0.13
 Nodes (19): ArrayType(), Create(), DateType(), Escape(), Extends(), IntrinsicRest(), IntrinsicTemplateLiteral(), IsArrayOfTuple() (+11 more)
 
-### Community 54 - "foods/+page.server.ts"
-Cohesion: 0.19
-Nodes (17): loadAllergenStatus(), loadRepeatCandidates(), loadTexturesTried(), formatDateInputValue(), formatHHmm(), formatRelative(), isSameDay(), isValidBirthDate() (+9 more)
+### Community 54 - "dates.ts"
+Cohesion: 0.42
+Nodes (8): formatDateInputValue(), formatHHmm(), formatRelative(), formatTime(), isSameDay(), isValidBirthDate(), localInputToIso(), pad2()
 
 ### Community 55 - "Key screens"
 Cohesion: 0.25
@@ -507,7 +505,7 @@ Nodes (8): Aujourd'hui (home), Auth — signup (first impression), Carnet, Déco
 
 ### Community 56 - "Fallow: Common Workflow Patterns & Recipes"
 Cohesion: 0.07
-Nodes (26): Node.js Bindings, All-in-one with `--ci`, Combined Dead Code + Duplication, Cross-directory only, Custom Plugin Setup, Duplication Threshold CI Gate, Fallow: Common Workflow Patterns & Recipes, Full audit (default) (+18 more)
+Nodes (27): Node.js Bindings, All-in-one with `--ci`, Combined Dead Code + Duplication, Cross-directory only, Duplication Threshold CI Gate, Fallow: Common Workflow Patterns & Recipes, Full audit (default), GitHub Code Scanning Integration (+19 more)
 
 ### Community 57 - "PWA Offline Log Queue Implementation Plan"
 Cohesion: 0.11
@@ -561,9 +559,9 @@ Nodes (12): applyNextMarker(), args, collectFiles(), covRoot, failedFiles, files
 Cohesion: 0.25
 Nodes (8): Migration plan (seven phases, every commit shippable), Phase 1 — Foundation: tokens, fonts, gitignored brand assets (~½ day), Phase 2 — Primitive layer (~1 day), Phase 3 — App shell + log Sheet (~2–3 days), Phase 4 — Aujourd'hui + Carnet (~2–3 days), Phase 5 — Découvrir + Profil + Reaction detail (~2 days), Phase 6 — Auth + onboarding + landing + legal pages (~1–2 days), Phase 7 — Cleanup & flag removal (~½ day)
 
-### Community 70 - "rate-limit.ts"
-Cohesion: 0.06
-Nodes (51): CleanupResult, runCleanup(), startCleanupTimer(), stopCleanupTimer(), hasUniqueShape(), isUniqueViolation(), invitations, webauthnChallenges (+43 more)
+### Community 70 - "signup/+page.server.ts"
+Cohesion: 0.05
+Nodes (42): hasUniqueShape(), isUniqueViolation(), isE2E(), parseForm(), ParseFormResult, parseFormWithKey(), ParseFormWithKeyResult, schema (+34 more)
 
 ### Community 71 - "DEPLOY.md"
 Cohesion: 0.11
@@ -602,8 +600,8 @@ Cohesion: 0.33
 Nodes (6): 4-tab shell, Center FAB, Desktop variant (≥ 1024px), Information architecture, Multi-child header, Wide desktop variant (≥ 1440px)
 
 ### Community 80 - "log/+page.server.ts"
-Cohesion: 0.08
-Nodes (31): idempotencyKeys, Executor, loadVisibleFoodsForChild(), ResolveFoodInput, ResolveFoodResult, resolveOrInsertFood(), visibleToChild(), parseIntParam() (+23 more)
+Cohesion: 0.11
+Nodes (23): Executor, loadVisibleFoodsForChild(), ResolveFoodInput, ResolveFoodResult, resolveOrInsertFood(), visibleToChild(), IdempotencyInFlight, IdempotencyScopeMismatch (+15 more)
 
 ### Community 81 - "Sentry Observability Implementation Plan"
 Cohesion: 0.14
@@ -622,8 +620,8 @@ Cohesion: 0.14
 Nodes (14): Architecture, Edge cases, Endpoint integration sketch, File map, Manifest/icons audit (pre-flight), Out of scope (could come later), Problem, Public API (+6 more)
 
 ### Community 85 - "Phase 5 — Découvrir + Profil + Reaction Detail — Design Spec"
-Cohesion: 0.11
-Nodes (19): Accessibility, Data flow, Découvrir (replaces `/child/[id]/guide` body when flag on), E2E (Playwright, mobile viewport pinned), Goal, Information architecture, Key screens, Migration / sequencing (+11 more)
+Cohesion: 0.22
+Nodes (9): Data flow, Goal, Information architecture, Migration / sequencing, Non-goals, Open questions, Phase 5 — Découvrir + Profil + Reaction Detail — Design Spec, Privacy / PII posture (+1 more)
 
 ### Community 86 - "Codebase simplification — 6-bundle DRY/coherence pass"
 Cohesion: 0.14
@@ -637,13 +635,13 @@ Nodes (14): Architecture, Companion bundles, Components & specs, Data flow, Erro
 Cohesion: 0.19
 Nodes (14): TAnyRight(), TArrayRight(), TBooleanRight(), TIntegerRight(), TLiteral(), TLiteralBoolean(), TLiteralNumber(), TLiteralString() (+6 more)
 
-### Community 89 - "hooks.server.test.ts"
-Cohesion: 0.12
-Nodes (17): appHandle(), handle(), handleError(), { captureExceptionMock, initMock }, CookieOpts, warnIfAddressHeaderMissing(), eventRoute(), filterIncomingBreadcrumb() (+9 more)
+### Community 89 - "sentry.ts"
+Cohesion: 0.23
+Nodes (10): eventRoute(), filterIncomingBreadcrumb(), ScrubbableEvent, scrubBreadcrumbData(), scrubBreadcrumbs(), scrubEvent(), scrubException(), scrubPathname() (+2 more)
 
-### Community 90 - "categories.ts"
-Cohesion: 0.20
-Nodes (13): getCategoryIcon(), ruleCategoryImbalance(), CATEGORIES, CATEGORY_IDS, CATEGORY_LABEL_RESOLVERS, CategoryClasses, CategoryColor, CLASS_MAP (+5 more)
+### Community 90 - "Design tokens"
+Cohesion: 0.40
+Nodes (5): Color tokens (dark), Color tokens (light), Design tokens, Glow shadow, Motion
 
 ### Community 91 - "Testing & accessibility"
 Cohesion: 0.40
@@ -666,8 +664,8 @@ Cohesion: 0.27
 Nodes (13): IsObjectArrayLike(), IsObjectBigIntLike(), IsObjectBooleanLike(), IsObjectConstructorLike(), IsObjectDateLike(), IsObjectFunctionLike(), IsObjectNumberLike(), IsObjectPromiseLike() (+5 more)
 
 ### Community 96 - "report/+page.server.ts"
-Cohesion: 0.33
-Nodes (10): countsAsAllergenExposure(), isTextureKey(), aggregateFoods(), AllergenReportRow, buildAllergenRows(), computeMostAdvancedTexture(), computeTextureDistribution(), load() (+2 more)
+Cohesion: 0.13
+Nodes (19): InsertSymptomResult, groupByMeal(), MealGroup, REACTION_RANK, REACTION_VALUES, ReactionId, getReactionLabel(), REACTION_DESCRIPTION_RESOLVERS (+11 more)
 
 ### Community 97 - "pre-launch-check SKILL"
 Cohesion: 0.16
@@ -686,12 +684,12 @@ Cohesion: 0.17
 Nodes (12): After submit, Audit / event log, Data model, French copy, Goal, Late reaction promotion on a `ras` food entry, Non-goals, Open questions for the plan (+4 more)
 
 ### Community 101 - "Discover tab — grouped layout"
-Cohesion: 0.17
-Nodes (12): API: `DiscoverGroup.svelte`, Discover tab — grouped layout, Files touched, Group order, Layout structure, Risk / open items, Tests, What (+4 more)
+Cohesion: 0.14
+Nodes (14): Discover Tab — Grouped Layout Design, API: `DiscoverGroup.svelte`, Discover tab — grouped layout, Files touched, Group order, Layout structure, Risk / open items, Tests (+6 more)
 
 ### Community 102 - "Modal.svelte"
-Cohesion: 0.13
-Nodes (5): i(), drag, handleOpenChange(), isDesktop, string
+Cohesion: 0.25
+Nodes (4): drag, handleOpenChange(), isDesktop, string
 
 ### Community 103 - "Component primitives (shadcn-svelte)"
 Cohesion: 0.40
@@ -703,15 +701,19 @@ Nodes (18): absoluteUrl(), articleJsonLd(), BreadcrumbItem, breadcrumbJsonLd(), 
 
 ### Community 105 - "cn.ts"
 Cohesion: 0.07
-Nodes (3): filtered, baseProps, cn()
+Nodes (3): baseProps, cn(), ./$types
 
 ### Community 106 - "devDependencies"
 Cohesion: 0.06
-Nodes (33): @axe-core/playwright, drizzle-kit, eslint-config-prettier, globals, happy-dom, @happy-dom/global-registrator, lint-staged, devDependencies (+25 more)
+Nodes (33): drizzle-kit, eslint-config-prettier, globals, happy-dom, @happy-dom/global-registrator, lint-staged, devDependencies, drizzle-kit (+25 more)
 
 ### Community 107 - "webauthn-auth-reviewer subagent"
 Cohesion: 0.18
 Nodes (11): webauthn-auth-reviewer subagent, Cross-cutting, Output, Session & hashing, What to check (WebAuthn ceremony — the high-value bugs), migration 0002_purge_sessions_for_token_hashing, @simplewebauthn/server, src/lib/server/auth.ts (+3 more)
+
+### Community 108 - "Testing & accessibility"
+Cohesion: 0.40
+Nodes (5): Accessibility, E2E (Playwright, mobile viewport pinned), Testing & accessibility, Unit / component (vitest, 100% coverage gate enforced), Visual regression
 
 ### Community 109 - "PR 1 — Texture progression"
 Cohesion: 0.18
@@ -746,12 +748,8 @@ Cohesion: 0.18
 Nodes (8): BUDGET_PATH, CLIENT_DIR, jsFiles, ROOT, STATIC_DIR, staticFiles, totalJs, violations
 
 ### Community 117 - "reminders.ts"
-Cohesion: 0.09
-Nodes (26): EnrichedEntry, computeReminders(), MaintainCandidate, push(), Reminder, ReminderInput, RuleContext, ruleForbiddenFoods() (+18 more)
-
-### Community 118 - "timeline.ts"
-Cohesion: 0.14
-Nodes (10): execRows(), Executor, DiversityMetrics, RepeatCandidate, WeeklyRecap, CoparentEntry, StreakStats, REPEAT_CANDIDATE_MAX_COUNT (+2 more)
+Cohesion: 0.08
+Nodes (29): EnrichedEntry, MaintainCandidate, push(), Reminder, ReminderInput, ruleCategoryImbalance(), RuleContext, ruleForbiddenFoods() (+21 more)
 
 ### Community 119 - "Phase 5 — Découvrir + Profil + Reaction Detail Implementation Plan"
 Cohesion: 0.22
@@ -773,17 +771,17 @@ Nodes (10): A11y audit — design, Architecture, Companion bundles, Data flow, E
 Cohesion: 0.20
 Nodes (9): baseLocale, locales, modules, plugin.inlang.messageFormat, pathPattern, $schema, en, fr (+1 more)
 
-### Community 124 - "AujourdhuiBento.svelte"
-Cohesion: 0.17
-Nodes (4): recordLabel, showRecord, streakUnit, weekLabel
+### Community 124 - "Key screens"
+Cohesion: 0.40
+Nodes (5): Découvrir (replaces `/child/[id]/guide` body when flag on), Key screens, Print page (`/child/[id]/foods/[entryId]/print`), Profil (replaces `/account` body when flag on), Reaction detail (`/child/[id]/foods/[entryId]` — new)
 
 ### Community 125 - "passkey-client.ts"
-Cohesion: 0.24
-Nodes (6): authenticateWithPasskey(), PasskeyAuthResult, PasskeyErrorKey, signInWithPasskey(), FakeResponse, toastErrorCalls
+Cohesion: 0.21
+Nodes (7): authenticateWithPasskey(), PasskeyAuthResult, PasskeyErrorKey, signInWithPasskey(), FakeResponse, toastErrorCalls, localizedHref()
 
 ### Community 126 - "seed.ts"
-Cohesion: 0.18
-Nodes (10): AnyDb, applySeedCorrections(), FOODS_SEED, SeedFood, seedFoods(), Tx, MenuInput, CATALOG (+2 more)
+Cohesion: 0.33
+Nodes (7): AnyDb, applySeedCorrections(), FOODS_SEED, SeedFood, seedFoods(), Tx, CategoryId
 
 ### Community 127 - "CLAUDE.md hard rules"
 Cohesion: 0.21
@@ -806,20 +804,16 @@ Cohesion: 0.25
 Nodes (9): Bun Migration Implementation Plan, Bun.password Argon2id Hashing, bun:sql Postgres Driver, PGlite In-Process Test DB, svelte-adapter-bun HTTP Adapter, diversif: Postgres → SQLite Migration (on the Bun stack), Big-Bang Cutover Risk Acceptance, bun:sqlite + drizzle-orm/bun-sqlite Driver (+1 more)
 
 ### Community 135 - "Phase 6 — Auth + Onboarding + Landing + Legal — Design Spec"
-Cohesion: 0.12
-Nodes (16): `/child/new` (`OnboardingForm`), Data flow, Goal, Information architecture, Key screens, `/` (landing) — bento restyle, Legacy Aujourd'hui — `BentoOptInBanner`, Legal pages (+8 more)
+Cohesion: 0.22
+Nodes (9): Data flow, Goal, Information architecture, Migration / sequencing, Non-goals, Open questions, Phase 6 — Auth + Onboarding + Landing + Legal — Design Spec, Privacy / PII posture (+1 more)
 
 ### Community 136 - "Perf budget — design"
 Cohesion: 0.22
 Nodes (9): Architecture, Companion bundles, Data flow, Error handling, Goal, Non-goals, Perf budget — design, Rollout — single PR, three commits (+1 more)
 
 ### Community 137 - "[id]/+page.server.ts"
-Cohesion: 0.27
-Nodes (13): loadAllergenRows(), dismissReminder(), loadDismissals(), ttlForReminderKey(), loadDiversityMetrics(), loadWeeklyRecap(), loadCoparentActivity(), loadStreak() (+5 more)
-
-### Community 138 - "profile/page.server.test.ts"
-Cohesion: 0.20
-Nodes (9): parseForm(), ParseFormResult, parseFormWithKey(), ParseFormWithKeyResult, schema, actions, load(), profileSchema (+1 more)
+Cohesion: 0.13
+Nodes (26): loadAllergenRows(), loadAllergenStatus(), dismissReminder(), loadDismissals(), ttlForReminderKey(), DiversityMetrics, loadDiversityMetrics(), loadRepeatCandidates() (+18 more)
 
 ### Community 140 - "Testing Diversif Locally"
 Cohesion: 0.25
@@ -833,6 +827,10 @@ Nodes (8): Actionable error messages, `activate` flags, Clock skew, Exit Codes, 
 Cohesion: 0.25
 Nodes (8): Examples, Exit Codes, Flags, `health`: Function Complexity & File Health Analysis, Health Trend, JSON Output Structure, Vital Signs, Vital Signs Snapshots
 
+### Community 143 - "Custom Plugin Setup"
+Cohesion: 0.50
+Nodes (4): Custom Plugin Setup, Option 1: Inline framework config, Option 2: External plugin file, Option 3: Plugin directory
+
 ### Community 144 - "Claude Code setup — reproducible everywhere"
 Cohesion: 0.25
 Nodes (8): Claude Code on the web (cloud), Claude Code setup — reproducible everywhere, External prerequisite: graphify, Secrets — important, TL;DR, Updating the setup, What reproduces automatically (no script), What the script restores
@@ -842,8 +840,8 @@ Cohesion: 0.25
 Nodes (8): Phase 6 — Auth + Onboarding + Landing + Legal Implementation Plan, File structure, Final verification (no separate task, run before pushing), Phase 6 — Auth + Onboarding + Landing + Legal Implementation Plan, Pre-flight context, Self-review summary, Flip bento flag default-on for new signups via bento=1 cookie, Extract shared createInvitationForChild server helper
 
 ### Community 146 - "Perf Budget Implementation Plan"
-Cohesion: 0.36
-Nodes (8): Perf Budget Implementation Plan, bundle-budget.json Thresholds, check-bundle-size.mjs Script, bundle-budget CI Job, Lighthouse Layer Deferred (NO_FCP), Perf Budget Design (Bundle D), bundle-budget.json, Baseline × 1.2 Threshold Strategy
+Cohesion: 0.43
+Nodes (7): Perf Budget Implementation Plan, bundle-budget.json Thresholds, check-bundle-size.mjs Script, bundle-budget CI Job, Perf Budget Design (Bundle D), bundle-budget.json, Baseline × 1.2 Threshold Strategy
 
 ### Community 147 - "package.json"
 Cohesion: 0.17
@@ -857,9 +855,9 @@ Nodes (4): Counts, CRITICAL_TABLES, MUST_BE_NONEMPTY, SKIP_TABLES
 Cohesion: 0.23
 Nodes (7): getLegalIdentity(), LegalIdentity, read(), KEYS, original, load(), load()
 
-### Community 151 - "ageInMonths"
-Cohesion: 0.24
-Nodes (8): parisDay(), beforeLocalMidnight, localMidnightPlus30, ageInMonths(), formatAge(), PARIS_FORMATTER, parisDateParts(), parisDayIndex()
+### Community 151 - "parisDayIndex"
+Cohesion: 0.20
+Nodes (8): dayFormats, dayLabels, parisDay(), beforeLocalMidnight, localMidnightPlus30, PARIS_FORMATTER, parisDateParts(), parisDayIndex()
 
 ### Community 152 - "Bundle 2 — Visual coherence sweep (Implementation Plan)"
 Cohesion: 0.29
@@ -934,8 +932,8 @@ Cohesion: 0.33
 Nodes (6): Architecture, Components added (~22), Database migration, Feature flag, Routes, Symptom vocabulary and severity
 
 ### Community 182 - "Components"
-Cohesion: 0.18
-Nodes (11): Discover Tab — Grouped Layout Design, Repères / À essayer / Apprendre Grouping, A11y Audit Design (Bundle C), axe-core Playwright A11y Gate, Components, Dependencies, `e2e/a11y-axe.spec.ts` (new), `e2e/a11y-lighthouse.spec.ts` (new) (+3 more)
+Cohesion: 0.20
+Nodes (10): A11y Audit Design (Bundle C), axe-core Playwright A11y Gate, Components, Dependencies, `e2e/a11y-axe.spec.ts` (new), `e2e/a11y-lighthouse.spec.ts` (new), Lighthouse config (`lighthouserc.cjs`, optional), Lighthouse Layer Deferred (NO_FCP) (+2 more)
 
 ### Community 183 - "Components"
 Cohesion: 0.33
@@ -1058,9 +1056,9 @@ Nodes (3): Graphify memory: hashPassword fan-out query, hashPassword (src/lib/se
   project.inlang/modules/README.md · relation: references
 
 ## Knowledge Gaps
-- **2618 isolated node(s):** `$schema`, `superpowers@claude-plugins-official`, `frontend-design@claude-plugins-official`, `code-review@claude-plugins-official`, `code-simplifier@claude-plugins-official` (+2613 more)
+- **2619 isolated node(s):** `$schema`, `superpowers@claude-plugins-official`, `frontend-design@claude-plugins-official`, `code-review@claude-plugins-official`, `code-simplifier@claude-plugins-official` (+2614 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **45 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -1076,6 +1074,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **What is the exact relationship between `scripts/lint-i18n.mjs` and `scripts/lint-i18n.ts`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
 - **Why does `CLAUDE.md hard rules` connect `CLAUDE.md hard rules` to `PRODUCT.md — Diversif product register`, `i18n-add-key/SKILL.md`, `Use Bun, not npm/Node convention`, `DEPLOY.md`?**
-  _High betweenness centrality (0.093) - this node is a cross-community bridge._
+  _High betweenness centrality (0.090) - this node is a cross-community bridge._
 - **Why does `hookify: block-no-verify` connect `CLAUDE.md hard rules` to `Fallow: Common Workflow Patterns & Recipes`?**
-  _High betweenness centrality (0.054) - this node is a cross-community bridge._
+  _High betweenness centrality (0.052) - this node is a cross-community bridge._

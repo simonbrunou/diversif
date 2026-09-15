@@ -246,9 +246,9 @@
     "semantic_hash": ""
   },
   "messages/fr.json": {
-    "mtime": 1789457249.6007974,
-    "seen": 1789458119.1811092,
-    "ast_hash": "c0a403edbaa68967b2a3656b4bd30bac",
+    "mtime": 1789462049.004419,
+    "seen": 1789462240.1896243,
+    "ast_hash": "e71284947931acded89f7dc6c915106a",
     "semantic_hash": ""
   },
   "package.json": {
@@ -498,9 +498,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/ChildSwitcherDrawer.test.ts": {
-    "mtime": 1789457689.8561404,
-    "seen": 1789458119.1820252,
-    "ast_hash": "ae8a917cb8dc99c98726158d46b52870",
+    "mtime": 1789462078.9211204,
+    "seen": 1789462240.1905727,
+    "ast_hash": "b21a18ae53779d8cacdbd47ea56d50bf",
     "semantic_hash": ""
   },
   "src/lib/components/FabLog.svelte": {
@@ -852,9 +852,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/CarnetStats.svelte": {
-    "mtime": 1789458666.1593354,
-    "seen": 1789459264.806815,
-    "ast_hash": "8f3b6e770ced506a60918a181d00f82b",
+    "mtime": 1789462072.5921836,
+    "seen": 1789462240.1921535,
+    "ast_hash": "943d8e29139ee777cb134a046ce2bfc2",
     "semantic_hash": ""
   },
   "src/lib/components/bento/CarnetStats.test.ts": {
@@ -1020,9 +1020,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/bento/RecentFeed.svelte": {
-    "mtime": 1789458287.6260676,
-    "seen": 1789459264.8075936,
-    "ast_hash": "96f594fcc7718ab73647e829e55b24f1",
+    "mtime": 1789462107.6068337,
+    "seen": 1789462240.192917,
+    "ast_hash": "bf40319a202996264fbbcbde4434c405",
     "semantic_hash": ""
   },
   "src/lib/components/bento/RecentFeed.test.ts": {
@@ -1290,9 +1290,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/report/ReportSummaryStats.svelte": {
-    "mtime": 1789456594.2897542,
-    "seen": 1789458119.1854825,
-    "ast_hash": "2af9124e7d4c91eccbd48f4882547dec",
+    "mtime": 1789461951.0457366,
+    "seen": 1789462240.1943161,
+    "ast_hash": "f687d09120326ee8e1e4a25b44bed830",
     "semantic_hash": ""
   },
   "src/lib/components/report/ReportTextureDistribution.svelte": {
@@ -3300,9 +3300,9 @@
     "semantic_hash": ""
   },
   "DESIGN.md": {
-    "mtime": 1789458422.6597545,
-    "seen": 1789459264.8185759,
-    "ast_hash": "e8ba75a851928e3a3839a4b94d06f53f",
+    "mtime": 1789462100.5049047,
+    "seen": 1789462240.2037666,
+    "ast_hash": "340849f7408b3bcc3583ea3dbf0a155a",
     "semantic_hash": ""
   },
   "PARKING_LOT.md": {
