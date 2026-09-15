@@ -1,0 +1,438 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-15T06:20:00Z",
+  "title": "Design System: Diversif",
+  "extensions": {
+    "colorMeta": {
+      "sage": {
+        "role": "primary",
+        "displayName": "Sage",
+        "canonical": "hsl(120 14% 49%)",
+        "tonalRamp": [
+          "hsl(120 18% 15%)",
+          "hsl(120 18% 24%)",
+          "hsl(120 18% 32%)",
+          "hsl(120 16% 41%)",
+          "hsl(120 14% 49%)",
+          "hsl(120 16% 63%)",
+          "hsl(120 20% 78%)",
+          "hsl(120 28% 93%)"
+        ]
+      },
+      "sage-strong": {
+        "role": "primary",
+        "displayName": "Deep Sage",
+        "canonical": "hsl(120 18% 32%)",
+        "tonalRamp": [
+          "hsl(120 20% 15%)",
+          "hsl(120 19% 23%)",
+          "hsl(120 18% 32%)",
+          "hsl(120 17% 42%)",
+          "hsl(120 15% 54%)",
+          "hsl(120 17% 68%)",
+          "hsl(120 22% 82%)",
+          "hsl(120 30% 94%)"
+        ]
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Warm Cream",
+        "canonical": "hsl(39 67% 97%)",
+        "tonalRamp": [
+          "hsl(39 20% 15%)",
+          "hsl(39 24% 27%)",
+          "hsl(39 30% 40%)",
+          "hsl(39 38% 54%)",
+          "hsl(39 48% 68%)",
+          "hsl(39 56% 81%)",
+          "hsl(39 62% 90%)",
+          "hsl(39 67% 97%)"
+        ]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Warm Sand",
+        "canonical": "hsl(39 50% 91%)",
+        "tonalRamp": [
+          "hsl(39 22% 15%)",
+          "hsl(39 26% 26%)",
+          "hsl(39 32% 38%)",
+          "hsl(39 38% 51%)",
+          "hsl(39 44% 64%)",
+          "hsl(39 48% 78%)",
+          "hsl(39 50% 91%)",
+          "hsl(39 55% 96%)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "hsl(0 0% 10%)",
+        "tonalRamp": [
+          "hsl(0 0% 10%)",
+          "hsl(0 0% 20%)",
+          "hsl(0 0% 32%)",
+          "hsl(0 0% 45%)",
+          "hsl(0 0% 58%)",
+          "hsl(0 0% 72%)",
+          "hsl(0 0% 85%)",
+          "hsl(0 0% 95%)"
+        ]
+      },
+      "tile-peach": {
+        "role": "secondary",
+        "displayName": "Peach",
+        "canonical": "hsl(27 100% 87%)",
+        "tonalRamp": [
+          "hsl(23 88% 15%)",
+          "hsl(23 88% 22%)",
+          "hsl(25 80% 34%)",
+          "hsl(26 88% 47%)",
+          "hsl(27 100% 62%)",
+          "hsl(27 100% 75%)",
+          "hsl(27 100% 87%)",
+          "hsl(27 100% 95%)"
+        ]
+      },
+      "tile-butter": {
+        "role": "secondary",
+        "displayName": "Butter",
+        "canonical": "hsl(47 100% 84%)",
+        "tonalRamp": [
+          "hsl(38 88% 15%)",
+          "hsl(38 88% 23%)",
+          "hsl(40 84% 34%)",
+          "hsl(43 88% 45%)",
+          "hsl(45 100% 58%)",
+          "hsl(46 100% 71%)",
+          "hsl(47 100% 84%)",
+          "hsl(47 100% 94%)"
+        ]
+      },
+      "tile-mint": {
+        "role": "secondary",
+        "displayName": "Mint",
+        "canonical": "hsl(142 35% 84%)",
+        "tonalRamp": [
+          "hsl(142 41% 14%)",
+          "hsl(142 41% 21%)",
+          "hsl(142 38% 31%)",
+          "hsl(142 36% 43%)",
+          "hsl(142 34% 56%)",
+          "hsl(142 34% 70%)",
+          "hsl(142 35% 84%)",
+          "hsl(142 38% 94%)"
+        ]
+      },
+      "tile-sky": {
+        "role": "secondary",
+        "displayName": "Sky",
+        "canonical": "hsl(213 100% 89%)",
+        "tonalRamp": [
+          "hsl(218 62% 16%)",
+          "hsl(218 62% 26%)",
+          "hsl(216 60% 38%)",
+          "hsl(214 72% 50%)",
+          "hsl(213 90% 64%)",
+          "hsl(213 100% 77%)",
+          "hsl(213 100% 89%)",
+          "hsl(213 100% 96%)"
+        ]
+      },
+      "tile-lilac": {
+        "role": "secondary",
+        "displayName": "Lilac",
+        "canonical": "hsl(257 100% 92%)",
+        "tonalRamp": [
+          "hsl(261 56% 17%)",
+          "hsl(261 56% 27%)",
+          "hsl(259 54% 39%)",
+          "hsl(258 62% 52%)",
+          "hsl(257 80% 66%)",
+          "hsl(257 100% 80%)",
+          "hsl(257 100% 92%)",
+          "hsl(257 100% 97%)"
+        ]
+      },
+      "reaction-reaction": {
+        "role": "tertiary",
+        "displayName": "Soft Peach",
+        "canonical": "hsl(23 80% 86%)",
+        "tonalRamp": [
+          "hsl(23 88% 15%)",
+          "hsl(23 88% 22%)",
+          "hsl(23 82% 34%)",
+          "hsl(23 80% 47%)",
+          "hsl(23 80% 61%)",
+          "hsl(23 80% 74%)",
+          "hsl(23 80% 86%)",
+          "hsl(23 80% 94%)"
+        ]
+      },
+      "severe-coral": {
+        "role": "tertiary",
+        "displayName": "Emergency Coral",
+        "canonical": "hsl(14 100% 71%)",
+        "tonalRamp": [
+          "hsl(14 88% 15%)",
+          "hsl(14 88% 22%)",
+          "hsl(14 86% 34%)",
+          "hsl(14 92% 46%)",
+          "hsl(14 100% 58%)",
+          "hsl(14 100% 71%)",
+          "hsl(14 100% 83%)",
+          "hsl(14 100% 93%)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Fraunces italic. The emotional register only — reassurance copy and the wordmark. Never a data label or a counter."
+      },
+      "headline": { "displayName": "Headline", "purpose": "Page and section headings." },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Row and card titles: a food name, a reminder headline."
+      },
+      "numeric": {
+        "displayName": "Numeric",
+        "purpose": "Every live counter. Inter 800 with tabular figures so the value cannot jitter on update; any unit splits off at body scale."
+      },
+      "body": { "displayName": "Body", "purpose": "Guidance copy and descriptions." },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Compartment labels. Legitimate as a compartment's only heading; never stacked above a title."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-sm",
+        "value": "0 1px 2px hsl(28 30% 20% / 0.06)",
+        "purpose": "Barely-there separation for dense chrome."
+      },
+      {
+        "name": "shadow-card",
+        "value": "0 6px 14px -2px hsl(28 30% 20% / 0.1), 0 2px 4px -1px hsl(28 30% 20% / 0.05)",
+        "purpose": "Buttons and controls that should feel pressable."
+      },
+      {
+        "name": "shadow-soft",
+        "value": "0 8px 24px -8px hsl(28 50% 30% / 0.18)",
+        "purpose": "The default compartment lift. Warm-hued, large-blur, negative-spread — lifts, never outlines."
+      },
+      {
+        "name": "shadow-lifted",
+        "value": "0 18px 36px -10px hsl(28 50% 30% / 0.22)",
+        "purpose": "Sheets and modals above the page."
+      },
+      {
+        "name": "shadow-glow",
+        "value": "0 0 0 4px hsl(47 100% 84%), 0 8px 20px -4px hsl(40 90% 50% / 0.4)",
+        "purpose": "Celebration only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-soft",
+        "value": "cubic-bezier(0.32, 0.72, 0, 1)",
+        "purpose": "Default easing for state transitions and feed entrances."
+      },
+      {
+        "name": "ease-spring",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Ambient motion: modal and bottom-sheet entrances, FAB scale. Exponential ease-out with no overshoot."
+      },
+      {
+        "name": "ease-celebrate",
+        "value": "cubic-bezier(0.16, 1.6, 0.3, 1)",
+        "purpose": "The only curve permitted to overshoot, and only on the milestone pop, where the bounce is the content."
+      },
+      { "name": "dur-fast", "value": "120ms", "purpose": "Micro-feedback." },
+      { "name": "dur-base", "value": "200ms", "purpose": "Default state transition." },
+      { "name": "dur-slow", "value": "360ms", "purpose": "Modal and sheet entrance." },
+      { "name": "dur-celebrate", "value": "720ms", "purpose": "Milestone pop." }
+    ],
+    "breakpoints": [
+      { "name": "collapse-guard", "value": "320px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The default action. Sage fill with near-black ink — white-on-sage fails AA in both themes.",
+      "html": "<button class=\"ds-btn-primary\">Enregistrer</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 2.5rem; padding: 0.5rem 1rem; background: hsl(120 14% 49%); color: hsl(0 0% 10%); font-family: 'Inter Variable', Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: 0.875rem; box-shadow: 0 6px 14px -2px hsl(28 30% 20% / 0.1), 0 2px 4px -1px hsl(28 30% 20% / 0.05); transition: background 200ms cubic-bezier(0.32, 0.72, 0, 1); cursor: pointer; } .ds-btn-primary:hover { background: hsl(120 14% 49% / 0.9); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(39 67% 97%), 0 0 0 4px hsl(120 14% 49%); }"
+    },
+    {
+      "name": "Pill Button",
+      "kind": "button",
+      "refersTo": "button-pill",
+      "description": "The desktop rail's primary action. Fully round so it reads as an action beside text destinations.",
+      "html": "<button class=\"ds-btn-pill\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14M12 5v14\"/></svg>Enregistrer un repas</button>",
+      "css": ".ds-btn-pill { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 2.75rem; padding: 0 1.25rem; background: hsl(120 14% 49%); color: hsl(0 0% 10%); font-family: 'Inter Variable', Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 700; border: none; border-radius: 9999px; box-shadow: 0 8px 24px -8px hsl(28 50% 30% / 0.18); transition: background 200ms cubic-bezier(0.32, 0.72, 0, 1); cursor: pointer; } .ds-btn-pill:hover { background: hsl(120 14% 49% / 0.9); } .ds-btn-pill:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(39 67% 97%), 0 0 0 4px hsl(120 14% 49%); }"
+    },
+    {
+      "name": "Tile Button (mint)",
+      "kind": "button",
+      "refersTo": "button-tile-mint",
+      "description": "An action living inside a tinted compartment: the tint's fill with its paired foreground.",
+      "html": "<button class=\"ds-btn-tile-mint\">Voir le carnet</button>",
+      "css": ".ds-btn-tile-mint { display: inline-flex; align-items: center; justify-content: center; height: 2.5rem; padding: 0.5rem 1rem; background: hsl(142 35% 84%); color: hsl(142 41% 21%); font-family: 'Inter Variable', Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; border: none; border-radius: 0.875rem; transition: background 200ms cubic-bezier(0.32, 0.72, 0, 1); cursor: pointer; } .ds-btn-tile-mint:hover { background: hsl(142 35% 84% / 0.9); } .ds-btn-tile-mint:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(39 67% 97%), 0 0 0 4px hsl(120 14% 49%); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "44px tall on a cream fill with a 2px warm stroke. Focus shifts the border to sage and adds no ring — the stroke is already 2px.",
+      "html": "<input class=\"ds-input-text\" type=\"text\" placeholder=\"Rechercher un aliment…\" />",
+      "css": ".ds-input-text { display: flex; width: 100%; height: 2.75rem; padding: 0.5rem 1rem; background: hsl(39 67% 97%); color: hsl(0 0% 10%); font-family: 'Inter Variable', Inter, system-ui, sans-serif; font-size: 0.875rem; border: 2px solid hsl(39 36% 88%); border-radius: 0.875rem; transition: border-color 200ms cubic-bezier(0.32, 0.72, 0, 1); } .ds-input-text::placeholder { color: hsl(0 0% 32%); } .ds-input-text:focus-visible { outline: none; border-color: hsl(120 14% 49%); }"
+    },
+    {
+      "name": "Stat Tile",
+      "kind": "card",
+      "refersTo": "card-tile",
+      "description": "A labelled compartment: uppercase label, a tabular numeral, an optional delta line. Tonal fill separates it; no border.",
+      "html": "<article class=\"ds-card-tile\"><p class=\"ds-card-tile-label\">Aliments</p><p class=\"ds-card-tile-value\">32</p><p class=\"ds-card-tile-meta\">+7 nouveaux cette semaine</p></article>",
+      "css": ".ds-card-tile { padding: 1rem; background: hsl(142 35% 84%); color: hsl(142 41% 21%); border: 1px solid transparent; border-radius: 1.125rem; box-shadow: 0 8px 24px -8px hsl(28 50% 30% / 0.18); font-family: 'Inter Variable', Inter, system-ui, sans-serif; } .ds-card-tile-label { margin: 0; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; } .ds-card-tile-value { margin: 0.25rem 0 0; font-size: 1.75rem; font-weight: 800; line-height: 1; font-feature-settings: 'tnum'; } .ds-card-tile-meta { margin: 0.5rem 0 0; font-size: 0.75rem; }"
+    },
+    {
+      "name": "Content Row",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "A feed row. White so it separates from the cream canvas without a border — one elevation channel, not two.",
+      "html": "<a class=\"ds-row\" href=\"#\"><span class=\"ds-row-icon\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8z\"/></svg></span><span class=\"ds-row-body\"><span class=\"ds-row-title\">Épinard</span><span class=\"ds-row-meta\">il y a 4 h</span></span><span class=\"ds-row-pill\">Tout va bien</span></a>",
+      "css": ".ds-row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 0.75rem; row-gap: 0.25rem; padding: 0.5rem 0.75rem; background: hsl(0 0% 100%); color: hsl(0 0% 10%); border-radius: 1.125rem; box-shadow: 0 8px 24px -8px hsl(28 50% 30% / 0.18); font-family: 'Inter Variable', Inter, system-ui, sans-serif; text-decoration: none; } .ds-row-icon { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; background: hsl(39 50% 91%); border-radius: 9999px; } .ds-row-body { display: flex; flex-direction: column; flex: 1 1 6rem; min-width: 0; } .ds-row-title { font-size: 0.875rem; font-weight: 700; line-height: 1.25; } .ds-row-meta { font-size: 0.75rem; color: hsl(0 0% 32%); } .ds-row-pill { flex: 0 0 auto; padding: 0.125rem 0.5rem; background: hsl(142 35% 84%); color: hsl(142 41% 21%); border-radius: 9999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }"
+    },
+    {
+      "name": "State Chip",
+      "kind": "chip",
+      "refersTo": "chip-state",
+      "description": "An allergen state. The fill IS the state, so two states that mean different things must never share a tint.",
+      "html": "<span class=\"ds-chip\">Œuf<span class=\"ds-chip-state\">· à reproposer</span></span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 0.25rem; min-height: 2rem; padding: 0 0.75rem; background: hsl(47 100% 84%); color: hsl(38 88% 23%); border-radius: 9999px; font-family: 'Inter Variable', Inter, system-ui, sans-serif; font-size: 0.75rem; font-weight: 500; } .ds-chip-state { font-size: 0.6875rem; opacity: 0.9; }"
+    },
+    {
+      "name": "Reaction Chip",
+      "kind": "chip",
+      "refersTo": "chip-state",
+      "description": "A recorded réaction. Its own tint, deliberately distinct from the re-offer chip — the two were once 1.02:1 apart.",
+      "html": "<a class=\"ds-chip-reaction\" href=\"#\">Sésame<span class=\"ds-chip-state\">· réaction</span></a>",
+      "css": ".ds-chip-reaction { display: inline-flex; align-items: center; gap: 0.25rem; min-height: 2rem; padding: 0 0.75rem; background: hsl(23 80% 86%); color: hsl(23 88% 22%); border-radius: 9999px; font-family: 'Inter Variable', Inter, system-ui, sans-serif; font-size: 0.75rem; font-weight: 500; text-decoration: none; transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-chip-reaction:active { transform: scale(0.97); } .ds-chip-reaction:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(213 100% 89%), 0 0 0 4px hsl(120 14% 49%); }"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Mobile chrome: a 56px bar in normal flow with four icon-and-label tabs and a reserved centre slot for the FAB.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Navigation principale\"><a class=\"ds-nav-tab ds-nav-tab-active\" href=\"#\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M16 2v4M8 2v4M3 10h18\"/></svg><span>Aujourd’hui</span></a><a class=\"ds-nav-tab\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 19.5V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16H6a2 2 0 0 1-2-2z\"/></svg><span>Carnet</span></a><div class=\"ds-nav-slot\" aria-hidden=\"true\"></div><a class=\"ds-nav-tab\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6 7 18.2l1.9-5.8L4 8.8h6.1z\"/></svg><span>Découvrir</span></a><a class=\"ds-nav-tab\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4 3.6-6 8-6s8 2 8 6\"/></svg><span>Profil</span></a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; width: 100%; height: 3.5rem; padding: 0 0.5rem; background: hsl(0 0% 100% / 0.95); border-top: 1px solid hsl(39 36% 88% / 0.4); backdrop-filter: blur(8px); font-family: 'Inter Variable', Inter, system-ui, sans-serif; } .ds-nav-tab { display: flex; flex: 1 1 0; flex-direction: column; align-items: center; justify-content: center; gap: 0.125rem; min-height: 2.75rem; min-width: 0; color: hsl(0 0% 10% / 0.7); font-size: 0.6875rem; font-weight: 500; text-decoration: none; transition: color 200ms cubic-bezier(0.32, 0.72, 0, 1); } .ds-nav-tab:hover { color: hsl(0 0% 10%); } .ds-nav-tab-active { color: hsl(120 18% 32%); } .ds-nav-slot { width: 5rem; flex: 0 0 auto; }"
+    },
+    {
+      "name": "Log FAB",
+      "kind": "custom",
+      "refersTo": "fab-log",
+      "description": "The signature control: a 60px sage disc over the nav's centre slot, with a visible caption because the co-parent who opens the app cold never sees onboarding.",
+      "html": "<div class=\"ds-fab-wrap\"><button class=\"ds-fab\" aria-label=\"Enregistrer un repas\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14M12 5v14\"/></svg></button><span class=\"ds-fab-caption\" aria-hidden=\"true\">Enregistrer</span></div>",
+      "css": ".ds-fab-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; font-family: 'Inter Variable', Inter, system-ui, sans-serif; } .ds-fab { display: flex; align-items: center; justify-content: center; width: 3.75rem; height: 3.75rem; background: hsl(120 14% 49%); color: hsl(0 0% 10%); border: none; border-radius: 9999px; box-shadow: 0 8px 24px -8px hsl(28 50% 30% / 0.18); transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1); cursor: pointer; } .ds-fab:hover { transform: scale(1.05); } .ds-fab:active { transform: scale(0.95); } .ds-fab:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(39 67% 97%), 0 0 0 4px hsl(120 14% 49%); } .ds-fab-caption { color: hsl(120 18% 32%); font-size: 0.6875rem; font-weight: 500; line-height: 1; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Honest Bento Tray",
+    "overview": "Every screen is a tray of small coloured compartments. The compartments are warm, pastel and inviting; the data inside them is honest. That second half is not decoration — it is the load-bearing constraint. A tracker for a medical-adjacent task reflexively gets one of two treatments: the hospital portal (navy, teal, Helvetica, \"please confirm your appointment\") or the SaaS dashboard (warm grey, indigo accent, identical card grid). Both are refused here. This is a baby-care register, used by a parent at 11pm with one hand free.\n\nWarmth is how reassurance is delivered, so warmth applies uniformly — to a new food, a milestone, a reaction, and the account-deletion form alike. What warmth must never do is soften a fact. A réaction is a soft peach, not an alarm red; but it is also visibly not the same peach as a routine \"re-offer this\" nudge, because a parent must be able to tell in one glance which of the two they are looking at. Cheerful surfaces, unflinching numbers: when the two conflict, the number wins and the surface stays warm around it.\n\nDensity is low and deliberate. Compartments are generously padded, separated by a consistent 12px gutter, and each holds one idea. The system leans on tonal fill rather than outline or shadow to say \"this is a distinct thing\", which is why five pastels carry so much of the structural load.",
+    "keyCharacteristics": [
+      "Warm cream canvas; pastel tonal compartments; near-black ink",
+      "Sage as the single brand voice — actions and focus only, never decoration",
+      "Coral quarantined to one real emergency",
+      "Fraunces italic for the emotional register, Inter for everything factual",
+      "Tabular figures on every live number",
+      "One elevation channel per surface: tonal fill or hairline, never both",
+      "Mobile-first and one-handed; the desktop layout is a genuine re-composition, not a stretch"
+    ],
+    "rules": [
+      {
+        "name": "The Quarantined Coral Rule",
+        "body": "Coral means \"call emergency services\". It appears on one rail, on one page, and nowhere else — not on validation errors, not on destructive buttons, not on a bad reaction. Its total absence from routine screens is what makes it legible when it finally appears.",
+        "section": "colors"
+      },
+      {
+        "name": "The Paired Foreground Rule",
+        "body": "Text on a tint uses that tint's own -foreground token. Never ink-soft, never ink, never a grey. Grey-on-pastel is the failure mode this system is built to avoid: it looks acceptable in light mode and quietly fails AA in dark.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Voice Rule",
+        "body": "Sage marks what the user can do. If sage appears on something that is not an action or a focus state, it is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Figures Rule",
+        "body": "Any number that can change while the parent is looking at it carries font-feature-settings: 'tnum'. Proportional digits reflow their own width on increment, and a stat that jitters as it updates reads as unreliable.",
+        "section": "typography"
+      },
+      {
+        "name": "The Numerals Are Inter Rule",
+        "body": "Counters are Inter 800, never the display serif. Fraunces italic is beautiful and proportional, which makes it wrong for a number: a two-glyph count and a seven-glyph count set in it are visibly unequal in weight, and it has no tabular variant.",
+        "section": "typography"
+      },
+      {
+        "name": "The Unit Is Not The Number Rule",
+        "body": "A value with a unit splits the two — the figure at numeric scale, the unit at body scale on a shared baseline. \"6 jours\" set as one 28px run overflows a narrow compartment and reads as a sentence rather than a measurement.",
+        "section": "typography"
+      },
+      {
+        "name": "The Re-Composition Rule",
+        "body": "A wide viewport gets a different arrangement, not a wider one. A two-up stat pair stretched to a 768px well produces 3.4:1 letterboxes with the number stranded in the left eighth; the same pair stacked in a narrow grid column stays near-square and legible.",
+        "section": "layout"
+      },
+      {
+        "name": "The Thumb Arc Rule",
+        "body": "The primary action lives within reach of a thumb on a phone held one-handed. On mobile it is centred in the bottom bar with at least 8px of clear space from its neighbours; the parent's other arm is holding a baby.",
+        "section": "layout"
+      },
+      {
+        "name": "The Min-Width-Zero Rule",
+        "body": "Any flex child that contains text carries min-w-0. Without it a flex item refuses to shrink below its content width, and the overflow surfaces at 200% zoom as content escaping its own compartment.",
+        "section": "layout"
+      },
+      {
+        "name": "The Single Channel Rule",
+        "body": "Declare elevation once: tonal fill, a hairline, or a shadow — never a 1px border under a wide soft shadow. That combination is the ghost card: on a canvas-coloured fill the border does all the work and the shadow is wasted. If a surface needs to separate, give it a background that differs from its parent.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Closed Scale Rule",
+        "body": "Six radii and full. If a surface seems to need a seventh, it either belongs to an existing step or the composition is wrong.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do pair every tint with its own -foreground token. On a pastel, grey text is a dark-mode AA failure waiting to happen.",
+      "Do give live numbers tabular figures and Inter 800, and split any unit off the figure.",
+      "Do declare elevation once per surface — fill, hairline, or shadow.",
+      "Do keep sage for actions and focus, and let the tints carry structure.",
+      "Do put min-w-0 on any flex child holding text, and verify the result at a 195px viewport (200% zoom).",
+      "Do re-compose the grid at lg rather than widening the mobile stack.",
+      "Do keep primary actions inside the thumb arc with ≥8px of clearance from neighbours.",
+      "Do let a long label wrap. A wrapped heading is better than an ellipsis, and an ellipsis is better than an overflow."
+    ],
+    "donts": [
+      "Don't use coral for anything but the emergency rail. Not errors, not destructive actions, not bad reactions.",
+      "Don't give two materially different states the same tint.",
+      "Don't put white text on sage.",
+      "Don't hide content in a horizontal scroller without a visible affordance — and never nest one inside a link. Scroll containers are not keyboard-focusable in Safari or Firefox, which is where this product's users are.",
+      "Don't set a data label or a counter in Fraunces. The display serif is for feeling, not for facts.",
+      "Don't put a 1px border under a wide soft shadow.",
+      "Don't add a radius value outside the closed scale.",
+      "Don't reach for bounce or elastic easing for ambient motion. Overshoot belongs to the single celebration curve; everything else decelerates exponentially.",
+      "Don't put an eyebrow above a heading. Where a label is the compartment's only heading it is doing real work; stacked above a title it is decoration.",
+      "Don't use an emoji or a unicode glyph where an icon belongs. Icons are drawn, from one library, at one stroke weight."
+    ]
+  }
+}
