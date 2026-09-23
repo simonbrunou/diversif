@@ -24,7 +24,9 @@ describe('mealDateError', () => {
   });
 
   it('accepts a meal logged on the child’s birth day itself', () => {
-    const givenAt = new Date('2024-01-01T23:00:00Z');
+    // 2024-01-01T12:00:00Z is 13:00 CET in Paris — still 1 January there,
+    // unlike a near-midnight instant that could roll into 2 January.
+    const givenAt = new Date('2024-01-01T12:00:00Z');
     expect(mealDateError(givenAt, '2024-01-01', now)).toBeNull();
   });
 

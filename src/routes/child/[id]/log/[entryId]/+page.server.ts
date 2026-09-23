@@ -3,12 +3,12 @@ import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { and, asc, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { children, foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods } from '$lib/server/db/schema';
 import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { audit } from '$lib/server/audit';
 import { loadVisibleFoodsForChild, resolveOrInsertFood } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
-import { mealDateError } from '$lib/utils/meal-date';
+import { mealDateErrorForChild } from '$lib/server/meal-date';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
 import * as m from '$lib/paraglide/messages';
 import type { SafeUser } from '$lib/types';
@@ -50,19 +50,6 @@ async function loadEntry(entryId: number, childId: number) {
   // resolve it here (paraglide's per-request locale context) same as join/[code].
   if (!row) throw error(404, m.errorsFoodEntryNotFound());
   return row;
-}
-
-// Cheap, childId-scoped select for the one column the givenAt bounds check
-// (mealDateError) needs — shared by every write path in this file, none of
-// which goes through the child layout's load.
-async function loadChildBirthDate(childId: number): Promise<string | null> {
-  const row = (
-    await db
-      .select({ birthDate: children.birthDate })
-      .from(children)
-      .where(eq(children.id, childId))
-  )[0];
-  return row?.birthDate ?? null;
 }
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
@@ -146,11 +133,8 @@ async function updateMeal(opts: {
   const givenAtDate = new Date(String(raw.givenAt));
   if (Number.isNaN(givenAtDate.getTime())) return fail(400, { errorKey: 'errorsLogDateInvalid' });
 
-  const birthDate = await loadChildBirthDate(childId);
-  if (birthDate) {
-    const dateError = mealDateError(givenAtDate, birthDate, Date.now());
-    if (dateError) return fail(400, { errorKey: dateError });
-  }
+  const dateError = await mealDateErrorForChild(childId, givenAtDate);
+  if (dateError) return fail(400, { errorKey: dateError });
 
   // Validate texture against the enum — an unchecked value hits the DB CHECK
   // and 500s instead of returning a graceful 400 (the single-entry path uses
@@ -233,6 +217,20 @@ export const actions: Actions = {
       return fail(400, { errorKey: schemaErrorKey(parsed.error.issues[0]) });
     }
 
+    const givenAtDate = new Date(parsed.data.givenAt);
+    if (Number.isNaN(givenAtDate.getTime())) {
+      return fail(400, { errorKey: 'errorsLogDateInvalid' });
+    }
+
+    // Bound the date before resolveOrInsertFood: that call can autocommit a
+    // brand-new custom food row, and a future/pre-birth givenAt must fail
+    // before any write happens, not after — otherwise a rejected edit still
+    // leaves an orphan custom food behind.
+    const dateError = await mealDateErrorForChild(childId, givenAtDate);
+    if (dateError) {
+      return fail(400, { errorKey: dateError });
+    }
+
     const resolved = await resolveOrInsertFood({
       foodId: parsed.data.foodId ?? null,
       customName: parsed.data['customFood.name'],
@@ -246,19 +244,6 @@ export const actions: Actions = {
       });
     }
     const { foodId } = resolved;
-
-    const givenAtDate = new Date(parsed.data.givenAt);
-    if (Number.isNaN(givenAtDate.getTime())) {
-      return fail(400, { errorKey: 'errorsLogDateInvalid' });
-    }
-
-    const birthDate = await loadChildBirthDate(childId);
-    if (birthDate) {
-      const dateError = mealDateError(givenAtDate, birthDate, Date.now());
-      if (dateError) {
-        return fail(400, { errorKey: dateError });
-      }
-    }
 
     const textureValue =
       parsed.data.texture === undefined

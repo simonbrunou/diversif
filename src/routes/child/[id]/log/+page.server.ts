@@ -3,7 +3,7 @@ import { localizedRedirect } from '$lib/server/redirect';
 import { z } from 'zod';
 import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { children, foodEntries, foods, preparedMeals } from '$lib/server/db/schema';
+import { foodEntries, foods, preparedMeals } from '$lib/server/db/schema';
 import { requireChildContext } from '$lib/server/guards';
 import { audit } from '$lib/server/audit';
 import {
@@ -12,7 +12,7 @@ import {
   visibleToChild
 } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
-import { mealDateError } from '$lib/utils/meal-date';
+import { mealDateErrorForChild } from '$lib/server/meal-date';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
 import {
   ALLERGENS,
@@ -374,20 +374,9 @@ export const actions: Actions = {
       return fail(400, { errorKey: 'errorsLogDateInvalid' });
     }
 
-    // Cheap, childId-scoped select for the one column the bounds check
-    // needs — the same "just birthDate" shape as the layout's child select,
-    // but this action never calls that load.
-    const child = (
-      await db
-        .select({ birthDate: children.birthDate })
-        .from(children)
-        .where(eq(children.id, childId))
-    )[0];
-    if (child) {
-      const dateError = mealDateError(givenAtDate, child.birthDate, Date.now());
-      if (dateError) {
-        return fail(400, { errorKey: dateError });
-      }
+    const dateError = await mealDateErrorForChild(childId, givenAtDate);
+    if (dateError) {
+      return fail(400, { errorKey: dateError });
     }
 
     let redirectPath: string;

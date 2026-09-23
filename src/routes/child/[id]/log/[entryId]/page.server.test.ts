@@ -266,6 +266,31 @@ describe('child/[id]/log/[entryId] update action', () => {
     expect(fresh?.givenAt).toEqual(new Date('2024-06-01T10:00:00Z'));
   });
 
+  it('rejects a future date with a new custom food before creating the food row', async () => {
+    // Regression: the date bounds check must run BEFORE resolveOrInsertFood,
+    // which autocommits a new custom food row outside the later update's
+    // transaction. A date-rejected submit must not leave that row behind.
+    const { u, c, m, entry } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        'customFood.name': 'Purée orpheline',
+        'customFood.category': 'legumes',
+        givenAt: '2099-01-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = (await actions.update!(
+      event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogDateFuture');
+    const created = await testDb.select().from(foods).where(eq(foods.name, 'Purée orpheline'));
+    expect(created.length).toBe(0);
+  });
+
   it('fails with a generic bad-input key on an out-of-enum field (e.g. reaction)', async () => {
     // Exercises schemaErrorKey's fallback branch: a schema issue whose path is
     // neither `givenAt` nor the zero-length `.refine()` (here an invalid
