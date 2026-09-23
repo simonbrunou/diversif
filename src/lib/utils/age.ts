@@ -1,4 +1,13 @@
 import { parisDateParts, parisDayIndex } from './paris-date';
+import * as m from '$lib/paraglide/messages';
+
+function monthsLabel(months: number): string {
+  return months === 1 ? m.childAgeMonthsOne() : m.childAgeMonthsOther({ months });
+}
+
+function daysLabel(days: number): string {
+  return days === 1 ? m.childAgeDaysOne() : m.childAgeDaysOther({ days });
+}
 
 export function ageInMonths(birthDate: string, now: Date = new Date()): number {
   const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
@@ -13,7 +22,7 @@ export function formatAge(birthDate: string, now: Date = new Date()): string {
   const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
   const birthDayIndex = Math.floor(Date.UTC(birthYear, birthMonth - 1, birthDay) / 86_400_000);
   const nowDayIndex = parisDayIndex(now.getTime());
-  if (nowDayIndex < birthDayIndex) return 'à venir';
+  if (nowDayIndex < birthDayIndex) return m.childAgeFutureLabel();
 
   const months = ageInMonths(birthDate, now);
 
@@ -28,20 +37,18 @@ export function formatAge(birthDate: string, now: Date = new Date()): string {
   const days = nowDayIndex - cursorDayIndex;
 
   if (months < 1) {
-    if (days <= 0) return 'aujourd’hui';
-    if (days === 1) return '1 jour';
-    return `${days} jours`;
+    if (days <= 0) return m.childAgeTodayLabel();
+    return daysLabel(days);
   }
 
   if (months >= 24) {
     const years = Math.floor(months / 12);
     const remainingMonths = months - years * 12;
-    if (remainingMonths === 0) return `${years} ans`;
-    return `${years} ans et ${remainingMonths} mois`;
+    const yearsLabel = m.childAgeYears({ years });
+    if (remainingMonths === 0) return yearsLabel;
+    return m.childAgeJoiner({ first: yearsLabel, second: monthsLabel(remainingMonths) });
   }
 
-  const monthLabel = months === 1 ? 'mois' : 'mois';
-  if (days === 0) return `${months} ${monthLabel}`;
-  const dayLabel = days === 1 ? 'jour' : 'jours';
-  return `${months} ${monthLabel} et ${days} ${dayLabel}`;
+  if (days === 0) return monthsLabel(months);
+  return m.childAgeJoiner({ first: monthsLabel(months), second: daysLabel(days) });
 }
