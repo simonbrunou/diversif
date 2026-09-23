@@ -11,12 +11,14 @@ import {
   passkeys,
   preparedMeals,
   sessions,
+  symptoms,
   tipDismissals,
   users,
   type Child,
   type FoodEntry,
   type Membership,
-  type Passkey
+  type Passkey,
+  type Symptom
 } from './db/schema';
 import type { TextureKey } from '$lib/utils/textures';
 import { parseDietExclusions, type DietExclusion } from '$lib/utils/diet';
@@ -139,6 +141,14 @@ export type ExportedUser = {
       loggedByMe: boolean;
       mealId: string | null;
       createdAt: string;
+      symptoms: Array<{
+        id: number;
+        observedAt: string;
+        label: Symptom['label'];
+        note: string | null;
+        recordedByMe: boolean;
+        createdAt: string;
+      }>;
     }>;
     preparedMeals: Array<{
       id: number;
@@ -186,25 +196,26 @@ export type ExportedUser = {
   }>;
 };
 
-// Hard ceiling on the number of food entries we'll serialise in a single
-// export. The endpoint synchronously buffers the whole JSON payload in memory;
-// without a guard rail, a pathologically-long log could OOM the process or
-// blow past upstream proxy response limits. We do NOT silently truncate : if
-// the count is over this, exportUserData throws ExportTooLargeError so the
-// caller can surface an actionable error rather than handing the user an
-// incomplete archive (which would breach RGPD article 15).
+// Hard ceiling on the number of food-entry + symptom rows we'll serialise in
+// a single export. The endpoint synchronously buffers the whole JSON payload
+// in memory; without a guard rail, a pathologically-long log OR symptom
+// history could OOM the process or blow past upstream proxy response
+// limits. We do NOT silently truncate : if the combined count is over this,
+// exportUserData throws ExportTooLargeError so the caller can surface an
+// actionable error rather than handing the user an incomplete archive
+// (which would breach RGPD article 15).
 //
-// 50k entries is well above any realistic user (≈9 years of daily logging
-// and corresponds to ~12MB of JSON pre-pretty-print). If we ever see it
-// hit in practice, the right fix is to stream the response, not to lower
-// the cap.
-const EXPORT_FOOD_ENTRIES_LIMIT = 50_000;
+// 50k rows is well above any realistic user (≈9 years of daily logging with
+// a symptom on every entry, corresponding to ~12MB of JSON
+// pre-pretty-print). If we ever see it hit in practice, the right fix is to
+// stream the response, not to lower the cap.
+const EXPORT_ROW_LIMIT = 50_000;
 
 export class ExportTooLargeError extends Error {
   readonly count: number;
   readonly limit: number;
   constructor(count: number, limit: number) {
-    super(`Export too large: ${count} food entries exceeds limit of ${limit}`);
+    super(`Export too large: ${count} rows exceeds limit of ${limit}`);
     this.name = 'ExportTooLargeError';
     this.count = count;
     this.limit = limit;
@@ -221,6 +232,64 @@ const isoOrThrow = (v: Date | null | undefined): string => {
   return v.toISOString();
 };
 
+// Groups rows by a derived key, preserving each group's original row order.
+// Shared by every "load these child-scoped rows, then bucket per parent id"
+// step in exportUserData below.
+function groupBy<T, K>(rows: readonly T[], keyOf: (row: T) => K): Map<K, T[]> {
+  const map = new Map<K, T[]>();
+  for (const row of rows) {
+    const key = keyOf(row);
+    const list = map.get(key);
+    if (list) list.push(row);
+    else map.set(key, [row]);
+  }
+  return map;
+}
+
+// Loads every symptom logged against the given children, bucketed by the
+// food entry they were recorded on. Split out of exportUserData to keep its
+// cyclomatic/cognitive complexity under the fallow budget.
+async function loadSymptomsByEntryId(childIds: number[]) {
+  const rows =
+    childIds.length === 0
+      ? []
+      : await db
+          .select({
+            id: symptoms.id,
+            foodEntryId: symptoms.foodEntryId,
+            observedAt: symptoms.observedAt,
+            label: symptoms.label,
+            note: symptoms.note,
+            createdBy: symptoms.createdBy,
+            createdAt: symptoms.createdAt
+          })
+          .from(symptoms)
+          .where(inArray(symptoms.childId, childIds))
+          .orderBy(asc(symptoms.observedAt));
+  return groupBy(rows, (s) => s.foodEntryId);
+}
+
+// Counts food_entries + symptoms rows for the given children, for the
+// ExportTooLargeError preflight guard below. Symptoms are buffered in memory
+// right alongside their parent entry and are just as unbounded per child, so
+// both must count against the same ceiling.
+async function countExportRows(childIds: number[]): Promise<number> {
+  const [foodEntryCountRows, symptomCountRows] = await Promise.all([
+    execRows<{ count: string }>(
+      db,
+      sql`SELECT COUNT(*) as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
+    ),
+    execRows<{ count: string }>(
+      db,
+      sql`SELECT COUNT(*) as count FROM ${symptoms} WHERE ${inArray(symptoms.childId, childIds)}`
+    )
+  ]);
+  /* v8 ignore next 2 : pg COUNT(*) always returns a single row */
+  const foodEntryCount = Number(foodEntryCountRows[0]?.count ?? 0);
+  const symptomCount = Number(symptomCountRows[0]?.count ?? 0);
+  return foodEntryCount + symptomCount;
+}
+
 /**
  * Builds the article 15 / 20 export payload for a user.
  *
@@ -228,14 +297,15 @@ const isoOrThrow = (v: Date | null | undefined): string => {
  * passkey public keys and signature counters (security material with no
  * portability value to the user).
  *
- * Throws `ExportTooLargeError` if the user's food-entry count exceeds the
- * configured ceiling, so the caller can return a clear error rather than
- * serialise an incomplete archive. The `entryLimit` parameter exists for
- * tests; production callers should leave it on the default.
+ * Throws `ExportTooLargeError` if the user's combined food-entry + symptom
+ * row count exceeds the configured ceiling, so the caller can return a clear
+ * error rather than serialise an incomplete archive. The `rowLimit`
+ * parameter exists for tests; production callers should leave it on the
+ * default.
  */
 export async function exportUserData(
   userId: number,
-  entryLimit: number = EXPORT_FOOD_ENTRIES_LIMIT
+  rowLimit: number = EXPORT_ROW_LIMIT
 ): Promise<ExportedUser> {
   const userRows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   const user = userRows[0];
@@ -255,21 +325,16 @@ export async function exportUserData(
   // Count first so we can refuse oversize exports up front, instead of
   // silently truncating and handing the user an incomplete archive.
   if (childIds.length > 0) {
-    const countRows = await execRows<{ count: string }>(
-      db,
-      sql`SELECT COUNT(*) as count FROM ${foodEntries} WHERE ${inArray(foodEntries.childId, childIds)}`
-    );
-    /* v8 ignore next : pg COUNT(*) always returns a single row */
-    const total = Number(countRows[0]?.count ?? 0);
-    if (total > entryLimit) {
+    const total = await countExportRows(childIds);
+    if (total > rowLimit) {
       audit({
         type: 'account.export_blocked',
         userId,
         reason: 'too_large',
         count: total,
-        limit: entryLimit
+        limit: rowLimit
       });
-      throw new ExportTooLargeError(total, entryLimit);
+      throw new ExportTooLargeError(total, rowLimit);
     }
   }
 
@@ -365,18 +430,9 @@ export async function exportUserData(
           .orderBy(asc(tipDismissals.dismissedAt));
 
   const membershipByChildId = new Map(userMemberships.map((m) => [m.childId, m]));
-  const entriesByChildId = new Map<number, typeof entryRows>();
-  for (const e of entryRows) {
-    const list = entriesByChildId.get(e.childId) ?? [];
-    list.push(e);
-    entriesByChildId.set(e.childId, list);
-  }
-  const preparedMealsByChildId = new Map<number, typeof preparedMealRows>();
-  for (const meal of preparedMealRows) {
-    const list = preparedMealsByChildId.get(meal.childId) ?? [];
-    list.push(meal);
-    preparedMealsByChildId.set(meal.childId, list);
-  }
+  const entriesByChildId = groupBy(entryRows, (e) => e.childId);
+  const symptomsByFoodEntryId = await loadSymptomsByEntryId(childIds);
+  const preparedMealsByChildId = groupBy(preparedMealRows, (meal) => meal.childId);
 
   audit({ type: 'account.exported', userId, foodEntryCount: entryRows.length });
 
@@ -421,7 +477,15 @@ export async function exportUserData(
           texture: e.texture ?? null,
           loggedByMe: e.loggedBy === userId,
           mealId: e.mealId ?? null,
-          createdAt: isoOrThrow(e.createdAt)
+          createdAt: isoOrThrow(e.createdAt),
+          symptoms: (symptomsByFoodEntryId.get(e.id) ?? []).map((s) => ({
+            id: s.id,
+            observedAt: isoOrThrow(s.observedAt),
+            label: s.label,
+            note: s.note,
+            recordedByMe: s.createdBy === userId,
+            createdAt: isoOrThrow(s.createdAt)
+          }))
         })),
         preparedMeals: childPreparedMeals.map((meal) => ({
           id: meal.id,

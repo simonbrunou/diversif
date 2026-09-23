@@ -21,6 +21,7 @@ import {
   invitations,
   passkeys,
   preparedMeals,
+  symptoms,
   tipDismissals,
   users
 } from './db/schema';
@@ -316,6 +317,42 @@ describe('exportUserData', () => {
     }
   });
 
+  it('throws ExportTooLargeError when entries are within the cap but symptoms push the combined total over it', async () => {
+    const u = await insertUser('symptom-heavy@example.com');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Riz');
+    // 2 entries, well under a cap of 5 — but 4 symptoms on top push the
+    // combined food-entry + symptom count to 6, over the cap. Guards against
+    // the preflight counting only food_entries and missing an unbounded
+    // symptom log.
+    const entry1 = await insertEntry(c.id, food.id, u.id);
+    const entry2 = await insertEntry(c.id, food.id, u.id);
+    for (let i = 0; i < 4; i++) {
+      await testDb.insert(symptoms).values({
+        foodEntryId: i % 2 === 0 ? entry1.id : entry2.id,
+        childId: c.id,
+        observedAt: new Date(),
+        label: 'rougeur',
+        note: null,
+        createdBy: u.id,
+        createdAt: new Date()
+      });
+    }
+
+    await expect(exportUserData(u.id, 5)).rejects.toThrow(ExportTooLargeError);
+    try {
+      await exportUserData(u.id, 5);
+    } catch (err) {
+      if (err instanceof ExportTooLargeError) {
+        expect(err.count).toBe(6);
+        expect(err.limit).toBe(5);
+      } else {
+        throw err;
+      }
+    }
+  });
+
   it('emits an account.export_blocked audit event when the cap trips', async () => {
     const u = await insertUser('refused@example.com');
     const c = await insertChild('Bébé', u.id);
@@ -379,5 +416,77 @@ describe('exportUserData', () => {
     expect(entries).toHaveLength(2);
     expect(entries[0].texture).toBe('ecrasee');
     expect(entries[1].texture).toBeNull();
+  });
+
+  it('nests symptoms under the right food entry with recordedByMe, excluding unrelated children', async () => {
+    const owner = await insertUser('symptom-owner@example.com');
+    const coParent = await insertUser('symptom-coparent@example.com');
+    const stranger = await insertUser('symptom-stranger@example.com');
+    const child = await insertChild('Léa', owner.id);
+    await insertMembership(owner.id, child.id, 'owner');
+    await insertMembership(coParent.id, child.id, 'member');
+    const food = await insertFood('Oeuf');
+    const entryWithSymptoms = await insertEntry(child.id, food.id, owner.id);
+    const entryWithoutSymptoms = await insertEntry(child.id, food.id, owner.id);
+
+    // A child the exporting user has no membership on at all : its symptoms
+    // must never surface in owner's export, even though the query scopes by
+    // childId rather than by owner's foodEntry ids.
+    const strangerChild = await insertChild('Théo', stranger.id);
+    await insertMembership(stranger.id, strangerChild.id, 'owner');
+    const strangerEntry = await insertEntry(strangerChild.id, food.id, stranger.id);
+    await testDb.insert(symptoms).values({
+      foodEntryId: strangerEntry.id,
+      childId: strangerChild.id,
+      observedAt: new Date(),
+      label: 'eczema',
+      note: null,
+      createdBy: stranger.id,
+      createdAt: new Date()
+    });
+
+    await testDb.insert(symptoms).values({
+      foodEntryId: entryWithSymptoms.id,
+      childId: child.id,
+      observedAt: new Date('2026-05-01T10:00:00Z'),
+      label: 'urticaire',
+      note: 'Rougeurs au visage',
+      createdBy: owner.id,
+      createdAt: new Date('2026-05-01T10:05:00Z')
+    });
+    await testDb.insert(symptoms).values({
+      foodEntryId: entryWithSymptoms.id,
+      childId: child.id,
+      observedAt: new Date('2026-05-01T10:10:00Z'),
+      label: 'vomissement',
+      note: null,
+      createdBy: coParent.id,
+      createdAt: new Date('2026-05-01T10:15:00Z')
+    });
+
+    const out = await exportUserData(owner.id);
+    expect(out.children).toHaveLength(1); // strangerChild never appears
+    const entries = out.children[0].foodEntries;
+    const withSymptoms = entries.find((e) => e.id === entryWithSymptoms.id)!;
+    const withoutSymptoms = entries.find((e) => e.id === entryWithoutSymptoms.id)!;
+    expect(withSymptoms.symptoms).toEqual([
+      {
+        id: expect.any(Number),
+        observedAt: '2026-05-01T10:00:00.000Z',
+        label: 'urticaire',
+        note: 'Rougeurs au visage',
+        recordedByMe: true,
+        createdAt: '2026-05-01T10:05:00.000Z'
+      },
+      {
+        id: expect.any(Number),
+        observedAt: '2026-05-01T10:10:00.000Z',
+        label: 'vomissement',
+        note: null,
+        recordedByMe: false,
+        createdAt: '2026-05-01T10:15:00.000Z'
+      }
+    ]);
+    expect(withoutSymptoms.symptoms).toEqual([]);
   });
 });
