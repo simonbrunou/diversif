@@ -139,9 +139,11 @@ which is for maybe-never work; these are required.
          `docker-compose.yml` with the `backup` profile against the same
          `/app/data` volume) or add a second Coolify service running
          `litestream/litestream:0.3.13 replicate -config /etc/litestream.yml`
-         mounted read-write on the same volume as the app, with the same four
-         `LITESTREAM_*` variables set in its environment tab. This wiring is an
-         operator TODO, not automated by this repo.
+         mounted read-write on the same volume as the app, with
+         `DATABASE_PATH=/app/data/diversif.db` (required — `litestream.yml`'s
+         `path: ${DATABASE_PATH}` resolves to nothing without it) alongside
+         the same four `LITESTREAM_*` variables set in its environment tab.
+         This wiring is an operator TODO, not automated by this repo.
       4. **Verify replication is actually happening**: `litestream databases`
          and `litestream generations -config litestream.yml <path>` (run inside
          the `litestream` container, e.g.
