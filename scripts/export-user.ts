@@ -144,6 +144,14 @@ const symptomRows = childIds.length
       .query(`SELECT * FROM symptoms WHERE child_id IN (${inList}) ORDER BY observed_at ASC`)
       .all(...childIds) as SymptomRow[])
   : [];
+// Bucket once (preserving the observed_at ASC query order) instead of an
+// O(entries × symptoms) .filter() per entry below.
+const symptomsByEntryId = new Map<number, SymptomRow[]>();
+for (const s of symptomRows) {
+  const list = symptomsByEntryId.get(s.food_entry_id);
+  if (list) list.push(s);
+  else symptomsByEntryId.set(s.food_entry_id, [s]);
+}
 const preparedMeals = childIds.length
   ? (db
       .query(`SELECT * FROM prepared_meals WHERE child_id IN (${inList}) ORDER BY created_at ASC`)
@@ -264,16 +272,14 @@ const payload = {
           loggedByMe: e.logged_by === user.id,
           mealId: e.meal_id ?? null,
           createdAt: iso(e.created_at),
-          symptoms: symptomRows
-            .filter((s) => s.food_entry_id === e.id)
-            .map((s) => ({
-              id: s.id,
-              observedAt: iso(s.observed_at),
-              label: s.label,
-              note: s.note,
-              recordedByMe: s.created_by === user.id,
-              createdAt: iso(s.created_at)
-            }))
+          symptoms: (symptomsByEntryId.get(e.id) ?? []).map((s) => ({
+            id: s.id,
+            observedAt: iso(s.observed_at),
+            label: s.label,
+            note: s.note,
+            recordedByMe: s.created_by === user.id,
+            createdAt: iso(s.created_at)
+          }))
         })),
       preparedMeals: preparedMeals
         .filter((meal) => meal.child_id === c.id)

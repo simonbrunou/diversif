@@ -1,11 +1,13 @@
 // Pins output parity between the self-service export (exportUserData, used by
 // /account/export) and the operator-side script (scripts/export-user.ts),
 // which is a standalone raw-SQL re-implementation kept separate because the
-// runtime Docker image ships scripts/ without the rest of src/ (see the
-// script's own header comment). Each new field landing in one but not the
-// other is exactly how they drifted before (issue #369) — this test snapshots
-// the SAME database both read from and fails the moment their JSON payloads
-// (modulo `exportedAt`) diverge.
+// runtime Docker image COPYs the four operator scripts individually into
+// ./scripts/ without ever copying src/ (Dockerfile, #371/PR #379) — so
+// export-user.ts can only import bun:sqlite and node builtins, never
+// $lib/server/gdpr.ts or its helpers. Each new field landing in one but not
+// the other is exactly how they drifted before (issue #369) — this test
+// snapshots the SAME database both read from and fails the moment their
+// JSON payloads (modulo `exportedAt`) diverge.
 import { describe, expect, it, mock } from 'bun:test';
 import { unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';

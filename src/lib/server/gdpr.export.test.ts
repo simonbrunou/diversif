@@ -317,6 +317,42 @@ describe('exportUserData', () => {
     }
   });
 
+  it('throws ExportTooLargeError when entries are within the cap but symptoms push the combined total over it', async () => {
+    const u = await insertUser('symptom-heavy@example.com');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Riz');
+    // 2 entries, well under a cap of 5 — but 4 symptoms on top push the
+    // combined food-entry + symptom count to 6, over the cap. Guards against
+    // the preflight counting only food_entries and missing an unbounded
+    // symptom log.
+    const entry1 = await insertEntry(c.id, food.id, u.id);
+    const entry2 = await insertEntry(c.id, food.id, u.id);
+    for (let i = 0; i < 4; i++) {
+      await testDb.insert(symptoms).values({
+        foodEntryId: i % 2 === 0 ? entry1.id : entry2.id,
+        childId: c.id,
+        observedAt: new Date(),
+        label: 'rougeur',
+        note: null,
+        createdBy: u.id,
+        createdAt: new Date()
+      });
+    }
+
+    await expect(exportUserData(u.id, 5)).rejects.toThrow(ExportTooLargeError);
+    try {
+      await exportUserData(u.id, 5);
+    } catch (err) {
+      if (err instanceof ExportTooLargeError) {
+        expect(err.count).toBe(6);
+        expect(err.limit).toBe(5);
+      } else {
+        throw err;
+      }
+    }
+  });
+
   it('emits an account.export_blocked audit event when the cap trips', async () => {
     const u = await insertUser('refused@example.com');
     const c = await insertChild('Bébé', u.id);
