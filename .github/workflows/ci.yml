@@ -205,6 +205,58 @@ jobs:
       # broken before (missing patches/ dir, see Dockerfile) with nothing in
       # CI to catch it.
       - run: docker build --tag diversif:ci-smoke .
+      # No proxy env vars needed: PROTOCOL_HEADER/HOST_HEADER are baked into
+      # the image but adapter-node falls back to the plain `host` header and
+      # https when a request lacks them (@sveltejs/adapter-node handler.js),
+      # and ADDRESS_HEADER — the one that throws when configured but
+      # missing from a request — is deliberately NOT baked in. DATABASE_PATH
+      # and WEBAUTHN_RP_ID are also baked in, so the container boots, runs
+      # migrate() + seedFoods(), and answers /healthz with zero extra config.
+      - name: Start the built image against a throwaway data volume
+        run: |
+          set -e
+          mkdir -p "${{ runner.temp }}/diversif-docker-data"
+          # The container runs as uid 1001 (see Dockerfile); a fresh host
+          # dir bind-mounted at /app/data must be writable by it.
+          chmod 0777 "${{ runner.temp }}/diversif-docker-data"
+          docker run -d --name diversif-smoke -v "${{ runner.temp }}/diversif-docker-data:/app/data" diversif:ci-smoke
+      # Bounded at 90s (18 x 5s): well past start-period=20s + interval=30s
+      # (Dockerfile HEALTHCHECK), so a container that never migrates/boots
+      # cleanly fails the job instead of the workflow hanging on it.
+      - name: Wait for the container to report healthy
+        run: |
+          set -e
+          for i in $(seq 1 18); do
+            status="$(docker inspect --format '{{.State.Health.Status}}' diversif-smoke)"
+            echo "health status: ${status} ($((i * 5))s elapsed)"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            if [ "$status" = "unhealthy" ]; then
+              echo "Container reported unhealthy" >&2
+              docker logs diversif-smoke >&2
+              docker inspect --format '{{json .State.Health}}' diversif-smoke >&2
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Container never became healthy within 90s" >&2
+          docker logs diversif-smoke >&2
+          docker inspect --format '{{json .State.Health}}' diversif-smoke >&2
+          exit 1
+      # Proves #371's fix: the runtime image ships the operator scripts
+      # README/DEPLOY.md tell operators to run in-container, against a DB
+      # that migrate()/seedFoods() already migrated + seeded on boot.
+      - name: Run the operator scripts inside the running container
+        run: |
+          set -e
+          docker exec diversif-smoke bun scripts/cleanup.ts
+          docker exec diversif-smoke bun run db:verify-backup
+      - name: Stop and remove the smoke container
+        if: always()
+        run: |
+          docker rm -f diversif-smoke || true
+          rm -rf "${{ runner.temp }}/diversif-docker-data" || true
 
   bun-audit:
     name: Dependency vulnerability audit

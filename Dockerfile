@@ -49,6 +49,14 @@ COPY --from=builder --chown=diversif:diversif /app/package.json ./package.json
 # (src/lib/server/db/index.ts → migrate()). They must travel with the
 # runtime image, not just CI.
 COPY --from=builder --chown=diversif:diversif /app/drizzle ./drizzle
+# The operator scripts README ("Cleanup" / "RGPD export") and DEPLOY.md
+# ("db:verify-backup") tell the operator to run inside this container
+# against the mounted /app/data volume. They import only bun:sqlite / node
+# builtins (no build artifacts), so a plain COPY of the four is enough.
+COPY --from=builder --chown=diversif:diversif \
+  /app/scripts/cleanup.ts /app/scripts/export-user.ts \
+  /app/scripts/list-stale-users.ts /app/scripts/verify-backup-restore.ts \
+  ./scripts/
 
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -79,9 +87,12 @@ EXPOSE 3000
 
 # /healthz returns {ok:true} only when bun:sqlite answers SELECT 1, so this
 # doubles as a liveness + DB-reachability probe. start-period gives
-# migrations room before the first probe counts.
+# migrations room before the first probe counts. Probed with `bun` (the
+# only HTTP-capable binary in this image — no wget/curl, see #370) in exec
+# form: a network error, a non-JSON body, or {ok:false} all resolve to
+# exit 1; --timeout bounds the whole probe, including a hung fetch.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3000/healthz | grep -q '"ok":true' || exit 1
+  CMD ["bun", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r => r.json()).then(j => process.exit(j.ok ? 0 : 1), () => process.exit(1))"]
 
 USER diversif
 
