@@ -39,9 +39,16 @@ type UserRow = {
   privacy_accepted_at: number | null;
   age_confirmed_at: number | null;
   last_login_at: number | null;
+  last_export_at: number | null;
 };
 type MembershipRow = { user_id: number; child_id: number; role: string; created_at: number | null };
-type ChildRow = { id: number; name: string; birth_date: string; created_at: number | null };
+type ChildRow = {
+  id: number;
+  name: string;
+  birth_date: string;
+  created_at: number | null;
+  dietary_exclusions: string;
+};
 type EntryRow = {
   id: number;
   child_id: number;
@@ -50,7 +57,18 @@ type EntryRow = {
   given_at: number | null;
   reaction: string;
   notes: string | null;
+  texture: string | null;
   logged_by: number | null;
+  meal_id: string | null;
+  created_at: number | null;
+};
+type SymptomRow = {
+  id: number;
+  food_entry_id: number;
+  observed_at: number | null;
+  label: string;
+  note: string | null;
+  created_by: number | null;
   created_at: number | null;
 };
 type PreparedMealRow = {
@@ -73,6 +91,15 @@ type PasskeyRow = {
   created_at: number | null;
   last_used_at: number | null;
 };
+type InvitationRow = {
+  child_id: number;
+  created_by: number | null;
+  used_by: number | null;
+  created_at: number | null;
+  expires_at: number | null;
+  used_at: number | null;
+};
+type TipDismissalRow = { child_id: number; reminder_key: string; dismissed_at: number | null };
 
 const db = new Database(databasePath, { readonly: true });
 
@@ -109,12 +136,34 @@ const entries = childIds.length
       )
       .all(...childIds) as EntryRow[])
   : [];
+// Mirrors gdpr.ts's exportUserData: symptoms are scoped by child_id (not just
+// the entries above) so a symptom row can never leak across a childId that
+// isn't actually a membership of this user.
+const symptomRows = childIds.length
+  ? (db
+      .query(`SELECT * FROM symptoms WHERE child_id IN (${inList}) ORDER BY observed_at ASC`)
+      .all(...childIds) as SymptomRow[])
+  : [];
 const preparedMeals = childIds.length
   ? (db
       .query(`SELECT * FROM prepared_meals WHERE child_id IN (${inList}) ORDER BY created_at ASC`)
       .all(...childIds) as PreparedMealRow[])
   : [];
 const passkeys = db.query('SELECT * FROM passkeys WHERE user_id = ?').all(user.id) as PasskeyRow[];
+
+// Invitations the user generated OR consumed — see gdpr.ts's exportUserData
+// for why `relationship` can produce two rows for the same code, and why the
+// bearer `code` itself is omitted from the export.
+const userInvitations = db
+  .query('SELECT * FROM invitations WHERE created_by = ? OR used_by = ? ORDER BY created_at ASC')
+  .all(user.id, user.id) as InvitationRow[];
+const tipDismissals = childIds.length
+  ? (db
+      .query(
+        `SELECT * FROM tip_dismissals WHERE user_id = ? AND child_id IN (${inList}) ORDER BY dismissed_at ASC`
+      )
+      .all(user.id, ...childIds) as TipDismissalRow[])
+  : [];
 
 const iso = (v: number | null) => (v == null ? null : new Date(v).toISOString());
 const parseTransports = (v: string | null): string[] => {
@@ -134,6 +183,21 @@ const parseFoodIds = (v: string): number[] => {
     return [];
   }
 };
+// Mirrors $lib/utils/diet.ts's parseDietExclusions: narrows an untrusted JSON
+// column down to the known DietExclusion id space, dropping unknown/invalid
+// entries rather than throwing. Duplicated here (not imported) because this
+// script is self-contained — the runtime Docker image ships `scripts/`
+// without the rest of `src/`.
+const DIET_EXCLUSIONS = ['porc', 'vegetarien', 'sans_poisson'];
+const parseDietExclusions = (v: string): string[] => {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(v);
+  } catch {
+    return [];
+  }
+  return Array.isArray(parsed) ? parsed.filter((x) => DIET_EXCLUSIONS.includes(x)) : [];
+};
 const preparedMealFoodIds = [
   ...new Set(preparedMeals.flatMap((meal) => parseFoodIds(meal.ingredient_food_ids)))
 ];
@@ -145,6 +209,23 @@ const preparedMealFoodRows = preparedMealFoodIds.length
       .all(...preparedMealFoodIds) as FoodNameRow[])
   : [];
 const preparedMealFoodNames = new Map(preparedMealFoodRows.map((food) => [food.id, food.name]));
+
+const exportedInvitations = userInvitations.flatMap((inv) => {
+  const base = {
+    childId: inv.child_id,
+    createdAt: iso(inv.created_at),
+    expiresAt: iso(inv.expires_at),
+    usedAt: iso(inv.used_at)
+  };
+  const rows: Array<Record<string, unknown>> = [];
+  if (inv.created_by === user.id) {
+    rows.push({ ...base, relationship: 'sent' });
+  }
+  if (inv.used_by === user.id) {
+    rows.push({ ...base, relationship: 'accepted' });
+  }
+  return rows;
+});
 
 const payload = {
   exportedAt: new Date().toISOString(),
@@ -158,7 +239,8 @@ const payload = {
     tosAcceptedAt: iso(user.tos_accepted_at),
     privacyAcceptedAt: iso(user.privacy_accepted_at),
     ageConfirmedAt: iso(user.age_confirmed_at),
-    lastLoginAt: iso(user.last_login_at)
+    lastLoginAt: iso(user.last_login_at),
+    lastExportAt: iso(user.last_export_at)
   },
   children: children.map((c) => {
     const m = memberships.find((mm) => mm.child_id === c.id);
@@ -167,6 +249,7 @@ const payload = {
       name: c.name,
       birthDate: c.birth_date,
       createdAt: iso(c.created_at),
+      dietaryExclusions: parseDietExclusions(c.dietary_exclusions),
       membership: { role: m?.role ?? 'member', joinedAt: iso(m?.created_at ?? null) },
       foodEntries: entries
         .filter((e) => e.child_id === c.id)
@@ -177,8 +260,20 @@ const payload = {
           givenAt: iso(e.given_at),
           reaction: e.reaction,
           notes: e.notes,
+          texture: e.texture ?? null,
           loggedByMe: e.logged_by === user.id,
-          createdAt: iso(e.created_at)
+          mealId: e.meal_id ?? null,
+          createdAt: iso(e.created_at),
+          symptoms: symptomRows
+            .filter((s) => s.food_entry_id === e.id)
+            .map((s) => ({
+              id: s.id,
+              observedAt: iso(s.observed_at),
+              label: s.label,
+              note: s.note,
+              recordedByMe: s.created_by === user.id,
+              createdAt: iso(s.created_at)
+            }))
         })),
       preparedMeals: preparedMeals
         .filter((meal) => meal.child_id === c.id)
@@ -204,6 +299,12 @@ const payload = {
     transports: parseTransports(p.transports),
     createdAt: iso(p.created_at),
     lastUsedAt: iso(p.last_used_at)
+  })),
+  invitations: exportedInvitations,
+  tipDismissals: tipDismissals.map((t) => ({
+    childId: t.child_id,
+    reminderKey: t.reminder_key,
+    dismissedAt: iso(t.dismissed_at)
   }))
 };
 

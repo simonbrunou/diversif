@@ -11,12 +11,14 @@ import {
   passkeys,
   preparedMeals,
   sessions,
+  symptoms,
   tipDismissals,
   users,
   type Child,
   type FoodEntry,
   type Membership,
-  type Passkey
+  type Passkey,
+  type Symptom
 } from './db/schema';
 import type { TextureKey } from '$lib/utils/textures';
 import { parseDietExclusions, type DietExclusion } from '$lib/utils/diet';
@@ -139,6 +141,14 @@ export type ExportedUser = {
       loggedByMe: boolean;
       mealId: string | null;
       createdAt: string;
+      symptoms: Array<{
+        id: number;
+        observedAt: string;
+        label: Symptom['label'];
+        note: string | null;
+        recordedByMe: boolean;
+        createdAt: string;
+      }>;
     }>;
     preparedMeals: Array<{
       id: number;
@@ -295,6 +305,23 @@ export async function exportUserData(
           .where(inArray(foodEntries.childId, childIds))
           .orderBy(asc(foodEntries.givenAt));
 
+  const symptomRows =
+    childIds.length === 0
+      ? []
+      : await db
+          .select({
+            id: symptoms.id,
+            foodEntryId: symptoms.foodEntryId,
+            observedAt: symptoms.observedAt,
+            label: symptoms.label,
+            note: symptoms.note,
+            createdBy: symptoms.createdBy,
+            createdAt: symptoms.createdAt
+          })
+          .from(symptoms)
+          .where(inArray(symptoms.childId, childIds))
+          .orderBy(asc(symptoms.observedAt));
+
   const preparedMealRows =
     childIds.length === 0
       ? []
@@ -371,6 +398,12 @@ export async function exportUserData(
     list.push(e);
     entriesByChildId.set(e.childId, list);
   }
+  const symptomsByFoodEntryId = new Map<number, typeof symptomRows>();
+  for (const s of symptomRows) {
+    const list = symptomsByFoodEntryId.get(s.foodEntryId) ?? [];
+    list.push(s);
+    symptomsByFoodEntryId.set(s.foodEntryId, list);
+  }
   const preparedMealsByChildId = new Map<number, typeof preparedMealRows>();
   for (const meal of preparedMealRows) {
     const list = preparedMealsByChildId.get(meal.childId) ?? [];
@@ -421,7 +454,15 @@ export async function exportUserData(
           texture: e.texture ?? null,
           loggedByMe: e.loggedBy === userId,
           mealId: e.mealId ?? null,
-          createdAt: isoOrThrow(e.createdAt)
+          createdAt: isoOrThrow(e.createdAt),
+          symptoms: (symptomsByFoodEntryId.get(e.id) ?? []).map((s) => ({
+            id: s.id,
+            observedAt: isoOrThrow(s.observedAt),
+            label: s.label,
+            note: s.note,
+            recordedByMe: s.createdBy === userId,
+            createdAt: isoOrThrow(s.createdAt)
+          }))
         })),
         preparedMeals: childPreparedMeals.map((meal) => ({
           id: meal.id,
