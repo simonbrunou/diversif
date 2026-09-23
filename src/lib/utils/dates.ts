@@ -77,22 +77,35 @@ export function isValidBirthDate(value: string): boolean {
 export function formatDate(
   d: Date | string | number,
   locale: string,
-  options: { style?: 'medium' | 'short' } = {}
+  options: { style?: 'medium' | 'short'; timeZone?: string } = {}
 ): string {
   const date = d instanceof Date ? d : new Date(d);
   if (options.style === 'short') {
-    return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(date);
+    return new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'long',
+      timeZone: options.timeZone
+    }).format(date);
   }
-  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date);
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeZone: options.timeZone
+  }).format(date);
 }
 
 /**
  * Format a time using the short timeStyle for the given locale.
  * E.g. "14:27" (fr-FR) or "2:27 PM" (en-US).
  */
-export function formatTime(d: Date | string | number, locale: string): string {
+export function formatTime(
+  d: Date | string | number,
+  locale: string,
+  options: { timeZone?: string } = {}
+): string {
   const date = d instanceof Date ? d : new Date(d);
-  return new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(date);
+  return new Intl.DateTimeFormat(locale, { timeStyle: 'short', timeZone: options.timeZone }).format(
+    date
+  );
 }
 
 /**

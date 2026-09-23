@@ -128,4 +128,27 @@ describe('print loader', () => {
       )
     ).rejects.toMatchObject({ status: 404 });
   });
+
+  it('shows the meal and symptom times in Europe/Paris wall clock even when the server runs in UTC', async () => {
+    const originalTz = process.env.TZ;
+    process.env.TZ = 'UTC';
+    try {
+      const ctx = await setup();
+      const data = await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      );
+      // givenAt = 2026-05-01T11:30:00Z is 13:30 in Europe/Paris (CEST, +2h);
+      // the symptom's 2026-05-01T11:42:00Z is 13:42 Paris. Both must reflect
+      // Paris wall-clock time, not the server's UTC clock.
+      expect(data.givenAt).toMatch(/13:30/);
+      expect(data.symptoms[0].observedAt).toMatch(/13:42/);
+    } finally {
+      process.env.TZ = originalTz;
+    }
+  });
 });
