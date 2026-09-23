@@ -113,14 +113,38 @@ const CLOCK_SKEW_TOLERANCE_MS = 5 * 60_000;
  * the most recent instant at or before `nowMs` whose Europe/Paris wall clock
  * reads `hh:mm` — today's Paris civil date, or yesterday's if today's
  * occurrence would still be in the future (e.g. "21:30" typed at 08:00 means
- * last night, not later today). Today's occurrence is accepted even up to
- * `CLOCK_SKEW_TOLERANCE_MS` ahead of `nowMs`, to absorb ordinary client/server
- * clock skew.
+ * last night, not later today). "Today" is the Paris civil date of
+ * `nowMs + CLOCK_SKEW_TOLERANCE_MS` (`latestAcceptable`), not of `nowMs`
+ * itself: a clock running a few minutes ahead that has already crossed Paris
+ * midnight must still see the new civil day, or a "00:01" typed right after
+ * midnight would resolve to that morning's 00:01 — nearly a full day in the
+ * past — instead of the midnight that just happened. Every comparison below
+ * is against `latestAcceptable`, the same slack the clock-skew tolerance
+ * grants elsewhere in this function.
+ *
+ * On the fall-back day, `parisWallClockToUtcMs` always resolves an ambiguous
+ * `hh:mm` (02:00-02:59, see above) to its later, CET occurrence. If that
+ * occurrence is still ahead of `latestAcceptable`, the earlier CEST
+ * occurrence — exactly one hour before, since Europe/Paris only ever shifts
+ * by a full hour — may already have happened; it's accepted once verified to
+ * really be the same wall-clock reading (guards against subtracting an hour
+ * from an ordinary, unambiguous time and landing on an unrelated instant).
  */
 export function latestParisWallClock(hh: number, mm: number, nowMs: number): Date {
-  const today = parisDateParts(nowMs);
+  const latestAcceptable = nowMs + CLOCK_SKEW_TOLERANCE_MS;
+  const today = parisDateParts(latestAcceptable);
   const todayInstant = parisWallClockToUtcMs(today.year, today.month, today.day, hh, mm);
-  if (todayInstant <= nowMs + CLOCK_SKEW_TOLERANCE_MS) return new Date(todayInstant);
+  if (todayInstant <= latestAcceptable) return new Date(todayInstant);
+
+  const earlierOccurrence = todayInstant - 3_600_000;
+  if (
+    earlierOccurrence <= latestAcceptable &&
+    parisWallClockAsUtcMs(earlierOccurrence) ===
+      Date.UTC(today.year, today.month - 1, today.day, hh, mm)
+  ) {
+    return new Date(earlierOccurrence);
+  }
+
   const prev = previousCivilDate(today.year, today.month, today.day);
   return new Date(parisWallClockToUtcMs(prev.year, prev.month, prev.day, hh, mm));
 }

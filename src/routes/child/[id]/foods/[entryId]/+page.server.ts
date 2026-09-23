@@ -86,6 +86,10 @@ export const actions: Actions = {
     }
     const entry = await loadEntryForChild(entryId, childId);
 
+    // Known limitation: AddSymptomSheet pre-fills this field from the
+    // browser's own local HH:MM, which we then read as Europe/Paris —
+    // consistent with the app-wide Paris convention from #310, but wrong if
+    // the parent's device isn't actually set to a French timezone.
     const [hh, mm] = parsed.data.observedAt.split(':').map(Number);
     const observedAt = latestParisWallClock(hh, mm, Date.now());
 

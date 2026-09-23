@@ -96,4 +96,23 @@ describe('latestParisWallClock', () => {
     const now = Date.parse('2026-06-01T10:30:30Z');
     expect(latestParisWallClock(12, 40, now).toISOString()).toBe('2026-05-31T10:40:00.000Z');
   });
+
+  it('resolves a typed time just after Paris midnight when "now" is a few minutes before it, ahead-clock skew', () => {
+    // now = 2026-06-01T21:58:00Z = 23:58 Paris (June 1 civil date). Typed
+    // "00:01" means "just now, past midnight" — within the 5-minute skew
+    // tolerance of the upcoming June 2 midnight — not 00:01 on the morning
+    // that already happened (which would be nearly a full day in the past).
+    const now = Date.parse('2026-06-01T21:58:00Z');
+    expect(latestParisWallClock(0, 1, now).toISOString()).toBe('2026-06-01T22:01:00.000Z');
+  });
+
+  it('resolves the earlier (CEST) occurrence of an ambiguous fall-back time when the later one is still ahead', () => {
+    // now = 2026-10-25T00:45:00Z = 02:45 CEST Paris — inside the first 02:xx
+    // hour, before the fall-back transition. The later (CET) occurrence of
+    // "02:30" is still in the future from here, so this must resolve to the
+    // earlier (CEST) occurrence that already happened minutes ago, not roll
+    // back a whole day to yesterday's 02:30.
+    const now = Date.parse('2026-10-25T00:45:00Z');
+    expect(latestParisWallClock(2, 30, now).toISOString()).toBe('2026-10-25T00:30:00.000Z');
+  });
 });
