@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../../../test/db';
 import {
@@ -128,6 +128,37 @@ describe('reaction-detail loader', () => {
     expect(data.symptoms[0].label).toBe('rougeur');
     expect(data.symptoms[0].note).toBe('front');
     expect(typeof data.symptoms[0].observedAt).toBe('string');
+  });
+
+  it('shows meal and symptom times in Europe/Paris wall clock even when the server runs in UTC', async () => {
+    const originalTz = process.env.TZ;
+    process.env.TZ = 'UTC';
+    try {
+      const ctx = await setup();
+      const entry = await ctx.log('reaction', new Date('2026-06-01T10:00:00Z'));
+      await testDb.insert(symptoms).values({
+        foodEntryId: entry.id,
+        childId: ctx.c.id,
+        observedAt: new Date('2026-06-01T10:10:00Z'),
+        label: 'rougeur',
+        note: null,
+        createdBy: ctx.u.id
+      });
+      const data = await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(entry.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      );
+      // 2026-06-01T10:00:00Z is 12:00 in Europe/Paris (CEST, +2h) — must display
+      // Paris wall-clock time, not the server's UTC clock.
+      expect(data.time).toBe('12:00');
+      expect(data.symptoms[0].observedAt).toBe('12:10');
+    } finally {
+      process.env.TZ = originalTz;
+    }
   });
 
   it('formats dates with en-GB locale when locale is en', async () => {
@@ -342,6 +373,28 @@ describe('addSymptom action', () => {
     expect(row.reaction).toBe('reaction');
     const calls = audit.mock.calls.map((c) => c[0].type);
     expect(calls).not.toContain('food_entry.reaction_promoted');
+  });
+
+  it('stores the typed time as the most recent past Europe/Paris instant, even under TZ=UTC', async () => {
+    const originalTz = process.env.TZ;
+    process.env.TZ = 'UTC';
+    setSystemTime(new Date('2026-06-01T10:40:00Z'));
+    try {
+      const ctx = await setup();
+      const entry = await ctx.log('reaction');
+      await actions.addSymptom(
+        makeFormEvent(ctx, entry.id, { label: 'rougeur', note: '', observedAt: '12:10' })
+      );
+      const rows = await testDb.select().from(symptoms);
+      expect(rows).toHaveLength(1);
+      // now = 2026-06-01T10:40:00Z = 12:40 Paris (CEST, +2h). "12:10" is already past
+      // today in Paris, so it must store 12:10 Paris = 10:10Z, not the server's raw
+      // 12:10 UTC (which would be in the future) nor today-at-server-midnight.
+      expect(rows[0].observedAt.toISOString()).toBe('2026-06-01T10:10:00.000Z');
+    } finally {
+      setSystemTime(null);
+      process.env.TZ = originalTz;
+    }
   });
 });
 

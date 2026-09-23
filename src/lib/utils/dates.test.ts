@@ -154,6 +154,14 @@ describe('formatDate', () => {
     expect(out).toMatch(/mars/i);
     expect(out).not.toMatch(/2026/);
   });
+
+  it('anchors on the given IANA zone regardless of host TZ when timeZone is provided', () => {
+    // 2026-03-01T23:30:00Z is 2026-03-02T00:30 in Europe/Paris (CET, +1h) —
+    // a different calendar day than the UTC instant.
+    const late = new Date('2026-03-01T23:30:00Z');
+    const out = formatDate(late, 'fr-FR', { style: 'short', timeZone: 'Europe/Paris' });
+    expect(out).toMatch(/2 mars/i);
+  });
 });
 
 describe('formatTime', () => {
@@ -166,6 +174,13 @@ describe('formatTime', () => {
     expect(out.length).toBeGreaterThan(0);
     // Must contain exactly the minutes component ":27" or " 27"
     expect(out).toMatch(/27/);
+  });
+
+  it('anchors on the given IANA zone regardless of host TZ when timeZone is provided', () => {
+    // 23:30 UTC is 00:30 the next day in Europe/Paris (CET, +1h).
+    const d = new Date('2026-03-01T23:30:00Z');
+    const out = formatTime(d, 'fr-FR', { timeZone: 'Europe/Paris' });
+    expect(out).toMatch(/00:30|0:30/);
   });
 
   it('accepts an epoch ms number', () => {

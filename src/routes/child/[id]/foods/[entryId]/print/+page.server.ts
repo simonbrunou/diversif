@@ -5,6 +5,7 @@ import { children, foodEntries, foods } from '$lib/server/db/schema';
 import { listSymptomsByEntry } from '$lib/server/db/symptoms';
 import { requireChildContext } from '$lib/server/guards';
 import { ageInMonths } from '$lib/utils/age';
+import { PARIS_TIME_ZONE } from '$lib/utils/paris-date';
 import * as m from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
@@ -35,7 +36,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   const locale = (locals.locale ?? 'fr') as 'fr' | 'en';
   const dtf = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
     dateStyle: 'long',
-    timeStyle: 'short'
+    timeStyle: 'short',
+    timeZone: PARIS_TIME_ZONE
   });
 
   return {

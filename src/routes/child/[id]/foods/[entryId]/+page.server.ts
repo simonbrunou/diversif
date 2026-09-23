@@ -13,6 +13,7 @@ import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
 import { audit } from '$lib/server/audit';
 import { formatDate, formatTime } from '$lib/utils/dates';
+import { PARIS_TIME_ZONE, latestParisWallClock } from '$lib/utils/paris-date';
 import * as m from '$lib/paraglide/messages';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -49,7 +50,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   const sList = (await listSymptomsByEntry(entryId, childId)).map((s) => ({
     id: s.id,
     label: s.label,
-    observedAt: formatTime(s.observedAt, intlLocale),
+    observedAt: formatTime(s.observedAt, intlLocale, { timeZone: PARIS_TIME_ZONE }),
     note: s.note
   }));
   const nth = await countNthExposition(entryId, childId);
@@ -61,8 +62,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     isRas: row.reaction === 'ras',
     texture: row.texture ?? null,
     nth,
-    date: formatDate(row.givenAt, intlLocale, { style: 'short' }),
-    time: formatTime(row.givenAt, intlLocale),
+    date: formatDate(row.givenAt, intlLocale, { style: 'short', timeZone: PARIS_TIME_ZONE }),
+    time: formatTime(row.givenAt, intlLocale, { timeZone: PARIS_TIME_ZONE }),
     symptoms: sList
   };
 };
@@ -85,9 +86,12 @@ export const actions: Actions = {
     }
     const entry = await loadEntryForChild(entryId, childId);
 
+    // Known limitation: AddSymptomSheet pre-fills this field from the
+    // browser's own local HH:MM, which we then read as Europe/Paris —
+    // consistent with the app-wide Paris convention from #310, but wrong if
+    // the parent's device isn't actually set to a French timezone.
     const [hh, mm] = parsed.data.observedAt.split(':').map(Number);
-    const observedAt = new Date();
-    observedAt.setHours(hh, mm, 0, 0);
+    const observedAt = latestParisWallClock(hh, mm, Date.now());
 
     const result = await insertSymptom({
       foodEntryId: entryId,
