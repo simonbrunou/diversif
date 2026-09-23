@@ -269,6 +269,47 @@ describe('child/[id]/log default action', () => {
     expect(r.data.errorKey).toBe('errorsLogDateInvalid');
   });
 
+  it('rejects a meal dated in the future and writes nothing', async () => {
+    const { u, c, m, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2099-01-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogDateFuture');
+    expect((await testDb.select().from(foodEntries)).length).toBe(0);
+  });
+
+  it('rejects a meal dated before the child was born and writes nothing', async () => {
+    // setup()'s child has the default birthDate 2024-01-01 (see seedChild).
+    const { u, c, m, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2023-06-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogDateBeforeBirth');
+    expect((await testDb.select().from(foodEntries)).length).toBe(0);
+  });
+
   it('fails when foodId references an inaccessible food', async () => {
     const { u, c, m } = await setup();
     // Create a custom food for a different child
