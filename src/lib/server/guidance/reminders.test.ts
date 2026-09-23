@@ -398,6 +398,29 @@ describe('computeReminders', () => {
       expect(cards[1].key.startsWith('maintain-allergen:arachide')).toBe(true);
     });
 
+    it('breaks same-day-since ties by ALLERGEN_PRIORITY order, not allergenExposures row order', () => {
+      // All three last given the same day: daysSince ties, so the cap's
+      // choice of which 2 to surface must come from ALLERGEN_PRIORITY
+      // (oeuf, arachide, lait, …), not from the arbitrary row order
+      // allergenExposures arrives in (loadAllergenRows has no ORDER BY).
+      // Feed them in reverse priority order to prove the tie-break, not
+      // insertion order, decides.
+      const daysAgo = 10;
+      const out = computeReminders(
+        isolated({
+          allergenExposures: [
+            { allergenType: 'lait', reaction: 'ras', givenAt: NOW - daysAgo * DAY },
+            { allergenType: 'arachide', reaction: 'ras', givenAt: NOW - daysAgo * DAY },
+            { allergenType: 'oeuf', reaction: 'ras', givenAt: NOW - daysAgo * DAY }
+          ]
+        })
+      );
+      const cards = out.filter((r) => r.key.startsWith('maintain-allergen:'));
+      expect(cards.length).toBe(2);
+      expect(cards[0].key.startsWith('maintain-allergen:oeuf')).toBe(true);
+      expect(cards[1].key.startsWith('maintain-allergen:arachide')).toBe(true);
+    });
+
     it('does not fire for non-priority allergens (céleri)', () => {
       // Céleri is tracked in ALLERGENS (EU 1169/2011 labelling) but excluded
       // from PRIORITY_INTRODUCTION_ALLERGENS because no early-introduction

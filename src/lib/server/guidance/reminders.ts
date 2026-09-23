@@ -327,11 +327,17 @@ function summarizePriorityAllergens(exposures: ReminderInput['allergenExposures'
 }
 
 // Introduced, reaction-free priority allergens whose last exposure is older than
-// the maintain window, sorted oldest exposure first (largest daysSince first).
-// Iterates `lastByAllergen` (built from the full allergenExposures history)
-// rather than ALLERGEN_PRIORITY so `lastAt` is always defined by
-// construction : an introduced priority allergen always has at least one
-// exposure row backing it, so a `lastAt == null` branch would be dead code.
+// the maintain window, sorted oldest exposure first (largest daysSince first),
+// ties broken by ALLERGEN_PRIORITY order. Iterates `lastByAllergen` (built
+// from the full allergenExposures history) rather than ALLERGEN_PRIORITY so
+// `lastAt` is always defined by construction : an introduced priority
+// allergen always has at least one exposure row backing it, so a
+// `lastAt == null` branch would be dead code. The explicit tie-break matters
+// because iteration order here follows insertion into `lastByAllergen`
+// (i.e. row order of the unbounded allergenExposures, which carries no
+// ORDER BY) rather than ALLERGEN_PRIORITY — without it, two allergens last
+// given on the same day would sort in unspecified order under the
+// MAINTAIN_CARD_CAP = 2 cutoff.
 function selectMaintainCandidates(
   input: ReminderInput,
   now: number,
@@ -347,7 +353,10 @@ function selectMaintainCandidates(
       candidates.push({ id, daysSince, lastAt });
     }
   }
-  candidates.sort((a, b) => b.daysSince - a.daysSince);
+  candidates.sort((a, b) => {
+    if (a.daysSince !== b.daysSince) return b.daysSince - a.daysSince;
+    return ALLERGEN_PRIORITY.indexOf(a.id) - ALLERGEN_PRIORITY.indexOf(b.id);
+  });
   return candidates;
 }
 
