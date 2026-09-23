@@ -446,6 +446,71 @@ describe('child/[id] +page.server load', () => {
     expect(out.stats.allergens.reaction).toBe(1);
   });
 
+  it('does not surface a maintain-allergen reminder for a lait exposure that is only an allergenic fat, but does for a dairy exposure (#373)', async () => {
+    // loadAllergenRows' SQL predicate (allergen-status.ts:66) is the only
+    // place left that excludes a matieres_grasses+ras row from counting as
+    // an allergen exposure : reminders.ts now trusts allergenRows verbatim
+    // (see reminders.ts summarizePriorityAllergens). If that predicate ever
+    // regresses, an allergenic fat like Beurre would start "introducing"
+    // lait and triggering a "keep giving lait" nudge from a fat log alone.
+    const eightDaysAgo = new Date(Date.now() - 8 * 86400_000);
+
+    async function loadWithLaitEntry(category: string, foodName: string) {
+      const u = await seedUser({ email: `${foodName.toLowerCase()}@example.com` });
+      const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
+      const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
+      const food = (
+        await testDb
+          .insert(foods)
+          .values({
+            name: foodName,
+            category,
+            isMajorAllergen: true,
+            allergenType: 'lait',
+            suggestedAgeMonths: 4,
+            notes: null,
+            isCustom: false,
+            customForChildId: null
+          })
+          .returning()
+      )[0];
+      await testDb.insert(foodEntries).values({
+        childId: c.id,
+        foodId: food.id,
+        givenAt: eightDaysAgo,
+        reaction: 'ras',
+        notes: null,
+        loggedBy: u.id,
+        createdAt: new Date()
+      });
+      return load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          parent: async () => ({
+            child: {
+              id: c.id,
+              name: c.name,
+              birthDate: c.birthDate,
+              createdAt: c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof load>[0]
+      );
+    }
+
+    const fatOut = await loadWithLaitEntry('matieres_grasses', 'Beurre');
+    expect(
+      fatOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
+    ).toBeUndefined();
+
+    const dairyOut = await loadWithLaitEntry('produits_laitiers', 'Fromage');
+    expect(
+      dairyOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
+    ).toBeDefined();
+  });
+
   it('surfaces an observation-window reminder with cta href when a non-RAS entry exists within 48 h', async () => {
     const { u, c, m, food } = await setup();
     const [entry] = await testDb

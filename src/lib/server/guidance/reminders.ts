@@ -5,7 +5,6 @@
 import {
   ALLERGEN_MAINTAIN_DAYS,
   PRIORITY_INTRODUCTION_ALLERGENS,
-  countsAsAllergenExposure,
   getAllergenLabel,
   type AllergenId
 } from '$lib/utils/allergens';
@@ -20,6 +19,7 @@ import * as m from '$lib/paraglide/messages';
 import type { SourceId } from '$lib/content/sources';
 import { FORBIDDEN_FOODS } from '$lib/content/guidance';
 import type { EnrichedEntry } from './queries';
+import type { ReactionId } from '$lib/utils/reactions';
 import { findRepeatCandidates } from './repeat-candidates';
 
 type Severity = 'info' | 'warn' | 'important';
@@ -39,6 +39,12 @@ export type ReminderInput = {
   ageMonths: number;
   childCreatedAt: number;
   entries: EnrichedEntry[]; // full history, recent first : first-intro and exposure-count rules need it
+  // Full-history allergen-tagged rows (unbounded — same source as the
+  // allergen tile / introducedAllergens), independent of `entries`'s
+  // REMINDERS_SCAN_LIMIT cap. The maintain-allergen rule (8) needs the
+  // child's whole allergen history so an old reaction or an old exposure
+  // that aged out of the capped `entries` window still counts.
+  allergenExposures: Array<{ allergenType: string; reaction: ReactionId; givenAt: number }>;
   introducedAllergens: Set<AllergenId>;
   dismissals: Set<string>; // already-honored TTLs by caller
   now?: number;
@@ -299,18 +305,20 @@ function ruleForbiddenFoods({ input }: RuleContext): Reminder[] {
 type MaintainCandidate = { id: AllergenId; daysSince: number; lastAt: number };
 
 // Per priority allergen: newest exposure timestamp, and whether any exposure
-// triggered symptoms (which suppress the maintain nudge).
-function summarizePriorityAllergens(entries: EnrichedEntry[]): {
+// triggered symptoms (which suppress the maintain nudge). `exposures` comes
+// from ReminderInput.allergenExposures — full history, already filtered by
+// loadAllergenRows' SQL predicate (category !== 'matieres_grasses' OR
+// reaction !== 'ras', the same rule countsAsAllergenExposure encodes) — so
+// every row here already counts as an exposure and needs no re-filtering.
+function summarizePriorityAllergens(exposures: ReminderInput['allergenExposures']): {
   lastByAllergen: Map<AllergenId, number>;
   hasSymptomsByAllergen: Map<AllergenId, boolean>;
 } {
   const lastByAllergen = new Map<AllergenId, number>();
   const hasSymptomsByAllergen = new Map<AllergenId, boolean>();
-  for (const e of entries) {
-    if (!e.allergenType) continue;
-    if (e.reaction === 'ras' && !countsAsAllergenExposure(e)) continue;
+  for (const e of exposures) {
+    if (!ALLERGEN_PRIORITY.includes(e.allergenType as AllergenId)) continue;
     const aid = e.allergenType as AllergenId;
-    if (!ALLERGEN_PRIORITY.includes(aid)) continue;
     const cur = lastByAllergen.get(aid);
     if (cur == null || e.givenAt > cur) lastByAllergen.set(aid, e.givenAt);
     if (e.reaction !== 'ras') hasSymptomsByAllergen.set(aid, true);
@@ -319,7 +327,17 @@ function summarizePriorityAllergens(entries: EnrichedEntry[]): {
 }
 
 // Introduced, reaction-free priority allergens whose last exposure is older than
-// the maintain window, sorted oldest exposure first (largest daysSince first).
+// the maintain window, sorted oldest exposure first (largest daysSince first),
+// ties broken by ALLERGEN_PRIORITY order. Iterates `lastByAllergen` (built
+// from the full allergenExposures history) rather than ALLERGEN_PRIORITY so
+// `lastAt` is always defined by construction : an introduced priority
+// allergen always has at least one exposure row backing it, so a
+// `lastAt == null` branch would be dead code. The explicit tie-break matters
+// because iteration order here follows insertion into `lastByAllergen`
+// (i.e. row order of the unbounded allergenExposures, which carries no
+// ORDER BY) rather than ALLERGEN_PRIORITY — without it, two allergens last
+// given on the same day would sort in unspecified order under the
+// MAINTAIN_CARD_CAP = 2 cutoff.
 function selectMaintainCandidates(
   input: ReminderInput,
   now: number,
@@ -327,23 +345,26 @@ function selectMaintainCandidates(
   hasSymptomsByAllergen: Map<AllergenId, boolean>
 ): MaintainCandidate[] {
   const candidates: MaintainCandidate[] = [];
-  for (const id of ALLERGEN_PRIORITY) {
+  for (const [id, lastAt] of lastByAllergen) {
     if (!input.introducedAllergens.has(id)) continue;
     if (hasSymptomsByAllergen.get(id)) continue;
-    const lastAt = lastByAllergen.get(id);
-    if (lastAt == null) continue; // introduced but no allergenType-tagged entry in window
     const daysSince = Math.max(0, Math.floor((now - lastAt) / DAY_MS));
     if (daysSince >= ALLERGEN_MAINTAIN_DAYS) {
       candidates.push({ id, daysSince, lastAt });
     }
   }
-  candidates.sort((a, b) => b.daysSince - a.daysSince);
+  candidates.sort((a, b) => {
+    if (a.daysSince !== b.daysSince) return b.daysSince - a.daysSince;
+    return ALLERGEN_PRIORITY.indexOf(a.id) - ALLERGEN_PRIORITY.indexOf(b.id);
+  });
   return candidates;
 }
 
 function ruleMaintainAllergens({ input, now, childPath }: RuleContext): Reminder[] {
   if (input.ageMonths < 4) return [];
-  const { lastByAllergen, hasSymptomsByAllergen } = summarizePriorityAllergens(input.entries);
+  const { lastByAllergen, hasSymptomsByAllergen } = summarizePriorityAllergens(
+    input.allergenExposures
+  );
   const candidates = selectMaintainCandidates(input, now, lastByAllergen, hasSymptomsByAllergen);
   // Cap to MAINTAIN_CARD_CAP.
   return candidates.slice(0, MAINTAIN_CARD_CAP).map((c): Reminder => {

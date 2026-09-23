@@ -26,12 +26,14 @@ import type { Actions, PageServerLoad } from './$types';
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 // ponytail: caps the reminders scan instead of leaving it truly unbounded.
-// The stale-diversity/repeat-exposure/maintain-allergen rules need each
-// food's/allergen's lifetime first-and-last exposure, so this can't be a
-// short date window without silently breaking those rules for long-time
-// families. 5000 rows comfortably covers years of active logging for the
-// app's target 4-12mo+toddler window; raise it (or move to a materialized
-// per-child summary) if real usage ever gets close to it.
+// The stale-diversity/repeat-exposure rules need each food's lifetime
+// first-and-last exposure, so this can't be a short date window without
+// silently breaking those rules for long-time families. 5000 rows
+// comfortably covers years of active logging for the app's target
+// 4-12mo+toddler window; raise it (or move to a materialized per-child
+// summary) if real usage ever gets close to it. The maintain-allergen rule
+// does NOT depend on this cap — it reads `allergenRows` (unbounded, loaded
+// separately below) via ReminderInput.allergenExposures instead.
 const REMINDERS_SCAN_LIMIT = 5000;
 
 type AllergenSummary = {
@@ -213,6 +215,20 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     givenAt: toEpochMs(r.givenAt as Date | number | string)
   }));
 
+  // Full-history allergen exposures for the maintain-allergen rule — reuses
+  // `allergenRows` (loaded above, unbounded) instead of `entriesNormalized`
+  // (capped at REMINDERS_SCAN_LIMIT), so a stale-allergen nudge or a
+  // reaction-suppression is never lost once a child's log passes the cap.
+  // loadAllergenRows' SQL already applies the same exposure predicate as
+  // countsAsAllergenExposure (category !== 'matieres_grasses' OR
+  // reaction !== 'ras'), so no re-filtering here — and AllergenRow carries
+  // no category to re-filter on anyway.
+  const allergenExposures = allergenRows.map((r) => ({
+    allergenType: r.allergenType as string,
+    reaction: r.reaction as ReactionId,
+    givenAt: toEpochMs(r.givenAt as Date | number | string)
+  }));
+
   // child.createdAt comes from the layout load, avoiding a second SELECT.
   const childCreatedAt = child.createdAt;
 
@@ -230,6 +246,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     ageMonths,
     childCreatedAt,
     entries: entriesNormalized,
+    allergenExposures,
     introducedAllergens: introducedAllergenIds,
     dismissals,
     now: nowAtLoad.getTime()
