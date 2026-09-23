@@ -71,4 +71,29 @@ describe('latestParisWallClock', () => {
     const second = latestParisWallClock(2, 30, now).toISOString();
     expect(second).toBe(first);
   });
+
+  it('resolves the later (CET) occurrence of an ambiguous wall time on the fall-back day', () => {
+    // 2026-10-25 is the last Sunday of October: Paris clocks fall back from
+    // 03:00 CEST to 02:00 CET, so 02:30 happens twice. "now" is later the
+    // same day so the today-branch resolves it.
+    const now = Date.parse('2026-10-25T12:00:00Z');
+    // 2026-10-25T01:30:00Z reads as 02:30 CET (GMT+1) in Paris — the later,
+    // post-transition occurrence.
+    expect(latestParisWallClock(2, 30, now).toISOString()).toBe('2026-10-25T01:30:00.000Z');
+  });
+
+  it('tolerates a typed time up to 5 minutes ahead of "now" (client/server clock skew)', () => {
+    // now = 2026-06-01T10:30:30Z = 12:30:30 Paris. "12:32" is 1m30s ahead of
+    // now — e.g. the browser prefilled the field with its own clock, which
+    // ticked past the second the request left it. Still resolves to today.
+    const now = Date.parse('2026-06-01T10:30:30Z');
+    expect(latestParisWallClock(12, 32, now).toISOString()).toBe('2026-06-01T10:32:00.000Z');
+  });
+
+  it('still falls back to the previous day once the typed time is beyond the skew tolerance', () => {
+    // now = 2026-06-01T10:30:30Z = 12:30:30 Paris. "12:40" is 9m30s ahead —
+    // beyond the 5-minute skew tolerance — so it resolves to yesterday.
+    const now = Date.parse('2026-06-01T10:30:30Z');
+    expect(latestParisWallClock(12, 40, now).toISOString()).toBe('2026-05-31T10:40:00.000Z');
+  });
 });

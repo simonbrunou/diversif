@@ -68,7 +68,7 @@ function parisOffsetMinutesAt(instantMs: number): number {
  * the pre- and post-transition offsets and this deterministically settles on
  * the post-transition (CEST) reading — e.g. a requested 02:30 resolves to
  * the instant Paris clocks read 03:30. Ambiguous times on the fall-back day
- * (01:00-01:59, both CEST and CET) deterministically resolve to the later
+ * (02:00-02:59, both CEST and CET) deterministically resolve to the later
  * (CET) occurrence for the same reason.
  */
 function parisWallClockToUtcMs(
@@ -98,17 +98,29 @@ function previousCivilDate(
   return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() };
 }
 
+/** A typed symptom time defaults to the browser's own clock (AddSymptomSheet),
+ * so "now" here is a client reading, not the server's — up to a few seconds
+ * ahead if the phone's clock runs fast, or the request lands just after a
+ * minute boundary the field was filled before. Without slack, that pushes
+ * `todayInstant` past `nowMs` and misdates the symptom to yesterday. 5
+ * minutes comfortably covers ordinary clock drift without masking a genuine
+ * "typed a time still in the future" case (evenings vs. the following
+ * morning are hours apart, not minutes). */
+const CLOCK_SKEW_TOLERANCE_MS = 5 * 60_000;
+
 /**
  * Resolves a typed `hh:mm` (a parent recording a symptom just observed) to
  * the most recent instant at or before `nowMs` whose Europe/Paris wall clock
  * reads `hh:mm` — today's Paris civil date, or yesterday's if today's
  * occurrence would still be in the future (e.g. "21:30" typed at 08:00 means
- * last night, not later today).
+ * last night, not later today). Today's occurrence is accepted even up to
+ * `CLOCK_SKEW_TOLERANCE_MS` ahead of `nowMs`, to absorb ordinary client/server
+ * clock skew.
  */
 export function latestParisWallClock(hh: number, mm: number, nowMs: number): Date {
   const today = parisDateParts(nowMs);
   const todayInstant = parisWallClockToUtcMs(today.year, today.month, today.day, hh, mm);
-  if (todayInstant <= nowMs) return new Date(todayInstant);
+  if (todayInstant <= nowMs + CLOCK_SKEW_TOLERANCE_MS) return new Date(todayInstant);
   const prev = previousCivilDate(today.year, today.month, today.day);
   return new Date(parisWallClockToUtcMs(prev.year, prev.month, prev.day, hh, mm));
 }
