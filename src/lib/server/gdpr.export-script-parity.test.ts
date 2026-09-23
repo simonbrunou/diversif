@@ -27,6 +27,7 @@ import {
   tipDismissals,
   users
 } from './db/schema';
+import { DIET_EXCLUSIONS } from '$lib/utils/diet';
 import {
   insertChild,
   insertEntry,
@@ -46,7 +47,7 @@ describe('scripts/export-user.ts parity with exportUserData', () => {
     await insertMembership(coParent.id, child.id, 'member');
     await testDb
       .update(children)
-      .set({ dietaryExclusions: ['vegetarien', 'porc'] })
+      .set({ dietaryExclusions: [...DIET_EXCLUSIONS] })
       .where(eq(children.id, child.id));
     await testDb
       .update(users)
