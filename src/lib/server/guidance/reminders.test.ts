@@ -20,12 +20,30 @@ function entry(overrides: Partial<EnrichedEntry> = {}): EnrichedEntry {
   };
 }
 
+// Mirrors loadAllergenRows' SQL predicate (same rule countsAsAllergenExposure
+// encodes): excludes only ras-reaction rows of the matieres_grasses category.
+// Lets most tests set only `entries` and get a consistent allergenExposures
+// default; tests that need the two to diverge (the capped-window vs
+// full-history maintain-allergen cases) pass allergenExposures explicitly.
+function defaultAllergenExposures(entries: EnrichedEntry[]): ReminderInput['allergenExposures'] {
+  return entries
+    .filter((e) => e.allergenType != null)
+    .filter((e) => !(e.category === 'matieres_grasses' && e.reaction === 'ras'))
+    .map((e) => ({
+      allergenType: e.allergenType as string,
+      reaction: e.reaction,
+      givenAt: e.givenAt
+    }));
+}
+
 function input(overrides: Partial<ReminderInput> = {}): ReminderInput {
+  const entries = overrides.entries ?? [];
   return {
     childId: 1,
     ageMonths: 8, // outside stage-transition windows (6-7, 9-10, 12-13)
     childCreatedAt: NOW - 30 * DAY,
     entries: [],
+    allergenExposures: defaultAllergenExposures(entries),
     introducedAllergens: new Set<AllergenId>(),
     dismissals: new Set<string>(),
     now: NOW,
@@ -268,6 +286,7 @@ describe('computeReminders', () => {
         ageMonths: 8,
         childCreatedAt: Date.now() - 30 * DAY,
         entries: [],
+        allergenExposures: [],
         introducedAllergens: ALL_ALLERGENS,
         dismissals: new Set<string>()
       });
@@ -457,6 +476,40 @@ describe('computeReminders', () => {
       expect(out.find((r) => r.key === 'stage-transition:6m')).toBeDefined();
       expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
       expect(out.length).toBeLessThanOrEqual(4);
+    });
+
+    it('suppresses the maintain nudge for a reaction that aged out of the capped `entries` window but is still in allergenExposures (full history)', () => {
+      // Simulates a child whose log has passed REMINDERS_SCAN_LIMIT: the
+      // `réaction` row for oeuf no longer fits in `entries` (only recent
+      // `ras` rows do), but the full-history allergenExposures still has it.
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['oeuf']),
+          entries: [allergenEntry('oeuf', 8)], // capped window: only a recent 'ras' row survives
+          allergenExposures: [
+            { allergenType: 'oeuf', reaction: 'reaction', givenAt: NOW - 100 * DAY }, // aged out of `entries`
+            { allergenType: 'oeuf', reaction: 'ras', givenAt: NOW - 8 * DAY }
+          ]
+        })
+      );
+      expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
+    });
+
+    it('surfaces the maintain nudge for an allergen whose only exposure aged out of `entries` but is in allergenExposures (full history)', () => {
+      // Simulates a child whose sole lait exposure is older than
+      // REMINDERS_SCAN_LIMIT rows back: absent from `entries`, but present in
+      // the unbounded allergenExposures — this is the "most overdue nudge"
+      // case the old `lastAt == null` guard used to drop.
+      const out = computeReminders(
+        isolated({
+          introducedAllergens: new Set<AllergenId>(['lait']),
+          entries: [],
+          allergenExposures: [{ allergenType: 'lait', reaction: 'ras', givenAt: NOW - 50 * DAY }]
+        })
+      );
+      const card = out.find((r) => r.key.startsWith('maintain-allergen:lait'));
+      expect(card).toBeDefined();
+      expect(card?.body).toContain('50 jours');
     });
   });
 });
