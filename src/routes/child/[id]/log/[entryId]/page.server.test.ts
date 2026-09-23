@@ -219,6 +219,78 @@ describe('child/[id]/log/[entryId] update action', () => {
     expect(r.data.errorKey).toBe('errorsLogDateInvalid');
   });
 
+  it('rejects a future-dated update and leaves the entry unchanged', async () => {
+    const { u, c, m, entry, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2099-01-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = (await actions.update!(
+      event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogDateFuture');
+    const fresh = (
+      await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).limit(1)
+    )[0];
+    expect(fresh?.givenAt).toEqual(new Date('2024-06-01T10:00:00Z'));
+  });
+
+  it('rejects a pre-birth-dated update and leaves the entry unchanged', async () => {
+    // setup()'s child has the default birthDate 2024-01-01 (see seedChild).
+    const { u, c, m, entry, food } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        foodId: String(food.id),
+        givenAt: '2023-06-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = (await actions.update!(
+      event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogDateBeforeBirth');
+    const fresh = (
+      await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id)).limit(1)
+    )[0];
+    expect(fresh?.givenAt).toEqual(new Date('2024-06-01T10:00:00Z'));
+  });
+
+  it('rejects a future date with a new custom food before creating the food row', async () => {
+    // Regression: the date bounds check must run BEFORE resolveOrInsertFood,
+    // which autocommits a new custom food row outside the later update's
+    // transaction. A date-rejected submit must not leave that row behind.
+    const { u, c, m, entry } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id), entryId: String(entry.id) },
+      formData: {
+        'customFood.name': 'Purée orpheline',
+        'customFood.category': 'legumes',
+        givenAt: '2099-01-01T10:00',
+        reaction: 'ras'
+      }
+    });
+    const r = (await actions.update!(
+      event as unknown as Parameters<NonNullable<typeof actions.update>>[0]
+    )) as { status: number; data: { errorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsLogDateFuture');
+    const created = await testDb.select().from(foods).where(eq(foods.name, 'Purée orpheline'));
+    expect(created.length).toBe(0);
+  });
+
   it('fails with a generic bad-input key on an out-of-enum field (e.g. reaction)', async () => {
     // Exercises schemaErrorKey's fallback branch: a schema issue whose path is
     // neither `givenAt` nor the zero-length `.refine()` (here an invalid
@@ -665,6 +737,65 @@ describe('child/[id]/log/[entryId] meal mode', () => {
       .from(schema.foodEntries)
       .where(eq(schema.foodEntries.mealId, m1));
     expect(rows.every((row) => row.texture === null && row.notes === null)).toBe(true);
+  });
+
+  test('meal-mode update rejects a future-dated givenAt and leaves siblings unchanged', async () => {
+    const { child, m1, ids } = await seedMeal(['ras', 'ras']);
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: {
+        givenAt: '2099-01-01T10:00',
+        notes: 'x',
+        [`reaction.${ids[0]}`]: 'ras',
+        [`reactionLoaded.${ids[0]}`]: 'ras',
+        [`reaction.${ids[1]}`]: 'ras',
+        [`reactionLoaded.${ids[1]}`]: 'ras'
+      }
+    });
+    const r = await captureFlow(() => actions.update(ev as never));
+    expect(r.kind).toBe('return');
+    if (r.kind === 'return') {
+      const value = r.value as { status: number; data: { errorKey: string } };
+      expect(value.status).toBe(400);
+      expect(value.data.errorKey).toBe('errorsLogDateFuture');
+    }
+    const rows = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.mealId, m1));
+    expect(rows.every((row) => row.notes === null)).toBe(true);
+  });
+
+  test('meal-mode update rejects a pre-birth givenAt and leaves siblings unchanged', async () => {
+    // seedMeal's child has the default birthDate 2024-01-01 (see seedChild).
+    const { child, m1, ids } = await seedMeal(['ras', 'ras']);
+    const ev = makeRouteEvent({
+      user,
+      memberships,
+      params: { id: String(child.id), entryId: String(ids[0]) },
+      formData: {
+        givenAt: '2023-06-01T10:00',
+        notes: 'x',
+        [`reaction.${ids[0]}`]: 'ras',
+        [`reactionLoaded.${ids[0]}`]: 'ras',
+        [`reaction.${ids[1]}`]: 'ras',
+        [`reactionLoaded.${ids[1]}`]: 'ras'
+      }
+    });
+    const r = await captureFlow(() => actions.update(ev as never));
+    expect(r.kind).toBe('return');
+    if (r.kind === 'return') {
+      const value = r.value as { status: number; data: { errorKey: string } };
+      expect(value.status).toBe(400);
+      expect(value.data.errorKey).toBe('errorsLogDateBeforeBirth');
+    }
+    const rows = await testDb
+      .select()
+      .from(schema.foodEntries)
+      .where(eq(schema.foodEntries.mealId, m1));
+    expect(rows.every((row) => row.notes === null)).toBe(true);
   });
 
   test('a stale date-only edit does not clobber a concurrently-promoted reaction', async () => {

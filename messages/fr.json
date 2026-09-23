@@ -123,6 +123,8 @@
   "errorsLogDateRequired": "Date requise.",
   "errorsLogNoFoodSelected": "Choisissez un aliment ou créez-en un.",
   "errorsLogDateInvalid": "Date invalide.",
+  "errorsLogDateFuture": "La date du repas ne peut pas être dans le futur.",
+  "errorsLogDateBeforeBirth": "Cette date tombe avant la naissance de bébé. Vérifiez le jour choisi.",
   "errorsLogFoodNotFound": "Aliment introuvable.",
   "errorsLogFoodInvalid": "Aliment invalide.",
   "errorsLogNoFoodResolved": "Aucun aliment sélectionné.",

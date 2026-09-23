@@ -8,6 +8,7 @@ import { parseIntParam, requireChildContext } from '$lib/server/guards';
 import { audit } from '$lib/server/audit';
 import { loadVisibleFoodsForChild, resolveOrInsertFood } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
+import { mealDateErrorForChild } from '$lib/server/meal-date';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
 import * as m from '$lib/paraglide/messages';
 import type { SafeUser } from '$lib/types';
@@ -132,6 +133,9 @@ async function updateMeal(opts: {
   const givenAtDate = new Date(String(raw.givenAt));
   if (Number.isNaN(givenAtDate.getTime())) return fail(400, { errorKey: 'errorsLogDateInvalid' });
 
+  const dateError = await mealDateErrorForChild(childId, givenAtDate);
+  if (dateError) return fail(400, { errorKey: dateError });
+
   // Validate texture against the enum — an unchecked value hits the DB CHECK
   // and 500s instead of returning a graceful 400 (the single-entry path uses
   // a zod enum; mirror it here since the meal-mode payload is hand-validated).
@@ -213,6 +217,20 @@ export const actions: Actions = {
       return fail(400, { errorKey: schemaErrorKey(parsed.error.issues[0]) });
     }
 
+    const givenAtDate = new Date(parsed.data.givenAt);
+    if (Number.isNaN(givenAtDate.getTime())) {
+      return fail(400, { errorKey: 'errorsLogDateInvalid' });
+    }
+
+    // Bound the date before resolveOrInsertFood: that call can autocommit a
+    // brand-new custom food row, and a future/pre-birth givenAt must fail
+    // before any write happens, not after — otherwise a rejected edit still
+    // leaves an orphan custom food behind.
+    const dateError = await mealDateErrorForChild(childId, givenAtDate);
+    if (dateError) {
+      return fail(400, { errorKey: dateError });
+    }
+
     const resolved = await resolveOrInsertFood({
       foodId: parsed.data.foodId ?? null,
       customName: parsed.data['customFood.name'],
@@ -226,11 +244,6 @@ export const actions: Actions = {
       });
     }
     const { foodId } = resolved;
-
-    const givenAtDate = new Date(parsed.data.givenAt);
-    if (Number.isNaN(givenAtDate.getTime())) {
-      return fail(400, { errorKey: 'errorsLogDateInvalid' });
-    }
 
     const textureValue =
       parsed.data.texture === undefined

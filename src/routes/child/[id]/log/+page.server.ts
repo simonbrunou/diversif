@@ -12,6 +12,7 @@ import {
   visibleToChild
 } from '$lib/server/food-resolution';
 import { TEXTURE_VALUES } from '$lib/utils/textures';
+import { mealDateErrorForChild } from '$lib/server/meal-date';
 import { REACTION_VALUES } from '$lib/utils/reaction-values';
 import {
   ALLERGENS,
@@ -371,6 +372,11 @@ export const actions: Actions = {
     const givenAtDate = new Date(parsed.data.givenAt);
     if (Number.isNaN(givenAtDate.getTime())) {
       return fail(400, { errorKey: 'errorsLogDateInvalid' });
+    }
+
+    const dateError = await mealDateErrorForChild(childId, givenAtDate);
+    if (dateError) {
+      return fail(400, { errorKey: dateError });
     }
 
     let redirectPath: string;

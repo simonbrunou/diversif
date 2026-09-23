@@ -113,6 +113,7 @@
           name="givenAt"
           type="datetime-local"
           bind:value={givenAt}
+          min={`${data.child.birthDate}T00:00`}
           required
         />
       </div>
@@ -261,7 +262,14 @@
 
       <div class="grid gap-1.5">
         <Label for="givenAt">{m.logFormGivenAtLabel()}</Label>
-        <Input id="givenAt" name="givenAt" type="datetime-local" bind:value={givenAt} required />
+        <Input
+          id="givenAt"
+          name="givenAt"
+          type="datetime-local"
+          bind:value={givenAt}
+          min={`${data.child.birthDate}T00:00`}
+          required
+        />
       </div>
 
       <div class="grid gap-1.5">
