@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+import { baseLocale, overwriteGetLocale } from '$lib/paraglide/runtime';
 import { ageInMonths, formatAge } from './age';
 
 describe('ageInMonths', () => {
@@ -70,5 +71,56 @@ describe('formatAge', () => {
     // by the parent's Paris calendar, still UTC-Jan-9.
     const now = new Date(Date.UTC(2026, 0, 9, 23, 30, 0));
     expect(formatAge('2026-01-10', now)).toBe('aujourd’hui');
+  });
+
+  describe('en locale', () => {
+    afterEach(() => {
+      overwriteGetLocale(() => baseLocale);
+    });
+
+    it('returns "not yet born" when birth is in the future', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2030-01-01', new Date('2024-01-01T00:00:00Z'))).toBe('not yet born');
+    });
+    it('returns "born today" on the day of birth', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2024-05-03', new Date('2024-05-03T00:00:00Z'))).toBe('born today');
+    });
+    it('returns "1 day" the day after birth', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2024-05-03', new Date('2024-05-04T00:00:00Z'))).toBe('1 day');
+    });
+    it('returns plural days when under a month', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2024-05-01', new Date('2024-05-15T12:00:00Z'))).toBe('14 days');
+    });
+    it('returns plural months and days', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2024-01-01', new Date('2024-08-13T00:00:00Z'))).toBe(
+        '7 months and 12 days'
+      );
+    });
+    it('returns plural months alone on the day boundary', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2024-01-01', new Date('2024-08-01T00:00:00Z'))).toBe('7 months');
+    });
+    it('handles the singular month case', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2024-01-01', new Date('2024-02-15T00:00:00Z'))).toBe('1 month and 14 days');
+    });
+    it('uses singular day after a plural month count', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2024-01-01', new Date('2024-08-02T00:00:00Z'))).toBe('7 months and 1 day');
+    });
+    it('returns whole-year output when months is a multiple of 12', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2022-05-03', new Date('2024-05-03T12:00:00Z'))).toBe('2 years');
+    });
+    it('returns years and months when not a whole year', () => {
+      overwriteGetLocale(() => 'en');
+      expect(formatAge('2022-01-01', new Date('2024-05-03T00:00:00Z'))).toBe(
+        '2 years and 4 months'
+      );
+    });
   });
 });
