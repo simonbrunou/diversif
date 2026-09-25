@@ -89,6 +89,20 @@ interface EnvelopeItem {
   payload: Uint8Array;
 }
 
+/** Index just past an item's payload starting at `offset`. Throws on a bad length. */
+function payloadEnd(bytes: Uint8Array, offset: number, length: unknown): number {
+  if (length === undefined) {
+    const end = bytes.indexOf(NEWLINE, offset);
+    return end === -1 ? bytes.length : end;
+  }
+  // A negative or fractional length would move the parser backwards and never
+  // end its loop: one crafted request could pin the server.
+  if (!Number.isSafeInteger(length) || Number(length) < 0) throw new Error('item length');
+  const end = offset + Number(length);
+  if (end > bytes.length) throw new Error('truncated item');
+  return end;
+}
+
 /** Split the items following the envelope header line. Throws on malformed input. */
 function parseItems(bytes: Uint8Array, start: number): EnvelopeItem[] {
   const items: EnvelopeItem[] = [];
@@ -99,18 +113,9 @@ function parseItems(bytes: Uint8Array, start: number): EnvelopeItem[] {
     const header: unknown = JSON.parse(decoder.decode(bytes.subarray(offset, headerEnd)));
     if (typeof header !== 'object' || header === null) throw new Error('item header');
     offset = headerEnd + 1;
-    const length = 'length' in header ? header.length : undefined;
-    // A negative or fractional length would move `offset` backwards and never
-    // end this loop: one crafted request could pin the server.
-    if (length !== undefined && (!Number.isSafeInteger(length) || Number(length) < 0)) {
-      throw new Error('item length');
-    }
-    let payloadEnd =
-      length === undefined ? bytes.indexOf(NEWLINE, offset) : offset + Number(length);
-    if (payloadEnd === -1) payloadEnd = bytes.length;
-    if (payloadEnd > bytes.length) throw new Error('truncated item');
-    items.push({ header: { ...header }, payload: bytes.subarray(offset, payloadEnd) });
-    offset = payloadEnd + 1;
+    const end = payloadEnd(bytes, offset, 'length' in header ? header.length : undefined);
+    items.push({ header: { ...header }, payload: bytes.subarray(offset, end) });
+    offset = end + 1;
   }
   return items;
 }
