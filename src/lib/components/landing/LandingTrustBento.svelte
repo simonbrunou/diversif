@@ -3,7 +3,7 @@
   import { EyeOff, BookOpen, Lock } from 'lucide-svelte';
 
   const PILLARS = [
-    { icon: EyeOff, key: 'landingTrustPillarNoTelemetry' as const },
+    { icon: EyeOff, key: 'landingTrustPillarNoAnalytics' as const },
     { icon: BookOpen, key: 'landingTrustPillarSources' as const },
     { icon: Lock, key: 'landingTrustPillarOwnership' as const }
   ];

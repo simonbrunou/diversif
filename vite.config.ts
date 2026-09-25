@@ -4,7 +4,7 @@ import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { paraglideCompilerOptions } from './paraglide.config';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
-import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { sentrySvelteKit } from '@sentry/sveltekit';
 import { defineConfig } from 'vite';
 
 /**
@@ -18,7 +18,7 @@ import { defineConfig } from 'vite';
  *  3. GITHUB_SHA — GitHub Actions
  *  4. GIT_COMMIT_SHA — generic CI shape (Drone, Buildkite, etc.)
  *  5. `git rev-parse HEAD` — local builds with .git/ in the working tree
- *  6. undefined — sentryVitePlugin emits "No release name provided" and
+ *  6. undefined — the Sentry plugin emits "No release name provided" and
  *     uploads sourcemaps unassociated; build still succeeds
  *
  * Uses execFileSync (vs execSync) so the command + args bypass the shell
@@ -81,6 +81,44 @@ export default defineConfig({
   },
   plugins: [
     tailwindcss(),
+    // Must precede sveltekit(): it wraps universal `load` functions for
+    // browser tracing, resolves the SDK's SvelteKit-version-specific browser
+    // tracing module, and — when SENTRY_AUTH_TOKEN is set — uploads the source
+    // maps of the final adapter-node output (./build, after adapter-node
+    // re-bundles the server) instead of Vite's intermediate chunks. Server
+    // `load` functions are traced by SvelteKit itself (kit.experimental.tracing
+    // in svelte.config.js), so the plugin leaves them alone.
+    sentrySvelteKit({
+      autoUploadSourceMaps: Boolean(process.env.SENTRY_AUTH_TOKEN),
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG || 'simonbrunou',
+      project: process.env.SENTRY_PROJECT || 'diversif',
+      telemetry: false,
+      release: {
+        name: SENTRY_RELEASE_RESOLVED,
+        // One deploy marker per production build, so "resolved in next
+        // release" and the release health timeline line up with deploys.
+        deploy: { env: process.env.SENTRY_ENVIRONMENT || 'production' },
+        // Suspect commits need the GitHub integration in the Sentry org; opt
+        // in with SENTRY_REPOSITORY=<owner>/<repo> once it is connected (a
+        // missing integration would otherwise fail the build).
+        ...(process.env.SENTRY_REPOSITORY && SENTRY_RELEASE_RESOLVED
+          ? {
+              setCommits: {
+                repo: process.env.SENTRY_REPOSITORY,
+                commit: SENTRY_RELEASE_RESOLVED,
+                ignoreMissing: true
+              }
+            }
+          : {})
+      },
+      sourcemaps: {
+        // build.sourcemap is set explicitly below, so the plugin does not
+        // pick its own deletion glob: remove every map after upload so the
+        // runtime image never serves them.
+        filesToDeleteAfterUpload: ['./build/**/*.map', './.svelte-kit/output/**/*.map']
+      }
+    }),
     sveltekit(),
     // Options shared with scripts/compile-paraglide.ts — see
     // paraglide.config.ts for the strategy/urlPatterns rationale.
@@ -156,31 +194,7 @@ export default defineConfig({
         ]
       },
       devOptions: { enabled: false }
-    }),
-    ...(process.env.SENTRY_AUTH_TOKEN
-      ? [
-          sentryVitePlugin({
-            authToken: process.env.SENTRY_AUTH_TOKEN,
-            org: process.env.SENTRY_ORG || 'simonbrunou',
-            project: process.env.SENTRY_PROJECT || 'diversif',
-            release: { name: SENTRY_RELEASE_RESOLVED },
-            sourcemaps: {
-              // .map files land in .svelte-kit/output/ during vite build.
-              // adapter-node copies that tree to ./build/ in a later phase,
-              // but the Sentry plugin runs in vite's closeBundle hook BEFORE
-              // that copy — so ./build/ is still empty at upload time and
-              // the plugin warns "Didn't find any matching sources".
-              assets: ['./.svelte-kit/output/**'],
-              // Delete .map files after upload so the deployed build
-              // (which adapter-node copies into the runtime image) doesn't
-              // ship reachable .map files. Sentry retains them for stack
-              // symbolication.
-              filesToDeleteAfterUpload: ['./.svelte-kit/output/**/*.map']
-            },
-            telemetry: false
-          })
-        ]
-      : [])
+    })
   ],
   esbuild: {
     // esbuild >= 0.27.7 regressed: it tries to *lower* array destructuring
@@ -199,7 +213,7 @@ export default defineConfig({
     //
     // 'hidden' (vs 'true') omits the //# sourceMappingURL= comment, but
     // the .map files would still be reachable by URL-guessing without the
-    // post-upload delete (configured below in the plugin block).
+    // post-upload delete (sourcemaps.filesToDeleteAfterUpload above).
     sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
     rollupOptions: {
       // `bun` and `bun:*` (bun:sql, bun:test, etc.) are runtime built-ins

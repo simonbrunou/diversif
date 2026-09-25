@@ -12,7 +12,7 @@
 
 Diversif is a self-hosted web app for tracking a baby's food diversification (introducing solids between ~4–12 months), with co-parent sharing. Single-Docker, French-default UI with an `/en/` locale variant. Offline-first PWA — the log queue replays when the parent comes back online.
 
-Built by Simon Brunou as a personal-but-public side project, deployable in one container, telemetry-free aside from strict-PII-scrubbed Sentry error reporting. No analytics. No tracking. Pediatric expert content (LEAP, EAT, ESPGHAN, ANSES, HCSP) is reused as-is from peer-reviewed sources; the app does not author medical opinions.
+Built by Simon Brunou as a personal-but-public side project, deployable in one container, no analytics or ad trackers — the only outbound traffic is PII-scrubbed Sentry monitoring (errors, sampled performance traces, server logs, error-only masked session replays, opt-in problem reports), relayed through the app's own server. Pediatric expert content (LEAP, EAT, ESPGHAN, ANSES, HCSP) is reused as-is from peer-reviewed sources; the app does not author medical opinions.
 
 ---
 
@@ -52,7 +52,7 @@ The 2026-07 meal-idea carve-out holds to the same rule and is not an exception t
 - Auth: WebAuthn passkeys plus `Bun.password` Argon2id. Co-parent sharing by single-use invite code, 7-day expiry.
 - RGPD: account deletion and export are both one form away and actually delete the row plus related entries.
 - **Terminology is load-bearing.** `aliment` is the catalog item; `repas` is the logged event. The action verb is always _enregistrer_. `Régularité`, never "streak"; `Bilan`, never "stats"; `Adresse e-mail`, never "email".
-- Telemetry-free by constraint: no analytics, no third-party fonts, no tracking pixels. Only outbound traffic is Sentry with strict PII scrubbing.
+- Telemetry-free by constraint: no analytics, no ad trackers, no third-party fonts or tracking pixels. The only outbound traffic is PII-scrubbed Sentry monitoring — errors, sampled performance traces, server-side operational logs, error-only masked session replays, and opt-in problem reports — relayed through the app's own server, not contacted directly by the browser.
 - The app authors no medical opinion. Curation only.
 
 ---
@@ -147,7 +147,7 @@ Fraunces Variable (italic) for the emotional / hero register. Inter Variable for
 3. **Two taps to log.** From any screen, FAB → pick food → done. Reaction defaults to RAS (the overwhelmingly most common case) so the parent doesn't have to think about it.
 4. **Offline-first.** A log written offline is queued in IndexedDB and replayed on reconnection with idempotency keys. The UI never punishes a parent for a flaky connection.
 5. **Honest empty states.** Fresh accounts see "Bienvenue Léo. Commencez par enregistrer un premier aliment." — not fake stats, not pretend streaks. The data starts when the data starts.
-6. **Telemetry-free.** No analytics, no GA, no tracking pixels, no third-party fonts. The only outbound traffic is Sentry error reporting with strict PII scrubbing.
+6. **Telemetry-free.** No analytics, no GA, no ad trackers, no third-party fonts or tracking pixels. The only outbound traffic is PII-scrubbed Sentry monitoring (errors, sampled performance traces, server logs, error-only masked session replays, opt-in problem reports), relayed through the app's own server.
 7. **Self-hosted = the user owns their data.** Account deletion (RGPD) is one form away and actually deletes the row + all related entries. Export is a button on the same screen.
 8. **Pediatric content is not authored by us.** All allergen guidance, age windows, and clinical-style text comes from cited peer-reviewed sources (LEAP, EAT, ESPGHAN, ANSES, HCSP). We curate; we don't opine.
 

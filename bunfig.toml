@@ -33,6 +33,13 @@ coveragePathIgnorePatterns = [
   "src/lib/server/db/index.ts",
   "src/lib/server/db/schema.ts",
   "src/hooks.client.ts",
+  # SvelteKit's pre-server bootstrap: a single Sentry.init call (plus a boot
+  # log) that no test imports — its scrub callbacks live in src/lib/sentry.ts.
+  "src/instrumentation.server.ts",
+  # Browser-only Session Replay bootstrap (one Sentry.addIntegration call),
+  # lazily imported by hooks.client.ts; its recording scrubber is tested in
+  # src/lib/sentry.test.ts.
+  "src/lib/sentry-replay.ts",
   "src/lib/paraglide/**",
   "src/hooks.ts",
   "src/lib/components/ui/use-bottom-sheet-drag.svelte.ts",

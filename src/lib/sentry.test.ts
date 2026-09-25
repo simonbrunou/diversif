@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'bun:test';
-import { scrubEvent, scrubPathname, filterIncomingBreadcrumb } from './sentry';
+import {
+  scrubEvent,
+  scrubPathname,
+  filterIncomingBreadcrumb,
+  scrubSpan,
+  scrubLog,
+  scrubRecordingEvent,
+  scrubRecordingFrames,
+  parseSampleRate
+} from './sentry';
 
 describe('scrubPathname', () => {
   it('returns the route pattern verbatim when given one', () => {
@@ -227,6 +236,305 @@ describe('scrubEvent', () => {
     };
     const out = scrubEvent(e)!;
     expect(out.exception!.values![0].value).toBe('[redacted: see errorId in stderr]');
+  });
+
+  it('scrubs a raw-pathname transaction and does not trust it as a route pattern', () => {
+    // Browser errors outside handleError carry the raw location as their
+    // transaction; copying it into request.url verbatim leaked child ids.
+    const out = scrubEvent({
+      transaction: '/child/18/guide',
+      request: { url: 'https://diversif.app/child/18/guide?tab=2' }
+    })!;
+    expect(out.transaction).toBe('/child/[id]/guide');
+    expect(out.request!.url).toBe('https://diversif.app/child/[id]/guide');
+  });
+
+  it('uses a method-prefixed server transaction as the route pattern', () => {
+    const out = scrubEvent({
+      transaction: 'GET /child/[id]/log',
+      request: { url: 'https://diversif.app/child/7/log#top' }
+    })!;
+    expect(out.transaction).toBe('GET /child/[id]/log');
+    expect(out.request!.url).toBe('https://diversif.app/child/[id]/log');
+  });
+
+  it('drops client identifiers and query attributes from a transaction trace and its spans', () => {
+    const out = scrubEvent({
+      type: 'transaction',
+      transaction: 'GET /child/[id]/foods',
+      contexts: {
+        trace: {
+          data: {
+            'url.full': 'https://diversif.app/child/18/foods?cat=fruits',
+            'url.query': 'cat=fruits',
+            'http.route': '/child/[id]/foods',
+            'http.request.header.cf_connecting_ip': '203.0.113.9',
+            'http.request.header.referer': 'https://diversif.app/child/18',
+            'user_agent.original': 'Mozilla/5.0',
+            'client.address': '203.0.113.9',
+            'sentry.op': 'http.server'
+          }
+        }
+      },
+      spans: [
+        {
+          description: 'GET /child/18/foods?cat=fruits',
+          data: { url: '/child/18/foods', 'http.query': '?cat=fruits' }
+        }
+      ]
+    })!;
+    expect(out.contexts!.trace!.data).toEqual({
+      'url.full': 'https://diversif.app/child/[id]/foods',
+      'http.route': '/child/[id]/foods',
+      'sentry.op': 'http.server'
+    });
+    expect(out.spans![0]).toEqual({
+      description: 'GET /child/[id]/foods',
+      data: { url: '/child/[id]/foods' }
+    });
+  });
+
+  it('keeps a feedback message but scrubs its page URL and contact fields', () => {
+    const out = scrubEvent({
+      type: 'feedback',
+      contexts: {
+        feedback: {
+          message: 'Le bouton ne répond pas',
+          url: 'https://diversif.app/child/18/log?date=2026-09-01',
+          contact_email: 'parent@example.com',
+          name: 'Camille'
+        }
+      }
+    })!;
+    expect(out.contexts!.feedback).toEqual({
+      message: 'Le bouton ne répond pas',
+      url: 'https://diversif.app/child/[id]/log'
+    });
+  });
+
+  it('scrubs the visited URLs and segment names of a replay event', () => {
+    const out = scrubEvent({
+      type: 'replay_event',
+      urls: ['https://diversif.app/child/18', '/child/18/foods/42?x=1', 7],
+      segment_names: ['/child/18', 'pageload']
+    })!;
+    expect(out.urls).toEqual(['https://diversif.app/child/[id]', '/child/[id]/foods/[id]', 7]);
+    expect(out.segment_names).toEqual(['/child/[id]', 'pageload']);
+  });
+});
+
+describe('scrubSpan', () => {
+  it('leaves non-URL span names and attributes untouched', () => {
+    const span = { description: 'sveltekit.load', data: { 'sveltekit.load.node_type': 'page' } };
+    expect(scrubSpan(span)).toEqual({
+      description: 'sveltekit.load',
+      data: { 'sveltekit.load.node_type': 'page' }
+    });
+  });
+
+  it('scrubs an absolute fetch URL in the span name', () => {
+    expect(scrubSpan({ description: 'POST https://diversif.app/child/18/log?/save' })).toEqual({
+      description: 'POST https://diversif.app/child/[id]/log'
+    });
+  });
+
+  it('strips attribute values from the element named by an interaction span', () => {
+    // INP spans are named by the SDK's htmlTreeAsString, which appends
+    // aria-label/title/alt/name values — here a child's first name.
+    const span = {
+      op: 'ui.interaction.click',
+      description:
+        'div.grid > a.flex.items-center#row-3[aria-label="Ouvrir les réglages de Léo"][title="Léo"]'
+    };
+    expect(scrubSpan(span).description).toBe('div.grid > a.flex.items-center#row-3');
+  });
+
+  it('strips attribute values that contain unescaped quotes, keeping Tailwind classes', () => {
+    // htmlTreeAsString doesn't escape values; custom food names are free text.
+    const span = {
+      op: 'ui.interaction.click',
+      description:
+        'li.w-[88px] > button.pill[aria-label="Retirer Purée "maison" de la sélection"][type="button"]'
+    };
+    expect(scrubSpan(span).description).toBe('li.w-[88px] > button.pill');
+  });
+
+  it('reads the op from span data for web-vital spans', () => {
+    const span = {
+      description: 'button.pill[aria-label="Retirer Poisson de la sélection"]',
+      data: { 'sentry.op': 'ui.webvital.cls' }
+    };
+    expect(scrubSpan(span).description).toBe('button.pill');
+  });
+
+  it('strips attribute values from LCP and CLS element attributes', () => {
+    const span = {
+      description: '/child/18',
+      data: {
+        'lcp.element': 'img.photo[alt="Léo au parc"]',
+        'browser.web_vital.cls.source.1': 'li.meal[aria-label="Voir le repas concerné : arachide"]',
+        'lcp.url': 'https://diversif.app/child/18/photo.jpg?v=2'
+      }
+    };
+    expect(scrubSpan(span).data).toEqual({
+      'lcp.element': 'img.photo',
+      'browser.web_vital.cls.source.1': 'li.meal',
+      'lcp.url': 'https://diversif.app/child/[id]/photo.jpg'
+    });
+  });
+});
+
+describe('scrubLog', () => {
+  it('drops user attributes and scrubs URL attributes', () => {
+    const log = {
+      message: 'cleanup completed',
+      attributes: { 'user.email': 'a@example.com', 'url.path': '/child/18', expiredSessions: 3 }
+    };
+    expect(scrubLog(log).attributes).toEqual({ 'url.path': '/child/[id]', expiredSessions: 3 });
+  });
+
+  it('accepts logs without attributes', () => {
+    expect(scrubLog({})).toEqual({});
+  });
+});
+
+describe('parseSampleRate', () => {
+  it('accepts rates within [0, 1] inclusive', () => {
+    expect(parseSampleRate('0', 0.5)).toBe(0);
+    expect(parseSampleRate('0.25', 0.5)).toBe(0.25);
+    expect(parseSampleRate('1', 0.5)).toBe(1);
+  });
+
+  it('falls back on unset, blank, non-numeric, or out-of-range values', () => {
+    for (const raw of [undefined, '', '  ', 'abc', '1.5', '-0.1', 'Infinity']) {
+      expect(parseSampleRate(raw, 0.1)).toBe(0.1);
+    }
+  });
+});
+
+describe('scrubRecordingFrames', () => {
+  it('scrubs the page URL of rrweb meta frames and leaves other frames alone', () => {
+    const snapshot = { type: 2, data: { node: { id: 1 } } };
+    const frames = [
+      { type: 4, data: { href: 'https://diversif.app/child/18?welcome=1', width: 1280 } },
+      snapshot,
+      { type: 4 },
+      'not-a-frame'
+    ];
+    scrubRecordingFrames(frames);
+    expect(frames).toEqual([
+      { type: 4, data: { href: 'https://diversif.app/child/[id]', width: 1280 } },
+      { type: 2, data: { node: { id: 1 } } },
+      { type: 4 },
+      'not-a-frame'
+    ]);
+  });
+
+  it('scrubs link URLs in snapshot nodes and mutation records, keeping other attributes', () => {
+    const frames = [
+      {
+        type: 2,
+        data: {
+          node: {
+            id: 1,
+            childNodes: [
+              {
+                id: 2,
+                tagName: 'a',
+                attributes: {
+                  href: 'https://diversif.app/child/18/foods?segment=allergens',
+                  class: 'pill',
+                  'aria-label': '****'
+                },
+                childNodes: []
+              }
+            ]
+          }
+        }
+      },
+      {
+        type: 3,
+        data: {
+          source: 0,
+          adds: [{ parentId: 1, node: { id: 3, attributes: { src: '/child/18/photo.jpg?v=2' } } }],
+          attributes: [{ id: 2, attributes: { href: '/child/18/log#top', title: null } }]
+        }
+      }
+    ];
+    scrubRecordingFrames(frames);
+    expect(frames[0].data.node!.childNodes![0].attributes).toEqual({
+      href: 'https://diversif.app/child/[id]/foods',
+      class: 'pill',
+      'aria-label': '****'
+    });
+    expect(frames[1].data.adds![0].node.attributes).toEqual({ src: '/child/[id]/photo.jpg' });
+    expect(frames[1].data.attributes![0].attributes).toEqual({
+      href: '/child/[id]/log',
+      title: null
+    });
+  });
+
+  it('ignores a recording that is not an event array', () => {
+    const recording = { type: 4, data: { href: '/child/18' } };
+    scrubRecordingFrames(recording);
+    expect(recording.data.href).toBe('/child/18');
+  });
+});
+
+describe('scrubRecordingEvent', () => {
+  it('drops console breadcrumb frames', () => {
+    const frame = {
+      data: { tag: 'breadcrumb', payload: { category: 'console', message: 'secret' } }
+    };
+    expect(scrubRecordingEvent(frame)).toBeNull();
+  });
+
+  it('strips the selector and node details of ui.* breadcrumb frames', () => {
+    const out = scrubRecordingEvent({
+      data: {
+        tag: 'breadcrumb',
+        payload: {
+          category: 'ui.click',
+          message: 'a.pill[aria-label="Poisson"]',
+          data: {
+            nodeId: 12,
+            url: 'https://diversif.app/child/18',
+            node: { id: 12, tagName: 'a', textContent: 'Poisson', attributes: { href: '/x' } }
+          }
+        }
+      }
+    });
+    expect(out!.data!.payload).toEqual({
+      category: 'ui.click',
+      data: { nodeId: 12, url: 'https://diversif.app/child/[id]', node: { id: 12, tagName: 'a' } }
+    });
+  });
+
+  it('scrubs URLs in navigation breadcrumb frames', () => {
+    const out = scrubRecordingEvent({
+      data: {
+        tag: 'breadcrumb',
+        payload: { category: 'navigation', data: { from: '/child/18', to: '/child/18/log' } }
+      }
+    });
+    expect(out!.data!.payload!.data).toEqual({ from: '/child/[id]', to: '/child/[id]/log' });
+  });
+
+  it('scrubs the URL named by performanceSpan frames', () => {
+    const out = scrubRecordingEvent({
+      data: {
+        tag: 'performanceSpan',
+        payload: { op: 'navigation.navigate', description: 'https://diversif.app/child/18?x=1' }
+      }
+    });
+    expect(out!.data!.payload!.description).toBe('https://diversif.app/child/[id]');
+  });
+
+  it('passes through frames without data or payload', () => {
+    const bare = { type: 3 };
+    expect(scrubRecordingEvent(bare)).toBe(bare);
+    const noPayload = { type: 5, data: { tag: 'options' } };
+    expect(scrubRecordingEvent(noPayload)).toBe(noPayload);
   });
 });
 

@@ -1,16 +1,24 @@
 import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { redirect } from '@sveltejs/kit';
+import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from './test/db';
+import * as m from '$lib/paraglide/messages';
+import { users, memberships, children, sessions } from '$lib/server/db/schema';
 
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
-const { captureExceptionMock, initMock } = {
-  captureExceptionMock: mock(),
-  initMock: mock()
-};
+const captureExceptionMock = mock();
+const setIsolationTagsMock = mock();
 
+// Tests resolve the browser build of @sentry/sveltekit (scripts/bun-test.ts
+// runs with --conditions=browser), which has no sentryHandle. The stand-in
+// must be registered before anything loads the SDK so it replaces the whole
+// module; static imports of hooks.server / auth (which reach the SDK) would be
+// hoisted above mock.module, hence the dynamic imports below.
 mock.module('@sentry/sveltekit', () => ({
-  init: initMock,
-  captureException: captureExceptionMock
+  captureException: captureExceptionMock,
+  getIsolationScope: () => ({ setTags: setIsolationTagsMock }),
+  sentryHandle: () => mock()
 }));
 
 // The real paraglideMiddleware runs in these tests (no mock): it resolves
@@ -18,11 +26,15 @@ mock.module('@sentry/sveltekit', () => ({
 // AsyncLocalStorage scope, so the tests below exercise the actual 2.x
 // per-request locale isolation — see the concurrency regression test.
 
-import { handle, handleError, warnIfAddressHeaderMissing } from './hooks.server';
-import * as m from '$lib/paraglide/messages';
-import { createSession, SESSION_COOKIE } from '$lib/server/auth';
-import { users, memberships, children, sessions } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+// The exported `handle` is sequence(sentryHandle, localizedHandle); sequence()
+// needs a live SvelteKit request store, so these tests drive the app's own
+// handle directly.
+const {
+  localizedHandle: handle,
+  handleError,
+  warnIfAddressHeaderMissing
+} = await import('./hooks.server');
+const { createSession, SESSION_COOKIE } = await import('$lib/server/auth');
 
 type CookieOpts = {
   path?: string;
@@ -318,6 +330,51 @@ describe('handle', () => {
       expect(await response.text()).toBe('<html lang="fr">');
     }
   );
+
+  it('tags an error escaping the handle chain with the errorId the error page shows', async () => {
+    // sentryHandle captures such errors before handleError runs, so the tag
+    // must already be on the request scope when the error leaves the handle.
+    setIsolationTagsMock.mockClear();
+    const { event } = makeEvent(null, '/child/1');
+    const failure = new Error('database is locked');
+    const resolve = mock(async () => {
+      throw failure;
+    });
+
+    const handled = handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    await expect(handled).rejects.toBe(failure);
+
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const result = handleError({
+        error: failure,
+        event: { ...event, route: { id: '/child/[id]' } },
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+      expect(setIsolationTagsMock).toHaveBeenCalledWith({
+        errorId: result?.errorId,
+        status: 500,
+        method: 'GET',
+        route: null
+      });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('leaves redirects thrown in the handle chain untagged', async () => {
+    setIsolationTagsMock.mockClear();
+    const { event } = makeEvent(null, '/');
+    const resolve = mock(async () => {
+      redirect(303, '/login');
+    });
+
+    await expect(
+      handle({ event, resolve } as unknown as Parameters<typeof handle>[0])
+    ).rejects.toMatchObject({ status: 303 });
+    expect(setIsolationTagsMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('warnIfAddressHeaderMissing', () => {
@@ -480,7 +537,7 @@ describe('handleError → Sentry', () => {
     };
   }
 
-  it('forwards the error to Sentry with errorId, status, method, route tags', () => {
+  it('forwards the error to Sentry as unhandled, with errorId, status, method, route tags', () => {
     const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const err = new TypeError('boom');
@@ -492,17 +549,21 @@ describe('handleError → Sentry', () => {
       } as unknown as Parameters<typeof handleError>[0]);
 
       expect(captureExceptionMock).toHaveBeenCalledOnce();
-      const [capturedErr, capturedCtx] = captureExceptionMock.mock.calls[0];
+      const [capturedErr, capturedHint] = captureExceptionMock.mock.calls[0];
       expect(capturedErr).toBe(err);
-      expect(capturedCtx.tags).toEqual({
+      expect(capturedHint.mechanism).toEqual({
+        type: 'auto.function.sveltekit.handle_error',
+        handled: false
+      });
+      expect(capturedHint.captureContext.tags).toEqual({
         errorId: result?.errorId,
         status: 500,
         method: 'POST',
         route: '/child/[id]/log/[entryId]'
       });
       // No PII slipped in
-      expect(capturedCtx.user).toBeUndefined();
-      expect(capturedCtx.contexts).toBeUndefined();
+      expect(capturedHint.captureContext.user).toBeUndefined();
+      expect(capturedHint.captureContext.contexts).toBeUndefined();
     } finally {
       spy.mockRestore();
     }
@@ -533,7 +594,7 @@ describe('handleError → Sentry', () => {
         status: 500,
         message: 'Internal Error'
       } as unknown as Parameters<typeof handleError>[0]);
-      const ctx = captureExceptionMock.mock.calls[0][1];
+      const ctx = captureExceptionMock.mock.calls[0][1].captureContext;
       expect(ctx.tags.route).toBeNull();
       expect(ctx.tags.status).toBe(500);
     } finally {

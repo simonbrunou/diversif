@@ -1,9 +1,6 @@
-// Side-effect-only: ensures Sentry is initialised before this module runs
-// migrations. captureException below would otherwise silently drop events
-// because hooks.server.ts's own Sentry.init has not run yet at that point in
-// the import chain.
-import '$lib/sentry-init.server';
-
+// Sentry is initialised by src/instrumentation.server.ts, which SvelteKit
+// loads before any server module — so the captureException below reaches
+// Sentry even though it runs while this module is still evaluating.
 import path from 'node:path';
 import * as Sentry from '@sentry/sveltekit';
 import { Database } from 'bun:sqlite';
@@ -57,6 +54,7 @@ if (!building) {
     const migrationsFolder = path.resolve('./drizzle');
     migrate(drizzleDb, { migrationsFolder });
     seedFoods(drizzleDb);
+    Sentry.logger.info('Database migrated and seeded');
   } catch (err) {
     Sentry.captureException(err, { tags: { subsystem: 'db-migrate' } });
     throw err;
@@ -88,6 +86,13 @@ if (!building && process.env.NODE_ENV !== 'test' && !process.env.BUN_TEST) {
   registerShutdownHandlers({
     pool,
     beforeExit: () => stopCleanupTimer?.(),
+    // Mirror the shutdown progress into Sentry Logs; the flush below sends
+    // whatever was emitted before it (shutdown.start, beforeExitFailed,
+    // shutdown.drained). Later lines reach the console only.
+    log: (msg) => {
+      console.log(JSON.stringify(msg));
+      Sentry.logger.info('Shutdown', { ...msg });
+    },
     // 2s flush budget mirrors Sentry's own docs for SIGTERM handlers.
     flush: async () => {
       await Sentry.close(2000);

@@ -8,6 +8,14 @@ const config = {
     // adapter-node default output is ./build; keep it explicit so the
     // Docker entrypoint's `bun ./build/index.js` path is unambiguous.
     adapter: adapter({ out: 'build' }),
+    // src/instrumentation.server.ts initialises Sentry before any other server
+    // module loads, and SvelteKit's own OpenTelemetry spans (handle, load,
+    // form actions) feed Sentry's performance traces. adapter-node emits the
+    // instrumentation file and imports it first from build/index.js.
+    experimental: {
+      instrumentation: { server: true },
+      tracing: { server: true }
+    },
     alias: {
       $components: 'src/lib/components',
       '$components/*': 'src/lib/components/*'
@@ -36,17 +44,16 @@ const config = {
         'img-src': ['self', 'data:'],
         'font-src': ['self', 'data:'],
         'connect-src': [
-          'self',
-          // Sentry SaaS EU region ingest endpoints — needed for browser-side
-          // captureException to reach Sentry. Cleared via wildcards because the
-          // exact org-id-based subdomain (e.g o123456.ingest.de.sentry.io) is
-          // determined by the runtime DSN. If we ever switch to a same-origin
-          // Sentry tunnel, these can be removed.
-          'https://*.ingest.de.sentry.io',
-          'https://*.ingest.sentry.io'
+          // Browser Sentry envelopes go through the same-origin tunnel
+          // (src/routes/monitoring/+server.ts), so no Sentry ingest origin is
+          // allow-listed: the browser never talks to a third party.
+          'self'
         ],
         'manifest-src': ['self'],
-        'worker-src': ['self'],
+        // blob: is for Sentry Session Replay's compression worker, which the
+        // SDK spins up from an inline Blob URL. Creating one already requires
+        // script execution, which script-src keeps hash-locked.
+        'worker-src': ['self', 'blob:'],
         'base-uri': ['self'],
         'form-action': ['self'],
         'object-src': ['none']

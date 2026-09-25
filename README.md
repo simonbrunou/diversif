@@ -12,7 +12,7 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 - Tailwind CSS, in-house auth (`Bun.password` Argon2id sessions, WebAuthn passkeys)
 - i18n via `@inlang/paraglide-js` 2.x (FR default, `/en/` for English; URL-based locale, AsyncLocalStorage on the server)
 - PWA via `@vite-pwa/sveltekit` with an in-page offline log queue
-- Observability via `@sentry/sveltekit` (strict PII scrubbing)
+- Observability via `@sentry/sveltekit` (errors, sampled performance tracing, server logs, `diversif-cleanup` cron monitor, error-only masked session replay, in-app user feedback — all PII-scrubbed and relayed through a same-origin `/monitoring` tunnel, never contacted directly by the browser)
 - Deployed in a single `oven/bun` Docker image
 
 ## Development
@@ -81,7 +81,7 @@ sqlite3 "$DATABASE_PATH" "VACUUM INTO 'diversif-$(date +%F).db'"
 
 ## Vie privée & RGPD
 
-Diversif est conçu pour être conforme au RGPD lorsqu'il est exposé en tant qu'instance publique (l'éditeur agit alors comme responsable de traitement). Aucune donnée n'est partagée avec un tiers ; la base SQLite reste chez l'hébergeur de l'instance.
+Diversif est conçu pour être conforme au RGPD lorsqu'il est exposé en tant qu'instance publique (l'éditeur agit alors comme responsable de traitement). Aucune donnée n'est partagée avec un tiers de mesure d'audience, de publicité ou de suivi commercial ; la base SQLite reste chez l'hébergeur de l'instance. Un seul sous-traitant technique (Sentry, pour la supervision applicative — voir `/politique-confidentialite`) reçoit des données strictement scrubbées, relayées par le serveur de l'application plutôt que contactées directement par le navigateur.
 
 - **Pages légales** : `/mentions-legales`, `/politique-confidentialite`, `/cgu`, `/cookies`. Elles affichent « à compléter » tant que les variables d'environnement décrites ci-dessous ne sont pas renseignées.
 - **Consentement** : à l'inscription, l'utilisateur doit confirmer avoir au moins 15 ans (article 45 LIL), accepter les CGU et la politique de confidentialité. Les horodatages sont stockés dans la table `users`.

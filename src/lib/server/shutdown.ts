@@ -83,6 +83,9 @@ export function registerShutdownHandlers(opts: ShutdownOptions): void {
       }
     }
     const result = await drainPool(opts.pool, timeoutMs);
+    // Logged before flush so log sinks that the flush closes (Sentry Logs)
+    // still receive the drain result.
+    log({ type: 'shutdown.drained', drain: result });
     if (opts.flush) {
       try {
         await opts.flush();

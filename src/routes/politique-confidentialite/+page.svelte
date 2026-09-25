@@ -29,7 +29,7 @@
   <section lang="fr" class="mt-8 space-y-3">
     <header class="space-y-2">
       <h1 class="font-display text-3xl italic">Politique de confidentialité</h1>
-      <p class="text-sm leading-relaxed">Dernière mise à jour : 10 mai 2026.</p>
+      <p class="text-sm leading-relaxed">Dernière mise à jour : 25 septembre 2026.</p>
     </header>
 
   <section class="mt-8 space-y-3">
@@ -84,19 +84,19 @@
     </ul>
     <p class="text-sm leading-relaxed">
       Aucun cookie de mesure d'audience, aucune adresse IP et aucun User-Agent ne sont
-      enregistrés dans la base applicative. Un service tiers de remontée d'erreurs techniques
-      (voir section 4) reçoit, en cas de panne, une trace technique sans identifiant utilisateur.
+      enregistrés dans la base applicative. Les données de supervision technique (erreurs,
+      mesures de performance, journaux techniques, enregistrements de session déclenchés par une
+      erreur et signalements volontaires de problème — voir section 4) transitent uniquement par
+      le serveur de Diversif avant d'être relayées à notre sous-traitant technique, qui ne reçoit
+      donc jamais l'adresse IP, le User-Agent ni les cookies du visiteur.
     </p>
   </section>
 
-  <!-- Optional follow-up: append Sentry GmbH's full street address from
-       https://sentry.io/legal/dpa/ if the policy needs more precision than
-       "Berlin, Allemagne". -->
   <section class="mt-8 space-y-3">
     <SectionHeader as="h2">4. Destinataires et sous-traitants</SectionHeader>
     <p class="text-sm leading-relaxed">
       Les données applicatives (compte, enfants, journal, sessions) sont stockées dans une base
-      PostgreSQL hébergée par {legal.hostProvider}. Aucun tiers de mesure d'audience, de publicité,
+      SQLite hébergée par {legal.hostProvider}. Aucun tiers de mesure d'audience, de publicité,
       de suivi commercial, d'e-mail, de notification ou de CDN ne reçoit vos données. Les
       co-parents auxquels vous transmettez un code d'invitation accèdent au journal de l'enfant
       correspondant.
@@ -107,12 +107,24 @@
     <ul class="list-disc space-y-1 pl-5 text-sm leading-relaxed">
       <li>
         <span class="font-medium">Sentry GmbH</span> (entité européenne de Functional Software,
-        Inc., siège social à Berlin, Allemagne) : collecte des erreurs techniques produites
-        par l'application (trace d'exécution, route SvelteKit anonymisée, identifiant d'erreur
-        opaque). Aucun identifiant utilisateur, aucune adresse e-mail, aucun corps de requête,
-        aucun cookie ni en-tête ne sont transmis. Base légale : intérêt légitime à corriger les
-        pannes (article 6.1.f RGPD). Données hébergées en Union européenne (région Francfort).
-        Durée de conservation : 90 jours. Lien :
+        Inc., siège social à Berlin, Allemagne) : supervision technique de l'application. Le
+        navigateur ne contacte jamais Sentry directement — toutes les données ci-dessous
+        transitent par le serveur de Diversif (route <code>/monitoring</code>), qui les relaie
+        sans jamais transmettre l'adresse IP, le User-Agent ni les cookies du visiteur. Les
+        segments dynamiques d'URL, paramètres de requête, cookies, en-têtes, corps de requête et
+        variables locales de la pile d'exécution sont systématiquement retirés avant l'envoi.
+        <ul class="list-disc space-y-1 pl-5">
+          <li>Erreurs serveur et navigateur, taguées d'un identifiant d'erreur opaque affiché sur la page d'erreur.</li>
+          <li>Mesures de performance échantillonnées (chargement des pages, requêtes serveur, indicateurs Web Vitals), nommées par le modèle de route ; les éléments d'interface concernés ne sont décrits que par leur balise et leurs classes CSS, sans aucun libellé.</li>
+          <li>Sessions de navigation anonymes (début, durée, fin normale ou interrompue par une erreur) pour mesurer la stabilité de chaque version.</li>
+          <li>Journaux techniques opérationnels côté serveur uniquement (démarrage, migration et nettoyage de la base) — aucune donnée personnelle.</li>
+          <li>Suivi de l'exécution de la tâche de nettoyage automatique (toutes les 6 heures) : début, fin, succès ou échec.</li>
+          <li>Enregistrement de session dans le navigateur, déclenché uniquement par une erreur : la minute qui la précède et la suite de la visite (texte, champs de saisie et images masqués). Aucun enregistrement n'est transmis en l'absence d'erreur.</li>
+          <li>Signalement volontaire de problème (page Profil et page d'erreur) : envoyé uniquement à votre initiative, ne doit contenir ni donnée de santé ni nom de personne. Le formulaire ne demande ni nom, ni adresse e-mail, ni capture d'écran : seuls votre message, la route de la page (anonymisée) et, depuis la page d'erreur, l'identifiant d'erreur sont transmis. Envoyer un signalement ne déclenche aucun enregistrement de session ; si une erreur en a déjà déclenché un, le signalement y est rattaché.</li>
+        </ul>
+        Base légale : intérêt légitime à détecter et corriger les pannes (article 6.1.f RGPD).
+        Données hébergées en Union européenne (région Francfort). Durée de conservation : 90 jours
+        maximum. Aucune donnée de supervision n'est stockée sur votre appareil. Lien :
         <a class="text-primary-strong underline" href="https://sentry.io/legal/dpa/" target="_blank" rel="noopener noreferrer">accord de traitement (DPA)</a>.
       </li>
     </ul>

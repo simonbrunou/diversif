@@ -5,11 +5,14 @@
   // These four are operational CLIs invoked manually via `bun scripts/<x>.ts`
   // (documented in README.md), so they have no package.json script entry and
   // must be declared as entry points or they look like unused files.
+  // src/instrumentation.server.ts is loaded by SvelteKit itself
+  // (kit.experimental.instrumentation.server), which the plugin doesn't know.
   "entry": [
     "scripts/cleanup.ts",
     "scripts/export-user.ts",
     "scripts/generate-icons.ts",
-    "scripts/list-stale-users.ts"
+    "scripts/list-stale-users.ts",
+    "src/instrumentation.server.ts"
   ],
 
   // Runtime-essential but never imported from JS, so static analysis can't see
