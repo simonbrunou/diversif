@@ -608,6 +608,11 @@ describe('clientRouteTag', () => {
     expect(clientRouteTag('/join/abcd1234?ref=mail', { code: 'abcd1234' })).toBe('/join/[id]');
   });
 
+  it('drops the query a static page key carries', () => {
+    expect(clientRouteTag('/signup?code=ABCD1234', {})).toBe('/signup');
+    expect(clientRouteTag('/login?next=/child/18', {})).toBe('/login');
+  });
+
   it('returns null without a route id', () => {
     expect(clientRouteTag(null, {})).toBeNull();
     expect(clientRouteTag(undefined, { id: '1' })).toBeNull();

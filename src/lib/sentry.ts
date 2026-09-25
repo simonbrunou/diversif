@@ -220,17 +220,20 @@ export function isNetworkFailure(error: unknown): boolean {
  * the route pattern (`/child/[id]/guide`) — except when the `__data.json`
  * fetch itself fails, where `route.id` is the page key: raw pathname plus
  * query (`/child/18/guide?x=1`). scrubEvent trusts the tag as a pattern, so a
- * raw key must be scrubbed here. A key is only possible for a dynamic route
- * (non-empty params) and never contains `[`; static ids stay verbatim, which
- * scrubPathname alone would get wrong (`/politique-confidentialite` → `/[id]`).
+ * raw key must be scrubbed here. The query goes whatever the route
+ * (`/signup?code=` carries an invite code); a pattern never has one. A path
+ * is only scrubbed for a dynamic route (non-empty params) and a pattern never
+ * contains `[`; static ids stay verbatim, which scrubPathname alone would get
+ * wrong (`/politique-confidentialite` → `/[id]`).
  */
 export function clientRouteTag(
   routeId: string | null | undefined,
   params: Record<string, unknown>
 ): string | null {
   if (!routeId) return null;
-  const isPattern = routeId.includes('[') || Object.keys(params).length === 0;
-  return isPattern ? routeId : scrubPathname(routeId.split(/[?#]/, 1)[0]);
+  const path = routeId.split(/[?#]/, 1)[0];
+  const isPattern = path.includes('[') || Object.keys(params).length === 0;
+  return isPattern ? path : scrubPathname(path);
 }
 
 // Strip free-form text that may contain user input. The errorId tag is
