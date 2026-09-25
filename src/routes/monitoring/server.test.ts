@@ -372,6 +372,12 @@ describe('POST /monitoring — replay recordings', () => {
     [
       'a recording that inflates past 8 MiB',
       replayEnvelope(gzipSync(encoder.encode(`[${'0,'.repeat(4_700_000)}0]`)))
+    ],
+    // Same cap for plain JSON (no compression worker): bounded by
+    // BODY_SIZE_LIMIT in production, but not if an operator raises it.
+    [
+      'an uncompressed recording over 8 MiB',
+      replayEnvelope(encoder.encode(`[${'0,'.repeat(4_700_000)}0]`))
     ]
   ];
 

@@ -143,6 +143,7 @@ function scrubReplayRecording(payload: Uint8Array): Uint8Array {
   const gzip = body[0] === 0x1f && body[1] === 0x8b;
   const zlib = body[0] === 0x78;
   const json = gzip || zlib ? unzipSync(body, { maxOutputLength: MAX_RECORDING_BYTES }) : body;
+  if (json.length > MAX_RECORDING_BYTES) throw new Error('recording too large');
   const frames: unknown = JSON.parse(decoder.decode(json));
   scrubRecordingFrames(frames);
   const scrubbed = encoder.encode(JSON.stringify(frames));
