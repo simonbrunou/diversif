@@ -183,6 +183,56 @@ export function filterIncomingBreadcrumb<B extends { category?: string }>(b: B):
   return b;
 }
 
+// What each browser engine says when the request never got a response —
+// offline, connection dropped, request aborted by a page unload — for a
+// `fetch` (SvelteKit's `__data.json`) or a code-split chunk import. Sentry's
+// fetch instrumentation may append the host: `Failed to fetch (diversif.app)`.
+const NETWORK_FAILURE_MESSAGES = [
+  // Chromium
+  /^Failed to fetch(?: \(.*\))?$/,
+  /^network error$/,
+  /^Failed to fetch dynamically imported module: /,
+  // Firefox
+  /^NetworkError when attempting to fetch resource\.(?: \(.*\))?$/,
+  /^error loading dynamically imported module: /,
+  // WebKit
+  /^Load failed(?: \(.*\))?$/,
+  /^The Internet connection appears to be offline\.$/,
+  /^Importing a module script failed\.$/
+];
+
+/**
+ * Whether a client-side error is the browser failing to reach the server
+ * rather than a bug. Engines raise these as a `TypeError` with no app frames
+ * (chunk imports) or only SvelteKit's (fetches), and the scrubbed message is
+ * the same for all of them, so they pile into one opaque Sentry issue
+ * whatever the route (DIVERSIF-4). A redeploy that removes the previous
+ * build's hashed chunks fails the same way for a tab still on the old build.
+ */
+export function isNetworkFailure(error: unknown): boolean {
+  return (
+    error instanceof TypeError && NETWORK_FAILURE_MESSAGES.some((re) => re.test(error.message))
+  );
+}
+
+/**
+ * Route tag for a client-side handleError event. SvelteKit hands the hook
+ * the route pattern (`/child/[id]/guide`) — except when the `__data.json`
+ * fetch itself fails, where `route.id` is the page key: raw pathname plus
+ * query (`/child/18/guide?x=1`). scrubEvent trusts the tag as a pattern, so a
+ * raw key must be scrubbed here. A key is only possible for a dynamic route
+ * (non-empty params) and never contains `[`; static ids stay verbatim, which
+ * scrubPathname alone would get wrong (`/politique-confidentialite` → `/[id]`).
+ */
+export function clientRouteTag(
+  routeId: string | null | undefined,
+  params: Record<string, unknown>
+): string | null {
+  if (!routeId) return null;
+  const isPattern = routeId.includes('[') || Object.keys(params).length === 0;
+  return isPattern ? routeId : scrubPathname(routeId.split(/[?#]/, 1)[0]);
+}
+
 // Strip free-form text that may contain user input. The errorId tag is
 // still attached, and the full Error message + stack live in the
 // [diversif:error] stderr line indexed by that token.

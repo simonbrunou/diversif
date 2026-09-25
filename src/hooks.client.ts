@@ -3,12 +3,15 @@ import { env } from '$env/dynamic/public';
 import type { HandleClientError } from '@sveltejs/kit';
 import {
   SENTRY_TUNNEL_PATH,
+  clientRouteTag,
   filterIncomingBreadcrumb,
+  isNetworkFailure,
   parseSampleRate,
   scrubEvent,
   scrubSpan
 } from '$lib/sentry';
 import { loadReplay } from '$lib/sentry-replay-loader';
+import * as m from '$lib/paraglide/messages';
 
 // No paraglide bootstrap is needed here since the 2.x migration: the
 // runtime's `url` strategy re-reads window.location on every getLocale()
@@ -86,9 +89,22 @@ if (env.PUBLIC_SENTRY_DSN) void loadReplay();
 // reach Sentry, tagged with an errorId the error page shows (and the
 // « Signaler ce problème » report carries) so a parent's report and the
 // Sentry issue can be matched.
+//
+// Network failures (isNetworkFailure: offline, dropped connection, a chunk a
+// redeploy removed) are not bugs either: the parent is told to check their
+// connection, with no errorId since no event exists to match. Hover preloads
+// reach this hook too, so they would otherwise be reported for a page the
+// parent never opened.
+//
+// A failed `__data.json` fetch reaches this hook with the page key
+// (`/child/18/guide?…`) as `route.id` instead of the route pattern; see
+// clientRouteTag.
 export const handleError: HandleClientError = ({ error, event, status }) => {
   if (status < 500) {
     return { message: 'Internal Error' };
+  }
+  if (isNetworkFailure(error)) {
+    return { message: m.errorsNetwork() };
   }
   const errorId = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).padStart(8, '0');
   Sentry.captureException(error, {
@@ -97,7 +113,7 @@ export const handleError: HandleClientError = ({ error, event, status }) => {
       tags: {
         errorId,
         status,
-        route: event.route?.id ?? null
+        route: clientRouteTag(event.route?.id, event.params)
       }
     }
   });
