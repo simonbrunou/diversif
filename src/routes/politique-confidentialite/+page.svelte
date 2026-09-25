@@ -115,11 +115,12 @@
         variables locales de la pile d'exécution sont systématiquement retirés avant l'envoi.
         <ul class="list-disc space-y-1 pl-5">
           <li>Erreurs serveur et navigateur, taguées d'un identifiant d'erreur opaque affiché sur la page d'erreur.</li>
-          <li>Mesures de performance échantillonnées (chargement des pages, requêtes serveur, indicateurs Web Vitals), nommées par le modèle de route.</li>
+          <li>Mesures de performance échantillonnées (chargement des pages, requêtes serveur, indicateurs Web Vitals), nommées par le modèle de route ; les éléments d'interface concernés ne sont décrits que par leur balise et leurs classes CSS, sans aucun libellé.</li>
+          <li>Sessions de navigation anonymes (début, durée, fin normale ou interrompue par une erreur) pour mesurer la stabilité de chaque version.</li>
           <li>Journaux techniques opérationnels côté serveur uniquement (démarrage, migration et nettoyage de la base) — aucune donnée personnelle.</li>
           <li>Suivi de l'exécution de la tâche de nettoyage automatique (toutes les 6 heures) : début, fin, succès ou échec.</li>
           <li>Enregistrement de session dans le navigateur, déclenché uniquement par une erreur : la minute qui la précède et la suite de la visite (texte, champs de saisie et images masqués). Aucun enregistrement n'est transmis en l'absence d'erreur.</li>
-          <li>Signalement volontaire de problème (page Profil et page d'erreur) : envoyé uniquement à votre initiative, ne doit contenir ni donnée de santé ni nom de personne ; seuls votre message libre et la route de la page (anonymisée) sont transmis, les champs nom, e-mail et capture d'écran étant désactivés. Envoyer un signalement ne déclenche aucun enregistrement de session ; si une erreur en a déjà déclenché un, le signalement y est rattaché.</li>
+          <li>Signalement volontaire de problème (page Profil et page d'erreur) : envoyé uniquement à votre initiative, ne doit contenir ni donnée de santé ni nom de personne. Le formulaire ne demande ni nom, ni adresse e-mail, ni capture d'écran : seuls votre message, la route de la page (anonymisée) et, depuis la page d'erreur, l'identifiant d'erreur sont transmis. Envoyer un signalement ne déclenche aucun enregistrement de session ; si une erreur en a déjà déclenché un, le signalement y est rattaché.</li>
         </ul>
         Base légale : intérêt légitime à détecter et corriger les pannes (article 6.1.f RGPD).
         Données hébergées en Union européenne (région Francfort). Durée de conservation : 90 jours

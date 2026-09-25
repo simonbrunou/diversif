@@ -1,4 +1,10 @@
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import {
+  isHttpError,
+  isRedirect,
+  type Handle,
+  type HandleServerError,
+  type RequestEvent
+} from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { randomBytes } from 'node:crypto';
 import {
@@ -28,7 +34,8 @@ import { paraglideMiddleware } from '$lib/paraglide/server';
  * are worth waking someone up.
  */
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
-  const errorId = randomBytes(4).toString('hex');
+  const errorId =
+    (typeof error === 'object' && error !== null && handleChainErrorIds.get(error)) || newErrorId();
   if (status < 500) {
     return { message: 'Internal Error', errorId };
   }
@@ -211,13 +218,45 @@ const appHandle = async (
  * locale always matches the URL, so the middleware never issues a locale
  * redirect — routing behavior is byte-identical to the 1.x setup.
  */
-export const localizedHandle: Handle = ({ event, resolve }) =>
-  paraglideMiddleware(event.request, ({ request, locale }) => {
-    // The middleware hands back a request whose URL is de-localized,
-    // matching what `reroute` already did for `event.url`.
-    event.request = request;
-    return appHandle(event, resolve, locale);
+export const localizedHandle: Handle = async ({ event, resolve }) => {
+  try {
+    return await paraglideMiddleware(event.request, ({ request, locale }) => {
+      // The middleware hands back a request whose URL is de-localized,
+      // matching what `reroute` already did for `event.url`.
+      event.request = request;
+      return appHandle(event, resolve, locale);
+    });
+  } catch (err) {
+    tagHandleChainError(err, event);
+    throw err;
+  }
+};
+
+function newErrorId(): string {
+  return randomBytes(4).toString('hex');
+}
+
+const handleChainErrorIds = new WeakMap<object, string>();
+
+/**
+ * An unexpected error escaping the app's handle (e.g. session validation on a
+ * locked database) is captured by sentryHandle on its way out, before
+ * SvelteKit calls handleError — whose own capture of the same error Sentry
+ * then drops as a duplicate. So mint the errorId here: tag the request's
+ * isolation scope, which sentryHandle's capture reads, and hand the same id to
+ * handleError for the error page. Redirects and 4xx are control flow.
+ */
+function tagHandleChainError(err: unknown, event: RequestEvent): void {
+  if (typeof err !== 'object' || err === null || isRedirect(err) || isHttpError(err)) return;
+  const errorId = newErrorId();
+  handleChainErrorIds.set(err, errorId);
+  Sentry.getIsolationScope().setTags({
+    errorId,
+    status: 500,
+    method: event.request.method,
+    route: event.route?.id ?? null
   });
+}
 
 /**
  * sentryHandle runs first: it gives every request its own isolation scope,

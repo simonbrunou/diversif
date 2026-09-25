@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, spyOn } from 'bun:test';
+import { deflateSync, gzipSync, unzipSync } from 'node:zlib';
 import { POST } from './+server';
 
 const ORIGINAL_DSN = process.env.PUBLIC_SENTRY_DSN;
@@ -223,4 +224,129 @@ describe('POST /monitoring', () => {
     const [url] = fetchSpy.mock.calls[0];
     expect(url).toBe('https://glitch.example/sentry/api/7/envelope/');
   });
+});
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+function concat(...parts: Uint8Array[]): Uint8Array {
+  const out = new Uint8Array(parts.reduce((size, part) => size + part.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    out.set(part, offset);
+    offset += part.length;
+  }
+  return out;
+}
+
+const RECORDED_FRAMES = [
+  // rrweb Meta frame: Replay records location.href with every full snapshot.
+  {
+    type: 4,
+    data: { href: 'https://diversif.app/child/18/log?date=2026-09-01#top', width: 1280 },
+    timestamp: 1
+  },
+  { type: 5, data: { tag: 'breadcrumb', payload: { category: 'navigation' } }, timestamp: 2 }
+];
+
+// replay_event (JSON, no length header, as the SDK sends it) followed by a
+// replay_recording whose payload is `{"segment_id":0}\n` + the encoded frames.
+function replayEnvelope(recording: Uint8Array): Uint8Array {
+  const payload = concat(encoder.encode('{"segment_id":0}\n'), recording);
+  return concat(
+    encoder.encode(`${JSON.stringify({ dsn: CONFIGURED_DSN })}\n`),
+    encoder.encode('{"type":"replay_event"}\n{"type":"replay_event","replay_id":"r1"}\n'),
+    encoder.encode(`${JSON.stringify({ type: 'replay_recording', length: payload.length })}\n`),
+    payload
+  );
+}
+
+/** Split the forwarded envelope into its replay_event line and recording item. */
+function forwardedRecording(body: Uint8Array): { header: { length: number }; payload: Uint8Array } {
+  const lines: number[] = [];
+  for (let i = 0; i < body.length && lines.length < 4; i++) if (body[i] === 0x0a) lines.push(i);
+  const header = JSON.parse(decoder.decode(body.subarray(lines[2] + 1, lines[3])));
+  return { header, payload: body.subarray(lines[3] + 1) };
+}
+
+describe('POST /monitoring — replay recordings', () => {
+  const encodings: Array<[string, (json: Uint8Array) => Uint8Array, (body: Uint8Array) => string]> =
+    [
+      ['gzip', (json) => gzipSync(json), (body) => decoder.decode(unzipSync(body))],
+      ['zlib', (json) => deflateSync(json), (body) => decoder.decode(unzipSync(body))],
+      ['uncompressed', (json) => json, (body) => decoder.decode(body)]
+    ];
+
+  for (const [name, encode, decode] of encodings) {
+    it(`scrubs the page URL of rrweb Meta frames in ${name} recordings`, async () => {
+      process.env.PUBLIC_SENTRY_DSN = CONFIGURED_DSN;
+      const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(null, { status: 200 })
+      );
+      const recording = encode(encoder.encode(JSON.stringify(RECORDED_FRAMES)));
+
+      const response = await post(makeRequest(replayEnvelope(recording)));
+
+      expect(response.status).toBe(200);
+      const body = fetchSpy.mock.calls[0][1]?.body as Uint8Array;
+      expect(decoder.decode(body.subarray(0, body.indexOf(0x0a)))).toBe(
+        JSON.stringify({ dsn: CONFIGURED_DSN })
+      );
+      const { header, payload } = forwardedRecording(body);
+      // The item length is rewritten to match the re-encoded payload.
+      expect(header.length).toBe(payload.length);
+      const segmentEnd = payload.indexOf(0x0a);
+      expect(decoder.decode(payload.subarray(0, segmentEnd))).toBe('{"segment_id":0}');
+      const frames = JSON.parse(decode(payload.subarray(segmentEnd + 1)));
+      expect(frames[0].data).toEqual({ href: 'https://diversif.app/child/[id]/log', width: 1280 });
+      expect(frames[1]).toEqual(RECORDED_FRAMES[1]);
+    });
+  }
+
+  it('forwards an envelope without a replay recording byte for byte', async () => {
+    process.env.PUBLIC_SENTRY_DSN = CONFIGURED_DSN;
+    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(null, { status: 200 })
+    );
+    // Last item has no length header and no trailing newline.
+    const envelope = encoder.encode(
+      `${JSON.stringify({ dsn: CONFIGURED_DSN })}\n{"type":"event"}\n{"message":"x"}`
+    );
+
+    await post(makeRequest(envelope));
+
+    expect(fetchSpy.mock.calls[0][1]?.body).toEqual(envelope);
+  });
+
+  const malformed: Array<[string, Uint8Array]> = [
+    [
+      'an item header that is not an object',
+      encoder.encode(`${JSON.stringify({ dsn: CONFIGURED_DSN })}\nnull\n{}`)
+    ],
+    [
+      'an item longer than the body',
+      encoder.encode(`${JSON.stringify({ dsn: CONFIGURED_DSN })}\n{"type":"x","length":99}\n{}`)
+    ],
+    [
+      'a recording without its segment line',
+      encoder.encode(
+        `${JSON.stringify({ dsn: CONFIGURED_DSN })}\n{"type":"replay_recording","length":2}\n[]`
+      )
+    ],
+    ['a corrupt compressed recording', replayEnvelope(new Uint8Array([0x1f, 0x8b, 0x00, 0x01]))]
+  ];
+
+  for (const [name, envelope] of malformed) {
+    it(`rejects ${name} without forwarding it`, async () => {
+      process.env.PUBLIC_SENTRY_DSN = CONFIGURED_DSN;
+      const fetchSpy = spyOn(globalThis, 'fetch').mockRejectedValue(
+        new Error('must not be called')
+      );
+
+      const response = await post(makeRequest(envelope));
+
+      expect(response.status).toBe(400);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+  }
 });

@@ -114,9 +114,10 @@ After deploy, verify each surface independently:
    masked.
 6. **User feedback**: from the Profil page, open « Signaler un problème »,
    submit a test message, and confirm it appears in Sentry → User Feedback
-   with the scrubbed route attached and no name/email/screenshot fields.
-   Also try « Signaler ce problème » from a 5xx error page and confirm the
-   feedback is tagged with that page's `errorId`.
+   with the scrubbed route attached (the form has no name/e-mail/screenshot fields)
+   and no replay, since no error happened. Also try « Signaler ce problème »
+   from a 5xx error page and confirm the feedback is tagged with that page's
+   `errorId`.
 
 ## 9. Privacy policy ack
 

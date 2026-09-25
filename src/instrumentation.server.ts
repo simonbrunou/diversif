@@ -31,8 +31,10 @@ Sentry.init({
   // silently leak identifiers into every event.
   sendDefaultPii: false,
   // Every browser envelope relayed by the tunnel would otherwise produce its
-  // own server transaction.
-  ignoreTransactions: [`POST ${SENTRY_TUNNEL_PATH}`],
+  // own server transaction; `sveltekit.handle.root` is the root span of a
+  // request matching no route (bot scans, 404s), which sentryHandle never
+  // renames.
+  ignoreTransactions: [`POST ${SENTRY_TUNNEL_PATH}`, 'sveltekit.handle.root'],
   beforeSend: scrubEvent,
   beforeSendTransaction: scrubEvent,
   beforeSendSpan: scrubSpan,

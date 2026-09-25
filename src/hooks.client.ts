@@ -8,6 +8,7 @@ import {
   scrubEvent,
   scrubSpan
 } from '$lib/sentry';
+import { loadReplay } from '$lib/sentry-replay-loader';
 
 // No paraglide bootstrap is needed here since the 2.x migration: the
 // runtime's `url` strategy re-reads window.location on every getLocale()
@@ -55,7 +56,14 @@ Sentry.init({
       // beforeSend never sees replay or feedback events; scrub them here.
       name: 'DiversifPrivacy',
       processEvent: (event) =>
-        event.type === 'replay_event' || event.type === 'feedback' ? scrubEvent(event) : event
+        event.type === 'replay_event' || event.type === 'feedback' ? scrubEvent(event) : event,
+      // Release-health sessions are not events either: the SDK copies
+      // navigator.userAgent into every one, whatever sendDefaultPii says.
+      setup: (client) => {
+        client.on('beforeSendSession', (session) => {
+          if ('userAgent' in session) session.userAgent = undefined;
+        });
+      }
     }
   ],
   beforeSend: scrubEvent,
@@ -64,12 +72,9 @@ Sentry.init({
   beforeBreadcrumb: filterIncomingBreadcrumb
 });
 
-// Code-split: the replay recorder is ~100 KB and not needed for the first
-// paint, so it loads right after startup — and not at all when browser capture
-// is disabled.
-if (env.PUBLIC_SENTRY_DSN) {
-  void import('$lib/sentry-replay').then(({ startReplay }) => startReplay());
-}
+// Replay is code-split and starts right after init (see loadReplay) — not at
+// all when browser capture is disabled.
+if (env.PUBLIC_SENTRY_DSN) void loadReplay();
 
 // Tags omit `method` (which the server hook records): SvelteKit's
 // `NavigationEvent` has no `request` property in the browser, and there is no

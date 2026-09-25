@@ -24,6 +24,8 @@
  * trade-off are documented next to BODY_SIZE_LIMIT in .env.example.
  */
 
+import { deflateSync, gzipSync, unzipSync } from 'node:zlib';
+import { scrubRecordingFrames } from '$lib/sentry';
 import type { RequestHandler } from './$types';
 
 interface ParsedDsn {
@@ -65,6 +67,82 @@ function parseDsn(raw: string): ParsedDsn | null {
 // else from the upstream response (e.g. Set-Cookie) is ever relayed to the
 // client.
 const FORWARDED_RESPONSE_HEADERS = ['x-sentry-rate-limits', 'retry-after'];
+
+const NEWLINE = 0x0a;
+const decoder = new TextDecoder();
+const encoder = new TextEncoder();
+
+interface EnvelopeItem {
+  header: Record<string, unknown>;
+  payload: Uint8Array;
+}
+
+/** Split the items following the envelope header line. Throws on malformed input. */
+function parseItems(bytes: Uint8Array, start: number): EnvelopeItem[] {
+  const items: EnvelopeItem[] = [];
+  let offset = start;
+  while (offset < bytes.length) {
+    let headerEnd = bytes.indexOf(NEWLINE, offset);
+    if (headerEnd === -1) headerEnd = bytes.length;
+    const header: unknown = JSON.parse(decoder.decode(bytes.subarray(offset, headerEnd)));
+    if (typeof header !== 'object' || header === null) throw new Error('item header');
+    offset = headerEnd + 1;
+    const length = 'length' in header && typeof header.length === 'number' ? header.length : null;
+    let payloadEnd = length === null ? bytes.indexOf(NEWLINE, offset) : offset + length;
+    if (payloadEnd === -1) payloadEnd = bytes.length;
+    if (payloadEnd > bytes.length) throw new Error('truncated item');
+    items.push({ header: { ...header }, payload: bytes.subarray(offset, payloadEnd) });
+    offset = payloadEnd + 1;
+  }
+  return items;
+}
+
+function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
+  const out = new Uint8Array(parts.reduce((size, part) => size + part.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    out.set(part, offset);
+    offset += part.length;
+  }
+  return out;
+}
+
+/**
+ * A `replay_recording` payload is a `{"segment_id":N}` line followed by the
+ * rrweb event array — gzip (Replay's compression worker), zlib, or plain JSON
+ * (no worker). Decode it, scrub the frames the client could not reach (the
+ * rrweb Meta frame's page URL, see scrubRecordingFrames) and re-encode it the
+ * same way.
+ */
+function scrubReplayRecording(payload: Uint8Array): Uint8Array {
+  const segmentEnd = payload.indexOf(NEWLINE);
+  if (segmentEnd === -1) throw new Error('replay segment header');
+  const body = payload.subarray(segmentEnd + 1);
+  const gzip = body[0] === 0x1f && body[1] === 0x8b;
+  const zlib = body[0] === 0x78;
+  const frames: unknown = JSON.parse(decoder.decode(gzip || zlib ? unzipSync(body) : body));
+  scrubRecordingFrames(frames);
+  const json = encoder.encode(JSON.stringify(frames));
+  const encoded = gzip ? gzipSync(json) : zlib ? deflateSync(json) : json;
+  return concat([payload.subarray(0, segmentEnd + 1), encoded]);
+}
+
+/**
+ * Return the envelope to forward: byte-identical unless it carries a replay
+ * recording, which is rebuilt with scrubbed frames and corrected item lengths.
+ */
+function scrubEnvelope(bytes: Uint8Array<ArrayBuffer>, headerEnd: number): Uint8Array<ArrayBuffer> {
+  const items = parseItems(bytes, headerEnd + 1);
+  if (!items.some((item) => item.header.type === 'replay_recording')) return bytes;
+  const parts: Uint8Array[] = [bytes.subarray(0, headerEnd)];
+  for (const item of items) {
+    const payload =
+      item.header.type === 'replay_recording' ? scrubReplayRecording(item.payload) : item.payload;
+    if ('length' in item.header) item.header.length = payload.length;
+    parts.push(encoder.encode(`\n${JSON.stringify(item.header)}\n`), payload);
+  }
+  return concat(parts);
+}
 
 export const POST: RequestHandler = async ({ request }) => {
   // Read per request (not module scope) so tests can set/unset the env var,
@@ -110,6 +188,14 @@ export const POST: RequestHandler = async ({ request }) => {
     return new Response(null, { status: 400 });
   }
 
+  let body: Uint8Array<ArrayBuffer>;
+  try {
+    body = scrubEnvelope(bytes, newlineIndex);
+  } catch {
+    // Unparseable items can't be scrubbed, so they are never forwarded.
+    return new Response(null, { status: 400 });
+  }
+
   const ingestUrl = `${configured.origin}${configured.pathPrefix}/api/${configured.projectId}/envelope/`;
 
   let upstream: Response;
@@ -119,7 +205,7 @@ export const POST: RequestHandler = async ({ request }) => {
     // the tunnel is that Sentry sees only this server, never the client.
     upstream = await fetch(ingestUrl, {
       method: 'POST',
-      body: bytes,
+      body,
       headers: { 'Content-Type': 'application/x-sentry-envelope' },
       signal: AbortSignal.timeout(10_000)
     });

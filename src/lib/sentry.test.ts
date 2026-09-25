@@ -6,6 +6,7 @@ import {
   scrubSpan,
   scrubLog,
   scrubRecordingEvent,
+  scrubRecordingFrames,
   parseSampleRate
 } from './sentry';
 
@@ -336,6 +337,41 @@ describe('scrubSpan', () => {
       description: 'POST https://diversif.app/child/[id]/log'
     });
   });
+
+  it('strips attribute values from the element named by an interaction span', () => {
+    // INP spans are named by the SDK's htmlTreeAsString, which appends
+    // aria-label/title/alt/name values — here a child's first name.
+    const span = {
+      op: 'ui.interaction.click',
+      description:
+        'div.grid > a.flex.items-center#row-3[aria-label="Ouvrir les réglages de Léo"][title="Léo"]'
+    };
+    expect(scrubSpan(span).description).toBe('div.grid > a.flex.items-center#row-3');
+  });
+
+  it('reads the op from span data for web-vital spans', () => {
+    const span = {
+      description: 'button.pill[aria-label="Retirer Poisson de la sélection"]',
+      data: { 'sentry.op': 'ui.webvital.cls' }
+    };
+    expect(scrubSpan(span).description).toBe('button.pill');
+  });
+
+  it('strips attribute values from LCP and CLS element attributes', () => {
+    const span = {
+      description: '/child/18',
+      data: {
+        'lcp.element': 'img.photo[alt="Léo au parc"]',
+        'browser.web_vital.cls.source.1': 'li.meal[aria-label="Voir le repas concerné : arachide"]',
+        'lcp.url': 'https://diversif.app/child/18/photo.jpg?v=2'
+      }
+    };
+    expect(scrubSpan(span).data).toEqual({
+      'lcp.element': 'img.photo',
+      'browser.web_vital.cls.source.1': 'li.meal',
+      'lcp.url': 'https://diversif.app/child/[id]/photo.jpg'
+    });
+  });
 });
 
 describe('scrubLog', () => {
@@ -366,15 +402,76 @@ describe('parseSampleRate', () => {
   });
 });
 
-describe('scrubRecordingEvent', () => {
-  it('scrubs the page href of rrweb meta frames', () => {
-    const out = scrubRecordingEvent({
-      type: 4,
-      data: { href: 'https://diversif.app/child/18?welcome=1' }
-    });
-    expect(out!.data!.href).toBe('https://diversif.app/child/[id]');
+describe('scrubRecordingFrames', () => {
+  it('scrubs the page URL of rrweb meta frames and leaves other frames alone', () => {
+    const snapshot = { type: 2, data: { node: { id: 1 } } };
+    const frames = [
+      { type: 4, data: { href: 'https://diversif.app/child/18?welcome=1', width: 1280 } },
+      snapshot,
+      { type: 4 },
+      'not-a-frame'
+    ];
+    scrubRecordingFrames(frames);
+    expect(frames).toEqual([
+      { type: 4, data: { href: 'https://diversif.app/child/[id]', width: 1280 } },
+      { type: 2, data: { node: { id: 1 } } },
+      { type: 4 },
+      'not-a-frame'
+    ]);
   });
 
+  it('scrubs link URLs in snapshot nodes and mutation records, keeping other attributes', () => {
+    const frames = [
+      {
+        type: 2,
+        data: {
+          node: {
+            id: 1,
+            childNodes: [
+              {
+                id: 2,
+                tagName: 'a',
+                attributes: {
+                  href: 'https://diversif.app/child/18/foods?segment=allergens',
+                  class: 'pill',
+                  'aria-label': '****'
+                },
+                childNodes: []
+              }
+            ]
+          }
+        }
+      },
+      {
+        type: 3,
+        data: {
+          source: 0,
+          adds: [{ parentId: 1, node: { id: 3, attributes: { src: '/child/18/photo.jpg?v=2' } } }],
+          attributes: [{ id: 2, attributes: { href: '/child/18/log#top', title: null } }]
+        }
+      }
+    ];
+    scrubRecordingFrames(frames);
+    expect(frames[0].data.node!.childNodes![0].attributes).toEqual({
+      href: 'https://diversif.app/child/[id]/foods',
+      class: 'pill',
+      'aria-label': '****'
+    });
+    expect(frames[1].data.adds![0].node.attributes).toEqual({ src: '/child/[id]/photo.jpg' });
+    expect(frames[1].data.attributes![0].attributes).toEqual({
+      href: '/child/[id]/log',
+      title: null
+    });
+  });
+
+  it('ignores a recording that is not an event array', () => {
+    const recording = { type: 4, data: { href: '/child/18' } };
+    scrubRecordingFrames(recording);
+    expect(recording.data.href).toBe('/child/18');
+  });
+});
+
+describe('scrubRecordingEvent', () => {
   it('drops console breadcrumb frames', () => {
     const frame = {
       data: { tag: 'breadcrumb', payload: { category: 'console', message: 'secret' } }

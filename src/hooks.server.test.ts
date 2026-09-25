@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from './test/db';
 import * as m from '$lib/paraglide/messages';
@@ -7,6 +8,7 @@ import { users, memberships, children, sessions } from '$lib/server/db/schema';
 mock.module('$lib/server/db', () => ({ db: testDb }));
 
 const captureExceptionMock = mock();
+const setIsolationTagsMock = mock();
 
 // Tests resolve the browser build of @sentry/sveltekit (scripts/bun-test.ts
 // runs with --conditions=browser), which has no sentryHandle. The stand-in
@@ -15,6 +17,7 @@ const captureExceptionMock = mock();
 // hoisted above mock.module, hence the dynamic imports below.
 mock.module('@sentry/sveltekit', () => ({
   captureException: captureExceptionMock,
+  getIsolationScope: () => ({ setTags: setIsolationTagsMock }),
   sentryHandle: () => mock()
 }));
 
@@ -327,6 +330,51 @@ describe('handle', () => {
       expect(await response.text()).toBe('<html lang="fr">');
     }
   );
+
+  it('tags an error escaping the handle chain with the errorId the error page shows', async () => {
+    // sentryHandle captures such errors before handleError runs, so the tag
+    // must already be on the request scope when the error leaves the handle.
+    setIsolationTagsMock.mockClear();
+    const { event } = makeEvent(null, '/child/1');
+    const failure = new Error('database is locked');
+    const resolve = mock(async () => {
+      throw failure;
+    });
+
+    const handled = handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    await expect(handled).rejects.toBe(failure);
+
+    const spy = spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const result = handleError({
+        error: failure,
+        event: { ...event, route: { id: '/child/[id]' } },
+        status: 500,
+        message: 'Internal Error'
+      } as unknown as Parameters<typeof handleError>[0]);
+      expect(setIsolationTagsMock).toHaveBeenCalledWith({
+        errorId: result?.errorId,
+        status: 500,
+        method: 'GET',
+        route: null
+      });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('leaves redirects thrown in the handle chain untagged', async () => {
+    setIsolationTagsMock.mockClear();
+    const { event } = makeEvent(null, '/');
+    const resolve = mock(async () => {
+      redirect(303, '/login');
+    });
+
+    await expect(
+      handle({ event, resolve } as unknown as Parameters<typeof handle>[0])
+    ).rejects.toMatchObject({ status: 303 });
+    expect(setIsolationTagsMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('warnIfAddressHeaderMissing', () => {

@@ -7,6 +7,7 @@
   import RgpdSection from './RgpdSection.svelte';
   import DashedActionRow from '$components/ui/DashedActionRow.svelte';
   import SectionHeader from '$components/ui/SectionHeader.svelte';
+  import ProblemReportDialog from '$lib/components/ProblemReportDialog.svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
   import { Plus } from 'lucide-svelte';
@@ -37,11 +38,7 @@
     canReport = Boolean(Sentry.getClient()?.getDsn());
   });
 
-  async function reportProblem() {
-    // Code-split: the feedback widget is fetched on first use only.
-    const { openFeedbackForm } = await import('$lib/sentry-feedback');
-    await openFeedbackForm();
-  }
+  let reporting = $state(false);
 </script>
 
 <div class="flex flex-col">
@@ -77,7 +74,7 @@
       <li><a href={localizedHref('/aide')} class="underline">{m.aideNavLabel()}</a></li>
       {#if canReport}
         <li>
-          <button type="button" class="underline" onclick={reportProblem}>
+          <button type="button" class="underline" onclick={() => (reporting = true)}>
             {m.feedbackReportProblem()}
           </button>
         </li>
@@ -89,3 +86,7 @@
     </ul>
   </section>
 </div>
+
+{#if canReport}
+  <ProblemReportDialog bind:open={reporting} />
+{/if}

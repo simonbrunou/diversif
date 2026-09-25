@@ -16,17 +16,10 @@ export function startReplay(): void {
       maskAllInputs: true,
       blockAllMedia: true,
       // Default masked attributes plus the ones that carry child/entry ids,
-      // dates or food names in this app's markup.
-      maskAttributes: [
-        'title',
-        'placeholder',
-        'aria-label',
-        'alt',
-        'href',
-        'action',
-        'value',
-        'datetime'
-      ],
+      // dates or food names in this app's markup. rrweb resolves href/src to
+      // absolute URLs before this list applies, so links are scrubbed
+      // server-side by the /monitoring tunnel instead (scrubRecordingFrames).
+      maskAttributes: ['title', 'placeholder', 'aria-label', 'alt', 'action', 'value', 'datetime'],
       // Keep the replay session in memory only — nothing is written to
       // sessionStorage, so the three strictly-necessary cookies stay the only
       // client-side storage (see /cookies).

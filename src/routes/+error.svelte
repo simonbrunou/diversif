@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import Button from '$components/ui/Button.svelte';
+  import ProblemReportDialog from '$lib/components/ProblemReportDialog.svelte';
   import { AlertTriangle } from 'lucide-svelte';
   import * as m from '$lib/paraglide/messages';
   import { localizedHref } from '$lib/utils/localized-href';
@@ -18,18 +19,10 @@
     canReport = Boolean(Sentry.getClient()?.getDsn());
   });
 
-  let opening = $state(false);
-  async function report() {
-    opening = true;
-    try {
-      // Code-split: the feedback widget is fetched on first use only.
-      const { openFeedbackForm } = await import('$lib/sentry-feedback');
-      const errorId = page.error?.errorId;
-      await openFeedbackForm(errorId ? { errorId } : {});
-    } finally {
-      opening = false;
-    }
-  }
+  let reporting = $state(false);
+  const reportTags = $derived<Record<string, string>>(
+    page.error?.errorId ? { errorId: page.error.errorId } : {}
+  );
 </script>
 
 <div class="mx-auto w-full px-4 flex max-w-md flex-1 flex-col items-center justify-center gap-5 py-16 text-center">
@@ -50,9 +43,13 @@
     <Button href={localizedHref('/')}>{m.errorsGenericHome()}</Button>
     <Button variant="outline" onclick={() => history.back()}>{m.errorsGenericBack()}</Button>
     {#if canReport && status >= 500}
-      <Button variant="ghost" loading={opening} onclick={report}>
+      <Button variant="ghost" onclick={() => (reporting = true)}>
         {m.feedbackReportThisProblem()}
       </Button>
     {/if}
   </div>
 </div>
+
+{#if canReport}
+  <ProblemReportDialog bind:open={reporting} tags={reportTags} />
+{/if}

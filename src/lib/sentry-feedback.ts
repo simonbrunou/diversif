@@ -1,76 +1,34 @@
 import * as Sentry from '@sentry/sveltekit';
-import * as m from '$lib/paraglide/messages';
+import { loadReplay } from '$lib/sentry-replay-loader';
 
 /**
- * Open Sentry's user-feedback dialog (« Signaler un problème »).
+ * Send a « Signaler un problème » report to Sentry as user feedback: the
+ * message the parent typed, the page URL (scrubbed by scrubEvent's feedback
+ * branch) and `tags` — e.g. the errorId shown on the error page, which links
+ * the report to the matching Sentry issue. Resolves once Sentry accepted it;
+ * rejects otherwise.
  *
- * Only ever reached through a dynamic import from the UI, so the widget's code
- * is fetched the first time a parent opens it rather than shipping in every
- * page's bundle.
- *
- * Privacy: the name/e-mail fields and screenshots are disabled, so a report
- * carries the message the parent chose to type, the scrubbed page route (see
- * scrubEvent's feedback branch) and `tags` — e.g. the errorId shown on the
- * error page, which links the report to the matching Sentry issue.
- *
- * Replay's own event processor sends its buffered recording along with any
- * feedback event and then records the rest of the page view. The privacy
- * policy promises that only an error triggers a recording, so while Replay is
- * merely buffering (no error yet) it is stopped for as long as the dialog is
- * open — the buffer is discarded, nothing is sent — and buffering resumes once
- * the dialog is dismissed or the report has been sent. A recording an error
- * already started keeps running, and the report is linked to it.
+ * The form is our own (ProblemReportDialog) rather than Sentry's widget,
+ * because Replay uploads its buffered recording whenever that widget opens
+ * and whenever any feedback event is processed. The privacy policy promises
+ * that only an error triggers a recording, so a Replay that is merely
+ * buffering (no error yet) is stopped — its buffer discarded, nothing sent —
+ * while the report goes out, then buffering resumes. A recording an error
+ * already started keeps running and the report is linked to it.
  */
-export async function openFeedbackForm(tags: Record<string, string> = {}): Promise<void> {
+export async function sendProblemReport(
+  message: string,
+  tags: Record<string, string> = {}
+): Promise<void> {
+  // Replay is code-split; wait for it so it cannot start buffering mid-report.
+  await loadReplay();
   const replay = Sentry.getReplay();
   const bufferingReplay = replay?.getRecordingMode() === 'buffer' ? replay : undefined;
   await bufferingReplay?.stop({ flush: false });
-  const resumeReplay = () => bufferingReplay?.startBuffering();
-
-  let feedback = Sentry.getFeedback();
-  if (!feedback) {
-    feedback = Sentry.feedbackIntegration({
-      autoInject: false,
-      showBranding: false,
-      showName: false,
-      showEmail: false,
-      enableScreenshot: false,
-      // The dialog is themed from app.css through the widget's --dialog-* /
-      // --button-* / --input-* variables, which already follow the app's own
-      // light/dark switch; 'light' just stops the widget's prefers-color-scheme
-      // defaults from fighting it.
-      colorScheme: 'light'
-    });
-    Sentry.addIntegration(feedback);
+  try {
+    // A forked scope keeps the tags off every later event on the page.
+    await Sentry.withScope(() => Sentry.sendFeedback({ message, tags }, { includeReplay: false }));
+  } finally {
+    bufferingReplay?.startBuffering();
   }
-
-  const genericError = m.feedbackErrorGeneric();
-  const form = await feedback.createForm({
-    tags,
-    formTitle: m.feedbackReportProblem(),
-    messageLabel: m.feedbackMessageLabel(),
-    messagePlaceholder: m.feedbackMessagePlaceholder(),
-    isRequiredLabel: m.feedbackRequiredLabel(),
-    submitButtonLabel: m.feedbackSubmit(),
-    cancelButtonLabel: m.commonCancel(),
-    successMessageText: m.feedbackSuccess(),
-    errorEmptyMessageText: m.feedbackErrorEmpty(),
-    errorTimeoutText: genericError,
-    errorForbiddenText: genericError,
-    errorNoClientText: genericError,
-    errorGenericText: genericError,
-    // A fresh dialog is built per opening (labels follow the current locale);
-    // drop it from the DOM once dismissed or sent. Both callbacks run after
-    // the feedback event has been processed and sent.
-    onFormClose: () => {
-      form.removeFromDom();
-      resumeReplay();
-    },
-    onFormSubmitted: () => {
-      form.removeFromDom();
-      resumeReplay();
-    }
-  });
-  form.appendToDom();
-  form.open();
 }

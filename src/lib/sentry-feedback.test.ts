@@ -1,23 +1,12 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import * as m from '$lib/paraglide/messages';
-
-type FormOptions = Record<string, unknown> & {
-  onFormClose: () => void;
-  onFormSubmitted: () => void;
-};
 
 // Ordered record of the side effects the privacy contract depends on.
 const log: string[] = [];
-const form = {
-  appendToDom: mock(),
-  open: mock(() => log.push('open')),
-  removeFromDom: mock()
-};
-const createForm = mock(async (_options: FormOptions) => form);
-const feedbackIntegration = mock((_options: Record<string, unknown>) => ({ createForm }));
-let installed: { createForm: typeof createForm } | undefined;
-const addIntegration = mock((integration: { createForm: typeof createForm }) => {
-  installed = integration;
+let sendFails = false;
+const sendFeedback = mock(async (_params: unknown, _hint: unknown) => {
+  log.push('sendFeedback');
+  if (sendFails) throw new Error('Unable to send feedback');
+  return 'event-id';
 });
 let recordingMode: 'buffer' | 'session' | undefined;
 const replay = {
@@ -31,98 +20,59 @@ const replay = {
 };
 let replayInstalled = false;
 
-// Registered before sentry-feedback.ts is first loaded so the stand-in is the
-// whole module; a static import would be hoisted above mock.module.
+// Registered before sentry-feedback.ts is first loaded so the stand-ins are
+// the whole modules; a static import would be hoisted above mock.module.
 mock.module('@sentry/sveltekit', () => ({
-  getFeedback: () => installed,
   getReplay: () => (replayInstalled ? replay : undefined),
-  feedbackIntegration,
-  addIntegration
+  withScope: <T>(callback: () => T) => callback(),
+  sendFeedback
+}));
+mock.module('$lib/sentry-replay-loader', () => ({
+  loadReplay: async () => {
+    log.push('loadReplay');
+  }
 }));
 
-const { openFeedbackForm } = await import('./sentry-feedback');
+const { sendProblemReport } = await import('./sentry-feedback');
 
 beforeEach(() => {
-  installed = undefined;
+  log.length = 0;
+  sendFails = false;
   replayInstalled = false;
   recordingMode = undefined;
-  log.length = 0;
-  for (const fn of [
-    createForm,
-    feedbackIntegration,
-    addIntegration,
-    form.appendToDom,
-    form.open,
-    form.removeFromDom,
-    replay.stop,
-    replay.startBuffering
-  ]) {
-    fn.mockClear();
-  }
+  for (const fn of [sendFeedback, replay.stop, replay.startBuffering]) fn.mockClear();
 });
 
-describe('openFeedbackForm', () => {
-  it('installs the widget without name, e-mail or screenshot fields', async () => {
-    await openFeedbackForm();
-    expect(feedbackIntegration).toHaveBeenCalledWith(
-      expect.objectContaining({
-        autoInject: false,
-        showName: false,
-        showEmail: false,
-        enableScreenshot: false
-      })
+describe('sendProblemReport', () => {
+  it('sends the message and tags as feedback without asking for a replay', async () => {
+    await sendProblemReport('Le bouton ne répond pas', { errorId: 'abcd1234' });
+    expect(sendFeedback).toHaveBeenCalledWith(
+      { message: 'Le bouton ne répond pas', tags: { errorId: 'abcd1234' } },
+      { includeReplay: false }
     );
-    expect(addIntegration).toHaveBeenCalledTimes(1);
   });
 
-  it('opens a French dialog tagged with the error it reports', async () => {
-    await openFeedbackForm({ errorId: 'abcd1234' });
-    expect(createForm).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tags: { errorId: 'abcd1234' },
-        formTitle: m.feedbackReportProblem(),
-        submitButtonLabel: m.feedbackSubmit(),
-        cancelButtonLabel: m.commonCancel()
-      })
-    );
-    expect(form.appendToDom).toHaveBeenCalledTimes(1);
-    expect(form.open).toHaveBeenCalledTimes(1);
+  it('discards a buffering replay while the report is sent, then resumes buffering', async () => {
+    replayInstalled = true;
+    recordingMode = 'buffer';
+    await sendProblemReport('x');
+    expect(replay.stop).toHaveBeenCalledWith({ flush: false });
+    // Replay finished loading first, so it cannot start buffering mid-report.
+    expect(log).toEqual(['loadReplay', 'replay.stop', 'sendFeedback', 'replay.startBuffering']);
   });
 
-  it('reuses the installed widget on later openings', async () => {
-    await openFeedbackForm();
-    await openFeedbackForm();
-    expect(feedbackIntegration).toHaveBeenCalledTimes(1);
-    expect(addIntegration).toHaveBeenCalledTimes(1);
-    expect(createForm).toHaveBeenCalledTimes(2);
+  it('resumes buffering and rejects when sending fails', async () => {
+    replayInstalled = true;
+    recordingMode = 'buffer';
+    sendFails = true;
+    await expect(sendProblemReport('x')).rejects.toThrow('Unable to send feedback');
+    expect(log.at(-1)).toBe('replay.startBuffering');
   });
-
-  it('takes the dialog out of the DOM once it is dismissed', async () => {
-    await openFeedbackForm();
-    createForm.mock.calls[0][0].onFormClose();
-    expect(form.removeFromDom).toHaveBeenCalledTimes(1);
-  });
-
-  for (const callback of ['onFormClose', 'onFormSubmitted'] as const) {
-    it(`discards a buffering replay while open and resumes it after ${callback}`, async () => {
-      replayInstalled = true;
-      recordingMode = 'buffer';
-      await openFeedbackForm();
-      // Stopped without flushing before the dialog shows, so the feedback
-      // event cannot carry the pre-report recording to Sentry.
-      expect(replay.stop).toHaveBeenCalledWith({ flush: false });
-      expect(log).toEqual(['replay.stop', 'open']);
-
-      createForm.mock.calls[0][0][callback]();
-      expect(log).toEqual(['replay.stop', 'open', 'replay.startBuffering']);
-    });
-  }
 
   it('leaves a replay that an error already started recording untouched', async () => {
     replayInstalled = true;
     recordingMode = 'session';
-    await openFeedbackForm();
-    createForm.mock.calls[0][0].onFormSubmitted();
+    await sendProblemReport('x');
     expect(replay.stop).not.toHaveBeenCalled();
     expect(replay.startBuffering).not.toHaveBeenCalled();
   });

@@ -28,12 +28,18 @@ export const SENTRY_TUNNEL_PATH = '/monitoring';
 
 type ScrubbableSpan = {
   description?: string;
+  op?: string;
   data?: Record<string, unknown>;
 };
 
 type ScrubbableLog = {
   attributes?: Record<string, unknown>;
 };
+
+/** Narrow an unknown payload fragment to a mutable plain object. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
 
 const NUMERIC = /^\d+$/;
 // A segment is treated as an opaque token when it is 8+ chars long AND
@@ -92,21 +98,42 @@ const CLIENT_ATTRIBUTE =
   /^(?:http\.(?:request|response)\.header\.|user\.|client\.|user_agent\.|network\.peer\.|net\.(?:peer|sock)\.)|^http\.(?:client_ip|user_agent)$/;
 // Query strings and fragments carry arbitrary client input.
 const QUERY_ATTRIBUTE = /(?:^|\.)(?:query|fragment)$/;
+// Web-vital attributes naming the DOM element involved (LCP element, CLS
+// sources) — CSS-selector strings built by the SDK's htmlTreeAsString.
+const SELECTOR_ATTRIBUTE = /(?:^|\.)(?:lcp\.element|cls\.source\.\d+)$/;
+// The `[attr="value"]` parts htmlTreeAsString appends (aria-label, title,
+// alt, name…). In this app those values name children and foods, e.g.
+// `a[aria-label="Ouvrir les réglages de Léo"]`; tag, id and classes stay.
+const SELECTOR_ATTRIBUTE_VALUE = /\[[\w-]+="(?:[^"\\]|\\.)*"\]/g;
 
-/** Drop client-identifying attributes and scrub every URL-shaped value. */
+function scrubSelector(selector: string): string {
+  return selector.replace(SELECTOR_ATTRIBUTE_VALUE, '');
+}
+
+/** Drop client-identifying attributes and scrub every URL- or selector-shaped value. */
 function scrubAttributes(attributes: Record<string, unknown>): void {
   for (const [key, value] of Object.entries(attributes)) {
     if (CLIENT_ATTRIBUTE.test(key) || QUERY_ATTRIBUTE.test(key)) {
       delete attributes[key];
     } else if (typeof value === 'string') {
-      attributes[key] = scrubName(value);
+      attributes[key] = SELECTOR_ATTRIBUTE.test(key) ? scrubSelector(value) : scrubName(value);
     }
   }
 }
 
-/** `beforeSendSpan`: scrub the span name and its attributes in place. */
+/**
+ * `beforeSendSpan`: scrub the span name and its attributes in place. INP, LCP
+ * and CLS spans (`ui.interaction.*`, `ui.webvital.*`) are named after the DOM
+ * element involved rather than a URL.
+ */
 export function scrubSpan<S extends ScrubbableSpan>(span: S): S {
-  if (typeof span.description === 'string') span.description = scrubName(span.description);
+  const op = span.op ?? span.data?.['sentry.op'];
+  if (typeof span.description === 'string') {
+    span.description =
+      typeof op === 'string' && op.startsWith('ui.')
+        ? scrubSelector(span.description)
+        : scrubName(span.description);
+  }
   if (span.data && typeof span.data === 'object') scrubAttributes(span.data);
   return span;
 }
@@ -299,10 +326,9 @@ type RecordingPayload = {
   data?: { node?: { id?: unknown; tagName?: unknown }; [key: string]: unknown };
 };
 
-/** The fields of a replay recording frame (rrweb or Sentry custom) this scrubber touches. */
+/** The fields of a Sentry custom replay frame this scrubber touches. */
 type RecordingFrame = {
   data?: {
-    href?: unknown;
     tag?: unknown;
     payload?: RecordingPayload;
   };
@@ -326,19 +352,19 @@ function keepBreadcrumbFrame(payload: RecordingPayload): boolean {
 
 /**
  * Replay `beforeAddRecordingEvent`: scrub the frames the replay integration
- * records around the (already masked) DOM snapshots.
+ * records around the (already masked) DOM snapshots. Replay only hands its own
+ * custom frames to this hook; rrweb's frames (including the Meta frame with
+ * the page URL) bypass it and are scrubbed by the tunnel — see
+ * scrubRecordingFrames.
  *
- * - rrweb Meta frames carry the page `href`.
  * - Breadcrumb frames: see keepBreadcrumbFrame; URLs in their data are scrubbed.
  * - performanceSpan frames name the fetched/navigated URL.
  */
 export function scrubRecordingEvent<R extends object>(event: R): R | null {
-  // Replay hands over rrweb and Sentry custom frames alike; every field of
-  // RecordingFrame is optional and each is type-checked before use below.
+  // Every field of RecordingFrame is optional and type-checked before use.
   const frame: RecordingFrame = event;
   const data = frame.data;
   if (!data || typeof data !== 'object') return event;
-  if (typeof data.href === 'string') data.href = scrubUrlString(data.href);
 
   const payload = data.payload;
   if (!payload || typeof payload !== 'object') return event;
@@ -352,4 +378,65 @@ export function scrubRecordingEvent<R extends object>(event: R): R | null {
     payload.data = scrubBreadcrumbData(payload.data);
   }
   return event;
+}
+
+/** rrweb `EventType.Meta`: emitted with every full snapshot. */
+const RRWEB_META_EVENT = 4;
+
+// Attributes rrweb resolves to absolute URLs *before* applying Replay's
+// maskAttributes, so `maskAttributes: ['href']` never masks them: every link
+// in a snapshot would carry raw child ids and query strings.
+const URL_ATTRIBUTES: Record<string, true> = {
+  href: true,
+  src: true,
+  srcset: true,
+  'xlink:href': true,
+  background: true,
+  data: true
+};
+
+/** Scrub URL-bearing values of one rrweb `attributes` map (snapshot node or mutation). */
+function scrubUrlAttributes(attributes: Record<string, unknown>): void {
+  for (const [name, value] of Object.entries(attributes)) {
+    if (Object.hasOwn(URL_ATTRIBUTES, name) && typeof value === 'string') {
+      attributes[name] = scrubUrlString(value);
+    }
+  }
+}
+
+/**
+ * Walk a recording frame and scrub every `attributes` map in it: the
+ * serialized DOM of full snapshots (node.attributes, recursively through
+ * childNodes) and incremental mutations (adds[].node.attributes and
+ * attributes[].attributes).
+ */
+function scrubDomAttributes(value: unknown): void {
+  if (Array.isArray(value)) {
+    value.forEach(scrubDomAttributes);
+    return;
+  }
+  if (!isRecord(value)) return;
+  for (const [key, child] of Object.entries(value)) {
+    if (key === 'attributes' && isRecord(child) && !Array.isArray(child)) scrubUrlAttributes(child);
+    scrubDomAttributes(child);
+  }
+}
+
+/**
+ * Scrub a decoded replay recording (the rrweb event array inside a
+ * `replay_recording` envelope item) in place. Used server-side by the
+ * /monitoring tunnel, because these frames never pass through a client-side
+ * hook: the Meta frame records `location.href`, and snapshots/mutations carry
+ * every link's absolute URL (see URL_ATTRIBUTES).
+ */
+export function scrubRecordingFrames(frames: unknown): void {
+  if (!Array.isArray(frames)) return;
+  for (const frame of frames) {
+    if (!isRecord(frame)) continue;
+    const data = frame.data;
+    if (frame.type === RRWEB_META_EVENT && isRecord(data) && typeof data.href === 'string') {
+      data.href = scrubUrlString(data.href);
+    }
+    scrubDomAttributes(data);
+  }
 }
