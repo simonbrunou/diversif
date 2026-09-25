@@ -26,8 +26,15 @@ export async function sendProblemReport(
   const bufferingReplay = replay?.getRecordingMode() === 'buffer' ? replay : undefined;
   await bufferingReplay?.stop({ flush: false });
   try {
-    // A forked scope keeps the tags off every later event on the page.
-    await Sentry.withScope(() => Sentry.sendFeedback({ message, tags }, { includeReplay: false }));
+    // captureFeedback puts `tags` on the feedback event itself; sendFeedback
+    // also copies them onto the current scope, where they would tag every
+    // later event on the page. It runs in a forked scope, synchronously — an
+    // async callback would keep that scope current until the send settles.
+    let sending: Promise<unknown> = Promise.resolve();
+    Sentry.withScope(() => {
+      sending = Sentry.sendFeedback({ message, tags }, { includeReplay: false });
+    });
+    await sending;
   } finally {
     bufferingReplay?.startBuffering();
   }

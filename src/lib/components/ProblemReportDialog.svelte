@@ -17,10 +17,15 @@
 
   let message = $state('');
   let status = $state<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  // Bumped on every close, so a send still in flight when the parent
+  // dismisses the dialog cannot mark the next report sent or failed.
+  // Deliberately not $state: the effect below must not depend on it.
+  let generation = 0;
 
   // Every close (Cancel, Escape, overlay, the X) starts the next report fresh.
   $effect(() => {
     if (!open) {
+      generation += 1;
       message = '';
       status = 'idle';
     }
@@ -28,13 +33,15 @@
 
   async function submit(event: SubmitEvent) {
     event.preventDefault();
+    const attempt = generation;
     status = 'sending';
+    let outcome: 'sent' | 'failed' = 'sent';
     try {
       await sendProblemReport(message.trim(), tags);
-      status = 'sent';
     } catch {
-      status = 'failed';
+      outcome = 'failed';
     }
+    if (attempt === generation) status = outcome;
   }
 </script>
 

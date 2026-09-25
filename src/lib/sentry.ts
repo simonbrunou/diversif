@@ -104,7 +104,10 @@ const SELECTOR_ATTRIBUTE = /(?:^|\.)(?:lcp\.element|cls\.source\.\d+)$/;
 // The `[attr="value"]` parts htmlTreeAsString appends (aria-label, title,
 // alt, name…). In this app those values name children and foods, e.g.
 // `a[aria-label="Ouvrir les réglages de Léo"]`; tag, id and classes stay.
-const SELECTOR_ATTRIBUTE_VALUE = /\[[\w-]+="(?:[^"\\]|\\.)*"\]/g;
+// Values are not escaped (a food named `Purée "maison"` keeps its quotes), so
+// a block ends at the `"]` followed by the next block, the ` > ` between
+// elements, or the end — attribute blocks always close an element's segment.
+const SELECTOR_ATTRIBUTE_VALUE = /\[[\w-]+=".*?"\](?=\[[\w-]+="|\s>\s|$)/g;
 
 function scrubSelector(selector: string): string {
   return selector.replace(SELECTOR_ATTRIBUTE_VALUE, '');

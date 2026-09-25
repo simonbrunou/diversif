@@ -351,6 +351,15 @@ describe('POST /monitoring — replay recordings', () => {
       'an item longer than the body',
       encoder.encode(`${JSON.stringify({ dsn: CONFIGURED_DSN })}\n{"type":"x","length":99}\n{}`)
     ],
+    // A negative length used to send offset backwards: the loop never ended.
+    [
+      'a negative item length',
+      encoder.encode(`${JSON.stringify({ dsn: CONFIGURED_DSN })}\n{"type":"x","length":-27}\n{}`)
+    ],
+    [
+      'a fractional item length',
+      encoder.encode(`${JSON.stringify({ dsn: CONFIGURED_DSN })}\n{"type":"x","length":0.5}\n{}`)
+    ],
     [
       'a recording without its segment line',
       encoder.encode(

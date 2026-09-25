@@ -99,8 +99,14 @@ function parseItems(bytes: Uint8Array, start: number): EnvelopeItem[] {
     const header: unknown = JSON.parse(decoder.decode(bytes.subarray(offset, headerEnd)));
     if (typeof header !== 'object' || header === null) throw new Error('item header');
     offset = headerEnd + 1;
-    const length = 'length' in header && typeof header.length === 'number' ? header.length : null;
-    let payloadEnd = length === null ? bytes.indexOf(NEWLINE, offset) : offset + length;
+    const length = 'length' in header ? header.length : undefined;
+    // A negative or fractional length would move `offset` backwards and never
+    // end this loop: one crafted request could pin the server.
+    if (length !== undefined && (!Number.isSafeInteger(length) || Number(length) < 0)) {
+      throw new Error('item length');
+    }
+    let payloadEnd =
+      length === undefined ? bytes.indexOf(NEWLINE, offset) : offset + Number(length);
     if (payloadEnd === -1) payloadEnd = bytes.length;
     if (payloadEnd > bytes.length) throw new Error('truncated item');
     items.push({ header: { ...header }, payload: bytes.subarray(offset, payloadEnd) });

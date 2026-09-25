@@ -3,7 +3,9 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/svelte';
 import '../../test/component';
 
 let reportFails = false;
+let heldSend: Promise<void> | undefined;
 const sendProblemReport = mock(async (_message: string, _tags: Record<string, string>) => {
+  await heldSend;
   if (reportFails) throw new Error('offline');
 });
 mock.module('$lib/sentry-feedback', () => ({ sendProblemReport }));
@@ -12,6 +14,7 @@ const { default: ProblemReportDialog } = await import('./ProblemReportDialog.sve
 
 beforeEach(() => {
   reportFails = false;
+  heldSend = undefined;
   sendProblemReport.mockClear();
 });
 afterEach(() => cleanup());
@@ -55,5 +58,24 @@ describe('ProblemReportDialog', () => {
     expect((await screen.findByRole('alert')).textContent).toContain('L’envoi a échoué');
     expect(textarea.value).toBe('Écran blanc');
     expect(submitButton().disabled).toBe(false);
+  });
+
+  it('opens fresh when a report sent before closing finishes afterwards', async () => {
+    const { promise, resolve } = Promise.withResolvers<void>();
+    heldSend = promise;
+    const { rerender } = render(ProblemReportDialog, { props: { open: true } });
+    await fireEvent.input(screen.getByLabelText('Que s’est-il passé ?'), {
+      target: { value: 'Écran blanc' }
+    });
+    await fireEvent.click(submitButton());
+
+    // Escape / overlay / X while the report is still sending.
+    await rerender({ open: false });
+    resolve();
+    await sendProblemReport.mock.results[0].value;
+    await rerender({ open: true });
+
+    expect(screen.queryByRole('status')).toBeNull();
+    expect((screen.getByLabelText('Que s’est-il passé ?') as HTMLTextAreaElement).value).toBe('');
   });
 });

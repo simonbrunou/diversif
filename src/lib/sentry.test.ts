@@ -349,6 +349,16 @@ describe('scrubSpan', () => {
     expect(scrubSpan(span).description).toBe('div.grid > a.flex.items-center#row-3');
   });
 
+  it('strips attribute values that contain unescaped quotes, keeping Tailwind classes', () => {
+    // htmlTreeAsString doesn't escape values; custom food names are free text.
+    const span = {
+      op: 'ui.interaction.click',
+      description:
+        'li.w-[88px] > button.pill[aria-label="Retirer Purée "maison" de la sélection"][type="button"]'
+    };
+    expect(scrubSpan(span).description).toBe('li.w-[88px] > button.pill');
+  });
+
   it('reads the op from span data for web-vital spans', () => {
     const span = {
       description: 'button.pill[aria-label="Retirer Poisson de la sélection"]',
