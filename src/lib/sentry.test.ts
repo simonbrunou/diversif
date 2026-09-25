@@ -574,7 +574,8 @@ describe('isNetworkFailure', () => {
     'Load failed',
     'Load failed (diversif.app)',
     'The Internet connection appears to be offline.',
-    'Importing a module script failed.'
+    'Importing a module script failed.',
+    'Error in input stream'
   ])('recognises the browser TypeError %p', (message) => {
     expect(isNetworkFailure(new TypeError(message))).toBe(true);
   });
@@ -603,9 +604,45 @@ describe('clientRouteTag', () => {
     expect(clientRouteTag('/politique-confidentialite', {})).toBe('/politique-confidentialite');
   });
 
-  it('scrubs the page key a failed __data.json fetch passes as route.id', () => {
+  it('rebuilds the pattern from the page key a failed __data.json fetch passes as route.id', () => {
     expect(clientRouteTag('/child/18/guide', { id: '18' })).toBe('/child/[id]/guide');
-    expect(clientRouteTag('/join/abcd1234?ref=mail', { code: 'abcd1234' })).toBe('/join/[id]');
+    expect(clientRouteTag('/join/BEBE-ABCDEF?ref=mail', { code: 'BEBE-ABCDEF' })).toBe(
+      '/join/[code]'
+    );
+    expect(clientRouteTag('/en/child/7/log/3', { id: '7', entryId: '3' })).toBe(
+      '/en/child/[id]/log/[entryId]'
+    );
+  });
+
+  it('hides a param value scrubPathname would keep', () => {
+    // Too short / all letters for scrubPathname's token heuristics.
+    expect(clientRouteTag('/join/BEBE-AB', { code: 'BEBE-AB' })).toBe('/join/[code]');
+    expect(clientRouteTag('/join/bebeabcdef', { code: 'bebeabcdef' })).toBe('/join/[code]');
+  });
+
+  it('names params in route order when two values are equal', () => {
+    expect(clientRouteTag('/child/5/log/5', { id: '5', entryId: '5' })).toBe(
+      '/child/[id]/log/[entryId]'
+    );
+  });
+
+  it('matches params against decoded segments', () => {
+    expect(clientRouteTag('/join/caf%C3%A9', { code: 'café' })).toBe('/join/[code]');
+    // A malformed escape cannot be decoded; SvelteKit's param keeps it raw.
+    expect(clientRouteTag('/join/%E0%A4%A', { code: '%E0%A4%A' })).toBe('/join/[code]');
+  });
+
+  it('falls back to scrubPathname when a value spans segments', () => {
+    expect(clientRouteTag('/docs/2024/notes', { path: '2024/notes' })).toBe('/docs/[id]/notes');
+  });
+
+  it('reads a raw page key containing `[` as a key, not a pattern', () => {
+    expect(clientRouteTag('/child/[18]/guide', { id: '[18]' })).toBe('/child/[id]/guide');
+  });
+
+  it('ignores optional and rest params that matched nothing', () => {
+    expect(clientRouteTag('/docs', { rest: '' })).toBe('/docs');
+    expect(clientRouteTag('/child/18', { lang: undefined, id: '18' })).toBe('/child/[id]');
   });
 
   it('drops the query a static page key carries', () => {
