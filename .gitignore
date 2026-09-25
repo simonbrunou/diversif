@@ -17,6 +17,8 @@ data
 # Machine-local Claude settings (permissions + any machine-local env).
 # Reproduce from .claude/settings.local.json.example via scripts/claude-setup.sh.
 .claude/settings.local.json
+# Machine-local omp (Oh My Pi) agent config, incl. MCP OAuth state.
+.omp/
 .playwright-mcp/
 *.log
 coverage
