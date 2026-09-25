@@ -18,15 +18,27 @@
  * project — otherwise this endpoint would be an open relay letting anyone
  * push arbitrary data into (or spend the quota of) any Sentry project.
  *
- * adapter-node's BODY_SIZE_LIMIT (128KB recommended in .env.example) caps how large an
- * envelope can be before SvelteKit itself rejects the request with 413, so we
- * don't enforce our own size limit on top of it. Measured sizes and the
- * trade-off are documented next to BODY_SIZE_LIMIT in .env.example.
+ * adapter-node's BODY_SIZE_LIMIT (128KB recommended in .env.example) caps how
+ * large an envelope can be before SvelteKit itself rejects the request with
+ * 413; measured sizes and the trade-off are documented next to it. Because the
+ * tunnel works for unauthenticated callers — outbound requests, and decoding
+ * replay recordings — it is also throttled per client address, and
+ * decompression is capped so a small gzip bomb cannot exhaust memory.
  */
 
 import { deflateSync, gzipSync, unzipSync } from 'node:zlib';
 import { scrubRecordingFrames } from '$lib/sentry';
+import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
 import type { RequestHandler } from './$types';
+
+// A parent's tab sends a few envelopes per navigation, plus one replay segment
+// every 5 s once an error has started a recording; 4 per second per address
+// leaves room for co-parents behind the same NAT.
+const TUNNEL_LIMIT = { name: 'sentry-tunnel', limit: 240, windowMs: 60_000 };
+
+// Recordings measure ~60 KB compressed (≈1 MB of JSON); anything that inflates
+// past this is not a real replay segment.
+const MAX_RECORDING_BYTES = 8 * 1024 * 1024;
 
 interface ParsedDsn {
   /** `${protocol}//${host}`, e.g. "https://o1.ingest.de.sentry.io". */
@@ -110,9 +122,8 @@ function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
 /**
  * A `replay_recording` payload is a `{"segment_id":N}` line followed by the
  * rrweb event array — gzip (Replay's compression worker), zlib, or plain JSON
- * (no worker). Decode it, scrub the frames the client could not reach (the
- * rrweb Meta frame's page URL, see scrubRecordingFrames) and re-encode it the
- * same way.
+ * (no worker). Decode it, scrub the frames the client could not reach (see
+ * scrubRecordingFrames) and re-encode it the same way.
  */
 function scrubReplayRecording(payload: Uint8Array): Uint8Array {
   const segmentEnd = payload.indexOf(NEWLINE);
@@ -120,10 +131,11 @@ function scrubReplayRecording(payload: Uint8Array): Uint8Array {
   const body = payload.subarray(segmentEnd + 1);
   const gzip = body[0] === 0x1f && body[1] === 0x8b;
   const zlib = body[0] === 0x78;
-  const frames: unknown = JSON.parse(decoder.decode(gzip || zlib ? unzipSync(body) : body));
+  const json = gzip || zlib ? unzipSync(body, { maxOutputLength: MAX_RECORDING_BYTES }) : body;
+  const frames: unknown = JSON.parse(decoder.decode(json));
   scrubRecordingFrames(frames);
-  const json = encoder.encode(JSON.stringify(frames));
-  const encoded = gzip ? gzipSync(json) : zlib ? deflateSync(json) : json;
+  const scrubbed = encoder.encode(JSON.stringify(frames));
+  const encoded = gzip ? gzipSync(scrubbed) : zlib ? deflateSync(scrubbed) : scrubbed;
   return concat([payload.subarray(0, segmentEnd + 1), encoded]);
 }
 
@@ -144,17 +156,26 @@ function scrubEnvelope(bytes: Uint8Array<ArrayBuffer>, headerEnd: number): Uint8
   return concat(parts);
 }
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
   // Read per request (not module scope) so tests can set/unset the env var,
   // and so the tunnel turns off the moment browser capture is disabled.
   const configuredDsn = process.env.PUBLIC_SENTRY_DSN;
   const configured = configuredDsn ? parseDsn(configuredDsn) : null;
   if (!configured) return new Response(null, { status: 404 });
 
+  const rl = checkRateLimit(TUNNEL_LIMIT, clientKey(event));
+  if (!rl.allowed) {
+    // The browser SDK reads Retry-After on 429 and backs off.
+    return new Response(null, {
+      status: 429,
+      headers: { 'Retry-After': String(rl.retryAfterSeconds) }
+    });
+  }
+
   // Envelopes may contain binary payloads (gzip-compressed replay
   // segments), so the body is read and forwarded as raw bytes — never
   // decoded as text as a whole.
-  const bytes = new Uint8Array(await request.arrayBuffer());
+  const bytes = new Uint8Array(await event.request.arrayBuffer());
   const newlineIndex = bytes.indexOf(0x0a);
   if (newlineIndex === -1) return new Response(null, { status: 400 });
 

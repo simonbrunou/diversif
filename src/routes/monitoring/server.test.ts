@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, spyOn } from 'bun:test';
 import { deflateSync, gzipSync, unzipSync } from 'node:zlib';
+import { _clearAllRateLimits } from '$lib/server/rate-limit';
 import { POST } from './+server';
 
 const ORIGINAL_DSN = process.env.PUBLIC_SENTRY_DSN;
@@ -7,6 +8,7 @@ const ORIGINAL_DSN = process.env.PUBLIC_SENTRY_DSN;
 afterEach(() => {
   if (ORIGINAL_DSN === undefined) delete process.env.PUBLIC_SENTRY_DSN;
   else process.env.PUBLIC_SENTRY_DSN = ORIGINAL_DSN;
+  _clearAllRateLimits();
 });
 
 // Envelope header + one item header + a payload containing non-UTF-8 bytes
@@ -28,8 +30,10 @@ function makeRequest(body: Uint8Array, headers: Record<string, string> = {}): Re
   return new Request('http://localhost/monitoring', { method: 'POST', body, headers });
 }
 
-function post(request: Request): Promise<Response> {
-  return POST({ request } as unknown as Parameters<typeof POST>[0]);
+function post(request: Request, clientAddress = '198.51.100.7'): Promise<Response> {
+  return POST({ request, getClientAddress: () => clientAddress } as unknown as Parameters<
+    typeof POST
+  >[0]);
 }
 
 const CONFIGURED_DSN = 'https://abc@o1.ingest.de.sentry.io/42';
@@ -226,6 +230,26 @@ describe('POST /monitoring', () => {
   });
 });
 
+describe('POST /monitoring — throttling', () => {
+  it('answers 429 with Retry-After once one address exceeds 240 envelopes a minute', async () => {
+    process.env.PUBLIC_SENTRY_DSN = CONFIGURED_DSN;
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(
+      async () => new Response(null, { status: 200 })
+    );
+    for (let i = 0; i < 240; i++) {
+      expect((await post(makeRequest(buildEnvelope(CONFIGURED_DSN)))).status).toBe(200);
+    }
+
+    const throttled = await post(makeRequest(buildEnvelope(CONFIGURED_DSN)));
+
+    expect(throttled.status).toBe(429);
+    expect(Number(throttled.headers.get('retry-after'))).toBeGreaterThan(0);
+    expect(fetchSpy).toHaveBeenCalledTimes(240);
+    // Other clients keep their own budget.
+    expect((await post(makeRequest(buildEnvelope(CONFIGURED_DSN)), '192.0.2.44')).status).toBe(200);
+  });
+});
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -333,7 +357,13 @@ describe('POST /monitoring — replay recordings', () => {
         `${JSON.stringify({ dsn: CONFIGURED_DSN })}\n{"type":"replay_recording","length":2}\n[]`
       )
     ],
-    ['a corrupt compressed recording', replayEnvelope(new Uint8Array([0x1f, 0x8b, 0x00, 0x01]))]
+    ['a corrupt compressed recording', replayEnvelope(new Uint8Array([0x1f, 0x8b, 0x00, 0x01]))],
+    // ~20 KB on the wire, a valid ~9.4 MB JSON array once inflated: only the
+    // decompression cap can reject it.
+    [
+      'a recording that inflates past 8 MiB',
+      replayEnvelope(gzipSync(encoder.encode(`[${'0,'.repeat(4_700_000)}0]`)))
+    ]
   ];
 
   for (const [name, envelope] of malformed) {

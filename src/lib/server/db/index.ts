@@ -87,7 +87,8 @@ if (!building && process.env.NODE_ENV !== 'test' && !process.env.BUN_TEST) {
     pool,
     beforeExit: () => stopCleanupTimer?.(),
     // Mirror the shutdown progress into Sentry Logs; the flush below sends
-    // whatever was emitted before it (shutdown.start, beforeExitFailed).
+    // whatever was emitted before it (shutdown.start, beforeExitFailed,
+    // shutdown.drained). Later lines reach the console only.
     log: (msg) => {
       console.log(JSON.stringify(msg));
       Sentry.logger.info('Shutdown', { ...msg });

@@ -108,7 +108,7 @@ describe('registerShutdownHandlers', () => {
     });
   });
 
-  it('runs flush after draining the pool, before exit', async () => {
+  it('runs flush after draining the pool, before exit, with the drain result logged first', async () => {
     const order: string[] = [];
     const pool = {
       end: mock(async () => {
@@ -126,13 +126,17 @@ describe('registerShutdownHandlers', () => {
       pool,
       process: proc,
       exit,
-      log: mock(),
+      // The flush closes Sentry, so anything logged after it never reaches
+      // Sentry Logs: the drain result has to come first.
+      log: mock((msg: { type: string }) => {
+        if (msg.type === 'shutdown.drained') order.push('drained');
+      }),
       flush,
       timeoutMs: 1000
     });
     proc.emit('SIGTERM');
     await waitFor(() => expect(exit).toHaveBeenCalledWith(0));
-    expect(order).toEqual(['drain', 'flush', 'exit']);
+    expect(order).toEqual(['drain', 'drained', 'flush', 'exit']);
     expect(flush).toHaveBeenCalledTimes(1);
   });
 
