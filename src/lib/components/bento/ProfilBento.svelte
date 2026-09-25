@@ -1,4 +1,6 @@
 <script lang="ts">
+  import * as Sentry from '@sentry/sveltekit';
+  import { onMount } from 'svelte';
   import ChildCardRow from './ChildCardRow.svelte';
   import CoparentsSection from './CoparentsSection.svelte';
   import CompteSection from './CompteSection.svelte';
@@ -27,6 +29,19 @@
     locale: 'fr' | 'en';
     theme: 'system' | 'light' | 'dark';
   } = $props();
+
+  // Offered only once hydrated and when browser capture is configured (no
+  // DSN = self-hosted without Sentry: a report would go nowhere).
+  let canReport = $state(false);
+  onMount(() => {
+    canReport = Boolean(Sentry.getClient()?.getDsn());
+  });
+
+  async function reportProblem() {
+    // Code-split: the feedback widget is fetched on first use only.
+    const { openFeedbackForm } = await import('$lib/sentry-feedback');
+    await openFeedbackForm();
+  }
 </script>
 
 <div class="flex flex-col">
@@ -60,6 +75,13 @@
     <SectionHeader>{m.profilLegalTitle()}</SectionHeader>
     <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-primary-strong">
       <li><a href={localizedHref('/aide')} class="underline">{m.aideNavLabel()}</a></li>
+      {#if canReport}
+        <li>
+          <button type="button" class="underline" onclick={reportProblem}>
+            {m.feedbackReportProblem()}
+          </button>
+        </li>
+      {/if}
       <li><a href={localizedHref('/cgu')} class="underline">{m.chromePublicFooterCGU()}</a></li>
       <li><a href={localizedHref('/mentions-legales')} class="underline">{m.chromeLegalLinksMentionsLegales()}</a></li>
       <li><a href={localizedHref('/politique-confidentialite')} class="underline">{m.chromeLegalLinksPolitiqueConfidentialite()}</a></li>

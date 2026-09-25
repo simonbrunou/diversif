@@ -314,12 +314,12 @@ jobs:
       # @sentry/vite-plugin as a hard `dependency` rather than a
       # devDependency/optionalDependency upstream, so it ships in
       # prod-deps' node_modules even though nothing at runtime imports it —
-      # grep confirms `sentryVitePlugin` is only ever imported from
-      # vite.config.ts, a build-time-only file never bundled into
-      # build/index.js. It pulled in brace-expansion/browserslist/
-      # baseline-browser-mapping transitively before the overrides above
-      # fixed those; harmless dead weight either way, but worth knowing why
-      # it's there if `bun audit` ever flags something in that chain again.
+      # it is only reached through `sentrySvelteKit` in vite.config.ts, a
+      # build-time-only file never bundled into build/index.js. It pulled in
+      # brace-expansion/browserslist/baseline-browser-mapping transitively
+      # before the overrides above fixed those; harmless dead weight either
+      # way, but worth knowing why it's there if `bun audit` ever flags
+      # something in that chain again.
       - name: Production dependencies (strict — ships in the runtime image)
         run: |
           set -e

@@ -16,7 +16,7 @@ services:
       WEBAUTHN_RP_ID: localhost
       DATABASE_PATH: /app/data/diversif.db
       NODE_ENV: development
-      BODY_SIZE_LIMIT: 65536
+      BODY_SIZE_LIMIT: 131072
     volumes:
       # SQLite lives on a named volume so it survives `docker compose down`
       # (without -v) and image rebuilds. Losing this volume loses all data.

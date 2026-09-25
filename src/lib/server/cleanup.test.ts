@@ -1,9 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime, spyOn } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
-
-mock.module('$lib/server/db', () => ({ db: testDb }));
-
-import { runCleanup, startCleanupTimer, stopCleanupTimer } from './cleanup';
 import {
   idempotencyKeys,
   invitations,
@@ -13,6 +9,23 @@ import {
   children
 } from './db/schema';
 import { _clearAllRateLimits, checkRateLimit } from './rate-limit';
+
+mock.module('$lib/server/db', () => ({ db: testDb }));
+
+// Tests resolve the browser build of @sentry/sveltekit (scripts/bun-test.ts
+// runs with --conditions=browser), which has no cron API. Registering the
+// stand-in before cleanup.ts is first loaded makes it the whole module rather
+// than a patch over the browser build's fixed export list — a static import
+// would be hoisted above mock.module and load the browser build first.
+const withMonitorMock = mock(<T>(_slug: string, callback: () => T, _config: unknown) => callback());
+const captureExceptionMock = mock();
+mock.module('@sentry/sveltekit', () => ({
+  withMonitor: withMonitorMock,
+  captureException: captureExceptionMock,
+  logger: { info: mock() }
+}));
+
+const { runCleanup, startCleanupTimer, stopCleanupTimer } = await import('./cleanup');
 
 beforeEach(async () => {
   await resetTestDb();
@@ -149,6 +162,13 @@ describe('startCleanupTimer', () => {
     // Allow the initial async run to flush.
     await new Promise((r) => setImmediate(r));
     expect(await testDb.select().from(sessions)).toHaveLength(0);
+    // The run is reported to the Sentry cron monitor Sentry alerts on when a
+    // 6-hourly check-in goes missing.
+    expect(withMonitorMock).toHaveBeenCalledWith(
+      'diversif-cleanup',
+      runCleanup,
+      expect.objectContaining({ schedule: { type: 'interval', value: 6, unit: 'hour' } })
+    );
 
     // Second call is a no-op.
     startCleanupTimer();
@@ -185,6 +205,9 @@ describe('startCleanupTimer', () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(errSpy).toHaveBeenCalledWith('[cleanup] initial run failed:', expect.any(Error));
+    expect(captureExceptionMock).toHaveBeenCalledWith(expect.any(Error), {
+      tags: { subsystem: 'cleanup' }
+    });
 
     // The scheduled-run branch can't be exercised here — see TODO above.
     // The runtime path is identical to the initial-run branch (both wrap

@@ -1,8 +1,5 @@
-// Side-effect-only: must be the first import so Sentry is initialised
-// before any module that captures during its own init (e.g. $lib/server/db).
-import '$lib/sentry-init.server';
-
 import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
 import { randomBytes } from 'node:crypto';
 import {
   SESSION_COOKIE,
@@ -56,11 +53,17 @@ export const handleError: HandleServerError = ({ error, event, status, message }
     })
   );
   Sentry.captureException(err, {
-    tags: {
-      errorId,
-      status,
-      method: event.request.method,
-      route: event.route?.id ?? null
+    // Same mechanism Sentry's own handleErrorWithSentry reports: SvelteKit
+    // caught it, but no app code handled it, so the issue counts as unhandled
+    // (and a crashed session in release health).
+    mechanism: { type: 'auto.function.sveltekit.handle_error', handled: false },
+    captureContext: {
+      tags: {
+        errorId,
+        status,
+        method: event.request.method,
+        route: event.route?.id ?? null
+      }
     }
   });
   return { message: 'Internal Error', errorId };
@@ -208,10 +211,22 @@ const appHandle = async (
  * locale always matches the URL, so the middleware never issues a locale
  * redirect — routing behavior is byte-identical to the 1.x setup.
  */
-export const handle: Handle = ({ event, resolve }) =>
+export const localizedHandle: Handle = ({ event, resolve }) =>
   paraglideMiddleware(event.request, ({ request, locale }) => {
     // The middleware hands back a request whose URL is de-localized,
     // matching what `reroute` already did for `event.url`.
     event.request = request;
     return appHandle(event, resolve, locale);
   });
+
+/**
+ * sentryHandle runs first: it gives every request its own isolation scope,
+ * names the server transaction after the route pattern, continues the
+ * browser's trace and adds the `sentry-trace`/`baggage` meta tags that link
+ * the pageload span to it. The fetch-proxy script it can inject is only needed
+ * for SvelteKit < 2.16 and would be blocked by the hash-based CSP anyway.
+ */
+export const handle: Handle = sequence(
+  Sentry.sentryHandle({ injectFetchProxyScript: false }),
+  localizedHandle
+);
