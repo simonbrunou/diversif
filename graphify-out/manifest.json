@@ -402,8 +402,8 @@
     "semantic_hash": ""
   },
   "src/hooks.client.ts": {
-    "mtime": 1790348304.3933372,
-    "seen": 1790348474.8511262,
+    "mtime": 1790350500.3301437,
+    "seen": 1790350542.4882402,
     "ast_hash": "a73ebde81fd9f7f8d110ba9991c32fb7",
     "semantic_hash": ""
   },
@@ -1656,15 +1656,15 @@
     "semantic_hash": ""
   },
   "src/lib/sentry.test.ts": {
-    "mtime": 1790348625.9557624,
-    "seen": 1790348638.9782228,
-    "ast_hash": "3226cc84e1084679a9edd37b28793e22",
+    "mtime": 1790350466.6704826,
+    "seen": 1790350542.4936414,
+    "ast_hash": "4ecdbbfae769e31a49980edc5b707cc1",
     "semantic_hash": ""
   },
   "src/lib/sentry.ts": {
-    "mtime": 1790348630.7090614,
-    "seen": 1790348638.978225,
-    "ast_hash": "7425d246ba15dcb6e239ad858dddf1d1",
+    "mtime": 1790350500.618141,
+    "seen": 1790350542.4936428,
+    "ast_hash": "e80ba598c0cfaf7064298ab2b21d534f",
     "semantic_hash": ""
   },
   "src/lib/seo.test.ts": {
@@ -3765,6 +3765,12 @@
     "mtime": 1790346026.9926462,
     "seen": 1790347545.439045,
     "ast_hash": "4e93638487654c48ff5c23fee1878779",
+    "semantic_hash": ""
+  },
+  "src/hooks.client.test.ts": {
+    "mtime": 1790350476.4463842,
+    "seen": 1790350542.4882383,
+    "ast_hash": "6533c56287f7206688721629f68904c9",
     "semantic_hash": ""
   }
 }
