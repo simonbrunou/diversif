@@ -183,6 +183,85 @@ export function filterIncomingBreadcrumb<B extends { category?: string }>(b: B):
   return b;
 }
 
+// What each browser engine says when the network fails the request —
+// offline, connection dropped before or while the body streams in, request
+// aborted by a page unload — for a `fetch` (SvelteKit's `__data.json`) or a
+// code-split chunk import. Sentry's fetch instrumentation may append the
+// host: `Failed to fetch (diversif.app)`.
+const NETWORK_FAILURE_MESSAGES = [
+  // Chromium
+  /^Failed to fetch(?: \(.*\))?$/,
+  /^network error$/,
+  /^Failed to fetch dynamically imported module: /,
+  // Firefox
+  /^NetworkError when attempting to fetch resource\.(?: \(.*\))?$/,
+  /^error loading dynamically imported module: /,
+  // dom/streams/UnderlyingSourceCallbackHelpers.cpp: the body stream broke.
+  /^Error in input stream$/,
+  // WebKit
+  /^Load failed(?: \(.*\))?$/,
+  /^The Internet connection appears to be offline\.$/,
+  /^Importing a module script failed\.$/
+];
+
+/**
+ * Whether a client-side error is the browser failing to reach the server
+ * rather than a bug. Engines raise these as a `TypeError` with no app frames
+ * (chunk imports) or only SvelteKit's (fetches), and the scrubbed message is
+ * the same for all of them, so they pile into one opaque Sentry issue
+ * whatever the route (DIVERSIF-4). A redeploy that removes the previous
+ * build's hashed chunks fails the same way for a tab still on the old build.
+ */
+export function isNetworkFailure(error: unknown): boolean {
+  return (
+    error instanceof TypeError && NETWORK_FAILURE_MESSAGES.some((re) => re.test(error.message))
+  );
+}
+
+/** A path segment as SvelteKit decodes it into `params`; a malformed escape stays raw. */
+function decodeSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
+}
+
+/**
+ * Route tag for a client-side handleError event. SvelteKit hands the hook
+ * the route pattern (`/child/[id]/guide`) — except when the `__data.json`
+ * fetch itself fails, where `route.id` is the page key: raw pathname plus
+ * query (`/child/18/guide?x=1`). scrubEvent trusts the tag as a pattern, so a
+ * raw key must be turned back into one here. The query goes whatever the
+ * route (`/signup?code=` carries an invite code); a pattern never has one.
+ *
+ * Each param value is swapped back for its `[name]`, in route order:
+ * scrubPathname's heuristics miss a short or alphabetic value such as a
+ * mistyped invite code. Optional and rest params that matched nothing carry
+ * no value to find. A static route has no params, so its id comes back
+ * verbatim, which scrubPathname would get wrong (`/politique-confidentialite`
+ * → `/[id]`). If a value is missing, the id is either a real pattern (it
+ * contains `[`), kept verbatim, or a value spanning segments (a rest param),
+ * left to scrubPathname. A raw key can contain `[` too (`/child/[18]/guide`),
+ * hence substituting before that check.
+ */
+export function clientRouteTag(
+  routeId: string | null | undefined,
+  params: Record<string, unknown>
+): string | null {
+  if (!routeId) return null;
+  const path = routeId.split(/[?#]/, 1)[0];
+  const pending = Object.entries(params).filter(([, value]) => value);
+  const segments = path.split('/').map((segment) => {
+    const next = pending[0];
+    if (!next || decodeSegment(segment) !== next[1]) return segment;
+    pending.shift();
+    return `[${next[0]}]`;
+  });
+  if (pending.length === 0) return segments.join('/');
+  return path.includes('[') ? path : scrubPathname(path);
+}
+
 // Strip free-form text that may contain user input. The errorId tag is
 // still attached, and the full Error message + stack live in the
 // [diversif:error] stderr line indexed by that token.

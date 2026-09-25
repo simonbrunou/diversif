@@ -7,7 +7,9 @@ import {
   scrubLog,
   scrubRecordingEvent,
   scrubRecordingFrames,
-  parseSampleRate
+  parseSampleRate,
+  isNetworkFailure,
+  clientRouteTag
 } from './sentry';
 
 describe('scrubPathname', () => {
@@ -557,5 +559,99 @@ describe('filterIncomingBreadcrumb', () => {
   it('keeps breadcrumbs without a category', () => {
     const b = { message: 'no category here' };
     expect(filterIncomingBreadcrumb(b)).toBe(b);
+  });
+});
+
+describe('isNetworkFailure', () => {
+  it.each([
+    'Failed to fetch',
+    'Failed to fetch (diversif.app)',
+    'network error',
+    'Failed to fetch dynamically imported module: https://diversif.app/_app/immutable/nodes/19.x.js',
+    'NetworkError when attempting to fetch resource.',
+    'NetworkError when attempting to fetch resource. (diversif.app)',
+    'error loading dynamically imported module: https://diversif.app/_app/immutable/nodes/19.x.js',
+    'Load failed',
+    'Load failed (diversif.app)',
+    'The Internet connection appears to be offline.',
+    'Importing a module script failed.',
+    'Error in input stream'
+  ])('recognises the browser TypeError %p', (message) => {
+    expect(isNetworkFailure(new TypeError(message))).toBe(true);
+  });
+
+  it('reports TypeErrors raised by app code', () => {
+    expect(
+      isNetworkFailure(new TypeError("Cannot read properties of undefined (reading 'id')"))
+    ).toBe(false);
+    // Only the whole message counts: app code quoting a network error is a bug.
+    expect(isNetworkFailure(new TypeError('Parsing failed: Failed to fetch'))).toBe(false);
+  });
+
+  it('reports a network-looking message that is not a TypeError', () => {
+    expect(isNetworkFailure(new Error('Failed to fetch'))).toBe(false);
+    expect(isNetworkFailure('Failed to fetch')).toBe(false);
+    expect(isNetworkFailure(undefined)).toBe(false);
+  });
+});
+
+describe('clientRouteTag', () => {
+  it('keeps a dynamic route pattern verbatim', () => {
+    expect(clientRouteTag('/child/[id]/guide', { id: '18' })).toBe('/child/[id]/guide');
+  });
+
+  it('keeps a static route id verbatim, even a long hyphenated one', () => {
+    expect(clientRouteTag('/politique-confidentialite', {})).toBe('/politique-confidentialite');
+  });
+
+  it('rebuilds the pattern from the page key a failed __data.json fetch passes as route.id', () => {
+    expect(clientRouteTag('/child/18/guide', { id: '18' })).toBe('/child/[id]/guide');
+    expect(clientRouteTag('/join/BEBE-ABCDEF?ref=mail', { code: 'BEBE-ABCDEF' })).toBe(
+      '/join/[code]'
+    );
+    expect(clientRouteTag('/en/child/7/log/3', { id: '7', entryId: '3' })).toBe(
+      '/en/child/[id]/log/[entryId]'
+    );
+  });
+
+  it('hides a param value scrubPathname would keep', () => {
+    // Too short / all letters for scrubPathname's token heuristics.
+    expect(clientRouteTag('/join/BEBE-AB', { code: 'BEBE-AB' })).toBe('/join/[code]');
+    expect(clientRouteTag('/join/bebeabcdef', { code: 'bebeabcdef' })).toBe('/join/[code]');
+  });
+
+  it('names params in route order when two values are equal', () => {
+    expect(clientRouteTag('/child/5/log/5', { id: '5', entryId: '5' })).toBe(
+      '/child/[id]/log/[entryId]'
+    );
+  });
+
+  it('matches params against decoded segments', () => {
+    expect(clientRouteTag('/join/caf%C3%A9', { code: 'café' })).toBe('/join/[code]');
+    // A malformed escape cannot be decoded; SvelteKit's param keeps it raw.
+    expect(clientRouteTag('/join/%E0%A4%A', { code: '%E0%A4%A' })).toBe('/join/[code]');
+  });
+
+  it('falls back to scrubPathname when a value spans segments', () => {
+    expect(clientRouteTag('/docs/2024/notes', { path: '2024/notes' })).toBe('/docs/[id]/notes');
+  });
+
+  it('reads a raw page key containing `[` as a key, not a pattern', () => {
+    expect(clientRouteTag('/child/[18]/guide', { id: '[18]' })).toBe('/child/[id]/guide');
+  });
+
+  it('ignores optional and rest params that matched nothing', () => {
+    expect(clientRouteTag('/docs', { rest: '' })).toBe('/docs');
+    expect(clientRouteTag('/child/18', { lang: undefined, id: '18' })).toBe('/child/[id]');
+  });
+
+  it('drops the query a static page key carries', () => {
+    expect(clientRouteTag('/signup?code=ABCD1234', {})).toBe('/signup');
+    expect(clientRouteTag('/login?next=/child/18', {})).toBe('/login');
+  });
+
+  it('returns null without a route id', () => {
+    expect(clientRouteTag(null, {})).toBeNull();
+    expect(clientRouteTag(undefined, { id: '1' })).toBeNull();
   });
 });

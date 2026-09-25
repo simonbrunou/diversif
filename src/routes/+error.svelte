@@ -42,7 +42,8 @@
   <div class="flex flex-wrap justify-center gap-2">
     <Button href={localizedHref('/')}>{m.errorsGenericHome()}</Button>
     <Button variant="outline" onclick={() => history.back()}>{m.errorsGenericBack()}</Button>
-    {#if canReport && status >= 500}
+    <!-- errorId marks a captured event; a network failure has none to match. -->
+    {#if canReport && status >= 500 && page.error?.errorId}
       <Button variant="ghost" onclick={() => (reporting = true)}>
         {m.feedbackReportThisProblem()}
       </Button>

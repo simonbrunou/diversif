@@ -111,6 +111,7 @@
   "legalCookiesTitle": "Cookies",
   "legalCookiesUpdated": "Last updated: 20 May 2026.",
   "errorsGenericFallback": "An error occurred.",
+  "errorsNetwork": "Unable to reach the server. Check your connection, then try again.",
   "errorsAuthRateLimited": "Too many attempts. Please try again later.",
   "errorsAuthRateLimitedSeconds": "Too many attempts. Try again in {seconds}s.",
   "errorsAuthBadInput": "Invalid fields.",
