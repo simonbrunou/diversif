@@ -4,8 +4,8 @@
 
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { cn } from '$lib/utils/cn';
-  import { AlertTriangle, Info, Check, type Icon as LucideIcon } from 'lucide-svelte';
+  import { cn } from '#lib/utils/cn.js';
+  import { AlertTriangle, Info, Check, type LucideIcon } from '@lucide/svelte';
 
   let {
     variant,
@@ -25,7 +25,7 @@
     success: 'bg-tile-mint text-tile-mint-foreground border-tile-mint/40'
   };
 
-  const ICONS: Record<Variant, typeof LucideIcon> = {
+  const ICONS: Record<Variant, LucideIcon> = {
     warning: AlertTriangle,
     info: Info,
     success: Check

@@ -1,6 +1,6 @@
 import { expect, mock } from 'bun:test';
 import { testDb, schema } from './db';
-import type { SafeUser } from '$lib/types';
+import type { SafeUser } from '#lib/types.js';
 
 type Membership = typeof schema.memberships.$inferSelect;
 

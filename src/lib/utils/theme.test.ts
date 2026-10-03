@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 // to setBrowser re-registers the mock with the new constant value so the
 // theme.ts side sees a fresh value at function-call time.
 function setBrowser(value: boolean): void {
-  mock.module('$app/environment', () => ({
+  mock.module('$app/env', () => ({
     browser: value,
     building: false,
     dev: true,

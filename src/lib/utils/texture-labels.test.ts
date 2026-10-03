@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 import { TEXTURE_VALUES, getTextureLabel } from './texture-labels';
 
 describe('texture-labels', () => {

@@ -4,12 +4,12 @@
   import AddSymptomSheet from './AddSymptomSheet.svelte';
   import StayCoolCard from './StayCoolCard.svelte';
   import SevereRail from './SevereRail.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import { type TextureKey } from '$lib/utils/textures';
-  import { getTextureLabel } from '$lib/utils/texture-labels';
-  import type { SymptomEntry } from '$lib/types';
-  import { ChevronLeft, Pencil } from 'lucide-svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import { type TextureKey } from '#lib/utils/textures.js';
+  import { getTextureLabel } from '#lib/utils/texture-labels.js';
+  import type { SymptomEntry } from '#lib/types.js';
+  import { ChevronLeft, Pencil } from '@lucide/svelte';
 
   let {
     childId,

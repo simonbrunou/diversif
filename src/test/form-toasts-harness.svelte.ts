@@ -4,7 +4,7 @@
  * compiled by the Svelte loader, so this rune-bearing `.svelte.ts` module
  * provides one via `$effect.root`.
  */
-import { createFormToasts } from '$lib/forms/form-toasts.svelte';
+import { createFormToasts } from '#lib/forms/form-toasts.svelte.js';
 
 export function mountFormToasts(keys: { successKey?: string; errorKey?: string }) {
   let form = $state<Record<string, unknown> | null>(null);

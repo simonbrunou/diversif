@@ -16,9 +16,9 @@
 </script>
 
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { cn } from '$lib/utils/cn';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import * as m from '#lib/paraglide/messages.js';
+  import { cn } from '#lib/utils/cn.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
 
   let {
     childId,
@@ -35,8 +35,7 @@
     <a
       href={localizedHref(`/child/${childId}/foods${seg.query}`)}
       aria-current={active ? 'page' : undefined}
-      data-sveltekit-noscroll
-      data-sveltekit-keepfocus
+      data-sveltekit-reset="false"
       data-sveltekit-replacestate
       class={cn(
         'flex min-h-11 flex-1 items-center justify-center rounded-full px-3 text-center text-xs font-semibold transition-colors duration-base ease-soft active:scale-[0.97]',

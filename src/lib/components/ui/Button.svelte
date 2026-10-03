@@ -36,8 +36,8 @@
 
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { cn } from '$lib/utils/cn';
-  import { Loader2 } from 'lucide-svelte';
+  import { cn } from '#lib/utils/cn.js';
+  import { Loader2 } from '@lucide/svelte';
 
   type Props = {
     variant?: Variant;

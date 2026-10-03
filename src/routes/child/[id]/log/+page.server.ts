@@ -1,30 +1,30 @@
 import { fail } from '@sveltejs/kit';
-import { localizedRedirect } from '$lib/server/redirect';
+import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
 import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { foodEntries, foods, preparedMeals } from '$lib/server/db/schema';
-import { requireChildContext } from '$lib/server/guards';
-import { audit } from '$lib/server/audit';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries, foods, preparedMeals } from '#lib/server/db/schema.js';
+import { requireChildContext } from '#lib/server/guards.js';
+import { audit } from '#lib/server/audit.js';
 import {
   loadVisibleFoodsForChild,
   resolveOrInsertFood,
   visibleToChild
-} from '$lib/server/food-resolution';
-import { TEXTURE_VALUES } from '$lib/utils/textures';
-import { mealDateErrorForChild } from '$lib/server/meal-date';
-import { REACTION_VALUES } from '$lib/utils/reaction-values';
+} from '#lib/server/food-resolution.js';
+import { TEXTURE_VALUES } from '#lib/utils/textures.js';
+import { mealDateErrorForChild } from '#lib/server/meal-date.js';
+import { REACTION_VALUES } from '#lib/utils/reaction-values.js';
 import {
   ALLERGENS,
   ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY,
   PRIORITY_INTRODUCTION_ALLERGENS,
   countsAsAllergenExposure
-} from '$lib/utils/allergens';
+} from '#lib/utils/allergens.js';
 import {
   IdempotencyInFlight,
   IdempotencyScopeMismatch,
   withIdempotencyKey
-} from '$lib/server/idempotency';
+} from '#lib/server/idempotency.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z

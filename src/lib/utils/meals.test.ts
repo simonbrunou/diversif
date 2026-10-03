@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
 import { groupByMeal } from './meals';
-import type { RecentEntry } from '$lib/types';
+import type { RecentEntry } from '#lib/types.js';
 
 const row = (id: number, mealId: string | null, reaction: 'ras' | 'inconfort' | 'reaction') => ({
   id,

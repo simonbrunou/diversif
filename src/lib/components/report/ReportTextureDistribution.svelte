@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { getTextureLabel } from '$lib/utils/texture-labels';
-  import { TEXTURE_VALUES, type TextureKey } from '$lib/utils/textures';
-  import * as m from '$lib/paraglide/messages';
+  import { getTextureLabel } from '#lib/utils/texture-labels.js';
+  import { TEXTURE_VALUES, type TextureKey } from '#lib/utils/textures.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let {
     textureDistribution

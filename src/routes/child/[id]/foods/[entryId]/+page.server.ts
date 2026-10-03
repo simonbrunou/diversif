@@ -1,20 +1,20 @@
 import { error, fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { db } from '$lib/server/db';
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import {
   listSymptomsByEntry,
   insertSymptom,
   deleteSymptomById,
   countNthExposition
-} from '$lib/server/db/symptoms';
-import { parseIntParam, requireChildContext } from '$lib/server/guards';
-import { SYMPTOM_LABELS, type SymptomLabel } from '$lib/content/symptoms';
-import { audit } from '$lib/server/audit';
-import { formatDate, formatTime } from '$lib/utils/dates';
-import { PARIS_TIME_ZONE, latestParisWallClock } from '$lib/utils/paris-date';
-import * as m from '$lib/paraglide/messages';
+} from '#lib/server/db/symptoms.js';
+import { parseIntParam, requireChildContext } from '#lib/server/guards.js';
+import { SYMPTOM_LABELS, type SymptomLabel } from '#lib/content/symptoms.js';
+import { audit } from '#lib/server/audit.js';
+import { formatDate, formatTime } from '#lib/utils/dates.js';
+import { PARIS_TIME_ZONE, latestParisWallClock } from '#lib/utils/paris-date.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { Actions, PageServerLoad } from './$types';
 
 async function loadEntryForChild(entryId: number, childId: number) {

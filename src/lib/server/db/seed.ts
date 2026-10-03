@@ -4,13 +4,12 @@ import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import { sql, count } from 'drizzle-orm';
 import { foods } from './schema';
 import type * as schema from './schema';
-import type { CategoryId } from '$lib/utils/categories';
-import type { AllergenId } from '$lib/utils/allergens';
+import type { CategoryId } from '#lib/utils/categories.js';
+import type { AllergenId } from '#lib/utils/allergens.js';
 
 type AnyDb = BunSQLiteDatabase<typeof schema>;
 type Tx =
-  | AnyDb
-  | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+  AnyDb | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 type SeedFood = {
   name: string;

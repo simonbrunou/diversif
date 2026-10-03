@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import Badge from '$components/ui/Badge.svelte';
-  import Callout from '$components/ui/Callout.svelte';
-  import type { Menu } from '$lib/server/menu/engine';
-  import type { MealId, RoleId } from '$lib/server/menu/tables';
-  import { getCategoryIcon, getCategoryClasses } from '$lib/utils/categories';
-  import { cn } from '$lib/utils/cn';
-  import * as m from '$lib/paraglide/messages';
+  import Card from '#lib/components/ui/Card.svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
+  import Callout from '#lib/components/ui/Callout.svelte';
+  import type { Menu } from '#lib/server/menu/engine.js';
+  import type { MealId, RoleId } from '#lib/server/menu/tables.js';
+  import { getCategoryIcon, getCategoryClasses } from '#lib/utils/categories.js';
+  import { cn } from '#lib/utils/cn.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let { menu, childId }: { menu: Menu; childId: number } = $props();
 

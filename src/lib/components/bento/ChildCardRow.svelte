@@ -1,7 +1,7 @@
 <script lang="ts">
-  import LinkRow from '$components/ui/LinkRow.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { ChevronRight } from 'lucide-svelte';
+  import LinkRow from '#lib/components/ui/LinkRow.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { ChevronRight } from '@lucide/svelte';
 
   type Child = { id: string; name: string; ageMonths: number };
 

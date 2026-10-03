@@ -1,9 +1,9 @@
 import { fail } from '@sveltejs/kit';
-import { localizedRedirect } from '$lib/server/redirect';
-import { SESSION_COOKIE } from '$lib/server/auth';
-import { deleteUserAccount } from '$lib/server/gdpr';
-import { requireUser } from '$lib/server/guards';
-import { requireFreshAuthWithKey } from '$lib/server/fresh-auth';
+import { localizedRedirect } from '#lib/server/redirect.js';
+import { SESSION_COOKIE } from '#lib/server/auth.js';
+import { deleteUserAccount } from '#lib/server/gdpr.js';
+import { requireUser } from '#lib/server/guards.js';
+import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {

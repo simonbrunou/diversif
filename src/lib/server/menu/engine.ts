@@ -1,8 +1,8 @@
-import type { Food } from '$lib/server/db/schema';
-import type { CategoryId } from '$lib/utils/categories';
-import { getStageForAgeMonths, type Stage, type StageId } from '$lib/content/guidance';
-import { getQuantitiesForStage, type StageQuantities } from '$lib/content/quantities';
-import { FORBIDDEN_FOODS } from '$lib/content/guidance';
+import type { Food } from '#lib/server/db/schema.js';
+import type { CategoryId } from '#lib/utils/categories.js';
+import { getStageForAgeMonths, type Stage, type StageId } from '#lib/content/guidance.js';
+import { getQuantitiesForStage, type StageQuantities } from '#lib/content/quantities.js';
+import { FORBIDDEN_FOODS } from '#lib/content/guidance.js';
 import {
   ROLE_POOLS,
   CHARCUTERIE_MATCHERS,
@@ -16,8 +16,8 @@ import {
   type MealId
 } from './tables';
 import { rotatePick } from './rotation';
-import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '$lib/utils/allergens';
-import type { DietExclusion } from '$lib/utils/diet';
+import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '#lib/utils/allergens.js';
+import type { DietExclusion } from '#lib/utils/diet.js';
 
 export type MenuInput = {
   childId: number;
@@ -30,7 +30,7 @@ export type MenuInput = {
   reactionTierFoodIds: Set<number>;
   introducedAllergens: Set<string>;
   reactedAllergens: Set<string>;
-  // Typed against $lib/utils/diet's enum (not a bare string[]) so a DIET_EXCLUSIONS
+  // Typed against #lib/utils/diet's enum (not a bare string[]) so a DIET_EXCLUSIONS
   // rename/removal is a compile error at every literal match site below.
   dietaryExclusions: DietExclusion[];
 };

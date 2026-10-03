@@ -7,12 +7,16 @@ name: diversif-local
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      # Plain http with no proxy in front: pin SvelteKit's paths.origin at
+      # build time, or form POSTs fail the CSRF check (Dockerfile ARG ORIGIN).
+      args:
+        ORIGIN: http://localhost:3000
     container_name: diversif-app
     ports:
       - '3000:3000'
     environment:
-      ORIGIN: http://localhost:3000
       WEBAUTHN_RP_ID: localhost
       DATABASE_PATH: /app/data/diversif.db
       NODE_ENV: development
@@ -29,7 +33,7 @@ services:
     # below point at a real S3-compatible bucket (Cloudflare R2 recommended)
     # — see DEPLOY.md B1 for the setup steps. Ordinary `docker compose up`
     # for local dev is unaffected.
-    image: litestream/litestream:0.3.13
+    image: litestream/litestream:0.5.17
     profiles: [backup]
     container_name: diversif-litestream
     command: replicate

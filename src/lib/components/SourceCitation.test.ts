@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/svelte';
 import '../../test/component';
 import SourceCitation from './SourceCitation.svelte';
-import { SOURCES } from '$lib/content/sources';
+import { SOURCES } from '#lib/content/sources.js';
 
 describe('SourceCitation', () => {
   it('renders an unordered list by default', () => {

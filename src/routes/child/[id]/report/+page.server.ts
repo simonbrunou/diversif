@@ -1,20 +1,20 @@
-import { db } from '$lib/server/db';
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { asc, eq } from 'drizzle-orm';
 import {
   ALLERGENS,
   PRIORITY_INTRODUCTION_ALLERGENS,
   countsAsAllergenExposure,
   getAllergenLabel
-} from '$lib/utils/allergens';
-import { CATEGORY_IDS, type CategoryId } from '$lib/utils/categories';
-import type { ReactionId } from '$lib/utils/reactions';
-import { REACTION_RANK } from '$lib/utils/reaction-values';
-import { ageInMonths } from '$lib/utils/age';
-import { toEpochMs } from '$lib/utils/dates';
-import { getStageForAgeMonths, type Stage } from '$lib/content/guidance';
-import { TEXTURE_VALUES, type TextureKey, isTextureKey } from '$lib/utils/textures';
-import { requireChildContext } from '$lib/server/guards';
+} from '#lib/utils/allergens.js';
+import { CATEGORY_IDS, type CategoryId } from '#lib/utils/categories.js';
+import type { ReactionId } from '#lib/utils/reactions.js';
+import { REACTION_RANK } from '#lib/utils/reaction-values.js';
+import { ageInMonths } from '#lib/utils/age.js';
+import { toEpochMs } from '#lib/utils/dates.js';
+import { getStageForAgeMonths, type Stage } from '#lib/content/guidance.js';
+import { TEXTURE_VALUES, type TextureKey, isTextureKey } from '#lib/utils/textures.js';
+import { requireChildContext } from '#lib/server/guards.js';
 import type { PageServerLoad } from './$types';
 
 type ReportEntry = {

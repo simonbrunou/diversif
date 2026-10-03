@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { reportReactionIcon, reportReactionClass, formatReportDay } from '$lib/utils/report';
-  import type { ReactionId } from '$lib/utils/reaction-values';
-  import { CircleDashed } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
+  import { reportReactionIcon, reportReactionClass, formatReportDay } from '#lib/utils/report.js';
+  import type { ReactionId } from '#lib/utils/reaction-values.js';
+  import { CircleDashed } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
 
   type AllergenRow = {
     id: string;

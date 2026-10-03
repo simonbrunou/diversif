@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import QuantitiesCard from './QuantitiesCard.svelte';
-import { QUANTITIES } from '$lib/content/quantities';
+import { QUANTITIES } from '#lib/content/quantities.js';
 
 afterEach(() => cleanup());
 

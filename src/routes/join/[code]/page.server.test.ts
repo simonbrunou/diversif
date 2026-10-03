@@ -9,12 +9,12 @@ import {
   seedUser
 } from '../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { invitations, memberships } from '$lib/server/db/schema';
+import { invitations, memberships } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 
 beforeEach(async () => {
   await resetTestDb();

@@ -9,11 +9,11 @@ import {
   seedUser
 } from '../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { foodEntries, foods, tipDismissals } from '$lib/server/db/schema';
+import { foodEntries, foods, tipDismissals } from '#lib/server/db/schema.js';
 import { load, actions } from './+page.server';
-import { groupByMeal } from '$lib/utils/meals';
+import { groupByMeal } from '#lib/utils/meals.js';
 
 beforeEach(async () => {
   await resetTestDb();

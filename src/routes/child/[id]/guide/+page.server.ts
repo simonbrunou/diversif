@@ -1,6 +1,6 @@
-import { ageInMonths } from '$lib/utils/age';
-import { getStageForAgeMonths, getAllStagesForBento } from '$lib/content/guidance';
-import { requireChildContext } from '$lib/server/guards';
+import { ageInMonths } from '#lib/utils/age.js';
+import { getStageForAgeMonths, getAllStagesForBento } from '#lib/content/guidance.js';
+import { requireChildContext } from '#lib/server/guards.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent, locals, params }) => {

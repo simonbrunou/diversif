@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/sveltekit';
 
 // Against the real browser SDK (sentry-feedback.test.ts stubs it): whether
 // tags leak depends on how the SDK's scope stack treats withScope callbacks.
-mock.module('$lib/sentry-replay-loader', () => ({ loadReplay: async () => {} }));
+mock.module('#lib/sentry-replay-loader.js', () => ({ loadReplay: async () => {} }));
 
 type Sent = { type: string; tags?: Record<string, string> };
 

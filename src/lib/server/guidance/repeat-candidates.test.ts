@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { findRepeatCandidates } from './repeat-candidates';
 import type { EnrichedEntry } from './queries';
-import type { AllergenId } from '$lib/utils/allergens';
+import type { AllergenId } from '#lib/utils/allergens.js';
 
 const NOW = new Date('2026-05-19T12:00:00Z').getTime();
 const DAY = 24 * 60 * 60 * 1000;

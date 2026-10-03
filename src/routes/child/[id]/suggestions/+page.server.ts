@@ -1,9 +1,9 @@
-import { db } from '$lib/server/db';
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { and, eq, lte, notInArray, sql } from 'drizzle-orm';
-import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '$lib/utils/allergens';
-import { ageInMonths } from '$lib/utils/age';
-import { requireChildContext } from '$lib/server/guards';
+import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '#lib/utils/allergens.js';
+import { ageInMonths } from '#lib/utils/age.js';
+import { requireChildContext } from '#lib/server/guards.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, parent, locals }) => {

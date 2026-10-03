@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { hashPassword, SESSION_COOKIE } from '$lib/server/auth';
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
-import { users } from '$lib/server/db/schema';
+import { hashPassword, SESSION_COOKIE } from '#lib/server/auth.js';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
+import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { actions, load } from './+page.server';
 

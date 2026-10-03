@@ -1,15 +1,15 @@
 <script lang="ts">
-  import AujourdhuiBento from '$lib/components/bento/AujourdhuiBento.svelte';
-  import CoparentActivity from '$lib/components/bento/CoparentActivity.svelte';
-  import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
-  import TipCard from '$lib/components/TipCard.svelte';
-  import SectionHeader from '$components/ui/SectionHeader.svelte';
+  import AujourdhuiBento from '#lib/components/bento/AujourdhuiBento.svelte';
+  import CoparentActivity from '#lib/components/bento/CoparentActivity.svelte';
+  import WelcomeDialog from '#lib/components/WelcomeDialog.svelte';
+  import TipCard from '#lib/components/TipCard.svelte';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
   import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
-  import { celebrate, pickMilestoneFromQuery } from '$lib/utils/milestones';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import * as m from '$lib/paraglide/messages';
-  import { Baby } from 'lucide-svelte';
+  import { celebrate, pickMilestoneFromQuery } from '#lib/utils/milestones.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import * as m from '#lib/paraglide/messages.js';
+  import { Baby } from '@lucide/svelte';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -29,7 +29,7 @@
     );
     if (!milestone) return;
     celebrate(toast, milestone);
-    const url = new URL(page.url);
+    const url = new URL(page.url.href);
     for (const key of [
       'logged',
       'first',

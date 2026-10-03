@@ -8,9 +8,9 @@ import {
   seedUser
 } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { load } from './+page.server';
 
 beforeEach(async () => {
@@ -212,7 +212,7 @@ describe('child/[id]/foods load', () => {
 
   it('bentoAllergens reports cleared for each priority allergen tried once with ras', async () => {
     const ctx = await setup();
-    const { PRIORITY_INTRODUCTION_ALLERGENS } = await import('$lib/utils/allergens');
+    const { PRIORITY_INTRODUCTION_ALLERGENS } = await import('#lib/utils/allergens.js');
     // Seed one food per priority allergen, each with a single 'ras' entry.
     for (const id of PRIORITY_INTRODUCTION_ALLERGENS) {
       const [food] = await testDb

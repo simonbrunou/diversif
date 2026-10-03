@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import { TEXTURE_PROGRESSION, CHOKING_HAZARDS } from '$lib/content/guidance';
-  import { Layers, AlertTriangle } from 'lucide-svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import { TEXTURE_PROGRESSION, CHOKING_HAZARDS } from '#lib/content/guidance.js';
+  import { Layers, AlertTriangle } from '@lucide/svelte';
 </script>
 
 <section id="textures" class="scroll-mt-6 space-y-3">

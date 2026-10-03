@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import { SOURCES, ALL_SOURCE_IDS } from '$lib/content/sources';
-  import { Library, ExternalLink } from 'lucide-svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import { SOURCES, ALL_SOURCE_IDS } from '#lib/content/sources.js';
+  import { Library, ExternalLink } from '@lucide/svelte';
 </script>
 
 <section id="sources" class="scroll-mt-6 space-y-3">

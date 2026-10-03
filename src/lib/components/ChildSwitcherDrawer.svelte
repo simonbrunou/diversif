@@ -1,8 +1,8 @@
 <script lang="ts">
   import Modal from './ui/Modal.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import { Plus, Check, Sprout } from 'lucide-svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import { Plus, Check, Sprout } from '@lucide/svelte';
 
   type Child = { id: string; name: string; birthMonth: string };
 

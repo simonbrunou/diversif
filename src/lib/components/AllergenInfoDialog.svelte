@@ -1,13 +1,13 @@
 <script lang="ts">
-  import DetailSheet from '$lib/components/ui/DetailSheet.svelte';
-  import SheetSection from '$lib/components/ui/SheetSection.svelte';
-  import Callout from '$lib/components/ui/Callout.svelte';
-  import Badge from '$components/ui/Badge.svelte';
+  import DetailSheet from '#lib/components/ui/DetailSheet.svelte';
+  import SheetSection from '#lib/components/ui/SheetSection.svelte';
+  import Callout from '#lib/components/ui/Callout.svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
   import SourceCitation from './SourceCitation.svelte';
-  import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
-  import { getAllergenLabel, type AllergenId } from '$lib/utils/allergens';
-  import { CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
+  import { ALLERGEN_GUIDANCE } from '#lib/content/guidance.js';
+  import { getAllergenLabel, type AllergenId } from '#lib/utils/allergens.js';
+  import { CheckCircle2, AlertCircle, ShieldCheck } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
 
   let {
     allergenId = $bindable(null),

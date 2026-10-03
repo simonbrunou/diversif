@@ -1,5 +1,5 @@
 /**
- * Sentry tunnel endpoint (see SENTRY_TUNNEL_PATH in $lib/sentry.ts).
+ * Sentry tunnel endpoint (see SENTRY_TUNNEL_PATH in #lib/sentry.ts).
  *
  * The browser SDK is configured to POST every envelope (errors, traces,
  * replays, user feedback) here instead of directly to ingest.sentry.io.
@@ -27,8 +27,8 @@
  */
 
 import { deflateSync, gzipSync, unzipSync } from 'node:zlib';
-import { scrubRecordingFrames } from '$lib/sentry';
-import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
+import { scrubRecordingFrames } from '#lib/sentry.js';
+import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
 import type { RequestHandler } from './$types';
 
 // A parent's tab sends a few envelopes per navigation, plus one replay segment

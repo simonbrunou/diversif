@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { hashPassword } from '$lib/server/auth';
+import { hashPassword } from '#lib/server/auth.js';
 import { load } from './+page.server';
 
 beforeEach(async () => {

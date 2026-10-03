@@ -2,7 +2,7 @@ import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const mocks = {
   generateRegistrationOptions: mock(),
@@ -13,10 +13,10 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { SESSION_COOKIE, hashPassword } from '$lib/server/auth';
-import { users, webauthnChallenges } from '$lib/server/db/schema';
+import { SESSION_COOKIE, hashPassword } from '#lib/server/auth.js';
+import { users, webauthnChallenges } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { PASSKEY_CHALLENGE_COOKIE, RP_ID } from '$lib/server/passkeys';
+import { PASSKEY_CHALLENGE_COOKIE, RP_ID } from '#lib/server/passkeys.js';
 
 const PASSWORD = 'current-password-12';
 let passwordHash: string;

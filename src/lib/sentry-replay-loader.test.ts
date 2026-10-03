@@ -7,7 +7,7 @@ const startReplay = mock(() => {
     throw new Error('Failed to fetch dynamically imported module');
   }
 });
-mock.module('$lib/sentry-replay', () => ({ startReplay }));
+mock.module('#lib/sentry-replay.js', () => ({ startReplay }));
 
 const { loadReplay } = await import('./sentry-replay-loader');
 

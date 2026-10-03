@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Button from '$lib/components/ui/Button.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { Printer } from 'lucide-svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { Printer } from '@lucide/svelte';
   import type { Snippet } from 'svelte';
 
   let {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // Per-file bun test runner. bun:test's mock.module is process-global with
-// no per-file isolation, so files that mock $app/state, $lib/paraglide/runtime,
-// $lib/server/db, etc. leak their overrides into every subsequent file in
+// no per-file isolation, so files that mock $app/state, #lib/paraglide/runtime,
+// #lib/server/db, etc. leak their overrides into every subsequent file in
 // the same process. Vitest got per-file isolation for free. We get it by
 // spawning a fresh bun process per file.
 //
@@ -249,7 +249,7 @@ function isNonExecutable(sourceLine: string): boolean {
 function compactRanges(nums: number[]): string {
   const sorted = [...nums].sort((a, b) => a - b);
   const parts: string[] = [];
-  for (let s = 0; s < sorted.length; ) {
+  for (let s = 0; s < sorted.length;) {
     let e = s;
     while (e + 1 < sorted.length && sorted[e + 1] === sorted[e] + 1) e++;
     parts.push(s === e ? `${sorted[s]}` : `${sorted[s]}-${sorted[e]}`);

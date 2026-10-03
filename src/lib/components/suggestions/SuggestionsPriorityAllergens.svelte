@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import Badge from '$components/ui/Badge.svelte';
-  import { getAllergenLabel } from '$lib/utils/allergens';
-  import * as m from '$lib/paraglide/messages';
+  import Card from '#lib/components/ui/Card.svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
+  import { getAllergenLabel } from '#lib/utils/allergens.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   type SuggestedFood = {
     id: number;

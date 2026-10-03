@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { SITE, absoluteUrl } from '$lib/seo';
+import { SITE, absoluteUrl } from '#lib/seo.js';
 
 export const prerender = true;
 

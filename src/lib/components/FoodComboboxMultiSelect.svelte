@@ -1,8 +1,8 @@
 <script lang="ts">
-  import FoodComboboxList from '$lib/components/FoodComboboxList.svelte';
-  import Badge from '$components/ui/Badge.svelte';
-  import { X } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
+  import FoodComboboxList from '#lib/components/FoodComboboxList.svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
+  import { X } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
   import type { Snippet } from 'svelte';
 
   type FoodOption = {

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import SectionHeader from '$components/ui/SectionHeader.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { cn } from '$lib/utils/cn';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { cn } from '#lib/utils/cn.js';
 
   type Stage = { id: string; title: string; oneLiner: string };
 

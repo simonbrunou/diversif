@@ -1,15 +1,15 @@
 <script lang="ts">
-  import SectionHeader from '$components/ui/SectionHeader.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { formatRelative } from '$lib/utils/dates';
-  import { getCategoryIcon } from '$lib/utils/categories';
-  import { cn } from '$lib/utils/cn';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import type { RecentEntry } from '$lib/types';
-  import { getTextureLabel } from '$lib/utils/texture-labels';
-  import { groupByMeal, type MealGroup } from '$lib/utils/meals';
-  import { UtensilsCrossed, ChevronRight, Pencil, Plus } from 'lucide-svelte';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { formatRelative } from '#lib/utils/dates.js';
+  import { getCategoryIcon } from '#lib/utils/categories.js';
+  import { cn } from '#lib/utils/cn.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import type { RecentEntry } from '#lib/types.js';
+  import { getTextureLabel } from '#lib/utils/texture-labels.js';
+  import { groupByMeal, type MealGroup } from '#lib/utils/meals.js';
+  import { UtensilsCrossed, ChevronRight, Pencil, Plus } from '@lucide/svelte';
 
   let { entries, childId }: { entries: RecentEntry[]; childId: string } = $props();
 

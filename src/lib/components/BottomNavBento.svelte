@@ -1,6 +1,6 @@
 <script lang="ts" module>
-  import { Calendar, BookText, Sparkles, User } from 'lucide-svelte';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import { Calendar, BookText, Sparkles, User } from '@lucide/svelte';
+  import { localizedHref } from '#lib/utils/localized-href.js';
 
   type Tab = {
     href: (childId: string) => string;
@@ -44,8 +44,8 @@
 </script>
 
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { cn } from '$lib/utils/cn';
+  import * as m from '#lib/paraglide/messages.js';
+  import { cn } from '#lib/utils/cn.js';
 
   let {
     currentChildId,

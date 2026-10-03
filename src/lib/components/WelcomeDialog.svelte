@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Modal from '$components/ui/Modal.svelte';
-  import Button from '$components/ui/Button.svelte';
+  import Modal from '#lib/components/ui/Modal.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
   import { enhance } from '$app/forms';
   import { goto } from '$app/navigation';
-  import { Heart, Sparkles, BookOpen } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import { Heart, Sparkles, BookOpen } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
 
   let {
     open = $bindable(false),

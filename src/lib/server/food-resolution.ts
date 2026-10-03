@@ -4,8 +4,8 @@ import type { SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import { foods } from './db/schema';
 import type * as schema from './db/schema';
-import { CATEGORY_IDS } from '$lib/utils/categories';
-import { normalize } from '$lib/utils/search';
+import { CATEGORY_IDS } from '#lib/utils/categories.js';
+import { normalize } from '#lib/utils/search.js';
 
 /**
  * A food is visible to a child if it's in the global catalog (no owner) or
@@ -37,8 +37,7 @@ export async function loadVisibleFoodsForChild(childId: number) {
 // participate in an outer transaction. bun:sqlite is synchronous, so this runs
 // inline inside the caller's sync `db.transaction((tx) => ...)`.
 type Executor =
-  | DB
-  | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+  DB | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
 export type ResolveFoodInput = {
   /** ID of an existing food from the global catalog or this child's custom foods. */

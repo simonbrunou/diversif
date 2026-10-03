@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import SourceCitation from '$lib/components/SourceCitation.svelte';
-  import type { StageQuantities } from '$lib/content/quantities';
-  import * as m from '$lib/paraglide/messages';
+  import Card from '#lib/components/ui/Card.svelte';
+  import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import type { StageQuantities } from '#lib/content/quantities.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let { quantities }: { quantities: StageQuantities } = $props();
 </script>

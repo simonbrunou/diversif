@@ -8,7 +8,7 @@
 // `resolveMessageKey` consumers: form-toasts.svelte.ts (which surfaces
 // action-returned keys via toast for the account pages).
 
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 
 /**
  * Wraps a use:enhance callback so a `submitting` state flag is flipped on

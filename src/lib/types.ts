@@ -1,8 +1,8 @@
 import type { User, Membership } from './server/db/schema';
 import type { SymptomLabel } from './content/symptoms';
-import type { TextureKey } from '$lib/utils/textures';
-import type { CategoryId } from '$lib/utils/categories';
-import type { ReactionId } from '$lib/utils/reactions';
+import type { TextureKey } from '#lib/utils/textures.js';
+import type { CategoryId } from '#lib/utils/categories.js';
+import type { ReactionId } from '#lib/utils/reactions.js';
 
 export type SafeUser = Omit<User, 'passwordHash'>;
 export type { Membership };

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import BackHeader from '$components/ui/BackHeader.svelte';
-  import Callout from '$lib/components/ui/Callout.svelte';
-  import Seo from '$lib/components/Seo.svelte';
-  import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import Callout from '#lib/components/ui/Callout.svelte';
+  import Seo from '#lib/components/Seo.svelte';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
+  import * as m from '#lib/paraglide/messages.js';
   import { page } from '$app/state';
   import type { PageData } from './$types';
 

@@ -9,11 +9,11 @@ import {
   seedUser
 } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { foodEntries, foods, preparedMeals } from '$lib/server/db/schema';
+import { foodEntries, foods, preparedMeals } from '#lib/server/db/schema.js';
 import { eq, sql } from 'drizzle-orm';
-import { ALLERGENS } from '$lib/utils/allergens';
+import { ALLERGENS } from '#lib/utils/allergens.js';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {

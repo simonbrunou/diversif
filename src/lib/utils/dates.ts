@@ -1,5 +1,5 @@
-import { getLocale } from '$lib/paraglide/runtime';
-import * as m from '$lib/paraglide/messages';
+import { getLocale } from '#lib/paraglide/runtime.js';
+import * as m from '#lib/paraglide/messages.js';
 
 function pad2(n: number): string {
   return String(n).padStart(2, '0');

@@ -5,7 +5,7 @@ import '../../test/component';
 // Capture real exports BEFORE the per-file mocks so afterAll can restore
 // them — bun:test's mock.module is process-global, so the getLocale
 // override below would otherwise leak into every subsequent file.
-import * as actualParaglide from '$lib/paraglide/runtime';
+import * as actualParaglide from '#lib/paraglide/runtime.js';
 
 import LocaleSwitcher from './LocaleSwitcher.svelte';
 
@@ -13,11 +13,11 @@ mock.module('$app/state', () => ({
   page: { url: { pathname: '/login', search: '', hash: '' } }
 }));
 
-mock.module('$app/environment', () => ({
+mock.module('$app/env', () => ({
   building: false
 }));
 
-mock.module('$lib/paraglide/runtime', () => ({
+mock.module('#lib/paraglide/runtime.js', () => ({
   ...actualParaglide,
   getLocale: mock(() => 'fr')
 }));
@@ -25,7 +25,7 @@ mock.module('$lib/paraglide/runtime', () => ({
 // Restore the real module after this file's tests so the next file isn't
 // polluted by the getLocale = 'fr' mock here.
 afterAll(() => {
-  mock.module('$lib/paraglide/runtime', () => actualParaglide);
+  mock.module('#lib/paraglide/runtime.js', () => actualParaglide);
 });
 
 describe('LocaleSwitcher', () => {
@@ -50,7 +50,7 @@ describe('LocaleSwitcher', () => {
   it('strips the /en prefix before resolving (avoids /en/en/... and same-URL flips)', async () => {
     const state = await import('$app/state');
     const original = state.page.url;
-    const runtime = await import('$lib/paraglide/runtime');
+    const runtime = await import('#lib/paraglide/runtime.js');
     runtime.getLocale.mockReturnValue('en');
     Object.assign(state.page, {
       url: { pathname: '/en/login', search: '', hash: '' }
@@ -92,7 +92,7 @@ describe('LocaleSwitcher', () => {
     // Re-mock the module (bun:test mock.module replaces the factory) rather
     // than assigning into the imported namespace — ESM namespace objects are
     // read-only and the previous `env.building = true` threw under bun.
-    mock.module('$app/environment', () => ({ building: true }));
+    mock.module('$app/env', () => ({ building: true }));
     try {
       render(LocaleSwitcher);
       const fr = screen.getByRole('link', { name: /fr/i });
@@ -100,13 +100,13 @@ describe('LocaleSwitcher', () => {
       expect(fr.getAttribute('href')).toBe('/signup');
       expect(en.getAttribute('href')).toBe('/en/signup');
     } finally {
-      mock.module('$app/environment', () => ({ building: false }));
+      mock.module('$app/env', () => ({ building: false }));
       Object.assign(state.page, { url: original });
     }
   });
 
   it('flips data-active and aria-current when the locale is en', async () => {
-    const runtime = await import('$lib/paraglide/runtime');
+    const runtime = await import('#lib/paraglide/runtime.js');
     runtime.getLocale.mockReturnValue('en');
 
     render(LocaleSwitcher);
@@ -119,7 +119,7 @@ describe('LocaleSwitcher', () => {
   });
 
   it('renders ≥44px row options with endonym labels in the rows variant', async () => {
-    const runtime = await import('$lib/paraglide/runtime');
+    const runtime = await import('#lib/paraglide/runtime.js');
     runtime.getLocale.mockReturnValue('fr');
 
     render(LocaleSwitcher, { props: { variant: 'rows' } });

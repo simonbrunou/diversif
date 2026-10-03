@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { fuzzyMatch } from '$lib/utils/search';
-  import { CATEGORIES, getCategoryIcon, getCategoryFilterChipClass } from '$lib/utils/categories';
-  import FoodComboboxCustomPanel from '$lib/components/FoodComboboxCustomPanel.svelte';
-  import FoodComboboxSingleSelect from '$lib/components/FoodComboboxSingleSelect.svelte';
-  import FoodComboboxMultiSelect from '$lib/components/FoodComboboxMultiSelect.svelte';
-  import Input from '$components/ui/Input.svelte';
+  import { fuzzyMatch } from '#lib/utils/search.js';
+  import { CATEGORIES, getCategoryIcon, getCategoryFilterChipClass } from '#lib/utils/categories.js';
+  import FoodComboboxCustomPanel from '#lib/components/FoodComboboxCustomPanel.svelte';
+  import FoodComboboxSingleSelect from '#lib/components/FoodComboboxSingleSelect.svelte';
+  import FoodComboboxMultiSelect from '#lib/components/FoodComboboxMultiSelect.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import { tick } from 'svelte';
-  import * as m from '$lib/paraglide/messages';
+  import * as m from '#lib/paraglide/messages.js';
 
   type FoodOption = {
     id: number;

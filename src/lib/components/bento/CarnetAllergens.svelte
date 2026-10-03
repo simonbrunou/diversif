@@ -1,10 +1,10 @@
 <!-- src/lib/components/bento/CarnetAllergens.svelte -->
 <script lang="ts">
-  import { Sparkles } from 'lucide-svelte';
-  import Button from '$components/ui/Button.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { cn } from '$lib/utils/cn';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import { Sparkles } from '@lucide/svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { cn } from '#lib/utils/cn.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
 
   type Item = {
     id: string;

@@ -6,8 +6,8 @@
 -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import type { Icon as LucideIcon } from 'lucide-svelte';
-  import { cn } from '$lib/utils/cn';
+  import type { LucideIcon } from '@lucide/svelte';
+  import { cn } from '#lib/utils/cn.js';
 
   let {
     href,
@@ -20,7 +20,7 @@
   }: {
     href?: string;
     onclick?: () => void;
-    icon: typeof LucideIcon;
+    icon: LucideIcon;
     iconSize?: number;
     type?: 'button' | 'submit';
     class?: string;

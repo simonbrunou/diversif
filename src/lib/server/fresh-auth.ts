@@ -4,7 +4,7 @@ import { db } from './db';
 import { users } from './db/schema';
 import { checkRateLimit } from './rate-limit';
 import { verifyPassword } from './auth';
-import type { SafeUser } from '$lib/types';
+import type { SafeUser } from '#lib/types.js';
 
 // Shared across all currentPassword-gated surfaces (change password, delete
 // account, delete child). Keyed on user.id so the budget follows the threat

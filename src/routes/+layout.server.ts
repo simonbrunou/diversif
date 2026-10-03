@@ -1,9 +1,9 @@
-import { db } from '$lib/server/db';
-import { children } from '$lib/server/db/schema';
-import { parseChildIdParamOrNull } from '$lib/server/guards';
+import { db } from '#lib/server/db/index.js';
+import { children } from '#lib/server/db/schema.js';
+import { parseChildIdParamOrNull } from '#lib/server/guards.js';
 import { inArray } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
-import type { ChildSummary } from '$lib/types';
+import type { ChildSummary } from '#lib/types.js';
 
 export const load: LayoutServerLoad = async ({ locals, params }) => {
   let childList: ChildSummary[] = [];

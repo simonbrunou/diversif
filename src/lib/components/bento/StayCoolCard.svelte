@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import { ChevronRight } from 'lucide-svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import { ChevronRight } from '@lucide/svelte';
 </script>
 
 <Card as="section" variant="tile-mint" class="mb-3 p-4">

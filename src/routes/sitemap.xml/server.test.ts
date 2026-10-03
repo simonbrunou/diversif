@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { GET } from './+server';
 import { makeRouteEvent } from '../../test/route';
-import { SITE } from '$lib/seo';
+import { SITE } from '#lib/seo.js';
 
 describe('GET /sitemap.xml', () => {
   it('returns an XML sitemap with absolute URLs pinned to SITE.defaultOrigin', async () => {

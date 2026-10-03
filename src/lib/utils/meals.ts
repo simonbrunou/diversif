@@ -1,5 +1,5 @@
-import { REACTION_RANK } from '$lib/utils/reaction-values';
-import type { ReactionId } from '$lib/utils/reactions';
+import { REACTION_RANK } from '#lib/utils/reaction-values.js';
+import type { ReactionId } from '#lib/utils/reactions.js';
 
 export type MealGroup<T> = {
   mealId: string | null;

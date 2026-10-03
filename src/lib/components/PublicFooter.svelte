@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
 
   const year = new Date().getFullYear();
 </script>

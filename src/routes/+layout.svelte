@@ -1,21 +1,21 @@
 <script lang="ts">
   import '../app.css';
   import { Toaster, toast } from 'svelte-sonner';
-  import { flush, count as pendingQueueCount, needsReauthCount } from '$lib/offline/queue';
-  import { purgeClientState } from '$lib/offline/purge';
+  import { flush, count as pendingQueueCount, needsReauthCount } from '#lib/offline/queue.js';
+  import { purgeClientState } from '#lib/offline/purge.js';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/state';
   import { goto, onNavigate } from '$app/navigation';
-  import { browser } from '$app/environment';
-  import { deLocalizeHref } from '$lib/paraglide/runtime';
-  import * as m from '$lib/paraglide/messages';
-  import { applyTheme, getStoredTheme } from '$lib/utils/theme';
-  import PublicHeader from '$lib/components/PublicHeader.svelte';
-  import PublicFooter from '$lib/components/PublicFooter.svelte';
-  import AppShellBento from '$lib/components/AppShellBento.svelte';
-  import ReloadPrompt from '$lib/components/ReloadPrompt.svelte';
-  import JsonLd from '$lib/components/JsonLd.svelte';
-  import { organizationJsonLd, websiteJsonLd, SITE } from '$lib/seo';
+  import { browser } from '$app/env';
+  import { deLocalizeHref } from '#lib/paraglide/runtime.js';
+  import * as m from '#lib/paraglide/messages.js';
+  import { applyTheme, getStoredTheme } from '#lib/utils/theme.js';
+  import PublicHeader from '#lib/components/PublicHeader.svelte';
+  import PublicFooter from '#lib/components/PublicFooter.svelte';
+  import AppShellBento from '#lib/components/AppShellBento.svelte';
+  import ReloadPrompt from '#lib/components/ReloadPrompt.svelte';
+  import JsonLd from '#lib/components/JsonLd.svelte';
+  import { organizationJsonLd, websiteJsonLd, SITE } from '#lib/seo.js';
   import type { LayoutData } from './$types';
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();

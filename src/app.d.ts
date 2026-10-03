@@ -1,7 +1,6 @@
 /// <reference types="bun" />
-/// <reference types="vite-plugin-pwa/client" />
-import type { Locale } from '$lib/paraglide/runtime';
-import type { Membership, SafeUser } from '$lib/types';
+import type { Locale } from '#lib/paraglide/runtime.js';
+import type { Membership, SafeUser } from '#lib/types.js';
 
 declare global {
   /**
@@ -18,6 +17,13 @@ declare global {
    * `|| undefined` fallback (which would be an uncoverable branch).
    */
   const __SENTRY_RELEASE__: string | undefined;
+
+  /**
+   * The origin the build was pinned to (ORIGIN at build time, see
+   * vite.config.ts), or '' when the server derives it per request from the
+   * proxy headers. Only src/lib/server/e2e.ts reads it.
+   */
+  const __BUILD_ORIGIN__: string;
 
   namespace App {
     interface Locals {

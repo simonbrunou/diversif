@@ -1,9 +1,9 @@
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
-  import { severityOf, symptomLabelText, type SymptomLabel } from '$lib/content/symptoms';
-  import { cn } from '$lib/utils/cn';
-  import { X } from 'lucide-svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import ConfirmModal from '#lib/components/ui/ConfirmModal.svelte';
+  import { severityOf, symptomLabelText, type SymptomLabel } from '#lib/content/symptoms.js';
+  import { cn } from '#lib/utils/cn.js';
+  import { X } from '@lucide/svelte';
 
   let {
     id,

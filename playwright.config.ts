@@ -73,7 +73,10 @@ export default defineConfig({
     // E2E runs against a throwaway SQLite file at DATABASE_PATH. The app applies
     // migrations + seeds the catalog on boot; scripts/reset-e2e-db.ts deletes
     // the file before the suite runs (test:e2e). No external DB service needed.
-    command: `bun run build && PORT=${PORT} HOST=127.0.0.1 ORIGIN=${BASE_URL} bun build/index.js`,
+    // ORIGIN pins SvelteKit's paths.origin at build time (vite.config.ts), so
+    // plain-http form POSTs pass the CSRF check and isE2E() sees a loopback
+    // build origin (see env.E2E below).
+    command: `ORIGIN=${BASE_URL} bun run build && PORT=${PORT} HOST=127.0.0.1 bun build/index.js`,
     port: PORT,
     timeout: 180_000,
     reuseExistingServer: !process.env.CI,
@@ -85,12 +88,12 @@ export default defineConfig({
       // Marks this server as an end-to-end run so the signup throttle relaxes
       // its 20/hr cap — a single Playwright suite legitimately creates dozens
       // of accounts from one address, and we'd otherwise lock ourselves out.
-      // NOTE: src/lib/server/e2e.ts (isE2E) only honours E2E=1 when ORIGIN is
-      // a plain-http loopback URL — which the webServer command above sets
-      // (ORIGIN=http://localhost:<port>). NODE_ENV can't be the guard because
-      // this server intentionally runs the production build with
-      // NODE_ENV=production; the ORIGIN requirement is what keeps a stray
-      // E2E=1 inert on a real deployment.
+      // NOTE: src/lib/server/e2e.ts (isE2E) only honours E2E=1 when the build
+      // was pinned to a plain-http loopback origin — which the webServer
+      // command above does (ORIGIN=http://localhost:<port> at build time).
+      // NODE_ENV can't be the guard because this server intentionally runs
+      // the production build with NODE_ENV=production; the build-origin
+      // requirement is what keeps a stray E2E=1 inert on a real deployment.
       E2E: '1',
       // src/lib/server/passkeys.ts's resolveRPID() defaults to "diversif.app";
       // the e2e webServer runs on localhost, so the WebAuthn RP ID must match

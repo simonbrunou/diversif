@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { CATEGORIES } from '$lib/utils/categories';
-  import Input from '$components/ui/Input.svelte';
-  import Select from '$components/ui/Select.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import { CATEGORIES } from '#lib/utils/categories.js';
+  import Input from '#lib/components/ui/Input.svelte';
+  import Select from '#lib/components/ui/Select.svelte';
+  import * as m from '#lib/paraglide/messages.js';
 
   let {
     customName,

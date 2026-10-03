@@ -1,14 +1,8 @@
-import type { CategoryId } from '$lib/utils/categories';
-import type { StageId } from '$lib/content/guidance';
+import type { CategoryId } from '#lib/utils/categories.js';
+import type { StageId } from '#lib/content/guidance.js';
 
 export type RoleId =
-  | 'legume'
-  | 'fruit'
-  | 'proteine'
-  | 'feculent'
-  | 'matiereGrasse'
-  | 'laitier'
-  | 'dessert';
+  'legume' | 'fruit' | 'proteine' | 'feculent' | 'matiereGrasse' | 'laitier' | 'dessert';
 export type MealId = 'matin' | 'midi' | 'gouter' | 'soir';
 
 // Solid-food ideas only: milk feeds are shown in the quantities card.

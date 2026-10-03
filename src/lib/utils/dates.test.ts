@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-import { baseLocale, overwriteGetLocale } from '$lib/paraglide/runtime';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import {
   formatRelative,
   formatDateInputValue,

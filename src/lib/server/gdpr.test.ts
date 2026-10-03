@@ -2,12 +2,12 @@ import { describe, expect, it, mock } from 'bun:test';
 import { testDb } from '../../test/db';
 import { randomUUID } from 'crypto';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const { exportUserData } = await import('./gdpr');
 
-import { db } from '$lib/server/db';
-import { children, foodEntries, foods, memberships, users } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { children, foodEntries, foods, memberships, users } from '#lib/server/db/schema.js';
 
 async function setupTestData() {
   // Create user

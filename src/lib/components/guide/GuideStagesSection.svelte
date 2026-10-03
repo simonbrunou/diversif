@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Badge from '$components/ui/Badge.svelte';
-  import StageBadge from '$lib/components/StageBadge.svelte';
-  import SourceCitation from '$lib/components/SourceCitation.svelte';
-  import { STAGES, type StageId } from '$lib/content/guidance';
-  import { Layers, AlertTriangle } from 'lucide-svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
+  import StageBadge from '#lib/components/StageBadge.svelte';
+  import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import { STAGES, type StageId } from '#lib/content/guidance.js';
+  import { Layers, AlertTriangle } from '@lucide/svelte';
 
   let { currentStageId = null }: { currentStageId?: StageId | null } = $props();
 </script>

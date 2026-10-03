@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import RecentFeed from './RecentFeed.svelte';
-import * as m from '$lib/paraglide/messages';
-import type { RecentEntry } from '$lib/types';
+import * as m from '#lib/paraglide/messages.js';
+import type { RecentEntry } from '#lib/types.js';
 
 afterEach(() => cleanup());
 

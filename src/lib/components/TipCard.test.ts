@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/svelte';
-import { Heart } from 'lucide-svelte';
+import { Heart } from '@lucide/svelte';
 import '../../test/component';
 import { textSnippet } from '../../test/component';
 import TipCard from './TipCard.svelte';

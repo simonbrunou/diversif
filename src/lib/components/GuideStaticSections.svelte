@@ -13,7 +13,7 @@
 </script>
 
 <script lang="ts">
-  import { type StageId } from '$lib/content/guidance';
+  import { type StageId } from '#lib/content/guidance.js';
   import GuideReglesSection from './guide/GuideReglesSection.svelte';
   import GuideStagesSection from './guide/GuideStagesSection.svelte';
   import GuideAllergensSection from './guide/GuideAllergensSection.svelte';

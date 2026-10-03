@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
@@ -8,12 +8,12 @@ import {
   consumeChallenge,
   finishAuthentication,
   parsePasskeyResponseBody
-} from '$lib/server/passkeys';
-import { createSession, setSessionCookie } from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { audit } from '$lib/server/audit';
-import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
+} from '#lib/server/passkeys.js';
+import { createSession, setSessionCookie } from '#lib/server/auth.js';
+import { db } from '#lib/server/db/index.js';
+import { users } from '#lib/server/db/schema.js';
+import { audit } from '#lib/server/audit.js';
+import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
 import type { RequestHandler } from './$types';
 
 const PASSKEY_LIMIT = { name: 'passkey-auth', limit: 20, windowMs: 5 * 60 * 1000 };
@@ -58,7 +58,7 @@ export const POST: RequestHandler = async (event) => {
 
   if (!result.ok) {
     audit({ type: 'auth.login_failed', method: 'passkey' });
-    return json({ ok: false, error: result.error }, { status: 400 });
+    return Response.json({ ok: false, error: result.error }, { status: 400 });
   }
 
   // Intentionally do NOT reset the bucket on success : see the matching
@@ -72,5 +72,5 @@ export const POST: RequestHandler = async (event) => {
   setSessionCookie(cookies, token);
   audit({ type: 'auth.login_succeeded', userId: result.userId, method: 'passkey' });
 
-  return json({ ok: true });
+  return Response.json({ ok: true });
 };

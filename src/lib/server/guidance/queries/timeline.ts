@@ -1,11 +1,11 @@
 // Timeline-oriented queries: streak and co-parent activity.
 
-import { db } from '$lib/server/db';
-import { execRows } from '$lib/server/db/exec';
-import { foodEntries, foods, users } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { execRows } from '#lib/server/db/exec.js';
+import { foodEntries, foods, users } from '#lib/server/db/schema.js';
 import { and, asc, desc, eq, gte, ne, sql } from 'drizzle-orm';
-import type { CategoryId } from '$lib/utils/categories';
-import type { ReactionId } from '$lib/utils/reactions';
+import type { CategoryId } from '#lib/utils/categories.js';
+import type { ReactionId } from '#lib/utils/reactions.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

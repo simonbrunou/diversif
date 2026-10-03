@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 import { seedChild, seedUser, seedMembership } from '../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 // Force the code generator to a single deterministic value so the
 // collision-exhaustion path can be exercised: with every attempt producing
 // the same code, pre-seeding that code makes all 5 inserts collide.
-mock.module('$lib/utils/invites', () => ({
+mock.module('#lib/utils/invites.js', () => ({
   generateInviteCodeRaw: () => 'BEBE-AAAAAA'
 }));
 

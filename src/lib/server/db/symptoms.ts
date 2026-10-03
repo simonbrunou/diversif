@@ -1,8 +1,8 @@
 import { and, asc, eq, lte, sql } from 'drizzle-orm';
 import { db } from './index';
 import { foodEntries, symptoms } from './schema';
-import { severityOf, type SymptomLabel } from '$lib/content/symptoms';
-import type { ReactionId } from '$lib/utils/reactions';
+import { severityOf, type SymptomLabel } from '#lib/content/symptoms.js';
+import type { ReactionId } from '#lib/utils/reactions.js';
 
 export interface InsertSymptomInput {
   foodEntryId: number;

@@ -20,8 +20,8 @@ import {
   type Passkey,
   type Symptom
 } from './db/schema';
-import type { TextureKey } from '$lib/utils/textures';
-import { parseDietExclusions, type DietExclusion } from '$lib/utils/diet';
+import type { TextureKey } from '#lib/utils/textures.js';
+import { parseDietExclusions, type DietExclusion } from '#lib/utils/diet.js';
 
 export type DeletionSummary = {
   deletedChildren: number;

@@ -16,7 +16,7 @@
 # leaves it logging "sync error … unable to open database file" every
 # second while replicating nothing. Check the sidecar's logs, then confirm
 # replication with DEPLOY.md's "Verify replication is actually happening"
-# step (`litestream databases` / `litestream generations`) — see DEPLOY.md
+# step (`litestream databases` / `litestream ltx`) — see DEPLOY.md
 # B1 for the R2 bucket + API token setup.
 
 dbs:

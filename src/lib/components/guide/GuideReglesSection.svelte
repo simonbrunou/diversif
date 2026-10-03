@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import SourceCitation from '$lib/components/SourceCitation.svelte';
-  import { KEY_PRINCIPLES } from '$lib/content/guidance';
-  import { Sparkles } from 'lucide-svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import { KEY_PRINCIPLES } from '#lib/content/guidance.js';
+  import { Sparkles } from '@lucide/svelte';
 </script>
 
 <section id="regles" class="scroll-mt-6 space-y-3">

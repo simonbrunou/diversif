@@ -1,7 +1,7 @@
 <script lang="ts">
   import FoodCard from './FoodCard.svelte';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import type { TextureKey } from '$lib/utils/textures';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import type { TextureKey } from '#lib/utils/textures.js';
 
   type Item = {
     id: number;

@@ -1,6 +1,6 @@
 import { testDb } from '../../test/db';
 import { children, foodEntries, foods, memberships, users } from './db/schema';
-import type { TextureKey } from '$lib/utils/textures';
+import type { TextureKey } from '#lib/utils/textures.js';
 
 export async function insertUser(email: string, displayName = email) {
   const u = await testDb

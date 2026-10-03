@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { localizedRedirect } from '$lib/server/redirect';
+import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import {
@@ -7,14 +7,14 @@ import {
   findUserByEmail,
   setSessionCookie,
   verifyPasswordOrDecoy
-} from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { audit } from '$lib/server/audit';
-import { requireGuest } from '$lib/server/guards';
-import { parseFormWithKey } from '$lib/server/forms';
-import { checkRateLimit, clientKey, peekRateLimit, recordAttempt } from '$lib/server/rate-limit';
-import { isE2E } from '$lib/server/e2e';
+} from '#lib/server/auth.js';
+import { db } from '#lib/server/db/index.js';
+import { users } from '#lib/server/db/schema.js';
+import { audit } from '#lib/server/audit.js';
+import { requireGuest } from '#lib/server/guards.js';
+import { parseFormWithKey } from '#lib/server/forms.js';
+import { checkRateLimit, clientKey, peekRateLimit, recordAttempt } from '#lib/server/rate-limit.js';
+import { isE2E } from '#lib/server/e2e.js';
 import type { Actions, PageServerLoad } from './$types';
 
 // Per-IP login ceiling. Since #302, every e2e signup also drives a real
@@ -22,7 +22,7 @@ import type { Actions, PageServerLoad } from './$types';
 // see signup/+page.server.ts), so the suite now legitimately submits this
 // action ~1:1 with every signup instead of rarely. Relax it the same way
 // signup/+page.server.ts's SIGNUP_LIMIT already does : isE2E() requires
-// both E2E=1 (set in playwright.config.ts) and a loopback ORIGIN, so a
+// both E2E=1 (set in playwright.config.ts) and a loopback build origin, so a
 // stray E2E=1 on a real deployment keeps the strict 10/5min ceiling.
 const LOGIN_LIMIT = {
   name: 'login',

@@ -3,7 +3,7 @@ import { and, eq, gt } from 'drizzle-orm';
 import { db } from './db';
 import { isE2E } from './e2e';
 import { sessions, users, memberships, type Session, type User } from './db/schema';
-import type { SafeUser } from '$lib/types';
+import type { SafeUser } from '#lib/types.js';
 import type { Cookies } from '@sveltejs/kit';
 
 export const SESSION_COOKIE = 'session';
@@ -24,7 +24,7 @@ const ARGON_OPTS = {
 // Playwright workers the CPU cost starves the single server process and stalls
 // unrelated requests (the fast child-creation redirect queues past its 15s
 // budget). Relax the cost for E2E only (isE2E() requires both E2E=1 — set in
-// playwright.config.ts — and a loopback http ORIGIN, so a stray E2E=1 on a
+// playwright.config.ts — and a loopback http build origin, so a stray E2E=1 on a
 // real deployment can't weaken production hashes) — hash strength is
 // irrelevant against a throwaway test DB, and Bun.password.verify reads each
 // hash's params back from the stored string, so verification is unaffected.
@@ -197,8 +197,8 @@ export async function findUserByEmail(email: string): Promise<User | undefined> 
   return rows[0];
 }
 
-export { generateInviteCodeRaw, isValidInviteCodeFormat } from '$lib/utils/invites';
-export { PASSWORD_MIN_LENGTH } from '$lib/utils/password';
+export { generateInviteCodeRaw, isValidInviteCodeFormat } from '#lib/utils/invites.js';
+export { PASSWORD_MIN_LENGTH } from '#lib/utils/password.js';
 
 /**
  * Set the session cookie with the canonical options used across login, signup,

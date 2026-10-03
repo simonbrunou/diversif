@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { hashPassword } from '$lib/server/auth';
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
-import { passkeys } from '$lib/server/db/schema';
+import { hashPassword } from '#lib/server/auth.js';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
+import { passkeys } from '#lib/server/db/schema.js';
 import { load } from './+page.server';
 import { seedChild, seedMembership } from '../../test/route';
 

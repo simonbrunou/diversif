@@ -1,9 +1,9 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import Button from '$lib/components/ui/Button.svelte';
-  import Label from '$components/ui/Label.svelte';
-  import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Label from '#lib/components/ui/Label.svelte';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
+  import * as m from '#lib/paraglide/messages.js';
 
   type Errors = { firstName?: string; birthDate?: string } | null;
   type Values = { firstName?: string; birthDate?: string } | null;

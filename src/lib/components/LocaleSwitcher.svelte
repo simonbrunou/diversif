@@ -1,11 +1,11 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { building } from '$app/environment';
-  import { getLocale, locales } from '$lib/paraglide/runtime';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import * as m from '$lib/paraglide/messages';
-  import { cn } from '$lib/utils/cn';
-  import { Check } from 'lucide-svelte';
+  import { building } from '$app/env';
+  import { getLocale, locales } from '#lib/paraglide/runtime.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import * as m from '#lib/paraglide/messages.js';
+  import { cn } from '#lib/utils/cn.js';
+  import { Check } from '@lucide/svelte';
 
   // 'inline' is the compact header/footer switcher; 'rows' renders
   // full-width ≥44px row options for /account/locale.

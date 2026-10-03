@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Button from '$components/ui/Button.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
   import LocaleSwitcher from './LocaleSwitcher.svelte';
   import SharedTopBar from './SharedTopBar.svelte';
   import { page } from '$app/state';
-  import type { SafeUser } from '$lib/types';
-  import { Menu, X } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import type { SafeUser } from '#lib/types.js';
+  import { Menu, X } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
 
   let {
     user,

@@ -2,7 +2,7 @@ import { describe, expect, it, mock } from 'bun:test';
 // bun:sqlite is synchronous: the healthz probe calls db.get() (not .execute())
 // and relies on it throwing when the handle is dead.
 const { get } = { get: mock() };
-mock.module('$lib/server/db', () => ({ db: { get } }));
+mock.module('#lib/server/db/index.js', () => ({ db: { get } }));
 
 import { GET } from './+server';
 

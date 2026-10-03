@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Button from '$components/ui/Button.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { WifiOff } from 'lucide-svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { WifiOff } from '@lucide/svelte';
 
   function retry() {
     location.reload();

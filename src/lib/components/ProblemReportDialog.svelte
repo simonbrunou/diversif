@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Modal from '$components/ui/Modal.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import Field from '$components/ui/Field.svelte';
-  import Textarea from '$components/ui/Textarea.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { sendProblemReport } from '$lib/sentry-feedback';
+  import Modal from '#lib/components/ui/Modal.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Field from '#lib/components/ui/Field.svelte';
+  import Textarea from '#lib/components/ui/Textarea.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { sendProblemReport } from '#lib/sentry-feedback.js';
 
   let {
     open = $bindable(false),

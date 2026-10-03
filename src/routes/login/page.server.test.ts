@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { hashPassword, SESSION_COOKIE } from '$lib/server/auth';
-import { users } from '$lib/server/db/schema';
-import { _clearAllRateLimits, peekRateLimit, resetRateLimit } from '$lib/server/rate-limit';
+import { hashPassword, SESSION_COOKIE } from '#lib/server/auth.js';
+import { users } from '#lib/server/db/schema.js';
+import { _clearAllRateLimits, peekRateLimit, resetRateLimit } from '#lib/server/rate-limit.js';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {

@@ -1,15 +1,15 @@
 <script lang="ts">
-  import Button from '$components/ui/Button.svelte';
-  import Callout from '$lib/components/ui/Callout.svelte';
-  import Card from '$components/ui/Card.svelte';
-  import Seo from '$lib/components/Seo.svelte';
-  import JsonLd from '$lib/components/JsonLd.svelte';
-  import { breadcrumbJsonLd, SITE } from '$lib/seo';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Callout from '#lib/components/ui/Callout.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import Seo from '#lib/components/Seo.svelte';
+  import JsonLd from '#lib/components/JsonLd.svelte';
+  import { breadcrumbJsonLd, SITE } from '#lib/seo.js';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
   import { page } from '$app/state';
-  import { SOURCES, ALL_SOURCE_IDS } from '$lib/content/sources';
-  import { Library, ExternalLink } from 'lucide-svelte';
+  import { SOURCES, ALL_SOURCE_IDS } from '#lib/content/sources.js';
+  import { Library, ExternalLink } from '@lucide/svelte';
 
   const siteUrl = SITE.defaultOrigin;
 

@@ -6,7 +6,7 @@
 import { describe, expect, it, mock } from 'bun:test';
 import { testDb } from '../../test/db';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 // Set BEFORE the dynamic import below — a static import would be hoisted
 // above this assignment and read the default RP ID instead.

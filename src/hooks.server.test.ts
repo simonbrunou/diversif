@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from './test/db';
-import * as m from '$lib/paraglide/messages';
-import { users, memberships, children, sessions } from '$lib/server/db/schema';
+import * as m from '#lib/paraglide/messages.js';
+import { users, memberships, children, sessions } from '#lib/server/db/schema.js';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const captureExceptionMock = mock();
 const setIsolationTagsMock = mock();
@@ -34,7 +34,7 @@ const {
   handleError,
   warnIfAddressHeaderMissing
 } = await import('./hooks.server');
-const { createSession, SESSION_COOKIE } = await import('$lib/server/auth');
+const { createSession, SESSION_COOKIE } = await import('#lib/server/auth.js');
 
 type CookieOpts = {
   path?: string;
@@ -347,10 +347,9 @@ describe('handle', () => {
     const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const result = handleError({
+        kind: 'unknown',
         error: failure,
-        event: { ...event, route: { id: '/child/[id]' } },
-        status: 500,
-        message: 'Internal Error'
+        event: { ...event, route: { id: '/child/[id]' } }
       } as unknown as Parameters<typeof handleError>[0]);
       expect(setIsolationTagsMock).toHaveBeenCalledWith({
         errorId: result?.errorId,
@@ -435,10 +434,9 @@ describe('handleError', () => {
     try {
       const err = new TypeError('boom');
       const result = handleError({
+        kind: 'unknown',
         error: err,
-        event: makeErrorEvent('/child/2/guide', 'GET', 42),
-        status: 500,
-        message: 'Internal Error'
+        event: makeErrorEvent('/child/2/guide', 'GET', 42)
       } as unknown as Parameters<typeof handleError>[0]);
 
       expect(result?.message).toBe('Internal Error');
@@ -490,10 +488,9 @@ describe('handleError', () => {
     const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       handleError({
+        kind: 'unknown',
         error: new Error('x'),
-        event: makeErrorEvent('/login', 'POST', null),
-        status: 500,
-        message: 'Internal Error'
+        event: makeErrorEvent('/login', 'POST', null)
       } as unknown as Parameters<typeof handleError>[0]);
       const payload = JSON.parse(spy.mock.calls[0][1] as string);
       expect(payload.userId).toBeNull();
@@ -507,10 +504,9 @@ describe('handleError', () => {
     const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const result = handleError({
+        kind: 'unknown',
         error: null,
-        event: makeErrorEvent(),
-        status: 500,
-        message: 'Internal Error'
+        event: makeErrorEvent()
       } as unknown as Parameters<typeof handleError>[0]);
       expect(result?.message).toBe('Internal Error');
       expect(result?.errorId).toMatch(/^[0-9a-f]{8}$/);
@@ -542,10 +538,9 @@ describe('handleError → Sentry', () => {
     try {
       const err = new TypeError('boom');
       const result = handleError({
+        kind: 'unknown',
         error: err,
-        event: makeSentryErrorEvent(),
-        status: 500,
-        message: 'Internal Error'
+        event: makeSentryErrorEvent()
       } as unknown as Parameters<typeof handleError>[0]);
 
       expect(captureExceptionMock).toHaveBeenCalledOnce();
@@ -573,10 +568,9 @@ describe('handleError → Sentry', () => {
     const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       handleError({
+        kind: 'unknown',
         error: new Error('x'),
-        event: makeSentryErrorEvent(),
-        status: 500,
-        message: 'Internal Error'
+        event: makeSentryErrorEvent()
       } as unknown as Parameters<typeof handleError>[0]);
       expect(spy).toHaveBeenCalledOnce();
       expect(spy.mock.calls[0][0]).toBe('[diversif:error]');
@@ -589,10 +583,9 @@ describe('handleError → Sentry', () => {
     const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       handleError({
+        kind: 'unknown',
         error: new Error('x'),
-        event: { ...makeSentryErrorEvent(), route: { id: null } },
-        status: 500,
-        message: 'Internal Error'
+        event: { ...makeSentryErrorEvent(), route: { id: null } }
       } as unknown as Parameters<typeof handleError>[0]);
       const ctx = captureExceptionMock.mock.calls[0][1].captureContext;
       expect(ctx.tags.route).toBeNull();
@@ -606,10 +599,9 @@ describe('handleError → Sentry', () => {
     const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
       const result = handleError({
-        error: new Error('Not Found: /wp-admin'),
-        event: { ...makeSentryErrorEvent(), route: { id: null } },
-        status: 404,
-        message: 'Not Found'
+        kind: 'framework',
+        error: { status: 404, message: 'Not Found' },
+        event: { ...makeSentryErrorEvent(), route: { id: null } }
       } as unknown as Parameters<typeof handleError>[0]);
       // /+error.svelte still gets an errorId so support flows work, but no
       // Sentry event and no operator-noise log line.
@@ -621,4 +613,25 @@ describe('handleError → Sentry', () => {
       spy.mockRestore();
     }
   });
+
+  it.each([404, 503])(
+    'leaves the body of an error(%i, ...) thrown by route code untouched',
+    (status) => {
+      const spy = spyOn(console, 'error').mockImplementation(() => {});
+      try {
+        const result = handleError({
+          kind: 'app',
+          error: { status, message: 'Enfant introuvable' },
+          event: makeSentryErrorEvent()
+        } as unknown as Parameters<typeof handleError>[0]);
+        // Returning nothing keeps the route's own message on /+error.svelte;
+        // an expected error is neither logged nor reported.
+        expect(result).toBeUndefined();
+        expect(captureExceptionMock).not.toHaveBeenCalled();
+        expect(spy).not.toHaveBeenCalled();
+      } finally {
+        spy.mockRestore();
+      }
+    }
+  );
 });

@@ -8,7 +8,6 @@ import {
   uniqueIndex,
   check
 } from 'drizzle-orm/sqlite-core';
-import type { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 // Relative import so drizzle-kit can load this file outside the Vite/SvelteKit
 // alias resolver (npm run db:generate runs schema.ts directly via tsx).
 import { TEXTURE_VALUES } from '../../utils/textures';
@@ -252,8 +251,11 @@ export const passkeys = sqliteTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     publicKey: text('public_key').notNull(),
     counter: integer('counter').notNull().default(0),
+    // SimpleWebAuthn 14 types transports as plain strings (it dropped
+    // AuthenticatorTransportFuture), so the column stores whatever the
+    // browser reported.
     transports: text('transports', { mode: 'json' })
-      .$type<AuthenticatorTransportFuture[]>()
+      .$type<string[]>()
       .notNull()
       .default(sql`'[]'`),
     deviceType: text('device_type', { enum: ['singleDevice', 'multiDevice'] }).notNull(),

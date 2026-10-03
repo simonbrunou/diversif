@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 
 const captureExceptionMock = mock();
 
@@ -11,15 +11,20 @@ mock.module('@sentry/sveltekit', () => ({
   browserTracingIntegration: mock(() => ({})),
   captureException: captureExceptionMock
 }));
-mock.module('$env/dynamic/public', () => ({ env: {} }));
+mock.module('$app/env/public', () => ({
+  PUBLIC_SENTRY_DSN: '',
+  PUBLIC_SENTRY_ENVIRONMENT: '',
+  PUBLIC_SENTRY_TRACES_SAMPLE_RATE: '',
+  PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE: '',
+  PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE: ''
+}));
 
 const { handleError } = await import('./hooks.client');
 
 function clientError(error: unknown, routeId: string, params: Record<string, string>) {
   return handleError({
+    kind: 'unknown',
     error,
-    status: 500,
-    message: 'Internal Error',
     event: { params, route: { id: routeId }, url: new URL(routeId, 'https://diversif.app') }
   } as unknown as Parameters<typeof handleError>[0]) as App.Error;
 }
@@ -35,6 +40,23 @@ describe('client handleError', () => {
       '/child/[id]/guide',
       { id: '18' }
     );
+
+    expect(result).toEqual({ message: m.errorsNetwork() });
+    expect(captureExceptionMock).not.toHaveBeenCalled();
+  });
+
+  it('treats a proxy error page answering an enhanced form as an unreachable server', () => {
+    // SvelteKit turns a non-JSON 5xx response to an enhanced form (Traefik's
+    // 502 while Coolify swaps the container) into a framework error.
+    const result = handleError({
+      kind: 'framework',
+      error: { status: 502, message: 'Bad Gateway' },
+      event: {
+        params: {},
+        route: { id: '/child/[id]/log' },
+        url: new URL('https://diversif.app/child/18/log')
+      }
+    } as unknown as Parameters<typeof handleError>[0]);
 
     expect(result).toEqual({ message: m.errorsNetwork() });
     expect(captureExceptionMock).not.toHaveBeenCalled();

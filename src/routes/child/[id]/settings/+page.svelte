@@ -1,17 +1,17 @@
 <script lang="ts">
-  import BackHeader from '$components/ui/BackHeader.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import Input from '$components/ui/Input.svelte';
-  import Field from '$lib/components/ui/Field.svelte';
-  import Card from '$components/ui/Card.svelte';
+  import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
+  import Field from '#lib/components/ui/Field.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
 
-  import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
+  import ConfirmModal from '#lib/components/ui/ConfirmModal.svelte';
   import { enhance } from '$app/forms';
   import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
-  import { resolveMessageKey, trackSubmission } from '$lib/forms/tracked-enhance';
-  import * as m from '$lib/paraglide/messages';
-  import { DIET_EXCLUSIONS, type DietExclusion } from '$lib/utils/diet';
+  import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import * as m from '#lib/paraglide/messages.js';
+  import { DIET_EXCLUSIONS, type DietExclusion } from '#lib/utils/diet.js';
   import type { ActionData, PageData } from './$types';
 
   let {

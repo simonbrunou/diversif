@@ -41,10 +41,9 @@ type Counts = Record<string, number>;
 
 function userTables(db: Database): string[] {
   const rows = db
-    .query<
-      { name: string },
-      []
-    >("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
+    .query<{ name: string }, []>(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+    )
     .all();
   return rows.map((r) => r.name).filter((n) => !SKIP_TABLES.has(n));
 }

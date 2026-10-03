@@ -3,15 +3,15 @@ import { testDb } from '../../test/db';
 import { _clearAllRateLimits } from './rate-limit';
 
 // Use the in-memory pg-mem db so we can insert real rows without a live PG.
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 // Import after mocks are in place.
 const { requireFreshAuth, requireFreshAuthWithKey } = await import('./fresh-auth');
 const { hashPassword } = await import('./auth');
 
-import type { SafeUser } from '$lib/types';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
+import type { SafeUser } from '#lib/types.js';
+import { db } from '#lib/server/db/index.js';
+import { users } from '#lib/server/db/schema.js';
 
 const fakeUser: SafeUser = {
   id: 9001,

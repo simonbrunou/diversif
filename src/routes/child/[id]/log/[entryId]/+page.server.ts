@@ -1,17 +1,17 @@
 import { error, fail } from '@sveltejs/kit';
-import { localizedRedirect } from '$lib/server/redirect';
+import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
 import { and, asc, eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { foodEntries, foods } from '$lib/server/db/schema';
-import { parseIntParam, requireChildContext } from '$lib/server/guards';
-import { audit } from '$lib/server/audit';
-import { loadVisibleFoodsForChild, resolveOrInsertFood } from '$lib/server/food-resolution';
-import { TEXTURE_VALUES } from '$lib/utils/textures';
-import { mealDateErrorForChild } from '$lib/server/meal-date';
-import { REACTION_VALUES } from '$lib/utils/reaction-values';
-import * as m from '$lib/paraglide/messages';
-import type { SafeUser } from '$lib/types';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
+import { parseIntParam, requireChildContext } from '#lib/server/guards.js';
+import { audit } from '#lib/server/audit.js';
+import { loadVisibleFoodsForChild, resolveOrInsertFood } from '#lib/server/food-resolution.js';
+import { TEXTURE_VALUES } from '#lib/utils/textures.js';
+import { mealDateErrorForChild } from '#lib/server/meal-date.js';
+import { REACTION_VALUES } from '#lib/utils/reaction-values.js';
+import * as m from '#lib/paraglide/messages.js';
+import type { SafeUser } from '#lib/types.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const schema = z

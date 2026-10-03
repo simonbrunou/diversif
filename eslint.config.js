@@ -50,7 +50,12 @@ export default ts.config(
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
-      ]
+      ],
+      // eslint-plugin-svelte v3 turns this on by default. It wants every link
+      // and goto() to go through SvelteKit's resolve(), but diversif routes
+      // through localizedHref() for the paraglide /en/ locale prefix — which
+      // resolve() can't express — so the rule fights the i18n routing.
+      'svelte/no-navigation-without-resolve': 'off'
     }
   },
   {
@@ -58,11 +63,6 @@ export default ts.config(
     rules: {
       // We never compile to custom elements, so the rest-prop warning is noise.
       'svelte/valid-compile': ['error', { ignoreWarnings: true }],
-      // eslint-plugin-svelte v3 turns this on by default. It wants every link to
-      // go through SvelteKit's resolve(), but diversif routes through
-      // localizedHref() for the paraglide /en/ locale prefix — which resolve()
-      // can't express — so the rule fights the i18n routing. Disable it.
-      'svelte/no-navigation-without-resolve': 'off',
       // Also new in v3: flags every `new Map()`/`new Set()` in a component as
       // non-reactive. We use plain Maps for local, non-reactive computation
       // (e.g. grouping a list before render); reactive state never lives in a

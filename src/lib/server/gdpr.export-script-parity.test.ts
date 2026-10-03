@@ -4,7 +4,7 @@
 // runtime Docker image COPYs the four operator scripts individually into
 // ./scripts/ without ever copying src/ (Dockerfile, #371/PR #379) — so
 // export-user.ts can only import bun:sqlite and node builtins, never
-// $lib/server/gdpr.ts or its helpers. Each new field landing in one but not
+// #lib/server/gdpr.ts or its helpers. Each new field landing in one but not
 // the other is exactly how they drifted before (issue #369) — this test
 // snapshots the SAME database both read from and fails the moment their
 // JSON payloads (modulo `exportedAt`) diverge.
@@ -15,7 +15,7 @@ import path from 'node:path';
 import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../test/db';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { exportUserData } from './gdpr';
 import {
@@ -29,7 +29,7 @@ import {
   tipDismissals,
   users
 } from './db/schema';
-import { DIET_EXCLUSIONS } from '$lib/utils/diet';
+import { DIET_EXCLUSIONS } from '#lib/utils/diet.js';
 import {
   insertChild,
   insertEntry,

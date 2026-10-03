@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { localizedRedirect } from './redirect';
-import type { Membership, SafeUser } from '$lib/types';
+import type { Membership, SafeUser } from '#lib/types.js';
 
 /**
  * Generic integer param parser. Throws a 400 HTTP error with a French message

@@ -2,7 +2,7 @@
 // server containers typically run in UTC, so any "which calendar day is this"
 // computation (age, last-tried dates, weekly chart buckets) must anchor on
 // Europe/Paris local time, not the host's UTC clock. Usable from both server
-// and client code (plain util, no `$lib/server` import).
+// and client code (plain util, no `#lib/server` import).
 export const PARIS_TIME_ZONE = 'Europe/Paris';
 
 const PARIS_FORMATTER = new Intl.DateTimeFormat('en-CA', {

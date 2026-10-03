@@ -1,6 +1,6 @@
-import { SESSION_COOKIE, invalidateSession } from '$lib/server/auth';
-import { localizedRedirect } from '$lib/server/redirect';
-import { audit } from '$lib/server/audit';
+import { SESSION_COOKIE, invalidateSession } from '#lib/server/auth.js';
+import { localizedRedirect } from '#lib/server/redirect.js';
+import { audit } from '#lib/server/audit.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies, locals, setHeaders }) => {
@@ -20,7 +20,7 @@ export const POST: RequestHandler = async ({ cookies, locals, setHeaders }) => {
   // event-accumulated headers onto the redirect response. Safari doesn't
   // honour Clear-Site-Data reliably, so the logout form also purges
   // client-side before submitting (see purgeBeforeSubmit in
-  // $lib/offline/purge).
+  // #lib/offline/purge).
   setHeaders({ 'Clear-Site-Data': '"cache", "storage"' });
   throw localizedRedirect(locals.locale, 303, '/login');
 };

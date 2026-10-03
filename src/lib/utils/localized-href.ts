@@ -1,4 +1,4 @@
-import { getLocale, localizeHref, type Locale } from '$lib/paraglide/runtime';
+import { getLocale, localizeHref, type Locale } from '#lib/paraglide/runtime.js';
 
 /**
  * Resolve an unprefixed app path to a locale's URL (the active locale by

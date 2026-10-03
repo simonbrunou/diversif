@@ -332,8 +332,7 @@ export async function finishRegistration(opts: {
 }
 
 export type AuthenticationResult =
-  | { ok: true; passkey: Passkey; userId: number }
-  | { ok: false; error: string };
+  { ok: true; passkey: Passkey; userId: number } | { ok: false; error: string };
 
 // Single error string returned for every failure mode in finishAuthentication
 // (unknown credential, bad signature, unverified). Distinct messages would

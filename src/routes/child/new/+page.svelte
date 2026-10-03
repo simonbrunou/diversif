@@ -1,7 +1,7 @@
 <script lang="ts">
-  import OnboardingForm from '$lib/components/bento/OnboardingForm.svelte';
-  import Seo from '$lib/components/Seo.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import OnboardingForm from '#lib/components/bento/OnboardingForm.svelte';
+  import Seo from '#lib/components/Seo.svelte';
+  import * as m from '#lib/paraglide/messages.js';
   import type { ActionData, PageData } from './$types';
 
   let { data: _data, form }: { data: PageData; form: ActionData } = $props();

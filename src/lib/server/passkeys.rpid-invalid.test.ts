@@ -5,7 +5,7 @@
 import { describe, expect, it, mock } from 'bun:test';
 import { testDb } from '../../test/db';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 process.env.WEBAUTHN_RP_ID = 'example.org.';
 

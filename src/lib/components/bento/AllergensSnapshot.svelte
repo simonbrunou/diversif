@@ -22,9 +22,9 @@
 </script>
 
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { cn } from '$lib/utils/cn';
-  import { ChevronRight } from 'lucide-svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { cn } from '#lib/utils/cn.js';
+  import { ChevronRight } from '@lucide/svelte';
 
   type PillItem = {
     id: string;

@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import type { Locale } from '$lib/paraglide/runtime';
+import type { Locale } from '#lib/paraglide/runtime.js';
 
 type RedirectStatus = Parameters<typeof redirect>[0];
 
@@ -12,7 +12,9 @@ type RedirectStatus = Parameters<typeof redirect>[0];
  * hooks.server.ts) so the helper prefixes the path with /en when needed.
  *
  * Pass paths as unprefixed app paths (e.g. '/', '/login', '/account/deleted').
- * Already /en-prefixed paths and absolute URLs are passed through unchanged.
+ * Already /en-prefixed paths are passed through unchanged. Absolute URLs are
+ * refused: SvelteKit 3 rejects external redirects unless the caller opts in,
+ * and this helper never does.
  */
 export function localizedRedirect(locale: Locale, status: RedirectStatus, path: string): never {
   // Treat /en, /en/..., /en?..., /en#... all as already-prefixed so they

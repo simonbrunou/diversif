@@ -1,11 +1,5 @@
-import {
-  isHttpError,
-  isRedirect,
-  type Handle,
-  type HandleServerError,
-  type RequestEvent
-} from '@sveltejs/kit';
-import { sequence } from '@sveltejs/kit/hooks';
+import { isHttpError, isRedirect, type RequestEvent } from '@sveltejs/kit';
+import { sequence, type Handle, type HandleServerError } from '@sveltejs/kit/hooks';
 import { randomBytes } from 'node:crypto';
 import {
   SESSION_COOKIE,
@@ -13,11 +7,11 @@ import {
   invalidateSession,
   listMembershipsForUser,
   validateSession
-} from '$lib/server/auth';
+} from '#lib/server/auth.js';
 import * as Sentry from '@sentry/sveltekit';
-import { scrubPathname } from '$lib/sentry';
-import type { Locale } from '$lib/paraglide/runtime';
-import { paraglideMiddleware } from '$lib/paraglide/server';
+import { scrubPathname } from '#lib/sentry.js';
+import type { Locale } from '#lib/paraglide/runtime.js';
+import { paraglideMiddleware } from '#lib/paraglide/server.js';
 
 /**
  * Tag every server-side error with a short id, log a structured stderr line,
@@ -25,17 +19,28 @@ import { paraglideMiddleware } from '$lib/paraglide/server';
  * line (Coolify streams stderr) and correlate to user reports via the id
  * shown on /+error.svelte.
  *
- * 4xx are routing dead-ends — SvelteKit's "no matching route" error
- * (typos, stale bookmarks, bots scanning for /wp-admin), client typos,
- * deliberate aborts — and they would otherwise flood Sentry + stderr with
- * uninteresting noise. The errorId is still generated and returned so
+ * Errors thrown with `error(...)` (kind 'app') are expected outcomes whose
+ * body the route chose; SvelteKit 3 now routes them through this hook too, so
+ * return nothing and let the error page render that body unchanged.
+ *
+ * 4xx framework errors are routing dead-ends — SvelteKit's "no matching
+ * route" error (typos, stale bookmarks, bots scanning for /wp-admin), client
+ * typos, deliberate aborts — and they would otherwise flood Sentry + stderr
+ * with uninteresting noise. The errorId is still generated and returned so
  * /+error.svelte can surface it for support tickets, but no event is
  * captured. Only 5xx (unhandled exceptions in route code, infra failures)
  * are worth waking someone up.
  */
-export const handleError: HandleServerError = ({ error, event, status, message }) => {
+export const handleError: HandleServerError = ({ kind, error, event }) => {
+  if (kind === 'app') return;
+
   const errorId =
     (typeof error === 'object' && error !== null && handleChainErrorIds.get(error)) || newErrorId();
+  // Unknown errors are thrown exceptions, rendered as 500 'Internal Error';
+  // framework and validation errors carry SvelteKit's own status and message.
+  const { status, message } =
+    kind === 'unknown' ? { status: 500, message: 'Internal Error' } : error;
+
   if (status < 500) {
     return { message: 'Internal Error', errorId };
   }
@@ -100,10 +105,11 @@ export function warnIfAddressHeaderMissing(
 }
 warnIfAddressHeaderMissing();
 
-// `script-src` and `style-src` are emitted as a `<meta>` tag by SvelteKit
-// (see svelte.config.js `kit.csp`), which lets it hash its own inline
-// hydration scripts. The other directives are header-only and complement that
-// meta tag. `X-Frame-Options: DENY` (below) covers `frame-ancestors`.
+// `script-src` and `style-src` are emitted as a `<meta>` tag by SvelteKit (see
+// the `csp` option of sveltekit() in vite.config.ts), which lets it hash its
+// own inline hydration scripts. The other directives are header-only and
+// complement that meta tag. `X-Frame-Options: DENY` (below) covers
+// `frame-ancestors`.
 const PERMISSIONS_POLICY =
   'geolocation=(), camera=(), microphone=(), usb=(), payment=(), interest-cohort=()';
 
@@ -159,7 +165,7 @@ const appHandle = async (
   // would leak `%paraglide.lang%` to the client whenever the head is flushed
   // before the closing chunk.
   //
-  // The theme cookie (written by $lib/utils/theme alongside localStorage)
+  // The theme cookie (written by #lib/utils/theme alongside localStorage)
   // lets SSR emit class="dark" on <html> for explicit-dark users, so the
   // first paint is correct without waiting for the inline theme-init script.
   // 'system' can't be resolved server-side (no prefers-color-scheme on the
@@ -193,7 +199,7 @@ const appHandle = async (
   }
 
   // Belt-and-braces (2): the service worker's own runtime-caching config
-  // (vite.config.ts) is the primary defense against a shared/offline device
+  // (src/service-worker/index.ts) is the primary defense against a shared/offline device
   // replaying a previous user's authenticated HTML — it never writes /child,
   // /account or /join responses to CacheStorage in the first place. This
   // header is the secondary layer for surfaces Workbox doesn't cover: the
@@ -222,8 +228,11 @@ export const localizedHandle: Handle = async ({ event, resolve }) => {
   try {
     return await paraglideMiddleware(event.request, ({ request, locale }) => {
       // The middleware hands back a request whose URL is de-localized,
-      // matching what `reroute` already did for `event.url`.
-      event.request = request;
+      // matching what `reroute` already did for `event.url`. The clone took
+      // over the original's body, so loads and actions must read the clone.
+      // RequestEvent is typed readonly since SvelteKit 3, but the event is a
+      // plain object and handle may still swap the request.
+      Object.assign(event, { request });
       return appHandle(event, resolve, locale);
     });
   } catch (err) {

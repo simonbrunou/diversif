@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { computeReminders, type ReminderInput } from './reminders';
 import type { EnrichedEntry } from './queries';
-import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
+import { ALLERGENS, type AllergenId } from '#lib/utils/allergens.js';
 
 const NOW = new Date('2026-05-03T12:00:00Z').getTime();
 const DAY = 24 * 60 * 60 * 1000;

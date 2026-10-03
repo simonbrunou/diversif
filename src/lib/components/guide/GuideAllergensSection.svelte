@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import Badge from '$components/ui/Badge.svelte';
-  import SourceCitation from '$lib/components/SourceCitation.svelte';
-  import AllergenInfoDialog from '$lib/components/AllergenInfoDialog.svelte';
-  import { ALLERGENS, getAllergenLabel, type AllergenId } from '$lib/utils/allergens';
-  import { ALLERGEN_GUIDANCE } from '$lib/content/guidance';
-  import { ShieldCheck } from 'lucide-svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
+  import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import AllergenInfoDialog from '#lib/components/AllergenInfoDialog.svelte';
+  import { ALLERGENS, getAllergenLabel, type AllergenId } from '#lib/utils/allergens.js';
+  import { ALLERGEN_GUIDANCE } from '#lib/content/guidance.js';
+  import { ShieldCheck } from '@lucide/svelte';
 
   let openAllergenId = $state<AllergenId | null>(null);
 </script>

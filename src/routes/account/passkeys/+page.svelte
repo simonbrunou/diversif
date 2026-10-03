@@ -1,15 +1,15 @@
 <script lang="ts">
-  import BackHeader from '$components/ui/BackHeader.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
-  import Input from '$components/ui/Input.svelte';
-  import Field from '$lib/components/ui/Field.svelte';
-  import { invalidateAll } from '$app/navigation';
-  import { browser } from '$app/environment';
+  import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import ConfirmModal from '#lib/components/ui/ConfirmModal.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
+  import Field from '#lib/components/ui/Field.svelte';
+  import { refreshAll } from '$app/navigation';
+  import { browser } from '$app/env';
   import { toast } from 'svelte-sonner';
-  import * as m from '$lib/paraglide/messages';
-  import { getLocale } from '$lib/paraglide/runtime';
-  import { createFormToasts } from '$lib/forms/form-toasts.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { getLocale } from '#lib/paraglide/runtime.js';
+  import { createFormToasts } from '#lib/forms/form-toasts.svelte.js';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -83,7 +83,7 @@
       passkeyName = '';
       currentPassword = '';
       toast.success(m.authAccountPasskeyRegisterSuccess());
-      await invalidateAll();
+      await refreshAll();
     } catch (err) {
       const message = err instanceof Error ? err.message : m.errorsAccountPasskeyGenericError();
       // User cancellation surfaces as a NotAllowedError. Stay quiet for it.

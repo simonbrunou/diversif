@@ -143,7 +143,7 @@ describe('signInWithPasskey', () => {
       showError: () => {}
     });
     expect(busy).toEqual([true, false]);
-    expect(navigate).toHaveBeenCalledWith('/', { invalidateAll: true });
+    expect(navigate).toHaveBeenCalledWith('/', { refreshAll: true });
   });
 
   it('surfaces the resolved errorKey message on failure', async () => {
@@ -153,7 +153,7 @@ describe('signInWithPasskey', () => {
       navigate: (() => Promise.resolve()) as never,
       showError: (message) => shown.push(message)
     });
-    const { errorsAccountPasskeyAuthFailed } = await import('$lib/paraglide/messages');
+    const { errorsAccountPasskeyAuthFailed } = await import('#lib/paraglide/messages.js');
     expect(shown).toEqual([errorsAccountPasskeyAuthFailed()]);
   });
 
@@ -165,7 +165,7 @@ describe('signInWithPasskey', () => {
     });
     // The default showError fires-and-forgets a dynamic import; flush it.
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const { errorsAccountPasskeyGenericError } = await import('$lib/paraglide/messages');
+    const { errorsAccountPasskeyGenericError } = await import('#lib/paraglide/messages.js');
     expect(toastErrorCalls).toEqual([errorsAccountPasskeyGenericError()]);
   });
 

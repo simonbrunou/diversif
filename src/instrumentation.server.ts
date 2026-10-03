@@ -6,13 +6,13 @@ import {
   scrubEvent,
   scrubLog,
   scrubSpan
-} from '$lib/sentry';
+} from '#lib/sentry.js';
 
-// SvelteKit loads this file before any other server module (see
-// `kit.experimental.instrumentation.server` in svelte.config.js), so the SDK is
-// configured before $lib/server/db runs its migrations and before the
-// OpenTelemetry tracer that `kit.experimental.tracing.server` reports to is
-// first used.
+// SvelteKit loads this file before any other server module (it picks up
+// src/instrumentation.server.ts automatically), so the SDK is configured
+// before #lib/server/db runs its migrations and before the OpenTelemetry
+// tracer that SvelteKit's `tracing.server` option (vite.config.ts) reports to
+// is first used.
 Sentry.init({
   dsn: process.env.SENTRY_DSN || '',
   environment: process.env.SENTRY_ENVIRONMENT || 'production',

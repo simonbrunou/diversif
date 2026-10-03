@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/sveltekit';
-import { scrubRecordingEvent } from '$lib/sentry';
+import { scrubRecordingEvent } from '#lib/sentry.js';
 
 /**
  * Add Session Replay to the already-initialised browser SDK. Reached only

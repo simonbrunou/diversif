@@ -1,12 +1,12 @@
-import { db } from '$lib/server/db';
-import { foodEntries, foods, users } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries, foods, users } from '#lib/server/db/schema.js';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
-import { requireChildContext } from '$lib/server/guards';
-import { toEpochMs } from '$lib/utils/dates';
-import { parisDayIndex } from '$lib/utils/paris-date';
-import { loadRepeatCandidates, loadTexturesTried } from '$lib/server/guidance/queries';
-import { loadAllergenStatus } from '$lib/server/guidance/allergen-status';
-import type { TextureKey } from '$lib/utils/textures';
+import { requireChildContext } from '#lib/server/guards.js';
+import { toEpochMs } from '#lib/utils/dates.js';
+import { parisDayIndex } from '#lib/utils/paris-date.js';
+import { loadRepeatCandidates, loadTexturesTried } from '#lib/server/guidance/queries/index.js';
+import { loadAllergenStatus } from '#lib/server/guidance/allergen-status.js';
+import type { TextureKey } from '#lib/utils/textures.js';
 import type { PageServerLoad } from './$types';
 
 async function loadWeeklyEntries(
@@ -17,7 +17,7 @@ async function loadWeeklyEntries(
   // Europe/Paris calendar days, so a food logged right after local midnight
   // lands in "today"'s bucket even though the server clock (and SQLite
   // storage) is UTC. anchorUtc pins the epoch-ms representation of today's
-  // Paris dayIndex (see $lib/utils/paris-date) so the client can label each
+  // Paris dayIndex (see #lib/utils/paris-date) so the client can label each
   // bar against the same civil date without SSR/CSR hydration drift.
   const anchorIndex = parisDayIndex(now.getTime());
   const anchorUtc = anchorIndex * 86400_000;
@@ -184,7 +184,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     .orderBy(desc(foodEntries.givenAt));
 
   if (q) {
-    const { normalize } = await import('$lib/utils/search');
+    const { normalize } = await import('#lib/utils/search.js');
     const nq = normalize(q);
     rows = rows.filter((r) => normalize(r.foodName).includes(nq));
   }

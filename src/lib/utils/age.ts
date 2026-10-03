@@ -1,5 +1,5 @@
 import { parisDateParts, parisDayIndex } from './paris-date';
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 
 function monthsLabel(months: number): string {
   return months === 1 ? m.childAgeMonthsOne() : m.childAgeMonthsOther({ months });

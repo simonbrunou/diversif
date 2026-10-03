@@ -1,7 +1,7 @@
-import { CheckCircle2, AlertCircle, OctagonAlert } from 'lucide-svelte';
+import { CheckCircle2, AlertCircle, OctagonAlert } from '@lucide/svelte';
 import type { ReactionId } from './reaction-values';
 import { formatDate } from './dates';
-import { getLocale } from '$lib/paraglide/runtime';
+import { getLocale } from '#lib/paraglide/runtime.js';
 
 // Shared icon/class/date-format helpers for the pediatric handoff report
 // (report/+page.svelte and its section components) so the reaction ↔

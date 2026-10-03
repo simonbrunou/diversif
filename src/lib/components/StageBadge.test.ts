@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/svelte';
 import '../../test/component';
 import StageBadge from './StageBadge.svelte';
-import { STAGES } from '$lib/content/guidance';
+import { STAGES } from '#lib/content/guidance.js';
 
 describe('StageBadge', () => {
   it('renders the stage id and an icon', () => {

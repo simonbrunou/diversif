@@ -1,6 +1,12 @@
 import * as Sentry from '@sentry/sveltekit';
-import { env } from '$env/dynamic/public';
-import type { HandleClientError } from '@sveltejs/kit';
+import {
+  PUBLIC_SENTRY_DSN,
+  PUBLIC_SENTRY_ENVIRONMENT,
+  PUBLIC_SENTRY_TRACES_SAMPLE_RATE,
+  PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE,
+  PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE
+} from '$app/env/public';
+import type { HandleClientError } from '@sveltejs/kit/hooks';
 import {
   SENTRY_TUNNEL_PATH,
   clientRouteTag,
@@ -9,9 +15,9 @@ import {
   parseSampleRate,
   scrubEvent,
   scrubSpan
-} from '$lib/sentry';
-import { loadReplay } from '$lib/sentry-replay-loader';
-import * as m from '$lib/paraglide/messages';
+} from '#lib/sentry.js';
+import { loadReplay } from '#lib/sentry-replay-loader.js';
+import * as m from '#lib/paraglide/messages.js';
 
 // No paraglide bootstrap is needed here since the 2.x migration: the
 // runtime's `url` strategy re-reads window.location on every getLocale()
@@ -19,8 +25,8 @@ import * as m from '$lib/paraglide/messages';
 // navigations (the layout still syncs <html lang>).
 
 Sentry.init({
-  dsn: env.PUBLIC_SENTRY_DSN || '',
-  environment: env.PUBLIC_SENTRY_ENVIRONMENT || 'production',
+  dsn: PUBLIC_SENTRY_DSN,
+  environment: PUBLIC_SENTRY_ENVIRONMENT || 'production',
   // Inlined at build time by Vite's `define` (vite.config.ts), so the
   // server-side SHA and the client bundle share one constant.
   release: __SENTRY_RELEASE__,
@@ -38,13 +44,13 @@ Sentry.init({
   // pattern, Web Vitals, same-origin fetches) comes from the SvelteKit SDK's
   // browserTracingIntegration below; sentryHandle's <meta> tags join it to
   // the server trace.
-  tracesSampleRate: parseSampleRate(env.PUBLIC_SENTRY_TRACES_SAMPLE_RATE, 0.1),
+  tracesSampleRate: parseSampleRate(PUBLIC_SENTRY_TRACES_SAMPLE_RATE, 0.1),
   // Session Replay defaults to error-only: the last minute before a captured
   // error is kept in memory and sent with it; no session is recorded
   // otherwise unless an operator raises the session rate. The recorder itself
   // is added below, once its chunk has loaded.
-  replaysSessionSampleRate: parseSampleRate(env.PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE, 0),
-  replaysOnErrorSampleRate: parseSampleRate(env.PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE, 1),
+  replaysSessionSampleRate: parseSampleRate(PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE, 0),
+  replaysOnErrorSampleRate: parseSampleRate(PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE, 1),
   // Explicitly opt out of default PII (IP address, cookies, user agent).
   sendDefaultPii: false,
   integrations: [
@@ -77,12 +83,15 @@ Sentry.init({
 
 // Replay is code-split and starts right after init (see loadReplay) — not at
 // all when browser capture is disabled.
-if (env.PUBLIC_SENTRY_DSN) void loadReplay();
+if (PUBLIC_SENTRY_DSN) void loadReplay();
 
 // Tags omit `method` (which the server hook records): SvelteKit's
 // `NavigationEvent` has no `request` property in the browser, and there is no
 // reliable equivalent (clicks, popstate, programmatic navigations all reach
 // here without a method).
+//
+// Errors thrown with `error(...)` (kind 'app') keep the body the load chose,
+// exactly as before SvelteKit 3 started routing them through this hook.
 //
 // 4xx are skipped to match the server-side gate: client-side 404s (e.g. a
 // data-load throwing notFound) are routing dead-ends, not bugs. Only 5xx
@@ -94,16 +103,22 @@ if (env.PUBLIC_SENTRY_DSN) void loadReplay();
 // redeploy removed) are not bugs either: the parent is told to check their
 // connection, with no errorId since no event exists to match. Hover preloads
 // reach this hook too, so they would otherwise be reported for a page the
-// parent never opened.
+// parent never opened. The same goes for a 5xx `framework` error: in the
+// browser SvelteKit only raises those when an enhanced form gets a non-JSON
+// error page, i.e. Traefik or Cloudflare answering while Coolify swaps the
+// container. The app's own 5xx come back as JSON the server hook already
+// reported.
 //
 // A failed `__data.json` fetch reaches this hook with the page key
 // (`/child/18/guide?…`) as `route.id` instead of the route pattern; see
 // clientRouteTag.
-export const handleError: HandleClientError = ({ error, event, status }) => {
+export const handleError: HandleClientError = ({ kind, error, event }) => {
+  if (kind === 'app') return;
+  const status = kind === 'unknown' ? 500 : error.status;
   if (status < 500) {
     return { message: 'Internal Error' };
   }
-  if (isNetworkFailure(error)) {
+  if (kind === 'framework' || isNetworkFailure(error)) {
     return { message: m.errorsNetwork() };
   }
   const errorId = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).padStart(8, '0');

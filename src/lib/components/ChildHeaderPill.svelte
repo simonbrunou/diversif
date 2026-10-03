@@ -1,7 +1,7 @@
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { ChevronDown, Sprout } from 'lucide-svelte';
-  import { ageInMonths } from '$lib/utils/age';
+  import * as m from '#lib/paraglide/messages.js';
+  import { ChevronDown, Sprout } from '@lucide/svelte';
+  import { ageInMonths } from '#lib/utils/age.js';
 
   type Child = {
     id: string;

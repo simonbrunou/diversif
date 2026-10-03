@@ -1,6 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test';
-import * as m from '$lib/paraglide/messages';
-import { getAllergenLabel } from '$lib/utils/allergens';
+import * as m from '#lib/paraglide/messages.js';
+import { getAllergenLabel } from '#lib/utils/allergens.js';
 import { celebrate, pickMilestoneFromQuery } from './milestones';
 
 function fakeToast() {

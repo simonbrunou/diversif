@@ -1,7 +1,7 @@
-import { localizedRedirect } from '$lib/server/redirect';
-import { SESSION_COOKIE, invalidateAllUserSessions } from '$lib/server/auth';
-import { requireUser } from '$lib/server/guards';
-import { audit } from '$lib/server/audit';
+import { localizedRedirect } from '#lib/server/redirect.js';
+import { SESSION_COOKIE, invalidateAllUserSessions } from '#lib/server/auth.js';
+import { requireUser } from '#lib/server/guards.js';
+import { audit } from '#lib/server/audit.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {

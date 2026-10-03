@@ -1,10 +1,10 @@
 <script lang="ts">
-  import DiscoverBento from '$lib/components/bento/DiscoverBento.svelte';
-  import Callout from '$lib/components/ui/Callout.svelte';
-  import LinkRow from '$lib/components/ui/LinkRow.svelte';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import * as m from '$lib/paraglide/messages';
-  import { BookOpen, ChevronRight, Lightbulb } from 'lucide-svelte';
+  import DiscoverBento from '#lib/components/bento/DiscoverBento.svelte';
+  import Callout from '#lib/components/ui/Callout.svelte';
+  import LinkRow from '#lib/components/ui/LinkRow.svelte';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import * as m from '#lib/paraglide/messages.js';
+  import { BookOpen, ChevronRight, Lightbulb } from '@lucide/svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

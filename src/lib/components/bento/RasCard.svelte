@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import Card from '#lib/components/ui/Card.svelte';
+  import * as m from '#lib/paraglide/messages.js';
 
   let { nth }: { nth: number } = $props();
 </script>

@@ -143,17 +143,20 @@ which is for maybe-never work; these are required.
          Coolify service to a Docker Compose deployment (reusing
          `docker-compose.yml` with the `backup` profile against the same
          `/app/data` volume) or add a second Coolify service running
-         `litestream/litestream:0.3.13 replicate -config /etc/litestream.yml`
+         `litestream/litestream:0.5.17 replicate -config /etc/litestream.yml`
          mounted read-write on the same volume as the app, with
          `DATABASE_PATH=/app/data/diversif.db` (required — `litestream.yml`'s
          `path: ${DATABASE_PATH}` resolves to nothing without it) alongside
          the same four `LITESTREAM_*` variables set in its environment tab.
          This wiring is an operator TODO, not automated by this repo.
       4. **Verify replication is actually happening**: `litestream databases`
-         and `litestream generations -config litestream.yml <path>` (run inside
-         the `litestream` container, e.g.
-         `docker compose exec litestream litestream generations -config /etc/litestream.yml /app/data/diversif.db`)
-         should list a generation once the app has written data.
+         and `litestream ltx -config litestream.yml <path>` (run inside the
+         `litestream` container, e.g.
+         `docker compose exec litestream litestream ltx -config /etc/litestream.yml /app/data/diversif.db`)
+         should list LTX files once the app has written data. (Litestream
+         0.5 replaced 0.3's generations with LTX files; its `restore` still
+         reads a 0.3 replica, but a fresh bucket path keeps the two formats
+         apart.)
       5. **Exercise the restore path** periodically —
          `litestream restore -config litestream.yml -o /tmp/restored.db <path>`,
          then `DATABASE_PATH=/tmp/restored.db bun run db:verify-backup` — same

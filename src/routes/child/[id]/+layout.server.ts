@@ -1,9 +1,9 @@
 import { error } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
-import { children } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { children } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { requireChildContext } from '$lib/server/guards';
-import * as m from '$lib/paraglide/messages';
+import { requireChildContext } from '#lib/server/guards.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals, params }) => {

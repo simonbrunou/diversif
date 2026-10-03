@@ -5,12 +5,12 @@
   import CoparentsSection from './CoparentsSection.svelte';
   import CompteSection from './CompteSection.svelte';
   import RgpdSection from './RgpdSection.svelte';
-  import DashedActionRow from '$components/ui/DashedActionRow.svelte';
-  import SectionHeader from '$components/ui/SectionHeader.svelte';
-  import ProblemReportDialog from '$lib/components/ProblemReportDialog.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import { Plus } from 'lucide-svelte';
+  import DashedActionRow from '#lib/components/ui/DashedActionRow.svelte';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
+  import ProblemReportDialog from '#lib/components/ProblemReportDialog.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import { Plus } from '@lucide/svelte';
 
   type ChildWithCoparents = {
     id: string;

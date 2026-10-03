@@ -1,20 +1,20 @@
 <script lang="ts">
-  import Button from '$components/ui/Button.svelte';
-  import Input from '$components/ui/Input.svelte';
-  import Field from '$lib/components/ui/Field.svelte';
-  import BentoAuthLayout from '$lib/components/bento/BentoAuthLayout.svelte';
-  import FormError from '$components/ui/FormError.svelte';
-  import Callout from '$lib/components/ui/Callout.svelte';
-  import Seo from '$lib/components/Seo.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
+  import Field from '#lib/components/ui/Field.svelte';
+  import BentoAuthLayout from '#lib/components/bento/BentoAuthLayout.svelte';
+  import FormError from '#lib/components/ui/FormError.svelte';
+  import Callout from '#lib/components/ui/Callout.svelte';
+  import Seo from '#lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
-  import { browser } from '$app/environment';
+  import { browser } from '$app/env';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { onMount } from 'svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { signInWithPasskey } from '$lib/auth/passkey-client';
-  import { trackSubmission } from '$lib/forms/tracked-enhance';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import * as m from '#lib/paraglide/messages.js';
+  import { signInWithPasskey } from '#lib/auth/passkey-client.js';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();
@@ -79,7 +79,7 @@
         if (verifyRes.ok && data?.ok) {
           if (cancelled) return;
           // localizedHref so an EN visitor lands on /en, not the FR home.
-          await goto(localizedHref('/'), { invalidateAll: true });
+          await goto(localizedHref('/'), { refreshAll: true });
         }
       } catch {
         // Background flow: aborts, refusals, and network blips stay silent.

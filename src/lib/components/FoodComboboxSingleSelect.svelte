@@ -1,8 +1,8 @@
 <script lang="ts">
-  import CategoryTag from '$lib/components/CategoryTag.svelte';
-  import FoodComboboxList from '$lib/components/FoodComboboxList.svelte';
-  import { getAllergenLabel } from '$lib/utils/allergens';
-  import * as m from '$lib/paraglide/messages';
+  import CategoryTag from '#lib/components/CategoryTag.svelte';
+  import FoodComboboxList from '#lib/components/FoodComboboxList.svelte';
+  import { getAllergenLabel } from '#lib/utils/allergens.js';
+  import * as m from '#lib/paraglide/messages.js';
   import type { Snippet } from 'svelte';
 
   type FoodOption = {

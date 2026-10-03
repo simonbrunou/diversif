@@ -11,8 +11,8 @@
 // endpoints and error keys), so it intentionally stays where it is.
 
 import { goto } from '$app/navigation';
-import * as m from '$lib/paraglide/messages';
-import { localizedHref } from '$lib/utils/localized-href';
+import * as m from '#lib/paraglide/messages.js';
+import { localizedHref } from '#lib/utils/localized-href.js';
 
 /**
  * Literal union (not string) so a renamed paraglide key is a compile error
@@ -109,11 +109,8 @@ export async function signInWithPasskey(
   try {
     const result = await authenticate();
     if (result.ok) {
-      // localizedHref so an EN visitor lands on /en, not the FR home. The
-      // navigation-without-resolve rule is off for .svelte files (where every
-      // other goto lives); this path is locale-resolved by localizedHref.
-      // eslint-disable-next-line svelte/no-navigation-without-resolve
-      await navigate(localizedHref('/'), { invalidateAll: true });
+      // localizedHref so an EN visitor lands on /en, not the FR home.
+      await navigate(localizedHref('/'), { refreshAll: true });
       return;
     }
     if (result.errorKey !== null) {

@@ -10,7 +10,7 @@ import {
 } from './db/schema';
 import { _clearAllRateLimits, checkRateLimit } from './rate-limit';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 // Tests resolve the browser build of @sentry/sveltekit (scripts/bun-test.ts
 // runs with --conditions=browser), which has no cron API. Registering the

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getCategoryLabel, type CategoryId } from '$lib/utils/categories';
-  import { getReactionLabel } from '$lib/utils/reactions';
-  import { reportReactionIcon, reportReactionClass, formatReportDay } from '$lib/utils/report';
-  import type { ReactionId } from '$lib/utils/reaction-values';
-  import * as m from '$lib/paraglide/messages';
+  import { getCategoryLabel, type CategoryId } from '#lib/utils/categories.js';
+  import { getReactionLabel } from '#lib/utils/reactions.js';
+  import { reportReactionIcon, reportReactionClass, formatReportDay } from '#lib/utils/report.js';
+  import type { ReactionId } from '#lib/utils/reaction-values.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   type ReportEntry = {
     id: number;

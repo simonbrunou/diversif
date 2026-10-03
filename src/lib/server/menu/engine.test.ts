@@ -1,8 +1,8 @@
 import { test, expect } from 'bun:test';
 import { buildMenu, cautionFor, safeForRole, mkItem, type MenuInput } from './engine';
 import { SOFT_CHEESE, OILY_FISH } from './tables';
-import { FOODS_SEED } from '$lib/server/db/seed';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import { FOODS_SEED } from '#lib/server/db/seed.js';
+import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
 
 // Build a catalog with stable ids from the seed (id = index+1, isCustom=false).
 const CATALOG = FOODS_SEED.map((f, i) => ({

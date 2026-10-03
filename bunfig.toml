@@ -7,9 +7,11 @@ trustedDependencies = ["@sentry/cli"]
 # Preload order matters: svelte-loader.preload.ts registers the Bun.plugin
 # for .svelte / .svelte.{js,ts} compilation BEFORE bunfig.preload.ts pulls
 # in @testing-library/svelte (which imports props.svelte.js — needs the
-# plugin already active). bunfig.preload.ts then sets up happy-dom, $app/*
-# mocks, jest-dom matchers, and the per-test reset hooks.
-preload = ["./svelte-loader.preload.ts", "./bunfig.preload.ts"]
+# plugin already active), and happy-dom.preload.ts registers the DOM globals
+# before jest-dom's import of @testing-library/dom binds `screen` to them.
+# bunfig.preload.ts then sets up $app/* mocks, jest-dom matchers, and the
+# per-test reset hooks.
+preload = ["./svelte-loader.preload.ts", "./happy-dom.preload.ts", "./bunfig.preload.ts"]
 # Coverage stays opt-in via `bun test --coverage` — but do NOT set
 # `coverage = false` here: bun 1.3.14 silently ignores the CLI --coverage
 # flag when bunfig says false (no table, no lcov, exit 0), which left the
@@ -44,5 +46,11 @@ coveragePathIgnorePatterns = [
   "src/hooks.ts",
   "src/lib/components/ui/use-bottom-sheet-drag.svelte.ts",
   # Route-options only (`export const prerender = true`), no logic to cover.
-  "src/routes/offline/+page.ts"
+  "src/routes/offline/+page.ts",
+  # SvelteKit's env-variable definitions: one defineEnvVars call that the
+  # framework consumes; app code imports the values from $app/env/public.
+  "src/env.ts",
+  # Runs only in the browser's service-worker scope against $app/manifest; the
+  # Playwright suite exercises it on the production build, where it registers.
+  "src/service-worker/**"
 ]

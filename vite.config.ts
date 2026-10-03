@@ -1,11 +1,13 @@
 import { execFileSync } from 'node:child_process';
 import tailwindcss from '@tailwindcss/vite';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
-import { paraglideCompilerOptions } from './paraglide.config';
+import { paraglideCompilerOptions } from './paraglide.config.ts';
+import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { sentrySvelteKit } from '@sentry/sveltekit';
-import { defineConfig } from 'vite';
+import { createSentryBuildPluginManager } from '@sentry/bundler-plugins/core';
+import { defineConfig, type Plugin } from 'vite';
 
 /**
  * Resolve the Sentry release name from the most reliable source available
@@ -47,22 +49,83 @@ function resolveSentryRelease(): string | undefined {
 // release tag attached to runtime errors).
 const SENTRY_RELEASE_RESOLVED = resolveSentryRelease();
 
-// Routes gated by requireUser()/requireChildContext() (see
-// src/lib/server/guards.ts) — their rendered HTML embeds session-specific
-// data (child health records under /child, account settings under
-// /account, invite/child names under /join) and must never be written to
-// the service worker's CacheStorage, or a later visitor on a shared/offline
-// device could read a previous user's data straight out of the cache with
-// no session check. Covers both the bare path and its /en/ localized
-// counterpart (see paraglide.config.ts urlPatterns).
-const SESSION_GATED_PATH = /^\/(en\/)?(child|account|join)(\/|$)/;
+// adapter-node 6 dropped its runtime ORIGIN variable. Without paths.origin it
+// derives the origin per request from the Host header, or PROTOCOL_HEADER /
+// HOST_HEADER behind the production proxy (Dockerfile), and assumes https
+// when no protocol header arrives. So production leaves ORIGIN unset at build
+// time, and plain-http runs with no proxy in front (the e2e server,
+// docker-compose on localhost) pin it, or every form POST fails SvelteKit's
+// CSRF origin check.
+const BUILD_ORIGIN = process.env.ORIGIN || undefined;
 
-// A build-stable cache-busting token for the /offline precache entry below:
-// reuses the same release resolution as Sentry so the offline fallback page
-// is refetched on every real deploy (new git SHA) without needing its own
-// versioning scheme. Falls back to the build wall-clock time so local/CI
-// builds without any of the SHA sources still get a changing revision.
-const OFFLINE_FALLBACK_REVISION = SENTRY_RELEASE_RESOLVED ?? String(Date.now());
+const SENTRY_BUILD_OPTIONS = {
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG || 'simonbrunou',
+  project: process.env.SENTRY_PROJECT || 'diversif',
+  telemetry: false,
+  release: {
+    name: SENTRY_RELEASE_RESOLVED,
+    // One deploy marker per production build, so "resolved in next
+    // release" and the release health timeline line up with deploys.
+    deploy: { env: process.env.SENTRY_ENVIRONMENT || 'production' },
+    // Suspect commits need the GitHub integration in the Sentry org; opt
+    // in with SENTRY_REPOSITORY=<owner>/<repo> once it is connected (a
+    // missing integration would otherwise fail the build).
+    ...(process.env.SENTRY_REPOSITORY && SENTRY_RELEASE_RESOLVED
+      ? {
+          setCommits: {
+            repo: process.env.SENTRY_REPOSITORY,
+            commit: SENTRY_RELEASE_RESOLVED,
+            ignoreMissing: true
+          }
+        }
+      : {})
+  },
+  sourcemaps: {
+    // build.sourcemap is set explicitly below: remove every map after
+    // upload so the runtime image never serves them.
+    filesToDeleteAfterUpload: ['./build/**/*.map', './.svelte-kit/output/**/*.map']
+  }
+};
+
+/**
+ * Creates the Sentry release, uploads the source maps of the final
+ * adapter-node output (./build) and deletes every .map file, once SvelteKit
+ * has run the adapter.
+ *
+ * @sentry/sveltekit 10 does this from the SSR build's closeBundle hook, which
+ * never fires under SvelteKit 3: environments now build inside Vite's
+ * buildApp, and the adapter runs in SvelteKit's own `post` buildApp hook. Left
+ * alone, no release or deploy marker is created and the hidden source maps
+ * stay in ./build/client, where adapter-node serves them publicly. Remove
+ * this plugin once @sentry/sveltekit uploads after SvelteKit 3's adapter, or
+ * releases get two deploy markers per build.
+ */
+function sentryUploadAfterAdapter(): Plugin {
+  return {
+    name: 'diversif:sentry-upload-after-adapter',
+    apply: 'build',
+    // enforce + order 'post' put this handler after SvelteKit's adapter one.
+    enforce: 'post',
+    buildApp: {
+      order: 'post',
+      async handler() {
+        if (!process.env.SENTRY_AUTH_TOKEN) return;
+        const sentry = createSentryBuildPluginManager(SENTRY_BUILD_OPTIONS, {
+          buildTool: 'vite',
+          loggerPrefix: '[sentry-upload-after-adapter]'
+        });
+        try {
+          await sentry.createRelease();
+          await sentry.uploadSourcemaps(['./build/**/*.js']);
+        } finally {
+          // Even when the upload fails: maps must never reach the image.
+          await sentry.deleteArtifacts();
+        }
+      }
+    }
+  };
+}
 
 export default defineConfig({
   define: {
@@ -77,124 +140,98 @@ export default defineConfig({
     // either a release-tagged or release-less test environment.
     __SENTRY_RELEASE__: SENTRY_RELEASE_RESOLVED
       ? JSON.stringify(SENTRY_RELEASE_RESOLVED)
-      : 'undefined'
+      : 'undefined',
+    // The origin this build serves, or '' when it derives it per request.
+    // src/lib/server/e2e.ts keys the e2e relaxations on it: a loopback build
+    // can't accept a real cross-host form POST, so they stay inert anywhere
+    // that serves real traffic.
+    __BUILD_ORIGIN__: JSON.stringify(BUILD_ORIGIN ?? '')
   },
   plugins: [
     tailwindcss(),
     // Must precede sveltekit(): it wraps universal `load` functions for
     // browser tracing, resolves the SDK's SvelteKit-version-specific browser
-    // tracing module, and — when SENTRY_AUTH_TOKEN is set — uploads the source
-    // maps of the final adapter-node output (./build, after adapter-node
-    // re-bundles the server) instead of Vite's intermediate chunks. Server
-    // `load` functions are traced by SvelteKit itself (kit.experimental.tracing
-    // in svelte.config.js), so the plugin leaves them alone.
+    // tracing module, and — when SENTRY_AUTH_TOKEN is set — stamps a debug ID
+    // into every chunk, which sentryUploadAfterAdapter() below matches the
+    // uploaded maps with. Server `load` functions are traced by SvelteKit
+    // itself (`tracing` in the sveltekit() options below), so the plugin
+    // leaves them alone.
     sentrySvelteKit({
       autoUploadSourceMaps: Boolean(process.env.SENTRY_AUTH_TOKEN),
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      org: process.env.SENTRY_ORG || 'simonbrunou',
-      project: process.env.SENTRY_PROJECT || 'diversif',
-      telemetry: false,
-      release: {
-        name: SENTRY_RELEASE_RESOLVED,
-        // One deploy marker per production build, so "resolved in next
-        // release" and the release health timeline line up with deploys.
-        deploy: { env: process.env.SENTRY_ENVIRONMENT || 'production' },
-        // Suspect commits need the GitHub integration in the Sentry org; opt
-        // in with SENTRY_REPOSITORY=<owner>/<repo> once it is connected (a
-        // missing integration would otherwise fail the build).
-        ...(process.env.SENTRY_REPOSITORY && SENTRY_RELEASE_RESOLVED
-          ? {
-              setCommits: {
-                repo: process.env.SENTRY_REPOSITORY,
-                commit: SENTRY_RELEASE_RESOLVED,
-                ignoreMissing: true
-              }
-            }
-          : {})
-      },
-      sourcemaps: {
-        // build.sourcemap is set explicitly below, so the plugin does not
-        // pick its own deletion glob: remove every map after upload so the
-        // runtime image never serves them.
-        filesToDeleteAfterUpload: ['./build/**/*.map', './.svelte-kit/output/**/*.map']
+      ...SENTRY_BUILD_OPTIONS
+    }),
+    sveltekit({
+      preprocess: vitePreprocess(),
+      // adapter-node default output is ./build; keep it explicit so the
+      // Docker entrypoint's `bun ./build/index.js` path is unambiguous.
+      adapter: adapter({ out: 'build' }),
+      // See BUILD_ORIGIN above.
+      //
+      // relative: false makes asset URLs root-relative (`/_app/...`). The
+      // service worker answers a failed navigation to any path (/child/2,
+      // /en/account) with the prerendered /offline page; with Kit's default
+      // `./_app/...` URLs that page would request /child/_app/..., miss the
+      // precache and render unstyled and inert.
+      paths: { origin: BUILD_ORIGIN, relative: false },
+      // The same SHA Sentry tags releases with (falls back to Kit's build
+      // timestamp when none resolves). It revisions the service worker's
+      // unhashed precache entries, so a rebuild of the same commit doesn't
+      // make every client re-download them.
+      version: { name: SENTRY_RELEASE_RESOLVED },
+      // src/instrumentation.server.ts initialises Sentry before any other
+      // server module loads (SvelteKit picks the file up automatically), and
+      // SvelteKit's own OpenTelemetry spans (handle, load, form actions) feed
+      // Sentry's performance traces. adapter-node emits the instrumentation
+      // file and imports it first from build/index.js.
+      tracing: { server: true },
+      // src/service-worker/ is registered by ReloadPrompt.svelte instead, so
+      // it stays off in dev and a new version waits for the parent's go-ahead
+      // (the « Nouvelle version disponible » toast) before taking over.
+      serviceWorker: { register: false },
+      // SvelteKit injects small inline bootstrap <script> tags for hydration.
+      // Hash mode emits a `<meta http-equiv="content-security-policy">` that
+      // whitelists the exact hash of each inline script it produced. We rely
+      // on that meta tag for `script-src` and `style-src` (the inline-prone
+      // directives) and put the other directives — including frame-ancestors
+      // via X-Frame-Options — on the response in `hooks.server.ts`.
+      csp: {
+        mode: 'hash',
+        directives: {
+          'default-src': ['self'],
+          // SvelteKit's hash mode only hashes scripts that SvelteKit itself
+          // emits during render (hydration boot, route data). Static <script>
+          // blocks in src/app.html are NOT scanned, so they need explicit
+          // hashes here or they get silently blocked. The hash below covers
+          // the anti-FOIT theme-init script in src/app.html — if you edit
+          // that script, recompute with:
+          //   python3 -c "import re,hashlib,base64; \
+          //     b=re.search(r'<script>(.*?)<\/script>',open('src/app.html').read(),re.DOTALL).group(1); \
+          //     print(base64.b64encode(hashlib.sha256(b.encode()).digest()).decode())"
+          'script-src': ['self', 'sha256-GqV1bi71LSFwJEB0v4isQY6KFrlnWV2dqeHM79pt0cE='],
+          'style-src': ['self', 'unsafe-inline'],
+          'img-src': ['self', 'data:'],
+          'font-src': ['self', 'data:'],
+          'connect-src': [
+            // Browser Sentry envelopes go through the same-origin tunnel
+            // (src/routes/monitoring/+server.ts), so no Sentry ingest origin
+            // is allow-listed: the browser never talks to a third party.
+            'self'
+          ],
+          'manifest-src': ['self'],
+          // blob: is for Sentry Session Replay's compression worker, which
+          // the SDK spins up from an inline Blob URL. Creating one already
+          // requires script execution, which script-src keeps hash-locked.
+          'worker-src': ['self', 'blob:'],
+          'base-uri': ['self'],
+          'form-action': ['self'],
+          'object-src': ['none']
+        }
       }
     }),
-    sveltekit(),
     // Options shared with scripts/compile-paraglide.ts — see
     // paraglide.config.ts for the strategy/urlPatterns rationale.
     paraglideVitePlugin({ ...paraglideCompilerOptions }),
-    SvelteKitPWA({
-      registerType: 'prompt',
-      strategies: 'generateSW',
-      manifest: false,
-      injectRegister: null,
-      workbox: {
-        globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
-        // navigateFallback (Workbox's built-in NavigationRoute) always wins
-        // for every navigation, online or offline, which would break this
-        // SSR app's normal routing — see e2e/offline.spec.ts. The /offline
-        // page is instead reached per-route via the `precacheFallback`
-        // option below (a handlerDidError hook), which only kicks in once
-        // the matched strategy itself has failed (network down + nothing
-        // cached), so it never intercepts a normal online navigation. It
-        // still needs to be in the precache manifest to be servable
-        // offline — added explicitly since it's an SSR route, not a static
-        // build asset covered by globPatterns above.
-        navigateFallback: null,
-        additionalManifestEntries: [{ url: '/offline', revision: OFFLINE_FALLBACK_REVISION }],
-        runtimeCaching: [
-          {
-            // /child, /account, /join render session-specific HTML — never
-            // persist it to CacheStorage (see SESSION_GATED_PATH above).
-            // NetworkOnly still benefits from the same offline fallback via
-            // precacheFallback, it just never reads/writes a cache first.
-            urlPattern: ({ request, url }) =>
-              request.mode === 'navigate' && SESSION_GATED_PATH.test(url.pathname),
-            handler: 'NetworkOnly',
-            options: {
-              precacheFallback: { fallbackURL: '/offline' }
-            }
-          },
-          {
-            // Everything else navigable (landing, guide, login, etc.) — no
-            // per-user secrets, safe to keep available offline.
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'pages',
-              networkTimeoutSeconds: 3,
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              precacheFallback: { fallbackURL: '/offline' },
-              // Authoritative session gate: hooks.server.ts stamps
-              // `Cache-Control: no-store` on EVERY authenticated response
-              // (driven by locals.user, not a route list), so refuse to write
-              // any such response to CacheStorage. This catches routes the
-              // SESSION_GATED_PATH deny-list above can't — notably `/` and
-              // `/en`, which render the multi-child picker (names/ages/roles)
-              // for signed-in users — and any future authenticated route,
-              // with no regex to maintain. Workbox's NetworkFirst calls
-              // cache.put() manually and otherwise ignores Cache-Control.
-              plugins: [
-                {
-                  cacheWillUpdate: async ({ response }: { response: Response }) =>
-                    response.headers.get('cache-control')?.includes('no-store') ? null : response
-                }
-              ]
-            }
-          },
-          {
-            urlPattern: ({ request }) =>
-              ['style', 'script', 'worker', 'image', 'font'].includes(request.destination),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'assets',
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 }
-            }
-          }
-        ]
-      },
-      devOptions: { enabled: false }
-    })
+    sentryUploadAfterAdapter()
   ],
   esbuild: {
     // esbuild >= 0.27.7 regressed: it tries to *lower* array destructuring
@@ -213,7 +250,7 @@ export default defineConfig({
     //
     // 'hidden' (vs 'true') omits the //# sourceMappingURL= comment, but
     // the .map files would still be reachable by URL-guessing without the
-    // post-upload delete (sourcemaps.filesToDeleteAfterUpload above).
+    // post-upload delete (sentryUploadAfterAdapter above).
     sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
     rollupOptions: {
       // `bun` and `bun:*` (bun:sql, bun:test, etc.) are runtime built-ins

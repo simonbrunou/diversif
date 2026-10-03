@@ -2,7 +2,7 @@ import { describe, expect, it, mock } from 'bun:test';
 import { testDb } from '../../test/db';
 import { makeRouteEvent } from '../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { load } from './+page.server';
 

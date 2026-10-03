@@ -1,16 +1,16 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { goto, afterNavigate } from '$app/navigation';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import Button from '$lib/components/ui/Button.svelte';
-  import { Plus } from 'lucide-svelte';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import Button from '#lib/components/ui/Button.svelte';
+  import { Plus } from '@lucide/svelte';
   import BottomNavBento, { TABS } from './BottomNavBento.svelte';
   import FabLog from './FabLog.svelte';
   import ChildHeaderPill from './ChildHeaderPill.svelte';
   import ChildSwitcherDrawer from './ChildSwitcherDrawer.svelte';
   import SharedTopBar from './SharedTopBar.svelte';
-  import { cn } from '$lib/utils/cn';
-  import * as m from '$lib/paraglide/messages';
+  import { cn } from '#lib/utils/cn.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   type Child = { id: string; name: string; birthMonth: string };
 
@@ -53,7 +53,8 @@
 
   afterNavigate((navigation) => {
     // Only reset on pathname changes — segment switches (CarnetSegments uses
-    // data-sveltekit-noscroll on same-pathname ?segment= links) must not jump to top.
+    // data-sveltekit-reset="false" on same-pathname ?segment= links) must not
+    // jump to top.
     if (navigation.from?.url.pathname === navigation.to?.url.pathname) return;
     scrollEl?.scrollTo({ top: 0, behavior: 'instant' });
   });

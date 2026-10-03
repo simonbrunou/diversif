@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Check, X } from 'lucide-svelte';
-  import { TEXTURE_VALUES, type TextureKey } from '$lib/utils/textures';
-  import { getTextureLabel } from '$lib/utils/texture-labels';
-  import { cn } from '$lib/utils/cn';
-  import * as m from '$lib/paraglide/messages';
+  import { Check, X } from '@lucide/svelte';
+  import { TEXTURE_VALUES, type TextureKey } from '#lib/utils/textures.js';
+  import { getTextureLabel } from '#lib/utils/texture-labels.js';
+  import { cn } from '#lib/utils/cn.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let {
     name,

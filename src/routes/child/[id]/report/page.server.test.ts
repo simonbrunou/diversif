@@ -7,11 +7,11 @@ import {
   seedMembership,
   seedUser
 } from '../../../../test/route';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
+import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { load } from './+page.server';
 
 beforeEach(async () => {

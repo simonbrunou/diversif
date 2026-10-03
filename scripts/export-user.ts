@@ -191,7 +191,7 @@ const parseFoodIds = (v: string): number[] => {
     return [];
   }
 };
-// Mirrors $lib/utils/diet.ts's parseDietExclusions: narrows an untrusted JSON
+// Mirrors #lib/utils/diet.ts's parseDietExclusions: narrows an untrusted JSON
 // column down to the known DietExclusion id space, dropping unknown/invalid
 // entries rather than throwing. Duplicated here (not imported) because this
 // script is self-contained — the runtime Docker image ships `scripts/`

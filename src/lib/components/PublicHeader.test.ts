@@ -4,7 +4,7 @@ import '../../test/app-stubs';
 import { setPagePathname } from '../../test/app-stubs';
 import '../../test/component';
 import PublicHeader from './PublicHeader.svelte';
-import type { SafeUser } from '$lib/types';
+import type { SafeUser } from '#lib/types.js';
 
 const guest = null;
 const user: SafeUser = {

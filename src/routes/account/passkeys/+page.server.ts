@@ -1,11 +1,11 @@
 import { fail } from '@sveltejs/kit';
 import { z } from 'zod';
-import { deletePasskey, listPasskeys, publicPasskey, renamePasskey } from '$lib/server/passkeys';
-import { requireUser } from '$lib/server/guards';
-import { parseFormWithKey } from '$lib/server/forms';
-import { requireFreshAuthWithKey } from '$lib/server/fresh-auth';
-import { localizedRedirect } from '$lib/server/redirect';
-import { audit } from '$lib/server/audit';
+import { deletePasskey, listPasskeys, publicPasskey, renamePasskey } from '#lib/server/passkeys.js';
+import { requireUser } from '#lib/server/guards.js';
+import { parseFormWithKey } from '#lib/server/forms.js';
+import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
+import { localizedRedirect } from '#lib/server/redirect.js';
+import { audit } from '#lib/server/audit.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const renameSchema = z.object({

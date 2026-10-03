@@ -2,8 +2,8 @@
 // Every claim that comes from an official guideline carries SourceId(s).
 // Edited by hand; UI templates should never duplicate this copy.
 
-import type { AllergenId } from '$lib/utils/allergens';
-import type { CategoryId } from '$lib/utils/categories';
+import type { AllergenId } from '#lib/utils/allergens.js';
+import type { CategoryId } from '#lib/utils/categories.js';
 import type { SourceId } from './sources';
 
 // ---------------------------------------------------------------------------

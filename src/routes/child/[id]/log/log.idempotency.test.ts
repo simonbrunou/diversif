@@ -9,14 +9,14 @@ import {
   seedUser
 } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 // Mock the (console-only) audit sink so we can assert a MULTI-food replay
 // fires the post-commit audit exactly once (no-op for every other test here).
-mock.module('$lib/server/audit', () => ({ audit: mock() }));
+mock.module('#lib/server/audit.js', () => ({ audit: mock() }));
 
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { eq, sql } from 'drizzle-orm';
-import { audit } from '$lib/server/audit';
+import { audit } from '#lib/server/audit.js';
 import { actions } from './+page.server';
 
 // bun:test's mock() records calls; expose the shape we assert on without

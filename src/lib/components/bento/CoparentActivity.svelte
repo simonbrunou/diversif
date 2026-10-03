@@ -1,7 +1,7 @@
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { groupByMeal } from '$lib/utils/meals';
-  import type { CoparentEntry } from '$lib/server/guidance/queries/timeline';
+  import * as m from '#lib/paraglide/messages.js';
+  import { groupByMeal } from '#lib/utils/meals.js';
+  import type { CoparentEntry } from '#lib/server/guidance/queries/timeline.js';
 
   let { activity }: { activity: CoparentEntry[] } = $props();
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { EyeOff, BookOpen, Lock } from 'lucide-svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { EyeOff, BookOpen, Lock } from '@lucide/svelte';
 
   const PILLARS = [
     { icon: EyeOff, key: 'landingTrustPillarNoAnalytics' as const },

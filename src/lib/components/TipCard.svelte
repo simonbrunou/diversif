@@ -31,11 +31,11 @@
 
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import type { Icon as LucideIcon } from 'lucide-svelte';
-  import { Lightbulb } from 'lucide-svelte';
-  import { cn } from '$lib/utils/cn';
+  import type { LucideIcon } from '@lucide/svelte';
+  import { Lightbulb } from '@lucide/svelte';
+  import { cn } from '#lib/utils/cn.js';
   import SourceCitation from './SourceCitation.svelte';
-  import type { SourceId } from '$lib/content/sources';
+  import type { SourceId } from '#lib/content/sources.js';
 
   let {
     tone = 'info',
@@ -55,7 +55,7 @@
     eyebrow?: string;
     title?: string;
     body?: string;
-    icon?: typeof LucideIcon;
+    icon?: LucideIcon;
     sources?: SourceId[];
     class?: string;
     children?: Snippet;

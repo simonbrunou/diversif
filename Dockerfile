@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM oven/bun:1.3.14-debian@sha256:9dba1a1b43ce28c9d7931bfc4eb00feb63b0114720a0277a8f939ae4dfc9db6f AS builder
+FROM oven/bun:1.4.2-debian@sha256:4f6e31d1a54d6a3dd312daef655fc998101b5043d52e12592ac293ef04b9bc73 AS builder
 WORKDIR /app
 # HUSKY=0 stops the `prepare` script from running `husky install` during
 # `bun install`. Husky's hook-install path is unnecessary inside the
@@ -18,12 +18,17 @@ COPY . .
 # SENTRY_RELEASE / SOURCE_COMMIT / GITHUB_SHA / GIT_COMMIT_SHA / git HEAD
 # in that order) and inlined into both server + client bundles via Vite's
 # `define`. No runtime SHA file or entrypoint mirroring required.
+# Leave ORIGIN unset for proxied deployments (production): the server then
+# derives each request's origin from PROTOCOL_HEADER/HOST_HEADER below. Only a
+# plain-http setup with no proxy in front (docker-compose.yml on localhost)
+# passes it, to pin SvelteKit's paths.origin — see vite.config.ts.
+ARG ORIGIN
 RUN bun run build
 
 # Separate, --production-only install: the runtime image must not ship the
 # builder's devDependencies (vite, svelte-check, playwright, ...) — they're
 # needed to build but not to run the built server.
-FROM oven/bun:1.3.14-debian@sha256:9dba1a1b43ce28c9d7931bfc4eb00feb63b0114720a0277a8f939ae4dfc9db6f AS prod-deps
+FROM oven/bun:1.4.2-debian@sha256:4f6e31d1a54d6a3dd312daef655fc998101b5043d52e12592ac293ef04b9bc73 AS prod-deps
 WORKDIR /app
 COPY package.json bun.lock ./
 # --ignore-scripts: this stage only needs node_modules for the runtime copy,
@@ -32,7 +37,7 @@ COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     bun install --frozen-lockfile --production --ignore-scripts
 
-FROM oven/bun:1.3.14-debian@sha256:9dba1a1b43ce28c9d7931bfc4eb00feb63b0114720a0277a8f939ae4dfc9db6f
+FROM oven/bun:1.4.2-debian@sha256:4f6e31d1a54d6a3dd312daef655fc998101b5043d52e12592ac293ef04b9bc73
 WORKDIR /app
 
 # Run as a dedicated non-root user. Without this the server (and the
@@ -62,8 +67,8 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
 # Trust Cloudflare/Traefik's forwarded headers so the SvelteKit handler
-# derives the request origin per-request instead of from a build-baked
-# ORIGIN env var. Lets CSRF accept POSTs from every preview hostname
+# derives the request origin per-request (SvelteKit's `paths.origin` stays
+# unset). Lets CSRF accept POSTs from every preview hostname
 # (`*.diversif.app`) without per-deploy configuration. Only set these when
 # sitting behind a trusted reverse proxy — clients could otherwise spoof
 # them.

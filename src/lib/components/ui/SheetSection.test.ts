@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, cleanup, screen } from '@testing-library/svelte';
 import { textSnippet } from '../../../test/component';
-import { Calendar } from 'lucide-svelte';
+import { Calendar } from '@lucide/svelte';
 import SheetSection from './SheetSection.svelte';
 
 afterEach(() => cleanup());

@@ -8,7 +8,7 @@ import {
   requireMembership,
   requireOwnership
 } from './guards';
-import type { SafeUser, Membership } from '$lib/types';
+import type { SafeUser, Membership } from '#lib/types.js';
 
 const fakeUser: SafeUser = {
   id: 1,

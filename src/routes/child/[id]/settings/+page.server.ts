@@ -1,20 +1,20 @@
 import { fail } from '@sveltejs/kit';
-import { localizedRedirect } from '$lib/server/redirect';
+import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
 import { and, eq, gt, isNull, sql } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { children, invitations, memberships, users } from '$lib/server/db/schema';
-import { createInvitationForChild } from '$lib/server/invitations';
-import { audit } from '$lib/server/audit';
-import { requireFreshAuthWithKey } from '$lib/server/fresh-auth';
+import { db } from '#lib/server/db/index.js';
+import { children, invitations, memberships, users } from '#lib/server/db/schema.js';
+import { createInvitationForChild } from '#lib/server/invitations.js';
+import { audit } from '#lib/server/audit.js';
+import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
 import {
   parseChildIdParam,
   requireChildContext,
   requireOwnership,
   requireUser
-} from '$lib/server/guards';
-import { isValidBirthDate } from '$lib/utils/dates';
-import { parseDietExclusions } from '$lib/utils/diet';
+} from '#lib/server/guards.js';
+import { isValidBirthDate } from '#lib/utils/dates.js';
+import { parseDietExclusions } from '#lib/utils/diet.js';
 import type { Actions, PageServerLoad } from './$types';
 
 // Cap on simultaneously-active (unused, unexpired) invites per child. A parent

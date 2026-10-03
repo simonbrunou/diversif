@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import CoparentActivity from './CoparentActivity.svelte';
-import * as m from '$lib/paraglide/messages';
-import type { CoparentEntry } from '$lib/server/guidance/queries/timeline';
+import * as m from '#lib/paraglide/messages.js';
+import type { CoparentEntry } from '#lib/server/guidance/queries/timeline.js';
 
 afterEach(() => cleanup());
 

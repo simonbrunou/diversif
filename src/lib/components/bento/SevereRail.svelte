@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { Phone } from 'lucide-svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { Phone } from '@lucide/svelte';
 </script>
 
 <div role="alert" class="mb-3 rounded-tile bg-severe text-severe-foreground shadow-soft">

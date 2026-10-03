@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Check } from 'lucide-svelte';
+  import { Check } from '@lucide/svelte';
   import {
     REACTIONS,
     getReactionDescription,
     getReactionLabel,
     type ReactionId
-  } from '$lib/utils/reactions';
-  import { cn } from '$lib/utils/cn';
-  import * as m from '$lib/paraglide/messages';
+  } from '#lib/utils/reactions.js';
+  import { cn } from '#lib/utils/cn.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let {
     name,

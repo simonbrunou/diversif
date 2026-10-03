@@ -2,12 +2,12 @@ import { describe, expect, it, mock } from 'bun:test';
 import { and, eq } from 'drizzle-orm';
 import { testDb } from '../../test/db';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const { resolveOrInsertFood } = await import('./food-resolution');
 
-import { db } from '$lib/server/db';
-import { children, foods, users } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { children, foods, users } from '#lib/server/db/schema.js';
 
 // Seed a user + child so FK constraints on customForChildId are satisfied.
 async function seedChild(): Promise<number> {

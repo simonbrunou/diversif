@@ -1,18 +1,18 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import Callout from '$lib/components/ui/Callout.svelte';
-  import LandingHeroBento from '$lib/components/landing/LandingHeroBento.svelte';
-  import LandingFeaturesBento from '$lib/components/landing/LandingFeaturesBento.svelte';
-  import LandingTrustBento from '$lib/components/landing/LandingTrustBento.svelte';
-  import LandingClosingCtaBento from '$lib/components/landing/LandingClosingCtaBento.svelte';
-  import Seo from '$lib/components/Seo.svelte';
-  import JsonLd from '$lib/components/JsonLd.svelte';
-  import { SITE, faqPageJsonLd, webApplicationJsonLd } from '$lib/seo';
+  import Card from '#lib/components/ui/Card.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Callout from '#lib/components/ui/Callout.svelte';
+  import LandingHeroBento from '#lib/components/landing/LandingHeroBento.svelte';
+  import LandingFeaturesBento from '#lib/components/landing/LandingFeaturesBento.svelte';
+  import LandingTrustBento from '#lib/components/landing/LandingTrustBento.svelte';
+  import LandingClosingCtaBento from '#lib/components/landing/LandingClosingCtaBento.svelte';
+  import Seo from '#lib/components/Seo.svelte';
+  import JsonLd from '#lib/components/JsonLd.svelte';
+  import { SITE, faqPageJsonLd, webApplicationJsonLd } from '#lib/seo.js';
   import { page } from '$app/state';
-  import { formatAge } from '$lib/utils/age';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import * as m from '$lib/paraglide/messages';
+  import { formatAge } from '#lib/utils/age.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import * as m from '#lib/paraglide/messages.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

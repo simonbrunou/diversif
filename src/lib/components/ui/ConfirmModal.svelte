@@ -1,7 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { trackSubmission } from '$lib/forms/tracked-enhance';
-  import * as m from '$lib/paraglide/messages';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import * as m from '#lib/paraglide/messages.js';
   import Modal from './Modal.svelte';
   import Button from './Button.svelte';
   import Input from './Input.svelte';

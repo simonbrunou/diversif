@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { makeRouteEvent, safeUser, seedMembership, seedUser } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
-import { memberships } from '$lib/server/db/schema';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
+import { memberships } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { actions } from './+page.server';
 import { setup } from './settings-test-fixtures';

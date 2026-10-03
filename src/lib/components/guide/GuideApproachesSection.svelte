@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import SourceCitation from '$lib/components/SourceCitation.svelte';
-  import { APPROACHES } from '$lib/content/guidance';
-  import { Users } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
+  import Card from '#lib/components/ui/Card.svelte';
+  import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import { APPROACHES } from '#lib/content/guidance.js';
+  import { Users } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
 </script>
 
 <section id="approches" class="scroll-mt-6 space-y-3">

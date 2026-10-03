@@ -7,19 +7,19 @@ import {
   PRIORITY_INTRODUCTION_ALLERGENS,
   getAllergenLabel,
   type AllergenId
-} from '$lib/utils/allergens';
-import { getCategoryLabel, type CategoryId } from '$lib/utils/categories';
+} from '#lib/utils/allergens.js';
+import { getCategoryLabel, type CategoryId } from '#lib/utils/categories.js';
 // User-facing copy resolves through paraglide so the EN locale gets English
 // reminders. Since the paraglide-js 2.x migration, hooks.server.ts wraps the
 // request in paraglideMiddleware's AsyncLocalStorage scope, so every m.X()
 // call below resolves the request's own locale — the old setLanguageTag
 // module-global race (concurrent requests cross-contaminating SSR output) is
 // gone.
-import * as m from '$lib/paraglide/messages';
-import type { SourceId } from '$lib/content/sources';
-import { FORBIDDEN_FOODS } from '$lib/content/guidance';
+import * as m from '#lib/paraglide/messages.js';
+import type { SourceId } from '#lib/content/sources.js';
+import { FORBIDDEN_FOODS } from '#lib/content/guidance.js';
 import type { EnrichedEntry } from './queries';
-import type { ReactionId } from '$lib/utils/reactions';
+import type { ReactionId } from '#lib/utils/reactions.js';
 import { findRepeatCandidates } from './repeat-candidates';
 
 type Severity = 'info' | 'warn' | 'important';
@@ -144,17 +144,15 @@ function ruleStageTransitions({ input, childPath }: RuleContext): Reminder[] {
   ];
   return stageTransitions
     .filter((st) => input.ageMonths >= st.months && input.ageMonths < st.months + 2)
-    .map(
-      (st): Reminder => ({
-        key: st.key,
-        severity: 'important',
-        title: st.title,
-        body: st.body,
-        cta: { label: m.reminderCtaSeeGuide(), href: `${childPath}/guide` },
-        sources: st.sources,
-        dismissable: true
-      })
-    );
+    .map((st): Reminder => ({
+      key: st.key,
+      severity: 'important',
+      title: st.title,
+      body: st.body,
+      cta: { label: m.reminderCtaSeeGuide(), href: `${childPath}/guide` },
+      sources: st.sources,
+      dismissable: true
+    }));
 }
 
 // 3. Stale diversity : no *new* food in 14 days (and child has any entries)
@@ -189,17 +187,15 @@ function ruleStaleDiversity({ input, now, childPath }: RuleContext): Reminder[] 
 function rulePendingAllergens({ input, childPath }: RuleContext): Reminder[] {
   if (input.ageMonths < 4 || input.entries.length === 0) return [];
   const missing = ALLERGEN_PRIORITY.filter((id) => !input.introducedAllergens.has(id));
-  return missing.slice(0, 3).map(
-    (id): Reminder => ({
-      key: `pending-allergen:${id}`,
-      severity: 'warn',
-      title: m.reminderPendingAllergenTitle({ allergen: getAllergenLabel(id) }),
-      body: m.reminderPendingAllergenBody(),
-      cta: { label: m.reminderCtaHowToIntroduce(), href: `${childPath}/guide#allergenes` },
-      sources: ['hcsp-2020', 'eaaci-2020'],
-      dismissable: true
-    })
-  );
+  return missing.slice(0, 3).map((id): Reminder => ({
+    key: `pending-allergen:${id}`,
+    severity: 'warn',
+    title: m.reminderPendingAllergenTitle({ allergen: getAllergenLabel(id) }),
+    body: m.reminderPendingAllergenBody(),
+    cta: { label: m.reminderCtaHowToIntroduce(), href: `${childPath}/guide#allergenes` },
+    sources: ['hcsp-2020', 'eaaci-2020'],
+    dismissable: true
+  }));
 }
 
 // 5. Repeat exposure: food given exactly 1× with reaction ras,
@@ -216,17 +212,15 @@ function ruleRepeatExposure({ input, now, childPath }: RuleContext): Reminder[] 
     now
   });
   repeatCandidates.sort((a, b) => a.lastGivenAt - b.lastGivenAt);
-  return repeatCandidates.slice(0, 2).map(
-    (c): Reminder => ({
-      key: `repeat-exposure:${c.foodId}`,
-      severity: 'info',
-      title: m.reminderRepeatExposureTitle({ food: c.foodName }),
-      body: m.reminderRepeatExposureBody(),
-      cta: { label: m.reminderCtaLogThisFood(), href: `${childPath}/log?foodId=${c.foodId}` },
-      sources: ['spf-pnns-guide'],
-      dismissable: true
-    })
-  );
+  return repeatCandidates.slice(0, 2).map((c): Reminder => ({
+    key: `repeat-exposure:${c.foodId}`,
+    severity: 'info',
+    title: m.reminderRepeatExposureTitle({ food: c.foodName }),
+    body: m.reminderRepeatExposureBody(),
+    cta: { label: m.reminderCtaLogThisFood(), href: `${childPath}/log?foodId=${c.foodId}` },
+    sources: ['spf-pnns-guide'],
+    dismissable: true
+  }));
 }
 
 // 6. Category imbalance : last 14 days dominated by 1 category > 60 %

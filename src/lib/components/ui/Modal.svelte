@@ -8,9 +8,9 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { Dialog as DialogPrimitive } from 'bits-ui';
-  import { X } from 'lucide-svelte';
-  import { cn } from '$lib/utils/cn';
-  import * as m from '$lib/paraglide/messages';
+  import { X } from '@lucide/svelte';
+  import { cn } from '#lib/utils/cn.js';
+  import * as m from '#lib/paraglide/messages.js';
   import { useBottomSheetDrag } from './use-bottom-sheet-drag.svelte';
 
   type Props = {

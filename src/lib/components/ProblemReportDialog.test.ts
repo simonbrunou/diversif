@@ -8,7 +8,7 @@ const sendProblemReport = mock(async (_message: string, _tags: Record<string, st
   await heldSend;
   if (reportFails) throw new Error('offline');
 });
-mock.module('$lib/sentry-feedback', () => ({ sendProblemReport }));
+mock.module('#lib/sentry-feedback.js', () => ({ sendProblemReport }));
 
 const { default: ProblemReportDialog } = await import('./ProblemReportDialog.svelte');
 

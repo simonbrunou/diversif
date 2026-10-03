@@ -1,8 +1,8 @@
 import { describe, expect, it, mock } from 'bun:test';
 import { testDb } from '../../test/db';
-import { isValidInviteCodeFormat, generateInviteCodeRaw } from '$lib/utils/invites';
+import { isValidInviteCodeFormat, generateInviteCodeRaw } from '#lib/utils/invites.js';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const { hashPassword, verifyPasswordOrDecoy } = await import('./auth');
 

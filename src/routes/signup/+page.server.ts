@@ -1,21 +1,21 @@
 import { fail } from '@sveltejs/kit';
-import { localizedRedirect } from '$lib/server/redirect';
+import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
-import { db } from '$lib/server/db';
-import { invitations, memberships, users } from '$lib/server/db/schema';
-import { isUniqueViolation } from '$lib/server/db/errors';
-import { audit } from '$lib/server/audit';
+import { db } from '#lib/server/db/index.js';
+import { invitations, memberships, users } from '#lib/server/db/schema.js';
+import { isUniqueViolation } from '#lib/server/db/errors.js';
+import { audit } from '#lib/server/audit.js';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import {
   findUserByEmail,
   hashPassword,
   isValidInviteCodeFormat,
   PASSWORD_MIN_LENGTH
-} from '$lib/server/auth';
-import { requireGuest } from '$lib/server/guards';
-import { parseFormWithKey } from '$lib/server/forms';
-import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
-import { isE2E } from '$lib/server/e2e';
+} from '#lib/server/auth.js';
+import { requireGuest } from '#lib/server/guards.js';
+import { parseFormWithKey } from '#lib/server/forms.js';
+import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
+import { isE2E } from '#lib/server/e2e.js';
 import type { Actions, PageServerLoad } from './$types';
 
 // Per-IP signup ceiling. 20/hour comfortably accommodates shared egress
@@ -26,7 +26,7 @@ import type { Actions, PageServerLoad } from './$types';
 // noisy client.
 const SIGNUP_LIMIT = {
   name: 'signup',
-  // Playwright sets E2E=1 + ORIGIN=http://localhost in its webServer env; the
+  // Playwright builds with ORIGIN=http://localhost and runs with E2E=1; the
   // suite legitimately runs dozens of signups from one address in a few
   // minutes, so the throttle relaxes there. isE2E() requires both signals, so
   // a stray E2E=1 on a real deployment keeps the 20/hour ceiling.

@@ -2,23 +2,23 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const exportSpy = { fn: mock() };
-import * as actualGdpr from '$lib/server/gdpr';
+import * as actualGdpr from '#lib/server/gdpr.js';
 // Snapshot the real export AT IMPORT TIME, before mock.module replaces the
 // module. If we read actualGdpr.exportUserData later, the live binding has
 // already flipped to the mocked spy — calling the snapshot from the spy's
 // implementation would recurse infinitely.
 const realExportUserData: typeof actualGdpr.exportUserData = actualGdpr.exportUserData;
-mock.module('$lib/server/gdpr', () => ({
+mock.module('#lib/server/gdpr.js', () => ({
   ...actualGdpr,
   exportUserData: (...args: Parameters<typeof actualGdpr.exportUserData>) => exportSpy.fn(...args)
 }));
 
-import { users } from '$lib/server/db/schema';
+import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { ExportTooLargeError } from '$lib/server/gdpr';
+import { ExportTooLargeError } from '#lib/server/gdpr.js';
 import { GET } from './+server';
 
 beforeEach(async () => {

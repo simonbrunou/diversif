@@ -1,16 +1,16 @@
 import { fail } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
-import { foodEntries, foods, users } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries, foods, users } from '#lib/server/db/schema.js';
 import { asc, desc, eq, sql } from 'drizzle-orm';
-import { ALLERGENS, type AllergenId } from '$lib/utils/allergens';
-import { CATEGORIES, type CategoryId } from '$lib/utils/categories';
-import type { ReactionId } from '$lib/utils/reactions';
-import { REACTION_RANK } from '$lib/utils/reaction-values';
-import { ageInMonths } from '$lib/utils/age';
-import { toEpochMs } from '$lib/utils/dates';
-import { computeReminders, type Reminder } from '$lib/server/guidance/reminders';
-import { loadAllergenRows, summarizeAllergenRows } from '$lib/server/guidance/allergen-status';
-import * as m from '$lib/paraglide/messages';
+import { ALLERGENS, type AllergenId } from '#lib/utils/allergens.js';
+import { CATEGORIES, type CategoryId } from '#lib/utils/categories.js';
+import type { ReactionId } from '#lib/utils/reactions.js';
+import { REACTION_RANK } from '#lib/utils/reaction-values.js';
+import { ageInMonths } from '#lib/utils/age.js';
+import { toEpochMs } from '#lib/utils/dates.js';
+import { computeReminders, type Reminder } from '#lib/server/guidance/reminders.js';
+import { loadAllergenRows, summarizeAllergenRows } from '#lib/server/guidance/allergen-status.js';
+import * as m from '#lib/paraglide/messages.js';
 import {
   loadCoparentActivity,
   loadDiversityMetrics,
@@ -19,8 +19,8 @@ import {
   loadWeeklyRecap,
   dismissReminder,
   type EnrichedEntry
-} from '$lib/server/guidance/queries';
-import { requireChildContext } from '$lib/server/guards';
+} from '#lib/server/guidance/queries/index.js';
+import { requireChildContext } from '#lib/server/guards.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;

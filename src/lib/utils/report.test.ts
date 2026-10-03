@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test';
-import { baseLocale, overwriteGetLocale } from '$lib/paraglide/runtime';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import { reportReactionIcon, reportReactionClass, formatReportDay } from './report';
-import { CheckCircle2, AlertCircle, OctagonAlert } from 'lucide-svelte';
+import { CheckCircle2, AlertCircle, OctagonAlert } from '@lucide/svelte';
 
 describe('reportReactionIcon', () => {
   it('maps each reaction id to its icon', () => {

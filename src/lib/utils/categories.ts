@@ -12,9 +12,9 @@ import {
   Sprout,
   Utensils,
   Wheat,
-  type Icon as LucideIcon
-} from 'lucide-svelte';
-import * as m from '$lib/paraglide/messages';
+  type LucideIcon
+} from '@lucide/svelte';
+import * as m from '#lib/paraglide/messages.js';
 
 export type CategoryColor = 'mint' | 'peach' | 'butter' | 'sky' | 'lilac' | 'primary';
 
@@ -35,7 +35,7 @@ export const CATEGORIES = [
   id: string;
   label: string;
   color: CategoryColor;
-  icon: typeof LucideIcon;
+  icon: LucideIcon;
 }>;
 
 export type CategoryId = (typeof CATEGORIES)[number]['id'];
@@ -71,7 +71,7 @@ export function getCategoryColor(id: string): CategoryColor {
   return CATEGORIES.find((c) => c.id === id)?.color ?? 'primary';
 }
 
-export function getCategoryIcon(id: string): typeof LucideIcon {
+export function getCategoryIcon(id: string): LucideIcon {
   return CATEGORIES.find((c) => c.id === id)?.icon ?? Utensils;
 }
 

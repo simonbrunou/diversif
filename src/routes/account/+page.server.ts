@@ -1,9 +1,9 @@
 import { and, eq, inArray, ne } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { children, memberships, users } from '$lib/server/db/schema';
-import { ageInMonths } from '$lib/utils/age';
-import { listPasskeys, publicPasskey } from '$lib/server/passkeys';
-import { requireUser } from '$lib/server/guards';
+import { db } from '#lib/server/db/index.js';
+import { children, memberships, users } from '#lib/server/db/schema.js';
+import { ageInMonths } from '#lib/utils/age.js';
+import { listPasskeys, publicPasskey } from '#lib/server/passkeys.js';
+import { requireUser } from '#lib/server/guards.js';
 import type { PageServerLoad } from './$types';
 
 const VALID_THEMES = new Set(['system', 'light', 'dark'] as const);

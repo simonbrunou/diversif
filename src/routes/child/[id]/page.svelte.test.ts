@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, cleanup } from '@testing-library/svelte';
 import '../../../test/component';
-import * as m from '$lib/paraglide/messages';
-import type { CoparentEntry } from '$lib/server/guidance/queries/timeline';
+import * as m from '#lib/paraglide/messages.js';
+import type { CoparentEntry } from '#lib/server/guidance/queries/timeline.js';
 
 // Component-level mocks for the dashboard page's non-DB dependencies, following
 // the recipe used by src/routes/child/[id]/log/log.hint.test.ts (each bun:test

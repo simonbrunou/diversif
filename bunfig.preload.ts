@@ -1,22 +1,19 @@
-// Test-process preload: registers a happy-dom global, wires
-// @testing-library/jest-dom matchers into bun:test's expect, mocks
-// SvelteKit's virtual $app/* modules so server/client code that imports
-// from them resolves at test time (the SvelteKit Vite plugin generates
-// these at build time; bun test runs outside that build pipeline), and
-// installs build-time `define` constants that vite would otherwise inline.
+// Test-process preload: wires @testing-library/jest-dom matchers into
+// bun:test's expect, mocks SvelteKit's virtual $app/* modules so
+// server/client code that imports from them resolves at test time (the
+// SvelteKit Vite plugin generates these at build time; bun test runs outside
+// that build pipeline), and installs build-time `define` constants that vite
+// would otherwise inline. The happy-dom globals come from
+// happy-dom.preload.ts and the Svelte compiler from svelte-loader.preload.ts,
+// both listed before this file in bunfig.toml so they're active before this
+// file's imports run.
 
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
-// A real base URL matters since paraglide 2.x: localizeHref() resolves
-// against window.location.href, and `new URL(path, 'about:blank')` throws.
-GlobalRegistrator.register({ url: 'http://localhost/' });
-
-// Svelte compilation loader lives in svelte-loader.preload.ts (listed first
-// in bunfig.toml) so it's active before this file's imports run.
-
-// Vite's `define` in vite.config.ts inlines __SENTRY_RELEASE__ as a literal
-// at build time. bun test bypasses Vite, so we have to define the global
-// ourselves or every server module that reads it ReferenceErrors at import.
+// Vite's `define` in vite.config.ts inlines __SENTRY_RELEASE__ and
+// __BUILD_ORIGIN__ as literals at build time. bun test bypasses Vite, so we
+// have to define the globals ourselves or every server module that reads
+// them ReferenceErrors at import.
 (globalThis as { __SENTRY_RELEASE__?: string | undefined }).__SENTRY_RELEASE__ = undefined;
+(globalThis as { __BUILD_ORIGIN__?: string }).__BUILD_ORIGIN__ = '';
 
 import { afterAll, afterEach, expect, mock, setSystemTime } from 'bun:test';
 import * as matchers from '@testing-library/jest-dom/matchers';
@@ -52,9 +49,9 @@ afterEach(() => {
 // process-global, so a file that overrides one of these leaks the override
 // into every subsequent file. afterAll restores defaults at file boundary.
 function applyDefaultAppMocks(): void {
-  // $app/environment — building/dev/browser flags. In tests we're never in
-  // a build context and we treat `dev` as true.
-  mock.module('$app/environment', () => ({
+  // $app/env — building/dev/browser flags. In tests we're never in a build
+  // context and we treat `dev` as true.
+  mock.module('$app/env', () => ({
     browser: false,
     building: false,
     dev: true,
@@ -82,16 +79,18 @@ function applyDefaultAppMocks(): void {
   mock.module('$app/navigation', () => ({
     goto: async () => {},
     invalidate: async () => {},
-    invalidateAll: async () => {},
+    refreshAll: async () => {},
     preloadData: async () => {},
     preloadCode: async () => {},
     afterNavigate: () => {},
     beforeNavigate: () => {},
-    onNavigate: () => {},
-    pushState: () => {},
-    replaceState: () => {}
+    onNavigate: () => {}
   }));
 
+  // SvelteKit 3 removed $app/stores, but @sentry/sveltekit's default browser
+  // tracing module still imports it: in real builds sentrySvelteKit()
+  // (vite.config.ts) swaps in the $app/state variant, a step bun test skips.
+  // Every test that loads the client SDK needs this stand-in.
   mock.module('$app/stores', () => {
     const readable = <T>(v: T) => ({
       subscribe: (fn: (v: T) => void) => {
@@ -99,39 +98,13 @@ function applyDefaultAppMocks(): void {
         return () => {};
       }
     });
-    return {
-      page: readable({
-        url: new URL('http://localhost/'),
-        params: {},
-        route: { id: null },
-        data: {},
-        form: null,
-        status: 200,
-        error: null
-      }),
-      navigating: readable(null),
-      updated: readable(false),
-      getStores: () => ({
-        page: readable({}),
-        navigating: readable(null),
-        updated: readable(false)
-      })
-    };
+    return { page: readable({}), navigating: readable(null), updated: readable(false) };
   });
 
   mock.module('$app/forms', () => ({
     enhance: () => ({ destroy: () => {} }),
     applyAction: async () => {},
     deserialize: <T>(s: string) => JSON.parse(s) as T
-  }));
-
-  mock.module('$app/paths', () => ({
-    base: '',
-    assets: '',
-    resolveRoute: (id: string, params?: Record<string, string>) => {
-      if (!params) return id;
-      return Object.entries(params).reduce((acc, [k, v]) => acc.replace(`[${k}]`, v), id);
-    }
   }));
 }
 
@@ -145,12 +118,12 @@ afterAll(() => {
 
 // Redirect prod DB to the in-memory bun:sqlite test instance for every test in
 // the suite. Without this, transitive imports of any module that pulls in
-// $lib/server/db (auth, gdpr, passkeys, idempotency, the route action
+// #lib/server/db (auth, gdpr, passkeys, idempotency, the route action
 // handlers …) would run the module's migrate()/seed against a DATABASE_PATH
 // file that test runs don't provide. Individual test files can override this
 // with their own mock.module call; the LAST registration for a given path wins.
 import { testDb, schema } from './src/test/db';
-mock.module('$lib/server/db', () => ({
+mock.module('#lib/server/db/index.js', () => ({
   db: testDb,
   schema,
   // pool is exported for the shutdown handler; tests don't need it but
@@ -162,13 +135,13 @@ mock.module('$lib/server/db', () => ({
 }));
 
 // Capture the REAL paraglide runtime exports BEFORE any test file's
-// mock.module replaces them. Test files that mock '$lib/paraglide/runtime'
+// mock.module replaces them. Test files that mock '#lib/paraglide/runtime.js'
 // (LocaleSwitcher.test.ts, hooks.server.test.ts) would otherwise leak
 // their mocked runtime across the suite — bun:test's mock.module is
 // process-global and there's no per-file isolation. After each file we
 // restore the real exports so a clean default is in place for the next
 // file (and any overwriteGetLocale-based test works against the real runtime).
-import * as actualParaglide from '$lib/paraglide/runtime';
+import * as actualParaglide from '#lib/paraglide/runtime.js';
 
 // Default test locale. Without this, every message call resolves the locale
 // through the runtime's strategy chain — and because happy-dom registers a
@@ -184,7 +157,7 @@ actualParaglide.overwriteGetLocale(
 actualParaglide.overwriteSetLocale(() => {});
 
 function restoreParaglide(): void {
-  mock.module('$lib/paraglide/runtime', () => actualParaglide);
+  mock.module('#lib/paraglide/runtime.js', () => actualParaglide);
 }
 
 afterAll(() => {

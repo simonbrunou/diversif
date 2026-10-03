@@ -1,16 +1,16 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { trackSubmission } from '$lib/forms/tracked-enhance';
-  import Button from '$lib/components/ui/Button.svelte';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import Button from '#lib/components/ui/Button.svelte';
   import Modal from '../ui/Modal.svelte';
-  import Label from '$components/ui/Label.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import Label from '#lib/components/ui/Label.svelte';
+  import * as m from '#lib/paraglide/messages.js';
   import {
     SYMPTOM_LABELS,
     severityOf,
     symptomLabelText,
     type SymptomLabel
-  } from '$lib/content/symptoms';
+  } from '#lib/content/symptoms.js';
 
   let {
     open = $bindable(false),

@@ -122,9 +122,8 @@ test('a transport failure while online queues the entry instead of wiping the fo
   expect(dbCount).toBeGreaterThanOrEqual(1);
 });
 
-// The offline fallback page (/offline) is available as a SvelteKit route for
-// users to visit directly, but cannot be served as a navigation fallback in
-// generateSW mode: Workbox's navigateFallback option serves the fallback for
-// ALL navigations (online and offline), which breaks SSR apps. Selective
-// offline-only fallback requires injectManifest mode with a custom
-// setCatchHandler — a future improvement tracked separately.
+// The offline fallback page (/offline) is a prerendered SvelteKit route. The
+// service worker (src/service-worker/index.ts) serves it only when a
+// navigation's own strategy fails (PrecacheFallbackPlugin), never as a global
+// navigateFallback: that would answer ALL navigations, online and offline,
+// and break this SSR app.

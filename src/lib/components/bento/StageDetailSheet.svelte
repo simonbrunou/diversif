@@ -1,8 +1,8 @@
 <script lang="ts">
-  import DetailSheet from '$lib/components/ui/DetailSheet.svelte';
-  import SheetSection from '$lib/components/ui/SheetSection.svelte';
-  import Callout from '$lib/components/ui/Callout.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import DetailSheet from '#lib/components/ui/DetailSheet.svelte';
+  import SheetSection from '#lib/components/ui/SheetSection.svelte';
+  import Callout from '#lib/components/ui/Callout.svelte';
+  import * as m from '#lib/paraglide/messages.js';
 
   type Stage = {
     id: string;

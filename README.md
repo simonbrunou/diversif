@@ -6,12 +6,12 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 
 ## Stack
 
-- Bun 1.3+ runtime (dev, test, build, prod server)
-- SvelteKit (Svelte 5 + TypeScript) on `@sveltejs/adapter-node`
+- Bun 1.4+ runtime (dev, test, build, prod server)
+- SvelteKit 3 (Svelte 5 + TypeScript) on `@sveltejs/adapter-node`, configured in `vite.config.ts`; `#lib/*` subpath imports (package.json `imports`) replace `$lib`
 - SQLite via `bun:sqlite` + Drizzle ORM (in-memory `bun:sqlite` in tests)
 - Tailwind CSS, in-house auth (`Bun.password` Argon2id sessions, WebAuthn passkeys)
 - i18n via `@inlang/paraglide-js` 2.x (FR default, `/en/` for English; URL-based locale, AsyncLocalStorage on the server)
-- PWA via `@vite-pwa/sveltekit` with an in-page offline log queue
+- PWA: a SvelteKit service worker (`src/service-worker/`, Workbox precache + runtime caching, `/offline` fallback) with an in-page offline log queue
 - Observability via `@sentry/sveltekit` (errors, sampled performance tracing, server logs, `diversif-cleanup` cron monitor, error-only masked session replay, in-app user feedback — all PII-scrubbed and relayed through a same-origin `/monitoring` tunnel, never contacted directly by the browser)
 - Deployed in a single `oven/bun` Docker image
 

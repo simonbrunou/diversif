@@ -1,22 +1,22 @@
 <script lang="ts">
-  import Button from '$components/ui/Button.svelte';
-  import Input from '$components/ui/Input.svelte';
-  import Label from '$components/ui/Label.svelte';
-  import Textarea from '$components/ui/Textarea.svelte';
-  import FormError from '$components/ui/FormError.svelte';
-  import BackHeader from '$components/ui/BackHeader.svelte';
-  import Card from '$components/ui/Card.svelte';
-  import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
-  import FoodCombobox from '$lib/components/FoodCombobox.svelte';
-  import ReactionPicker from '$lib/components/ReactionPicker.svelte';
-  import TexturePicker from '$lib/components/TexturePicker.svelte';
-  import { formatDateInputValue, localInputToIso } from '$lib/utils/dates';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import type { TextureKey } from '$lib/utils/textures';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
+  import Label from '#lib/components/ui/Label.svelte';
+  import Textarea from '#lib/components/ui/Textarea.svelte';
+  import FormError from '#lib/components/ui/FormError.svelte';
+  import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import ConfirmModal from '#lib/components/ui/ConfirmModal.svelte';
+  import FoodCombobox from '#lib/components/FoodCombobox.svelte';
+  import ReactionPicker from '#lib/components/ReactionPicker.svelte';
+  import TexturePicker from '#lib/components/TexturePicker.svelte';
+  import { formatDateInputValue, localInputToIso } from '#lib/utils/dates.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import type { TextureKey } from '#lib/utils/textures.js';
   import { enhance } from '$app/forms';
-  import { Trash2, X } from 'lucide-svelte';
-  import { resolveMessageKey } from '$lib/forms/tracked-enhance';
-  import * as m from '$lib/paraglide/messages';
+  import { Trash2, X } from '@lucide/svelte';
+  import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
+  import * as m from '#lib/paraglide/messages.js';
   import type { ActionData, PageData } from './$types';
 
   let {

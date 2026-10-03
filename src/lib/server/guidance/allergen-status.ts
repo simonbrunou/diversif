@@ -1,14 +1,14 @@
 import { and, eq, isNotNull, ne, or } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { foodEntries, foods } from '$lib/server/db/schema';
-import { parisDateParts } from '$lib/utils/paris-date';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
+import { parisDateParts } from '#lib/utils/paris-date.js';
 import {
   ALLERGENS,
   ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY,
   ALLERGEN_MAINTAIN_DAYS,
   PRIORITY_INTRODUCTION_ALLERGENS,
   getAllergenLabel
-} from '$lib/utils/allergens';
+} from '#lib/utils/allergens.js';
 
 export type AllergenItem = {
   id: string;

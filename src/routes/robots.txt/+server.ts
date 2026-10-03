@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { SITE } from '$lib/seo';
+import { SITE } from '#lib/seo.js';
 
 export const prerender = true;
 

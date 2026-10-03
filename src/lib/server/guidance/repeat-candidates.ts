@@ -9,8 +9,8 @@
 // loadRepeatCandidates list, /child/[id]/foods?repeat=1 filter) and the
 // in-JS form (reminders.ts rule 6) can never drift apart again.
 
-import { REACTION_RANK } from '$lib/utils/reaction-values';
-import type { AllergenId } from '$lib/utils/allergens';
+import { REACTION_RANK } from '#lib/utils/reaction-values.js';
+import type { AllergenId } from '#lib/utils/allergens.js';
 import type { EnrichedEntry } from './queries';
 
 /** Maximum exposure count (inclusive) for a food to count as a repeat candidate. */

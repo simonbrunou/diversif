@@ -9,10 +9,10 @@ import {
   seedUser
 } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
-import { children, invitations, memberships, users } from '$lib/server/db/schema';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
+import { children, invitations, memberships, users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { load, actions } from './+page.server';
 import { PASSWORD, setup } from './settings-test-fixtures';

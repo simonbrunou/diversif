@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test';
 import { render, cleanup, screen } from '@testing-library/svelte';
 import { createRawSnippet, type Snippet } from 'svelte';
 import { textSnippet } from '../../../test/component';
-import { Sparkles } from 'lucide-svelte';
+import { Sparkles } from '@lucide/svelte';
 import CalloutCard from './CalloutCard.svelte';
 
 afterEach(() => cleanup());

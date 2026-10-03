@@ -1,7 +1,7 @@
 // Texture-coverage queries.
 
-import { db } from '$lib/server/db';
-import { foodEntries } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { foodEntries } from '#lib/server/db/schema.js';
 import { and, eq, sql } from 'drizzle-orm';
 
 export async function loadTexturesTried(childId: number): Promise<number> {

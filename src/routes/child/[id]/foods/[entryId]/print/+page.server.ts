@@ -1,12 +1,12 @@
 import { error } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { children, foodEntries, foods } from '$lib/server/db/schema';
-import { listSymptomsByEntry } from '$lib/server/db/symptoms';
-import { requireChildContext } from '$lib/server/guards';
-import { ageInMonths } from '$lib/utils/age';
-import { PARIS_TIME_ZONE } from '$lib/utils/paris-date';
-import * as m from '$lib/paraglide/messages';
+import { db } from '#lib/server/db/index.js';
+import { children, foodEntries, foods } from '#lib/server/db/schema.js';
+import { listSymptomsByEntry } from '#lib/server/db/symptoms.js';
+import { requireChildContext } from '#lib/server/guards.js';
+import { ageInMonths } from '#lib/utils/age.js';
+import { PARIS_TIME_ZONE } from '#lib/utils/paris-date.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {

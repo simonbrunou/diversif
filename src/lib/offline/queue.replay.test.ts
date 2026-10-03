@@ -12,13 +12,13 @@ import {
 } from '../../test/route';
 
 // Same bootstrap as the route-level action tests (e.g.
-// log.idempotency.test.ts): point $lib/server/db at the in-process
+// log.idempotency.test.ts): point #lib/server/db at the in-process
 // bun:sqlite instance before the action module (which imports it) loads.
-mock.module('$lib/server/db', () => ({ db: testDb }));
-mock.module('$lib/server/audit', () => ({ audit: mock() }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
+mock.module('#lib/server/audit.js', () => ({ audit: mock() }));
 
 import { eq, sql } from 'drizzle-orm';
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { actions } from '../../routes/child/[id]/log/+page.server';
 import { clear, count, enqueue, flush, needsReauthCount } from './queue';
 

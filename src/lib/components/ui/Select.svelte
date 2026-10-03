@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { HTMLSelectAttributes } from 'svelte/elements';
   import type { Snippet } from 'svelte';
-  import { cn } from '$lib/utils/cn';
-  import { ChevronDown } from 'lucide-svelte';
+  import { cn } from '#lib/utils/cn.js';
+  import { ChevronDown } from '@lucide/svelte';
 
   type Props = HTMLSelectAttributes & {
     class?: string;

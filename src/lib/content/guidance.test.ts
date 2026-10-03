@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { ALLERGENS } from '$lib/utils/allergens';
-import { CATEGORIES } from '$lib/utils/categories';
+import { ALLERGENS } from '#lib/utils/allergens.js';
+import { CATEGORIES } from '#lib/utils/categories.js';
 import {
   ALLERGEN_GUIDANCE,
   CATEGORY_GUIDANCE,

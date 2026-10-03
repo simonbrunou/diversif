@@ -3,7 +3,7 @@ import { render, fireEvent } from '@testing-library/svelte';
 import { stubGlobal, unstubAllGlobals } from '../../test/bun-test-utils';
 import '../../test/app-stubs';
 import '../../test/component';
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 import ThemeToggle from './ThemeToggle.svelte';
 
 // Resolve button labels through the paraglide keys (not literals) so the

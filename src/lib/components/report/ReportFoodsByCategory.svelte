@@ -1,9 +1,9 @@
 <script lang="ts">
-  import CategoryTag from '$lib/components/CategoryTag.svelte';
-  import { reportReactionIcon, reportReactionClass, formatReportDay } from '$lib/utils/report';
-  import type { ReactionId } from '$lib/utils/reaction-values';
-  import type { CategoryId } from '$lib/utils/categories';
-  import * as m from '$lib/paraglide/messages';
+  import CategoryTag from '#lib/components/CategoryTag.svelte';
+  import { reportReactionIcon, reportReactionClass, formatReportDay } from '#lib/utils/report.js';
+  import type { ReactionId } from '#lib/utils/reaction-values.js';
+  import type { CategoryId } from '#lib/utils/categories.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   type ReportFood = {
     foodId: number;

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import SourceCitation from '$lib/components/SourceCitation.svelte';
-  import { REACTION_GUIDANCE, EMERGENCY_NUMBER } from '$lib/content/guidance';
-  import { HeartPulse, Phone } from 'lucide-svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import { REACTION_GUIDANCE, EMERGENCY_NUMBER } from '#lib/content/guidance.js';
+  import { HeartPulse, Phone } from '@lucide/svelte';
 </script>
 
 <section id="reactions" class="scroll-mt-6 space-y-3">

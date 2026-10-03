@@ -3,7 +3,7 @@ import { render, screen, cleanup } from '@testing-library/svelte';
 import { textSnippet } from '../../test/component';
 import AppShellBento from './AppShellBento.svelte';
 import { TABS } from './BottomNavBento.svelte';
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 
 mock.module('$app/forms', () => ({
   enhance: () => ({ destroy: () => {} })

@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../test/db';
 import { seedUser, seedChild, seedMembership } from '../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { foodEntries, foods, symptoms } from './schema';
 import {

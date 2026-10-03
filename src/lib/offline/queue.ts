@@ -133,12 +133,10 @@ interface ActionFailure {
 }
 interface ActionError {
   type: 'error';
-  // SvelteKit's `handle_action_json_request` puts the real numeric status
-  // only on the HTTP Response (get_status(err)); the JSON body's `error`
-  // object never carries a `status` field — this app's own
-  // src/hooks.server.ts:handleError explicitly strips it, returning only
-  // `{ message: 'Internal Error', errorId }` for every status < 500. Reading
-  // `error.status` here would always be `undefined`.
+  // SvelteKit's `handle_action_json_request` sets the real numeric status on
+  // the HTTP Response. Read it from there: the JSON body's `error` object is
+  // whatever src/hooks.server.ts:handleError chose to expose, not a status
+  // contract this replay should depend on.
   error: { message: string };
 }
 type ActionResult = ActionRedirect | ActionFailure | ActionError;
@@ -217,7 +215,7 @@ async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry' | 'ne
     // The real status lives on the HTTP response, not the JSON body — see
     // the ActionError interface comment above. Mirror what SvelteKit's own
     // client deserialize() does for the redirect/success paths: read it off
-    // `res`, never off the (always status-less) body.
+    // `res`, never off the body.
     if (res.status >= 500) return 'retry';
     return dropRow(res.status, 'error');
   }

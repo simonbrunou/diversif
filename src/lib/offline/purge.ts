@@ -4,8 +4,8 @@ import { clear } from './queue';
  * Purge client-side storage that may hold the previous user's data after the
  * session ends (explicit logout, « Se déconnecter partout », or expiry).
  *
- * - The PWA service worker's 'pages' runtime cache (vite.config.ts workbox
- *   NetworkFirst, 7-day expiry) holds authenticated HTML — without this, the
+ * - The PWA service worker's 'pages' runtime cache (src/service-worker/index.ts
+ *   Workbox NetworkFirst, 7-day expiry) holds authenticated HTML — without this, the
  *   next person on a shared device could read the child's data straight out
  *   of CacheStorage. The 'assets' cache is deliberately left alone: it only
  *   holds fingerprinted static files with no personal data, and dropping it

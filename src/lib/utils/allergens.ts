@@ -1,7 +1,7 @@
 // NOTE: this module is imported by server code (guidance/reminders,
 // allergen-status, the report load) and by tests; keep it free of svelte /
-// lucide-svelte imports. The paraglide messages import is plain TS and safe.
-import * as m from '$lib/paraglide/messages';
+// @lucide/svelte imports. The paraglide messages import is plain TS and safe.
+import * as m from '#lib/paraglide/messages.js';
 
 // The 12 allergens diversif tracks for the diversification logbook,
 // derived from EU Regulation 1169/2011 Annexe II (14 allergens for
@@ -80,8 +80,8 @@ export function countsAsAllergenExposure(food: {
 }
 
 // Allergen labels go through paraglide so the EN locale gets English names
-// (same pattern as REACTION_LABEL_RESOLVERS in $lib/utils/reactions and
-// CATEGORY_LABEL_RESOLVERS in $lib/utils/categories). Adding a new entry to
+// (same pattern as REACTION_LABEL_RESOLVERS in #lib/utils/reactions and
+// CATEGORY_LABEL_RESOLVERS in #lib/utils/categories). Adding a new entry to
 // ALLERGENS without adding a resolver here is a compile error (the Record is
 // keyed on AllergenId), which is the desired loud failure.
 // i18n-keep: allergenGluten allergenOeuf allergenLait allergenArachide allergenFruitsACoque allergenSesame allergenSoja allergenPoisson allergenCrustace allergenMollusque allergenCeleri allergenMoutarde

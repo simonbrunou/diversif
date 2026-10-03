@@ -1,16 +1,16 @@
 <script lang="ts">
   import FoodCardGrid from './FoodCardGrid.svelte';
-  import CalloutCard from '$components/ui/CalloutCard.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import CalloutCard from '#lib/components/ui/CalloutCard.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import * as m from '#lib/paraglide/messages.js';
   import {
     getCategoryLabel,
     getCategoryIcon,
     getCategoryFilterChipClass
-  } from '$lib/utils/categories';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import type { TextureKey } from '$lib/utils/textures';
-  import { Salad } from 'lucide-svelte';
+  } from '#lib/utils/categories.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import type { TextureKey } from '#lib/utils/textures.js';
+  import { Salad } from '@lucide/svelte';
 
   type Food = {
     id: number;

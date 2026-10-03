@@ -1,6 +1,6 @@
-import { error, json } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
+import { error } from '@sveltejs/kit';
+import { db } from '#lib/server/db/index.js';
+import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_COOKIE,
@@ -9,9 +9,9 @@ import {
   buildRegistrationOptions,
   createChallenge,
   isOriginAllowedForRPID
-} from '$lib/server/passkeys';
-import { requireUser } from '$lib/server/guards';
-import { requireFreshAuth } from '$lib/server/fresh-auth';
+} from '#lib/server/passkeys.js';
+import { requireUser } from '#lib/server/guards.js';
+import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
@@ -24,12 +24,12 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
   try {
     body = await request.json();
   } catch {
-    return json({ ok: false, error: 'Mot de passe requis.' }, { status: 400 });
+    return Response.json({ ok: false, error: 'Mot de passe requis.' }, { status: 400 });
   }
 
   const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
   if (!currentPassword) {
-    return json({ ok: false, error: 'Mot de passe requis.' }, { status: 400 });
+    return Response.json({ ok: false, error: 'Mot de passe requis.' }, { status: 400 });
   }
 
   const freshAuth = await requireFreshAuth(safe, currentPassword, {
@@ -38,7 +38,7 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
     }
   });
   if (!freshAuth.ok) {
-    return json(
+    return Response.json(
       { ok: false, error: freshAuth.error.data.error },
       { status: freshAuth.error.status }
     );
@@ -68,5 +68,5 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
     maxAge: Math.floor(PASSKEY_CHALLENGE_TTL_MS / 1000)
   });
 
-  return json(options);
+  return Response.json(options);
 };

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import SourceCitation from '$lib/components/SourceCitation.svelte';
-  import { CATEGORY_GUIDANCE } from '$lib/content/guidance';
-  import { CATEGORIES } from '$lib/utils/categories';
-  import { UtensilsCrossed } from 'lucide-svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import { CATEGORY_GUIDANCE } from '#lib/content/guidance.js';
+  import { CATEGORIES } from '#lib/utils/categories.js';
+  import { UtensilsCrossed } from '@lucide/svelte';
 </script>
 
 <section id="categories" class="scroll-mt-6 space-y-3">

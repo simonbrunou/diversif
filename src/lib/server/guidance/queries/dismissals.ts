@@ -1,7 +1,7 @@
 // Reminder-dismissal storage and TTL conventions.
 
-import { db } from '$lib/server/db';
-import { tipDismissals } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { tipDismissals } from '#lib/server/db/schema.js';
 import { and, eq } from 'drizzle-orm';
 
 const DAY_MS = 24 * 60 * 60 * 1000;

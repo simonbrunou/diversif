@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 
 import { localizedHref } from './localized-href';
-import { baseLocale, overwriteGetLocale } from '$lib/paraglide/runtime';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 
-// Don't mock.module('$lib/paraglide/runtime') — bun:test's mock.module is
+// Don't mock.module('#lib/paraglide/runtime.js') — bun:test's mock.module is
 // process-global, so the replacement would leak into every subsequent test
 // file that relies on getLocale() returning 'fr'. Instead, swap the locale
 // resolver via overwriteGetLocale and reset to the base locale after each.

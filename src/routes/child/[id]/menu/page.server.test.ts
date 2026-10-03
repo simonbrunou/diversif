@@ -9,11 +9,11 @@ import {
   seedUser
 } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { eq } from 'drizzle-orm';
-import { children, foodEntries, foods } from '$lib/server/db/schema';
-import type { DietExclusion } from '$lib/utils/diet';
+import { children, foodEntries, foods } from '#lib/server/db/schema.js';
+import type { DietExclusion } from '#lib/utils/diet.js';
 import { load } from './+page.server';
 
 beforeEach(async () => {

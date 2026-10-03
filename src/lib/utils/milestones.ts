@@ -1,6 +1,6 @@
 import type { toast as Toast } from 'svelte-sonner';
-import { ALLERGENS, getAllergenLabel } from '$lib/utils/allergens';
-import * as m from '$lib/paraglide/messages';
+import { ALLERGENS, getAllergenLabel } from '#lib/utils/allergens.js';
+import * as m from '#lib/paraglide/messages.js';
 
 const TOAST_CLASS = 'bg-celebrate/15 border-celebrate/30 text-celebrate-foreground';
 
@@ -19,7 +19,7 @@ export type MilestoneKind =
  *   ?logged=1[&first=1][&allergen=arachide][&allAllergens=1]&categories=N&prevCategories=M
  */
 export function pickMilestoneFromQuery(
-  search: URLSearchParams,
+  search: Pick<URLSearchParams, 'get'>,
   totalCategories: number
 ): MilestoneKind | null {
   if (search.get('logged') !== '1') return null;

@@ -2,11 +2,11 @@
   import * as Sentry from '@sentry/sveltekit';
   import { onMount } from 'svelte';
   import { page } from '$app/state';
-  import Button from '$components/ui/Button.svelte';
-  import ProblemReportDialog from '$lib/components/ProblemReportDialog.svelte';
-  import { AlertTriangle } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import Button from '#lib/components/ui/Button.svelte';
+  import ProblemReportDialog from '#lib/components/ProblemReportDialog.svelte';
+  import { AlertTriangle } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
 
   const status = $derived(page.status);
   const message = $derived(page.error?.message ?? m.errorsGenericFallback());

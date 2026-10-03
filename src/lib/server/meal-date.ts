@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { children } from '$lib/server/db/schema';
-import { mealDateError, type MealDateErrorKey } from '$lib/utils/meal-date';
+import { db } from '#lib/server/db/index.js';
+import { children } from '#lib/server/db/schema.js';
+import { mealDateError, type MealDateErrorKey } from '#lib/utils/meal-date.js';
 
 // Cheap, childId-scoped bounds check for a meal's givenAt: selects only the
 // birth date column (requireChildContext doesn't carry it, and none of the

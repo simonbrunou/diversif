@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const mocks = {
   generateRegistrationOptions: mock(),
@@ -13,14 +13,14 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { webauthnChallenges } from '$lib/server/db/schema';
+import { webauthnChallenges } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
   RP_ID
-} from '$lib/server/passkeys';
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
+} from '#lib/server/passkeys.js';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 
 beforeEach(async () => {
   await resetTestDb();

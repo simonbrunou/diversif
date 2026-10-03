@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ProfilBento from '$lib/components/bento/ProfilBento.svelte';
+  import ProfilBento from '#lib/components/bento/ProfilBento.svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

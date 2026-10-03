@@ -1,4 +1,4 @@
-import type { ReactionId } from '$lib/utils/reactions';
+import type { ReactionId } from '#lib/utils/reactions.js';
 
 // Structured audit log for sensitive account operations. Emitted as a single
 // JSON line to stdout so the deployment platform's log aggregator captures it

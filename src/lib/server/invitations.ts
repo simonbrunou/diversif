@@ -1,6 +1,6 @@
 import { db } from './db';
 import { invitations } from './db/schema';
-import { generateInviteCodeRaw } from '$lib/utils/invites';
+import { generateInviteCodeRaw } from '#lib/utils/invites.js';
 import { isUniqueViolation } from './db/errors';
 
 const INVITE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;

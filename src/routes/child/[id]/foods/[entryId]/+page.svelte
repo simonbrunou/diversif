@@ -1,12 +1,12 @@
 <script lang="ts">
-  import ReactionDetailBento from '$lib/components/bento/ReactionDetailBento.svelte';
-  import RasCard from '$lib/components/bento/RasCard.svelte';
-  import AddSymptomSheet from '$lib/components/bento/AddSymptomSheet.svelte';
-  import Button from '$lib/components/ui/Button.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import { getTextureLabel } from '$lib/utils/texture-labels';
-  import { ChevronLeft, Pencil } from 'lucide-svelte';
+  import ReactionDetailBento from '#lib/components/bento/ReactionDetailBento.svelte';
+  import RasCard from '#lib/components/bento/RasCard.svelte';
+  import AddSymptomSheet from '#lib/components/bento/AddSymptomSheet.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import { getTextureLabel } from '#lib/utils/texture-labels.js';
+  import { ChevronLeft, Pencil } from '@lucide/svelte';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SITE, absoluteUrl, type SeoInput } from '$lib/seo';
+  import { SITE, absoluteUrl, type SeoInput } from '#lib/seo.js';
 
   let {
     title,

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Seo from '$lib/components/Seo.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
+  import Seo from '#lib/components/Seo.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
 </script>
 
 <Seo title={m.authDeletedTitle()} path="/account/deleted" noindex alternateLocales={['en']} />

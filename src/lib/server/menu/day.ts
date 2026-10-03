@@ -1,4 +1,4 @@
-import { parisDayIndex } from '$lib/utils/paris-date';
+import { parisDayIndex } from '#lib/utils/paris-date.js';
 
 export function parisDay(nowMs: number): { dayIndex: number; weekday: number } {
   const dayIndex = parisDayIndex(nowMs);

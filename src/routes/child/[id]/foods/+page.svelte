@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { PageData } from './$types';
   import { page } from '$app/state';
-  import CarnetBento from '$lib/components/bento/CarnetBento.svelte';
-  import type { Segment } from '$lib/components/bento/CarnetSegments.svelte';
+  import CarnetBento from '#lib/components/bento/CarnetBento.svelte';
+  import type { Segment } from '#lib/components/bento/CarnetSegments.svelte';
 
   let { data }: { data: PageData } = $props();
 

@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const auditSpy = mock();
-import * as actualAudit from '$lib/server/audit';
-mock.module('$lib/server/audit', () => ({
+import * as actualAudit from '#lib/server/audit.js';
+mock.module('#lib/server/audit.js', () => ({
   ...actualAudit,
   audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
 }));
@@ -20,9 +20,9 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { users, webauthnChallenges, passkeys } from '$lib/server/db/schema';
+import { users, webauthnChallenges, passkeys } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { PASSKEY_CHALLENGE_COOKIE, RP_ID, createChallenge } from '$lib/server/passkeys';
+import { PASSKEY_CHALLENGE_COOKIE, RP_ID, createChallenge } from '#lib/server/passkeys.js';
 
 beforeEach(async () => {
   await resetTestDb();

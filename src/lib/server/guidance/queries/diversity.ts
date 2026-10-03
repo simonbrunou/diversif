@@ -1,10 +1,10 @@
 // Diversity metrics, repeat-exposure candidates, weekly recap.
 
-import { db } from '$lib/server/db';
-import { execRows } from '$lib/server/db/exec';
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { execRows } from '#lib/server/db/exec.js';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { sql } from 'drizzle-orm';
-import type { CategoryId } from '$lib/utils/categories';
+import type { CategoryId } from '#lib/utils/categories.js';
 import { REPEAT_CANDIDATE_MAX_COUNT, REPEAT_CANDIDATE_MAX_WORST_RANK } from '../repeat-candidates';
 import { loadTexturesTried } from './seasonal';
 

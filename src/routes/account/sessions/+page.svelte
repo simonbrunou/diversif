@@ -1,11 +1,11 @@
 <script lang="ts">
-  import BackHeader from '$components/ui/BackHeader.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import Card from '$components/ui/Card.svelte';
-  import Modal from '$components/ui/Modal.svelte';
-  import SectionHeader from '$components/ui/SectionHeader.svelte';
-  import { purgeBeforeSubmit } from '$lib/offline/purge';
-  import * as m from '$lib/paraglide/messages';
+  import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import Modal from '#lib/components/ui/Modal.svelte';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
+  import { purgeBeforeSubmit } from '#lib/offline/purge.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let confirmOpen = $state(false);
   let loggingOutEverywhere = $state(false);

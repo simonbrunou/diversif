@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { requireUser } from '$lib/server/guards';
-import { parseFormWithKey } from '$lib/server/forms';
+import { db } from '#lib/server/db/index.js';
+import { users } from '#lib/server/db/schema.js';
+import { requireUser } from '#lib/server/guards.js';
+import { parseFormWithKey } from '#lib/server/forms.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const profileSchema = z.object({

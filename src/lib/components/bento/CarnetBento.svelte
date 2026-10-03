@@ -6,7 +6,7 @@
   import CarnetCategories from './CarnetCategories.svelte';
   import CarnetAllergens from './CarnetAllergens.svelte';
   import CarnetStats from './CarnetStats.svelte';
-  import type { TextureKey } from '$lib/utils/textures';
+  import type { TextureKey } from '#lib/utils/textures.js';
 
   type Food = {
     id: number;

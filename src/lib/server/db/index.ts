@@ -9,7 +9,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import * as schema from './schema';
 import { seedFoods } from './seed';
 import { registerShutdownHandlers } from '../shutdown';
-import { building } from '$app/environment';
+import { building } from '$app/env';
 
 export type DB = BunSQLiteDatabase<typeof schema>;
 

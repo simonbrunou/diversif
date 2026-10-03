@@ -1,8 +1,8 @@
 <script lang="ts">
-  import BackHeader from '$components/ui/BackHeader.svelte';
-  import QuantitiesCard from '$lib/components/menu/QuantitiesCard.svelte';
-  import MenuDay from '$lib/components/menu/MenuDay.svelte';
-  import * as m from '$lib/paraglide/messages';
+  import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import QuantitiesCard from '#lib/components/menu/QuantitiesCard.svelte';
+  import MenuDay from '#lib/components/menu/MenuDay.svelte';
+  import * as m from '#lib/paraglide/messages.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

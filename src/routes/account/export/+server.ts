@@ -1,10 +1,10 @@
 import { error } from '@sveltejs/kit';
 import { and, eq, isNull, lt, or } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { ExportTooLargeError, exportUserData } from '$lib/server/gdpr';
-import { requireUser } from '$lib/server/guards';
-import * as m from '$lib/paraglide/messages';
+import { db } from '#lib/server/db/index.js';
+import { users } from '#lib/server/db/schema.js';
+import { ExportTooLargeError, exportUserData } from '#lib/server/gdpr.js';
+import { requireUser } from '#lib/server/guards.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { RequestHandler } from './$types';
 
 const EXPORT_THROTTLE_MS = 60_000;

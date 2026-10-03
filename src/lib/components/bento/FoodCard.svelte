@@ -1,8 +1,8 @@
 <script lang="ts">
-  import * as m from '$lib/paraglide/messages';
-  import { cn } from '$lib/utils/cn';
-  import { type TextureKey } from '$lib/utils/textures';
-  import { getTextureLabel } from '$lib/utils/texture-labels';
+  import * as m from '#lib/paraglide/messages.js';
+  import { cn } from '#lib/utils/cn.js';
+  import { type TextureKey } from '#lib/utils/textures.js';
+  import { getTextureLabel } from '#lib/utils/texture-labels.js';
 
   type Status = 'ras' | 'inconfort' | 'reaction' | 'todo';
   let {

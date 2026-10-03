@@ -1,12 +1,12 @@
 <script lang="ts">
-  import BackHeader from '$components/ui/BackHeader.svelte';
-  import CalloutCard from '$components/ui/CalloutCard.svelte';
-  import TipCard from '$lib/components/TipCard.svelte';
-  import SuggestionsPriorityAllergens from '$lib/components/suggestions/SuggestionsPriorityAllergens.svelte';
-  import SuggestionsCategorySection from '$lib/components/suggestions/SuggestionsCategorySection.svelte';
-  import { CATEGORIES, getCategoryLabel } from '$lib/utils/categories';
-  import { Sparkles, Lightbulb } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
+  import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import CalloutCard from '#lib/components/ui/CalloutCard.svelte';
+  import TipCard from '#lib/components/TipCard.svelte';
+  import SuggestionsPriorityAllergens from '#lib/components/suggestions/SuggestionsPriorityAllergens.svelte';
+  import SuggestionsCategorySection from '#lib/components/suggestions/SuggestionsCategorySection.svelte';
+  import { CATEGORIES, getCategoryLabel } from '#lib/utils/categories.js';
+  import { Sparkles, Lightbulb } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

@@ -1,9 +1,9 @@
 <!-- src/lib/components/bento/ReminderStrip.svelte -->
 <script lang="ts">
-  import type { Reminder } from '$lib/server/guidance/reminders';
-  import { Bell, ChevronDown, ChevronRight, Lightbulb, X } from 'lucide-svelte';
+  import type { Reminder } from '#lib/server/guidance/reminders.js';
+  import { Bell, ChevronDown, ChevronRight, Lightbulb, X } from '@lucide/svelte';
   import { enhance } from '$app/forms';
-  import * as m from '$lib/paraglide/messages';
+  import * as m from '#lib/paraglide/messages.js';
 
   let { reminders }: { reminders: Reminder[] } = $props();
 

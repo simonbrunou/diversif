@@ -1,9 +1,9 @@
 <script lang="ts">
-  import LinkRow from '$components/ui/LinkRow.svelte';
-  import SectionHeader from '$components/ui/SectionHeader.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import { Download, Trash2 } from 'lucide-svelte';
+  import LinkRow from '#lib/components/ui/LinkRow.svelte';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import { Download, Trash2 } from '@lucide/svelte';
 </script>
 
 <section class="mb-3">

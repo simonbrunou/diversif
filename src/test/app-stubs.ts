@@ -39,7 +39,7 @@ mock.module('$app/forms', () => ({
   deserialize: mock(() => {})
 }));
 
-mock.module('$app/environment', () => ({
+mock.module('$app/env', () => ({
   browser: true,
   building: false,
   dev: true,
@@ -49,7 +49,7 @@ mock.module('$app/environment', () => ({
 mock.module('$app/navigation', () => ({
   goto: mock(() => {}),
   invalidate: mock(() => {}),
-  invalidateAll: mock(() => {}),
+  refreshAll: mock(() => {}),
   afterNavigate: mock(() => {}),
   beforeNavigate: mock(() => {})
 }));

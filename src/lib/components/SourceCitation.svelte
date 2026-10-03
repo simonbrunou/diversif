@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { SOURCES, type SourceId } from '$lib/content/sources';
-  import { ExternalLink } from 'lucide-svelte';
+  import { SOURCES, type SourceId } from '#lib/content/sources.js';
+  import { ExternalLink } from '@lucide/svelte';
 
   let { ids, inline = false }: { ids: SourceId[]; inline?: boolean } = $props();
 

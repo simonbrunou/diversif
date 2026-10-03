@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import MenuDay from './MenuDay.svelte';
-import { QUANTITIES } from '$lib/content/quantities';
-import type { Menu } from '$lib/server/menu/engine';
-import type { Food } from '$lib/server/db/schema';
+import { QUANTITIES } from '#lib/content/quantities.js';
+import type { Menu } from '#lib/server/menu/engine.js';
+import type { Food } from '#lib/server/db/schema.js';
 
 afterEach(() => cleanup());
 

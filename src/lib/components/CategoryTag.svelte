@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getCategoryClasses, getCategoryIcon, getCategoryLabel } from '$lib/utils/categories';
-  import { cn } from '$lib/utils/cn';
+  import { getCategoryClasses, getCategoryIcon, getCategoryLabel } from '#lib/utils/categories.js';
+  import { cn } from '#lib/utils/cn.js';
 
   let {
     id,

@@ -1,11 +1,11 @@
 <script lang="ts">
   import SymptomRow from './SymptomRow.svelte';
-  import DashedActionRow from '$components/ui/DashedActionRow.svelte';
-  import EmptyHint from '$components/ui/EmptyHint.svelte';
-  import SectionHeader from '$components/ui/SectionHeader.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { Plus } from 'lucide-svelte';
-  import type { SymptomEntry } from '$lib/types';
+  import DashedActionRow from '#lib/components/ui/DashedActionRow.svelte';
+  import EmptyHint from '#lib/components/ui/EmptyHint.svelte';
+  import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { Plus } from '@lucide/svelte';
+  import type { SymptomEntry } from '#lib/types.js';
 
   let {
     symptoms,

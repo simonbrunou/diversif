@@ -27,7 +27,7 @@ mock.module('@sentry/sveltekit', () => ({
   withScope: <T>(callback: () => T) => callback(),
   sendFeedback
 }));
-mock.module('$lib/sentry-replay-loader', () => ({
+mock.module('#lib/sentry-replay-loader.js', () => ({
   loadReplay: async () => {
     log.push('loadReplay');
   }

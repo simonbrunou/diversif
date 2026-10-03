@@ -1,18 +1,18 @@
 <script lang="ts">
-  import Button from '$components/ui/Button.svelte';
-  import Input from '$components/ui/Input.svelte';
-  import Field from '$lib/components/ui/Field.svelte';
-  import BentoAuthLayout from '$lib/components/bento/BentoAuthLayout.svelte';
-  import FormError from '$components/ui/FormError.svelte';
-  import Seo from '$lib/components/Seo.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
+  import Field from '#lib/components/ui/Field.svelte';
+  import BentoAuthLayout from '#lib/components/bento/BentoAuthLayout.svelte';
+  import FormError from '#lib/components/ui/FormError.svelte';
+  import Seo from '#lib/components/Seo.svelte';
   import { enhance } from '$app/forms';
-  import { browser } from '$app/environment';
-  import { Eye, EyeOff } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { signInWithPasskey } from '$lib/auth/passkey-client';
-  import { trackSubmission } from '$lib/forms/tracked-enhance';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import { PASSWORD_MIN_LENGTH } from '$lib/utils/password';
+  import { browser } from '$app/env';
+  import { Eye, EyeOff } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { signInWithPasskey } from '#lib/auth/passkey-client.js';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import { PASSWORD_MIN_LENGTH } from '#lib/utils/password.js';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { normalize } from '$lib/utils/search';
-  import { getAllergenLabel } from '$lib/utils/allergens';
-  import CategoryTag from '$lib/components/CategoryTag.svelte';
-  import { SearchX, ListFilter } from 'lucide-svelte';
-  import * as m from '$lib/paraglide/messages';
+  import { normalize } from '#lib/utils/search.js';
+  import { getAllergenLabel } from '#lib/utils/allergens.js';
+  import CategoryTag from '#lib/components/CategoryTag.svelte';
+  import { SearchX, ListFilter } from '@lucide/svelte';
+  import * as m from '#lib/paraglide/messages.js';
 
   type FoodOption = {
     id: number;

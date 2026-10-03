@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import FormError from '$components/ui/FormError.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import FormError from '#lib/components/ui/FormError.svelte';
   import { enhance } from '$app/forms';
-  import { resolveMessageKey, trackSubmission } from '$lib/forms/tracked-enhance';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import * as m from '$lib/paraglide/messages';
+  import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import * as m from '#lib/paraglide/messages.js';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();

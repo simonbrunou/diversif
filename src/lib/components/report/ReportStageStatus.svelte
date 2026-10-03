@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { getTextureLabel } from '$lib/utils/texture-labels';
-  import type { TextureKey } from '$lib/utils/textures';
-  import type { Stage } from '$lib/content/guidance';
-  import * as m from '$lib/paraglide/messages';
+  import { getTextureLabel } from '#lib/utils/texture-labels.js';
+  import type { TextureKey } from '#lib/utils/textures.js';
+  import type { Stage } from '#lib/content/guidance.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let {
     ageMonths,

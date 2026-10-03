@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import {
   PASSKEY_CHALLENGE_COOKIE,
   RP_ID,
@@ -7,9 +7,9 @@ import {
   finishRegistration,
   parsePasskeyResponseBody,
   publicPasskey
-} from '$lib/server/passkeys';
-import { requireUser } from '$lib/server/guards';
-import { audit } from '$lib/server/audit';
+} from '#lib/server/passkeys.js';
+import { requireUser } from '#lib/server/guards.js';
+import { audit } from '#lib/server/audit.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
@@ -42,9 +42,9 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
   });
 
   if (!result.ok) {
-    return json({ ok: false, error: result.error }, { status: 400 });
+    return Response.json({ ok: false, error: result.error }, { status: 400 });
   }
 
   audit({ type: 'account.passkey_added', userId: user.id, passkeyId: result.passkey.id });
-  return json({ ok: true, passkey: publicPasskey(result.passkey) });
+  return Response.json({ ok: true, passkey: publicPasskey(result.passkey) });
 };

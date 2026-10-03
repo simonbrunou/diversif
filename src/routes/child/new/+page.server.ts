@@ -1,14 +1,14 @@
 import { fail } from '@sveltejs/kit';
-import { localizedRedirect } from '$lib/server/redirect';
+import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
-import { db } from '$lib/server/db';
-import { children, memberships } from '$lib/server/db/schema';
-import { requireUser } from '$lib/server/guards';
-import { isValidBirthDate } from '$lib/utils/dates';
-import { createInvitationForChild } from '$lib/server/invitations';
-import { audit } from '$lib/server/audit';
-import { checkRateLimit } from '$lib/server/rate-limit';
-import * as m from '$lib/paraglide/messages';
+import { db } from '#lib/server/db/index.js';
+import { children, memberships } from '#lib/server/db/schema.js';
+import { requireUser } from '#lib/server/guards.js';
+import { isValidBirthDate } from '#lib/utils/dates.js';
+import { createInvitationForChild } from '#lib/server/invitations.js';
+import { audit } from '#lib/server/audit.js';
+import { checkRateLimit } from '#lib/server/rate-limit.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { Actions, PageServerLoad } from './$types';
 
 // No custom zod messages here on purpose: they'd be evaluated once at module

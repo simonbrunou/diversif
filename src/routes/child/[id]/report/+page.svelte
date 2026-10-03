@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { ArrowLeft } from 'lucide-svelte';
-  import PrintShell from '$lib/components/PrintShell.svelte';
-  import ReportSummaryStats from '$lib/components/report/ReportSummaryStats.svelte';
-  import ReportStageStatus from '$lib/components/report/ReportStageStatus.svelte';
-  import ReportTextureDistribution from '$lib/components/report/ReportTextureDistribution.svelte';
-  import ReportAllergensGrid from '$lib/components/report/ReportAllergensGrid.svelte';
-  import ReportFoodsByCategory from '$lib/components/report/ReportFoodsByCategory.svelte';
-  import ReportNotableReactions from '$lib/components/report/ReportNotableReactions.svelte';
-  import { formatAge } from '$lib/utils/age';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import { formatReportDay } from '$lib/utils/report';
-  import * as m from '$lib/paraglide/messages';
-  import { getLocale } from '$lib/paraglide/runtime';
+  import { ArrowLeft } from '@lucide/svelte';
+  import PrintShell from '#lib/components/PrintShell.svelte';
+  import ReportSummaryStats from '#lib/components/report/ReportSummaryStats.svelte';
+  import ReportStageStatus from '#lib/components/report/ReportStageStatus.svelte';
+  import ReportTextureDistribution from '#lib/components/report/ReportTextureDistribution.svelte';
+  import ReportAllergensGrid from '#lib/components/report/ReportAllergensGrid.svelte';
+  import ReportFoodsByCategory from '#lib/components/report/ReportFoodsByCategory.svelte';
+  import ReportNotableReactions from '#lib/components/report/ReportNotableReactions.svelte';
+  import { formatAge } from '#lib/utils/age.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import { formatReportDay } from '#lib/utils/report.js';
+  import * as m from '#lib/paraglide/messages.js';
+  import { getLocale } from '#lib/paraglide/runtime.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

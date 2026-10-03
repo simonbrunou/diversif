@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 import { ALLERGENS, countsAsAllergenExposure, getAllergenLabel } from './allergens';
 
 describe('ALLERGENS', () => {

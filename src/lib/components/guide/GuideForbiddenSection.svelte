@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Card from '$components/ui/Card.svelte';
-  import Badge from '$components/ui/Badge.svelte';
-  import SourceCitation from '$lib/components/SourceCitation.svelte';
-  import { FORBIDDEN_FOODS } from '$lib/content/guidance';
-  import { AlertTriangle } from 'lucide-svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
+  import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import { FORBIDDEN_FOODS } from '#lib/content/guidance.js';
+  import { AlertTriangle } from '@lucide/svelte';
 </script>
 
 <section id="eviter" class="scroll-mt-6 space-y-3">

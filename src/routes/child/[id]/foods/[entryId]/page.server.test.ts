@@ -9,12 +9,12 @@ import {
   seedUser
 } from '../../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
-mock.module('$lib/server/audit', () => ({ audit: mock() }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
+mock.module('#lib/server/audit.js', () => ({ audit: mock() }));
 
-import { audit } from '$lib/server/audit';
+import { audit } from '#lib/server/audit.js';
 
-import { foodEntries, foods, symptoms } from '$lib/server/db/schema';
+import { foodEntries, foods, symptoms } from '#lib/server/db/schema.js';
 import { load, actions } from './+page.server';
 
 beforeEach(async () => {

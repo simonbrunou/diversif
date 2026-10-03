@@ -1,9 +1,9 @@
 <!-- src/lib/components/bento/CarnetCategories.svelte -->
 <script lang="ts">
   import FoodCard from './FoodCard.svelte';
-  import EmptyHint from '$components/ui/EmptyHint.svelte';
-  import { CATEGORY_IDS, getCategoryLabel } from '$lib/utils/categories';
-  import * as m from '$lib/paraglide/messages';
+  import EmptyHint from '#lib/components/ui/EmptyHint.svelte';
+  import { CATEGORY_IDS, getCategoryLabel } from '#lib/utils/categories.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   type Food = {
     id: number;

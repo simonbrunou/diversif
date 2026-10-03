@@ -1,12 +1,12 @@
 import { error, fail, type RequestEvent } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
-import { children, invitations, memberships, users } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { children, invitations, memberships, users } from '#lib/server/db/schema.js';
 import { and, eq, gt, isNull } from 'drizzle-orm';
-import { isValidInviteCodeFormat } from '$lib/utils/invites';
-import { localizedRedirect } from '$lib/server/redirect';
-import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
-import { audit } from '$lib/server/audit';
-import * as m from '$lib/paraglide/messages';
+import { isValidInviteCodeFormat } from '#lib/utils/invites.js';
+import { localizedRedirect } from '#lib/server/redirect.js';
+import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
+import { audit } from '#lib/server/audit.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { Actions, PageServerLoad } from './$types';
 
 type ActiveInvite = {

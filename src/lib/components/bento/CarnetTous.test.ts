@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, fireEvent, screen, cleanup } from '@testing-library/svelte';
 import CarnetTous from './CarnetTous.svelte';
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 
 afterEach(() => cleanup());
 

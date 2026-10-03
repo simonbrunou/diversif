@@ -1,19 +1,19 @@
-import { localizedRedirect } from '$lib/server/redirect';
+import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { users } from '#lib/server/db/schema.js';
 import {
   createSession,
   hashPassword,
   invalidateAllUserSessions,
   PASSWORD_MIN_LENGTH,
   setSessionCookie
-} from '$lib/server/auth';
-import { requireUser } from '$lib/server/guards';
-import { parseFormWithKey } from '$lib/server/forms';
-import { requireFreshAuthWithKey } from '$lib/server/fresh-auth';
-import { audit } from '$lib/server/audit';
+} from '#lib/server/auth.js';
+import { requireUser } from '#lib/server/guards.js';
+import { parseFormWithKey } from '#lib/server/forms.js';
+import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
+import { audit } from '#lib/server/audit.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const passwordSchema = z.object({

@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/sveltekit';
-import { loadReplay } from '$lib/sentry-replay-loader';
+import { loadReplay } from '#lib/sentry-replay-loader.js';
 
 /**
  * Send a « Signaler un problème » report to Sentry as user feedback: the

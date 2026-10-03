@@ -6,7 +6,7 @@ import {
   PORC_MATCHERS,
   OILY_FISH
 } from './tables';
-import { FOODS_SEED } from '$lib/server/db/seed';
+import { FOODS_SEED } from '#lib/server/db/seed.js';
 
 const names = new Set(FOODS_SEED.map((f) => f.name));
 

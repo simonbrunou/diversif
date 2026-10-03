@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, spyOn } from 'bun:test';
 import { deflateSync, gzipSync, unzipSync } from 'node:zlib';
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 import { POST } from './+server';
 
 const ORIGINAL_DSN = process.env.PUBLIC_SENTRY_DSN;

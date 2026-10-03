@@ -8,11 +8,11 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { loadCoparentActivity } from './timeline';
-import { children, foods, foodEntries, users } from '$lib/server/db/schema';
-import { groupByMeal } from '$lib/utils/meals';
+import { children, foods, foodEntries, users } from '#lib/server/db/schema.js';
+import { groupByMeal } from '#lib/utils/meals.js';
 
 beforeEach(async () => {
   await resetTestDb();

@@ -56,9 +56,10 @@ describe('localizedRedirect', () => {
     expect(r).toEqual({ status: 303, location: '/en/english' });
   });
 
-  it('passes absolute URLs through unchanged', () => {
-    const r = captureRedirect(() => localizedRedirect('en', 303, 'https://example.com/x'));
-    expect(r).toEqual({ status: 303, location: 'https://example.com/x' });
+  it('refuses to send the visitor off-site', () => {
+    expect(() => localizedRedirect('en', 303, 'https://example.com/x')).toThrow(
+      /redirect_external_not_allowed/
+    );
   });
 
   it('preserves the redirect status code', () => {

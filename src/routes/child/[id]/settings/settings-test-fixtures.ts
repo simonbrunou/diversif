@@ -1,5 +1,5 @@
 import { beforeAll } from 'bun:test';
-import { hashPassword } from '$lib/server/auth';
+import { hashPassword } from '#lib/server/auth.js';
 import { seedChild, seedMembership, seedUser } from '../../../../test/route';
 
 export const PASSWORD = 'current-password-12';

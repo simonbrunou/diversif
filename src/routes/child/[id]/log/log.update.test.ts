@@ -9,9 +9,9 @@ import {
   seedUser
 } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { actions } from './+page.server';
 

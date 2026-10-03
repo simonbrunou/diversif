@@ -1,13 +1,13 @@
 <script lang="ts">
-  import BackHeader from '$components/ui/BackHeader.svelte';
-  import Button from '$components/ui/Button.svelte';
-  import Input from '$components/ui/Input.svelte';
-  import Field from '$lib/components/ui/Field.svelte';
+  import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
+  import Field from '#lib/components/ui/Field.svelte';
   import { enhance } from '$app/forms';
-  import * as m from '$lib/paraglide/messages';
-  import { trackSubmission } from '$lib/forms/tracked-enhance';
-  import { createFormToasts } from '$lib/forms/form-toasts.svelte';
-  import { PASSWORD_MIN_LENGTH } from '$lib/utils/password';
+  import * as m from '#lib/paraglide/messages.js';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { createFormToasts } from '#lib/forms/form-toasts.svelte.js';
+  import { PASSWORD_MIN_LENGTH } from '#lib/utils/password.js';
   import type { ActionData } from './$types';
 
   let { form }: { form: ActionData } = $props();

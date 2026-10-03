@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { applyTheme, getStoredTheme, type Theme } from '$lib/utils/theme';
-  import { cn } from '$lib/utils/cn';
-  import * as m from '$lib/paraglide/messages';
+  import { applyTheme, getStoredTheme, type Theme } from '#lib/utils/theme.js';
+  import { cn } from '#lib/utils/cn.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let theme = $state<Theme>('system');
 

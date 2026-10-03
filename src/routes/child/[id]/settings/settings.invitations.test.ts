@@ -2,21 +2,21 @@ import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const generateInviteCodeRawSpy = mock<() => string>();
 
-// Same live-binding hazard as $lib/utils/invites below — snapshot the
+// Same live-binding hazard as #lib/utils/invites below — snapshot the
 // namespace as a plain object before mock.module replaces it.
-import * as actualAuthNs from '$lib/server/auth';
+import * as actualAuthNs from '#lib/server/auth.js';
 const realAuth: typeof actualAuthNs = { ...actualAuthNs };
-mock.module('$lib/server/auth', () => ({
+mock.module('#lib/server/auth.js', () => ({
   ...realAuth,
   generateInviteCodeRaw: () => generateInviteCodeRawSpy()
 }));
 
 // The shared invitations helper imports generateInviteCodeRaw from
-// $lib/utils/invites directly. We intercept it here so the same spy that
+// #lib/utils/invites directly. We intercept it here so the same spy that
 // controls the auth re-export also controls the shared module, giving the
 // createInvitation collision tests full control over code generation.
 //
@@ -32,7 +32,7 @@ mock.module('$lib/server/auth', () => ({
 // already-mocked binding. Hard-code a simple default generator instead —
 // matches the real generateInviteCodeRaw's BEBE- prefix pattern. Tests
 // that need collision behaviour set .mockImplementation themselves.
-import * as actualInvitesNs from '$lib/utils/invites';
+import * as actualInvitesNs from '#lib/utils/invites.js';
 const defaultInviteCodeGen = (): string => {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let suffix = '';
@@ -40,13 +40,13 @@ const defaultInviteCodeGen = (): string => {
   return `BEBE-${suffix}`;
 };
 const _invitesRef = { real: defaultInviteCodeGen };
-mock.module('$lib/utils/invites', () => ({
+mock.module('#lib/utils/invites.js', () => ({
   ...actualInvitesNs,
   generateInviteCodeRaw: () => generateInviteCodeRawSpy()
 }));
 
-import { _clearAllRateLimits } from '$lib/server/rate-limit';
-import { invitations, users } from '$lib/server/db/schema';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
+import { invitations, users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { actions } from './+page.server';
 import { PASSWORD, setup } from './settings-test-fixtures';

@@ -9,7 +9,7 @@ import {
   seedUser
 } from '../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { load } from './+layout.server';
 

@@ -9,9 +9,9 @@ import {
   seedUser
 } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { foodEntries, foods } from '$lib/server/db/schema';
+import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { load } from './+page.server';
 
 beforeEach(async () => {
@@ -235,7 +235,7 @@ describe('child/[id]/foods load', () => {
       await ctx.log(ctx.carrot.id, 'ras', i);
     }
 
-    // Accent/case-insensitive search (matches $lib/utils/search's normalize())
+    // Accent/case-insensitive search (matches #lib/utils/search's normalize())
     // must still find it despite it being outside the top-200-by-recency
     // window.
     const searched = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?q=epinard`);

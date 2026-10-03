@@ -29,13 +29,13 @@ mock.module('$app/navigation', () => ({
   goto: async () => {},
   afterNavigate: () => {}
 }));
-mock.module('$app/environment', () => ({
+mock.module('$app/env', () => ({
   browser: false
 }));
 mock.module('svelte-sonner', () => ({
   toast: { error: () => {}, success: () => {} }
 }));
-mock.module('$lib/offline/queue', () => ({
+mock.module('#lib/offline/queue.js', () => ({
   enqueue: async () => {}
 }));
 
@@ -77,8 +77,8 @@ const HINT_TEXT =
   'Plusieurs aliments jamais notés sont sélectionnés : enregistrez précisément chacun et la réaction observée.';
 
 function hiddenFoodIdValues(container: HTMLElement): string[] {
-  return Array.from(container.querySelectorAll('input[type="hidden"][name="foodId"]')).map(
-    (el) => el.getAttribute('value')!
+  return Array.from(container.querySelectorAll('input[type="hidden"][name="foodId"]')).map((el) =>
+    el.getAttribute('value')!
   );
 }
 

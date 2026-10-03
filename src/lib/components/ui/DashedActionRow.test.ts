@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, screen, cleanup, fireEvent } from '@testing-library/svelte';
 import { textSnippet } from '../../../test/component';
-import { Plus } from 'lucide-svelte';
+import { Plus } from '@lucide/svelte';
 import DashedActionRow from './DashedActionRow.svelte';
 
 afterEach(() => cleanup());

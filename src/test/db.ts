@@ -2,7 +2,7 @@ import path from 'node:path';
 import { readFileSync, readdirSync } from 'node:fs';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import * as schema from '$lib/server/db/schema';
+import * as schema from '#lib/server/db/schema.js';
 
 type DB = BunSQLiteDatabase<typeof schema>;
 

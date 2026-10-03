@@ -1,13 +1,13 @@
-import { db } from '$lib/server/db';
-import { children, foodEntries, foods } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { children, foodEntries, foods } from '#lib/server/db/schema.js';
 import { and, eq, lte, sql } from 'drizzle-orm';
-import { ageInMonths } from '$lib/utils/age';
-import { REACTION_RANK } from '$lib/utils/reaction-values';
-import { parseDietExclusions } from '$lib/utils/diet';
-import { countsAsAllergenExposure } from '$lib/utils/allergens';
-import { requireChildContext } from '$lib/server/guards';
-import { buildMenu } from '$lib/server/menu/engine';
-import { parisDay } from '$lib/server/menu/day';
+import { ageInMonths } from '#lib/utils/age.js';
+import { REACTION_RANK } from '#lib/utils/reaction-values.js';
+import { parseDietExclusions } from '#lib/utils/diet.js';
+import { countsAsAllergenExposure } from '#lib/utils/allergens.js';
+import { requireChildContext } from '#lib/server/guards.js';
+import { buildMenu } from '#lib/server/menu/engine.js';
+import { parisDay } from '#lib/server/menu/day.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, parent, locals }) => {

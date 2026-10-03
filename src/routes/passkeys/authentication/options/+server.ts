@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
@@ -7,8 +7,8 @@ import {
   buildAuthenticationOptions,
   createChallenge,
   isOriginAllowedForRPID
-} from '$lib/server/passkeys';
-import { checkRateLimit, clientKey } from '$lib/server/rate-limit';
+} from '#lib/server/passkeys.js';
+import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
 import type { RequestHandler } from './$types';
 
 // The endpoint is unauthenticated (a visitor needs a fresh challenge before
@@ -77,5 +77,5 @@ export const POST: RequestHandler = async (event) => {
     maxAge: Math.floor(PASSKEY_CHALLENGE_TTL_MS / 1000)
   });
 
-  return json(options);
+  return Response.json(options);
 };

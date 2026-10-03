@@ -8,7 +8,7 @@ let loading: Promise<void> | undefined;
  * offline) just means no replay for now, and the next call tries again.
  */
 export function loadReplay(): Promise<void> {
-  loading ??= import('$lib/sentry-replay')
+  loading ??= import('#lib/sentry-replay.js')
     .then(({ startReplay }) => startReplay())
     .catch(() => {
       loading = undefined;

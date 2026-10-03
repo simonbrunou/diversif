@@ -9,10 +9,10 @@ import {
   seedUser
 } from '../../../../test/route';
 
-mock.module('$lib/server/db', () => ({ db: testDb }));
+mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { eq } from 'drizzle-orm';
-import { children } from '$lib/server/db/schema';
+import { children } from '#lib/server/db/schema.js';
 import { actions, load } from './+page.server';
 import { setup } from './settings-test-fixtures';
 

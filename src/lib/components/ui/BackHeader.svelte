@@ -8,11 +8,11 @@
   referrer signal — afterNavigate's `from` is, so we listen for it.
 -->
 <script lang="ts">
-  import { ArrowLeft } from 'lucide-svelte';
-  import { browser } from '$app/environment';
+  import { ArrowLeft } from '@lucide/svelte';
+  import { browser } from '$app/env';
   import { afterNavigate, goto } from '$app/navigation';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import * as m from '$lib/paraglide/messages';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import * as m from '#lib/paraglide/messages.js';
 
   let {
     title,

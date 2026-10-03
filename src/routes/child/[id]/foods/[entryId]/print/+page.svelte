@@ -1,7 +1,7 @@
 <script lang="ts">
-  import PrintShell from '$lib/components/PrintShell.svelte';
-  import * as m from '$lib/paraglide/messages';
-  import { severityOf, symptomLabelText, type SymptomLabel } from '$lib/content/symptoms';
+  import PrintShell from '#lib/components/PrintShell.svelte';
+  import * as m from '#lib/paraglide/messages.js';
+  import { severityOf, symptomLabelText, type SymptomLabel } from '#lib/content/symptoms.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

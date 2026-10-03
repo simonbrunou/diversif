@@ -4,12 +4,12 @@
   import AllergensSnapshot, { type AllergenPillState } from './AllergensSnapshot.svelte';
   import ReminderStrip from './ReminderStrip.svelte';
   import RecentFeed from './RecentFeed.svelte';
-  import type { Reminder } from '$lib/server/guidance/reminders';
-  import type { RecentEntry } from '$lib/types';
-  import { PRIORITY_INTRODUCTION_ALLERGENS } from '$lib/utils/allergens';
-  import { localizedHref } from '$lib/utils/localized-href';
-  import * as m from '$lib/paraglide/messages';
-  import { FileText, ChevronRight, UtensilsCrossed } from 'lucide-svelte';
+  import type { Reminder } from '#lib/server/guidance/reminders.js';
+  import type { RecentEntry } from '#lib/types.js';
+  import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
+  import * as m from '#lib/paraglide/messages.js';
+  import { FileText, ChevronRight, UtensilsCrossed } from '@lucide/svelte';
 
   type Stats = {
     foodsIntroduced: number;
@@ -23,7 +23,7 @@
     };
   };
 
-  // Mirrors AllergenItem from $lib/server/guidance/allergen-status — declared
+  // Mirrors AllergenItem from #lib/server/guidance/allergen-status — declared
   // locally (like CarnetBento) so this client component doesn't import a
   // server module.
   type AllergenStatusItem = {
