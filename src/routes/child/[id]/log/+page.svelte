@@ -32,10 +32,17 @@
   }: { data: PageData; form: ActionData } = $props();
 
   let givenAt = $state(formatDateInputValue());
+  // The datetime-local input reports '' while one of its segments is cleared
+  // mid-edit, and `new Date('')` is an Invalid Date that ageInMonths cannot
+  // format. Age-based defaults pause until the date is complete again.
+  const givenAtAgeMonths = $derived.by(() => {
+    const date = new Date(givenAt);
+    return Number.isNaN(date.getTime()) ? undefined : ageInMonths(data.child.birthDate, date);
+  });
   let reaction = $state<'ras' | 'inconfort' | 'reaction'>('ras');
   // svelte-ignore state_referenced_locally
   let texture = $state<TextureKey | null>(
-    defaultTextureForAgeMonths(ageInMonths(data.child.birthDate, new Date(givenAt)))
+    givenAtAgeMonths === undefined ? null : defaultTextureForAgeMonths(givenAtAgeMonths)
   );
   let texturePristine = $state(true);
   let submitting = $state(false);
@@ -46,10 +53,8 @@
 
   $effect(() => {
     // While the user hasn't touched the picker, follow the meal date.
-    if (!texturePristine) return;
-    texture = defaultTextureForAgeMonths(
-      ageInMonths(data.child.birthDate, new Date(givenAt))
-    );
+    if (!texturePristine || givenAtAgeMonths === undefined) return;
+    texture = defaultTextureForAgeMonths(givenAtAgeMonths);
   });
 
   const initialFoodId = (() => {
@@ -311,7 +316,7 @@
         name="texture"
         bind:value={texture}
         bind:pristine={texturePristine}
-        ageMonths={ageInMonths(data.child.birthDate, new Date(givenAt))}
+        ageMonths={givenAtAgeMonths}
       />
     </div>
 

@@ -178,3 +178,27 @@ describe('log +page.svelte — multi-select help + never-tried hint', () => {
     expect(container.querySelector('input[type="hidden"][name="preparedMealId"]')).toBeNull();
   });
 });
+
+describe('log +page.svelte — meal date input', () => {
+  // A datetime-local input reports '' while any of its segments is cleared
+  // mid-edit. The age-based texture default used to feed that to
+  // ageInMonths, which threw "RangeError: Invalid time value" and replaced
+  // the whole form with the error page (Sentry DIVERSIF-B).
+  it('keeps the form while the meal date is incomplete, then follows the completed date', async () => {
+    const { container } = render(Page, { props: { data: makeData([]), form: null } });
+    const givenAt = container.querySelector<HTMLInputElement>('input[name="givenAt"]')!;
+    const checkedTexture = () =>
+      container.querySelector<HTMLInputElement>('input[name="texture"]:checked')?.value;
+    const defaultTexture = checkedTexture();
+
+    await fireEvent.input(givenAt, { target: { value: '' } });
+    expect(container.querySelector('input[name="givenAt"]')).toBe(givenAt);
+    expect(checkedTexture()).toBe(defaultTexture);
+    expect(container.textContent).not.toContain('par défaut pour');
+
+    // Child born 2024-01-01: 5 months old on that date → smooth purée.
+    await fireEvent.input(givenAt, { target: { value: '2024-06-15T12:00' } });
+    expect(checkedTexture()).toBe('lisse');
+    expect(container.textContent).toContain('par défaut pour 5 mois');
+  });
+});
