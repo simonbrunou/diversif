@@ -8,8 +8,9 @@
  *
  * Posture: strict, defence in depth. The errorId in event.tags is the only
  * correlation token. From the SDK side this scrubber drops user.id, email,
- * request body, cookies, headers, query string, message bodies, stack frame
- * locals, and every span/log attribute that can carry a client identifier
+ * request body, cookies, headers, query string, server error messages (a
+ * browser error keeps only its engine wording, see scrubErrorMessage), stack
+ * frame locals, and every span/log attribute that can carry a client identifier
  * (request headers, client address, user agent); combined with
  * `sendDefaultPii: false` in Sentry.init, no client identifiers leave the
  * process.
@@ -207,10 +208,10 @@ const NETWORK_FAILURE_MESSAGES = [
 /**
  * Whether a client-side error is the browser failing to reach the server
  * rather than a bug. Engines raise these as a `TypeError` with no app frames
- * (chunk imports) or only SvelteKit's (fetches), and the scrubbed message is
- * the same for all of them, so they pile into one opaque Sentry issue
- * whatever the route (DIVERSIF-4). A redeploy that removes the previous
- * build's hashed chunks fails the same way for a tab still on the old build.
+ * (chunk imports) or only SvelteKit's (fetches), so they pile into a handful
+ * of Sentry issues whatever the route (DIVERSIF-4). A redeploy that removes
+ * the previous build's hashed chunks fails the same way for a tab still on
+ * the old build.
  */
 export function isNetworkFailure(error: unknown): boolean {
   return (
@@ -262,10 +263,93 @@ export function clientRouteTag(
   return path.includes('[') ? path : scrubPathname(path);
 }
 
-// Strip free-form text that may contain user input. The errorId tag is
-// still attached, and the full Error message + stack live in the
-// [diversif:error] stderr line indexed by that token.
+// Strip free-form text that may contain user input from server events. The
+// errorId tag is still attached, and the full Error message + stack live in
+// the [diversif:error] stderr line indexed by that token.
 const REDACTED = '[redacted: see errorId in stderr]';
+
+// A browser error has no stderr line behind it, so redacting its message lost
+// it for good: issues read « RangeError: [redacted…] » and every TypeError
+// shared one issue (DIVERSIF-4). Engine messages are fixed technical text
+// (app code never interpolates user data into a browser-side Error), so they
+// are kept minus every part that can quote user data; see scrubErrorMessage.
+const MESSAGE_MAX_LENGTH = 300;
+// The SDK stringifies whatever a promise was rejected with.
+const NON_ERROR_REJECTION = /^(Non-Error promise rejection captured with value: ).*$/s;
+// V8 quotes up to 20 characters of the JSON source, quotes included, so they
+// cannot be paired: `Unexpected token 'L', "{"name":Léa"... is not valid JSON`.
+// Only tried on messages with that ending, where its first attempt matches.
+const JSON_SNIPPET_END = ' is not valid JSON';
+const JSON_SNIPPET = /(?:\.\.\.)?".*"(?:\.\.\.)?(?= is not valid JSON$)/s;
+// One left-to-right pass, so a replacement is never scanned again. Every
+// alternative starts at a fixed place (a token start, a bounded scheme, a
+// quote) so a long message is scanned in linear time. Groups, in the order the
+// replacer receives them:
+// - url: any `scheme://…` or `data:…`;
+// - path: a `/…` path standing on its own (`Not found: /child/18/log`);
+// - email;
+// - quoted: '…' "…" `…` ‘…’ “…” «…». A quote only opens where no letter or
+//   digit precedes it, so the apostrophe of « Can't find variable » is not one;
+// - number (no group needed, it is the last alternative): dates, ids,
+//   positions, digits inside a token (`2026-01-15T10:00Z`).
+const MESSAGE_SENSITIVE =
+  /(?<url>\b[a-z][\w+.-]{0,31}:\/\/[^\s'"`<>()[\]]+|\bdata:[^\s'"`<>()[\]]+)|(?<path>(?<=^|[\s(=:,])\/[^\s'"`<>()[\]/][^\s'"`<>()[\]]*)|(?<email>(?<![^\s@'"`<>()[\]])[^\s@'"`<>()[\]]+@[^\s@'"`<>()[\]]+)|(?<quoted>(?<![\p{L}\d])(?:'[^']*'|"[^"]*"|`[^`]*`|‘[^’]*’|“[^”]*”|«[^»]*»))|\d+(?:[.,:/-]\d+)*/giu;
+// Property and function names engines quote: 'name', 'a.b.c', `$derived`. A
+// JSON parse error quotes the offending input instead (Safari: `Unexpected
+// identifier "Lea"`), so none of its quoted text is kept.
+const CODE_IDENTIFIER = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/;
+
+/** Build assets (`/_app/…`, e.g. a chunk that failed to load) keep their path; any other path may carry an id or an invite code. */
+function scrubMessagePath(path: string): string {
+  return path === '/' || path.startsWith('/_app/') ? path : '/…';
+}
+
+function scrubMessageUrl(raw: string): string {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return '[url]';
+    // Svelte's production errors are nothing but a link to their docs page:
+    // `https://svelte.dev/e/state_unsafe_mutation`.
+    if (url.hostname === 'svelte.dev') return url.origin + url.pathname;
+    return url.origin + scrubMessagePath(url.pathname);
+  } catch {
+    return '[url]';
+  }
+}
+
+/**
+ * The browser-side counterpart of REDACTED: keep an error message's engine
+ * wording (`Invalid time value`, `Cannot read properties of undefined
+ * (reading 'name')`) and drop what can carry user data — URL paths (except
+ * build assets and Svelte docs links), e-mail addresses, quoted text that is
+ * not a code identifier, digits, and the value of a non-Error promise
+ * rejection.
+ */
+export function scrubErrorMessage(message: string): string {
+  const jsonError = message.includes('JSON');
+  const unquoted = message.endsWith(JSON_SNIPPET_END)
+    ? message.replace(JSON_SNIPPET, '"…"')
+    : message;
+  const scrubbed = unquoted
+    .replace(NON_ERROR_REJECTION, '$1…')
+    .replace(
+      MESSAGE_SENSITIVE,
+      (match: string, url?: string, path?: string, email?: string, quoted?: string) => {
+        if (url) return scrubMessageUrl(match);
+        if (path) return scrubMessagePath(match);
+        if (email) return '[email]';
+        if (quoted) {
+          return !jsonError && CODE_IDENTIFIER.test(match.slice(1, -1))
+            ? match
+            : `${match[0]}…${match.at(-1)}`;
+        }
+        return '[n]';
+      }
+    );
+  return scrubbed.length > MESSAGE_MAX_LENGTH
+    ? `${scrubbed.slice(0, MESSAGE_MAX_LENGTH)}…`
+    : scrubbed;
+}
 
 /**
  * Compute the route pattern used to scrub request/breadcrumb URLs: the route
@@ -297,13 +381,17 @@ function scrubRequest(request: NonNullable<Event['request']>, route: string | nu
 }
 
 /**
- * Redact exception messages (which may quote user input) and drop stack frame
- * locals (`vars`), which can capture in-scope PII.
+ * Rewrite exception messages (which may quote user input) with
+ * `scrubMessage` and drop stack frame locals (`vars`), which can capture
+ * in-scope PII.
  */
-function scrubException(exception: NonNullable<Event['exception']>): void {
+function scrubException(
+  exception: NonNullable<Event['exception']>,
+  scrubMessage: (message: string) => string
+): void {
   if (!Array.isArray(exception.values)) return;
   for (const ex of exception.values) {
-    if (typeof ex.value === 'string') ex.value = REDACTED;
+    if (typeof ex.value === 'string') ex.value = scrubMessage(ex.value);
     const frames = ex.stacktrace?.frames;
     if (Array.isArray(frames)) {
       for (const frame of frames) {
@@ -366,7 +454,10 @@ function scrubFeedback(feedback: Record<string, unknown>): void {
  * through the privacy integration in hooks.client.ts because `beforeSend`
  * never sees them). Returns null — dropping the event — if scrubbing throws.
  */
-export function scrubEvent<E extends Event>(event: E): E | null {
+function scrubEventWith<E extends Event>(
+  event: E,
+  scrubMessage: (message: string) => string
+): E | null {
   try {
     if (!event || typeof event !== 'object') return null;
 
@@ -377,8 +468,8 @@ export function scrubEvent<E extends Event>(event: E): E | null {
 
     delete event.user;
 
-    if (typeof event.message === 'string') event.message = REDACTED;
-    if (event.exception) scrubException(event.exception);
+    if (typeof event.message === 'string') event.message = scrubMessage(event.message);
+    if (event.exception) scrubException(event.exception, scrubMessage);
 
     if (Array.isArray(event.breadcrumbs)) {
       event.breadcrumbs = scrubBreadcrumbs(event.breadcrumbs);
@@ -398,6 +489,16 @@ export function scrubEvent<E extends Event>(event: E): E | null {
   } catch {
     return null;
   }
+}
+
+/** Server events: messages are redacted, their full text is in the stderr line. */
+export function scrubEvent<E extends Event>(event: E): E | null {
+  return scrubEventWith(event, () => REDACTED);
+}
+
+/** Browser events: no stderr line exists, so messages go through scrubErrorMessage. */
+export function scrubBrowserEvent<E extends Event>(event: E): E | null {
+  return scrubEventWith(event, scrubErrorMessage);
 }
 
 /** The payload of a Sentry custom replay frame (breadcrumb or performanceSpan). */

@@ -3,7 +3,7 @@ import { loadReplay } from '#lib/sentry-replay-loader.js';
 
 /**
  * Send a « Signaler un problème » report to Sentry as user feedback: the
- * message the parent typed, the page URL (scrubbed by scrubEvent's feedback
+ * message the parent typed, the page URL (scrubbed by scrubBrowserEvent's feedback
  * branch) and `tags` — e.g. the errorId shown on the error page, which links
  * the report to the matching Sentry issue. Resolves once Sentry accepted it;
  * rejects otherwise.

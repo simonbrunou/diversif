@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import {
   scrubEvent,
+  scrubBrowserEvent,
+  scrubErrorMessage,
   scrubPathname,
   filterIncomingBreadcrumb,
   scrubSpan,
@@ -322,6 +324,79 @@ describe('scrubEvent', () => {
     })!;
     expect(out.urls).toEqual(['https://diversif.app/child/[id]', '/child/[id]/foods/[id]', 7]);
     expect(out.segment_names).toEqual(['/child/[id]', 'pageload']);
+  });
+});
+
+describe('scrubErrorMessage', () => {
+  it.each([
+    'Invalid time value',
+    "Cannot read properties of undefined (reading 'name')",
+    "undefined is not an object (evaluating 'a.b.c')",
+    "Can't find variable: gtag",
+    'can\'t access property "length", list is undefined',
+    'Failed to fetch (diversif.app)',
+    'Failed to fetch dynamically imported module: https://diversif.app/_app/immutable/nodes/12.CzX3.js',
+    'https://svelte.dev/e/state_unsafe_mutation'
+  ])('keeps the engine wording of %p', (message) => {
+    expect(scrubErrorMessage(message)).toBe(message);
+  });
+
+  it.each([
+    [
+      'Unexpected token \'L\', "Léa mange"... is not valid JSON',
+      'Unexpected token \'…\', "…" is not valid JSON'
+    ],
+    [
+      'Unexpected token \'L\', "{"name":Léa Dupont}" is not valid JSON',
+      'Unexpected token \'…\', "…" is not valid JSON'
+    ],
+    [
+      'Unexpected token \'L\', ..."e":Léa Dupont,"a"... is not valid JSON',
+      'Unexpected token \'…\', "…" is not valid JSON'
+    ],
+    [
+      'JSON Parse error: Unexpected identifier "Lea"',
+      'JSON Parse error: Unexpected identifier "…"'
+    ],
+    ["Cannot find 'arachide crue'", "Cannot find '…'"],
+    ['Failed for « Léo »', 'Failed for «…»'],
+    ['Invalid birth date 2026-01-15T10:00:00Z', 'Invalid birth date [n]T[n]Z'],
+    ['No session for parent@example.com', 'No session for [email]'],
+    [
+      'Load failed: https://diversif.app/join/BEBE-A2B3C4?x=1#y',
+      'Load failed: https://diversif.app/…'
+    ],
+    ['Not found: /child/18/log', 'Not found: /…'],
+    ['Bad link http://%%/child/18', 'Bad link [url]'],
+    ['Bad image data:image/png;base64,QUJD', 'Bad image [url]'],
+    [
+      'Non-Error promise rejection captured with value: Léa a eu une réaction',
+      'Non-Error promise rejection captured with value: …'
+    ]
+  ])('strips what can carry user data from %p', (message, expected) => {
+    expect(scrubErrorMessage(message)).toBe(expected);
+  });
+
+  it('caps the scrubbed message at 300 characters', () => {
+    const out = scrubErrorMessage('x'.repeat(400));
+    expect(out).toBe(`${'x'.repeat(300)}…`);
+  });
+});
+
+describe('scrubBrowserEvent', () => {
+  it('scrubs messages instead of redacting them, keeping the rest of scrubEvent', () => {
+    const out = scrubBrowserEvent({
+      message: 'Unknown food "Purée maison"',
+      exception: {
+        values: [{ type: 'RangeError', value: 'Invalid time value' }]
+      },
+      user: { id: '42' },
+      request: { url: 'https://diversif.app/child/18/log?x=1' }
+    })!;
+    expect(out.message).toBe('Unknown food "…"');
+    expect(out.exception!.values![0]).toEqual({ type: 'RangeError', value: 'Invalid time value' });
+    expect(out.user).toBeUndefined();
+    expect(out.request!.url).toBe('https://diversif.app/child/[id]/log');
   });
 });
 

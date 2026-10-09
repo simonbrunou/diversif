@@ -13,7 +13,7 @@ import {
   filterIncomingBreadcrumb,
   isNetworkFailure,
   parseSampleRate,
-  scrubEvent,
+  scrubBrowserEvent,
   scrubSpan
 } from '#lib/sentry.js';
 import { loadReplay } from '#lib/sentry-replay-loader.js';
@@ -65,7 +65,9 @@ Sentry.init({
       // beforeSend never sees replay or feedback events; scrub them here.
       name: 'DiversifPrivacy',
       processEvent: (event) =>
-        event.type === 'replay_event' || event.type === 'feedback' ? scrubEvent(event) : event,
+        event.type === 'replay_event' || event.type === 'feedback'
+          ? scrubBrowserEvent(event)
+          : event,
       // Release-health sessions are not events either: the SDK copies
       // navigator.userAgent into every one, whatever sendDefaultPii says.
       setup: (client) => {
@@ -75,8 +77,8 @@ Sentry.init({
       }
     }
   ],
-  beforeSend: scrubEvent,
-  beforeSendTransaction: scrubEvent,
+  beforeSend: scrubBrowserEvent,
+  beforeSendTransaction: scrubBrowserEvent,
   beforeSendSpan: scrubSpan,
   beforeBreadcrumb: filterIncomingBreadcrumb
 });

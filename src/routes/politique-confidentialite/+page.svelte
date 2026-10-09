@@ -29,7 +29,7 @@
   <section lang="fr" class="mt-8 space-y-3">
     <header class="space-y-2">
       <h1 class="font-display text-3xl italic">Politique de confidentialité</h1>
-      <p class="text-sm leading-relaxed">Dernière mise à jour : 25 septembre 2026.</p>
+      <p class="text-sm leading-relaxed">Dernière mise à jour : 9 octobre 2026.</p>
     </header>
 
   <section class="mt-8 space-y-3">
@@ -114,7 +114,7 @@
         segments dynamiques d'URL, paramètres de requête, cookies, en-têtes, corps de requête et
         variables locales de la pile d'exécution sont systématiquement retirés avant l'envoi.
         <ul class="list-disc space-y-1 pl-5">
-          <li>Erreurs serveur et navigateur, taguées d'un identifiant d'erreur opaque affiché sur la page d'erreur.</li>
+          <li>Erreurs serveur et navigateur, taguées d'un identifiant d'erreur opaque affiché sur la page d'erreur. Le message d'une erreur serveur n'est jamais transmis ; celui d'une erreur du navigateur l'est, après suppression des adresses e-mail, des chiffres, du chemin des adresses web (seuls le nom de domaine et les fichiers de l'application sont conservés) et des textes entre guillemets autres que les noms de propriétés ou de fonctions du code.</li>
           <li>Mesures de performance échantillonnées (chargement des pages, requêtes serveur, indicateurs Web Vitals), nommées par le modèle de route ; les éléments d'interface concernés ne sont décrits que par leur balise et leurs classes CSS, sans aucun libellé.</li>
           <li>Sessions de navigation anonymes (début, durée, fin normale ou interrompue par une erreur) pour mesurer la stabilité de chaque version.</li>
           <li>Journaux techniques opérationnels côté serveur uniquement (démarrage, migration et nettoyage de la base) — aucune donnée personnelle.</li>
