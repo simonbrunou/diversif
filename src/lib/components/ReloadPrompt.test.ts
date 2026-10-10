@@ -17,7 +17,7 @@ class FakeWorkbox extends EventTarget {
     super();
     FakeWorkbox.last = this;
   }
-  register = () => Promise.resolve(undefined);
+  register = () => Promise.resolve(registered);
 }
 mock.module('workbox-window', () => ({ Workbox: FakeWorkbox }));
 
@@ -34,6 +34,8 @@ class FakeWaitingWorker extends EventTarget {
   }
 }
 let registration: { waiting: FakeWaitingWorker | null } | undefined;
+// The registration `register()` resolves with, for the update polling.
+let registered: Pick<ServiceWorkerRegistration, 'update'> | undefined;
 
 const { default: ReloadPrompt } = await import('./ReloadPrompt.svelte');
 
@@ -65,6 +67,7 @@ afterEach(() => {
   toastFn.mockClear();
   FakeWorkbox.last = undefined;
   registration = undefined;
+  registered = undefined;
 });
 
 describe('ReloadPrompt', () => {
@@ -114,5 +117,30 @@ describe('ReloadPrompt', () => {
     // toast back once the user has dismissed it this session.
     newWorkerWaiting();
     expect(toastFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a failed update check from becoming an unhandled rejection', async () => {
+    // The browser rejects the periodic update check when the network drops
+    // or a deploy swaps the container; Sentry's global handler reported each
+    // one as a crash (DIVERSIF-C). The installed worker keeps serving. bun
+    // test fails the running test on any unhandled rejection, the way the
+    // browser hands it to Sentry.
+    const { promise: polling, resolve: startPolling } = Promise.withResolvers<() => void>();
+    const intervalSpy = spyOn(globalThis, 'setInterval').mockImplementation(((
+      callback: () => void
+    ) => {
+      startPolling(callback);
+      return 0;
+    }) as unknown as typeof setInterval);
+    const update = mock(() => Promise.reject(new TypeError('Failed to update a ServiceWorker')));
+    registered = { update };
+    try {
+      render(ReloadPrompt);
+      const poll = await polling;
+      poll();
+      expect(update).toHaveBeenCalledTimes(1);
+    } finally {
+      intervalSpy.mockRestore();
+    }
   });
 });

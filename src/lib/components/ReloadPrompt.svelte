@@ -52,13 +52,15 @@
     wb.addEventListener('waiting', showUpdateToast);
 
     // Poll for SW updates every 60 s so the user gets fresh code even if
-    // they keep the tab open for hours.
+    // they keep the tab open for hours. A failed check (offline, a dropped
+    // connection, the container swap of a deploy) keeps the installed worker
+    // and the next poll tries again: nothing to report.
     let pollId: ReturnType<typeof setInterval> | undefined;
     let unmounted = false;
     wb.register()
       .then((registration) => {
         if (!registration || unmounted) return;
-        pollId = setInterval(() => void registration.update(), 60_000);
+        pollId = setInterval(() => void registration.update().catch(() => {}), 60_000);
       })
       // The app works without a worker (blocked storage, a browser without
       // module workers, a failed first fetch): nothing to report.
