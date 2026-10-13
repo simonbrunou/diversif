@@ -11,9 +11,9 @@
  * request body, cookies, headers, query string, server error messages (a
  * browser error keeps only its engine wording, see scrubErrorMessage), stack
  * frame locals, and every span/log attribute that can carry a client identifier
- * (request headers, client address, user agent); combined with
- * `sendDefaultPii: false` in Sentry.init, no client identifiers leave the
- * process.
+ * (request headers, client address, user agent); combined with the
+ * restrictive `dataCollection` baseline (DATA_COLLECTION) in Sentry.init, no
+ * client identifiers leave the process.
  *
  * Browser payloads reach Sentry through the same-origin tunnel
  * (src/routes/monitoring/+server.ts), so Sentry's ingest only ever sees the
@@ -22,10 +22,36 @@
  * second layer (Settings → Security & Privacy).
  */
 
-import type { Breadcrumb, Event } from '@sentry/sveltekit';
+import type { Breadcrumb, Event, init } from '@sentry/sveltekit';
+
+type DataCollection = NonNullable<Parameters<typeof init>[0]['dataCollection']>;
 
 /** Same-origin path the browser SDK posts envelopes to (see hooks.client.ts). */
 export const SENTRY_TUNNEL_PATH = '/monitoring';
+
+/**
+ * `dataCollection` for both Sentry.init calls. SDK v11 replaced
+ * `sendDefaultPii` with `dataCollection`, whose defaults collect user info,
+ * cookies, request/response bodies and database query data, and an unknown
+ * `sendDefaultPii: false` is silently ignored, so the old opt-out must be
+ * restated here. This is the baseline the v11 migration guide gives for
+ * keeping v10's default behaviour; scrubEvent/scrubSpan/scrubLog still strip
+ * what the SDK attaches anyway.
+ */
+export const DATA_COLLECTION: DataCollection = {
+  userInfo: false,
+  cookies: false,
+  httpHeaders: {
+    request: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] },
+    response: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] }
+  },
+  httpBodies: [],
+  urlQueryParams: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] },
+  genAI: { inputs: false, outputs: false },
+  databaseQueryData: false,
+  queues: false,
+  graphQL: { document: false, variables: false }
+};
 
 type ScrubbableSpan = {
   description?: string;

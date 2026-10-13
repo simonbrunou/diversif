@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/sveltekit';
 import {
   SENTRY_TUNNEL_PATH,
+  DATA_COLLECTION,
   filterIncomingBreadcrumb,
   parseSampleRate,
   scrubEvent,
@@ -23,13 +24,19 @@ Sentry.init({
   release: __SENTRY_RELEASE__,
   tracesSampleRate: parseSampleRate(process.env.SENTRY_TRACES_SAMPLE_RATE, 0.1),
   // Structured operational logs (boot, migrations, cleanup, shutdown) sent
-  // explicitly via Sentry.logger. Console output is deliberately NOT captured:
-  // handleError's `[diversif:error]` line carries the user id and raw path.
-  enableLogs: true,
-  // Explicitly opt out of default PII (IP address, cookies, user agent).
-  // This is v10's default, but a future SDK upgrade flipping it must not
-  // silently leak identifiers into every event.
-  sendDefaultPii: false,
+  // explicitly via Sentry.logger (v11 captures logs whenever that API is
+  // called, there is no enableLogs option). Console output is deliberately
+  // NOT captured: handleError's `[diversif:error]` line carries the user id
+  // and raw path.
+  //
+  // SDK v11 replaced sendDefaultPii with dataCollection (IP address, cookies,
+  // headers, bodies); the restrictive baseline keeps the v10 default.
+  dataCollection: DATA_COLLECTION,
+  // v11 streams spans by default, which bypasses beforeSendTransaction and
+  // ignoreTransactions below. The static lifecycle keeps one scrubbed,
+  // filterable transaction per request, as in v10; beforeSendSpan must then
+  // be wrapped.
+  traceLifecycle: 'static',
   // Every browser envelope relayed by the tunnel would otherwise produce its
   // own server transaction; `sveltekit.handle.root` is the root span of a
   // request matching no route (bot scans, 404s), which sentryHandle never
@@ -37,7 +44,7 @@ Sentry.init({
   ignoreTransactions: [`POST ${SENTRY_TUNNEL_PATH}`, 'sveltekit.handle.root'],
   beforeSend: scrubEvent,
   beforeSendTransaction: scrubEvent,
-  beforeSendSpan: scrubSpan,
+  beforeSendSpan: Sentry.withStaticSpan(scrubSpan),
   beforeSendLog: scrubLog,
   beforeBreadcrumb: filterIncomingBreadcrumb
 });

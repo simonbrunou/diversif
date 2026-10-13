@@ -9,6 +9,7 @@ import {
 import type { HandleClientError } from '@sveltejs/kit/hooks';
 import {
   SENTRY_TUNNEL_PATH,
+  DATA_COLLECTION,
   clientRouteTag,
   filterIncomingBreadcrumb,
   isNetworkFailure,
@@ -51,8 +52,13 @@ Sentry.init({
   // is added below, once its chunk has loaded.
   replaysSessionSampleRate: parseSampleRate(PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE, 0),
   replaysOnErrorSampleRate: parseSampleRate(PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE, 1),
-  // Explicitly opt out of default PII (IP address, cookies, user agent).
-  sendDefaultPii: false,
+  // SDK v11 replaced sendDefaultPii with dataCollection (IP address, cookies,
+  // headers, bodies); the restrictive baseline keeps the v10 default.
+  dataCollection: DATA_COLLECTION,
+  // v11 streams spans by default, which bypasses beforeSendTransaction (the
+  // transaction scrubber below). The static lifecycle keeps one scrubbed
+  // transaction per trace, as in v10; beforeSendSpan must then be wrapped.
+  traceLifecycle: 'static',
   integrations: [
     Sentry.browserTracingIntegration({
       // One span per hashed /_app/immutable/*.js chunk made a full pageload
@@ -69,7 +75,7 @@ Sentry.init({
           ? scrubBrowserEvent(event)
           : event,
       // Release-health sessions are not events either: the SDK copies
-      // navigator.userAgent into every one, whatever sendDefaultPii says.
+      // navigator.userAgent into every one, whatever dataCollection says.
       setup: (client) => {
         client.on('beforeSendSession', (session) => {
           if ('userAgent' in session) session.userAgent = undefined;
@@ -79,7 +85,7 @@ Sentry.init({
   ],
   beforeSend: scrubBrowserEvent,
   beforeSendTransaction: scrubBrowserEvent,
-  beforeSendSpan: scrubSpan,
+  beforeSendSpan: Sentry.withStaticSpan(scrubSpan),
   beforeBreadcrumb: filterIncomingBreadcrumb
 });
 
