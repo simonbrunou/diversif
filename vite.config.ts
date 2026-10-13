@@ -5,7 +5,7 @@ import { paraglideCompilerOptions } from './paraglide.config.ts';
 import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import { sentrySvelteKit } from '@sentry/sveltekit';
+import { sentrySvelteKit } from '@sentry/sveltekit/vite';
 import { createSentryBuildPluginManager } from '@sentry/bundler-plugins/core';
 import { defineConfig, type Plugin } from 'vite';
 

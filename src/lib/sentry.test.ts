@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+  DATA_COLLECTION,
   scrubEvent,
   scrubBrowserEvent,
   scrubErrorMessage,
@@ -13,6 +14,23 @@ import {
   isNetworkFailure,
   clientRouteTag
 } from './sentry';
+
+describe('DATA_COLLECTION', () => {
+  // SDK v11's defaults collect user info, cookies and HTTP/DB payloads; it
+  // also silently ignores the removed sendDefaultPii. Every category the
+  // migration guide lists as on by default must be switched off here.
+  it('opts out of every category v11 collects by default', () => {
+    expect(DATA_COLLECTION).toMatchObject({
+      userInfo: false,
+      cookies: false,
+      httpBodies: [],
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      queues: false,
+      graphQL: { document: false, variables: false }
+    });
+  });
+});
 
 describe('scrubPathname', () => {
   it('returns the route pattern verbatim when given one', () => {

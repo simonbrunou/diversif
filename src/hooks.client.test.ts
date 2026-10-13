@@ -9,6 +9,7 @@ const captureExceptionMock = mock();
 mock.module('@sentry/sveltekit', () => ({
   init: mock(),
   browserTracingIntegration: mock(() => ({})),
+  withStaticSpan: <T>(callback: T) => callback,
   captureException: captureExceptionMock
 }));
 mock.module('$app/env/public', () => ({
