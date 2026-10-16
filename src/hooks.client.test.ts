@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import type { init } from '@sentry/sveltekit';
 import * as m from '#lib/paraglide/messages.js';
 
 const captureExceptionMock = mock();
+const initMock = mock();
 
 // hooks.client.ts calls Sentry.init at import, so the stand-ins must be
 // registered before it loads; a static import would be hoisted above
 // mock.module, hence the dynamic import below. No DSN: Replay stays off.
 mock.module('@sentry/sveltekit', () => ({
-  init: mock(),
+  init: initMock,
   browserTracingIntegration: mock(() => ({})),
   withStaticSpan: <T>(callback: T) => callback,
   captureException: captureExceptionMock
@@ -76,6 +78,41 @@ describe('client handleError', () => {
       errorId: result.errorId,
       status: 500,
       route: '/child/[id]/guide'
+    });
+  });
+});
+
+describe('client beforeSend', () => {
+  const options = initMock.mock.calls[0]?.[0] as Parameters<typeof init>[0] | undefined;
+
+  // The SDK's global onunhandledrejection handler passes the rejection reason
+  // as originalException (DIVERSIF-D).
+  function rejected(reason: TypeError) {
+    return options?.beforeSend?.(
+      { exception: { values: [{ type: reason.name, value: reason.message }] } },
+      { originalException: reason }
+    );
+  }
+
+  it('is passed to Sentry.init', () => {
+    expect(options?.beforeSend).toBeFunction();
+  });
+
+  it('drops a network failure that never went through handleError', () => {
+    expect(
+      rejected(
+        new TypeError(
+          'Failed to fetch dynamically imported module: https://diversif.app/_app/immutable/nodes/0.uSiPSxcP.js'
+        )
+      )
+    ).toBeNull();
+  });
+
+  it('still sends any other unhandled error, scrubbed', () => {
+    expect(rejected(new TypeError("Cannot read properties of undefined (reading '0')"))).toEqual({
+      exception: {
+        values: [{ type: 'TypeError', value: "Cannot read properties of undefined (reading '…')" }]
+      }
     });
   });
 });

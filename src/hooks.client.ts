@@ -83,7 +83,17 @@ Sentry.init({
       }
     }
   ],
-  beforeSend: scrubBrowserEvent,
+  // Network failures are not reported (see handleError below), but some never
+  // reach handleError. SvelteKit 3 imports the root layout and root error
+  // chunks (nodes 0 and 1) before hydrating, outside its try/catch, and the
+  // inline bootstrap never catches kit.start(), so a failed load reaches the
+  // SDK's global onunhandledrejection handler instead (DIVERSIF-D). The SDK's
+  // universal-load wrapper also reports load errors before handleError sees
+  // them, and SvelteKit leaves code-only preloads (`void _preload_code`)
+  // uncaught, should the app ever enable them. Not `ignoreErrors`: it matches
+  // the message alone, while isNetworkFailure also requires the TypeError.
+  beforeSend: (event, hint) =>
+    isNetworkFailure(hint.originalException) ? null : scrubBrowserEvent(event),
   beforeSendTransaction: scrubBrowserEvent,
   beforeSendSpan: Sentry.withStaticSpan(scrubSpan),
   beforeBreadcrumb: filterIncomingBreadcrumb
