@@ -10,6 +10,7 @@
   import { deLocalizeHref } from '#lib/paraglide/runtime.js';
   import * as m from '#lib/paraglide/messages.js';
   import { applyTheme, getStoredTheme } from '#lib/utils/theme.js';
+  import { markHydrated } from '#lib/boot-recovery.js';
   import PublicHeader from '#lib/components/PublicHeader.svelte';
   import PublicFooter from '#lib/components/PublicFooter.svelte';
   import AppShellBento from '#lib/components/AppShellBento.svelte';
@@ -103,10 +104,11 @@
     // Deterministic hydration signal: SSR'd inputs can lose values typed
     // before the client render claims them, which made e2e form fills (and
     // real users on slow connections) race hydration. Tests gate their
-    // first interaction on this attribute instead of retry loops; it costs
-    // nothing in production and survives client-side navigations (the root
+    // first interaction on this attribute instead of retry loops. Boot
+    // recovery reads it too: a network failure before it is set means the
+    // app could not start. It survives client-side navigations (the root
     // layout never unmounts).
-    document.documentElement.dataset.hydrated = 'true';
+    markHydrated();
 
     // Sync the theme cookie with the localStorage choice once per load:
     // users who picked dark/light before the cookie existed would otherwise

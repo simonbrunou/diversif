@@ -12,12 +12,13 @@ import {
   DATA_COLLECTION,
   clientRouteTag,
   filterIncomingBreadcrumb,
-  isNetworkFailure,
   parseSampleRate,
   scrubBrowserEvent,
   scrubSpan
 } from '#lib/sentry.js';
+import { isNetworkFailure } from '#lib/network-failure.js';
 import { loadReplay } from '#lib/sentry-replay-loader.js';
+import { recoverFromFailedBoot } from '#lib/boot-recovery.js';
 import * as m from '#lib/paraglide/messages.js';
 
 // No paraglide bootstrap is needed here since the 2.x migration: the
@@ -102,6 +103,11 @@ Sentry.init({
 // Replay is code-split and starts right after init (see loadReplay) — not at
 // all when browser capture is disabled.
 if (PUBLIC_SENTRY_DSN) void loadReplay();
+
+// This module runs before kit.start(), so the listener is in place when the
+// root chunks load; a network failure before hydration means the app could
+// not start (see boot-recovery.ts).
+window.addEventListener('unhandledrejection', (event) => recoverFromFailedBoot(event.reason));
 
 // Tags omit `method` (which the server hook records): SvelteKit's
 // `NavigationEvent` has no `request` property in the browser, and there is no

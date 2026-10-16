@@ -4,6 +4,7 @@ import * as m from '#lib/paraglide/messages.js';
 
 const captureExceptionMock = mock();
 const initMock = mock();
+const recoverFromFailedBootMock = mock();
 
 // hooks.client.ts calls Sentry.init at import, so the stand-ins must be
 // registered before it loads; a static import would be hoisted above
@@ -21,6 +22,7 @@ mock.module('$app/env/public', () => ({
   PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE: '',
   PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE: ''
 }));
+mock.module('#lib/boot-recovery.js', () => ({ recoverFromFailedBoot: recoverFromFailedBootMock }));
 
 const { handleError } = await import('./hooks.client');
 
@@ -114,5 +116,21 @@ describe('client beforeSend', () => {
         values: [{ type: 'TypeError', value: "Cannot read properties of undefined (reading '…')" }]
       }
     });
+  });
+});
+
+describe('client unhandledrejection listener', () => {
+  it('hands every rejection reason to boot recovery, which picks the network failures', () => {
+    const reasons = [
+      new TypeError('Failed to fetch dynamically imported module: …/nodes/0.x.js'),
+      new RangeError('Invalid time value'),
+      'not even an Error'
+    ];
+
+    for (const reason of reasons) {
+      window.dispatchEvent(Object.assign(new Event('unhandledrejection'), { reason }));
+    }
+
+    expect(recoverFromFailedBootMock.mock.calls).toEqual(reasons.map((reason) => [reason]));
   });
 });
