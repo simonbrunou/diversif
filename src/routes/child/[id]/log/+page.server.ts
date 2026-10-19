@@ -107,7 +107,8 @@ class LogActionAbort extends Error {
 type LogTx = NonNullable<Parameters<typeof resolveOrInsertFood>[1]>;
 
 // Categories covered for a child, excluding the `autre` bucket so this count
-// shares a denominator with the dashboard's totalCategories (CATEGORIES.length - 1).
+// shares a denominator with the dashboard's TOTAL_CATEGORIES (CATEGORIES.length - 1,
+// in routes/child/[id]/+page.svelte).
 function countCategoriesCovered(tx: LogTx, childId: number): number {
   return (
     tx

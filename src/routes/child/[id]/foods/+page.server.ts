@@ -4,6 +4,7 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { requireChildContext } from '#lib/server/guards.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { parisDayIndex } from '#lib/utils/paris-date.js';
+import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import { loadRepeatCandidates, loadTexturesTried } from '#lib/server/guidance/queries/index.js';
 import { loadAllergenStatus } from '#lib/server/guidance/allergen-status.js';
 import type { TextureKey } from '#lib/utils/textures.js';
@@ -87,13 +88,12 @@ function buildFoodFilters(childId: number, category: string, reaction: string) {
 // reflect the most recent entry within the filter, not the absolute latest.
 function aggregateBentoFoods(rows: BentoSourceRow[]): BentoFood[] {
   const foodMap = new Map<number, BentoFood>();
-  const severity = { ras: 0, inconfort: 1, reaction: 2 } as const;
   for (const r of rows) {
     const reaction = r.reaction;
     const existing = foodMap.get(r.foodId);
     if (existing) {
       existing.tried += 1;
-      if (severity[reaction] > severity[existing.status]) existing.status = reaction;
+      if (REACTION_RANK[reaction] > REACTION_RANK[existing.status]) existing.status = reaction;
     } else {
       foodMap.set(r.foodId, {
         id: r.foodId,
@@ -126,10 +126,10 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const conditions = buildFoodFilters(childId, category, reaction);
 
   if (repeat) {
-    // Foods given <= 2 times whose worst reaction is RAS or Inconfort. Shares
-    // the threshold constants (and SQL form) with loadDiversityMetrics and the
-    // dashboard "Reproposez" cards (which go through findRepeatCandidates in
-    // reminders.ts rule 6) — see src/lib/server/guidance/repeat-candidates.
+    // Foods given <= 2 times whose worst reaction is RAS (Inconfort excluded). Shares
+    // the worst-rank threshold with the dashboard "Reproposez" cards
+    // (findRepeatCandidates in reminders.ts ruleRepeatExposure, which also
+    // narrows the count to 1) — see src/lib/server/guidance/repeat-candidates.
     // Pass `null` so the carnet filter returns every candidate, not the
     // oldest N (loadRepeatCandidates orders by last_at ASC before LIMIT).
     const candidates = await loadRepeatCandidates(childId, null);

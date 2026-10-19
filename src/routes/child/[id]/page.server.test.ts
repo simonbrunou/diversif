@@ -330,45 +330,43 @@ describe('child/[id] +page.server load', () => {
     expect(out.recent[0].loggedByName).toBe('Compte supprimé');
   });
 
-  it('marks reactions in the allergen summary', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    const allergen = (
-      await testDb
-        .insert(foods)
-        .values({
-          name: 'Œuf',
-          category: 'oeufs',
-          isMajorAllergen: true,
-          allergenType: 'oeuf',
-          suggestedAgeMonths: 6,
+  it('counts in weekCount only the foods first logged in the last 7 days', async () => {
+    const { u, c, m, food: carrot } = await setup();
+    const sibling = await seedChild({ createdBy: u.id, name: 'Aîné' });
+    const [apple, pear] = await testDb
+      .insert(foods)
+      .values(
+        ['Pomme', 'Poire'].map((name) => ({
+          name,
+          category: 'fruits',
+          isMajorAllergen: false,
+          allergenType: null,
+          suggestedAgeMonths: 4,
           notes: null,
           isCustom: false,
           customForChildId: null
-        })
-        .returning()
-    )[0];
-    // Two entries: ras then inconfort : worst should be inconfort.
+        }))
+      )
+      .returning();
+    const entry = (foodId: number, daysAgo: number, childId = c.id) => ({
+      childId,
+      foodId,
+      givenAt: new Date(Date.now() - daysAgo * 86400_000),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: u.id,
+      createdAt: new Date()
+    });
     await testDb.insert(foodEntries).values([
-      {
-        childId: c.id,
-        foodId: allergen.id,
-        givenAt: new Date(Date.now() - 86400_000),
-        reaction: 'ras',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      },
-      {
-        childId: c.id,
-        foodId: allergen.id,
-        givenAt: new Date(),
-        reaction: 'inconfort',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      }
+      // Carotte was first logged 10 days ago, so today's repeat is not new.
+      entry(carrot.id, 10),
+      entry(carrot.id, 0),
+      // Pomme is new this week: three logs still count once.
+      entry(apple.id, 2),
+      entry(apple.id, 1),
+      entry(apple.id, 0),
+      // Another child's food counts in neither total.
+      entry(pear.id, 0, sibling.id)
     ]);
     const out = await load(
       makeRouteEvent({
@@ -385,69 +383,12 @@ describe('child/[id] +page.server load', () => {
         })
       }) as unknown as Parameters<typeof load>[0]
     );
-    expect(out.stats.allergens.introduced).toBe(1);
-    expect(out.stats.allergens.inconfort).toBe(1);
-  });
-
-  it('upgrades worst-allergen reaction when reaction > inconfort encountered', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    const allergen = (
-      await testDb
-        .insert(foods)
-        .values({
-          name: 'Arachide',
-          category: 'allergenes',
-          isMajorAllergen: true,
-          allergenType: 'arachide',
-          suggestedAgeMonths: 6,
-          notes: null,
-          isCustom: false,
-          customForChildId: null
-        })
-        .returning()
-    )[0];
-    await testDb.insert(foodEntries).values([
-      {
-        childId: c.id,
-        foodId: allergen.id,
-        givenAt: new Date(Date.now() - 86400_000),
-        reaction: 'inconfort',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      },
-      {
-        childId: c.id,
-        foodId: allergen.id,
-        givenAt: new Date(),
-        reaction: 'reaction',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      }
-    ]);
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
-    );
-    expect(out.stats.allergens.reaction).toBe(1);
+    expect(out.stats.foodsIntroduced).toBe(2);
+    expect(out.stats.weekCount).toBe(1);
   });
 
   it('does not surface a maintain-allergen reminder for a lait exposure that is only an allergenic fat, but does for a dairy exposure (#373)', async () => {
-    // loadAllergenRows' SQL predicate (allergen-status.ts:66) is the only
+    // loadAllergenRows' WHERE (its matieres_grasses / non-RAS clause) is the only
     // place left that excludes a matieres_grasses+ras row from counting as
     // an allergen exposure : reminders.ts now trusts allergenRows verbatim
     // (see reminders.ts summarizePriorityAllergens). If that predicate ever
@@ -500,15 +441,21 @@ describe('child/[id] +page.server load', () => {
       );
     }
 
+    // The pending-allergen nudge reads the introduced-allergen set: a fat
+    // log must leave lait "to introduce", a dairy log must clear it.
     const fatOut = await loadWithLaitEntry('matieres_grasses', 'Beurre');
     expect(
       fatOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
     ).toBeUndefined();
+    // Lait is 3rd in PRIORITY_INTRODUCTION_ALLERGENS and rulePendingAllergens
+    // shows the first 3 missing ones, so it is listed whenever not introduced.
+    expect(fatOut.reminders.some((r) => r.key === 'pending-allergen:lait')).toBe(true);
 
     const dairyOut = await loadWithLaitEntry('produits_laitiers', 'Fromage');
     expect(
       dairyOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
     ).toBeDefined();
+    expect(dairyOut.reminders.some((r) => r.key === 'pending-allergen:lait')).toBe(false);
   });
 
   it('surfaces an observation-window reminder with cta href when a non-RAS entry exists within 48 h', async () => {

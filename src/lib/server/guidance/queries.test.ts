@@ -4,11 +4,10 @@ import { testDb, resetTestDb } from '../../../test/db';
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import {
-  loadDiversityMetrics,
+  loadTexturesTried,
   loadRepeatCandidates,
   loadDismissals,
   loadStreak,
-  loadWeeklyRecap,
   loadCoparentActivity,
   dismissReminder
 } from './queries';
@@ -43,15 +42,15 @@ async function seedUserAndChild() {
   return { user, child };
 }
 
-async function seedFood(opts: { name: string; category: string; allergen?: string | null }) {
+async function seedFood(opts: { name: string; category: string }) {
   return (
     await testDb
       .insert(foods)
       .values({
         name: opts.name,
         category: opts.category,
-        isMajorAllergen: opts.allergen != null,
-        allergenType: opts.allergen ?? null,
+        isMajorAllergen: false,
+        allergenType: null,
         suggestedAgeMonths: 6,
         notes: null,
         isCustom: false,
@@ -88,115 +87,7 @@ beforeEach(async () => {
   await resetTestDb();
 });
 
-describe('loadDiversityMetrics', () => {
-  it('counts distinct categories ignoring "autre"', async () => {
-    const { user, child } = await seedUserAndChild();
-    const veg = await seedFood({ name: 'Carotte', category: 'legumes' });
-    const fruit = await seedFood({ name: 'Pomme', category: 'fruits' });
-    const autre = await seedFood({ name: 'Autre', category: 'autre' });
-    const now = Date.now();
-    await logEntry({
-      childId: child.id,
-      foodId: veg.id,
-      userId: user.id,
-      givenAt: new Date(now - 1000),
-      reaction: 'ras'
-    });
-    await logEntry({
-      childId: child.id,
-      foodId: fruit.id,
-      userId: user.id,
-      givenAt: new Date(now - 2000),
-      reaction: 'ras'
-    });
-    await logEntry({
-      childId: child.id,
-      foodId: autre.id,
-      userId: user.id,
-      givenAt: new Date(now - 3000),
-      reaction: 'ras'
-    });
-
-    const m = await loadDiversityMetrics(child.id, 11);
-    expect(m.categoriesCovered).toBe(2);
-    expect(m.totalCategories).toBe(11);
-    expect(m.lastNewFoodAt).not.toBeNull();
-    expect(m.repeatExposureCount).toBe(3);
-  });
-
-  it('returns zeros when no entries', async () => {
-    const { child } = await seedUserAndChild();
-    const m = await loadDiversityMetrics(child.id, 11);
-    expect(m.categoriesCovered).toBe(0);
-    expect(m.lastNewFoodAt).toBeNull();
-    expect(m.repeatExposureCount).toBe(0);
-  });
-
-  it('returns lastNewFoodAt as the most-recent first-introduction across foods', async () => {
-    const { user, child } = await seedUserAndChild();
-    const carrot = await seedFood({ name: 'Carotte', category: 'legumes' });
-    const apple = await seedFood({ name: 'Pomme', category: 'fruits' });
-    // Carrot first-introduced earlier; apple first-introduced later, then re-logged
-    // even later (later re-log must NOT pull lastNewFoodAt forward : only first
-    // introductions count).
-    const carrotFirst = new Date('2024-05-01T10:00:00Z');
-    const appleFirst = new Date('2024-05-10T10:00:00Z');
-    const appleAgain = new Date('2024-05-20T10:00:00Z');
-    await logEntry({
-      childId: child.id,
-      foodId: carrot.id,
-      userId: user.id,
-      givenAt: carrotFirst,
-      reaction: 'ras'
-    });
-    await logEntry({
-      childId: child.id,
-      foodId: apple.id,
-      userId: user.id,
-      givenAt: appleFirst,
-      reaction: 'ras'
-    });
-    await logEntry({
-      childId: child.id,
-      foodId: apple.id,
-      userId: user.id,
-      givenAt: appleAgain,
-      reaction: 'ras'
-    });
-
-    const m = await loadDiversityMetrics(child.id, 11);
-    expect(m.lastNewFoodAt).toBe(appleFirst.getTime());
-  });
-
-  it('excludes foods given >= 3 times from repeat exposure', async () => {
-    const { user, child } = await seedUserAndChild();
-    const food = await seedFood({ name: 'Carotte', category: 'legumes' });
-    const now = Date.now();
-    for (let i = 0; i < 3; i++) {
-      await logEntry({
-        childId: child.id,
-        foodId: food.id,
-        userId: user.id,
-        givenAt: new Date(now - i * 1000),
-        reaction: 'ras'
-      });
-    }
-    expect((await loadDiversityMetrics(child.id, 11)).repeatExposureCount).toBe(0);
-  });
-
-  it('excludes foods whose worst reaction is "reaction"', async () => {
-    const { user, child } = await seedUserAndChild();
-    const food = await seedFood({ name: 'Carotte', category: 'legumes' });
-    await logEntry({
-      childId: child.id,
-      foodId: food.id,
-      userId: user.id,
-      givenAt: new Date(),
-      reaction: 'reaction'
-    });
-    expect((await loadDiversityMetrics(child.id, 11)).repeatExposureCount).toBe(0);
-  });
-
+describe('loadTexturesTried', () => {
   it('counts distinct non-null textures and ignores null texture entries', async () => {
     const { user, child } = await seedUserAndChild();
     const food = await seedFood({ name: 'Carotte', category: 'legumes' });
@@ -244,13 +135,12 @@ describe('loadDiversityMetrics', () => {
       createdAt: new Date(),
       texture: null
     });
-    const m = await loadDiversityMetrics(child.id, 11);
-    expect(m.texturesTried).toBe(2);
+    expect(await loadTexturesTried(child.id)).toBe(2);
   });
 
-  it('returns texturesTried = 0 when no entries exist', async () => {
+  it('returns 0 when no entries exist', async () => {
     const { child } = await seedUserAndChild();
-    expect((await loadDiversityMetrics(child.id, 11)).texturesTried).toBe(0);
+    expect(await loadTexturesTried(child.id)).toBe(0);
   });
 });
 
@@ -290,8 +180,19 @@ describe('loadRepeatCandidates', () => {
   });
 
   it('uses default limit of 5', async () => {
-    const { child } = await seedUserAndChild();
-    expect(await loadRepeatCandidates(child.id)).toEqual([]);
+    const { user, child } = await seedUserAndChild();
+    const now = Date.now();
+    for (let i = 0; i < 6; i++) {
+      const food = await seedFood({ name: `F${i}`, category: 'legumes' });
+      await logEntry({
+        childId: child.id,
+        foodId: food.id,
+        userId: user.id,
+        givenAt: new Date(now - (i + 1) * DAY_MS),
+        reaction: 'ras'
+      });
+    }
+    expect(await loadRepeatCandidates(child.id)).toHaveLength(5);
   });
 
   it('returns every candidate when limit is null (carnet ?repeat=1 case)', async () => {
@@ -309,6 +210,59 @@ describe('loadRepeatCandidates', () => {
     }
     const out = await loadRepeatCandidates(child.id, null);
     expect(out.length).toBe(7);
+  });
+
+  it('keeps foods given twice and excludes foods given 3 times', async () => {
+    const { user, child } = await seedUserAndChild();
+    const carrot = await seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = await seedFood({ name: 'Pomme', category: 'fruits' });
+    const now = Date.now();
+    for (const [food, times] of [
+      [carrot, 3],
+      [apple, 2]
+    ] as const) {
+      for (let i = 0; i < times; i++) {
+        await logEntry({
+          childId: child.id,
+          foodId: food.id,
+          userId: user.id,
+          givenAt: new Date(now - (i + 1) * DAY_MS),
+          reaction: 'ras'
+        });
+      }
+    }
+    const out = await loadRepeatCandidates(child.id);
+    expect(out.map((c) => c.foodName)).toEqual(['Pomme']);
+  });
+
+  it('excludes a food with an earlier "reaction" log, even when its latest log is RAS', async () => {
+    const { user, child } = await seedUserAndChild();
+    const carrot = await seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = await seedFood({ name: 'Pomme', category: 'fruits' });
+    const now = Date.now();
+    await logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: new Date(now - 2 * DAY_MS),
+      reaction: 'reaction'
+    });
+    await logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: new Date(now - DAY_MS),
+      reaction: 'ras'
+    });
+    await logEntry({
+      childId: child.id,
+      foodId: apple.id,
+      userId: user.id,
+      givenAt: new Date(now - DAY_MS),
+      reaction: 'ras'
+    });
+    const out = await loadRepeatCandidates(child.id);
+    expect(out.map((c) => c.foodName)).toEqual(['Pomme']);
   });
 });
 
@@ -511,64 +465,6 @@ describe('loadStreak', () => {
       current: 2,
       record: 4
     });
-  });
-});
-
-describe('loadWeeklyRecap', () => {
-  it('returns zeros when there are no entries', async () => {
-    const { child } = await seedUserAndChild();
-    const recap = await loadWeeklyRecap(child.id, new Date('2024-06-10T12:00:00Z'));
-    expect(recap).toEqual({ entries: 0, newFoods: 0, newAllergens: 0 });
-  });
-
-  it('counts entries, distinct first-introductions, and distinct first allergens within the window', async () => {
-    const { user, child } = await seedUserAndChild();
-    const carrot = await seedFood({ name: 'Carotte', category: 'legumes' });
-    const apple = await seedFood({ name: 'Pomme', category: 'fruits' });
-    const peanut = await seedFood({
-      name: 'Beurre cacahuète',
-      category: 'allergenes',
-      allergen: 'arachide'
-    });
-    const now = new Date('2024-06-10T12:00:00Z');
-    const within = new Date('2024-06-08T10:00:00Z'); // 2d ago
-    const outside = new Date('2024-05-15T10:00:00Z'); // ~26d ago
-    // Carrot first introduced outside the window, then re-logged within → not new this week.
-    await logEntry({
-      childId: child.id,
-      foodId: carrot.id,
-      userId: user.id,
-      givenAt: outside,
-      reaction: 'ras'
-    });
-    await logEntry({
-      childId: child.id,
-      foodId: carrot.id,
-      userId: user.id,
-      givenAt: within,
-      reaction: 'ras'
-    });
-    // Apple first introduced within the window → counts as new.
-    await logEntry({
-      childId: child.id,
-      foodId: apple.id,
-      userId: user.id,
-      givenAt: within,
-      reaction: 'ras'
-    });
-    // Peanut introduced within the window → counts as new + new allergen.
-    await logEntry({
-      childId: child.id,
-      foodId: peanut.id,
-      userId: user.id,
-      givenAt: within,
-      reaction: 'ras'
-    });
-
-    const recap = await loadWeeklyRecap(child.id, now);
-    expect(recap.entries).toBe(3); // 2 within + 1 within (the outside one excluded)
-    expect(recap.newFoods).toBe(2); // apple + peanut
-    expect(recap.newAllergens).toBe(1); // arachide
   });
 });
 

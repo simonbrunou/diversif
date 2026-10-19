@@ -46,9 +46,10 @@ function formatDDMMYY(d: Date): string {
   return `${dd}/${mm}/${yy}`;
 }
 
-// Raw allergen-tagged join, factored out so callers that also need the worst-
-// reaction summary (the dashboard) can fetch it once and reuse the rows for
-// both, instead of running this same join+where twice per request.
+// Raw allergen-tagged join, factored out so the dashboard can fetch it once
+// and reuse the rows for the allergen tile (summarizeAllergenRows), the
+// introduced-allergen set and the maintain-allergen exposures, instead of
+// running this same join+where once per consumer.
 export async function loadAllergenRows(childId: number): Promise<AllergenRow[]> {
   return db
     .select({

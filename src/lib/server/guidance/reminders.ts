@@ -199,11 +199,11 @@ function rulePendingAllergens({ input, childPath }: RuleContext): Reminder[] {
 }
 
 // 5. Repeat exposure: food given exactly 1× with reaction ras,
-// > 3 days ago, and not a priority allergen (rule 9 owns those). Stricter
-// than the broad "1-2× & worst<=1" predicate used by the carnet's repeat
-// filter and loadDiversityMetrics; both share findRepeatCandidates as the
-// canonical predicate engine, with reminders narrowing it further via the
-// maxCount=1 + minDaysSinceLastGiven + excludeAllergens options.
+// > 3 days ago, and not a priority allergen (rule 8, ruleMaintainAllergens,
+// owns those). Calls findRepeatCandidates with its default worst-rank
+// threshold (RAS only) but overrides maxCount to 1 and adds the
+// minDaysSinceLastGiven + excludeAllergens filters, so it is stricter than
+// the carnet's repeat filter (1-2×, RAS only, via loadRepeatCandidates).
 function ruleRepeatExposure({ input, now, childPath }: RuleContext): Reminder[] {
   const repeatCandidates = findRepeatCandidates(input.entries, {
     maxCount: 1,

@@ -356,8 +356,9 @@ describe('computeReminders', () => {
     });
 
     it('fires when 7 days have elapsed', () => {
-      // Use isolated() default (ALL_ALLERGENS) so rule 4 / rule 6 noise does not
-      // crowd out the info-severity maintain card under the 4-card cap.
+      // Use isolated() default (ALL_ALLERGENS) so pending-allergen /
+      // repeat-exposure noise does not crowd out the info-severity maintain
+      // card under the 4-card cap.
       const out = computeReminders(
         isolated({
           entries: [allergenEntry('oeuf', 7)]

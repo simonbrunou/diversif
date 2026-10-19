@@ -187,14 +187,14 @@ describe('child/[id]/foods load', () => {
     expect(out.filters.repeat).toBe(true);
   });
 
-  it('repeat=1 includes only foods given <=2 times with worst <= inconfort', async () => {
+  it('repeat=1 includes only foods given <=2 times, every time RAS', async () => {
     const ctx = await setup();
     await ctx.log(ctx.carrot.id, 'ras', 1);
     await ctx.log(ctx.apple.id, 'ras', 1);
     await ctx.log(ctx.apple.id, 'ras', 2);
     await ctx.log(ctx.apple.id, 'ras', 3);
     const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
-    expect(out.entries.every((e) => e.foodName === 'Carotte')).toBe(true);
+    expect(out.entries.map((e) => e.foodName)).toEqual(['Carotte']);
   });
 
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
