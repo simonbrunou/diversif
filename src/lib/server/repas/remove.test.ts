@@ -74,7 +74,7 @@ describe('removeIngredient', () => {
     expect(entryRows(child.id)).toHaveLength(3);
   });
 
-  it('never removes another child’s entry posted as removeId', async () => {
+  it('deletes nothing when removeId is another child’s entry', async () => {
     const { ctx, ids, user, carotte } = await meal(2);
     const sibling = await siblingOf(ctx, user.id);
     const [theirs] = logged(sibling, carotte.id);
