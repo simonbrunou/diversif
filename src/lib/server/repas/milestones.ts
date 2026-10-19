@@ -8,8 +8,9 @@ import {
 import type { Milestones } from '#lib/utils/milestones.js';
 import type { Tx } from './core';
 
-// Milestone measurement for a new repas: a snapshot before the insert, the
-// same counts after it, and the difference as typed Milestones. The URL
+// Milestone measurement for a new repas: a snapshot before the insert (counts
+// and the allergen history), the same reads after it, and the difference as
+// typed Milestones. The URL
 // encoding lives with its decoder in src/lib/utils/milestones.ts.
 
 // An aggregate query always returns one row; the fallback only satisfies the type.

@@ -428,6 +428,14 @@ describe('logRepas: milestones', () => {
     expect((await logOne(ctx, arachide.id)).firstAllergen).toBeNull();
   });
 
+  // Butter never introduces lait, but symptoms on it still block lait.
+  it('does not celebrate lait after symptoms on butter, even on a fine dairy log', async () => {
+    const { ctx } = await seedRepasChild();
+    await logOne(ctx, (await allergenAliment('lait', 'matieres_grasses')).id, 'inconfort');
+    const yaourt = await allergenAliment('lait', 'produits_laitiers');
+    expect((await logOne(ctx, yaourt.id)).firstAllergen).toBeNull();
+  });
+
   it('does not count an allergenic fat as an allergen exposure', async () => {
     const { ctx } = await seedRepasChild();
     const beurre = await allergenAliment('lait', 'matieres_grasses');
