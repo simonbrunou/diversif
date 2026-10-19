@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import { computeReminders, type ReminderInput } from './reminders';
+import {
+  SEVERITY_BY_KEY_FAMILY,
+  TTL_BY_SEVERITY,
+  keyFamily,
+  ttlForReminderKey
+} from './dismissal-ttl';
 import type { EnrichedEntry } from './queries';
 import { ALLERGENS, type AllergenId } from '#lib/utils/allergens.js';
 
@@ -524,4 +530,60 @@ describe('computeReminders', () => {
       expect(card?.body).toContain('50 jours');
     });
   });
+});
+
+describe('dismissal TTL', () => {
+  // Small inputs, so the 4-card cap never hides a family. Each fixture names
+  // the families it must produce; the test fails if it stops producing one.
+  const fixtures: Array<{ families: string[]; input: ReminderInput }> = [
+    { families: ['welcome'], input: input({ childCreatedAt: NOW - 2 * DAY }) },
+    { families: ['stage-transition'], input: input({ ageMonths: 6 }) },
+    {
+      families: ['stale-diversity', 'repeat-exposure'],
+      input: isolated({ entries: [entry({ givenAt: NOW - 20 * DAY })] })
+    },
+    { families: ['pending-allergen'], input: input({ ageMonths: 5, entries: [entry()] }) },
+    {
+      families: ['category-imbalance'],
+      input: isolated({
+        entries: [
+          ...Array.from({ length: 5 }, (_, i) => entry({ id: i, givenAt: NOW - i * DAY })),
+          entry({ id: 6, category: 'fruits', givenAt: NOW - 6 * DAY })
+        ]
+      })
+    },
+    {
+      families: ['forbidden-reminder'],
+      input: input({ entries: [entry({ foodName: 'Miel de lavande' })] })
+    },
+    {
+      families: ['maintain-allergen'],
+      input: isolated({ entries: [entry({ allergenType: 'oeuf', givenAt: NOW - 7 * DAY })] })
+    }
+  ];
+
+  // welcome-dialog is pinned in queries.test.ts, observation-window in
+  // routes/child/[id]/page.server.test.ts.
+  const builtOutsideComputeReminders = new Set(['welcome-dialog', 'observation-window']);
+
+  it('has a fixture for every family computeReminders builds', () => {
+    expect(fixtures.flatMap((f) => f.families).sort()).toEqual(
+      [...SEVERITY_BY_KEY_FAMILY.keys()].filter((f) => !builtOutsideComputeReminders.has(f)).sort()
+    );
+  });
+
+  for (const fixture of fixtures) {
+    it(`gives ${fixture.families.join(' and ')} the TTL of its severity`, () => {
+      const reminders = computeReminders(fixture.input);
+      expect(reminders.map((r) => keyFamily(r.key))).toEqual(
+        expect.arrayContaining(fixture.families)
+      );
+      for (const r of reminders) {
+        expect({ key: r.key, ttl: ttlForReminderKey(r.key) }).toEqual({
+          key: r.key,
+          ttl: TTL_BY_SEVERITY[r.severity]
+        });
+      }
+    });
+  }
 });

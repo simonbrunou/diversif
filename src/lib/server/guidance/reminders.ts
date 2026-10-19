@@ -22,7 +22,7 @@ import type { EnrichedEntry } from './queries';
 import type { ReactionId } from '#lib/utils/reactions.js';
 import { findRepeatCandidates } from './repeat-candidates';
 
-type Severity = 'info' | 'warn' | 'important';
+export type Severity = 'info' | 'warn' | 'important';
 
 export type Reminder = {
   key: string;
