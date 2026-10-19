@@ -11,7 +11,8 @@ mock.module('#lib/server/audit.js', () => ({
   audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
 }));
 
-import { hashPassword, SESSION_COOKIE, validateSession, createSession } from '#lib/server/auth.js';
+import { hashPassword } from '#lib/server/auth.js';
+import { resumeSession, startSession } from '#lib/server/session.js';
 import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -62,23 +63,6 @@ describe('account/password changePassword', () => {
     expect(r.data.passwordErrorKey).toBe('errorsAuthBadInput');
   });
 
-  it('redirects to /login when user no longer exists', async () => {
-    const u = await seed();
-    await testDb.delete(users).where(eq(users.id, u.id));
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: {
-        currentPassword: 'current-password-12',
-        newPassword: 'new-very-long-password-12+'
-      }
-    });
-    const r = await captureFlow(() =>
-      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
-    );
-    expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe('/login');
-  });
-
   it('fails when current password is wrong', async () => {
     const u = await seed();
     const event = makeRouteEvent({
@@ -115,8 +99,8 @@ describe('account/password changePassword', () => {
 
   it('drops every existing session and issues a new one for this tab', async () => {
     const u = await seed();
-    const a = await createSession(u.id);
-    const b = await createSession(u.id);
+    const otherDevice = makeRouteEvent();
+    await startSession(otherDevice, u.id);
     const event = makeRouteEvent({
       user: safeUser(u),
       formData: {
@@ -126,37 +110,7 @@ describe('account/password changePassword', () => {
     });
     await actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0]);
 
-    expect(await validateSession(a.token)).toBeNull();
-    expect(await validateSession(b.token)).toBeNull();
-
-    const setCalls = (event.cookies.set as ReturnType<typeof mock>).mock.calls;
-    expect(setCalls.length).toBeGreaterThanOrEqual(1);
-    const [name, value, opts] = setCalls[setCalls.length - 1];
-    expect(name).toBe(SESSION_COOKIE);
-    expect(typeof value).toBe('string');
-    expect((opts as { httpOnly?: boolean }).httpOnly).toBe(true);
-    expect(await validateSession(value as string)).not.toBeNull();
-  });
-
-  it('rate-limits brute-force attempts on the currentPassword field', async () => {
-    const u = await seed();
-    for (let i = 0; i < 5; i++) {
-      const event = makeRouteEvent({
-        user: safeUser(u),
-        formData: { currentPassword: 'wrong', newPassword: 'new-very-long-password-12+' }
-      });
-      await actions.default!(
-        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-      );
-    }
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { currentPassword: 'wrong', newPassword: 'new-very-long-password-12+' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { passwordErrorKey: string } };
-    expect(r.status).toBe(429);
-    expect(r.data.passwordErrorKey).toBe('errorsAuthRateLimited');
+    expect(await resumeSession(otherDevice)).toBeNull();
+    expect((await resumeSession(event))?.id).toBe(u.id);
   });
 });

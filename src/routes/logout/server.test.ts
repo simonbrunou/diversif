@@ -1,55 +1,46 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
-import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
+import { captureFlow, copyCookies, makeRouteEvent, safeUser, seedUser } from '../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { createSession, SESSION_COOKIE, validateSession } from '#lib/server/auth.js';
-import { users } from '#lib/server/db/schema.js';
+const auditSpy = mock();
+import * as actualAudit from '#lib/server/audit.js';
+mock.module('#lib/server/audit.js', () => ({
+  ...actualAudit,
+  audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
+}));
+
+import { resumeSession, startSession } from '#lib/server/session.js';
 import { POST } from './+server';
 
 beforeEach(async () => {
   await resetTestDb();
+  auditSpy.mockClear();
 });
 
 describe('logout POST', () => {
-  it('invalidates the session and clears the cookie', async () => {
-    const u = (
-      await testDb
-        .insert(users)
-        .values({
-          email: 'a@example.com',
-          passwordHash: 'placeholder-hash',
-          displayName: 'A',
-          createdAt: new Date()
-        })
-        .returning()
-    )[0];
-    const { token, session } = await createSession(u.id);
+  it('ends the session, clears site data and redirects to /login', async () => {
+    const u = await seedUser();
+    const event = makeRouteEvent({ user: safeUser(u) });
+    await startSession(event, u.id);
+    const copy = makeRouteEvent({ cookies: copyCookies(event.cookies) });
 
-    // The handler invalidates via the raw cookie token (sessions are stored
-    // hashed at rest; locals.sessionId holds the digest, which can't be
-    // replayed through the token-hashing delete path).
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      sessionId: session.id,
-      cookies: { [SESSION_COOKIE]: token }
-    });
     const result = await captureFlow(() => POST(event as unknown as Parameters<typeof POST>[0]));
     expect(result.kind).toBe('redirect');
     if (result.kind === 'redirect') expect(result.location).toBe('/login');
-    expect(await validateSession(token)).toBeNull();
-    expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
+    expect(await resumeSession(copy)).toBeNull();
     // The 303 must carry Clear-Site-Data so Chromium/Firefox wipe the SW
     // 'pages' cache + IndexedDB even when JS (the client-side purge) is off.
     expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
+    expect(auditSpy).toHaveBeenCalledWith({ type: 'auth.logout', userId: u.id });
   });
 
-  it('still clears the cookie when no session is present', async () => {
-    const event = makeRouteEvent({ user: null, sessionId: null });
+  it('still clears site data, without an audit entry, when no one is signed in', async () => {
+    const event = makeRouteEvent({ user: null });
     const result = await captureFlow(() => POST(event as unknown as Parameters<typeof POST>[0]));
     expect(result.kind).toBe('redirect');
-    expect(event.cookies.delete).toHaveBeenCalled();
     expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
+    expect(auditSpy).not.toHaveBeenCalled();
   });
 });

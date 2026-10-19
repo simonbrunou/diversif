@@ -1,9 +1,9 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '#lib/server/redirect.js';
-import { SESSION_COOKIE } from '#lib/server/auth.js';
+import { endSession } from '#lib/server/session.js';
 import { deleteUserAccount } from '#lib/server/gdpr.js';
 import { requireUser } from '#lib/server/guards.js';
-import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
+import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -12,7 +12,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, locals, cookies }) => {
+  default: async (event) => {
+    const { request, locals } = event;
     const user = requireUser(locals);
     const raw = Object.fromEntries(await request.formData());
     const confirmEmail =
@@ -28,18 +29,11 @@ export const actions: Actions = {
     // Fresh-auth: typed email is visible on the page, so a stolen session
     // cookie alone shouldn't be enough to permanently destroy the account.
     // Require the current password as proof the request comes from the owner.
-    const fresh = await requireFreshAuthWithKey(user, currentPassword, {
-      field: 'deleteErrorKey',
-      rateLimitedKey: 'errorsAuthRateLimited',
-      incorrectKey: 'errorsAccountPasswordIncorrect',
-      onMissingUser: () => {
-        throw localizedRedirect(locals.locale, 303, '/login');
-      }
-    });
+    const fresh = await requireFreshAuth(locals, currentPassword, 'deleteErrorKey');
     if (!fresh.ok) return fresh.failure;
 
     await deleteUserAccount(user.id);
-    cookies.delete(SESSION_COOKIE, { path: '/' });
+    await endSession(event);
     throw localizedRedirect(locals.locale, 303, '/account/deleted');
   }
 };

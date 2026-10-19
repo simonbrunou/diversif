@@ -6,7 +6,8 @@
 // inline closure.
 //
 // `resolveMessageKey` consumers: form-toasts.svelte.ts (which surfaces
-// action-returned keys via toast for the account pages).
+// action-returned keys via toast for the account pages) and the
+// passkeys/registration/options endpoint (fresh-auth failures as prose).
 
 import * as m from '#lib/paraglide/messages.js';
 

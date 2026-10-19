@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
-import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
+import { captureFlow, copyCookies, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
@@ -11,7 +11,8 @@ mock.module('#lib/server/audit.js', () => ({
   audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
 }));
 
-import { hashPassword, SESSION_COOKIE, validateSession, createSession } from '#lib/server/auth.js';
+import { hashPassword } from '#lib/server/auth.js';
+import { resumeSession, startSession } from '#lib/server/session.js';
 import { actions, load } from './+page.server';
 
 beforeEach(async () => {
@@ -45,11 +46,13 @@ describe('account/sessions load', () => {
 });
 
 describe('account/sessions logoutEverywhere', () => {
-  it('invalidates every session, clears the cookie, redirects', async () => {
+  it('ends every session of the user, clears site data, redirects', async () => {
     const u = await seed();
-    const a = await createSession(u.id);
-    const b = await createSession(u.id);
+    const otherDevice = makeRouteEvent();
+    await startSession(otherDevice, u.id);
     const event = makeRouteEvent({ user: safeUser(u) });
+    await startSession(event, u.id);
+    const copy = makeRouteEvent({ cookies: copyCookies(event.cookies) });
     const r = await captureFlow(() =>
       actions.logoutEverywhere!(
         event as unknown as Parameters<NonNullable<typeof actions.logoutEverywhere>>[0]
@@ -57,9 +60,8 @@ describe('account/sessions logoutEverywhere', () => {
     );
     expect(r.kind).toBe('redirect');
     if (r.kind === 'redirect') expect(r.location).toBe('/login');
-    expect(await validateSession(a.token)).toBeNull();
-    expect(await validateSession(b.token)).toBeNull();
-    expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
+    expect(await resumeSession(otherDevice)).toBeNull();
+    expect(await resumeSession(copy)).toBeNull();
     expect(auditSpy).toHaveBeenCalledWith({ type: 'account.sessions_revoked', userId: u.id });
     // Same Clear-Site-Data contract as POST /logout : the redirect response
     // must instruct the browser to wipe CacheStorage + storage.

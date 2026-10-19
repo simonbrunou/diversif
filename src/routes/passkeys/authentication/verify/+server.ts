@@ -1,5 +1,4 @@
 import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
@@ -9,9 +8,7 @@ import {
   finishAuthentication,
   parsePasskeyResponseBody
 } from '#lib/server/passkeys.js';
-import { createSession, setSessionCookie } from '#lib/server/auth.js';
-import { db } from '#lib/server/db/index.js';
-import { users } from '#lib/server/db/schema.js';
+import { startSession } from '#lib/server/session.js';
 import { audit } from '#lib/server/audit.js';
 import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
 import type { RequestHandler } from './$types';
@@ -66,10 +63,7 @@ export const POST: RequestHandler = async (event) => {
   // an attacker with one valid credential keep the throttle defeated by
   // alternating failed guesses with their own occasional successful auth.
 
-  await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, result.userId));
-
-  const { token } = await createSession(result.userId);
-  setSessionCookie(cookies, token);
+  await startSession(event, result.userId);
   audit({ type: 'auth.login_succeeded', userId: result.userId, method: 'passkey' });
 
   return Response.json({ ok: true });

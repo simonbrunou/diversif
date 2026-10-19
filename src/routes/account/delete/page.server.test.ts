@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
-import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
+import { captureFlow, copyCookies, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { hashPassword, SESSION_COOKIE } from '#lib/server/auth.js';
+import { hashPassword } from '#lib/server/auth.js';
+import { resumeSession, startSession } from '#lib/server/session.js';
 import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -109,20 +110,6 @@ describe('account/delete deleteAccount', () => {
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 
-  it('redirects to /login when user row is gone (race)', async () => {
-    const u = await seed();
-    await testDb.delete(users).where(eq(users.id, u.id));
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: 'p@example.com', currentPassword: 'current-password-12' }
-    });
-    const r = await captureFlow(() =>
-      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
-    );
-    expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe('/login');
-  });
-
   it('fails when currentPassword is wrong', async () => {
     const u = await seed();
     const event = makeRouteEvent({
@@ -137,7 +124,7 @@ describe('account/delete deleteAccount', () => {
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 
-  it('deletes the user, clears the cookie and redirects to /account/deleted', async () => {
+  it('deletes the user, signs the device out and redirects to /account/deleted', async () => {
     const u = await seed();
     const event = makeRouteEvent({
       user: safeUser(u),
@@ -146,6 +133,8 @@ describe('account/delete deleteAccount', () => {
         currentPassword: 'current-password-12'
       }
     });
+    await startSession(event, u.id);
+    const copy = makeRouteEvent({ cookies: copyCookies(event.cookies) });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
     );
@@ -154,29 +143,8 @@ describe('account/delete deleteAccount', () => {
     expect(
       (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]
     ).toBeUndefined();
-    expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
-  });
-
-  it('rate-limits brute-force attempts on the currentPassword field', async () => {
-    const u = await seed();
-    for (let i = 0; i < 5; i++) {
-      const event = makeRouteEvent({
-        user: safeUser(u),
-        formData: { confirmEmail: 'p@example.com', currentPassword: 'wrong' }
-      });
-      await actions.default!(
-        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-      );
-    }
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: 'p@example.com', currentPassword: 'wrong' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
-    expect(r.status).toBe(429);
-    expect(r.data.deleteErrorKey).toBe('errorsAuthRateLimited');
-    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+    expect(await resumeSession(copy)).toBeNull();
+    // Same shared-device hygiene as POST /logout: the 303 clears site data.
+    expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
   });
 });

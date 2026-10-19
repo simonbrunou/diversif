@@ -1,18 +1,12 @@
-import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import { users } from '#lib/server/db/schema.js';
-import {
-  createSession,
-  hashPassword,
-  invalidateAllUserSessions,
-  PASSWORD_MIN_LENGTH,
-  setSessionCookie
-} from '#lib/server/auth.js';
+import { hashPassword, PASSWORD_MIN_LENGTH } from '#lib/server/auth.js';
+import { restartSession } from '#lib/server/session.js';
 import { requireUser } from '#lib/server/guards.js';
 import { parseFormWithKey } from '#lib/server/forms.js';
-import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
+import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import { audit } from '#lib/server/audit.js';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -29,7 +23,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, locals, cookies }) => {
+  default: async (event) => {
+    const { request, locals } = event;
     const user = requireUser(locals);
 
     const parsed = await parseFormWithKey(request, passwordSchema, {
@@ -38,14 +33,7 @@ export const actions: Actions = {
     });
     if (!parsed.ok) return parsed.failure;
 
-    const fresh = await requireFreshAuthWithKey(user, parsed.data.currentPassword, {
-      field: 'passwordErrorKey',
-      rateLimitedKey: 'errorsAuthRateLimited',
-      incorrectKey: 'errorsAccountPasswordIncorrect',
-      onMissingUser: () => {
-        throw localizedRedirect(locals.locale, 303, '/login');
-      }
-    });
+    const fresh = await requireFreshAuth(locals, parsed.data.currentPassword, 'passwordErrorKey');
     if (!fresh.ok) return fresh.failure;
 
     const newHash = await hashPassword(parsed.data.newPassword);
@@ -54,9 +42,7 @@ export const actions: Actions = {
     // Drop every existing session (including the attacker's stolen cookie if
     // any) and re-issue one for this tab so the user stays logged in on the
     // device they used to change their password.
-    await invalidateAllUserSessions(user.id);
-    const { token } = await createSession(user.id);
-    setSessionCookie(cookies, token);
+    await restartSession(event, user.id);
 
     audit({ type: 'account.password_changed', userId: user.id });
     return { passwordSuccessKey: 'errorsAccountPasswordSuccess' };

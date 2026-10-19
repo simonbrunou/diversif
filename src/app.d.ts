@@ -29,12 +29,6 @@ declare global {
     interface Locals {
       user: SafeUser | null;
       memberships: Membership[];
-      /**
-       * The session's stored id — sha256 of the cookie token, NOT the raw
-       * bearer token. Safe to log/compare against DB rows; useless to an
-       * attacker. The raw token only ever lives in the cookie.
-       */
-      sessionId: string | null;
       locale: Locale;
     }
     // interface PageData {}

@@ -1,14 +1,8 @@
-import { createHash, randomBytes } from 'node:crypto';
-import { and, eq, gt } from 'drizzle-orm';
+import { randomBytes } from 'node:crypto';
+import { eq } from 'drizzle-orm';
 import { db } from './db';
 import { isE2E } from './e2e';
-import { sessions, users, memberships, type Session, type User } from './db/schema';
-import type { SafeUser } from '#lib/types.js';
-import type { Cookies } from '@sveltejs/kit';
-
-export const SESSION_COOKIE = 'session';
-export const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
-export const SESSION_RENEW_THRESHOLD_MS = 1000 * 60 * 60 * 24 * 15; // 15 days
+import { users, memberships, type User } from './db/schema';
 
 // Bun.password ships argon2id natively. memoryCost/timeCost mirror the
 // previous @node-rs/argon2 tuning so the cost profile is unchanged and
@@ -79,106 +73,6 @@ export async function verifyPasswordOrDecoy(
   return verifyPassword(hash, plain);
 }
 
-function newToken(): string {
-  return randomBytes(32).toString('hex');
-}
-
-/**
- * Sessions are stored hashed at rest: the cookie carries the raw 256-bit
- * token, the DB row id is sha256(token) hex. Anyone holding the SQLite file
- * (or a backup of it) sees only digests — useless as bearer tokens without
- * the preimage. Plain sha256 (no salt, no argon) is deliberate: the token has
- * 256 bits of entropy, so rainbow tables and brute force are both moot, and
- * an unsalted digest keeps validation a single indexed equality lookup.
- */
-export function hashSessionToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
-}
-
-export type CreatedSession = {
-  /** Raw bearer token — goes in the cookie, never in the database. */
-  token: string;
-  /** The stored row; `session.id` is sha256(token), not the token itself. */
-  session: Session;
-};
-
-export async function createSession(userId: number): Promise<CreatedSession> {
-  const now = Date.now();
-  const token = newToken();
-  const id = hashSessionToken(token);
-  const expiresAt = new Date(now + SESSION_DURATION_MS);
-  await db.insert(sessions).values({ id, userId, expiresAt });
-  return { token, session: { id, userId, expiresAt } };
-}
-
-export type ValidatedSession = {
-  user: SafeUser;
-  session: Session;
-  renewed: boolean;
-};
-
-export async function validateSession(token: string): Promise<ValidatedSession | null> {
-  if (!token) return null;
-  const now = Date.now();
-  // The cookie holds the raw token; rows are keyed by its sha256 digest.
-  const id = hashSessionToken(token);
-
-  const rows = await db
-    .select({
-      session: sessions,
-      user: users
-    })
-    .from(sessions)
-    .innerJoin(users, eq(users.id, sessions.userId))
-    .where(and(eq(sessions.id, id), gt(sessions.expiresAt, new Date(now))))
-    .limit(1);
-  const row = rows[0];
-
-  if (!row) return null;
-
-  let session = row.session;
-  let renewed = false;
-  if (session.expiresAt.getTime() - now < SESSION_RENEW_THRESHOLD_MS) {
-    const newExpiry = new Date(now + SESSION_DURATION_MS);
-    // Wrap both updates in a transaction so a crash between them can't leave
-    // the session renewed without a corresponding lastLoginAt bump (or vice
-    // versa). Bumping `last_login_at` keeps retention queries seeing recent
-    // activity even when the user never explicitly re-logs in.
-    db.transaction((tx) => {
-      tx.update(sessions).set({ expiresAt: newExpiry }).where(eq(sessions.id, id)).run();
-      tx.update(users)
-        .set({ lastLoginAt: new Date(now) })
-        .where(eq(users.id, row.user.id))
-        .run();
-    });
-    session = { ...session, expiresAt: newExpiry };
-    renewed = true;
-  }
-
-  const safeUser: SafeUser = {
-    id: row.user.id,
-    email: row.user.email,
-    displayName: row.user.displayName,
-    createdAt: row.user.createdAt,
-    tosAcceptedAt: row.user.tosAcceptedAt,
-    privacyAcceptedAt: row.user.privacyAcceptedAt,
-    ageConfirmedAt: row.user.ageConfirmedAt,
-    lastLoginAt: row.user.lastLoginAt,
-    lastExportAt: row.user.lastExportAt
-  };
-
-  return { user: safeUser, session, renewed };
-}
-
-export async function invalidateSession(token: string): Promise<void> {
-  if (!token) return;
-  await db.delete(sessions).where(eq(sessions.id, hashSessionToken(token)));
-}
-
-export async function invalidateAllUserSessions(userId: number): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.userId, userId));
-}
-
 export async function listMembershipsForUser(userId: number) {
   // Ordered so kids[0] (the nav fallback target on /account) is stable —
   // without ORDER BY, SQLite row order is unspecified. createdAt first so an
@@ -199,21 +93,3 @@ export async function findUserByEmail(email: string): Promise<User | undefined> 
 
 export { generateInviteCodeRaw, isValidInviteCodeFormat } from '#lib/utils/invites.js';
 export { PASSWORD_MIN_LENGTH } from '#lib/utils/password.js';
-
-/**
- * Set the session cookie with the canonical options used across login, signup,
- * and password-change flows. Centralises the 6-property options object so a
- * single place controls path, httpOnly, sameSite, secure and maxAge.
- *
- * `token` is the RAW session token from `createSession().token` — never the
- * stored `session.id` (which is its sha256 digest and would not validate).
- */
-export function setSessionCookie(cookies: Cookies, token: string): void {
-  cookies.set(SESSION_COOKIE, token, {
-    path: '/',
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: Math.floor(SESSION_DURATION_MS / 1000)
-  });
-}

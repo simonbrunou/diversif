@@ -1,15 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
-import {
-  createSession,
-  findUserByEmail,
-  setSessionCookie,
-  verifyPasswordOrDecoy
-} from '#lib/server/auth.js';
-import { db } from '#lib/server/db/index.js';
-import { users } from '#lib/server/db/schema.js';
+import { findUserByEmail, verifyPasswordOrDecoy } from '#lib/server/auth.js';
+import { startSession } from '#lib/server/session.js';
 import { audit } from '#lib/server/audit.js';
 import { requireGuest } from '#lib/server/guards.js';
 import { parseFormWithKey } from '#lib/server/forms.js';
@@ -73,7 +66,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
   default: async (event) => {
-    const { request, cookies } = event;
+    const { request } = event;
     const ip = clientKey(event);
     const rl = checkRateLimit(LOGIN_LIMIT, ip);
     if (!rl.allowed) {
@@ -140,10 +133,7 @@ export const actions: Actions = {
     // before getting it right won't be locked out. (The per-email bucket
     // never counted this success in the first place.)
 
-    await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
-
-    const { token } = await createSession(user.id);
-    setSessionCookie(cookies, token);
+    await startSession(event, user.id);
     audit({ type: 'auth.login_succeeded', userId: user.id, method: 'password' });
 
     throw localizedRedirect(event.locals.locale, 303, safeNextPath(event.url));

@@ -1,13 +1,8 @@
 import { isHttpError, isRedirect, type RequestEvent } from '@sveltejs/kit';
 import { sequence, type Handle, type HandleServerError } from '@sveltejs/kit/hooks';
 import { randomBytes } from 'node:crypto';
-import {
-  SESSION_COOKIE,
-  SESSION_DURATION_MS,
-  invalidateSession,
-  listMembershipsForUser,
-  validateSession
-} from '#lib/server/auth.js';
+import { listMembershipsForUser } from '#lib/server/auth.js';
+import { resumeSession } from '#lib/server/session.js';
 import * as Sentry from '@sentry/sveltekit';
 import { scrubPathname } from '#lib/sentry.js';
 import type { Locale } from '#lib/paraglide/runtime.js';
@@ -129,35 +124,9 @@ const appHandle = async (
 ): Promise<Response> => {
   event.locals.locale = locale;
 
-  const token = event.cookies.get(SESSION_COOKIE) ?? '';
-  const validated = token ? await validateSession(token) : null;
-
-  if (validated) {
-    event.locals.user = validated.user;
-    event.locals.sessionId = validated.session.id;
-    event.locals.memberships = await listMembershipsForUser(validated.user.id);
-
-    if (validated.renewed) {
-      // Re-set the RAW token from the cookie (not validated.session.id, which
-      // is its sha256 digest) — renewal only extends maxAge, never rotates.
-      event.cookies.set(SESSION_COOKIE, token, {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: Math.floor(SESSION_DURATION_MS / 1000)
-      });
-    }
-  } else {
-    if (token) {
-      // Stale token: clear it.
-      await invalidateSession(token);
-      event.cookies.delete(SESSION_COOKIE, { path: '/' });
-    }
-    event.locals.user = null;
-    event.locals.sessionId = null;
-    event.locals.memberships = [];
-  }
+  const user = await resumeSession(event);
+  event.locals.user = user;
+  event.locals.memberships = user ? await listMembershipsForUser(user.id) : [];
 
   // Replace %paraglide.lang% in app.html with the resolved locale. Run on
   // every chunk: the placeholder sits in the opening <html> tag, which can

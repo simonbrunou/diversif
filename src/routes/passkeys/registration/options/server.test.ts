@@ -13,10 +13,11 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { SESSION_COOKIE, hashPassword } from '#lib/server/auth.js';
+import { hashPassword } from '#lib/server/auth.js';
 import { users, webauthnChallenges } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, RP_ID } from '#lib/server/passkeys.js';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 
 const PASSWORD = 'current-password-12';
 let passwordHash: string;
@@ -28,6 +29,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await resetTestDb();
   mocks.generateRegistrationOptions.mockReset();
+  _clearAllRateLimits();
 });
 
 async function seed() {
@@ -91,21 +93,6 @@ describe('POST /passkeys/registration/options', () => {
     expect(res.status).toBe(400);
     expect(((await res.json()) as { error: string }).error).toBe('Mot de passe requis.');
     expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
-  });
-
-  it('errors 401 when the user no longer exists', async () => {
-    const u = await seed();
-    await testDb.delete(users).where(eq(users.id, u.id));
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      url: 'https://diversif.app/passkeys/registration/options'
-    });
-    withJsonBody(event, { currentPassword: PASSWORD });
-    const r = await captureFlow(
-      () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
-    );
-    expect(r.kind).toBe('error');
-    if (r.kind === 'error') expect(r.status).toBe(401);
   });
 
   it('returns options, sets the challenge cookie, and stores the challenge', async () => {
@@ -181,9 +168,8 @@ describe('POST /passkeys/registration/options', () => {
     withJsonBody(event, { currentPassword: 'wrong-password' });
     const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
     expect(res.status).toBe(400);
+    // Prose like the endpoint's other errors (the client shows its own text).
+    expect(await res.json()).toEqual({ ok: false, error: 'Mot de passe actuel incorrect.' });
     expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 });
-
-// Ensure the unused exports are kept tree-shake-friendly across tests.
-void SESSION_COOKIE;

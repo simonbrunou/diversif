@@ -20,10 +20,19 @@ function makeCookies(initial: Record<string, string> = {}) {
   return { get, set, delete: del, _store: store };
 }
 
+/**
+ * Snapshot of a fake cookie jar's current values, to seed another
+ * makeRouteEvent: a second browser replaying a copied cookie. Sign-out tests
+ * need it because the signed-out jar has already dropped its own cookie, so
+ * only a copy proves the session was revoked server-side.
+ */
+export function copyCookies(jar: ReturnType<typeof makeCookies>): Record<string, string> {
+  return Object.fromEntries([...jar._store].map(([name, { value }]) => [name, value]));
+}
+
 export type RouteEventOptions = {
   user?: SafeUser | null;
   memberships?: Membership[];
-  sessionId?: string | null;
   /** Initial request cookies (e.g. the raw session token for logout flows). */
   cookies?: Record<string, string>;
   params?: Record<string, string>;
@@ -54,13 +63,13 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     body: opts.formData ? formData : undefined,
     headers: opts.headers
   });
+  const headersSet = new Set<string>();
 
   const event = {
     cookies,
     locals: {
       user: opts.user ?? null,
       memberships: opts.memberships ?? [],
-      sessionId: opts.sessionId ?? (opts.user ? 'sess-id' : null),
       locale: opts.locale ?? 'fr'
     },
     params: opts.params ?? {},
@@ -69,8 +78,14 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     parent: opts.parent ?? (async () => ({})),
     getClientAddress: () => '127.0.0.1',
     // Mirrors event.setHeaders: headers accumulated here are merged onto the
-    // final response by SvelteKit (including thrown-redirect responses).
-    setHeaders: mock((_headers: Record<string, string>) => {})
+    // final response by SvelteKit (including thrown-redirect responses), and
+    // setting the same header twice throws, as SvelteKit's respond.js does.
+    setHeaders: mock((headers: Record<string, string>) => {
+      for (const name of Object.keys(headers)) {
+        if (headersSet.has(name.toLowerCase())) throw new Error(`"${name}" header is already set`);
+        headersSet.add(name.toLowerCase());
+      }
+    })
   };
   return event;
 }

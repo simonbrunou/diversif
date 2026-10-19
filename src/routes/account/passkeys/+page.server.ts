@@ -3,8 +3,7 @@ import { z } from 'zod';
 import { deletePasskey, listPasskeys, publicPasskey, renamePasskey } from '#lib/server/passkeys.js';
 import { requireUser } from '#lib/server/guards.js';
 import { parseFormWithKey } from '#lib/server/forms.js';
-import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
-import { localizedRedirect } from '#lib/server/redirect.js';
+import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import { audit } from '#lib/server/audit.js';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -57,14 +56,7 @@ export const actions: Actions = {
     // to silently remove the owner's passkeys — deleting one locks that
     // device out of passwordless login and is the classic prelude to an
     // account takeover cleanup.
-    const fresh = await requireFreshAuthWithKey(user, parsed.data.currentPassword, {
-      field: 'passkeyErrorKey',
-      rateLimitedKey: 'errorsAuthRateLimited',
-      incorrectKey: 'errorsAccountPasswordIncorrect',
-      onMissingUser: () => {
-        throw localizedRedirect(locals.locale, 303, '/login');
-      }
-    });
+    const fresh = await requireFreshAuth(locals, parsed.data.currentPassword, 'passkeyErrorKey');
     if (!fresh.ok) return fresh.failure;
     if (!(await deletePasskey(user.id, parsed.data.id))) {
       return fail(404, { passkeyErrorKey: 'errorsAccountPasskeyNotFound' });
