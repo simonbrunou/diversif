@@ -330,45 +330,40 @@ describe('child/[id] +page.server load', () => {
     expect(out.recent[0].loggedByName).toBe('Compte supprimé');
   });
 
-  it('marks reactions in the allergen summary', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    const allergen = (
+  it('counts in weekCount only the foods first logged in the last 7 days', async () => {
+    const { u, c, m, food: carrot } = await setup();
+    const apple = (
       await testDb
         .insert(foods)
         .values({
-          name: 'Œuf',
-          category: 'oeufs',
-          isMajorAllergen: true,
-          allergenType: 'oeuf',
-          suggestedAgeMonths: 6,
+          name: 'Pomme',
+          category: 'fruits',
+          isMajorAllergen: false,
+          allergenType: null,
+          suggestedAgeMonths: 4,
           notes: null,
           isCustom: false,
           customForChildId: null
         })
         .returning()
     )[0];
-    // Two entries: ras then inconfort : worst should be inconfort.
+    const entry = (foodId: number, daysAgo: number) => ({
+      childId: c.id,
+      foodId,
+      givenAt: new Date(Date.now() - daysAgo * 86400_000),
+      reaction: 'ras',
+      notes: null,
+      loggedBy: u.id,
+      createdAt: new Date()
+    });
     await testDb.insert(foodEntries).values([
-      {
-        childId: c.id,
-        foodId: allergen.id,
-        givenAt: new Date(Date.now() - 86400_000),
-        reaction: 'ras',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      },
-      {
-        childId: c.id,
-        foodId: allergen.id,
-        givenAt: new Date(),
-        reaction: 'inconfort',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      }
+      // Carotte was first logged 10 days ago, so today's repeat is not new.
+      entry(carrot.id, 10),
+      entry(carrot.id, 0),
+      // Pomme is new this week: three logs still count once.
+      entry(apple.id, 2),
+      entry(apple.id, 1),
+      entry(apple.id, 0)
     ]);
     const out = await load(
       makeRouteEvent({
@@ -385,65 +380,8 @@ describe('child/[id] +page.server load', () => {
         })
       }) as unknown as Parameters<typeof load>[0]
     );
-    expect(out.stats.allergens.introduced).toBe(1);
-    expect(out.stats.allergens.inconfort).toBe(1);
-  });
-
-  it('upgrades worst-allergen reaction when reaction > inconfort encountered', async () => {
-    const u = await seedUser();
-    const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-    const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    const allergen = (
-      await testDb
-        .insert(foods)
-        .values({
-          name: 'Arachide',
-          category: 'allergenes',
-          isMajorAllergen: true,
-          allergenType: 'arachide',
-          suggestedAgeMonths: 6,
-          notes: null,
-          isCustom: false,
-          customForChildId: null
-        })
-        .returning()
-    )[0];
-    await testDb.insert(foodEntries).values([
-      {
-        childId: c.id,
-        foodId: allergen.id,
-        givenAt: new Date(Date.now() - 86400_000),
-        reaction: 'inconfort',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      },
-      {
-        childId: c.id,
-        foodId: allergen.id,
-        givenAt: new Date(),
-        reaction: 'reaction',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      }
-    ]);
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
-    );
-    expect(out.stats.allergens.reaction).toBe(1);
+    expect(out.stats.foodsIntroduced).toBe(2);
+    expect(out.stats.weekCount).toBe(1);
   });
 
   it('does not surface a maintain-allergen reminder for a lait exposure that is only an allergenic fat, but does for a dairy exposure (#373)', async () => {

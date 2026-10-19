@@ -127,7 +127,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
 
   if (repeat) {
     // Foods given <= 2 times whose worst reaction is RAS or Inconfort. Shares
-    // the threshold constants (and SQL form) with loadDiversityMetrics and the
+    // the threshold constants with the
     // dashboard "Reproposez" cards (which go through findRepeatCandidates in
     // reminders.ts rule 6) — see src/lib/server/guidance/repeat-candidates.
     // Pass `null` so the carnet filter returns every candidate, not the

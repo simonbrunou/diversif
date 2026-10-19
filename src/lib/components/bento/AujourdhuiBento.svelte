@@ -14,13 +14,6 @@
   type Stats = {
     foodsIntroduced: number;
     weekCount: number;
-    allergens: {
-      introduced: number;
-      total: number;
-      ras: number;
-      inconfort: number;
-      reaction: number;
-    };
   };
 
   // Mirrors AllergenItem from #lib/server/guidance/allergen-status — declared

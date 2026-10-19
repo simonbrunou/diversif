@@ -302,8 +302,8 @@ if (wantCoverage || reportOnly) {
   // the function omits exactly those lines as non-executable. (Verified on
   // queries/diversity.ts: the queries.test.ts child emits no DA records for
   // the sql`…` string-interior lines, while children that import the module
-  // without running loadDiversityMetrics emit DA:<line>,0 for them.) A line
-  // omitted by any child that reported the file is therefore V8 lumping,
+  // without running loadDiversityMetrics, since deleted, emit DA:<line>,0
+  // for them.) A line omitted by any child that reported the file is therefore V8 lumping,
   // not real executable source, and is excluded from the gate. Genuinely
   // uncovered executable lines are reported (as 0) by every child.
   const fileCov = new Map<

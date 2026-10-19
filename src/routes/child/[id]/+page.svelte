@@ -7,6 +7,7 @@
   import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
   import { celebrate, pickMilestoneFromQuery } from '#lib/utils/milestones.js';
+  import { CATEGORIES } from '#lib/utils/categories.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import * as m from '#lib/paraglide/messages.js';
   import { Baby } from '@lucide/svelte';
@@ -22,11 +23,11 @@
   // svelte-ignore state_referenced_locally
   let welcomeOpen = $state(data.showWelcomeDialog);
 
+  // Exclude 'autre', matching the log action's countCategoriesCovered.
+  const TOTAL_CATEGORIES = CATEGORIES.length - 1;
+
   $effect(() => {
-    const milestone = pickMilestoneFromQuery(
-      page.url.searchParams,
-      data.diversity.totalCategories
-    );
+    const milestone = pickMilestoneFromQuery(page.url.searchParams, TOTAL_CATEGORIES);
     if (!milestone) return;
     celebrate(toast, milestone);
     const url = new URL(page.url.href);

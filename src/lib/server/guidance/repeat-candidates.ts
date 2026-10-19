@@ -1,13 +1,12 @@
 // Single source of truth for the "repeat-exposure candidate" predicate used
-// across the dashboard reminder, the carnet repeat filter, and the diversity
-// metric.
+// by both the dashboard reminder and the carnet repeat filter.
 //
 // A food counts as a "repeat candidate" when it has been logged few times
 // AND every observation was "ras". A food associated with discomfort must
 // not be re-offered by an automated prompt without medical advice. The predicate
-// lives here so the three SQL forms (loadDiversityMetrics count,
-// loadRepeatCandidates list, /child/[id]/foods?repeat=1 filter) and the
-// in-JS form (reminders.ts rule 6) can never drift apart again.
+// lives here so the SQL form (loadRepeatCandidates, behind the
+// /child/[id]/foods?repeat=1 filter) and the in-JS form (reminders.ts rule 6)
+// can never drift apart again.
 
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import type { AllergenId } from '#lib/utils/allergens.js';

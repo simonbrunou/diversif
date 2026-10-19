@@ -3,9 +3,8 @@ import { db } from '#lib/server/db/index.js';
 import { foodEntries, foods, users } from '#lib/server/db/schema.js';
 import { asc, desc, eq, sql } from 'drizzle-orm';
 import { ALLERGENS, type AllergenId } from '#lib/utils/allergens.js';
-import { CATEGORIES, type CategoryId } from '#lib/utils/categories.js';
+import type { CategoryId } from '#lib/utils/categories.js';
 import type { ReactionId } from '#lib/utils/reactions.js';
-import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import { ageInMonths } from '#lib/utils/age.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { computeReminders, type Reminder } from '#lib/server/guidance/reminders.js';
@@ -13,10 +12,8 @@ import { loadAllergenRows, summarizeAllergenRows } from '#lib/server/guidance/al
 import * as m from '#lib/paraglide/messages.js';
 import {
   loadCoparentActivity,
-  loadDiversityMetrics,
   loadDismissals,
   loadStreak,
-  loadWeeklyRecap,
   dismissReminder,
   type EnrichedEntry
 } from '#lib/server/guidance/queries/index.js';
@@ -35,40 +32,6 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 // does NOT depend on this cap — it reads `allergenRows` (unbounded, loaded
 // separately below) via ReminderInput.allergenExposures instead.
 const REMINDERS_SCAN_LIMIT = 5000;
-
-type AllergenSummary = {
-  introduced: number;
-  total: number;
-  ras: number;
-  inconfort: number;
-  reaction: number;
-};
-
-// Worst reaction seen per allergen, plus the introduced / per-reaction summary.
-function summarizeAllergens(rows: { allergenType: string | null; reaction: string }[]): {
-  worstByAllergen: Map<string, 'ras' | 'inconfort' | 'reaction'>;
-  summary: AllergenSummary;
-} {
-  const worstByAllergen = new Map<string, 'ras' | 'inconfort' | 'reaction'>();
-  for (const r of rows) {
-    /* v8 ignore next : query already filters allergenType IS NOT NULL */
-    if (!r.allergenType) continue;
-    const cur = worstByAllergen.get(r.allergenType);
-    const next = r.reaction as 'ras' | 'inconfort' | 'reaction';
-    if (!cur || REACTION_RANK[next] > REACTION_RANK[cur]) {
-      worstByAllergen.set(r.allergenType, next);
-    }
-  }
-  const summary: AllergenSummary = {
-    introduced: worstByAllergen.size,
-    total: ALLERGENS.length,
-    ras: 0,
-    inconfort: 0,
-    reaction: 0
-  };
-  for (const v of worstByAllergen.values()) summary[v] += 1;
-  return { worstByAllergen, summary };
-}
 
 // Observation-window reminder: if there's a non-RAS entry within the last
 // 48 hours, surface a "check the profile" reminder pointing directly to
@@ -167,22 +130,18 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
   );
 
-  // Fetched once and reused for both the worst-reaction summary below and the
-  // per-allergen status tile: loadAllergenStatus ran the exact same join+where
-  // a second time for the same request before this was deduplicated.
+  // Fetched once and reused for the per-allergen status tile, the
+  // introduced-allergen set and the maintain-allergen exposures below:
+  // loadAllergenStatus ran the exact same join+where a second time for the
+  // same request before this was deduplicated.
   const allergenRows = await loadAllergenRows(childId);
-
-  const { worstByAllergen, summary } = summarizeAllergens(allergenRows);
 
   // Per-allergen status (same shape as the Carnet Allergènes segment) so
   // the "Allergènes prioritaires" tile shows real allergen names, not
   // synthetic placeholders.
   const bentoAllergens = summarizeAllergenRows(allergenRows, nowAtLoad);
 
-  // Diversity metrics
-  const diversity = await loadDiversityMetrics(childId, CATEGORIES.length - 1); // exclude 'autre'
   const streak = await loadStreak(childId);
-  const weeklyRecap = await loadWeeklyRecap(childId);
   const coparentActivity = await loadCoparentActivity(childId, user.id);
 
   // Reminders: (near-)full history is required so first-introduction and
@@ -236,9 +195,9 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
 
   const dismissals = await loadDismissals(user.id, childId);
   const introducedAllergenIds = new Set(
-    Array.from(worstByAllergen.keys()).filter((id): id is AllergenId =>
-      ALLERGENS.some((a) => a.id === id)
-    )
+    allergenRows
+      .map((r) => r.allergenType)
+      .filter((id): id is AllergenId => ALLERGENS.some((a) => a.id === id))
   );
 
   const baseReminders = computeReminders({
@@ -291,13 +250,10 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     })),
     stats: {
       foodsIntroduced: distinctFoods,
-      weekCount,
-      allergens: summary
+      weekCount
     },
     bentoAllergens,
-    diversity,
     streak,
-    weeklyRecap,
     coparentActivity,
     reminders,
     showWelcomeDialog,

@@ -41,22 +41,15 @@ const { default: Page } = await import('./+page.svelte');
 
 // A minimal PageData covering only the fields the dashboard render touches:
 // the pre-diversification gate (ageMonths/stats), AujourdhuiBento's props, the
-// milestone $effect (diversity.totalCategories), the WelcomeDialog (child.id,
-// showWelcomeDialog:false → stays closed), and the co-parent section under
-// test (coparentActivity).
+// WelcomeDialog (child.id, showWelcomeDialog:false → stays closed), and the
+// co-parent section under test (coparentActivity).
 function makeData(coparentActivity: CoparentEntry[]): PageData {
   return {
     child: { id: 1, name: 'Bébé', birthDate: '2024-01-01' },
     recent: [],
-    stats: {
-      foodsIntroduced: 5,
-      weekCount: 2,
-      allergens: { introduced: 0, total: 12, ras: 0, inconfort: 0, reaction: 0 }
-    },
+    stats: { foodsIntroduced: 5, weekCount: 2 },
     bentoAllergens: [],
-    diversity: { totalCategories: 8 },
     streak: { current: 3, record: 6 },
-    weeklyRecap: null,
     reminders: [],
     coparentActivity,
     showWelcomeDialog: false,

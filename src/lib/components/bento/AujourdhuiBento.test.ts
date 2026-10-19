@@ -9,11 +9,7 @@ describe('AujourdhuiBento', () => {
   const baseProps = {
     childId: 'abc',
     recent: [],
-    stats: {
-      foodsIntroduced: 5,
-      weekCount: 2,
-      allergens: { introduced: 0, total: 12, ras: 0, inconfort: 0, reaction: 0 }
-    },
+    stats: { foodsIntroduced: 5, weekCount: 2 },
     streak: 3,
     streakRecord: 5,
     reminders: [],
