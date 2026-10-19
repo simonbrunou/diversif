@@ -44,7 +44,7 @@ export async function requireFreshAuth<TField extends string>(
     .from(users)
     .where(eq(users.id, user.id))
     .limit(1);
-  if (!row) throw localizedRedirect(locals.locale, 303, '/login');
+  if (!row?.passwordHash) throw localizedRedirect(locals.locale, 303, '/login');
 
   if (!(await verifyPassword(row.passwordHash, currentPassword))) {
     return failure(400, 'errorsAccountPasswordIncorrect');

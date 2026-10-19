@@ -152,6 +152,27 @@ describe('handle', () => {
     expect(response.headers.get('Cache-Control')).toBeNull();
   });
 
+  it('sends Strict-Transport-Security in production only', async () => {
+    const resolve = mock(async () => new Response('ok'));
+    const dev = await handle({ event: makeEvent(null).event, resolve } as unknown as Parameters<
+      typeof handle
+    >[0]);
+    expect(dev.headers.get('Strict-Transport-Security')).toBeNull();
+
+    const orig = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      const prod = await handle({ event: makeEvent(null).event, resolve } as unknown as Parameters<
+        typeof handle
+      >[0]);
+      expect(prod.headers.get('Strict-Transport-Security')).toBe(
+        'max-age=31536000; includeSubDomains'
+      );
+    } finally {
+      process.env.NODE_ENV = orig;
+    }
+  });
+
   it('sets locale to fr for paths without /en/ prefix', async () => {
     const { event } = makeEvent(null, '/mentions-legales');
     const resolve = mock(async () => new Response('ok'));

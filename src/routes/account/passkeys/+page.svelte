@@ -58,7 +58,9 @@
         body: JSON.stringify({ currentPassword })
       });
       const optsJSON = await optsRes.json().catch(() => ({}));
-      if (!optsRes.ok || optsJSON?.ok === false) {
+      // `redirected`: a signed-out request is sent to /login, and fetch
+      // follows it to an HTML 200 that must not reach the ceremony.
+      if (!optsRes.ok || optsRes.redirected || optsJSON?.ok === false) {
         // The server's raw error string is deliberately ignored (same as the
         // login/signup passkey flow in passkey-client.ts): it isn't run
         // through paraglide, so the localized fallback is strictly better for

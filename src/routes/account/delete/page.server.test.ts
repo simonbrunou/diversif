@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
-import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
+import { captureFlow, copyCookies, makeRouteEvent, safeUser, seedUser } from '../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { hashPassword } from '#lib/server/auth.js';
+import { resumeSession, startSession } from '#lib/server/session.js';
 import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -146,6 +147,8 @@ describe('account/delete deleteAccount', () => {
         currentPassword: 'current-password-12'
       }
     });
+    await startSession(event, u.id);
+    const copy = makeRouteEvent({ cookies: copyCookies(event.cookies) });
     const r = await captureFlow(() =>
       actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
     );
@@ -154,6 +157,8 @@ describe('account/delete deleteAccount', () => {
     expect(
       (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]
     ).toBeUndefined();
+    expect(await resumeSession(copy)).toBeNull();
+    expect(copyCookies(event.cookies)).toEqual({});
     // Same shared-device hygiene as POST /logout: the 303 clears site data.
     expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
   });

@@ -1,7 +1,4 @@
 import { error } from '@sveltejs/kit';
-import { db } from '#lib/server/db/index.js';
-import { users } from '#lib/server/db/schema.js';
-import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_COOKIE,
   PASSKEY_CHALLENGE_TTL_MS,
@@ -15,7 +12,7 @@ import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
-  const safe = requireUser(locals);
+  const user = requireUser(locals);
   if (!isOriginAllowedForRPID(url.origin)) {
     throw error(500, 'Configuration WebAuthn invalide pour cet hôte.');
   }
@@ -40,20 +37,17 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
     );
   }
 
-  const fresh = (await db.select().from(users).where(eq(users.id, safe.id)).limit(1))[0];
-  if (!fresh) throw error(401, 'Utilisateur introuvable');
-
   const options = await buildRegistrationOptions({
-    userId: fresh.id,
-    email: fresh.email,
-    displayName: fresh.displayName,
+    userId: user.id,
+    email: user.email,
+    displayName: user.displayName,
     rpID: RP_ID
   });
 
   const stored = await createChallenge({
     challenge: options.challenge,
     purpose: 'registration',
-    userId: fresh.id
+    userId: user.id
   });
 
   cookies.set(PASSKEY_CHALLENGE_COOKIE, stored.token, {

@@ -18,6 +18,8 @@
 import { Database } from 'bun:sqlite';
 
 const DEFAULT_DAYS = 1095;
+// Doit rester égale à SESSION_DURATION_MS dans src/lib/server/session.ts : ce
+// script lit la base directement et n'importe pas le code de l'application.
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30;
 
 const databasePath = process.env.DATABASE_PATH;

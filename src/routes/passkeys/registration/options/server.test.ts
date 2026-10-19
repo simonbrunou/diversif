@@ -17,6 +17,7 @@ import { hashPassword } from '#lib/server/auth.js';
 import { users, webauthnChallenges } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, RP_ID } from '#lib/server/passkeys.js';
+import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 
 const PASSWORD = 'current-password-12';
 let passwordHash: string;
@@ -28,6 +29,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await resetTestDb();
   mocks.generateRegistrationOptions.mockReset();
+  _clearAllRateLimits();
 });
 
 async function seed() {
@@ -181,6 +183,24 @@ describe('POST /passkeys/registration/options', () => {
     const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ ok: false, error: 'errorsAccountPasswordIncorrect' });
+    expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
+  });
+
+  it('refuses a 6th password attempt within 5 minutes with the rate-limit key', async () => {
+    const u = await seed();
+    const attempt = async (currentPassword: string) => {
+      const event = makeRouteEvent({
+        user: safeUser(u),
+        url: 'https://diversif.app/passkeys/registration/options'
+      });
+      withJsonBody(event, { currentPassword });
+      return (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
+    };
+    for (let i = 0; i < 5; i++) await attempt('wrong-password');
+
+    const res = await attempt(PASSWORD);
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ ok: false, error: 'errorsAuthRateLimited' });
     expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 });

@@ -30,6 +30,7 @@ describe('logout POST', () => {
     expect(result.kind).toBe('redirect');
     if (result.kind === 'redirect') expect(result.location).toBe('/login');
     expect(await resumeSession(copy)).toBeNull();
+    expect(copyCookies(event.cookies)).toEqual({});
     // The 303 must carry Clear-Site-Data so Chromium/Firefox wipe the SW
     // 'pages' cache + IndexedDB even when JS (the client-side purge) is off.
     expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });

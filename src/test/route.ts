@@ -63,6 +63,7 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     body: opts.formData ? formData : undefined,
     headers: opts.headers
   });
+  const headersSet = new Set<string>();
 
   const event = {
     cookies,
@@ -77,8 +78,14 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     parent: opts.parent ?? (async () => ({})),
     getClientAddress: () => '127.0.0.1',
     // Mirrors event.setHeaders: headers accumulated here are merged onto the
-    // final response by SvelteKit (including thrown-redirect responses).
-    setHeaders: mock((_headers: Record<string, string>) => {})
+    // final response by SvelteKit (including thrown-redirect responses), and
+    // setting the same header twice throws, as SvelteKit's respond.js does.
+    setHeaders: mock((headers: Record<string, string>) => {
+      for (const name of Object.keys(headers)) {
+        if (headersSet.has(name.toLowerCase())) throw new Error(`"${name}" header is already set`);
+        headersSet.add(name.toLowerCase());
+      }
+    })
   };
   return event;
 }

@@ -28,7 +28,31 @@ describe('startSession / resumeSession', () => {
 
     const resumed = await resumeSession(device);
     expect(resumed?.id).toBe(user.id);
-    expect(resumed).not.toHaveProperty('passwordHash');
+    // An allowlist, so a future sensitive column can't leak into locals.user.
+    expect(Object.keys(resumed!).sort()).toEqual([
+      'ageConfirmedAt',
+      'createdAt',
+      'displayName',
+      'email',
+      'id',
+      'lastExportAt',
+      'lastLoginAt',
+      'privacyAcceptedAt',
+      'tosAcceptedAt'
+    ]);
+  });
+
+  it("revokes the device's previous session when signing in again", async () => {
+    const first = await seedUser({ email: 'a@example.com' });
+    const second = await seedUser({ email: 'b@example.com' });
+    const device = makeRouteEvent();
+    await startSession(device, first.id);
+    const previous = makeRouteEvent({ cookies: copyCookies(device.cookies) });
+    expect((await resumeSession(previous))?.id).toBe(first.id);
+
+    await startSession(device, second.id);
+    expect((await resumeSession(device))?.id).toBe(second.id);
+    expect(await resumeSession(previous)).toBeNull();
   });
 
   it('issues a 30-day httpOnly, SameSite=Lax cookie named "session" on /', async () => {
@@ -140,6 +164,7 @@ describe('endSession', () => {
     const device = makeRouteEvent();
     await startSession(device, user.id);
     const stolen = makeRouteEvent({ cookies: copyCookies(device.cookies) });
+    expect((await resumeSession(stolen))?.id).toBe(user.id);
 
     await endSession(device);
     expect(await resumeSession(stolen)).toBeNull();
@@ -184,10 +209,12 @@ describe('endAllSessions', () => {
     await startSession(phone, user.id);
     await startSession(laptop, user.id);
     await startSession(otherDevice, other.id);
+    const stolen = makeRouteEvent({ cookies: copyCookies(phone.cookies) });
+    expect((await resumeSession(stolen))?.id).toBe(user.id);
 
     await endAllSessions(phone, user.id);
     expect(await resumeSession(laptop)).toBeNull();
-    expect(await resumeSession(makeRouteEvent({ cookies: copyCookies(phone.cookies) }))).toBeNull();
+    expect(await resumeSession(stolen)).toBeNull();
     expect((await resumeSession(otherDevice))?.id).toBe(other.id);
   });
 
@@ -210,6 +237,7 @@ describe('restartSession', () => {
     await startSession(device, user.id);
     await startSession(laptop, user.id);
     const stolen = makeRouteEvent({ cookies: copyCookies(device.cookies) });
+    expect((await resumeSession(stolen))?.id).toBe(user.id);
 
     await restartSession(device, user.id);
     expect(await resumeSession(laptop)).toBeNull();

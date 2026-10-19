@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { and, eq, gt } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 import { db } from './db';
 import { sessions, users } from './db/schema';
@@ -51,6 +51,11 @@ function setCookie(cookies: Cookies, token: string): void {
   });
 }
 
+async function revokeThisDevice(cookies: Cookies): Promise<void> {
+  const token = cookies.get(SESSION_COOKIE);
+  if (token) await db.delete(sessions).where(eq(sessions.id, digest(token)));
+}
+
 function signOutDevice(event: SignOutEvent): void {
   event.cookies.delete(SESSION_COOKIE, { path: '/' });
   // setHeaders applies to the 303 the caller throws next: SvelteKit merges
@@ -59,8 +64,13 @@ function signOutDevice(event: SignOutEvent): void {
   event.setHeaders({ 'Clear-Site-Data': CLEAR_SITE_DATA });
 }
 
-/** Sign this device in as `userId` for 30 days (login, passkey login). */
+/**
+ * Sign this device in as `userId` for 30 days (login, passkey login). A
+ * session the device already held is revoked, not just orphaned by the new
+ * cookie, so a copy of the old cookie stops working too.
+ */
 export async function startSession(event: CookieEvent, userId: number): Promise<void> {
+  await revokeThisDevice(event.cookies);
   const token = newToken();
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
   await db.insert(sessions).values({ id: digest(token), userId, expiresAt });
@@ -78,15 +88,15 @@ export async function resumeSession(event: CookieEvent): Promise<SafeUser | null
   if (!token) return null;
   const now = Date.now();
   const id = digest(token);
-  const rows = await db
+  const [row] = await db
     .select({ session: sessions, user: users })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
-    .where(and(eq(sessions.id, id), gt(sessions.expiresAt, new Date(now))))
+    .where(eq(sessions.id, id))
     .limit(1);
-  const row = rows[0];
-  if (!row) {
-    await db.delete(sessions).where(eq(sessions.id, id));
+  if (!row || row.session.expiresAt.getTime() <= now) {
+    // Only an expired row needs deleting: an unknown cookie costs no write.
+    if (row) await db.delete(sessions).where(eq(sessions.id, id));
     event.cookies.delete(SESSION_COOKIE, { path: '/' });
     return null;
   }
@@ -139,8 +149,7 @@ export async function restartSession(event: CookieEvent, userId: number): Promis
  * The caller throws the redirect.
  */
 export async function endSession(event: SignOutEvent): Promise<void> {
-  const token = event.cookies.get(SESSION_COOKIE);
-  if (token) await db.delete(sessions).where(eq(sessions.id, digest(token)));
+  await revokeThisDevice(event.cookies);
   signOutDevice(event);
 }
 

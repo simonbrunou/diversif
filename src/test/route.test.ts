@@ -14,3 +14,9 @@ test('makeRouteEvent appends nothing for an empty array value', async () => {
   expect(fd.getAll('foodId')).toEqual([]);
   expect(fd.get('givenAt')).toBe('x');
 });
+
+test('makeRouteEvent setHeaders throws on a header set twice, like SvelteKit', () => {
+  const ev = makeRouteEvent();
+  ev.setHeaders({ 'Clear-Site-Data': '"cache"' });
+  expect(() => ev.setHeaders({ 'clear-site-data': '"storage"' })).toThrow(/already set/);
+});
