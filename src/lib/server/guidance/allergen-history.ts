@@ -92,8 +92,8 @@ export type AllergenHistory = {
    */
   isTolerated(id: string): boolean;
   /**
-   * Tolerated, never-blocked priority allergens, the longest without a reliable
-   * exposure first, ties in PRIORITY_INTRODUCTION_ALLERGENS order. The one
+   * Tolerated, never-blocked priority allergens, the most days without a
+   * reliable exposure first, ties in PRIORITY_INTRODUCTION_ALLERGENS order. The one
    * maintenance policy: reminders nudge the overdue head, the menu offers the
    * first entry it can serve, the tile marks overdue ones 'fading'.
    */
@@ -185,9 +185,9 @@ function factsByAllergen(entries: readonly AllergenEntry[]): Map<string, Facts> 
 const daysBetween = (from: number, to: number) => Math.max(0, Math.floor((to - from) / DAY_MS));
 
 // One maintenance policy for every reader: tolerated priority allergens with no
-// symptoms ever, the longest without a reliable exposure first, ties in
-// PRIORITY_INTRODUCTION_ALLERGENS order. The reminders take the overdue head,
-// the menu the first entry it can serve, and the tile marks overdue ones fading.
+// symptoms ever, the most days without a reliable exposure first. The
+// reminders take the overdue head, the menu the first entry it can serve, and
+// the tile marks overdue ones fading.
 function buildMaintainQueue(byAllergen: Map<string, Facts>, now: number): MaintainCandidate[] {
   const queue: MaintainCandidate[] = [];
   for (const id of PRIORITY_INTRODUCTION_ALLERGENS) {
@@ -201,8 +201,9 @@ function buildMaintainQueue(byAllergen: Map<string, Facts>, now: number): Mainta
       overdue: daysSince >= ALLERGEN_MAINTAIN_DAYS
     });
   }
-  // Stable sort: equal lastAt keeps the PRIORITY_INTRODUCTION_ALLERGENS order.
-  return queue.sort((a, b) => a.lastAt - b.lastAt);
+  // By whole days, as the parent reads them; the stable sort keeps
+  // PRIORITY_INTRODUCTION_ALLERGENS order within the same day count.
+  return queue.sort((a, b) => b.daysSince - a.daysSince);
 }
 
 function formatDDMMYY(ms: number): string {

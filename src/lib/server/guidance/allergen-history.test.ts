@@ -117,6 +117,17 @@ describe('loadAllergenHistory: maintainQueue', () => {
     ]);
   });
 
+  it('ranks by whole days, so the same day count falls back to priority order', async () => {
+    // lait was given a few hours earlier than arachide, but both read "9 days".
+    await log(await seedFood('Fromage blanc', 'produits_laitiers', 'lait'), 'ras', 9.6);
+    await log(await seedFood('Purée de cacahuète', 'allergenes', 'arachide'), 'ras', 9.1);
+
+    expect(history().maintainQueue.map((c) => [c.id, c.daysSince])).toEqual([
+      ['arachide', 9],
+      ['lait', 9]
+    ]);
+  });
+
   it('turns overdue exactly at ALLERGEN_MAINTAIN_DAYS', async () => {
     const yaourt = await seedFood('Yaourt', 'produits_laitiers', 'lait');
     const sibling = await seedChild({ createdBy: userId, birthDate: '2025-06-01' });
