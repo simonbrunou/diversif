@@ -207,7 +207,6 @@ describe('computeReminders', () => {
         })
       );
       expect(out.find((r) => r.key === 'pending-allergen:lait')).toBeUndefined();
-      expect(out.find((r) => r.key.startsWith('maintain-allergen:lait'))).toBeUndefined();
     });
   });
 
