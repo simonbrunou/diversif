@@ -44,7 +44,7 @@ type MaintainCandidate = {
 };
 
 /** One of the 12 tracked allergens, as the Aujourd'hui tile and the Carnet show it. */
-export type AllergenItem = {
+type AllergenItem = {
   id: AllergenId;
   label: string;
   /** Counted entries: reliable exposures plus any entry that carried symptoms. */
