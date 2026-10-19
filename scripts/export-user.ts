@@ -4,10 +4,20 @@
  * manuellement à une demande RGPD article 15 / 20 (en cas de besoin
  * d'agir en lieu et place de l'utilisateur).
  *
- * Usage: DATABASE_PATH=/app/data/diversif.db bun scripts/export-user.ts <email>
- *   ou : DATABASE_PATH=… bun scripts/export-user.ts --id <userId>
+ * Depuis un clone (après `bun run paraglide`, dont le schéma importe les
+ * messages compilés) :
+ *   DATABASE_PATH=… bun scripts/export-user.ts <email>
+ *   DATABASE_PATH=… bun scripts/export-user.ts --id <userId>
+ * Dans le conteneur, `bun run build` en livre une version autonome :
+ *   DATABASE_PATH=/app/data/diversif.db bun build/scripts/export-user.js <email>
+ *
+ * Même export que /account/export (src/lib/server/gdpr-export.ts), avec
+ * OPERATOR_EXPORT : sans plafond de lignes ni entrée d'audit.
  */
 import { Database } from 'bun:sqlite';
+import { drizzle } from 'drizzle-orm/bun-sqlite';
+import * as schema from '#lib/server/db/schema.js';
+import { OPERATOR_EXPORT, UserNotFoundError, exportUserData } from '#lib/server/gdpr-export.js';
 
 const args = process.argv.slice(2);
 let userId: number | null = null;
@@ -28,291 +38,18 @@ if (!databasePath) {
   process.exit(1);
 }
 
-// Raw SQLite rows: columns come back snake_case (the names declared in schema.ts)
-// and `timestamp_ms` columns are plain epoch-ms integers.
-type UserRow = {
-  id: number;
-  email: string;
-  display_name: string;
-  created_at: number | null;
-  tos_accepted_at: number | null;
-  privacy_accepted_at: number | null;
-  age_confirmed_at: number | null;
-  last_login_at: number | null;
-  last_export_at: number | null;
-};
-type MembershipRow = { user_id: number; child_id: number; role: string; created_at: number | null };
-type ChildRow = {
-  id: number;
-  name: string;
-  birth_date: string;
-  created_at: number | null;
-  dietary_exclusions: string;
-};
-type EntryRow = {
-  id: number;
-  child_id: number;
-  food_id: number;
-  food_name: string;
-  given_at: number | null;
-  reaction: string;
-  notes: string | null;
-  texture: string | null;
-  logged_by: number | null;
-  meal_id: string | null;
-  created_at: number | null;
-};
-type SymptomRow = {
-  id: number;
-  food_entry_id: number;
-  observed_at: number | null;
-  label: string;
-  note: string | null;
-  created_by: number | null;
-  created_at: number | null;
-};
-type PreparedMealRow = {
-  id: number;
-  child_id: number;
-  brand: string;
-  name: string;
-  ingredient_food_ids: string;
-  last_used_at: number | null;
-  created_at: number | null;
-  updated_at: number | null;
-};
-type FoodNameRow = { id: number; name: string };
-type PasskeyRow = {
-  id: string;
-  name: string;
-  device_type: string;
-  backed_up: number;
-  transports: string | null;
-  created_at: number | null;
-  last_used_at: number | null;
-};
-type InvitationRow = {
-  child_id: number;
-  created_by: number | null;
-  used_by: number | null;
-  created_at: number | null;
-  expires_at: number | null;
-  used_at: number | null;
-};
-type TipDismissalRow = { child_id: number; reminder_key: string; dismissed_at: number | null };
-
-const db = new Database(databasePath, { readonly: true });
-
-const user = (
-  userId
-    ? db.query('SELECT * FROM users WHERE id = ?').get(userId)
-    : db.query('SELECT * FROM users WHERE email = ?').get(email!.toLowerCase())
-) as UserRow | null;
-
-if (!user) {
+const sqlite = new Database(databasePath, { readonly: true });
+try {
+  const payload = await exportUserData(
+    drizzle(sqlite, { schema }),
+    userId ? { userId } : { email: email! },
+    OPERATOR_EXPORT
+  );
+  console.log(JSON.stringify(payload, null, 2));
+} catch (err) {
+  if (!(err instanceof UserNotFoundError)) throw err;
   console.error('Utilisateur introuvable.');
-  db.close();
-  process.exit(2);
+  process.exitCode = 2;
+} finally {
+  sqlite.close();
 }
-
-const memberships = db
-  .query('SELECT * FROM memberships WHERE user_id = ?')
-  .all(user.id) as MembershipRow[];
-const childIds = memberships.map((m) => m.child_id);
-// SQLite has no array params, so expand `IN (?, ?, …)` to one placeholder per id.
-const inList = childIds.map(() => '?').join(',');
-
-const children = childIds.length
-  ? (db.query(`SELECT * FROM children WHERE id IN (${inList})`).all(...childIds) as ChildRow[])
-  : [];
-const entries = childIds.length
-  ? (db
-      .query(
-        `SELECT fe.*, f.name AS food_name
-           FROM food_entries fe
-           JOIN foods f ON f.id = fe.food_id
-          WHERE fe.child_id IN (${inList})
-          ORDER BY fe.given_at ASC`
-      )
-      .all(...childIds) as EntryRow[])
-  : [];
-// Mirrors gdpr.ts's exportUserData: symptoms are scoped by child_id (not just
-// the entries above) so a symptom row can never leak across a childId that
-// isn't actually a membership of this user.
-const symptomRows = childIds.length
-  ? (db
-      .query(`SELECT * FROM symptoms WHERE child_id IN (${inList}) ORDER BY observed_at ASC`)
-      .all(...childIds) as SymptomRow[])
-  : [];
-// Bucket once (preserving the observed_at ASC query order) instead of an
-// O(entries × symptoms) .filter() per entry below.
-const symptomsByEntryId = new Map<number, SymptomRow[]>();
-for (const s of symptomRows) {
-  const list = symptomsByEntryId.get(s.food_entry_id);
-  if (list) list.push(s);
-  else symptomsByEntryId.set(s.food_entry_id, [s]);
-}
-const preparedMeals = childIds.length
-  ? (db
-      .query(`SELECT * FROM prepared_meals WHERE child_id IN (${inList}) ORDER BY created_at ASC`)
-      .all(...childIds) as PreparedMealRow[])
-  : [];
-const passkeys = db.query('SELECT * FROM passkeys WHERE user_id = ?').all(user.id) as PasskeyRow[];
-
-// Invitations the user generated OR consumed — see gdpr.ts's exportUserData
-// for why `relationship` can produce two rows for the same code, and why the
-// bearer `code` itself is omitted from the export.
-const userInvitations = db
-  .query('SELECT * FROM invitations WHERE created_by = ? OR used_by = ? ORDER BY created_at ASC')
-  .all(user.id, user.id) as InvitationRow[];
-const tipDismissals = childIds.length
-  ? (db
-      .query(
-        `SELECT * FROM tip_dismissals WHERE user_id = ? AND child_id IN (${inList}) ORDER BY dismissed_at ASC`
-      )
-      .all(user.id, ...childIds) as TipDismissalRow[])
-  : [];
-
-const iso = (v: number | null) => (v == null ? null : new Date(v).toISOString());
-const parseTransports = (v: string | null): string[] => {
-  if (!v) return [];
-  try {
-    const parsed: unknown = JSON.parse(v);
-    return Array.isArray(parsed) ? (parsed as string[]) : [];
-  } catch {
-    return [];
-  }
-};
-const parseFoodIds = (v: string): number[] => {
-  try {
-    const parsed: unknown = JSON.parse(v);
-    return Array.isArray(parsed) ? parsed.filter((id): id is number => Number.isInteger(id)) : [];
-  } catch {
-    return [];
-  }
-};
-// Mirrors #lib/utils/diet.ts's parseDietExclusions: narrows an untrusted JSON
-// column down to the known DietExclusion id space, dropping unknown/invalid
-// entries rather than throwing. Duplicated here (not imported) because this
-// script is self-contained — the runtime Docker image ships `scripts/`
-// without the rest of `src/`.
-const DIET_EXCLUSIONS = ['porc', 'vegetarien', 'sans_poisson'];
-const parseDietExclusions = (v: string): string[] => {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(v);
-  } catch {
-    return [];
-  }
-  return Array.isArray(parsed) ? parsed.filter((x) => DIET_EXCLUSIONS.includes(x)) : [];
-};
-const preparedMealFoodIds = [
-  ...new Set(preparedMeals.flatMap((meal) => parseFoodIds(meal.ingredient_food_ids)))
-];
-const preparedMealFoodRows = preparedMealFoodIds.length
-  ? (db
-      .query(
-        `SELECT id, name FROM foods WHERE id IN (${preparedMealFoodIds.map(() => '?').join(',')})`
-      )
-      .all(...preparedMealFoodIds) as FoodNameRow[])
-  : [];
-const preparedMealFoodNames = new Map(preparedMealFoodRows.map((food) => [food.id, food.name]));
-
-const exportedInvitations = userInvitations.flatMap((inv) => {
-  const base = {
-    childId: inv.child_id,
-    createdAt: iso(inv.created_at),
-    expiresAt: iso(inv.expires_at),
-    usedAt: iso(inv.used_at)
-  };
-  const rows: Array<Record<string, unknown>> = [];
-  if (inv.created_by === user.id) {
-    rows.push({ ...base, relationship: 'sent' });
-  }
-  if (inv.used_by === user.id) {
-    rows.push({ ...base, relationship: 'accepted' });
-  }
-  return rows;
-});
-
-const payload = {
-  exportedAt: new Date().toISOString(),
-  generator: 'diversif',
-  schemaVersion: 1,
-  profile: {
-    id: user.id,
-    email: user.email,
-    displayName: user.display_name,
-    createdAt: iso(user.created_at),
-    tosAcceptedAt: iso(user.tos_accepted_at),
-    privacyAcceptedAt: iso(user.privacy_accepted_at),
-    ageConfirmedAt: iso(user.age_confirmed_at),
-    lastLoginAt: iso(user.last_login_at),
-    lastExportAt: iso(user.last_export_at)
-  },
-  children: children.map((c) => {
-    const m = memberships.find((mm) => mm.child_id === c.id);
-    return {
-      id: c.id,
-      name: c.name,
-      birthDate: c.birth_date,
-      createdAt: iso(c.created_at),
-      dietaryExclusions: parseDietExclusions(c.dietary_exclusions),
-      membership: { role: m?.role ?? 'member', joinedAt: iso(m?.created_at ?? null) },
-      foodEntries: entries
-        .filter((e) => e.child_id === c.id)
-        .map((e) => ({
-          id: e.id,
-          foodId: e.food_id,
-          foodName: e.food_name,
-          givenAt: iso(e.given_at),
-          reaction: e.reaction,
-          notes: e.notes,
-          texture: e.texture ?? null,
-          loggedByMe: e.logged_by === user.id,
-          mealId: e.meal_id ?? null,
-          createdAt: iso(e.created_at),
-          symptoms: (symptomsByEntryId.get(e.id) ?? []).map((s) => ({
-            id: s.id,
-            observedAt: iso(s.observed_at),
-            label: s.label,
-            note: s.note,
-            recordedByMe: s.created_by === user.id,
-            createdAt: iso(s.created_at)
-          }))
-        })),
-      preparedMeals: preparedMeals
-        .filter((meal) => meal.child_id === c.id)
-        .map((meal) => ({
-          id: meal.id,
-          brand: meal.brand,
-          name: meal.name,
-          ingredients: parseFoodIds(meal.ingredient_food_ids).map((foodId) => ({
-            foodId,
-            foodName: preparedMealFoodNames.get(foodId) ?? null
-          })),
-          lastUsedAt: iso(meal.last_used_at),
-          createdAt: iso(meal.created_at),
-          updatedAt: iso(meal.updated_at)
-        }))
-    };
-  }),
-  passkeys: passkeys.map((p) => ({
-    id: p.id,
-    name: p.name,
-    deviceType: p.device_type,
-    backedUp: !!p.backed_up,
-    transports: parseTransports(p.transports),
-    createdAt: iso(p.created_at),
-    lastUsedAt: iso(p.last_used_at)
-  })),
-  invitations: exportedInvitations,
-  tipDismissals: tipDismissals.map((t) => ({
-    childId: t.child_id,
-    reminderKey: t.reminder_key,
-    dismissedAt: iso(t.dismissed_at)
-  }))
-};
-
-console.log(JSON.stringify(payload, null, 2));
-db.close();

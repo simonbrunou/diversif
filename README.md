@@ -115,11 +115,16 @@ DATABASE_PATH=/app/data/diversif.db bun scripts/cleanup.ts
 
 ### Export / suppression manuels d'un compte
 
-Pour répondre manuellement à une demande RGPD article 15 / 20 (par exemple si l'utilisateur ne peut pas se connecter) :
+Pour répondre manuellement à une demande RGPD article 15 / 20 (par exemple si l'utilisateur ne peut pas se connecter, ou si `/account/export` a refusé un export trop volumineux) :
 
 ```bash
-DATABASE_PATH=/app/data/diversif.db bun scripts/export-user.ts user@example.com
+# Dans le conteneur (image Railpack ou Dockerfile) :
+DATABASE_PATH=/app/data/diversif.db bun build/scripts/export-user.js user@example.com
+# Depuis un clone (après `bun run paraglide`) :
+DATABASE_PATH=/chemin/vers/diversif.db bun scripts/export-user.ts user@example.com
 ```
+
+`--id <userId>` remplace l'adresse e-mail. Le script ouvre la base en lecture seule et produit le même JSON que `/account/export` (`src/lib/server/gdpr-export.ts`), sans plafond de lignes ni entrée d'audit. `bun run build` le livre sous forme autonome dans `build/scripts/`.
 
 ## Internationalisation
 

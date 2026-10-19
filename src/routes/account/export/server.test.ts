@@ -5,27 +5,30 @@ import { captureFlow, makeRouteEvent, safeUser } from '../../../test/route';
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 const exportSpy = { fn: mock() };
-import * as actualGdpr from '#lib/server/gdpr.js';
+import * as actualGdprExport from '#lib/server/gdpr-export.js';
 // Snapshot the real export AT IMPORT TIME, before mock.module replaces the
-// module. If we read actualGdpr.exportUserData later, the live binding has
+// module. If we read actualGdprExport.exportUserData later, the live binding has
 // already flipped to the mocked spy — calling the snapshot from the spy's
 // implementation would recurse infinitely.
-const realExportUserData: typeof actualGdpr.exportUserData = actualGdpr.exportUserData;
-mock.module('#lib/server/gdpr.js', () => ({
-  ...actualGdpr,
-  exportUserData: (...args: Parameters<typeof actualGdpr.exportUserData>) => exportSpy.fn(...args)
+const realExportUserData: typeof actualGdprExport.exportUserData = actualGdprExport.exportUserData;
+mock.module('#lib/server/gdpr-export.js', () => ({
+  ...actualGdprExport,
+  exportUserData: (...args: Parameters<typeof actualGdprExport.exportUserData>) =>
+    exportSpy.fn(...args)
 }));
 
 import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { ExportTooLargeError } from '#lib/server/gdpr.js';
+import { ExportTooLargeError } from '#lib/server/gdpr-export.js';
 import { GET } from './+server';
 
 beforeEach(async () => {
   await resetTestDb();
   // Default the spy to the real implementation (snapshotted above before
   // the mock.module replaced the module's namespace bindings).
-  exportSpy.fn.mockImplementation((userId: number) => realExportUserData(userId));
+  exportSpy.fn.mockImplementation((...args: Parameters<typeof realExportUserData>) =>
+    realExportUserData(...args)
+  );
 });
 
 async function seedUser() {
@@ -59,6 +62,9 @@ describe('account export GET', () => {
     expect(response.headers.get('content-disposition')).toContain('attachment');
     const json = JSON.parse(await response.text());
     expect(json.profile.email).toBe('exp@example.com');
+    // App db, no options: the self-service export keeps the row cap and the
+    // audit trail (OPERATOR_EXPORT is for the operator script only).
+    expect(exportSpy.fn).toHaveBeenLastCalledWith(testDb, { userId: u.id });
 
     const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
     expect(fresh?.lastExportAt).toBeInstanceOf(Date);

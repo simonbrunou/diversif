@@ -1,20 +1,14 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { randomUUID } from 'node:crypto';
+import { eq, sql } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../test/db';
-
-mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
-
-// Import the real audit module BEFORE re-mocking it. bun's mock.module is
-// process-global, so an `await import('./audit')` inside the factory would
-// recurse forever (it goes through the very mock we're defining). Capturing
-// the actual export statically once is the equivalent of vi.importActual.
-import * as actualAudit from './audit';
-const auditSpy = mock();
-mock.module('./audit', () => ({
-  ...actualAudit,
-  audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
-}));
-
-import { ExportTooLargeError, exportUserData } from './gdpr';
+import {
+  ExportTooLargeError,
+  OPERATOR_EXPORT,
+  UserNotFoundError,
+  exportUserData,
+  type ExportOptions
+} from './gdpr-export';
 import {
   children,
   foodEntries,
@@ -25,7 +19,6 @@ import {
   tipDismissals,
   users
 } from './db/schema';
-import { eq } from 'drizzle-orm';
 import {
   insertChild,
   insertEntry,
@@ -34,16 +27,70 @@ import {
   insertUser
 } from './gdpr-test-fixtures';
 
+// The module takes the database as a parameter, so tests hand it the
+// in-memory testDb directly: no mock.module of the db singleton or of audit.
+// Payload tests route the audit trail into a spy, which keeps stdout clean and
+// lets the audit tests assert on the events.
+const auditSpy = mock();
+
+function exportFor(userId: number, options: ExportOptions = {}) {
+  return exportUserData(testDb, { userId }, { audit: auditSpy, ...options });
+}
+
+// One child owned by a fresh user, with `count` food entries bulk-inserted in
+// one statement (a recursive CTE): fast enough to cross the real 50 000-row
+// cap without 50k round trips.
+async function userWithEntries(count: number) {
+  const u = await insertUser('bulk@example.com');
+  const c = await insertChild('Bébé', u.id);
+  await insertMembership(u.id, c.id, 'owner');
+  const food = await insertFood('Riz');
+  testDb.run(sql`
+    WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ${count})
+    INSERT INTO food_entries (child_id, food_id, given_at, reaction, logged_by, created_at)
+    SELECT ${c.id}, ${food.id}, 1700000000000 + i, 'ras', ${u.id}, 1700000000000 FROM n`);
+  return u;
+}
+
 beforeEach(async () => {
   await resetTestDb();
   auditSpy.mockClear();
 });
 
-describe('exportUserData', () => {
-  it('throws for unknown users', async () => {
-    await expect(exportUserData(99_999)).rejects.toThrow();
+describe('exportUserData: subject lookup', () => {
+  it('throws UserNotFoundError for an unknown user id', async () => {
+    await expect(exportFor(99_999)).rejects.toThrow(UserNotFoundError);
   });
 
+  it('throws UserNotFoundError for an unknown email', async () => {
+    await expect(
+      exportUserData(testDb, { email: 'nobody@example.com' }, OPERATOR_EXPORT)
+    ).rejects.toThrow(UserNotFoundError);
+  });
+
+  it('finds the subject by email, case-insensitively, with the same payload as by id', async () => {
+    const u = await insertUser('mixed@example.com', 'Mia');
+    const c = await insertChild('Léa', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    await insertEntry(c.id, (await insertFood('Banane')).id, u.id);
+
+    const { exportedAt: _byEmailAt, ...byEmail } = await exportUserData(
+      testDb,
+      { email: 'MIXED@Example.com' },
+      OPERATOR_EXPORT
+    );
+    const { exportedAt: _byIdAt, ...byId } = await exportUserData(
+      testDb,
+      { userId: u.id },
+      OPERATOR_EXPORT
+    );
+
+    expect(byEmail.profile.id).toBe(u.id);
+    expect(byEmail).toEqual(byId);
+  });
+});
+
+describe('exportUserData: payload', () => {
   it('returns the expected shape with redactions', async () => {
     const u = await insertUser('export@example.com', 'Eve');
     const c = await insertChild('Léa', u.id);
@@ -78,7 +125,7 @@ describe('exportUserData', () => {
       .set({ lastExportAt: new Date('2026-04-01T00:00:00Z') })
       .where(eq(users.id, u.id));
 
-    const out = await exportUserData(u.id);
+    const out = await exportFor(u.id);
     expect(out.generator).toBe('diversif');
     expect(out.schemaVersion).toBe(1);
     expect(out.profile.email).toBe('export@example.com');
@@ -123,7 +170,7 @@ describe('exportUserData', () => {
     });
     await testDb.delete(foodEntries).where(eq(foodEntries.childId, c.id));
 
-    const out = await exportUserData(u.id);
+    const out = await exportFor(u.id);
     expect(out.children[0].foodEntries).toEqual([]);
     expect(out.children[0].preparedMeals[0].ingredients).toEqual([
       { foodId: food.id, foodName: 'Carotte' }
@@ -139,13 +186,93 @@ describe('exportUserData', () => {
       .set({ dietaryExclusions: ['vegetarien', 'porc'] })
       .where(eq(children.id, c.id));
 
-    const out = await exportUserData(u.id);
+    const out = await exportFor(u.id);
     expect(out.children[0].dietaryExclusions).toEqual(['vegetarien', 'porc']);
+  });
+
+  it('drops dietaryExclusions ids outside the known set instead of failing', async () => {
+    const u = await insertUser('diet-unknown@example.com');
+    const c = await insertChild('Léa', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    // Raw write: the typed column would refuse an unknown id.
+    testDb.run(
+      sql`UPDATE children SET dietary_exclusions = ${JSON.stringify(['porc', 'inconnu'])} WHERE id = ${c.id}`
+    );
+
+    const out = await exportFor(u.id);
+    expect(out.children[0].dietaryExclusions).toEqual(['porc']);
+  });
+
+  it('lists children by id with their own membership, whatever order the user joined them in', async () => {
+    const u = await insertUser('two-kids@example.com');
+    const owner = await insertUser('other-parent@example.com');
+    const first = await insertChild('Aïcha', owner.id);
+    const second = await insertChild('Basile', u.id);
+    await insertMembership(u.id, second.id, 'owner', new Date('2026-01-01T00:00:00Z'));
+    await insertMembership(owner.id, first.id, 'owner');
+    await insertMembership(u.id, first.id, 'member', new Date('2026-02-01T00:00:00Z'));
+
+    const out = await exportFor(u.id);
+    expect(out.children.map((c) => [c.name, c.membership])).toEqual([
+      ['Aïcha', { role: 'member', joinedAt: '2026-02-01T00:00:00.000Z' }],
+      ['Basile', { role: 'owner', joinedAt: '2026-01-01T00:00:00.000Z' }]
+    ]);
+  });
+
+  it('reads malformed JSON columns as empty or filtered lists instead of failing the export', async () => {
+    const u = await insertUser('corrupt@example.com');
+    const c = await insertChild('Léa', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Carotte');
+    await testDb.insert(preparedMeals).values(
+      ['Cassé', 'Mélangé'].map((name, i) => ({
+        childId: c.id,
+        brand: 'Babybio',
+        name,
+        ingredientFoodIds: [food.id],
+        createdAt: new Date(Date.UTC(2026, 4, 1 + i)),
+        updatedAt: new Date(Date.UTC(2026, 4, 1 + i))
+      }))
+    );
+    await testDb.insert(passkeys).values(
+      ['pk-broken', 'pk-string'].map((id) => ({
+        id,
+        userId: u.id,
+        publicKey: 'k',
+        counter: 0,
+        transports: [],
+        deviceType: 'singleDevice' as const,
+        backedUp: false,
+        name: id,
+        createdAt: new Date()
+      }))
+    );
+    // Raw writes standing in for a hand-edited row or a bad restore: the typed
+    // json columns can't produce these. The operator export is the fallback
+    // when the self-service one fails, so it must still go through.
+    testDb.run(sql`UPDATE children SET dietary_exclusions = '{oops' WHERE id = ${c.id}`);
+    testDb.run(sql`UPDATE passkeys SET transports = 'not json' WHERE id = 'pk-broken'`);
+    testDb.run(sql`UPDATE passkeys SET transports = '"usb"' WHERE id = 'pk-string'`);
+    testDb.run(sql`UPDATE prepared_meals SET ingredient_food_ids = '[' WHERE name = 'Cassé'`);
+    testDb.run(
+      sql`UPDATE prepared_meals SET ingredient_food_ids = ${JSON.stringify(['11', 1.5, null, food.id])} WHERE name = 'Mélangé'`
+    );
+
+    const out = await exportFor(u.id);
+    expect(out.children[0].dietaryExclusions).toEqual([]);
+    expect(out.passkeys.map((p) => [p.id, p.transports])).toEqual([
+      ['pk-broken', []],
+      ['pk-string', []]
+    ]);
+    expect(out.children[0].preparedMeals.map((m) => [m.name, m.ingredients])).toEqual([
+      ['Cassé', []],
+      ['Mélangé', [{ foodId: food.id, foodName: 'Carotte' }]]
+    ]);
   });
 
   it('returns empty children list when user has no memberships', async () => {
     const u = await insertUser('alone@example.com');
-    const out = await exportUserData(u.id);
+    const out = await exportFor(u.id);
     expect(out.children).toEqual([]);
     expect(out.passkeys).toEqual([]);
   });
@@ -154,7 +281,7 @@ describe('exportUserData', () => {
     const u = await insertUser('blank@example.com');
     const c = await insertChild('Bébé', u.id);
     await insertMembership(u.id, c.id, 'owner');
-    const out = await exportUserData(u.id);
+    const out = await exportFor(u.id);
     expect(out.children).toHaveLength(1);
     expect(out.children[0].foodEntries).toEqual([]);
   });
@@ -188,7 +315,7 @@ describe('exportUserData', () => {
       usedBy: accepted.id
     });
 
-    const senderOut = await exportUserData(inviter.id);
+    const senderOut = await exportFor(inviter.id);
     expect(senderOut.invitations).toHaveLength(2);
     // Ordered by createdAt: INV-SENT first (2026-05-01), INV-ACCEPTED second
     // (2026-05-02). Identify by usedAt rather than code (code is intentionally
@@ -197,7 +324,7 @@ describe('exportUserData', () => {
     expect(senderOut.invitations[1].relationship).toBe('sent');
     expect(senderOut.invitations[1].usedAt).not.toBeNull();
 
-    const accepterOut = await exportUserData(accepted.id);
+    const accepterOut = await exportFor(accepted.id);
     expect(accepterOut.invitations).toHaveLength(1);
     expect(accepterOut.invitations[0].relationship).toBe('accepted');
     expect(accepterOut.invitations[0].usedAt).not.toBeNull();
@@ -224,7 +351,7 @@ describe('exportUserData', () => {
       usedBy: user.id
     });
 
-    const out = await exportUserData(user.id);
+    const out = await exportFor(user.id);
 
     expect(out.invitations).toEqual([
       {
@@ -272,7 +399,7 @@ describe('exportUserData', () => {
       dismissedAt: new Date('2026-05-03')
     });
 
-    const out = await exportUserData(u.id);
+    const out = await exportFor(u.id);
     expect(out.tipDismissals).toHaveLength(2);
     expect(out.tipDismissals.map((t) => t.reminderKey)).toEqual([
       'priority-allergens',
@@ -290,117 +417,8 @@ describe('exportUserData', () => {
     const food = await insertFood('Riz');
     await insertEntry(c.id, food.id, owner.id);
 
-    const out = await exportUserData(member.id);
+    const out = await exportFor(member.id);
     expect(out.children[0].foodEntries[0].loggedByMe).toBe(false);
-  });
-
-  it('throws ExportTooLargeError when food entries exceed the cap', async () => {
-    const u = await insertUser('big@example.com');
-    const c = await insertChild('Bébé', u.id);
-    await insertMembership(u.id, c.id, 'owner');
-    const food = await insertFood('Riz');
-    // Seed 3 entries; pass a cap of 2 so the threshold trips without
-    // having to insert tens of thousands of rows.
-    await insertEntry(c.id, food.id, u.id);
-    await insertEntry(c.id, food.id, u.id);
-    await insertEntry(c.id, food.id, u.id);
-    await expect(exportUserData(u.id, 2)).rejects.toThrow(ExportTooLargeError);
-    try {
-      await exportUserData(u.id, 2);
-    } catch (err) {
-      if (err instanceof ExportTooLargeError) {
-        expect(err.count).toBe(3);
-        expect(err.limit).toBe(2);
-      } else {
-        throw err;
-      }
-    }
-  });
-
-  it('throws ExportTooLargeError when entries are within the cap but symptoms push the combined total over it', async () => {
-    const u = await insertUser('symptom-heavy@example.com');
-    const c = await insertChild('Bébé', u.id);
-    await insertMembership(u.id, c.id, 'owner');
-    const food = await insertFood('Riz');
-    // 2 entries, well under a cap of 5 — but 4 symptoms on top push the
-    // combined food-entry + symptom count to 6, over the cap. Guards against
-    // the preflight counting only food_entries and missing an unbounded
-    // symptom log.
-    const entry1 = await insertEntry(c.id, food.id, u.id);
-    const entry2 = await insertEntry(c.id, food.id, u.id);
-    for (let i = 0; i < 4; i++) {
-      await testDb.insert(symptoms).values({
-        foodEntryId: i % 2 === 0 ? entry1.id : entry2.id,
-        childId: c.id,
-        observedAt: new Date(),
-        label: 'rougeur',
-        note: null,
-        createdBy: u.id,
-        createdAt: new Date()
-      });
-    }
-
-    await expect(exportUserData(u.id, 5)).rejects.toThrow(ExportTooLargeError);
-    try {
-      await exportUserData(u.id, 5);
-    } catch (err) {
-      if (err instanceof ExportTooLargeError) {
-        expect(err.count).toBe(6);
-        expect(err.limit).toBe(5);
-      } else {
-        throw err;
-      }
-    }
-  });
-
-  it('emits an account.export_blocked audit event when the cap trips', async () => {
-    const u = await insertUser('refused@example.com');
-    const c = await insertChild('Bébé', u.id);
-    await insertMembership(u.id, c.id, 'owner');
-    const food = await insertFood('Riz');
-    await insertEntry(c.id, food.id, u.id);
-    await insertEntry(c.id, food.id, u.id);
-
-    await expect(exportUserData(u.id, 1)).rejects.toThrow(ExportTooLargeError);
-
-    expect(auditSpy).toHaveBeenCalledOnce();
-    expect(auditSpy).toHaveBeenCalledWith({
-      type: 'account.export_blocked',
-      userId: u.id,
-      reason: 'too_large',
-      count: 2,
-      limit: 1
-    });
-  });
-
-  it('exports normally when entry count equals the cap', async () => {
-    const u = await insertUser('exact@example.com');
-    const c = await insertChild('Bébé', u.id);
-    await insertMembership(u.id, c.id, 'owner');
-    const food = await insertFood('Riz');
-    await insertEntry(c.id, food.id, u.id);
-    await insertEntry(c.id, food.id, u.id);
-    const out = await exportUserData(u.id, 2);
-    expect(out.children[0].foodEntries).toHaveLength(2);
-  });
-
-  it('emits an account.exported audit event with the entry count', async () => {
-    const u = await insertUser('exporter@example.com');
-    const c = await insertChild('Bébé', u.id);
-    await insertMembership(u.id, c.id, 'owner');
-    const food = await insertFood('Banane');
-    await insertEntry(c.id, food.id, u.id);
-    await insertEntry(c.id, food.id, u.id);
-    await insertEntry(c.id, food.id, u.id);
-
-    await exportUserData(u.id);
-
-    expect(auditSpy).toHaveBeenCalledOnce();
-    expect(auditSpy).toHaveBeenCalledWith({
-      type: 'account.exported',
-      userId: u.id,
-      foodEntryCount: 3
-    });
   });
 
   it('includes texture in exported food entries', async () => {
@@ -411,11 +429,47 @@ describe('exportUserData', () => {
     await insertEntry(c.id, food.id, u.id, 'ecrasee');
     await insertEntry(c.id, food.id, u.id, null);
 
-    const out = await exportUserData(u.id);
+    const out = await exportFor(u.id);
     const entries = out.children[0].foodEntries;
     expect(entries).toHaveLength(2);
     expect(entries[0].texture).toBe('ecrasee');
     expect(entries[1].texture).toBeNull();
+  });
+
+  it('includes mealId, shared by the ingredients of one meal and null on a standalone entry', async () => {
+    const u = await insertUser('meal-export@example.com');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const carotte = await insertFood('Carotte');
+    const poulet = await insertFood('Poulet');
+    const mealId = randomUUID();
+    const givenAt = new Date('2026-05-02T08:00:00Z');
+    await testDb.insert(foodEntries).values(
+      [carotte, poulet].map((food) => ({
+        childId: c.id,
+        foodId: food.id,
+        givenAt,
+        reaction: 'ras' as const,
+        loggedBy: u.id,
+        mealId,
+        createdAt: givenAt
+      }))
+    );
+    await testDb.insert(foodEntries).values({
+      childId: c.id,
+      foodId: carotte.id,
+      givenAt: new Date('2026-05-03T08:00:00Z'),
+      reaction: 'ras',
+      loggedBy: u.id,
+      createdAt: givenAt
+    });
+
+    const out = await exportFor(u.id);
+    expect(out.children[0].foodEntries.map((e) => [e.foodName, e.mealId])).toEqual([
+      ['Carotte', mealId],
+      ['Poulet', mealId],
+      ['Carotte', null]
+    ]);
   });
 
   it('nests symptoms under the right food entry with recordedByMe, excluding unrelated children', async () => {
@@ -464,7 +518,7 @@ describe('exportUserData', () => {
       createdAt: new Date('2026-05-01T10:15:00Z')
     });
 
-    const out = await exportUserData(owner.id);
+    const out = await exportFor(owner.id);
     expect(out.children).toHaveLength(1); // strangerChild never appears
     const entries = out.children[0].foodEntries;
     const withSymptoms = entries.find((e) => e.id === entryWithSymptoms.id)!;
@@ -488,5 +542,126 @@ describe('exportUserData', () => {
       }
     ]);
     expect(withoutSymptoms.symptoms).toEqual([]);
+  });
+});
+
+describe('exportUserData: row cap and audit trail', () => {
+  it('throws ExportTooLargeError when food entries exceed the cap', async () => {
+    const u = await userWithEntries(3);
+    const err = await exportFor(u.id, { rowLimit: 2 }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ExportTooLargeError);
+    expect(err).toMatchObject({ count: 3, limit: 2 });
+  });
+
+  it('throws ExportTooLargeError when entries are within the cap but symptoms push the combined total over it', async () => {
+    const u = await insertUser('symptom-heavy@example.com');
+    const c = await insertChild('Bébé', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Riz');
+    // 2 entries, well under a cap of 5 — but 4 symptoms on top push the
+    // combined food-entry + symptom count to 6, over the cap. Guards against
+    // the preflight counting only food_entries and missing an unbounded
+    // symptom log.
+    const entry1 = await insertEntry(c.id, food.id, u.id);
+    const entry2 = await insertEntry(c.id, food.id, u.id);
+    for (let i = 0; i < 4; i++) {
+      await testDb.insert(symptoms).values({
+        foodEntryId: i % 2 === 0 ? entry1.id : entry2.id,
+        childId: c.id,
+        observedAt: new Date(),
+        label: 'rougeur',
+        note: null,
+        createdBy: u.id,
+        createdAt: new Date()
+      });
+    }
+
+    const err = await exportFor(u.id, { rowLimit: 5 }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ExportTooLargeError);
+    expect(err).toMatchObject({ count: 6, limit: 5 });
+  });
+
+  it('exports normally when entry count equals the cap', async () => {
+    const u = await userWithEntries(2);
+    const out = await exportFor(u.id, { rowLimit: 2 });
+    expect(out.children[0].foodEntries).toHaveLength(2);
+  });
+
+  it('emits an account.export_blocked audit event when the cap trips', async () => {
+    const u = await userWithEntries(2);
+
+    await expect(exportFor(u.id, { rowLimit: 1 })).rejects.toThrow(ExportTooLargeError);
+
+    expect(auditSpy).toHaveBeenCalledTimes(1);
+    expect(auditSpy).toHaveBeenCalledWith({
+      type: 'account.export_blocked',
+      userId: u.id,
+      reason: 'too_large',
+      count: 2,
+      limit: 1
+    });
+  });
+
+  it('emits an account.exported audit event with the entry count', async () => {
+    const u = await userWithEntries(3);
+
+    await exportFor(u.id);
+
+    expect(auditSpy).toHaveBeenCalledTimes(1);
+    expect(auditSpy).toHaveBeenCalledWith({
+      type: 'account.exported',
+      userId: u.id,
+      foodEntryCount: 3
+    });
+  });
+});
+
+describe('exportUserData: default options vs OPERATOR_EXPORT', () => {
+  let logSpy: ReturnType<typeof spyOn<Console, 'log'>>;
+  beforeEach(() => {
+    logSpy = spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    logSpy.mockRestore();
+  });
+
+  it('defaults to the self-service policy: 50 000-row cap, refusal written to the audit log', async () => {
+    const u = await userWithEntries(50_001);
+
+    const err = await exportUserData(testDb, { userId: u.id }).catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(ExportTooLargeError);
+    expect(err).toMatchObject({ count: 50_001, limit: 50_000 });
+    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(logSpy.mock.calls[0][0] as string)).toMatchObject({
+      level: 'audit',
+      type: 'account.export_blocked',
+      userId: u.id
+    });
+  });
+
+  it('writes account.exported to the audit log by default', async () => {
+    const u = await userWithEntries(1);
+
+    await exportUserData(testDb, { userId: u.id });
+
+    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(logSpy.mock.calls[0][0] as string)).toMatchObject({
+      level: 'audit',
+      type: 'account.exported',
+      userId: u.id,
+      foodEntryCount: 1
+    });
+  });
+
+  it('OPERATOR_EXPORT exports past the self-service cap and writes nothing to stdout', async () => {
+    const u = await userWithEntries(50_001);
+
+    const out = await exportUserData(testDb, { userId: u.id }, OPERATOR_EXPORT);
+
+    expect(out.children[0].foodEntries).toHaveLength(50_001);
+    // The operator script prints the export on stdout, where audit() also
+    // writes: a single audit line would corrupt the JSON it hands over.
+    expect(logSpy).not.toHaveBeenCalled();
   });
 });
