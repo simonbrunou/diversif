@@ -34,7 +34,7 @@ export type AllergenEntry = {
   givenAt: number;
 };
 
-export type MaintainCandidate = {
+type MaintainCandidate = {
   id: PriorityAllergenId;
   /** Epoch ms of the last reliable exposure. */
   lastAt: number;
@@ -64,7 +64,7 @@ export type AllergenItem = {
 };
 
 /** One of the 12 tracked allergens, as the Bilan prints it for the pediatrician. */
-export type AllergenBilanRow = {
+type AllergenBilanRow = {
   id: AllergenId;
   label: string;
   isPriority: boolean;
