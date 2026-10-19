@@ -9,8 +9,8 @@ export type MealDateErrorKey = 'errorsLogDateFuture' | 'errorsLogDateBeforeBirth
 
 /**
  * Bounds-checks a meal's givenAt against "now" and the child's birth date.
- * Shared by every write path (create, single-entry edit, whole-meal edit) so
- * the three server actions agree on the same tolerance and calendar. Mirrors
+ * The repas write module (src/lib/server/repas) applies it to every write,
+ * inside the write's own transaction. Mirrors
  * formatAge's Europe/Paris civil-day comparison (src/lib/utils/age.ts) so a
  * meal logged on the child's birth day is accepted, matching "aujourd’hui".
  */

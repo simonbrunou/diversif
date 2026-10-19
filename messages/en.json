@@ -135,8 +135,6 @@
   "errorsLogDateFuture": "This meal’s date can’t be in the future.",
   "errorsLogDateBeforeBirth": "This date is before your baby was born. Check the day you selected.",
   "errorsLogFoodNotFound": "Food not found.",
-  "errorsLogFoodInvalid": "Invalid food.",
-  "errorsLogNoFoodResolved": "No food selected.",
   "errorsLogIdempotencyKeyInvalid": "Invalid idempotency key.",
   "errorsLogIdempotencyConflict": "Idempotency key conflict.",
   "errorsLogTextureInvalid": "Invalid texture.",
