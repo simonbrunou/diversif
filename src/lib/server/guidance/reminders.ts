@@ -292,11 +292,11 @@ function ruleForbiddenFoods({ input }: RuleContext): Reminder[] {
   return out;
 }
 
-// 8. Maintain priority allergens: nudge the overdue head of the allergen
-// history's maintain queue, the same queue the menu's maintenance card and the
-// tile's 'fading' state read. The queue never holds an allergen associated
-// with discomfort or a reaction, so an automated prompt never advises
-// re-exposure before medical review.
+// 8. Maintain priority allergens: nudge the first MAINTAIN_CARD_CAP overdue
+// entries of the allergen history's maintain queue, the same queue the menu's
+// maintenance card and the 'fading' state read. The queue never holds an
+// allergen associated with discomfort or a reaction, so this nudge never
+// advises re-exposure before medical review.
 function ruleMaintainAllergens({ input, childPath }: RuleContext): Reminder[] {
   if (input.ageMonths < 4) return [];
   const overdue = input.allergens.maintainQueue.filter((c) => c.overdue);

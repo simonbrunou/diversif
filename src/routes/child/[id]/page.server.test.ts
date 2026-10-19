@@ -392,7 +392,8 @@ describe('child/[id] +page.server load', () => {
     // Wiring check: the loader must hand the reminders the allergen history,
     // whose exposure rule excludes a matieres_grasses+ras row. If that ever
     // regresses, an allergenic fat like Beurre would start "introducing"
-    // lait and triggering a "keep giving lait" nudge from a fat log alone.
+    // lait: no more pending nudge, and a "keep giving lait" nudge from a fat
+    // log alone.
     const eightDaysAgo = new Date(Date.now() - 8 * 86400_000);
 
     async function loadWithLaitEntry(category: string, foodName: string) {

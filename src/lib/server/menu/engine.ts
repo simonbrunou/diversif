@@ -56,7 +56,6 @@ export type Menu = {
 
 const CHARCUTERIE = (f: Food) => CHARCUTERIE_MATCHERS.some((m) => f.name.includes(m));
 
-// Matches the Set-based lookup pattern in allergen-history.ts / AujourdhuiBento.svelte.
 const PRIORITY_ALLERGEN_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 function forbiddenAtAge(f: Food, ageMonths: number): boolean {
@@ -247,8 +246,8 @@ function allowedAllergen(input: MenuInput, a: string): boolean {
 // The allergen-focus card scans the WHOLE catalog by allergenType, not a role pool, so it uses
 // THIS predicate rather than safeForRole — which means it must repeat every role-independent
 // safety gate safeForRole applies, or an unsafe food slips onto the card. Charcuterie (Jambon)
-// is never a protéine and never card-eligible, and neither is an allergenic fat, which never
-// counts as an exposure.
+// is never a protéine and never card-eligible, and neither is an allergenic fat, which is never
+// a reliable exposure.
 function catalogSafe(f: Food, input: MenuInput): boolean {
   return safeFood(f, input) && !CHARCUTERIE(f) && input.allergens.isExposureFood(f);
 }
@@ -269,10 +268,11 @@ function pickDueAllergenFood(input: MenuInput): Food | null {
   );
 }
 
-// No allergen to introduce → maintain the first allergen of the history's maintain queue (most
-// days without a reliable exposure) that the diet allows and that still has a safe, already
-// introduced food. It is the queue the Aujourd'hui maintain reminders nudge, so the card and the
-// reminder name the same allergen whenever the menu can serve it.
+// No allergen to introduce → maintain the first allergen of the history's maintain queue (the
+// oldest last reliable exposure) that the diet allows and that still has a safe, already
+// introduced food. The Aujourd'hui maintain reminders nudge the same queue's first overdue
+// entries, so the card names their first allergen unless the diet or a missing safe introduced
+// food rules it out.
 function pickMaintainAllergenFood(input: MenuInput): Food | null {
   for (const { id } of input.allergens.maintainQueue) {
     if (!allowedAllergen(input, id)) continue;

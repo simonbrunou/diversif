@@ -265,6 +265,10 @@ describe('child/[id]/report load', () => {
     // 2 non-allergen entries: should NOT appear in allergens output
     await logEntry(c.id, carotte.id, u.id, new Date('2026-04-10'), 'ras');
     await logEntry(c.id, carotte.id, u.id, new Date('2026-04-12'), 'ras');
+    // Butter logged fine: the loader must pass the food's category through, or
+    // lait would read as introduced on the page the pediatrician gets.
+    const beurre = await seedFood('Beurre', 'matieres_grasses', 'lait');
+    await logEntry(c.id, beurre.id, u.id, new Date('2026-04-22'), 'ras');
 
     const data = await load(
       makeRouteEvent({

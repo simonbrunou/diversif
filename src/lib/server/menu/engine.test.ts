@@ -430,13 +430,14 @@ test('charcuterie (Jambon) is never surfaced as a protéine, even un-introduced'
 
 test('reaction to Saumon blocks all poisson', () => {
   const saumon = CATALOG.find((f) => f.name === 'Saumon')!;
-  const menu = buildMenu(
-    baseInput({
-      reactionTierFoodIds: new Set([saumon.id]),
-      avoidFoodIds: new Set([saumon.id]),
-      allergens: historyOf({ blocked: ['poisson'] })
-    })
-  );
+  const input = baseInput({
+    reactionTierFoodIds: new Set([saumon.id]),
+    avoidFoodIds: new Set([saumon.id]),
+    allergens: historyOf({ blocked: ['poisson'] })
+  });
+  // The whole protéine pool, not one day's pick: a rotation could dodge fish by luck.
+  expect(safeForRole('proteine', input).some((f) => f.allergenType === 'poisson')).toBe(false);
+  const menu = buildMenu(input);
   expect(menu.meals.flatMap((mo) => mo.items).some((i) => i.food.category === 'poissons')).toBe(
     false
   );
@@ -457,14 +458,14 @@ test('allergenFocus.maintain re-offers only an introduced food', () => {
   expect(intro.has(menu.allergenFocus!.food.id)).toBe(true);
 });
 
-// The maintenance card follows the allergen history's maintain queue, the same
-// one the Aujourd'hui reminders nudge, so the two never name different allergens
-// unless the menu cannot serve the reminder's one.
+// The maintenance card follows the allergen history's maintain queue, whose first
+// overdue entries the Aujourd'hui reminders nudge: the card names the queue's
+// first allergen unless the diet or a missing safe introduced food rules it out.
 describe('allergenFocus.maintain follows the maintain queue', () => {
-  /** Every priority allergen given today, except the overrides given `daysAgo` days ago. */
-  const givenDaysAgo = (overdue: Record<string, number>) =>
+  /** Every priority allergen given today, except those in `daysAgo`, given that many days ago. */
+  const givenDaysAgo = (daysAgo: Record<string, number>) =>
     allergenHistoryFrom(
-      PRIORITY_INTRODUCTION_ALLERGENS.map((id) => allergenRow(id, 'ras', overdue[id] ?? 0)),
+      PRIORITY_INTRODUCTION_ALLERGENS.map((id) => allergenRow(id, 'ras', daysAgo[id] ?? 0)),
       NOW
     );
 

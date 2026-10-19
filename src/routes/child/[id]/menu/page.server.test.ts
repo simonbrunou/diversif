@@ -109,10 +109,11 @@ describe('child/[id]/menu load', () => {
       category: 'matieres_grasses',
       age: 6
     });
-    // A food WITH an allergenType logged at the 'reaction' tier exercises every
-    // branch of the loader's aggregation loop in one entry: avoidFoodIds
-    // (reaction >= inconfort), reactionTierFoodIds (reaction >= reaction), and
-    // the allergen history's block on its allergen. It's a proteine-role food
+    // A food WITH an allergenType logged at the 'reaction' tier exercises both
+    // reaction branches of the loader's aggregation loop in one entry
+    // (avoidFoodIds: reaction >= inconfort; reactionTierFoodIds: reaction >=
+    // reaction); the allergen history blocks its allergen too, though that
+    // block alone is not what keeps this food out. It's a proteine-role food
     // (oeufs), so excluding it is a real, observable behavior — not vacuous.
     const oeuf = await insertFood({ name: 'Œuf', category: 'oeufs', age: 6, allergen: 'oeuf' });
 

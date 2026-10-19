@@ -132,9 +132,6 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
   // Read once, unbounded; the tile and the allergen reminders both answer from it.
   const allergens = loadAllergenHistory(db, childId, nowAtLoad.getTime());
 
-  // Per-allergen status (same shape as the Carnet Allergènes segment) so
-  // the "Allergènes prioritaires" tile shows real allergen names, not
-  // synthetic placeholders.
   const bentoAllergens = allergens.statuses;
 
   const streak = await loadStreak(childId);

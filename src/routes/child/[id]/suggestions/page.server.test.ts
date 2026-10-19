@@ -265,7 +265,7 @@ describe('child/[id]/suggestions load', () => {
     expect(out.others.some((f) => f.id === otherMilk.id)).toBe(false);
   });
 
-  it('blocks lait after symptoms logged on butter, though butter never introduces it (#373)', async () => {
+  it('blocks lait after symptoms logged on butter, though butter is not an introduction food (#373)', async () => {
     const ctx = await setup();
     const butter = await insertFood({
       name: 'Beurre',
