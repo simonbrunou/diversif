@@ -2,7 +2,7 @@ import { defineEnvVars } from '@sveltejs/kit/env';
 
 // Browser-side Sentry configuration, read at runtime (SvelteKit's default for
 // env vars) so one Docker image serves every deployment. Unset values become
-// '' — hooks.client.ts treats an empty DSN as "browser capture disabled" and
+// '': an empty DSN means "browser capture disabled", and #lib/sentry-policy.ts
 // falls back to its own defaults for the rest. The server reads its SENTRY_*
 // counterparts straight from process.env (src/instrumentation.server.ts).
 const optional = (input: string | undefined) => input ?? '';

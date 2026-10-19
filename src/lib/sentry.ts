@@ -3,8 +3,8 @@
  * errors (`beforeSend`), transactions (`beforeSendTransaction`), spans
  * (`beforeSendSpan`), logs (`beforeSendLog`), replay/feedback events (the
  * client's privacy integration) and replay recording frames
- * (`beforeAddRecordingEvent`). Imported by src/instrumentation.server.ts and
- * src/hooks.client.ts so both runtimes share one rule set.
+ * (`beforeAddRecordingEvent`). #lib/sentry-policy.ts wires each scrubber to
+ * its SDK hook in both runtimes, so they share one rule set.
  *
  * Posture: strict, defence in depth. The errorId in event.tags is the only
  * correlation token. From the SDK side this scrubber drops user.id, email,
@@ -12,8 +12,8 @@
  * browser error keeps only its engine wording, see scrubErrorMessage), stack
  * frame locals, and every span/log attribute that can carry a client identifier
  * (request headers, client address, user agent); combined with the
- * restrictive `dataCollection` baseline (DATA_COLLECTION) in Sentry.init, no
- * client identifiers leave the process.
+ * restrictive `dataCollection` baseline in #lib/sentry-policy.ts, no client
+ * identifiers leave the process.
  *
  * Browser payloads reach Sentry through the same-origin tunnel
  * (src/routes/monitoring/+server.ts), so Sentry's ingest only ever sees the
@@ -22,36 +22,7 @@
  * second layer (Settings → Security & Privacy).
  */
 
-import type { Breadcrumb, Event, init } from '@sentry/sveltekit';
-
-type DataCollection = NonNullable<Parameters<typeof init>[0]['dataCollection']>;
-
-/** Same-origin path the browser SDK posts envelopes to (see hooks.client.ts). */
-export const SENTRY_TUNNEL_PATH = '/monitoring';
-
-/**
- * `dataCollection` for both Sentry.init calls. SDK v11 replaced
- * `sendDefaultPii` with `dataCollection`, whose defaults collect user info,
- * cookies, request/response bodies and database query data, and an unknown
- * `sendDefaultPii: false` is silently ignored, so the old opt-out must be
- * restated here. This is the baseline the v11 migration guide gives for
- * keeping v10's default behaviour; scrubEvent/scrubSpan/scrubLog still strip
- * what the SDK attaches anyway.
- */
-export const DATA_COLLECTION: DataCollection = {
-  userInfo: false,
-  cookies: false,
-  httpHeaders: {
-    request: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] },
-    response: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] }
-  },
-  httpBodies: [],
-  urlQueryParams: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] },
-  genAI: { inputs: false, outputs: false },
-  databaseQueryData: false,
-  queues: false,
-  graphQL: { document: false, variables: false }
-};
+import type { Breadcrumb, Event } from '@sentry/sveltekit';
 
 type ScrubbableSpan = {
   description?: string;
@@ -179,17 +150,6 @@ export function scrubLog<L extends ScrubbableLog>(log: L): L {
 }
 
 /**
- * Parse a `*_SAMPLE_RATE` env value. Anything that is not a number in [0, 1]
- * (unset, empty, typo, out of range) falls back to the documented default
- * rather than silently sampling everything or nothing.
- */
-export function parseSampleRate(raw: string | undefined, fallback: number): number {
-  if (raw === undefined || raw.trim() === '') return fallback;
-  const rate = Number(raw);
-  return Number.isFinite(rate) && rate >= 0 && rate <= 1 ? rate : fallback;
-}
-
-/**
  * Drop breadcrumbs that the SDK auto-collects but we don't want sent to
  * Sentry under the strict-PII contract:
  *
@@ -200,7 +160,7 @@ export function parseSampleRate(raw: string | undefined, fallback: number): numb
  *   attach that JSON (containing userId, raw path, msg, stack) as a
  *   breadcrumb on subsequent events, bypassing the rest of scrubEvent.
  *
- * Wired as `beforeBreadcrumb` in both hooks so dropped breadcrumbs never
+ * Wired as `beforeBreadcrumb` in both runtimes so dropped breadcrumbs never
  * enter the SDK's internal buffer; the same filter is also applied inside
  * scrubEvent as a belt-and-braces second pass.
  */
@@ -442,7 +402,7 @@ function scrubFeedback(feedback: Record<string, unknown>): void {
 /**
  * Scrub any event type in place: errors (`beforeSend`), transactions
  * (`beforeSendTransaction`), and the browser's replay/feedback events (routed
- * through the privacy integration in hooks.client.ts because `beforeSend`
+ * through the privacy integration in sentry-policy.ts because `beforeSend`
  * never sees them). Returns null — dropping the event — if scrubbing throws.
  */
 function scrubEventWith<E extends Event>(

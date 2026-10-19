@@ -6,99 +6,39 @@ import {
   PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE,
   PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE
 } from '$app/env/public';
-import type { HandleClientError } from '@sveltejs/kit/hooks';
-import {
-  SENTRY_TUNNEL_PATH,
-  DATA_COLLECTION,
-  clientRouteTag,
-  filterIncomingBreadcrumb,
-  parseSampleRate,
-  scrubBrowserEvent,
-  scrubSpan
-} from '#lib/sentry.js';
-import { isNetworkFailure } from '#lib/network-failure.js';
+import { clientSentryOptions, handleClientError } from '#lib/sentry-policy.js';
 import { loadReplay } from '#lib/sentry-replay-loader.js';
 import { recoverFromFailedBoot } from '#lib/boot-recovery.js';
-import * as m from '#lib/paraglide/messages.js';
 
 // No paraglide bootstrap is needed here since the 2.x migration: the
 // runtime's `url` strategy re-reads window.location on every getLocale()
 // call, so the locale is correct before hydration and across client-side
 // navigations (the layout still syncs <html lang>).
 
-Sentry.init({
-  dsn: PUBLIC_SENTRY_DSN,
-  environment: PUBLIC_SENTRY_ENVIRONMENT || 'production',
-  // Inlined at build time by Vite's `define` (vite.config.ts), so the
-  // server-side SHA and the client bundle share one constant.
-  release: __SENTRY_RELEASE__,
-  // Envelopes go to our own origin, which relays them to Sentry
-  // (src/routes/monitoring/+server.ts): Sentry never sees a parent's IP
-  // address, and CSP connect-src stays 'self'.
-  tunnel: SENTRY_TUNNEL_PATH,
-  // The SDK posts binary envelopes (compressed replay segments) without a
-  // Content-Type, and SvelteKit hands a body-less Request to any endpoint
-  // whose request lacks one — the tunnel would receive nothing. Declaring the
-  // envelope type also keeps these same-origin posts out of SvelteKit's
-  // form-submission CSRF check, which only concerns form content types.
-  transportOptions: { headers: { 'Content-Type': 'application/x-sentry-envelope' } },
-  // Browser tracing (pageload/navigation spans named after the route
-  // pattern, Web Vitals, same-origin fetches) comes from the SvelteKit SDK's
-  // browserTracingIntegration below; sentryHandle's <meta> tags join it to
-  // the server trace.
-  tracesSampleRate: parseSampleRate(PUBLIC_SENTRY_TRACES_SAMPLE_RATE, 0.1),
-  // Session Replay defaults to error-only: the last minute before a captured
-  // error is kept in memory and sent with it; no session is recorded
-  // otherwise unless an operator raises the session rate. The recorder itself
-  // is added below, once its chunk has loaded.
-  replaysSessionSampleRate: parseSampleRate(PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE, 0),
-  replaysOnErrorSampleRate: parseSampleRate(PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE, 1),
-  // SDK v11 replaced sendDefaultPii with dataCollection (IP address, cookies,
-  // headers, bodies); the restrictive baseline keeps the v10 default.
-  dataCollection: DATA_COLLECTION,
-  // v11 streams spans by default, which bypasses beforeSendTransaction (the
-  // transaction scrubber below). The static lifecycle keeps one scrubbed
-  // transaction per trace, as in v10; beforeSendSpan must then be wrapped.
-  traceLifecycle: 'static',
-  integrations: [
-    Sentry.browserTracingIntegration({
-      // One span per hashed /_app/immutable/*.js chunk made a full pageload
-      // ~150 KB (95 script spans) — past BODY_SIZE_LIMIT, so the tunnel
-      // rejected it — and the timing of immutable, service-worker-cached
-      // chunks says little. CSS, fonts, images and fetches keep their spans.
-      ignoreResourceSpans: ['resource.script']
-    }),
+// What is reported, dropped and scrubbed is #lib/sentry-policy.ts's call.
+Sentry.init(
+  clientSentryOptions(
     {
-      // beforeSend never sees replay or feedback events; scrub them here.
-      name: 'DiversifPrivacy',
-      processEvent: (event) =>
-        event.type === 'replay_event' || event.type === 'feedback'
-          ? scrubBrowserEvent(event)
-          : event,
-      // Release-health sessions are not events either: the SDK copies
-      // navigator.userAgent into every one, whatever dataCollection says.
-      setup: (client) => {
-        client.on('beforeSendSession', (session) => {
-          if ('userAgent' in session) session.userAgent = undefined;
-        });
-      }
-    }
-  ],
-  // Network failures are not reported (see handleError below), but some never
-  // reach handleError. SvelteKit 3 imports the root layout and root error
-  // chunks (nodes 0 and 1) before hydrating, outside its try/catch, and the
-  // inline bootstrap never catches kit.start(), so a failed load reaches the
-  // SDK's global onunhandledrejection handler instead (DIVERSIF-D). The SDK's
-  // universal-load wrapper also reports load errors before handleError sees
-  // them, and SvelteKit leaves code-only preloads (`void _preload_code`)
-  // uncaught, should the app ever enable them. Not `ignoreErrors`: it matches
-  // the message alone, while isNetworkFailure also requires the TypeError.
-  beforeSend: (event, hint) =>
-    isNetworkFailure(hint.originalException) ? null : scrubBrowserEvent(event),
-  beforeSendTransaction: scrubBrowserEvent,
-  beforeSendSpan: Sentry.withStaticSpan(scrubSpan),
-  beforeBreadcrumb: filterIncomingBreadcrumb
-});
+      PUBLIC_SENTRY_DSN,
+      PUBLIC_SENTRY_ENVIRONMENT,
+      PUBLIC_SENTRY_TRACES_SAMPLE_RATE,
+      PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE,
+      PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE
+    },
+    [
+      // Browser tracing: pageload/navigation spans named after the route
+      // pattern, Web Vitals, same-origin fetches; sentryHandle's <meta> tags
+      // join it to the server trace.
+      Sentry.browserTracingIntegration({
+        // One span per hashed /_app/immutable/*.js chunk made a full pageload
+        // ~150 KB (95 script spans) — past BODY_SIZE_LIMIT, so the tunnel
+        // rejected it — and the timing of immutable, service-worker-cached
+        // chunks says little. CSS, fonts, images and fetches keep their spans.
+        ignoreResourceSpans: ['resource.script']
+      })
+    ]
+  )
+);
 
 // Replay is code-split and starts right after init (see loadReplay) — not at
 // all when browser capture is disabled.
@@ -109,52 +49,4 @@ if (PUBLIC_SENTRY_DSN) void loadReplay();
 // not start (see boot-recovery.ts).
 window.addEventListener('unhandledrejection', (event) => recoverFromFailedBoot(event.reason));
 
-// Tags omit `method` (which the server hook records): SvelteKit's
-// `NavigationEvent` has no `request` property in the browser, and there is no
-// reliable equivalent (clicks, popstate, programmatic navigations all reach
-// here without a method).
-//
-// Errors thrown with `error(...)` (kind 'app') keep the body the load chose,
-// exactly as before SvelteKit 3 started routing them through this hook.
-//
-// 4xx are skipped to match the server-side gate: client-side 404s (e.g. a
-// data-load throwing notFound) are routing dead-ends, not bugs. Only 5xx
-// reach Sentry, tagged with an errorId the error page shows (and the
-// « Signaler ce problème » report carries) so a parent's report and the
-// Sentry issue can be matched.
-//
-// Network failures (isNetworkFailure: offline, dropped connection, a chunk a
-// redeploy removed) are not bugs either: the parent is told to check their
-// connection, with no errorId since no event exists to match. Hover preloads
-// reach this hook too, so they would otherwise be reported for a page the
-// parent never opened. The same goes for a 5xx `framework` error: in the
-// browser SvelteKit only raises those when an enhanced form gets a non-JSON
-// error page, i.e. Traefik or Cloudflare answering while Coolify swaps the
-// container. The app's own 5xx come back as JSON the server hook already
-// reported.
-//
-// A failed `__data.json` fetch reaches this hook with the page key
-// (`/child/18/guide?…`) as `route.id` instead of the route pattern; see
-// clientRouteTag.
-export const handleError: HandleClientError = ({ kind, error, event }) => {
-  if (kind === 'app') return;
-  const status = kind === 'unknown' ? 500 : error.status;
-  if (status < 500) {
-    return { message: 'Internal Error' };
-  }
-  if (kind === 'framework' || isNetworkFailure(error)) {
-    return { message: m.errorsNetwork() };
-  }
-  const errorId = crypto.getRandomValues(new Uint32Array(1))[0].toString(16).padStart(8, '0');
-  Sentry.captureException(error, {
-    mechanism: { type: 'auto.function.sveltekit.handle_error', handled: false },
-    captureContext: {
-      tags: {
-        errorId,
-        status,
-        route: clientRouteTag(event.route?.id, event.params)
-      }
-    }
-  });
-  return { message: 'Internal Error', errorId };
-};
+export const handleError = handleClientError;

@@ -1,7 +1,7 @@
 /**
  * Recovery for an app that failed to start. When a root chunk fails to load,
- * SvelteKit 3 rejects kit.start() with nothing to catch it (see the
- * beforeSend comment in hooks.client.ts, DIVERSIF-D): the parent is left on
+ * SvelteKit 3 rejects kit.start() with nothing to catch it (see verdict in
+ * #lib/sentry-policy.ts, DIVERSIF-D): the parent is left on
  * the server-rendered page, where only plain links and forms still work, and
  * nothing tells them why. hooks.client.ts passes every unhandled rejection
  * here.

@@ -1,5 +1,5 @@
 /**
- * Sentry tunnel endpoint (see SENTRY_TUNNEL_PATH in #lib/sentry.ts).
+ * Sentry tunnel endpoint (see SENTRY_TUNNEL_PATH in #lib/sentry-policy.ts).
  *
  * The browser SDK is configured to POST every envelope (errors, traces,
  * replays, user feedback) here instead of directly to ingest.sentry.io.
