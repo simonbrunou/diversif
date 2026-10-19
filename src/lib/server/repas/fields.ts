@@ -133,8 +133,9 @@ function reactionEditField(form: FormData, suffix: string): ReactionEdit | null 
 }
 
 /**
- * The durable submit (src/lib/offline/submit.ts) posts its key as an
- * `idempotencyKey` field, online and on replay alike.
+ * The log form's key travels as an `idempotencyKey` field, both from the
+ * online submit (src/lib/offline/submit.ts) and from the queue's replay
+ * (src/lib/offline/queue.ts).
  */
 export function idempotencyKeyField(form: FormData): string | null {
   const key = text(form, 'idempotencyKey') ?? null;

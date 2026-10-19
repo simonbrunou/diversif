@@ -164,6 +164,8 @@ async function postOne(
     ...row.formData,
     idempotencyKey: row.key
   });
+  // Only the app's own verdict drops a row: an answer from something else
+  // (a proxy, a captive portal, even a 4xx page) keeps it for the next flush.
   if (result === 'unreachable') return 'retry';
 
   if (result.type === 'redirect') {

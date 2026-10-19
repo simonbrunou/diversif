@@ -38,16 +38,18 @@ function bodyOf(fields: Fields): URLSearchParams {
   return body;
 }
 
-/** What came back: the action's result, or nothing the module can read as one. */
+/**
+ * What came back: the action's result, or 'unreachable' when the app itself
+ * didn't answer. Either the request threw (offline, DNS, timeout) or
+ * something in between answered with a page that isn't an action result: a
+ * captive portal, or the proxy's error page while a deploy swaps the
+ * container. use:enhance turned both into a status-less error.
+ */
 export type Answer = ActionResult | 'unreachable';
 
 const RESULT_TYPES = new Set(['success', 'failure', 'redirect', 'error']);
 
-/**
- * POST `fields` to a SvelteKit action the way `use:enhance` does. A request
- * that throws (offline, DNS, timeout) is 'unreachable', and so is an answer
- * that isn't an action result: a proxy's error page or a captive portal.
- */
+/** POST `fields` to a SvelteKit action the way `use:enhance` does. */
 export async function postAction(
   transport: Transport,
   url: string,

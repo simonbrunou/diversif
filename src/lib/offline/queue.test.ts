@@ -1,31 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import 'fake-indexeddb/auto';
 
+import { rawRows } from '../../test/offline-db';
 import { clear, count, enqueue, flush, needsReauthCount } from './queue';
 import type { Transport } from './wire';
 
 /** Count rows directly in IDB, bypassing the module's own count() export. */
 async function countRows(): Promise<number> {
-  const req = indexedDB.open('diversif-offline', 1);
-  const db = await new Promise<IDBDatabase>((res, rej) => {
-    req.onupgradeneeded = () => {
-      const d = req.result;
-      if (!d.objectStoreNames.contains('log')) {
-        const store = d.createObjectStore('log', { keyPath: 'key' });
-        store.createIndex('queuedAt', 'queuedAt', { unique: false });
-      }
-    };
-    req.onsuccess = () => res(req.result);
-    req.onerror = () => rej(req.error);
-  });
-  const n = await new Promise<number>((res, rej) => {
-    const t = db.transaction('log', 'readonly');
-    const r = t.objectStore('log').count();
-    r.onsuccess = () => res(r.result);
-    r.onerror = () => rej(r.error);
-  });
-  db.close();
-  return n;
+  return (await rawRows()).length;
 }
 
 /**

@@ -5,12 +5,14 @@
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
   import { submitRepas, type Submitted } from '#lib/offline/submit.js';
+  import { localizedHref } from '#lib/utils/localized-href.js';
   import * as m from '#lib/paraglide/messages.js';
 
   // A repas form (log or edit) sent through the durable submit
   // (src/lib/offline/submit.ts) instead of use:enhance. This component only
   // applies the outcome: the server's answer goes to the page as use:enhance
-  // would apply it, a queued repas goes back to the dashboard.
+  // would apply it, a queued repas goes back to the dashboard, and a failure
+  // keeps the form as typed.
 
   let {
     busy = $bindable(false),
@@ -45,9 +47,12 @@
       // The repas is durably queued. Navigation is best-effort: offline, a
       // dashboard that isn't cached makes goto() reject, and the queued row
       // still syncs once the connection is back.
-      await goto(`/child/${queueFor}`).catch(() => {});
+      await goto(localizedHref(`/child/${queueFor}`)).catch(() => {});
     } else if (outcome.kind === 'failed') {
-      toast.error(m.offlineQueueFailedToast());
+      // The log form fails only when IndexedDB refused the row; an edit,
+      // never queued, fails whenever the app didn't answer (the message
+      // use:enhance's error page showed).
+      toast.error(queueFor === undefined ? m.errorsNetwork() : m.offlineQueueFailedToast());
     }
   }
 </script>

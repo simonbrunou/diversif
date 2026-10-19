@@ -45,7 +45,7 @@ export async function submitRepas(
     navigator.onLine === false ? 'unreachable' : await postAction(transport, target.action, fields);
   if (answer !== 'unreachable') return { kind: 'sent', result: answer };
   if (!durable) return { kind: 'failed' };
-  return queue({
+  return enqueueOrFail({
     key: durable.key,
     childId: durable.childId,
     formData: fields,
@@ -53,7 +53,7 @@ export async function submitRepas(
   });
 }
 
-async function queue(row: QueuedSubmit): Promise<Submitted> {
+async function enqueueOrFail(row: QueuedSubmit): Promise<Submitted> {
   try {
     await enqueue(row);
     return { kind: 'queued' };
