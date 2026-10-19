@@ -8,7 +8,7 @@ import { hashPassword } from '#lib/server/auth.js';
 import { resumeSession, startSession } from '#lib/server/session.js';
 import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 import { users } from '#lib/server/db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { actions, load } from './+page.server';
 
 beforeEach(async () => {
@@ -42,6 +42,19 @@ describe('account/delete load', () => {
 });
 
 describe('account/delete deleteAccount', () => {
+  it('redirects unauthenticated POSTs to /login', async () => {
+    const event = makeRouteEvent({
+      user: null,
+      formData: { confirmEmail: 'p@example.com', currentPassword: 'current-password-12' }
+    });
+    const r = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    if (r.kind === 'redirect') expect(r.location).toBe('/login');
+    expect(event.setHeaders).not.toHaveBeenCalled();
+  });
+
   it('fails when the typed email does not match', async () => {
     const u = await seed();
     const event = makeRouteEvent({
@@ -54,6 +67,8 @@ describe('account/delete deleteAccount', () => {
     expect(r.status).toBe(400);
     expect(r.data.deleteErrorKey).toBe('errorsAccountDeleteEmailMismatch');
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+    // A refused attempt keeps the account, so the browser keeps its storage.
+    expect(event.setHeaders).not.toHaveBeenCalled();
   });
 
   it('matches the typed email case-insensitively against the stored email', async () => {
@@ -94,6 +109,7 @@ describe('account/delete deleteAccount', () => {
     )) as { status: number; data: { deleteErrorKey: string } };
     expect(r.status).toBe(400);
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+    expect(event.setHeaders).not.toHaveBeenCalled();
   });
 
   it('fails when currentPassword is missing', async () => {
@@ -108,6 +124,7 @@ describe('account/delete deleteAccount', () => {
     expect(r.status).toBe(400);
     expect(r.data.deleteErrorKey).toBe('errorsAccountPasswordIncorrect');
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+    expect(event.setHeaders).not.toHaveBeenCalled();
   });
 
   it('fails when currentPassword is wrong', async () => {
@@ -122,6 +139,7 @@ describe('account/delete deleteAccount', () => {
     expect(r.status).toBe(400);
     expect(r.data.deleteErrorKey).toBe('errorsAccountPasswordIncorrect');
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+    expect(event.setHeaders).not.toHaveBeenCalled();
   });
 
   it('deletes the user, signs the device out and redirects to /account/deleted', async () => {
@@ -144,7 +162,39 @@ describe('account/delete deleteAccount', () => {
       (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]
     ).toBeUndefined();
     expect(await resumeSession(copy)).toBeNull();
-    // Same shared-device hygiene as POST /logout: the 303 clears site data.
+    // Same shared-device hygiene as POST /logout: the response (action JSON
+    // when the form is enhanced, the 303 without JS) clears site data.
     expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
+  });
+
+  it('keeps the session and the browser storage when the deletion itself fails', async () => {
+    // The sign-out must come after deleteUserAccount: SvelteKit merges
+    // setHeaders onto every response, the 500 included, so signing out
+    // earlier would wipe the offline queue and the session of an account
+    // that survived the failed (transactional) deletion.
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { confirmEmail: 'p@example.com', currentPassword: 'current-password-12' }
+    });
+    await startSession(event, u.id);
+    const copy = makeRouteEvent({ cookies: copyCookies(event.cookies) });
+    try {
+      testDb.run(
+        sql`CREATE TRIGGER tmp_abort_user_delete BEFORE DELETE ON users
+            BEGIN SELECT RAISE(ABORT, 'simulated user-delete failure'); END`
+      );
+      await expect(
+        captureFlow(() =>
+          actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+        )
+      ).rejects.toThrow(/simulated user-delete failure/);
+    } finally {
+      testDb.run(sql`DROP TRIGGER IF EXISTS tmp_abort_user_delete`);
+    }
+    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+    expect(await resumeSession(copy)).not.toBeNull();
+    expect(event.setHeaders).not.toHaveBeenCalled();
+    expect(event.cookies.delete).not.toHaveBeenCalled();
   });
 });

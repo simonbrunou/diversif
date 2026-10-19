@@ -23,12 +23,17 @@ const SESSION_COOKIE = 'session';
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 const SESSION_RENEW_THRESHOLD_MS = 1000 * 60 * 60 * 24 * 15; // 15 days
 
-// Wipes CacheStorage (the SW 'pages' runtime cache holds authenticated HTML),
-// IndexedDB (offline queue) and the SW registration, so the next person on a
-// shared device can't read the previous user's data. Safari doesn't honour
-// the header reliably, so the logout forms also purge client-side before
-// submitting (purgeBeforeSubmit in #lib/offline/purge), and the root layout
-// purges when it sees the user turn anonymous (account deletion's form).
+// Wipes the HTTP cache and site storage: CacheStorage (the SW 'pages' runtime
+// cache may hold authenticated HTML from an older SW build), IndexedDB
+// (offline queue), localStorage and the SW registration, so the next person
+// on a shared device can't read the previous user's data. Safari doesn't
+// honour the header reliably, so the logout forms also purge client-side
+// before submitting (purgeBeforeSubmit in #lib/offline/purge). The account
+// deletion form can't: purging before the POST would wipe the offline queue
+// of an account a refused attempt (wrong email or password, rate limit)
+// leaves in place. Its enhanced redirect is a client-side navigation
+// instead, so the root layout purges when it sees the user turn anonymous;
+// a no-JS deletion gets the header only.
 const CLEAR_SITE_DATA = '"cache", "storage"';
 
 type CookieEvent = Pick<RequestEvent, 'cookies'>;

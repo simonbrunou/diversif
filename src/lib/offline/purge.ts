@@ -2,10 +2,13 @@ import { clear } from './queue';
 
 /**
  * Purge client-side storage that may hold the previous user's data after the
- * session ends (explicit logout, « Se déconnecter partout », or expiry).
+ * session ends: explicit logout and « Se déconnecter partout » (via
+ * purgeBeforeSubmit below), account deletion and expiry (via the root
+ * layout's authenticated→anonymous effect).
  *
  * - The PWA service worker's 'pages' runtime cache (src/service-worker/index.ts
- *   Workbox NetworkFirst, 7-day expiry) holds authenticated HTML — without this, the
+ *   Workbox NetworkFirst, 7-day expiry) may hold authenticated HTML written by
+ *   an older SW build, before its no-store gate — without this, the
  *   next person on a shared device could read the child's data straight out
  *   of CacheStorage. The 'assets' cache is deliberately left alone: it only
  *   holds fingerprinted static files with no personal data, and dropping it
@@ -13,8 +16,9 @@ import { clear } from './queue';
  * - The offline IndexedDB queue can hold unsent food-log submissions.
  *
  * Strictly best-effort: every failure is swallowed so a flaky CacheStorage or
- * IndexedDB implementation can never break the logout navigation itself —
- * worst case we leave behind what was already there before this existed.
+ * IndexedDB implementation can never block the logout submit or reject the
+ * root layout's fire-and-forget call — worst case we leave behind what was
+ * already there before this existed.
  */
 export async function purgeClientState(): Promise<void> {
   try {
@@ -23,7 +27,7 @@ export async function purgeClientState(): Promise<void> {
     }
   } catch {
     // Best-effort: CacheStorage can be unavailable (private mode, http) or
-    // throw on quota/teardown races. Never block the logout navigation.
+    // throw on quota/teardown races. Never block or reject the caller.
   }
   try {
     if (typeof indexedDB !== 'undefined') {
