@@ -29,9 +29,10 @@ export async function loadRepeatCandidates(
   limit: number | null = 5
 ): Promise<RepeatCandidate[]> {
   // The CASE WHEN mirrors REACTION_RANK (#lib/utils/reaction-values) by hand:
-  // update both if a reaction value is added (the reaction CHECK constraint
-  // means ELSE only ever sees 'ras'). The outer WHERE on n/worst, rather than
-  // HAVING, is a leftover shape that SQLite treats the same. LIMIT is conditionally
+  // update it, and SEVERITY in ../allergen-status, if a reaction value is
+  // added (the reaction CHECK constraint means ELSE only ever sees 'ras').
+  // The outer WHERE on n/worst, rather than HAVING, is a leftover shape that
+  // SQLite treats the same. LIMIT is conditionally
   // emitted because the carnet filter needs an uncapped list (ORDER BY
   // last_at ASC + a numeric cap would otherwise hide the most recently
   // re-offered foods past the first N rows on extremely active children).

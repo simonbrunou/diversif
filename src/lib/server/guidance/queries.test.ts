@@ -235,7 +235,7 @@ describe('loadRepeatCandidates', () => {
     expect(out.map((c) => c.foodName)).toEqual(['Pomme']);
   });
 
-  it('excludes a food whose worst reaction is "reaction", even after a RAS log', async () => {
+  it('excludes a food with an earlier "reaction" log, even when its latest log is RAS', async () => {
     const { user, child } = await seedUserAndChild();
     const carrot = await seedFood({ name: 'Carotte', category: 'legumes' });
     const apple = await seedFood({ name: 'Pomme', category: 'fruits' });
@@ -245,14 +245,14 @@ describe('loadRepeatCandidates', () => {
       foodId: carrot.id,
       userId: user.id,
       givenAt: new Date(now - 2 * DAY_MS),
-      reaction: 'ras'
+      reaction: 'reaction'
     });
     await logEntry({
       childId: child.id,
       foodId: carrot.id,
       userId: user.id,
       givenAt: new Date(now - DAY_MS),
-      reaction: 'reaction'
+      reaction: 'ras'
     });
     await logEntry({
       childId: child.id,

@@ -54,6 +54,9 @@ describe('pickMilestoneFromQuery', () => {
       total: 11
     });
     // "All categories" follows the total: 11 today, since 'autre' doesn't count.
+    expect(pickMilestoneFromQuery(qs('logged=1&categories=10&prevCategories=9'), 11)).toEqual({
+      kind: 'generic'
+    });
     expect(pickMilestoneFromQuery(qs('logged=1&categories=11&prevCategories=10'), 11)).toEqual({
       kind: 'category-milestone',
       covered: 11,

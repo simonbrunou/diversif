@@ -388,7 +388,7 @@ describe('child/[id] +page.server load', () => {
   });
 
   it('does not surface a maintain-allergen reminder for a lait exposure that is only an allergenic fat, but does for a dairy exposure (#373)', async () => {
-    // loadAllergenRows' SQL predicate (allergen-status.ts:66) is the only
+    // loadAllergenRows' WHERE (its matieres_grasses / non-RAS clause) is the only
     // place left that excludes a matieres_grasses+ras row from counting as
     // an allergen exposure : reminders.ts now trusts allergenRows verbatim
     // (see reminders.ts summarizePriorityAllergens). If that predicate ever
@@ -447,6 +447,8 @@ describe('child/[id] +page.server load', () => {
     expect(
       fatOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
     ).toBeUndefined();
+    // Lait is 3rd in PRIORITY_INTRODUCTION_ALLERGENS and rulePendingAllergens
+    // shows the first 3 missing ones, so it is listed whenever not introduced.
     expect(fatOut.reminders.some((r) => r.key === 'pending-allergen:lait')).toBe(true);
 
     const dairyOut = await loadWithLaitEntry('produits_laitiers', 'Fromage');
