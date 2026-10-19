@@ -1,6 +1,7 @@
 // Pure derivation engine: given the child's data + dismissals, produce the
-// list of reminders the dashboard should currently surface. No DB calls here
-// : the caller passes plain data : to keep this trivially testable.
+// list of reminders the dashboard should currently surface. No DB calls here:
+// the caller passes the entries and the already-loaded allergen history, to
+// keep this trivially testable.
 
 import {
   PRIORITY_INTRODUCTION_ALLERGENS,
@@ -40,7 +41,8 @@ export type ReminderInput = {
   entries: EnrichedEntry[]; // full history, recent first : first-intro and exposure-count rules need it
   // The child's whole allergen history (unbounded, unlike `entries`'s
   // REMINDERS_SCAN_LIMIT cap), so an old reaction or an old exposure still
-  // counts for the pending-allergen and maintain-allergen rules.
+  // counts for the allergen rules. Build it with the same `now` as below: the
+  // maintain rule reads its day counts, not this engine's clock.
   allergens: AllergenHistory;
   dismissals: Set<string>; // already-honored TTLs by caller
   now?: number;
@@ -199,14 +201,16 @@ function rulePendingAllergens({ input, childPath }: RuleContext): Reminder[] {
 // owns those). Calls findRepeatCandidates with its default worst-rank
 // threshold (RAS only) but overrides maxCount to 1 and adds the
 // minDaysSinceLastGiven + excludeAllergens filters, so it is stricter than
-// the carnet's repeat filter (1-2×, RAS only, via loadRepeatCandidates).
+// the carnet's repeat filter (1-2×, RAS only, via loadRepeatCandidates). The
+// predicate works per food, so a food whose allergen is blocked by symptoms
+// on another food is dropped here (#373).
 function ruleRepeatExposure({ input, now, childPath }: RuleContext): Reminder[] {
   const repeatCandidates = findRepeatCandidates(input.entries, {
     maxCount: 1,
     minDaysSinceLastGiven: 3,
     excludeAllergens: new Set<AllergenId>(ALLERGEN_PRIORITY),
     now
-  });
+  }).filter((c) => !c.allergenType || !input.allergens.isBlocked(c.allergenType));
   repeatCandidates.sort((a, b) => a.lastGivenAt - b.lastGivenAt);
   return repeatCandidates.slice(0, 2).map((c): Reminder => ({
     key: `repeat-exposure:${c.foodId}`,
