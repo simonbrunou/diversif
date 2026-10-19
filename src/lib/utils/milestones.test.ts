@@ -42,7 +42,7 @@ describe('pickMilestoneFromQuery', () => {
     expect(m).toEqual({ kind: 'first-food' });
   });
 
-  it('returns category-milestone only when crossing into 5/8/12', () => {
+  it('returns category-milestone only when crossing into 5/8/all', () => {
     expect(pickMilestoneFromQuery(qs('logged=1&categories=5&prevCategories=4'), 11)).toEqual({
       kind: 'category-milestone',
       covered: 5,
@@ -51,6 +51,12 @@ describe('pickMilestoneFromQuery', () => {
     expect(pickMilestoneFromQuery(qs('logged=1&categories=8&prevCategories=7'), 11)).toEqual({
       kind: 'category-milestone',
       covered: 8,
+      total: 11
+    });
+    // "All categories" follows the total: 11 today, since 'autre' doesn't count.
+    expect(pickMilestoneFromQuery(qs('logged=1&categories=11&prevCategories=10'), 11)).toEqual({
+      kind: 'category-milestone',
+      covered: 11,
       total: 11
     });
     expect(pickMilestoneFromQuery(qs('logged=1&categories=12&prevCategories=11'), 12)).toEqual({

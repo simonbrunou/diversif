@@ -4,7 +4,9 @@ import * as m from '#lib/paraglide/messages.js';
 
 const TOAST_CLASS = 'bg-celebrate/15 border-celebrate/30 text-celebrate-foreground';
 
-const CATEGORY_THRESHOLDS = [5, 8, 12] as const;
+// Plus "every category" (totalCategories), checked in pickMilestoneFromQuery.
+// A fixed 12 here was unreachable: the count excludes 'autre' and tops out at 11.
+const CATEGORY_THRESHOLDS = [5, 8] as const;
 
 export type MilestoneKind =
   | { kind: 'all-allergens' }
@@ -35,7 +37,10 @@ export function pickMilestoneFromQuery(
   const covered = Number(search.get('categories'));
   const prev = Number(search.get('prevCategories'));
   if (Number.isFinite(covered) && Number.isFinite(prev) && covered > prev) {
-    if (CATEGORY_THRESHOLDS.includes(covered as (typeof CATEGORY_THRESHOLDS)[number])) {
+    if (
+      covered >= totalCategories ||
+      CATEGORY_THRESHOLDS.includes(covered as (typeof CATEGORY_THRESHOLDS)[number])
+    ) {
       return { kind: 'category-milestone', covered, total: totalCategories };
     }
   }
