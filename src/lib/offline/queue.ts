@@ -160,13 +160,15 @@ async function postOne(
 ): Promise<{ qs: string } | 'drop' | 'retry' | 'needs-reauth'> {
   // The key travels as a form field, as with the online submit. Rows queued
   // before #325 don't carry the field, so it is always copied from the row.
-  const result = await postAction(transport, `/child/${row.childId}/log`, {
+  const answer = await postAction(transport, `/child/${row.childId}/log`, {
     ...row.formData,
     idempotencyKey: row.key
   });
-  // Only the app's own verdict drops a row: an answer from something else
-  // (a proxy, a captive portal, even a 4xx page) keeps it for the next flush.
-  if (result === 'unreachable') return 'retry';
+  // Only the action's own verdict drops a row. A hook's error, or an answer
+  // from something else (a proxy, a captive portal, even a 4xx page), keeps
+  // it for the next flush.
+  if (answer.kind !== 'action') return 'retry';
+  const { result } = answer;
 
   if (result.type === 'redirect') {
     // Match every locale-prefixed login redirect (paraglide rewrites bare

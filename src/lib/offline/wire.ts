@@ -38,14 +38,24 @@ function bodyOf(fields: Fields): URLSearchParams {
   return body;
 }
 
-/**
- * What came back: the action's result, or 'unreachable' when the app itself
- * didn't answer. Either the request threw (offline, DNS, timeout) or
- * something in between answered with a page that isn't an action result: a
- * captive portal, or the proxy's error page while a deploy swaps the
- * container. use:enhance turned both into a status-less error.
- */
-export type Answer = ActionResult | 'unreachable';
+/** What came back from a POST to an action. */
+export type Answer =
+  /** The action ran: its result. */
+  | { kind: 'action'; result: ActionResult }
+  /**
+   * The request failed before its action ran (a hook threw): SvelteKit's own
+   * error answer, as use:enhance would apply it, errorId included.
+   */
+  | { kind: 'hook'; result: ActionResult }
+  /**
+   * The app didn't answer: the request threw (offline, DNS, timeout), or
+   * something in between answered with a page that isn't the app's JSON (a
+   * captive portal, the proxy's error page while a deploy swaps the
+   * container).
+   */
+  | { kind: 'unreachable' };
+
+export const UNREACHABLE: Answer = { kind: 'unreachable' };
 
 const RESULT_TYPES = new Set(['success', 'failure', 'redirect', 'error']);
 
@@ -68,23 +78,31 @@ export async function postAction(
       body: bodyOf(fields)
     });
   } catch {
-    return 'unreachable';
+    return UNREACHABLE;
   }
-  return readResult(response);
+  return readAnswer(response);
 }
 
-async function readResult(response: Response): Promise<Answer> {
+async function readAnswer(response: Response): Promise<Answer> {
   try {
     const result = JSON.parse(await response.text());
-    if (!RESULT_TYPES.has(result?.type)) return 'unreachable';
+    if (!RESULT_TYPES.has(result?.type)) return hookError(response, result);
     // As $app/forms' deserialize does: `data` is devalue-encoded. devalue's
     // own parse matches it while src/hooks.ts declares no transport hooks.
     if (result.data) result.data = parse(result.data);
     // As use:enhance does: an error's status rides on the response only,
     // never in the body hooks.server.ts's handleError shapes.
     if (result.type === 'error' || result.type === 'failure') result.status = response.status;
-    return result as ActionResult;
+    return { kind: 'action', result };
   } catch {
-    return 'unreachable';
+    return UNREACHABLE;
   }
+}
+
+// SvelteKit answers a request whose hook threw with `{ status, message,
+// errorId? }` and no `type`; use:enhance applied it as an error.
+function hookError(response: Response, body: { message?: unknown } | null): Answer {
+  if (response.ok || typeof body?.message !== 'string') return UNREACHABLE;
+  const error = { ...body, status: response.status, message: body.message };
+  return { kind: 'hook', result: { type: 'error', status: response.status, error } };
 }

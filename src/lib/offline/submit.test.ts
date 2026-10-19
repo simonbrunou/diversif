@@ -35,6 +35,13 @@ function goOffline(): void {
 
 const unreachable: Transport = () => Promise.reject(new TypeError('Failed to fetch'));
 
+// SvelteKit's answer when a hook throws before the action runs.
+const hookCrashed: Transport = async () =>
+  new Response(JSON.stringify({ status: 500, message: 'Internal Error', errorId: 'c0ffee00' }), {
+    status: 500,
+    headers: { 'content-type': 'application/json' }
+  });
+
 describe('submitRepas', () => {
   beforeEach(async () => {
     await resetTestDb();
@@ -165,15 +172,34 @@ describe('submitRepas', () => {
 
   it('queues when something other than the app answers (a proxy or captive portal page)', async () => {
     const { child, carotte, action } = await setup();
-    const portal: Transport = async () =>
+    const answers = [
       new Response('<html>Bienvenue sur le wifi</html>', {
         status: 200,
         headers: { 'content-type': 'text/html' }
-      });
+      }),
+      // JSON, but neither an action result nor SvelteKit's error answer.
+      new Response(JSON.stringify({ error: 'upstream timeout' }), {
+        status: 504,
+        headers: { 'content-type': 'application/json' }
+      })
+    ];
+    for (const answer of answers) {
+      const outcome = await submitRepas(
+        form({ foodId: carotte.id, givenAt: GIVEN_AT, reaction: 'ras' }),
+        { action, queueFor: child.id },
+        async () => answer
+      );
+      expect(outcome).toEqual({ kind: 'queued' });
+    }
+    expect(await count()).toBe(2);
+  });
+
+  it('queues when a hook fails before the action ran: the replay may get through', async () => {
+    const { child, carotte, action } = await setup();
     const outcome = await submitRepas(
       form({ foodId: carotte.id, givenAt: GIVEN_AT, reaction: 'ras' }),
       { action, queueFor: child.id },
-      portal
+      hookCrashed
     );
 
     expect(outcome).toEqual({ kind: 'queued' });
@@ -206,6 +232,25 @@ describe('submitRepas', () => {
       expect(outcome.kind).toBe('sent');
       expect(sent[0].has('idempotencyKey')).toBe(false);
       expect(sent[0].get('givenAt')).toBe(new Date(GIVEN_AT).toISOString());
+    });
+
+    it('hands back the error a hook answered before the action ran, errorId included', async () => {
+      const { carotte, action } = await setup();
+      const outcome = await submitRepas(
+        form({ foodId: carotte.id, givenAt: GIVEN_AT, reaction: 'ras' }),
+        { action },
+        hookCrashed
+      );
+
+      expect(outcome).toEqual({
+        kind: 'sent',
+        result: {
+          type: 'error',
+          status: 500,
+          error: { status: 500, message: 'Internal Error', errorId: 'c0ffee00' }
+        }
+      });
+      expect(await count()).toBe(0);
     });
 
     it('fails, queueing nothing, when the server cannot be reached', async () => {

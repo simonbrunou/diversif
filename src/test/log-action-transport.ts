@@ -76,9 +76,14 @@ function envelope(outcome: FlowOutcome, location: string): Response {
     return json(200, { type: 'redirect', status: outcome.status, location: outcome.location });
   }
   if (outcome.kind === 'error') {
-    // error(): the status rides on the HTTP response only, and the body is
-    // the error's own (hooks.server.ts's handleError leaves 'app' errors be).
-    return json(outcome.status, { type: 'error', location, error: { message: outcome.message } });
+    // error(): the result's status rides on the HTTP response only, and the
+    // error is error()'s own body (hooks.server.ts's handleError leaves 'app'
+    // errors be).
+    return json(outcome.status, {
+      type: 'error',
+      location,
+      error: { status: outcome.status, message: outcome.message }
+    });
   }
   const value = outcome.value as { status?: number; data?: unknown } | undefined;
   if (typeof value?.status !== 'number') {

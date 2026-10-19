@@ -1,7 +1,7 @@
 import type { ActionResult } from '$app/forms';
 import { localInputToIso } from '#lib/utils/dates.js';
 import { enqueue, type QueuedSubmit } from './queue';
-import { fetchTransport, fieldsOf, postAction, type Transport } from './wire';
+import { fetchTransport, fieldsOf, postAction, UNREACHABLE, type Transport } from './wire';
 
 // The durable submit: how the log and edit forms send a repas. It turns the
 // datetime-local meal date into an instant, sends the form to its action and,
@@ -42,9 +42,14 @@ export async function submitRepas(
   if (durable) fields.idempotencyKey = durable.key;
 
   const answer =
-    navigator.onLine === false ? 'unreachable' : await postAction(transport, target.action, fields);
-  if (answer !== 'unreachable') return { kind: 'sent', result: answer };
-  if (!durable) return { kind: 'failed' };
+    navigator.onLine === false ? UNREACHABLE : await postAction(transport, target.action, fields);
+  if (answer.kind === 'action') return { kind: 'sent', result: answer.result };
+  if (!durable) {
+    // Never queued: a hook's error goes to the page as use:enhance applied
+    // it, and no answer at all fails.
+    return answer.kind === 'hook' ? { kind: 'sent', result: answer.result } : { kind: 'failed' };
+  }
+  // The log form queues both, as before: the hook may work on replay.
   return enqueueOrFail({
     key: durable.key,
     childId: durable.childId,

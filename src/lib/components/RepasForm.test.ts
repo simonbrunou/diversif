@@ -9,7 +9,9 @@ import '../../test/component';
 // real, over fetch (spied) and fake-indexeddb.
 let events: string[] = [];
 const applyAction = mock(async (_result: unknown) => {
-  events.push('applyAction');
+  events.push('applyAction started');
+  await Promise.resolve();
+  events.push('applyAction done');
 });
 const goto = mock(async (_url: string) => {});
 const toast = { success: mock((_m: string) => {}), error: mock((_m: string) => {}) };
@@ -76,7 +78,7 @@ describe('RepasForm', () => {
     await waitFor(() => expect(events).toContain('busy=false'));
 
     expect(form.getAttribute('method')).toBe('POST');
-    expect(events).toEqual(['busy=true', 'applyAction', 'busy=false']);
+    expect(events).toEqual(['busy=true', 'applyAction started', 'applyAction done', 'busy=false']);
     expect(applyAction.mock.calls[0][0]).toEqual({
       type: 'redirect',
       status: 303,

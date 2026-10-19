@@ -557,6 +557,30 @@ describe('queue', () => {
     expect(await countRows()).toBe(1);
   });
 
+  it('leaves the row queued when a hook answered before the action ran, even with a 4xx', async () => {
+    // SvelteKit's answer when a hook throws: an App.Error with no action
+    // `type`. Not the action's verdict on the row, so the row stays.
+    for (const status of [500, 403]) {
+      const { transport } = server(
+        () =>
+          new Response(JSON.stringify({ status, message: 'Internal Error' }), {
+            status,
+            headers: { 'content-type': 'application/json' }
+          })
+      );
+      await enqueue({
+        key: `hook-${status}`,
+        childId: 1,
+        formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+        queuedAt: 1
+      });
+      await flush(transport);
+
+      expect(await countRows()).toBe(1);
+      await clear();
+    }
+  });
+
   it('drops the row and emits drop event on type:error 4xx', async () => {
     const { transport } = server(() => errorActionResult(422));
     const events: string[] = [];
