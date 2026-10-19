@@ -30,7 +30,7 @@ function makeEntryData(): PageData {
 }
 
 describe('child/[id]/log/[entryId] +page.svelte — single entry', () => {
-  it('sends the loaded reaction in a hidden reactionLoaded that does not follow the picker (#421)', async () => {
+  it('renders a hidden reactionLoaded with the loaded reaction, which does not follow the picker (#421)', async () => {
     const { container } = render(Page, { props: { data: makeEntryData(), form: null } });
 
     const updateForm = container.querySelector('form[action="?/update"]')!;
@@ -45,6 +45,7 @@ describe('child/[id]/log/[entryId] +page.svelte — single entry', () => {
     const target = updateForm.querySelector<HTMLInputElement>(
       'input[name="reaction"][value="inconfort"]'
     )!;
+    expect(target).not.toBeNull();
     await fireEvent.click(target);
     expect(target.checked).toBe(true);
     expect(hidden[0].value).toBe('ras');

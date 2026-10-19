@@ -461,7 +461,9 @@ describe('child/[id]/log/[entryId] update action', () => {
 // The form carries the reaction it loaded (`reactionLoaded`); the action must
 // not write that stale value back over the promotion.
 describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', () => {
-  async function loadForm(ctx: Awaited<ReturnType<typeof setup>>) {
+  type Ctx = Awaited<ReturnType<typeof setup>>;
+
+  async function loadForm(ctx: Ctx) {
     const out = await load(
       makeRouteEvent({
         user: safeUser(ctx.u),
@@ -473,10 +475,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     return out.entry;
   }
 
-  async function addSymptom(
-    ctx: Awaited<ReturnType<typeof setup>>,
-    label: 'rougeur' | 'gonflement'
-  ) {
+  async function addSymptom(ctx: Ctx, label: 'rougeur' | 'gonflement') {
     const result = await insertSymptom({
       foodEntryId: ctx.entry.id,
       childId: ctx.c.id,
@@ -489,7 +488,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     return result.promotedTo;
   }
 
-  async function submit(ctx: Awaited<ReturnType<typeof setup>>, formData: Record<string, string>) {
+  async function submit(ctx: Ctx, formData: Record<string, string>) {
     const event = makeRouteEvent({
       user: safeUser(ctx.u),
       memberships: [ctx.m],

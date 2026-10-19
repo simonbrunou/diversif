@@ -255,8 +255,9 @@ export const actions: Actions = {
 
     // Same dirty-only, optimistically-guarded reaction write as updateMeal: a
     // symptom that promoted this row after the form loaded must survive a
-    // stale submit. A form without `reactionLoaded` falls back to the row as
-    // read above.
+    // stale submit. A form without `reactionLoaded` (a page rendered before
+    // this field existed) falls back to the row as read above, so its guard
+    // always matches and the write is unguarded, as it was before #421.
     const submitted = parsed.data.reaction;
     const loaded = parsed.data.reactionLoaded ?? entry.reaction;
     db.transaction((tx) => {
@@ -272,7 +273,7 @@ export const actions: Actions = {
         .run();
       if (submitted !== loaded) {
         tx.update(foodEntries)
-          .set({ reaction: submitted })
+          .set({ reaction: submitted, updatedAt: new Date() })
           .where(
             and(
               eq(foodEntries.id, entryId),
