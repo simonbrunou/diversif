@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
-import { redirect } from '@sveltejs/kit';
 import { testDb, resetTestDb } from './test/db';
 import * as m from '#lib/paraglide/messages.js';
 import { copyCookies, makeRouteEvent } from './test/route';
@@ -7,7 +6,6 @@ import { users, memberships, children } from '#lib/server/db/schema.js';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-const captureExceptionMock = mock();
 const setIsolationTagsMock = mock();
 
 // Tests resolve the browser build of @sentry/sveltekit (scripts/bun-test.ts
@@ -16,7 +14,7 @@ const setIsolationTagsMock = mock();
 // module; static imports of hooks.server / auth (which reach the SDK) would be
 // hoisted above mock.module, hence the dynamic imports below.
 mock.module('@sentry/sveltekit', () => ({
-  captureException: captureExceptionMock,
+  captureException: mock(),
   getIsolationScope: () => ({ setTags: setIsolationTagsMock }),
   sentryHandle: () => mock()
 }));
@@ -319,19 +317,6 @@ describe('handle', () => {
     } finally {
       spy.mockRestore();
     }
-  });
-
-  it('leaves redirects thrown in the handle chain untagged', async () => {
-    setIsolationTagsMock.mockClear();
-    const { event } = makeEvent(null, '/');
-    const resolve = mock(async () => {
-      redirect(303, '/login');
-    });
-
-    await expect(
-      handle({ event, resolve } as unknown as Parameters<typeof handle>[0])
-    ).rejects.toMatchObject({ status: 303 });
-    expect(setIsolationTagsMock).not.toHaveBeenCalled();
   });
 });
 

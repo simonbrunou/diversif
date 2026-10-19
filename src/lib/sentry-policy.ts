@@ -1,13 +1,14 @@
 /**
  * What Diversif reports to Sentry, for both runtimes: the Sentry.init options
  * (which scrubber runs at which SDK hook, sampling, the tunnel, what is never
- * collected) and the one "report this?" decision that client handleError,
- * server handleError, the handle chain and every beforeSend ask. A new rule,
- * or an SDK upgrade that moves a hook, is an edit here; the init files only
- * pass their environment and integrations in.
+ * collected), Session Replay's options, and the one "report this?" decision
+ * that client handleError, server handleError, the handle chain and every
+ * beforeSend ask. A new rule, or an SDK upgrade that moves a hook, is an edit
+ * here; the init files only pass their environment and integrations in.
  *
  * - Client: `Sentry.init(clientSentryOptions(env, integrations))`, then
- *   `export const handleError = handleClientError`.
+ *   `export const handleError = handleClientError`; Replay, once its chunk
+ *   loads, is `Sentry.replayIntegration(replayOptions)`.
  * - Server: `Sentry.init(serverSentryOptions(process.env))`;
  *   `export const handleError = handleServerError`, and the app's handle calls
  *   `tagHandleChainError` on any error escaping it.
@@ -15,7 +16,8 @@
  * Every error the hooks report carries an `errorId` tag: the id the error page
  * shows (« Réf : ») and a problem report quotes, which links a parent's report
  * to the Sentry issue and, on the server, to the `[diversif:error]` stderr
- * line. The scrub rules themselves live in #lib/sentry.ts.
+ * line. The scrub rules themselves live in #lib/sentry.ts; the /monitoring
+ * tunnel also scrubs the replay frames no SDK hook sees.
  */
 
 import * as Sentry from '@sentry/sveltekit';
@@ -31,6 +33,7 @@ import {
   scrubEvent,
   scrubLog,
   scrubPathname,
+  scrubRecordingEvent,
   scrubSpan
 } from '#lib/sentry.js';
 
@@ -57,15 +60,18 @@ type Caught = { kind?: string; error: unknown };
  */
 type Verdict = 'expected' | 'quiet' | 'unreachable' | 'report';
 
+/** SvelteKit's message for an unknown error, and the only one the error page gets. */
+const INTERNAL_ERROR = 'Internal Error';
+
 /**
  * The status and message SvelteKit renders a caught error with: an unknown
- * error is a thrown exception, rendered as 500 'Internal Error', while
- * framework and validation errors carry SvelteKit's own. Not for 'app'
- * errors, whose `error` is the body the route chose (verdict: expected).
+ * error is a thrown exception, rendered as a 500, while framework and
+ * validation errors carry SvelteKit's own. Not for 'app' errors, whose `error`
+ * is the body the route chose (verdict: expected).
  */
-function rendered({ kind, error }: Caught): { status: number; message: string } {
+function statusAndMessage({ kind, error }: Caught): { status: number; message: string } {
   return kind === 'unknown'
-    ? { status: 500, message: 'Internal Error' }
+    ? { status: 500, message: INTERNAL_ERROR }
     : (error as { status: number; message: string });
 }
 
@@ -90,11 +96,16 @@ function rendered({ kind, error }: Caught): { status: number; message: string } 
 function verdict(runtime: Runtime, caught: Caught): Verdict {
   const { kind, error } = caught;
   if (kind === 'app') return 'expected';
-  if (kind && rendered(caught).status < 500) return 'quiet';
+  if (kind && statusAndMessage(caught).status < 500) return 'quiet';
   if (runtime === 'client' && (kind === 'framework' || isNetworkFailure(error))) {
     return 'unreachable';
   }
   return 'report';
+}
+
+/** Whether `value` can key the WeakMap of handle-chain errorIds. */
+function isObject(value: unknown): value is object {
+  return typeof value === 'object' && value !== null;
 }
 
 function newErrorId(): string {
@@ -143,6 +154,26 @@ function parseSampleRate(raw: string | undefined, fallback: number): number {
   return Number.isFinite(rate) && rate >= 0 && rate <= 1 ? rate : fallback;
 }
 
+/** The options both runtimes share, so an SDK upgrade edits them once. */
+function sharedOptions(environment: string | undefined, tracesSampleRate: string | undefined) {
+  return {
+    environment: environment || 'production',
+    // Inlined at build time by Vite's `define` (vite.config.ts), so the server
+    // and the client bundle share one SHA. vite.config.ts emits either a
+    // string literal or the bare `undefined` token.
+    release: __SENTRY_RELEASE__,
+    tracesSampleRate: parseSampleRate(tracesSampleRate, 0.1),
+    dataCollection: DATA_COLLECTION,
+    // v11 streams spans by default, which bypasses beforeSendTransaction (and
+    // ignoreTransactions on the server). The static lifecycle keeps one
+    // scrubbed, filterable transaction per trace, as in v10; beforeSendSpan
+    // must then be wrapped.
+    traceLifecycle: 'static' as const,
+    beforeSendSpan: Sentry.withStaticSpan(scrubSpan),
+    beforeBreadcrumb: filterIncomingBreadcrumb
+  };
+}
+
 type Integration = Exclude<BrowserOptions['defaultIntegrations'], false | undefined>[number];
 
 /** The browser-side Sentry variables (src/env.ts); unset ones are ''. */
@@ -179,33 +210,24 @@ export function clientSentryOptions(
   integrations: Integration[]
 ): BrowserOptions {
   return {
+    ...sharedOptions(env.PUBLIC_SENTRY_ENVIRONMENT, env.PUBLIC_SENTRY_TRACES_SAMPLE_RATE),
     dsn: env.PUBLIC_SENTRY_DSN,
-    environment: env.PUBLIC_SENTRY_ENVIRONMENT || 'production',
-    // Inlined at build time by Vite's `define` (vite.config.ts), so the
-    // server-side SHA and the client bundle share one constant.
-    release: __SENTRY_RELEASE__,
     // Envelopes go to our own origin, which relays them to Sentry
     // (src/routes/monitoring/+server.ts): Sentry never sees a parent's IP
     // address, and CSP connect-src stays 'self'.
     tunnel: SENTRY_TUNNEL_PATH,
     // The SDK posts binary envelopes (compressed replay segments) without a
     // Content-Type, and SvelteKit hands a body-less Request to any endpoint
-    // whose request lacks one — the tunnel would receive nothing. Declaring the
-    // envelope type also keeps these same-origin posts out of SvelteKit's
+    // whose request lacks one, so the tunnel would receive nothing. Declaring
+    // the envelope type also keeps these same-origin posts out of SvelteKit's
     // form-submission CSRF check, which only concerns form content types.
     transportOptions: { headers: { 'Content-Type': 'application/x-sentry-envelope' } },
-    tracesSampleRate: parseSampleRate(env.PUBLIC_SENTRY_TRACES_SAMPLE_RATE, 0.1),
     // Session Replay defaults to error-only: the last minute before a captured
     // error is kept in memory and sent with it; no session is recorded
     // otherwise unless an operator raises the session rate. The recorder itself
     // is added once its chunk has loaded (#lib/sentry-replay-loader.ts).
     replaysSessionSampleRate: parseSampleRate(env.PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE, 0),
     replaysOnErrorSampleRate: parseSampleRate(env.PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE, 1),
-    dataCollection: DATA_COLLECTION,
-    // v11 streams spans by default, which bypasses beforeSendTransaction. The
-    // static lifecycle keeps one scrubbed transaction per trace, as in v10;
-    // beforeSendSpan must then be wrapped.
-    traceLifecycle: 'static',
     integrations: [...integrations, privacyIntegration],
     // A browser error has no stderr line behind it, so its message is scrubbed
     // rather than redacted (scrubBrowserEvent).
@@ -213,11 +235,33 @@ export function clientSentryOptions(
       verdict('client', { error: hint.originalException }) === 'report'
         ? scrubBrowserEvent(event)
         : null,
-    beforeSendTransaction: scrubBrowserEvent,
-    beforeSendSpan: Sentry.withStaticSpan(scrubSpan),
-    beforeBreadcrumb: filterIncomingBreadcrumb
+    beforeSendTransaction: scrubBrowserEvent
   };
 }
+
+/**
+ * Options for Session Replay's integration, which #lib/sentry-replay.ts adds
+ * once its chunk has loaded; the sample rates are clientSentryOptions'.
+ */
+export const replayOptions: NonNullable<Parameters<typeof Sentry.replayIntegration>[0]> = {
+  // The SDK defaults, restated because they are the privacy contract:
+  // every text node, input value and image/SVG is masked or blocked.
+  maskAllText: true,
+  maskAllInputs: true,
+  blockAllMedia: true,
+  // Default masked attributes plus the ones that carry child/entry ids,
+  // dates or food names in this app's markup. rrweb resolves href/src to
+  // absolute URLs before this list applies, so links are scrubbed
+  // server-side by the /monitoring tunnel instead (scrubRecordingFrames).
+  maskAttributes: ['title', 'placeholder', 'aria-label', 'alt', 'action', 'value', 'datetime'],
+  // Keep the replay session in memory only: nothing is written to
+  // sessionStorage, so the three strictly-necessary cookies stay the only
+  // client-side storage (see /cookies).
+  stickySession: false,
+  // networkDetailAllowUrls stays at its empty default: no request or
+  // response bodies/headers are recorded.
+  beforeAddRecordingEvent: scrubRecordingEvent
+};
 
 /**
  * Client handleError. Only a reported error gets an errorId; a 4xx gets the
@@ -236,7 +280,7 @@ export const handleClientError: HandleClientError = (caught) => {
     case 'expected':
       return;
     case 'quiet':
-      return { message: 'Internal Error' };
+      return { message: INTERNAL_ERROR };
     case 'unreachable':
       return { message: m.errorsNetwork() };
   }
@@ -246,49 +290,51 @@ export const handleClientError: HandleClientError = (caught) => {
     captureContext: {
       tags: {
         errorId,
-        status: rendered(caught).status,
+        status: statusAndMessage(caught).status,
         route: clientRouteTag(event.route?.id, event.params)
       }
     }
   });
-  return { message: 'Internal Error', errorId };
+  return { message: INTERNAL_ERROR, errorId };
 };
 
-/** Options for the server's Sentry.init, read from `process.env`'s SENTRY_* variables. */
-export function serverSentryOptions(env: Record<string, string | undefined>): NodeOptions {
+/** The server-side Sentry variables; `process.env` is passed whole. */
+type ServerSentryEnv = {
+  SENTRY_DSN?: string;
+  SENTRY_ENVIRONMENT?: string;
+  SENTRY_TRACES_SAMPLE_RATE?: string;
+  [name: string]: string | undefined;
+};
+
+/** Options for the server's Sentry.init. */
+export function serverSentryOptions(env: ServerSentryEnv): NodeOptions {
   return {
+    ...sharedOptions(env.SENTRY_ENVIRONMENT, env.SENTRY_TRACES_SAMPLE_RATE),
     dsn: env.SENTRY_DSN || '',
-    environment: env.SENTRY_ENVIRONMENT || 'production',
-    // Inlined at build time by Vite's `define` — see vite.config.ts. The
-    // resolver there walks SENTRY_RELEASE → SOURCE_COMMIT → GITHUB_SHA →
-    // GIT_COMMIT_SHA → `git rev-parse HEAD`, then emits either a string
-    // literal or the bare `undefined` token.
-    release: __SENTRY_RELEASE__,
-    tracesSampleRate: parseSampleRate(env.SENTRY_TRACES_SAMPLE_RATE, 0.1),
-    // Structured operational logs (boot, migrations, cleanup, shutdown) are
-    // sent explicitly via Sentry.logger (v11 captures logs whenever that API
-    // is called, there is no enableLogs option). Console output is
-    // deliberately NOT captured: handleServerError's `[diversif:error]` line
-    // carries the user id and raw path.
-    dataCollection: DATA_COLLECTION,
-    // v11 streams spans by default, which bypasses beforeSendTransaction and
-    // ignoreTransactions below. The static lifecycle keeps one scrubbed,
-    // filterable transaction per request, as in v10; beforeSendSpan must then
-    // be wrapped.
-    traceLifecycle: 'static',
     // Every browser envelope relayed by the tunnel would otherwise produce its
     // own server transaction; `sveltekit.handle.root` is the root span of a
     // request matching no route (bot scans, 404s), which sentryHandle never
     // renames.
     ignoreTransactions: [`POST ${SENTRY_TUNNEL_PATH}`, 'sveltekit.handle.root'],
     // Server messages are redacted: their full text is in the stderr line.
+    // No rule drops a server error today, so this verdict is always 'report';
+    // asking it anyway means a future rule on the error also reaches the
+    // errors sentryHandle and the SDK capture without handleError.
     beforeSend: (event, hint) =>
       verdict('server', { error: hint.originalException }) === 'report' ? scrubEvent(event) : null,
     beforeSendTransaction: scrubEvent,
-    beforeSendSpan: Sentry.withStaticSpan(scrubSpan),
-    beforeSendLog: scrubLog,
-    beforeBreadcrumb: filterIncomingBreadcrumb
+    // Structured operational logs (boot, migrations, cleanup, shutdown) are
+    // sent explicitly via Sentry.logger (v11 captures logs whenever that API
+    // is called, there is no enableLogs option). Console output is
+    // deliberately NOT captured: handleServerError's `[diversif:error]` line
+    // carries the user id and raw path.
+    beforeSendLog: scrubLog
   };
+}
+
+/** The tags a reported server error carries, on its event or its request's scope. */
+function serverTags(errorId: string, status: number, event: RequestEvent) {
+  return { errorId, status, method: event.request.method, route: event.route?.id ?? null };
 }
 
 /**
@@ -327,25 +373,20 @@ const handleChainErrorIds = new WeakMap<object, string>();
 /**
  * An unexpected error escaping the app's handle (e.g. session validation on a
  * locked database) is captured by sentryHandle on its way out, before
- * SvelteKit calls handleError — whose own capture of the same error Sentry
+ * SvelteKit calls handleError, whose own capture of the same error Sentry
  * then drops as a duplicate. So mint the errorId here: tag the request's
  * isolation scope, which sentryHandle's capture reads, and hand the same id to
- * handleServerError for the error page. Redirects are control flow; for the
- * rest, SvelteKit will classify an error(...) as 'app' and anything else as an
- * unknown 500, so the verdict decides as handleServerError will.
+ * handleServerError for the error page. Redirects are control flow and an
+ * error(...) is an 'app' error handleServerError won't report; anything else
+ * is tagged as the 500 SvelteKit renders for an unknown error.
  */
 export function tagHandleChainError(error: unknown, event: RequestEvent): void {
-  if (typeof error !== 'object' || error === null || isRedirect(error)) return;
+  if (!isObject(error) || isRedirect(error)) return;
   const kind = isHttpError(error) ? 'app' : 'unknown';
   if (verdict('server', { kind, error }) !== 'report') return;
   const errorId = newErrorId();
   handleChainErrorIds.set(error, errorId);
-  Sentry.getIsolationScope().setTags({
-    errorId,
-    status: 500,
-    method: event.request.method,
-    route: event.route?.id ?? null
-  });
+  Sentry.getIsolationScope().setTags(serverTags(errorId, 500, event));
 }
 
 /**
@@ -358,16 +399,13 @@ export const handleServerError: HandleServerError = (caught) => {
   const { error, event } = caught;
   const outcome = verdict('server', caught);
   if (outcome === 'expected') return;
-  const errorId =
-    (typeof error === 'object' && error !== null && handleChainErrorIds.get(error)) || newErrorId();
-  if (outcome === 'quiet') return { message: 'Internal Error', errorId };
-  const { status, message } = rendered(caught);
+  const errorId = (isObject(error) && handleChainErrorIds.get(error)) || newErrorId();
+  if (outcome === 'quiet') return { message: INTERNAL_ERROR, errorId };
+  const { status, message } = statusAndMessage(caught);
   logServerError(caught, errorId, status, message);
   Sentry.captureException(error, {
     mechanism: HANDLE_ERROR_MECHANISM,
-    captureContext: {
-      tags: { errorId, status, method: event.request.method, route: event.route?.id ?? null }
-    }
+    captureContext: { tags: serverTags(errorId, status, event) }
   });
-  return { message: 'Internal Error', errorId };
+  return { message: INTERNAL_ERROR, errorId };
 };

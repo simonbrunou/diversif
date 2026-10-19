@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import * as Sentry from '@sentry/sveltekit';
 import * as m from '#lib/paraglide/messages.js';
 import { recordingTransport } from '../test/sentry-recorder';
-import { clientSentryOptions, handleClientError } from './sentry-policy';
+import { clientSentryOptions, handleClientError, replayOptions } from './sentry-policy';
 
 // The real browser SDK, initialised with the policy's options: only the
 // transport is swapped for a recorder, so every hook runs as in production.
@@ -213,6 +213,14 @@ describe('client traces and breadcrumbs', () => {
     expect(JSON.stringify(transactions)).not.toContain('/child/18');
   });
 
+  it('keeps click, input and console breadcrumbs out of the SDK buffer', () => {
+    Sentry.addBreadcrumb({ category: 'navigation', message: 'kept' });
+    for (const category of ['ui.click', 'ui.input', 'console']) {
+      Sentry.addBreadcrumb({ category, message: `${category} probe` });
+      expect(Sentry.getIsolationScope().getLastBreadcrumb()).toMatchObject({ message: 'kept' });
+    }
+  });
+
   it('never sends a click, an input or a console breadcrumb', async () => {
     Sentry.addBreadcrumb({ category: 'ui.click', message: 'button[aria-label="Retirer Léo"]' });
     Sentry.addBreadcrumb({ category: 'ui.input', message: 'input#email' });
@@ -273,6 +281,30 @@ describe('client payloads beforeSend never sees', () => {
     const sessions = await recorder.sent('session');
     expect(sessions.length).toBeGreaterThan(0);
     for (const session of sessions) expect(session.attrs).not.toHaveProperty('user_agent');
+  });
+});
+
+describe('client Session Replay', () => {
+  it('masks every text, input and medium, and keeps the session out of sessionStorage', () => {
+    expect(replayOptions).toMatchObject({
+      maskAllText: true,
+      maskAllInputs: true,
+      blockAllMedia: true,
+      stickySession: false
+    });
+    expect(replayOptions.maskAttributes).toEqual(
+      expect.arrayContaining(['aria-label', 'title', 'alt', 'value', 'datetime'])
+    );
+  });
+
+  it('scrubs the frames Replay records around the masked snapshots', () => {
+    const consoleFrame = {
+      type: 5,
+      timestamp: 0,
+      data: { tag: 'breadcrumb', payload: { category: 'console', message: '[diversif:error]' } }
+    };
+
+    expect(replayOptions.beforeAddRecordingEvent?.(consoleFrame as never)).toBeNull();
   });
 });
 

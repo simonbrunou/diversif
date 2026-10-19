@@ -195,6 +195,13 @@ describe('server options', () => {
     expect(attributes.expiredSessions.value).toBe(3);
   });
 
+  it('keeps console breadcrumbs, such as the stderr line, out of the SDK buffer', () => {
+    Sentry.addBreadcrumb({ category: 'http', message: 'kept' });
+    Sentry.addBreadcrumb({ category: 'console', message: '[diversif:error] {"userId":7}' });
+
+    expect(Sentry.getIsolationScope().getLastBreadcrumb()).toMatchObject({ message: 'kept' });
+  });
+
   it('defaults to the production environment and 10% of traces, collecting no client data', () => {
     const options = serverSentryOptions({ SENTRY_TRACES_SAMPLE_RATE: 'abc' });
 
