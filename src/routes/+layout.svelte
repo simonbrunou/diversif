@@ -68,12 +68,17 @@
 
   // Purge the service-worker 'pages' cache + the offline IndexedDB queue when
   // the session ENDS — i.e. on the authenticated→anonymous transition only.
-  // BACKSTOP for client-side-detected expiry only (e.g. an invalidate/goto
-  // that re-runs the root layout load with user=null mid-session). It does
-  // NOT cover the logout buttons: those are full-document POSTs, the layout
-  // remounts fresh on /login and this effect never observes the transition.
-  // Explicit logout is handled by purgeBeforeSubmit on the forms
-  // (account/sessions/+page.svelte) plus the server's Clear-Site-Data header.
+  // Covers client-side-detected expiry (e.g. an invalidate/goto that re-runs
+  // the root layout load with user=null mid-session) and account deletion:
+  // once hydrated, the enhanced account/delete form's redirect is a
+  // client-side navigation this effect observes. Safari doesn't honour
+  // Clear-Site-Data reliably, so there it may be the only effective purge
+  // after a deletion (see CLEAR_SITE_DATA in #lib/server/session.ts; guarded
+  // by e2e/gdpr.spec.ts). It does NOT cover the logout buttons: those are
+  // full-document POSTs, the layout remounts fresh on /login and this effect
+  // never observes the transition. Explicit logout is handled by
+  // purgeBeforeSubmit on the forms (account/sessions/+page.svelte) plus the
+  // server's Clear-Site-Data header.
   // A plain (non-reactive) latch — not $state — so the effect re-runs only
   // when `data.user` changes. It starts undefined and is seeded by the
   // effect's first run (right after hydration), so a visitor who lands
