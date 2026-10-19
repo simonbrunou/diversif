@@ -39,7 +39,7 @@ describe('logRepas: two taps', () => {
     const { carotte, ctx, child, user } = await seedRepasChild();
 
     const logged = ok(
-      logRepas(ctx, form({ foodId: carotte.id, givenAt: recently(), reaction: 'ras' }), null)
+      logRepas(ctx, form({ foodId: carotte.id, givenAt: recently(), reaction: 'ras' }))
     );
 
     if (logged.replayed) throw new Error('a fresh key cannot replay');
@@ -69,7 +69,7 @@ describe('logRepas: two taps', () => {
     const { carotte, ctx } = await seedRepasChild();
     const fields = { foodId: carotte.id, givenAt: recently(), reaction: 'inconfort' };
     const { entryIds } = ok(
-      logRepas(ctx, form({ ...fields, texture: 'ecrasee', notes: '  a bien mangé ' }), null)
+      logRepas(ctx, form({ ...fields, texture: 'ecrasee', notes: '  a bien mangé ' }))
     ) as { entryIds: number[] };
     expect(readRepas(ctx, entryIds[0])?.entry).toMatchObject({
       reaction: 'inconfort',
@@ -82,7 +82,7 @@ describe('logRepas: two taps', () => {
 describe('logRepas: meals', () => {
   it('logs several aliments as one meal sharing a mealId', async () => {
     const { ctx, child, ids } = await threeAliments();
-    ok(logRepas(ctx, form({ foodId: ids, givenAt: recently(), reaction: 'ras' }), null));
+    ok(logRepas(ctx, form({ foodId: ids, givenAt: recently(), reaction: 'ras' })));
 
     const rows = entryRows(child.id);
     expect(rows.map((r) => r.foodId)).toEqual(ids);
@@ -100,8 +100,7 @@ describe('logRepas: meals', () => {
     ok(
       logRepas(
         ctx,
-        form({ foodId: [carotte.id, carotte.id], givenAt: recently(), reaction: 'ras' }),
-        null
+        form({ foodId: [carotte.id, carotte.id], givenAt: recently(), reaction: 'ras' })
       )
     );
     expect(entryRows(child.id).map((r) => [r.foodId, r.mealId])).toEqual([[carotte.id, null]]);
@@ -111,7 +110,7 @@ describe('logRepas: meals', () => {
     const { ctx } = await seedRepasChild();
     const ids = Array.from({ length: 21 }, (_, i) => i + 1);
     expectRefusal(
-      logRepas(ctx, form({ foodId: ids, givenAt: recently(), reaction: 'ras' }), null),
+      logRepas(ctx, form({ foodId: ids, givenAt: recently(), reaction: 'ras' })),
       400,
       'errorsLogTooManyFoods'
     );
@@ -122,7 +121,7 @@ describe('logRepas: field errors', () => {
   it('refuses a repas with no aliment', async () => {
     const { ctx } = await seedRepasChild();
     expectRefusal(
-      logRepas(ctx, form({ givenAt: recently(), reaction: 'ras' }), null),
+      logRepas(ctx, form({ givenAt: recently(), reaction: 'ras' })),
       400,
       'errorsLogNoFoodSelected'
     );
@@ -131,7 +130,7 @@ describe('logRepas: field errors', () => {
   it('treats a whitespace-only custom name as no aliment', async () => {
     const { ctx } = await seedRepasChild();
     expectRefusal(
-      logRepas(ctx, form({ 'customFood.name': '   ', givenAt: recently(), reaction: 'ras' }), null),
+      logRepas(ctx, form({ 'customFood.name': '   ', givenAt: recently(), reaction: 'ras' })),
       400,
       'errorsLogNoFoodSelected'
     );
@@ -142,8 +141,7 @@ describe('logRepas: field errors', () => {
     ok(
       logRepas(
         ctx,
-        form({ foodId: carotte.id, 'customFood.name': ' ', givenAt: recently(), reaction: 'ras' }),
-        null
+        form({ foodId: carotte.id, 'customFood.name': ' ', givenAt: recently(), reaction: 'ras' })
       )
     );
     expect(entryRows(child.id)).toHaveLength(1);
@@ -159,11 +157,7 @@ describe('logRepas: field errors', () => {
     });
     for (const foodId of [String(theirs.id), 'abc', '0']) {
       expectRefusal(
-        logRepas(
-          ctx,
-          form({ foodId: [carotte.id, foodId], givenAt: recently(), reaction: 'ras' }),
-          null
-        ),
+        logRepas(ctx, form({ foodId: [carotte.id, foodId], givenAt: recently(), reaction: 'ras' })),
         400,
         'errorsLogFoodNotFound'
       );
@@ -182,7 +176,7 @@ describe('logRepas: field errors', () => {
     ];
     for (const [date, errorKey] of cases) {
       const fields = { foodId: carotte.id, reaction: 'ras', ...date };
-      expectRefusal(logRepas(ctx, form(fields), null), 400, errorKey);
+      expectRefusal(logRepas(ctx, form(fields)), 400, errorKey);
     }
     expect(entryRows(child.id)).toEqual([]);
   });
@@ -191,19 +185,19 @@ describe('logRepas: field errors', () => {
     const { ctx, carotte } = await seedRepasChild();
     for (const reaction of [undefined, 'pas-une-reaction']) {
       const fields = { foodId: carotte.id, givenAt: recently(), ...(reaction ? { reaction } : {}) };
-      expectRefusal(logRepas(ctx, form(fields), null), 400, 'errorsAuthBadInput');
+      expectRefusal(logRepas(ctx, form(fields)), 400, 'errorsAuthBadInput');
     }
   });
 
   it('reads an empty texture as no texture, and refuses an unknown one', async () => {
     const { ctx, carotte } = await seedRepasChild();
     const fields = { foodId: carotte.id, givenAt: recently(), reaction: 'ras' };
-    const { entryIds } = ok(logRepas(ctx, form({ ...fields, texture: '' }), null)) as {
+    const { entryIds } = ok(logRepas(ctx, form({ ...fields, texture: '' }))) as {
       entryIds: number[];
     };
     expect(readRepas(ctx, entryIds[0])?.entry.texture).toBeNull();
     expectRefusal(
-      logRepas(ctx, form({ ...fields, texture: 'pas-une-texture' }), null),
+      logRepas(ctx, form({ ...fields, texture: 'pas-une-texture' })),
       400,
       'errorsLogTextureInvalid'
     );
@@ -212,9 +206,9 @@ describe('logRepas: field errors', () => {
   it('caps the stored notes at 2000 characters, after trimming', async () => {
     const { ctx, carotte } = await seedRepasChild();
     const fields = { foodId: carotte.id, givenAt: recently(), reaction: 'ras' };
-    ok(logRepas(ctx, form({ ...fields, notes: ` ${'x'.repeat(2000)} ` }), null));
+    ok(logRepas(ctx, form({ ...fields, notes: ` ${'x'.repeat(2000)} ` })));
     expectRefusal(
-      logRepas(ctx, form({ ...fields, notes: 'x'.repeat(2001) }), null),
+      logRepas(ctx, form({ ...fields, notes: 'x'.repeat(2001) })),
       400,
       'errorsLogNoteTooLong'
     );
@@ -223,7 +217,7 @@ describe('logRepas: field errors', () => {
   it('refuses a custom name longer than 80 characters', async () => {
     const { ctx } = await seedRepasChild();
     const fields = { 'customFood.name': 'x'.repeat(81), givenAt: recently(), reaction: 'ras' };
-    expectRefusal(logRepas(ctx, form(fields), null), 400, 'errorsAuthBadInput');
+    expectRefusal(logRepas(ctx, form(fields)), 400, 'errorsAuthBadInput');
   });
 });
 
@@ -231,7 +225,7 @@ describe('logRepas: custom aliments', () => {
   function logCustom(ctx: Parameters<typeof logRepas>[0], name: string, category?: string) {
     const fields = { 'customFood.name': name, givenAt: recently(), reaction: 'ras' };
     return ok(
-      logRepas(ctx, form(category ? { ...fields, 'customFood.category': category } : fields), null)
+      logRepas(ctx, form(category ? { ...fields, 'customFood.category': category } : fields))
     ) as { entryIds: number[] };
   }
 
@@ -275,7 +269,7 @@ describe('logRepas: custom aliments', () => {
       givenAt: recently(),
       reaction: 'ras'
     };
-    ok(logRepas(ctx, form(fields), null));
+    ok(logRepas(ctx, form(fields)));
     const rows = entryRows(child.id);
     expect(rows).toHaveLength(2);
     expect(rows[0].mealId).toBe(rows[1].mealId);
@@ -285,7 +279,7 @@ describe('logRepas: custom aliments', () => {
     const { ctx, child } = await seedRepasChild();
     const fields = { 'customFood.name': 'Purée orpheline', reaction: 'ras' };
     expectRefusal(
-      logRepas(ctx, form({ ...fields, givenAt: '2099-01-01T10:00' }), null),
+      logRepas(ctx, form({ ...fields, givenAt: '2099-01-01T10:00' })),
       400,
       'errorsLogDateFuture'
     );
@@ -299,7 +293,7 @@ describe('logRepas: custom aliments', () => {
     );
     try {
       expect(() =>
-        logRepas(ctx, form({ ...fields, givenAt: recently(), notes: '__simulated_fail__' }), null)
+        logRepas(ctx, form({ ...fields, givenAt: recently(), notes: '__simulated_fail__' }))
       ).toThrow();
     } finally {
       testDb.run(sql`DROP TRIGGER IF EXISTS tmp_abort_entry`);
@@ -319,8 +313,8 @@ describe('logRepas: plats préparés', () => {
       'preparedMeal.name': 'Légumes et riz',
       reaction: 'ras'
     };
-    ok(logRepas(ctx, form({ ...fields, givenAt: '2024-06-01T10:00:00Z' }), null));
-    ok(logRepas(ctx, form({ ...fields, foodId: ids, givenAt: '2024-05-01T10:00:00Z' }), null));
+    ok(logRepas(ctx, form({ ...fields, givenAt: '2024-06-01T10:00:00Z' })));
+    ok(logRepas(ctx, form({ ...fields, foodId: ids, givenAt: '2024-05-01T10:00:00Z' })));
 
     expect(testDb.select().from(preparedMeals).all()).toMatchObject([
       {
@@ -348,7 +342,7 @@ describe('logRepas: plats préparés', () => {
       })
       .returning();
     const fields = { foodId: carotte.id, preparedMealId: saved.id, reaction: 'ras' };
-    ok(logRepas(ctx, form({ ...fields, givenAt: '2024-06-01T10:00:00Z' }), null));
+    ok(logRepas(ctx, form({ ...fields, givenAt: '2024-06-01T10:00:00Z' })));
     expect(testDb.select().from(preparedMeals).get()?.lastUsedAt).toEqual(
       new Date('2024-06-01T10:00:00Z')
     );
@@ -376,7 +370,7 @@ describe('logRepas: plats préparés', () => {
       { 'preparedMeal.name': 'Purée verte' },
       { 'preparedMeal.brand': 'x'.repeat(61), 'preparedMeal.name': 'Purée verte' }
     ]) {
-      expectRefusal(logRepas(ctx, form({ ...fields, ...extra }), null), 400, 'errorsAuthBadInput');
+      expectRefusal(logRepas(ctx, form({ ...fields, ...extra })), 400, 'errorsAuthBadInput');
     }
     expect(entryRows(child.id)).toEqual([]);
   });
@@ -388,7 +382,7 @@ describe('logRepas: milestones', () => {
     foodId: number | number[],
     reaction = 'ras'
   ) {
-    const logged = ok(logRepas(ctx, form({ foodId, givenAt: recently(), reaction }), null));
+    const logged = ok(logRepas(ctx, form({ foodId, givenAt: recently(), reaction })));
     if (logged.replayed) throw new Error('a fresh key cannot replay');
     return logged.milestones;
   }
@@ -501,16 +495,17 @@ describe('logRepas: milestones', () => {
 });
 
 describe('logRepas: idempotency key', () => {
-  const fields = (foodId: number | number[]) => ({
+  const fields = (foodId: number | number[], idempotencyKey?: string) => ({
     foodId,
     givenAt: '2026-05-07T10:00:00.000Z',
-    reaction: 'ras'
+    reaction: 'ras',
+    ...(idempotencyKey ? { idempotencyKey } : {})
   });
 
   it('replays a second submit under the same key without writing or auditing again', async () => {
     const { ctx, child, ids } = await threeAliments();
-    const first = ok(logRepas(ctx, form(fields(ids)), 'key-replay-1'));
-    const again = ok(logRepas(ctx, form(fields(ids)), 'key-replay-1'));
+    const first = ok(logRepas(ctx, form(fields(ids, 'key-replay-1'))));
+    const again = ok(logRepas(ctx, form(fields(ids, 'key-replay-1'))));
 
     expect(first.replayed).toBe(false);
     expect(again).toEqual({ ok: true, replayed: true, redirect: first.redirect });
@@ -520,22 +515,12 @@ describe('logRepas: idempotency key', () => {
     expect(auditMock.mock.calls).toHaveLength(1);
   });
 
-  it('reads the key from the form field when there is no header', async () => {
-    const { ctx, child, carotte } = await seedRepasChild();
-    const withKey = { ...fields(carotte.id), idempotencyKey: 'field-key-1' };
-    ok(logRepas(ctx, form(withKey), null));
-    expect(ok(logRepas(ctx, form(withKey), null)).replayed).toBe(true);
-    // The header wins over the field.
-    expect(ok(logRepas(ctx, form(withKey), 'header-key-1')).replayed).toBe(false);
-    expect(entryRows(child.id)).toHaveLength(2);
-  });
-
   it('logs twice without a key, or under two keys', async () => {
     const { ctx, child, carotte } = await seedRepasChild();
-    ok(logRepas(ctx, form(fields(carotte.id)), null));
-    ok(logRepas(ctx, form(fields(carotte.id)), null));
-    ok(logRepas(ctx, form(fields(carotte.id)), 'key-a'));
-    ok(logRepas(ctx, form(fields(carotte.id)), 'key-b'));
+    ok(logRepas(ctx, form(fields(carotte.id))));
+    ok(logRepas(ctx, form(fields(carotte.id))));
+    ok(logRepas(ctx, form(fields(carotte.id, 'key-a'))));
+    ok(logRepas(ctx, form(fields(carotte.id, 'key-b'))));
     expect(entryRows(child.id)).toHaveLength(4);
   });
 
@@ -543,7 +528,7 @@ describe('logRepas: idempotency key', () => {
     const { ctx, carotte } = await seedRepasChild();
     for (const key of ['x'.repeat(101), 'pas une clé']) {
       expectRefusal(
-        logRepas(ctx, form(fields(carotte.id)), key),
+        logRepas(ctx, form(fields(carotte.id, key))),
         400,
         'errorsLogIdempotencyKeyInvalid'
       );
@@ -554,14 +539,14 @@ describe('logRepas: idempotency key', () => {
     const { ctx, child, user, carotte } = await seedRepasChild();
     const sibling = await seedChild({ createdBy: user.id, birthDate: '2024-02-01' });
     const coparent = await seedUser({ email: 'coparent@example.com' });
-    ok(logRepas(ctx, form(fields(carotte.id)), 'k1'));
+    ok(logRepas(ctx, form(fields(carotte.id, 'k1'))));
 
     for (const other of [
       { childId: sibling.id, user: ctx.user },
       { childId: child.id, user: { id: coparent.id } }
     ]) {
       expectRefusal(
-        logRepas(other, form(fields(carotte.id)), 'k1'),
+        logRepas(other, form(fields(carotte.id, 'k1'))),
         409,
         'errorsLogIdempotencyConflict'
       );

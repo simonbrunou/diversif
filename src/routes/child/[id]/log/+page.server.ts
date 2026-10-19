@@ -40,12 +40,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 export const actions: Actions = {
-  // The offline-queue replay (src/lib/offline/queue.ts) posts here too, with
-  // its idempotency key in an `Idempotency-Key` header.
+  // The offline-queue replay (src/lib/offline/queue.ts) posts here too.
   default: async ({ request, params, locals }) => {
     const ctx = requireChildContext(locals, params);
     const form = await request.formData();
-    const logged = logRepas(ctx, form, request.headers.get('Idempotency-Key'));
+    const logged = logRepas(ctx, form);
     if (!logged.ok) return fail(logged.status, { errorKey: logged.errorKey });
     throw localizedRedirect(locals.locale, 303, logged.redirect);
   }

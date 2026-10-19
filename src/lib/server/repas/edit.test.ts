@@ -24,9 +24,7 @@ beforeEach(async () => {
 const LOGGED_AT = '2024-06-01T10:00:00.000Z';
 
 function logged(ctx: RepasContext, foodId: number | number[], extra: Record<string, string> = {}) {
-  const result = ok(
-    logRepas(ctx, form({ foodId, givenAt: LOGGED_AT, reaction: 'ras', ...extra }), null)
-  );
+  const result = ok(logRepas(ctx, form({ foodId, givenAt: LOGGED_AT, reaction: 'ras', ...extra })));
   if (result.replayed) throw new Error('a fresh key cannot replay');
   return result.entryIds;
 }

@@ -137,17 +137,13 @@ function insertRepas(tx: Tx, ctx: RepasContext, draft: LogDraft): Logged {
 }
 
 /**
- * Log a new repas from the log form. With an idempotency key (the
- * `Idempotency-Key` header, else the form's `idempotencyKey` field), a second
- * submit under the same key replays the first one's redirect without writing.
+ * Log a new repas from the log form. With an idempotency key (the form's
+ * `idempotencyKey` field), a second submit under the same key replays the
+ * first one's redirect without writing.
  */
-export function logRepas(
-  ctx: RepasContext,
-  form: FormData,
-  idempotencyHeader: string | null
-): LogResult {
+export function logRepas(ctx: RepasContext, form: FormData): LogResult {
   return refusing(() => {
-    const key = idempotencyKeyField(form, idempotencyHeader);
+    const key = idempotencyKeyField(form);
     const draft = parseLogForm(form);
     let fresh = null as Logged | null;
 

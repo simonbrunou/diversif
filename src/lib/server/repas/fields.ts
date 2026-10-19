@@ -133,12 +133,11 @@ function reactionEditField(form: FormData, suffix: string): ReactionEdit | null 
 }
 
 /**
- * The offline replay sends the key as an `Idempotency-Key` header; the online
- * `use:enhance` submit can't set headers, so it posts an `idempotencyKey`
- * field. The header wins when both are present.
+ * The durable submit (src/lib/offline/submit.ts) posts its key as an
+ * `idempotencyKey` field, online and on replay alike.
  */
-export function idempotencyKeyField(form: FormData, header: string | null): string | null {
-  const key = header ?? text(form, 'idempotencyKey') ?? null;
+export function idempotencyKeyField(form: FormData): string | null {
+  const key = text(form, 'idempotencyKey') ?? null;
   if (key !== null && (key.length > MAX_IDEMPOTENCY_KEY || !/^[A-Za-z0-9_-]+$/.test(key))) {
     refuse('errorsLogIdempotencyKeyInvalid');
   }
