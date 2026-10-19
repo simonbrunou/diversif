@@ -9,7 +9,7 @@
  * - Client: `Sentry.init(clientSentryOptions(env, integrations))`, then
  *   `export const handleError = handleClientError`; Replay, once its chunk
  *   loads, is `Sentry.replayIntegration(replayOptions)`.
- * - Server: `Sentry.init(serverSentryOptions(process.env))`;
+ * - Server: `Sentry.init(serverSentryOptions(env))` with its SENTRY_* variables;
  *   `export const handleError = handleServerError`, and the app's handle calls
  *   `tagHandleChainError` on any error escaping it.
  *
@@ -60,7 +60,7 @@ type Caught = { kind?: string; error: unknown };
  */
 type Verdict = 'expected' | 'quiet' | 'unreachable' | 'report';
 
-/** SvelteKit's message for an unknown error, and the only one the error page gets. */
+/** SvelteKit's message for an unknown error; the error page shows it for a reported error or a 4xx. */
 const INTERNAL_ERROR = 'Internal Error';
 
 /**
@@ -210,7 +210,6 @@ export function clientSentryOptions(
   integrations: Integration[]
 ): BrowserOptions {
   return {
-    ...sharedOptions(env.PUBLIC_SENTRY_ENVIRONMENT, env.PUBLIC_SENTRY_TRACES_SAMPLE_RATE),
     dsn: env.PUBLIC_SENTRY_DSN,
     // Envelopes go to our own origin, which relays them to Sentry
     // (src/routes/monitoring/+server.ts): Sentry never sees a parent's IP
@@ -235,7 +234,9 @@ export function clientSentryOptions(
       verdict('client', { error: hint.originalException }) === 'report'
         ? scrubBrowserEvent(event)
         : null,
-    beforeSendTransaction: scrubBrowserEvent
+    beforeSendTransaction: scrubBrowserEvent,
+    // Last, so a key set above and here too fails to compile.
+    ...sharedOptions(env.PUBLIC_SENTRY_ENVIRONMENT, env.PUBLIC_SENTRY_TRACES_SAMPLE_RATE)
   };
 }
 
@@ -298,18 +299,16 @@ export const handleClientError: HandleClientError = (caught) => {
   return { message: INTERNAL_ERROR, errorId };
 };
 
-/** The server-side Sentry variables; `process.env` is passed whole. */
+/** The server-side Sentry variables, from `process.env`. */
 type ServerSentryEnv = {
   SENTRY_DSN?: string;
   SENTRY_ENVIRONMENT?: string;
   SENTRY_TRACES_SAMPLE_RATE?: string;
-  [name: string]: string | undefined;
 };
 
 /** Options for the server's Sentry.init. */
 export function serverSentryOptions(env: ServerSentryEnv): NodeOptions {
   return {
-    ...sharedOptions(env.SENTRY_ENVIRONMENT, env.SENTRY_TRACES_SAMPLE_RATE),
     dsn: env.SENTRY_DSN || '',
     // Every browser envelope relayed by the tunnel would otherwise produce its
     // own server transaction; `sveltekit.handle.root` is the root span of a
@@ -328,7 +327,9 @@ export function serverSentryOptions(env: ServerSentryEnv): NodeOptions {
     // is called, there is no enableLogs option). Console output is
     // deliberately NOT captured: handleServerError's `[diversif:error]` line
     // carries the user id and raw path.
-    beforeSendLog: scrubLog
+    beforeSendLog: scrubLog,
+    // Last, so a key set above and here too fails to compile.
+    ...sharedOptions(env.SENTRY_ENVIRONMENT, env.SENTRY_TRACES_SAMPLE_RATE)
   };
 }
 

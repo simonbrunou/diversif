@@ -298,13 +298,23 @@ describe('client Session Replay', () => {
   });
 
   it('scrubs the frames Replay records around the masked snapshots', () => {
-    const consoleFrame = {
+    const frame = (payload: object) => ({
       type: 5,
       timestamp: 0,
-      data: { tag: 'breadcrumb', payload: { category: 'console', message: '[diversif:error]' } }
-    };
+      data: { tag: 'breadcrumb', payload }
+    });
+    const scrub = (payload: object) =>
+      replayOptions.beforeAddRecordingEvent?.(frame(payload) as never);
 
-    expect(replayOptions.beforeAddRecordingEvent?.(consoleFrame as never)).toBeNull();
+    expect(scrub({ category: 'console', message: '[diversif:error]' })).toBeNull();
+    // A click keeps its replay node, minus the selector naming the child.
+    expect(
+      scrub({
+        category: 'ui.click',
+        message: 'button[aria-label="Retirer Léo"]',
+        data: { node: { id: 7, tagName: 'button', attributes: { 'aria-label': 'Retirer Léo' } } }
+      })
+    ).toEqual(frame({ category: 'ui.click', data: { node: { id: 7, tagName: 'button' } } }));
   });
 });
 
