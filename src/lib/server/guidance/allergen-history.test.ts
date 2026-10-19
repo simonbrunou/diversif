@@ -110,22 +110,31 @@ describe('loadAllergenHistory: maintainQueue', () => {
     const queue = history().maintainQueue;
     expect(queue.map((c) => [c.id, c.daysSince, c.overdue])).toEqual([
       ['gluten', 12, true],
-      // arachide before lait: same day, and PRIORITY_INTRODUCTION_ALLERGENS lists it first.
+      // arachide before lait: given at the same instant, and
+      // PRIORITY_INTRODUCTION_ALLERGENS lists it first.
       ['arachide', 9, true],
       ['lait', 9, true],
       ['poisson', 2, false]
     ]);
   });
 
-  it('ranks by whole days, so the same day count falls back to priority order', async () => {
-    // lait was given a few hours earlier than arachide, but both read "9 days".
-    await log(await seedFood('Fromage blanc', 'produits_laitiers', 'lait'), 'ras', 9.6);
-    await log(await seedFood('Purée de cacahuète', 'allergenes', 'arachide'), 'ras', 9.1);
+  it('keeps one order all day long, the allergen given first at the head', async () => {
+    // lait at 08:00 and oeuf at 10:00 (Paris), three days before. Between
+    // 10:00 and 08:00 both read "3 jours"; the head must not switch to oeuf.
+    await log(
+      await seedFood('Fromage blanc', 'produits_laitiers', 'lait'),
+      'ras',
+      (NOW - Date.UTC(2026, 0, 25, 7, 0)) / DAY
+    );
+    await log(
+      await seedFood('Œuf dur', 'oeufs', 'oeuf'),
+      'ras',
+      (NOW - Date.UTC(2026, 0, 25, 9, 0)) / DAY
+    );
+    const headAt = (now: number) => loadAllergenHistory(testDb, childId, now).maintainQueue[0];
 
-    expect(history().maintainQueue.map((c) => [c.id, c.daysSince])).toEqual([
-      ['arachide', 9],
-      ['lait', 9]
-    ]);
+    expect(headAt(Date.UTC(2026, 0, 28, 8, 0))).toMatchObject({ id: 'lait', daysSince: 3 });
+    expect(headAt(Date.UTC(2026, 0, 28, 9, 30))).toMatchObject({ id: 'lait', daysSince: 3 });
   });
 
   it('turns overdue exactly at ALLERGEN_MAINTAIN_DAYS', async () => {

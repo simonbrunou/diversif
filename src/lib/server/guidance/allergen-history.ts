@@ -92,10 +92,12 @@ export type AllergenHistory = {
    */
   isTolerated(id: string): boolean;
   /**
-   * Tolerated, never-blocked priority allergens, the most days without a
-   * reliable exposure first, ties in PRIORITY_INTRODUCTION_ALLERGENS order. The one
-   * maintenance policy: reminders nudge the overdue head, the menu offers the
-   * first entry it can serve, the tile marks overdue ones 'fading'.
+   * Tolerated, never-blocked priority allergens, the one whose last reliable
+   * exposure is oldest first (exposures at the same instant in
+   * PRIORITY_INTRODUCTION_ALLERGENS order). The order does not depend on
+   * `now`, so it holds all day. The one maintenance policy: the reminders
+   * nudge the first two overdue entries, the menu offers the first entry it
+   * can serve, the tile and the Carnet mark overdue ones 'fading'.
    */
   readonly maintainQueue: readonly MaintainCandidate[];
   /** All 12 tracked allergens, in ALLERGENS order, for the Aujourd'hui tile and the Carnet. */
@@ -184,10 +186,6 @@ function factsByAllergen(entries: readonly AllergenEntry[]): Map<string, Facts> 
 
 const daysBetween = (from: number, to: number) => Math.max(0, Math.floor((to - from) / DAY_MS));
 
-// One maintenance policy for every reader: tolerated priority allergens with no
-// symptoms ever, the most days without a reliable exposure first. The
-// reminders take the overdue head, the menu the first entry it can serve, and
-// the tile marks overdue ones fading.
 function buildMaintainQueue(byAllergen: Map<string, Facts>, now: number): MaintainCandidate[] {
   const queue: MaintainCandidate[] = [];
   for (const id of PRIORITY_INTRODUCTION_ALLERGENS) {
@@ -201,9 +199,11 @@ function buildMaintainQueue(byAllergen: Map<string, Facts>, now: number): Mainta
       overdue: daysSince >= ALLERGEN_MAINTAIN_DAYS
     });
   }
-  // By whole days, as the parent reads them; the stable sort keeps
-  // PRIORITY_INTRODUCTION_ALLERGENS order within the same day count.
-  return queue.sort((a, b) => b.daysSince - a.daysSince);
+  // By the instant of the last exposure, not by whole days: whole days tie
+  // twice a day and would let the head switch between two loads on the same
+  // day. The stable sort keeps PRIORITY_INTRODUCTION_ALLERGENS order for
+  // exposures logged at the same instant (one meal).
+  return queue.sort((a, b) => a.lastAt - b.lastAt);
 }
 
 function formatDDMMYY(ms: number): string {
