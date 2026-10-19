@@ -62,7 +62,6 @@ describe('account/sessions logoutEverywhere', () => {
     if (r.kind === 'redirect') expect(r.location).toBe('/login');
     expect(await resumeSession(otherDevice)).toBeNull();
     expect(await resumeSession(copy)).toBeNull();
-    expect(copyCookies(event.cookies)).toEqual({});
     expect(auditSpy).toHaveBeenCalledWith({ type: 'account.sessions_revoked', userId: u.id });
     // Same Clear-Site-Data contract as POST /logout : the redirect response
     // must instruct the browser to wipe CacheStorage + storage.

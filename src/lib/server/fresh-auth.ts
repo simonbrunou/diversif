@@ -30,13 +30,13 @@ export async function requireFreshAuth<TField extends string>(
   field: TField
 ): Promise<{ ok: true } | { ok: false; failure: ActionFailure<Record<TField, string>> }> {
   const user = requireUser(locals);
-  const failure = (status: number, key: string) => ({
+  const refuse = (status: number, key: string) => ({
     ok: false as const,
     failure: fail(status, { [field]: key } as Record<TField, string>)
   });
 
   if (!checkRateLimit(FRESH_AUTH_LIMIT, String(user.id)).allowed) {
-    return failure(429, 'errorsAuthRateLimited');
+    return refuse(429, 'errorsAuthRateLimited');
   }
 
   const [row] = await db
@@ -47,7 +47,7 @@ export async function requireFreshAuth<TField extends string>(
   if (!row?.passwordHash) throw localizedRedirect(locals.locale, 303, '/login');
 
   if (!(await verifyPassword(row.passwordHash, currentPassword))) {
-    return failure(400, 'errorsAccountPasswordIncorrect');
+    return refuse(400, 'errorsAccountPasswordIncorrect');
   }
   return { ok: true };
 }

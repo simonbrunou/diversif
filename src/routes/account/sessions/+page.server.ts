@@ -11,9 +11,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
   logoutEverywhere: async (event) => {
-    const user = requireUser(event.locals);
+    const { locals } = event;
+    const user = requireUser(locals);
     await endAllSessions(event, user.id);
     audit({ type: 'account.sessions_revoked', userId: user.id });
-    throw localizedRedirect(event.locals.locale, 303, '/login');
+    throw localizedRedirect(locals.locale, 303, '/login');
   }
 };

@@ -1,11 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
-import { eq } from 'drizzle-orm';
 import { findUserByEmail, verifyPasswordOrDecoy } from '#lib/server/auth.js';
 import { startSession } from '#lib/server/session.js';
-import { db } from '#lib/server/db/index.js';
-import { users } from '#lib/server/db/schema.js';
 import { audit } from '#lib/server/audit.js';
 import { requireGuest } from '#lib/server/guards.js';
 import { parseFormWithKey } from '#lib/server/forms.js';
@@ -135,8 +132,6 @@ export const actions: Actions = {
     // window is wide enough that a legitimate user who mistyped a few times
     // before getting it right won't be locked out. (The per-email bucket
     // never counted this success in the first place.)
-
-    await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
 
     await startSession(event, user.id);
     audit({ type: 'auth.login_succeeded', userId: user.id, method: 'password' });

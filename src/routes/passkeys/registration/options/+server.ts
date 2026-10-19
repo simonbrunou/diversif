@@ -9,6 +9,7 @@ import {
 } from '#lib/server/passkeys.js';
 import { requireUser } from '#lib/server/guards.js';
 import { requireFreshAuth } from '#lib/server/fresh-auth.js';
+import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
@@ -29,12 +30,10 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
     return Response.json({ ok: false, error: 'Mot de passe requis.' }, { status: 400 });
   }
 
-  const freshAuth = await requireFreshAuth(locals, currentPassword, 'error');
+  const freshAuth = await requireFreshAuth(locals, currentPassword, 'errorKey');
   if (!freshAuth.ok) {
-    return Response.json(
-      { ok: false, error: freshAuth.failure.data.error },
-      { status: freshAuth.failure.status }
-    );
+    const { status, data } = freshAuth.failure;
+    return Response.json({ ok: false, error: resolveMessageKey(data.errorKey) }, { status });
   }
 
   const options = await buildRegistrationOptions({

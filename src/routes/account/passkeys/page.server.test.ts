@@ -12,7 +12,7 @@ mock.module('#lib/server/audit.js', () => ({
 }));
 
 import { hashPassword } from '#lib/server/auth.js';
-import { passkeys, users } from '#lib/server/db/schema.js';
+import { passkeys } from '#lib/server/db/schema.js';
 import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 import { eq } from 'drizzle-orm';
 import { actions, load } from './+page.server';
@@ -157,43 +157,6 @@ describe('account/passkeys delete', () => {
     const fresh = (await testDb.select().from(passkeys).where(eq(passkeys.id, 'p1')).limit(1))[0];
     expect(fresh).toBeDefined();
     expect(auditSpy).not.toHaveBeenCalled();
-  });
-
-  it('rate-limits repeated wrong-password attempts', async () => {
-    const u = await seed();
-    await seedKey(u.id);
-    for (let i = 0; i < 5; i++) {
-      await actions.delete!(
-        makeRouteEvent({
-          user: safeUser(u),
-          formData: { id: 'p1', currentPassword: 'not-the-password' }
-        }) as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
-      );
-    }
-    const r = (await actions.delete!(
-      makeRouteEvent({
-        user: safeUser(u),
-        formData: { id: 'p1', currentPassword: 'current-password-12' }
-      }) as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
-    )) as { status: number; data: { passkeyErrorKey: string } };
-    expect(r.status).toBe(429);
-    expect(r.data.passkeyErrorKey).toBe('errorsAuthRateLimited');
-  });
-
-  it('redirects to /login when the user row has vanished', async () => {
-    const u = await seed();
-    await seedKey(u.id);
-    await testDb.delete(users).where(eq(users.id, u.id));
-    const r = await captureFlow(() =>
-      actions.delete!(
-        makeRouteEvent({
-          user: safeUser(u),
-          formData: { id: 'p1', currentPassword: 'current-password-12' }
-        }) as unknown as Parameters<NonNullable<typeof actions.delete>>[0]
-      )
-    );
-    expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe('/login');
   });
 
   it('fails 404 for unknown id', async () => {

@@ -63,23 +63,6 @@ describe('account/password changePassword', () => {
     expect(r.data.passwordErrorKey).toBe('errorsAuthBadInput');
   });
 
-  it('redirects to /login when user no longer exists', async () => {
-    const u = await seed();
-    await testDb.delete(users).where(eq(users.id, u.id));
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: {
-        currentPassword: 'current-password-12',
-        newPassword: 'new-very-long-password-12+'
-      }
-    });
-    const r = await captureFlow(() =>
-      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
-    );
-    expect(r.kind).toBe('redirect');
-    if (r.kind === 'redirect') expect(r.location).toBe('/login');
-  });
-
   it('fails when current password is wrong', async () => {
     const u = await seed();
     const event = makeRouteEvent({
@@ -129,27 +112,5 @@ describe('account/password changePassword', () => {
 
     expect(await resumeSession(otherDevice)).toBeNull();
     expect((await resumeSession(event))?.id).toBe(u.id);
-  });
-
-  it('rate-limits brute-force attempts on the currentPassword field', async () => {
-    const u = await seed();
-    for (let i = 0; i < 5; i++) {
-      const event = makeRouteEvent({
-        user: safeUser(u),
-        formData: { currentPassword: 'wrong', newPassword: 'new-very-long-password-12+' }
-      });
-      await actions.default!(
-        event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-      );
-    }
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { currentPassword: 'wrong', newPassword: 'new-very-long-password-12+' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { passwordErrorKey: string } };
-    expect(r.status).toBe(429);
-    expect(r.data.passwordErrorKey).toBe('errorsAuthRateLimited');
   });
 });

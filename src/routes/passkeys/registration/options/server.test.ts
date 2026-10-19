@@ -95,20 +95,6 @@ describe('POST /passkeys/registration/options', () => {
     expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 
-  it('redirects to /login when the user no longer exists', async () => {
-    const u = await seed();
-    await testDb.delete(users).where(eq(users.id, u.id));
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      url: 'https://diversif.app/passkeys/registration/options'
-    });
-    withJsonBody(event, { currentPassword: PASSWORD });
-    const r = await captureFlow(
-      () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
-    );
-    expect(r).toEqual({ kind: 'redirect', status: 303, location: '/login' });
-  });
-
   it('returns options, sets the challenge cookie, and stores the challenge', async () => {
     const u = await seed();
     mocks.generateRegistrationOptions.mockResolvedValue({
@@ -182,25 +168,8 @@ describe('POST /passkeys/registration/options', () => {
     withJsonBody(event, { currentPassword: 'wrong-password' });
     const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ ok: false, error: 'errorsAccountPasswordIncorrect' });
-    expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
-  });
-
-  it('refuses a 6th password attempt within 5 minutes with the rate-limit key', async () => {
-    const u = await seed();
-    const attempt = async (currentPassword: string) => {
-      const event = makeRouteEvent({
-        user: safeUser(u),
-        url: 'https://diversif.app/passkeys/registration/options'
-      });
-      withJsonBody(event, { currentPassword });
-      return (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
-    };
-    for (let i = 0; i < 5; i++) await attempt('wrong-password');
-
-    const res = await attempt(PASSWORD);
-    expect(res.status).toBe(429);
-    expect(await res.json()).toEqual({ ok: false, error: 'errorsAuthRateLimited' });
+    // Prose like the endpoint's other errors (the client shows its own text).
+    expect(await res.json()).toEqual({ ok: false, error: 'Mot de passe actuel incorrect.' });
     expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 });

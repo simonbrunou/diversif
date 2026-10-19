@@ -1,5 +1,4 @@
 import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
   PASSKEY_CHALLENGE_COOKIE,
@@ -10,8 +9,6 @@ import {
   parsePasskeyResponseBody
 } from '#lib/server/passkeys.js';
 import { startSession } from '#lib/server/session.js';
-import { db } from '#lib/server/db/index.js';
-import { users } from '#lib/server/db/schema.js';
 import { audit } from '#lib/server/audit.js';
 import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
 import type { RequestHandler } from './$types';
@@ -65,8 +62,6 @@ export const POST: RequestHandler = async (event) => {
   // comment in src/routes/login/+page.server.ts. Resetting on success lets
   // an attacker with one valid credential keep the throttle defeated by
   // alternating failed guesses with their own occasional successful auth.
-
-  await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, result.userId));
 
   await startSession(event, result.userId);
   audit({ type: 'auth.login_succeeded', userId: result.userId, method: 'passkey' });

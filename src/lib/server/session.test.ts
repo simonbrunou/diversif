@@ -42,6 +42,16 @@ describe('startSession / resumeSession', () => {
     ]);
   });
 
+  it('records the sign-in in last_login_at', async () => {
+    const user = await seedUser();
+    const signedInAt = Date.now() + DAY_MS;
+    setSystemTime(signedInAt);
+
+    await startSession(makeRouteEvent(), user.id);
+    const [row] = await testDb.select().from(users).where(eq(users.id, user.id));
+    expect(row.lastLoginAt!.getTime()).toBeGreaterThan(signedInAt - 1000);
+  });
+
   it("revokes the device's previous session when signing in again", async () => {
     const first = await seedUser({ email: 'a@example.com' });
     const second = await seedUser({ email: 'b@example.com' });
@@ -242,6 +252,18 @@ describe('restartSession', () => {
     await restartSession(device, user.id);
     expect(await resumeSession(laptop)).toBeNull();
     expect(await resumeSession(stolen)).toBeNull();
+  });
+
+  it('does not count as a sign-in in last_login_at', async () => {
+    const user = await seedUser();
+    const device = makeRouteEvent();
+    await startSession(device, user.id);
+    const [before] = await testDb.select().from(users).where(eq(users.id, user.id));
+
+    setSystemTime(Date.now() + DAY_MS);
+    await restartSession(device, user.id);
+    const [after] = await testDb.select().from(users).where(eq(users.id, user.id));
+    expect(after.lastLoginAt).toEqual(before.lastLoginAt);
   });
 
   it('keeps this device signed in on a new session without clearing site data', async () => {

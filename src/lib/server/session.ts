@@ -7,9 +7,9 @@ import type { SafeUser } from '#lib/types.js';
 
 /**
  * The session lifecycle: the only module that knows the session cookie, its
- * options, and how its token maps to a stored row. Routes start, resume,
- * restart or end a session through the five functions below and never see a
- * token.
+ * options, and how its token maps to a stored row. Routes and the server hook
+ * start, resume, restart or end a session through the five functions below
+ * and never see a token.
  *
  * Sessions are stored hashed at rest: the cookie carries the raw 256-bit
  * token, the DB row id is sha256(token) hex. Anyone holding the SQLite file
@@ -26,18 +26,16 @@ const SESSION_RENEW_THRESHOLD_MS = 1000 * 60 * 60 * 24 * 15; // 15 days
 // Wipes CacheStorage (the SW 'pages' runtime cache holds authenticated HTML),
 // IndexedDB (offline queue) and the SW registration, so the next person on a
 // shared device can't read the previous user's data. Safari doesn't honour
-// the header reliably, so every sign-out form also purges client-side before
-// submitting (purgeBeforeSubmit in #lib/offline/purge).
+// the header reliably, so the logout forms also purge client-side before
+// submitting (purgeBeforeSubmit in #lib/offline/purge), and the root layout
+// purges when it sees the user turn anonymous (account deletion's form).
 const CLEAR_SITE_DATA = '"cache", "storage"';
 
 type CookieEvent = Pick<RequestEvent, 'cookies'>;
 type SignOutEvent = Pick<RequestEvent, 'cookies' | 'setHeaders'>;
 
-function newToken(): string {
-  return randomBytes(32).toString('hex');
-}
-
-function digest(token: string): string {
+/** The stored row id for a cookie token. */
+function sessionIdFor(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
@@ -51,43 +49,59 @@ function setCookie(cookies: Cookies, token: string): void {
   });
 }
 
-async function revokeThisDevice(cookies: Cookies): Promise<void> {
-  const token = cookies.get(SESSION_COOKIE);
-  if (token) await db.delete(sessions).where(eq(sessions.id, digest(token)));
+function clearCookie(cookies: Cookies): void {
+  cookies.delete(SESSION_COOKIE, { path: '/' });
 }
 
-function signOutDevice(event: SignOutEvent): void {
-  event.cookies.delete(SESSION_COOKIE, { path: '/' });
-  // setHeaders applies to the 303 the caller throws next: SvelteKit merges
-  // event-accumulated headers onto the redirect response. It throws if the
-  // header is set twice, so callers must not set Clear-Site-Data themselves.
+async function issueSession(cookies: Cookies, userId: number): Promise<void> {
+  const token = randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
+  await db.insert(sessions).values({ id: sessionIdFor(token), userId, expiresAt });
+  setCookie(cookies, token);
+}
+
+async function revokeDeviceSession(cookies: Cookies): Promise<void> {
+  const token = cookies.get(SESSION_COOKIE);
+  if (token) await db.delete(sessions).where(eq(sessions.id, sessionIdFor(token)));
+}
+
+async function revokeAllSessions(userId: number): Promise<void> {
+  await db.delete(sessions).where(eq(sessions.userId, userId));
+}
+
+/** Delete the cookie and send Clear-Site-Data; revokes nothing itself. */
+function clearDevice(event: SignOutEvent): void {
+  clearCookie(event.cookies);
+  // setHeaders applies to the response the caller produces next (the thrown
+  // 303, or the redirect result of an enhanced form action). SvelteKit throws
+  // if the header is set twice, so callers must not set it themselves.
   event.setHeaders({ 'Clear-Site-Data': CLEAR_SITE_DATA });
 }
 
 /**
- * Sign this device in as `userId` for 30 days (login, passkey login). A
- * session the device already held is revoked, not just orphaned by the new
- * cookie, so a copy of the old cookie stops working too.
+ * Sign this device in as `userId` for 30 days (login, passkey login) and
+ * record the sign-in in `last_login_at`. A session the device already held is
+ * revoked, not just orphaned by the new cookie, so a copy of the old cookie
+ * stops working too.
  */
 export async function startSession(event: CookieEvent, userId: number): Promise<void> {
-  await revokeThisDevice(event.cookies);
-  const token = newToken();
-  const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
-  await db.insert(sessions).values({ id: digest(token), userId, expiresAt });
-  setCookie(event.cookies, token);
+  await revokeDeviceSession(event.cookies);
+  await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, userId));
+  await issueSession(event.cookies, userId);
 }
 
 /**
  * The user this request's session cookie belongs to, or null. Runs once per
  * request in the server hook. A session used within its last 15 days is
- * extended by another 30 (same token, new cookie maxAge, `last_login_at`
- * bumped); an unknown or expired cookie is deleted along with its row.
+ * pushed back to 30 days from now (same token, new cookie maxAge,
+ * `last_login_at` bumped). An unknown or expired cookie is deleted, and an
+ * expired row with it.
  */
 export async function resumeSession(event: CookieEvent): Promise<SafeUser | null> {
   const token = event.cookies.get(SESSION_COOKIE);
   if (!token) return null;
   const now = Date.now();
-  const id = digest(token);
+  const id = sessionIdFor(token);
   const [row] = await db
     .select({ session: sessions, user: users })
     .from(sessions)
@@ -95,9 +109,9 @@ export async function resumeSession(event: CookieEvent): Promise<SafeUser | null
     .where(eq(sessions.id, id))
     .limit(1);
   if (!row || row.session.expiresAt.getTime() <= now) {
-    // Only an expired row needs deleting: an unknown cookie costs no write.
+    // An unknown cookie has no row, so it costs no write.
     if (row) await db.delete(sessions).where(eq(sessions.id, id));
-    event.cookies.delete(SESSION_COOKIE, { path: '/' });
+    clearCookie(event.cookies);
     return null;
   }
 
@@ -135,12 +149,13 @@ export async function resumeSession(event: CookieEvent): Promise<SafeUser | null
 
 /**
  * Revoke every session of `userId` (including a stolen cookie) and sign this
- * device back in on a new one (password change). Sends no Clear-Site-Data:
- * the user stays signed in and keeps their offline queue.
+ * device back in on a new one (password change). Not a sign-in: leaves
+ * `last_login_at` alone. Sends no Clear-Site-Data: the user stays signed in
+ * and keeps their offline queue.
  */
 export async function restartSession(event: CookieEvent, userId: number): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.userId, userId));
-  await startSession(event, userId);
+  await revokeAllSessions(userId);
+  await issueSession(event.cookies, userId);
 }
 
 /**
@@ -149,12 +164,12 @@ export async function restartSession(event: CookieEvent, userId: number): Promis
  * The caller throws the redirect.
  */
 export async function endSession(event: SignOutEvent): Promise<void> {
-  await revokeThisDevice(event.cookies);
-  signOutDevice(event);
+  await revokeDeviceSession(event.cookies);
+  clearDevice(event);
 }
 
 /** Like endSession, but revokes every session of `userId` (« Se déconnecter partout »). */
 export async function endAllSessions(event: SignOutEvent, userId: number): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.userId, userId));
-  signOutDevice(event);
+  await revokeAllSessions(userId);
+  clearDevice(event);
 }
