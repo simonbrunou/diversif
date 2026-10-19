@@ -269,21 +269,20 @@ function pickDueAllergenFood(input: MenuInput): Food | null {
   );
 }
 
-// No allergen to introduce → maintain focus on an INTRODUCED allergen food.
+// No allergen to introduce → maintain the first allergen of the history's maintain queue (most
+// days without a reliable exposure) that the diet allows and that still has a safe, already
+// introduced food. It is the queue the Aujourd'hui maintain reminders nudge, so the card and the
+// reminder name the same allergen whenever the menu can serve it.
 function pickMaintainAllergenFood(input: MenuInput): Food | null {
-  const maintainList = PRIORITY_INTRODUCTION_ALLERGENS.filter(
-    (a) => input.allergens.isIntroduced(a) && allowedAllergen(input, a)
-  ).sort();
-  const maintainA = rotatePick(maintainList, `${input.childId}:maintain`, input.dayIndex);
-  if (!maintainA) return null;
-  return (
-    input.catalog
-      .filter(
-        (f) =>
-          f.allergenType === maintainA && input.introducedFoodIds.has(f.id) && catalogSafe(f, input)
-      )
-      .sort((a, b) => a.id - b.id)[0] ?? null
-  );
+  for (const { id } of input.allergens.maintainQueue) {
+    if (!allowedAllergen(input, id)) continue;
+    const food = input.catalog
+      .filter((f) => f.allergenType === id && input.introducedFoodIds.has(f.id))
+      .filter((f) => catalogSafe(f, input))
+      .sort((a, b) => a.id - b.id)[0];
+    if (food) return food;
+  }
+  return null;
 }
 
 // Resolve the day's allergen-focus card. An allergen due for introduction always wins and is

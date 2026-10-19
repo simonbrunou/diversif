@@ -1,4 +1,4 @@
-import { test, expect } from 'bun:test';
+import { describe, test, expect } from 'bun:test';
 import { buildMenu, cautionFor, safeForRole, mkItem, type MenuInput } from './engine';
 import { SOFT_CHEESE, OILY_FISH } from './tables';
 import { FOODS_SEED } from '#lib/server/db/seed.js';
@@ -455,6 +455,49 @@ test('allergenFocus.maintain re-offers only an introduced food', () => {
   );
   expect(menu.allergenFocus?.mode).toBe('maintain');
   expect(intro.has(menu.allergenFocus!.food.id)).toBe(true);
+});
+
+// The maintenance card follows the allergen history's maintain queue, the same
+// one the Aujourd'hui reminders nudge, so the two never name different allergens
+// unless the menu cannot serve the reminder's one.
+describe('allergenFocus.maintain follows the maintain queue', () => {
+  /** Every priority allergen given today, except the overrides given `daysAgo` days ago. */
+  const givenDaysAgo = (overdue: Record<string, number>) =>
+    allergenHistoryFrom(
+      PRIORITY_INTRODUCTION_ALLERGENS.map((id) => allergenRow(id, 'ras', overdue[id] ?? 0)),
+      NOW
+    );
+
+  test('offers the most overdue allergen every day until it is given', () => {
+    for (let dayIndex = 20638; dayIndex < 20645; dayIndex++) {
+      const menu = buildMenu(
+        baseInput({ dayIndex, allergens: givenDaysAgo({ lait: 20, gluten: 10 }) })
+      );
+      expect(menu.allergenFocus?.mode).toBe('maintain');
+      expect(menu.allergenFocus?.food.allergenType).toBe('lait');
+    }
+  });
+
+  test('skips an allergen the diet excludes', () => {
+    const menu = buildMenu(
+      baseInput({
+        dietaryExclusions: ['sans_poisson'],
+        allergens: givenDaysAgo({ poisson: 30, lait: 20 })
+      })
+    );
+    expect(menu.allergenFocus?.food.allergenType).toBe('lait');
+  });
+
+  test('skips an allergen with no safe introduced food left to serve', () => {
+    const laitFoods = CATALOG.filter((f) => f.allergenType === 'lait').map((f) => f.id);
+    const menu = buildMenu(
+      baseInput({
+        avoidFoodIds: new Set(laitFoods),
+        allergens: givenDaysAgo({ lait: 20, gluten: 10 })
+      })
+    );
+    expect(menu.allergenFocus?.food.allergenType).toBe('gluten');
+  });
 });
 
 test('sans_poisson never shows poisson as allergène du jour', () => {
