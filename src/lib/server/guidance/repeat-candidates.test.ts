@@ -63,7 +63,7 @@ describe('findRepeatCandidates', () => {
     expect(out).toEqual([]);
   });
 
-  it('respects custom maxCount (used by reminders rule 6)', () => {
+  it('respects custom maxCount (used by ruleRepeatExposure)', () => {
     const out = findRepeatCandidates(
       [
         entry({ foodId: 1, reaction: 'ras' }),

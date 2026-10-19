@@ -5,8 +5,8 @@
 // AND every observation was "ras". A food associated with discomfort must
 // not be re-offered by an automated prompt without medical advice. The predicate
 // lives here so the SQL form (loadRepeatCandidates, behind the
-// /child/[id]/foods?repeat=1 filter) and the in-JS form (reminders.ts rule 6)
-// can never drift apart again.
+// /child/[id]/foods?repeat=1 filter) and the in-JS form (reminders.ts
+// ruleRepeatExposure) can never drift apart again.
 
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import type { AllergenId } from '#lib/utils/allergens.js';
@@ -39,7 +39,7 @@ export type FindRepeatCandidatesOptions = {
   maxWorstRank?: number;
   /**
    * Optional cooldown in days since the food was last given. Foods whose
-   * last exposure is <= N days ago are excluded. Used by reminders rule 6
+   * last exposure is <= N days ago are excluded. Used by ruleRepeatExposure
    * with N=3 so we don't surface a "Reproposez" card right after the food
    * was logged.
    */

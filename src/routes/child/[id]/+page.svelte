@@ -23,7 +23,9 @@
   // svelte-ignore state_referenced_locally
   let welcomeOpen = $state(data.showWelcomeDialog);
 
-  // Exclude 'autre', matching the log action's countCategoriesCovered.
+  // Denominator for the category-milestone toast. Excludes 'autre' because the
+  // log action's countCategoriesCovered (the `categories=` value in the
+  // redirect) excludes it too.
   const TOTAL_CATEGORIES = CATEGORIES.length - 1;
 
   $effect(() => {

@@ -332,11 +332,12 @@ describe('child/[id] +page.server load', () => {
 
   it('counts in weekCount only the foods first logged in the last 7 days', async () => {
     const { u, c, m, food: carrot } = await setup();
-    const apple = (
-      await testDb
-        .insert(foods)
-        .values({
-          name: 'Pomme',
+    const sibling = await seedChild({ createdBy: u.id, name: 'Aîné' });
+    const [apple, pear] = await testDb
+      .insert(foods)
+      .values(
+        ['Pomme', 'Poire'].map((name) => ({
+          name,
           category: 'fruits',
           isMajorAllergen: false,
           allergenType: null,
@@ -344,11 +345,11 @@ describe('child/[id] +page.server load', () => {
           notes: null,
           isCustom: false,
           customForChildId: null
-        })
-        .returning()
-    )[0];
-    const entry = (foodId: number, daysAgo: number) => ({
-      childId: c.id,
+        }))
+      )
+      .returning();
+    const entry = (foodId: number, daysAgo: number, childId = c.id) => ({
+      childId,
       foodId,
       givenAt: new Date(Date.now() - daysAgo * 86400_000),
       reaction: 'ras',
@@ -363,7 +364,9 @@ describe('child/[id] +page.server load', () => {
       // Pomme is new this week: three logs still count once.
       entry(apple.id, 2),
       entry(apple.id, 1),
-      entry(apple.id, 0)
+      entry(apple.id, 0),
+      // Another child's food counts in neither total.
+      entry(pear.id, 0, sibling.id)
     ]);
     const out = await load(
       makeRouteEvent({
@@ -438,15 +441,19 @@ describe('child/[id] +page.server load', () => {
       );
     }
 
+    // The pending-allergen nudge reads the introduced-allergen set: a fat
+    // log must leave lait "to introduce", a dairy log must clear it.
     const fatOut = await loadWithLaitEntry('matieres_grasses', 'Beurre');
     expect(
       fatOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
     ).toBeUndefined();
+    expect(fatOut.reminders.some((r) => r.key === 'pending-allergen:lait')).toBe(true);
 
     const dairyOut = await loadWithLaitEntry('produits_laitiers', 'Fromage');
     expect(
       dairyOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
     ).toBeDefined();
+    expect(dairyOut.reminders.some((r) => r.key === 'pending-allergen:lait')).toBe(false);
   });
 
   it('surfaces an observation-window reminder with cta href when a non-RAS entry exists within 48 h', async () => {

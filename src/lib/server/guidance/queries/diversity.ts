@@ -1,4 +1,5 @@
-// Repeat-exposure candidates.
+// Repeat-exposure candidates. (The file name predates the removal of the
+// dashboard diversity metrics, #424.)
 
 import { db } from '#lib/server/db/index.js';
 import { execRows } from '#lib/server/db/exec.js';
@@ -20,16 +21,17 @@ export type RepeatCandidate = {
  * pass `null` to disable the cap (e.g. the carnet `?repeat=1` filter, which
  * must return every candidate, not the oldest N). The dashboard "Reproposez"
  * cards take a separate JS path through findRepeatCandidates + reminders.ts
- * rule 6 (capped to 2 cards there), so they do not hit this default.
+ * ruleRepeatExposure (capped to 2 cards there), so they do not hit this default.
  * Predicate shares constants with findRepeatCandidates — see ../repeat-candidates.
  */
 export async function loadRepeatCandidates(
   childId: number,
   limit: number | null = 5
 ): Promise<RepeatCandidate[]> {
-  // The SQL CASE WHEN mirrors REACTION_RANK (#lib/utils/reaction-values). Wrapping
-  // WHERE rather than HAVING is friendlier to query planners; the subquery
-  // wrap is harmless under SQLite so we keep it. LIMIT is conditionally
+  // The CASE WHEN mirrors REACTION_RANK (#lib/utils/reaction-values) by hand:
+  // update both if a reaction value is added (the reaction CHECK constraint
+  // means ELSE only ever sees 'ras'). The outer WHERE on n/worst, rather than
+  // HAVING, is a leftover shape that SQLite treats the same. LIMIT is conditionally
   // emitted because the carnet filter needs an uncapped list (ORDER BY
   // last_at ASC + a numeric cap would otherwise hide the most recently
   // re-offered foods past the first N rows on extremely active children).

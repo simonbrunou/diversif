@@ -42,15 +42,15 @@ async function seedUserAndChild() {
   return { user, child };
 }
 
-async function seedFood(opts: { name: string; category: string; allergen?: string | null }) {
+async function seedFood(opts: { name: string; category: string }) {
   return (
     await testDb
       .insert(foods)
       .values({
         name: opts.name,
         category: opts.category,
-        isMajorAllergen: opts.allergen != null,
-        allergenType: opts.allergen ?? null,
+        isMajorAllergen: false,
+        allergenType: null,
         suggestedAgeMonths: 6,
         notes: null,
         isCustom: false,
@@ -180,8 +180,19 @@ describe('loadRepeatCandidates', () => {
   });
 
   it('uses default limit of 5', async () => {
-    const { child } = await seedUserAndChild();
-    expect(await loadRepeatCandidates(child.id)).toEqual([]);
+    const { user, child } = await seedUserAndChild();
+    const now = Date.now();
+    for (let i = 0; i < 6; i++) {
+      const food = await seedFood({ name: `F${i}`, category: 'legumes' });
+      await logEntry({
+        childId: child.id,
+        foodId: food.id,
+        userId: user.id,
+        givenAt: new Date(now - (i + 1) * DAY_MS),
+        reaction: 'ras'
+      });
+    }
+    expect(await loadRepeatCandidates(child.id)).toHaveLength(5);
   });
 
   it('returns every candidate when limit is null (carnet ?repeat=1 case)', async () => {
@@ -201,33 +212,57 @@ describe('loadRepeatCandidates', () => {
     expect(out.length).toBe(7);
   });
 
-  it('excludes foods given >= 3 times', async () => {
+  it('keeps foods given twice and excludes foods given 3 times', async () => {
     const { user, child } = await seedUserAndChild();
-    const food = await seedFood({ name: 'Carotte', category: 'legumes' });
+    const carrot = await seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = await seedFood({ name: 'Pomme', category: 'fruits' });
     const now = Date.now();
-    for (let i = 0; i < 3; i++) {
-      await logEntry({
-        childId: child.id,
-        foodId: food.id,
-        userId: user.id,
-        givenAt: new Date(now - i * 1000),
-        reaction: 'ras'
-      });
+    for (const [food, times] of [
+      [carrot, 3],
+      [apple, 2]
+    ] as const) {
+      for (let i = 0; i < times; i++) {
+        await logEntry({
+          childId: child.id,
+          foodId: food.id,
+          userId: user.id,
+          givenAt: new Date(now - (i + 1) * DAY_MS),
+          reaction: 'ras'
+        });
+      }
     }
-    expect(await loadRepeatCandidates(child.id)).toEqual([]);
+    const out = await loadRepeatCandidates(child.id);
+    expect(out.map((c) => c.foodName)).toEqual(['Pomme']);
   });
 
-  it('excludes foods whose worst reaction is "reaction"', async () => {
+  it('excludes a food whose worst reaction is "reaction", even after a RAS log', async () => {
     const { user, child } = await seedUserAndChild();
-    const food = await seedFood({ name: 'Carotte', category: 'legumes' });
+    const carrot = await seedFood({ name: 'Carotte', category: 'legumes' });
+    const apple = await seedFood({ name: 'Pomme', category: 'fruits' });
+    const now = Date.now();
     await logEntry({
       childId: child.id,
-      foodId: food.id,
+      foodId: carrot.id,
       userId: user.id,
-      givenAt: new Date(),
+      givenAt: new Date(now - 2 * DAY_MS),
+      reaction: 'ras'
+    });
+    await logEntry({
+      childId: child.id,
+      foodId: carrot.id,
+      userId: user.id,
+      givenAt: new Date(now - DAY_MS),
       reaction: 'reaction'
     });
-    expect(await loadRepeatCandidates(child.id)).toEqual([]);
+    await logEntry({
+      childId: child.id,
+      foodId: apple.id,
+      userId: user.id,
+      givenAt: new Date(now - DAY_MS),
+      reaction: 'ras'
+    });
+    const out = await loadRepeatCandidates(child.id);
+    expect(out.map((c) => c.foodName)).toEqual(['Pomme']);
   });
 });
 

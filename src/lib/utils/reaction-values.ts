@@ -6,9 +6,10 @@ export const REACTION_VALUES = ['ras', 'inconfort', 'reaction'] as const;
 export type ReactionId = (typeof REACTION_VALUES)[number];
 
 // Canonical worst-reaction ordering (ras < inconfort < reaction), derived from
-// REACTION_VALUES so the rank can never drift from the id space. Shared by every
-// "worst reaction" aggregation (repeat-candidates, the dashboard allergen tile,
-// the pediatrician report) instead of each re-declaring the same literal map.
+// REACTION_VALUES so the rank can never drift from the id space. Shared by the
+// "worst reaction" aggregations (repeat-candidates, meals.ts, the menu and
+// pediatrician-report loads) instead of each re-declaring the same literal map;
+// the SQL CASE in guidance/queries/diversity.ts mirrors it by hand.
 export const REACTION_RANK = Object.fromEntries(REACTION_VALUES.map((id, i) => [id, i])) as Record<
   ReactionId,
   number

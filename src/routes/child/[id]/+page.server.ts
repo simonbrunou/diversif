@@ -130,10 +130,10 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
   );
 
-  // Fetched once and reused for the per-allergen status tile, the
-  // introduced-allergen set and the maintain-allergen exposures below:
-  // loadAllergenStatus ran the exact same join+where a second time for the
-  // same request before this was deduplicated.
+  // Fetched once (unbounded) and reused for the per-allergen status tile, the
+  // introduced-allergen set and the maintain-allergen exposures below, rather
+  // than calling loadAllergenStatus and re-running the same join+where per
+  // consumer.
   const allergenRows = await loadAllergenRows(childId);
 
   // Per-allergen status (same shape as the Carnet Allergènes segment) so

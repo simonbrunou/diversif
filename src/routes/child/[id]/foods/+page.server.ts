@@ -126,10 +126,10 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const conditions = buildFoodFilters(childId, category, reaction);
 
   if (repeat) {
-    // Foods given <= 2 times whose worst reaction is RAS or Inconfort. Shares
-    // the threshold constants with the
-    // dashboard "Reproposez" cards (which go through findRepeatCandidates in
-    // reminders.ts rule 6) — see src/lib/server/guidance/repeat-candidates.
+    // Foods given <= 2 times whose worst reaction is RAS (Inconfort excluded). Shares
+    // the worst-rank threshold with the dashboard "Reproposez" cards
+    // (findRepeatCandidates in reminders.ts ruleRepeatExposure, which also
+    // narrows the count to 1) — see src/lib/server/guidance/repeat-candidates.
     // Pass `null` so the carnet filter returns every candidate, not the
     // oldest N (loadRepeatCandidates orders by last_at ASC before LIMIT).
     const candidates = await loadRepeatCandidates(childId, null);

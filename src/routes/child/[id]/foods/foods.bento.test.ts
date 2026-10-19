@@ -446,7 +446,7 @@ describe('child/[id]/foods load', () => {
   it('repeat=1 early-return branch still emits bentoAllergens + weeklyEntries', async () => {
     // Seed an entry that satisfies the allergen/weekly queries but make the
     // repeat candidate query return zero : by recording 3 entries for the
-    // only food, the worst-<=1 / n-<=2 predicate excludes it, forcing the
+    // only food, the RAS-only / n-<=2 predicate excludes it, forcing the
     // ids.length === 0 branch. The new fields must still populate.
     const ctx = await setup();
     const [milk] = await testDb
