@@ -14,6 +14,7 @@ mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 import { foodEntries, foods, tipDismissals } from '#lib/server/db/schema.js';
 import { load, actions } from './+page.server';
 import { groupByMeal } from '#lib/utils/meals.js';
+import { TTL_BY_SEVERITY, ttlForReminderKey } from '#lib/server/guidance/dismissal-ttl.js';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -491,6 +492,7 @@ describe('child/[id] +page.server load', () => {
     expect(obsReminder).toBeDefined();
     expect(obsReminder!.cta?.href).toBe(`/child/${c.id}/foods/${entry.id}`);
     expect(obsReminder!.severity).toBe('warn');
+    expect(ttlForReminderKey(obsReminder!.key)).toBe(TTL_BY_SEVERITY[obsReminder!.severity]);
   });
 
   it('does not surface observation-window reminder when non-RAS entry is older than 48 h', async () => {

@@ -322,6 +322,17 @@ describe('loadDismissals / dismissReminder', () => {
     expect((await loadDismissals(user.id, child.id)).has('pending-allergen:oeuf')).toBe(true);
   });
 
+  it('keeps warn observation-window dismissals past the 30-day info TTL', async () => {
+    const { user, child } = await seedUserAndChild();
+    await testDb.insert(tipDismissals).values({
+      userId: user.id,
+      childId: child.id,
+      reminderKey: 'observation-window:42',
+      dismissedAt: new Date(Date.now() - 31 * DAY_MS)
+    });
+    expect((await loadDismissals(user.id, child.id)).has('observation-window:42')).toBe(true);
+  });
+
   it('important reminders never expire', async () => {
     const { user, child } = await seedUserAndChild();
     const veryLongAgo = new Date(Date.now() - 365 * DAY_MS);

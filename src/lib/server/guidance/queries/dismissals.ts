@@ -1,42 +1,22 @@
-// Reminder-dismissal storage and TTL conventions.
+// Reminder-dismissal storage. The TTL conventions live in ../dismissal-ttl.ts.
 
 import { db } from '#lib/server/db/index.js';
 import { tipDismissals } from '#lib/server/db/schema.js';
 import { and, eq } from 'drizzle-orm';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function ttlForReminderKey(key: string): number | null {
-  // Conventions:
-  //   important reminders are 'welcome', 'stage-transition:*', 'forbidden-reminder:*' → no TTL until conditions clear
-  //   warn reminders are 'pending-allergen:*' → 90 days
-  //   info reminders are everything else → 30 days
-  if (
-    key === 'welcome' ||
-    key === 'welcome-dialog' ||
-    key.startsWith('stage-transition:') ||
-    key.startsWith('forbidden-reminder:')
-  ) {
-    return null;
-  }
-  if (key.startsWith('pending-allergen:')) {
-    return 90 * DAY_MS;
-  }
-  return 30 * DAY_MS;
-}
+import { ttlForReminderKey } from '../dismissal-ttl';
 
 export async function loadDismissals(userId: number, childId: number): Promise<Set<string>> {
   const rows = await db
     .select({ key: tipDismissals.reminderKey, at: tipDismissals.dismissedAt })
     .from(tipDismissals)
     .where(and(eq(tipDismissals.userId, userId), eq(tipDismissals.childId, childId)));
-  // Honor TTL by reminderKey prefix (info: 30d, warn: 90d, important: never)
+  // Drop dismissals older than their key's TTL.
   const now = Date.now();
   const out = new Set<string>();
   for (const r of rows) {
     const at = r.at.getTime();
     const ttl = ttlForReminderKey(r.key);
-    if (ttl == null || now - at < ttl) {
+    if (now - at < ttl) {
       out.add(r.key);
     }
   }
