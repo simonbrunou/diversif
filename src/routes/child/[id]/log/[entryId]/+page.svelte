@@ -28,6 +28,10 @@
   let givenAt = $state(formatDateInputValue(new Date(data.entry.givenAt)));
   // svelte-ignore state_referenced_locally
   let reaction = $state<'ras' | 'inconfort' | 'reaction'>(data.entry.reaction);
+  // Static load-time snapshot for the server's dirty-only reaction guard, same
+  // role as mealReactionsLoaded below: it must never follow the picker.
+  // svelte-ignore state_referenced_locally
+  const reactionLoaded = data.entry.reaction;
   // svelte-ignore state_referenced_locally
   let texture = $state<TextureKey | null>(data.entry.texture);
   let texturePristine = $state(false);
@@ -275,6 +279,7 @@
       <div class="grid gap-1.5">
         <Label>{m.logFormReactionLegend()}</Label>
         <ReactionPicker name="reaction" bind:value={reaction} />
+        <input type="hidden" name="reactionLoaded" value={reactionLoaded} />
       </div>
 
       <div class="grid gap-1.5">
