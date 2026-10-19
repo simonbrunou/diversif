@@ -505,7 +505,8 @@ export async function exportUserData(
       name: p.name,
       deviceType: p.deviceType,
       backedUp: p.backedUp,
-      // Kept as stored, as the browser reported them (see schema.ts).
+      // Kept as stored, as the browser reported them (see schema.ts): the
+      // elements are not narrowed to strings, as the old script never did.
       transports: jsonArray(p.transports) as string[],
       createdAt: p.createdAt.toISOString(),
       lastUsedAt: isoOrNull(p.lastUsedAt)

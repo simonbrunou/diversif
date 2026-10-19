@@ -4,13 +4,14 @@
 // there would corrupt the export). The payload is covered at the module's
 // interface, in gdpr-export.test.ts.
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
-import { rmSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { sql } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../test/db';
 import { insertUser } from './gdpr-test-fixtures';
 
+const scriptPath = path.resolve(import.meta.dir, '../../../scripts/export-user.ts');
 const dbPath = path.join(tmpdir(), `diversif-export-script-${process.pid}.db`);
 let userId: number;
 
@@ -29,7 +30,7 @@ afterAll(() => {
 function runScript(args: string[], databasePath: string | null = dbPath) {
   const { DATABASE_PATH: _inherited, ...env } = process.env;
   const proc = Bun.spawnSync({
-    cmd: ['bun', 'scripts/export-user.ts', ...args],
+    cmd: [process.execPath, scriptPath, ...args],
     env: databasePath === null ? env : { ...env, DATABASE_PATH: databasePath },
     stdout: 'pipe',
     stderr: 'pipe'
@@ -68,6 +69,15 @@ describe('scripts/export-user.ts', () => {
     const r = runScript([]);
     expect(r.code).toBe(1);
     expect(r.stderr).toContain('Usage:');
+  });
+
+  it('opens the database read-only: a missing file is an error, never created', () => {
+    const missing = path.join(tmpdir(), `diversif-export-missing-${process.pid}.db`);
+    rmSync(missing, { force: true });
+    const r = runScript(['--id', String(userId)], missing);
+    expect(r.code).toBe(1);
+    expect(r.stdout).toBe('');
+    expect(existsSync(missing)).toBe(false);
   });
 
   it('exits 1 when DATABASE_PATH is missing', () => {
