@@ -9,7 +9,7 @@ import type * as schema from './db/schema';
 // so the SELECT-then-INSERT below is race-free inside a transaction without the
 // savepoint + 23505 dance the Postgres driver required. Both the bare db handle
 // and a transaction handle satisfy this type.
-type Tx =
+type Executor =
   | BunSQLiteDatabase<typeof schema>
   | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
@@ -31,7 +31,7 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
  * of the inserted key row when `doWork()` throws.
  */
 export function withIdempotencyKey<T extends { redirect: string }>(
-  tx: Tx,
+  tx: Executor,
   args: { key: string; userId: number; scope: string },
   doWork: () => T
 ): { kind: 'fresh' | 'replay'; redirect: string } {
@@ -80,7 +80,7 @@ export function withIdempotencyKey<T extends { redirect: string }>(
   return { kind: 'fresh', redirect: result.redirect };
 }
 
-export function pruneExpiredKeys(tx: Tx, olderThanMs: number = TWENTY_FOUR_HOURS_MS): number {
+export function pruneExpiredKeys(tx: Executor, olderThanMs: number = TWENTY_FOUR_HOURS_MS): number {
   const cutoff = new Date(Date.now() - olderThanMs);
   const deleted = tx
     .delete(idempotencyKeys)

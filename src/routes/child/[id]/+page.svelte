@@ -6,7 +6,11 @@
   import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
   import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
-  import { celebrate, pickMilestoneFromQuery } from '#lib/utils/milestones.js';
+  import {
+    celebrate,
+    clearMilestoneQuery,
+    pickMilestoneFromQuery
+  } from '#lib/utils/milestones.js';
   import { CATEGORIES } from '#lib/utils/categories.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import * as m from '#lib/paraglide/messages.js';
@@ -24,8 +28,8 @@
   let welcomeOpen = $state(data.showWelcomeDialog);
 
   // Denominator for the category-milestone toast. Excludes 'autre' because the
-  // log action's countCategoriesCovered (the `categories=` value in the
-  // redirect) excludes it too.
+  // repas module's countCategoriesCovered (the `categories=` value in the
+  // redirect, src/lib/server/repas/milestones.ts) excludes it too.
   const TOTAL_CATEGORIES = CATEGORIES.length - 1;
 
   $effect(() => {
@@ -33,16 +37,7 @@
     if (!milestone) return;
     celebrate(toast, milestone);
     const url = new URL(page.url.href);
-    for (const key of [
-      'logged',
-      'first',
-      'allergen',
-      'allAllergens',
-      'categories',
-      'prevCategories'
-    ]) {
-      url.searchParams.delete(key);
-    }
+    clearMilestoneQuery(url);
     history.replaceState({}, '', url);
   });
 </script>

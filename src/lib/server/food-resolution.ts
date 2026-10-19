@@ -1,19 +1,13 @@
-import { and, eq, isNull, or } from 'drizzle-orm';
-import { db, type DB } from './db';
-import type { SQLiteTransaction } from 'drizzle-orm/sqlite-core';
-import type { ExtractTablesWithRelations } from 'drizzle-orm';
+import { eq, isNull, or } from 'drizzle-orm';
+import { db } from './db';
 import { foods } from './db/schema';
-import type * as schema from './db/schema';
-import { CATEGORY_IDS } from '#lib/utils/categories.js';
-import { normalize } from '#lib/utils/search.js';
 
 /**
  * A food is visible to a child if it's in the global catalog (no owner) or
  * was created as a custom food for this specific child.
  *
- * Extracted so the predicate lives in exactly one place: it used to be
- * inlined verbatim in both log/+page.server.ts and log/[entryId]/+page.server.ts's
- * loaders, plus a third copy right here.
+ * Extracted so the predicate lives in exactly one place: the log and edit
+ * pickers below and the repas write module's aliment resolution.
  */
 export function visibleToChild(childId: number) {
   return or(isNull(foods.customForChildId), eq(foods.customForChildId, childId));
@@ -31,108 +25,4 @@ export async function loadVisibleFoodsForChild(childId: number) {
     .from(foods)
     .where(visibleToChild(childId))
     .orderBy(foods.name);
-}
-
-// Accepts either the bare db handle or a transaction handle so the insert can
-// participate in an outer transaction. bun:sqlite is synchronous, so this runs
-// inline inside the caller's sync `db.transaction((tx) => ...)`.
-type Executor =
-  DB | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
-
-export type ResolveFoodInput = {
-  /** ID of an existing food from the global catalog or this child's custom foods. */
-  foodId?: number | null;
-  /** Name for a new custom food (mutually exclusive with foodId). */
-  customName?: string | null;
-  /** Category slug for the custom food; falls back to 'autre' when absent or unrecognised. */
-  customCategory?: string | null;
-  /** The child the entry belongs to — used to scope custom-food visibility. */
-  childId: number;
-};
-
-export type ResolveFoodResult =
-  | { ok: true; food: typeof foods.$inferSelect; foodId: number }
-  | { ok: false; reason: 'not-found' | 'invalid-custom' };
-
-/**
- * Resolve a food for a log entry: either look up an existing food by id, or
- * insert a new custom food and return it. Validates that the resolved food is
- * accessible to the given child (global catalog or owned custom food).
- *
- * The helper is transaction-aware: pass a Drizzle tx instance when you need the
- * insert to participate in an outer transaction, or omit it to run against the
- * default db connection.
- *
- * Usage:
- *   const result = resolveOrInsertFood({ foodId, customName, customCategory, childId }, tx);
- *   if (!result.ok) return fail(400, { errorKey: result.reason === 'not-found' ? 'errorsLogFoodNotFound' : 'errorsLogFoodInvalid' });
- *   const { food, foodId: resolvedId } = result;
- */
-export function resolveOrInsertFood(input: ResolveFoodInput, tx: Executor = db): ResolveFoodResult {
-  const customName = input.customName?.trim();
-
-  // Resolve to a foodId — either reuse the provided one or insert a new custom
-  // row. The else branch is the bail-out for callers that forgot to provide
-  // either.
-  let resolvedId: number;
-  if (input.foodId) {
-    resolvedId = input.foodId;
-  } else if (customName) {
-    // Dedup guard: a retried submit (double-tap, resubmit after an error) must
-    // reuse the child's existing custom food instead of inserting a second
-    // row with the same name and splitting its tried-count/allergen history
-    // across two indistinguishable cards. Scoped to this child's own custom
-    // foods only (mirrors visibleToChild's customForChildId = childId leg) —
-    // global-catalog matches go through the foodId path instead.
-    const nName = normalize(customName);
-    const existingCustom = tx
-      .select({ id: foods.id, name: foods.name })
-      .from(foods)
-      .where(eq(foods.customForChildId, input.childId))
-      .all()
-      .find((f) => normalize(f.name) === nName);
-
-    if (existingCustom) {
-      resolvedId = existingCustom.id;
-    } else {
-      const category =
-        input.customCategory?.trim() && CATEGORY_IDS.includes(input.customCategory.trim())
-          ? input.customCategory.trim()
-          : 'autre';
-
-      const inserted = tx
-        .insert(foods)
-        .values({
-          name: customName,
-          category,
-          isMajorAllergen: false,
-          allergenType: null,
-          suggestedAgeMonths: 0,
-          notes: null,
-          isCustom: true,
-          customForChildId: input.childId
-        })
-        .returning({ id: foods.id })
-        .all()[0];
-
-      resolvedId = inserted.id;
-    }
-  } else {
-    return { ok: false, reason: 'invalid-custom' };
-  }
-
-  // Verify the food is accessible: either from the global catalog or owned by
-  // this child.
-  const food = tx
-    .select()
-    .from(foods)
-    .where(and(eq(foods.id, resolvedId), visibleToChild(input.childId)))
-    .limit(1)
-    .all()[0];
-
-  if (!food) {
-    return { ok: false, reason: 'not-found' };
-  }
-
-  return { ok: true, food, foodId: resolvedId };
 }
