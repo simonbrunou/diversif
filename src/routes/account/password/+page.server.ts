@@ -1,4 +1,3 @@
-import { localizedRedirect } from '#lib/server/redirect.js';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
@@ -7,7 +6,7 @@ import { hashPassword, PASSWORD_MIN_LENGTH } from '#lib/server/auth.js';
 import { restartSession } from '#lib/server/session.js';
 import { requireUser } from '#lib/server/guards.js';
 import { parseFormWithKey } from '#lib/server/forms.js';
-import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
+import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import { audit } from '#lib/server/audit.js';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -34,14 +33,7 @@ export const actions: Actions = {
     });
     if (!parsed.ok) return parsed.failure;
 
-    const fresh = await requireFreshAuthWithKey(user, parsed.data.currentPassword, {
-      field: 'passwordErrorKey',
-      rateLimitedKey: 'errorsAuthRateLimited',
-      incorrectKey: 'errorsAccountPasswordIncorrect',
-      onMissingUser: () => {
-        throw localizedRedirect(locals.locale, 303, '/login');
-      }
-    });
+    const fresh = await requireFreshAuth(locals, parsed.data.currentPassword, 'passwordErrorKey');
     if (!fresh.ok) return fresh.failure;
 
     const newHash = await hashPassword(parsed.data.newPassword);

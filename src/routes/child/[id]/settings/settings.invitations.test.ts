@@ -95,7 +95,7 @@ describe('settings createInvitation action', () => {
   it('redirects to /login when the user row vanished mid-session', async () => {
     const { u, c, m } = await setup();
     // Simulate the rare revocation race: the session is still live but the
-    // user row is gone — requireFreshAuth's onMissingUser must redirect.
+    // user row is gone — requireFreshAuth must redirect, not 500.
     await testDb.delete(users).where(eq(users.id, u.id));
     const event = makeRouteEvent({
       user: safeUser(u),

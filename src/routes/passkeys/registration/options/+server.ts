@@ -32,15 +32,11 @@ export const POST: RequestHandler = async ({ locals, cookies, request, url }) =>
     return Response.json({ ok: false, error: 'Mot de passe requis.' }, { status: 400 });
   }
 
-  const freshAuth = await requireFreshAuth(safe, currentPassword, {
-    onMissingUser: () => {
-      throw error(401, 'Utilisateur introuvable');
-    }
-  });
+  const freshAuth = await requireFreshAuth(locals, currentPassword, 'error');
   if (!freshAuth.ok) {
     return Response.json(
-      { ok: false, error: freshAuth.error.data.error },
-      { status: freshAuth.error.status }
+      { ok: false, error: freshAuth.failure.data.error },
+      { status: freshAuth.failure.status }
     );
   }
 

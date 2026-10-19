@@ -3,7 +3,7 @@ import { localizedRedirect } from '#lib/server/redirect.js';
 import { endSession } from '#lib/server/session.js';
 import { deleteUserAccount } from '#lib/server/gdpr.js';
 import { requireUser } from '#lib/server/guards.js';
-import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
+import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -29,14 +29,7 @@ export const actions: Actions = {
     // Fresh-auth: typed email is visible on the page, so a stolen session
     // cookie alone shouldn't be enough to permanently destroy the account.
     // Require the current password as proof the request comes from the owner.
-    const fresh = await requireFreshAuthWithKey(user, currentPassword, {
-      field: 'deleteErrorKey',
-      rateLimitedKey: 'errorsAuthRateLimited',
-      incorrectKey: 'errorsAccountPasswordIncorrect',
-      onMissingUser: () => {
-        throw localizedRedirect(locals.locale, 303, '/login');
-      }
-    });
+    const fresh = await requireFreshAuth(locals, currentPassword, 'deleteErrorKey');
     if (!fresh.ok) return fresh.failure;
 
     await deleteUserAccount(user.id);

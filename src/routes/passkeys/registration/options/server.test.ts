@@ -93,7 +93,7 @@ describe('POST /passkeys/registration/options', () => {
     expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 
-  it('errors 401 when the user no longer exists', async () => {
+  it('redirects to /login when the user no longer exists', async () => {
     const u = await seed();
     await testDb.delete(users).where(eq(users.id, u.id));
     const event = makeRouteEvent({
@@ -104,8 +104,7 @@ describe('POST /passkeys/registration/options', () => {
     const r = await captureFlow(
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
     );
-    expect(r.kind).toBe('error');
-    if (r.kind === 'error') expect(r.status).toBe(401);
+    expect(r).toEqual({ kind: 'redirect', status: 303, location: '/login' });
   });
 
   it('returns options, sets the challenge cookie, and stores the challenge', async () => {
@@ -181,6 +180,7 @@ describe('POST /passkeys/registration/options', () => {
     withJsonBody(event, { currentPassword: 'wrong-password' });
     const res = (await POST(event as unknown as Parameters<typeof POST>[0])) as unknown as Response;
     expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ ok: false, error: 'errorsAccountPasswordIncorrect' });
     expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 });

@@ -6,7 +6,7 @@ import { db } from '#lib/server/db/index.js';
 import { children, invitations, memberships, users } from '#lib/server/db/schema.js';
 import { createInvitationForChild } from '#lib/server/invitations.js';
 import { audit } from '#lib/server/audit.js';
-import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
+import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import {
   parseChildIdParam,
   requireChildContext,
@@ -164,14 +164,7 @@ export const actions: Actions = {
     const data = await request.formData();
     const currentPassword = String(data.get('currentPassword') ?? '');
 
-    const fresh = await requireFreshAuthWithKey(user, currentPassword, {
-      field: 'errorKey',
-      rateLimitedKey: 'errorsAuthRateLimited',
-      incorrectKey: 'errorsAccountPasswordIncorrect',
-      onMissingUser: () => {
-        throw localizedRedirect(locals.locale, 303, '/login');
-      }
-    });
+    const fresh = await requireFreshAuth(locals, currentPassword, 'errorKey');
     if (!fresh.ok) return fresh.failure;
 
     const code = await createInvitationForChild({ childId, createdBy: user.id });
@@ -228,7 +221,7 @@ export const actions: Actions = {
   deleteChild: async ({ params, request, locals }) => {
     requireUser(locals);
     const childId = parseChildIdParam(params);
-    const { user } = requireOwnership(locals, childId);
+    requireOwnership(locals, childId);
 
     const data = await request.formData();
     const confirmText = String(data.get('confirmText') ?? /* v8 ignore next */ '').trim();
@@ -241,17 +234,8 @@ export const actions: Actions = {
 
     // Fresh-auth: typed name is visible on the page; require the current
     // password as proof the request comes from the owner, not a stolen
-    // session cookie. `onMissingUser` localizes the /login redirect on the
-    // rare race where the owner row vanished between requireOwnership and
-    // now (helper would otherwise throw a plain Error → unhandled 500).
-    const fresh = await requireFreshAuthWithKey(user, currentPassword, {
-      field: 'errorKey',
-      rateLimitedKey: 'errorsAuthRateLimited',
-      incorrectKey: 'errorsAccountPasswordIncorrect',
-      onMissingUser: () => {
-        throw localizedRedirect(locals.locale, 303, '/login');
-      }
-    });
+    // session cookie.
+    const fresh = await requireFreshAuth(locals, currentPassword, 'errorKey');
     if (!fresh.ok) return fresh.failure;
 
     await db.delete(children).where(eq(children.id, childId));
