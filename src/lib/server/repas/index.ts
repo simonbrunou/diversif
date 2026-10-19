@@ -132,13 +132,7 @@ function insertRepas(tx: Tx, ctx: RepasContext, draft: LogDraft): Logged {
   const foodIds = aliments.map((food) => food.id);
   recordPreparedMeal(tx, ctx.childId, draft.preparedMeal, foodIds, draft.givenAt);
 
-  const milestones = measureMilestones(
-    tx,
-    ctx.childId,
-    aliments,
-    baseline,
-    draft.reaction === 'ras'
-  );
+  const milestones = measureMilestones(tx, ctx.childId, baseline);
   return { redirect: milestonesPath(ctx.childId, milestones), entryIds, milestones };
 }
 

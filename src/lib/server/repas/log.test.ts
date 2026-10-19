@@ -419,6 +419,15 @@ describe('logRepas: milestones', () => {
     expect((await logOne(ctx, (await allergenAliment('soja')).id)).firstAllergen).toBeNull();
   });
 
+  // The toast says "continuez à le proposer": never for an allergen that
+  // already caused symptoms, even if this log went fine.
+  it('does not celebrate an allergen that already caused a reaction (#373)', async () => {
+    const { ctx } = await seedRepasChild();
+    const arachide = await allergenAliment('arachide');
+    await logOne(ctx, arachide.id, 'reaction');
+    expect((await logOne(ctx, arachide.id)).firstAllergen).toBeNull();
+  });
+
   it('does not count an allergenic fat as an allergen exposure', async () => {
     const { ctx } = await seedRepasChild();
     const beurre = await allergenAliment('lait', 'matieres_grasses');
