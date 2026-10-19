@@ -56,11 +56,14 @@ COPY --from=builder --chown=diversif:diversif /app/package.json ./package.json
 COPY --from=builder --chown=diversif:diversif /app/drizzle ./drizzle
 # The operator scripts README ("Cleanup" / "RGPD export") and DEPLOY.md
 # ("db:verify-backup") tell the operator to run inside this container
-# against the mounted /app/data volume. They import only bun:sqlite / node
-# builtins (no build artifacts), so a plain COPY of the four is enough.
+# against the mounted /app/data volume. These three import only bun:sqlite /
+# node builtins (no build artifacts), so a plain COPY is enough. The RGPD
+# export reuses src/lib/server/gdpr-export.ts instead: `bun run build`
+# bundles it into build/scripts/export-user.js, shipped by the COPY of
+# build/ above.
 COPY --from=builder --chown=diversif:diversif \
-  /app/scripts/cleanup.ts /app/scripts/export-user.ts \
-  /app/scripts/list-stale-users.ts /app/scripts/verify-backup-restore.ts \
+  /app/scripts/cleanup.ts /app/scripts/list-stale-users.ts \
+  /app/scripts/verify-backup-restore.ts \
   ./scripts/
 
 ENV NODE_ENV=production

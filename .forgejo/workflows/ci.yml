@@ -261,6 +261,27 @@ jobs:
           set -e
           docker exec "$SMOKE_CONTAINER" bun scripts/cleanup.ts
           docker exec "$SMOKE_CONTAINER" bun run db:verify-backup
+      # The RGPD export ships as a bundle (`bun run build` → build/scripts/),
+      # not as a copied source file: prove the bundle loads with no src/ or
+      # devDependencies, reads the migrated schema read-only, and keeps its
+      # exit codes. The user row is seeded here; boot only seeds foods.
+      - name: Run the RGPD export inside the running container
+        run: |
+          set -e
+          docker exec "$SMOKE_CONTAINER" bun -e '
+            import { Database } from "bun:sqlite";
+            new Database(process.env.DATABASE_PATH)
+              .query("INSERT INTO users (email, password_hash, display_name, created_at) VALUES (?, ?, ?, ?)")
+              .run("smoke@example.com", "x", "Smoke", Date.now());
+          '
+          out="$(docker exec "$SMOKE_CONTAINER" bun build/scripts/export-user.js SMOKE@example.com)"
+          case "$out" in
+            *'"email": "smoke@example.com"'*) ;;
+            *) printf 'Unexpected export output:\n%s\n' "$out" >&2; exit 1 ;;
+          esac
+          status=0
+          docker exec "$SMOKE_CONTAINER" bun build/scripts/export-user.js nobody@example.com || status=$?
+          test "$status" -eq 2
       - name: Stop and remove the smoke container, volume and image
         if: always()
         run: |
