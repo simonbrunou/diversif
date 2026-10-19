@@ -1,6 +1,6 @@
 import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import type { SQLiteTransaction } from 'drizzle-orm/sqlite-core';
-import type { db } from '#lib/server/db/index.js';
+import type { DB } from '#lib/server/db/index.js';
 import type * as schema from '#lib/server/db/schema.js';
 import type { MealDateErrorKey } from '#lib/utils/meal-date.js';
 
@@ -13,7 +13,7 @@ export type Tx = SQLiteTransaction<
   typeof schema,
   ExtractTablesWithRelations<typeof schema>
 >;
-export type Executor = typeof db | Tx;
+export type Executor = DB | Tx;
 
 /** Every error key a repas write can refuse with (keys of messages/*.json). */
 export type RepasErrorKey =

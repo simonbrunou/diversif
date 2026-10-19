@@ -28,8 +28,8 @@
   let welcomeOpen = $state(data.showWelcomeDialog);
 
   // Denominator for the category-milestone toast. Excludes 'autre' because the
-  // log action's countCategoriesCovered (the `categories=` value in the
-  // redirect) excludes it too.
+  // repas module's countCategoriesCovered (the `categories=` value in the
+  // redirect, src/lib/server/repas/milestones.ts) excludes it too.
   const TOTAL_CATEGORIES = CATEGORIES.length - 1;
 
   $effect(() => {

@@ -34,8 +34,6 @@ import { recordPreparedMeal } from './prepared-meal';
 // fail() or a redirect. (A symptom's reaction promotion is the one other
 // writer, in src/lib/server/db/symptoms.ts; the edit guard below respects it.)
 
-export type { RepasErrorKey } from './core';
-
 /** Who writes, for which child: requireChildContext's result fits as-is. */
 export type RepasContext = { childId: number; user: { id: number } };
 
