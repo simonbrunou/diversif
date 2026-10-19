@@ -40,7 +40,7 @@
     foods: Food[];
     foodCount: number;
     categoryCount: number;
-    allergens: AllergenItem[];
+    allergens: readonly AllergenItem[];
     stats: {
       diversityScore: number;
       distinctFoods: number;

@@ -15,7 +15,7 @@
     state: 'cleared' | 'todo' | 'inconfort' | 'reaction' | 'fading';
   };
 
-  let { items, childId }: { items: Item[]; childId?: string } = $props();
+  let { items, childId }: { items: readonly Item[]; childId?: string } = $props();
 
   function stateLabel(s: Item['state']): string {
     if (s === 'cleared') return m.aujourdhuiAllergensOk();

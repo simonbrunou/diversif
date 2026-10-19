@@ -41,7 +41,7 @@
     streak: number;
     streakRecord: number;
     reminders: Reminder[];
-    allergens: AllergenStatusItem[];
+    allergens: readonly AllergenStatusItem[];
   } = $props();
 
   const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);

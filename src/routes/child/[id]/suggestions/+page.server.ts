@@ -41,8 +41,8 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   // excluded entirely pending medical review.
   const introducesPriorityAllergen = (food: (typeof candidates)[number]) =>
     allergens.isExposureFood(food) &&
-    PRIORITY_SET.has(food.allergenType!) &&
-    !allergens.isIntroduced(food.allergenType!);
+    PRIORITY_SET.has(food.allergenType) &&
+    !allergens.isIntroduced(food.allergenType);
 
   const safeCandidates = candidates.filter(
     (food) => !food.allergenType || !allergens.isBlocked(food.allergenType)

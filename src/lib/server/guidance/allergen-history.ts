@@ -12,7 +12,8 @@ import {
   ALLERGEN_MAINTAIN_DAYS,
   PRIORITY_INTRODUCTION_ALLERGENS,
   getAllergenLabel,
-  type AllergenId
+  type AllergenId,
+  type PriorityAllergenId
 } from '#lib/utils/allergens.js';
 
 // Both the bare db handle and a transaction handle: the log action reads the
@@ -21,7 +22,10 @@ type Executor =
   | BunSQLiteDatabase<typeof schema>
   | SQLiteTransaction<'sync', void, typeof schema, ExtractTablesWithRelations<typeof schema>>;
 
-/** One allergen-tagged food_entries row, as the history reads it. */
+/**
+ * One food_entries row of one child, with its food's allergen tag and
+ * category. Rows without an allergen tag are ignored.
+ */
 export type AllergenEntry = {
   entryId: number;
   allergenType: string | null;
@@ -31,7 +35,7 @@ export type AllergenEntry = {
 };
 
 export type MaintainCandidate = {
-  id: AllergenId;
+  id: PriorityAllergenId;
   /** Epoch ms of the last reliable exposure. */
   lastAt: number;
   daysSince: number;
@@ -41,11 +45,12 @@ export type MaintainCandidate = {
 
 /** One of the 12 tracked allergens, as the Aujourd'hui tile and the Carnet show it. */
 export type AllergenItem = {
-  id: string;
+  id: AllergenId;
   label: string;
+  /** Counted entries: reliable exposures plus any entry that carried symptoms. */
   triedCount: number;
   lastTried: string | null;
-  /** Days since the most recent log. Null only when the allergen has never been logged ('todo'). Consumed by the 'fading' caption; populated for other states for symmetry but not surfaced. */
+  /** Days since the most recent counted entry (a fine fat log does not count). Null only when nothing counts yet ('todo'). Read by the Carnet's 'fading' caption only. */
   daysSinceLastTried: number | null;
   state: 'cleared' | 'todo' | 'inconfort' | 'reaction' | 'fading';
   /**
@@ -60,11 +65,12 @@ export type AllergenItem = {
 
 /** One of the 12 tracked allergens, as the Bilan prints it for the pediatrician. */
 export type AllergenBilanRow = {
-  id: string;
+  id: AllergenId;
   label: string;
   isPriority: boolean;
   status: 'introduced' | 'untested';
   worst: ReactionId | null;
+  /** Counted entries: reliable exposures plus any entry that carried symptoms. */
   exposures: number;
   firstGivenAt: number | null;
   lastGivenAt: number | null;
@@ -74,21 +80,24 @@ export type AllergenBilanRow = {
  * Everything diversif tells a parent about one child's allergens, answered from
  * a single read of their allergen-tagged entries. The rule deciding which
  * entries count is private to this module: an entry counts when the food is a
- * reliable exposure (allergen-tagged, not a fat), or when it carried symptoms,
- * whatever the food.
+ * reliable exposure (allergen-tagged, not a fat), or when it carried symptoms
+ * on any allergen-tagged food, a fat included.
  */
 export type AllergenHistory = {
   /** At least one counted entry. A blocked allergen is introduced, so it is never "still to introduce". */
   isIntroduced(id: string): boolean;
   /**
-   * Any entry with inconfort or réaction, a fat included. A blocked allergen is
-   * never re-proposed: no maintain nudge, no menu card, no suggestion (#373).
+   * Any entry with inconfort or réaction, a fat included. No reader of this
+   * history re-proposes a blocked allergen: no pending or maintain nudge, no
+   * repeat-exposure card, no menu slot or card, no suggestion, no milestone
+   * toast (#373).
    */
   isBlocked(id: string): boolean;
   /**
    * The milestone rule: at least one reliable exposure logged without symptoms.
    * Narrower than isIntroduced on purpose, since the milestones say "proposé
-   * sans symptôme". Says nothing about later symptoms: check isBlocked too.
+   * sans symptôme". Says nothing about symptoms on other entries, before or
+   * after: check isBlocked too.
    */
   isTolerated(id: string): boolean;
   /**
@@ -101,25 +110,29 @@ export type AllergenHistory = {
    */
   readonly maintainQueue: readonly MaintainCandidate[];
   /** All 12 tracked allergens, in ALLERGENS order, for the Aujourd'hui tile and the Carnet. */
-  readonly statuses: AllergenItem[];
+  readonly statuses: readonly AllergenItem[];
   /** All 12 tracked allergens, priority first then by label, for the Bilan. */
-  readonly bilanRows: AllergenBilanRow[];
+  readonly bilanRows: readonly AllergenBilanRow[];
   /**
-   * Whether logging this catalog food would count as an exposure to its
-   * allergen. False for an allergenic fat: its tag only serves blocking.
+   * Whether this catalog food is a reliable exposure to its allergen, i.e.
+   * counts toward introduction and maintenance when logged without symptoms.
+   * False for an untagged food and for an allergenic fat, whose entries only
+   * count when they carried symptoms.
    */
-  isExposureFood(food: { allergenType: string | null; category: string }): boolean;
+  isExposureFood<F extends FoodTag>(food: F): food is F & { allergenType: string };
 };
+
+type FoodTag = { allergenType: string | null; category: string };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
-// Fat products keep their allergen tag so a reaction still blocks the
-// allergen, but their low, variable protein content makes them unreliable as
-// an introduction or maintenance exposure.
+// Fat products keep their allergen tag so symptoms (inconfort or réaction)
+// still block the allergen, but their low, variable protein content makes
+// them unreliable as an introduction or maintenance exposure.
 const FAT_CATEGORY = 'matieres_grasses';
 
-function isReliableExposure(food: { allergenType: string | null; category: string }): boolean {
+function isReliableExposure<F extends FoodTag>(food: F): food is F & { allergenType: string } {
   return food.allergenType != null && food.category !== FAT_CATEGORY;
 }
 
@@ -135,8 +148,8 @@ type Facts = {
 };
 
 // The exposure rule: an entry counts toward an allergen's history when it is a
-// reliable exposure, or when it carried symptoms whatever the food. Symptoms
-// on a fat still count, so the allergen reads as introduced and blocked.
+// reliable exposure, or when it carried symptoms on any allergen-tagged food.
+// Symptoms on a fat still count, so the allergen reads as introduced and blocked.
 function counts(e: AllergenEntry): e is AllergenEntry & { allergenType: string } {
   return e.allergenType != null && (isReliableExposure(e) || e.reaction !== 'ras');
 }
@@ -217,7 +230,7 @@ function buildStatuses(
   queue: readonly MaintainCandidate[],
   now: number
 ): AllergenItem[] {
-  const overdue = new Set(queue.filter((c) => c.overdue).map((c) => c.id));
+  const overdue = new Set<AllergenId>(queue.filter((c) => c.overdue).map((c) => c.id));
   return ALLERGENS.map(({ id }): AllergenItem => {
     const label = getAllergenLabel(id);
     const facts = byAllergen.get(id);
@@ -310,11 +323,7 @@ export function loadAllergenHistory(
     .where(and(eq(foodEntries.childId, childId), isNotNull(foods.allergenType)))
     .all();
   return allergenHistoryFrom(
-    rows.map((r) => ({
-      ...r,
-      reaction: r.reaction as ReactionId,
-      givenAt: toEpochMs(r.givenAt as Date | number | string)
-    })),
+    rows.map((r) => ({ ...r, givenAt: toEpochMs(r.givenAt as Date | number | string) })),
     now
   );
 }

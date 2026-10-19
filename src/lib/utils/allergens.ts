@@ -58,6 +58,8 @@ export const PRIORITY_INTRODUCTION_ALLERGENS = [
   'sesame'
 ] as const satisfies readonly AllergenId[];
 
+export type PriorityAllergenId = (typeof PRIORITY_INTRODUCTION_ALLERGENS)[number];
+
 // Days after which a previously-tolerated allergen gets a maintenance nudge.
 // Current ASCIA consensus recommends at least weekly exposure. The allergen
 // history (lib/server/guidance/allergen-history) applies it once, as its
