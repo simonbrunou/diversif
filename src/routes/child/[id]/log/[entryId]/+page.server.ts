@@ -21,6 +21,7 @@ const schema = z
     'customFood.category': z.string().optional(),
     givenAt: z.string().min(1, 'Date requise'),
     reaction: z.enum(REACTION_VALUES),
+    reactionLoaded: z.enum(REACTION_VALUES).optional(),
     texture: z.union([z.enum(TEXTURE_VALUES), z.literal('')]).optional(),
     notes: z.string().max(2000).optional()
   })
@@ -252,17 +253,36 @@ export const actions: Actions = {
           ? null
           : parsed.data.texture;
 
-    await db
-      .update(foodEntries)
-      .set({
-        foodId,
-        givenAt: givenAtDate,
-        reaction: parsed.data.reaction,
-        texture: textureValue,
-        notes: parsed.data.notes?.trim() || null,
-        updatedAt: new Date()
-      })
-      .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)));
+    // Same dirty-only, optimistically-guarded reaction write as updateMeal: a
+    // symptom that promoted this row after the form loaded must survive a
+    // stale submit. A form without `reactionLoaded` falls back to the row as
+    // read above.
+    const submitted = parsed.data.reaction;
+    const loaded = parsed.data.reactionLoaded ?? entry.reaction;
+    db.transaction((tx) => {
+      tx.update(foodEntries)
+        .set({
+          foodId,
+          givenAt: givenAtDate,
+          texture: textureValue,
+          notes: parsed.data.notes?.trim() || null,
+          updatedAt: new Date()
+        })
+        .where(and(eq(foodEntries.id, entryId), eq(foodEntries.childId, childId)))
+        .run();
+      if (submitted !== loaded) {
+        tx.update(foodEntries)
+          .set({ reaction: submitted })
+          .where(
+            and(
+              eq(foodEntries.id, entryId),
+              eq(foodEntries.childId, childId),
+              eq(foodEntries.reaction, loaded)
+            )
+          )
+          .run();
+      }
+    });
     audit({ type: 'food_entry.updated', userId: user.id, childId, entryId });
 
     const from = String(raw.from ?? '');

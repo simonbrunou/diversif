@@ -13,6 +13,7 @@ mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '#lib/server/db/schema.js';
 import * as schema from '#lib/server/db/schema.js';
+import { insertSymptom } from '#lib/server/db/symptoms.js';
 import { eq } from 'drizzle-orm';
 import type { Membership, SafeUser } from '#lib/types.js';
 import type { ReactionId } from '#lib/utils/reaction-values.js';
@@ -453,6 +454,136 @@ describe('child/[id]/log/[entryId] update action', () => {
       await testDb.select().from(foods).where(eq(foods.name, 'Velouté maison')).limit(1)
     )[0];
     expect(created).toBeDefined();
+  });
+});
+
+// #421: a co-parent's symptom promotes the row while this edit form is open.
+// The form carries the reaction it loaded (`reactionLoaded`); the action must
+// not write that stale value back over the promotion.
+describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', () => {
+  async function loadForm(ctx: Awaited<ReturnType<typeof setup>>) {
+    const out = await load(
+      makeRouteEvent({
+        user: safeUser(ctx.u),
+        memberships: [ctx.m],
+        params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
+        url: `http://localhost/child/${ctx.c.id}/log/${ctx.entry.id}`
+      }) as unknown as Parameters<typeof load>[0]
+    );
+    return out.entry;
+  }
+
+  async function addSymptom(
+    ctx: Awaited<ReturnType<typeof setup>>,
+    label: 'rougeur' | 'gonflement'
+  ) {
+    const result = await insertSymptom({
+      foodEntryId: ctx.entry.id,
+      childId: ctx.c.id,
+      observedAt: new Date('2024-06-01T11:00:00Z'),
+      label,
+      note: null,
+      createdBy: ctx.u.id,
+      currentReaction: 'ras'
+    });
+    return result.promotedTo;
+  }
+
+  async function submit(ctx: Awaited<ReturnType<typeof setup>>, formData: Record<string, string>) {
+    const event = makeRouteEvent({
+      user: safeUser(ctx.u),
+      memberships: [ctx.m],
+      params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
+      formData
+    });
+    return captureFlow(() =>
+      actions.update!(event as unknown as Parameters<NonNullable<typeof actions.update>>[0])
+    );
+  }
+
+  async function freshRow(entryId: number) {
+    return (await testDb.select().from(foodEntries).where(eq(foodEntries.id, entryId)))[0];
+  }
+
+  it('a stale edit of the time, aliment and notes keeps the promoted reaction', async () => {
+    const ctx = await setup();
+    const loaded = await loadForm(ctx);
+    expect(loaded.reaction).toBe('ras');
+    const pomme = (
+      await testDb
+        .insert(foods)
+        .values({
+          name: 'Pomme',
+          category: 'fruits',
+          isMajorAllergen: false,
+          allergenType: null,
+          suggestedAgeMonths: 4,
+          notes: null,
+          isCustom: false,
+          customForChildId: null
+        })
+        .returning()
+    )[0];
+
+    expect(await addSymptom(ctx, 'rougeur')).toBe('inconfort');
+
+    // The parent fixes the time, aliment and notes; the picker still shows the
+    // reaction the form loaded.
+    const r = await submit(ctx, {
+      foodId: String(pomme.id),
+      givenAt: '2024-06-01T12:30:00.000Z',
+      reaction: loaded.reaction,
+      reactionLoaded: loaded.reaction,
+      notes: 'heure corrigée',
+      from: ''
+    });
+    expect(r.kind).toBe('redirect');
+
+    const row = await freshRow(ctx.entry.id);
+    expect(row.reaction).toBe('inconfort');
+    expect(row.foodId).toBe(pomme.id);
+    expect(row.givenAt).toEqual(new Date('2024-06-01T12:30:00.000Z'));
+    expect(row.notes).toBe('heure corrigée');
+  });
+
+  it('a deliberate reaction change that raced a promotion does not overwrite it', async () => {
+    // The dirty-only check alone lets this write through (submitted 'inconfort'
+    // differs from loaded 'ras'); only the WHERE guard on the loaded value
+    // stops it from downgrading the severe promotion.
+    const ctx = await setup();
+    const loaded = await loadForm(ctx);
+    expect(await addSymptom(ctx, 'gonflement')).toBe('reaction');
+
+    const r = await submit(ctx, {
+      foodId: String(ctx.food.id),
+      givenAt: '2024-06-01T12:30:00.000Z',
+      reaction: 'inconfort',
+      reactionLoaded: loaded.reaction,
+      notes: 'modifié'
+    });
+    expect(r.kind).toBe('redirect');
+
+    const row = await freshRow(ctx.entry.id);
+    expect(row.reaction).toBe('reaction');
+    expect(row.notes).toBe('modifié');
+  });
+
+  it('a deliberate reaction change on an up-to-date form still applies', async () => {
+    const ctx = await setup();
+    expect(await addSymptom(ctx, 'rougeur')).toBe('inconfort');
+    // The form loads after the promotion, so it is not stale.
+    const loaded = await loadForm(ctx);
+    expect(loaded.reaction).toBe('inconfort');
+
+    const r = await submit(ctx, {
+      foodId: String(ctx.food.id),
+      givenAt: '2024-06-01T10:00:00.000Z',
+      reaction: 'ras',
+      reactionLoaded: loaded.reaction
+    });
+    expect(r.kind).toBe('redirect');
+
+    expect((await freshRow(ctx.entry.id)).reaction).toBe('ras');
   });
 });
 
