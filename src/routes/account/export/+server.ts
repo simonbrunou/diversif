@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { and, eq, isNull, lt, or } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import { users } from '#lib/server/db/schema.js';
-import { ExportTooLargeError, exportUserData } from '#lib/server/gdpr.js';
+import { ExportTooLargeError, exportUserData } from '#lib/server/gdpr-export.js';
 import { requireUser } from '#lib/server/guards.js';
 import * as m from '#lib/paraglide/messages.js';
 import type { RequestHandler } from './$types';
@@ -37,7 +37,9 @@ export const GET: RequestHandler = async ({ locals }) => {
 
   let payload;
   try {
-    payload = await exportUserData(user.id);
+    // Default options on purpose: the self-service export keeps the row cap
+    // and the audit trail.
+    payload = await exportUserData(db, { userId: user.id });
   } catch (err) {
     // Refuse rather than silently truncate: an article 15 export is supposed
     // to be complete. If the dataset is unrealistically large we tell the
