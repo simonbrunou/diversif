@@ -3,8 +3,10 @@
 
   // SvelteKit routes/hooks are discovered by fallow's built-in Svelte plugin.
   // These four are operational CLIs invoked manually via `bun scripts/<x>.ts`
-  // (documented in README.md), so they have no package.json script entry and
-  // must be declared as entry points or they look like unused files.
+  // (documented in README.md), so they must be declared as entry points or
+  // they look like unused files. export-user.ts is also the input of the
+  // `build:scripts` package.json script (bundled into build/scripts/); it
+  // stays listed so it remains an entry however fallow reads that command.
   // SvelteKit itself loads the last three, which the plugin doesn't know:
   // src/instrumentation.server.ts (before any other server module), src/env.ts
   // (the $app/env/* variable definitions) and src/service-worker/index.ts.

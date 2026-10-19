@@ -219,6 +219,57 @@ describe('exportUserData: payload', () => {
     ]);
   });
 
+  it('reads malformed JSON columns as empty or filtered lists instead of failing the export', async () => {
+    const u = await insertUser('corrupt@example.com');
+    const c = await insertChild('Léa', u.id);
+    await insertMembership(u.id, c.id, 'owner');
+    const food = await insertFood('Carotte');
+    await testDb.insert(preparedMeals).values(
+      ['Cassé', 'Mélangé'].map((name, i) => ({
+        childId: c.id,
+        brand: 'Babybio',
+        name,
+        ingredientFoodIds: [food.id],
+        createdAt: new Date(Date.UTC(2026, 4, 1 + i)),
+        updatedAt: new Date(Date.UTC(2026, 4, 1 + i))
+      }))
+    );
+    await testDb.insert(passkeys).values(
+      ['pk-broken', 'pk-string'].map((id) => ({
+        id,
+        userId: u.id,
+        publicKey: 'k',
+        counter: 0,
+        transports: [],
+        deviceType: 'singleDevice' as const,
+        backedUp: false,
+        name: id,
+        createdAt: new Date()
+      }))
+    );
+    // Raw writes standing in for a hand-edited row or a bad restore: the typed
+    // json columns can't produce these. The operator export is the fallback
+    // when the self-service one fails, so it must still go through.
+    testDb.run(sql`UPDATE children SET dietary_exclusions = '{oops' WHERE id = ${c.id}`);
+    testDb.run(sql`UPDATE passkeys SET transports = 'not json' WHERE id = 'pk-broken'`);
+    testDb.run(sql`UPDATE passkeys SET transports = '"usb"' WHERE id = 'pk-string'`);
+    testDb.run(sql`UPDATE prepared_meals SET ingredient_food_ids = '[' WHERE name = 'Cassé'`);
+    testDb.run(
+      sql`UPDATE prepared_meals SET ingredient_food_ids = ${JSON.stringify(['11', 1.5, null, food.id])} WHERE name = 'Mélangé'`
+    );
+
+    const out = await exportFor(u.id);
+    expect(out.children[0].dietaryExclusions).toEqual([]);
+    expect(out.passkeys.map((p) => [p.id, p.transports])).toEqual([
+      ['pk-broken', []],
+      ['pk-string', []]
+    ]);
+    expect(out.children[0].preparedMeals.map((m) => [m.name, m.ingredients])).toEqual([
+      ['Cassé', []],
+      ['Mélangé', [{ foodId: food.id, foodName: 'Carotte' }]]
+    ]);
+  });
+
   it('returns empty children list when user has no memberships', async () => {
     const u = await insertUser('alone@example.com');
     const out = await exportFor(u.id);

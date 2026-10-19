@@ -4,7 +4,8 @@
  * manuellement à une demande RGPD article 15 / 20 (en cas de besoin
  * d'agir en lieu et place de l'utilisateur).
  *
- * Depuis un clone :
+ * Depuis un clone (après `bun run paraglide`, dont le schéma importe les
+ * messages compilés) :
  *   DATABASE_PATH=… bun scripts/export-user.ts <email>
  *   DATABASE_PATH=… bun scripts/export-user.ts --id <userId>
  * Dans le conteneur, `bun run build` en livre une version autonome :

@@ -2,13 +2,14 @@
 // JSON-ready object. Two adapters call it with their own database handle:
 //   - /account/export passes the app's db and keeps the default options
 //     (row cap + audit trail);
-//   - scripts/export-user.ts passes a read-only bun:sqlite handle and
-//     OPERATOR_EXPORT.
+//   - scripts/export-user.ts passes a drizzle handle over a read-only
+//     bun:sqlite connection, and OPERATOR_EXPORT.
 // This module must stay free of import-time side effects: the operator script
 // is bundled from it (`bun run build:scripts`), so importing the `db`
 // singleton here would open, migrate and seed DATABASE_PATH from the script.
-import { and, asc, count, eq, inArray, or } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import { audit, type AuditEvent } from './audit';
 import {
   children,
@@ -146,8 +147,8 @@ export type ExportOptions = {
  * Options for the operator script (scripts/export-user.ts):
  *   - no row cap, because the 413 the route returns above the cap tells the
  *     user to ask for a manual export, and this is that export;
- *   - no audit entry: the operator is not the data subject, and audit()
- *     writes on stdout, where the script prints the export itself.
+ *   - no audit entry, as before this module existed: audit() writes on
+ *     stdout, where the script prints the export itself.
  */
 export const OPERATOR_EXPORT = { rowLimit: null, audit: null } as const satisfies ExportOptions;
 
@@ -198,6 +199,23 @@ function groupBy<T, K>(rows: readonly T[], keyOf: (row: T) => K): Map<K, T[]> {
     else map.set(key, [row]);
   }
   return map;
+}
+
+// The export's three JSON text columns (children.dietary_exclusions,
+// passkeys.transports, prepared_meals.ingredient_food_ids) are selected raw
+// and parsed here: drizzle's json mode throws on a malformed value, and a
+// hand-edited row or a bad restore must not block an article 15 export (the
+// operator script is the fallback when the self-service one fails). A value
+// that doesn't parse to an array reads as an empty list.
+const rawJson = (column: AnySQLiteColumn) => sql<string | null>`${column}`;
+
+function jsonArray(raw: string | null): unknown[] {
+  try {
+    const parsed: unknown = JSON.parse(raw ?? '');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 async function findUser(db: Db, subject: ExportSubject) {
@@ -262,11 +280,27 @@ async function loadChildRows(db: Db, userId: number, childIds: number[]) {
     .where(inArray(symptoms.childId, childIds))
     .orderBy(asc(symptoms.observedAt));
 
-  const meals = await db
-    .select()
-    .from(preparedMeals)
-    .where(inArray(preparedMeals.childId, childIds))
-    .orderBy(asc(preparedMeals.createdAt));
+  const meals = (
+    await db
+      .select({
+        id: preparedMeals.id,
+        childId: preparedMeals.childId,
+        brand: preparedMeals.brand,
+        name: preparedMeals.name,
+        ingredientFoodIds: rawJson(preparedMeals.ingredientFoodIds),
+        lastUsedAt: preparedMeals.lastUsedAt,
+        createdAt: preparedMeals.createdAt,
+        updatedAt: preparedMeals.updatedAt
+      })
+      .from(preparedMeals)
+      .where(inArray(preparedMeals.childId, childIds))
+      .orderBy(asc(preparedMeals.createdAt))
+  ).map((meal) => ({
+    ...meal,
+    ingredientFoodIds: jsonArray(meal.ingredientFoodIds).filter((id): id is number =>
+      Number.isInteger(id)
+    )
+  }));
 
   const tips = await db
     .select({
@@ -341,22 +375,32 @@ async function loadInvitations(db: Db, userId: number): Promise<ExportedUser['in
  *
  * Throws UserNotFoundError when the subject doesn't exist, and
  * ExportTooLargeError (after auditing `account.export_blocked`) when the
- * row cap trips: the count runs before any row is loaded, and the archive is
- * refused rather than truncated.
+ * row cap trips: the food entries and symptoms are counted before any of them
+ * is loaded, and the archive is refused rather than truncated.
  */
 export async function exportUserData(
   db: Db,
   subject: ExportSubject,
   options: ExportOptions = {}
 ): Promise<ExportedUser> {
-  const { rowLimit = EXPORT_ROW_LIMIT, audit: record = audit } = options;
+  const { rowLimit = EXPORT_ROW_LIMIT, audit: emitAudit = audit } = options;
   const user = await findUser(db, subject);
   const userId = user.id;
 
   // The user's children, each with the user's own membership on it. Ordered
-  // by child id: the order the archive has always listed them in.
+  // by child id, the order the previous `id IN (…)` primary-key lookup
+  // returned them in.
   const childMemberships = await db
-    .select({ child: children, membership: memberships })
+    .select({
+      child: {
+        id: children.id,
+        name: children.name,
+        birthDate: children.birthDate,
+        createdAt: children.createdAt,
+        dietaryExclusions: rawJson(children.dietaryExclusions)
+      },
+      membership: { role: memberships.role, createdAt: memberships.createdAt }
+    })
     .from(memberships)
     .innerJoin(children, eq(children.id, memberships.childId))
     .where(eq(memberships.userId, userId))
@@ -366,7 +410,7 @@ export async function exportUserData(
   if (rowLimit !== null) {
     const total = await countExportRows(db, childIds);
     if (total > rowLimit) {
-      record?.({
+      emitAudit?.({
         type: 'account.export_blocked',
         userId,
         reason: 'too_large',
@@ -382,13 +426,24 @@ export async function exportUserData(
     userId,
     childIds
   );
-  const userPasskeys = await db.select().from(passkeys).where(eq(passkeys.userId, userId));
+  const userPasskeys = await db
+    .select({
+      id: passkeys.id,
+      name: passkeys.name,
+      deviceType: passkeys.deviceType,
+      backedUp: passkeys.backedUp,
+      transports: rawJson(passkeys.transports),
+      createdAt: passkeys.createdAt,
+      lastUsedAt: passkeys.lastUsedAt
+    })
+    .from(passkeys)
+    .where(eq(passkeys.userId, userId));
   const exportedInvitations = await loadInvitations(db, userId);
 
   const entriesByChildId = groupBy(entries, (e) => e.childId);
   const mealsByChildId = groupBy(meals, (meal) => meal.childId);
 
-  record?.({ type: 'account.exported', userId, foodEntryCount: entries.length });
+  emitAudit?.({ type: 'account.exported', userId, foodEntryCount: entries.length });
 
   return {
     exportedAt: new Date().toISOString(),
@@ -410,7 +465,7 @@ export async function exportUserData(
       name: c.name,
       birthDate: c.birthDate,
       createdAt: c.createdAt.toISOString(),
-      dietaryExclusions: parseDietExclusions(c.dietaryExclusions),
+      dietaryExclusions: parseDietExclusions(jsonArray(c.dietaryExclusions)),
       membership: { role: m.role, joinedAt: m.createdAt.toISOString() },
       foodEntries: (entriesByChildId.get(c.id) ?? []).map((e) => ({
         id: e.id,
@@ -450,7 +505,8 @@ export async function exportUserData(
       name: p.name,
       deviceType: p.deviceType,
       backedUp: p.backedUp,
-      transports: p.transports,
+      // Kept as stored, as the browser reported them (see schema.ts).
+      transports: jsonArray(p.transports) as string[],
       createdAt: p.createdAt.toISOString(),
       lastUsedAt: isoOrNull(p.lastUsedAt)
     })),
