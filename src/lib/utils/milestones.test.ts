@@ -1,7 +1,13 @@
 import { describe, expect, it, mock } from 'bun:test';
 import * as m from '#lib/paraglide/messages.js';
 import { getAllergenLabel } from '#lib/utils/allergens.js';
-import { celebrate, pickMilestoneFromQuery } from './milestones';
+import {
+  celebrate,
+  clearMilestoneQuery,
+  milestonesQuery,
+  pickMilestoneFromQuery,
+  type Milestones
+} from './milestones';
 
 function fakeToast() {
   const success = mock();
@@ -14,6 +20,49 @@ function fakeToast() {
 function qs(input: string): URLSearchParams {
   return new URLSearchParams(input);
 }
+
+const NOTHING_NEW: Milestones = {
+  firstFood: false,
+  firstAllergen: null,
+  allAllergens: false,
+  categories: { before: 3, after: 3 }
+};
+
+describe('milestonesQuery', () => {
+  // The exact string is a contract: the create action stores the redirect in
+  // idempotency_keys and replays it verbatim, and the offline queue matches it.
+  it('encodes every flag in the historical order', () => {
+    expect(
+      milestonesQuery({
+        firstFood: true,
+        firstAllergen: 'arachide',
+        allAllergens: true,
+        categories: { before: 0, after: 1 }
+      })
+    ).toBe('logged=1&first=1&allergen=arachide&allAllergens=1&categories=1&prevCategories=0');
+  });
+
+  it('omits the flags that did not fire but always carries the category counts', () => {
+    expect(milestonesQuery(NOTHING_NEW)).toBe('logged=1&categories=3&prevCategories=3');
+  });
+
+  it('round-trips through pickMilestoneFromQuery', () => {
+    const query = qs(milestonesQuery({ ...NOTHING_NEW, categories: { before: 4, after: 5 } }));
+    expect(pickMilestoneFromQuery(query, 11)).toEqual({
+      kind: 'category-milestone',
+      covered: 5,
+      total: 11
+    });
+  });
+});
+
+describe('clearMilestoneQuery', () => {
+  it('removes every milestone param and keeps the others', () => {
+    const url = new URL(`http://localhost/child/1?tab=x&${milestonesQuery(NOTHING_NEW)}&first=1`);
+    clearMilestoneQuery(url);
+    expect(url.search).toBe('?tab=x');
+  });
+});
 
 describe('pickMilestoneFromQuery', () => {
   it('returns null when logged flag is missing', () => {
