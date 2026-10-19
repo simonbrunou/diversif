@@ -1,10 +1,29 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { signUpAndCreateChild } from './_helpers';
+
+// Rows waiting in the offline queue's IndexedDB store.
+function queuedRows(page: Page): Promise<number> {
+  return page.evaluate(async () => {
+    const dbReq = indexedDB.open('diversif-offline');
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      dbReq.onsuccess = () => resolve(dbReq.result);
+      dbReq.onerror = () => reject(dbReq.error);
+    });
+    return new Promise<number>((resolve, reject) => {
+      const tx = db.transaction('log', 'readonly');
+      const req = tx.objectStore('log').count();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  });
+}
 
 // Smoke: when navigator.onLine is false, the log form's enhanced submit
 // handler must short-circuit, write to IDB, and surface the queued toast.
 // The replay-on-online path is exhaustively covered by unit tests for
-// queue.ts and the idempotency endpoint; we don't re-verify it end-to-end.
+// queue.ts and the repas module's idempotency-key handling; end to end we only
+// check that the layout turns a replay into the repas's milestone toast
+// ("a queued first repas is celebrated when it replays on reconnect").
 test('queues a log submission while offline', async ({ page }) => {
   const sevenMonthsAgo = new Date();
   sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
@@ -43,20 +62,7 @@ test('queues a log submission while offline', async ({ page }) => {
 
   // Verify the row was written to IDB. This is the durability contract that
   // matters for the offline UX : the entry survives until flush picks it up.
-  const dbCount = await page.evaluate(async () => {
-    const dbReq = indexedDB.open('diversif-offline');
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      dbReq.onsuccess = () => resolve(dbReq.result);
-      dbReq.onerror = () => reject(dbReq.error);
-    });
-    return new Promise<number>((resolve, reject) => {
-      const tx = db.transaction('log', 'readonly');
-      const req = tx.objectStore('log').count();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  });
-  expect(dbCount).toBeGreaterThanOrEqual(1);
+  expect(await queuedRows(page)).toBeGreaterThanOrEqual(1);
 });
 
 // Regression for the F-P4 audit finding: a request that fails at the
@@ -106,20 +112,61 @@ test('a transport failure while online queues the entry instead of wiping the fo
   // Still navigates back to the dashboard rather than an error page.
   await expect(page).toHaveURL(/\/child\/\d+$/, { timeout: 8000 });
 
-  const dbCount = await page.evaluate(async () => {
-    const dbReq = indexedDB.open('diversif-offline');
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      dbReq.onsuccess = () => resolve(dbReq.result);
-      dbReq.onerror = () => reject(dbReq.error);
-    });
-    return new Promise<number>((resolve, reject) => {
-      const tx = db.transaction('log', 'readonly');
-      const req = tx.objectStore('log').count();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
+  expect(await queuedRows(page)).toBeGreaterThanOrEqual(1);
+});
+
+// The replay redirect carries the milestone flags the dashboard reads after
+// an online log. A first repas logged offline must still be celebrated when
+// the queue replays it, even with a second queued repas replaying right
+// behind it, not reduced to "Synchronisé." toasts.
+test('a queued first repas is celebrated when it replays on reconnect', async ({ page }) => {
+  const sevenMonthsAgo = new Date();
+  sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+  const childId = await signUpAndCreateChild(
+    page,
+    'Nino',
+    sevenMonthsAgo.toISOString().slice(0, 10),
+    'replay'
+  );
+
+  await page.goto(`/child/${childId}/log`);
+  // Patched once: the second repas is reached by client-side navigation,
+  // which keeps the patch, while a full page load would reset it.
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'onLine', { get: () => false, configurable: true });
   });
-  expect(dbCount).toBeGreaterThanOrEqual(1);
+
+  // Poire is not an allergen, so the first repas reaches the first-repas
+  // milestone and the second one reaches none.
+  const queuePoire = async () => {
+    await page.getByPlaceholder('Rechercher un aliment…').fill('Poire');
+    await page
+      .getByRole('button', { name: /^Poire/ })
+      .first()
+      .click();
+    await page.getByRole('button', { name: /^enregistrer$/i }).click();
+    await expect(page).toHaveURL(/\/child\/\d+$/, { timeout: 8000 });
+  };
+  await queuePoire();
+  // The dashboard opens its welcome dialog over the log CTA.
+  await page.getByRole('dialog').getByRole('button', { name: 'Fermer' }).click();
+  await page.getByRole('link', { name: /enregistrer un premier repas/i }).click();
+  await queuePoire();
+  expect(await queuedRows(page)).toBe(2);
+
+  // Back online: the layout's 'online' listener flushes the queue.
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'onLine', { get: () => true, configurable: true });
+    window.dispatchEvent(new Event('online'));
+  });
+
+  // Both repas have replayed before the toasts are checked, so a toast the
+  // second one would add can't arrive after the assertions. The absence check
+  // counts once instead of retrying: toHaveCount(0) would wait out the 4 s
+  // toast and pass after a "Synchronisé." toast has come and gone.
+  await expect.poll(() => queuedRows(page), { timeout: 8000 }).toBe(0);
+  await expect(page.getByText('Premier repas noté.')).toBeVisible();
+  expect(await page.getByText('Synchronisé.', { exact: true }).count()).toBe(0);
 });
 
 // The offline fallback page (/offline) is a prerendered SvelteKit route. The

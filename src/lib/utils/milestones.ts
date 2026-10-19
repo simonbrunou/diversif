@@ -1,5 +1,6 @@
 import type { toast as Toast } from 'svelte-sonner';
 import { ALLERGENS, getAllergenLabel } from '#lib/utils/allergens.js';
+import { TRACKED_CATEGORY_COUNT } from '#lib/utils/categories.js';
 import * as m from '#lib/paraglide/messages.js';
 
 const TOAST_CLASS = 'bg-celebrate/15 border-celebrate/30 text-celebrate-foreground';
@@ -142,4 +143,22 @@ export function celebrate(toast: typeof Toast, milestone: MilestoneKind): void {
       toast.success(m.milestoneGenericTitle());
       return;
   }
+}
+
+/**
+ * Toasts for the queued repas one queue flush replayed: one per milestone
+ * reached, else a single plain "synced" toast. Each entry of `queryStrings` is
+ * a replay redirect's query string, the flags the dashboard reads after an
+ * online log. One toast per repas would bury a milestone under the others.
+ */
+export function celebrateSynced(toast: typeof Toast, queryStrings: readonly string[]): void {
+  let celebrated = false;
+  for (const qs of queryStrings) {
+    const milestone = pickMilestoneFromQuery(new URLSearchParams(qs), TRACKED_CATEGORY_COUNT);
+    if (milestone && milestone.kind !== 'generic') {
+      celebrate(toast, milestone);
+      celebrated = true;
+    }
+  }
+  if (!celebrated) toast.success(m.offlineSyncedToast());
 }

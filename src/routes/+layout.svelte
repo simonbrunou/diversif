@@ -1,7 +1,12 @@
 <script lang="ts">
   import '../app.css';
   import { Toaster, toast } from 'svelte-sonner';
-  import { flush, count as pendingQueueCount, needsReauthCount } from '#lib/offline/queue.js';
+  import {
+    flush,
+    count as pendingQueueCount,
+    needsReauthCount,
+    type QueueSyncedDetail
+  } from '#lib/offline/queue.js';
   import { purgeClientState } from '#lib/offline/purge.js';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/state';
@@ -10,6 +15,7 @@
   import { deLocalizeHref } from '#lib/paraglide/runtime.js';
   import * as m from '#lib/paraglide/messages.js';
   import { applyTheme, getStoredTheme } from '#lib/utils/theme.js';
+  import { celebrateSynced } from '#lib/utils/milestones.js';
   import { markHydrated } from '#lib/boot-recovery.js';
   import PublicHeader from '#lib/components/PublicHeader.svelte';
   import PublicFooter from '#lib/components/PublicFooter.svelte';
@@ -188,8 +194,8 @@
     const handleOnline = () => {
       void flush();
     };
-    const handleSynced = () => {
-      toast.success(m.offlineSyncedToast());
+    const handleSynced = (e: Event) => {
+      celebrateSynced(toast, (e as CustomEvent<QueueSyncedDetail>).detail.queryStrings);
     };
     const handleDropped = () => {
       // Longer duration than the default: a dropped, un-recoverable entry is
