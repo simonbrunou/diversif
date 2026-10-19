@@ -3,8 +3,9 @@ import { isTextureKey, type TextureKey } from '#lib/utils/textures.js';
 import { refuse, type RepasErrorKey } from './core';
 
 // The one parser for every repas form: the log form (create), the single-entry
-// edit form and the meal edit form. Each field has one reader and one error
-// key, so create and edit can no longer disagree on what a field means.
+// edit form and the meal edit form. Each field has one reader, which owns the
+// field's error keys, so create and edit can no longer disagree on what a
+// field means or how it is refused.
 
 const MAX_ALIMENTS = 20;
 const MAX_CUSTOM_NAME = 80;

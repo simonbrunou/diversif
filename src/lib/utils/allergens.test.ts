@@ -19,8 +19,7 @@ describe('ALLERGENS', () => {
   //   - src/routes/+page.svelte (landing FAQ + chip nav)
   //   - src/routes/allergens/+page.svelte (h1, ItemList name, body copy)
   //   - src/routes/guide/+page.svelte (Seo + Article description)
-  //   - src/routes/child/[id]/log/+page.server.ts (comment)
-  //   - src/routes/child/[id]/log/page.server.test.ts (comment)
+  //   - src/lib/server/repas/milestones.ts (comments)
   //   - src/lib/utils/milestones.test.ts (toast assertion)
   //   - messages/fr.json + messages/en.json (dialogsWelcomeStep1Bullet2After
   //     references the count)

@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { awaitHydration, dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 // The edit page's four actions (update, delete, deleteMeal, removeIngredient)
-// end to end, through the repas write module.
+// end to end, through the repas write module: one test per form mode.
 
 async function childOfEightMonths(page: Page): Promise<string> {
   const birthDate = new Date();
@@ -72,33 +72,56 @@ test('edits a standalone repas and lands back on its detail page', async ({ page
   await expect(page).toHaveURL(new RegExp(`/child/${childId}/log/${entryId}$`));
   await page.reload();
   await expect(page.getByLabel('Note')).toHaveValue('A grimacé');
+
+  await page.getByRole('button', { name: 'Supprimer ce repas', exact: true }).click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Supprimer ce repas', exact: true })
+    .click();
+  await expect(page).toHaveURL(new RegExp(`/child/${childId}/foods$`));
+  await page.goto(`/child/${childId}`);
+  await expect(page.getByTestId('feed-row-detail')).toHaveCount(0);
 });
 
-test('edits a meal, removes an aliment, then deletes the meal', async ({ page }) => {
+test('edits a meal, removes aliments, then deletes the meal', async ({ page }) => {
   const childId = await childOfEightMonths(page);
-  await logRepas(page, childId, ['Poire', 'Pomme', 'Carotte']);
+  await logRepas(page, childId, ['Poire', 'Pomme', 'Carotte', 'Banane']);
+  // The dashboard opens a meal on its lowest entry id: Poire's.
   const anchorId = await feedEntryId(page, childId, 'feed-row-edit');
 
   await page.goto(`/child/${childId}/log/${anchorId}?from=dashboard`);
   await awaitHydration(page);
   await expect(page.getByRole('heading', { name: 'Modifier le repas' })).toBeVisible();
   const remove = page.getByRole('button', { name: 'Retirer', exact: true });
-  await expect(remove).toHaveCount(3);
+  await expect(remove).toHaveCount(4);
   await page.getByLabel('Note').fill('Repas du midi');
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/child/${childId}$`));
 
-  // Remove the aliment the editor was opened on: it lands on a survivor.
   await page.goto(`/child/${childId}/log/${anchorId}`);
   await awaitHydration(page);
   await expect(page.getByLabel('Note')).toHaveValue('Repas du midi');
-  await remove.first().click();
-  const removeDialog = page.getByRole('dialog');
-  await expect(removeDialog).toContainText('du repas ?');
-  await removeDialog.getByRole('button', { name: 'Retirer', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const removeConfirmed = async (row: number) => {
+    await remove.nth(row).click();
+    await expect(dialog).toContainText('du repas ?');
+    await dialog.getByRole('button', { name: 'Retirer', exact: true }).click();
+  };
+
+  // Another aliment: the editor lands back on the same entry, and must show
+  // the meal as it is now, with the dialog closed.
+  await removeConfirmed(1);
+  await expect(remove).toHaveCount(3);
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole('link', { name: 'Pomme' })).toHaveCount(0);
+  await expect(page).toHaveURL(new RegExp(`/log/${anchorId}$`));
+
+  // The aliment the editor was opened on: it lands on a survivor.
+  await removeConfirmed(0);
   await expect(page).not.toHaveURL(new RegExp(`/log/${anchorId}$`));
   await expect(page).toHaveURL(new RegExp(`/child/${childId}/log/\\d+$`));
   await expect(remove).toHaveCount(2);
+  await expect(dialog).toBeHidden();
 
   await page.getByRole('button', { name: 'Supprimer le repas', exact: true }).click();
   const deleteDialog = page.getByRole('dialog');

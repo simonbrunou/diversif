@@ -8,10 +8,11 @@ import {
   editRepas,
   readRepas,
   removeIngredient,
+  type RepasContext,
   type RepasRefusal
 } from '#lib/server/repas/index.js';
 import * as m from '#lib/paraglide/messages.js';
-import type { Actions, PageServerLoad, RequestEvent } from './$types';
+import type { Action, Actions, PageServerLoad, RequestEvent } from './$types';
 
 // error() renders through +error.svelte, which shows the message verbatim —
 // resolve it here (paraglide's per-request locale context) same as join/[code].
@@ -24,19 +25,18 @@ function refused(refusal: RepasRefusal) {
   return fail(refusal.status, { errorKey: refusal.errorKey });
 }
 
-function entryContext({ locals, params }: RequestEvent) {
+function entryContext({ locals, params }: Pick<RequestEvent, 'locals' | 'params'>) {
   const ctx = requireChildContext(locals, params);
   return { ctx, entryId: parseIntParam(params.entryId, "Identifiant d'entrée") };
 }
 
-export const load: PageServerLoad = async ({ locals, params, url }) => {
-  const { childId } = requireChildContext(locals, params);
-  const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
+export const load: PageServerLoad = async (event) => {
+  const { ctx, entryId } = entryContext(event);
 
-  const repas = readRepas({ childId }, entryId) ?? entryNotFound();
-  const list = await loadVisibleFoodsForChild(childId);
+  const repas = readRepas(ctx, entryId) ?? entryNotFound();
+  const list = await loadVisibleFoodsForChild(ctx.childId);
 
-  const fromRaw = url.searchParams.get('from');
+  const fromRaw = event.url.searchParams.get('from');
   const from: 'dashboard' | 'detail' | 'foods' =
     fromRaw === 'dashboard' ? 'dashboard' : fromRaw === 'detail' ? 'detail' : 'foods';
 
@@ -61,34 +61,28 @@ function destinationFor(
   return `/child/${childId}/foods`;
 }
 
+// An action that writes through the repas module, then goes back where the
+// editor was opened from (the form's `from`).
+function writeThenLeave(
+  kind: 'update' | 'delete',
+  write: (ctx: RepasContext, entryId: number, form: FormData) => RepasRefusal | { ok: true }
+): Action {
+  return async (event) => {
+    const { ctx, entryId } = entryContext(event);
+    const form = await event.request.formData();
+    const written = write(ctx, entryId, form);
+    if (!written.ok) return refused(written);
+    const to = destinationFor(form, ctx.childId, entryId, kind);
+    throw localizedRedirect(event.locals.locale, 303, to);
+  };
+}
+
 export const actions: Actions = {
-  update: async (event) => {
-    const { ctx, entryId } = entryContext(event);
-    const form = await event.request.formData();
-    const edited = editRepas(ctx, entryId, form);
-    if (!edited.ok) return refused(edited);
-    const to = destinationFor(form, ctx.childId, entryId, 'update');
-    throw localizedRedirect(event.locals.locale, 303, to);
-  },
+  update: writeThenLeave('update', editRepas),
+  delete: writeThenLeave('delete', deleteEntry),
+  deleteMeal: writeThenLeave('delete', deleteMeal),
 
-  delete: async (event) => {
-    const { ctx, entryId } = entryContext(event);
-    const form = await event.request.formData();
-    const deleted = deleteEntry(ctx, entryId);
-    if (!deleted.ok) return refused(deleted);
-    const to = destinationFor(form, ctx.childId, entryId, 'delete');
-    throw localizedRedirect(event.locals.locale, 303, to);
-  },
-
-  deleteMeal: async (event) => {
-    const { ctx, entryId } = entryContext(event);
-    const form = await event.request.formData();
-    const deleted = deleteMeal(ctx, entryId);
-    if (!deleted.ok) return refused(deleted);
-    const to = destinationFor(form, ctx.childId, entryId, 'delete');
-    throw localizedRedirect(event.locals.locale, 303, to);
-  },
-
+  // Lands on a surviving entry of the meal, not where the editor came from.
   removeIngredient: async (event) => {
     const { ctx, entryId } = entryContext(event);
     const removed = removeIngredient(ctx, entryId, await event.request.formData());

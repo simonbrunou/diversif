@@ -11,8 +11,9 @@ export type Aliment = typeof foods.$inferSelect;
 /**
  * Resolve the aliments a form names, inside the repas transaction: catalog ids
  * must be visible to the child (global catalog or its own custom aliments),
- * and a new custom aliment is inserted, so it rolls back with the rest of the
- * repas. Returns each aliment once, in posted order, custom last.
+ * and a custom aliment is reused by name or else inserted, so a new one rolls
+ * back with the rest of the repas. Returns each aliment once, in posted order,
+ * custom last.
  */
 export function resolveAliments(tx: Tx, childId: number, choice: AlimentChoice): Aliment[] {
   const resolved = new Map<number, Aliment>();
@@ -57,12 +58,12 @@ function customAliment(
     .find((food) => normalize(food.name) === wanted);
   if (existing) return existing;
 
-  const knownCategory = category?.trim();
+  const posted = category?.trim();
   return tx
     .insert(foods)
     .values({
       name,
-      category: knownCategory && CATEGORY_IDS.includes(knownCategory) ? knownCategory : 'autre',
+      category: posted && CATEGORY_IDS.includes(posted) ? posted : 'autre',
       isMajorAllergen: false,
       allergenType: null,
       suggestedAgeMonths: 0,

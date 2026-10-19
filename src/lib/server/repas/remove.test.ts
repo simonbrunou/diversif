@@ -74,6 +74,18 @@ describe('removeIngredient', () => {
     expect(entryRows(child.id)).toHaveLength(3);
   });
 
+  it('never removes another child’s entry posted as removeId', async () => {
+    const { ctx, ids, user, carotte } = await meal(2);
+    const sibling = await siblingOf(ctx, user.id);
+    const [theirs] = logged(sibling, carotte.id);
+    expect(removeIngredient(ctx, ids[0], form({ removeId: theirs }))).toEqual({
+      ok: true,
+      landOn: ids[0]
+    });
+    expect(readRepas(sibling, theirs)).not.toBeNull();
+    expect(readRepas(ctx, ids[0])?.meal?.members.map((m) => m.id)).toEqual(ids);
+  });
+
   it('refuses a standalone entry or a malformed removeId', async () => {
     const { ctx, ids, carotte } = await meal(2);
     const [single] = logged(ctx, carotte.id);

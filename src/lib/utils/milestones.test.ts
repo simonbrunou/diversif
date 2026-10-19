@@ -4,7 +4,7 @@ import { getAllergenLabel } from '#lib/utils/allergens.js';
 import {
   celebrate,
   clearMilestoneQuery,
-  milestonesQuery,
+  milestonesPath,
   pickMilestoneFromQuery,
   type Milestones
 } from './milestones';
@@ -28,27 +28,34 @@ const NOTHING_NEW: Milestones = {
   categories: { before: 3, after: 3 }
 };
 
-describe('milestonesQuery', () => {
-  // The exact string is a contract: the create action stores the redirect in
+// The decoder's side of a path milestonesPath built.
+function searchOf(path: string): URLSearchParams {
+  return new URL(path, 'http://localhost').searchParams;
+}
+
+describe('milestonesPath', () => {
+  // The param names are a contract: the create action stores this path in
   // idempotency_keys and replays it verbatim, and the offline queue matches it.
-  it('encodes every flag in the historical order', () => {
+  it('encodes every flag on the child’s dashboard path', () => {
     expect(
-      milestonesQuery({
+      milestonesPath(7, {
         firstFood: true,
         firstAllergen: 'arachide',
         allAllergens: true,
         categories: { before: 0, after: 1 }
       })
-    ).toBe('logged=1&first=1&allergen=arachide&allAllergens=1&categories=1&prevCategories=0');
+    ).toBe(
+      '/child/7?logged=1&first=1&allergen=arachide&allAllergens=1&categories=1&prevCategories=0'
+    );
   });
 
   it('omits the flags that did not fire but always carries the category counts', () => {
-    expect(milestonesQuery(NOTHING_NEW)).toBe('logged=1&categories=3&prevCategories=3');
+    expect(milestonesPath(7, NOTHING_NEW)).toBe('/child/7?logged=1&categories=3&prevCategories=3');
   });
 
   it('round-trips through pickMilestoneFromQuery', () => {
-    const query = qs(milestonesQuery({ ...NOTHING_NEW, categories: { before: 4, after: 5 } }));
-    expect(pickMilestoneFromQuery(query, 11)).toEqual({
+    const path = milestonesPath(7, { ...NOTHING_NEW, categories: { before: 4, after: 5 } });
+    expect(pickMilestoneFromQuery(searchOf(path), 11)).toEqual({
       kind: 'category-milestone',
       covered: 5,
       total: 11
@@ -58,7 +65,7 @@ describe('milestonesQuery', () => {
 
 describe('clearMilestoneQuery', () => {
   it('removes every milestone param and keeps the others', () => {
-    const url = new URL(`http://localhost/child/1?tab=x&${milestonesQuery(NOTHING_NEW)}&first=1`);
+    const url = new URL(`${milestonesPath(1, NOTHING_NEW)}&tab=x&first=1`, 'http://localhost');
     clearMilestoneQuery(url);
     expect(url.search).toBe('?tab=x');
   });

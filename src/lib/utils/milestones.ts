@@ -43,10 +43,11 @@ const MILESTONE_PARAMS = [
 ] as const;
 
 /**
- * Encode milestones as the post-log query string. The exact string is stored
- * in idempotency_keys.redirect and replayed verbatim, so keep the param order.
+ * Encode milestones as the post-log query string. The decoder reads params by
+ * name, but redirects stored in idempotency_keys before a deploy replay
+ * verbatim, so the names are a contract: renaming one breaks those replays.
  */
-export function milestonesQuery(milestones: Milestones): string {
+function milestonesQuery(milestones: Milestones): string {
   const search = new URLSearchParams({ logged: '1' });
   if (milestones.firstFood) search.set('first', '1');
   if (milestones.firstAllergen) search.set('allergen', milestones.firstAllergen);
@@ -54,6 +55,11 @@ export function milestonesQuery(milestones: Milestones): string {
   search.set('categories', String(milestones.categories.after));
   search.set('prevCategories', String(milestones.categories.before));
   return search.toString();
+}
+
+/** The (unlocalized) dashboard path a new repas lands on, carrying its milestones. */
+export function milestonesPath(childId: number, milestones: Milestones): string {
+  return `/child/${childId}?${milestonesQuery(milestones)}`;
 }
 
 /** Strip the milestone params once celebrated, so a reload doesn't toast again. */

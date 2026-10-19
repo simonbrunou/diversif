@@ -8,7 +8,7 @@ import {
   withIdempotencyKey
 } from '#lib/server/idempotency.js';
 import { mealDateError } from '#lib/utils/meal-date.js';
-import { milestonesQuery, type Milestones } from '#lib/utils/milestones.js';
+import { milestonesPath, type Milestones } from '#lib/utils/milestones.js';
 import type { ReactionId } from '#lib/utils/reaction-values.js';
 import type { TextureKey } from '#lib/utils/textures.js';
 import { resolveAliments } from './aliments';
@@ -28,10 +28,11 @@ import { recordPreparedMeal } from './prepared-meal';
 
 // The repas write module. A repas is what the baby ate at one time: one
 // food_entries row per aliment, grouped by a shared mealId when there are two
-// or more (the meal rule, src/lib/server/repas/meal.ts). Every write a parent
-// can make to a repas goes through the functions below, each one transaction:
-// the routes only turn FormData into a call and the result into fail() or a
-// redirect.
+// or more (the meal rule, src/lib/server/repas/meal.ts). Every write the log
+// and edit pages make to a repas goes through the functions below, each one
+// transaction: the routes only turn FormData into a call and the result into
+// fail() or a redirect. (A symptom's reaction promotion is the one other
+// writer, in src/lib/server/db/symptoms.ts; the edit guard below respects it.)
 
 export type { RepasErrorKey } from './core';
 
@@ -41,10 +42,17 @@ export type RepasContext = { childId: number; user: { id: number } };
 /** A refused write. Nothing was written. */
 export type RepasRefusal = { ok: false; status: 400 | 404 | 409; errorKey: RepasErrorKey };
 
+/** A repas just written by logRepas. */
+type Logged = {
+  /** The unlocalized dashboard path carrying the encoded milestones. */
+  redirect: string;
+  entryIds: number[];
+  milestones: Milestones;
+};
+
 export type LogResult =
   | RepasRefusal
-  /** `redirect` is the unlocalized dashboard path carrying the encoded milestones. */
-  | { ok: true; replayed: false; redirect: string; entryIds: number[]; milestones: Milestones }
+  | ({ ok: true; replayed: false } & Logged)
   /** An idempotency-key replay: nothing was written, `redirect` is the first submit's. */
   | { ok: true; replayed: true; redirect: string };
 
@@ -62,8 +70,6 @@ export type RepasView = {
     members: { id: number; foodId: number; foodName: string; reaction: ReactionId }[];
   } | null;
 };
-
-type Fresh = Extract<LogResult, { replayed: false }>;
 
 // Run a write and turn the module's own refusals into values. Anything else
 // (a constraint the parser should have caught, a dead database) still throws.
@@ -99,7 +105,7 @@ function notFound(): never {
   throw new RepasAbort(404, 'errorsFoodEntryNotFound');
 }
 
-function insertRepas(tx: Tx, ctx: RepasContext, draft: LogDraft): Omit<Fresh, 'ok' | 'replayed'> {
+function insertRepas(tx: Tx, ctx: RepasContext, draft: LogDraft): Logged {
   const aliments = resolveAliments(tx, ctx.childId, draft.aliments);
   // Snapshot BEFORE any insert so milestones compare pre/post state.
   const baseline = milestoneBaseline(tx, ctx.childId);
@@ -135,7 +141,7 @@ function insertRepas(tx: Tx, ctx: RepasContext, draft: LogDraft): Omit<Fresh, 'o
     baseline,
     draft.reaction === 'ras'
   );
-  return { redirect: `/child/${ctx.childId}?${milestonesQuery(milestones)}`, entryIds, milestones };
+  return { redirect: milestonesPath(ctx.childId, milestones), entryIds, milestones };
 }
 
 /**
@@ -151,7 +157,7 @@ export function logRepas(
   return refusing(() => {
     const key = idempotencyKeyField(form, idempotencyHeader);
     const draft = parseLogForm(form);
-    let fresh = null as Omit<Fresh, 'ok' | 'replayed'> | null;
+    let fresh = null as Logged | null;
 
     const redirect = db.transaction((tx) => {
       checkMealDate(tx, ctx.childId, draft.givenAt);
@@ -278,9 +284,10 @@ export function editRepas(
 }
 
 /**
- * Remove one aliment (the form's `removeId`) from the meal `entryId` belongs
- * to. Returns the surviving entry to land on: the lowest remaining id, never
- * the removed one (which is often the entry the editor was opened on).
+ * Remove one ingrédient, an aliment's row (the form's `removeId`), from the
+ * meal `entryId` belongs to: the « Retirer » action. Returns the surviving
+ * entry to land on: the lowest remaining id, never the removed one (which is
+ * often the entry the editor was opened on).
  */
 export function removeIngredient(
   ctx: RepasContext,

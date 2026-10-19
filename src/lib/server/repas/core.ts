@@ -2,6 +2,7 @@ import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import type { SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import type { db } from '#lib/server/db/index.js';
 import type * as schema from '#lib/server/db/schema.js';
+import type { MealDateErrorKey } from '#lib/utils/meal-date.js';
 
 // bun:sqlite transactions are synchronous: every repas write runs inside one
 // `db.transaction((tx) => …)` with no awaits, and the database serializes
@@ -16,10 +17,9 @@ export type Executor = typeof db | Tx;
 
 /** Every error key a repas write can refuse with (keys of messages/*.json). */
 export type RepasErrorKey =
+  | MealDateErrorKey
   | 'errorsAuthBadInput'
   | 'errorsFoodEntryNotFound'
-  | 'errorsLogDateBeforeBirth'
-  | 'errorsLogDateFuture'
   | 'errorsLogDateInvalid'
   | 'errorsLogDateRequired'
   | 'errorsLogFoodNotFound'

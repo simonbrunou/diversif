@@ -74,7 +74,13 @@ export function settleMeal(tx: Tx, childId: number, mealId: string): number[] {
   if (rest.length === 1) {
     tx.update(foodEntries)
       .set({ mealId: null, updatedAt: new Date() })
-      .where(eq(foodEntries.id, rest[0]))
+      .where(
+        and(
+          eq(foodEntries.id, rest[0]),
+          eq(foodEntries.childId, childId),
+          eq(foodEntries.mealId, mealId)
+        )
+      )
       .run();
   }
   return rest;
