@@ -322,7 +322,7 @@ describe('loadAllergenHistory: blocking (#373)', () => {
     expect(h.isBlocked('arachide')).toBe(false);
   });
 
-  it('keeps a reaction logged first: tolerated and blocked, whatever the row order', async () => {
+  it('keeps a reaction logged before a fine log: tolerated and blocked', async () => {
     const oeuf = await seedFood('Œuf dur', 'oeufs', 'oeuf');
     await log(oeuf, 'reaction', 10);
     await log(oeuf, 'ras', 5);

@@ -212,9 +212,9 @@ function buildMaintainQueue(byAllergen: Map<string, Facts>, now: number): Mainta
       overdue: daysSince >= ALLERGEN_MAINTAIN_DAYS
     });
   }
-  // By the instant of the last exposure, not by whole days: whole days tie
-  // twice a day and would let the head switch between two loads on the same
-  // day. The stable sort keeps PRIORITY_INTRODUCTION_ALLERGENS order for
+  // By the instant of the last exposure, not by whole days: two exposures a
+  // few hours apart tie on whole days for part of every day, so the head could
+  // switch between two loads on the same day. The stable sort keeps PRIORITY_INTRODUCTION_ALLERGENS order for
   // exposures logged at the same instant (one meal).
   return queue.sort((a, b) => a.lastAt - b.lastAt);
 }
