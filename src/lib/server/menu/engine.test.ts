@@ -3,6 +3,12 @@ import { buildMenu, cautionFor, safeForRole, mkItem, type MenuInput } from './en
 import { SOFT_CHEESE, OILY_FISH } from './tables';
 import { FOODS_SEED } from '#lib/server/db/seed.js';
 import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
+import type { ReactionId } from '#lib/utils/reaction-values.js';
+import {
+  allergenHistoryFrom,
+  type AllergenEntry,
+  type AllergenHistory
+} from '#lib/server/guidance/allergen-history.js';
 
 // Build a catalog with stable ids from the seed (id = index+1, isCustom=false).
 const CATALOG = FOODS_SEED.map((f, i) => ({
@@ -17,6 +23,32 @@ const CATALOG = FOODS_SEED.map((f, i) => ({
   customForChildId: null
 }));
 
+const NOW = Date.UTC(2026, 5, 1, 12);
+const DAY = 24 * 60 * 60 * 1000;
+
+const allergenRow = (allergenType: string, reaction: ReactionId, daysAgo = 0): AllergenEntry => ({
+  entryId: 0,
+  allergenType,
+  category: 'allergenes',
+  reaction,
+  givenAt: NOW - daysAgo * DAY
+});
+
+/** A history seeded with a tolerated exposure today per `introduced` id and a réaction per `blocked` one. */
+function historyOf(
+  opts: { introduced?: readonly string[]; blocked?: readonly string[] } = {}
+): AllergenHistory {
+  return allergenHistoryFrom(
+    [
+      ...(opts.introduced ?? []).map((id) => allergenRow(id, 'ras')),
+      ...(opts.blocked ?? []).map((id) => allergenRow(id, 'reaction'))
+    ],
+    NOW
+  );
+}
+
+const allPriorityExcept = (id: string) => PRIORITY_INTRODUCTION_ALLERGENS.filter((a) => a !== id);
+
 function baseInput(over: Partial<MenuInput> = {}): MenuInput {
   return {
     childId: 1,
@@ -27,8 +59,7 @@ function baseInput(over: Partial<MenuInput> = {}): MenuInput {
     introducedFoodIds: new Set(CATALOG.map((f) => f.id)), // "everything introduced" baseline
     avoidFoodIds: new Set(),
     reactionTierFoodIds: new Set(),
-    introducedAllergens: new Set(),
-    reactedAllergens: new Set(),
+    allergens: historyOf(),
     dietaryExclusions: [],
     ...over
   };
@@ -120,9 +151,7 @@ test('a new account with no introduced foods still fills non-allergen slots, bad
   // laitier slot — a bigger dairy pool would let rotatePick just dodge it by chance.
   const yaourt = CATALOG.find((f) => f.name === 'Yaourt nature')!;
   const catalog = CATALOG.filter((f) => f.category !== 'produits_laitiers' || f.id === yaourt.id);
-  const menu = buildMenu(
-    baseInput({ catalog, introducedFoodIds: new Set(), introducedAllergens: new Set() })
-  );
+  const menu = buildMenu(baseInput({ catalog, introducedFoodIds: new Set() }));
   const items = menu.meals.flatMap((mo) => mo.items);
   expect(items.length).toBeGreaterThan(0);
   for (const i of items) expect(i.isNew).toBe(true); // nothing is introduced yet
@@ -161,7 +190,7 @@ test('safeForRole(proteine) excludes charcuterie and is sorted ascending by id',
 test('safeForRole(matiereGrasse) blocks walnut oil after tree-nut symptoms', () => {
   const result = safeForRole(
     'matiereGrasse',
-    baseInput({ reactedAllergens: new Set(['fruits_a_coque']) })
+    baseInput({ allergens: historyOf({ blocked: ['fruits_a_coque'] }) })
   );
   expect(result.some((food) => food.name === 'Huile de noix')).toBe(false);
 });
@@ -175,7 +204,7 @@ test('vegetarien excludes viandes and poissons but keeps eggs and legumes in the
 
 test('vegetarien with egg symptoms gets a legume protein without a meat/fish/egg gram hint', () => {
   const menu = buildMenu(
-    baseInput({ dietaryExclusions: ['vegetarien'], reactedAllergens: new Set(['oeuf']) })
+    baseInput({ dietaryExclusions: ['vegetarien'], allergens: historyOf({ blocked: ['oeuf'] }) })
   );
   const protein = menu.meals
     .find((meal) => meal.id === 'midi')
@@ -209,14 +238,14 @@ test('safeForRole excludes avoided, reacted-allergen, and reaction-tier foods', 
     'legume',
     baseInput({
       avoidFoodIds: new Set([carotte.id]),
-      reactedAllergens: new Set([celeriRave.allergenType!]),
+      allergens: historyOf({ blocked: [celeriRave.allergenType!] }),
       reactionTierFoodIds: new Set([brocoli.id])
     })
   );
 
   const names = result.map((f) => f.name);
   expect(names).not.toContain('Carotte'); // avoidFoodIds, not on the reaction tier
-  expect(names).not.toContain('Céleri-rave'); // allergenType present in reactedAllergens
+  expect(names).not.toContain('Céleri-rave'); // its allergen is blocked
   expect(names).not.toContain('Brocoli'); // reactionTierFoodIds
   expect(names).toContain('Courgette (épluchée, épépinée)'); // untouched control
 });
@@ -305,8 +334,8 @@ test('THE safety gate: an un-introduced priority-allergen food never appears in 
   const oeufFoods = CATALOG.filter((f) => f.allergenType === 'oeuf');
   expect(oeufFoods.length).toBeGreaterThan(0);
   const intro = new Set(CATALOG.filter((f) => f.allergenType !== 'oeuf').map((f) => f.id));
-  const introducedAllergens = new Set(PRIORITY_INTRODUCTION_ALLERGENS.filter((a) => a !== 'oeuf'));
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro, introducedAllergens, weekday: 3 }));
+  const allergens = historyOf({ introduced: allPriorityExcept('oeuf') });
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro, allergens, weekday: 3 }));
   const slotFoodIds = new Set(menu.meals.flatMap((mo) => mo.items).map((i) => i.food.id));
   for (const f of oeufFoods) expect(slotFoodIds.has(f.id)).toBe(false);
   // Sanity: the scenario is non-vacuous — oeuf IS due, and surfaces card-only.
@@ -321,7 +350,7 @@ test('an un-introduced non-allergen food fills a slot directly, badged Nouveaut�
   const menu = buildMenu(
     baseInput({
       introducedFoodIds: intro,
-      introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
+      allergens: historyOf({ introduced: PRIORITY_INTRODUCTION_ALLERGENS })
     })
   );
   const items = menu.meals.flatMap((mo) => mo.items);
@@ -342,8 +371,8 @@ test('an un-introduced non-allergen food fills a slot directly, badged Nouveaut�
 test('orphan allergen (arachide) is card-only, never a meal slot', () => {
   const peanut = CATALOG.find((f) => f.allergenType === 'arachide')!;
   const intro = new Set(CATALOG.filter((f) => f.id !== peanut.id).map((f) => f.id));
-  const introAll = new Set(PRIORITY_INTRODUCTION_ALLERGENS.filter((a) => a !== 'arachide'));
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro, introducedAllergens: introAll }));
+  const allergens = historyOf({ introduced: allPriorityExcept('arachide') });
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro, allergens }));
   expect(menu.allergenFocus?.food.allergenType).toBe('arachide');
   expect(menu.allergenFocus?.mode).toBe('introduce');
   expect(menu.meals.flatMap((mo) => mo.items).some((i) => i.food.id === peanut.id)).toBe(false);
@@ -354,10 +383,8 @@ test("allergenFocus carries the food's prep/choking caution (never skips caution
   // food carries the "Bien cuit, sans arêtes." category caution via cautionFor —
   // the allergenFocus card must surface it, like every other food-surfacing path.
   const intro = new Set(CATALOG.filter((f) => f.category !== 'poissons').map((f) => f.id));
-  const introducedAllergens = new Set(
-    PRIORITY_INTRODUCTION_ALLERGENS.filter((a) => a !== 'poisson')
-  );
-  const menu = buildMenu(baseInput({ introducedFoodIds: intro, introducedAllergens }));
+  const allergens = historyOf({ introduced: allPriorityExcept('poisson') });
+  const menu = buildMenu(baseInput({ introducedFoodIds: intro, allergens }));
   expect(menu.allergenFocus?.mode).toBe('introduce');
   expect(menu.allergenFocus?.food.category).toBe('poissons');
   expect(menu.allergenFocus?.caution).toBe(cautionFor(menu.allergenFocus!.food));
@@ -378,7 +405,8 @@ test('allergenic fats never become introduction or maintenance focus foods', () 
         catalog,
         dayIndex,
         introducedFoodIds,
-        introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
+        // The rows are tolerated non-fat exposures: entries need not point at catalog foods.
+        allergens: historyOf({ introduced: PRIORITY_INTRODUCTION_ALLERGENS })
       })
     );
     expect(menu.allergenFocus).toBeNull();
@@ -406,7 +434,7 @@ test('reaction to Saumon blocks all poisson', () => {
     baseInput({
       reactionTierFoodIds: new Set([saumon.id]),
       avoidFoodIds: new Set([saumon.id]),
-      reactedAllergens: new Set(['poisson'])
+      allergens: historyOf({ blocked: ['poisson'] })
     })
   );
   expect(menu.meals.flatMap((mo) => mo.items).some((i) => i.food.category === 'poissons')).toBe(
@@ -422,7 +450,7 @@ test('allergenFocus.maintain re-offers only an introduced food', () => {
   const menu = buildMenu(
     baseInput({
       introducedFoodIds: intro,
-      introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
+      allergens: historyOf({ introduced: PRIORITY_INTRODUCTION_ALLERGENS })
     })
   );
   expect(menu.allergenFocus?.mode).toBe('maintain');
@@ -430,9 +458,7 @@ test('allergenFocus.maintain re-offers only an introduced food', () => {
 });
 
 test('sans_poisson never shows poisson as allergène du jour', () => {
-  const menu = buildMenu(
-    baseInput({ dietaryExclusions: ['sans_poisson'], introducedAllergens: new Set() })
-  );
+  const menu = buildMenu(baseInput({ dietaryExclusions: ['sans_poisson'] }));
   // Non-null pins down that a real substitute allergen was surfaced, not an
   // accidental null the `.food.allergenType` check below would pass vacuously.
   expect(menu.allergenFocus).not.toBeNull();
@@ -461,12 +487,11 @@ test('a due allergen with no safe catalog food falls through to maintain, slots 
   // pickDueAllergenFood returns null, and the flow must fall through to the maintain branch
   // instead of leaving the day with no allergen card.
   const peanut = CATALOG.find((f) => f.allergenType === 'arachide')!;
-  const introAll = new Set(PRIORITY_INTRODUCTION_ALLERGENS.filter((a) => a !== 'arachide'));
   const intro = introExceptLegumes();
   const menu = buildMenu(
     baseInput({
       introducedFoodIds: intro,
-      introducedAllergens: introAll,
+      allergens: historyOf({ introduced: allPriorityExcept('arachide') }),
       avoidFoodIds: new Set([peanut.id])
     })
   );
@@ -486,9 +511,9 @@ test('an introduced allergen with no matching introduced food yields no maintain
   // Every priority-allergen-tagged food is un-introduced, even though all 7 allergens are
   // flagged introduced at the tracking level → pickMaintainAllergenFood finds no INDIVIDUAL
   // introduced food for any candidate allergen, so allergenFocus stays null. But slotEligible
-  // only gates a food until its ALLERGEN's first exposure — once introducedAllergens already
-  // has it, other un-introduced foods of that same allergen are ordinary slot novelties, not
-  // held back for the card.
+  // only gates a food until its ALLERGEN's first exposure — once the history has it
+  // introduced, other un-introduced foods of that same allergen are ordinary slot novelties,
+  // not held back for the card.
   const priority: readonly string[] = PRIORITY_INTRODUCTION_ALLERGENS;
   const allergenFoodIds = new Set(
     CATALOG.filter((f) => f.allergenType && priority.includes(f.allergenType)).map((f) => f.id)
@@ -497,7 +522,7 @@ test('an introduced allergen with no matching introduced food yields no maintain
   const menu = buildMenu(
     baseInput({
       introducedFoodIds: intro,
-      introducedAllergens: new Set(PRIORITY_INTRODUCTION_ALLERGENS)
+      allergens: historyOf({ introduced: PRIORITY_INTRODUCTION_ALLERGENS })
     })
   );
   expect(menu.allergenFocus).toBeNull();

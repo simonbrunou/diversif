@@ -1,10 +1,13 @@
 import { db } from '#lib/server/db/index.js';
 import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { and, eq, lte, notInArray, sql } from 'drizzle-orm';
-import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '#lib/utils/allergens.js';
+import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
 import { ageInMonths } from '#lib/utils/age.js';
 import { requireChildContext } from '#lib/server/guards.js';
+import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import type { PageServerLoad } from './$types';
+
+const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const { childId } = requireChildContext(locals, params);
@@ -20,27 +23,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
       .where(eq(foodEntries.childId, childId))
   ).map((r) => r.id);
 
-  const allergenEntries = await db
-    .selectDistinct({
-      allergenType: foods.allergenType,
-      category: foods.category,
-      reaction: foodEntries.reaction
-    })
-    .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(eq(foodEntries.childId, childId));
-  const introducedAllergens = allergenEntries
-    .filter(countsAsAllergenExposure)
-    .map((row) => row.allergenType)
-    .filter((value): value is string => !!value);
-
-  const introducedAllergenSet = new Set(introducedAllergens);
-  const blockedAllergenSet = new Set(
-    allergenEntries
-      .filter((row) => row.reaction !== 'ras')
-      .map((row) => row.allergenType)
-      .filter((value): value is string => !!value)
-  );
+  const allergens = loadAllergenHistory(db, childId);
 
   const conditions = [lte(foods.suggestedAgeMonths, months), eq(foods.isCustom, false)];
   if (introducedIds.length > 0) {
@@ -53,23 +36,19 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     .where(and(...conditions))
     .orderBy(sql`${foods.suggestedAgeMonths} ASC, ${foods.name} ASC`);
 
-  // Common allergens not to delay are grouped first. Any allergen associated
-  // with symptoms is excluded entirely pending medical review.
-  const allergenSet = new Set<string>(
-    PRIORITY_INTRODUCTION_ALLERGENS.filter((id) => !introducedAllergenSet.has(id))
-  );
+  // Common allergens not to delay are grouped first, with the foods that would
+  // count as their introduction. Any allergen associated with symptoms is
+  // excluded entirely pending medical review.
+  const introducesPriorityAllergen = (food: (typeof candidates)[number]) =>
+    allergens.isExposureFood(food) &&
+    PRIORITY_SET.has(food.allergenType!) &&
+    !allergens.isIntroduced(food.allergenType!);
 
   const safeCandidates = candidates.filter(
-    (food) => !food.allergenType || !blockedAllergenSet.has(food.allergenType)
+    (food) => !food.allergenType || !allergens.isBlocked(food.allergenType)
   );
-  const priority = safeCandidates.filter(
-    (food) =>
-      countsAsAllergenExposure(food) && food.allergenType && allergenSet.has(food.allergenType)
-  );
-  const others = safeCandidates.filter(
-    (food) =>
-      !countsAsAllergenExposure(food) || !food.allergenType || !allergenSet.has(food.allergenType)
-  );
+  const priority = safeCandidates.filter(introducesPriorityAllergen);
+  const others = safeCandidates.filter((food) => !introducesPriorityAllergen(food));
 
   return {
     ageMonths: months,

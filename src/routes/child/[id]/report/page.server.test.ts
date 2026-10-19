@@ -7,7 +7,6 @@ import {
   seedMembership,
   seedUser
 } from '../../../../test/route';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
@@ -141,31 +140,6 @@ describe('child/[id]/report load', () => {
     expect(legumes?.foods[0].firstGivenAt).toBeLessThan(legumes!.foods[0].lastGivenAt);
   });
 
-  it('marks only introduced allergens as such and bubbles the worst reaction to the row', async () => {
-    const { u, c, guard } = await setup();
-    const peanut = await seedFood('Beurre cacahuète', 'allergenes', 'arachide');
-    await logEntry(c.id, peanut.id, u.id, new Date('2024-05-01T10:00:00Z'), 'ras');
-    await logEntry(c.id, peanut.id, u.id, new Date('2024-05-05T10:00:00Z'), 'inconfort');
-
-    const event = makeRouteEvent({
-      ...guard,
-      parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
-    });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
-
-    const arachide = out.allergens.find((a) => a.id === 'arachide');
-    expect(arachide?.status).toBe('introduced');
-    expect(arachide?.exposures).toBe(2);
-    expect(arachide?.worst).toBe('inconfort');
-
-    const oeuf = out.allergens.find((a) => a.id === 'oeuf');
-    expect(oeuf?.status).toBe('untested');
-    expect(oeuf?.exposures).toBe(0);
-    expect(oeuf?.worst).toBeNull();
-
-    expect(out.totals.allergensIntroduced).toBe(1);
-  });
-
   it('returns every non-RAS entry in the notable timeline (no silent cap)', async () => {
     const { u, c, guard } = await setup();
     const f = await seedFood('Pomme', 'fruits');
@@ -274,6 +248,8 @@ describe('child/[id]/report load', () => {
     expect(standaloneLine?.mealId).toBeNull();
   });
 
+  // The rows themselves (fat rule, ordering, worst) are the allergen history's
+  // bilanRows, tested at its interface; this pins the wiring and the total.
   it('aggregates allergens from a mixed entries fixture', async () => {
     const { u, c, guard } = await setup();
     const oeuf = await seedFood('Œuf', 'proteines', 'oeuf');
@@ -315,77 +291,8 @@ describe('child/[id]/report load', () => {
 
     const lait = data.allergens.find((a) => a.id === 'lait');
     expect(lait).toMatchObject({ status: 'untested', worst: null, exposures: 0 });
-  });
 
-  it('orders allergens priority-first, then non-priority, alphabetical within each group', async () => {
-    const { c, guard } = await setup();
-    const event = makeRouteEvent({
-      ...guard,
-      parent: async () => ({ child: c })
-    });
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
-    const priorityIds = new Set(PRIORITY_INTRODUCTION_ALLERGENS);
-    // Every priority allergen comes before any non-priority allergen.
-    const firstNonPriority = data.allergens.findIndex((a) => !priorityIds.has(a.id));
-    if (firstNonPriority === -1) {
-      // No non-priority allergens — vacuously ordered. Still check priority order.
-    } else {
-      for (let i = 0; i < firstNonPriority; i++) {
-        expect(priorityIds.has(data.allergens[i].id)).toBe(true);
-      }
-      for (let i = firstNonPriority; i < data.allergens.length; i++) {
-        expect(priorityIds.has(data.allergens[i].id)).toBe(false);
-      }
-    }
-    // Within the priority group, check alphabetical (fr) order.
-    const priorityRows = data.allergens.filter((a) => priorityIds.has(a.id));
-    for (let i = 1; i < priorityRows.length; i++) {
-      expect(
-        priorityRows[i - 1].label.localeCompare(priorityRows[i].label, 'fr')
-      ).toBeLessThanOrEqual(0);
-    }
-    // Within the non-priority group, check alphabetical (fr) order.
-    const nonPriorityRows = data.allergens.filter((a) => !priorityIds.has(a.id));
-    for (let i = 1; i < nonPriorityRows.length; i++) {
-      expect(
-        nonPriorityRows[i - 1].label.localeCompare(nonPriorityRows[i].label, 'fr')
-      ).toBeLessThanOrEqual(0);
-    }
-  });
-
-  it('counts allergenic fats only when they carry symptoms', async () => {
-    const { u, c, guard } = await setup();
-    const butter = await seedFood('Beurre', 'matieres_grasses', 'lait');
-    await logEntry(c.id, butter.id, u.id, new Date('2026-05-01T10:00:00Z'), 'ras');
-    const event = makeRouteEvent({ ...guard, parent: async () => ({ child: c }) });
-
-    const tolerated = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(tolerated.allergens.find((row) => row.id === 'lait')).toMatchObject({
-      status: 'untested',
-      exposures: 0
-    });
-
-    await logEntry(c.id, butter.id, u.id, new Date('2026-05-02T10:00:00Z'), 'reaction');
-    const symptomatic = await load(event as unknown as Parameters<typeof load>[0]);
-    expect(symptomatic.allergens.find((row) => row.id === 'lait')).toMatchObject({
-      status: 'introduced',
-      worst: 'reaction',
-      exposures: 1
-    });
-  });
-
-  it('flags isPriority on every allergen row', async () => {
-    const { c, guard } = await setup();
-    const event = makeRouteEvent({
-      ...guard,
-      parent: async () => ({ child: c })
-    });
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
-    for (const row of data.allergens) {
-      expect(row.isPriority).toBe(
-        (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(row.id)
-      );
-    }
+    expect(data.totals.allergensIntroduced).toBe(2);
   });
 
   it('returns the current diversification stage based on child age', async () => {

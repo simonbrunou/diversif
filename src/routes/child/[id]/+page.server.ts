@@ -2,13 +2,12 @@ import { fail } from '@sveltejs/kit';
 import { db } from '#lib/server/db/index.js';
 import { foodEntries, foods, users } from '#lib/server/db/schema.js';
 import { asc, desc, eq, sql } from 'drizzle-orm';
-import { ALLERGENS, type AllergenId } from '#lib/utils/allergens.js';
 import type { CategoryId } from '#lib/utils/categories.js';
 import type { ReactionId } from '#lib/utils/reactions.js';
 import { ageInMonths } from '#lib/utils/age.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { computeReminders, type Reminder } from '#lib/server/guidance/reminders.js';
-import { loadAllergenRows, summarizeAllergenRows } from '#lib/server/guidance/allergen-status.js';
+import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import * as m from '#lib/paraglide/messages.js';
 import {
   loadCoparentActivity,
@@ -28,9 +27,9 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 // silently breaking those rules for long-time families. 5000 rows
 // comfortably covers years of active logging for the app's target
 // 4-12mo+toddler window; raise it (or move to a materialized per-child
-// summary) if real usage ever gets close to it. The maintain-allergen rule
-// does NOT depend on this cap — it reads `allergenRows` (unbounded, loaded
-// separately below) via ReminderInput.allergenExposures instead.
+// summary) if real usage ever gets close to it. The allergen rules do NOT
+// depend on this cap — they read the allergen history (unbounded, loaded
+// separately below) via ReminderInput.allergens instead.
 const REMINDERS_SCAN_LIMIT = 5000;
 
 // Observation-window reminder: if there's a non-RAS entry within the last
@@ -130,16 +129,13 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
   );
 
-  // Fetched once (unbounded) and reused for the per-allergen status tile, the
-  // introduced-allergen set and the maintain-allergen exposures below, rather
-  // than calling loadAllergenStatus and re-running the same join+where per
-  // consumer.
-  const allergenRows = await loadAllergenRows(childId);
+  // Read once, unbounded; the tile and the allergen reminders both answer from it.
+  const allergens = loadAllergenHistory(db, childId, nowAtLoad.getTime());
 
   // Per-allergen status (same shape as the Carnet Allergènes segment) so
   // the "Allergènes prioritaires" tile shows real allergen names, not
   // synthetic placeholders.
-  const bentoAllergens = summarizeAllergenRows(allergenRows, nowAtLoad);
+  const bentoAllergens = allergens.statuses;
 
   const streak = await loadStreak(childId);
   const coparentActivity = await loadCoparentActivity(childId, user.id);
@@ -174,39 +170,19 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
     givenAt: toEpochMs(r.givenAt as Date | number | string)
   }));
 
-  // Full-history allergen exposures for the maintain-allergen rule — reuses
-  // `allergenRows` (loaded above, unbounded) instead of `entriesNormalized`
-  // (capped at REMINDERS_SCAN_LIMIT), so a stale-allergen nudge or a
-  // reaction-suppression is never lost once a child's log passes the cap.
-  // loadAllergenRows' SQL already applies the same exposure predicate as
-  // countsAsAllergenExposure (category !== 'matieres_grasses' OR
-  // reaction !== 'ras'), so no re-filtering here — and AllergenRow carries
-  // no category to re-filter on anyway.
-  const allergenExposures = allergenRows.map((r) => ({
-    allergenType: r.allergenType as string,
-    reaction: r.reaction as ReactionId,
-    givenAt: toEpochMs(r.givenAt as Date | number | string)
-  }));
-
   // child.createdAt comes from the layout load, avoiding a second SELECT.
   const childCreatedAt = child.createdAt;
 
   const ageMonths = ageInMonths(child.birthDate, nowAtLoad);
 
   const dismissals = await loadDismissals(user.id, childId);
-  const introducedAllergenIds = new Set(
-    allergenRows
-      .map((r) => r.allergenType)
-      .filter((id): id is AllergenId => ALLERGENS.some((a) => a.id === id))
-  );
 
   const baseReminders = computeReminders({
     childId,
     ageMonths,
     childCreatedAt,
     entries: entriesNormalized,
-    allergenExposures,
-    introducedAllergens: introducedAllergenIds,
+    allergens,
     dismissals,
     now: nowAtLoad.getTime()
   });
