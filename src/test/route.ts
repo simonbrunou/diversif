@@ -20,10 +20,19 @@ function makeCookies(initial: Record<string, string> = {}) {
   return { get, set, delete: del, _store: store };
 }
 
+/**
+ * Snapshot of a fake cookie jar's current values, to seed another
+ * makeRouteEvent: a second browser replaying a copied cookie. Sign-out tests
+ * need it because the signed-out jar has already dropped its own cookie, so
+ * only a copy proves the session was revoked server-side.
+ */
+export function copyCookies(jar: ReturnType<typeof makeCookies>): Record<string, string> {
+  return Object.fromEntries([...jar._store].map(([name, { value }]) => [name, value]));
+}
+
 export type RouteEventOptions = {
   user?: SafeUser | null;
   memberships?: Membership[];
-  sessionId?: string | null;
   /** Initial request cookies (e.g. the raw session token for logout flows). */
   cookies?: Record<string, string>;
   params?: Record<string, string>;
@@ -60,7 +69,6 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
     locals: {
       user: opts.user ?? null,
       memberships: opts.memberships ?? [],
-      sessionId: opts.sessionId ?? (opts.user ? 'sess-id' : null),
       locale: opts.locale ?? 'fr'
     },
     params: opts.params ?? {},

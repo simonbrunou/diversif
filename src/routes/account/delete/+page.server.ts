@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { localizedRedirect } from '#lib/server/redirect.js';
-import { SESSION_COOKIE } from '#lib/server/auth.js';
+import { endSession } from '#lib/server/session.js';
 import { deleteUserAccount } from '#lib/server/gdpr.js';
 import { requireUser } from '#lib/server/guards.js';
 import { requireFreshAuthWithKey } from '#lib/server/fresh-auth.js';
@@ -12,7 +12,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, locals, cookies }) => {
+  default: async (event) => {
+    const { request, locals } = event;
     const user = requireUser(locals);
     const raw = Object.fromEntries(await request.formData());
     const confirmEmail =
@@ -39,7 +40,7 @@ export const actions: Actions = {
     if (!fresh.ok) return fresh.failure;
 
     await deleteUserAccount(user.id);
-    cookies.delete(SESSION_COOKIE, { path: '/' });
+    await endSession(event);
     throw localizedRedirect(locals.locale, 303, '/account/deleted');
   }
 };

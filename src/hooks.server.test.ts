@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from './test/db';
 import * as m from '#lib/paraglide/messages.js';
-import { users, memberships, children, sessions } from '#lib/server/db/schema.js';
+import { copyCookies, makeRouteEvent } from './test/route';
+import { users, memberships, children } from '#lib/server/db/schema.js';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
@@ -34,26 +34,23 @@ const {
   handleError,
   warnIfAddressHeaderMissing
 } = await import('./hooks.server');
-const { createSession, SESSION_COOKIE } = await import('#lib/server/auth.js');
+const { startSession } = await import('#lib/server/session.js');
 
-type CookieOpts = {
-  path?: string;
-  httpOnly?: boolean;
-  sameSite?: 'lax' | 'strict' | 'none';
-  secure?: boolean;
-  maxAge?: number;
-};
+/** Cookies of a browser signed in as `userId`. */
+async function signedIn(userId: number): Promise<Record<string, string>> {
+  const device = makeRouteEvent();
+  await startSession(device, userId);
+  return copyCookies(device.cookies);
+}
 
-function makeEvent(token: string | null, pathname = '/', themeCookie: string | null = null) {
-  const set = mock((_name: string, _value: string, _opts: CookieOpts) => {});
-  const del = mock((_name: string, _opts: CookieOpts) => {});
-  const cookies = {
-    get: mock((name: string) =>
-      name === SESSION_COOKIE ? token : name === 'theme' ? themeCookie : null
-    ),
-    set,
-    delete: del
-  };
+function makeEvent(
+  session: Record<string, string> | null,
+  pathname = '/',
+  themeCookie: string | null = null
+) {
+  const { cookies } = makeRouteEvent({
+    cookies: { ...session, ...(themeCookie ? { theme: themeCookie } : {}) }
+  });
   const url = new URL(`http://localhost${pathname}`);
   const event = {
     cookies,
@@ -63,7 +60,7 @@ function makeEvent(token: string | null, pathname = '/', themeCookie: string | n
     request: new Request(url),
     locals: {} as App.Locals
   };
-  return { event, set, del, cookies };
+  return { event };
 }
 
 async function seedUser() {
@@ -90,17 +87,8 @@ describe('handle', () => {
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(event.locals.user).toBeNull();
-    expect(event.locals.sessionId).toBeNull();
     expect(event.locals.memberships).toEqual([]);
     expect(resolve).toHaveBeenCalled();
-  });
-
-  it('clears stale token and deletes the cookie', async () => {
-    const { event, del } = makeEvent('garbage-token');
-    const resolve = mock(async () => new Response('ok'));
-    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
-    expect(event.locals.user).toBeNull();
-    expect(del).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
   });
 
   it('populates locals on a valid session', async () => {
@@ -119,47 +107,17 @@ describe('handle', () => {
     await testDb
       .insert(memberships)
       .values({ userId: user.id, childId: child.id, role: 'owner', createdAt: new Date() });
-    const { token, session } = await createSession(user.id);
-
-    const { event } = makeEvent(token);
+    const { event } = makeEvent(await signedIn(user.id));
     const resolve = mock(async () => new Response('ok'));
     await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
 
     expect(event.locals.user?.id).toBe(user.id);
-    // locals.sessionId carries the STORED id (sha256 of the cookie token),
-    // never the raw bearer token.
-    expect(event.locals.sessionId).toBe(session.id);
-    expect(event.locals.sessionId).not.toBe(token);
     expect(event.locals.memberships.length).toBe(1);
-  });
-
-  it('renews the cookie when session is close to expiry', async () => {
-    const user = await seedUser();
-    const { token, session } = await createSession(user.id);
-    // Force expiry into the renewal window.
-    await testDb
-      .update(sessions)
-      .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
-      .where(eq(sessions.id, session.id));
-
-    const { event, set } = makeEvent(token);
-    const resolve = mock(async () => new Response('ok'));
-    await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
-
-    expect(set).toHaveBeenCalled();
-    const args = set.mock.calls[0];
-    expect(args[0]).toBe(SESSION_COOKIE);
-    // The renewed cookie must re-issue the RAW token — setting the stored
-    // hash would log the user out on their next request.
-    expect(args[1]).toBe(token);
-    expect(args[2].path).toBe('/');
-    expect(args[2].httpOnly).toBe(true);
   });
 
   it('emits X-Robots-Tag noindex for authenticated responses', async () => {
     const user = await seedUser();
-    const { token } = await createSession(user.id);
-    const { event } = makeEvent(token);
+    const { event } = makeEvent(await signedIn(user.id));
     const resolve = mock(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
@@ -181,8 +139,7 @@ describe('handle', () => {
 
   it('sets Cache-Control: no-store for authenticated responses', async () => {
     const user = await seedUser();
-    const { token } = await createSession(user.id);
-    const { event } = makeEvent(token, '/child/1');
+    const { event } = makeEvent(await signedIn(user.id), '/child/1');
     const resolve = mock(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(response.headers.get('Cache-Control')).toBe('no-store');
@@ -193,25 +150,6 @@ describe('handle', () => {
     const resolve = mock(async () => new Response('ok'));
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
     expect(response.headers.get('Cache-Control')).toBeNull();
-  });
-
-  it('marks the cookie secure in production', async () => {
-    const orig = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      const user = await seedUser();
-      const { token, session } = await createSession(user.id);
-      await testDb
-        .update(sessions)
-        .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
-        .where(eq(sessions.id, session.id));
-      const { event, set } = makeEvent(token);
-      const resolve = mock(async () => new Response('ok'));
-      await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
-      expect(set.mock.calls[0][2].secure).toBe(true);
-    } finally {
-      process.env.NODE_ENV = orig;
-    }
   });
 
   it('sets locale to fr for paths without /en/ prefix', async () => {

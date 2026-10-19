@@ -4,7 +4,7 @@ import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../../test/r
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { hashPassword, SESSION_COOKIE } from '#lib/server/auth.js';
+import { hashPassword } from '#lib/server/auth.js';
 import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -137,7 +137,7 @@ describe('account/delete deleteAccount', () => {
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
   });
 
-  it('deletes the user, clears the cookie and redirects to /account/deleted', async () => {
+  it('deletes the user, signs the device out and redirects to /account/deleted', async () => {
     const u = await seed();
     const event = makeRouteEvent({
       user: safeUser(u),
@@ -154,7 +154,8 @@ describe('account/delete deleteAccount', () => {
     expect(
       (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]
     ).toBeUndefined();
-    expect(event.cookies.delete).toHaveBeenCalledWith(SESSION_COOKIE, { path: '/' });
+    // Same shared-device hygiene as POST /logout: the 303 clears site data.
+    expect(event.setHeaders).toHaveBeenCalledWith({ 'Clear-Site-Data': '"cache", "storage"' });
   });
 
   it('rate-limits brute-force attempts on the currentPassword field', async () => {

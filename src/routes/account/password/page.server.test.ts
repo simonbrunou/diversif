@@ -11,7 +11,8 @@ mock.module('#lib/server/audit.js', () => ({
   audit: (...args: Parameters<typeof actualAudit.audit>) => auditSpy(...args)
 }));
 
-import { hashPassword, SESSION_COOKIE, validateSession, createSession } from '#lib/server/auth.js';
+import { hashPassword } from '#lib/server/auth.js';
+import { resumeSession, startSession } from '#lib/server/session.js';
 import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
 import { users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
@@ -115,8 +116,8 @@ describe('account/password changePassword', () => {
 
   it('drops every existing session and issues a new one for this tab', async () => {
     const u = await seed();
-    const a = await createSession(u.id);
-    const b = await createSession(u.id);
+    const otherDevice = makeRouteEvent();
+    await startSession(otherDevice, u.id);
     const event = makeRouteEvent({
       user: safeUser(u),
       formData: {
@@ -126,16 +127,8 @@ describe('account/password changePassword', () => {
     });
     await actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0]);
 
-    expect(await validateSession(a.token)).toBeNull();
-    expect(await validateSession(b.token)).toBeNull();
-
-    const setCalls = (event.cookies.set as ReturnType<typeof mock>).mock.calls;
-    expect(setCalls.length).toBeGreaterThanOrEqual(1);
-    const [name, value, opts] = setCalls[setCalls.length - 1];
-    expect(name).toBe(SESSION_COOKIE);
-    expect(typeof value).toBe('string');
-    expect((opts as { httpOnly?: boolean }).httpOnly).toBe(true);
-    expect(await validateSession(value as string)).not.toBeNull();
+    expect(await resumeSession(otherDevice)).toBeNull();
+    expect((await resumeSession(event))?.id).toBe(u.id);
   });
 
   it('rate-limits brute-force attempts on the currentPassword field', async () => {

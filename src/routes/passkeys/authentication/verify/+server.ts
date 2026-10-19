@@ -9,7 +9,7 @@ import {
   finishAuthentication,
   parsePasskeyResponseBody
 } from '#lib/server/passkeys.js';
-import { createSession, setSessionCookie } from '#lib/server/auth.js';
+import { startSession } from '#lib/server/session.js';
 import { db } from '#lib/server/db/index.js';
 import { users } from '#lib/server/db/schema.js';
 import { audit } from '#lib/server/audit.js';
@@ -68,8 +68,7 @@ export const POST: RequestHandler = async (event) => {
 
   await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, result.userId));
 
-  const { token } = await createSession(result.userId);
-  setSessionCookie(cookies, token);
+  await startSession(event, result.userId);
   audit({ type: 'auth.login_succeeded', userId: result.userId, method: 'passkey' });
 
   return Response.json({ ok: true });

@@ -20,7 +20,6 @@ const fakeUser: SafeUser = {
 function makeLocals(opts: { user?: SafeUser | null; memberships?: Membership[] }): App.Locals {
   return {
     user: opts.user ?? null,
-    sessionId: opts.user ? 'sess' : null,
     memberships: opts.memberships ?? []
   } as App.Locals;
 }

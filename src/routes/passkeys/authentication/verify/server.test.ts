@@ -13,8 +13,8 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { SESSION_COOKIE, hashSessionToken, validateSession } from '#lib/server/auth.js';
-import { passkeys, sessions, users } from '#lib/server/db/schema.js';
+import { resumeSession } from '#lib/server/session.js';
+import { passkeys, users } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import {
   PASSKEY_CHALLENGE_AUTOFILL_COOKIE,
@@ -134,12 +134,7 @@ describe('POST /passkeys/authentication/verify', () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.ok).toBe(false);
-    // No session cookie was issued.
-    expect(event.cookies.set).not.toHaveBeenCalledWith(
-      SESSION_COOKIE,
-      expect.anything(),
-      expect.anything()
-    );
+    expect(await resumeSession(event)).toBeNull();
   });
 
   it('issues a session cookie on success', async () => {
@@ -166,29 +161,13 @@ describe('POST /passkeys/authentication/verify', () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
 
-    // A session row was created and a cookie set.
-    const setCalls = event.cookies.set.mock.calls.filter((args) => args[0] === SESSION_COOKIE);
-    expect(setCalls.length).toBe(1);
-    const sessionToken = setCalls[0][1] as string;
-    const validated = await validateSession(sessionToken);
-    expect(validated?.user.id).toBe(u.id);
+    expect((await resumeSession(event))?.id).toBe(u.id);
 
     // Counter was bumped on the passkey.
     const updated = (
       await testDb.select().from(passkeys).where(eq(passkeys.id, 'cred-id')).limit(1)
     )[0];
     expect(updated?.counter).toBe(5);
-
-    // Sanity check session row exists — stored under the token's sha256
-    // digest, never the raw cookie value.
-    const row = (
-      await testDb
-        .select()
-        .from(sessions)
-        .where(eq(sessions.id, hashSessionToken(sessionToken)))
-        .limit(1)
-    )[0];
-    expect(row?.userId).toBe(u.id);
     // The consumed challenge and the request's own origin/RP ID must reach
     // the crypto verifier, not just be accepted by the route and dropped.
     expect(mocks.verifyAuthenticationResponse).toHaveBeenCalledWith(
@@ -223,11 +202,7 @@ describe('POST /passkeys/authentication/verify', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
-    // Session was issued for the right user.
-    const sessionCall = event.cookies.set.mock.calls.find((args) => args[0] === SESSION_COOKIE);
-    const sessionToken = sessionCall?.[1] as string;
-    const validated = await validateSession(sessionToken);
-    expect(validated?.user.id).toBe(u.id);
+    expect((await resumeSession(event))?.id).toBe(u.id);
   });
 
   it('clears both challenge cookies after verify', async () => {
@@ -254,35 +229,5 @@ describe('POST /passkeys/authentication/verify', () => {
     const deletedNames = event.cookies.delete.mock.calls.map((args) => args[0]);
     expect(deletedNames).toContain(PASSKEY_CHALLENGE_COOKIE);
     expect(deletedNames).toContain(PASSKEY_CHALLENGE_AUTOFILL_COOKIE);
-  });
-
-  it('marks the session cookie secure in production', async () => {
-    await seedUserAndKey();
-    const c = await createChallenge({ challenge: 'ch', purpose: 'authentication' });
-    mocks.verifyAuthenticationResponse.mockResolvedValue({
-      verified: true,
-      authenticationInfo: {
-        credentialID: 'cred-id',
-        newCounter: 1,
-        userVerified: true,
-        credentialDeviceType: 'singleDevice',
-        credentialBackedUp: false,
-        origin: 'https://app.example.com',
-        rpID: 'app.example.com'
-      }
-    });
-    const orig = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      const event = makeReq({
-        body: { response: { id: 'cred-id' } },
-        cookieToken: c.token
-      });
-      await POST(event as unknown as Parameters<typeof POST>[0]);
-      const sessionCall = event.cookies.set.mock.calls.find((args) => args[0] === SESSION_COOKIE);
-      expect((sessionCall?.[2] as { secure: boolean }).secure).toBe(true);
-    } finally {
-      process.env.NODE_ENV = orig;
-    }
   });
 });

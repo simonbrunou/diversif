@@ -13,7 +13,7 @@ const mocks = {
 mock.module('@simplewebauthn/server', () => mocks);
 
 import { POST } from './+server';
-import { SESSION_COOKIE, hashPassword } from '#lib/server/auth.js';
+import { hashPassword } from '#lib/server/auth.js';
 import { users, webauthnChallenges } from '#lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { PASSKEY_CHALLENGE_COOKIE, RP_ID } from '#lib/server/passkeys.js';
@@ -184,6 +184,3 @@ describe('POST /passkeys/registration/options', () => {
     expect(await testDb.select().from(webauthnChallenges)).toHaveLength(0);
   });
 });
-
-// Ensure the unused exports are kept tree-shake-friendly across tests.
-void SESSION_COOKIE;

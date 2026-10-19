@@ -4,7 +4,8 @@ import { captureFlow, makeRouteEvent, safeUser } from '../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
-import { hashPassword, SESSION_COOKIE } from '#lib/server/auth.js';
+import { hashPassword } from '#lib/server/auth.js';
+import { resumeSession } from '#lib/server/session.js';
 import { users } from '#lib/server/db/schema.js';
 import { _clearAllRateLimits, peekRateLimit, resetRateLimit } from '#lib/server/rate-limit.js';
 import { load, actions } from './+page.server';
@@ -116,8 +117,8 @@ describe('login default action', () => {
     expect(result.data.errorKey).toBe('errorsAuthInvalidCredentials');
   });
 
-  it('issues a session cookie and redirects on success', async () => {
-    await seedTestUser();
+  it('starts a session and redirects on success', async () => {
+    const user = await seedTestUser();
     const event = makeRouteEvent({
       formData: { email: 'parent@example.com', password: 'correct-password' }
     });
@@ -126,9 +127,7 @@ describe('login default action', () => {
     );
     expect(result.kind).toBe('redirect');
     if (result.kind === 'redirect') expect(result.location).toBe('/');
-    expect(event.cookies.set).toHaveBeenCalled();
-    const setArgs = event.cookies.set.mock.calls[0];
-    expect(setArgs[0]).toBe(SESSION_COOKIE);
+    expect((await resumeSession(event))?.id).toBe(user.id);
   });
 
   it('preserves the /en locale on successful redirect', async () => {
