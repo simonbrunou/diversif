@@ -61,11 +61,14 @@ export function milestoneBaseline(tx: Tx, childId: number): MilestoneBaseline {
   };
 }
 
-// The milestones count tolerated allergens (the history's isTolerated: a
-// reliable exposure logged without symptoms), matching the "proposé sans
-// symptôme" copy.
-const allTolerated = (allergens: AllergenHistory) =>
-  ALLERGENS.every((a) => allergens.isTolerated(a.id));
+// The milestones celebrate an allergen once a reliable exposure was logged
+// without symptoms (the history's isTolerated), matching the "proposé sans
+// symptôme" copy, and never while it is blocked: both toasts go on to ask the
+// parent to keep offering it (#373).
+const isCelebrated = (allergens: AllergenHistory, id: string) =>
+  allergens.isTolerated(id) && !allergens.isBlocked(id);
+const allCelebrated = (allergens: AllergenHistory) =>
+  ALLERGENS.every((a) => isCelebrated(allergens, a.id));
 
 // This repas's milestones, by diffing the allergen history before and after
 // the insert, which differ only by this repas's rows (every aliment, not just
@@ -79,17 +82,16 @@ export function measureMilestones(
   const after = loadAllergenHistory(tx, childId); // post-insert
   // Celebrate only allergens for which the app actually recommends prompt
   // introduction; the wider 12-item EU tracking list includes soja and
-  // allergens with no preventive introduction calendar. Never one that already
-  // caused symptoms: the toast says to keep offering it (#373).
+  // allergens with no preventive introduction calendar.
   const firstAllergen =
     PRIORITY_INTRODUCTION_ALLERGENS.find(
-      (id) => after.isTolerated(id) && !before.isTolerated(id) && !after.isBlocked(id)
+      (id) => isCelebrated(after, id) && !before.isTolerated(id)
     ) ?? null;
 
   return {
     firstFood: baseline.priorEntryCount === 0,
     firstAllergen,
-    allAllergens: allTolerated(after) && !allTolerated(before),
+    allAllergens: allCelebrated(after) && !allCelebrated(before),
     categories: {
       before: baseline.priorCategoriesCovered,
       after: countCategoriesCovered(tx, childId)
