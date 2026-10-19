@@ -1,52 +1,18 @@
 import * as Sentry from '@sentry/sveltekit';
-import {
-  SENTRY_TUNNEL_PATH,
-  DATA_COLLECTION,
-  filterIncomingBreadcrumb,
-  parseSampleRate,
-  scrubEvent,
-  scrubLog,
-  scrubSpan
-} from '#lib/sentry.js';
+import { serverSentryOptions } from '#lib/sentry-policy.js';
 
 // SvelteKit loads this file before any other server module (it picks up
 // src/instrumentation.server.ts automatically), so the SDK is configured
 // before #lib/server/db runs its migrations and before the OpenTelemetry
 // tracer that SvelteKit's `tracing.server` option (vite.config.ts) reports to
-// is first used.
-Sentry.init({
-  dsn: process.env.SENTRY_DSN || '',
-  environment: process.env.SENTRY_ENVIRONMENT || 'production',
-  // Inlined at build time by Vite's `define` — see vite.config.ts. The
-  // resolver there walks SENTRY_RELEASE → SOURCE_COMMIT → GITHUB_SHA →
-  // GIT_COMMIT_SHA → `git rev-parse HEAD`, then emits either a string
-  // literal or the bare `undefined` token.
-  release: __SENTRY_RELEASE__,
-  tracesSampleRate: parseSampleRate(process.env.SENTRY_TRACES_SAMPLE_RATE, 0.1),
-  // Structured operational logs (boot, migrations, cleanup, shutdown) sent
-  // explicitly via Sentry.logger (v11 captures logs whenever that API is
-  // called, there is no enableLogs option). Console output is deliberately
-  // NOT captured: handleError's `[diversif:error]` line carries the user id
-  // and raw path.
-  //
-  // SDK v11 replaced sendDefaultPii with dataCollection (IP address, cookies,
-  // headers, bodies); the restrictive baseline keeps the v10 default.
-  dataCollection: DATA_COLLECTION,
-  // v11 streams spans by default, which bypasses beforeSendTransaction and
-  // ignoreTransactions below. The static lifecycle keeps one scrubbed,
-  // filterable transaction per request, as in v10; beforeSendSpan must then
-  // be wrapped.
-  traceLifecycle: 'static',
-  // Every browser envelope relayed by the tunnel would otherwise produce its
-  // own server transaction; `sveltekit.handle.root` is the root span of a
-  // request matching no route (bot scans, 404s), which sentryHandle never
-  // renames.
-  ignoreTransactions: [`POST ${SENTRY_TUNNEL_PATH}`, 'sveltekit.handle.root'],
-  beforeSend: scrubEvent,
-  beforeSendTransaction: scrubEvent,
-  beforeSendSpan: Sentry.withStaticSpan(scrubSpan),
-  beforeSendLog: scrubLog,
-  beforeBreadcrumb: filterIncomingBreadcrumb
-});
+// is first used. What is reported, dropped and scrubbed is
+// #lib/sentry-policy.ts's call.
+Sentry.init(
+  serverSentryOptions({
+    SENTRY_DSN: process.env.SENTRY_DSN,
+    SENTRY_ENVIRONMENT: process.env.SENTRY_ENVIRONMENT,
+    SENTRY_TRACES_SAMPLE_RATE: process.env.SENTRY_TRACES_SAMPLE_RATE
+  })
+);
 
 Sentry.logger.info('Server starting', { runtime: `bun ${Bun.version}` });

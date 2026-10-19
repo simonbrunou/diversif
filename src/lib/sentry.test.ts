@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test';
 import {
-  DATA_COLLECTION,
   scrubEvent,
   scrubBrowserEvent,
   scrubErrorMessage,
@@ -10,26 +9,8 @@ import {
   scrubLog,
   scrubRecordingEvent,
   scrubRecordingFrames,
-  parseSampleRate,
   clientRouteTag
 } from './sentry';
-
-describe('DATA_COLLECTION', () => {
-  // SDK v11's defaults collect user info, cookies and HTTP/DB payloads; it
-  // also silently ignores the removed sendDefaultPii. Every category the
-  // migration guide lists as on by default must be switched off here.
-  it('opts out of every category v11 collects by default', () => {
-    expect(DATA_COLLECTION).toMatchObject({
-      userInfo: false,
-      cookies: false,
-      httpBodies: [],
-      genAI: { inputs: false, outputs: false },
-      databaseQueryData: false,
-      queues: false,
-      graphQL: { document: false, variables: false }
-    });
-  });
-});
 
 describe('scrubPathname', () => {
   it('returns the route pattern verbatim when given one', () => {
@@ -489,20 +470,6 @@ describe('scrubLog', () => {
 
   it('accepts logs without attributes', () => {
     expect(scrubLog({})).toEqual({});
-  });
-});
-
-describe('parseSampleRate', () => {
-  it('accepts rates within [0, 1] inclusive', () => {
-    expect(parseSampleRate('0', 0.5)).toBe(0);
-    expect(parseSampleRate('0.25', 0.5)).toBe(0.25);
-    expect(parseSampleRate('1', 0.5)).toBe(1);
-  });
-
-  it('falls back on unset, blank, non-numeric, or out-of-range values', () => {
-    for (const raw of [undefined, '', '  ', 'abc', '1.5', '-0.1', 'Infinity']) {
-      expect(parseSampleRate(raw, 0.1)).toBe(0.1);
-    }
   });
 });
 

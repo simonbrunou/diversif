@@ -11,8 +11,9 @@ import { defineConfig, type Plugin } from 'vite';
 
 /**
  * Resolve the Sentry release name from the most reliable source available
- * at build time. Mirrors the runtime fallback in sentry-init.server.ts so
- * both surfaces tag events with the same SHA.
+ * at build time. Inlined as __SENTRY_RELEASE__ (see `define` below) so the
+ * server and browser options in src/lib/sentry-policy.ts tag events with the
+ * same SHA.
  *
  * Order:
  *  1. SENTRY_RELEASE — explicit override
@@ -130,8 +131,8 @@ function sentryUploadAfterAdapter(): Plugin {
 export default defineConfig({
   define: {
     // Inlined at build time into every bundle. Replaces the runtime
-    // env-var read + docker-entrypoint.sh fallback chain — see
-    // src/lib/sentry-init.server.ts and src/hooks.client.ts.
+    // env-var read + docker-entrypoint.sh fallback chain; read by both
+    // option builders in src/lib/sentry-policy.ts.
     //
     // When no SHA could be resolved, emit the literal token `undefined`
     // (not `""`) so the call sites can read the constant directly

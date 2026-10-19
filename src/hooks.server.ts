@@ -1,80 +1,17 @@
-import { isHttpError, isRedirect, type RequestEvent } from '@sveltejs/kit';
-import { sequence, type Handle, type HandleServerError } from '@sveltejs/kit/hooks';
-import { randomBytes } from 'node:crypto';
+import { sequence, type Handle } from '@sveltejs/kit/hooks';
 import { listMembershipsForUser } from '#lib/server/auth.js';
 import { resumeSession } from '#lib/server/session.js';
 import * as Sentry from '@sentry/sveltekit';
-import { scrubPathname } from '#lib/sentry.js';
+import { handleServerError, tagHandleChainError } from '#lib/sentry-policy.js';
 import type { Locale } from '#lib/paraglide/runtime.js';
 import { paraglideMiddleware } from '#lib/paraglide/server.js';
 
 /**
- * Tag every server-side error with a short id, log a structured stderr line,
- * and pass only the id back to the client. Operators read the prefixed log
- * line (Coolify streams stderr) and correlate to user reports via the id
- * shown on /+error.svelte.
- *
- * Errors thrown with `error(...)` (kind 'app') are expected outcomes whose
- * body the route chose; SvelteKit 3 now routes them through this hook too, so
- * return nothing and let the error page render that body unchanged.
- *
- * 4xx framework errors are routing dead-ends — SvelteKit's "no matching
- * route" error (typos, stale bookmarks, bots scanning for /wp-admin), client
- * typos, deliberate aborts — and they would otherwise flood Sentry + stderr
- * with uninteresting noise. The errorId is still generated and returned so
- * /+error.svelte can surface it for support tickets, but no event is
- * captured. Only 5xx (unhandled exceptions in route code, infra failures)
- * are worth waking someone up.
+ * Every server-side error gets a short id, shown on /+error.svelte; a reported
+ * one also gets a structured `[diversif:error]` stderr line (Coolify streams
+ * stderr) and a Sentry event. See #lib/sentry-policy.ts.
  */
-export const handleError: HandleServerError = ({ kind, error, event }) => {
-  if (kind === 'app') return;
-
-  const errorId =
-    (typeof error === 'object' && error !== null && handleChainErrorIds.get(error)) || newErrorId();
-  // Unknown errors are thrown exceptions, rendered as 500 'Internal Error';
-  // framework and validation errors carry SvelteKit's own status and message.
-  const { status, message } =
-    kind === 'unknown' ? { status: 500, message: 'Internal Error' } : error;
-
-  if (status < 500) {
-    return { message: 'Internal Error', errorId };
-  }
-  const err = error as Error;
-  // The Sentry event already drops user.id and scrubs the URL : this stderr
-  // line is the operator-side trail. Apply the same path scrub so child/food
-  // IDs and other dynamic segments don't end up in the deployment platform's
-  // log aggregator. The event.route?.id pattern (e.g. /child/[id]/log) is a
-  // strict superset of the path's debugging value, so prefer it when set.
-  console.error(
-    '[diversif:error]',
-    JSON.stringify({
-      id: errorId,
-      method: event.request.method,
-      path: scrubPathname(event.url.pathname, event.route?.id ?? null),
-      userId: event.locals.user?.id ?? null,
-      status,
-      message,
-      name: err?.name,
-      msg: err?.message,
-      stack: err?.stack
-    })
-  );
-  Sentry.captureException(err, {
-    // Same mechanism Sentry's own handleErrorWithSentry reports: SvelteKit
-    // caught it, but no app code handled it, so the issue counts as unhandled
-    // (and a crashed session in release health).
-    mechanism: { type: 'auto.function.sveltekit.handle_error', handled: false },
-    captureContext: {
-      tags: {
-        errorId,
-        status,
-        method: event.request.method,
-        route: event.route?.id ?? null
-      }
-    }
-  });
-  return { message: 'Internal Error', errorId };
-};
+export const handleError = handleServerError;
 
 /**
  * Boot-time misconfiguration check. PROTOCOL_HEADER set without
@@ -209,32 +146,6 @@ export const localizedHandle: Handle = async ({ event, resolve }) => {
     throw err;
   }
 };
-
-function newErrorId(): string {
-  return randomBytes(4).toString('hex');
-}
-
-const handleChainErrorIds = new WeakMap<object, string>();
-
-/**
- * An unexpected error escaping the app's handle (e.g. session validation on a
- * locked database) is captured by sentryHandle on its way out, before
- * SvelteKit calls handleError — whose own capture of the same error Sentry
- * then drops as a duplicate. So mint the errorId here: tag the request's
- * isolation scope, which sentryHandle's capture reads, and hand the same id to
- * handleError for the error page. Redirects and 4xx are control flow.
- */
-function tagHandleChainError(err: unknown, event: RequestEvent): void {
-  if (typeof err !== 'object' || err === null || isRedirect(err) || isHttpError(err)) return;
-  const errorId = newErrorId();
-  handleChainErrorIds.set(err, errorId);
-  Sentry.getIsolationScope().setTags({
-    errorId,
-    status: 500,
-    method: event.request.method,
-    route: event.route?.id ?? null
-  });
-}
 
 /**
  * sentryHandle runs first: it gives every request its own isolation scope,

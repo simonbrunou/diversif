@@ -5,8 +5,8 @@ import type { Membership, SafeUser } from '#lib/types.js';
 declare global {
   /**
    * Sentry release SHA inlined at build time by Vite's `define` (see
-   * vite.config.ts). Read directly in sentry-init.server.ts and
-   * hooks.client.ts instead of the old `process.env.SENTRY_RELEASE` /
+   * vite.config.ts). Read directly by both option builders in
+   * #lib/sentry-policy.ts instead of the old `process.env.SENTRY_RELEASE` /
    * `$env/dynamic/public PUBLIC_SENTRY_RELEASE` round-trip — that pair
    * required docker-entrypoint.sh to resolve and mirror the SHA at
    * container start, which Railpack-style builders don't run.
