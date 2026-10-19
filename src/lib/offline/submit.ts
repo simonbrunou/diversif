@@ -5,8 +5,9 @@ import { fetchTransport, fieldsOf, postAction, UNREACHABLE, type Transport } fro
 
 // The durable submit: how the log and edit forms send a repas. It turns the
 // datetime-local meal date into an instant, sends the form to its action and,
-// for the log form, falls back to the offline queue (queue.ts) when the
-// server can't be reached. RepasForm.svelte applies the outcome to the page.
+// for the log form, falls back to the offline queue (queue.ts) when no answer
+// came from the action: the server can't be reached, or a hook failed first.
+// RepasForm.svelte applies the outcome to the page.
 
 export type Submitted =
   /** The server answered; apply `result` to the page. */

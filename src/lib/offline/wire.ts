@@ -48,10 +48,9 @@ export type Answer =
    */
   | { kind: 'hook'; result: ActionResult }
   /**
-   * The app didn't answer: the request threw (offline, DNS, timeout), or
-   * something in between answered with a page that isn't the app's JSON (a
-   * captive portal, the proxy's error page while a deploy swaps the
-   * container).
+   * No answer to read: the request threw (offline, DNS, timeout), or the
+   * answer isn't SvelteKit's JSON (a captive portal, the proxy's error page
+   * while a deploy swaps the container, any HTML page).
    */
   | { kind: 'unreachable' };
 
@@ -90,8 +89,8 @@ async function readAnswer(response: Response): Promise<Answer> {
     // As $app/forms' deserialize does: `data` is devalue-encoded. devalue's
     // own parse matches it while src/hooks.ts declares no transport hooks.
     if (result.data) result.data = parse(result.data);
-    // As use:enhance does: an error's status rides on the response only,
-    // never in the body hooks.server.ts's handleError shapes.
+    // As use:enhance does: the status of an error or failure is the
+    // response's.
     if (result.type === 'error' || result.type === 'failure') result.status = response.status;
     return { kind: 'action', result };
   } catch {
@@ -100,9 +99,17 @@ async function readAnswer(response: Response): Promise<Answer> {
 }
 
 // SvelteKit answers a request whose hook threw with `{ status, message,
-// errorId? }` and no `type`; use:enhance applied it as an error.
-function hookError(response: Response, body: { message?: unknown } | null): Answer {
-  if (response.ok || typeof body?.message !== 'string') return UNREACHABLE;
-  const error = { ...body, status: response.status, message: body.message };
+// errorId? }` and no `type`; use:enhance applied it as an error. Like
+// use:enhance, a followed redirect is never that answer.
+function hookError(
+  response: Response,
+  body: { message?: unknown; errorId?: unknown } | null
+): Answer {
+  if (response.ok || response.redirected || typeof body?.message !== 'string') return UNREACHABLE;
+  const error = {
+    status: response.status,
+    message: body.message,
+    ...(typeof body.errorId === 'string' ? { errorId: body.errorId } : {})
+  };
   return { kind: 'hook', result: { type: 'error', status: response.status, error } };
 }

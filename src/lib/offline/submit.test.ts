@@ -253,6 +253,32 @@ describe('submitRepas', () => {
       expect(await count()).toBe(0);
     });
 
+    it('reads a hook error only from the app itself: no followed redirect, no stray errorId', async () => {
+      const { carotte, action } = await setup();
+      const submit = (answer: Response) =>
+        submitRepas(
+          form({ foodId: carotte.id, givenAt: GIVEN_AT, reaction: 'ras' }),
+          { action },
+          async () => answer
+        );
+      const appError = (body: unknown) =>
+        new Response(JSON.stringify(body), {
+          status: 500,
+          headers: { 'content-type': 'application/json' }
+        });
+
+      const redirected = appError({ status: 500, message: 'Internal Error' });
+      Object.defineProperty(redirected, 'redirected', { value: true });
+      expect(await submit(redirected)).toEqual({ kind: 'failed' });
+
+      expect(
+        await submit(appError({ status: 500, message: 'Internal Error', errorId: 42 }))
+      ).toEqual({
+        kind: 'sent',
+        result: { type: 'error', status: 500, error: { status: 500, message: 'Internal Error' } }
+      });
+    });
+
     it('fails, queueing nothing, when the server cannot be reached', async () => {
       const { carotte, action } = await setup();
       const outcome = await submitRepas(
