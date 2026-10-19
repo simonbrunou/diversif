@@ -160,7 +160,7 @@ describe('child/[id]/menu load', () => {
     // The SOLE introduced feculent, with NO allergenType, logged at 'inconfort'.
     // It is dropped from safeForRole('feculent') ONLY by the loader's
     // `avoidFoodIds.add(e.foodId)` line: it has no allergenType (so the
-    // reactedAllergens gate can't touch it) and inconfort < reaction (so the
+    // blocked-allergen gate can't touch it) and inconfort < reaction (so the
     // reactionTierFoodIds gate can't touch it either). This makes the test a
     // targeted, non-flaky guard for that one line, independent of parisDay's
     // real dayIndex:

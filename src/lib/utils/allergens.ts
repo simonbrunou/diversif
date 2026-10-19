@@ -1,5 +1,5 @@
 // NOTE: this module is imported by server code (guidance/reminders,
-// allergen-status, the report load) and by tests; keep it free of svelte /
+// allergen-history, the report load) and by tests; keep it free of svelte /
 // @lucide/svelte imports. The paraglide messages import is plain TS and safe.
 import * as m from '#lib/paraglide/messages.js';
 
@@ -59,25 +59,11 @@ export const PRIORITY_INTRODUCTION_ALLERGENS = [
 ] as const satisfies readonly AllergenId[];
 
 // Days after which a previously-tolerated allergen gets a maintenance nudge.
-// Current ASCIA consensus recommends at least weekly exposure. Single source of truth: the dashboard
-// `fading` badge in /child/[id]/foods, the `maintain-allergen` reminder
-// in lib/server/guidance/reminders, and the `loadAllergenStatus` function
-// in lib/server/guidance/allergen-status (powers both the carnet allergens
-// row and the Discover passport) all gate on this same threshold.
+// Current ASCIA consensus recommends at least weekly exposure. The allergen
+// history (lib/server/guidance/allergen-history) applies it once, as its
+// maintain queue's `overdue` flag, which the `fading` state of the Aujourd'hui
+// tile and the Carnet and the `maintain-allergen` reminder both read.
 export const ALLERGEN_MAINTAIN_DAYS = 7;
-
-// Fat products retain their allergen tag for reaction safety, but their
-// variable/low protein content does not make them a reliable introduction or
-// maintenance exposure. Use the tag for blocking; use this predicate for
-// progress, milestones, and automated exposure prompts.
-export const ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY = 'matieres_grasses';
-
-export function countsAsAllergenExposure(food: {
-  allergenType: string | null | undefined;
-  category: string;
-}): boolean {
-  return food.allergenType != null && food.category !== ALLERGEN_EXPOSURE_EXCLUDED_CATEGORY;
-}
 
 // Allergen labels go through paraglide so the EN locale gets English names
 // (same pattern as REACTION_LABEL_RESOLVERS in #lib/utils/reactions and

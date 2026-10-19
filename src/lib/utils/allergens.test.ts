@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import * as m from '#lib/paraglide/messages.js';
-import { ALLERGENS, countsAsAllergenExposure, getAllergenLabel } from './allergens';
+import { ALLERGENS, getAllergenLabel } from './allergens';
 
 describe('ALLERGENS', () => {
   it('exposes a non-empty list with unique ids', () => {
@@ -27,17 +27,6 @@ describe('ALLERGENS', () => {
   // ALLERGENS.length and don't need a manual update.
   it('matches the "12" hardcoded in user-facing copy', () => {
     expect(ALLERGENS).toHaveLength(12);
-  });
-});
-
-describe('countsAsAllergenExposure', () => {
-  it('keeps allergenic fats for safety without counting them as exposure', () => {
-    expect(countsAsAllergenExposure({ allergenType: 'lait', category: 'matieres_grasses' })).toBe(
-      false
-    );
-    expect(countsAsAllergenExposure({ allergenType: 'lait', category: 'produits_laitiers' })).toBe(
-      true
-    );
   });
 });
 

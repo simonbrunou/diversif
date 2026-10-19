@@ -16,7 +16,7 @@
     weekCount: number;
   };
 
-  // Mirrors AllergenItem from #lib/server/guidance/allergen-status — declared
+  // Mirrors AllergenItem from #lib/server/guidance/allergen-history — declared
   // locally (like CarnetBento) so this client component doesn't import a
   // server module.
   type AllergenStatusItem = {
