@@ -18,12 +18,12 @@ function queuedRows(page: Page): Promise<number> {
   });
 }
 
-// Smoke: when navigator.onLine is false, the log form's enhanced submit
-// handler must short-circuit, write to IDB, and surface the queued toast.
-// The replay-on-online path is exhaustively covered by unit tests for
-// queue.ts and the repas module's idempotency-key handling; end to end we only
-// check that the layout turns a replay into the repas's milestone toast
-// ("a queued first repas is celebrated when it replays on reconnect").
+// Smoke: when navigator.onLine is false, the log form's durable submit
+// (src/lib/offline/submit.ts) must short-circuit, write to IDB, and surface
+// the queued toast. The replay-on-online path is covered by the unit tests
+// in src/lib/offline/, which replay against the real log action; end to end
+// we only check that the layout turns a replay into the repas's milestone
+// toast ("a queued first repas is celebrated when it replays on reconnect").
 test('queues a log submission while offline', async ({ page }) => {
   const sevenMonthsAgo = new Date();
   sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
@@ -43,8 +43,8 @@ test('queues a log submission while offline', async ({ page }) => {
 
   // Patch navigator.onLine to false. context.setOffline drops connections at
   // the network layer, but our offline path is gated on the JS property:
-  // patching it directly keeps the page alive so use:enhance can cancel()
-  // and route through the queue.
+  // patching it directly keeps the page alive so the submit skips the
+  // network and routes through the queue.
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'onLine', { get: () => false, configurable: true });
   });
@@ -92,8 +92,7 @@ test('a transport failure while online queues the entry instead of wiping the fo
   // navigator.onLine stays true throughout — this is the "flaky but
   // reportedly online" case the true-offline precheck above can't catch.
   // Abort the log POST at the network layer so the browser's fetch()
-  // rejects, which is exactly how SvelteKit's enhance() produces a
-  // status-less `{ type: 'error' }` result (forms.js catch block).
+  // rejects: the durable submit reads that as an unreachable server.
   await page.route(`**/child/${childId}/log`, (route) => {
     if (route.request().method() === 'POST') {
       return route.abort('failed');

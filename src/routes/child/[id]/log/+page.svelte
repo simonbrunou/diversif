@@ -10,15 +10,12 @@
   import ReactionPicker from '#lib/components/ReactionPicker.svelte';
   import TexturePicker from '#lib/components/TexturePicker.svelte';
   import TipCard from '#lib/components/TipCard.svelte';
+  import RepasForm from '#lib/components/RepasForm.svelte';
   import { defaultTextureForAgeMonths, type TextureKey } from '#lib/utils/textures.js';
-  import { formatDateInputValue, localInputToIso } from '#lib/utils/dates.js';
+  import { formatDateInputValue } from '#lib/utils/dates.js';
   import { ageInMonths } from '#lib/utils/age.js';
   import { getTipsFor, pickRotatingTip } from '#lib/content/guidance.js';
   import { page } from '$app/state';
-  import { enhance } from '$app/forms';
-  import { goto } from '$app/navigation';
-  import { toast } from 'svelte-sonner';
-  import { enqueue } from '#lib/offline/queue.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
   import { normalize } from '#lib/utils/search.js';
@@ -98,86 +95,7 @@
     fallback={`/child/${data.child.id}`}
   />
 
-  <form
-    method="POST"
-    class="grid gap-5"
-    use:enhance={({ formData, cancel }) => {
-      if (submitting) {
-        cancel();
-        return async () => {};
-      }
-      submitting = true;
-      const rawGivenAt = formData.get('givenAt');
-      if (typeof rawGivenAt === 'string') {
-        formData.set('givenAt', localInputToIso(rawGivenAt));
-      }
-      // One key per submission attempt, reused as both the online request's
-      // idempotency key and the offline-queue row key if it ends up queued
-      // (precheck or post-attempt transport failure below). That way a
-      // request that actually reached the server before the client saw a
-      // failure can't double-insert when the queued copy is replayed.
-      const idempotencyKey = crypto.randomUUID();
-      formData.set('idempotencyKey', idempotencyKey);
-
-      const queueOffline = () => {
-        // getAll-aware capture: formData.forEach (or Object.fromEntries) is
-        // last-wins on repeated keys, so a multi-ingredient meal's repeated
-        // `foodId` entries would silently collapse to just the last one.
-        const formObj: Record<string, string | string[]> = {};
-        for (const key of new Set([...formData.keys()])) {
-          const all = formData.getAll(key).filter((v): v is string => typeof v === 'string');
-          formObj[key] = all.length > 1 ? all : all[0];
-        }
-        void (async () => {
-          try {
-            await enqueue({
-              key: idempotencyKey,
-              childId: data.child.id,
-              formData: formObj,
-              queuedAt: Date.now()
-            });
-          } catch {
-            toast.error(m.offlineQueueFailedToast());
-            submitting = false;
-            return;
-          }
-          toast.success(m.offlineQueuedToast());
-          submitting = false;
-          // The entry is durably queued. Navigation is best-effort : if the dashboard
-          // route isn't cached and we're truly offline, goto() may reject; the queued
-          // row still syncs when we're back online.
-          await goto(`/child/${data.child.id}`).catch(() => {
-            /* best-effort navigation */
-          });
-        })();
-      };
-
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        cancel();
-        queueOffline();
-        return async () => {};
-      }
-
-      return async ({ result, update }) => {
-        // A thrown fetch (DNS failure, weak signal, connected-but-no-internet
-        // wifi, timeout, captive portal…) is normalized by SvelteKit into
-        // `{ type: 'error', error }` with no `status` set — `status` is only
-        // attached once a real response came back (see
-        // @sveltejs/kit forms.js). Treat the status-less case as a transport
-        // failure and degrade to the same durable offline queue instead of
-        // letting the default `update()` hand it to `applyAction`, which
-        // would unmount the form and wipe it via the nearest error boundary.
-        // A genuine server-side error (uncaught exception -> 500) DOES carry
-        // a status and must still surface normally, not be swallowed here.
-        if (result.type === 'error' && result.status === undefined) {
-          queueOffline();
-          return;
-        }
-        await update();
-        submitting = false;
-      };
-    }}
-  >
+  <RepasForm class="grid gap-5" queueFor={data.child.id} bind:busy={submitting}>
     {#if form?.errorKey}
       <FormError>{resolveMessageKey(form.errorKey)}</FormError>
     {/if}
@@ -335,7 +253,7 @@
       </Button>
       <Button href={localizedHref(`/child/${data.child.id}`)} variant="outline" size="lg">{m.commonCancel()}</Button>
     </div>
-  </form>
+  </RepasForm>
 
   {#if tip}
     <TipCard

@@ -1,100 +1,34 @@
-import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import 'fake-indexeddb/auto';
 
 import { testDb, resetTestDb } from '../../test/db';
-import {
-  captureFlow,
-  makeRouteEvent,
-  safeUser,
-  seedChild,
-  seedMembership,
-  seedUser
-} from '../../test/route';
+import { safeUser, seedChild, seedMembership, seedUser } from '../../test/route';
 
-// Same bootstrap as the route-level action tests (e.g.
-// log.idempotency.test.ts): point #lib/server/db at the in-process
-// bun:sqlite instance before the action module (which imports it) loads.
+// Same bootstrap as the route-level action tests: point #lib/server/db at the
+// in-process bun:sqlite instance before the action module (which imports it)
+// loads.
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 mock.module('#lib/server/audit.js', () => ({ audit: mock() }));
 
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { foodEntries, foods } from '#lib/server/db/schema.js';
-import { actions } from '../../routes/child/[id]/log/+page.server';
+import { inProcessTransport, type Identity } from '../../test/log-action-transport';
+import type { Transport } from './wire';
 import { clear, count, enqueue, flush, needsReauthCount } from './queue';
 
-/**
- * This file closes the gap named in the audit: queue.test.ts's flush()
- * coverage only ever fed postOne() hand-typed Response bodies (fabricated
- * redirect locations, fabricated statuses). Here the fetch() queue.ts calls
- * is instead answered by actually invoking the REAL `+page.server.ts`
- * action against the real in-process DB, using the exact request body/
- * headers postOne() sent — so the redirect location, status codes, and
- * idempotency behaviour under test all come from production code, not from
- * a mock we hand-rolled to match our own assumptions.
- *
- * The one piece we can't reproduce without a real Vite-served request is
- * that SvelteKit's real JSON envelope ships `data` devalue-encoded rather
- * than as a plain object — irrelevant here since postOne() never reads
- * `.data`. For an error result specifically, postOne() reads the numeric
- * status off the HTTP Response, never the body (see the ActionError
- * interface comment in queue.ts): toEnvelopeResponse() below reconstructs
- * that split deliberately rather than flattening `status` into the body
- * like a fabricated envelope would.
- */
-type FlowOutcome =
-  | { kind: 'redirect'; status: number; location: string }
-  | { kind: 'error'; status: number; message: string }
-  | { kind: 'return'; value: unknown };
-
-function toEnvelopeResponse(outcome: FlowOutcome): Response {
-  let body: unknown;
-  let status = 200;
-  if (outcome.kind === 'redirect') {
-    // handle_action_json_request never sets a Response-level status for a
-    // redirect result either — the real status travels in the body only.
-    body = { type: 'redirect', status: outcome.status, location: outcome.location };
-  } else if (outcome.kind === 'error') {
-    // Mirror the real network envelope: handle_action_json_request puts the
-    // numeric status ONLY on the HTTP Response (never in the JSON body),
-    // and this app's hooks.server.ts:handleError strips the message down to
-    // a generic 'Internal Error' + errorId for every status — see the
-    // ActionError interface comment in queue.ts. Reconstructing the body
-    // with outcome.status/outcome.message (the raw pre-handleError values
-    // captureFlow observed) would be an envelope the real server can never
-    // produce.
-    body = { type: 'error', error: { message: 'Internal Error', errorId: 'deadbeef' } };
-    status = outcome.status;
-  } else {
-    const value = outcome.value as { status?: number; data?: unknown } | undefined;
-    if (typeof value?.status !== 'number') {
-      throw new Error(`unexpected action return shape: ${JSON.stringify(value)}`);
-    }
-    body = { type: 'failure', status: value.status, data: value.data };
-  }
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json' }
-  });
-}
-
-function formDataFromBody(body: URLSearchParams): Record<string, string | string[]> {
-  const out: Record<string, string | string[]> = {};
-  for (const key of new Set(body.keys())) {
-    const values = body.getAll(key);
-    out[key] = values.length > 1 ? values : values[0];
-  }
-  return out;
-}
+// Replays through the in-process adapter (src/test/log-action-transport.ts):
+// every answer comes from the real log action and the real database, never
+// from an envelope written to match our own assumptions.
 
 async function setup() {
   const u = await seedUser();
   const c = await seedChild({ createdBy: u.id });
   const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-  const food = (
-    await testDb
-      .insert(foods)
-      .values({
-        name: 'Carotte',
+  const [carotte, pomme] = await testDb
+    .insert(foods)
+    .values(
+      ['Carotte', 'Pomme'].map((name) => ({
+        name,
         category: 'legumes',
         isMajorAllergen: false,
         allergenType: null,
@@ -102,55 +36,113 @@ async function setup() {
         notes: null,
         isCustom: false,
         customForChildId: null
-      })
-      .returning()
-  )[0];
-  return { u, c, m, food };
+      }))
+    )
+    .returning();
+  const signedIn: Identity = { user: safeUser(u), memberships: [m] };
+  return { u, c, m, carotte, pomme, transport: inProcessTransport(() => signedIn) };
 }
 
-/**
- * Builds a fetch-shaped responder that actually runs the real
- * `/child/[id]/log` action against real formData/headers decoded from what
- * postOne() posted — a stand-in for the real HTTP server, without booting
- * Vite. Returned as a plain function (not a spy) so tests can compose it —
- * e.g. wrap it to simulate a dropped response — before installing it.
- */
-function realActionResponder(
-  user: Awaited<ReturnType<typeof setup>>['u'],
-  membership: Awaited<ReturnType<typeof setup>>['m'],
-  childId: number
-) {
-  return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const match = String(input).match(/^\/child\/(\d+)\/log$/);
-    if (!match) throw new Error(`unexpected fetch url: ${String(input)}`);
-    const headers = init!.headers as Record<string, string>;
-    const formData = formDataFromBody(init!.body as URLSearchParams);
-    const outcome = (await captureFlow(() =>
-      actions.default!(
-        makeRouteEvent({
-          user: safeUser(user),
-          memberships: [membership],
-          params: { id: String(childId) },
-          formData,
-          headers: { 'Idempotency-Key': headers['Idempotency-Key'] }
-        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-      )
-    )) as FlowOutcome;
-    return toEnvelopeResponse(outcome);
+function entriesOf(childId: number) {
+  return testDb.select().from(foodEntries).where(eq(foodEntries.childId, childId)).all();
+}
+
+/** The first answer to each call number in `lost` never reaches the client. */
+function losing(transport: Transport, lost: number[]): Transport {
+  let calls = 0;
+  return async (url, init) => {
+    calls += 1;
+    const response = await transport(url, init);
+    if (lost.includes(calls)) throw new TypeError('Failed to fetch');
+    return response;
   };
 }
 
-describe('offline queue replay against a real server response', () => {
+/** Write a row straight into IndexedDB, the way an older client left it. */
+async function putRaw(row: unknown): Promise<void> {
+  const req = indexedDB.open('diversif-offline', 1);
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    req.onupgradeneeded = () => {
+      const store = req.result.createObjectStore('log', { keyPath: 'key' });
+      store.createIndex('queuedAt', 'queuedAt', { unique: false });
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  await new Promise<void>((resolve, reject) => {
+    const t = db.transaction('log', 'readwrite');
+    t.objectStore('log').put(row);
+    t.oncomplete = () => resolve();
+    t.onerror = () => reject(t.error);
+  });
+  db.close();
+}
+
+describe('offline queue replay against the real log action', () => {
   beforeEach(async () => {
     await resetTestDb();
     await clear();
-    mock.restore();
   });
 
-  it('flush() drains a queued entry through the real action: DB write, IDB clear, real redirect parsed', async () => {
-    const { u, c, m, food } = await setup();
-    spyOn(globalThis, 'fetch').mockImplementation(realActionResponder(u, m, c.id));
+  // Rows already sitting on parents' devices were written by the client
+  // before the durable submit module: the current one (#325 onwards) copies
+  // the key into formData.idempotencyKey, older ones only kept it as the row
+  // key. Both must replay, and a replay whose answer was lost must not log
+  // the repas twice.
+  it('replays rows queued by earlier clients, once each, even when an answer is lost', async () => {
+    const { c, carotte, pomme, transport } = await setup();
+    const current = '6f9c1d1e-2b1a-4c47-9d0e-5a1f2f3b4c5d';
+    await putRaw({
+      key: current,
+      childId: c.id,
+      formData: {
+        foodId: [String(carotte.id), String(pomme.id)],
+        givenAt: '2026-05-07T10:00:00.000Z',
+        reaction: 'ras',
+        texture: 'lisse',
+        notes: '',
+        idempotencyKey: current
+      },
+      queuedAt: 1
+    });
+    await putRaw({
+      key: 'b7e2a4d0-8c3f-4e1b-a5d6-0f9e8d7c6b5a',
+      childId: c.id,
+      formData: {
+        foodId: String(carotte.id),
+        givenAt: '2026-05-08T10:00:00.000Z',
+        reaction: 'ras'
+      },
+      queuedAt: 2
+    });
 
+    const synced: unknown[] = [];
+    const handler = (e: Event) => synced.push((e as CustomEvent).detail);
+    window.addEventListener('queue:synced', handler);
+
+    // Calls 1 and 3 are each row's first replay: the action runs, the
+    // answer is lost, and the row is posted again on the next pass.
+    const flaky = losing(transport, [1, 3]);
+    await flush(flaky);
+    expect(synced).toEqual([]);
+    await flush(flaky);
+    await flush(flaky);
+
+    expect(await count()).toBe(0);
+    const rows = entriesOf(c.id);
+    expect(rows.map((r) => r.foodId).sort()).toEqual([carotte.id, carotte.id, pomme.id].sort());
+    expect(rows.filter((r) => r.mealId !== null)).toHaveLength(2);
+    // Each cached redirect keeps the milestone flags of its lost answer: the
+    // first repas is still celebrated, the second has nothing to celebrate.
+    expect(synced).toEqual([
+      { queryStrings: [expect.stringContaining('first=1')] },
+      { queryStrings: [expect.not.stringContaining('first=1')] }
+    ]);
+    window.removeEventListener('queue:synced', handler);
+  });
+
+  it('drains a queued entry: DB write, IDB clear, real redirect parsed', async () => {
+    const { c, carotte, transport } = await setup();
     const synced: unknown[] = [];
     const handler = (e: Event) => synced.push((e as CustomEvent).detail);
     window.addEventListener('queue:synced', handler);
@@ -158,28 +150,25 @@ describe('offline queue replay against a real server response', () => {
     await enqueue({
       key: 'replay-real-1',
       childId: c.id,
-      formData: { foodId: String(food.id), givenAt: '2026-05-07T10:00:00.000Z', reaction: 'ras' },
+      formData: {
+        foodId: String(carotte.id),
+        givenAt: '2026-05-07T10:00:00.000Z',
+        reaction: 'ras'
+      },
       queuedAt: 1
     });
-
-    await flush();
+    await flush(transport);
 
     expect(await count()).toBe(0);
     // The child had no entries, so the real redirect carries the first-repas
     // flag the layout celebrates.
     expect(synced).toEqual([{ queryStrings: [expect.stringContaining('first=1')] }]);
-
-    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
-    expect(rows).toHaveLength(1);
-    expect(rows[0].foodId).toBe(food.id);
-
+    expect(entriesOf(c.id).map((r) => r.foodId)).toEqual([carotte.id]);
     window.removeEventListener('queue:synced', handler);
   });
 
-  it('flush() drops a queued entry the real action rejects (real fail(), not a fabricated 400)', async () => {
-    const { u, c, m } = await setup();
-    spyOn(globalThis, 'fetch').mockImplementation(realActionResponder(u, m, c.id));
-
+  it('drops a queued entry the real action rejects (real fail(), not a fabricated 400)', async () => {
+    const { c, transport } = await setup();
     const dropped: unknown[] = [];
     const handler = (e: Event) => dropped.push((e as CustomEvent).detail);
     window.addEventListener('queue:dropped', handler);
@@ -187,100 +176,22 @@ describe('offline queue replay against a real server response', () => {
     await enqueue({
       key: 'replay-invalid-date',
       childId: c.id,
-      formData: { givenAt: 'not-a-date', reaction: 'ras' }, // no foodId → real .refine() failure
+      formData: { givenAt: 'not-a-date', reaction: 'ras' }, // no foodId: a real refusal
       queuedAt: 1
     });
-
-    await flush();
+    await flush(transport);
 
     expect(await count()).toBe(0);
     expect(dropped).toEqual([{ reason: 'failure', status: 400 }]);
+    expect(entriesOf(c.id)).toHaveLength(0);
     window.removeEventListener('queue:dropped', handler);
-
-    const n =
-      (
-        await testDb
-          .select({ n: sql<number>`count(*)` })
-          .from(foodEntries)
-          .limit(1)
-      )[0]?.n ?? 0;
-    expect(Number(n)).toBe(0);
   });
 
-  it('replaying after a dropped response does not duplicate the food entry (real server-side idempotency)', async () => {
-    const { u, c, m, food } = await setup();
-    const respond = realActionResponder(u, m, c.id);
-    let calls = 0;
-
-    // The FIRST call runs the real action (which really inserts, since
-    // bun:sqlite transactions commit synchronously) but then simulates the
-    // client never seeing the response — exactly what "replay on reconnect"
-    // means: the row stays queued and is POSTed again on the next flush.
-    spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
-      calls += 1;
-      const response = await respond(input, init);
-      if (calls === 1) throw new TypeError('Failed to fetch');
-      return response;
-    });
-    const synced: unknown[] = [];
-    const handler = (e: Event) => synced.push((e as CustomEvent).detail);
-    window.addEventListener('queue:synced', handler);
-
-    await enqueue({
-      key: 'reconnect-1',
-      childId: c.id,
-      formData: { foodId: String(food.id), givenAt: '2026-05-07T10:00:00.000Z', reaction: 'ras' },
-      queuedAt: 1
-    });
-
-    await flush(); // network drop after the real server-side insert already committed
-    expect(await count()).toBe(1);
-    expect(synced).toEqual([]);
-
-    await flush(); // reconnect: same row, same Idempotency-Key, real cached redirect
-    expect(await count()).toBe(0);
-    // The cached redirect keeps the milestone flags of the first, lost response.
-    expect(synced).toEqual([{ queryStrings: [expect.stringContaining('first=1')] }]);
-    window.removeEventListener('queue:synced', handler);
-
-    const n =
-      (
-        await testDb
-          .select({ n: sql<number>`count(*)` })
-          .from(foodEntries)
-          .limit(1)
-      )[0]?.n ?? 0;
-    expect(Number(n)).toBe(1);
-  });
-
-  // Regression for #307's review: the real requireMembership guard throws
-  // `error(403, 'Accès refusé')` when this user's membership on the child
-  // is gone — exactly what "access revoked while the entry sat offline"
-  // means. Drives the REAL action (not a hand-typed envelope) with no
-  // membership row for this user/child, so the 403 — and its journey
-  // through handle_action_json_request + hooks.server.ts:handleError +
-  // toEnvelopeResponse — is the same one production would produce.
-  it('flush() surfaces access-revoked (not the generic drop) when the real action 403s a removed membership', async () => {
-    const { u, c, food } = await setup();
-    spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
-      const match = String(input).match(/^\/child\/(\d+)\/log$/);
-      if (!match) throw new Error(`unexpected fetch url: ${String(input)}`);
-      const headers = init!.headers as Record<string, string>;
-      const formData = formDataFromBody(init!.body as URLSearchParams);
-      const outcome = (await captureFlow(() =>
-        actions.default!(
-          makeRouteEvent({
-            user: safeUser(u),
-            memberships: [], // revoked: no membership row matches this child
-            params: { id: String(c.id) },
-            formData,
-            headers: { 'Idempotency-Key': headers['Idempotency-Key'] }
-          }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-        )
-      )) as FlowOutcome;
-      return toEnvelopeResponse(outcome);
-    });
-
+  // #307: the real requireMembership guard answers 403 once this user's
+  // membership on the child is gone, the "access revoked while the entry sat
+  // offline" case.
+  it('surfaces access-revoked (not the generic drop) when the real action 403s a removed membership', async () => {
+    const { u, c, carotte } = await setup();
     const revoked: unknown[] = [];
     const dropped: string[] = [];
     const onRevoked = (e: Event) => revoked.push((e as CustomEvent).detail);
@@ -291,58 +202,30 @@ describe('offline queue replay against a real server response', () => {
     await enqueue({
       key: 'revoked-1',
       childId: c.id,
-      formData: { foodId: String(food.id), givenAt: '2026-05-07T10:00:00.000Z', reaction: 'ras' },
+      formData: {
+        foodId: String(carotte.id),
+        givenAt: '2026-05-07T10:00:00.000Z',
+        reaction: 'ras'
+      },
       queuedAt: 1
     });
-
-    await flush();
+    await flush(inProcessTransport(() => ({ user: safeUser(u), memberships: [] })));
 
     expect(await count()).toBe(0);
     expect(revoked).toEqual([{ status: 403 }]);
     expect(dropped).toEqual([]);
-
-    const n =
-      (
-        await testDb
-          .select({ n: sql<number>`count(*)` })
-          .from(foodEntries)
-          .limit(1)
-      )[0]?.n ?? 0;
-    expect(Number(n)).toBe(0);
-
+    expect(entriesOf(c.id)).toHaveLength(0);
     window.removeEventListener('queue:accessRevoked', onRevoked);
     window.removeEventListener('queue:dropped', onDropped);
   });
 
-  // Regression for #308: requireUser throws a REAL localizedRedirect(...,
-  // '/login') when locals.user is null — exactly what an expired session
-  // looks like server-side. Drives the actual action (not a fabricated
-  // redirect) through that expiry, then flips to an authenticated identity
-  // to prove the row is retained and only cleared by a later successful
-  // replay — the end-to-end contract #308 asks for, with no fabricated
-  // envelope standing in for the real one.
-  it('flush() retains the row on a real session-expiry redirect, then clears it once a later replay succeeds', async () => {
-    const { u, c, m, food } = await setup();
-    let authenticated = false;
-    spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
-      const match = String(input).match(/^\/child\/(\d+)\/log$/);
-      if (!match) throw new Error(`unexpected fetch url: ${String(input)}`);
-      const headers = init!.headers as Record<string, string>;
-      const formData = formDataFromBody(init!.body as URLSearchParams);
-      const outcome = (await captureFlow(() =>
-        actions.default!(
-          makeRouteEvent({
-            user: authenticated ? safeUser(u) : null, // null: expired session
-            memberships: authenticated ? [m] : [],
-            params: { id: String(c.id) },
-            formData,
-            headers: { 'Idempotency-Key': headers['Idempotency-Key'] }
-          }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-        )
-      )) as FlowOutcome;
-      return toEnvelopeResponse(outcome);
-    });
-
+  // #308: requireUser answers a real localized redirect to /login when the
+  // session expired. The row is retained, then cleared by a later replay
+  // once the parent signed in again.
+  it('retains the row on a real session-expiry redirect, then clears it once a later replay succeeds', async () => {
+    const { u, c, m, carotte } = await setup();
+    let identity: Identity = { user: null, memberships: [] };
+    const transport = inProcessTransport(() => identity);
     const needsReauth: unknown[] = [];
     const onNeedsReauth = (e: Event) => needsReauth.push((e as CustomEvent).detail);
     window.addEventListener('queue:needsReauth', onNeedsReauth);
@@ -350,26 +233,25 @@ describe('offline queue replay against a real server response', () => {
     await enqueue({
       key: 'reauth-real-1',
       childId: c.id,
-      formData: { foodId: String(food.id), givenAt: '2026-05-07T10:00:00.000Z', reaction: 'ras' },
+      formData: {
+        foodId: String(carotte.id),
+        givenAt: '2026-05-07T10:00:00.000Z',
+        reaction: 'ras'
+      },
       queuedAt: 1
     });
-
-    await flush(); // session expired: real requireUser -> localizedRedirect
+    await flush(transport);
 
     expect(await count()).toBe(1);
     expect(await needsReauthCount()).toBe(1);
     expect(needsReauth).toEqual([{ key: 'reauth-real-1' }]);
 
-    authenticated = true; // the user re-authenticates elsewhere
-    await flush(); // next replay runs the real action to completion
+    identity = { user: safeUser(u), memberships: [m] };
+    await flush(transport);
 
     expect(await count()).toBe(0);
     expect(await needsReauthCount()).toBe(0);
-
-    const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
-    expect(rows).toHaveLength(1);
-    expect(rows[0].foodId).toBe(food.id);
-
+    expect(entriesOf(c.id).map((r) => r.foodId)).toEqual([carotte.id]);
     window.removeEventListener('queue:needsReauth', onNeedsReauth);
   });
 });

@@ -2,12 +2,10 @@ import { describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../../../../test/component';
 
-// $app/forms is already stubbed by bunfig.preload.ts's global default, but every
-// sibling component test in this repo re-declares it locally for clarity/
-// self-containment (see src/lib/components/ReactionPicker.test.ts,
-// src/lib/components/ui/ConfirmModal.test.ts, log.hint.test.ts).
-mock.module('$app/forms', () => ({
-  enhance: () => ({ destroy: () => {} })
+// svelte-sonner's real dist can't load under bun test (see log.hint.test.ts),
+// and RepasForm imports it. $app/forms comes from bunfig.preload.ts.
+mock.module('svelte-sonner', () => ({
+  toast: { error: () => {}, success: () => {} }
 }));
 
 // Static imports hoist above mock.module, so the component under test must be

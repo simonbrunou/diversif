@@ -1,7 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import 'fake-indexeddb/auto';
 
-import { buildBody, clear, count, enqueue, flush, needsReauthCount } from './queue';
+import { clear, count, enqueue, flush, needsReauthCount } from './queue';
+import type { Transport } from './wire';
 
 /** Count rows directly in IDB, bypassing the module's own count() export. */
 async function countRows(): Promise<number> {
@@ -27,15 +28,30 @@ async function countRows(): Promise<number> {
   return n;
 }
 
+/**
+ * A transport that answers every replay with `answer()` and records what was
+ * posted. The answers are hand-built envelopes for the statuses the real
+ * action can't easily produce; queue.replay.test.ts replays against the real
+ * action instead.
+ */
+function server(answer: () => Response | Promise<Response>) {
+  const calls: { url: string; init: RequestInit; body: URLSearchParams }[] = [];
+  const transport: Transport = async (url, init) => {
+    calls.push({ url, init, body: new URLSearchParams(String(init.body)) });
+    return answer();
+  };
+  return { transport, calls };
+}
+
 const goodActionResult = (location = '/child/1?logged=1') =>
   new Response(JSON.stringify({ type: 'redirect', location }), {
     status: 200,
     headers: { 'content-type': 'application/json' }
   });
 
-const failureActionResult = (status: number, data: Record<string, unknown> = {}) =>
-  new Response(JSON.stringify({ type: 'failure', status, data }), {
-    status: 200,
+const failureActionResult = (status: number) =>
+  new Response(JSON.stringify({ type: 'failure', status }), {
+    status,
     headers: { 'content-type': 'application/json' }
   });
 
@@ -43,10 +59,7 @@ const failureActionResult = (status: number, data: Record<string, unknown> = {})
 // SvelteKit's handle_action_json_request puts the numeric status ONLY on
 // the HTTP response (never in the JSON body), and this app's own
 // hooks.server.ts:handleError strips the message down to a generic
-// 'Internal Error' + errorId for every status < 500 — see the ActionError
-// interface comment in queue.ts. A body-level `status` field, or an HTTP
-// response hardcoded to 200 regardless of the intended status, would be a
-// fictional envelope the real server can never produce.
+// 'Internal Error' + errorId for every status < 500.
 const errorActionResult = (status: number) =>
   new Response(
     JSON.stringify({ type: 'error', error: { message: 'Internal Error', errorId: 'deadbeef' } }),
@@ -56,7 +69,9 @@ const errorActionResult = (status: number) =>
     }
   );
 
-const networkFailure = () => Promise.reject(new TypeError('Failed to fetch'));
+const networkFailure = (): Response => {
+  throw new TypeError('Failed to fetch');
+};
 
 /** A fake IDBOpenDBRequest that fires onerror instead of onsuccess. */
 function failingOpenRequest(error: DOMException): IDBOpenDBRequest {
@@ -80,22 +95,10 @@ function failingOpenRequest(error: DOMException): IDBOpenDBRequest {
 describe('queue', () => {
   beforeEach(async () => {
     await clear();
-    mock.restore();
   });
 
   afterEach(async () => {
     await clear();
-  });
-
-  it('enqueue persists a row', async () => {
-    expect(await countRows()).toBe(0);
-    await enqueue({
-      key: 'k1',
-      childId: 1,
-      formData: { foodId: '1', reaction: 'ras', givenAt: '2026-01-01T00:00:00Z' },
-      queuedAt: 1
-    });
-    expect(await countRows()).toBe(1);
   });
 
   it('count() reports the number of rows still queued', async () => {
@@ -116,7 +119,7 @@ describe('queue', () => {
   });
 
   it('emits queue:changed on enqueue, and again once flush drops the row', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult());
+    const { transport } = server(() => goodActionResult());
     const events: string[] = [];
     const handler = () => events.push('changed');
     window.addEventListener('queue:changed', handler);
@@ -129,26 +132,20 @@ describe('queue', () => {
     });
     expect(events).toEqual(['changed']);
 
-    await flush();
+    await flush(transport);
     expect(events).toEqual(['changed', 'changed']);
     expect(await count()).toBe(0);
 
     window.removeEventListener('queue:changed', handler);
   });
 
-  it('buildBody expands array values into repeated params', () => {
-    const body = buildBody({ foodId: ['1', '2'], reaction: 'ras' });
-    expect(body.getAll('foodId')).toEqual(['1', '2']);
-    expect(body.get('reaction')).toBe('ras');
-  });
-
-  it('flush posts each row and removes them on type:redirect', async () => {
-    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult());
+  it('flush posts each row as an action request carrying its key, and removes it on type:redirect', async () => {
+    const { transport, calls } = server(() => goodActionResult());
 
     await enqueue({
       key: 'k1',
       childId: 1,
-      formData: { foodId: '1', reaction: 'ras', givenAt: '2026-01-01T00:00:00Z' },
+      formData: { foodId: ['1', '3'], reaction: 'ras', givenAt: '2026-01-01T00:00:00Z' },
       queuedAt: 1
     });
     await enqueue({
@@ -158,20 +155,19 @@ describe('queue', () => {
       queuedAt: 2
     });
 
-    await flush();
+    await flush(transport);
 
-    expect(fetchSpy).toHaveBeenCalledTimes(2);
-    const firstCall = fetchSpy.mock.calls[0];
-    expect(firstCall[0]).toBe('/child/1/log');
-    const init = firstCall[1] as RequestInit;
-    expect(init.method).toBe('POST');
-    expect((init.headers as Record<string, string>)['Idempotency-Key']).toBe('k1');
-    expect((init.headers as Record<string, string>)['x-sveltekit-action']).toBe('true');
+    expect(calls).toHaveLength(2);
+    expect(calls[0].url).toBe('/child/1/log');
+    expect(calls[0].init.method).toBe('POST');
+    expect((calls[0].init.headers as Record<string, string>)['x-sveltekit-action']).toBe('true');
+    expect(calls[0].body.get('idempotencyKey')).toBe('k1');
+    expect(calls[0].body.getAll('foodId')).toEqual(['1', '3']);
     expect(await countRows()).toBe(0);
   });
 
   it('processes rows in queuedAt order', async () => {
-    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult());
+    const { transport, calls } = server(() => goodActionResult());
 
     await enqueue({
       key: 'late',
@@ -186,16 +182,13 @@ describe('queue', () => {
       queuedAt: 1
     });
 
-    await flush();
+    await flush(transport);
 
-    const headersOfCall = (i: number) =>
-      (fetchSpy.mock.calls[i][1] as RequestInit).headers as Record<string, string>;
-    expect(headersOfCall(0)['Idempotency-Key']).toBe('early');
-    expect(headersOfCall(1)['Idempotency-Key']).toBe('late');
+    expect(calls.map((c) => c.body.get('idempotencyKey'))).toEqual(['early', 'late']);
   });
 
   it('leaves the row queued on a network failure', async () => {
-    spyOn(globalThis, 'fetch').mockImplementation(networkFailure);
+    const { transport } = server(networkFailure);
 
     await enqueue({
       key: 'k1',
@@ -203,13 +196,13 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(1);
   });
 
   it('leaves the row queued on type:error 5xx', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(503));
+    const { transport } = server(() => errorActionResult(503));
 
     await enqueue({
       key: 'k1',
@@ -217,13 +210,13 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(1);
   });
 
   it('leaves the row queued on type:failure status 409', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(409));
+    const { transport } = server(() => failureActionResult(409));
 
     await enqueue({
       key: 'k1',
@@ -231,15 +224,16 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(1);
   });
 
   it('drops the row and emits drop event on type:failure 4xx', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(400, { error: 'bad' }));
+    const { transport } = server(() => failureActionResult(400));
     const events: string[] = [];
-    const off = window.addEventListener('queue:dropped', () => events.push('dropped'));
+    const handler = () => events.push('dropped');
+    window.addEventListener('queue:dropped', handler);
 
     await enqueue({
       key: 'k1',
@@ -247,11 +241,11 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(0);
     expect(events).toContain('dropped');
-    window.removeEventListener('queue:dropped', off as EventListener);
+    window.removeEventListener('queue:dropped', handler);
   });
 
   // Regression for F-P5 (#308): the row must survive a session-expiry
@@ -261,7 +255,7 @@ describe('queue', () => {
   // (queue:needsReauth + needsReauthCount()), not the one-shot toast the
   // old 'sessionExpired' event drove.
   it('retains the row (not dropped) and emits needsReauth on type:redirect to /login', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/login'));
+    const { transport } = server(() => goodActionResult('/login'));
     const events: unknown[] = [];
     const handler = (e: Event) => events.push((e as CustomEvent).detail);
     window.addEventListener('queue:needsReauth', handler);
@@ -272,7 +266,7 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(1);
     expect(await needsReauthCount()).toBe(1);
@@ -281,7 +275,7 @@ describe('queue', () => {
   });
 
   it('treats /en/login (paraglide locale prefix) the same as /login', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login'));
+    const { transport } = server(() => goodActionResult('/en/login'));
     const events: unknown[] = [];
     const handler = (e: Event) => events.push((e as CustomEvent).detail);
     window.addEventListener('queue:needsReauth', handler);
@@ -292,7 +286,7 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(1);
     expect(await needsReauthCount()).toBe(1);
@@ -301,7 +295,7 @@ describe('queue', () => {
   });
 
   it('also fires needsReauth on /en/login?next=...', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/en/login?next=/child/1'));
+    const { transport } = server(() => goodActionResult('/en/login?next=/child/1'));
     const events: unknown[] = [];
     const handler = (e: Event) => events.push((e as CustomEvent).detail);
     window.addEventListener('queue:needsReauth', handler);
@@ -312,7 +306,7 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(1);
     expect(await needsReauthCount()).toBe(1);
@@ -321,7 +315,7 @@ describe('queue', () => {
   });
 
   it('does not re-mark or re-emit on a second flush while still needs-reauth (no queue:changed spam)', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/login'));
+    const { transport } = server(() => goodActionResult('/login'));
     const changed: number[] = [];
     const handler = () => changed.push(1);
     window.addEventListener('queue:changed', handler);
@@ -334,10 +328,10 @@ describe('queue', () => {
     });
     changed.length = 0; // drop the enqueue's own queue:changed
 
-    await flush(); // first pass: transitions to needs-reauth, emits once
+    await flush(transport); // first pass: transitions to needs-reauth, emits once
     expect(changed).toEqual([1]);
 
-    await flush(); // still logged out: same outcome, already marked — no-op
+    await flush(transport); // still logged out: same outcome, already marked — no-op
     expect(changed).toEqual([1]);
     expect(await countRows()).toBe(1);
 
@@ -348,7 +342,7 @@ describe('queue', () => {
     // Guards against re-introducing 'retry'-style break-the-loop semantics
     // for needs-reauth, which would wedge every row queued after the first
     // session-expired one until it happens to succeed.
-    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult('/login'));
+    const { transport } = server(() => goodActionResult('/login'));
 
     await enqueue({
       key: 'first',
@@ -363,14 +357,15 @@ describe('queue', () => {
       queuedAt: 2
     });
 
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(2);
     expect(await needsReauthCount()).toBe(2);
   });
 
   it('a successful replay after re-authentication clears a needs-reauth row', async () => {
-    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValueOnce(goodActionResult('/login'));
+    let location = '/login';
+    const { transport } = server(() => goodActionResult(location));
 
     await enqueue({
       key: 'k1',
@@ -378,20 +373,20 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush(); // marks needs-reauth, retained
+    await flush(transport); // marks needs-reauth, retained
     expect(await countRows()).toBe(1);
     expect(await needsReauthCount()).toBe(1);
 
     // Simulate the user re-authenticating: the next replay succeeds.
-    fetchSpy.mockResolvedValue(goodActionResult());
-    await flush();
+    location = '/child/1?logged=1';
+    await flush(transport);
 
     expect(await countRows()).toBe(0);
     expect(await needsReauthCount()).toBe(0);
   });
 
   it('emits queue:synced with milestone qs on success', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(
+    const { transport } = server(() =>
       goodActionResult('/child/1?logged=1&first=1&categories=2&prevCategories=1')
     );
     const detail: unknown[] = [];
@@ -404,7 +399,7 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(detail).toEqual([{ queryStrings: ['logged=1&first=1&categories=2&prevCategories=1'] }]);
     window.removeEventListener('queue:synced', handler);
@@ -518,7 +513,7 @@ describe('queue', () => {
     const fetchWasInvoked = new Promise<void>((res) => {
       fetchInvoked = res;
     });
-    spyOn(globalThis, 'fetch').mockImplementation(
+    const { transport, calls } = server(
       () =>
         new Promise<Response>((res) => {
           resolveFetch = res;
@@ -532,17 +527,17 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    const p1 = flush();
-    const p2 = flush();
+    const p1 = flush(transport);
+    const p2 = flush(transport);
     // tx() now resolves on transaction.oncomplete (after the merge), which
     // takes a few microtasks longer than fn()'s synchronous resolution. Wait
-    // until fetch is actually invoked before resolving the response, so
+    // until the request is actually sent before resolving the response, so
     // resolveFetch is guaranteed populated.
     await fetchWasInvoked;
     resolveFetch!(goodActionResult());
     await Promise.all([p1, p2]);
 
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(calls).toHaveLength(1);
   });
 
   it('leaves the row queued on type:error with a real HTTP 500 (unhandled server exception)', async () => {
@@ -551,7 +546,7 @@ describe('queue', () => {
     // `{ message: 'Internal Error', errorId }`) — only the HTTP response
     // itself carries the real status. errorActionResult(500) reproduces
     // exactly that shape.
-    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(500));
+    const { transport } = server(() => errorActionResult(500));
 
     await enqueue({
       key: 'k1',
@@ -559,14 +554,14 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(1);
   });
 
   it('leaves the row queued when response body is not valid JSON', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response('not-json', { status: 200, headers: { 'content-type': 'text/plain' } })
+    const { transport } = server(
+      () => new Response('not-json', { status: 200, headers: { 'content-type': 'text/plain' } })
     );
 
     await enqueue({
@@ -575,13 +570,13 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(1);
   });
 
   it('drops the row and emits drop event on type:error 4xx', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(422));
+    const { transport } = server(() => errorActionResult(422));
     const events: string[] = [];
     const handler = () => events.push('dropped');
     window.addEventListener('queue:dropped', handler);
@@ -592,7 +587,7 @@ describe('queue', () => {
       formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
       queuedAt: 1
     });
-    await flush();
+    await flush(transport);
 
     expect(await countRows()).toBe(0);
     expect(events).toContain('dropped');
@@ -604,77 +599,37 @@ describe('queue', () => {
   // access was revoked while the entry sat offline. That must be
   // distinguishable from every other 4xx (malformed request, etc.) so the
   // parent gets an explanatory message instead of the generic drop toast.
-  it('drops the row and emits accessRevoked (not dropped) on type:error 403', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(403));
-    const droppedEvents: string[] = [];
-    const revokedEvents: unknown[] = [];
-    const onDropped = () => droppedEvents.push('dropped');
-    const onRevoked = (e: Event) => revokedEvents.push((e as CustomEvent).detail);
-    window.addEventListener('queue:dropped', onDropped);
-    window.addEventListener('queue:accessRevoked', onRevoked);
+  for (const [type, status] of [
+    ['error', 403],
+    ['error', 404],
+    ['failure', 401]
+  ] as const) {
+    it(`drops the row and emits accessRevoked (not dropped) on type:${type} ${status}`, async () => {
+      const { transport } = server(() =>
+        type === 'error' ? errorActionResult(status) : failureActionResult(status)
+      );
+      const droppedEvents: string[] = [];
+      const revokedEvents: unknown[] = [];
+      const onDropped = () => droppedEvents.push('dropped');
+      const onRevoked = (e: Event) => revokedEvents.push((e as CustomEvent).detail);
+      window.addEventListener('queue:dropped', onDropped);
+      window.addEventListener('queue:accessRevoked', onRevoked);
 
-    await enqueue({
-      key: 'k1',
-      childId: 1,
-      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
-      queuedAt: 1
+      await enqueue({
+        key: 'k1',
+        childId: 1,
+        formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
+        queuedAt: 1
+      });
+      await flush(transport);
+
+      expect(await countRows()).toBe(0);
+      expect(droppedEvents).toEqual([]);
+      expect(revokedEvents).toEqual([{ status }]);
+      window.removeEventListener('queue:dropped', onDropped);
+      window.removeEventListener('queue:accessRevoked', onRevoked);
     });
-    await flush();
-
-    expect(await countRows()).toBe(0);
-    expect(droppedEvents).toEqual([]);
-    expect(revokedEvents).toEqual([{ status: 403 }]);
-    window.removeEventListener('queue:dropped', onDropped);
-    window.removeEventListener('queue:accessRevoked', onRevoked);
-  });
-
-  it('drops the row and emits accessRevoked (not dropped) on type:error 404', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(errorActionResult(404));
-    const droppedEvents: string[] = [];
-    const revokedEvents: unknown[] = [];
-    const onDropped = () => droppedEvents.push('dropped');
-    const onRevoked = (e: Event) => revokedEvents.push((e as CustomEvent).detail);
-    window.addEventListener('queue:dropped', onDropped);
-    window.addEventListener('queue:accessRevoked', onRevoked);
-
-    await enqueue({
-      key: 'k1',
-      childId: 1,
-      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
-      queuedAt: 1
-    });
-    await flush();
-
-    expect(await countRows()).toBe(0);
-    expect(droppedEvents).toEqual([]);
-    expect(revokedEvents).toEqual([{ status: 404 }]);
-    window.removeEventListener('queue:dropped', onDropped);
-    window.removeEventListener('queue:accessRevoked', onRevoked);
-  });
-
-  it('drops the row and emits accessRevoked (not dropped) on type:failure 401', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(401));
-    const droppedEvents: string[] = [];
-    const revokedEvents: unknown[] = [];
-    const onDropped = () => droppedEvents.push('dropped');
-    const onRevoked = (e: Event) => revokedEvents.push((e as CustomEvent).detail);
-    window.addEventListener('queue:dropped', onDropped);
-    window.addEventListener('queue:accessRevoked', onRevoked);
-
-    await enqueue({
-      key: 'k1',
-      childId: 1,
-      formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
-      queuedAt: 1
-    });
-    await flush();
-
-    expect(await countRows()).toBe(0);
-    expect(droppedEvents).toEqual([]);
-    expect(revokedEvents).toEqual([{ status: 401 }]);
-    window.removeEventListener('queue:dropped', onDropped);
-    window.removeEventListener('queue:accessRevoked', onRevoked);
-  });
+  }
 
   it('enqueue rejects when indexedDB.open fires onerror', async () => {
     // Cover the req.onerror path in openDb() and reqAsPromise() by injecting
@@ -751,53 +706,6 @@ describe('queue', () => {
         queuedAt: 1
       })
     ).rejects.toBeDefined();
-  });
-
-  it('exposes pending rows after a fresh module load (cross-tab persistence)', async () => {
-    // Seed IDB directly without going through enqueue, simulating a previous
-    // tab session that wrote to IDB.
-    const dbReq = indexedDB.open('diversif-offline', 1);
-    const db = await new Promise<IDBDatabase>((res, rej) => {
-      dbReq.onupgradeneeded = () => {
-        const d = dbReq.result;
-        if (!d.objectStoreNames.contains('log')) {
-          const store = d.createObjectStore('log', { keyPath: 'key' });
-          store.createIndex('queuedAt', 'queuedAt', { unique: false });
-        }
-      };
-      dbReq.onsuccess = () => res(dbReq.result);
-      dbReq.onerror = () => rej(dbReq.error);
-    });
-    await new Promise<void>((res, rej) => {
-      const t = db.transaction('log', 'readwrite');
-      t.objectStore('log').put({
-        key: 'persisted',
-        childId: 1,
-        formData: { foodId: '1', reaction: 'ras', givenAt: 'x' },
-        queuedAt: 1
-      });
-      t.oncomplete = () => res();
-      t.onerror = () => rej(t.error);
-    });
-    db.close();
-
-    // Re-import the module fresh (simulating tab reload).
-    // bun:test has no equivalent to vi.resetModules() — ESM has no userland
-    // cache invalidation. For this test the persistent IDB state is what
-    // matters: the post-close re-import returns the same module instance,
-    // but the queue's in-memory state is reset by reading fresh from IDB.
-    const fresh = await import('./queue');
-    const fetchSpy = spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ type: 'redirect', location: '/child/1?logged=1' }), {
-        status: 200,
-        headers: { 'content-type': 'application/json' }
-      })
-    );
-    await fresh.flush();
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect((fetchSpy.mock.calls[0][1] as RequestInit).headers).toMatchObject({
-      'Idempotency-Key': 'persisted'
-    });
   });
 
   it('tx rejects when IDBTransaction fires onerror (covers transaction.onerror)', async () => {
