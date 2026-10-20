@@ -29,13 +29,19 @@ Rules:
 
 Agents may merge their own PR without asking once all three hold:
 
-- a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent) and its real findings are fixed;
+- a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent) and you fixed its real findings;
 - CI is green on the pushed SHA;
-- the branch has no conflict with `origin/main`: after `git fetch origin`, `git merge-tree --write-tree origin/main HEAD` exits 0.
+- the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0.
 
-A branch behind `main` with no conflict merges as it is, with no sync and no CI re-run. Accepted risk: two PRs that pass apart can break `main` together, and the CI run on `main` after the merge shows it. On a conflict, merge `origin/main` into the branch, resolve it, run `bun run test`, push, and wait for CI on the new head.
+Merge a branch that is behind `main` but has no conflict as it is. Merging `origin/main` into it first would only re-run its CI. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows that, so after you merge, check that run along with the deploy and report it if it is red.
 
-The production deploy that the merge triggers is accepted. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
+When the merge-tree check reports a conflict:
+
+1. Merge `origin/main` into the branch and resolve the conflict.
+2. Run `bun run test`.
+3. Push, and wait for CI on the new head.
+
+The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
 
 ## Agent skills
 
