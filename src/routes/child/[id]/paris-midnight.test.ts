@@ -12,19 +12,25 @@ import { load as loadCarnet } from './foods/+page.server';
 
 // A repas logged just after midnight in Paris, followed through what the
 // parent sees next: the Aujourd'hui feed and tiles, and the Carnet's bars.
-// Each route reads the clock once per request, so the fixed clock below is
-// the whole seam.
+// Each loader reads the clock once per request, so the fixed clock below is
+// the whole seam. The host runs in UTC, as the production server does.
 
 type LogEvent = Parameters<typeof logActions.default>[0];
 type AujourdhuiEvent = Parameters<typeof loadAujourdhui>[0];
 type CarnetEvent = Parameters<typeof loadCarnet>[0];
 
+let hostZone: string | undefined;
+
 beforeEach(async () => {
+  hostZone = process.env.TZ;
+  process.env.TZ = 'UTC';
   await resetTestDb();
 });
 
 afterEach(() => {
   setSystemTime();
+  if (hostZone === undefined) delete process.env.TZ;
+  else process.env.TZ = hostZone;
 });
 
 async function setup() {

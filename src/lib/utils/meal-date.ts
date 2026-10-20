@@ -1,4 +1,4 @@
-import { civilDay, parisDayOf } from './civil-calendar';
+import { civilDayOfDate, parisDayOf } from './civil-calendar';
 
 // A phone or server clock a few minutes fast shouldn't block logging "now" —
 // give givenAt this much slack above the server's now before calling it
@@ -23,8 +23,7 @@ export function mealDateError(
     return 'errorsLogDateFuture';
   }
 
-  const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
-  if (parisDayOf(givenAt.getTime()) < civilDay(birthYear, birthMonth, birthDay)) {
+  if (parisDayOf(givenAt.getTime()) < civilDayOfDate(birthDate)) {
     return 'errorsLogDateBeforeBirth';
   }
 

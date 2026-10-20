@@ -5,7 +5,7 @@ import type * as schema from '#lib/server/db/schema.js';
 import * as m from '#lib/paraglide/messages.js';
 import type { RecentEntry } from '#lib/types.js';
 import type { CategoryId } from '#lib/utils/categories.js';
-import { parisDayOf, thisWeek, utcDayOf } from '#lib/utils/civil-calendar.js';
+import { isThisWeek, utcDayOf } from '#lib/utils/civil-calendar.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { REACTION_RANK, type ReactionId } from '#lib/utils/reaction-values.js';
 import type { TextureKey } from '#lib/utils/textures.js';
@@ -60,7 +60,10 @@ export type ChildHistory = {
   readonly recent: RecentEntry[];
   /** Distinct foods ever logged: the « aliments découverts » tile. */
   readonly foodsIntroduced: number;
-  /** Foods whose first entry falls this week (thisWeek): today or the 6 Paris days before. */
+  /**
+   * Foods whose first entry falls this week (isThisWeek): from Paris midnight
+   * 6 days ago, a meal dated a few minutes ahead of the clock included.
+   */
   readonly newFoodsThisWeek: number;
   readonly streak: StreakStats;
   /** The allergen history (#427), built from the same rows. */
@@ -115,11 +118,11 @@ function toRecentEntry(e: HistoryEntry): RecentEntry {
 function buildCoparentActivity(
   newestFirstEntries: readonly HistoryEntry[],
   viewerId: number,
-  weekStart: number
+  now: number
 ): CoparentEntry[] {
   const out: CoparentEntry[] = [];
   for (const e of newestFirstEntries) {
-    if (parisDayOf(e.givenAt) < weekStart || out.length === COPARENT_ACTIVITY_SIZE) break;
+    if (!isThisWeek(e.givenAt, now) || out.length === COPARENT_ACTIVITY_SIZE) break;
     if (e.loggedBy === viewerId || e.loggedByName === null) continue;
     out.push({
       id: e.id,
@@ -217,17 +220,14 @@ export function childHistoryFrom(
   const foods = buildFoods(sorted);
   const allergens = allergenHistoryFrom(sorted, now);
   const repeatCandidates = foods.filter(isRepeatCandidate).sort((a, b) => a.lastAt - b.lastAt);
-  // The first Paris day of this week. An instant after today still counts: a
-  // meal may be dated a few minutes ahead of the server's clock.
-  const weekStart = thisWeek(now)[0];
   return {
     recent: sorted.slice(0, RECENT_FEED_SIZE).map(toRecentEntry),
     foodsIntroduced: foods.length,
-    newFoodsThisWeek: foods.filter((f) => parisDayOf(f.firstAt) >= weekStart).length,
+    newFoodsThisWeek: foods.filter((f) => isThisWeek(f.firstAt, now)).length,
     streak: buildStreak(sorted, now),
     allergens,
     repeatCandidates,
-    coparentActivity: (viewerId) => buildCoparentActivity(sorted, viewerId, weekStart),
+    coparentActivity: (viewerId) => buildCoparentActivity(sorted, viewerId, now),
     reminders: (context) =>
       computeReminders({
         ...context,
@@ -245,7 +245,8 @@ export function childHistoryFrom(
  * Reads the child's whole history in one query, unbounded: the first
  * introductions, the repeat candidates and the allergen history all need every
  * entry, however old. One child's history is a few thousand rows at most.
- * `now` is the request's one reading of the clock.
+ * `now` anchors every window: read the clock once and pass the same instant
+ * to everything the page derives from it.
  */
 export function loadChildHistory(
   db: BunSQLiteDatabase<typeof schema>,

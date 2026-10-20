@@ -2,13 +2,16 @@ import { describe, expect, it } from 'bun:test';
 import {
   DAY_MS,
   civilDay,
-  civilDayInstant,
+  civilDayOfDate,
+  daysBefore,
   elapsedDays,
+  isThisWeek,
   lastDays,
   parisDayOf,
   parisDaysAgo,
   thisWeek,
   utcDayOf,
+  utcMidnightOf,
   weekdayOf
 } from './civil-calendar';
 
@@ -26,6 +29,13 @@ describe('civilDay', () => {
   it('rolls an out-of-range month or day over, as Date.UTC does', () => {
     expect(civilDay(2026, 3, 0)).toBe(civilDay(2026, 2, 28));
     expect(civilDay(2026, 13, 1)).toBe(civilDay(2027, 1, 1));
+  });
+});
+
+describe('civilDayOfDate', () => {
+  it('reads a YYYY-MM-DD date, such as a birth date', () => {
+    expect(civilDayOfDate('2026-06-02')).toBe(20606);
+    expect(civilDayOfDate('1970-01-01')).toBe(0);
   });
 });
 
@@ -96,15 +106,28 @@ describe('thisWeek', () => {
   });
 });
 
-describe('civilDayInstant', () => {
+describe('isThisWeek', () => {
+  const halfPastMidnight = at('2026-06-01T22:30:00Z'); // 00:30 Paris, Tuesday 2 June
+
+  it('starts at Paris midnight 6 days ago, not 7 × 24 hours ago', () => {
+    expect(isThisWeek(at('2026-05-26T22:10:00Z'), halfPastMidnight)).toBe(true); // 00:10, 27 May
+    expect(isThisWeek(at('2026-05-26T21:50:00Z'), halfPastMidnight)).toBe(false); // 23:50, 26 May
+  });
+
+  it('counts an instant after today: a meal dated a few minutes ahead', () => {
+    expect(isThisWeek(at('2026-06-02T22:02:00Z'), at('2026-06-02T21:58:00Z'))).toBe(true);
+  });
+});
+
+describe('utcMidnightOf', () => {
   it('is the UTC midnight that names the day', () => {
-    expect(civilDayInstant(civilDay(2026, 5, 15))).toBe(Date.UTC(2026, 4, 15));
+    expect(utcMidnightOf(civilDay(2026, 5, 15))).toBe(Date.UTC(2026, 4, 15));
   });
 
   it('prints as the same date in Europe/Paris and maps back to the day', () => {
     const paris = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' });
     for (const day of [civilDay(2026, 1, 10), civilDay(2026, 3, 29), civilDay(2026, 10, 25)]) {
-      const instant = civilDayInstant(day);
+      const instant = utcMidnightOf(day);
       expect(paris.format(instant)).toBe(new Date(instant).toISOString().slice(0, 10));
       expect(parisDayOf(instant)).toBe(day);
     }
@@ -128,6 +151,15 @@ describe('utcDayOf', () => {
     const halfPastMidnightInParis = at('2026-06-01T22:30:00Z');
     expect(utcDayOf(halfPastMidnightInParis)).toBe(civilDay(2026, 6, 1));
     expect(parisDayOf(halfPastMidnightInParis)).toBe(civilDay(2026, 6, 2));
+  });
+});
+
+describe('daysBefore', () => {
+  it('is n × 24 hours before now, whatever the calendar', () => {
+    expect(daysBefore(at('2026-06-02T10:00:00Z'), 3)).toBe(at('2026-05-30T10:00:00Z'));
+    // Across the 25-hour fall-back day, 1 day before 12:00 CET on 25 October
+    // is 13:00 CEST on the 24th: 24 hours, not the same time on the clock.
+    expect(daysBefore(at('2026-10-25T11:00:00Z'), 1)).toBe(at('2026-10-24T11:00:00Z'));
   });
 });
 

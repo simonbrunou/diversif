@@ -1049,7 +1049,9 @@ export function getTipsFor(ctx: TipContext): Tip[] {
 
 /**
  * Deterministic daily-rotating tip picker : same parents on the same day see
- * the same tip. Stable across reloads, refreshes at Paris midnight.
+ * the same tip. Stable across reloads, refreshes at Paris midnight. `now`
+ * defaults to the clock because the log page picks the tip as it renders, on
+ * the server and again in the browser, with no loader instant to pass.
  */
 export function pickRotatingTip(tips: Tip[], seed: number, now: number = Date.now()): Tip | null {
   if (tips.length === 0) return null;

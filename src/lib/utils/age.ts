@@ -1,4 +1,4 @@
-import { civilDay, parisDayOf } from './civil-calendar';
+import { civilDay, civilDayOfDate, parisDayOf } from './civil-calendar';
 import { parisDateParts } from './paris-date';
 import * as m from '#lib/paraglide/messages.js';
 
@@ -20,10 +20,10 @@ export function ageInMonths(birthDate: string, now: Date = new Date()): number {
 }
 
 export function formatAge(birthDate: string, now: Date = new Date()): string {
-  const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
   const today = parisDayOf(now.getTime());
-  if (today < civilDay(birthYear, birthMonth, birthDay)) return m.childAgeFutureLabel();
+  if (today < civilDayOfDate(birthDate)) return m.childAgeFutureLabel();
 
+  const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
   const months = ageInMonths(birthDate, now);
 
   // The birth date rolled forward by `months` — mirrors the month-overflow

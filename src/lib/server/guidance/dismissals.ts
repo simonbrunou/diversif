@@ -23,12 +23,19 @@ export async function loadDismissals(
   return out;
 }
 
-export async function dismissReminder(userId: number, childId: number, key: string): Promise<void> {
+/** Records that this viewer dismissed `key` at `now`; dismissing it again restarts its TTL. */
+export async function dismissReminder(
+  userId: number,
+  childId: number,
+  key: string,
+  now: number
+): Promise<void> {
+  const dismissedAt = new Date(now);
   await db
     .insert(tipDismissals)
-    .values({ userId, childId, reminderKey: key, dismissedAt: new Date() })
+    .values({ userId, childId, reminderKey: key, dismissedAt })
     .onConflictDoUpdate({
       target: [tipDismissals.userId, tipDismissals.childId, tipDismissals.reminderKey],
-      set: { dismissedAt: new Date() }
+      set: { dismissedAt }
     });
 }

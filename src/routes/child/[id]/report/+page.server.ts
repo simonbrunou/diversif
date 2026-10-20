@@ -7,7 +7,7 @@ import { CATEGORY_IDS, type CategoryId } from '#lib/utils/categories.js';
 import type { ReactionId } from '#lib/utils/reactions.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import { ageInMonths } from '#lib/utils/age.js';
-import { DAY_MS } from '#lib/utils/civil-calendar.js';
+import { daysBefore } from '#lib/utils/civil-calendar.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { getStageForAgeMonths, type Stage } from '#lib/content/guidance.js';
 import { TEXTURE_VALUES, type TextureKey, isTextureKey } from '#lib/utils/textures.js';
@@ -101,7 +101,7 @@ function computeTextureDistribution(
   counts: Record<TextureKey, number>;
   totalWithTexture: number;
 } {
-  const cutoff = now - 30 * DAY_MS;
+  const cutoff = daysBefore(now, 30);
 
   const counts: Record<TextureKey, number> = {
     lisse: 0,

@@ -3,7 +3,7 @@ import { foodEntries, foods, users } from '#lib/server/db/schema.js';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { requireChildContext } from '#lib/server/guards.js';
 import { toEpochMs } from '#lib/utils/dates.js';
-import { civilDayInstant, parisDayOf, thisWeek } from '#lib/utils/civil-calendar.js';
+import { parisDayOf, thisWeek, utcMidnightOf } from '#lib/utils/civil-calendar.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import {
   loadAllergenHistory,
@@ -21,17 +21,17 @@ async function loadWeeklyEntries(
   // 7 daily buckets: oldest at index 0, today at index 6. Buckets are
   // Europe/Paris calendar days, so a food logged right after local midnight
   // lands in "today"'s bucket even though the server clock (and SQLite
-  // storage) is UTC. anchorUtc names today's Paris date (civilDayInstant) so
+  // storage) is UTC. anchorUtc names today's Paris date (utcMidnightOf) so
   // the client can label each bar against the same civil date without
   // SSR/CSR hydration drift.
   const week = thisWeek(now);
   const today = week[week.length - 1];
   // SQL pre-filter only needs to be a superset: real Paris-midnight instants
-  // can be up to ~2h off from the UTC midnights civilDayInstant returns, so
+  // can be up to ~2h off from the UTC midnights utcMidnightOf returns, so
   // pad a full extra day on each side; exact bucketing below re-derives each
   // row's Paris civil day and is authoritative regardless of this margin.
-  const start = new Date(civilDayInstant(week[0] - 1));
-  const end = new Date(civilDayInstant(today + 2));
+  const start = new Date(utcMidnightOf(week[0] - 1));
+  const end = new Date(utcMidnightOf(today + 2));
 
   const rows = await db
     .select({ givenAt: foodEntries.givenAt })
@@ -51,7 +51,7 @@ async function loadWeeklyEntries(
     const idx = week.indexOf(parisDayOf(givenAtMs));
     if (idx >= 0) counts[idx] += 1;
   }
-  return { counts, anchorUtc: civilDayInstant(today) };
+  return { counts, anchorUtc: utcMidnightOf(today) };
 }
 type BentoFood = {
   id: number;

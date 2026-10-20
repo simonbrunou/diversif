@@ -1,4 +1,5 @@
 import { eq, lt } from 'drizzle-orm';
+import { DAY_MS } from '#lib/utils/civil-calendar.js';
 import { idempotencyKeys } from './db/schema';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { SQLiteTransaction } from 'drizzle-orm/sqlite-core';
@@ -20,8 +21,6 @@ export class IdempotencyInFlight extends Error {
 export class IdempotencyScopeMismatch extends Error {
   readonly name = 'IdempotencyScopeMismatch' as const;
 }
-
-const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
 /**
  * MUST be called inside `db.transaction((tx) => ...)`, never with the bare `db`
@@ -80,7 +79,7 @@ export function withIdempotencyKey<T extends { redirect: string }>(
   return { kind: 'fresh', redirect: result.redirect };
 }
 
-export function pruneExpiredKeys(tx: Executor, olderThanMs: number = TWENTY_FOUR_HOURS_MS): number {
+export function pruneExpiredKeys(tx: Executor, olderThanMs: number = DAY_MS): number {
   const cutoff = new Date(Date.now() - olderThanMs);
   const deleted = tx
     .delete(idempotencyKeys)

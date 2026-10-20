@@ -302,7 +302,8 @@ export function allergenHistoryFrom(
  * Reads the child's whole allergen history in one query, unbounded, so an old
  * reaction never ages out. Synchronous: pass a transaction handle to read
  * inside a write (the log action measures milestones before and after).
- * `now` is the request's one reading of the clock.
+ * `now` anchors every day count: read the clock once and pass the same
+ * instant to everything the page derives from it.
  */
 export function loadAllergenHistory(
   executor: Executor,

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import {
   formatRelative,
@@ -71,34 +71,48 @@ describe('formatRelative', () => {
 
   // The server renders the feed in UTC and the browser in its own zone; both
   // must print what a parent in Paris reads on the clock.
-  describe('in Paris time, whatever the host zone', () => {
-    const halfPastMidnight = new Date('2026-06-01T22:30:00Z'); // 00:30 Paris, 2 June
+  describe.each(['UTC', 'Europe/Paris', 'America/Montreal', 'Asia/Tokyo'])(
+    'in Paris time, on a host in %s',
+    (zone) => {
+      const halfPastMidnight = new Date('2026-06-01T22:30:00Z'); // 00:30 Paris, 2 June
+      let hostZone: string | undefined;
 
-    it('turns over at Paris midnight: 22:00 the evening before is « hier »', () => {
-      expect(formatRelative(Date.parse('2026-06-01T20:00:00Z'), halfPastMidnight)).toBe(
-        'hier 22:00'
-      );
-    });
+      beforeEach(() => {
+        hostZone = process.env.TZ;
+        process.env.TZ = zone;
+      });
 
-    it('prints the Paris hour for today', () => {
-      const onePm = new Date('2026-06-02T11:00:00Z'); // 13:00 Paris, 12 h 50 after 00:10
-      expect(formatRelative(Date.parse('2026-06-01T22:10:00Z'), onePm)).toBe('aujourd’hui 00:10');
-    });
+      afterEach(() => {
+        if (hostZone === undefined) delete process.env.TZ;
+        else process.env.TZ = hostZone;
+      });
 
-    it('prints the Paris date and weekday for an older entry', () => {
-      // 23:30Z on Thursday 15 January is 00:30 CET on Friday 16 January.
-      expect(formatRelative(Date.parse('2026-01-15T23:30:00Z'), halfPastMidnight)).toBe(
-        'ven. 16 janv. 00:30'
-      );
-    });
+      it('turns over at Paris midnight: 22:00 the evening before is « hier »', () => {
+        expect(formatRelative(Date.parse('2026-06-01T20:00:00Z'), halfPastMidnight)).toBe(
+          'hier 22:00'
+        );
+      });
 
-    it('reads the year in Paris: 23:30 Paris on 31 December is last year', () => {
-      const newYear = new Date('2026-01-02T10:00:00Z');
-      expect(formatRelative(Date.parse('2025-12-31T22:30:00Z'), newYear)).toBe(
-        '31 déc. 2025 23:30'
-      );
-    });
-  });
+      it('prints the Paris hour for today', () => {
+        const onePm = new Date('2026-06-02T11:00:00Z'); // 13:00 Paris, 12 h 50 after 00:10
+        expect(formatRelative(Date.parse('2026-06-01T22:10:00Z'), onePm)).toBe('aujourd’hui 00:10');
+      });
+
+      it('prints the Paris date and weekday for an older entry', () => {
+        // 23:30Z on Thursday 15 January is 00:30 CET on Friday 16 January.
+        expect(formatRelative(Date.parse('2026-01-15T23:30:00Z'), halfPastMidnight)).toBe(
+          'ven. 16 janv. 00:30'
+        );
+      });
+
+      it('reads the year in Paris: 23:30 Paris on 31 December is last year', () => {
+        const newYear = new Date('2026-01-02T10:00:00Z');
+        expect(formatRelative(Date.parse('2025-12-31T22:30:00Z'), newYear)).toBe(
+          '31 déc. 2025 23:30'
+        );
+      });
+    }
+  );
 
   describe('locale switching', () => {
     afterEach(() => {

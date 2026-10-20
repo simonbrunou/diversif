@@ -11,7 +11,7 @@ function formatHHmm(d: Date): string {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-const PARIS_HH_MM = new Intl.DateTimeFormat('en-GB', {
+const PARIS_HH_MM_FORMATTER = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
   minute: '2-digit',
   hourCycle: 'h23',
@@ -30,7 +30,7 @@ export function formatRelative(date: Date | number, now: Date = new Date()): str
   const diffMin = Math.floor(diffMs / 60_000);
   const diffHour = Math.floor(diffMs / 3_600_000);
   const daysAgo = parisDaysAgo(d.getTime(), now.getTime());
-  const time = PARIS_HH_MM.format(d);
+  const time = PARIS_HH_MM_FORMATTER.format(d);
 
   if (diffMin < 1) return m.dateRelativeNow();
   if (diffMin < 60) return m.dateRelativeMinutes({ min: String(diffMin) });

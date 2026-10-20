@@ -44,17 +44,18 @@ describe('loadDismissals / dismissReminder', () => {
 
   it('persists dismissal and reflects it on next read', async () => {
     const { user, child } = await seedUserAndChild();
-    await dismissReminder(user.id, child.id, 'welcome');
-    // dismissReminder stamps the real clock, so read at the real clock too.
-    expect((await loadDismissals(user.id, child.id, Date.now())).has('welcome')).toBe(true);
+    await dismissReminder(user.id, child.id, 'welcome', NOW);
+    expect((await loadDismissals(user.id, child.id, NOW)).has('welcome')).toBe(true);
   });
 
   it('upserts dismissal on conflict (no duplicate row)', async () => {
     const { user, child } = await seedUserAndChild();
-    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf');
-    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf');
+    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf', NOW - DAY_MS);
+    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf', NOW);
     const rows = await testDb.select().from(tipDismissals).where(eq(tipDismissals.userId, user.id));
     expect(rows.length).toBe(1);
+    // The second dismissal restarts the TTL.
+    expect(rows[0].dismissedAt.getTime()).toBe(NOW);
   });
 
   it('drops a dismissal once its severity TTL has run out at `now`', async () => {
@@ -94,8 +95,8 @@ describe('loadDismissals / dismissReminder', () => {
         createdAt: new Date()
       })
       .returning();
-    await dismissReminder(user.id, sibling.id, 'welcome');
-    await dismissReminder(partner.id, child.id, 'stale-diversity');
-    expect((await loadDismissals(user.id, child.id, Date.now())).size).toBe(0);
+    await dismissReminder(user.id, sibling.id, 'welcome', NOW);
+    await dismissReminder(partner.id, child.id, 'stale-diversity', NOW);
+    expect((await loadDismissals(user.id, child.id, NOW)).size).toBe(0);
   });
 });

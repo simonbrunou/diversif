@@ -17,7 +17,7 @@ import { getCategoryLabel, type CategoryId } from '#lib/utils/categories.js';
 import * as m from '#lib/paraglide/messages.js';
 import type { SourceId } from '#lib/content/sources.js';
 import { FORBIDDEN_FOODS } from '#lib/content/guidance.js';
-import { DAY_MS, elapsedDays, utcDayOf } from '#lib/utils/civil-calendar.js';
+import { DAY_MS, daysBefore, elapsedDays, utcDayOf } from '#lib/utils/civil-calendar.js';
 import type { AllergenHistory } from './allergen-history';
 import type { FoodHistory, HistoryEntry } from './child-history';
 
@@ -215,7 +215,7 @@ function ruleRepeatExposure({ input, childPath }: RuleContext): Draft[] {
     .filter(
       (c) =>
         c.count === 1 &&
-        input.now - c.lastAt > REPEAT_COOLDOWN_DAYS * DAY_MS &&
+        c.lastAt < daysBefore(input.now, REPEAT_COOLDOWN_DAYS) &&
         !isPriorityAllergen(c.allergenType) &&
         !(c.allergenType && input.allergens.isBlocked(c.allergenType))
     )
@@ -233,7 +233,7 @@ function ruleRepeatExposure({ input, childPath }: RuleContext): Draft[] {
 // Category imbalance : last 14 days dominated by 1 category > 60 %
 function ruleCategoryImbalance({ input, childPath }: RuleContext): Draft[] {
   if (input.entries.length < 5) return [];
-  const since = input.now - 14 * DAY_MS;
+  const since = daysBefore(input.now, 14);
   const last14 = input.entries.filter((e) => e.givenAt >= since);
   if (last14.length < 5) return [];
   const byCat = new Map<CategoryId, number>();
