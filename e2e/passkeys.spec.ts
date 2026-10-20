@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { awaitHydration, signUp } from './_helpers';
-
-// Same fixed password `signUp()` always submits (see e2e/_helpers.ts) — the
-// registration ceremony's fresh-auth check needs it to reissue the account's
-// own current password.
-const SIGNUP_PASSWORD = 'hunter2-very-long';
+// The registration ceremony's fresh-auth check needs SIGNUP_PASSWORD to
+// reissue the account's own current password.
+import { awaitHydration, signUp, SIGNUP_PASSWORD } from './_helpers';
 
 /**
  * WebAuthn passkey registration + sign-in, driven through a real Chrome

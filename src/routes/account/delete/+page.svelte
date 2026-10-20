@@ -10,16 +10,15 @@
   import { onMount } from 'svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { matchesAccountEmail } from '#lib/utils/account-email.js';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let confirmDeleteEmail = $state('');
   let confirmDeletePassword = $state('');
   let deletingAccount = $state(false);
-  // Lowercase both sides, as the action does: an account email stored with
-  // mixed case would otherwise never match and keep the button disabled.
   const confirmed = $derived(
-    confirmDeleteEmail.trim().toLowerCase() === (data.user?.email ?? '').toLowerCase() &&
+    matchesAccountEmail(confirmDeleteEmail, data.user?.email ?? '') &&
       confirmDeletePassword.length > 0
   );
   // The button only waits for `confirmed` once hydrated: SSR renders it
@@ -37,6 +36,15 @@
   <SectionHeader as="h2" tone="destructive">{m.authAccountDeleteSection()}</SectionHeader>
   <p class="mb-3 text-sm text-ink-soft">{m.authAccountDeleteDescription()}</p>
   <form method="POST" class="grid gap-3" use:enhance={trackSubmission((v) => (deletingAccount = v))}>
+    {#if form?.deleteErrorKey}
+      <!-- Inline rather than a toast: the Toaster is client-only, and a
+           refused no-JS POST re-renders this page with nothing else to say why.
+           Keyed on `form` so a second identical refusal re-inserts the alert
+           and screen readers announce it again. -->
+      {#key form}
+        <FormError>{resolveMessageKey(form.deleteErrorKey)}</FormError>
+      {/key}
+    {/if}
     <Field name="confirmEmail" label={m.authAccountDeleteConfirmLabel()}>
       <Input
         id="confirmEmail"
@@ -58,11 +66,6 @@
         required
       />
     </Field>
-    {#if form?.deleteErrorKey}
-      <!-- Inline rather than a toast: the Toaster is client-only, and a
-           refused no-JS POST re-renders this page with nothing else to say why. -->
-      <FormError>{resolveMessageKey(form.deleteErrorKey)}</FormError>
-    {/if}
     <div>
       <Button
         type="submit"

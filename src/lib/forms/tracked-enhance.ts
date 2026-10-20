@@ -1,15 +1,16 @@
 // Shared use:enhance helpers.
 //
 // `trackSubmission` backs every enhanced form in the app: the account pages
-// (password/profile/delete), child settings, login, signup, join/[code],
+// (password/profile/passkeys/delete), child settings, login, signup, join/[code],
 // ConfirmModal and AddSymptomSheet — each previously declared a diverging
 // inline closure. The repas forms (log, edit) don't use use:enhance: they
 // submit through RepasForm.svelte and the durable submit module.
 //
-// `resolveMessageKey` turns an action-returned key into prose: inline in a
-// FormError (account/delete, the repas forms, join/[code]), as a toast
-// (form-toasts.svelte.ts for the other account pages, child settings), and
-// in the passkeys/registration/options endpoint (fresh-auth failures).
+// `resolveMessageKey` turns an action-returned key into prose: inline on the
+// page (login, signup, account/delete, the repas forms, join/[code]), as a
+// toast (form-toasts.svelte.ts for account/profile, password and passkeys;
+// child settings), and in the passkeys/registration/options endpoint
+// (fresh-auth failures).
 
 import * as m from '#lib/paraglide/messages.js';
 

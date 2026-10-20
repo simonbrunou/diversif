@@ -26,6 +26,9 @@ export async function awaitHydration(page: Page): Promise<void> {
   await page.locator('html[data-hydrated="true"]').waitFor({ state: 'attached', timeout: 15_000 });
 }
 
+/** The password every `signUp()` account gets, for fresh-auth prompts and re-logins. */
+export const SIGNUP_PASSWORD = 'hunter2-very-long';
+
 /**
  * Submit the signup form with a generated email and land on /child/new.
  * Use this when you want to drive the onboarding form yourself.
@@ -46,7 +49,7 @@ export async function signUp(
   } = {}
 ): Promise<string> {
   const email = opts.email ?? `${uniqueForWorker(emailPrefix)}@example.com`;
-  const password = 'hunter2-very-long';
+  const password = SIGNUP_PASSWORD;
   const url = opts.inviteCode ? `/signup?code=${opts.inviteCode}` : '/signup';
   await page.goto(url);
   await awaitHydration(page);

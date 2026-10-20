@@ -34,6 +34,15 @@ describe('account/delete page', () => {
     expect(toastError).not.toHaveBeenCalled();
   });
 
+  it('re-inserts the alert on a second identical refusal, so it is announced again', async () => {
+    const refusal = { deleteErrorKey: 'errorsAccountPasswordIncorrect' } as const;
+    const { getByRole, rerender } = renderPage('p@example.com', { ...refusal });
+    const first = getByRole('alert');
+    await rerender({ form: { ...refusal } });
+    expect(getByRole('alert')).not.toBe(first);
+    expect(getByRole('alert').textContent).toContain('Mot de passe actuel incorrect.');
+  });
+
   it('renders no alert before any submission', () => {
     const { queryByRole } = renderPage('p@example.com');
     expect(queryByRole('alert')).toBeNull();
