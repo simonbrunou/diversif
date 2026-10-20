@@ -1,24 +1,24 @@
-// Reminder-dismissal storage. The TTL conventions live in ../dismissal-ttl.ts.
+// Reminder dismissals, per viewer and child. How long each one holds is the
+// reminder policy's call: ttlForReminderKey in ./reminders.ts.
 
 import { db } from '#lib/server/db/index.js';
 import { tipDismissals } from '#lib/server/db/schema.js';
 import { and, eq } from 'drizzle-orm';
-import { ttlForReminderKey } from '../dismissal-ttl';
+import { ttlForReminderKey } from './reminders';
 
-export async function loadDismissals(userId: number, childId: number): Promise<Set<string>> {
+/** The keys this viewer dismissed for this child and whose TTL hasn't run out at `now`. */
+export async function loadDismissals(
+  userId: number,
+  childId: number,
+  now: number = Date.now()
+): Promise<Set<string>> {
   const rows = await db
     .select({ key: tipDismissals.reminderKey, at: tipDismissals.dismissedAt })
     .from(tipDismissals)
     .where(and(eq(tipDismissals.userId, userId), eq(tipDismissals.childId, childId)));
-  // Drop dismissals older than their key's TTL.
-  const now = Date.now();
   const out = new Set<string>();
   for (const r of rows) {
-    const at = r.at.getTime();
-    const ttl = ttlForReminderKey(r.key);
-    if (now - at < ttl) {
-      out.add(r.key);
-    }
+    if (now - r.at.getTime() < ttlForReminderKey(r.key)) out.add(r.key);
   }
   return out;
 }

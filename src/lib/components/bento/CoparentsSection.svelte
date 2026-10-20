@@ -4,7 +4,7 @@
   import EmptyHint from '#lib/components/ui/EmptyHint.svelte';
   import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
   import * as m from '#lib/paraglide/messages.js';
-  import type { CoparentEntry } from '#lib/server/guidance/queries/timeline.js';
+  import type { CoparentEntry } from '#lib/server/guidance/child-history.js';
   import { UserPlus } from '@lucide/svelte';
 
   type Coparent = { id: string; displayName: string; role: string };

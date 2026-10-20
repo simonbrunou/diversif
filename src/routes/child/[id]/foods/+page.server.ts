@@ -5,8 +5,9 @@ import { requireChildContext } from '#lib/server/guards.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { parisDayIndex } from '#lib/utils/paris-date.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
-import { loadRepeatCandidates, loadTexturesTried } from '#lib/server/guidance/queries/index.js';
+import { loadTexturesTried } from '#lib/server/guidance/queries/seasonal.js';
 import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
+import { loadChildHistory } from '#lib/server/guidance/child-history.js';
 import type { TextureKey } from '#lib/utils/textures.js';
 import type { PageServerLoad } from './$types';
 
@@ -126,14 +127,9 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const conditions = buildFoodFilters(childId, category, reaction);
 
   if (repeat) {
-    // Foods given <= 2 times whose worst reaction is RAS (Inconfort excluded). Shares
-    // the worst-rank threshold with the dashboard "Reproposez" cards
-    // (findRepeatCandidates in reminders.ts ruleRepeatExposure, which also
-    // narrows the count to 1) — see src/lib/server/guidance/repeat-candidates.
-    // Pass `null` so the carnet filter returns every candidate, not the
-    // oldest N (loadRepeatCandidates orders by last_at ASC before LIMIT).
-    const candidates = await loadRepeatCandidates(childId, null);
-    const ids = candidates.map((c) => c.foodId);
+    // Every food given <= 2 times, never with symptoms: the same candidates
+    // the Aujourd'hui "Reproposez" cards narrow down (ruleRepeatExposure).
+    const ids = loadChildHistory(db, childId).repeatCandidates.map((c) => c.foodId);
     if (ids.length === 0) {
       const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
         loadAllergenHistory(db, childId).statuses,
