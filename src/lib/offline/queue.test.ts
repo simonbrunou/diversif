@@ -25,6 +25,12 @@ function server(answer: () => Response | Promise<Response>) {
   return { transport, calls };
 }
 
+/** Like server(), answering the calls in turn. */
+function serverAnswering(...answers: (() => Response)[]) {
+  let call = 0;
+  return server(() => answers[call++]());
+}
+
 const goodActionResult = (location = '/child/1?logged=1') =>
   new Response(JSON.stringify({ type: 'redirect', location }), {
     status: 200,
@@ -388,9 +394,10 @@ describe('queue', () => {
   });
 
   it('announces one queue:synced per flush, only once the replayed rows are deleted', async () => {
-    spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(goodActionResult('/child/1?logged=1&first=1'))
-      .mockResolvedValueOnce(goodActionResult('/child/1?logged=1&categories=1&prevCategories=1'));
+    const { transport } = serverAnswering(
+      () => goodActionResult('/child/1?logged=1&first=1'),
+      () => goodActionResult('/child/1?logged=1&categories=1&prevCategories=1')
+    );
     const detail: unknown[] = [];
     const rowsLeftAtEmit: Promise<number>[] = [];
     const handler = (e: Event) => {
@@ -401,7 +408,7 @@ describe('queue', () => {
 
     await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
     await enqueue({ key: 'k2', childId: 1, formData: { foodId: '2' }, queuedAt: 2 });
-    await flush();
+    await flush(transport);
 
     expect(detail).toEqual([
       { queryStrings: ['logged=1&first=1', 'logged=1&categories=1&prevCategories=1'] }
@@ -411,16 +418,17 @@ describe('queue', () => {
   });
 
   it('announces only the rows replayed before a retry stopped the pass', async () => {
-    spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(goodActionResult('/child/1?logged=1&first=1'))
-      .mockImplementationOnce(networkFailure);
+    const { transport } = serverAnswering(
+      () => goodActionResult('/child/1?logged=1&first=1'),
+      networkFailure
+    );
     const detail: unknown[] = [];
     const handler = (e: Event) => detail.push((e as CustomEvent).detail);
     window.addEventListener('queue:synced', handler);
 
     await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
     await enqueue({ key: 'k2', childId: 1, formData: { foodId: '2' }, queuedAt: 2 });
-    await flush();
+    await flush(transport);
 
     expect(detail).toEqual([{ queryStrings: ['logged=1&first=1'] }]);
     expect(await countRows()).toBe(1);
@@ -430,9 +438,7 @@ describe('queue', () => {
   it('announces a replayed row only once it is deleted, so a failed delete cannot celebrate twice', async () => {
     // The replay returns the same redirect both times, as the server's
     // idempotency cache does for a re-sent key.
-    spyOn(globalThis, 'fetch').mockImplementation(async () =>
-      goodActionResult('/child/1?logged=1&first=1')
-    );
+    const { transport } = server(() => goodActionResult('/child/1?logged=1&first=1'));
     const detail: unknown[] = [];
     const handler = (e: Event) => detail.push((e as CustomEvent).detail);
     window.addEventListener('queue:synced', handler);
@@ -448,26 +454,26 @@ describe('queue', () => {
         ? realOpen(...(args as Parameters<typeof realOpen>))
         : failingOpenRequest(fakeError)
     );
-    await expect(flush()).rejects.toBe(fakeError);
+    await expect(flush(transport)).rejects.toBe(fakeError);
     openSpy.mockRestore();
 
     expect(detail).toEqual([]);
     expect(await countRows()).toBe(1);
 
-    await flush();
+    await flush(transport);
     expect(detail).toEqual([{ queryStrings: ['logged=1&first=1'] }]);
     expect(await countRows()).toBe(0);
     window.removeEventListener('queue:synced', handler);
   });
 
   it('does not announce queue:synced when no row replayed', async () => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(400));
+    const { transport } = server(() => failureActionResult(400));
     let synced = 0;
     const handler = () => synced++;
     window.addEventListener('queue:synced', handler);
 
     await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
-    await flush();
+    await flush(transport);
 
     expect(synced).toBe(0);
     window.removeEventListener('queue:synced', handler);
@@ -477,13 +483,13 @@ describe('queue', () => {
     ['/en/child/1?logged=1&first=1', 'logged=1&first=1'],
     ['/child/1', '']
   ])('reads the query string of the success redirect %s', async (location, queryString) => {
-    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult(location));
+    const { transport } = server(() => goodActionResult(location));
     const detail: unknown[] = [];
     const handler = (e: Event) => detail.push((e as CustomEvent).detail);
     window.addEventListener('queue:synced', handler);
 
     await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
-    await flush();
+    await flush(transport);
 
     expect(detail).toEqual([{ queryStrings: [queryString] }]);
     window.removeEventListener('queue:synced', handler);
