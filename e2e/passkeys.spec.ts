@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test';
-// The registration ceremony's fresh-auth check needs SIGNUP_PASSWORD to
-// reissue the account's own current password.
 import { awaitHydration, signUp, SIGNUP_PASSWORD } from './_helpers';
 
 /**
@@ -53,6 +51,8 @@ test.describe('passkeys', () => {
 
     await page.goto('/account/passkeys');
     await awaitHydration(page);
+    // The registration ceremony's fresh-auth check needs the account's own
+    // current password.
     await page.getByLabel('Mot de passe', { exact: true }).fill(SIGNUP_PASSWORD);
     await page.getByLabel('Nom de la nouvelle clé').fill('CDP virtual authenticator');
     await page.getByRole('button', { name: 'Ajouter une clé', exact: true }).click();

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { matchesAccountEmail } from './account-email';
 
 describe('matchesAccountEmail', () => {
-  it('ignores surrounding spaces and case on both sides', () => {
+  it('trims the typed value and ignores case on both sides', () => {
     expect(matchesAccountEmail('  PARENT@example.com ', 'Parent@Example.com')).toBe(true);
   });
 

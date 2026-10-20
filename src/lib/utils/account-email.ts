@@ -1,6 +1,6 @@
 /**
- * Whether `typed` is the account's email, ignoring surrounding spaces and
- * case. Shared by the account/delete action and its page's button check so
+ * Whether `typed` is the account's email, ignoring spaces around the typed
+ * value, and case. Shared by the account/delete action and its page's button check so
  * the two can't drift apart.
  *
  * Lowercase both sides: signup normalises to lowercase before insert, but

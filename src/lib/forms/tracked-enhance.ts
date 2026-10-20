@@ -6,7 +6,7 @@
 // inline closure. The repas forms (log, edit) don't use use:enhance: they
 // submit through RepasForm.svelte and the durable submit module.
 //
-// `resolveMessageKey` turns an action-returned key into prose: inline on the
+// `resolveMessageKey` turns an action- or load-returned key into prose: inline on the
 // page (login, signup, account/delete, the repas forms, join/[code]), as a
 // toast (form-toasts.svelte.ts for account/profile, password and passkeys;
 // child settings), and in the passkeys/registration/options endpoint
