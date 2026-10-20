@@ -4,19 +4,31 @@
   import Card from '#lib/components/ui/Card.svelte';
   import Input from '#lib/components/ui/Input.svelte';
   import Field from '#lib/components/ui/Field.svelte';
+  import FormError from '#lib/components/ui/FormError.svelte';
   import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
   import { enhance } from '$app/forms';
+  import { onMount } from 'svelte';
   import * as m from '#lib/paraglide/messages.js';
-  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
-  import { createFormToasts } from '#lib/forms/form-toasts.svelte.js';
+  import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let confirmDeleteEmail = $state('');
   let confirmDeletePassword = $state('');
   let deletingAccount = $state(false);
-
-  createFormToasts(() => form, { errorKey: 'deleteErrorKey' });
+  // Lowercase both sides, as the action does: an account email stored with
+  // mixed case would otherwise never match and keep the button disabled.
+  const confirmed = $derived(
+    confirmDeleteEmail.trim().toLowerCase() === (data.user?.email ?? '').toLowerCase() &&
+      confirmDeletePassword.length > 0
+  );
+  // The button only waits for `confirmed` once hydrated: SSR renders it
+  // enabled so a no-JS visitor can still exercise the right to erasure. The
+  // action enforces the same checks and both inputs are required.
+  let hydrated = $state(false);
+  onMount(() => {
+    hydrated = true;
+  });
 </script>
 
 <BackHeader title={m.authAccountDeleteSection()} />
@@ -46,13 +58,17 @@
         required
       />
     </Field>
+    {#if form?.deleteErrorKey}
+      <!-- Inline rather than a toast: the Toaster is client-only, and a
+           refused no-JS POST re-renders this page with nothing else to say why. -->
+      <FormError>{resolveMessageKey(form.deleteErrorKey)}</FormError>
+    {/if}
     <div>
       <Button
         type="submit"
         variant="destructive"
         loading={deletingAccount}
-        disabled={confirmDeleteEmail.trim().toLowerCase() !== (data.user?.email ?? '') ||
-          confirmDeletePassword.length === 0}
+        disabled={hydrated && !confirmed}
       >
         {deletingAccount ? m.authAccountDeleteSubmitting() : m.authAccountDeleteSubmit()}
       </Button>
