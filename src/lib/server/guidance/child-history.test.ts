@@ -75,8 +75,8 @@ describe('loadChildHistory', () => {
     const partner = await insertUser('partner@example.com', 'Partenaire');
     const child = await insertChild(parent.id, 'Bébé');
     const sibling = await insertChild(parent.id, 'Aîné');
-    const egg = await insertFood('Œuf dur', 'oeufs', 'oeuf');
     const carrot = await insertFood('Carotte', 'legumes', null);
+    const egg = await insertFood('Œuf dur', 'oeufs', 'oeuf');
     const [eggEntry, carrotEntry] = await testDb
       .insert(foodEntries)
       .values([
@@ -84,7 +84,7 @@ describe('loadChildHistory', () => {
           childId: child.id,
           foodId: egg.id,
           givenAt: new Date(NOW - 2 * DAY),
-          reaction: 'ras',
+          reaction: 'reaction',
           texture: 'ecrasee',
           notes: 'Pas de souci',
           loggedBy: parent.id,
@@ -132,7 +132,7 @@ describe('loadChildHistory', () => {
         foodId: egg.id,
         foodName: 'Œuf dur',
         category: 'oeufs',
-        reaction: 'ras',
+        reaction: 'reaction',
         givenAt: NOW - 2 * DAY,
         texture: 'ecrasee',
         mealId: null,
@@ -141,9 +141,11 @@ describe('loadChildHistory', () => {
     ]);
     expect(history.foodsIntroduced).toBe(2);
     expect(history.coparentActivity(parent.id)).toEqual([]);
-    const allergens = new Map(history.allergens.statuses.map((a) => [a.id, a.state]));
-    expect(allergens.get('oeuf')).toBe('cleared');
-    expect(allergens.get('arachide')).toBe('todo');
+    const allergens = new Map(history.allergens.statuses.map((a) => [a.id, a]));
+    // The réaction pill links the entry, not the food: their ids differ here.
+    expect(eggEntry.id).not.toBe(egg.id);
+    expect(allergens.get('oeuf')).toMatchObject({ state: 'reaction', worstEntryId: eggEntry.id });
+    expect(allergens.get('arachide')?.state).toBe('todo');
   });
 
   it('is empty for a child with no entries', async () => {
@@ -268,6 +270,18 @@ describe('coparentActivity', () => {
   it('shows at most 5 entries', () => {
     const entries = Array.from({ length: 8 }, (_, i) => byPartner({ givenAt: NOW - i * 60_000 }));
     expect(childHistoryFrom(CHILD_ID, entries, NOW).coparentActivity(VIEWER)).toHaveLength(5);
+  });
+
+  it("counts the 5 against the co-parent's entries, not the viewer's newer ones", () => {
+    const viewer = Array.from({ length: 6 }, (_, i) =>
+      entry({ loggedBy: VIEWER, givenAt: NOW - (i + 1) * 60_000 })
+    );
+    const partner = [
+      byPartner({ id: 901, givenAt: NOW - DAY }),
+      byPartner({ id: 902, givenAt: NOW - 2 * DAY })
+    ];
+    const history = childHistoryFrom(CHILD_ID, [...viewer, ...partner], NOW);
+    expect(history.coparentActivity(VIEWER).map((e) => e.id)).toEqual([901, 902]);
   });
 
   it("keeps a co-parent's meal adjacent, so groupByMeal folds it into one group", () => {

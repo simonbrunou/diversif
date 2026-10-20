@@ -47,7 +47,7 @@ The 2026-07 meal-idea carve-out holds to the same rule and is not an exception t
 
 - Food log with reaction (`ras` / `inconfort` / `reaction`), texture, notes, and multi-ingredient meals grouped by a shared `mealId`.
 - 12 tracked allergens with derived state (`cleared` / `todo` / `fading` / `inconfort` / `reaction`); priority-introduction set follows LEAP/EAT/ESPGHAN, not EU labelling.
-- Deterministic reminder engine (`src/lib/server/guidance/reminders.ts`): pure derivation from the child's data plus dismissals, sorted by severity and capped at 4.
+- Deterministic reminder engine (`src/lib/server/guidance/reminders.ts`): pure derivation from the child's history plus dismissals, capped at 4. The 48 h observation window leads, then cards run by severity; a dismissal holds as long as its severity's TTL.
 - Offline-first PWA: writes queue in IndexedDB and replay with idempotency keys.
 - Auth: WebAuthn passkeys plus `Bun.password` Argon2id. Co-parent sharing by single-use invite code, 7-day expiry.
 - RGPD: account deletion and export are both one form away and actually delete the row plus related entries.

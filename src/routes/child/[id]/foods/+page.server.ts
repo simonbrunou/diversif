@@ -5,9 +5,12 @@ import { requireChildContext } from '#lib/server/guards.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { parisDayIndex } from '#lib/utils/paris-date.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
-import { loadTexturesTried } from '#lib/server/guidance/queries/seasonal.js';
-import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
-import { loadChildHistory } from '#lib/server/guidance/child-history.js';
+import {
+  loadAllergenHistory,
+  type AllergenHistory
+} from '#lib/server/guidance/allergen-history.js';
+import { loadChildHistory, type ChildHistory } from '#lib/server/guidance/child-history.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { TextureKey } from '#lib/utils/textures.js';
 import type { PageServerLoad } from './$types';
 
@@ -110,6 +113,30 @@ function aggregateBentoFoods(rows: BentoSourceRow[]): BentoFood[] {
   return Array.from(foodMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+async function loadTexturesTried(childId: number): Promise<number> {
+  const rows = await db
+    .select({ n: sql<number>`count(distinct ${foodEntries.texture})` })
+    .from(foodEntries)
+    .where(and(eq(foodEntries.childId, childId), sql`${foodEntries.texture} IS NOT NULL`))
+    .limit(1);
+  // COUNT() always returns one row; the fallback only satisfies the types.
+  return rows[0]?.n ?? 0;
+}
+
+// The tiles beside the list: the allergen pills, the 7-day bars and the
+// textures count. The ?repeat=1 path passes the allergen history it already
+// read with the child's history, instead of reading it a second time.
+async function loadTiles(
+  childId: number,
+  allergens: AllergenHistory = loadAllergenHistory(db, childId)
+) {
+  const [weeklyEntries, texturesTried] = await Promise.all([
+    loadWeeklyEntries(childId),
+    loadTexturesTried(childId)
+  ]);
+  return { texturesTried, bentoAllergens: allergens.statuses, weeklyEntries };
+}
+
 // Rendered per-entry history list is capped for page weight; the search
 // filter, bento food/category aggregation, and their counts are computed
 // from the *unbounded* row set (see load()) so a food logged earlier than
@@ -126,25 +153,20 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
 
   const conditions = buildFoodFilters(childId, category, reaction);
 
+  let history: ChildHistory | undefined;
   if (repeat) {
     // Every food given <= 2 times, never with symptoms: the same candidates
     // the Aujourd'hui "Reproposez" cards narrow down (ruleRepeatExposure).
-    const ids = loadChildHistory(db, childId).repeatCandidates.map((c) => c.foodId);
+    history = loadChildHistory(db, childId);
+    const ids = history.repeatCandidates.map((c) => c.foodId);
     if (ids.length === 0) {
-      const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
-        loadAllergenHistory(db, childId).statuses,
-        loadWeeklyEntries(childId),
-        loadTexturesTried(childId)
-      ]);
       return {
         entries: [],
         filters: { q, category, reaction, repeat },
         bentoFoods: [],
         foodCount: 0,
         categoryCount: 0,
-        texturesTried,
-        bentoAllergens,
-        weeklyEntries
+        ...(await loadTiles(childId, history.allergens))
       };
     }
     conditions.push(inArray(foodEntries.foodId, ids));
@@ -189,24 +211,16 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const foodCount = bentoFoods.length;
   const categoryCount = new Set(bentoFoods.map((f) => f.category)).size;
 
-  const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
-    loadAllergenHistory(db, childId).statuses,
-    loadWeeklyEntries(childId),
-    loadTexturesTried(childId)
-  ]);
-
   return {
     entries: rows.slice(0, MAX_RENDERED_ENTRIES).map((r) => ({
       ...r,
-      loggedByName: r.loggedByName ?? 'Compte supprimé',
+      loggedByName: r.loggedByName ?? m.entryLoggedByDeletedAccount(),
       givenAt: toEpochMs(r.givenAt as Date | number | string)
     })),
     filters: { q, category, reaction, repeat },
     bentoFoods,
     foodCount,
     categoryCount,
-    texturesTried,
-    bentoAllergens,
-    weeklyEntries
+    ...(await loadTiles(childId, history?.allergens))
   };
 };

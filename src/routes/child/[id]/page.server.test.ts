@@ -304,67 +304,58 @@ describe('child/[id] +page.server load', () => {
     expect(byId.get('arachide')?.state).toBe('todo');
   });
 
-  it('surfaces an observation-window reminder with cta href when a non-RAS entry exists within 48 h', async () => {
-    const { u, c, m, food } = await setup();
+  /** A load or dismissReminder event for the setup's parent, posting `reminderKey`. */
+  function eventFor({ u, c, m }: Awaited<ReturnType<typeof setup>>, reminderKey = '') {
+    return makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { reminderKey },
+      parent: async () => ({
+        child: {
+          id: c.id,
+          name: c.name,
+          birthDate: c.birthDate,
+          createdAt: c.createdAt.getTime()
+        }
+      })
+    });
+  }
+  const loadAs = (event: ReturnType<typeof eventFor>) =>
+    load(event as unknown as Parameters<typeof load>[0]);
+  const dismissAs = (event: ReturnType<typeof eventFor>) =>
+    actions.dismissReminder!(
+      event as unknown as Parameters<NonNullable<typeof actions.dismissReminder>>[0]
+    );
+
+  it('surfaces the observation-window card, and hides it once dismissed through the action', async () => {
+    const ctx = await setup();
     const [entry] = await testDb
       .insert(foodEntries)
       .values({
-        childId: c.id,
-        foodId: food.id,
+        childId: ctx.c.id,
+        foodId: ctx.food.id,
         givenAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
         reaction: 'inconfort',
         notes: null,
-        loggedBy: u.id,
+        loggedBy: ctx.u.id,
         createdAt: new Date()
       })
       .returning();
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
-    );
-    const obsReminder = out.reminders.find((r) => r.key.startsWith('observation-window:'));
-    expect(obsReminder).toBeDefined();
-    expect(obsReminder!.cta?.href).toBe(`/child/${c.id}/foods/${entry.id}`);
-    expect(obsReminder!.severity).toBe('warn');
+    const key = `observation-window:${entry.id}`;
+    const card = (await loadAs(eventFor(ctx))).reminders.find((r) => r.key === key);
+    expect(card?.cta?.href).toBe(`/child/${ctx.c.id}/foods/${entry.id}`);
+    expect(card?.severity).toBe('warn');
+
+    await dismissAs(eventFor(ctx, key));
+    expect((await loadAs(eventFor(ctx))).reminders.map((r) => r.key)).not.toContain(key);
   });
 
-  it('keeps a card dismissed through the action hidden on the next load', async () => {
-    const { u, c, m } = await setup();
-    const event = () =>
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        formData: { reminderKey: 'welcome-dialog' },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      });
-    expect((await load(event() as unknown as Parameters<typeof load>[0])).showWelcomeDialog).toBe(
-      true
-    );
-    await actions.dismissReminder!(
-      event() as unknown as Parameters<NonNullable<typeof actions.dismissReminder>>[0]
-    );
-    expect((await load(event() as unknown as Parameters<typeof load>[0])).showWelcomeDialog).toBe(
-      false
-    );
+  it('keeps the welcome dialog closed once dismissed through the action', async () => {
+    const ctx = await setup();
+    expect((await loadAs(eventFor(ctx))).showWelcomeDialog).toBe(true);
+    await dismissAs(eventFor(ctx, 'welcome-dialog'));
+    expect((await loadAs(eventFor(ctx))).showWelcomeDialog).toBe(false);
   });
 });
 

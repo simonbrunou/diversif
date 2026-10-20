@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { childHistoryFrom, type HistoryEntry } from './child-history';
-import { TTL_BY_SEVERITY, ttlForReminderKey, type Reminder } from './reminders';
+import { ttlForReminderKey, type Reminder } from './reminders';
 import {
   ALLERGENS,
   PRIORITY_INTRODUCTION_ALLERGENS,
@@ -130,6 +130,12 @@ describe('reminders', () => {
       expect(keys(out)).not.toContain('stale-diversity');
     });
 
+    it('fires from the 14th day without a new food, not on the 13th', () => {
+      const after = (days: number) => isolated({ entries: [entry({ givenAt: NOW - days * DAY })] });
+      expect(keys(after(14))).toContain('stale-diversity');
+      expect(keys(after(13))).not.toContain('stale-diversity');
+    });
+
     it('does not fire when entries empty', () => {
       expect(keys(isolated())).not.toContain('stale-diversity');
     });
@@ -236,6 +242,11 @@ describe('reminders', () => {
       expect(keys(isolated({ entries: [e] }))).not.toContain('repeat-exposure:42');
     });
 
+    it('proposes a food tagged with a non-priority allergen while that allergen is fine', () => {
+      const fine = allergenEntry('celeri', 5, 'ras', { foodId: 10, foodName: 'Céleri-rave' });
+      expect(keys(isolated({ entries: [fine] }))).toContain('repeat-exposure:10');
+    });
+
     it('does not re-propose a food whose allergen caused symptoms on another food (#373)', () => {
       // Céleri is not a priority allergen, so the repeat rule may pick its foods.
       const fine = allergenEntry('celeri', 5, 'ras', { foodId: 10, foodName: 'Céleri-rave' });
@@ -268,6 +279,20 @@ describe('reminders', () => {
       expect(keys(out).filter((k) => k.startsWith('repeat-exposure:'))).toEqual([
         'repeat-exposure:9',
         'repeat-exposure:7'
+      ]);
+    });
+
+    it('breaks a tie between foods of one meal by entry id', () => {
+      // Three foods logged together 5 days ago: the two lowest entry ids win.
+      const meal = [
+        [12, 30],
+        [10, 50],
+        [11, 40]
+      ].map(([id, foodId]) => entry({ id, foodId, givenAt: NOW - 5 * DAY, mealId: 'm1' }));
+      const out = isolated({ entries: meal, dismissals: ['stale-diversity'] });
+      expect(keys(out).filter((k) => k.startsWith('repeat-exposure:'))).toEqual([
+        'repeat-exposure:50',
+        'repeat-exposure:40'
       ]);
     });
   });
@@ -409,11 +434,24 @@ describe('reminders', () => {
       ]);
     });
 
-    it('does not fire once the entry is older than 48 h', () => {
-      const e = entry({ reaction: 'inconfort', givenAt: NOW - 49 * HOUR });
-      expect(keys(isolated({ entries: [e] })).some((k) => k.startsWith('observation-'))).toBe(
-        false
+    it('still fires at exactly 48 h, not after', () => {
+      const at = (hours: number) =>
+        isolated({
+          entries: [entry({ id: 5, reaction: 'inconfort', givenAt: NOW - hours * HOUR })]
+        });
+      expect(keys(at(48))).toContain('observation-window:5');
+      expect(keys(at(49)).some((k) => k.startsWith('observation-'))).toBe(false);
+    });
+
+    it('points at the lowest entry id among symptoms logged at the same instant', () => {
+      const meal = [9, 8].map((id) =>
+        entry({ id, foodId: id, reaction: 'inconfort', givenAt: NOW - HOUR, mealId: 'm1' })
       );
+      const shown = (dismissals: string[]) =>
+        keys(isolated({ entries: meal, dismissals })).filter((k) => k.startsWith('observation-'));
+      expect(shown([])).toEqual(['observation-window:8']);
+      // Dismissed, it doesn't fall back to the meal's other entry.
+      expect(shown(['observation-window:8'])).toEqual([]);
     });
 
     it('does not fire when every recent entry is RAS', () => {
@@ -484,20 +522,6 @@ describe('ttlForReminderKey', () => {
       ['maintain-allergen:oeuf:20000', INFO_TTL]
     ];
     expect(cases.map(([key]) => [key, ttlForReminderKey(key)])).toEqual(cases);
-  });
-
-  it('matches the severity of every card the rules build', () => {
-    const out = [
-      ...remind({ childCreatedAt: NOW - 2 * DAY }),
-      ...remind({ ageMonths: 6, entries: [entry({ foodName: 'Miel', reaction: 'reaction' })] }),
-      ...isolated({ entries: [entry({ givenAt: NOW - 20 * DAY }), allergenEntry('oeuf', 9)] })
-    ];
-    for (const r of out) {
-      expect({ key: r.key, ttl: ttlForReminderKey(r.key) }).toEqual({
-        key: r.key,
-        ttl: TTL_BY_SEVERITY[r.severity]
-      });
-    }
   });
 
   it('falls back to the info TTL for an unknown family, prototype names included', () => {

@@ -6,7 +6,7 @@
   import RecentFeed from './RecentFeed.svelte';
   import type { Reminder } from '#lib/server/guidance/reminders.js';
   import type { RecentEntry } from '#lib/types.js';
-  import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
+  import { isPriorityAllergen } from '#lib/utils/allergens.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import * as m from '#lib/paraglide/messages.js';
   import { FileText, ChevronRight, UtensilsCrossed } from '@lucide/svelte';
@@ -44,8 +44,6 @@
     allergens: readonly AllergenStatusItem[];
   } = $props();
 
-  const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
-
   // Actionable states only, and every one of them visible. The old version
   // also emitted up to three 'cleared' pills and relied on a horizontal
   // scroller, which pushed the genuinely actionable 'todo' pills off the edge
@@ -71,7 +69,7 @@
       ...introduced.filter((a) => a.state === 'inconfort').map((a) => toPill(a, 'inconfort')),
       ...introduced.filter((a) => a.state === 'fading').map((a) => toPill(a, 'fading')),
       ...allergens
-        .filter((a) => a.state === 'todo' && PRIORITY_SET.has(a.id))
+        .filter((a) => a.state === 'todo' && isPriorityAllergen(a.id))
         .slice(0, 3)
         .map((a) => toPill(a, 'todo'))
     ];

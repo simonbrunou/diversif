@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { foodEntries, foods, users } from '#lib/server/db/schema.js';
 import type * as schema from '#lib/server/db/schema.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { RecentEntry } from '#lib/types.js';
 import type { CategoryId } from '#lib/utils/categories.js';
 import { toEpochMs } from '#lib/utils/dates.js';
@@ -88,7 +89,6 @@ const WEEK_MS = 7 * DAY_MS;
 const RECENT_FEED_SIZE = 20;
 const COPARENT_ACTIVITY_SIZE = 5;
 const REPEAT_CANDIDATE_MAX_COUNT = 2;
-const DELETED_ACCOUNT_NAME = 'Compte supprimé';
 
 function isRepeatCandidate(food: FoodHistory): boolean {
   return food.count <= REPEAT_CANDIDATE_MAX_COUNT && food.worst === 'ras';
@@ -108,7 +108,7 @@ function toRecentEntry(e: HistoryEntry): RecentEntry {
     givenAt: e.givenAt,
     texture: e.texture,
     mealId: e.mealId,
-    loggedByName: e.loggedByName ?? DELETED_ACCOUNT_NAME
+    loggedByName: e.loggedByName ?? m.entryLoggedByDeletedAccount()
   };
 }
 
@@ -216,10 +216,7 @@ export function childHistoryFrom(
 ): ChildHistory {
   const sorted = [...entries].sort(newestFirst);
   const foods = buildFoods(sorted);
-  const allergens = allergenHistoryFrom(
-    sorted.map((e) => ({ ...e, entryId: e.id })),
-    now
-  );
+  const allergens = allergenHistoryFrom(sorted, now);
   const repeatCandidates = foods.filter(isRepeatCandidate).sort((a, b) => a.lastAt - b.lastAt);
   return {
     recent: sorted.slice(0, RECENT_FEED_SIZE).map(toRecentEntry),

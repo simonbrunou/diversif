@@ -5,7 +5,7 @@
 import {
   PRIORITY_INTRODUCTION_ALLERGENS,
   getAllergenLabel,
-  type AllergenId
+  isPriorityAllergen
 } from '#lib/utils/allergens.js';
 import { getCategoryLabel, type CategoryId } from '#lib/utils/categories.js';
 // User-facing copy resolves through paraglide so the EN locale gets English
@@ -20,7 +20,7 @@ import { FORBIDDEN_FOODS } from '#lib/content/guidance.js';
 import type { AllergenHistory } from './allergen-history';
 import type { FoodHistory, HistoryEntry } from './child-history';
 
-export type Severity = 'info' | 'warn' | 'important';
+type Severity = 'info' | 'warn' | 'important';
 
 export type Reminder = {
   key: string;
@@ -59,12 +59,6 @@ const MAX_CARDS = 4;
 const MAINTAIN_CARD_CAP = 2;
 const REPEAT_CARD_CAP = 2;
 const REPEAT_COOLDOWN_DAYS = 3;
-
-// These are the common allergens French guidance says not to delay. See
-// PRIORITY_INTRODUCTION_ALLERGENS for which allergens are in scope and why
-// the others (soja, céleri, moutarde, crustacés, mollusques) are excluded.
-const ALLERGEN_PRIORITY: readonly AllergenId[] = PRIORITY_INTRODUCTION_ALLERGENS;
-const PRIORITY_SET = new Set<string>(ALLERGEN_PRIORITY);
 
 // A rule drafts a family's cards; the family gives each card its key and
 // severity. `keySuffix` tells two cards of one family apart.
@@ -195,10 +189,13 @@ function ruleStaleDiversity({ input, childPath }: RuleContext): Draft[] {
   ];
 }
 
-// Pending allergens: once diversification has started, allergen not yet introduced
+// Pending allergens: once diversification has started, the common allergens
+// French guidance says not to delay that aren't introduced yet. See
+// PRIORITY_INTRODUCTION_ALLERGENS for which allergens are in scope and why the
+// others (soja, céleri, moutarde, crustacés, mollusques) are excluded.
 function rulePendingAllergens({ input, childPath }: RuleContext): Draft[] {
   if (input.ageMonths < 4 || input.foods.length === 0) return [];
-  const missing = ALLERGEN_PRIORITY.filter((id) => !input.allergens.isIntroduced(id));
+  const missing = PRIORITY_INTRODUCTION_ALLERGENS.filter((id) => !input.allergens.isIntroduced(id));
   return missing.slice(0, 3).map((id): Draft => ({
     keySuffix: id,
     title: m.reminderPendingAllergenTitle({ allergen: getAllergenLabel(id) }),
@@ -214,16 +211,13 @@ function rulePendingAllergens({ input, childPath }: RuleContext): Draft[] {
 // every candidate. Priority allergens are left to ruleMaintainAllergens, and a
 // food whose allergen is blocked by symptoms on another food is dropped (#373).
 function ruleRepeatExposure({ input, childPath }: RuleContext): Draft[] {
-  const { now, allergens } = input;
   return input.repeatCandidates
     .filter(
       (c) =>
         c.count === 1 &&
-        now - c.lastAt > REPEAT_COOLDOWN_DAYS * DAY_MS &&
-        !(
-          c.allergenType &&
-          (PRIORITY_SET.has(c.allergenType) || allergens.isBlocked(c.allergenType))
-        )
+        input.now - c.lastAt > REPEAT_COOLDOWN_DAYS * DAY_MS &&
+        !isPriorityAllergen(c.allergenType) &&
+        !(c.allergenType && input.allergens.isBlocked(c.allergenType))
     )
     .slice(0, REPEAT_CARD_CAP)
     .map((c): Draft => ({
@@ -329,7 +323,7 @@ function ruleMaintainAllergens({ input, childPath }: RuleContext): Draft[] {
 }
 
 // A dismissed important reminder never comes back.
-export const TTL_BY_SEVERITY: Record<Severity, number> = {
+const TTL_BY_SEVERITY: Record<Severity, number> = {
   important: Infinity,
   warn: 90 * DAY_MS,
   info: 30 * DAY_MS

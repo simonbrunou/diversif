@@ -164,15 +164,7 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 
   // Built from `entries` in memory rather than a second SQL scan: the primary
   // query already carries every column the allergen history reads.
-  const allergens = allergenHistoryFrom(
-    entries.map((e) => ({
-      entryId: e.id,
-      allergenType: e.allergenType,
-      category: e.category,
-      reaction: e.reaction,
-      givenAt: e.givenAt
-    }))
-  ).bilanRows;
+  const allergens = allergenHistoryFrom(entries).bilanRows;
 
   // Notable reactions for the timeline section: every inconfort/réaction
   // entry, oldest first. We deliberately don't cap : this section exists so

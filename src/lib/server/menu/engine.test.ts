@@ -27,7 +27,7 @@ const NOW = Date.UTC(2026, 5, 1, 12);
 const DAY = 24 * 60 * 60 * 1000;
 
 const allergenRow = (allergenType: string, reaction: ReactionId, daysAgo = 0): AllergenEntry => ({
-  entryId: 0,
+  id: 0,
   allergenType,
   category: 'allergenes',
   reaction,

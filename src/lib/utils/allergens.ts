@@ -60,6 +60,12 @@ export const PRIORITY_INTRODUCTION_ALLERGENS = [
 
 export type PriorityAllergenId = (typeof PRIORITY_INTRODUCTION_ALLERGENS)[number];
 
+const PRIORITY_SET: ReadonlySet<string> = new Set(PRIORITY_INTRODUCTION_ALLERGENS);
+
+export function isPriorityAllergen(id: string | null): id is PriorityAllergenId {
+  return id !== null && PRIORITY_SET.has(id);
+}
+
 // Days after which a previously-tolerated allergen gets a maintenance nudge.
 // Current ASCIA consensus recommends at least weekly exposure. The allergen
 // history (lib/server/guidance/allergen-history) applies it once, as its

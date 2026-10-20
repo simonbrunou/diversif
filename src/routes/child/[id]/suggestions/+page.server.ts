@@ -1,13 +1,11 @@
 import { db } from '#lib/server/db/index.js';
 import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { and, eq, lte, notInArray, sql } from 'drizzle-orm';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
+import { isPriorityAllergen } from '#lib/utils/allergens.js';
 import { ageInMonths } from '#lib/utils/age.js';
 import { requireChildContext } from '#lib/server/guards.js';
 import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import type { PageServerLoad } from './$types';
-
-const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const { childId } = requireChildContext(locals, params);
@@ -41,7 +39,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   // excluded entirely pending medical review.
   const introducesPriorityAllergen = (food: (typeof candidates)[number]) =>
     allergens.isExposureFood(food) &&
-    PRIORITY_SET.has(food.allergenType) &&
+    isPriorityAllergen(food.allergenType) &&
     !allergens.isIntroduced(food.allergenType);
 
   const safeCandidates = candidates.filter(
