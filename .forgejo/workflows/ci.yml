@@ -301,19 +301,19 @@ jobs:
       # the Docker runtime image) and a looser all-dependencies audit
       # (production + dev/build tooling). Both are set to `high` — the
       # tightest level either scope actually needs today, since the
-      # `overrides` block in package.json (browserslist,
-      # baseline-browser-mapping, nanoid, postcss, postcss-selector-parser —
-      # added for #318 after #317 left them unresolved; devalue pinned to
-      # SvelteKit 3's patched floor) forces every transitive package whose
-      # parent (eslint / vite / @sentry/vite-plugin) hadn't repinned yet up to
-      # its first patched release. `bun audit` is clean (0 findings) on both
-      # scopes even at `--audit-level=low` as of this PR — `high` leaves
-      # headroom for low/moderate advisories in dev-only tooling that don't
-      # block a release, while still catching anything that actually
-      # matters. If a future advisory can't be cleared by an override (no
-      # fixed release yet, or an override that breaks the build), that's the
-      # trigger to raise a tier's threshold back up — document the specific
-      # package and reason next to the override, not by lowering this
+      # `overrides` block in package.json forces a transitive package onto a
+      # patched release when its parent hasn't repinned yet. The commit that
+      # added each override says why; `git log -G'"<name>":' --
+      # package.json` lists it, along with later bumps and any change to a
+      # dependency of the same name. `bun audit` was clean (0 findings) on
+      # both scopes even at `--audit-level=low` when this gate went in
+      # (#349) — `high` leaves headroom for low/moderate advisories in
+      # dev-only tooling that don't block a release, while still catching
+      # anything that actually matters. If a future advisory can't be
+      # cleared by an override (no fixed release yet, or an override that
+      # breaks the build), that's the trigger to raise a tier's threshold
+      # back up — name the specific package and reason in the commit that
+      # changes the override or the threshold, not by lowering this
       # comment's confidence silently.
       #
       # `brace-expansion` is deliberately not overridden: forcing one major
@@ -321,27 +321,25 @@ jobs:
       # collapsed the old PWA precache manifest to ~1 entry with only a
       # swallowed build warning). `bun audit fix` keeps each copy on a
       # patched release, and this `--audit-level=high` gate catches any
-      # that falls behind. Don't re-add it without re-checking resolved
-      # versions the way this comment describes for its neighbors.
+      # that falls behind. Re-add it only after checking in bun.lock that
+      # every copy still resolves to a version its consumer accepts.
       #
-      # Bun 1.4 accepts an undocumented `bun audit --production` (283
-      # packages instead of 586), but `--help` still lists only --json,
-      # --audit-level and --ignore. The production-only step below doesn't
+      # Bun 1.4 accepts `bun audit --production` (an alias of `--prod`),
+      # though `--help` doesn't list it. The production-only step below doesn't
       # rely on it: it audits a from-scratch install of a package.json with
       # devDependencies stripped, so only the packages that really end up in
       # the Docker runtime image's node_modules (see Dockerfile's prod-deps
       # stage) are considered.
       #
       # Note: @sentry/sveltekit (a real production dependency) declares
-      # @sentry/vite-plugin as a hard `dependency` rather than a
+      # @sentry/bundler-plugins as a hard `dependency` rather than a
       # devDependency/optionalDependency upstream, so it ships in
       # prod-deps' node_modules even though nothing at runtime imports it —
-      # it is only reached through `sentrySvelteKit` in vite.config.ts, a
-      # build-time-only file never bundled into build/index.js. It pulled in
-      # brace-expansion/browserslist/baseline-browser-mapping transitively
-      # before the overrides above fixed those; harmless dead weight either
-      # way, but worth knowing why it's there if `bun audit` ever flags
-      # something in that chain again.
+      # only vite.config.ts uses it (through `sentrySvelteKit` and
+      # `@sentry/bundler-plugins/core`), a build-time-only file never
+      # bundled into build/index.js. It pulls in brace-expansion
+      # transitively (glob → minimatch); harmless dead weight, but worth
+      # knowing why it's there if `bun audit` ever flags that chain.
       - name: Production dependencies (strict — ships in the runtime image)
         run: |
           set -e
