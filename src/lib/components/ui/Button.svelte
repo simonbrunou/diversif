@@ -37,7 +37,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { cn } from '#lib/utils/cn.js';
-  import { Loader2 } from '@lucide/svelte';
+  import { LoaderCircle } from '@lucide/svelte';
 
   type Props = {
     variant?: Variant;
@@ -83,7 +83,7 @@
     {...rest}
   >
     {#if loading}
-      <Loader2 size={iconSize} class="animate-spin" aria-hidden="true" />
+      <LoaderCircle size={iconSize} class="animate-spin" aria-hidden="true" />
     {/if}
     {#if children}{@render children()}{/if}
   </button>

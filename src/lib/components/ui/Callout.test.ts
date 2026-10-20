@@ -21,7 +21,7 @@ describe('Callout', () => {
       props: { variant: 'warning', children: textSnippet('warning body') }
     });
     expect(container.querySelector('aside')?.className).toContain('bg-warning');
-    expect(container.querySelector('svg')).not.toBeNull(); // AlertTriangle icon
+    expect(container.querySelector('svg')).not.toBeNull(); // TriangleAlert icon
   });
 
   it('renders the info surface for variant="info"', () => {

@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import { reportReactionIcon, reportReactionClass, formatReportDay } from './report';
-import { CheckCircle2, AlertCircle, OctagonAlert } from '@lucide/svelte';
+import { CircleCheck, CircleAlert, OctagonAlert } from '@lucide/svelte';
 
 describe('reportReactionIcon', () => {
   it('maps each reaction id to its icon', () => {
-    expect(reportReactionIcon('ras')).toBe(CheckCircle2);
-    expect(reportReactionIcon('inconfort')).toBe(AlertCircle);
+    expect(reportReactionIcon('ras')).toBe(CircleCheck);
+    expect(reportReactionIcon('inconfort')).toBe(CircleAlert);
     expect(reportReactionIcon('reaction')).toBe(OctagonAlert);
   });
 });

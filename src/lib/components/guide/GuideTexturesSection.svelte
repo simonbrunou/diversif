@@ -1,7 +1,7 @@
 <script lang="ts">
   import Card from '#lib/components/ui/Card.svelte';
   import { TEXTURE_PROGRESSION, CHOKING_HAZARDS } from '#lib/content/guidance.js';
-  import { Layers, AlertTriangle } from '@lucide/svelte';
+  import { Layers, TriangleAlert } from '@lucide/svelte';
 </script>
 
 <section id="textures" class="scroll-mt-6 space-y-3">
@@ -36,7 +36,7 @@
 
   <Card class="border-reaction-inconfort/30 bg-reaction-inconfort/5 p-4">
     <h3 class="flex items-center gap-2 text-sm font-semibold text-reaction-inconfort-foreground">
-      <AlertTriangle size={14} aria-hidden="true" />
+      <TriangleAlert size={14} aria-hidden="true" />
       Étouffement : règles de découpe
     </h3>
     <ul class="mt-2 grid gap-1 text-sm text-foreground/90 sm:grid-cols-2">

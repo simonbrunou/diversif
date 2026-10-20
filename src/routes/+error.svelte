@@ -4,7 +4,7 @@
   import { page } from '$app/state';
   import Button from '#lib/components/ui/Button.svelte';
   import ProblemReportDialog from '#lib/components/ProblemReportDialog.svelte';
-  import { AlertTriangle } from '@lucide/svelte';
+  import { TriangleAlert } from '@lucide/svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
 
@@ -27,7 +27,7 @@
 
 <div class="mx-auto w-full px-4 flex max-w-md flex-1 flex-col items-center justify-center gap-5 py-16 text-center">
   <div class="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-severe-text">
-    <AlertTriangle size={28} aria-hidden="true" />
+    <TriangleAlert size={28} aria-hidden="true" />
   </div>
   <div>
     <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">{m.errorsGenericLabel({ status })}</p>
