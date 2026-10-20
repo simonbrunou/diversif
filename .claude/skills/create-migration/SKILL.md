@@ -41,7 +41,7 @@ you never hand-edit an existing one (the `block-applied-migration-edit` hook enf
 
 6. **Test + lint**, then commit (hooks run prettier/eslint; do NOT use `--no-verify`):
    ```bash
-   bun test && bun lint
+   bun run test && bun lint
    ```
 
 ## If a just-generated migration is wrong

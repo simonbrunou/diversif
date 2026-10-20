@@ -32,7 +32,7 @@ Passkeys require `WEBAUTHN_RP_ID` to match the browser host's registrable domain
 ```bash
 bun run check
 bun run lint
-bun test
+bun run test
 bun run build
 ```
 

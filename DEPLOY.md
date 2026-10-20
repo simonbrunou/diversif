@@ -103,16 +103,24 @@ exposing the instance to anyone outside the maintainers.
 
 ### Launch ops backlog (deferred from [`TOOLING_AUDIT.md`](./TOOLING_AUDIT.md))
 
-Two deployment-side items are **not yet done** and must be closed before opening
-the instance to other families. They are infra/config, not code, so they live
-here rather than in the repo — and intentionally **not** in `PARKING_LOT.md`,
-which is for maybe-never work; these are required.
+Three launch items are **not yet done** and must be closed before opening the
+instance to other families. B1 and O1 are infra/config, not code, so they live
+here rather than in the repo; C1 is a human test no agent can run. None is in
+`PARKING_LOT.md`, which is for maybe-never work; these are required.
 
-- [ ] **B1 — Off-box, continuous backups.** Today the only off-box copy is the
-      manual pre-deploy `VACUUM INTO` snapshot above; the recurring cron is
-      unscheduled. For a single-file SQLite DB holding other families' data,
-      adopt **Litestream** streaming replication to an S3-compatible target
-      (e.g. Cloudflare R2): it gives point-in-time recovery (seconds of RPO vs.
+- [ ] **C1 — Cold-start test (the gate to "shareable").** Two parents who have
+      not used the app sign up and get going with zero help while a maintainer
+      watches without stepping in. Run it before building more.
+
+- [ ] **B1 — Off-box, continuous backups.** Today the only automatic off-box
+      copy is the host layer: the Proxmox `backup-all-cts` vzdump job
+      snapshots the whole container, data volume included, daily at 03:00 and
+      syncs it offsite to R2. That covers host loss, not a bad migration (by
+      the time you notice, that night's snapshot holds the bad state), which
+      is what the manual pre-deploy `VACUUM INTO` snapshot above is for; its
+      recurring cron is unscheduled. For a single-file SQLite DB holding other
+      families' data, adopt **Litestream** streaming replication to an
+      S3-compatible target (e.g. Cloudflare R2): it gives point-in-time recovery (seconds of RPO vs.
       up to 24 h for daily snapshots), needs no app changes, and its
       prerequisite — WAL mode — is **already enabled**
       (`src/lib/server/db/index.ts`). Keep the pre-deploy `VACUUM INTO` snapshot

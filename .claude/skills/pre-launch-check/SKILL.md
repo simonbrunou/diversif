@@ -18,7 +18,7 @@ bun run check          # paraglide compile + svelte-check (types)
 bun lint               # eslint + prettier + anglicism + i18n-unused
 bun lint:i18n          # FR/EN key + placeholder parity
 bun lint:contrast      # accessibility contrast check
-bun test               # unit/integration (100% coverage gate)
+bun run test:coverage  # unit/integration/component + 100% line-coverage gate (never bare `bun test`)
 bun depcruise          # architecture / dependency boundaries
 bun knip               # dead code / unused deps & exports
 bun db:verify-backup   # backup/restore path still works
