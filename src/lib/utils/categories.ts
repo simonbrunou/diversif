@@ -42,6 +42,12 @@ export type CategoryId = (typeof CATEGORIES)[number]['id'];
 
 export const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as readonly string[];
 
+// Denominator of the category-milestone toasts, on the dashboard after an
+// online log and in the layout after an offline replay: every category but
+// 'autre', which the repas module's countCategoriesCovered (the `categories=`
+// value in the redirect, src/lib/server/repas/milestones.ts) excludes too.
+export const TRACKED_CATEGORY_COUNT = CATEGORIES.filter((c) => c.id !== 'autre').length;
+
 // Category labels go through paraglide so the EN locale gets English names.
 // All registered categories have a resolver; an unknown id falls back to the
 // id string itself, matching the prior behavior. Adding a new category to

@@ -197,6 +197,15 @@ describe('child/[id]/foods load', () => {
     expect(out.entries.map((e) => e.foodName)).toEqual(['Carotte']);
   });
 
+  it('repeat=1 excludes a food with an inconfort reaction (REPEAT_CANDIDATE_MAX_WORST_RANK = 0)', async () => {
+    const ctx = await setup();
+    await ctx.log(ctx.carrot.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'ras', 1);
+    await ctx.log(ctx.apple.id, 'inconfort', 2);
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
+    expect(out.entries.map((e) => e.foodName)).toEqual(['Carotte']);
+  });
+
   it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
     const ctx = await setup();
     await testDb.insert(foodEntries).values({

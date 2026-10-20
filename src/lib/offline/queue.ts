@@ -10,6 +10,12 @@ export interface QueuedSubmit {
   status?: 'needs-reauth';
 }
 
+// Detail of the queue:synced event flush() dispatches on window: one replay
+// redirect query string per repas the pass sent and removed from the queue.
+export interface QueueSyncedDetail {
+  queryStrings: string[];
+}
+
 const DB_NAME = 'diversif-offline';
 const STORE = 'log';
 
@@ -171,7 +177,12 @@ function dropRow(status: number, reason: 'error' | 'failure'): 'drop' {
   return 'drop';
 }
 
-async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry' | 'needs-reauth'> {
+// A successful replay resolves to its redirect's query string: the repas's
+// milestone flags (see milestonesPath in #lib/utils/milestones), '' if it
+// has none.
+async function postOne(
+  row: QueuedSubmit
+): Promise<{ qs: string } | 'drop' | 'retry' | 'needs-reauth'> {
   const body = buildBody(row.formData);
   let res: Response;
   try {
@@ -205,11 +216,7 @@ async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry' | 'ne
     if (/^\/(?:[a-z]{2}\/)?login(?:\?|$)/.test(result.location)) {
       return 'needs-reauth';
     }
-    const m = result.location.match(/^\/(?:[a-z]{2}\/)?child\/(\d+)\?(.+)$/);
-    if (m) {
-      emit('queue:synced', { childId: Number(m[1]), qs: m[2] });
-    }
-    return 'ok';
+    return { qs: result.location.split('?')[1] ?? '' };
   }
   if (result.type === 'error') {
     // The real status lives on the HTTP response, not the JSON body — see
@@ -227,11 +234,15 @@ async function postOne(row: QueuedSubmit): Promise<'ok' | 'drop' | 'retry' | 'ne
 export function flush(): Promise<void> {
   if (inFlight) return inFlight;
   inFlight = (async () => {
+    const synced: string[] = [];
     try {
       const rows = await readAllOrdered();
       for (const row of rows) {
         const outcome = await postOne(row);
-        if (outcome === 'ok' || outcome === 'drop') {
+        if (typeof outcome === 'object') {
+          await deleteRow(row.key);
+          synced.push(outcome.qs);
+        } else if (outcome === 'drop') {
           await deleteRow(row.key);
         } else if (outcome === 'needs-reauth') {
           // Retained, not deleted (see the QueuedSubmit.status comment).
@@ -254,6 +265,12 @@ export function flush(): Promise<void> {
       }
     } finally {
       inFlight = null;
+      // Announced once per pass, and only for rows already deleted: a row
+      // replayed again after a failed delete or a closed tab returns its
+      // cached redirect, which would celebrate the same repas twice.
+      if (synced.length > 0) {
+        emit('queue:synced', { queryStrings: synced } satisfies QueueSyncedDetail);
+      }
     }
   })();
   return inFlight;

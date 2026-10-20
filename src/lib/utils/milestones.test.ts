@@ -1,8 +1,10 @@
 import { describe, expect, it, mock } from 'bun:test';
 import * as m from '#lib/paraglide/messages.js';
 import { getAllergenLabel } from '#lib/utils/allergens.js';
+import { TRACKED_CATEGORY_COUNT } from '#lib/utils/categories.js';
 import {
   celebrate,
+  celebrateSynced,
   clearMilestoneQuery,
   milestonesPath,
   pickMilestoneFromQuery,
@@ -199,5 +201,52 @@ describe('celebrate', () => {
     celebrate(toast, { kind: 'generic' });
     expect(success).toHaveBeenCalledOnce();
     expect(success.mock.calls[0][0]).toBe(m.milestoneGenericTitle());
+  });
+});
+
+// The offline queue replays queued repas and hands the layout the query
+// string of each replay redirect, one flush at a time.
+describe('celebrateSynced', () => {
+  const FIRST_FOOD = 'logged=1&first=1&categories=1&prevCategories=0';
+  const NO_MILESTONE = 'logged=1&categories=2&prevCategories=2';
+
+  it('celebrates the milestone a replayed repas reached', () => {
+    const { toast, success } = fakeToast();
+    celebrateSynced(toast, [FIRST_FOOD]);
+    expect(success).toHaveBeenCalledOnce();
+    expect(success.mock.calls[0][0]).toBe(m.milestoneFirstFoodTitle());
+    expect(success.mock.calls[0][1]?.class).toContain('celebrate');
+  });
+
+  it('counts categories against the dashboard denominator', () => {
+    const { toast, success } = fakeToast();
+    celebrateSynced(toast, ['logged=1&categories=5&prevCategories=4']);
+    expect(success).toHaveBeenCalledOnce();
+    expect(success.mock.calls[0][0]).toBe(m.milestoneCategoryTitle({ covered: 5 }));
+    expect(success.mock.calls[0][1]?.description).toBe(
+      m.milestoneCategoryDescription({ remaining: TRACKED_CATEGORY_COUNT - 5 })
+    );
+  });
+
+  it('keeps the milestone in view when other repas replay alongside it', () => {
+    const { toast, success } = fakeToast();
+    celebrateSynced(toast, [FIRST_FOOD, NO_MILESTONE, NO_MILESTONE]);
+    expect(success).toHaveBeenCalledOnce();
+    expect(success.mock.calls[0][0]).toBe(m.milestoneFirstFoodTitle());
+  });
+
+  it('celebrates every milestone reached in the flush', () => {
+    const { toast, success } = fakeToast();
+    celebrateSynced(toast, [FIRST_FOOD, 'logged=1&allergen=arachide']);
+    expect(success.mock.calls.map((c) => c[0])).toEqual([
+      m.milestoneFirstFoodTitle(),
+      m.milestoneFirstAllergenTitle({ allergen: getAllergenLabel('arachide') })
+    ]);
+  });
+
+  it('shows one synced toast when no replayed repas reached a milestone', () => {
+    const { toast, success } = fakeToast();
+    celebrateSynced(toast, [NO_MILESTONE, 'foo=1', '']);
+    expect(success.mock.calls).toEqual([[m.offlineSyncedToast()]]);
   });
 });

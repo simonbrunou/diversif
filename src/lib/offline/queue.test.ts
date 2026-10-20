@@ -58,6 +58,25 @@ const errorActionResult = (status: number) =>
 
 const networkFailure = () => Promise.reject(new TypeError('Failed to fetch'));
 
+/** A fake IDBOpenDBRequest that fires onerror instead of onsuccess. */
+function failingOpenRequest(error: DOMException): IDBOpenDBRequest {
+  const fakeReq = {
+    result: null,
+    error,
+    readyState: 'pending',
+    onupgradeneeded: null as ((e: IDBVersionChangeEvent) => void) | null,
+    onsuccess: null as ((e: Event) => void) | null,
+    onerror: null as ((e: Event) => void) | null,
+    onblocked: null as ((e: IDBVersionChangeEvent) => void) | null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false
+  } as unknown as IDBOpenDBRequest;
+  // Fire onerror asynchronously so handlers can be attached first.
+  Promise.resolve().then(() => fakeReq.onerror?.(new Event('error')));
+  return fakeReq;
+}
+
 describe('queue', () => {
   beforeEach(async () => {
     await clear();
@@ -387,7 +406,109 @@ describe('queue', () => {
     });
     await flush();
 
-    expect(detail).toEqual([{ childId: 1, qs: 'logged=1&first=1&categories=2&prevCategories=1' }]);
+    expect(detail).toEqual([{ queryStrings: ['logged=1&first=1&categories=2&prevCategories=1'] }]);
+    window.removeEventListener('queue:synced', handler);
+  });
+
+  it('announces one queue:synced per flush, only once the replayed rows are deleted', async () => {
+    spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(goodActionResult('/child/1?logged=1&first=1'))
+      .mockResolvedValueOnce(goodActionResult('/child/1?logged=1&categories=1&prevCategories=1'));
+    const detail: unknown[] = [];
+    const rowsLeftAtEmit: Promise<number>[] = [];
+    const handler = (e: Event) => {
+      detail.push((e as CustomEvent).detail);
+      rowsLeftAtEmit.push(countRows());
+    };
+    window.addEventListener('queue:synced', handler);
+
+    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+    await enqueue({ key: 'k2', childId: 1, formData: { foodId: '2' }, queuedAt: 2 });
+    await flush();
+
+    expect(detail).toEqual([
+      { queryStrings: ['logged=1&first=1', 'logged=1&categories=1&prevCategories=1'] }
+    ]);
+    expect(await Promise.all(rowsLeftAtEmit)).toEqual([0]);
+    window.removeEventListener('queue:synced', handler);
+  });
+
+  it('announces only the rows replayed before a retry stopped the pass', async () => {
+    spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(goodActionResult('/child/1?logged=1&first=1'))
+      .mockImplementationOnce(networkFailure);
+    const detail: unknown[] = [];
+    const handler = (e: Event) => detail.push((e as CustomEvent).detail);
+    window.addEventListener('queue:synced', handler);
+
+    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+    await enqueue({ key: 'k2', childId: 1, formData: { foodId: '2' }, queuedAt: 2 });
+    await flush();
+
+    expect(detail).toEqual([{ queryStrings: ['logged=1&first=1'] }]);
+    expect(await countRows()).toBe(1);
+    window.removeEventListener('queue:synced', handler);
+  });
+
+  it('announces a replayed row only once it is deleted, so a failed delete cannot celebrate twice', async () => {
+    // The replay returns the same redirect both times, as the server's
+    // idempotency cache does for a re-sent key.
+    spyOn(globalThis, 'fetch').mockImplementation(async () =>
+      goodActionResult('/child/1?logged=1&first=1')
+    );
+    const detail: unknown[] = [];
+    const handler = (e: Event) => detail.push((e as CustomEvent).detail);
+    window.addEventListener('queue:synced', handler);
+    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+
+    // flush() opens the database twice: to read the rows, then to delete the
+    // replayed one. Only the delete fails.
+    const fakeError = new DOMException('IDB open failed', 'UnknownError');
+    const realOpen = globalThis.indexedDB.open.bind(globalThis.indexedDB);
+    let opens = 0;
+    const openSpy = spyOn(globalThis.indexedDB, 'open').mockImplementation((...args) =>
+      ++opens === 1
+        ? realOpen(...(args as Parameters<typeof realOpen>))
+        : failingOpenRequest(fakeError)
+    );
+    await expect(flush()).rejects.toBe(fakeError);
+    openSpy.mockRestore();
+
+    expect(detail).toEqual([]);
+    expect(await countRows()).toBe(1);
+
+    await flush();
+    expect(detail).toEqual([{ queryStrings: ['logged=1&first=1'] }]);
+    expect(await countRows()).toBe(0);
+    window.removeEventListener('queue:synced', handler);
+  });
+
+  it('does not announce queue:synced when no row replayed', async () => {
+    spyOn(globalThis, 'fetch').mockResolvedValue(failureActionResult(400));
+    let synced = 0;
+    const handler = () => synced++;
+    window.addEventListener('queue:synced', handler);
+
+    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+    await flush();
+
+    expect(synced).toBe(0);
+    window.removeEventListener('queue:synced', handler);
+  });
+
+  it.each([
+    ['/en/child/1?logged=1&first=1', 'logged=1&first=1'],
+    ['/child/1', '']
+  ])('reads the query string of the success redirect %s', async (location, queryString) => {
+    spyOn(globalThis, 'fetch').mockResolvedValue(goodActionResult(location));
+    const detail: unknown[] = [];
+    const handler = (e: Event) => detail.push((e as CustomEvent).detail);
+    window.addEventListener('queue:synced', handler);
+
+    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+    await flush();
+
+    expect(detail).toEqual([{ queryStrings: [queryString] }]);
     window.removeEventListener('queue:synced', handler);
   });
 
@@ -559,23 +680,9 @@ describe('queue', () => {
     // Cover the req.onerror path in openDb() and reqAsPromise() by injecting
     // a fake IDBOpenDBRequest that fires onerror instead of onsuccess.
     const fakeError = new DOMException('IDB open failed', 'UnknownError');
-    const openSpy = spyOn(globalThis.indexedDB, 'open').mockImplementation(() => {
-      const fakeReq = {
-        result: null,
-        error: fakeError,
-        readyState: 'pending',
-        onupgradeneeded: null as ((e: IDBVersionChangeEvent) => void) | null,
-        onsuccess: null as ((e: Event) => void) | null,
-        onerror: null as ((e: Event) => void) | null,
-        onblocked: null as ((e: IDBVersionChangeEvent) => void) | null,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        dispatchEvent: () => false
-      } as unknown as IDBOpenDBRequest;
-      // Fire onerror asynchronously so handlers can be attached first.
-      Promise.resolve().then(() => fakeReq.onerror?.(new Event('error')));
-      return fakeReq;
-    });
+    const openSpy = spyOn(globalThis.indexedDB, 'open').mockImplementation(() =>
+      failingOpenRequest(fakeError)
+    );
 
     await expect(
       enqueue({

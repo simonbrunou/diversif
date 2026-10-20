@@ -19,8 +19,8 @@ function countOf(rows: { n: number }[]): number {
 }
 
 // Categories covered for a child, excluding the `autre` bucket so this count
-// shares a denominator with the dashboard's TOTAL_CATEGORIES (CATEGORIES.length - 1,
-// in routes/child/[id]/+page.svelte).
+// shares a denominator with the milestone toasts (TRACKED_CATEGORY_COUNT in
+// #lib/utils/categories).
 function countCategoriesCovered(tx: Tx, childId: number): number {
   return countOf(
     tx

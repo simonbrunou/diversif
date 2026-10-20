@@ -165,7 +165,9 @@ describe('offline queue replay against a real server response', () => {
     await flush();
 
     expect(await count()).toBe(0);
-    expect(synced).toEqual([{ childId: c.id, qs: expect.stringContaining('logged=1') }]);
+    // The child had no entries, so the real redirect carries the first-repas
+    // flag the layout celebrates.
+    expect(synced).toEqual([{ queryStrings: [expect.stringContaining('first=1')] }]);
 
     const rows = await testDb.select().from(foodEntries).where(eq(foodEntries.childId, c.id));
     expect(rows).toHaveLength(1);
@@ -220,6 +222,9 @@ describe('offline queue replay against a real server response', () => {
       if (calls === 1) throw new TypeError('Failed to fetch');
       return response;
     });
+    const synced: unknown[] = [];
+    const handler = (e: Event) => synced.push((e as CustomEvent).detail);
+    window.addEventListener('queue:synced', handler);
 
     await enqueue({
       key: 'reconnect-1',
@@ -230,9 +235,13 @@ describe('offline queue replay against a real server response', () => {
 
     await flush(); // network drop after the real server-side insert already committed
     expect(await count()).toBe(1);
+    expect(synced).toEqual([]);
 
     await flush(); // reconnect: same row, same Idempotency-Key, real cached redirect
     expect(await count()).toBe(0);
+    // The cached redirect keeps the milestone flags of the first, lost response.
+    expect(synced).toEqual([{ queryStrings: [expect.stringContaining('first=1')] }]);
+    window.removeEventListener('queue:synced', handler);
 
     const n =
       (
