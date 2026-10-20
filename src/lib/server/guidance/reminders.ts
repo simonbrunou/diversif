@@ -105,7 +105,8 @@ export function computeReminders(input: ReminderInput): Reminder[] {
 
 // Observation window: a non-RAS entry in the last 48 hours points the parent
 // at that entry's page, to review its notes and symptoms without hunting
-// through the log. Only the latest such entry, dismissed or not.
+// through the log. Only the latest such entry: once its card is dismissed, an
+// older entry in the window doesn't take its place.
 function ruleObservationWindow({ input, childPath }: RuleContext): Draft[] {
   const latest = input.entries.find(
     (e) => e.reaction !== 'ras' && input.now - e.givenAt <= OBSERVATION_WINDOW_MS

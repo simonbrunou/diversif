@@ -88,11 +88,11 @@ const WEEK_MS = 7 * DAY_MS;
 const RECENT_FEED_SIZE = 20;
 const COPARENT_ACTIVITY_SIZE = 5;
 const REPEAT_CANDIDATE_MAX_COUNT = 2;
+const DELETED_ACCOUNT_NAME = 'Compte supprimé';
 
 function isRepeatCandidate(food: FoodHistory): boolean {
   return food.count <= REPEAT_CANDIDATE_MAX_COUNT && food.worst === 'ras';
 }
-const DELETED_ACCOUNT_NAME = 'Compte supprimé';
 
 // Newest first. Entries of one meal share their instant, so the id keeps them
 // in a stable order and adjacent for groupByMeal.
@@ -205,8 +205,9 @@ function buildStreak(entries: readonly HistoryEntry[], now: number): StreakStats
 }
 
 /**
- * Builds the history from rows already in hand (test fixtures). `now` (epoch
- * ms) anchors every window, so all views agree on one instant.
+ * Builds the history from rows already in hand, in any order: loadChildHistory's
+ * read, or test fixtures. `now` (epoch ms) anchors every window, so all views
+ * agree on one instant.
  */
 export function childHistoryFrom(
   childId: number,
