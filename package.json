@@ -23,7 +23,7 @@
     "lint:contrast": "bun scripts/lint-contrast.ts",
     "format": "bun --bun node_modules/prettier/bin/prettier.cjs --write .",
     "test": "bun run paraglide && bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun scripts/bun-test.ts",
-    "test:watch": "bun --conditions=browser test ./src --watch",
+    "test:watch": "bun --conditions=browser test ./src ./eslint-rules --watch",
     "test:coverage": "bun run paraglide && bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun scripts/bun-test.ts --coverage",
     "test:e2e": "bun scripts/reset-e2e-db.ts && bun --bun node_modules/playwright/cli.js test",
     "test:e2e:install": "bun --bun node_modules/playwright/cli.js install --with-deps chromium",
