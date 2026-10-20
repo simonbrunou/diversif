@@ -14,9 +14,9 @@ conditions:
 
 ⚠️ **Anglicism detected in French UI strings**
 
-CLAUDE.md hard rule: French UI, NO anglicisms. PR reviewers reject regressions.
+AGENTS.md hard rule: French UI, NO anglicisms. PR reviewers reject regressions.
 
-**Known mappings (from CLAUDE.md):**
+**Known mappings (from AGENTS.md):**
 - `logger` → **Enregistrer**
 - `Streak` → **Régularité**
 - `Email` → **Adresse e-mail**

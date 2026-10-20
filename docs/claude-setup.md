@@ -91,7 +91,7 @@ secrets there, never in a committed file. GitHub access uses the **`gh` CLI**
 The `/graphify` skill and the `graphify` CLI (codebase knowledge graph, output
 committed under `graphify-out/`) are an external tool, not a marketplace plugin.
 Install graphify separately; it provides both the CLI and its own skill. See the
-graphify section in the project `CLAUDE.md`.
+graphify section in the project `AGENTS.md`.
 
 ## Claude Code on the web (cloud)
 

@@ -8,7 +8,7 @@ action: block
 
 🚫 **`--no-verify` is forbidden in this repo**
 
-CLAUDE.md hard rule: husky + lint-staged (prettier + eslint) gate every
+AGENTS.md hard rule: husky + lint-staged (prettier + eslint) gate every
 commit. Bypassing them with `--no-verify` is how anglicism leaks, unformatted
 code, and unused i18n keys land on `main`.
 
