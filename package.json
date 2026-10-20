@@ -44,7 +44,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
-    "@happy-dom/global-registrator": "21.0.3",
+    "@happy-dom/global-registrator": "21.0.4",
     "@playwright/test": "^1.63.0",
     "@sentry/bundler-plugins": "^11.0.0",
     "@sveltejs/adapter-node": "^6.0.0",
@@ -65,7 +65,7 @@
     "fake-indexeddb": "^6.2.5",
     "fallow": "3.34.1",
     "globals": "^17.13.0",
-    "happy-dom": "21.0.3",
+    "happy-dom": "21.0.4",
     "husky": "^9.1.7",
     "knip": "^6.39.0",
     "lint-staged": "^17.6.0",
