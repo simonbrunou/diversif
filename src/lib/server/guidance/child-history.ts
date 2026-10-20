@@ -39,7 +39,7 @@ export type FoodHistory = {
 };
 
 /** Consecutive logging days: the current run and the longest one ever. */
-export type StreakStats = { current: number; record: number };
+type StreakStats = { current: number; record: number };
 
 /** An entry another member of the carnet logged, for the « your co-parent has been busy » card. */
 export type CoparentEntry = {
