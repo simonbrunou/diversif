@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { eq } from 'drizzle-orm';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import { testDb, resetTestDb } from '../../../test/db';
 import { children, foodEntries, foods, users } from '#lib/server/db/schema.js';
 import { groupByMeal } from '#lib/utils/meals.js';
@@ -194,6 +195,18 @@ describe('recent', () => {
         loggedByName: 'Compte supprimé'
       }
     ]);
+  });
+});
+
+describe('recent, in English', () => {
+  afterEach(() => {
+    overwriteGetLocale(() => baseLocale);
+  });
+
+  it("names a deleted account in the reader's language", () => {
+    overwriteGetLocale(() => 'en');
+    const e = entry({ loggedBy: null, loggedByName: null });
+    expect(childHistoryFrom(CHILD_ID, [e], NOW).recent[0].loggedByName).toBe('Deleted account');
   });
 });
 

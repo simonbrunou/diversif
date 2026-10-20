@@ -25,8 +25,8 @@ export type RecentEntry = {
   mealId: string | null;
   /**
    * Display name of the co-parent who recorded this entry. The dashboard
-   * loader has always selected it (falling back to "Compte supprimé" for a
-   * deleted account) but it was missing from this contract, so the feed had
+   * loader has always selected it (falling back to m.entryLoggedByDeletedAccount
+   * for a deleted account) but it was missing from this contract, so the feed had
    * no typed way to show who logged what in a shared carnet.
    */
   loggedByName: string;
