@@ -33,13 +33,14 @@ Agents may merge their own PR without asking once all three hold:
 - CI is green on the pushed SHA;
 - the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0.
 
-Merge a branch that is behind `main` but has no conflict as it is. Merging `origin/main` into it first would only re-run its CI. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows that, so after you merge, check that run along with the deploy and report it if it is red.
+When the branch is behind `main` but has no conflict, merge it as it is. Merging `origin/main` into it first costs a full CI run, so skip that step. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows such a break. After you merge, check that run along with the deploy. If a newer merge cancelled it, check the run on the newer `main` commit instead. If the run is red, file a Forgejo issue labelled `needs-triage`.
 
-When the merge-tree check reports a conflict:
+The merge-tree check exits 1 on a conflict, and with another code on an error such as a SHA you have not fetched. On a conflict:
 
 1. Merge `origin/main` into the branch and resolve the conflict.
 2. Run `bun run test`.
 3. Push, and wait for CI on the new head.
+4. Check all three conditions again on the new pushed SHA.
 
 The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
 
