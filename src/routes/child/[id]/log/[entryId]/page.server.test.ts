@@ -27,8 +27,7 @@ async function setup(aliments = 1) {
         foodId: [seeded.carotte.id, ...extra],
         givenAt: '2024-06-01T10:00:00.000Z',
         reaction: 'ras'
-      }),
-      null
+      })
     )
   );
   if (logged.replayed) throw new Error('a fresh key cannot replay');

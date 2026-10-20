@@ -3,7 +3,8 @@
 // `trackSubmission` backs every enhanced form in the app: the account pages
 // (password/profile/delete), child settings, login, signup, join/[code],
 // ConfirmModal and AddSymptomSheet — each previously declared a diverging
-// inline closure.
+// inline closure. The repas forms (log, edit) don't use use:enhance: they
+// submit through RepasForm.svelte and the durable submit module.
 //
 // `resolveMessageKey` consumers: form-toasts.svelte.ts (which surfaces
 // action-returned keys via toast for the account pages) and the

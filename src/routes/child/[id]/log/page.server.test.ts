@@ -104,22 +104,6 @@ describe('child/[id]/log default action', () => {
     });
   });
 
-  it('replays the redirect for a key sent in the Idempotency-Key header', async () => {
-    const { event, carotte } = await setup();
-    const post = () =>
-      captureFlow(() =>
-        actions.default(
-          event({
-            formData: fields(carotte.id),
-            headers: { 'Idempotency-Key': 'replay-1' }
-          }) as unknown as ActionEvent
-        )
-      );
-    const first = await post();
-    expect(await post()).toEqual(first);
-    expect(await testDb.select().from(foodEntries)).toHaveLength(1);
-  });
-
   it('returns the refusal as a fail() with its status and error key', async () => {
     const { event, carotte } = await setup();
     const refused = await actions.default(

@@ -1,7 +1,9 @@
+import { fetchTransport, postAction, type Fields, type Transport } from './wire';
+
 export interface QueuedSubmit {
   key: string;
   childId: number;
-  formData: Record<string, string | string[]>;
+  formData: Fields;
   queuedAt: number;
   // Set when a replay redirected to /login: the row is retained (not
   // deleted) instead of being lost with the rest of the session, surfaced
@@ -128,38 +130,10 @@ export async function needsReauthCount(): Promise<number> {
   return rows.filter((r) => r.status === 'needs-reauth').length;
 }
 
-interface ActionRedirect {
-  type: 'redirect';
-  location: string;
-}
-interface ActionFailure {
-  type: 'failure';
-  status: number;
-  data?: Record<string, unknown>;
-}
-interface ActionError {
-  type: 'error';
-  // SvelteKit's `handle_action_json_request` sets the real numeric status on
-  // the HTTP Response. Read it from there: the JSON body's `error` object is
-  // whatever src/hooks.server.ts:handleError chose to expose, not a status
-  // contract this replay should depend on.
-  error: { message: string };
-}
-type ActionResult = ActionRedirect | ActionFailure | ActionError;
-
 function emit(name: string, detail?: unknown): void {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(name, { detail }));
   }
-}
-
-export function buildBody(form: Record<string, string | string[]>): URLSearchParams {
-  const body = new URLSearchParams();
-  for (const [k, v] of Object.entries(form)) {
-    if (Array.isArray(v)) for (const item of v) body.append(k, item);
-    else body.append(k, v);
-  }
-  return body;
 }
 
 // 401/403/404 mean the requireChildContext guard rejected a replay because
@@ -181,30 +155,20 @@ function dropRow(status: number, reason: 'error' | 'failure'): 'drop' {
 // milestone flags (see milestonesPath in #lib/utils/milestones), '' if it
 // has none.
 async function postOne(
-  row: QueuedSubmit
+  row: QueuedSubmit,
+  transport: Transport
 ): Promise<{ qs: string } | 'drop' | 'retry' | 'needs-reauth'> {
-  const body = buildBody(row.formData);
-  let res: Response;
-  try {
-    res = await fetch(`/child/${row.childId}/log`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'x-sveltekit-action': 'true',
-        'Idempotency-Key': row.key
-      },
-      body
-    });
-  } catch {
-    return 'retry';
-  }
-
-  let result: ActionResult;
-  try {
-    result = (await res.clone().json()) as ActionResult;
-  } catch {
-    return 'retry';
-  }
+  // The key travels as a form field, as with the online submit. Rows queued
+  // before #325 don't carry the field, so it is always copied from the row.
+  const answer = await postAction(transport, `/child/${row.childId}/log`, {
+    ...row.formData,
+    idempotencyKey: row.key
+  });
+  // Only the action's own verdict drops a row. A hook's error, or an answer
+  // from something else (a proxy, a captive portal, even a 4xx page), keeps
+  // it for the next flush.
+  if (answer.kind !== 'action') return 'retry';
+  const { result } = answer;
 
   if (result.type === 'redirect') {
     // Match every locale-prefixed login redirect (paraglide rewrites bare
@@ -219,26 +183,24 @@ async function postOne(
     return { qs: result.location.split('?')[1] ?? '' };
   }
   if (result.type === 'error') {
-    // The real status lives on the HTTP response, not the JSON body — see
-    // the ActionError interface comment above. Mirror what SvelteKit's own
-    // client deserialize() does for the redirect/success paths: read it off
-    // `res`, never off the body.
-    if (res.status >= 500) return 'retry';
-    return dropRow(res.status, 'error');
+    // postAction read the status off the HTTP response (wire.ts).
+    const status = result.status ?? 500;
+    if (status >= 500) return 'retry';
+    return dropRow(status, 'error');
   }
-  // type === 'failure'
+  // type === 'failure' (the log action never answers 'success')
   if (result.status === 409 || result.status === 429) return 'retry';
   return dropRow(result.status, 'failure');
 }
 
-export function flush(): Promise<void> {
+export function flush(transport: Transport = fetchTransport): Promise<void> {
   if (inFlight) return inFlight;
   inFlight = (async () => {
     const synced: string[] = [];
     try {
       const rows = await readAllOrdered();
       for (const row of rows) {
-        const outcome = await postOne(row);
+        const outcome = await postOne(row, transport);
         if (typeof outcome === 'object') {
           await deleteRow(row.key);
           synced.push(outcome.qs);

@@ -2,10 +2,10 @@ import { describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../../../../test/component';
 
-// Same setup as meal-edit.test.ts: a local $app/forms stub, then the page
+// Same setup as meal-edit.test.ts: a svelte-sonner stub, then the page
 // imported dynamically so the mock registers first.
-mock.module('$app/forms', () => ({
-  enhance: () => ({ destroy: () => {} })
+mock.module('svelte-sonner', () => ({
+  toast: { error: () => {}, success: () => {} }
 }));
 
 const { default: Page } = await import('./+page.svelte');

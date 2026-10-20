@@ -10,10 +10,10 @@
   import FoodCombobox from '#lib/components/FoodCombobox.svelte';
   import ReactionPicker from '#lib/components/ReactionPicker.svelte';
   import TexturePicker from '#lib/components/TexturePicker.svelte';
-  import { formatDateInputValue, localInputToIso } from '#lib/utils/dates.js';
+  import RepasForm from '#lib/components/RepasForm.svelte';
+  import { formatDateInputValue } from '#lib/utils/dates.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import type { TextureKey } from '#lib/utils/textures.js';
-  import { enhance } from '$app/forms';
   import { Trash2, X } from '@lucide/svelte';
   import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
   import * as m from '#lib/paraglide/messages.js';
@@ -88,22 +88,7 @@
       fallback={backHref}
     />
 
-    <form
-      method="POST"
-      action="?/update"
-      class="grid gap-5"
-      use:enhance={({ formData }) => {
-        mealSaving = true;
-        const rawGivenAt = formData.get('givenAt');
-        if (typeof rawGivenAt === 'string') {
-          formData.set('givenAt', localInputToIso(rawGivenAt));
-        }
-        return async ({ update }) => {
-          await update();
-          mealSaving = false;
-        };
-      }}
-    >
+    <RepasForm action="?/update" class="grid gap-5" bind:busy={mealSaving}>
       {#if form?.errorKey}
         <FormError>{resolveMessageKey(form.errorKey)}</FormError>
       {/if}
@@ -189,7 +174,7 @@
         </Button>
         <Button href={backHref} variant="outline" size="lg">{m.commonCancel()}</Button>
       </div>
-    </form>
+    </RepasForm>
 
     <div class="border-t pt-5">
       <Button
@@ -240,22 +225,7 @@
       fallback={backHref}
     />
 
-    <form
-      method="POST"
-      action="?/update"
-      class="grid gap-5"
-      use:enhance={({ formData }) => {
-        saving = true;
-        const rawGivenAt = formData.get('givenAt');
-        if (typeof rawGivenAt === 'string') {
-          formData.set('givenAt', localInputToIso(rawGivenAt));
-        }
-        return async ({ update }) => {
-          await update();
-          saving = false;
-        };
-      }}
-    >
+    <RepasForm action="?/update" class="grid gap-5" bind:busy={saving}>
       {#if form?.errorKey}
         <FormError>{resolveMessageKey(form.errorKey)}</FormError>
       {/if}
@@ -311,7 +281,7 @@
         </Button>
         <Button href={backHref} variant="outline" size="lg">{m.commonCancel()}</Button>
       </div>
-    </form>
+    </RepasForm>
 
     <div class="border-t pt-5">
       <Button

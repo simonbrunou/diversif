@@ -98,11 +98,17 @@ describe('purgeClientState', () => {
 });
 
 describe('purgeBeforeSubmit', () => {
+  // The purge awaits an IndexedDB transaction, which can take more than one
+  // timer tick under load (coverage on a busy CI runner), so the tests wait
+  // for the submit itself rather than a fixed delay.
   function makeSubmitEvent() {
     let submitted = false;
+    let resolveSubmission: () => void = () => {};
+    const submission = new Promise<void>((resolve) => (resolveSubmission = resolve));
     const form = {
       submit: () => {
         submitted = true;
+        resolveSubmission();
       }
     };
     let prevented = false;
@@ -112,13 +118,13 @@ describe('purgeBeforeSubmit', () => {
         prevented = true;
       }
     } as unknown as SubmitEvent;
-    return { event, wasPrevented: () => prevented, wasSubmitted: () => submitted };
+    return { event, wasPrevented: () => prevented, wasSubmitted: () => submitted, submission };
   }
 
   it('purges client state BEFORE re-submitting the form natively', async () => {
     const deleted: string[] = [];
     let deletedBeforeSubmit = false;
-    const { event, wasPrevented, wasSubmitted } = makeSubmitEvent();
+    const { event, wasPrevented, wasSubmitted, submission } = makeSubmitEvent();
     globalWithCaches.caches = {
       delete: async (name: string) => {
         deleted.push(name);
@@ -134,19 +140,19 @@ describe('purgeBeforeSubmit', () => {
     };
 
     purgeBeforeSubmit(event);
+    // The handler is sync: it stops the native submit, then submits once
+    // the purge has finished.
     expect(wasPrevented()).toBe(true);
+    expect(wasSubmitted()).toBe(false);
 
-    // The handler is sync; the purge + submit run on the microtask queue.
-    await new Promise((r) => setTimeout(r, 0));
-    expect(wasSubmitted()).toBe(true);
+    await submission;
     expect(deletedBeforeSubmit).toBe(true);
   });
 
   it('still submits when the purge machinery is unavailable', async () => {
     delete globalWithCaches.caches;
-    const { event, wasSubmitted } = makeSubmitEvent();
+    const { event, submission } = makeSubmitEvent();
     purgeBeforeSubmit(event);
-    await new Promise((r) => setTimeout(r, 0));
-    expect(wasSubmitted()).toBe(true);
+    await submission;
   });
 });
