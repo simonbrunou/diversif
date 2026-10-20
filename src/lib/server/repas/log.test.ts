@@ -419,6 +419,23 @@ describe('logRepas: milestones', () => {
     expect((await logOne(ctx, (await allergenAliment('soja')).id)).firstAllergen).toBeNull();
   });
 
+  // The toast says "continuez à le proposer": never for an allergen that
+  // already caused symptoms, even if this log went fine.
+  it('does not celebrate an allergen that already caused a reaction (#373)', async () => {
+    const { ctx } = await seedRepasChild();
+    const arachide = await allergenAliment('arachide');
+    await logOne(ctx, arachide.id, 'reaction');
+    expect((await logOne(ctx, arachide.id)).firstAllergen).toBeNull();
+  });
+
+  // Butter never introduces lait, but symptoms on it still block lait.
+  it('does not celebrate lait after symptoms on butter, even on a fine dairy log', async () => {
+    const { ctx } = await seedRepasChild();
+    await logOne(ctx, (await allergenAliment('lait', 'matieres_grasses')).id, 'inconfort');
+    const yaourt = await allergenAliment('lait', 'produits_laitiers');
+    expect((await logOne(ctx, yaourt.id)).firstAllergen).toBeNull();
+  });
+
   it('does not count an allergenic fat as an allergen exposure', async () => {
     const { ctx } = await seedRepasChild();
     const beurre = await allergenAliment('lait', 'matieres_grasses');
@@ -437,6 +454,41 @@ describe('logRepas: milestones', () => {
       allAllergens: true
     });
     expect((await logOne(ctx, aliments[0].id)).allAllergens).toBe(false);
+  });
+
+  // "Les 12 allergènes suivis ont été proposés sans symptôme": the final two
+  // logged with symptoms complete nothing.
+  it('does not celebrate all allergens when the final ones are logged with symptoms', async () => {
+    const { ctx } = await seedRepasChild();
+    const aliments = await Promise.all(ALLERGENS.map((a) => allergenAliment(a.id)));
+    await logOne(
+      ctx,
+      aliments.slice(0, 10).map((a) => a.id)
+    );
+    expect((await logOne(ctx, [aliments[10].id, aliments[11].id], 'inconfort')).allAllergens).toBe(
+      false
+    );
+  });
+
+  // The toast goes on "Continuez à proposer régulièrement…": not while one of
+  // the 12 is blocked by an earlier reaction (#373).
+  it('does not celebrate all allergens while an earlier one is blocked by a reaction', async () => {
+    const { ctx } = await seedRepasChild();
+    const aliments = await Promise.all(ALLERGENS.map((a) => allergenAliment(a.id)));
+    await logOne(
+      ctx,
+      aliments.slice(0, 10).map((a) => a.id)
+    );
+    await logOne(ctx, aliments[0].id, 'reaction');
+    expect((await logOne(ctx, [aliments[10].id, aliments[11].id])).allAllergens).toBe(false);
+  });
+
+  it('celebrates the repas allergen that is not blocked, skipping the one that is', async () => {
+    const { ctx } = await seedRepasChild();
+    const oeuf = await allergenAliment('oeuf');
+    const arachide = await allergenAliment('arachide');
+    await logOne(ctx, oeuf.id, 'reaction');
+    expect((await logOne(ctx, [oeuf.id, arachide.id])).firstAllergen).toBe('arachide');
   });
 
   it('reports category coverage before and after, excluding "autre"', async () => {

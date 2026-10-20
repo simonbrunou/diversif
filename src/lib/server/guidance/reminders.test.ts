@@ -7,11 +7,16 @@ import {
   ttlForReminderKey
 } from './dismissal-ttl';
 import type { EnrichedEntry } from './queries';
-import { ALLERGENS, type AllergenId } from '#lib/utils/allergens.js';
+import { allergenHistoryFrom } from './allergen-history';
+import {
+  ALLERGENS,
+  PRIORITY_INTRODUCTION_ALLERGENS,
+  type AllergenId
+} from '#lib/utils/allergens.js';
+import type { ReactionId } from '#lib/utils/reaction-values.js';
 
 const NOW = new Date('2026-05-03T12:00:00Z').getTime();
 const DAY = 24 * 60 * 60 * 1000;
-const ALL_ALLERGENS = new Set<AllergenId>(ALLERGENS.map((a) => a.id));
 
 function entry(overrides: Partial<EnrichedEntry> = {}): EnrichedEntry {
   return {
@@ -26,40 +31,59 @@ function entry(overrides: Partial<EnrichedEntry> = {}): EnrichedEntry {
   };
 }
 
-// Mirrors loadAllergenRows' SQL predicate (same rule countsAsAllergenExposure
-// encodes): excludes only ras-reaction rows of the matieres_grasses category.
-// Lets most tests set only `entries` and get a consistent allergenExposures
-// default; tests that need the two to diverge (the capped-window vs
-// full-history maintain-allergen cases) pass allergenExposures explicitly.
-function defaultAllergenExposures(entries: EnrichedEntry[]): ReminderInput['allergenExposures'] {
-  return entries
-    .filter((e) => e.allergenType != null)
-    .filter((e) => !(e.category === 'matieres_grasses' && e.reaction === 'ras'))
-    .map((e) => ({
-      allergenType: e.allergenType as string,
-      reaction: e.reaction,
-      givenAt: e.givenAt
-    }));
+/** A log of an allergen-tagged food, `daysAgo` days before NOW (one food per allergen by default). */
+function allergenEntry(
+  allergen: AllergenId,
+  daysAgo: number,
+  reaction: ReactionId = 'ras',
+  overrides: Partial<EnrichedEntry> = {}
+): EnrichedEntry {
+  const foodId = 100 + ALLERGENS.findIndex((a) => a.id === allergen);
+  return entry({
+    id: foodId,
+    foodId,
+    foodName: `food-${allergen}`,
+    category: 'allergenes',
+    allergenType: allergen,
+    reaction,
+    givenAt: NOW - daysAgo * DAY,
+    ...overrides
+  });
+}
+
+/** The allergen history of exactly these entries, as the loader would read it. */
+function historyOf(entries: EnrichedEntry[]) {
+  return allergenHistoryFrom(
+    entries.map((e) => ({ ...e, entryId: e.id })),
+    NOW
+  );
 }
 
 function input(overrides: Partial<ReminderInput> = {}): ReminderInput {
-  const entries = overrides.entries ?? [];
   return {
     childId: 1,
     ageMonths: 8, // outside stage-transition windows (6-7, 9-10, 12-13)
     childCreatedAt: NOW - 30 * DAY,
     entries: [],
-    allergenExposures: defaultAllergenExposures(entries),
-    introducedAllergens: new Set<AllergenId>(),
+    allergens: historyOf(overrides.entries ?? []),
     dismissals: new Set<string>(),
     now: NOW,
     ...overrides
   };
 }
 
-/** Helper for tests that should isolate one rule: suppress all unrelated rules. */
+const PENDING_ALLERGEN_KEYS = PRIORITY_INTRODUCTION_ALLERGENS.map((id) => `pending-allergen:${id}`);
+
+/**
+ * Isolates one rule: the parent dismissed every pending-allergen card, so
+ * those warnings don't crowd the 4-card cap. The history still comes from the
+ * same entries.
+ */
 function isolated(overrides: Partial<ReminderInput> = {}): ReminderInput {
-  return input({ introducedAllergens: ALL_ALLERGENS, ...overrides });
+  return input({
+    ...overrides,
+    dismissals: new Set([...PENDING_ALLERGEN_KEYS, ...(overrides.dismissals ?? [])])
+  });
 }
 
 describe('computeReminders', () => {
@@ -132,18 +156,20 @@ describe('computeReminders', () => {
 
   describe('pending-allergen', () => {
     it('emits warn-level reminders after diversification has started', () => {
-      const out = computeReminders(
-        input({ ageMonths: 5, entries: [entry()], introducedAllergens: new Set() })
-      );
+      const out = computeReminders(input({ ageMonths: 5, entries: [entry()] }));
       const pending = out.filter((r) => r.key.startsWith('pending-allergen:'));
       expect(pending.length).toBeGreaterThan(0);
       expect(pending[0].severity).toBe('warn');
     });
 
-    it('caps at top 3', () => {
-      const out = computeReminders(input({ ageMonths: 7 }));
-      const pending = out.filter((r) => r.key.startsWith('pending-allergen:'));
-      expect(pending.length).toBeLessThanOrEqual(3);
+    it('names the first 3 missing allergens, in priority order', () => {
+      const out = computeReminders(input({ ageMonths: 8, entries: [entry()] }));
+      const pending = out.filter((r) => r.key.startsWith('pending-allergen:')).map((r) => r.key);
+      expect(pending).toEqual([
+        'pending-allergen:oeuf',
+        'pending-allergen:arachide',
+        'pending-allergen:lait'
+      ]);
     });
 
     it('does not emit before 4 months', () => {
@@ -159,11 +185,28 @@ describe('computeReminders', () => {
     it('skips already-introduced allergens', () => {
       const out = computeReminders(
         input({
-          ageMonths: 7,
-          introducedAllergens: new Set<AllergenId>(['oeuf', 'arachide', 'lait'])
+          entries: [
+            allergenEntry('oeuf', 1),
+            allergenEntry('arachide', 1),
+            allergenEntry('lait', 1)
+          ]
         })
       );
-      expect(out.find((r) => r.key === 'pending-allergen:oeuf')).toBeUndefined();
+      const pending = out.filter((r) => r.key.startsWith('pending-allergen:')).map((r) => r.key);
+      expect(pending).toEqual([
+        'pending-allergen:gluten',
+        'pending-allergen:poisson',
+        'pending-allergen:fruits_a_coque'
+      ]);
+    });
+
+    it('never asks to introduce an allergen that already caused symptoms, even on butter (#373)', () => {
+      const out = computeReminders(
+        input({
+          entries: [allergenEntry('lait', 3, 'inconfort', { category: 'matieres_grasses' })]
+        })
+      );
+      expect(out.find((r) => r.key === 'pending-allergen:lait')).toBeUndefined();
     });
   });
 
@@ -193,6 +236,18 @@ describe('computeReminders', () => {
       const e = entry({ foodId: 42, reaction: 'inconfort', givenAt: NOW - 5 * DAY });
       const out = computeReminders(isolated({ entries: [e] }));
       expect(out.find((r) => r.key === 'repeat-exposure:42')).toBeUndefined();
+    });
+
+    it('does not re-propose a food whose allergen caused symptoms on another food (#373)', () => {
+      // Céleri is not a priority allergen, so the repeat rule may pick its foods.
+      const fine = allergenEntry('celeri', 5, 'ras', { foodId: 10, foodName: 'Céleri-rave' });
+      const symptoms = allergenEntry('celeri', 4, 'reaction', {
+        id: 11,
+        foodId: 11,
+        foodName: 'Céleri branche'
+      });
+      const out = computeReminders(isolated({ entries: [fine, symptoms] }));
+      expect(out.find((r) => r.key.startsWith('repeat-exposure:'))).toBeUndefined();
     });
 
     it('does not fire if given less than 3 days ago', () => {
@@ -292,8 +347,7 @@ describe('computeReminders', () => {
         ageMonths: 8,
         childCreatedAt: Date.now() - 30 * DAY,
         entries: [],
-        allergenExposures: [],
-        introducedAllergens: ALL_ALLERGENS,
+        allergens: historyOf([]),
         dismissals: new Set<string>()
       });
       expect(Array.isArray(out)).toBe(true);
@@ -334,50 +388,27 @@ describe('computeReminders', () => {
     });
   });
 
+  // Which allergens are due, in what order, and which never are (blocked,
+  // non-priority, butter-only) is the allergen history's maintain queue, tested
+  // at its own interface. These tests pin what the rule adds on top: it reads
+  // only the `overdue` entries, the 2-card cap, the dismissal key and the copy.
   describe('maintain-allergen', () => {
-    // Helper: build an entry for an allergen-bearing food. The reminders engine
-    // sees EnrichedEntry.allergenType and uses it to identify allergen logs.
-    function allergenEntry(
-      allergen: AllergenId,
-      daysAgo: number,
-      overrides: Partial<EnrichedEntry> = {}
-    ): EnrichedEntry {
-      return entry({
-        foodName: allergen,
-        allergenType: allergen,
-        givenAt: NOW - daysAgo * DAY,
-        reaction: 'ras',
-        ...overrides
-      });
-    }
+    const maintainCards = (out: ReturnType<typeof computeReminders>) =>
+      out.filter((r) => r.key.startsWith('maintain-allergen:'));
 
     it('does not fire before 7 days have elapsed', () => {
-      const out = computeReminders(
-        isolated({
-          introducedAllergens: new Set<AllergenId>(['oeuf']),
-          entries: [allergenEntry('oeuf', 6)]
-        })
-      );
-      expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
+      const out = computeReminders(isolated({ entries: [allergenEntry('oeuf', 6)] }));
+      expect(maintainCards(out)).toEqual([]);
     });
 
     it('fires when 7 days have elapsed', () => {
-      // Use isolated() default (ALL_ALLERGENS) so pending-allergen /
-      // repeat-exposure noise does not crowd out the info-severity maintain
-      // card under the 4-card cap.
-      const out = computeReminders(
-        isolated({
-          entries: [allergenEntry('oeuf', 7)]
-        })
-      );
+      const out = computeReminders(isolated({ entries: [allergenEntry('oeuf', 7)] }));
       const card = out.find((r) => r.key.startsWith('maintain-allergen:oeuf'));
       expect(card).toBeDefined();
       expect(card?.severity).toBe('info');
     });
 
-    it('caps at 2 cards sorted oldest-exposure-first', () => {
-      // Use isolated() default (ALL_ALLERGENS) so rule 4 pending-allergen does
-      // not fire for the other priority allergens and crowd the rail.
+    it('caps at 2 cards, most overdue first', () => {
       const out = computeReminders(
         isolated({
           entries: [
@@ -387,58 +418,7 @@ describe('computeReminders', () => {
           ]
         })
       );
-      const cards = out.filter((r) => r.key.startsWith('maintain-allergen:'));
-      expect(cards.length).toBe(2);
-      expect(cards[0].key.startsWith('maintain-allergen:lait')).toBe(true);
-      expect(cards[1].key.startsWith('maintain-allergen:arachide')).toBe(true);
-    });
-
-    it('breaks same-day-since ties by ALLERGEN_PRIORITY order, not allergenExposures row order', () => {
-      // All three last given the same day: daysSince ties, so the cap's
-      // choice of which 2 to surface must come from ALLERGEN_PRIORITY
-      // (oeuf, arachide, lait, …), not from the arbitrary row order
-      // allergenExposures arrives in (loadAllergenRows has no ORDER BY).
-      // Feed them in reverse priority order to prove the tie-break, not
-      // insertion order, decides.
-      const daysAgo = 10;
-      const out = computeReminders(
-        isolated({
-          allergenExposures: [
-            { allergenType: 'lait', reaction: 'ras', givenAt: NOW - daysAgo * DAY },
-            { allergenType: 'arachide', reaction: 'ras', givenAt: NOW - daysAgo * DAY },
-            { allergenType: 'oeuf', reaction: 'ras', givenAt: NOW - daysAgo * DAY }
-          ]
-        })
-      );
-      const cards = out.filter((r) => r.key.startsWith('maintain-allergen:'));
-      expect(cards.length).toBe(2);
-      expect(cards[0].key.startsWith('maintain-allergen:oeuf')).toBe(true);
-      expect(cards[1].key.startsWith('maintain-allergen:arachide')).toBe(true);
-    });
-
-    it('does not fire for non-priority allergens (céleri)', () => {
-      // Céleri is tracked in ALLERGENS (EU 1169/2011 labelling) but excluded
-      // from PRIORITY_INTRODUCTION_ALLERGENS because no early-introduction
-      // trial (LEAP, EAT, ESPGHAN) covered it. The maintain rule must respect
-      // that boundary.
-      const out = computeReminders(
-        isolated({
-          introducedAllergens: new Set<AllergenId>(['celeri']),
-          entries: [allergenEntry('celeri', 30)]
-        })
-      );
-      expect(out.find((r) => r.key.startsWith('maintain-allergen:'))).toBeUndefined();
-    });
-
-    it('does not fire if the priority allergen was never introduced', () => {
-      // No entries at all → introducedAllergens cannot include the allergen.
-      const out = computeReminders(
-        isolated({
-          introducedAllergens: new Set<AllergenId>(), // override the isolated()
-          entries: []
-        })
-      );
-      expect(out.find((r) => r.key.startsWith('maintain-allergen:'))).toBeUndefined();
+      expect(maintainCards(out).map((r) => r.key.split(':')[1])).toEqual(['lait', 'arachide']);
     });
 
     it('respects dismissal of the current stale cycle, but allows future cycles to surface', () => {
@@ -450,7 +430,6 @@ describe('computeReminders', () => {
       // Dismissed for this exposure → no card
       const out1 = computeReminders(
         isolated({
-          introducedAllergens: new Set<AllergenId>(['oeuf']),
           entries: [allergenEntry('oeuf', 10)],
           dismissals: new Set<string>([dismissedKey])
         })
@@ -460,7 +439,6 @@ describe('computeReminders', () => {
       // Same allergen, newer but still stale exposure → new bucket, old dismissal does not suppress it.
       const out2 = computeReminders(
         isolated({
-          introducedAllergens: new Set<AllergenId>(['oeuf']),
           entries: [allergenEntry('oeuf', 8)],
           dismissals: new Set<string>([dismissedKey])
         })
@@ -468,65 +446,24 @@ describe('computeReminders', () => {
       expect(out2.find((r) => r.key.startsWith('maintain-allergen:oeuf:'))).toBeDefined();
     });
 
-    it('lets reaction-state allergens still surface their pending-reaction context, but does not also emit a maintain card', () => {
-      const out = computeReminders(
-        isolated({
-          introducedAllergens: new Set<AllergenId>(['oeuf']),
-          entries: [allergenEntry('oeuf', 8, { reaction: 'reaction' })]
-        })
-      );
-      expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
-    });
-
     it('is displaced by higher-severity cards under the 4-card cap', () => {
       // At 6 months with only oeuf introduced, rule 4 emits 3 warn pending-allergen
       // cards for the other 6 priority allergens and rule 2 emits an important
       // stage-transition card. That fills the 4-card cap before the info-severity
-      // maintain card gets a slot — by design (PRODUCT.md: maintenance never
-      // displaces stage transitions or pending-allergen warnings).
+      // maintain card gets a slot, by design: maintenance never displaces
+      // important or warn cards (docs/superpowers/specs/2026-05-15-allergen-maintenance-design.md).
       const out = computeReminders(
-        input({
-          ageMonths: 6,
-          introducedAllergens: new Set<AllergenId>(['oeuf']),
-          entries: [allergenEntry('oeuf', 6)]
-        })
+        input({ ageMonths: 6, entries: [entry(), allergenEntry('oeuf', 8)] })
       );
       expect(out.find((r) => r.key === 'stage-transition:6m')).toBeDefined();
-      expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
-      expect(out.length).toBeLessThanOrEqual(4);
+      expect(maintainCards(out)).toEqual([]);
+      expect(out.length).toBe(4);
     });
 
-    it('suppresses the maintain nudge for a reaction that aged out of the capped `entries` window but is still in allergenExposures (full history)', () => {
-      // Simulates a child whose log has passed REMINDERS_SCAN_LIMIT: the
-      // `réaction` row for oeuf no longer fits in `entries` (only recent
-      // `ras` rows do), but the full-history allergenExposures still has it.
-      const out = computeReminders(
-        isolated({
-          introducedAllergens: new Set<AllergenId>(['oeuf']),
-          entries: [allergenEntry('oeuf', 8)], // capped window: only a recent 'ras' row survives
-          allergenExposures: [
-            { allergenType: 'oeuf', reaction: 'reaction', givenAt: NOW - 100 * DAY }, // aged out of `entries`
-            { allergenType: 'oeuf', reaction: 'ras', givenAt: NOW - 8 * DAY }
-          ]
-        })
-      );
-      expect(out.find((r) => r.key.startsWith('maintain-allergen:oeuf'))).toBeUndefined();
-    });
-
-    it('surfaces the maintain nudge for an allergen whose only exposure aged out of `entries` but is in allergenExposures (full history)', () => {
-      // Simulates a child whose sole lait exposure is older than
-      // REMINDERS_SCAN_LIMIT rows back: absent from `entries`, but present in
-      // the unbounded allergenExposures — this is the "most overdue nudge"
-      // case the old `lastAt == null` guard used to drop.
-      const out = computeReminders(
-        isolated({
-          introducedAllergens: new Set<AllergenId>(['lait']),
-          entries: [],
-          allergenExposures: [{ allergenType: 'lait', reaction: 'ras', givenAt: NOW - 50 * DAY }]
-        })
-      );
+    it('names the allergen and the days since its last exposure', () => {
+      const out = computeReminders(isolated({ entries: [allergenEntry('lait', 50)] }));
       const card = out.find((r) => r.key.startsWith('maintain-allergen:lait'));
-      expect(card).toBeDefined();
+      expect(card?.title).toContain('Lait');
       expect(card?.body).toContain('50 jours');
     });
   });

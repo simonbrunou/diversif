@@ -16,7 +16,7 @@
   let {
     allergens
   }: {
-    allergens: AllergenRow[];
+    allergens: readonly AllergenRow[];
   } = $props();
 </script>
 

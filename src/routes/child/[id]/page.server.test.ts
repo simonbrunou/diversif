@@ -389,12 +389,11 @@ describe('child/[id] +page.server load', () => {
   });
 
   it('does not surface a maintain-allergen reminder for a lait exposure that is only an allergenic fat, but does for a dairy exposure (#373)', async () => {
-    // loadAllergenRows' WHERE (its matieres_grasses / non-RAS clause) is the only
-    // place left that excludes a matieres_grasses+ras row from counting as
-    // an allergen exposure : reminders.ts now trusts allergenRows verbatim
-    // (see reminders.ts summarizePriorityAllergens). If that predicate ever
+    // Wiring check: the loader must hand the reminders the allergen history,
+    // whose exposure rule excludes a matieres_grasses+ras row. If that ever
     // regresses, an allergenic fat like Beurre would start "introducing"
-    // lait and triggering a "keep giving lait" nudge from a fat log alone.
+    // lait: no more pending nudge, and a "keep giving lait" nudge from a fat
+    // log alone.
     const eightDaysAgo = new Date(Date.now() - 8 * 86400_000);
 
     async function loadWithLaitEntry(category: string, foodName: string) {

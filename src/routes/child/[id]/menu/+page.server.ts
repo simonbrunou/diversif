@@ -4,8 +4,8 @@ import { and, eq, lte, sql } from 'drizzle-orm';
 import { ageInMonths } from '#lib/utils/age.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import { parseDietExclusions } from '#lib/utils/diet.js';
-import { countsAsAllergenExposure } from '#lib/utils/allergens.js';
 import { requireChildContext } from '#lib/server/guards.js';
+import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import { buildMenu } from '#lib/server/menu/engine.js';
 import { parisDay } from '#lib/server/menu/day.js';
 import type { PageServerLoad } from './$types';
@@ -15,33 +15,22 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const { child } = await parent();
   const ageMonths = ageInMonths(child.birthDate);
 
+  const now = Date.now();
   const entries = await db
-    .select({
-      foodId: foodEntries.foodId,
-      reaction: foodEntries.reaction,
-      allergenType: foods.allergenType,
-      category: foods.category
-    })
+    .select({ foodId: foodEntries.foodId, reaction: foodEntries.reaction })
     .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
     .where(eq(foodEntries.childId, childId));
 
+  // Food-level history; the allergen-level one comes from the allergen history.
   const introducedFoodIds = new Set<number>();
-  const introducedAllergens = new Set<string>();
   const avoidFoodIds = new Set<number>();
   const reactionTierFoodIds = new Set<number>();
-  const reactedAllergens = new Set<string>();
   for (const e of entries) {
     introducedFoodIds.add(e.foodId);
-    if (countsAsAllergenExposure(e)) introducedAllergens.add(e.allergenType!);
-    if (REACTION_RANK[e.reaction] >= REACTION_RANK['inconfort']) {
-      avoidFoodIds.add(e.foodId);
-      if (e.allergenType) reactedAllergens.add(e.allergenType);
-    }
-    if (REACTION_RANK[e.reaction] >= REACTION_RANK['reaction']) {
-      reactionTierFoodIds.add(e.foodId);
-    }
+    if (REACTION_RANK[e.reaction] >= REACTION_RANK['inconfort']) avoidFoodIds.add(e.foodId);
+    if (REACTION_RANK[e.reaction] >= REACTION_RANK['reaction']) reactionTierFoodIds.add(e.foodId);
   }
+  const allergens = loadAllergenHistory(db, childId, now);
 
   const catalog = await db
     .select()
@@ -49,7 +38,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     .where(and(eq(foods.isCustom, false), lte(foods.suggestedAgeMonths, Math.max(ageMonths, 4))))
     .orderBy(sql`${foods.id} ASC`);
 
-  const { dayIndex, weekday } = parisDay(Date.now());
+  const { dayIndex, weekday } = parisDay(now);
   // Hand-picked projection (just the column the engine needs) rather than
   // reusing the +layout.server.ts child object, which every child/[id]/*
   // route consumes : keeping this query local avoids widening that shared
@@ -75,8 +64,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     introducedFoodIds,
     avoidFoodIds,
     reactionTierFoodIds,
-    introducedAllergens,
-    reactedAllergens,
+    allergens,
     dietaryExclusions
   });
 

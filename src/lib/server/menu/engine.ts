@@ -16,7 +16,8 @@ import {
   type MealId
 } from './tables';
 import { rotatePick } from './rotation';
-import { PRIORITY_INTRODUCTION_ALLERGENS, countsAsAllergenExposure } from '#lib/utils/allergens.js';
+import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
+import type { AllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import type { DietExclusion } from '#lib/utils/diet.js';
 
 export type MenuInput = {
@@ -28,8 +29,7 @@ export type MenuInput = {
   introducedFoodIds: Set<number>;
   avoidFoodIds: Set<number>;
   reactionTierFoodIds: Set<number>;
-  introducedAllergens: Set<string>;
-  reactedAllergens: Set<string>;
+  allergens: AllergenHistory;
   // Typed against #lib/utils/diet's enum (not a bare string[]) so a DIET_EXCLUSIONS
   // rename/removal is a compile error at every literal match site below.
   dietaryExclusions: DietExclusion[];
@@ -56,7 +56,6 @@ export type Menu = {
 
 const CHARCUTERIE = (f: Food) => CHARCUTERIE_MATCHERS.some((m) => f.name.includes(m));
 
-// Matches the Set-based lookup pattern in allergen-status.ts / AujourdhuiBento.svelte.
 const PRIORITY_ALLERGEN_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 function forbiddenAtAge(f: Food, ageMonths: number): boolean {
@@ -90,7 +89,7 @@ function safeFood(f: Food, input: MenuInput): boolean {
     // symptom avoidance: per-food and per-allergen for any non-RAS observation
     !input.avoidFoodIds.has(f.id) &&
     !input.reactionTierFoodIds.has(f.id) &&
-    !(f.allergenType && input.reactedAllergens.has(f.allergenType))
+    !(f.allergenType && input.allergens.isBlocked(f.allergenType))
   );
 }
 
@@ -112,7 +111,7 @@ function slotEligible(f: Food, input: MenuInput): boolean {
   return !(
     f.allergenType &&
     PRIORITY_ALLERGEN_SET.has(f.allergenType) &&
-    !input.introducedAllergens.has(f.allergenType)
+    !input.allergens.isIntroduced(f.allergenType)
   );
 }
 
@@ -238,7 +237,7 @@ function assembleFullDayMeals(input: MenuInput, stage: Stage, quantities: StageQ
 
 function allowedAllergen(input: MenuInput, a: string): boolean {
   return (
-    !input.reactedAllergens.has(a) &&
+    !input.allergens.isBlocked(a) &&
     !(input.dietaryExclusions.includes('sans_poisson') && a === 'poisson') &&
     !(input.dietaryExclusions.includes('vegetarien') && a === 'poisson')
   );
@@ -247,9 +246,10 @@ function allowedAllergen(input: MenuInput, a: string): boolean {
 // The allergen-focus card scans the WHOLE catalog by allergenType, not a role pool, so it uses
 // THIS predicate rather than safeForRole — which means it must repeat every role-independent
 // safety gate safeForRole applies, or an unsafe food slips onto the card. Charcuterie (Jambon)
-// is never a protéine and never card-eligible.
+// is never a protéine and never card-eligible, and neither is an allergenic fat, which is never
+// a reliable exposure.
 function catalogSafe(f: Food, input: MenuInput): boolean {
-  return safeFood(f, input) && !CHARCUTERIE(f) && countsAsAllergenExposure(f);
+  return safeFood(f, input) && !CHARCUTERIE(f) && input.allergens.isExposureFood(f);
 }
 
 // A priority allergen due? Rotate the "allergène du jour" by dayIndex. It IS the day's one
@@ -257,7 +257,7 @@ function catalogSafe(f: Food, input: MenuInput): boolean {
 // role-bearing allergens stay card-only too, so no meal slot ever shows a new food).
 function pickDueAllergenFood(input: MenuInput): Food | null {
   const dueList = PRIORITY_INTRODUCTION_ALLERGENS.filter(
-    (a) => !input.introducedAllergens.has(a) && allowedAllergen(input, a)
+    (a) => !input.allergens.isIntroduced(a) && allowedAllergen(input, a)
   ).sort();
   const dueAllergen = rotatePick(dueList, `${input.childId}:allergenFocus`, input.dayIndex);
   if (!dueAllergen) return null;
@@ -268,21 +268,21 @@ function pickDueAllergenFood(input: MenuInput): Food | null {
   );
 }
 
-// No allergen to introduce → maintain focus on an INTRODUCED allergen food.
+// No allergen to introduce → maintain the first allergen of the history's maintain queue (the
+// oldest last reliable exposure) that the diet allows and that still has a safe, already
+// introduced food. The Aujourd'hui maintain reminders nudge the same queue's first overdue
+// entries, so the card names their first allergen unless the diet or a missing safe introduced
+// food rules it out.
 function pickMaintainAllergenFood(input: MenuInput): Food | null {
-  const maintainList = PRIORITY_INTRODUCTION_ALLERGENS.filter(
-    (a) => input.introducedAllergens.has(a) && allowedAllergen(input, a)
-  ).sort();
-  const maintainA = rotatePick(maintainList, `${input.childId}:maintain`, input.dayIndex);
-  if (!maintainA) return null;
-  return (
-    input.catalog
-      .filter(
-        (f) =>
-          f.allergenType === maintainA && input.introducedFoodIds.has(f.id) && catalogSafe(f, input)
-      )
-      .sort((a, b) => a.id - b.id)[0] ?? null
-  );
+  for (const { id } of input.allergens.maintainQueue) {
+    if (!allowedAllergen(input, id)) continue;
+    const food = input.catalog
+      .filter((f) => f.allergenType === id && input.introducedFoodIds.has(f.id))
+      .filter((f) => catalogSafe(f, input))
+      .sort((a, b) => a.id - b.id)[0];
+    if (food) return food;
+  }
+  return null;
 }
 
 // Resolve the day's allergen-focus card. An allergen due for introduction always wins and is

@@ -1,12 +1,8 @@
 import { db } from '#lib/server/db/index.js';
 import { foodEntries, foods } from '#lib/server/db/schema.js';
 import { asc, eq } from 'drizzle-orm';
-import {
-  ALLERGENS,
-  PRIORITY_INTRODUCTION_ALLERGENS,
-  countsAsAllergenExposure,
-  getAllergenLabel
-} from '#lib/utils/allergens.js';
+import { ALLERGENS } from '#lib/utils/allergens.js';
+import { allergenHistoryFrom } from '#lib/server/guidance/allergen-history.js';
 import { CATEGORY_IDS, type CategoryId } from '#lib/utils/categories.js';
 import type { ReactionId } from '#lib/utils/reactions.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
@@ -39,17 +35,6 @@ type ReportFood = {
   exposures: number;
   worstReaction: ReactionId;
   allergenType: string | null;
-};
-
-type AllergenReportRow = {
-  id: string;
-  label: string;
-  isPriority: boolean;
-  status: 'introduced' | 'untested';
-  worst: ReactionId | null;
-  exposures: number;
-  firstGivenAt: number | null;
-  lastGivenAt: number | null;
 };
 
 // Aggregate per food (first/last/count/worst), bucket by category, drop empty
@@ -92,68 +77,6 @@ function aggregateFoods(entries: ReportEntry[]): {
     .filter(([, list]) => list.length > 0)
     .map(([id, list]) => ({ id, foods: list }));
   return { byFood, categoryGroups };
-}
-
-// Per-allergen summary: introduced / worst / counts. Derived from `entries`
-// in memory rather than a second SQL scan : `entries` already contains
-// exactly the columns we need (allergenType, reaction, givenAt) because the
-// primary query joins on the food catalog.
-function buildAllergenRows(entries: ReportEntry[]): AllergenReportRow[] {
-  const allergenAggMap = new Map<
-    string,
-    { worst: ReactionId; exposures: number; first: number; last: number }
-  >();
-  for (const e of entries) {
-    if (e.allergenType == null) continue;
-    if (e.reaction === 'ras' && !countsAsAllergenExposure(e)) continue;
-    const cur = allergenAggMap.get(e.allergenType);
-    if (!cur) {
-      allergenAggMap.set(e.allergenType, {
-        worst: e.reaction,
-        exposures: 1,
-        first: e.givenAt,
-        last: e.givenAt
-      });
-    } else {
-      cur.exposures += 1;
-      cur.first = Math.min(cur.first, e.givenAt);
-      cur.last = Math.max(cur.last, e.givenAt);
-      if (REACTION_RANK[e.reaction] > REACTION_RANK[cur.worst]) cur.worst = e.reaction;
-    }
-  }
-
-  return ALLERGENS.map((a): AllergenReportRow => {
-    const agg = allergenAggMap.get(a.id);
-    const isPriority = (PRIORITY_INTRODUCTION_ALLERGENS as readonly string[]).includes(a.id);
-    if (!agg) {
-      return {
-        id: a.id,
-        label: getAllergenLabel(a.id),
-        isPriority,
-        status: 'untested',
-        worst: null,
-        exposures: 0,
-        firstGivenAt: null,
-        lastGivenAt: null
-      };
-    }
-    return {
-      id: a.id,
-      label: getAllergenLabel(a.id),
-      isPriority,
-      status: 'introduced',
-      worst: agg.worst,
-      exposures: agg.exposures,
-      firstGivenAt: agg.first,
-      lastGivenAt: agg.last
-    };
-  }).sort((x, y) => {
-    // Priority allergens first; within each group sort alphabetically on the
-    // localized label (FR collation also orders EN labels sensibly).
-    const p = Number(!x.isPriority) - Number(!y.isPriority);
-    if (p !== 0) return p;
-    return x.label.localeCompare(y.label, 'fr');
-  });
 }
 
 // Most advanced texture in the progression (finger excluded: parallel/opt-in).
@@ -239,7 +162,17 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 
   const { byFood, categoryGroups } = aggregateFoods(entries);
 
-  const allergens = buildAllergenRows(entries);
+  // Built from `entries` in memory rather than a second SQL scan: the primary
+  // query already carries every column the allergen history reads.
+  const allergens = allergenHistoryFrom(
+    entries.map((e) => ({
+      entryId: e.id,
+      allergenType: e.allergenType,
+      category: e.category,
+      reaction: e.reaction,
+      givenAt: e.givenAt
+    }))
+  ).bilanRows;
 
   // Notable reactions for the timeline section: every inconfort/réaction
   // entry, oldest first. We deliberately don't cap : this section exists so

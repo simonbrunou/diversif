@@ -264,4 +264,33 @@ describe('child/[id]/suggestions load', () => {
     expect(out.priorityAllergens.some((f) => f.id === otherMilk.id)).toBe(false);
     expect(out.others.some((f) => f.id === otherMilk.id)).toBe(false);
   });
+
+  it('blocks lait after symptoms logged on butter, though butter is not an introduction food (#373)', async () => {
+    const ctx = await setup();
+    const butter = await insertFood({
+      name: 'Beurre',
+      category: 'matieres_grasses',
+      age: 4,
+      allergen: 'lait'
+    });
+    const yogurt = await insertFood({
+      name: 'Yaourt',
+      category: 'produits_laitiers',
+      age: 4,
+      allergen: 'lait'
+    });
+    await testDb.insert(foodEntries).values({
+      childId: ctx.c.id,
+      foodId: butter.id,
+      givenAt: new Date(),
+      reaction: 'inconfort',
+      notes: null,
+      loggedBy: ctx.u.id,
+      createdAt: new Date()
+    });
+
+    const out = await loadFor(ctx);
+
+    expect([...out.priorityAllergens, ...out.others].some((f) => f.id === yogurt.id)).toBe(false);
+  });
 });

@@ -15,6 +15,7 @@ import { eq } from 'drizzle-orm';
 import { children, foodEntries, foods } from '#lib/server/db/schema.js';
 import type { DietExclusion } from '#lib/utils/diet.js';
 import { load } from './+page.server';
+import { load as loadToday } from '../+page.server';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -48,11 +49,12 @@ async function logEntry(opts: {
   foodId: number;
   loggedBy: number;
   reaction: 'ras' | 'inconfort' | 'reaction';
+  daysAgo?: number;
 }) {
   await testDb.insert(foodEntries).values({
     childId: opts.childId,
     foodId: opts.foodId,
-    givenAt: new Date(),
+    givenAt: new Date(Date.now() - (opts.daysAgo ?? 0) * 86_400_000),
     reaction: opts.reaction,
     notes: null,
     loggedBy: opts.loggedBy,
@@ -107,11 +109,11 @@ describe('child/[id]/menu load', () => {
       category: 'matieres_grasses',
       age: 6
     });
-    // A food WITH an allergenType logged at the 'reaction' tier exercises every
-    // branch of the loader's aggregation loop in one entry: introducedAllergens
-    // (has an allergenType), avoidFoodIds (reaction >= inconfort),
-    // reactionTierFoodIds (reaction >= reaction), and reactedAllergens (that
-    // reaction-tier entry also has an allergenType). It's a proteine-role food
+    // A food WITH an allergenType logged at the 'reaction' tier exercises both
+    // reaction branches of the loader's aggregation loop in one entry
+    // (avoidFoodIds: reaction >= inconfort; reactionTierFoodIds: reaction >=
+    // reaction); the allergen history blocks its allergen too, though that
+    // block alone is not what keeps this food out. It's a proteine-role food
     // (oeufs), so excluding it is a real, observable behavior — not vacuous.
     const oeuf = await insertFood({ name: 'Œuf', category: 'oeufs', age: 6, allergen: 'oeuf' });
 
@@ -159,7 +161,7 @@ describe('child/[id]/menu load', () => {
     // The SOLE introduced feculent, with NO allergenType, logged at 'inconfort'.
     // It is dropped from safeForRole('feculent') ONLY by the loader's
     // `avoidFoodIds.add(e.foodId)` line: it has no allergenType (so the
-    // reactedAllergens gate can't touch it) and inconfort < reaction (so the
+    // blocked-allergen gate can't touch it) and inconfort < reaction (so the
     // reactionTierFoodIds gate can't touch it either). This makes the test a
     // targeted, non-flaky guard for that one line, independent of parisDay's
     // real dayIndex:
@@ -301,6 +303,53 @@ describe('child/[id]/menu load', () => {
     // allergen) was surfaced, not an accidental null from an unrelated gap.
     expect(out.menu.allergenFocus).not.toBeNull();
     expect(out.menu.allergenFocus?.food.allergenType).not.toBe('poisson');
+  });
+
+  it("names the allergen Aujourd'hui asks to maintain, on the same day", async () => {
+    const ctx = await setup();
+    const daysAgo: Record<string, number> = { lait: 20, gluten: 10 };
+    for (const [allergen, name, category] of [
+      ['oeuf', 'Œuf dur', 'oeufs'],
+      ['arachide', 'Purée de cacahuète', 'allergenes'],
+      ['lait', 'Yaourt', 'produits_laitiers'],
+      ['gluten', 'Pâtes', 'feculents'],
+      ['poisson', 'Cabillaud', 'poissons'],
+      ['fruits_a_coque', 'Poudre de noisette', 'allergenes'],
+      ['sesame', 'Tahini', 'allergenes']
+    ]) {
+      const food = await insertFood({ name, category, age: 6, allergen });
+      await logEntry({
+        childId: ctx.c.id,
+        foodId: food.id,
+        loggedBy: ctx.u.id,
+        reaction: 'ras',
+        daysAgo: daysAgo[allergen] ?? 0
+      });
+    }
+
+    const today = await loadToday(
+      makeRouteEvent({
+        user: safeUser(ctx.u),
+        memberships: [ctx.m],
+        params: { id: String(ctx.c.id) },
+        parent: async () => ({
+          child: {
+            id: ctx.c.id,
+            name: ctx.c.name,
+            birthDate: ctx.c.birthDate,
+            createdAt: ctx.c.createdAt.getTime()
+          }
+        })
+      }) as unknown as Parameters<typeof loadToday>[0]
+    );
+    const menu = (await loadFor(ctx)).menu;
+
+    const nudged = today.reminders
+      .filter((r) => r.key.startsWith('maintain-allergen:'))
+      .map((r) => r.key.split(':')[1]);
+    expect(nudged).toEqual(['lait', 'gluten']);
+    expect(menu.allergenFocus?.mode).toBe('maintain');
+    expect(menu.allergenFocus?.food.allergenType).toBe(nudged[0]);
   });
 
   it('rejects a caller who is a member of child A but not child B (cross-child isolation)', async () => {

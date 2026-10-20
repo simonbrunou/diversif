@@ -6,7 +6,7 @@ import { toEpochMs } from '#lib/utils/dates.js';
 import { parisDayIndex } from '#lib/utils/paris-date.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import { loadRepeatCandidates, loadTexturesTried } from '#lib/server/guidance/queries/index.js';
-import { loadAllergenStatus } from '#lib/server/guidance/allergen-status.js';
+import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import type { TextureKey } from '#lib/utils/textures.js';
 import type { PageServerLoad } from './$types';
 
@@ -136,7 +136,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     const ids = candidates.map((c) => c.foodId);
     if (ids.length === 0) {
       const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
-        loadAllergenStatus(childId),
+        loadAllergenHistory(db, childId).statuses,
         loadWeeklyEntries(childId),
         loadTexturesTried(childId)
       ]);
@@ -194,7 +194,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const categoryCount = new Set(bentoFoods.map((f) => f.category)).size;
 
   const [bentoAllergens, weeklyEntries, texturesTried] = await Promise.all([
-    loadAllergenStatus(childId),
+    loadAllergenHistory(db, childId).statuses,
     loadWeeklyEntries(childId),
     loadTexturesTried(childId)
   ]);
