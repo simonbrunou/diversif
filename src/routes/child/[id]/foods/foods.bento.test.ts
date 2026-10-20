@@ -11,6 +11,7 @@ import {
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '#lib/server/db/schema.js';
+import type { TextureKey } from '#lib/utils/textures.js';
 import { load } from './+page.server';
 
 beforeEach(async () => {
@@ -307,6 +308,33 @@ describe('child/[id]/foods load', () => {
     } finally {
       setSystemTime(null);
     }
+  });
+
+  it('texturesTried counts distinct textures, an entry without one left out', async () => {
+    const ctx = await setup();
+    const textures: Array<TextureKey | null> = ['lisse', 'lisse', 'ecrasee', null];
+    await testDb.insert(foodEntries).values(
+      textures.map((texture, i) => ({
+        childId: ctx.c.id,
+        foodId: ctx.carrot.id,
+        givenAt: new Date(Date.now() - (i + 1) * 1000),
+        reaction: 'ras' as const,
+        notes: null,
+        loggedBy: ctx.u.id,
+        createdAt: new Date(),
+        texture
+      }))
+    );
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('texturesTried' in out)) throw new Error('expected texturesTried in load result');
+    expect(out.texturesTried).toBe(2);
+  });
+
+  it('texturesTried is 0 with no entries', async () => {
+    const ctx = await setup();
+    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    if (!('texturesTried' in out)) throw new Error('expected texturesTried in load result');
+    expect(out.texturesTried).toBe(0);
   });
 
   it('repeat=1 early-return branch still emits bentoAllergens + weeklyEntries', async () => {

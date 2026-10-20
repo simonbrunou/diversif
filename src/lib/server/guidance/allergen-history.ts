@@ -12,6 +12,7 @@ import {
   ALLERGEN_MAINTAIN_DAYS,
   PRIORITY_INTRODUCTION_ALLERGENS,
   getAllergenLabel,
+  isPriorityAllergen,
   type AllergenId,
   type PriorityAllergenId
 } from '#lib/utils/allergens.js';
@@ -27,7 +28,8 @@ type Executor =
  * category. Rows without an allergen tag are ignored.
  */
 export type AllergenEntry = {
-  entryId: number;
+  /** food_entries.id */
+  id: number;
   allergenType: string | null;
   category: string;
   reaction: ReactionId;
@@ -125,7 +127,6 @@ export type AllergenHistory = {
 type FoodTag = { allergenType: string | null; category: string };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const PRIORITY_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 // Fat products keep their allergen tag so symptoms (inconfort or réaction)
 // still block the allergen, but their low, variable protein content makes
@@ -164,7 +165,7 @@ function seedFacts(e: AllergenEntry): Facts {
     lastAt: e.givenAt,
     tolerated: !blocking,
     worst: e.reaction,
-    worstEntryId: blocking ? e.entryId : null,
+    worstEntryId: blocking ? e.id : null,
     worstAt: e.givenAt
   };
 }
@@ -182,7 +183,7 @@ function mergeFacts(facts: Facts, e: AllergenEntry): Facts {
     lastAt: Math.max(facts.lastAt, e.givenAt),
     tolerated: facts.tolerated || !isBlocking(e.reaction),
     worst: beatsWorst ? e.reaction : facts.worst,
-    worstEntryId: beatsWorst ? e.entryId : facts.worstEntryId,
+    worstEntryId: beatsWorst ? e.id : facts.worstEntryId,
     worstAt: beatsWorst ? e.givenAt : facts.worstAt
   };
 }
@@ -266,7 +267,7 @@ function buildBilanRows(byAllergen: Map<string, Facts>): AllergenBilanRow[] {
     return {
       id,
       label: getAllergenLabel(id),
-      isPriority: PRIORITY_SET.has(id),
+      isPriority: isPriorityAllergen(id),
       status: facts ? 'introduced' : 'untested',
       worst: facts?.worst ?? null,
       exposures: facts?.tried ?? 0,
@@ -312,7 +313,7 @@ export function loadAllergenHistory(
 ): AllergenHistory {
   const rows = executor
     .select({
-      entryId: foodEntries.id,
+      id: foodEntries.id,
       allergenType: foods.allergenType,
       category: foods.category,
       reaction: foodEntries.reaction,

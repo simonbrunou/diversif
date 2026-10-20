@@ -16,7 +16,7 @@ import {
   type MealId
 } from './tables';
 import { rotatePick } from './rotation';
-import { PRIORITY_INTRODUCTION_ALLERGENS } from '#lib/utils/allergens.js';
+import { PRIORITY_INTRODUCTION_ALLERGENS, isPriorityAllergen } from '#lib/utils/allergens.js';
 import type { AllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import type { DietExclusion } from '#lib/utils/diet.js';
 
@@ -55,8 +55,6 @@ export type Menu = {
 };
 
 const CHARCUTERIE = (f: Food) => CHARCUTERIE_MATCHERS.some((m) => f.name.includes(m));
-
-const PRIORITY_ALLERGEN_SET = new Set<string>(PRIORITY_INTRODUCTION_ALLERGENS);
 
 function forbiddenAtAge(f: Food, ageMonths: number): boolean {
   for (const ff of FORBIDDEN_FOODS) {
@@ -108,11 +106,7 @@ function safeForRole(role: RoleId, input: MenuInput): Food[] {
 // foods (allergen or not) and un-introduced NON-priority-allergen foods fill slots freely.
 function slotEligible(f: Food, input: MenuInput): boolean {
   if (input.introducedFoodIds.has(f.id)) return true;
-  return !(
-    f.allergenType &&
-    PRIORITY_ALLERGEN_SET.has(f.allergenType) &&
-    !input.allergens.isIntroduced(f.allergenType)
-  );
+  return !(isPriorityAllergen(f.allergenType) && !input.allergens.isIntroduced(f.allergenType));
 }
 
 /** safeForRole, further gated so an un-introduced priority allergen never fills a meal slot. */

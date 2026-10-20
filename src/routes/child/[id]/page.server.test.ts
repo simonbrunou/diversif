@@ -14,7 +14,6 @@ mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 import { foodEntries, foods, tipDismissals } from '#lib/server/db/schema.js';
 import { load, actions } from './+page.server';
 import { groupByMeal } from '#lib/utils/meals.js';
-import { TTL_BY_SEVERITY, ttlForReminderKey } from '#lib/server/guidance/dismissal-ttl.js';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -190,6 +189,10 @@ describe('child/[id] +page.server load', () => {
     );
     expect(out.recent.length).toBe(3);
     expect(out.stats.foodsIntroduced).toBe(1);
+    expect(out.stats.weekCount).toBe(1);
+    expect(out.streak).toEqual({ current: 3, record: 3 });
+    // The viewer logged all three, so there is no co-parent activity.
+    expect(out.coparentActivity).toEqual([]);
     expect(out.showWelcomeDialog).toBe(false);
   });
 
@@ -301,248 +304,58 @@ describe('child/[id] +page.server load', () => {
     expect(byId.get('arachide')?.state).toBe('todo');
   });
 
-  it('shows "Compte supprimé" for entries whose logger was deleted', async () => {
-    const { u, c, m, food } = await setup();
-    await testDb.insert(foodEntries).values({
-      childId: c.id,
-      foodId: food.id,
-      givenAt: new Date(),
-      reaction: 'ras',
-      notes: null,
-      loggedBy: null,
-      createdAt: new Date()
+  /** A load or dismissReminder event for the setup's parent, posting `reminderKey`. */
+  function eventFor({ u, c, m }: Awaited<ReturnType<typeof setup>>, reminderKey = '') {
+    return makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { reminderKey },
+      parent: async () => ({
+        child: {
+          id: c.id,
+          name: c.name,
+          birthDate: c.birthDate,
+          createdAt: c.createdAt.getTime()
+        }
+      })
     });
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
+  }
+  const loadAs = (event: ReturnType<typeof eventFor>) =>
+    load(event as unknown as Parameters<typeof load>[0]);
+  const dismissAs = (event: ReturnType<typeof eventFor>) =>
+    actions.dismissReminder!(
+      event as unknown as Parameters<NonNullable<typeof actions.dismissReminder>>[0]
     );
-    expect(out.recent).toHaveLength(1);
-    expect(out.recent[0].loggedByName).toBe('Compte supprimé');
-  });
 
-  it('counts in weekCount only the foods first logged in the last 7 days', async () => {
-    const { u, c, m, food: carrot } = await setup();
-    const sibling = await seedChild({ createdBy: u.id, name: 'Aîné' });
-    const [apple, pear] = await testDb
-      .insert(foods)
-      .values(
-        ['Pomme', 'Poire'].map((name) => ({
-          name,
-          category: 'fruits',
-          isMajorAllergen: false,
-          allergenType: null,
-          suggestedAgeMonths: 4,
-          notes: null,
-          isCustom: false,
-          customForChildId: null
-        }))
-      )
-      .returning();
-    const entry = (foodId: number, daysAgo: number, childId = c.id) => ({
-      childId,
-      foodId,
-      givenAt: new Date(Date.now() - daysAgo * 86400_000),
-      reaction: 'ras',
-      notes: null,
-      loggedBy: u.id,
-      createdAt: new Date()
-    });
-    await testDb.insert(foodEntries).values([
-      // Carotte was first logged 10 days ago, so today's repeat is not new.
-      entry(carrot.id, 10),
-      entry(carrot.id, 0),
-      // Pomme is new this week: three logs still count once.
-      entry(apple.id, 2),
-      entry(apple.id, 1),
-      entry(apple.id, 0),
-      // Another child's food counts in neither total.
-      entry(pear.id, 0, sibling.id)
-    ]);
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
-    );
-    expect(out.stats.foodsIntroduced).toBe(2);
-    expect(out.stats.weekCount).toBe(1);
-  });
-
-  it('does not surface a maintain-allergen reminder for a lait exposure that is only an allergenic fat, but does for a dairy exposure (#373)', async () => {
-    // Wiring check: the loader must hand the reminders the allergen history,
-    // whose exposure rule excludes a matieres_grasses+ras row. If that ever
-    // regresses, an allergenic fat like Beurre would start "introducing"
-    // lait: no more pending nudge, and a "keep giving lait" nudge from a fat
-    // log alone.
-    const eightDaysAgo = new Date(Date.now() - 8 * 86400_000);
-
-    async function loadWithLaitEntry(category: string, foodName: string) {
-      const u = await seedUser({ email: `${foodName.toLowerCase()}@example.com` });
-      const c = await seedChild({ createdBy: u.id, birthDate: '2024-01-01' });
-      const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-      const food = (
-        await testDb
-          .insert(foods)
-          .values({
-            name: foodName,
-            category,
-            isMajorAllergen: true,
-            allergenType: 'lait',
-            suggestedAgeMonths: 4,
-            notes: null,
-            isCustom: false,
-            customForChildId: null
-          })
-          .returning()
-      )[0];
-      await testDb.insert(foodEntries).values({
-        childId: c.id,
-        foodId: food.id,
-        givenAt: eightDaysAgo,
-        reaction: 'ras',
-        notes: null,
-        loggedBy: u.id,
-        createdAt: new Date()
-      });
-      return load(
-        makeRouteEvent({
-          user: safeUser(u),
-          memberships: [m],
-          params: { id: String(c.id) },
-          parent: async () => ({
-            child: {
-              id: c.id,
-              name: c.name,
-              birthDate: c.birthDate,
-              createdAt: c.createdAt.getTime()
-            }
-          })
-        }) as unknown as Parameters<typeof load>[0]
-      );
-    }
-
-    // The pending-allergen nudge reads the introduced-allergen set: a fat
-    // log must leave lait "to introduce", a dairy log must clear it.
-    const fatOut = await loadWithLaitEntry('matieres_grasses', 'Beurre');
-    expect(
-      fatOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
-    ).toBeUndefined();
-    // Lait is 3rd in PRIORITY_INTRODUCTION_ALLERGENS and rulePendingAllergens
-    // shows the first 3 missing ones, so it is listed whenever not introduced.
-    expect(fatOut.reminders.some((r) => r.key === 'pending-allergen:lait')).toBe(true);
-
-    const dairyOut = await loadWithLaitEntry('produits_laitiers', 'Fromage');
-    expect(
-      dairyOut.reminders.find((r) => r.key.startsWith('maintain-allergen:lait'))
-    ).toBeDefined();
-    expect(dairyOut.reminders.some((r) => r.key === 'pending-allergen:lait')).toBe(false);
-  });
-
-  it('surfaces an observation-window reminder with cta href when a non-RAS entry exists within 48 h', async () => {
-    const { u, c, m, food } = await setup();
+  it('surfaces the observation-window card, and hides it once dismissed through the action', async () => {
+    const ctx = await setup();
     const [entry] = await testDb
       .insert(foodEntries)
       .values({
-        childId: c.id,
-        foodId: food.id,
+        childId: ctx.c.id,
+        foodId: ctx.food.id,
         givenAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
         reaction: 'inconfort',
         notes: null,
-        loggedBy: u.id,
+        loggedBy: ctx.u.id,
         createdAt: new Date()
       })
       .returning();
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
-    );
-    const obsReminder = out.reminders.find((r) => r.key.startsWith('observation-window:'));
-    expect(obsReminder).toBeDefined();
-    expect(obsReminder!.cta?.href).toBe(`/child/${c.id}/foods/${entry.id}`);
-    expect(obsReminder!.severity).toBe('warn');
-    expect(ttlForReminderKey(obsReminder!.key)).toBe(TTL_BY_SEVERITY[obsReminder!.severity]);
+    const key = `observation-window:${entry.id}`;
+    const card = (await loadAs(eventFor(ctx))).reminders.find((r) => r.key === key);
+    expect(card?.cta?.href).toBe(`/child/${ctx.c.id}/foods/${entry.id}`);
+    expect(card?.severity).toBe('warn');
+
+    await dismissAs(eventFor(ctx, key));
+    expect((await loadAs(eventFor(ctx))).reminders.map((r) => r.key)).not.toContain(key);
   });
 
-  it('does not surface observation-window reminder when non-RAS entry is older than 48 h', async () => {
-    const { u, c, m, food } = await setup();
-    await testDb.insert(foodEntries).values({
-      childId: c.id,
-      foodId: food.id,
-      givenAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      reaction: 'inconfort',
-      notes: null,
-      loggedBy: u.id,
-      createdAt: new Date()
-    });
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
-    );
-    const obsReminder = out.reminders.find((r) => r.key.startsWith('observation-window:'));
-    expect(obsReminder).toBeUndefined();
-  });
-
-  it('does not surface observation-window reminder when all entries are RAS', async () => {
-    const { u, c, m } = await setup({ entries: 2 });
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
-    );
-    const obsReminder = out.reminders.find((r) => r.key.startsWith('observation-window:'));
-    expect(obsReminder).toBeUndefined();
+  it('keeps the welcome dialog closed once dismissed through the action', async () => {
+    const ctx = await setup();
+    expect((await loadAs(eventFor(ctx))).showWelcomeDialog).toBe(true);
+    await dismissAs(eventFor(ctx, 'welcome-dialog'));
+    expect((await loadAs(eventFor(ctx))).showWelcomeDialog).toBe(false);
   });
 });
 

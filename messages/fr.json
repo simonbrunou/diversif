@@ -277,6 +277,7 @@
   "aujourdhuiRecentLoggedBy": "par {name}",
   "aujourdhuiHandoffsLabel": "Raccourcis",
   "carnetTitle": "Carnet",
+  "entryLoggedByDeletedAccount": "Compte supprimé",
   "carnetSubFoodsOne": "1 aliment",
   "carnetSubFoodsOther": "{count} aliments",
   "carnetSubCategoriesOne": "1 catégorie",

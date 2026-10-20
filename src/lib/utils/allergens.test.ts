@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import * as m from '#lib/paraglide/messages.js';
-import { ALLERGENS, getAllergenLabel } from './allergens';
+import { ALLERGENS, getAllergenLabel, isPriorityAllergen } from './allergens';
 
 describe('ALLERGENS', () => {
   it('exposes a non-empty list with unique ids', () => {
@@ -46,5 +46,15 @@ describe('getAllergenLabel', () => {
     expect(getAllergenLabel(null)).toBeNull();
     expect(getAllergenLabel(undefined)).toBeNull();
     expect(getAllergenLabel('')).toBeNull();
+  });
+});
+
+describe('isPriorityAllergen', () => {
+  it('holds for the allergens not to delay, not for the others or no allergen', () => {
+    expect(isPriorityAllergen('oeuf')).toBe(true);
+    expect(isPriorityAllergen('sesame')).toBe(true);
+    expect(isPriorityAllergen('soja')).toBe(false);
+    expect(isPriorityAllergen('celeri')).toBe(false);
+    expect(isPriorityAllergen(null)).toBe(false);
   });
 });

@@ -8,10 +8,11 @@
   let { reminders }: { reminders: Reminder[] } = $props();
 
   const lead = $derived(reminders[0] ?? null);
-  // Everything after the first used to be discarded outright: computeReminders
-  // returns up to 4, sorted with `important` first, and this component rendered
-  // reminders[0] only. A permanently-firing stage banner therefore outranked —
-  // and silently swallowed — the actionable warn/info reminders, including the
+  // Everything after the first used to be discarded outright: the loader returns
+  // up to 4, the most urgent first (the 48 h observation window, then
+  // `important`), and this component rendered reminders[0] only. A
+  // permanently-firing stage banner therefore outranked — and silently
+  // swallowed — the actionable warn/info reminders, including the
   // repeat-exposure ones whose CTA deep-links straight into the log form.
   const rest = $derived(reminders.slice(1));
   const restLabel = $derived(

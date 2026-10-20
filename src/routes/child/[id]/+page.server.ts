@@ -1,235 +1,43 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '#lib/server/db/index.js';
-import { foodEntries, foods, users } from '#lib/server/db/schema.js';
-import { asc, desc, eq, sql } from 'drizzle-orm';
-import type { CategoryId } from '#lib/utils/categories.js';
-import type { ReactionId } from '#lib/utils/reactions.js';
 import { ageInMonths } from '#lib/utils/age.js';
-import { toEpochMs } from '#lib/utils/dates.js';
-import { computeReminders, type Reminder } from '#lib/server/guidance/reminders.js';
-import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
-import * as m from '#lib/paraglide/messages.js';
-import {
-  loadCoparentActivity,
-  loadDismissals,
-  loadStreak,
-  dismissReminder,
-  type EnrichedEntry
-} from '#lib/server/guidance/queries/index.js';
+import { loadChildHistory } from '#lib/server/guidance/child-history.js';
+import { dismissReminder, loadDismissals } from '#lib/server/guidance/dismissals.js';
 import { requireChildContext } from '#lib/server/guards.js';
 import type { Actions, PageServerLoad } from './$types';
-
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-
-// ponytail: caps the reminders scan instead of leaving it truly unbounded.
-// The stale-diversity/repeat-exposure rules need each food's lifetime
-// first-and-last exposure, so this can't be a short date window without
-// silently breaking those rules for long-time families. 5000 rows
-// comfortably covers years of active logging for the app's target
-// 4-12mo+toddler window; raise it (or move to a materialized per-child
-// summary) if real usage ever gets close to it. The allergen rules do NOT
-// depend on this cap — they read the allergen history (unbounded, loaded
-// separately below) via ReminderInput.allergens instead.
-const REMINDERS_SCAN_LIMIT = 5000;
-
-// Observation-window reminder: if there's a non-RAS entry within the last
-// 48 hours, surface a "check the profile" reminder pointing directly to
-// that entry's reaction-detail page. This lets the user quickly review
-// notes and symptoms without hunting through the log.
-function buildObservationReminder(
-  entries: EnrichedEntry[],
-  dismissals: Set<string>,
-  childId: number,
-  nowMs: number
-): Reminder | null {
-  const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
-  const latest = entries.find(
-    (e) => e.reaction !== 'ras' && nowMs - e.givenAt <= FORTY_EIGHT_HOURS_MS
-  );
-  if (!latest) return null;
-  const key = `observation-window:${latest.id}`;
-  if (dismissals.has(key)) return null;
-  return {
-    key,
-    severity: 'warn',
-    title: m.reminderObservationTitle({ food: latest.foodName }),
-    body: m.reminderObservationBody(),
-    cta: {
-      label: m.reminderCtaSeeProfile(),
-      href: `/child/${childId}/foods/${latest.id}`
-    },
-    dismissable: true
-  };
-}
 
 export const load: PageServerLoad = async ({ params, locals, parent }) => {
   // Same ordering as the layout: redirect guests to /login *before* a
   // malformed id can turn the response into a 404.
   const { user, childId } = requireChildContext(locals, params);
   const { child } = await parent();
-  // Pin a single "now" so ageMonths, the reminder windows, and the
-  // weekCount cutoff all see the same instant. Otherwise a request that
-  // straddles a month boundary by a few microseconds could compute
-  // ageMonths from one Date and the 4-11-month allergen window from
-  // another, silently disagreeing.
-  const nowAtLoad = new Date();
-  const sevenDaysAgo = new Date(nowAtLoad.getTime() - SEVEN_DAYS_MS);
-
-  const recent = await db
-    .select({
-      id: foodEntries.id,
-      givenAt: foodEntries.givenAt,
-      reaction: foodEntries.reaction,
-      notes: foodEntries.notes,
-      texture: foodEntries.texture,
-      mealId: foodEntries.mealId,
-      foodId: foods.id,
-      foodName: foods.name,
-      category: foods.category,
-      loggedByName: users.displayName
-    })
-    .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .leftJoin(users, eq(users.id, foodEntries.loggedBy))
-    .where(eq(foodEntries.childId, childId))
-    .orderBy(desc(foodEntries.givenAt), asc(foodEntries.id))
-    .limit(20);
-
-  const distinctFoods = Number(
-    (
-      await db
-        .select({ count: sql<number>`count(distinct ${foodEntries.foodId})` })
-        .from(foodEntries)
-        .where(eq(foodEntries.childId, childId))
-        .limit(1)
-    )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
-  );
-
-  // Foods whose FIRST-EVER log falls inside the window — i.e. genuinely new
-  // to this child this week. This used to be a plain count(*) of entries,
-  // which sat under `distinctFoods` as "+N cette semaine" and so claimed a
-  // delta on a distinct-food total while counting repeats: 8 entries covering
-  // 7 new foods rendered "32" above "+8 cette semaine". The HAVING clause is
-  // what makes it honest — group every entry by food, keep only the groups
-  // whose earliest entry is inside the window.
-  const weekCount = Number(
-    (
-      await db
-        .select({ count: sql<number>`count(*)` })
-        .from(
-          db
-            .select({ foodId: foodEntries.foodId })
-            .from(foodEntries)
-            .where(eq(foodEntries.childId, childId))
-            .groupBy(foodEntries.foodId)
-            .having(sql`min(${foodEntries.givenAt}) >= ${sevenDaysAgo.getTime()}`)
-            .as('new_foods')
-        )
-        .limit(1)
-    )[0]?.count /* v8 ignore next : COUNT() always returns a row */ ?? 0
-  );
-
-  // Read once, unbounded; the tile and the allergen reminders both answer from it.
-  const allergens = loadAllergenHistory(db, childId, nowAtLoad.getTime());
-
-  const bentoAllergens = allergens.statuses;
-
-  const streak = await loadStreak(childId);
-  const coparentActivity = await loadCoparentActivity(childId, user.id);
-
-  // Reminders: (near-)full history is required so first-introduction and
-  // exposure-count rules (stale-diversity, repeat-exposure) are correct
-  // for active children with logs older than 90 days — see
-  // REMINDERS_SCAN_LIMIT above for the cap this is bounded to.
-  const recentForReminders = await db
-    .select({
-      id: foodEntries.id,
-      foodId: foods.id,
-      foodName: foods.name,
-      category: foods.category,
-      allergenType: foods.allergenType,
-      reaction: foodEntries.reaction,
-      givenAt: foodEntries.givenAt
-    })
-    .from(foodEntries)
-    .innerJoin(foods, eq(foods.id, foodEntries.foodId))
-    .where(eq(foodEntries.childId, childId))
-    .orderBy(desc(foodEntries.givenAt))
-    .limit(REMINDERS_SCAN_LIMIT);
-
-  const entriesNormalized: EnrichedEntry[] = recentForReminders.map((r) => ({
-    id: r.id,
-    foodId: r.foodId,
-    foodName: r.foodName,
-    category: r.category as EnrichedEntry['category'],
-    allergenType: r.allergenType,
-    reaction: r.reaction as EnrichedEntry['reaction'],
-    givenAt: toEpochMs(r.givenAt as Date | number | string)
-  }));
-
-  // child.createdAt comes from the layout load, avoiding a second SELECT.
-  const childCreatedAt = child.createdAt;
-
-  const ageMonths = ageInMonths(child.birthDate, nowAtLoad);
-
-  const dismissals = await loadDismissals(user.id, childId);
-
-  const baseReminders = computeReminders({
-    childId,
-    ageMonths,
-    childCreatedAt,
-    entries: entriesNormalized,
-    allergens,
-    dismissals,
-    now: nowAtLoad.getTime()
-  });
-
-  const observationReminder = buildObservationReminder(
-    entriesNormalized,
-    dismissals,
-    childId,
-    nowAtLoad.getTime()
-  );
-
-  // Prepend the observation reminder (highest priority) then cap total at 4.
-  const reminders = (
-    observationReminder ? [observationReminder, ...baseReminders] : baseReminders
-  ).slice(0, 4);
-
-  // Welcome dialog: show only if not dismissed and the child has no entries
-  // *all-time* : `entriesNormalized` is capped at REMINDERS_SCAN_LIMIT rows,
-  // so basing this on that set (instead of `distinctFoods`, an unfiltered
-  // COUNT) would risk re-triggering onboarding for older children that
-  // simply went silent for a quarter.
-  //
-  // Gate on ageMonths >= 4 so the onboarding (which nudges "log a first food")
-  // doesn't fire for an under-4-month baby — who instead sees the "pas encore
-  // l'heure" pre-diversification card. Otherwise the modal and that card
-  // contradict each other, and the one-shot dialog is spent before it's useful.
-  const showWelcomeDialog =
-    !dismissals.has('welcome-dialog') && distinctFoods === 0 && ageMonths >= 4;
+  // One instant for the whole page: the age, every window of the history and
+  // the dismissal TTLs. Otherwise a request that straddles a month boundary by
+  // a few microseconds could compute ageMonths from one Date and the 4-11-month
+  // allergen window from another, silently disagreeing.
+  const now = Date.now();
+  const ageMonths = ageInMonths(child.birthDate, new Date(now));
+  const dismissals = await loadDismissals(user.id, childId, now);
+  const history = loadChildHistory(db, childId, now);
 
   return {
-    recent: recent.map((r) => ({
-      ...r,
-      // The food catalog is seeded from a closed CategoryId/ReactionId union,
-      // but Drizzle types these columns as the bare `text` SQL types.
-      // Narrow at the read boundary so the RecentEntry contract carries
-      // through to consumers.
-      category: r.category as CategoryId,
-      reaction: r.reaction as ReactionId,
-      loggedByName: r.loggedByName ?? 'Compte supprimé',
-      givenAt: toEpochMs(r.givenAt as Date | number | string)
-    })),
+    recent: history.recent,
     stats: {
-      foodsIntroduced: distinctFoods,
-      weekCount
+      foodsIntroduced: history.foodsIntroduced,
+      weekCount: history.newFoodsThisWeek
     },
-    bentoAllergens,
-    streak,
-    coparentActivity,
-    reminders,
-    showWelcomeDialog,
+    bentoAllergens: history.allergens.statuses,
+    streak: history.streak,
+    coparentActivity: history.coparentActivity(user.id),
+    reminders: history.reminders({ ageMonths, childCreatedAt: child.createdAt, dismissals }),
+    // Welcome dialog: only while the child has no entry at all and the parent
+    // hasn't closed it. Gated on ageMonths >= 4 so the onboarding (which
+    // nudges "log a first food") doesn't fire for an under-4-month baby, who
+    // instead sees the "pas encore l'heure" pre-diversification card.
+    // Otherwise the modal and that card contradict each other, and the
+    // one-shot dialog is spent before it's useful.
+    showWelcomeDialog:
+      !dismissals.has('welcome-dialog') && history.foodsIntroduced === 0 && ageMonths >= 4,
     ageMonths
   };
 };
