@@ -4,6 +4,7 @@ import svelte from 'eslint-plugin-svelte';
 import drizzle from 'eslint-plugin-drizzle';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
+import lucide from './eslint-rules/lucide.js';
 
 export default ts.config(
   js.configs.recommended,
@@ -57,6 +58,10 @@ export default ts.config(
       // resolve() can't express — so the rule fights the i18n routing.
       'svelte/no-navigation-without-resolve': 'off'
     }
+  },
+  {
+    plugins: { lucide },
+    rules: { 'lucide/no-deprecated-icons': 'error' }
   },
   {
     files: ['**/*.svelte'],
