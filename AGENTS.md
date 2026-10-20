@@ -27,7 +27,15 @@ Rules:
 
 ## Merge authority
 
-Agents may merge their own PR without asking once all three hold: a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent) and its real findings are fixed; CI is green on the pushed SHA; the branch is up to date with `origin/main`. The production deploy that the merge triggers is accepted. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
+Agents may merge their own PR without asking once all three hold:
+
+- a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent) and its real findings are fixed;
+- CI is green on the pushed SHA;
+- the branch has no conflict with `origin/main`: after `git fetch origin`, `git merge-tree --write-tree origin/main HEAD` exits 0.
+
+A branch behind `main` with no conflict merges as it is, with no sync and no CI re-run. Accepted risk: two PRs that pass apart can break `main` together, and the CI run on `main` after the merge shows it. On a conflict, merge `origin/main` into the branch, resolve it, run `bun run test`, push, and wait for CI on the new head.
+
+The production deploy that the merge triggers is accepted. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
 
 ## Agent skills
 
