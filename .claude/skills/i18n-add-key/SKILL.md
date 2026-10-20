@@ -16,7 +16,7 @@ key — never hardcode text in a component.
 1. Pick a key name (existing convention: look at neighbouring keys in `messages/en.json`).
 2. Add it to **both** `messages/en.json` and `messages/fr.json` in the same edit. Keep any
    `{placeholder}` identical across locales.
-3. French must be idiomatic and **anglicism-free**. Common mappings (from CLAUDE.md):
+3. French must be idiomatic and **anglicism-free**. Common mappings (from AGENTS.md):
    `logger → Enregistrer`, `Streak → Régularité`, `Email → Adresse e-mail`, `Stats → Bilan`,
    `Settings → Paramètres`, `Save → Enregistrer`, `Delete → Supprimer`.
 4. Recompile + verify parity:
