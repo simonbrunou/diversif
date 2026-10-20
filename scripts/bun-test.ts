@@ -5,7 +5,7 @@
 // the same process. Vitest got per-file isolation for free. We get it by
 // spawning a fresh bun process per file.
 //
-// Cost: ~1.5s startup × ~180 files = ~5 minutes (vs ~40s for in-process).
+// Cost: ~1s startup × ~215 files = ~3.5 minutes (vs ~40s for in-process).
 // Trade-off worth it: 99% pass rate per-file vs ~85% combined.
 //
 // Usage:

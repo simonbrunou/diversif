@@ -6,7 +6,8 @@
 // without editing this file.
 import { readdirSync, readFileSync } from 'node:fs';
 
-const componentTypes = '.svelte.d.ts';
+const lucidePackage = '@lucide/svelte';
+const componentTypeSuffix = '.svelte.d.ts';
 
 const readText = (dist, path) => readFileSync(new URL(path, dist), 'utf8');
 
@@ -16,10 +17,11 @@ function fail(detail) {
   throw new Error(`eslint-rules/lucide.js cannot parse @lucide/svelte (${detail}).`);
 }
 
-// Every export name points at one file under dist/icons/: a current icon's
-// .svelte component, or the .js file that re-exports it under an old name.
-// Each name exists plain (CircleAlert), Lucide-prefixed (LucideCircleAlert)
-// and Icon-suffixed (CircleAlertIcon). `toSameStyle` writes a plain name in
+// Maps every export name to the stem of the file it comes from under
+// dist/icons/ (circle-alert, or alert-circle for the old name's re-export
+// file), which is also its deep-import path. Each name exists plain
+// (CircleAlert), Lucide-prefixed (LucideCircleAlert) and Icon-suffixed
+// (CircleAlertIcon). `toSameStyle` writes a plain name in
 // the style of the name it is stored under, so a suggested replacement
 // matches the import it replaces.
 function readExports(dist) {
@@ -65,12 +67,12 @@ function readAliasNotes(dist, exportsByName) {
 function readRemovals(dist) {
   const removals = [];
   for (const entry of readdirSync(new URL('icons/', dist))) {
-    if (!entry.endsWith(componentTypes)) continue;
+    if (!entry.endsWith(componentTypeSuffix)) continue;
     const source = readText(dist, `icons/${entry}`);
     if (!source.includes('@deprecated')) continue;
     const reason = /@deprecated (\S.*)/.exec(source)?.[1];
     if (!reason) fail(`no reason after @deprecated in icons/${entry}`);
-    removals.push([entry.slice(0, -componentTypes.length), { reason }]);
+    removals.push([entry.slice(0, -componentTypeSuffix.length), { reason }]);
   }
   return removals;
 }
@@ -84,9 +86,8 @@ export function readLucide(dist) {
 }
 
 const { exportsByName, deprecatedByFile } = readLucide(
-  new URL('./', import.meta.resolve('@lucide/svelte'))
+  new URL('./', import.meta.resolve(lucidePackage))
 );
-const lucidePackage = '@lucide/svelte';
 const barrels = new Set([lucidePackage, `${lucidePackage}/icons`]);
 const deepPrefix = `${lucidePackage}/icons/`;
 
@@ -98,7 +99,7 @@ function readSource(node) {
     return { text: node.value, complete: true };
   }
   if (node?.type === 'TemplateLiteral') {
-    return { text: node.quasis[0].value.cooked ?? '', complete: node.expressions.length === 0 };
+    return { text: node.quasis[0].value.cooked, complete: node.expressions.length === 0 };
   }
   if (node?.type === 'BinaryExpression' && node.operator === '+') {
     const left = readSource(node.left);
@@ -160,11 +161,17 @@ const noDeprecatedIcons = {
     }
 
     function checkBarrelImport(node, path) {
-      const named = (node.specifiers ?? []).filter((s) => s.type !== 'ImportNamespaceSpecifier');
-      if (!node.specifiers || named.length < node.specifiers.length) {
+      const specifiers = node.specifiers ?? [];
+      if (!node.specifiers || specifiers.some((s) => s.type === 'ImportNamespaceSpecifier')) {
         context.report({ node, messageId: 'unnamed', data: { source: path } });
       }
-      for (const specifier of named) checkSpecifier(specifier, path);
+      // The barrels have no default export (TypeScript rejects a default
+      // import), so only named specifiers can reach an icon.
+      for (const specifier of specifiers) {
+        if (specifier.type === 'ImportSpecifier' || specifier.type === 'ExportSpecifier') {
+          checkSpecifier(specifier, path);
+        }
+      }
     }
 
     function check(node) {

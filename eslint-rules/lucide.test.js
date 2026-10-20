@@ -10,8 +10,13 @@ import lucide, { readLucide } from './lucide.js';
 RuleTester.describe = describe;
 RuleTester.it = it;
 
+const swissFrancReason =
+  'Removed because the depicted concept became obsolete and no longer had relevant use cases.';
+
 // These cases run against the installed @lucide/svelte, so they also prove
-// that its current files still parse.
+// that its current files still parse. They name icons that 1.51.0
+// deprecates: a Lucide release that drops one fails its case on purpose, and
+// the case then moves to another icon that release deprecates.
 new RuleTester({ languageOptions: { parser: ts.parser } }).run(
   'lucide/no-deprecated-icons',
   lucide.rules['no-deprecated-icons'],
@@ -24,7 +29,12 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       'const x = 1; export { x };',
       "const lazy = () => import('@lucide/svelte/icons/trash');",
       "import { Trash2 } from 'other-icons';",
-      'const load = (n) => import(`./icons/${n}`);'
+      "import { Trash2 } from '@lucide/lab';",
+      "import { Trash2 } from '@lucide/svelte-foo';",
+      'const load = (n) => import(`./icons/${n}`);',
+      'const load = (n) => import(`@lucide/svelte-foo/${n}`);',
+      // The barrels have no default export, so TypeScript rejects this one.
+      "import Trash2 from '@lucide/svelte';"
     ],
     invalid: [
       {
@@ -84,23 +94,62 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
         ]
       },
       {
+        code: 'const lazy = () => import(`@lucide/svelte/icons/trash-2`);',
+        errors: [
+          {
+            messageId: 'replaced',
+            data: {
+              name: '@lucide/svelte/icons/trash-2',
+              replacement: '@lucide/svelte/icons/trash'
+            }
+          }
+        ]
+      },
+      {
+        code: "import { 'Trash2' as Bin } from '@lucide/svelte'; export { 'Loader2' } from '@lucide/svelte';",
+        errors: [
+          { messageId: 'replaced', data: { name: 'Trash2', replacement: 'Trash' } },
+          { messageId: 'replaced', data: { name: 'Loader2', replacement: 'LoaderCircle' } }
+        ]
+      },
+      {
         code: "import { SwissFranc, LucideSwissFranc } from '@lucide/svelte';",
-        errors: [{ messageId: 'removed' }, { messageId: 'removed' }]
+        errors: [
+          { messageId: 'removed', data: { name: 'SwissFranc', reason: swissFrancReason } },
+          { messageId: 'removed', data: { name: 'LucideSwissFranc', reason: swissFrancReason } }
+        ]
       },
       {
         code: "import Franc from '@lucide/svelte/icons/badge-swiss-franc';",
-        errors: [{ messageId: 'removed' }]
+        errors: [
+          {
+            messageId: 'removed',
+            data: { name: '@lucide/svelte/icons/badge-swiss-franc', reason: swissFrancReason }
+          }
+        ]
       },
-      { code: "import * as L from '@lucide/svelte';", errors: [{ messageId: 'unnamed' }] },
-      { code: "import { icons } from '@lucide/svelte';", errors: [{ messageId: 'unnamed' }] },
-      { code: "export * from '@lucide/svelte/icons';", errors: [{ messageId: 'unnamed' }] },
-      { code: "const lazy = () => import('@lucide/svelte');", errors: [{ messageId: 'unnamed' }] },
+      {
+        code: "import * as L from '@lucide/svelte';",
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte' } }]
+      },
+      {
+        code: "import { icons } from '@lucide/svelte';",
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte' } }]
+      },
+      {
+        code: "export * from '@lucide/svelte/icons';",
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte/icons' } }]
+      },
+      {
+        code: "const lazy = () => import('@lucide/svelte');",
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte' } }]
+      },
       {
         code: 'const load = (n) => import(`@lucide/svelte/icons/${n}`);',
         errors: [{ messageId: 'computed' }]
       },
       {
-        code: "const load = (n) => import('@lucide/svelte/icons/' + n);",
+        code: "const load = (n) => import('@lucide/svelte/' + 'icons/' + n);",
         errors: [{ messageId: 'computed' }]
       }
     ]
@@ -158,16 +207,29 @@ describe('readLucide', () => {
 
   it.each([
     [
-      'an export line it cannot read',
+      'a file with no export lines',
+      { 'aliases/suffixed.d.ts': '' },
+      'unrecognised export lines in aliases/suffixed.d.ts'
+    ],
+    [
+      'one export line it cannot read among readable ones',
       {
-        'aliases/suffixed.d.ts': 'export { default as TrashIcon } from "../icons/trash.js";'
+        'aliases/suffixed.d.ts': [
+          files['aliases/suffixed.d.ts'],
+          'export { default as SwissFrancIcon } from "../icons/swiss-franc.js";'
+        ].join('\n')
       },
       'unrecognised export lines in aliases/suffixed.d.ts'
     ],
     [
-      'an alias note without a replacement link',
+      'one alias note without a replacement link among readable ones',
       {
-        'aliases/aliases.d.ts': files['aliases/aliases.d.ts'].replace('{@link Trash}', 'Trash')
+        'aliases/aliases.d.ts': [
+          files['aliases/aliases.d.ts'],
+          'export { ',
+          '/** @deprecated Renamed, use Trash instead. */',
+          "default as Bin } from '../icons/bin.js';"
+        ].join('\n')
       },
       'unrecognised @deprecated notes in aliases/aliases.d.ts'
     ],
