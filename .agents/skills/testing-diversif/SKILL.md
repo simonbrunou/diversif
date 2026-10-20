@@ -48,7 +48,7 @@ Set birth date accordingly to test specific stages. E.g., for 6–9 mois stage, 
 - WebAuthn passkey auth is also available but email/password is simpler for testing
 - If dev.db already has data from previous runs, you might get email conflicts — use unique emails
 - E2E tests use Playwright: `bun run test:e2e`
-- Unit tests: `bun test`
+- Unit and component tests: `bun run test` (bare `bun test` fails the component tests)
 
 ## Devin Secrets Needed
 

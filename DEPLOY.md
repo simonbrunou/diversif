@@ -101,20 +101,30 @@ exposing the instance to anyone outside the maintainers.
 | `ADDRESS_HEADER` / `PROTOCOL_HEADER` / `HOST_HEADER`                                                                                                                                                                                     | Behind a proxy, without `ADDRESS_HEADER` the per-IP rate limits see the proxy as one client and one bad actor can lock everyone out — see README "Reverse proxy". The image deliberately bakes **no** default: adapter-node throws on requests lacking the configured header (a baked `x-forwarded-for` would take down any deploy without a proxy), and client-supplied `x-forwarded-for` is spoofable. Set `ADDRESS_HEADER=cf-connecting-ip` behind a Cloudflare Tunnel; `ADDRESS_HEADER=x-forwarded-for` + `XFF_DEPTH=<trusted proxies>` behind a directly-exposed proxy; leave it unset only when clients hit the container **directly** (socket address is then correct). The server logs a `[diversif:boot]` warning when `PROTOCOL_HEADER` is set without `ADDRESS_HEADER`. |
 | `SENTRY_DSN`, `PUBLIC_SENTRY_DSN` (+ `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`, `SENTRY_TRACES_SAMPLE_RATE`, `PUBLIC_SENTRY_TRACES_SAMPLE_RATE`, `PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE`, `PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE`) | Errors, sampled performance tracing, server logs, the `diversif-cleanup` cron monitor, and error-only masked session replay all reach Sentry instead of dying silently; an empty `PUBLIC_SENTRY_DSN` also disables the `/monitoring` tunnel and browser-side capture.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
-### Launch ops backlog (deferred from [`TOOLING_AUDIT.md`](./TOOLING_AUDIT.md))
+### Launch ops backlog
 
-Two deployment-side items are **not yet done** and must be closed before opening
-the instance to other families. They are infra/config, not code, so they live
-here rather than in the repo — and intentionally **not** in `PARKING_LOT.md`,
-which is for maybe-never work; these are required.
+Three launch items are **not yet done**. C1 and B1 must be closed before
+opening the instance to other families; O1 is optional. B1 and O1 are
+infra/config, not code; C1 is a human test no agent can run.
 
-- [ ] **B1 — Off-box, continuous backups.** Today the only off-box copy is the
-      manual pre-deploy `VACUUM INTO` snapshot above; the recurring cron is
-      unscheduled. For a single-file SQLite DB holding other families' data,
-      adopt **Litestream** streaming replication to an S3-compatible target
-      (e.g. Cloudflare R2): it gives point-in-time recovery (seconds of RPO vs.
-      up to 24 h for daily snapshots), needs no app changes, and its
-      prerequisite — WAL mode — is **already enabled**
+- [ ] **C1 — Cold-start test (the gate to "shareable").** Two parents who have
+      not used the app sign up and get going with zero help while a maintainer
+      watches without stepping in. Run it before building more.
+
+- [ ] **B1 — Off-box, continuous backups.** Two automatic daily backups already
+      run from the Proxmox host, both shipped offsite to encrypted R2. At
+      03:00 the `backup-all-cts` vzdump job snapshots the whole LXC guest that
+      runs the app's Coolify server, Docker volumes included. At 04:00 a
+      `VACUUM INTO` snapshot of the database follows, kept 30 days and
+      restore-tested weekly.
+
+      Both give one copy per day, so a bad migration or a bad write can cost up
+      to a day of data, and restoring the guest snapshot rolls back everything
+      on the guest, not just the database. The remaining step is point-in-time
+      recovery. For a single-file SQLite DB holding other families' data, adopt
+      **Litestream** streaming replication to an S3-compatible target (e.g.
+      Cloudflare R2): seconds of RPO instead of up to 24 h, no app changes,
+      and its prerequisite, WAL mode, is **already enabled**
       (`src/lib/server/db/index.ts`). Keep the pre-deploy `VACUUM INTO` snapshot
       as the belt-and-braces pre-migration copy, and periodically run
       `bun run db:verify-backup` against a pulled-back replica so the restore
