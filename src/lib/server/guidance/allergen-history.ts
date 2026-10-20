@@ -5,6 +5,7 @@ import type { ExtractTablesWithRelations } from 'drizzle-orm';
 import { foodEntries, foods } from '#lib/server/db/schema.js';
 import type * as schema from '#lib/server/db/schema.js';
 import { toEpochMs } from '#lib/utils/dates.js';
+import { elapsedDays } from '#lib/utils/civil-calendar.js';
 import { parisDateParts } from '#lib/utils/paris-date.js';
 import { REACTION_RANK, type ReactionId } from '#lib/utils/reaction-values.js';
 import {
@@ -126,8 +127,6 @@ export type AllergenHistory = {
 
 type FoodTag = { allergenType: string | null; category: string };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 // Fat products keep their allergen tag so symptoms (inconfort or réaction)
 // still block the allergen, but their low, variable protein content makes
 // them unreliable as an introduction or maintenance exposure.
@@ -198,14 +197,12 @@ function factsByAllergen(entries: readonly AllergenEntry[]): Map<string, Facts> 
   return byAllergen;
 }
 
-const daysBetween = (from: number, to: number) => Math.max(0, Math.floor((to - from) / DAY_MS));
-
 function buildMaintainQueue(byAllergen: Map<string, Facts>, now: number): MaintainCandidate[] {
   const queue: MaintainCandidate[] = [];
   for (const id of PRIORITY_INTRODUCTION_ALLERGENS) {
     const facts = byAllergen.get(id);
     if (!facts || isBlocking(facts.worst)) continue;
-    const daysSince = daysBetween(facts.lastAt, now);
+    const daysSince = elapsedDays(facts.lastAt, now);
     queue.push({
       id,
       lastAt: facts.lastAt,
@@ -252,7 +249,7 @@ function buildStatuses(
       label,
       triedCount: facts.tried,
       lastTried: formatDDMMYY(facts.lastAt),
-      daysSinceLastTried: daysBetween(facts.lastAt, now),
+      daysSinceLastTried: elapsedDays(facts.lastAt, now),
       state: worst !== 'ras' ? worst : overdue.has(id) ? 'fading' : 'cleared',
       worstEntryId: facts.worstEntryId
     };
@@ -286,7 +283,7 @@ function buildBilanRows(byAllergen: Map<string, Facts>): AllergenBilanRow[] {
  */
 export function allergenHistoryFrom(
   entries: readonly AllergenEntry[],
-  now: number = Date.now()
+  now: number
 ): AllergenHistory {
   const byAllergen = factsByAllergen(entries);
   const maintainQueue = buildMaintainQueue(byAllergen, now);
@@ -305,11 +302,13 @@ export function allergenHistoryFrom(
  * Reads the child's whole allergen history in one query, unbounded, so an old
  * reaction never ages out. Synchronous: pass a transaction handle to read
  * inside a write (the log action measures milestones before and after).
+ * `now` anchors every day count: read the clock once and pass the same
+ * instant to everything the page derives from it.
  */
 export function loadAllergenHistory(
   executor: Executor,
   childId: number,
-  now: number = Date.now()
+  now: number
 ): AllergenHistory {
   const rows = executor
     .select({

@@ -7,6 +7,7 @@ import { CATEGORY_IDS, type CategoryId } from '#lib/utils/categories.js';
 import type { ReactionId } from '#lib/utils/reactions.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import { ageInMonths } from '#lib/utils/age.js';
+import { daysBefore } from '#lib/utils/civil-calendar.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { getStageForAgeMonths, type Stage } from '#lib/content/guidance.js';
 import { TEXTURE_VALUES, type TextureKey, isTextureKey } from '#lib/utils/textures.js';
@@ -91,14 +92,16 @@ function computeMostAdvancedTexture(entries: ReportEntry[]): TextureKey | null {
   return mostAdvancedIdx >= 0 ? TEXTURE_VALUES[mostAdvancedIdx] : null;
 }
 
-// 30-day texture distribution: count each texture key logged in the window.
-function computeTextureDistribution(entries: ReportEntry[]): {
+// 30-day texture distribution: count each texture key logged in the 30 × 24
+// hours before `now`.
+function computeTextureDistribution(
+  entries: ReportEntry[],
+  now: number
+): {
   counts: Record<TextureKey, number>;
   totalWithTexture: number;
 } {
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-  const cutoff = now - THIRTY_DAYS_MS;
+  const cutoff = daysBefore(now, 30);
 
   const counts: Record<TextureKey, number> = {
     lisse: 0,
@@ -127,6 +130,9 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
   // still comes from the layout via parent().
   const { childId } = requireChildContext(locals, params);
   const { child } = await parent();
+  // One instant for the whole report: the age, the texture window, the
+  // allergen day counts and the printed generation time.
+  const now = Date.now();
 
   // Pull all entries with their food join, ordered chronologically.
   const rows = await db
@@ -164,7 +170,7 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 
   // Built from `entries` in memory rather than a second SQL scan: the primary
   // query already carries every column the allergen history reads.
-  const allergens = allergenHistoryFrom(entries).bilanRows;
+  const allergens = allergenHistoryFrom(entries, now).bilanRows;
 
   // Notable reactions for the timeline section: every inconfort/réaction
   // entry, oldest first. We deliberately don't cap : this section exists so
@@ -174,14 +180,14 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 
   const mostAdvancedTexture = computeMostAdvancedTexture(entries);
 
-  const textureDistribution = computeTextureDistribution(entries);
+  const textureDistribution = computeTextureDistribution(entries, now);
 
   // Current diversification stage derived from child age at report time.
-  const ageMonths = ageInMonths(child.birthDate);
+  const ageMonths = ageInMonths(child.birthDate, new Date(now));
   const stage: Stage = getStageForAgeMonths(ageMonths);
 
   return {
-    generatedAt: Date.now(),
+    generatedAt: now,
     ageMonths,
     stage,
     mostAdvancedTexture,

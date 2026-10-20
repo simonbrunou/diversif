@@ -48,10 +48,12 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
     else coparentsByChildId.set(c.childId, [c]);
   }
 
+  // One instant for every child's age.
+  const now = new Date();
   const childrenData = myMemberships.map((row) => ({
     id: String(row.childId),
     name: row.childName,
-    ageMonths: ageInMonths(row.childBirthDate),
+    ageMonths: ageInMonths(row.childBirthDate, now),
     coparents: (coparentsByChildId.get(row.childId) ?? []).map((c) => ({
       id: String(c.id),
       displayName: c.displayName,

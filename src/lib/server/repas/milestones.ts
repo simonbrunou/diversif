@@ -45,7 +45,7 @@ export type MilestoneBaseline = {
 // transaction: reading the history after the insert loop would include the
 // repas's own just-inserted rows, so every "first allergen" would look
 // already-seen and the celebration would never fire.
-export function milestoneBaseline(tx: Tx, childId: number): MilestoneBaseline {
+export function milestoneBaseline(tx: Tx, childId: number, now: number): MilestoneBaseline {
   const priorEntryCount = countOf(
     tx
       .select({ n: sql<number>`count(*)` })
@@ -58,7 +58,7 @@ export function milestoneBaseline(tx: Tx, childId: number): MilestoneBaseline {
   return {
     priorEntryCount,
     priorCategoriesCovered: countCategoriesCovered(tx, childId),
-    priorAllergens: loadAllergenHistory(tx, childId)
+    priorAllergens: loadAllergenHistory(tx, childId, now)
   };
 }
 
@@ -77,10 +77,11 @@ const allCelebrated = (allergens: AllergenHistory) =>
 export function measureMilestones(
   tx: Tx,
   childId: number,
-  baseline: MilestoneBaseline
+  baseline: MilestoneBaseline,
+  now: number
 ): Milestones {
   const before = baseline.priorAllergens;
-  const after = loadAllergenHistory(tx, childId); // post-insert
+  const after = loadAllergenHistory(tx, childId, now); // post-insert
   // Celebrate only allergens for which the app actually recommends prompt
   // introduction; the wider 12-item EU tracking list includes soja and
   // allergens with no preventive introduction calendar.

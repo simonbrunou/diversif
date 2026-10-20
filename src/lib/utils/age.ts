@@ -1,4 +1,5 @@
-import { parisDateParts, parisDayIndex } from './paris-date';
+import { civilDay, parisDayOf } from './civil-calendar';
+import { parisDateParts } from './paris-date';
 import * as m from '#lib/paraglide/messages.js';
 
 function monthsLabel(months: number): string {
@@ -20,21 +21,16 @@ export function ageInMonths(birthDate: string, now: Date = new Date()): number {
 
 export function formatAge(birthDate: string, now: Date = new Date()): string {
   const [birthYear, birthMonth, birthDay] = birthDate.split('-').map(Number);
-  const birthDayIndex = Math.floor(Date.UTC(birthYear, birthMonth - 1, birthDay) / 86_400_000);
-  const nowDayIndex = parisDayIndex(now.getTime());
-  if (nowDayIndex < birthDayIndex) return m.childAgeFutureLabel();
+  const today = parisDayOf(now.getTime());
+  if (today < civilDay(birthYear, birthMonth, birthDay)) return m.childAgeFutureLabel();
 
   const months = ageInMonths(birthDate, now);
 
-  // Day index of the birth date rolled forward by `months` — mirrors the
-  // month-overflow semantics `Date#setUTCMonth` gave the previous
-  // UTC-anchored implementation (e.g. 31 Jan + 1 month lands on 3 March),
-  // now expressed purely in civil-day-index space so it stays consistent
-  // with `nowDayIndex`, which is derived from the Paris civil day.
-  const cursorDayIndex = Math.floor(
-    Date.UTC(birthYear, birthMonth - 1 + months, birthDay) / 86_400_000
-  );
-  const days = nowDayIndex - cursorDayIndex;
+  // The birth date rolled forward by `months` — mirrors the month-overflow
+  // semantics `Date#setUTCMonth` gave the previous UTC-anchored
+  // implementation (e.g. 31 Jan + 1 month lands on 3 March), as a civil day
+  // so it compares with `today`, the Paris civil day.
+  const days = today - civilDay(birthYear, birthMonth + months, birthDay);
 
   if (months < 1) {
     if (days <= 0) return m.childAgeTodayLabel();

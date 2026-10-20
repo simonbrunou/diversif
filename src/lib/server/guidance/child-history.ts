@@ -5,6 +5,7 @@ import type * as schema from '#lib/server/db/schema.js';
 import * as m from '#lib/paraglide/messages.js';
 import type { RecentEntry } from '#lib/types.js';
 import type { CategoryId } from '#lib/utils/categories.js';
+import { isThisWeek, utcDayOf } from '#lib/utils/civil-calendar.js';
 import { toEpochMs } from '#lib/utils/dates.js';
 import { REACTION_RANK, type ReactionId } from '#lib/utils/reaction-values.js';
 import type { TextureKey } from '#lib/utils/textures.js';
@@ -59,7 +60,10 @@ export type ChildHistory = {
   readonly recent: RecentEntry[];
   /** Distinct foods ever logged: the « aliments découverts » tile. */
   readonly foodsIntroduced: number;
-  /** Foods whose first entry falls in the last 7 days. */
+  /**
+   * Foods whose first entry falls this week (isThisWeek): from Paris midnight
+   * 6 days ago, a meal dated a few minutes ahead of the clock included.
+   */
   readonly newFoodsThisWeek: number;
   readonly streak: StreakStats;
   /** The allergen history (#427), built from the same rows. */
@@ -72,8 +76,9 @@ export type ChildHistory = {
    */
   readonly repeatCandidates: readonly FoodHistory[];
   /**
-   * This week's 5 latest entries logged by another member, newest first.
-   * Empty for a solo carnet. A deleted account's entries are left out.
+   * This week's 5 latest entries logged by another member, newest first, over
+   * the same 7 Paris days as newFoodsThisWeek. Empty for a solo carnet. A
+   * deleted account's entries are left out.
    */
   coparentActivity(viewerId: number): CoparentEntry[];
   /**
@@ -84,8 +89,6 @@ export type ChildHistory = {
   reminders(context: ReminderContext): Reminder[];
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const WEEK_MS = 7 * DAY_MS;
 const RECENT_FEED_SIZE = 20;
 const COPARENT_ACTIVITY_SIZE = 5;
 const REPEAT_CANDIDATE_MAX_COUNT = 2;
@@ -119,7 +122,7 @@ function buildCoparentActivity(
 ): CoparentEntry[] {
   const out: CoparentEntry[] = [];
   for (const e of newestFirstEntries) {
-    if (e.givenAt < now - WEEK_MS || out.length === COPARENT_ACTIVITY_SIZE) break;
+    if (!isThisWeek(e.givenAt, now) || out.length === COPARENT_ACTIVITY_SIZE) break;
     if (e.loggedBy === viewerId || e.loggedByName === null) continue;
     out.push({
       id: e.id,
@@ -188,20 +191,19 @@ function currentRun(days: readonly number[], today: number): number {
   return current;
 }
 
-// We bucket by UTC day on purpose. Most parents are within UTC±2 (Europe),
-// and a UTC-day boundary differs from local-day by at most ~2 hours : well
-// outside the normal awake window for logging baby meals (basically nobody
-// logs lunch at 02:00 local). The cost of UTC-bucketing is a theoretical
-// off-by-one for someone logging right around midnight in a far-east
-// timezone; the benefit is a stable computation that doesn't depend on the
-// server's TZ env. If we ever start serving users far from Europe, switch to
-// a localized bucketing here.
+// Régularité buckets by UTC day on purpose (utcDayOf), not by Paris day like
+// the rest of Aujourd'hui. Most parents are within UTC±2 (Europe), and a
+// UTC-day boundary differs from local-day by at most ~2 hours : well outside
+// the normal awake window for logging baby meals (basically nobody logs lunch
+// at 02:00 local). The cost of UTC-bucketing is a theoretical off-by-one for
+// someone logging right around midnight, as a meal at 00:30 Paris lands on
+// the UTC day before; the benefit is a computation that ignores time zones
+// entirely. If we ever start serving users far from Europe, switch to a
+// localized bucketing here.
 function buildStreak(entries: readonly HistoryEntry[], now: number): StreakStats {
-  const days = [...new Set(entries.map((e) => Math.floor(e.givenAt / DAY_MS)))].sort(
-    (a, b) => b - a
-  );
+  const days = [...new Set(entries.map((e) => utcDayOf(e.givenAt)))].sort((a, b) => b - a);
   if (days.length === 0) return { current: 0, record: 0 };
-  return { current: currentRun(days, Math.floor(now / DAY_MS)), record: longestRun(days) };
+  return { current: currentRun(days, utcDayOf(now)), record: longestRun(days) };
 }
 
 /**
@@ -221,7 +223,7 @@ export function childHistoryFrom(
   return {
     recent: sorted.slice(0, RECENT_FEED_SIZE).map(toRecentEntry),
     foodsIntroduced: foods.length,
-    newFoodsThisWeek: foods.filter((f) => f.firstAt >= now - WEEK_MS).length,
+    newFoodsThisWeek: foods.filter((f) => isThisWeek(f.firstAt, now)).length,
     streak: buildStreak(sorted, now),
     allergens,
     repeatCandidates,
@@ -243,11 +245,13 @@ export function childHistoryFrom(
  * Reads the child's whole history in one query, unbounded: the first
  * introductions, the repeat candidates and the allergen history all need every
  * entry, however old. One child's history is a few thousand rows at most.
+ * `now` anchors every window: read the clock once and pass the same instant
+ * to everything the page derives from it.
  */
 export function loadChildHistory(
   db: BunSQLiteDatabase<typeof schema>,
   childId: number,
-  now: number = Date.now()
+  now: number
 ): ChildHistory {
   const rows = db
     .select({

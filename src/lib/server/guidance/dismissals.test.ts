@@ -5,9 +5,9 @@ import { testDb, resetTestDb } from '../../../test/db';
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { children, tipDismissals, users } from '#lib/server/db/schema.js';
+import { DAY_MS } from '#lib/utils/civil-calendar.js';
 import { dismissReminder, loadDismissals } from './dismissals';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = Date.UTC(2026, 4, 3, 12);
 
 beforeEach(async () => {
@@ -39,21 +39,23 @@ async function dismissedDaysAgo(userId: number, childId: number, key: string, da
 describe('loadDismissals / dismissReminder', () => {
   it('returns an empty set when nothing dismissed', async () => {
     const { user, child } = await seedUserAndChild();
-    expect((await loadDismissals(user.id, child.id)).size).toBe(0);
+    expect((await loadDismissals(user.id, child.id, NOW)).size).toBe(0);
   });
 
   it('persists dismissal and reflects it on next read', async () => {
     const { user, child } = await seedUserAndChild();
-    await dismissReminder(user.id, child.id, 'welcome');
-    expect((await loadDismissals(user.id, child.id)).has('welcome')).toBe(true);
+    await dismissReminder(user.id, child.id, 'welcome', NOW);
+    expect((await loadDismissals(user.id, child.id, NOW)).has('welcome')).toBe(true);
   });
 
   it('upserts dismissal on conflict (no duplicate row)', async () => {
     const { user, child } = await seedUserAndChild();
-    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf');
-    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf');
+    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf', NOW - DAY_MS);
+    await dismissReminder(user.id, child.id, 'pending-allergen:oeuf', NOW);
     const rows = await testDb.select().from(tipDismissals).where(eq(tipDismissals.userId, user.id));
     expect(rows.length).toBe(1);
+    // The second dismissal restarts the TTL.
+    expect(rows[0].dismissedAt.getTime()).toBe(NOW);
   });
 
   it('drops a dismissal once its severity TTL has run out at `now`', async () => {
@@ -93,8 +95,8 @@ describe('loadDismissals / dismissReminder', () => {
         createdAt: new Date()
       })
       .returning();
-    await dismissReminder(user.id, sibling.id, 'welcome');
-    await dismissReminder(partner.id, child.id, 'stale-diversity');
-    expect((await loadDismissals(user.id, child.id)).size).toBe(0);
+    await dismissReminder(user.id, sibling.id, 'welcome', NOW);
+    await dismissReminder(partner.id, child.id, 'stale-diversity', NOW);
+    expect((await loadDismissals(user.id, child.id, NOW)).size).toBe(0);
   });
 });

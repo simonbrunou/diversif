@@ -105,11 +105,11 @@ function notFound(): never {
 
 function insertRepas(tx: Tx, ctx: RepasContext, draft: LogDraft): Logged {
   const aliments = resolveAliments(tx, ctx.childId, draft.aliments);
+  const now = new Date();
   // Snapshot BEFORE any insert so milestones compare pre/post state.
-  const baseline = milestoneBaseline(tx, ctx.childId);
+  const baseline = milestoneBaseline(tx, ctx.childId, now.getTime());
 
   const mealId = newMealId(aliments.length);
-  const now = new Date();
   const entryIds = aliments.map(
     (food) =>
       tx
@@ -132,7 +132,7 @@ function insertRepas(tx: Tx, ctx: RepasContext, draft: LogDraft): Logged {
   const foodIds = aliments.map((food) => food.id);
   recordPreparedMeal(tx, ctx.childId, draft.preparedMeal, foodIds, draft.givenAt);
 
-  const milestones = measureMilestones(tx, ctx.childId, baseline);
+  const milestones = measureMilestones(tx, ctx.childId, baseline, now.getTime());
   return { redirect: milestonesPath(ctx.childId, milestones), entryIds, milestones };
 }
 

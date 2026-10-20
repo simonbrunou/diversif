@@ -40,7 +40,7 @@
       {data.child.name}
     </h1>
     <p class="text-sm text-muted-foreground">
-      {formatAge(data.child.birthDate)} · {data.ageMonths < 4
+      {formatAge(data.child.birthDate, new Date(data.generatedAt))} · {data.ageMonths < 4
         ? m.preDiversificationTitle()
         : data.stage.title}
     </p>

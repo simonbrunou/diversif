@@ -50,7 +50,7 @@ export const actions: Actions = {
     if (typeof key !== 'string' || key.length === 0 || key.length > 100) {
       return fail(400, { errorKey: 'errorsLogInvalidRequest' });
     }
-    await dismissReminder(user.id, childId, key);
+    await dismissReminder(user.id, childId, key, Date.now());
     return { ok: true };
   }
 };

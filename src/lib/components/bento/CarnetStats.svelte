@@ -2,7 +2,8 @@
   import Card from '#lib/components/ui/Card.svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { getLocale } from '#lib/paraglide/runtime.js';
-  import { parisDayIndex } from '#lib/utils/paris-date.js';
+  import { lastDays, parisDayOf, utcMidnightOf } from '#lib/utils/civil-calendar.js';
+  import { PARIS_TIME_ZONE } from '#lib/utils/paris-date.js';
 
   let {
     diversityScore,
@@ -22,8 +23,8 @@
 
   // Single-letter weekday in the active locale, one per bucket. The server
   // (loadWeeklyEntries) buckets by Europe/Paris calendar day with the last
-  // bucket pinned to `anchorUtc` (the epoch-ms Paris dayIndex of "today" at
-  // request time — see #lib/utils/paris-date). Format the labels off that
+  // bucket pinned to `anchorUtc` (the instant naming today's Paris date at
+  // request time — see utcMidnightOf). Format the labels off that
   // same anchor, in the same Europe/Paris zone, so the bars and their labels
   // describe the same civil dates even when the page hydrates after a
   // midnight rollover — otherwise labels would shift one day while the bars
@@ -36,17 +37,14 @@
   // seven bars indistinguishable, and the visual axis that would disambiguate
   // them is aria-hidden.
   const dayFormats = $derived.by(() => {
-    const opts = { timeZone: 'Europe/Paris' } as const;
+    const opts = { timeZone: PARIS_TIME_ZONE };
     const narrow = new Intl.DateTimeFormat(getLocale(), { weekday: 'narrow', ...opts });
     const long = new Intl.DateTimeFormat(getLocale(), { weekday: 'long', ...opts });
     // Fallback: standalone use without an anchor (isolated tests, future
     // consumers). Still Europe/Paris-anchored, just recomputed from the
     // current instant instead of the server-provided anchor.
-    const todayUTC = anchorUtc ?? parisDayIndex(Date.now()) * 86400_000;
-    const days = Array.from(
-      { length: weeklyEntries.length },
-      (_, i) => new Date(todayUTC - (weeklyEntries.length - 1 - i) * 86400_000)
-    );
+    const today = parisDayOf(anchorUtc ?? Date.now());
+    const days = lastDays(weeklyEntries.length, today).map((day) => utcMidnightOf(day));
     return {
       narrow: days.map((d) => narrow.format(d)),
       long: days.map((d) => long.format(d))

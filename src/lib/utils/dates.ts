@@ -1,5 +1,7 @@
 import { getLocale } from '#lib/paraglide/runtime.js';
 import * as m from '#lib/paraglide/messages.js';
+import { parisDaysAgo } from './civil-calendar';
+import { PARIS_TIME_ZONE, parisDateParts } from './paris-date';
 
 function pad2(n: number): string {
   return String(n).padStart(2, '0');
@@ -9,34 +11,39 @@ function formatHHmm(d: Date): string {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
+const PARIS_HH_MM_FORMATTER = new Intl.DateTimeFormat('en-GB', {
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: PARIS_TIME_ZONE
+});
 
+/**
+ * When an entry was logged, as the feed prints it: « il y a 5 min »,
+ * « hier 20:15 ». Days and hours are read in Paris, like the entry page, so
+ * the server (UTC) and the browser render the same text.
+ */
 export function formatRelative(date: Date | number, now: Date = new Date()): string {
   const locale = getLocale();
   const d = date instanceof Date ? date : new Date(date);
   const diffMs = now.getTime() - d.getTime();
   const diffMin = Math.floor(diffMs / 60_000);
   const diffHour = Math.floor(diffMs / 3_600_000);
+  const daysAgo = parisDaysAgo(d.getTime(), now.getTime());
+  const time = PARIS_HH_MM_FORMATTER.format(d);
 
   if (diffMin < 1) return m.dateRelativeNow();
   if (diffMin < 60) return m.dateRelativeMinutes({ min: String(diffMin) });
-  if (diffHour < 12 && isSameDay(d, now)) return m.dateRelativeHours({ hour: String(diffHour) });
+  if (daysAgo === 0 && diffHour < 12) return m.dateRelativeHours({ hour: String(diffHour) });
+  if (daysAgo === 0) return m.dateRelativeToday({ time });
+  if (daysAgo === 1) return m.dateRelativeYesterday({ time });
 
-  if (isSameDay(d, now)) return m.dateRelativeToday({ time: formatHHmm(d) });
-  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-  if (isSameDay(d, yesterday)) return m.dateRelativeYesterday({ time: formatHHmm(d) });
-
-  const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(d);
-  const month = new Intl.DateTimeFormat(locale, { month: 'short' }).format(d);
-  if (d.getFullYear() === now.getFullYear())
-    return `${weekday} ${d.getDate()} ${month} ${formatHHmm(d)}`;
-  return `${d.getDate()} ${month} ${d.getFullYear()} ${formatHHmm(d)}`;
+  const inParis = { timeZone: PARIS_TIME_ZONE };
+  const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short', ...inParis }).format(d);
+  const month = new Intl.DateTimeFormat(locale, { month: 'short', ...inParis }).format(d);
+  const { year, day } = parisDateParts(d.getTime());
+  if (year === parisDateParts(now.getTime()).year) return `${weekday} ${day} ${month} ${time}`;
+  return `${day} ${month} ${year} ${time}`;
 }
 
 export function formatDateInputValue(date: Date = new Date()): string {

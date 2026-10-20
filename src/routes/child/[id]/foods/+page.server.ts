@@ -3,7 +3,7 @@ import { foodEntries, foods, users } from '#lib/server/db/schema.js';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { requireChildContext } from '#lib/server/guards.js';
 import { toEpochMs } from '#lib/utils/dates.js';
-import { parisDayIndex } from '#lib/utils/paris-date.js';
+import { parisDayOf, thisWeek, utcMidnightOf } from '#lib/utils/civil-calendar.js';
 import { REACTION_RANK } from '#lib/utils/reaction-values.js';
 import {
   loadAllergenHistory,
@@ -16,23 +16,22 @@ import type { PageServerLoad } from './$types';
 
 async function loadWeeklyEntries(
   childId: number,
-  now: Date = new Date()
+  now: number
 ): Promise<{ counts: number[]; anchorUtc: number }> {
   // 7 daily buckets: oldest at index 0, today at index 6. Buckets are
   // Europe/Paris calendar days, so a food logged right after local midnight
   // lands in "today"'s bucket even though the server clock (and SQLite
-  // storage) is UTC. anchorUtc pins the epoch-ms representation of today's
-  // Paris dayIndex (see #lib/utils/paris-date) so the client can label each
-  // bar against the same civil date without SSR/CSR hydration drift.
-  const anchorIndex = parisDayIndex(now.getTime());
-  const anchorUtc = anchorIndex * 86400_000;
-  const startIndex = anchorIndex - 6;
+  // storage) is UTC. anchorUtc names today's Paris date (utcMidnightOf) so
+  // the client can label each bar against the same civil date without
+  // SSR/CSR hydration drift.
+  const week = thisWeek(now);
+  const today = week[week.length - 1];
   // SQL pre-filter only needs to be a superset: real Paris-midnight instants
-  // can be up to ~2h off from the pseudo-UTC anchorUtc value, so pad a full
-  // extra day on each side; exact bucketing below re-derives each row's
-  // Paris civil day and is authoritative regardless of this margin.
-  const start = new Date(anchorUtc - 7 * 86400_000);
-  const end = new Date(anchorUtc + 2 * 86400_000);
+  // can be up to ~2h off from the UTC midnights utcMidnightOf returns, so
+  // pad a full extra day on each side; exact bucketing below re-derives each
+  // row's Paris civil day and is authoritative regardless of this margin.
+  const start = new Date(utcMidnightOf(week[0] - 1));
+  const end = new Date(utcMidnightOf(today + 2));
 
   const rows = await db
     .select({ givenAt: foodEntries.givenAt })
@@ -45,14 +44,14 @@ async function loadWeeklyEntries(
       )
     );
 
-  const counts = [0, 0, 0, 0, 0, 0, 0];
+  const counts = week.map(() => 0);
   for (const r of rows) {
     const givenAtMs =
       r.givenAt instanceof Date ? r.givenAt.getTime() : /* v8 ignore next */ Number(r.givenAt);
-    const idx = parisDayIndex(givenAtMs) - startIndex;
-    if (idx >= 0 && idx < 7) counts[idx] += 1;
+    const idx = week.indexOf(parisDayOf(givenAtMs));
+    if (idx >= 0) counts[idx] += 1;
   }
-  return { counts, anchorUtc };
+  return { counts, anchorUtc: utcMidnightOf(today) };
 }
 type BentoFood = {
   id: number;
@@ -128,10 +127,11 @@ async function loadTexturesTried(childId: number): Promise<number> {
 // read with the child's history, instead of reading it a second time.
 async function loadTiles(
   childId: number,
-  allergens: AllergenHistory = loadAllergenHistory(db, childId)
+  now: number,
+  allergens: AllergenHistory = loadAllergenHistory(db, childId, now)
 ) {
   const [weeklyEntries, texturesTried] = await Promise.all([
-    loadWeeklyEntries(childId),
+    loadWeeklyEntries(childId, now),
     loadTexturesTried(childId)
   ]);
   return { texturesTried, bentoAllergens: allergens.statuses, weeklyEntries };
@@ -150,6 +150,8 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   const category = url.searchParams.get('category') ?? '';
   const reaction = url.searchParams.get('reaction') ?? '';
   const repeat = url.searchParams.get('repeat') === '1';
+  // One instant for the whole page: the weekly bars and the allergen pills.
+  const now = Date.now();
 
   const conditions = buildFoodFilters(childId, category, reaction);
 
@@ -157,7 +159,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
   if (repeat) {
     // Every food given <= 2 times, never with symptoms: the same candidates
     // the Aujourd'hui "Reproposez" cards narrow down (ruleRepeatExposure).
-    history = loadChildHistory(db, childId);
+    history = loadChildHistory(db, childId, now);
     const ids = history.repeatCandidates.map((c) => c.foodId);
     if (ids.length === 0) {
       return {
@@ -166,7 +168,7 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
         bentoFoods: [],
         foodCount: 0,
         categoryCount: 0,
-        ...(await loadTiles(childId, history.allergens))
+        ...(await loadTiles(childId, now, history.allergens))
       };
     }
     conditions.push(inArray(foodEntries.foodId, ids));
@@ -221,6 +223,6 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     bentoFoods,
     foodCount,
     categoryCount,
-    ...(await loadTiles(childId, history?.allergens))
+    ...(await loadTiles(childId, now, history?.allergens))
   };
 };

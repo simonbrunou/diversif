@@ -10,7 +10,9 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const { childId } = requireChildContext(locals, params);
   const { child } = await parent();
-  const months = ageInMonths(child.birthDate);
+  // One instant for the whole page: the age and the allergen history.
+  const now = Date.now();
+  const months = ageInMonths(child.birthDate, new Date(now));
 
   if (months < 4) return { ageMonths: months, priorityAllergens: [], others: [] };
 
@@ -21,7 +23,7 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
       .where(eq(foodEntries.childId, childId))
   ).map((r) => r.id);
 
-  const allergens = loadAllergenHistory(db, childId);
+  const allergens = loadAllergenHistory(db, childId, now);
 
   const conditions = [lte(foods.suggestedAgeMonths, months), eq(foods.isCustom, false)];
   if (introducedIds.length > 0) {
