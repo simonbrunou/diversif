@@ -7,15 +7,16 @@ import { parseDietExclusions } from '#lib/utils/diet.js';
 import { requireChildContext } from '#lib/server/guards.js';
 import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import { buildMenu } from '#lib/server/menu/engine.js';
-import { parisDay } from '#lib/server/menu/day.js';
+import { parisDayOf, weekdayOf } from '#lib/utils/civil-calendar.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, parent, locals }) => {
   const { childId } = requireChildContext(locals, params);
   const { child } = await parent();
-  const ageMonths = ageInMonths(child.birthDate);
-
+  // One instant for the whole page: the age, the allergen history and the day.
   const now = Date.now();
+  const ageMonths = ageInMonths(child.birthDate, new Date(now));
+
   const entries = await db
     .select({ foodId: foodEntries.foodId, reaction: foodEntries.reaction })
     .from(foodEntries)
@@ -38,7 +39,8 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     .where(and(eq(foods.isCustom, false), lte(foods.suggestedAgeMonths, Math.max(ageMonths, 4))))
     .orderBy(sql`${foods.id} ASC`);
 
-  const { dayIndex, weekday } = parisDay(now);
+  const dayIndex = parisDayOf(now);
+  const weekday = weekdayOf(dayIndex);
   // Hand-picked projection (just the column the engine needs) rather than
   // reusing the +layout.server.ts child object, which every child/[id]/*
   // route consumes : keeping this query local avoids widening that shared

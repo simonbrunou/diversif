@@ -33,6 +33,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
   if (!row) throw error(404, m.errorsFoodEntryNotFound());
 
   const sList = await listSymptomsByEntry(entryId, childId);
+  // One instant for the age and the printed generation time.
+  const now = new Date();
   const locale = (locals.locale ?? 'fr') as 'fr' | 'en';
   const dtf = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
     dateStyle: 'long',
@@ -42,7 +44,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
   return {
     childName: row.childName,
-    months: ageInMonths(row.birthDate),
+    months: ageInMonths(row.birthDate, now),
     foodName: row.foodName,
     reaction: row.reaction,
     givenAt: dtf.format(row.givenAt),
@@ -51,6 +53,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
       observedAt: dtf.format(s.observedAt),
       note: s.note
     })),
-    generatedAt: dtf.format(new Date())
+    generatedAt: dtf.format(now)
   };
 };

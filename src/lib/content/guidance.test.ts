@@ -142,4 +142,14 @@ describe('pickRotatingTip', () => {
     const b = pickRotatingTip(tips, 1);
     expect(a?.id).toBe(b?.id);
   });
+
+  it('turns to the next tip at Paris midnight, not UTC midnight', () => {
+    const tips = getTipsFor({ ageMonths: 6 });
+    expect(tips.length).toBeGreaterThan(1);
+    const tipAt = (iso: string) => pickRotatingTip(tips, 1, Date.parse(iso))?.id;
+    // 23:59 and 00:01 Paris (CEST) on either side of midnight: a new day.
+    expect(tipAt('2026-06-01T21:59:00Z')).not.toBe(tipAt('2026-06-01T22:01:00Z'));
+    // 00:01 and 01:59 Paris share the day, though UTC turns over between them.
+    expect(tipAt('2026-06-01T22:01:00Z')).toBe(tipAt('2026-06-01T23:59:00Z'));
+  });
 });

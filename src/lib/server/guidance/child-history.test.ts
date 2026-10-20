@@ -215,15 +215,33 @@ describe('foodsIntroduced and newFoodsThisWeek', () => {
     const carrot = (daysAgo: number) => entry({ foodId: 1, givenAt: NOW - daysAgo * DAY });
     const apple = (daysAgo: number) => entry({ foodId: 2, givenAt: NOW - daysAgo * DAY });
     const pear = (daysAgo: number) => entry({ foodId: 3, givenAt: NOW - daysAgo * DAY });
+    const plum = (daysAgo: number) => entry({ foodId: 4, givenAt: NOW - daysAgo * DAY });
     const history = childHistoryFrom(
       CHILD_ID,
       // Carotte was first logged 10 days ago, so today's repeat is not new.
-      // Pomme is new this week: three logs still count once. Poire's first log
-      // is exactly 7 days old, the edge of the window.
-      [carrot(10), carrot(0), apple(2), apple(1), apple(0), pear(7)],
+      // Pomme is new this week: three logs still count once. Prune's first log
+      // is 6 days old, the oldest day of the week; Poire's, 7 days old, is not.
+      [carrot(10), carrot(0), apple(2), apple(1), apple(0), plum(6), pear(7)],
       NOW
     );
-    expect(history.foodsIntroduced).toBe(3);
+    expect(history.foodsIntroduced).toBe(4);
+    expect(history.newFoodsThisWeek).toBe(2);
+  });
+
+  it("counts the Carnet's 7 Paris days, so 23:50 seven dates back is not this week", () => {
+    const halfPastMidnight = Date.UTC(2024, 5, 9, 22, 35); // 00:35 Paris, 10 June
+    const history = childHistoryFrom(
+      CHILD_ID,
+      [
+        // 00:10 Paris on 4 June, the first day of the week: new.
+        entry({ foodId: 1, givenAt: Date.UTC(2024, 5, 3, 22, 10) }),
+        // 23:50 Paris on 3 June: under 7 × 24 hours ago, but a week ago.
+        entry({ foodId: 2, givenAt: Date.UTC(2024, 5, 3, 21, 50) }),
+        // 00:30 Paris tonight: today.
+        entry({ foodId: 3, givenAt: Date.UTC(2024, 5, 9, 22, 30) })
+      ],
+      halfPastMidnight
+    );
     expect(history.newFoodsThisWeek).toBe(2);
   });
 
@@ -273,11 +291,25 @@ describe('coparentActivity', () => {
         byPartner({ id: 1, givenAt: NOW - 8 * DAY }),
         byPartner({ id: 2, givenAt: NOW - 2 * DAY }),
         byPartner({ id: 3, givenAt: NOW - 7 * DAY }),
-        byPartner({ id: 4, givenAt: NOW - DAY })
+        byPartner({ id: 4, givenAt: NOW - DAY }),
+        byPartner({ id: 5, givenAt: NOW - 6 * DAY })
       ],
       NOW
     );
-    expect(history.coparentActivity(VIEWER).map((e) => e.id)).toEqual([4, 2, 3]);
+    expect(history.coparentActivity(VIEWER).map((e) => e.id)).toEqual([4, 2, 5]);
+  });
+
+  it('keeps the same 7 Paris days as newFoodsThisWeek', () => {
+    const halfPastMidnight = Date.UTC(2024, 5, 9, 22, 35); // 00:35 Paris, 10 June
+    const history = childHistoryFrom(
+      CHILD_ID,
+      [
+        byPartner({ id: 1, givenAt: Date.UTC(2024, 5, 3, 22, 10) }), // 00:10 Paris, 4 June
+        byPartner({ id: 2, givenAt: Date.UTC(2024, 5, 3, 21, 50) }) // 23:50 Paris, 3 June
+      ],
+      halfPastMidnight
+    );
+    expect(history.coparentActivity(VIEWER).map((e) => e.id)).toEqual([1]);
   });
 
   it('shows at most 5 entries', () => {

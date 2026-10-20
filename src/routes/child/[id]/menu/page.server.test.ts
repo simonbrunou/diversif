@@ -163,7 +163,7 @@ describe('child/[id]/menu load', () => {
     // `avoidFoodIds.add(e.foodId)` line: it has no allergenType (so the
     // blocked-allergen gate can't touch it) and inconfort < reaction (so the
     // reactionTierFoodIds gate can't touch it either). This makes the test a
-    // targeted, non-flaky guard for that one line, independent of parisDay's
+    // targeted, non-flaky guard for that one line, independent of the Paris day's
     // real dayIndex:
     //   WITH avoidFoodIds populated → feculent pool empty → slot skipped → absent every day.
     //   WITHOUT it → sole introduced feculent → picked in every feculent slot → present.
@@ -257,7 +257,7 @@ describe('child/[id]/menu load', () => {
 
     // Every OTHER priority allergen is already introduced, so 'poisson' is the
     // sole due allergen absent diet filtering — a deterministic proof,
-    // independent of parisDay's real dayIndex/weekday. Cabillaud stays
+    // independent of the Paris day's real dayIndex/weekday. Cabillaud stays
     // un-introduced so it remains eligible to be (wrongly) picked as the due
     // allergen food while the exclusion is inert.
     const oeuf = await insertFood({ name: 'Œuf', category: 'oeufs', age: 6, allergen: 'oeuf' });

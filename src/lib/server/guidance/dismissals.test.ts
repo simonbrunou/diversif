@@ -39,13 +39,14 @@ async function dismissedDaysAgo(userId: number, childId: number, key: string, da
 describe('loadDismissals / dismissReminder', () => {
   it('returns an empty set when nothing dismissed', async () => {
     const { user, child } = await seedUserAndChild();
-    expect((await loadDismissals(user.id, child.id)).size).toBe(0);
+    expect((await loadDismissals(user.id, child.id, NOW)).size).toBe(0);
   });
 
   it('persists dismissal and reflects it on next read', async () => {
     const { user, child } = await seedUserAndChild();
     await dismissReminder(user.id, child.id, 'welcome');
-    expect((await loadDismissals(user.id, child.id)).has('welcome')).toBe(true);
+    // dismissReminder stamps the real clock, so read at the real clock too.
+    expect((await loadDismissals(user.id, child.id, Date.now())).has('welcome')).toBe(true);
   });
 
   it('upserts dismissal on conflict (no duplicate row)', async () => {
@@ -95,6 +96,6 @@ describe('loadDismissals / dismissReminder', () => {
       .returning();
     await dismissReminder(user.id, sibling.id, 'welcome');
     await dismissReminder(partner.id, child.id, 'stale-diversity');
-    expect((await loadDismissals(user.id, child.id)).size).toBe(0);
+    expect((await loadDismissals(user.id, child.id, Date.now())).size).toBe(0);
   });
 });

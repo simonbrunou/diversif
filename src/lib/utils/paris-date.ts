@@ -1,8 +1,9 @@
-// Shared Europe/Paris civil-date conversion. The app targets French parents;
-// server containers typically run in UTC, so any "which calendar day is this"
-// computation (age, last-tried dates, weekly chart buckets) must anchor on
-// Europe/Paris local time, not the host's UTC clock. Usable from both server
-// and client code (plain util, no `#lib/server` import).
+// Shared Europe/Paris wall-clock conversion. The app targets French parents;
+// server containers typically run in UTC, so any "what does the clock read in
+// France" computation must anchor on Europe/Paris local time, not the host's
+// UTC clock. Day counts and daily buckets build on this in civil-calendar.ts.
+// Usable from both server and client code (plain util, no `#lib/server`
+// import).
 export const PARIS_TIME_ZONE = 'Europe/Paris';
 
 const PARIS_FORMATTER = new Intl.DateTimeFormat('en-CA', {
@@ -17,12 +18,6 @@ export function parisDateParts(ms: number): { year: number; month: number; day: 
   // en-CA formats as YYYY-MM-DD.
   const [year, month, day] = PARIS_FORMATTER.format(new Date(ms)).split('-').map(Number);
   return { year, month, day };
-}
-
-/** Epoch day index (days since 1970-01-01 UTC) of `ms`'s Europe/Paris civil date. */
-export function parisDayIndex(ms: number): number {
-  const { year, month, day } = parisDateParts(ms);
-  return Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
 }
 
 const PARIS_WALL_CLOCK_FORMATTER = new Intl.DateTimeFormat('en-US', {

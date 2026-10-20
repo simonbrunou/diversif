@@ -4,6 +4,7 @@
 
 import type { AllergenId } from '#lib/utils/allergens.js';
 import type { CategoryId } from '#lib/utils/categories.js';
+import { parisDayOf } from '#lib/utils/civil-calendar.js';
 import type { SourceId } from './sources';
 
 // ---------------------------------------------------------------------------
@@ -1048,11 +1049,11 @@ export function getTipsFor(ctx: TipContext): Tip[] {
 
 /**
  * Deterministic daily-rotating tip picker : same parents on the same day see
- * the same tip. Stable across reloads, refreshes once per day.
+ * the same tip. Stable across reloads, refreshes at Paris midnight.
  */
-export function pickRotatingTip(tips: Tip[], seed: number): Tip | null {
+export function pickRotatingTip(tips: Tip[], seed: number, now: number = Date.now()): Tip | null {
   if (tips.length === 0) return null;
-  const day = Math.floor(Date.now() / (24 * 60 * 60 * 1000));
+  const day = parisDayOf(now);
   const idx = (((day + seed) % tips.length) + tips.length) % tips.length;
   return tips[idx];
 }

@@ -10,7 +10,7 @@ import { ttlForReminderKey } from './reminders';
 export async function loadDismissals(
   userId: number,
   childId: number,
-  now: number = Date.now()
+  now: number
 ): Promise<Set<string>> {
   const rows = await db
     .select({ key: tipDismissals.reminderKey, at: tipDismissals.dismissedAt })

@@ -17,6 +17,7 @@ import { getCategoryLabel, type CategoryId } from '#lib/utils/categories.js';
 import * as m from '#lib/paraglide/messages.js';
 import type { SourceId } from '#lib/content/sources.js';
 import { FORBIDDEN_FOODS } from '#lib/content/guidance.js';
+import { DAY_MS, elapsedDays, utcDayOf } from '#lib/utils/civil-calendar.js';
 import type { AllergenHistory } from './allergen-history';
 import type { FoodHistory, HistoryEntry } from './child-history';
 
@@ -53,7 +54,6 @@ export type ReminderInput = ReminderContext & {
   allergens: AllergenHistory;
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const OBSERVATION_WINDOW_MS = 48 * 60 * 60 * 1000;
 const MAX_CARDS = 4;
 const MAINTAIN_CARD_CAP = 2;
@@ -119,7 +119,7 @@ function ruleObservationWindow({ input, childPath }: RuleContext): Draft[] {
 
 // Welcome : child created < 7 days ago AND 0 entries
 function ruleWelcome({ input, childPath }: RuleContext): Draft[] {
-  const childAgeDays = Math.floor((input.now - input.childCreatedAt) / DAY_MS);
+  const childAgeDays = elapsedDays(input.childCreatedAt, input.now);
   if (input.foods.length !== 0 || childAgeDays >= 7) return [];
   return [
     {
@@ -176,7 +176,7 @@ function ruleStageTransitions({ input, childPath }: RuleContext): Draft[] {
 function ruleStaleDiversity({ input, childPath }: RuleContext): Draft[] {
   if (input.foods.length === 0 || input.ageMonths < 4) return [];
   const lastNewFoodAt = input.foods.reduce((acc, f) => Math.max(acc, f.firstAt), -Infinity);
-  const daysSinceNewFood = Math.floor((input.now - lastNewFoodAt) / DAY_MS);
+  const daysSinceNewFood = elapsedDays(lastNewFoodAt, input.now);
   if (daysSinceNewFood < 14) return [];
   return [
     {
@@ -307,9 +307,13 @@ function ruleMaintainAllergens({ input, childPath }: RuleContext): Draft[] {
   const overdue = input.allergens.maintainQueue.filter((c) => c.overdue);
   return overdue.slice(0, MAINTAIN_CARD_CAP).map((c): Draft => {
     const label = getAllergenLabel(c.id);
-    const lastAtDayBucket = Math.floor(c.lastAt / DAY_MS);
     return {
-      keySuffix: `${c.id}:${lastAtDayBucket}`,
+      // The day of the last exposure, so a new exposure brings the card back.
+      // A UTC day on purpose: dismissals store these keys, and a Paris day
+      // would change the key, reviving a dismissed card, whenever the last
+      // exposure was logged between Paris midnight and UTC midnight. The day
+      // only tells exposures apart; no parent ever reads it.
+      keySuffix: `${c.id}:${utcDayOf(c.lastAt)}`,
       title: m.reminderMaintainAllergenTitle({ allergen: label }),
       body: m.reminderMaintainAllergenBody({
         allergen: label.toLowerCase(),

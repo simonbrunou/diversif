@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { PARIS_TIME_ZONE, parisDateParts, parisDayIndex, latestParisWallClock } from './paris-date';
+import { PARIS_TIME_ZONE, parisDateParts, latestParisWallClock } from './paris-date';
 
 describe('PARIS_TIME_ZONE', () => {
   it('is the Europe/Paris IANA identifier', () => {
@@ -15,14 +15,6 @@ describe('parisDateParts', () => {
       month: 6,
       day: 2
     });
-  });
-});
-
-describe('parisDayIndex', () => {
-  it('advances only once Paris crosses midnight, not UTC', () => {
-    const beforeParisMidnight = parisDayIndex(Date.parse('2026-06-01T21:59:00Z'));
-    const afterParisMidnight = parisDayIndex(Date.parse('2026-06-01T22:01:00Z'));
-    expect(afterParisMidnight).toBe(beforeParisMidnight + 1);
   });
 });
 
