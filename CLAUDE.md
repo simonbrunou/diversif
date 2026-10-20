@@ -22,7 +22,7 @@ Rules:
 - Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
 - If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
 - For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
-- Refresh the graph only in a dedicated chore PR cut from the main checkout (the #383 pattern). Keep `graphify update .` output out of feature and fix PRs and out of worktree commits: it rewrites graph.json wholesale and relabels communities, and from a worktree it stamps the worktree's directory name into the graph (#264, #415). Undo a stray run with `git restore graphify-out`, then delete the untracked `graphify-out/.graphify_labels.pending.json`
+- Refresh the graph only in a dedicated chore PR cut from the main checkout (the #383 pattern); this overrides the "run `graphify update .` after code changes" line in GRAPH_REPORT.md. Keep `graphify update .` output out of feature and fix PRs and out of worktree commits: it rewrites graph.json wholesale and relabels communities, and from a worktree it stamps the worktree's directory name into the graph (#264; seen again while working on #415, never committed). Undo a stray run with `git restore graphify-out`, then delete the untracked `graphify-out/.graphify_labels.pending.json`
 - On a graph.json merge conflict, take one side and regenerate
 
 ## Merge authority
