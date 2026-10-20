@@ -35,7 +35,7 @@ Agents may merge their own PR without asking once all three hold:
 
 When the branch is behind `main` but has no conflict, merge it as it is. Merging `origin/main` into it first costs a full CI run, so skip that step. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows such a break. After you merge, check that run along with the deploy. If a newer merge cancelled it, check the run on the newer `main` commit instead. If the run is red, file a Forgejo issue labelled `needs-triage`.
 
-The merge-tree check exits 1 on a conflict, and with another code on an error such as a SHA you have not fetched. On a conflict:
+The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also exits 1 when it cannot find the SHA, and then prints `not something we can merge` instead. In that case, fetch or correct the SHA and run the check again. On a conflict:
 
 1. Merge `origin/main` into the branch and resolve the conflict.
 2. Run `bun run test`.
