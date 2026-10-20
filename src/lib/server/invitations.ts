@@ -1,9 +1,10 @@
 import { db } from './db';
 import { invitations } from './db/schema';
+import { DAY_MS } from '#lib/utils/civil-calendar.js';
 import { generateInviteCodeRaw } from '#lib/utils/invites.js';
 import { isUniqueViolation } from './db/errors';
 
-const INVITE_DURATION_MS = 1000 * 60 * 60 * 24 * 7;
+const INVITE_DURATION_MS = 7 * DAY_MS;
 
 export async function createInvitationForChild(input: {
   childId: number;

@@ -4,6 +4,7 @@ import type { Cookies, RequestEvent } from '@sveltejs/kit';
 import { db } from './db';
 import { sessions, users } from './db/schema';
 import type { SafeUser } from '#lib/types.js';
+import { DAY_MS } from '#lib/utils/civil-calendar.js';
 
 /**
  * The session lifecycle: the only module that knows the session cookie, its
@@ -20,8 +21,8 @@ import type { SafeUser } from '#lib/types.js';
  */
 
 const SESSION_COOKIE = 'session';
-const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
-const SESSION_RENEW_THRESHOLD_MS = 1000 * 60 * 60 * 24 * 15; // 15 days
+const SESSION_DURATION_MS = 30 * DAY_MS;
+const SESSION_RENEW_THRESHOLD_MS = 15 * DAY_MS;
 
 // Wipes the HTTP cache and site storage: CacheStorage (the SW 'pages' runtime
 // cache may hold authenticated HTML from an older SW build), IndexedDB

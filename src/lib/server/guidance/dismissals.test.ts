@@ -5,9 +5,9 @@ import { testDb, resetTestDb } from '../../../test/db';
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { children, tipDismissals, users } from '#lib/server/db/schema.js';
+import { DAY_MS } from '#lib/utils/civil-calendar.js';
 import { dismissReminder, loadDismissals } from './dismissals';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = Date.UTC(2026, 4, 3, 12);
 
 beforeEach(async () => {

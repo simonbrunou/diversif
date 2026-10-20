@@ -1,9 +1,10 @@
-// The app's notions of "day", in one place. Which day an instant falls on,
-// every daily bucket, every "N days since" and every window counted in days
-// goes through here, so the millisecond arithmetic and the Europe/Paris
-// conversion live in one module. Durations counted in hours (the 48-hour
-// observation window, session and cache TTLs) stay with their owners. Plain
-// util, usable from both server and client code.
+// The app's notions of "day", in one place. Day numbers, daily buckets,
+// "N days since" counts and rolling windows go through here, so the
+// millisecond arithmetic lives in one module, and DAY_MS is its one
+// declaration. Code that only reads a Paris date's year, month or day (age in
+// months, display, typed symptom times) calls parisDateParts directly. TTLs
+// in seconds (the service worker's caches, the theme cookie) stay with their
+// owners. Plain util, usable from both server and client code.
 //
 // Three notions, each named after what it counts:
 // - the Paris civil day (parisDayOf, parisDaysAgo, lastDays, thisWeek,
