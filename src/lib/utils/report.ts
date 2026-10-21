@@ -1,4 +1,4 @@
-import { CheckCircle2, AlertCircle, OctagonAlert } from '@lucide/svelte';
+import { CircleCheck, CircleAlert, OctagonAlert } from '@lucide/svelte';
 import type { ReactionId } from './reaction-values';
 import { formatDate } from './dates';
 import { getLocale } from '#lib/paraglide/runtime.js';
@@ -7,7 +7,7 @@ import { getLocale } from '#lib/paraglide/runtime.js';
 // (report/+page.svelte and its section components) so the reaction ↔
 // icon/color mapping stays in exactly one place.
 export function reportReactionIcon(r: ReactionId) {
-  return r === 'ras' ? CheckCircle2 : r === 'inconfort' ? AlertCircle : OctagonAlert;
+  return r === 'ras' ? CircleCheck : r === 'inconfort' ? CircleAlert : OctagonAlert;
 }
 
 export function reportReactionClass(r: ReactionId): string {

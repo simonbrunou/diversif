@@ -3,12 +3,12 @@
   import Badge from '#lib/components/ui/Badge.svelte';
   import SourceCitation from '#lib/components/SourceCitation.svelte';
   import { FORBIDDEN_FOODS } from '#lib/content/guidance.js';
-  import { AlertTriangle } from '@lucide/svelte';
+  import { TriangleAlert } from '@lucide/svelte';
 </script>
 
 <section id="eviter" class="scroll-mt-6 space-y-3">
   <div class="flex items-center gap-2">
-    <AlertTriangle size={18} class="text-reaction-inconfort-foreground" aria-hidden="true" />
+    <TriangleAlert size={18} class="text-reaction-inconfort-foreground" aria-hidden="true" />
     <h2 class="text-xl font-semibold">Aliments à éviter</h2>
   </div>
   <Card class="overflow-hidden">

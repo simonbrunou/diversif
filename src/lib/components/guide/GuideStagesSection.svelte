@@ -3,7 +3,7 @@
   import StageBadge from '#lib/components/StageBadge.svelte';
   import SourceCitation from '#lib/components/SourceCitation.svelte';
   import { STAGES, type StageId } from '#lib/content/guidance.js';
-  import { Layers, AlertTriangle } from '@lucide/svelte';
+  import { Layers, TriangleAlert } from '@lucide/svelte';
 
   let { currentStageId = null }: { currentStageId?: StageId | null } = $props();
 </script>
@@ -68,7 +68,7 @@
               <div
                 class="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-reaction-inconfort-foreground"
               >
-                <AlertTriangle size={12} aria-hidden="true" />
+                <TriangleAlert size={12} aria-hidden="true" />
                 À surveiller
               </div>
               <ul class="mt-1 list-disc space-y-1 pl-5">

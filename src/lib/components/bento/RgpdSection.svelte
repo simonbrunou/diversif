@@ -3,7 +3,7 @@
   import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
-  import { Download, Trash2 } from '@lucide/svelte';
+  import { Download, Trash } from '@lucide/svelte';
 </script>
 
 <section class="mb-3">
@@ -13,7 +13,7 @@
     <span class="flex-1 text-sm font-bold">{m.profilRgpdExport()}</span>
   </LinkRow>
   <LinkRow href={localizedHref('/account/delete')} variant="tile-butter">
-    <Trash2 size={18} class="text-tile-butter-foreground" aria-hidden="true" />
+    <Trash size={18} class="text-tile-butter-foreground" aria-hidden="true" />
     <span class="flex-1 text-sm font-bold">{m.profilRgpdDelete()}</span>
   </LinkRow>
 </section>
