@@ -29,6 +29,8 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       'const x = 1; export { x };',
       "const lazy = () => import('@lucide/svelte/icons/trash');",
       "import { Trash2 } from 'other-icons';",
+      // Same length as the deep-path prefix, so only the prefix check stops it.
+      "import Bin from '$lib/components/icon/trash-2';",
       "import { Trash2 } from '@lucide/lab';",
       "import { Trash2 } from '@lucide/svelte-foo';",
       'const load = (n) => import(`./icons/${n}`);',
@@ -255,7 +257,13 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       },
       {
         code: "type T = typeof import('@lucide/svelte').Trash2;",
-        errors: [{ messageId: 'replaced', data: { name: 'Trash2', replacement: 'Trash' } }]
+        errors: [
+          { messageId: 'replaced', data: { name: 'Trash2', replacement: 'Trash' }, column: 17 }
+        ]
+      },
+      {
+        code: "type T = typeof import('@lucide/svelte').icons.Trash2.name;",
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte' } }]
       },
       {
         code: "type T = import('@lucide/svelte/icons/trash-2').default;",
