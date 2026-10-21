@@ -36,6 +36,11 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       "const load = (base) => import(base + '/icons/trash-2');",
       "const load = (a) => import(a ? './a' : './b');",
       'const load = () => import(1);',
+      'const load = () => import(String.raw`./icons\\unicode`);',
+      "const load = (x) => import(x as '@lucide/svelte');",
+      "const load = (x, y) => import((x as '@lucide/svelte') + y);",
+      "const load = (f) => import(f<'@lucide/svelte/icons/trash-2'>());",
+      "const load = () => import((<T extends '@lucide/svelte'>(): '@lucide/svelte/icons/trash-2' => './x')());",
       "type T = typeof import('@lucide/svelte').Trash;",
       // The barrels have no default export, so TypeScript rejects this one.
       "import Trash2 from '@lucide/svelte';"
@@ -268,7 +273,27 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       },
       {
         code: "type T = typeof import('@lucide/svelte/icons');",
-        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte/icons' } }]
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte/icons' }, column: 24 }]
+      },
+      {
+        code: "const lazy = () => import((0, '@lucide/svelte/icons/trash-2'));",
+        errors: [
+          {
+            messageId: 'replaced',
+            data: {
+              name: '@lucide/svelte/icons/trash-2',
+              replacement: '@lucide/svelte/icons/trash'
+            }
+          }
+        ]
+      },
+      {
+        code: "const load = (sub) => import('@lucide/svelte' + sub);",
+        errors: [{ messageId: 'computed' }]
+      },
+      {
+        code: 'const load = () => import(String.raw`@lucide/svelte/icons\\unicode`);',
+        errors: [{ messageId: 'computed' }]
       },
       {
         code: "export * from '@lucide/svelte/icons';",

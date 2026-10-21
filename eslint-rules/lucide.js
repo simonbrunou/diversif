@@ -99,9 +99,11 @@ const typeWrappers = new Set([
   'TSTypeAssertion'
 ]);
 
-// The paths a dynamic import source can load: each side of a `?:` and of a
-// logical operator (`||`, `??`, `&&`), with TypeScript's `as`, `satisfies`,
-// `!` and `<T>` wrappers removed.
+// The paths an import source can load. Static imports and import types
+// always have one string; a dynamic import can load each side of a `?:` and
+// of a logical operator (`||`, `??`, `&&`) and the last item of a `(a, b)`
+// sequence, with TypeScript's `as`, `satisfies`, `!` and `<T>` wrappers
+// removed.
 function sourceBranches(node) {
   if (node?.type === 'ConditionalExpression') {
     return [...sourceBranches(node.consequent), ...sourceBranches(node.alternate)];
@@ -109,6 +111,7 @@ function sourceBranches(node) {
   if (node?.type === 'LogicalExpression') {
     return [...sourceBranches(node.left), ...sourceBranches(node.right)];
   }
+  if (node?.type === 'SequenceExpression') return sourceBranches(node.expressions.at(-1));
   if (typeWrappers.has(node?.type)) return sourceBranches(node.expression);
   return [node];
 }
@@ -125,15 +128,22 @@ function fixedText(node) {
 
 const isLucide = (text) => text === lucidePackage || text.startsWith(`${lucidePackage}/`);
 
-// Whether any string inside a computed source spells a Lucide path:
-// `@lucide/svelte/icons/${n}`, `'@lucide/svelte/icons/' + n`, or one nested
-// deeper such as `(a ? '@lucide/svelte/icons/x' : b) + c`.
+// TypeScript keys whose subtree is a type, never a value the import loads. A
+// function's `returnType` holds a node whose type sits under `typeAnnotation`.
+const typeKeys = new Set(['typeAnnotation', 'typeArguments', 'typeParameters']);
+
+// Whether a string or template part inside a computed source starts with a
+// Lucide path: `@lucide/svelte/icons/${n}`, `'@lucide/svelte/icons/' + n`,
+// or one nested deeper such as `(a ? '@lucide/svelte/icons/x' : b) + c`.
+// Strings in type positions (`x as '@lucide/svelte'`) don't count. A tagged
+// template part with an invalid escape has no cooked text, so its raw text
+// is used.
 function spellsLucide(node, visitorKeys) {
   if (node?.type === 'Literal') return typeof node.value === 'string' && isLucide(node.value);
-  if (node?.type === 'TemplateElement') return isLucide(node.value.cooked);
-  return (visitorKeys[node?.type] ?? []).some((key) =>
-    [node[key]].flat().some((child) => spellsLucide(child, visitorKeys))
-  );
+  if (node?.type === 'TemplateElement') return isLucide(node.value.cooked ?? node.value.raw);
+  return (visitorKeys[node?.type] ?? [])
+    .filter((key) => !typeKeys.has(key))
+    .some((key) => [node[key]].flat().some((child) => spellsLucide(child, visitorKeys)));
 }
 
 const noDeprecatedIcons = {
@@ -185,13 +195,14 @@ const noDeprecatedIcons = {
 
     // `import('@lucide/svelte').X` in a type names the icon in its
     // qualifier; `.icons.X` starts with the namespace export.
-    function checkImportType(node, path) {
+    function checkImportType(node, path, sourceNode) {
       let first = node.qualifier;
       while (first?.type === 'TSQualifiedName') first = first.left;
       if (first) {
         checkName(node, first.name, path);
       } else {
-        context.report({ node, messageId: 'unnamed', data: { source: path } });
+        // Like a dynamic import of a barrel: report on the path.
+        context.report({ node: sourceNode, messageId: 'unnamed', data: { source: path } });
       }
     }
 
