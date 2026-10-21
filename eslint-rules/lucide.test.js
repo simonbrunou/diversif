@@ -33,6 +33,9 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       "import { Trash2 } from '@lucide/svelte-foo';",
       'const load = (n) => import(`./icons/${n}`);',
       'const load = (n) => import(`@lucide/svelte-foo/${n}`);',
+      "const load = (base) => import(base + '/icons/trash-2');",
+      'const load = () => import(1);',
+      "type T = typeof import('@lucide/svelte').Trash;",
       // The barrels have no default export, so TypeScript rejects this one.
       "import Trash2 from '@lucide/svelte';"
     ],
@@ -137,6 +140,38 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
         errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte' } }]
       },
       {
+        code: "import { icons } from '@lucide/svelte/icons';",
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte/icons' } }]
+      },
+      {
+        code: "import { SwissFranc } from '@lucide/svelte/icons/index';",
+        errors: [{ messageId: 'removed', data: { name: 'SwissFranc', reason: swissFrancReason } }]
+      },
+      {
+        code: "type T = typeof import('@lucide/svelte').Trash2;",
+        errors: [{ messageId: 'replaced', data: { name: 'Trash2', replacement: 'Trash' } }]
+      },
+      {
+        code: "type T = import('@lucide/svelte/icons/trash-2').default;",
+        errors: [
+          {
+            messageId: 'replaced',
+            data: {
+              name: '@lucide/svelte/icons/trash-2',
+              replacement: '@lucide/svelte/icons/trash'
+            }
+          }
+        ]
+      },
+      {
+        code: "type T = typeof import('@lucide/svelte').icons.Trash2;",
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte' } }]
+      },
+      {
+        code: "type T = typeof import('@lucide/svelte/icons');",
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte/icons' } }]
+      },
+      {
         code: "export * from '@lucide/svelte/icons';",
         errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte/icons' } }]
       },
@@ -175,7 +210,9 @@ const files = {
   ].join('\n'),
   'aliases/suffixed.d.ts': "export { default as TrashIcon } from '../icons/trash.js';",
   'icons/trash.svelte.d.ts': '/** Lucide SVG icon component. */',
-  'icons/swiss-franc.svelte.d.ts': '/**\n * @deprecated Removed because it became obsolete.\n */'
+  'icons/swiss-franc.svelte.d.ts': '/**\n * @deprecated Removed because it became obsolete.\n */',
+  // The component carries the same note; only its .svelte.d.ts is read.
+  'icons/swiss-franc.svelte': '<!-- @deprecated Removed because it became obsolete. -->'
 };
 
 describe('readLucide', () => {
@@ -202,7 +239,7 @@ describe('readLucide', () => {
     expect(deprecatedByFile.get('swiss-franc')).toEqual({
       reason: 'Removed because it became obsolete.'
     });
-    expect(deprecatedByFile.has('trash')).toBe(false);
+    expect([...deprecatedByFile.keys()].sort()).toEqual(['swiss-franc', 'trash-2']);
   });
 
   it.each([
@@ -220,6 +257,11 @@ describe('readLucide', () => {
         ].join('\n')
       },
       'unrecognised export lines in aliases/suffixed.d.ts'
+    ],
+    [
+      'an aliases file with no @deprecated notes',
+      { 'aliases/aliases.d.ts': "export { default as Bin } from '../icons/trash.js';" },
+      'unrecognised @deprecated notes in aliases/aliases.d.ts'
     ],
     [
       'one alias note without a replacement link among readable ones',

@@ -88,7 +88,8 @@ export function readLucide(dist) {
 const { exportsByName, deprecatedByFile } = readLucide(
   new URL('./', import.meta.resolve(lucidePackage))
 );
-const barrels = new Set([lucidePackage, `${lucidePackage}/icons`]);
+// icons/index re-exports every current icon, removed ones included.
+const barrels = new Set([lucidePackage, `${lucidePackage}/icons`, `${lucidePackage}/icons/index`]);
 const deepPrefix = `${lucidePackage}/icons/`;
 
 // The fixed text of an import source and whether it is the whole source: a
@@ -119,8 +120,9 @@ const noDeprecatedIcons = {
       replaced: "'{{name}}' is a deprecated Lucide alias: use '{{replacement}}' instead.",
       removed: "'{{name}}' is deprecated in Lucide: {{reason}}",
       // A namespace import (`import * as`, `import type * as` included), the
-      // `icons` namespace export, `export *` or a dynamic import of a barrel
-      // hides which icons a file uses, so the rule could not check them.
+      // `icons` namespace export, `export *`, a dynamic import of a barrel or
+      // a bare `typeof import(barrel)` hides which icons a file uses, so the
+      // rule could not check them.
       unnamed:
         "Import icons from '{{source}}' by name so lucide/no-deprecated-icons can check them.",
       computed:
@@ -140,36 +142,52 @@ const noDeprecatedIcons = {
       }
     }
 
-    function checkDeepImport(sourceNode, path) {
+    function checkDeepPath(sourceNode, path) {
       const note = deprecatedByFile.get(path.slice(deepPrefix.length));
       const suggest = (name) => deepPrefix + exportsByName.get(name).file;
       if (note) reportDeprecated(sourceNode, path, note, suggest);
     }
 
-    function checkSpecifier(specifier, path) {
-      // `import { X }` names the import in `imported`, `export { X } from`
-      // in `local`; either can be a string literal.
-      const id = specifier.type === 'ImportSpecifier' ? specifier.imported : specifier.local;
-      const name = id.name ?? id.value;
+    function checkName(node, name, path) {
       if (name === 'icons') {
-        context.report({ node: specifier, messageId: 'unnamed', data: { source: path } });
+        context.report({ node, messageId: 'unnamed', data: { source: path } });
         return;
       }
       const icon = exportsByName.get(name);
       const note = icon && deprecatedByFile.get(icon.file);
-      if (note) reportDeprecated(specifier, name, note, icon.toSameStyle);
+      if (note) reportDeprecated(node, name, note, icon.toSameStyle);
     }
 
-    function checkBarrelImport(node, path) {
+    // `import('@lucide/svelte').X` in a type names the icon in its
+    // qualifier; `.icons.X` starts with the namespace export.
+    function checkImportType(node, path) {
+      let first = node.qualifier;
+      while (first?.type === 'TSQualifiedName') first = first.left;
+      if (first) {
+        checkName(node, first.name, path);
+      } else {
+        context.report({ node, messageId: 'unnamed', data: { source: path } });
+      }
+    }
+
+    function checkBarrel(node, path) {
+      if (node.type === 'TSImportType') {
+        checkImportType(node, path);
+        return;
+      }
       const specifiers = node.specifiers ?? [];
       if (!node.specifiers || specifiers.some((s) => s.type === 'ImportNamespaceSpecifier')) {
         context.report({ node, messageId: 'unnamed', data: { source: path } });
       }
       // The barrels have no default export (TypeScript rejects a default
       // import), so only named specifiers can reach an icon.
+      // `import { X }` names the import in `imported`, `export { X } from`
+      // in `local`; either can be a string literal.
       for (const specifier of specifiers) {
-        if (specifier.type === 'ImportSpecifier' || specifier.type === 'ExportSpecifier') {
-          checkSpecifier(specifier, path);
+        if (specifier.type === 'ImportSpecifier') {
+          checkName(specifier, specifier.imported.name ?? specifier.imported.value, path);
+        } else if (specifier.type === 'ExportSpecifier') {
+          checkName(specifier, specifier.local.name ?? specifier.local.value, path);
         }
       }
     }
@@ -179,10 +197,10 @@ const noDeprecatedIcons = {
       if (!isLucide(source?.text)) return;
       if (!source.complete) {
         context.report({ node: node.source, messageId: 'computed' });
-      } else if (source.text.startsWith(deepPrefix)) {
-        checkDeepImport(node.source, source.text);
       } else if (barrels.has(source.text)) {
-        checkBarrelImport(node, source.text);
+        checkBarrel(node, source.text);
+      } else if (source.text.startsWith(deepPrefix)) {
+        checkDeepPath(node.source, source.text);
       }
     }
 
@@ -190,7 +208,8 @@ const noDeprecatedIcons = {
       ImportDeclaration: check,
       ExportNamedDeclaration: check,
       ExportAllDeclaration: check,
-      ImportExpression: check
+      ImportExpression: check,
+      TSImportType: check
     };
   }
 };
