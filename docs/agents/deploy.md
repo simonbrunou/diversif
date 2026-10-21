@@ -5,7 +5,7 @@ What a production deploy does and how to check one from a workstation. The migra
 ## What a merge to `main` sets off
 
 - **Trigger**: every push to `main` on Forgejo (a PR merge) starts a Coolify deploy through a webhook. The deploy does not wait for CI, so the CI run on the new `main` head is a separate check.
-- **Build**: Coolify builds with Railpack from `railpack.json`: it installs the Bun version pinned there, with `HUSKY=0`, and runs the `build` script from `package.json`. The image then starts `bun build/index.js` with `NODE_ENV=production`, `PROTOCOL_HEADER` and `HOST_HEADER` (`deploy` in `railpack.json`).
+- **Build**: Coolify builds with Railpack's node provider, set in `railpack.json`. It installs the Bun version pinned there, installs the dependencies with `HUSKY=0`, and runs the `build` script from `package.json` (the provider's default build step). The image then starts `bun build/index.js` with `NODE_ENV=production`, `PROTOCOL_HEADER` and `HOST_HEADER` (`deploy` in `railpack.json`).
 - **Source maps**: with `SENTRY_AUTH_TOKEN` set at build time, the `diversif:sentry-upload-after-adapter` plugin in `vite.config.ts` creates the Sentry release once the adapter has run, uploads the source maps of `./build` and deletes every `.map` file, so the image never serves them.
 - **Release name**: Coolify sets `SOURCE_COMMIT` to the commit it builds. Unless `SENTRY_RELEASE` overrides it, `vite.config.ts` uses it as the Sentry release and as SvelteKit's `version.name`, so `/_app/version.json` reports the SHA that is live.
 - **Start**: the new container runs the migrations and the food-catalog seed on boot (see `DEPLOY.md`), and Coolify swaps it in once it is healthy.
@@ -23,6 +23,6 @@ After a merge, run `scripts/smoke-prod.sh <sha>` with the new `main` head SHA (`
 - `/sw.js` answers 404 on purpose. It was the old vite-pwa worker, gone since the SvelteKit 3 migration.
 - `/offline` (prerendered) answers 200 HTML. It comes back with no `Content-Type` header today, which the script accepts.
 
-To check the service worker by hand, open the site in a browser (the Playwright MCP tools work). `ReloadPrompt.svelte` registers the worker after the page's `load` event, so hydration alone proves nothing: once `await navigator.serviceWorker.ready` resolves, the worker at `/service-worker.js` is active and its install has filled the `app-env` and `workbox-precache-v2-…` caches.
+To check the service worker by hand, open the site in a browser (the Playwright MCP tools work). `ReloadPrompt.svelte` registers the worker after the page's `load` event, so hydration alone proves nothing: once `await navigator.serviceWorker.ready` resolves, the worker at `/service-worker.js` is active and its install has filled the `workbox-precache-v2-…` cache. It also warms the `app-env` cache, but only as best effort, so that cache can exist and still be empty.
 
 The deployment queue, the build log, the container's health and the source-map upload are prod internals. Check them from the private homelab repo (homelab-stacks `scripts/coolify-deploy-status.sh`), not from here.

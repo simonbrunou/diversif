@@ -29,7 +29,7 @@ nix develop -c env ORIGIN=http://localhost:3123 bun run build
 nix develop -c env DATABASE_PATH=/tmp/diversif-repro.db PORT=3123 WEBAUTHN_RP_ID=localhost NODE_ENV=production bun build/index.js
 ```
 
-The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENTRY_DSN` is set, so a browser Sentry repro needs a fake one (for example `https://0123456789abcdef0123456789abcdef@o1.ingest.de.sentry.io/2`). Add `PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0` and `PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=0` to keep traces and replays out of the envelopes. Leave `SENTRY_DSN` unset, and intercept `/monitoring` in the browser to read the envelopes: the tunnel would otherwise relay them to the DSN's host. Delete `/tmp/diversif-repro.db*` afterwards.
+The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENTRY_DSN` is set. It is read at run time, so for a browser Sentry repro add a fake one to the `bun build/index.js` line (for example `PUBLIC_SENTRY_DSN=https://0123456789abcdef0123456789abcdef@o1.ingest.de.sentry.io/2`), with `PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0` and `PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=0` to keep traces and replays out of the envelopes. Leave `SENTRY_DSN` unset, and intercept `/monitoring` in the browser to read the envelopes: the tunnel would otherwise relay them to the DSN's host. Delete `/tmp/diversif-repro.db*` afterwards.
 
 ## Triaging a red run
 

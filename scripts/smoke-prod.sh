@@ -54,28 +54,38 @@ expect() {
   fi
 }
 
-deployed_version() {
+# Sets $live to the SHA /_app/version.json reports, or '' when unreadable.
+read_live() {
+  live=''
   fetch /_app/version.json
-  [ "$code" = 200 ] || return 1
-  sed -n 's/.*"version":"\([^"]*\)".*/\1/p' "$TMP/body"
+  [ "$code" = 200 ] && live="$(sed -n 's/.*"version":"\([^"]*\)".*/\1/p' "$TMP/body")"
 }
 
 # A newer merge can replace <sha> before the wait ends: a live commit that
-# contains <sha> counts as live too.
+# contains <sha> counts as live too. Fetches origin once if $live is unknown.
+REPO="$(dirname "$0")/.."
+fetched=''
 contains_sha() {
-  [ -n "$1" ] || return 1
-  git cat-file -e "$1^{commit}" 2>/dev/null || git fetch -q origin 2>/dev/null
-  git merge-base --is-ancestor "$SHA" "$1" 2>/dev/null
+  [[ "$live" =~ ^[0-9a-f]{7,40}$ ]] || return 1
+  if ! git -C "$REPO" cat-file -e "$live^{commit}" 2>/dev/null && [ -z "$fetched" ]; then
+    fetched=1
+    git -C "$REPO" fetch -q origin 2>/dev/null
+  fi
+  git -C "$REPO" merge-base --is-ancestor "$SHA" "$live" 2>/dev/null
 }
 
 if [ -n "$SHA" ]; then
   deadline=$(($(date +%s) + WAIT))
   while :; do
-    live="$(deployed_version)"
-    case "$live" in "$SHA"*) break ;; esac
-    contains_sha "$live" && break
+    read_live
+    case "$live" in "$SHA"*) [ -n "$live" ] && break ;; esac
+    contains_sha && break
     if [ "$(date +%s)" -ge "$deadline" ]; then
-      fail "/_app/version.json is ${live:-unreadable}, not $SHA after ${WAIT}s"
+      if [ -n "$live" ]; then
+        fail "/_app/version.json is $live, not $SHA after ${WAIT}s"
+      else
+        fail "/_app/version.json returned $got after ${WAIT}s"
+      fi
       printf 'smoke-prod: %s not live on %s, checks skipped\n' "$SHA" "$BASE"
       exit 1
     fi
