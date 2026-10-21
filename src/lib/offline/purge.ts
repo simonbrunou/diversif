@@ -3,8 +3,9 @@ import { clear } from './queue';
 /**
  * Purge client-side storage that may hold the previous user's data after the
  * session ends: explicit logout and « Se déconnecter partout » (via
- * purgeBeforeSubmit below), account deletion and expiry (via the root
- * layout's authenticated→anonymous effect).
+ * purgeBeforeSubmit below), an enhanced account deletion and expiry (via the
+ * root layout's authenticated→anonymous effect). A no-JS deletion runs none
+ * of this and relies on the server's Clear-Site-Data header alone.
  *
  * - The PWA service worker's 'pages' runtime cache (src/service-worker/index.ts
  *   Workbox NetworkFirst, 7-day expiry) may hold authenticated HTML written by

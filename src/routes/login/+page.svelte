@@ -13,7 +13,7 @@
   import { onMount } from 'svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { signInWithPasskey } from '#lib/auth/passkey-client.js';
-  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import type { ActionData } from './$types';
 
@@ -133,10 +133,7 @@
     use:enhance={trackSubmission((v) => (submitting = v))}
   >
     {#if form?.errorKey}
-      {@const k = form.errorKey as keyof typeof m}
-      <FormError>
-        {(m[k] as (() => string) | undefined)?.() ?? /* v8 ignore next */ m.errorsGenericFallback()}
-      </FormError>
+      <FormError>{resolveMessageKey(form.errorKey)}</FormError>
     {/if}
 
     <Field name="email" label={m.authEmailLabel()}>

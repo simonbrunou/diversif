@@ -1,5 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-import { awaitHydration, signUp, unique } from './_helpers';
+import { test, expect, type Browser, type Page } from '@playwright/test';
+import { awaitHydration, signUp, SIGNUP_PASSWORD, unique } from './_helpers';
 
 test.describe('legal pages', () => {
   test('public legal pages are reachable from the footer', async ({ page }) => {
@@ -24,7 +24,7 @@ test.describe('signup consent gates', () => {
     await awaitHydration(page);
     await page.getByLabel('Votre prénom').fill('Sans consentement');
     await page.getByLabel('Adresse e-mail').fill(email);
-    await page.getByLabel('Mot de passe', { exact: true }).fill('hunter2-very-long');
+    await page.getByLabel('Mot de passe', { exact: true }).fill(SIGNUP_PASSWORD);
     await page.getByRole('button', { name: /créer mon compte/i }).click();
     // Browsers block submission for unticked required checkboxes; URL stays on /signup.
     await expect(page).toHaveURL(/\/signup/);
@@ -33,12 +33,33 @@ test.describe('signup consent gates', () => {
 
 const DELETE_SENTINEL = '/e2e-delete-sentinel';
 
-// Opens the hydrated deletion form and fills it, ready to submit.
+const deleteButton = (page: Page) =>
+  page.getByRole('button', { name: /Supprimer définitivement/i });
+
+async function fillDeletionFields(page: Page, email: string, password = SIGNUP_PASSWORD) {
+  await page.getByLabel(/Saisissez votre adresse e-mail/i).fill(email);
+  await page.getByLabel(/Confirmez avec votre mot de passe/i).fill(password);
+}
+
+// Opens the hydrated deletion form and fills it, ready to submit. Hydrated,
+// the button waits for the typed email and a password.
 async function fillAccountDeletion(page: Page, email: string) {
   await page.goto('/account/delete');
   await awaitHydration(page);
-  await page.getByLabel(/Saisissez votre adresse e-mail/i).fill(email);
-  await page.getByLabel(/Confirmez avec votre mot de passe/i).fill('hunter2-very-long');
+  await expect(deleteButton(page)).toBeDisabled();
+  await fillDeletionFields(page, email);
+  await expect(deleteButton(page)).toBeEnabled();
+}
+
+// signUp needs a hydrated page, so the account is created with JavaScript;
+// this carries its session into a new context with JavaScript disabled.
+// The caller closes the returned page's context.
+async function openWithoutJavaScript(browser: Browser, page: Page): Promise<Page> {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    storageState: await page.context().storageState()
+  });
+  return context.newPage();
 }
 
 // Same sentinel approach as the logout purge test in auth.spec.ts.
@@ -58,7 +79,7 @@ test.describe('account deletion', () => {
     const email = await signUp(page, 'rgpd', { displayName: 'RGPD Tester' });
 
     await fillAccountDeletion(page, email);
-    await page.getByRole('button', { name: /Supprimer définitivement/i }).click();
+    await deleteButton(page).click();
     await expect(page).toHaveURL(/\/account\/deleted/, { timeout: 15_000 });
 
     await page.context().clearCookies();
@@ -73,8 +94,8 @@ test.describe('account deletion', () => {
     // can't act on it, as Safari may not: only the client-side purge may then
     // remove the sentinel. Chromium under Playwright already ignores the
     // header on fulfilled responses; the strip keeps the test honest if that
-    // changes. maxRedirects: 0 keeps a native 303 (form no longer enhanced)
-    // visible to the browser instead of silently following it.
+    // changes. maxRedirects: 0 keeps a native 303 (should the form stop being
+    // enhanced) visible to the browser instead of silently following it.
     let clearSiteData: string | undefined;
     await page.route(
       (url) => url.pathname === '/account/delete',
@@ -87,27 +108,77 @@ test.describe('account deletion', () => {
         await route.fulfill({ response, headers });
       }
     );
-    await page.getByRole('button', { name: /Supprimer définitivement/i }).click();
+    await deleteButton(page).click();
     await expect(page).toHaveURL(/\/account\/deleted/, { timeout: 15_000 });
     expect(clearSiteData).toBe('"cache", "storage"');
     // The root layout's authenticated→anonymous purge is fire-and-forget,
     // hence the poll.
     await expect.poll(() => deleteSentinelSurvives(page)).toBe(false);
   });
+});
 
-  test('Clear-Site-Data alone wipes the pages cache on account deletion', async ({ page }) => {
-    const email = await signUp(page, 'rgpd-header');
-    await fillAccountDeletion(page, email);
-    await seedDeleteSentinel(page);
-    // Native submit, as without JS: form.submit() skips use:enhance, the 303
-    // loads /account/deleted as a fresh document and the root layout never
-    // sees an authenticated→anonymous transition, so only the header can
-    // remove the sentinel.
-    await page.evaluate(() => {
-      (document.getElementById('confirmEmail') as HTMLInputElement).form!.submit();
-    });
-    await expect(page).toHaveURL(/\/account\/deleted/, { timeout: 15_000 });
-    await expect.poll(() => deleteSentinelSurvives(page)).toBe(false);
+// The right to erasure must not depend on JavaScript loading (#453).
+test.describe('account deletion without JavaScript', () => {
+  test('deletes the account, and Clear-Site-Data alone wipes the pages cache', async ({
+    browser,
+    page
+  }) => {
+    const email = await signUp(page, 'rgpd-nojs');
+    const noJs = await openWithoutJavaScript(browser, page);
+    try {
+      await noJs.goto('/account/delete');
+      await seedDeleteSentinel(noJs);
+      await fillDeletionFields(noJs, email);
+      const deletion = noJs.waitForResponse(
+        (r) => r.request().method() === 'POST' && new URL(r.url()).pathname === '/account/delete'
+      );
+      await deleteButton(noJs).click();
+      const response = await deletion;
+      expect(response.status()).toBe(303);
+      // headerValue reads the raw headers; headers() drops security ones.
+      expect(await response.headerValue('clear-site-data')).toBe('"cache", "storage"');
+      await expect(noJs).toHaveURL(/\/account\/deleted/, { timeout: 15_000 });
+      // With JavaScript off the root layout's client-side purge never runs,
+      // so only the header can have removed the sentinel.
+      await expect.poll(() => deleteSentinelSurvives(noJs)).toBe(false);
+
+      // The account is gone: its password no longer signs in.
+      await noJs.goto('/login');
+      await noJs.getByLabel('Adresse e-mail').fill(email);
+      await noJs.getByLabel('Mot de passe', { exact: true }).fill(SIGNUP_PASSWORD);
+      await noJs.getByRole('button', { name: 'Se connecter', exact: true }).click();
+      await expect(noJs.getByRole('alert')).toHaveText('Adresse e-mail ou mot de passe incorrect.');
+      await expect(noJs).toHaveURL(/\/login(?:[?#]|$)/);
+    } finally {
+      await noJs.context().close();
+    }
+  });
+
+  test('a refused deletion shows why on the re-rendered page and keeps the account', async ({
+    browser,
+    page
+  }) => {
+    const email = await signUp(page, 'rgpd-nojs-refused');
+    const noJs = await openWithoutJavaScript(browser, page);
+    try {
+      await noJs.goto('/account/delete');
+      await fillDeletionFields(noJs, 'autre@example.com');
+      await deleteButton(noJs).click();
+      await expect(noJs.getByRole('alert')).toHaveText(
+        'Saisissez votre adresse e-mail exacte pour confirmer.'
+      );
+
+      await fillDeletionFields(noJs, email, 'wrong-password-123');
+      await deleteButton(noJs).click();
+      await expect(noJs.getByRole('alert')).toHaveText('Mot de passe actuel incorrect.');
+
+      // Deleting the account would have ended this session too.
+      await noJs.goto('/account/delete');
+      await expect(noJs).toHaveURL(/\/account\/delete$/);
+      await expect(deleteButton(noJs)).toBeEnabled();
+    } finally {
+      await noJs.context().close();
+    }
   });
 });
 
