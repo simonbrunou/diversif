@@ -171,10 +171,6 @@ const noDeprecatedIcons = {
     }
 
     function checkBarrel(node, path) {
-      if (node.type === 'TSImportType') {
-        checkImportType(node, path);
-        return;
-      }
       const specifiers = node.specifiers ?? [];
       if (!node.specifiers || specifiers.some((s) => s.type === 'ImportNamespaceSpecifier')) {
         context.report({ node, messageId: 'unnamed', data: { source: path } });
@@ -192,24 +188,38 @@ const noDeprecatedIcons = {
       }
     }
 
-    function check(node) {
-      const source = readSource(node.source);
+    // A `?:`, `||` or `??` source can load either side, so each side is
+    // checked as a source of its own.
+    function checkSource(node, sourceNode, onBarrel) {
+      if (sourceNode?.type === 'ConditionalExpression') {
+        checkSource(node, sourceNode.consequent, onBarrel);
+        checkSource(node, sourceNode.alternate, onBarrel);
+        return;
+      }
+      if (sourceNode?.type === 'LogicalExpression') {
+        checkSource(node, sourceNode.left, onBarrel);
+        checkSource(node, sourceNode.right, onBarrel);
+        return;
+      }
+      const source = readSource(sourceNode);
       if (!isLucide(source?.text)) return;
       if (!source.complete) {
-        context.report({ node: node.source, messageId: 'computed' });
+        context.report({ node: sourceNode, messageId: 'computed' });
       } else if (barrels.has(source.text)) {
-        checkBarrel(node, source.text);
+        onBarrel(node, source.text);
       } else if (source.text.startsWith(deepPrefix)) {
-        checkDeepPath(node.source, source.text);
+        checkDeepPath(sourceNode, source.text);
       }
     }
+
+    const check = (node) => checkSource(node, node.source, checkBarrel);
 
     return {
       ImportDeclaration: check,
       ExportNamedDeclaration: check,
       ExportAllDeclaration: check,
       ImportExpression: check,
-      TSImportType: check
+      TSImportType: (node) => checkSource(node, node.source, checkImportType)
     };
   }
 };

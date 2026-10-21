@@ -43,8 +43,12 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       {
         code: "import { Trash2, Loader2 as Spin } from '@lucide/svelte';",
         errors: [
-          { messageId: 'replaced', data: { name: 'Trash2', replacement: 'Trash' } },
-          { messageId: 'replaced', data: { name: 'Loader2', replacement: 'LoaderCircle' } }
+          { messageId: 'replaced', data: { name: 'Trash2', replacement: 'Trash' }, column: 10 },
+          {
+            messageId: 'replaced',
+            data: { name: 'Loader2', replacement: 'LoaderCircle' },
+            column: 18
+          }
         ]
       },
       {
@@ -67,6 +71,35 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
         ]
       },
       {
+        code: "export { Trash2 as Bin } from '@lucide/svelte';",
+        errors: [{ messageId: 'replaced', data: { name: 'Trash2', replacement: 'Trash' } }]
+      },
+      {
+        code: "const lazy = (flag) => import(flag ? '@lucide/svelte/icons/trash-2' : '@lucide/svelte/icons/trash');",
+        errors: [
+          {
+            messageId: 'replaced',
+            data: {
+              name: '@lucide/svelte/icons/trash-2',
+              replacement: '@lucide/svelte/icons/trash'
+            },
+            column: 38
+          }
+        ]
+      },
+      {
+        code: "const lazy = (path) => import(path ?? '@lucide/svelte/icons/loader-2');",
+        errors: [
+          {
+            messageId: 'replaced',
+            data: {
+              name: '@lucide/svelte/icons/loader-2',
+              replacement: '@lucide/svelte/icons/loader-circle'
+            }
+          }
+        ]
+      },
+      {
         code: "export { Smile } from '@lucide/svelte';",
         errors: [
           { messageId: 'replaced', data: { name: 'Smile', replacement: 'FaceSlightlySmiling' } }
@@ -80,7 +113,8 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
             data: {
               name: '@lucide/svelte/icons/check-circle-2',
               replacement: '@lucide/svelte/icons/circle-check'
-            }
+            },
+            column: 18
           }
         ]
       },
@@ -133,7 +167,7 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       },
       {
         code: "import * as L from '@lucide/svelte';",
-        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte' } }]
+        errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte' }, column: 1 }]
       },
       {
         code: "import { icons } from '@lucide/svelte';",
@@ -181,7 +215,7 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       },
       {
         code: 'const load = (n) => import(`@lucide/svelte/icons/${n}`);',
-        errors: [{ messageId: 'computed' }]
+        errors: [{ messageId: 'computed', column: 28 }]
       },
       {
         code: "const load = (n) => import('@lucide/svelte/' + 'icons/' + n);",
