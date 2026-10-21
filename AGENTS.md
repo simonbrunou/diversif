@@ -27,7 +27,22 @@ Rules:
 
 ## Merge authority
 
-Agents may merge their own PR without asking once all three hold: a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent) and its real findings are fixed; CI is green on the pushed SHA; the branch is up to date with `origin/main`. The production deploy that the merge triggers is accepted. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
+Agents may merge their own PR without asking once all three hold:
+
+- a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent) and you fixed its real findings;
+- CI is green on the pushed SHA;
+- the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0.
+
+When the branch is behind `main` but has no conflict, merge it as it is. Merging `origin/main` into it first costs a full CI run, so skip that step. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows such a break. After you merge, check that run along with the deploy. If a newer merge cancelled it, check the run on the newer `main` commit instead. If the run is red, file a Forgejo issue labelled `needs-triage`.
+
+The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also exits 1 when it cannot find the SHA, and then prints `not something we can merge` instead. In that case, fetch or correct the SHA and run the check again. On a conflict:
+
+1. Merge `origin/main` into the branch and resolve the conflict.
+2. Run `bun run test`.
+3. Push, and wait for CI on the new head.
+4. Check all three conditions again on the new pushed SHA.
+
+The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
 
 ## Agent skills
 
