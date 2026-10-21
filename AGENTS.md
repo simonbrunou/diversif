@@ -5,6 +5,7 @@
 - **Stack & commands**: see `README.md` (Bun-native: SvelteKit on `@sveltejs/adapter-node` run under Bun + SQLite via `bun:sqlite` + Drizzle + WebAuthn passkeys + `Bun.password` Argon2id).
 - **Product, tone, users**: see `PRODUCT.md`.
 - **Tests**: `bun run test`, never bare `bun test` (component tests need the wrapper's `--conditions=browser`). It runs `bun:test` against an in-process `bun:sqlite` `:memory:` database (same engine as prod) — no Docker required. E2E: `bun run test:e2e` (Playwright; the script resets a throwaway SQLite file first). Before writing or debugging a test, read `docs/agents/testing.md`.
+- **Deploy**: a merge to `main` deploys to production. What a deploy does and how to check one: `docs/agents/deploy.md`.
 - **Claude Code setup** (reproducing plugins/skills/hooks/MCPs on a new machine): see `docs/claude-setup.md`. On a fresh clone, run `scripts/claude-setup.sh`, then open the project in Claude Code to auto-install plugins.
 
 ## Conventions agents must respect
@@ -43,6 +44,8 @@ The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also 
 4. Check all three conditions again on the new pushed SHA.
 
 The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
+
+After the merge, check the deploy with `scripts/smoke-prod.sh <sha>`, where `<sha>` is the new `main` head (see `docs/agents/deploy.md`).
 
 ## Agent skills
 

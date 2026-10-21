@@ -13,6 +13,11 @@
       "matchDepTypes": ["devDependencies"],
       "matchUpdateTypes": ["minor"],
       "automerge": true
+    },
+    {
+      "description": "Hold devalue below 6: SvelteKit 3 depends on devalue ^5.9.4, and its streaming serializer throws 'Invalid JavaScript fragment' under devalue 6. CI stays green unless a route streams a promise. Lift this once SvelteKit moves to devalue 6.",
+      "matchPackageNames": ["devalue"],
+      "allowedVersions": "<6"
     }
   ]
 }
