@@ -14,9 +14,10 @@
 //   removed;
 // - any other dynamic source with a string that starts with a Lucide path
 //   gets `computed`.
-// Not checked: a path held in a variable, and icons reached through a
-// namespace import that an eslint-disable comment let in. A static check
-// stops there.
+// Not checked: a path held in a variable, `import.meta.glob` patterns, and
+// icons reached through a namespace import that a lint suppression comment
+// let in. A static check stops there. (`require()` is already an error under
+// @typescript-eslint/no-require-imports.)
 import { readdirSync, readFileSync } from 'node:fs';
 
 const lucidePackage = '@lucide/svelte';
@@ -148,7 +149,9 @@ const typeKeys = new Set(['typeAnnotation', 'typeArguments', 'typeParameters']);
 // Whether a string or template part inside a computed source starts with a
 // Lucide path: `@lucide/svelte/icons/${n}`, `'@lucide/svelte/icons/' + n`,
 // or one nested deeper such as `(a ? '@lucide/svelte/icons/x' : b) + c`.
-// Strings in type positions (`x as '@lucide/svelte'`) don't count. A tagged
+// Strings under the type keys above (`x as '@lucide/svelte'`,
+// `f<'@lucide/svelte'>()`) don't count; rarer type positions such as a
+// class's `superTypeArguments` are still walked. A tagged
 // template part with an invalid escape has no cooked text, so its raw text
 // is used.
 function spellsLucide(node, visitorKeys) {

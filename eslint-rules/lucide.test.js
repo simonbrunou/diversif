@@ -36,6 +36,8 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       "const load = (base) => import(base + '/icons/trash-2');",
       "const load = (a) => import(a ? './a' : './b');",
       'const load = () => import(1);',
+      // A sequence loads only its last item.
+      "const load = () => import(('@lucide/svelte/icons/trash-2', './x'));",
       'const load = () => import(String.raw`./icons\\unicode`);',
       "const load = (x) => import(x as '@lucide/svelte');",
       "const load = (x, y) => import((x as '@lucide/svelte') + y);",
@@ -274,6 +276,20 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       {
         code: "type T = typeof import('@lucide/svelte/icons');",
         errors: [{ messageId: 'unnamed', data: { source: '@lucide/svelte/icons' }, column: 24 }]
+      },
+      {
+        // Escapes are read as the string they stand for: @ is @.
+        code: 'const lazy = (n) => [import(`\\u0040lucide/svelte/icons/trash-2`), import(`\\u0040lucide/svelte/icons/${n}`)];',
+        errors: [
+          {
+            messageId: 'replaced',
+            data: {
+              name: '@lucide/svelte/icons/trash-2',
+              replacement: '@lucide/svelte/icons/trash'
+            }
+          },
+          { messageId: 'computed' }
+        ]
       },
       {
         code: "const lazy = () => import((0, '@lucide/svelte/icons/trash-2'));",
