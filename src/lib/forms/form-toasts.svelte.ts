@@ -1,8 +1,9 @@
 // Shared "surface the form action result as a toast" effect.
 //
-// Consumers (4): account/profile, account/password, account/delete,
-// account/passkeys — each previously copy-pasted the same lastFormSeen
-// $effect with only the field names differing.
+// Consumers (3): account/profile, account/password, account/passkeys — each
+// previously copy-pasted the same lastFormSeen $effect with only the field
+// names differing. account/delete renders its error inline instead (a toast
+// can't reach a no-JS visitor, #453).
 
 import { toast } from 'svelte-sonner';
 import { resolveMessageKey } from './tracked-enhance';

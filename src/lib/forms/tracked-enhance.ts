@@ -1,14 +1,16 @@
 // Shared use:enhance helpers.
 //
 // `trackSubmission` backs every enhanced form in the app: the account pages
-// (password/profile/delete), child settings, login, signup, join/[code],
+// (password/profile/passkeys/delete), child settings, login, signup, join/[code],
 // ConfirmModal and AddSymptomSheet — each previously declared a diverging
 // inline closure. The repas forms (log, edit) don't use use:enhance: they
 // submit through RepasForm.svelte and the durable submit module.
 //
-// `resolveMessageKey` consumers: form-toasts.svelte.ts (which surfaces
-// action-returned keys via toast for the account pages) and the
-// passkeys/registration/options endpoint (fresh-auth failures as prose).
+// `resolveMessageKey` turns an action- or load-returned key into prose: inline on the
+// page (login, signup, account/delete, the repas forms, join/[code]), as a
+// toast (form-toasts.svelte.ts for account/profile, password and passkeys;
+// child settings), and in the passkeys/registration/options endpoint
+// (fresh-auth failures).
 
 import * as m from '#lib/paraglide/messages.js';
 
@@ -65,9 +67,9 @@ export function trackSubmission(
 /**
  * Resolve a paraglide message key by string. Used when a server action
  * returns a key (e.g. `form.profileSuccessKey = 'errorsAccountProfileSuccess'`)
- * that the page needs to surface via toast.success/error. Falls back to a
- * generic message if the key is unknown — should never happen in practice
- * but keeps the toast from rendering `undefined`.
+ * that the page needs to surface inline or via toast.success/error. Falls
+ * back to a generic message if the key is unknown — should never happen in
+ * practice but keeps the message from rendering `undefined`.
  */
 export function resolveMessageKey(key: string): string {
   const fn = m[key as keyof typeof m] as (() => string) | undefined;
