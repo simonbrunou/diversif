@@ -92,24 +92,49 @@ const { exportsByName, deprecatedByFile } = readLucide(
 const barrels = new Set([lucidePackage, `${lucidePackage}/icons`, `${lucidePackage}/icons/index`]);
 const deepPrefix = `${lucidePackage}/icons/`;
 
-// The fixed text of an import source and whether it is the whole source: a
-// string literal, a template literal up to its first `${}`, or the left end
-// of a `+` chain.
-function readSource(node) {
-  if (node?.type === 'Literal' && typeof node.value === 'string') {
-    return { text: node.value, complete: true };
+const typeWrappers = new Set([
+  'TSAsExpression',
+  'TSSatisfiesExpression',
+  'TSNonNullExpression',
+  'TSTypeAssertion'
+]);
+
+// The paths a dynamic import source can load: each side of a `?:` and of a
+// logical operator (`||`, `??`, `&&`), with TypeScript's `as`, `satisfies`,
+// `!` and `<T>` wrappers removed.
+function sourceBranches(node) {
+  if (node?.type === 'ConditionalExpression') {
+    return [...sourceBranches(node.consequent), ...sourceBranches(node.alternate)];
   }
-  if (node?.type === 'TemplateLiteral') {
-    return { text: node.quasis[0].value.cooked, complete: node.expressions.length === 0 };
+  if (node?.type === 'LogicalExpression') {
+    return [...sourceBranches(node.left), ...sourceBranches(node.right)];
   }
-  if (node?.type === 'BinaryExpression' && node.operator === '+') {
-    const left = readSource(node.left);
-    return left && { text: left.text, complete: false };
-  }
-  return null;
+  if (typeWrappers.has(node?.type)) return sourceBranches(node.expression);
+  return [node];
 }
 
-const isLucide = (text) => text === lucidePackage || text?.startsWith(`${lucidePackage}/`);
+// The text of a source fixed at compile time: a string literal or a template
+// literal with no `${}`.
+function fixedText(node) {
+  if (node?.type === 'Literal' && typeof node.value === 'string') return node.value;
+  if (node?.type === 'TemplateLiteral' && node.expressions.length === 0) {
+    return node.quasis[0].value.cooked;
+  }
+  return undefined;
+}
+
+const isLucide = (text) => text === lucidePackage || text.startsWith(`${lucidePackage}/`);
+
+// Whether any string inside a computed source spells a Lucide path:
+// `@lucide/svelte/icons/${n}`, `'@lucide/svelte/icons/' + n`, or one nested
+// deeper such as `(a ? '@lucide/svelte/icons/x' : b) + c`.
+function spellsLucide(node, visitorKeys) {
+  if (node?.type === 'Literal') return typeof node.value === 'string' && isLucide(node.value);
+  if (node?.type === 'TemplateElement') return isLucide(node.value.cooked);
+  return (visitorKeys[node?.type] ?? []).some((key) =>
+    [node[key]].flat().some((child) => spellsLucide(child, visitorKeys))
+  );
+}
 
 const noDeprecatedIcons = {
   meta: {
@@ -170,9 +195,13 @@ const noDeprecatedIcons = {
       }
     }
 
-    function checkBarrel(node, path) {
+    function checkBarrel(node, path, sourceNode) {
       const specifiers = node.specifiers ?? [];
-      if (!node.specifiers || specifiers.some((s) => s.type === 'ImportNamespaceSpecifier')) {
+      // `export *` and a dynamic import have no specifiers: report on the
+      // path, which also tells a `?:` dynamic import's two sides apart.
+      if (!node.specifiers) {
+        context.report({ node: sourceNode, messageId: 'unnamed', data: { source: path } });
+      } else if (specifiers.some((s) => s.type === 'ImportNamespaceSpecifier')) {
         context.report({ node, messageId: 'unnamed', data: { source: path } });
       }
       // The barrels have no default export (TypeScript rejects a default
@@ -188,38 +217,29 @@ const noDeprecatedIcons = {
       }
     }
 
-    // A `?:`, `||` or `??` source can load either side, so each side is
-    // checked as a source of its own.
-    function checkSource(node, sourceNode, onBarrel) {
-      if (sourceNode?.type === 'ConditionalExpression') {
-        checkSource(node, sourceNode.consequent, onBarrel);
-        checkSource(node, sourceNode.alternate, onBarrel);
-        return;
-      }
-      if (sourceNode?.type === 'LogicalExpression') {
-        checkSource(node, sourceNode.left, onBarrel);
-        checkSource(node, sourceNode.right, onBarrel);
-        return;
-      }
-      const source = readSource(sourceNode);
-      if (!isLucide(source?.text)) return;
-      if (!source.complete) {
-        context.report({ node: sourceNode, messageId: 'computed' });
-      } else if (barrels.has(source.text)) {
-        onBarrel(node, source.text);
-      } else if (source.text.startsWith(deepPrefix)) {
-        checkDeepPath(sourceNode, source.text);
+    function checkSource(node, onBarrel) {
+      for (const branch of sourceBranches(node.source)) {
+        const path = fixedText(branch);
+        if (path === undefined) {
+          if (spellsLucide(branch, context.sourceCode.visitorKeys)) {
+            context.report({ node: branch, messageId: 'computed' });
+          }
+        } else if (barrels.has(path)) {
+          onBarrel(node, path, branch);
+        } else if (path.startsWith(deepPrefix)) {
+          checkDeepPath(branch, path);
+        }
       }
     }
 
-    const check = (node) => checkSource(node, node.source, checkBarrel);
+    const check = (node) => checkSource(node, checkBarrel);
 
     return {
       ImportDeclaration: check,
       ExportNamedDeclaration: check,
       ExportAllDeclaration: check,
       ImportExpression: check,
-      TSImportType: (node) => checkSource(node, node.source, checkImportType)
+      TSImportType: (node) => checkSource(node, checkImportType)
     };
   }
 };
