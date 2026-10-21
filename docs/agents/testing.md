@@ -6,7 +6,7 @@ How to run, write and triage this repo's tests. Commands live in `package.json`;
 
 - **`bun run test`**, with `bun run test <path>` for a focused run. It wraps `scripts/bun-test.ts`: paraglide compile, SvelteKit sync, then one `bun --conditions=browser test` process per file, so `mock.module` overrides stay inside their file. Bare `bun test` drops the browser condition, and every `@testing-library/svelte` component test fails with `` `mount(...)` is not available on the server ``: the command is wrong, not your change.
 - **Coverage**: the 100% line gate runs only under `bun run test:coverage`, which is what CI runs.
-- **Worktrees run through the dev shell.** `bun` is on PATH only inside the flake's dev shell, and a new worktree is not `direnv allow`ed, so prefix commands with `nix develop -c`. A fresh worktree needs `nix develop -c bun install --frozen-lockfile` first. Run `git commit` and `git push` that way too: the husky pre-commit hook runs `npx lint-staged` from `node_modules`, and the pre-push hook runs `bun run lint` and `bun run check` (about 80 s), which fail outside the shell.
+- **Worktrees run through the dev shell.** `bun` is on PATH only inside the flake's dev shell, and a new worktree is not `direnv allow`ed, so prefix commands with `nix develop -c`. A fresh worktree needs `nix develop -c bun install --frozen-lockfile` first. Run `git push` that way too: the husky pre-push hook runs `bun run lint` and `bun run check` (about 80 s) and fails outside the shell. The pre-commit hook runs `npx lint-staged` under node and needs only `node_modules`.
 
 ## Writing unit and component tests
 
@@ -29,7 +29,7 @@ nix develop -c env ORIGIN=http://localhost:3123 bun run build
 nix develop -c env DATABASE_PATH=/tmp/diversif-repro.db PORT=3123 WEBAUTHN_RP_ID=localhost NODE_ENV=production bun build/index.js
 ```
 
-The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENTRY_DSN` is set, so a browser Sentry repro needs a fake one (for example `https://0123456789abcdef0123456789abcdef@o1.ingest.de.sentry.io/2`). Leave `SENTRY_DSN` unset, and intercept `/monitoring` in the browser to read the envelopes: the tunnel would otherwise relay them to the DSN's host. Delete `/tmp/diversif-repro.db*` afterwards.
+The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENTRY_DSN` is set, so a browser Sentry repro needs a fake one (for example `https://0123456789abcdef0123456789abcdef@o1.ingest.de.sentry.io/2`). Add `PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0` and `PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=0` to keep traces and replays out of the envelopes. Leave `SENTRY_DSN` unset, and intercept `/monitoring` in the browser to read the envelopes: the tunnel would otherwise relay them to the DSN's host. Delete `/tmp/diversif-repro.db*` afterwards.
 
 ## Triaging a red run
 

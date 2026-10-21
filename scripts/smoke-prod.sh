@@ -21,7 +21,8 @@ failed=0
 pass() { passed=$((passed + 1)); printf 'PASS %s\n' "$1"; }
 fail() { failed=$((failed + 1)); printf 'FAIL %s\n' "$1"; }
 
-# fetch <path>: body to $TMP/body, headers to $TMP/headers, sets $code and $ctype.
+# fetch <path>: body to $TMP/body, headers to $TMP/headers, sets $code and
+# $ctype, and $got to a readable "<code> <content type>" for FAIL lines.
 fetch() {
   local out
   : >"$TMP/body"
@@ -30,11 +31,27 @@ fetch() {
     -w '%{http_code} %{content_type}' "$BASE$1" 2>"$TMP/err")" || out="000 "
   code="${out%% *}"
   ctype="${out#* }"
+  if [ "$code" = 000 ]; then
+    got="no answer ($(tr '\n' ' ' <"$TMP/err" | sed 's/ *$//'))"
+  else
+    got="$code ${ctype:-with no Content-Type}"
+  fi
 }
 
 # header <name>: the value of that response header from the last fetch.
 header() {
   grep -i "^$1:" "$TMP/headers" | head -n 1 | cut -d: -f2- | tr -d '\r' | sed 's/^ *//'
+}
+
+# expect <path> <status> [<content-type glob>]: fetch, then check both.
+expect() {
+  fetch "$1"
+  # shellcheck disable=SC2053 # $3 is a glob on purpose.
+  if [ "$code" = "$2" ] && [[ "$ctype" == ${3:-*} ]]; then
+    pass "$1 $code ${ctype:-}"
+  else
+    fail "$1 returned $got, expected $2 ${3:-}"
+  fi
 }
 
 deployed_version() {
@@ -43,11 +60,20 @@ deployed_version() {
   sed -n 's/.*"version":"\([^"]*\)".*/\1/p' "$TMP/body"
 }
 
+# A newer merge can replace <sha> before the wait ends: a live commit that
+# contains <sha> counts as live too.
+contains_sha() {
+  [ -n "$1" ] || return 1
+  git cat-file -e "$1^{commit}" 2>/dev/null || git fetch -q origin 2>/dev/null
+  git merge-base --is-ancestor "$SHA" "$1" 2>/dev/null
+}
+
 if [ -n "$SHA" ]; then
   deadline=$(($(date +%s) + WAIT))
   while :; do
     live="$(deployed_version)"
     case "$live" in "$SHA"*) break ;; esac
+    contains_sha "$live" && break
     if [ "$(date +%s)" -ge "$deadline" ]; then
       fail "/_app/version.json is ${live:-unreadable}, not $SHA after ${WAIT}s"
       printf 'smoke-prod: %s not live on %s, checks skipped\n' "$SHA" "$BASE"
@@ -58,49 +84,33 @@ if [ -n "$SHA" ]; then
   pass "/_app/version.json is $live"
 fi
 
-for path in / /guide /en; do
-  fetch "$path"
-  if [ "$code" = 200 ] && [[ "$ctype" == text/html* ]]; then
-    pass "$path 200 $ctype"
-  else
-    fail "$path returned $code ${ctype:-no Content-Type}, expected 200 text/html"
-  fi
-  if [ "$path" = / ]; then
-    csp="$(header content-security-policy)"
-    hsts="$(header strict-transport-security)"
-    xfo="$(header x-frame-options)"
-    if [[ "$csp" == *"default-src 'self'"* ]]; then pass "CSP has default-src 'self'"; else fail "CSP is '${csp}'"; fi
-    if [[ "$hsts" == *max-age=* ]]; then pass "HSTS $hsts"; else fail "HSTS is '${hsts}'"; fi
-    if [ "$xfo" = DENY ]; then pass "X-Frame-Options DENY"; else fail "X-Frame-Options is '${xfo}'"; fi
-  fi
-done
+expect / 200 'text/html*'
+csp="$(header content-security-policy)"
+hsts="$(header strict-transport-security)"
+xfo="$(header x-frame-options)"
+if [[ "$csp" == *"default-src 'self'"* ]]; then pass "CSP has default-src 'self'"; else fail "CSP is '${csp}'"; fi
+if [[ "$hsts" == *max-age=* ]]; then pass "HSTS $hsts"; else fail "HSTS is '${hsts}'"; fi
+if [ "$xfo" = DENY ]; then pass "X-Frame-Options DENY"; else fail "X-Frame-Options is '${xfo}'"; fi
+
+expect /guide 200 'text/html*'
+expect /en 200 'text/html*'
+expect /_app/env.js 200 '*javascript*'
+expect /service-worker.js 200 '*javascript*'
+expect /sw.js 404
 
 fetch /healthz
 if [ "$code" = 200 ] && grep -q '"ok":true' "$TMP/body" && grep -q '"db":"ok"' "$TMP/body"; then
   pass "/healthz ok, db ok"
 else
-  fail "/healthz returned $code $(head -c 120 "$TMP/body")"
+  fail "/healthz returned $got $(head -c 120 "$TMP/body")"
 fi
 
-fetch /service-worker.js
-if [ "$code" = 200 ] && [[ "$ctype" == *javascript* ]]; then
-  pass "/service-worker.js 200 $ctype"
-else
-  fail "/service-worker.js returned $code ${ctype:-no Content-Type}, expected 200 JavaScript"
-fi
-
-fetch /sw.js
-if [ "$code" = 404 ]; then
-  pass "/sw.js 404 (old worker path, gone on purpose)"
-else
-  fail "/sw.js returned $code, expected 404"
-fi
-
+# Served with no Content-Type today; text/html is fine too.
 fetch /offline
-if [ "$code" = 200 ] && grep -qi '<html' "$TMP/body" && { [ -z "$ctype" ] || [[ "$ctype" == text/html* ]]; }; then
+if [ "$code" = 200 ] && grep -qi '<html' "$TMP/body" && [[ -z "$ctype" || "$ctype" == text/html* ]]; then
   pass "/offline 200 HTML (Content-Type: ${ctype:-none})"
 else
-  fail "/offline returned $code ${ctype:-no Content-Type}, expected 200 HTML"
+  fail "/offline returned $got, expected 200 HTML"
 fi
 
 total=$((passed + failed))
