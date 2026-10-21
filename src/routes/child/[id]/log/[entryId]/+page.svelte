@@ -14,7 +14,7 @@
   import { formatDateInputValue } from '#lib/utils/dates.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import type { TextureKey } from '#lib/utils/textures.js';
-  import { Trash2, X } from '@lucide/svelte';
+  import { Trash, X } from '@lucide/svelte';
   import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
   import * as m from '#lib/paraglide/messages.js';
   import type { ActionData, PageData } from './$types';
@@ -184,7 +184,7 @@
         class="text-severe-text hover:text-severe-text"
         onclick={() => (mealDeleteOpen = true)}
       >
-        <Trash2 size={16} aria-hidden="true" />
+        <Trash size={16} aria-hidden="true" />
         {m.mealEditDelete()}
       </Button>
     </div>
@@ -291,7 +291,7 @@
         class="text-severe-text hover:text-severe-text"
         onclick={() => (deleteOpen = true)}
       >
-        <Trash2 size={16} aria-hidden="true" />
+        <Trash size={16} aria-hidden="true" />
         {m.logEditDeleteCta()}
       </Button>
     </div>

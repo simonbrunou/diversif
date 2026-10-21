@@ -1,4 +1,4 @@
-import { AlertCircle, OctagonAlert, Smile, type LucideIcon } from '@lucide/svelte';
+import { CircleAlert, OctagonAlert, FaceSlightlySmiling, type LucideIcon } from '@lucide/svelte';
 import * as m from '#lib/paraglide/messages.js';
 import type { ReactionId } from './reaction-values';
 
@@ -7,8 +7,8 @@ import type { ReactionId } from './reaction-values';
 export type { ReactionId } from './reaction-values';
 
 export const REACTIONS = [
-  { id: 'ras', icon: Smile },
-  { id: 'inconfort', icon: AlertCircle },
+  { id: 'ras', icon: FaceSlightlySmiling },
+  { id: 'inconfort', icon: CircleAlert },
   { id: 'reaction', icon: OctagonAlert }
 ] as const satisfies ReadonlyArray<{
   id: ReactionId;

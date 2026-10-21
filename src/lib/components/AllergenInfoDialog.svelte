@@ -6,7 +6,7 @@
   import SourceCitation from './SourceCitation.svelte';
   import { ALLERGEN_GUIDANCE } from '#lib/content/guidance.js';
   import { getAllergenLabel, type AllergenId } from '#lib/utils/allergens.js';
-  import { CheckCircle2, AlertCircle, ShieldCheck } from '@lucide/svelte';
+  import { CircleCheck, CircleAlert, ShieldCheck } from '@lucide/svelte';
   import * as m from '#lib/paraglide/messages.js';
 
   let {
@@ -46,7 +46,7 @@
         <p class="text-foreground/90">{guidance.why}</p>
       </SheetSection>
 
-      <SheetSection title={m.allergenDialogHowToOfferTitle()} icon={CheckCircle2}>
+      <SheetSection title={m.allergenDialogHowToOfferTitle()} icon={CircleCheck}>
         <ul class="list-disc space-y-1 pl-5 text-foreground/90">
           {#each guidance.howToOffer as item, i (i)}
             <li>{item}</li>
@@ -54,7 +54,7 @@
         </ul>
       </SheetSection>
 
-      <SheetSection title={m.allergenDialogFirstSignsTitle()} icon={AlertCircle}>
+      <SheetSection title={m.allergenDialogFirstSignsTitle()} icon={CircleAlert}>
         <ul class="list-disc space-y-1 pl-5 text-foreground/90">
           {#each guidance.firstSigns as item, i (i)}
             <li>{item}</li>
