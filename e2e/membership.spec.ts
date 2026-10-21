@@ -1,5 +1,5 @@
 import { expect, test, type Page, type BrowserContext } from '@playwright/test';
-import { signUp, signUpAndCreateChild } from './_helpers';
+import { signUp, signUpAndCreateChild, SIGNUP_PASSWORD } from './_helpers';
 
 // Shared helper so the onboarding fill is hardened against the hydration
 // race (see _helpers.ts) — a local fill+click copy used to flake here.
@@ -16,7 +16,7 @@ async function generateInviteCode(page: Page, childId: number): Promise<string> 
   await page.getByRole('button', { name: /générer un code/i }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await dialog.getByLabel('Mot de passe').fill('hunter2-very-long');
+  await dialog.getByLabel('Mot de passe').fill(SIGNUP_PASSWORD);
   await dialog.getByRole('button', { name: /générer un code/i }).click();
   // The settings page renders the invitation code in a monospace block
   // (.font-mono) once the action returns.
