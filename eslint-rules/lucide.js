@@ -4,6 +4,19 @@
 // until a Lucide major drops it and breaks the build. The list is read from
 // the installed package, so icons deprecated by a later upgrade are caught
 // without editing this file.
+//
+// Checked:
+// - static imports and `export ... from` of @lucide/svelte, its icons and
+//   icons/index barrels, and @lucide/svelte/icons/<file> deep paths;
+// - TypeScript `import('...')` types;
+// - dynamic imports whose source is a string, a template with no `${}`, or
+//   a `?:`, `||`, `??`, `&&` or `(a, b)` of those, TypeScript wrappers
+//   removed;
+// - any other dynamic source with a string that starts with a Lucide path
+//   gets `computed`.
+// Not checked: a path held in a variable, and icons reached through a
+// namespace import that an eslint-disable comment let in. A static check
+// stops there.
 import { readdirSync, readFileSync } from 'node:fs';
 
 const lucidePackage = '@lucide/svelte';
