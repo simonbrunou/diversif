@@ -31,6 +31,47 @@ function serverAnswering(...answers: (() => Response)[]) {
   return server(() => answers[call++]());
 }
 
+/**
+ * A stand-in for navigator.locks holding one exclusive lock, whatever its
+ * name, the way every tab of the app shares it. A request with ifAvailable
+ * gets null while another holder has the lock; any other request waits for
+ * it. holdElsewhere() takes the lock the way another tab's pass would and
+ * returns the function that releases it, resolving once the lock is free.
+ */
+function webLocks() {
+  let holder: Promise<unknown> | null = null;
+  const request = async (
+    name: string,
+    options: LockOptions,
+    callback: (lock: Lock | null) => unknown
+  ): Promise<unknown> => {
+    if (holder && options.ifAvailable) return callback(null);
+    while (holder) await holder.catch(() => {});
+    const run = (async () => callback({ name, mode: 'exclusive' }))();
+    holder = run;
+    try {
+      return await run;
+    } finally {
+      holder = null;
+    }
+  };
+  return {
+    manager: { request } as unknown as LockManager,
+    holdElsewhere(): () => Promise<void> {
+      let release: () => void = () => {};
+      const released = request(
+        'other-tab',
+        {},
+        () => new Promise<void>((resolve) => (release = resolve))
+      );
+      return async () => {
+        release();
+        await released;
+      };
+    }
+  };
+}
+
 const goodActionResult = (location = '/child/1?logged=1') =>
   new Response(JSON.stringify({ type: 'redirect', location }), {
     status: 200,
@@ -757,5 +798,77 @@ describe('queue', () => {
         queuedAt: 1
       })
     ).rejects.toBeDefined();
+  });
+
+  // Every open tab flushes on reconnect, and the in-tab inFlight guard can't
+  // see the other tabs: both replayed the same rows and toasted them twice
+  // (#452). happy-dom's navigator.locks is null, the no-Web-Locks browser the
+  // tests above run as; these install a stand-in.
+  describe('with Web Locks', () => {
+    let locks: ReturnType<typeof webLocks>;
+
+    beforeEach(() => {
+      locks = webLocks();
+      Object.defineProperty(navigator, 'locks', { value: locks.manager, configurable: true });
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'locks');
+    });
+
+    it('skips its pass while another tab is flushing, then replays once that tab is done', async () => {
+      const { transport, calls } = server(() => goodActionResult('/child/1?logged=1&first=1'));
+      const events: string[] = [];
+      const names = [
+        'queue:changed',
+        'queue:synced',
+        'queue:dropped',
+        'queue:accessRevoked',
+        'queue:needsReauth'
+      ];
+      const handler = (e: Event) => events.push(e.type);
+      for (const name of names) window.addEventListener(name, handler);
+      await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+      events.length = 0;
+
+      const releaseOtherTab = locks.holdElsewhere();
+      await flush(transport);
+
+      expect(calls).toHaveLength(0);
+      expect(events).toEqual([]);
+      expect(await countRows()).toBe(1);
+
+      await releaseOtherTab();
+      await flush(transport);
+
+      expect(calls).toHaveLength(1);
+      expect(events).toEqual(['queue:changed', 'queue:synced']);
+      expect(await countRows()).toBe(0);
+      for (const name of names) window.removeEventListener(name, handler);
+    });
+
+    it('holds the lock until its pass ends, so another tab skips meanwhile', async () => {
+      let answer: (r: Response) => void = () => {};
+      let sent: () => void = () => {};
+      const requestSent = new Promise<void>((resolve) => (sent = resolve));
+      const { transport } = server(
+        () =>
+          new Promise<Response>((resolve) => {
+            answer = resolve;
+            sent();
+          })
+      );
+      await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+      const otherTabGets = () =>
+        navigator.locks.request('diversif-offline-flush', { ifAvailable: true }, (lock) => lock);
+
+      const pass = flush(transport);
+      await requestSent;
+      expect(await otherTabGets()).toBeNull();
+
+      answer(goodActionResult());
+      await pass;
+      expect(await otherTabGets()).not.toBeNull();
+    });
   });
 });
