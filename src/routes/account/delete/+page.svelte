@@ -9,7 +9,7 @@
   import { enhance } from '$app/forms';
   import { onMount } from 'svelte';
   import * as m from '#lib/paraglide/messages.js';
-  import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
   import { matchesAccountEmail } from '#lib/utils/account-email.js';
   import type { ActionData, PageData } from './$types';
 
@@ -36,15 +36,9 @@
   <SectionHeader as="h2" tone="destructive">{m.authAccountDeleteSection()}</SectionHeader>
   <p class="mb-3 text-sm text-ink-soft">{m.authAccountDeleteDescription()}</p>
   <form method="POST" class="grid gap-3" use:enhance={trackSubmission((v) => (deletingAccount = v))}>
-    {#if form?.deleteErrorKey}
-      <!-- Inline rather than a toast: the Toaster is client-only, and a
-           refused no-JS POST re-renders this page with nothing else to say why.
-           Keyed on `form` so a second identical refusal re-inserts the alert
-           and screen readers announce it again. -->
-      {#key form}
-        <FormError>{resolveMessageKey(form.deleteErrorKey)}</FormError>
-      {/key}
-    {/if}
+    <!-- Inline rather than a toast: the Toaster is client-only, and a
+         refused no-JS POST re-renders this page with nothing else to say why. -->
+    <FormError messageKey={form?.deleteErrorKey} {form} />
     <Field name="confirmEmail" label={m.authAccountDeleteConfirmLabel()}>
       <Input
         id="confirmEmail"
