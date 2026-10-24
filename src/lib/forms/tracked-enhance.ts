@@ -6,11 +6,12 @@
 // inline closure. The repas forms (log, edit) don't use use:enhance: they
 // submit through RepasForm.svelte and the durable submit module.
 //
-// `resolveMessageKey` turns an action- or load-returned key into prose: inline on the
-// page (login, signup, account/delete, the repas forms, join/[code]), as a
-// toast (form-toasts.svelte.ts for account/profile, password and passkeys;
-// child settings), and in the passkeys/registration/options endpoint
-// (fresh-auth failures).
+// `resolveMessageKey` turns an action- or load-returned key into prose: inside
+// FormError, whose `messageKey` prop renders the action refusals of login,
+// signup, account/delete, the repas forms and join/[code]; in join/[code]'s
+// load-error paragraph; as a toast (form-toasts.svelte.ts for account/profile,
+// password and passkeys; child settings); and in the
+// passkeys/registration/options endpoint (fresh-auth failures).
 
 import * as m from '#lib/paraglide/messages.js';
 

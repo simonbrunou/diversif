@@ -34,13 +34,12 @@
       </p>
       <p class="mt-2 text-xs text-muted-foreground">{m.joinCodeLine()} <span class="font-mono">{data.code}</span></p>
 
-      {#if form?.errorKey}
-        {@const retry = 'retryAfterSeconds' in form ? form.retryAfterSeconds : null}
-        <FormError class="mt-4">
-          {retry != null
-            ? m.errorsAuthRateLimitedSeconds({ seconds: retry })
-            : resolveMessageKey(form.errorKey)}
+      {#if form && 'retryAfterSeconds' in form && form.retryAfterSeconds != null}
+        <FormError class="mt-4" {form}>
+          {m.errorsAuthRateLimitedSeconds({ seconds: form.retryAfterSeconds })}
         </FormError>
+      {:else}
+        <FormError class="mt-4" messageKey={form?.errorKey} {form} />
       {/if}
 
       <form

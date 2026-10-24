@@ -17,7 +17,6 @@
   import { getTipsFor, pickRotatingTip } from '#lib/content/guidance.js';
   import { page } from '$app/state';
   import { localizedHref } from '#lib/utils/localized-href.js';
-  import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
   import { normalize } from '#lib/utils/search.js';
   import * as m from '#lib/paraglide/messages.js';
   import { Info, PackageOpen } from '@lucide/svelte';
@@ -96,9 +95,7 @@
   />
 
   <RepasForm class="grid gap-5" queueFor={data.child.id} bind:busy={submitting}>
-    {#if form?.errorKey}
-      <FormError>{resolveMessageKey(form.errorKey)}</FormError>
-    {/if}
+    <FormError messageKey={form?.errorKey} {form} />
 
     {#if data.preparedMeals.length > 0}
       <fieldset class="grid gap-3 rounded-lg border bg-card p-4">
