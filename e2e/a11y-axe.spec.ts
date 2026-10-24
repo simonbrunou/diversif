@@ -51,6 +51,21 @@ async function axeSweep(page: Page): Promise<void> {
   expect(result.violations, formatViolations(result.violations as AxeViolation[])).toEqual([]);
 }
 
+/**
+ * axeSweep() after a click that starts a transition (a dialog opening, a
+ * tile taking its selected ring). axe-core reads computed styles
+ * synchronously, and without the 500ms wait it can sample colors mid
+ * fade-in/zoom-in (Modal's `animate-in`), reporting a fabricated
+ * low-contrast violation for a still-transitioning element. Same class of
+ * flake already documented in dismissWelcomeIfPresent (_helpers.ts) — wait
+ * for the entrance transition to settle before asserting, don't scan
+ * mid-animation.
+ */
+async function axeSweepAfterTransition(page: Page): Promise<void> {
+  await page.waitForTimeout(500);
+  await axeSweep(page);
+}
+
 const PUBLIC_ROUTES = [
   '/',
   '/signup',
@@ -81,36 +96,46 @@ test('a11y axe: AllergenInfoDialog open @responsive', async ({ page }) => {
   await page.goto('/allergens');
   await page.getByRole('button', { name: /Arachide/ }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  await page.waitForTimeout(500);
-  await axeSweep(page);
+  await axeSweepAfterTransition(page);
 });
 
-// The signed-in surface was a single test until #477 split it by route
-// group, so that each group has its own budget and a timeout or a violation
-// names the group. As one test it outgrew its 90 s budget on a loaded
-// runner: on the desktop project it took 27.8 s on an idle runner (CI run
-// 245, third attempt), 45.4 s with no other E2E job running (run 251) and
-// 1.5 m beside another E2E job (run 254), against 13.7 s locally.
+// The signed-in surface was one test with test.slow() (90 s) until #477
+// split it by route group, so that each group has its own budget and a
+// timeout or a violation names the group. The single test timed out in CI
+// runs 187, 192 and 244. On the desktop project it took 27.8 s on an idle
+// runner (run 245, third attempt), then 45.4 s, 49.0 s, 1.2 m and 1.5 m in
+// runs 251, 250, 253 and 254, with no other E2E job beside it but unit-test
+// and Docker jobs on the same runner. Locally it took 13.7 s.
 //
-// Each group keeps test.slow(). In local runs the three tests below took
-// 4 to 14 s, 6 to 8 s and 6 to 15 s. The CI runs above took the whole
-// walk up to 6.6 times its local time, which puts every group past the 20 s
-// at which docs/agents/testing.md asks for test.slow().
-//
-// Every axeSweep() that follows a dialog-open click waits 500ms first:
-// axe-core reads computed styles synchronously, and without the wait it can
-// sample colors mid fade-in/zoom-in (Modal's `animate-in`), reporting a
-// fabricated low-contrast violation for a still-transitioning element. Same
-// class of flake already documented in dismissWelcomeIfPresent (_helpers.ts)
-// — wait for the entrance transition to settle before asserting, don't scan
-// mid-animation.
+// Each group keeps test.slow(). Locally the three tests below took 3.8 to
+// 4.8 s, 6.1 to 7.5 s and 7.5 to 15.4 s; the single test ran up to 6.6
+// times its local time in CI, past the 20 s at which docs/agents/testing.md
+// asks for test.slow().
 test.describe('a11y axe — auth routes @responsive', () => {
+  // Creates the child as well as the parent, in every test: /account lists
+  // the parent's children, and the single test swept it with one child.
   async function signUpForSweep(page: Page): Promise<string> {
     const childId = await signUpAndCreateChild(page, 'A11y', '2025-08-01');
     // Each test signs up a new parent, and each new account opens the
     // welcome modal: left open, it lands in the first axe pass.
     await dismissWelcomeIfPresent(page);
     return childId;
+  }
+
+  // Logs `query`'s first result matching `result` with « Réaction marquée »,
+  // then waits for the redirect back to the dashboard.
+  async function logWithReaction(
+    page: Page,
+    childId: string,
+    query: string,
+    result: RegExp
+  ): Promise<void> {
+    await page.goto(`/child/${childId}/log`);
+    await page.getByPlaceholder('Rechercher un aliment…').fill(query);
+    await page.getByRole('button', { name: result }).first().click();
+    await page.locator('fieldset').getByText('Réaction marquée', { exact: true }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
+    await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
   }
 
   async function sweepRoutes(page: Page, routes: string[]): Promise<void> {
@@ -138,8 +163,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
       await page.goto('/account/sessions');
       await page.getByRole('button', { name: 'Se déconnecter partout' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
-      await page.waitForTimeout(500);
-      await axeSweep(page);
+      await axeSweepAfterTransition(page);
       await page.keyboard.press('Escape');
     });
   });
@@ -175,19 +199,11 @@ test.describe('a11y axe — auth routes @responsive', () => {
     // — the empty sweep above stays, since the empty state is real and
     // must stay covered.
     await test.step('axe: populated /child/<id> (allergen entry + reaction)', async () => {
-      await page.goto(`/child/${childId}/log`);
       // "Œuf entier", not "Œuf": the category filter row contains a button
       // labelled "Œufs", which /^Œuf/ also matches — and it sorts before the
       // results, so .first() clicked the filter chip, left the combobox
       // unselected, and the submit bounced with "Choisissez un aliment".
-      await page.getByPlaceholder('Rechercher un aliment…').fill('Œuf entier');
-      await page
-        .getByRole('button', { name: /^Œuf entier/ })
-        .first()
-        .click();
-      await page.locator('fieldset').getByText('Réaction marquée', { exact: true }).click();
-      await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
-      await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
+      await logWithReaction(page, childId, 'Œuf entier', /^Œuf entier/);
 
       await page.goto(`/child/${childId}`);
       await axeSweep(page);
@@ -200,8 +216,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
       await page.goto(`/child/${childId}`);
       await page.getByRole('button', { name: /changer/i }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
-      await page.waitForTimeout(500);
-      await axeSweep(page);
+      await axeSweepAfterTransition(page);
       await page.keyboard.press('Escape');
     });
 
@@ -227,23 +242,14 @@ test.describe('a11y axe — auth routes @responsive', () => {
       // so the checked/ring-highlighted DOM state is what gets scanned.
       await page.locator('fieldset').getByText('Écrasée', { exact: true }).click();
       await expect(page.getByRole('radio', { name: 'Écrasée' })).toBeChecked();
-      await page.waitForTimeout(500);
-      await axeSweep(page);
+      await axeSweepAfterTransition(page);
     });
 
     await test.step('axe: AddSymptomSheet open', async () => {
       // AddSymptomSheet only renders reachably for a non-RAS entry (the
       // "Ajouter un symptôme" trigger lives on ReactionDetailBento) — log
       // a real reaction, then navigate to its detail page and open the sheet.
-      await page.goto(`/child/${childId}/log`);
-      await page.getByPlaceholder('Rechercher un aliment…').fill('poire');
-      await page
-        .getByRole('button', { name: /^Poire/ })
-        .first()
-        .click();
-      await page.locator('fieldset').getByText('Réaction marquée', { exact: true }).click();
-      await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
-      await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
+      await logWithReaction(page, childId, 'poire', /^Poire/);
 
       await page.goto(`/child/${childId}/foods`);
       await page.getByRole('link', { name: /Poire/i }).first().click();
@@ -251,8 +257,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
 
       await page.getByRole('button', { name: 'Ajouter un symptôme' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
-      await page.waitForTimeout(500);
-      await axeSweep(page);
+      await axeSweepAfterTransition(page);
     });
   });
 });
