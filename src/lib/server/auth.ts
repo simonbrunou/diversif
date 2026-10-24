@@ -24,8 +24,21 @@ const ARGON_OPTS = {
 // hash's params back from the stored string, so verification is unaffected.
 const ARGON_OPTS_E2E = { algorithm: 'argon2id', memoryCost: 4_096, timeCost: 1 } as const;
 
+// bun test takes the same relaxed cost: the login rate-limit tests verify 20+
+// passwords against hashes seeded here (and the decoy below), and at full cost
+// they crossed the 5 s per-test limit on a loaded CI runner (#475). Two locks,
+// neither reachable from a deployment: bunfig.preload.ts sets
+// __TEST_RELAXED_ARGON__ only in the bun test process (vite.config.ts inlines
+// false into every build), and NODE_ENV must read 'test', which bun test sets.
+// NODE_ENV is checked first so a script that imports this module outside both
+// Vite and bun test never evaluates the undeclared global.
+function isBunTest(): boolean {
+  if (process.env.NODE_ENV !== 'test') return false;
+  return __TEST_RELAXED_ARGON__;
+}
+
 export async function hashPassword(plain: string): Promise<string> {
-  return Bun.password.hash(plain, isE2E() ? ARGON_OPTS_E2E : ARGON_OPTS);
+  return Bun.password.hash(plain, isE2E() || isBunTest() ? ARGON_OPTS_E2E : ARGON_OPTS);
 }
 
 export async function verifyPassword(hash: string, plain: string): Promise<boolean> {

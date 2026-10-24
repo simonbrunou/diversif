@@ -25,6 +25,13 @@ declare global {
    */
   const __BUILD_ORIGIN__: string;
 
+  /**
+   * true only in the bun test process (bunfig.preload.ts); vite.config.ts
+   * inlines false into every build. Only src/lib/server/auth.ts reads it, to
+   * hash at the relaxed Argon2id cost under bun test.
+   */
+  const __TEST_RELAXED_ARGON__: boolean;
+
   namespace App {
     interface Locals {
       user: SafeUser | null;
