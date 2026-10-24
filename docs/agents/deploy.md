@@ -1,6 +1,6 @@
 # Deploy
 
-What a production deploy does, how to check one from a workstation, and where prod internals such as an env value are read. The migration runbook, rollback and the Sentry checks after a deploy live in [`DEPLOY.md`](../../DEPLOY.md).
+What a production deploy does, how to check one from a workstation, and where to read a production environment value. The migration runbook, rollback and the Sentry checks after a deploy live in [`DEPLOY.md`](../../DEPLOY.md).
 
 ## What a merge to `main` sets off
 
