@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
 import { seedChild, seedUser } from '../../test/route';
+import { stubGlobal } from '../../test/bun-test-utils';
 import { memberships } from './db/schema';
 import { isValidInviteCodeFormat, generateInviteCodeRaw } from '#lib/utils/invites.js';
 
@@ -93,7 +94,6 @@ describe('hashPassword cost', () => {
   const FULL_COST = /^\$argon2id\$v=19\$m=19456,t=2,p=1\$/;
   const RELAXED_COST = /^\$argon2id\$v=19\$m=4096,t=1,p=1\$/;
 
-  const globals = globalThis as { __TEST_RELAXED_ARGON__: boolean; __BUILD_ORIGIN__: string };
   const ORIG_NODE_ENV = process.env.NODE_ENV;
   const ORIG_E2E = process.env.E2E;
 
@@ -102,11 +102,8 @@ describe('hashPassword cost', () => {
     else process.env[name] = value;
   }
 
+  // The preload's afterEach unstubs the globals, back to the relaxed cost.
   afterEach(() => {
-    // Back to what bunfig.preload.ts installs, so the rest of the file keeps
-    // hashing at the relaxed cost.
-    globals.__TEST_RELAXED_ARGON__ = true;
-    globals.__BUILD_ORIGIN__ = '';
     restoreEnv('NODE_ENV', ORIG_NODE_ENV);
     restoreEnv('E2E', ORIG_E2E);
   });
@@ -115,16 +112,13 @@ describe('hashPassword cost', () => {
     expect(await hashPassword('correct horse')).toMatch(RELAXED_COST);
   });
 
+  // The next two tests each pin one lock and go red if it alone breaks: the
+  // first pins the preload global, the second the NODE_ENV check. The
+  // production-like test after them goes red only if both break, or if
+  // isE2E()'s loopback-origin check does.
   it('hashes at full cost outside the preload seam when isE2E() is false', async () => {
     // What every Vite build inlines.
-    globals.__TEST_RELAXED_ARGON__ = false;
-    expect(await hashPassword('correct horse')).toMatch(FULL_COST);
-  });
-
-  it('hashes at full cost in a production-like environment, even with a stray E2E=1', async () => {
-    globals.__TEST_RELAXED_ARGON__ = false;
-    process.env.NODE_ENV = 'production';
-    process.env.E2E = '1';
+    stubGlobal('__TEST_RELAXED_ARGON__', false);
     expect(await hashPassword('correct horse')).toMatch(FULL_COST);
   });
 
@@ -133,11 +127,18 @@ describe('hashPassword cost', () => {
     expect(await hashPassword('correct horse')).toMatch(FULL_COST);
   });
 
-  it('still relaxes the cost for the Playwright server, outside the preload seam', async () => {
-    globals.__TEST_RELAXED_ARGON__ = false;
+  it('hashes at full cost in a production-like environment, even with a stray E2E=1', async () => {
+    stubGlobal('__TEST_RELAXED_ARGON__', false);
     process.env.NODE_ENV = 'production';
     process.env.E2E = '1';
-    globals.__BUILD_ORIGIN__ = 'http://localhost:4173';
+    expect(await hashPassword('correct horse')).toMatch(FULL_COST);
+  });
+
+  it('still relaxes the cost for the Playwright server, outside the preload seam', async () => {
+    stubGlobal('__TEST_RELAXED_ARGON__', false);
+    stubGlobal('__BUILD_ORIGIN__', 'http://localhost:4173');
+    process.env.NODE_ENV = 'production';
+    process.env.E2E = '1';
     expect(await hashPassword('correct horse')).toMatch(RELAXED_COST);
   });
 });
