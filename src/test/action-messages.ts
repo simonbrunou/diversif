@@ -5,19 +5,19 @@
 
 import { expect, it, type mock } from 'bun:test';
 
-type ActionResult = Record<string, string>;
+type ActionPayload = Record<string, string>;
 type ToastMock = ReturnType<typeof mock>;
 type View = {
   getByRole: (role: string) => HTMLElement;
   queryByRole: (role: string) => HTMLElement | null;
-  rerender: (props: { form: ActionResult }) => Promise<void>;
+  rerender: (props: { form: ActionPayload }) => Promise<void>;
 };
 
 export function itShowsActionMessagesInline(opts: {
-  renderPage: (form: ActionResult | null) => View;
+  renderPage: (form: ActionPayload | null) => View;
   toast: { error: ToastMock; success: ToastMock };
-  refusal: { form: ActionResult; text: string };
-  success: { form: ActionResult; text: string };
+  refusal: { form: ActionPayload; text: string };
+  success: { form: ActionPayload; text: string };
 }) {
   const { renderPage, toast, refusal, success } = opts;
 

@@ -107,11 +107,18 @@ test.describe('passkeys', () => {
     await registerPasskey(page, 'Téléphone');
 
     // Rename posts natively, so its result comes with a new page load.
+    await page.getByLabel('Nom de la clé').fill('   ');
+    await page.getByRole('button', { name: 'Renommer', exact: true }).click();
+    await expect(page.getByRole('alert')).toHaveText('Nom invalide.');
+    await awaitHydration(page);
+    expect(await countText(page, 'Nom invalide.')).toBe(1);
+
     await page.getByLabel('Nom de la clé').fill('Téléphone perso');
     await page.getByRole('button', { name: 'Renommer', exact: true }).click();
     await expect(page.getByRole('status')).toHaveText('Clé renommée.');
     await awaitHydration(page);
     expect(await countText(page, 'Clé renommée.')).toBe(1);
+    expect(await countText(page, 'Nom invalide.')).toBe(0);
 
     // A refused deletion shows in the dialog, which stays open, and not on
     // the page behind it, not even after Cancel.

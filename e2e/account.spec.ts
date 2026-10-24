@@ -103,6 +103,7 @@ test.describe('account messages with JavaScript', () => {
     await expect(page.getByRole('status')).toHaveText('Profil mis à jour.');
     await expect(saveButton).toBeEnabled();
     expect(await page.getByText('Profil mis à jour.').count()).toBe(1);
+    expect(await page.getByText('Nom invalide.').count()).toBe(0);
     await expect(name).toHaveValue('Camille');
   });
 });
