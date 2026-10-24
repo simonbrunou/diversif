@@ -77,6 +77,11 @@
   const backHref = $derived(
     data.from === 'dashboard' ? `/child/${data.child.id}` : `/child/${data.child.id}/foods`
   );
+
+  // Without JavaScript the browser posts to this URL, and SvelteKit renders a
+  // refused save there: `from` must be in it for `load` to keep the editor's
+  // origin, or the next save lands on the carnet (#443).
+  const updateAction = $derived(`?/update&from=${data.from}`);
 </script>
 
 {#if data.meal}
@@ -87,7 +92,7 @@
       fallback={backHref}
     />
 
-    <RepasForm action="?/update" class="grid gap-5" bind:busy={mealSaving}>
+    <RepasForm action={updateAction} class="grid gap-5" bind:busy={mealSaving}>
       <FormError messageKey={form?.errorKey} {form} />
 
       <input type="hidden" name="from" value={data.from} />
@@ -222,7 +227,7 @@
       fallback={backHref}
     />
 
-    <RepasForm action="?/update" class="grid gap-5" bind:busy={saving}>
+    <RepasForm action={updateAction} class="grid gap-5" bind:busy={saving}>
       <FormError messageKey={form?.errorKey} {form} />
 
       <input type="hidden" name="from" value={data.from} />

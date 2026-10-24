@@ -15,7 +15,7 @@ const { default: Page } = await import('./+page.svelte');
 
 import type { PageData } from './$types';
 
-function makeMealData(): PageData {
+function makeMealData(from: 'dashboard' | 'detail' | 'foods' = 'foods'): PageData {
   return {
     child: { id: 1, name: 'Bébé', birthDate: '2024-01-01' },
     foods: [],
@@ -27,7 +27,7 @@ function makeMealData(): PageData {
       texture: null,
       notes: null
     },
-    from: 'foods',
+    from,
     meal: {
       mealId: 'meal-abc',
       members: [
@@ -104,7 +104,7 @@ describe('child/[id]/log/[entryId] +page.svelte — meal mode', () => {
 
     // Main submit -> ?/update; every reaction.{id}/reactionLoaded.{id} lives
     // inside this one form.
-    const updateForm = container.querySelector('form[action="?/update"]')!;
+    const updateForm = container.querySelector('form[action^="?/update"]')!;
     expect(updateForm).not.toBeNull();
     expect(updateForm.querySelectorAll('input[name^="reaction."]').length).toBeGreaterThan(0);
 
@@ -186,11 +186,21 @@ describe('child/[id]/log/[entryId] +page.svelte — meal mode', () => {
     expect(document.querySelector('form[action="?/deleteMeal"]')).not.toBeNull();
   });
 
+  // Same contract as the single-entry form (entry-edit.test.ts, #443).
+  it.each(['detail', 'dashboard', 'foods'] as const)(
+    'posts the update to an action URL that keeps from=%s',
+    (from) => {
+      const { container } = render(Page, { props: { data: makeMealData(from), form: null } });
+      const updateForm = container.querySelector('form[action^="?/update"]')!;
+      expect(updateForm.getAttribute('action')).toBe(`?/update&from=${from}`);
+    }
+  );
+
   it('shows a refused update inside the meal form', () => {
     const { container } = render(Page, {
       props: { data: makeMealData(), form: { errorKey: 'errorsLogIdempotencyConflict' } }
     });
-    const alerts = container.querySelectorAll('form[action="?/update"] [role="alert"]');
+    const alerts = container.querySelectorAll('form[action^="?/update"] [role="alert"]');
     expect(alerts.length).toBe(1);
     expect(alerts[0].textContent?.trim()).toBe('Conflit de clé d’idempotence.');
   });
