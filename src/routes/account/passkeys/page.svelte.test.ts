@@ -107,9 +107,10 @@ describe('account/passkeys messages', () => {
     const view = renderPage();
     await fireEvent.click(view.getByRole('button', { name: 'Supprimer' }));
     const dialog = view.getByRole('dialog');
-    // `control` is the first element in the document with the label's `for`
-    // id, as in a browser. getByLabelText would still find the dialog's
-    // field: happy-dom pairs a field with every label whose `for` names it.
+    // `control` is a single element for the label's `for` id, here the page's
+    // field when it shares the id, as in a browser. getByLabelText would still
+    // find the dialog's field: happy-dom pairs a field with every label whose
+    // `for` names it.
     const label = within(dialog).getByText('Mot de passe actuel') as HTMLLabelElement;
     expect(label.control && dialog.contains(label.control)).toBe(true);
   });
