@@ -1,6 +1,6 @@
 # Deploy
 
-What a production deploy does and how to check one from a workstation. The migration runbook, rollback and the Sentry checks after a deploy live in [`DEPLOY.md`](../../DEPLOY.md).
+What a production deploy does, how to check one from a workstation, and where prod internals such as an env value are read. The migration runbook, rollback and the Sentry checks after a deploy live in [`DEPLOY.md`](../../DEPLOY.md).
 
 ## What a merge to `main` sets off
 
@@ -27,4 +27,4 @@ To check the service worker by hand, open the site in a browser (the Playwright 
 
 The deployment queue, the build log, the container's health and the source-map upload are prod internals. Check them from the private homelab repo (homelab-stacks `scripts/coolify-deploy-status.sh`), not from here.
 
-A production environment value, such as `BODY_SIZE_LIMIT`, is a prod internal too. Read one variable with `printenv <NAME>` inside the app container, reached the way homelab-stacks `docs/operations/runbooks/ct-103-diversif.md` reaches it with `docker exec`. Print only that variable: the environment also holds secrets.
+A production environment value, such as `BODY_SIZE_LIMIT`, is a prod internal too. The homelab-stacks runbook `docs/operations/runbooks/ct-103-diversif.md` has the command, under "Read one environment value". Print only that variable: the environment also holds secrets.
