@@ -1,8 +1,9 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Browser, type Page } from '@playwright/test';
 import { awaitHydration, dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 // The edit page's four actions (update, delete, deleteMeal, removeIngredient)
-// end to end, through the repas write module: one test per form mode.
+// end to end, through the repas write module: one test per form mode. At the
+// end, what a refused save keeps, with and without JavaScript.
 
 async function childOfEightMonths(page: Page): Promise<string> {
   const birthDate = new Date();
@@ -130,3 +131,90 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
   await page.goto(`/child/${childId}`);
   await expect(page.getByTestId('feed-row-edit')).toHaveCount(0);
 });
+
+// The repas is logged with JavaScript; this carries the session into a new
+// context with JavaScript disabled. A copy of gdpr.spec.ts's helper (#498
+// shares one). The caller closes the returned page's context.
+async function openWithoutJavaScript(browser: Browser, page: Page): Promise<Page> {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    storageState: await page.context().storageState()
+  });
+  return context.newPage();
+}
+
+// A datetime-local value `days` back at 10:00, in the test runner's local
+// time. The browser shares that zone; without JavaScript the server parses the
+// value in its own. A few days back falls between the birth day and now in
+// any zone.
+function daysAgoInput(days: number): string {
+  const d = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T10:00`;
+}
+
+// Where a save goes back to, for each `from` the editor can be opened with.
+const ORIGINS = [
+  {
+    from: 'detail',
+    landsAt: (childId: string, entryId: string) => new RegExp(`/child/${childId}/foods/${entryId}$`)
+  },
+  { from: 'dashboard', landsAt: (childId: string) => new RegExp(`/child/${childId}$`) }
+] as const;
+
+const FORM_MODES = [
+  { name: 'standalone repas', aliments: ['Poire'], feedRow: 'feed-row-detail' },
+  { name: 'meal', aliments: ['Poire', 'Pomme'], feedRow: 'feed-row-edit' }
+] as const;
+
+// #443: a refused save keeps where the editor was opened from, so the save
+// that follows goes back there. With JavaScript the refusal applies in place;
+// without it the browser posts to the form's action URL and SvelteKit renders
+// the refusal there, so that URL must carry `from`.
+for (const javaScript of [true, false]) {
+  test.describe(`a refused save ${javaScript ? 'with' : 'without'} JavaScript`, () => {
+    for (const mode of FORM_MODES) {
+      for (const { from, landsAt } of ORIGINS) {
+        test(`the ${mode.name} editor opened from ${from} saves back there`, async ({
+          browser,
+          page
+        }) => {
+          // A signup, a logged repas, then the edit itself. On a CI runner busy
+          // with three other jobs, while the other worker ran a two-context
+          // membership test, one run took 29 s without JavaScript and over
+          // 30 s twice with it. test.slow() triples the budget for these
+          // tests only.
+          test.slow();
+          const childId = await childOfEightMonths(page);
+          await logRepas(page, childId, [...mode.aliments]);
+          const entryId = await feedEntryId(page, childId, mode.feedRow);
+          // With JavaScript the editor opens on the page that logged the repas,
+          // as the tests above do. A fresh context would load every chunk again
+          // and install the service worker, which precaches the app: extra
+          // work on a runner that is already slow.
+          const editor = javaScript ? page : await openWithoutJavaScript(browser, page);
+          try {
+            await editor.goto(`/child/${childId}/log/${entryId}?from=${from}`);
+            if (javaScript) await awaitHydration(editor);
+            const save = editor.getByRole('button', { name: 'Enregistrer', exact: true });
+
+            await editor.getByLabel('Quand ?').fill('2099-01-01T10:00');
+            await save.click();
+            await expect(
+              editor.getByText('La date du repas ne peut pas être dans le futur.')
+            ).toBeVisible();
+            await expect(editor.locator('form[action^="?/update"] input[name="from"]')).toHaveValue(
+              from
+            );
+
+            await editor.getByLabel('Quand ?').fill(daysAgoInput(3));
+            await save.click();
+            await expect(editor).toHaveURL(landsAt(childId, entryId));
+          } finally {
+            if (editor !== page) await editor.context().close();
+          }
+        });
+      }
+    }
+  });
+}

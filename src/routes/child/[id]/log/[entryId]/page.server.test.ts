@@ -98,6 +98,18 @@ describe('child/[id]/log/[entryId] load', () => {
     expect(data.from).toBe('foods');
     expect(data.meal?.members.map((m) => m.id)).toEqual(ids);
   });
+
+  // #443: without JavaScript, SvelteKit renders a refused save at the URL the
+  // form posted to, so the edit forms carry `from` next to the action key.
+  it('keeps where to go back on the action URL a refused save renders at', async () => {
+    const { event, ids, child } = await setup();
+    const data = await load(
+      event({
+        url: `http://localhost/child/${child.id}/log/${ids[0]}?/update&from=detail`
+      }) as unknown as LoadEvent
+    );
+    expect(data.from).toBe('detail');
+  });
 });
 
 describe('child/[id]/log/[entryId] update action', () => {
