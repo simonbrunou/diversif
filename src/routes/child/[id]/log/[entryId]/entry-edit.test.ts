@@ -12,7 +12,7 @@ const { default: Page } = await import('./+page.svelte');
 
 import type { PageData } from './$types';
 
-function makeEntryData(from: 'dashboard' | 'detail' | 'foods' = 'foods'): PageData {
+function makeEntryData(from: PageData['from'] = 'foods'): PageData {
   return {
     child: { id: 1, name: 'Bébé', birthDate: '2024-01-01' },
     foods: [],

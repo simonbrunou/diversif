@@ -132,19 +132,22 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
   await expect(page.getByTestId('feed-row-edit')).toHaveCount(0);
 });
 
-// Same as gdpr.spec.ts: the repas is logged with JavaScript, then this
-// carries the session into a new context with JavaScript disabled. The
-// caller closes the returned page's context.
-async function openWithoutJavaScript(browser: Browser, page: Page): Promise<Page> {
+// The repas is logged with JavaScript; this carries the session into a new
+// context with JavaScript on or off (the openWithoutJavaScript helper of the
+// account specs, for both paths). The caller closes the returned page's
+// context.
+async function openSession(browser: Browser, page: Page, javaScript: boolean): Promise<Page> {
   const context = await browser.newContext({
-    javaScriptEnabled: false,
+    javaScriptEnabled: javaScript,
     storageState: await page.context().storageState()
   });
   return context.newPage();
 }
 
-// A datetime-local value some days back, in the browser's (and, without
-// JavaScript, the server's) local time: inside [birth day, now] on any zone.
+// A datetime-local value `days` back at 10:00, in the test runner's local
+// time. The browser shares that zone; without JavaScript the server parses the
+// value in its own. A few days back falls between the birth day and now in
+// any zone.
 function daysAgoInput(days: number): string {
   const d = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -155,9 +158,9 @@ function daysAgoInput(days: number): string {
 const ORIGINS = [
   {
     from: 'detail',
-    lands: (childId: string, entryId: string) => new RegExp(`/child/${childId}/foods/${entryId}$`)
+    landsAt: (childId: string, entryId: string) => new RegExp(`/child/${childId}/foods/${entryId}$`)
   },
-  { from: 'dashboard', lands: (childId: string) => new RegExp(`/child/${childId}$`) }
+  { from: 'dashboard', landsAt: (childId: string) => new RegExp(`/child/${childId}$`) }
 ] as const;
 
 const FORM_MODES = [
@@ -172,13 +175,13 @@ const FORM_MODES = [
 for (const javaScript of [true, false]) {
   test.describe(`a refused save ${javaScript ? 'with' : 'without'} JavaScript`, () => {
     for (const mode of FORM_MODES) {
-      test(`keeps where the ${mode.name} editor was opened from`, async ({ browser, page }) => {
-        const childId = await childOfEightMonths(page);
-        await logRepas(page, childId, [...mode.aliments]);
-        const entryId = await feedEntryId(page, childId, mode.feedRow);
-        const editor = javaScript ? page : await openWithoutJavaScript(browser, page);
-        try {
-          for (const { from, lands } of ORIGINS) {
+      for (const { from, landsAt } of ORIGINS) {
+        test(`keeps ?from=${from} on the ${mode.name} editor`, async ({ browser, page }) => {
+          const childId = await childOfEightMonths(page);
+          await logRepas(page, childId, [...mode.aliments]);
+          const entryId = await feedEntryId(page, childId, mode.feedRow);
+          const editor = await openSession(browser, page, javaScript);
+          try {
             await editor.goto(`/child/${childId}/log/${entryId}?from=${from}`);
             if (javaScript) await awaitHydration(editor);
             const save = editor.getByRole('button', { name: 'Enregistrer', exact: true });
@@ -194,12 +197,12 @@ for (const javaScript of [true, false]) {
 
             await editor.getByLabel('Quand ?').fill(daysAgoInput(3));
             await save.click();
-            await expect(editor).toHaveURL(lands(childId, entryId));
+            await expect(editor).toHaveURL(landsAt(childId, entryId));
+          } finally {
+            await editor.context().close();
           }
-        } finally {
-          if (!javaScript) await editor.context().close();
-        }
-      });
+        });
+      }
     }
   });
 }
