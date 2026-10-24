@@ -28,14 +28,9 @@ Sentry.init(
     [
       // Browser tracing: pageload/navigation spans named after the route
       // pattern, Web Vitals, same-origin fetches; sentryHandle's <meta> tags
-      // join it to the server trace.
-      Sentry.browserTracingIntegration({
-        // One span per hashed /_app/immutable/*.js chunk made a full pageload
-        // ~150 KB (95 script spans), past BODY_SIZE_LIMIT, so the tunnel
-        // rejected it; and the timing of immutable, service-worker-cached
-        // chunks says little. CSS, fonts, images and fetches keep their spans.
-        ignoreResourceSpans: ['resource.script']
-      })
+      // join it to the server trace. The policy drops the hashed JS chunks'
+      // resource spans (IMMUTABLE_CHUNK_SPAN).
+      Sentry.browserTracingIntegration()
     ]
   )
 );

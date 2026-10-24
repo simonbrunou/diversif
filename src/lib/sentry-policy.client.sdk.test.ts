@@ -213,6 +213,33 @@ describe('client traces and breadcrumbs', () => {
     expect(JSON.stringify(transactions)).not.toContain('/child/18');
   });
 
+  it('drops the span of every hashed JS chunk a pageload fetched, whatever its initiator', async () => {
+    // The op comes from the browser's initiatorType, which differs across
+    // engines for the same <link rel="modulepreload">: Chromium says "other".
+    Sentry.startSpan({ name: 'GET /guide', forceTransaction: true }, () => {
+      for (const [op, name] of [
+        ['resource.other', '/_app/immutable/chunks/CLThMn91.js'],
+        ['resource.script', '/_app/immutable/nodes/0.uSiPSxcP.js'],
+        ['resource.link', '/_app/immutable/entry/start.EVIPfUgQ.js'],
+        ['resource.link', '/_app/immutable/assets/0.DsRr6JJR.css'],
+        ['resource.css', '/_app/immutable/assets/inter.B2xhLi2c.woff2'],
+        ['resource.img', '/favicon.svg'],
+        ['http.client', 'GET /child/18/__data.json']
+      ]) {
+        Sentry.startSpan({ op, name }, () => {});
+      }
+    });
+
+    const transactions = await recorder.sent('transaction');
+    const transaction = transactions.find((t) => t.transaction === 'GET /guide');
+    expect(transaction?.spans!.map((span) => span.description)).toEqual([
+      '/_app/immutable/assets/0.DsRr6JJR.css',
+      '/_app/immutable/assets/inter.B2xhLi2c.woff2',
+      '/favicon.svg',
+      'GET /child/[id]/__data.json'
+    ]);
+  });
+
   it('keeps click, input and console breadcrumbs out of the SDK buffer', () => {
     Sentry.addBreadcrumb({ category: 'navigation', message: 'kept' });
     for (const category of ['ui.click', 'ui.input', 'console']) {

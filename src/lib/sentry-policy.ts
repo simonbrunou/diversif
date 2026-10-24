@@ -185,6 +185,19 @@ type ClientSentryEnv = {
   PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE: string;
 };
 
+/**
+ * A pageload's resource span for each hashed /_app/immutable/*.js chunk.
+ * SvelteKit preloads 85 to 95 of them on a full pageload, and at about 1.4 KB
+ * of resource-timing attributes each they made the transaction 134 to 149 KB,
+ * past BODY_SIZE_LIMIT, so the tunnel rejected every pageload with 413 (#454).
+ * The timing of immutable, service-worker-cached chunks says little anyway.
+ * Matched on the path, not the op: the SDK names the op after the browser's
+ * initiatorType, which differs across engines for the same
+ * <link rel="modulepreload"> (Chromium reports `resource.other`). CSS, fonts,
+ * images and fetches keep their spans.
+ */
+const IMMUTABLE_CHUNK_SPAN = { op: /^resource\./, name: /^\/_app\/immutable\/.+\.js$/ };
+
 /** Scrubs the browser payloads that never reach a beforeSend* hook. */
 const privacyIntegration: Integration = {
   name: 'DiversifPrivacy',
@@ -235,6 +248,7 @@ export function clientSentryOptions(
         ? scrubBrowserEvent(event)
         : null,
     beforeSendTransaction: scrubBrowserEvent,
+    ignoreSpans: [IMMUTABLE_CHUNK_SPAN],
     // Last, so a key set above and here too fails to compile.
     ...sharedOptions(env.PUBLIC_SENTRY_ENVIRONMENT, env.PUBLIC_SENTRY_TRACES_SAMPLE_RATE)
   };
