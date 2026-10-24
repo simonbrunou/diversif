@@ -1,5 +1,10 @@
-import { test, expect, type Browser, type Page } from '@playwright/test';
-import { awaitHydration, dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
+import { test, expect, type Page } from '@playwright/test';
+import {
+  awaitHydration,
+  dismissWelcomeIfPresent,
+  openWithoutJavaScript,
+  signUpAndCreateChild
+} from './_helpers';
 
 // The edit page's four actions (update, delete, deleteMeal, removeIngredient)
 // end to end, through the repas write module: one test per form mode. At the
@@ -132,17 +137,6 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
   await expect(page.getByTestId('feed-row-edit')).toHaveCount(0);
 });
 
-// The repas is logged with JavaScript; this carries the session into a new
-// context with JavaScript disabled. A copy of gdpr.spec.ts's helper (#498
-// shares one). The caller closes the returned page's context.
-async function openWithoutJavaScript(browser: Browser, page: Page): Promise<Page> {
-  const context = await browser.newContext({
-    javaScriptEnabled: false,
-    storageState: await page.context().storageState()
-  });
-  return context.newPage();
-}
-
 // A datetime-local value `days` back at 10:00, in the test runner's local
 // time. The browser shares that zone; without JavaScript the server parses the
 // value in its own. A few days back falls between the birth day and now in
@@ -179,11 +173,9 @@ for (const javaScript of [true, false]) {
           browser,
           page
         }) => {
-          // A signup, a logged repas, then the edit itself. On a CI runner busy
-          // with three other jobs, while the other worker ran a two-context
-          // membership test, one run took 29 s without JavaScript and over
-          // 30 s twice with it. test.slow() triples the budget for these
-          // tests only.
+          // A signup, a logged repas, then the edit itself: up to 29 s of the
+          // 30 s budget on a CI runner shared with other jobs. test.slow()
+          // triples the budget for these tests only.
           test.slow();
           const childId = await childOfEightMonths(page);
           await logRepas(page, childId, [...mode.aliments]);
