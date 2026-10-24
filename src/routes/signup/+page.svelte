@@ -10,7 +10,7 @@
   import { Eye, EyeOff } from '@lucide/svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { signInWithPasskey } from '#lib/auth/passkey-client.js';
-  import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import { PASSWORD_MIN_LENGTH } from '#lib/utils/password.js';
   import type { ActionData, PageData } from './$types';
@@ -56,9 +56,7 @@
     class="grid gap-4"
     use:enhance={trackSubmission((v) => (submitting = v))}
   >
-    {#if form?.errorKey}
-      <FormError>{resolveMessageKey(form.errorKey)}</FormError>
-    {/if}
+    <FormError messageKey={form?.errorKey} {form} />
 
     <Field name="displayName" label={m.authSignupDisplayNameLabel()}>
       <Input

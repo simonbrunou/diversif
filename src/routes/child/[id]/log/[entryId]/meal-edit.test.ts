@@ -185,4 +185,13 @@ describe('child/[id]/log/[entryId] +page.svelte — meal mode', () => {
     // bits-ui's Portal moves dialog content outside `container`; query the document.
     expect(document.querySelector('form[action="?/deleteMeal"]')).not.toBeNull();
   });
+
+  it('shows a refused update inside the meal form', () => {
+    const { container } = render(Page, {
+      props: { data: makeMealData(), form: { errorKey: 'errorsLogIdempotencyConflict' } }
+    });
+    const alerts = container.querySelectorAll('form[action="?/update"] [role="alert"]');
+    expect(alerts.length).toBe(1);
+    expect(alerts[0].textContent?.trim()).toBe('Conflit de clé d’idempotence.');
+  });
 });
