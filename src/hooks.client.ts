@@ -28,8 +28,7 @@ Sentry.init(
     [
       // Browser tracing: pageload/navigation spans named after the route
       // pattern, Web Vitals, same-origin fetches; sentryHandle's <meta> tags
-      // join it to the server trace. The policy drops the hashed JS chunks'
-      // resource spans (IMMUTABLE_CHUNK_SPAN).
+      // join it to the server trace.
       Sentry.browserTracingIntegration()
     ]
   )

@@ -213,20 +213,31 @@ describe('client traces and breadcrumbs', () => {
     expect(JSON.stringify(transactions)).not.toContain('/child/18');
   });
 
-  it('drops the span of every hashed JS chunk a pageload fetched, whatever its initiator', async () => {
-    // The op comes from the browser's initiatorType, which differs across
-    // engines for the same <link rel="modulepreload">: Chromium says "other".
+  it('drops the resource span of every hashed JS chunk, whatever its initiator, and keeps the rest', async () => {
+    // Shaped as the SDK builds resource spans: the op comes from the
+    // browser's initiatorType, which differs across engines for the same
+    // <link rel="modulepreload"> (Chromium says "other"), and the name is the
+    // URL minus the page's origin.
     Sentry.startSpan({ name: 'GET /guide', forceTransaction: true }, () => {
-      for (const [op, name] of [
+      for (const [op, name, path] of [
         ['resource.other', '/_app/immutable/chunks/CLThMn91.js'],
         ['resource.script', '/_app/immutable/nodes/0.uSiPSxcP.js'],
         ['resource.link', '/_app/immutable/entry/start.EVIPfUgQ.js'],
         ['resource.link', '/_app/immutable/assets/0.DsRr6JJR.css'],
         ['resource.css', '/_app/immutable/assets/inter.B2xhLi2c.woff2'],
         ['resource.img', '/favicon.svg'],
-        ['http.client', 'GET /child/18/__data.json']
+        ['http.client', 'GET /child/18/__data.json', '/child/18/__data.json'],
+        // Only resource spans go: a fetch of a chunk keeps its span.
+        [
+          'http.client',
+          'GET /_app/immutable/chunks/CLThMn91.js',
+          '/_app/immutable/chunks/CLThMn91.js'
+        ]
       ]) {
-        Sentry.startSpan({ op, name }, () => {});
+        Sentry.startSpan(
+          { op, name, attributes: { 'url.full': `https://diversif.app${path ?? name}` } },
+          () => {}
+        );
       }
     });
 
@@ -236,7 +247,8 @@ describe('client traces and breadcrumbs', () => {
       '/_app/immutable/assets/0.DsRr6JJR.css',
       '/_app/immutable/assets/inter.B2xhLi2c.woff2',
       '/favicon.svg',
-      'GET /child/[id]/__data.json'
+      'GET /child/[id]/__data.json',
+      'GET /_app/immutable/chunks/CLThMn91.js'
     ]);
   });
 

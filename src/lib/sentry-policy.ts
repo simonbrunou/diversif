@@ -186,17 +186,23 @@ type ClientSentryEnv = {
 };
 
 /**
- * A pageload's resource span for each hashed /_app/immutable/*.js chunk.
- * SvelteKit preloads 85 to 95 of them on a full pageload, and at about 1.4 KB
- * of resource-timing attributes each they made the transaction 134 to 149 KB,
- * past BODY_SIZE_LIMIT, so the tunnel rejected every pageload with 413 (#454).
+ * Drops the resource span of each hashed /_app/immutable/*.js chunk, in any
+ * transaction. A full pageload preloads 85 to 95 chunks, and with about 1.4 KB
+ * of resource-timing attributes per span the measured pageloads reached 131 to
+ * 145 KB, past the 128 KB BODY_SIZE_LIMIT, so the tunnel answered 413 (#454).
  * The timing of immutable, service-worker-cached chunks says little anyway.
- * Matched on the path, not the op: the SDK names the op after the browser's
- * initiatorType, which differs across engines for the same
- * <link rel="modulepreload"> (Chromium reports `resource.other`). CSS, fonts,
+ *
+ * The op cannot select them: the SDK names it `resource.<initiatorType>`, and
+ * engines give the same <link rel="modulepreload"> different initiator types
+ * (Chromium says `other`). So the rule matches the chunk's URL under any
+ * `resource.*` op. It reads `url.full`, not the span name, which is the path
+ * only for a same-origin URL under the static trace lifecycle. CSS, fonts,
  * images and fetches keep their spans.
  */
-const IMMUTABLE_CHUNK_SPAN = { op: /^resource\./, name: /^\/_app\/immutable\/.+\.js$/ };
+const IMMUTABLE_CHUNK_SPAN_FILTER = {
+  op: /^resource\./,
+  attributes: { 'url.full': /\/_app\/immutable\/.+\.js$/ }
+};
 
 /** Scrubs the browser payloads that never reach a beforeSend* hook. */
 const privacyIntegration: Integration = {
@@ -248,7 +254,7 @@ export function clientSentryOptions(
         ? scrubBrowserEvent(event)
         : null,
     beforeSendTransaction: scrubBrowserEvent,
-    ignoreSpans: [IMMUTABLE_CHUNK_SPAN],
+    ignoreSpans: [IMMUTABLE_CHUNK_SPAN_FILTER],
     // Last, so a key set above and here too fails to compile.
     ...sharedOptions(env.PUBLIC_SENTRY_ENVIRONMENT, env.PUBLIC_SENTRY_TRACES_SAMPLE_RATE)
   };
