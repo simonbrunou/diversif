@@ -107,11 +107,11 @@ describe('account/passkeys messages', () => {
     const view = renderPage();
     await fireEvent.click(view.getByRole('button', { name: 'Supprimer' }));
     const dialog = view.getByRole('dialog');
-    // A browser resolves `for` to the first element with that id in the
-    // document; getByLabelText would search the dialog only.
+    // `control` is the first element in the document with the label's `for`
+    // id, as in a browser. getByLabelText would still find the dialog's
+    // field: happy-dom pairs a field with every label whose `for` names it.
     const label = within(dialog).getByText('Mot de passe actuel') as HTMLLabelElement;
-    const field = document.getElementById(label.htmlFor);
-    expect(field && dialog.contains(field)).toBe(true);
+    expect(label.control && dialog.contains(label.control)).toBe(true);
   });
 
   it('replaces a loaded rename message with the refused deletion in the dialog', async () => {
