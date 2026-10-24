@@ -1,6 +1,6 @@
 # Deploy
 
-What a production deploy does and how to check one from a workstation. The migration runbook, rollback and the Sentry checks after a deploy live in [`DEPLOY.md`](../../DEPLOY.md).
+What a production deploy does, how to check one from a workstation, and where to read a production environment value. The migration runbook, rollback and the Sentry checks after a deploy live in [`DEPLOY.md`](../../DEPLOY.md).
 
 ## What a merge to `main` sets off
 
@@ -26,3 +26,5 @@ After a merge, run `scripts/smoke-prod.sh <sha>` with the new `main` head SHA (`
 To check the service worker by hand, open the site in a browser (the Playwright MCP tools work). `ReloadPrompt.svelte` registers the worker after the page's `load` event, so hydration alone proves nothing: once `await navigator.serviceWorker.ready` resolves, the worker at `/service-worker.js` is active and its install has filled the `workbox-precache-v2-…` cache. It also warms the `app-env` cache, but only as best effort, so that cache can exist and still be empty.
 
 The deployment queue, the build log, the container's health and the source-map upload are prod internals. Check them from the private homelab repo (homelab-stacks `scripts/coolify-deploy-status.sh`), not from here.
+
+A production environment value, such as `BODY_SIZE_LIMIT`, is a prod internal too. The homelab-stacks runbook `docs/operations/runbooks/ct-103-diversif.md` has the command, under "Read one environment value". Print only that variable: the environment also holds secrets.
