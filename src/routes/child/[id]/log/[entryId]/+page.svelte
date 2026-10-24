@@ -14,6 +14,8 @@
   import { formatDateInputValue } from '#lib/utils/dates.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import type { TextureKey } from '#lib/utils/textures.js';
+  import { moreSevere, type ReactionId } from '#lib/utils/reaction-values.js';
+  import type { ActionResult } from '$app/forms';
   import { Trash, X } from '@lucide/svelte';
   import * as m from '#lib/paraglide/messages.js';
   import type { ActionData, PageData } from './$types';
@@ -26,11 +28,12 @@
   // svelte-ignore state_referenced_locally
   let givenAt = $state(formatDateInputValue(new Date(data.entry.givenAt)));
   // svelte-ignore state_referenced_locally
-  let reaction = $state<'ras' | 'inconfort' | 'reaction'>(data.entry.reaction);
-  // Static load-time snapshot for the server's dirty-only reaction guard, same
-  // role as mealReactionsLoaded below: it must never follow the picker.
+  let reaction = $state<ReactionId>(data.entry.reaction);
+  // The stored value the form loaded, for the server's dirty-only reaction
+  // guard, same role as mealReactionsLoaded below: it must never follow the
+  // picker. Only a reaction refusal moves it (showStoredReactions).
   // svelte-ignore state_referenced_locally
-  const reactionLoaded = data.entry.reaction;
+  let reactionLoaded = $state<ReactionId>(data.entry.reaction);
   // svelte-ignore state_referenced_locally
   let texture = $state<TextureKey | null>(data.entry.texture);
   let texturePristine = $state(false);
@@ -44,17 +47,44 @@
   // svelte-ignore state_referenced_locally
   let mealMembers = $state((data.meal?.members ?? []).map((mem) => ({ ...mem })));
 
-  // STATIC snapshot of each member's reaction AT LOAD TIME — deliberately a
-  // plain object (NOT $state), built once and never reassigned. Task 9's
-  // `update` action only writes a member's reaction when the submitted
-  // `reaction.{id}` differs from `reactionLoaded.{id}`. If this snapshot
-  // tracked the same mutable value as the picker above instead of freezing
-  // it, submitted would always equal loaded and that guard would never fire —
-  // reaction edits would silently no-op. See task-10-brief.md.
+  // Snapshot of each member's stored reaction AT LOAD TIME, kept apart from
+  // the pickers above. The `update` action only writes a member's reaction
+  // when the submitted `reaction.{id}` differs from `reactionLoaded.{id}`. If
+  // this snapshot tracked the same mutable value as the picker instead,
+  // submitted would always equal loaded and that guard would never fire:
+  // reaction edits would silently no-op. Only a reaction refusal moves it
+  // (showStoredReactions).
   // svelte-ignore state_referenced_locally
-  const mealReactionsLoaded: Record<number, string> = Object.fromEntries(
-    (data.meal?.members ?? []).map((mem) => [mem.id, mem.reaction])
+  let mealReactionsLoaded = $state<Record<number, ReactionId>>(
+    Object.fromEntries((data.meal?.members ?? []).map((mem) => [mem.id, mem.reaction]))
   );
+
+  // A reaction refusal (#445): a symptom or a co-parent changed a reaction
+  // since the form loaded, and the parent's pick was less severe. Each changed
+  // reaction now posts its stored value as loaded, so the next save goes
+  // through, and its picker shows the more severe of the parent's pick and
+  // the stored value, which is what the server would have kept. Without
+  // JavaScript the page reloads instead, and `load` seeds both from the
+  // stored values.
+  function showStoredReactions(result: ActionResult) {
+    if (result.type !== 'failure') return;
+    const stored = result.data?.reactions as Record<number, ReactionId> | undefined;
+    if (!stored) return;
+    if (!data.meal) {
+      const now = stored[data.entry.id];
+      if (now && now !== reactionLoaded) {
+        reactionLoaded = now;
+        reaction = moreSevere(reaction, now);
+      }
+      return;
+    }
+    for (const member of mealMembers) {
+      const now = stored[member.id];
+      if (!now || now === mealReactionsLoaded[member.id]) continue;
+      mealReactionsLoaded[member.id] = now;
+      member.reaction = moreSevere(member.reaction, now);
+    }
+  }
 
   let mealSaving = $state(false);
   let mealDeleteOpen = $state(false);
@@ -92,7 +122,12 @@
       fallback={backHref}
     />
 
-    <RepasForm action={updateAction} class="grid gap-5" bind:busy={mealSaving}>
+    <RepasForm
+      action={updateAction}
+      class="grid gap-5"
+      bind:busy={mealSaving}
+      onapplied={showStoredReactions}
+    >
       <FormError messageKey={form?.errorKey} {form} />
 
       <input type="hidden" name="from" value={data.from} />
@@ -227,7 +262,12 @@
       fallback={backHref}
     />
 
-    <RepasForm action={updateAction} class="grid gap-5" bind:busy={saving}>
+    <RepasForm
+      action={updateAction}
+      class="grid gap-5"
+      bind:busy={saving}
+      onapplied={showStoredReactions}
+    >
       <FormError messageKey={form?.errorKey} {form} />
 
       <input type="hidden" name="from" value={data.from} />

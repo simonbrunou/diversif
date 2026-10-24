@@ -9,7 +9,7 @@ import {
 } from '#lib/server/idempotency.js';
 import { mealDateError } from '#lib/utils/meal-date.js';
 import { milestonesPath, type Milestones } from '#lib/utils/milestones.js';
-import type { ReactionId } from '#lib/utils/reaction-values.js';
+import { REACTION_RANK, type ReactionId } from '#lib/utils/reaction-values.js';
 import type { TextureKey } from '#lib/utils/textures.js';
 import { resolveAliments } from './aliments';
 import { RepasAbort, refuse, type RepasErrorKey, type Tx } from './core';
@@ -32,13 +32,19 @@ import { recordPreparedMeal } from './prepared-meal';
 // and edit pages make to a repas goes through the functions below, each one
 // transaction: the routes only turn FormData into a call and the result into
 // fail() or a redirect. (A symptom's reaction promotion is the one other
-// writer, in src/lib/server/db/symptoms.ts; the edit guard below respects it.)
+// writer, in src/lib/server/db/symptoms.ts; writeReaction below respects it.)
 
 /** Who writes, for which child: requireChildContext's result fits as-is. */
 export type RepasContext = { childId: number; user: { id: number } };
 
 /** A refused write. Nothing was written. */
-export type RepasRefusal = { ok: false; status: 400 | 404 | 409; errorKey: RepasErrorKey };
+export type RepasRefusal = {
+  ok: false;
+  status: 400 | 404 | 409;
+  errorKey: RepasErrorKey;
+  /** With errorsLogReactionChanged: every row's stored reaction, by entry id, for the form to show. */
+  reactions?: Record<number, ReactionId>;
+};
 
 /** A repas just written by logRepas. */
 type Logged = {
@@ -75,7 +81,10 @@ function refusing<T>(write: () => T): T | RepasRefusal {
   try {
     return write();
   } catch (e) {
-    if (e instanceof RepasAbort) return { ok: false, status: e.status, errorKey: e.errorKey };
+    if (e instanceof RepasAbort) {
+      const { status, errorKey, reactions } = e;
+      return { ok: false, status, errorKey, ...(reactions && { reactions }) };
+    }
     if (e instanceof IdempotencyInFlight || e instanceof IdempotencyScopeMismatch) {
       return { ok: false, status: 409, errorKey: 'errorsLogIdempotencyConflict' };
     }
@@ -190,23 +199,32 @@ export function readRepas(ctx: Pick<RepasContext, 'childId'>, entryId: number): 
   };
 }
 
-// Dirty-only, optimistically guarded reaction write: only write when the
-// submitted value differs from what the form loaded, and only while the row
-// still holds that loaded value. A symptom that promoted the reaction between
-// load and submit makes the guarded WHERE match nothing, so the promotion
-// stands instead of being clobbered by a stale form.
-function writeReaction(tx: Tx, childId: number, row: RepasRow, edit: ReactionEdit): void {
+// Dirty-only reaction write: nothing happens unless the parent picked a value
+// other than the one the form loaded. `row` was read in this transaction, and
+// bun:sqlite runs it synchronously, so `row.reaction` is the value the write
+// replaces. When it no longer matches what the form loaded, a symptom (or a
+// co-parent) changed the reaction since: the more severe value wins (#445).
+// The parent's pick is written when it is more severe, the change stands when
+// they are equal, and a less severe pick refuses the whole edit, so a stale
+// form never downgrades a promotion (#421) and the parent is told. The
+// refusal carries the stored reaction of every row of the repas (`rows`),
+// for the form to show.
+function writeReaction(
+  tx: Tx,
+  childId: number,
+  row: RepasRow,
+  edit: ReactionEdit,
+  rows: RepasRow[]
+): void {
   const loaded = edit.loaded ?? row.reaction;
-  if (edit.to === loaded) return;
+  if (edit.to === loaded || edit.to === row.reaction) return;
+  if (row.reaction !== loaded && REACTION_RANK[edit.to] < REACTION_RANK[row.reaction]) {
+    const stored = Object.fromEntries(rows.map((r) => [r.id, r.reaction]));
+    throw new RepasAbort(409, 'errorsLogReactionChanged', stored);
+  }
   tx.update(foodEntries)
     .set({ reaction: edit.to, updatedAt: new Date() })
-    .where(
-      and(
-        eq(foodEntries.id, row.id),
-        eq(foodEntries.childId, childId),
-        eq(foodEntries.reaction, loaded)
-      )
-    )
+    .where(and(eq(foodEntries.id, row.id), eq(foodEntries.childId, childId)))
     .run();
 }
 
@@ -226,7 +244,7 @@ function editEntry(tx: Tx, childId: number, entry: RepasRow, form: FormData): vo
     })
     .where(and(eq(foodEntries.id, entry.id), eq(foodEntries.childId, childId)))
     .run();
-  writeReaction(tx, childId, entry, draft.reaction);
+  writeReaction(tx, childId, entry, draft.reaction, [entry]);
 }
 
 function editMeal(tx: Tx, childId: number, meal: NonNullable<RepasRows['meal']>, form: FormData) {
@@ -247,7 +265,7 @@ function editMeal(tx: Tx, childId: number, meal: NonNullable<RepasRows['meal']>,
     .run();
   for (const member of meal.members) {
     const edit = draft.reactions.get(member.id);
-    if (edit) writeReaction(tx, childId, member, edit);
+    if (edit) writeReaction(tx, childId, member, edit, meal.members);
   }
 }
 

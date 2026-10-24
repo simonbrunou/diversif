@@ -137,6 +137,54 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
   await expect(page.getByTestId('feed-row-edit')).toHaveCount(0);
 });
 
+// #445: a severe symptom, added from another tab, promotes the repas to
+// « Réaction marquée » while the editor still shows it RAS. A less severe pick
+// is refused with a message, and the editor shows the stored reaction, so the
+// save that follows goes through.
+test('refuses a reaction change that a symptom overtook, then saves', async ({ page }) => {
+  // The steps of the refused-save tests below, which took up to 29 s on a CI
+  // runner shared with other jobs, plus a symptom from a second tab.
+  test.slow();
+  const childId = await childOfEightMonths(page);
+  await logRepas(page, childId, ['Poire']);
+  const entryId = await feedEntryId(page, childId, 'feed-row-detail');
+
+  await page.goto(`/child/${childId}/log/${entryId}?from=detail`);
+  await awaitHydration(page);
+  await expect(page.locator('input[name="reactionLoaded"]')).toHaveValue('ras');
+
+  // A second tab of the same context, like a co-parent's: no cold start.
+  const other = await page.context().newPage();
+  try {
+    await other.goto(`/child/${childId}/foods/${entryId}`);
+    await awaitHydration(other);
+    await other.getByRole('button', { name: 'Signaler une réaction tardive' }).click();
+    await reactionOption(other, 'label', 'gonflement').click();
+    await other.getByRole('button', { name: 'Enregistrer le symptôme' }).click();
+    await expect(other.getByRole('dialog')).toBeHidden();
+  } finally {
+    await other.close();
+  }
+
+  await reactionOption(page, 'reaction', 'inconfort').click();
+  await page.getByLabel('Note').fill('A grimacé');
+  const save = page.getByRole('button', { name: 'Enregistrer', exact: true });
+  await save.click();
+  await expect(page.getByRole('alert')).toHaveText(
+    'Une réaction a changé entre-temps, par exemple après l’ajout d’un symptôme. Vérifiez-la avant d’enregistrer.'
+  );
+  await expect(page.locator('input[name="reaction"][value="reaction"]')).toBeChecked();
+  await expect(page.locator('input[name="reactionLoaded"]')).toHaveValue('reaction');
+  await expect(page.getByLabel('Note')).toHaveValue('A grimacé');
+
+  await save.click();
+  await expect(page).toHaveURL(new RegExp(`/child/${childId}/foods/${entryId}$`));
+  await page.goto(`/child/${childId}/log/${entryId}`);
+  await awaitHydration(page);
+  await expect(page.locator('input[name="reaction"][value="reaction"]')).toBeChecked();
+  await expect(page.getByLabel('Note')).toHaveValue('A grimacé');
+});
+
 // A datetime-local value `days` back at 10:00, in the test runner's local
 // time. The browser shares that zone; without JavaScript the server parses the
 // value in its own. A few days back falls between the birth day and now in

@@ -202,10 +202,11 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     });
   });
 
-  it('a deliberate reaction change that raced a promotion does not overwrite it', async () => {
+  it('a deliberate reaction change that raced a more severe promotion is refused with the stored reaction', async () => {
     // The dirty-only check alone lets this write through (submitted 'inconfort'
-    // differs from loaded 'ras'); only the WHERE guard on the loaded value
-    // stops it from downgrading the severe promotion.
+    // differs from loaded 'ras'). It must neither downgrade the severe
+    // promotion (#421) nor redirect as if it saved (#445): the form gets the
+    // stored reaction back to show, and nothing is written.
     const ctx = await setup();
     const loaded = await loadForm(ctx);
     expect(await addSymptom(ctx, 'gonflement')).toBe('reaction');
@@ -217,9 +218,27 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
       reactionLoaded: loaded.reaction,
       notes: 'modifié'
     });
-    expect(r.kind).toBe('redirect');
+    expect(r).toMatchObject({
+      kind: 'return',
+      value: {
+        status: 409,
+        data: { errorKey: 'errorsLogReactionChanged', reactions: { [ctx.ids[0]]: 'reaction' } }
+      }
+    });
 
-    expect(entryRow(ctx.ids[0])).toMatchObject({ reaction: 'reaction', notes: 'modifié' });
+    expect(entryRow(ctx.ids[0])).toMatchObject({ reaction: 'reaction', notes: null });
+
+    // The re-rendered form posts the stored reaction as loaded: saving again
+    // goes through, here with the parent's deliberate downgrade.
+    const again = await submit(ctx, {
+      foodId: String(ctx.carotte.id),
+      givenAt: '2024-06-01T12:30:00.000Z',
+      reaction: 'inconfort',
+      reactionLoaded: 'reaction',
+      notes: 'modifié'
+    });
+    expect(again.kind).toBe('redirect');
+    expect(entryRow(ctx.ids[0])).toMatchObject({ reaction: 'inconfort', notes: 'modifié' });
   });
 
   it('a deliberate reaction change on an up-to-date form still applies', async () => {

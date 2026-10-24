@@ -14,3 +14,7 @@ export const REACTION_RANK = Object.fromEntries(REACTION_VALUES.map((id, i) => [
   ReactionId,
   number
 >;
+
+export function moreSevere(a: ReactionId, b: ReactionId): ReactionId {
+  return REACTION_RANK[a] >= REACTION_RANK[b] ? a : b;
+}

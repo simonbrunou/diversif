@@ -1,11 +1,17 @@
 import { describe, expect, it, mock } from 'bun:test';
-import { render, fireEvent } from '@testing-library/svelte';
+import { render, fireEvent, waitFor } from '@testing-library/svelte';
 import '../../../../../test/component';
 
 // Same setup as meal-edit.test.ts: a svelte-sonner stub, then the page
 // imported dynamically so the mock registers first.
 mock.module('svelte-sonner', () => ({
   toast: { error: () => {}, success: () => {} }
+}));
+
+// The server's answer to the next save, as RepasForm's durable submit returns it.
+let answer: unknown = null;
+mock.module('#lib/offline/submit.js', () => ({
+  submitRepas: async () => ({ kind: 'sent', result: answer })
 }));
 
 const { default: Page } = await import('./+page.svelte');
@@ -61,6 +67,40 @@ describe('child/[id]/log/[entryId] +page.svelte — single entry', () => {
       expect(updateForm.getAttribute('action')).toBe(`?/update&from=${from}`);
     }
   );
+
+  // #445: a symptom promoted the entry to `reaction` after the form loaded it
+  // at RAS, and the parent's less severe pick is refused. The form must show
+  // the stored reaction and post it as loaded, or the next save is refused too.
+  it('shows the stored reaction after a reaction refusal, and keeps what the parent typed', async () => {
+    const { container } = render(Page, { props: { data: makeEntryData(), form: null } });
+    const updateForm = container.querySelector<HTMLFormElement>('form[action^="?/update"]')!;
+    const loaded = updateForm.querySelector<HTMLInputElement>('input[name="reactionLoaded"]')!;
+    const checked = () =>
+      updateForm.querySelector<HTMLInputElement>('input[name="reaction"]:checked')?.value;
+    const notes = updateForm.querySelector<HTMLTextAreaElement>('textarea[name="notes"]')!;
+
+    await fireEvent.click(updateForm.querySelector('input[name="reaction"][value="inconfort"]')!);
+    await fireEvent.input(notes, { target: { value: 'A grimacé' } });
+    answer = {
+      type: 'failure',
+      status: 409,
+      data: { errorKey: 'errorsLogReactionChanged', reactions: { 501: 'reaction' } }
+    };
+    await fireEvent.submit(updateForm);
+    await waitFor(() => expect(loaded.value).toBe('reaction'));
+    expect(checked()).toBe('reaction');
+    expect(notes.value).toBe('A grimacé');
+
+    // A later refusal without reactions (a bad date) leaves them as they are.
+    await fireEvent.click(updateForm.querySelector('input[name="reaction"][value="inconfort"]')!);
+    answer = { type: 'failure', status: 400, data: { errorKey: 'errorsLogDateFuture' } };
+    await fireEvent.submit(updateForm);
+    await waitFor(() =>
+      expect(updateForm.querySelector('button[type="submit"]:disabled')).toBeNull()
+    );
+    expect(loaded.value).toBe('reaction');
+    expect(checked()).toBe('inconfort');
+  });
 
   it('shows a refused update inside the entry form', () => {
     const { container } = render(Page, {
