@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { signUpAndCreateChild } from './_helpers';
+import { awaitHydration, signUpAndCreateChild } from './_helpers';
 
 // Rows waiting in the offline queue's IndexedDB store.
 function queuedRows(page: Page): Promise<number> {
@@ -21,9 +21,11 @@ function queuedRows(page: Page): Promise<number> {
 // Smoke: when navigator.onLine is false, the log form's durable submit
 // (src/lib/offline/submit.ts) must short-circuit, write to IDB, and surface
 // the queued toast. The replay-on-online path is covered by the unit tests
-// in src/lib/offline/, which replay against the real log action; end to end
-// we only check that the layout turns a replay into the repas's milestone
-// toast ("a queued first repas is celebrated when it replays on reconnect").
+// in src/lib/offline/, which replay against the real log action. End to end
+// we check that the layout turns a replay into the repas's milestone toast
+// ("a queued first repas is celebrated when it replays on reconnect"), and
+// that only one of two open tabs replays it ("two open tabs replay a queued
+// repas once and celebrate it once").
 test('queues a log submission while offline', async ({ page }) => {
   const sevenMonthsAgo = new Date();
   sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
@@ -166,6 +168,88 @@ test('a queued first repas is celebrated when it replays on reconnect', async ({
   await expect.poll(() => queuedRows(page), { timeout: 8000 }).toBe(0);
   await expect(page.getByText('Premier repas noté.')).toBeVisible();
   expect(await page.getByText('Synchronisé.', { exact: true }).count()).toBe(0);
+});
+
+// Every open tab flushes the queue on reconnect, and only one of them may
+// replay a queued repas: the other tab replaying it too toasted the same
+// milestone twice (#452).
+test('two open tabs replay a queued repas once and celebrate it once', async ({
+  page,
+  context
+}) => {
+  const sevenMonthsAgo = new Date();
+  sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
+  const childId = await signUpAndCreateChild(
+    page,
+    'Lino',
+    sevenMonthsAgo.toISOString().slice(0, 10),
+    'twotabs'
+  );
+
+  // The second tab opens before the repas is queued: its mount flush would
+  // otherwise replay the row on load, before any reconnect.
+  const other = await context.newPage();
+  await other.goto(`/child/${childId}`);
+  await awaitHydration(other);
+  await page.goto(`/child/${childId}/log`);
+  for (const p of [page, other]) {
+    await p.evaluate(() => {
+      Object.defineProperty(navigator, 'onLine', { get: () => false, configurable: true });
+    });
+  }
+
+  await page.getByPlaceholder('Rechercher un aliment…').fill('Poire');
+  await page
+    .getByRole('button', { name: /^Poire/ })
+    .first()
+    .click();
+  await page.getByRole('button', { name: /^enregistrer$/i }).click();
+  await expect(page).toHaveURL(/\/child\/\d+$/, { timeout: 8000 });
+  expect(await queuedRows(page)).toBe(1);
+
+  // Makes the old code's double replay happen every time. The first replay's
+  // answer reaches its tab only once a second replay was sent, or after
+  // 500 ms, so the other tab has read the row before the first deletes it.
+  // A second replay reaches the server only once the server has answered the
+  // first, so it gets the stored redirect, the path that celebrated the repas
+  // again, instead of a 409 that only retries it on the next minute's flush.
+  const replayers = new Set<Page>();
+  let replays = 0;
+  const firstAnswered = Promise.withResolvers<void>();
+  const secondSent = Promise.withResolvers<void>();
+  await context.route(`**/child/${childId}/log`, async (route) => {
+    if (route.request().method() !== 'POST') return route.continue();
+    replayers.add(route.request().frame().page());
+    replays += 1;
+    if (replays > 1) {
+      secondSent.resolve();
+      await firstAnswered.promise;
+      return route.continue();
+    }
+    const response = await route.fetch().finally(() => firstAnswered.resolve());
+    await Promise.race([secondSent.promise, new Promise((resolve) => setTimeout(resolve, 500))]);
+    await route.fulfill({ response });
+  });
+
+  await Promise.all(
+    [page, other].map((p) =>
+      p.evaluate(() => {
+        Object.defineProperty(navigator, 'onLine', { get: () => true, configurable: true });
+        window.dispatchEvent(new Event('online'));
+      })
+    )
+  );
+
+  // A tab toasts once its own pass ends, after the queue drained. Wait for
+  // the toast in every tab that replayed, then count once: a retrying
+  // toHaveCount would let a duplicate expire after 4 s and pass.
+  await expect.poll(() => queuedRows(page), { timeout: 8000 }).toBe(0);
+  for (const p of replayers) await expect(p.getByText('Premier repas noté.')).toBeVisible();
+  const toasts = async (text: string, options?: { exact: boolean }) =>
+    (await page.getByText(text, options).count()) + (await other.getByText(text, options).count());
+  expect(await toasts('Premier repas noté.')).toBe(1);
+  expect(await toasts('Synchronisé.', { exact: true })).toBe(0);
+  expect(replayers.size).toBe(1);
 });
 
 // The offline fallback page (/offline) is a prerendered SvelteKit route. The
