@@ -187,9 +187,10 @@ type ClientSentryEnv = {
 
 /**
  * Drops the resource span of each hashed /_app/immutable/*.js chunk, in any
- * transaction. A full pageload preloads 85 to 95 chunks, and with about 1.4 KB
- * of resource-timing attributes per span the measured pageloads reached 131 to
- * 145 KB, past the 128 KB BODY_SIZE_LIMIT, so the tunnel answered 413 (#454).
+ * transaction. A full pageload preloads 85 to 95 chunks, and each span weighs
+ * about 1.4 KB, most of it resource-timing attributes, so the measured
+ * pageloads reached 131 to 145 KB, past the 128 KB BODY_SIZE_LIMIT, and the
+ * tunnel answered 413 (#454).
  * The timing of immutable, service-worker-cached chunks says little anyway.
  *
  * The op cannot select them: the SDK names it `resource.<initiatorType>`, and

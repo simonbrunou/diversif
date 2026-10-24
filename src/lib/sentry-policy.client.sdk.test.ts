@@ -223,6 +223,8 @@ describe('client traces and breadcrumbs', () => {
         ['resource.other', '/_app/immutable/chunks/CLThMn91.js'],
         ['resource.script', '/_app/immutable/nodes/0.uSiPSxcP.js'],
         ['resource.link', '/_app/immutable/entry/start.EVIPfUgQ.js'],
+        // Under span streaming the SDK names a resource span after its domain.
+        ['resource.script', 'diversif.app', '/_app/immutable/chunks/Bq1xV7hN.js'],
         ['resource.link', '/_app/immutable/assets/0.DsRr6JJR.css'],
         ['resource.css', '/_app/immutable/assets/inter.B2xhLi2c.woff2'],
         ['resource.img', '/favicon.svg'],
