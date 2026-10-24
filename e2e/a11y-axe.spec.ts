@@ -5,15 +5,18 @@ import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 /**
  * a11y axe sweep — runs WCAG 2.1 AA + best-practice rules against every
  * public and auth-required route. Tagged @responsive so both the desktop
- * and mobile Playwright projects pick it up; auth routes share one signup
- * per worker via test.step for speed.
+ * and mobile Playwright projects pick it up. The auth routes run as three
+ * tests, one per route group (account pages, a child with no entries, a
+ * child with entries); each signs up its own parent and sweeps its routes
+ * one test.step per axe pass.
  *
  * The static-route sweep is a page.goto() + axe pass only, so it never
  * scans an open drawer/sheet or a FoodCombobox mid-interaction — those
- * DOM states are exercised by dedicated test.step blocks at the end of
- * the auth-routes test (ChildSwitcherDrawer, a confirm dialog, FoodCombobox
- * search + selection, TexturePicker tile selection, AddSymptomSheet), plus
- * a standalone AllergenInfoDialog test for the public /allergens route.
+ * DOM states are exercised by dedicated test.step blocks (the "Se
+ * déconnecter partout" confirm dialog in the account test; ChildSwitcherDrawer,
+ * FoodCombobox search + selection, TexturePicker tile selection and
+ * AddSymptomSheet in the populated-child test), plus a standalone
+ * AllergenInfoDialog test for the public /allergens route.
  *
  * Hard gate: any violation fails the test. The companion Lighthouse layer
  * (a11y/best-practices/SEO scores) was deferred — see the spec doc's
@@ -82,26 +85,70 @@ test('a11y axe: AllergenInfoDialog open @responsive', async ({ page }) => {
   await axeSweep(page);
 });
 
+// The signed-in surface was a single test until #477 split it by route
+// group, so that each group has its own budget and a timeout or a violation
+// names the group. As one test it outgrew its 90 s budget on a loaded
+// runner: on the desktop project it took 27.8 s on an idle runner (CI run
+// 245, third attempt), 45.4 s with no other E2E job running (run 251) and
+// 1.5 m beside another E2E job (run 254), against 13.7 s locally.
+//
+// Each group keeps test.slow(). In local runs the three tests below took
+// 4 to 14 s, 6 to 8 s and 6 to 15 s. The CI runs above took the whole
+// walk up to 6.6 times its local time, which puts every group past the 20 s
+// at which docs/agents/testing.md asks for test.slow().
+//
+// Every axeSweep() that follows a dialog-open click waits 500ms first:
+// axe-core reads computed styles synchronously, and without the wait it can
+// sample colors mid fade-in/zoom-in (Modal's `animate-in`), reporting a
+// fabricated low-contrast violation for a still-transitioning element. Same
+// class of flake already documented in dismissWelcomeIfPresent (_helpers.ts)
+// — wait for the entrance transition to settle before asserting, don't scan
+// mid-animation.
 test.describe('a11y axe — auth routes @responsive', () => {
-  test('walks the signed-in surface', async ({ page }) => {
-    // This single test does signup + child creation, 12 route sweeps, a real
-    // log submission, and 7 more axe passes over opened dialogs/sheets — 9
-    // test.step blocks, each running the full WCAG + best-practice ruleset.
-    // It measured 30.0s against the config's 30s budget on the run that added
-    // the populated-dashboard sweep: passing by a rounding error, i.e. already
-    // a guaranteed intermittent failure. test.slow() triples the budget for
-    // this test only, rather than relaxing the global timeout and blinding
-    // every other spec to a genuine hang.
-    test.slow();
+  async function signUpForSweep(page: Page): Promise<string> {
     const childId = await signUpAndCreateChild(page, 'A11y', '2025-08-01');
+    // Each test signs up a new parent, and each new account opens the
+    // welcome modal: left open, it lands in the first axe pass.
     await dismissWelcomeIfPresent(page);
+    return childId;
+  }
 
-    const routes = [
+  async function sweepRoutes(page: Page, routes: string[]): Promise<void> {
+    for (const r of routes) {
+      await test.step(`axe ${r}`, async () => {
+        await page.goto(r);
+        await axeSweep(page);
+      });
+    }
+  }
+
+  test('walks the account pages', async ({ page }) => {
+    test.slow();
+    await signUpForSweep(page);
+
+    await sweepRoutes(page, [
       '/account',
       '/account/profile',
       '/account/sessions',
       '/account/theme',
-      '/account/delete',
+      '/account/delete'
+    ]);
+
+    await test.step('axe: "Se déconnecter partout" confirm dialog open', async () => {
+      await page.goto('/account/sessions');
+      await page.getByRole('button', { name: 'Se déconnecter partout' }).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(500);
+      await axeSweep(page);
+      await page.keyboard.press('Escape');
+    });
+  });
+
+  test('walks a child with no entries', async ({ page }) => {
+    test.slow();
+    const childId = await signUpForSweep(page);
+
+    await sweepRoutes(page, [
       '/child/new',
       `/child/${childId}`,
       `/child/${childId}/foods`,
@@ -111,16 +158,14 @@ test.describe('a11y axe — auth routes @responsive', () => {
       `/child/${childId}/guide`,
       `/child/${childId}/log`,
       `/child/${childId}/report`
-    ];
+    ]);
+  });
 
-    for (const r of routes) {
-      await test.step(`axe ${r}`, async () => {
-        await page.goto(r);
-        await axeSweep(page);
-      });
-    }
+  test('walks a child with entries and its dialogs', async ({ page }) => {
+    test.slow();
+    const childId = await signUpForSweep(page);
 
-    // The route sweep above only ever visits a zero-entry dashboard, so it
+    // The test above only ever visits a zero-entry dashboard, so it
     // structurally cannot see the one real violation that shows up once a
     // child has data: with no entries, AllergensSnapshot renders a plain
     // paragraph instead of its overflow-x-auto pill scroller, and that
@@ -148,29 +193,12 @@ test.describe('a11y axe — auth routes @responsive', () => {
       await axeSweep(page);
     });
 
-    // The static-route sweep above only ever does page.goto() + axe — it
-    // never opens a drawer/sheet or types into FoodCombobox, so none of
-    // those DOM states get scanned. Exercise each explicitly.
-    //
-    // Every axeSweep() below that follows a dialog-open click waits 500ms
-    // first: axe-core reads computed styles synchronously, and without the
-    // wait it can sample colors mid fade-in/zoom-in (Modal's `animate-in`),
-    // reporting a fabricated low-contrast violation for a still-transitioning
-    // element. Same class of flake already documented in dismissWelcomeIfPresent
-    // above (_helpers.ts) — wait for the entrance transition to settle before
-    // asserting, don't scan mid-animation.
+    // The route sweeps only ever do page.goto() + axe — they never open a
+    // drawer/sheet or type into FoodCombobox, so none of those DOM states
+    // get scanned. Exercise each explicitly, with the entries above in place.
     await test.step('axe: ChildSwitcherDrawer open', async () => {
       await page.goto(`/child/${childId}`);
       await page.getByRole('button', { name: /changer/i }).click();
-      await expect(page.getByRole('dialog')).toBeVisible();
-      await page.waitForTimeout(500);
-      await axeSweep(page);
-      await page.keyboard.press('Escape');
-    });
-
-    await test.step('axe: "Se déconnecter partout" confirm dialog open', async () => {
-      await page.goto('/account/sessions');
-      await page.getByRole('button', { name: 'Se déconnecter partout' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
       await page.waitForTimeout(500);
       await axeSweep(page);
