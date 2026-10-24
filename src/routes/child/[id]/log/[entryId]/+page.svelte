@@ -15,7 +15,6 @@
   import { localizedHref } from '#lib/utils/localized-href.js';
   import type { TextureKey } from '#lib/utils/textures.js';
   import { Trash, X } from '@lucide/svelte';
-  import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
   import * as m from '#lib/paraglide/messages.js';
   import type { ActionData, PageData } from './$types';
 
@@ -89,9 +88,7 @@
     />
 
     <RepasForm action="?/update" class="grid gap-5" bind:busy={mealSaving}>
-      {#if form?.errorKey}
-        <FormError>{resolveMessageKey(form.errorKey)}</FormError>
-      {/if}
+      <FormError messageKey={form?.errorKey} {form} />
 
       <input type="hidden" name="from" value={data.from} />
 
@@ -226,9 +223,7 @@
     />
 
     <RepasForm action="?/update" class="grid gap-5" bind:busy={saving}>
-      {#if form?.errorKey}
-        <FormError>{resolveMessageKey(form.errorKey)}</FormError>
-      {/if}
+      <FormError messageKey={form?.errorKey} {form} />
 
       <input type="hidden" name="from" value={data.from} />
 

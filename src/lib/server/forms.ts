@@ -17,8 +17,9 @@ type ParseFormResult<T> =
  *   if (!parsed.ok) return parsed.failure;
  *   // parsed.data is fully typed
  *
- * For routes that surface errors through paraglide message keys (account/*,
- * signup, login), use `parseFormWithKey` instead — it returns a failure with
+ * For routes that surface errors through paraglide message keys (signup,
+ * login, account/password, profile and passkeys), use `parseFormWithKey`
+ * instead — it returns a failure with
  * a caller-specified field name (e.g. `passwordErrorKey`) carrying a key
  * string the client resolves through `resolveMessageKey()`.
  */
@@ -49,7 +50,9 @@ type ParseFormWithKeyResult<T, TField extends string, TEcho extends string> =
 /**
  * Like `parseForm`, but returns a failure shaped as `{ [field]: badInputKey }`
  * instead of `{ error: string }`. Suited for routes whose `+page.svelte`
- * surfaces errors through `resolveMessageKey()` (account/*, signup, login).
+ * surfaces errors through `resolveMessageKey()`, inline with FormError's
+ * `messageKey` prop (signup, login) or as a toast (account/password, profile
+ * and passkeys).
  *
  * When `echo` is provided, those named form fields are coerced to strings and
  * spread into the failure payload as top-level keys so the page can re-bind

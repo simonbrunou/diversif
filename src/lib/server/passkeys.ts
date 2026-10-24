@@ -117,7 +117,8 @@ function timingDecoyVerify(): void {
   /* v8 ignore stop */
 }
 /* v8 ignore next 3 : module-load warming, skipped in tests by design */
-if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+// fallow-ignore-next-line test-only-branch
+if (process.env.NODE_ENV !== 'test') {
   timingDecoyVerify();
 }
 

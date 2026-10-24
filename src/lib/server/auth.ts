@@ -17,15 +17,32 @@ const ARGON_OPTS = {
 // E2E runs the production build with full-cost argon2id. Under two parallel
 // Playwright workers the CPU cost starves the single server process and stalls
 // unrelated requests (the fast child-creation redirect queues past its 15s
-// budget). Relax the cost for E2E only (isE2E() requires both E2E=1 — set in
+// budget). Relax the cost for E2E (isE2E() requires both E2E=1 — set in
 // playwright.config.ts — and a loopback http build origin, so a stray E2E=1 on a
-// real deployment can't weaken production hashes) — hash strength is
-// irrelevant against a throwaway test DB, and Bun.password.verify reads each
-// hash's params back from the stored string, so verification is unaffected.
+// real deployment can't weaken production hashes) and for bun test (below) —
+// hash strength is irrelevant against a throwaway test DB, and
+// Bun.password.verify reads each hash's params back from the stored string, so
+// verification is unaffected.
 const ARGON_OPTS_E2E = { algorithm: 'argon2id', memoryCost: 4_096, timeCost: 1 } as const;
 
+// bun test takes the same relaxed cost: the login rate-limit tests verify up to
+// 21 passwords each against hashes seeded here (and the decoy below), and at
+// full cost they crossed the 5 s per-test limit on a loaded CI runner (#475).
+// Both conditions must hold. bunfig.preload.ts sets __TEST_RELAXED_ARGON__ in
+// the bun test process only, and vite.config.ts inlines false into every
+// build, so no deployment can set it. NODE_ENV must also read 'test', which
+// bun test sets unless the shell already exports another value.
+function testPreloadRelaxesCost(): boolean {
+  // fallow-ignore-next-line test-only-branch
+  if (process.env.NODE_ENV !== 'test') return false;
+  return __TEST_RELAXED_ARGON__;
+}
+
 export async function hashPassword(plain: string): Promise<string> {
-  return Bun.password.hash(plain, isE2E() ? ARGON_OPTS_E2E : ARGON_OPTS);
+  return Bun.password.hash(
+    plain,
+    isE2E() || testPreloadRelaxesCost() ? ARGON_OPTS_E2E : ARGON_OPTS
+  );
 }
 
 export async function verifyPassword(hash: string, plain: string): Promise<boolean> {
@@ -51,7 +68,8 @@ function getDecoyHash(): Promise<string> {
   return decoyHashPromise;
 }
 /* v8 ignore next 3 : module-load warming, skipped in tests by design */
-if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+// fallow-ignore-next-line test-only-branch
+if (process.env.NODE_ENV !== 'test') {
   void getDecoyHash();
 }
 

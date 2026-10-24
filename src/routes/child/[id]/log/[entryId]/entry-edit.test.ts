@@ -50,4 +50,13 @@ describe('child/[id]/log/[entryId] +page.svelte — single entry', () => {
     expect(target.checked).toBe(true);
     expect(hidden[0].value).toBe('ras');
   });
+
+  it('shows a refused update inside the entry form', () => {
+    const { container } = render(Page, {
+      props: { data: makeEntryData(), form: { errorKey: 'errorsLogIdempotencyConflict' } }
+    });
+    const alerts = container.querySelectorAll('form[action="?/update"] [role="alert"]');
+    expect(alerts.length).toBe(1);
+    expect(alerts[0].textContent?.trim()).toBe('Conflit de clé d’idempotence.');
+  });
 });
