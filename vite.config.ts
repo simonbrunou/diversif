@@ -146,7 +146,11 @@ export default defineConfig({
     // src/lib/server/e2e.ts keys the e2e relaxations on it: a loopback build
     // can't accept a real cross-host form POST, so they stay inert anywhere
     // that serves real traffic.
-    __BUILD_ORIGIN__: JSON.stringify(BUILD_ORIGIN ?? '')
+    __BUILD_ORIGIN__: JSON.stringify(BUILD_ORIGIN ?? ''),
+    // Always false in a build: only the bun test preload (bunfig.preload.ts)
+    // sets it to true, so src/lib/server/auth.ts can't hash at the relaxed
+    // test cost in a deployment, whatever its environment says.
+    __TEST_RELAXED_ARGON__: 'false'
   },
   plugins: [
     tailwindcss(),

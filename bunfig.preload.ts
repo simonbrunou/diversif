@@ -14,6 +14,10 @@
 // them ReferenceErrors at import.
 (globalThis as { __SENTRY_RELEASE__?: string | undefined }).__SENTRY_RELEASE__ = undefined;
 (globalThis as { __BUILD_ORIGIN__?: string }).__BUILD_ORIGIN__ = '';
+// The only place that sets this to true: it gives bun test the relaxed
+// Argon2id cost in hashPassword (src/lib/server/auth.ts). Every Vite build
+// inlines false.
+(globalThis as { __TEST_RELAXED_ARGON__?: boolean }).__TEST_RELAXED_ARGON__ = true;
 
 import { afterAll, afterEach, expect, mock, setSystemTime } from 'bun:test';
 import * as matchers from '@testing-library/jest-dom/matchers';
