@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 
 export function unique(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -24,6 +24,19 @@ export function uniqueForWorker(prefix: string): string {
  */
 export async function awaitHydration(page: Page): Promise<void> {
   await page.locator('html[data-hydrated="true"]').waitFor({ state: 'attached', timeout: 15_000 });
+}
+
+/**
+ * signUp needs a hydrated page, so the account is created with JavaScript;
+ * this carries its session into a new context with JavaScript disabled.
+ * The caller closes the returned page's context.
+ */
+export async function openWithoutJavaScript(browser: Browser, page: Page): Promise<Page> {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    storageState: await page.context().storageState()
+  });
+  return context.newPage();
 }
 
 /** The password every `signUp()` account gets, for fresh-auth prompts and re-logins. */

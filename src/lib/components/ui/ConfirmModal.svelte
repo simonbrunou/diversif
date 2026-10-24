@@ -37,10 +37,10 @@
     /** Extra `<input type="hidden">` fields posted with the confirmation. */
     hiddenFields?: Record<string, string | number>;
     /**
-     * Shown inside the modal when the action fails. Only set this when the
-     * host page has no error channel of its own (toast/FormError) — pages
-     * that surface the action's specific error must not get a second,
-     * vaguer message next to it.
+     * Shown inside the modal when the action fails: a generic line, or the
+     * action's own message resolved by the host page (account/passkeys).
+     * Only set this when, for this action, the host page shows no error of
+     * its own (no toast or FormError), so a refusal never shows twice.
      */
     failureMessage?: string;
   } = $props();

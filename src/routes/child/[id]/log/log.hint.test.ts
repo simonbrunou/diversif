@@ -36,8 +36,8 @@ mock.module('svelte-sonner', () => ({
 import type { PageData } from './$types';
 
 // svelte-sonner's real dist can't load under bun test (its 'runed' peer
-// import doesn't resolve from the install cache — see the identical note in
-// src/lib/forms/form-toasts.test.ts), and RepasForm imports it.
+// import doesn't resolve from the install cache — see docs/agents/testing.md),
+// and RepasForm imports it.
 // Static imports hoist above mock.module, so Page must be pulled in
 // dynamically, after the mocks above are registered.
 const { default: Page } = await import('./+page.svelte');

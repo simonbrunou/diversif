@@ -1,5 +1,5 @@
-import { test, expect, type Browser, type Page } from '@playwright/test';
-import { awaitHydration, signUp, SIGNUP_PASSWORD, unique } from './_helpers';
+import { test, expect, type Page } from '@playwright/test';
+import { awaitHydration, openWithoutJavaScript, signUp, SIGNUP_PASSWORD, unique } from './_helpers';
 
 test.describe('legal pages', () => {
   test('public legal pages are reachable from the footer', async ({ page }) => {
@@ -49,17 +49,6 @@ async function fillAccountDeletion(page: Page, email: string) {
   await expect(deleteButton(page)).toBeDisabled();
   await fillDeletionFields(page, email);
   await expect(deleteButton(page)).toBeEnabled();
-}
-
-// signUp needs a hydrated page, so the account is created with JavaScript;
-// this carries its session into a new context with JavaScript disabled.
-// The caller closes the returned page's context.
-async function openWithoutJavaScript(browser: Browser, page: Page): Promise<Page> {
-  const context = await browser.newContext({
-    javaScriptEnabled: false,
-    storageState: await page.context().storageState()
-  });
-  return context.newPage();
 }
 
 // Same sentinel approach as the logout purge test in auth.spec.ts.
