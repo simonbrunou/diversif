@@ -173,11 +173,9 @@ for (const javaScript of [true, false]) {
           browser,
           page
         }) => {
-          // A signup, a logged repas, then the edit itself. On a CI runner busy
-          // with three other jobs, while the other worker ran a two-context
-          // membership test, one run took 29 s without JavaScript and over
-          // 30 s twice with it. test.slow() triples the budget for these
-          // tests only.
+          // A signup, a logged repas, then the edit itself: up to 29 s of the
+          // 30 s budget on a CI runner shared with other jobs. test.slow()
+          // triples the budget for these tests only.
           test.slow();
           const childId = await childOfEightMonths(page);
           await logRepas(page, childId, [...mode.aliments]);
