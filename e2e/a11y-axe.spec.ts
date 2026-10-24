@@ -66,6 +66,12 @@ async function axeSweepAfterTransition(page: Page): Promise<void> {
   await axeSweep(page);
 }
 
+/** axeSweepAfterTransition() once the dialog a click just opened is visible. */
+async function axeSweepOpenDialog(page: Page): Promise<void> {
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await axeSweepAfterTransition(page);
+}
+
 const PUBLIC_ROUTES = [
   '/',
   '/signup',
@@ -95,25 +101,22 @@ for (const route of PUBLIC_ROUTES) {
 test('a11y axe: AllergenInfoDialog open @responsive', async ({ page }) => {
   await page.goto('/allergens');
   await page.getByRole('button', { name: /Arachide/ }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
-  await axeSweepAfterTransition(page);
+  await axeSweepOpenDialog(page);
 });
 
 // The signed-in surface was one test with test.slow() (90 s) until #477
 // split it by route group, so that each group has its own budget and a
-// timeout or a violation names the group. The single test timed out in CI
-// runs 187, 192 and 244. On the desktop project it took 27.8 s on an idle
-// runner (run 245, third attempt), then 45.4 s, 49.0 s, 1.2 m and 1.5 m in
-// runs 251, 250, 253 and 254, with no other E2E job beside it but unit-test
-// and Docker jobs on the same runner. Locally it took 13.7 s.
+// timeout or a violation names the group. The single test ran out of its
+// budget in CI runs 187, 192, 193, 194, 196, 244, 247 and 249. On the
+// desktop project it took 45.4 s in run 251 and 1.2 min in run 253, with no
+// other E2E job running, against 13.7 s locally.
 //
-// Each group keeps test.slow(). Locally the three tests below took 3.8 to
-// 4.8 s, 6.1 to 7.5 s and 7.5 to 15.4 s; the single test ran up to 6.6
-// times its local time in CI, past the 20 s at which docs/agents/testing.md
-// asks for test.slow().
+// Each group keeps test.slow(). Locally the three tests below took 3.7 to
+// 4.8 s, 6.1 to 7.5 s and 6.3 to 16.8 s. Runs 251 and 253 ran the single
+// test 3.3 and 5.3 times slower than its 13.7 s locally.
 test.describe('a11y axe — auth routes @responsive', () => {
-  // Creates the child as well as the parent, in every test: /account lists
-  // the parent's children, and the single test swept it with one child.
+  // The account test needs the child too: /account lists the parent's
+  // children, and the single test swept it with one child.
   async function signUpForSweep(page: Page): Promise<string> {
     const childId = await signUpAndCreateChild(page, 'A11y', '2025-08-01');
     // Each test signs up a new parent, and each new account opens the
@@ -162,8 +165,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
     await test.step('axe: "Se déconnecter partout" confirm dialog open', async () => {
       await page.goto('/account/sessions');
       await page.getByRole('button', { name: 'Se déconnecter partout' }).click();
-      await expect(page.getByRole('dialog')).toBeVisible();
-      await axeSweepAfterTransition(page);
+      await axeSweepOpenDialog(page);
       await page.keyboard.press('Escape');
     });
   });
@@ -215,8 +217,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
     await test.step('axe: ChildSwitcherDrawer open', async () => {
       await page.goto(`/child/${childId}`);
       await page.getByRole('button', { name: /changer/i }).click();
-      await expect(page.getByRole('dialog')).toBeVisible();
-      await axeSweepAfterTransition(page);
+      await axeSweepOpenDialog(page);
       await page.keyboard.press('Escape');
     });
 
@@ -256,8 +257,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
       await expect(page).toHaveURL(/\/child\/\d+\/foods\/\d+$/);
 
       await page.getByRole('button', { name: 'Ajouter un symptôme' }).click();
-      await expect(page.getByRole('dialog')).toBeVisible();
-      await axeSweepAfterTransition(page);
+      await axeSweepOpenDialog(page);
     });
   });
 });
