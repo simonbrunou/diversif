@@ -213,6 +213,47 @@ describe('client traces and breadcrumbs', () => {
     expect(JSON.stringify(transactions)).not.toContain('/child/18');
   });
 
+  it('drops the resource span of every hashed JS chunk, whatever its initiator, and keeps the rest', async () => {
+    // Shaped as the SDK builds resource spans: the op comes from the
+    // browser's initiatorType, which differs across engines for the same
+    // <link rel="modulepreload"> (Chromium says "other"), and the name is the
+    // URL minus the page's origin.
+    Sentry.startSpan({ name: 'GET /guide', forceTransaction: true }, () => {
+      for (const [op, name, path] of [
+        ['resource.other', '/_app/immutable/chunks/CLThMn91.js'],
+        ['resource.script', '/_app/immutable/nodes/0.uSiPSxcP.js'],
+        ['resource.link', '/_app/immutable/entry/start.EVIPfUgQ.js'],
+        // Under span streaming the SDK names a resource span after its domain.
+        ['resource.script', 'diversif.app', '/_app/immutable/chunks/Bq1xV7hN.js'],
+        ['resource.link', '/_app/immutable/assets/0.DsRr6JJR.css'],
+        ['resource.css', '/_app/immutable/assets/inter.B2xhLi2c.woff2'],
+        ['resource.img', '/favicon.svg'],
+        ['http.client', 'GET /child/18/__data.json', '/child/18/__data.json'],
+        // Only resource spans go: a fetch of a chunk keeps its span.
+        [
+          'http.client',
+          'GET /_app/immutable/chunks/CLThMn91.js',
+          '/_app/immutable/chunks/CLThMn91.js'
+        ]
+      ]) {
+        Sentry.startSpan(
+          { op, name, attributes: { 'url.full': `https://diversif.app${path ?? name}` } },
+          () => {}
+        );
+      }
+    });
+
+    const transactions = await recorder.sent('transaction');
+    const transaction = transactions.find((t) => t.transaction === 'GET /guide');
+    expect(transaction?.spans!.map((span) => span.description)).toEqual([
+      '/_app/immutable/assets/0.DsRr6JJR.css',
+      '/_app/immutable/assets/inter.B2xhLi2c.woff2',
+      '/favicon.svg',
+      'GET /child/[id]/__data.json',
+      'GET /_app/immutable/chunks/CLThMn91.js'
+    ]);
+  });
+
   it('keeps click, input and console breadcrumbs out of the SDK buffer', () => {
     Sentry.addBreadcrumb({ category: 'navigation', message: 'kept' });
     for (const category of ['ui.click', 'ui.input', 'console']) {
