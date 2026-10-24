@@ -495,8 +495,10 @@ describe('queue', () => {
         ? realOpen(...(args as Parameters<typeof realOpen>))
         : failingOpenRequest(fakeError)
     );
-    await expect(flush(transport)).rejects.toBe(fakeError);
+    // Not expect(...).rejects, which can hang the file: see docs/agents/testing.md.
+    const error = await flush(transport).catch((e: unknown) => e);
     openSpy.mockRestore();
+    expect(error).toBe(fakeError);
 
     expect(detail).toEqual([]);
     expect(await countRows()).toBe(1);
@@ -933,8 +935,7 @@ describe('queue', () => {
       );
       const { transport, calls } = server(() => goodActionResult());
 
-      // Not expect(...).rejects: bun's waits for the promise without letting
-      // the test timeout fire, so a pass that never settles hangs the file.
+      // Not expect(...).rejects, which can hang the file: see docs/agents/testing.md.
       const error = await flush(transport).catch((e: unknown) => e);
       openSpy.mockRestore();
       expect(error).toBe(fakeError);
