@@ -133,12 +133,11 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
 });
 
 // The repas is logged with JavaScript; this carries the session into a new
-// context with JavaScript on or off: gdpr.spec.ts's openWithoutJavaScript,
-// for both paths (#498 shares one helper). The caller closes the returned
-// page's context.
-async function openSession(browser: Browser, page: Page, javaScript: boolean): Promise<Page> {
+// context with JavaScript disabled. A copy of gdpr.spec.ts's helper (#498
+// shares one). The caller closes the returned page's context.
+async function openWithoutJavaScript(browser: Browser, page: Page): Promise<Page> {
   const context = await browser.newContext({
-    javaScriptEnabled: javaScript,
+    javaScriptEnabled: false,
     storageState: await page.context().storageState()
   });
   return context.newPage();
@@ -180,10 +179,20 @@ for (const javaScript of [true, false]) {
           browser,
           page
         }) => {
+          // A signup, a logged repas, then the edit itself. On a CI runner busy
+          // with three other jobs, while the other worker ran a two-context
+          // membership test, one run took 29 s without JavaScript and over
+          // 30 s twice with it. test.slow() triples the budget for these
+          // tests only.
+          test.slow();
           const childId = await childOfEightMonths(page);
           await logRepas(page, childId, [...mode.aliments]);
           const entryId = await feedEntryId(page, childId, mode.feedRow);
-          const editor = await openSession(browser, page, javaScript);
+          // With JavaScript the editor opens on the page that logged the repas,
+          // as the tests above do. A fresh context would load every chunk again
+          // and install the service worker, which precaches the app: extra
+          // work on a runner that is already slow.
+          const editor = javaScript ? page : await openWithoutJavaScript(browser, page);
           try {
             await editor.goto(`/child/${childId}/log/${entryId}?from=${from}`);
             if (javaScript) await awaitHydration(editor);
@@ -202,7 +211,7 @@ for (const javaScript of [true, false]) {
             await save.click();
             await expect(editor).toHaveURL(landsAt(childId, entryId));
           } finally {
-            await editor.context().close();
+            if (editor !== page) await editor.context().close();
           }
         });
       }
