@@ -39,8 +39,8 @@
     /**
      * Shown inside the modal when the action fails: a generic line, or the
      * action's own message resolved by the host page (account/passkeys).
-     * Only set this when the host page shows no error of its own for this
-     * action (toast/FormError), so a refusal never shows twice.
+     * Only set this when, for this action, the host page shows no error of
+     * its own (no toast or FormError), so a refusal never shows twice.
      */
     failureMessage?: string;
   } = $props();

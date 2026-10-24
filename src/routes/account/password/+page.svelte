@@ -17,8 +17,6 @@
 
 <BackHeader title={m.authAccountPasswordSection()} />
 
-<!-- Inline rather than toasts: the Toaster is client-only, and a no-JS POST
-     re-renders this page with nothing else to say how it went. -->
 <FormSuccess messageKey={form?.passwordSuccessKey} {form} class="mb-4" />
 <form method="POST" class="grid gap-4" use:enhance={trackSubmission((v) => (changing = v))}>
   <FormError messageKey={form?.passwordErrorKey} {form} />

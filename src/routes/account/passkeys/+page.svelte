@@ -18,13 +18,14 @@
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   // Rename posts without use:enhance, so its result always comes with a page
-  // load, JavaScript or not: the page shows its refusal. Delete posts from the
-  // enhanced ConfirmModal, which applies the result in place and stays open
-  // on a refusal, so that refusal shows inside the dialog instead of behind
-  // it. A success shows on the page either way: the dialog has closed by then.
+  // load, JavaScript or not: the page shows the refusal it loaded with. Delete
+  // posts from the enhanced ConfirmModal, which applies the result in place
+  // and stays open on a refusal, so that refusal shows inside the dialog
+  // instead of behind it. A success shows on the page either way: the dialog
+  // has closed by then.
   const loadedForm = untrack(() => form);
-  const renameResult = $derived(form === loadedForm ? form : null);
-  const deleteRefusal = $derived(
+  const pageLoadResult = $derived(form === loadedForm ? form : null);
+  const deleteFailureMessage = $derived(
     form !== loadedForm && form?.passkeyErrorKey
       ? resolveMessageKey(form.passkeyErrorKey)
       : m.errorsGenericFallback()
@@ -113,7 +114,7 @@
 <BackHeader title={m.authAccountPasskeysSection()} />
 
 <FormSuccess messageKey={form?.passkeySuccessKey} {form} class="mb-4" />
-<FormError messageKey={renameResult?.passkeyErrorKey} form={renameResult} class="mb-4" />
+<FormError messageKey={pageLoadResult?.passkeyErrorKey} form={pageLoadResult} class="mb-4" />
 <div class="space-y-4">
   <p class="text-sm text-ink-soft">{m.authAccountPasskeysDescription()}</p>
 
@@ -198,5 +199,5 @@
   requirePassword
   passwordLabel={m.authAccountPasskeyDeletePasswordLabel()}
   hiddenFields={{ id: deleteTargetId }}
-  failureMessage={deleteRefusal}
+  failureMessage={deleteFailureMessage}
 />

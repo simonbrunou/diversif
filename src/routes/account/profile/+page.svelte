@@ -16,8 +16,6 @@
 
 <BackHeader title={m.authAccountProfileSection()} />
 
-<!-- Inline rather than toasts: the Toaster is client-only, and a no-JS POST
-     re-renders this page with nothing else to say how it went. -->
 <FormSuccess messageKey={form?.profileSuccessKey} {form} class="mb-4" />
 <form method="POST" class="grid gap-4" use:enhance={trackSubmission((v) => (saving = v))}>
   <FormError messageKey={form?.profileErrorKey} {form} />

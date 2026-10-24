@@ -1,21 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { awaitHydration, openWithoutJavaScript, signUp, SIGNUP_PASSWORD } from './_helpers';
 
-/**
- * WebAuthn passkey registration + sign-in, driven through a real Chrome
- * DevTools Protocol virtual authenticator (`WebAuthn.addVirtualAuthenticator`)
- * so the actual browser credential API — RP ID/origin binding included — is
- * exercised, not just the mocked `@simplewebauthn/browser` calls the unit
- * suite stubs out (src/lib/auth/passkey-client.test.ts).
- *
- * Requires the e2e webServer's WEBAUTHN_RP_ID to resolve to "localhost" (the
- * test origin's effective domain) — set in playwright.config.ts's
- * webServer.env. Without it, src/lib/server/passkeys.ts's resolveRPID()
- * defaults to "diversif.app", and the RP ID/effective-domain match enforced
- * by Chromium itself (not our server or the virtual authenticator) would
- * make navigator.credentials.create()/get() reject before any request
- * reaches the app.
- */
 async function addVirtualAuthenticator(page: Page) {
   const client = await page.context().newCDPSession(page);
   await client.send('WebAuthn.enable');
@@ -44,6 +29,36 @@ async function registerPasskey(page: Page, name: string) {
   await expect(page.getByLabel('Nom de la clé')).toHaveValue(name);
 }
 
+async function submitDelete(page: Page, password: string) {
+  await page.getByRole('button', { name: 'Supprimer', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Mot de passe actuel', { exact: true }).fill(password);
+  await dialog.getByRole('button', { name: 'Supprimer', exact: true }).click();
+  return dialog;
+}
+
+// Counted right after the result shows: a toast would expire within 4 s and
+// a retrying assertion would wait it out (docs/agents/testing.md).
+async function countText(page: Page, text: string) {
+  return page.getByText(text, { exact: true }).count();
+}
+
+/**
+ * WebAuthn passkeys, driven through a real Chrome DevTools Protocol virtual
+ * authenticator (`WebAuthn.addVirtualAuthenticator`) so the actual browser
+ * credential API — RP ID/origin binding included — is exercised, not just
+ * the mocked `@simplewebauthn/browser` calls the unit suite stubs out
+ * (src/lib/auth/passkey-client.test.ts): registration and sign-in, then the
+ * rename and delete messages on /account/passkeys.
+ *
+ * Requires the e2e webServer's WEBAUTHN_RP_ID to resolve to "localhost" (the
+ * test origin's effective domain) — set in playwright.config.ts's
+ * webServer.env. Without it, src/lib/server/passkeys.ts's resolveRPID()
+ * defaults to "diversif.app", and the RP ID/effective-domain match enforced
+ * by Chromium itself (not our server or the virtual authenticator) would
+ * make navigator.credentials.create()/get() reject before any request
+ * reaches the app.
+ */
 test.describe('passkeys', () => {
   test('registers a passkey via /account/passkeys and signs in with it on /login', async ({
     page
@@ -83,7 +98,7 @@ test.describe('passkeys', () => {
     await expect(page).toHaveURL(/\/child\/new/, { timeout: 15_000 });
   });
 
-  test('a refused deletion shows in the open dialog, and renaming works without JavaScript', async ({
+  test('rename and delete results show once, and renaming works without JavaScript', async ({
     browser,
     page
   }) => {
@@ -91,18 +106,21 @@ test.describe('passkeys', () => {
     await signUp(page, 'passkey-messages');
     await registerPasskey(page, 'Téléphone');
 
-    await page.getByRole('button', { name: 'Supprimer', exact: true }).click();
-    const dialog = page.getByRole('dialog');
-    await dialog.getByLabel('Mot de passe actuel', { exact: true }).fill('wrong-password-123');
-    await dialog.getByRole('button', { name: 'Supprimer', exact: true }).click();
+    // Rename posts natively, so its result comes with a new page load.
+    await page.getByLabel('Nom de la clé').fill('Téléphone perso');
+    await page.getByRole('button', { name: 'Renommer', exact: true }).click();
+    await expect(page.getByRole('status')).toHaveText('Clé renommée.');
+    await awaitHydration(page);
+    expect(await countText(page, 'Clé renommée.')).toBe(1);
+
+    // A refused deletion shows in the dialog, which stays open, and not on
+    // the page behind it, not even after Cancel.
+    const dialog = await submitDelete(page, 'wrong-password-123');
     await expect(dialog.getByRole('alert')).toHaveText('Mot de passe actuel incorrect.');
-    // The dialog's alert appears only once the result has been applied, so
-    // count right away: a toast would expire within 4 s and a retrying
-    // assertion would wait it out (docs/agents/testing.md).
-    expect(await page.getByText('Mot de passe actuel incorrect.').count()).toBe(1);
+    expect(await countText(page, 'Mot de passe actuel incorrect.')).toBe(1);
     await dialog.getByRole('button', { name: 'Annuler', exact: true }).click();
     await expect(dialog).toBeHidden();
-    expect(await page.getByText('Mot de passe actuel incorrect.').count()).toBe(0);
+    expect(await countText(page, 'Mot de passe actuel incorrect.')).toBe(0);
 
     const noJs = await openWithoutJavaScript(browser, page);
     try {
@@ -118,5 +136,13 @@ test.describe('passkeys', () => {
     } finally {
       await noJs.context().close();
     }
+
+    // The dialog closes before a successful deletion's result lands on the page.
+    await page.goto('/account/passkeys');
+    await awaitHydration(page);
+    await submitDelete(page, SIGNUP_PASSWORD);
+    await expect(page.getByRole('status')).toHaveText('Clé supprimée.');
+    expect(await countText(page, 'Clé supprimée.')).toBe(1);
+    await expect(page.getByText('Aucune clé enregistrée.')).toBeVisible();
   });
 });

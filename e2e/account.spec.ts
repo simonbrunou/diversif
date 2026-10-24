@@ -83,4 +83,26 @@ test.describe('account messages with JavaScript', () => {
     expect(await page.getByText('Mot de passe modifié.').count()).toBe(1);
     expect(await page.getByText('Mot de passe actuel incorrect.').count()).toBe(0);
   });
+
+  test('the profile page shows each result once', async ({ page }) => {
+    await signUp(page, 'profile-js');
+    await page.goto('/account/profile');
+    await awaitHydration(page);
+    const saveButton = page.getByRole('button', { name: 'Enregistrer', exact: true });
+
+    const name = page.getByLabel('Nom affiché');
+    await name.evaluate((input) => input.removeAttribute('required'));
+    await name.fill('');
+    await saveButton.click();
+    await expect(page.getByRole('alert')).toHaveText('Nom invalide.');
+    await expect(saveButton).toBeEnabled();
+    expect(await page.getByText('Nom invalide.').count()).toBe(1);
+
+    await name.fill('Camille');
+    await saveButton.click();
+    await expect(page.getByRole('status')).toHaveText('Profil mis à jour.');
+    await expect(saveButton).toBeEnabled();
+    expect(await page.getByText('Profil mis à jour.').count()).toBe(1);
+    await expect(name).toHaveValue('Camille');
+  });
 });

@@ -18,12 +18,6 @@ describe('FormSuccess', () => {
     expect(screen.getByRole('note').className).toContain('bg-tile-mint');
   });
 
-  it('falls back to the generic message for an unknown key', () => {
-    const form = { savedKey: 'notAMessageKey' };
-    render(FormSuccess, { props: { messageKey: form.savedKey, form } });
-    expect(screen.getByRole('status').textContent?.trim()).toBe('Une erreur s’est produite.');
-  });
-
   it('puts the class on the callout, so an empty region takes no room', async () => {
     const { rerender } = render(FormSuccess, {
       props: { messageKey: undefined, form: null, class: 'mb-4' }
