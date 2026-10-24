@@ -4,15 +4,31 @@
   import ConfirmModal from '#lib/components/ui/ConfirmModal.svelte';
   import Input from '#lib/components/ui/Input.svelte';
   import Field from '#lib/components/ui/Field.svelte';
+  import FormError from '#lib/components/ui/FormError.svelte';
+  import FormSuccess from '#lib/components/ui/FormSuccess.svelte';
   import { refreshAll } from '$app/navigation';
   import { browser } from '$app/env';
+  import { untrack } from 'svelte';
   import { toast } from 'svelte-sonner';
   import * as m from '#lib/paraglide/messages.js';
   import { getLocale } from '#lib/paraglide/runtime.js';
-  import { createFormToasts } from '#lib/forms/form-toasts.svelte.js';
+  import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+
+  // Rename posts without use:enhance, so its result always comes with a page
+  // load, JavaScript or not: the page shows its refusal. Delete posts from the
+  // enhanced ConfirmModal, which applies the result in place and stays open
+  // on a refusal, so that refusal shows inside the dialog instead of behind
+  // it. A success shows on the page either way: the dialog has closed by then.
+  const loadedForm = untrack(() => form);
+  const renameResult = $derived(form === loadedForm ? form : null);
+  const deleteRefusal = $derived(
+    form !== loadedForm && form?.passkeyErrorKey
+      ? resolveMessageKey(form.passkeyErrorKey)
+      : m.errorsGenericFallback()
+  );
 
   let passkeyName = $state('');
   let currentPassword = $state('');
@@ -34,10 +50,6 @@
         typeof navigator.credentials?.create === 'function'
       )
   );
-
-  // ConfirmModal self-closes on success results (trackSubmission onSuccess),
-  // so the delete modal needs no manual dismissal here.
-  createFormToasts(() => form, { successKey: 'passkeySuccessKey', errorKey: 'passkeyErrorKey' });
 
   function formatDate(ts: number): string {
     return new Date(ts).toLocaleDateString(getLocale() === 'en' ? 'en-GB' : 'fr-FR', {
@@ -100,6 +112,8 @@
 
 <BackHeader title={m.authAccountPasskeysSection()} />
 
+<FormSuccess messageKey={form?.passkeySuccessKey} {form} class="mb-4" />
+<FormError messageKey={renameResult?.passkeyErrorKey} form={renameResult} class="mb-4" />
 <div class="space-y-4">
   <p class="text-sm text-ink-soft">{m.authAccountPasskeysDescription()}</p>
 
@@ -151,9 +165,11 @@
           bind:value={passkeyName}
         />
       </Field>
-      <Field name="currentPassword" label={m.commonPassword()}>
+      <!-- Not `currentPassword`: the delete dialog's field has that id, and a
+           duplicate would point the dialog's label at this field. -->
+      <Field name="passkeyCurrentPassword" label={m.commonPassword()}>
         <Input
-          id="currentPassword"
+          id="passkeyCurrentPassword"
           type="password"
           autocomplete="current-password"
           bind:value={currentPassword}
@@ -182,4 +198,5 @@
   requirePassword
   passwordLabel={m.authAccountPasskeyDeletePasswordLabel()}
   hiddenFields={{ id: deleteTargetId }}
+  failureMessage={deleteRefusal}
 />

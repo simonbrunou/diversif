@@ -39,7 +39,7 @@
     removeMemberOpen = true;
   }
 
-  // Identity dedup, like createFormToasts: the same retained `form` object
+  // Identity dedup: the same retained `form` object
   // must never re-toast if this effect picks up another dependency later.
   // (askRemoveMember always assigns the id before opening, so the modal can
   // never post a stale member; it stays mounted after the first ask so its

@@ -13,7 +13,7 @@ import type { CoparentEntry } from '#lib/server/guidance/child-history.js';
 // milestone $effect reads page.url.searchParams, and with no `?logged=1` param
 // pickMilestoneFromQuery returns null so the effect bails before touching
 // toast/history. svelte-sonner's real dist can't load under bun test (its
-// 'runed' peer import doesn't resolve — see form-toasts.test.ts), and the page
+// 'runed' peer import doesn't resolve — see docs/agents/testing.md), and the page
 // imports it directly. $app/forms + $app/navigation are pulled in transitively
 // by the child WelcomeDialog.
 mock.module('$app/state', () => ({

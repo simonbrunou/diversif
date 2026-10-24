@@ -2,8 +2,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, mock, spyOn } fro
 import { render, cleanup } from '@testing-library/svelte';
 
 const toastFn = mock((_message: string, _opts?: unknown) => {});
-// svelte-sonner's real dist can't load under bun test (see form-toasts.test.ts
-// for the same reasoning) — mock before the component import pulls it in.
+// svelte-sonner's real dist can't load under bun test (see
+// docs/agents/testing.md) — mock before the component import pulls it in.
 mock.module('svelte-sonner', () => ({ toast: toastFn }));
 
 // Production build: the component only registers the worker outside dev.

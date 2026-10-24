@@ -8,9 +8,10 @@
 //
 // `resolveMessageKey` turns an action- or load-returned key into prose: inside
 // FormError, whose `messageKey` prop renders the action refusals of login,
-// signup, account/delete, the repas forms and join/[code]; in join/[code]'s
-// load-error paragraph; as a toast (form-toasts.svelte.ts for account/profile,
-// password and passkeys; child settings); and in the
+// signup, the account pages (profile, password, passkeys, delete), the repas
+// forms and join/[code]; inside FormSuccess, for the account pages' success
+// messages; in account/passkeys' delete dialog; in join/[code]'s load-error
+// paragraph; as a toast in child settings; and in the
 // passkeys/registration/options endpoint (fresh-auth failures).
 
 import * as m from '#lib/paraglide/messages.js';
