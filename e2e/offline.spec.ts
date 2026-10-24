@@ -21,9 +21,11 @@ function queuedRows(page: Page): Promise<number> {
 // Smoke: when navigator.onLine is false, the log form's durable submit
 // (src/lib/offline/submit.ts) must short-circuit, write to IDB, and surface
 // the queued toast. The replay-on-online path is covered by the unit tests
-// in src/lib/offline/, which replay against the real log action; end to end
-// we only check that the layout turns a replay into the repas's milestone
-// toast ("a queued first repas is celebrated when it replays on reconnect").
+// in src/lib/offline/, which replay against the real log action. End to end
+// we check that the layout turns a replay into the repas's milestone toast
+// ("a queued first repas is celebrated when it replays on reconnect"), and
+// that only one of two open tabs replays it ("two open tabs replay a queued
+// repas once and celebrate it once").
 test('queues a log submission while offline', async ({ page }) => {
   const sevenMonthsAgo = new Date();
   sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
@@ -205,23 +207,27 @@ test('two open tabs replay a queued repas once and celebrate it once', async ({
   await expect(page).toHaveURL(/\/child\/\d+$/, { timeout: 8000 });
   expect(await queuedRows(page)).toBe(1);
 
-  // Every replay after the first waits until the server has answered the
-  // first one. A second replay then gets the stored redirect, the path that
-  // celebrated the repas again, instead of a 409 that only retries it on the
-  // next minute's flush.
+  // Makes the old code's double replay happen every time. The first replay's
+  // answer reaches its tab only once a second replay was sent, or after
+  // 500 ms, so the other tab has read the row before the first deletes it.
+  // A second replay reaches the server only once the server has answered the
+  // first, so it gets the stored redirect, the path that celebrated the repas
+  // again, instead of a 409 that only retries it on the next minute's flush.
   const replayers = new Set<Page>();
-  let firstAnswered: Promise<void> | null = null;
+  let replays = 0;
+  const firstAnswered = Promise.withResolvers<void>();
+  const secondSent = Promise.withResolvers<void>();
   await context.route(`**/child/${childId}/log`, async (route) => {
     if (route.request().method() !== 'POST') return route.continue();
     replayers.add(route.request().frame().page());
-    if (firstAnswered) {
-      await firstAnswered;
+    replays += 1;
+    if (replays > 1) {
+      secondSent.resolve();
+      await firstAnswered.promise;
       return route.continue();
     }
-    let answered = () => {};
-    firstAnswered = new Promise((resolve) => (answered = resolve));
-    const response = await route.fetch();
-    answered();
+    const response = await route.fetch().finally(() => firstAnswered.resolve());
+    await Promise.race([secondSent.promise, new Promise((resolve) => setTimeout(resolve, 500))]);
     await route.fulfill({ response });
   });
 
@@ -239,11 +245,10 @@ test('two open tabs replay a queued repas once and celebrate it once', async ({
   // toHaveCount would let a duplicate expire after 4 s and pass.
   await expect.poll(() => queuedRows(page), { timeout: 8000 }).toBe(0);
   for (const p of replayers) await expect(p.getByText('Premier repas noté.')).toBeVisible();
-  const toasts = async (text: string, exact: boolean) =>
-    (await page.getByText(text, { exact }).count()) +
-    (await other.getByText(text, { exact }).count());
-  expect(await toasts('Premier repas noté.', false)).toBe(1);
-  expect(await toasts('Synchronisé.', true)).toBe(0);
+  const toasts = async (text: string, options?: { exact: boolean }) =>
+    (await page.getByText(text, options).count()) + (await other.getByText(text, options).count());
+  expect(await toasts('Premier repas noté.')).toBe(1);
+  expect(await toasts('Synchronisé.', { exact: true })).toBe(0);
   expect(replayers.size).toBe(1);
 });
 

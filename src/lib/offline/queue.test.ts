@@ -31,41 +31,41 @@ function serverAnswering(...answers: (() => Response)[]) {
   return server(() => answers[call++]());
 }
 
+// Every tab must take the flush lock under this name for one tab's pass to
+// make the others skip theirs.
+const FLUSH_LOCK = 'diversif-offline-flush';
+
 /**
- * A stand-in for navigator.locks holding one exclusive lock, whatever its
- * name, the way every tab of the app shares it. A request with ifAvailable
- * gets null while another holder has the lock; any other request waits for
- * it. holdElsewhere() takes the lock the way another tab's pass would and
- * returns the function that releases it, resolving once the lock is free.
+ * A stand-in for navigator.locks with the Web Locks rules flush() relies on:
+ * one exclusive lock per name, a request with ifAvailable gets null while
+ * another holder has that lock, and any other request waits for it.
+ * holdElsewhere() takes a lock the way another tab's pass would and returns
+ * the function that releases it, resolving once the lock is free.
  */
 function webLocks() {
-  let holder: Promise<unknown> | null = null;
+  const holders = new Map<string, Promise<unknown>>();
   const request = async (
     name: string,
     options: LockOptions,
     callback: (lock: Lock | null) => unknown
   ): Promise<unknown> => {
-    if (holder && options.ifAvailable) return callback(null);
-    while (holder) await holder.catch(() => {});
+    if (holders.has(name) && options.ifAvailable) return callback(null);
+    while (holders.has(name)) await holders.get(name)?.catch(() => {});
     const run = (async () => callback({ name, mode: 'exclusive' }))();
-    holder = run;
+    holders.set(name, run);
     try {
       return await run;
     } finally {
-      holder = null;
+      holders.delete(name);
     }
   };
   return {
     manager: { request } as unknown as LockManager,
-    holdElsewhere(): () => Promise<void> {
-      let release: () => void = () => {};
-      const released = request(
-        'other-tab',
-        {},
-        () => new Promise<void>((resolve) => (release = resolve))
-      );
+    holdElsewhere(name: string): () => Promise<void> {
+      const { promise, resolve } = Promise.withResolvers<void>();
+      const released = request(name, {}, () => promise);
       return async () => {
-        release();
+        resolve();
         await released;
       };
     }
@@ -507,6 +507,30 @@ describe('queue', () => {
     window.removeEventListener('queue:synced', handler);
   });
 
+  it('runs a pass of its own for a flush started from a queue:synced listener', async () => {
+    // The first pass replays k1, then stops on k2's 409. The pass has ended
+    // by the time it announces k1, so a flush from the listener replays k2.
+    const { transport, calls } = serverAnswering(
+      () => goodActionResult(),
+      () => failureActionResult(409),
+      () => goodActionResult()
+    );
+    let fromListener: Promise<void> | undefined;
+    const handler = () => {
+      fromListener ??= flush(transport);
+    };
+    window.addEventListener('queue:synced', handler);
+
+    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+    await enqueue({ key: 'k2', childId: 1, formData: { foodId: '2' }, queuedAt: 2 });
+    await flush(transport);
+    await fromListener;
+
+    expect(calls.map((c) => c.body.get('idempotencyKey'))).toEqual(['k1', 'k2', 'k2']);
+    expect(await countRows()).toBe(0);
+    window.removeEventListener('queue:synced', handler);
+  });
+
   it('does not announce queue:synced when no row replayed', async () => {
     const { transport } = server(() => failureActionResult(400));
     let synced = 0;
@@ -806,6 +830,8 @@ describe('queue', () => {
   // tests above run as; these install a stand-in.
   describe('with Web Locks', () => {
     let locks: ReturnType<typeof webLocks>;
+    const otherTabTryLock = () =>
+      navigator.locks.request(FLUSH_LOCK, { ifAvailable: true }, (lock) => lock);
 
     beforeEach(() => {
       locks = webLocks();
@@ -817,8 +843,15 @@ describe('queue', () => {
     });
 
     it('skips its pass while another tab is flushing, then replays once that tab is done', async () => {
-      const { transport, calls } = server(() => goodActionResult('/child/1?logged=1&first=1'));
-      const events: string[] = [];
+      // Four rows whose replays, once the lock is free, fire every event
+      // flush() can emit: synced, dropped, accessRevoked and needsReauth,
+      // each with its queue:changed.
+      const { transport, calls } = serverAnswering(
+        () => goodActionResult('/child/1?logged=1&first=1'),
+        () => failureActionResult(422),
+        () => failureActionResult(403),
+        () => goodActionResult('/login')
+      );
       const names = [
         'queue:changed',
         'queue:synced',
@@ -826,49 +859,90 @@ describe('queue', () => {
         'queue:accessRevoked',
         'queue:needsReauth'
       ];
+      const events: string[] = [];
       const handler = (e: Event) => events.push(e.type);
+      for (let i = 1; i <= 4; i++) {
+        await enqueue({ key: `k${i}`, childId: 1, formData: { foodId: '1' }, queuedAt: i });
+      }
       for (const name of names) window.addEventListener(name, handler);
-      await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
-      events.length = 0;
 
-      const releaseOtherTab = locks.holdElsewhere();
+      const releaseOtherTab = locks.holdElsewhere(FLUSH_LOCK);
       await flush(transport);
 
       expect(calls).toHaveLength(0);
       expect(events).toEqual([]);
-      expect(await countRows()).toBe(1);
+      expect(await countRows()).toBe(4);
 
       await releaseOtherTab();
       await flush(transport);
 
-      expect(calls).toHaveLength(1);
-      expect(events).toEqual(['queue:changed', 'queue:synced']);
-      expect(await countRows()).toBe(0);
+      expect(calls).toHaveLength(4);
+      expect([...new Set(events)].sort()).toEqual([...names].sort());
+      // The needs-reauth row stays queued.
+      expect(await countRows()).toBe(1);
       for (const name of names) window.removeEventListener(name, handler);
     });
 
     it('holds the lock until its pass ends, so another tab skips meanwhile', async () => {
-      let answer: (r: Response) => void = () => {};
-      let sent: () => void = () => {};
-      const requestSent = new Promise<void>((resolve) => (sent = resolve));
-      const { transport } = server(
-        () =>
-          new Promise<Response>((resolve) => {
-            answer = resolve;
-            sent();
-          })
-      );
+      const sent = Promise.withResolvers<void>();
+      const answer = Promise.withResolvers<Response>();
+      const { transport } = server(() => {
+        sent.resolve();
+        return answer.promise;
+      });
       await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
-      const otherTabGets = () =>
-        navigator.locks.request('diversif-offline-flush', { ifAvailable: true }, (lock) => lock);
 
       const pass = flush(transport);
-      await requestSent;
-      expect(await otherTabGets()).toBeNull();
+      try {
+        await sent.promise;
+        expect(await otherTabTryLock()).toBeNull();
+      } finally {
+        // Ends the pass even when the check fails, so the tests after this
+        // one don't get its pending promise back from flush().
+        answer.resolve(goodActionResult());
+        await pass;
+      }
+      expect(await otherTabTryLock()).not.toBeNull();
+    });
 
-      answer(goodActionResult());
-      await pass;
-      expect(await otherTabGets()).not.toBeNull();
+    it('hands a second flush in the same tab the running pass instead of skipping', async () => {
+      const sent = Promise.withResolvers<void>();
+      const answer = Promise.withResolvers<Response>();
+      const { transport, calls } = server(() => {
+        sent.resolve();
+        return answer.promise;
+      });
+      await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+
+      const first = flush(transport);
+      await sent.promise;
+      const second = flush(transport);
+      answer.resolve(goodActionResult());
+      await second;
+
+      // The second call settles only once the running pass has replayed the row.
+      expect(await countRows()).toBe(0);
+      expect(calls).toHaveLength(1);
+      await first;
+    });
+
+    it('rejects and frees the lock when its pass throws', async () => {
+      const fakeError = new DOMException('IDB open failed', 'UnknownError');
+      const openSpy = spyOn(globalThis.indexedDB, 'open').mockImplementation(() =>
+        failingOpenRequest(fakeError)
+      );
+      const { transport, calls } = server(() => goodActionResult());
+
+      // Not expect(...).rejects: bun's waits for the promise without letting
+      // the test timeout fire, so a pass that never settles hangs the file.
+      const error = await flush(transport).catch((e: unknown) => e);
+      openSpy.mockRestore();
+      expect(error).toBe(fakeError);
+
+      expect(await otherTabTryLock()).not.toBeNull();
+      await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+      await flush(transport);
+      expect(calls).toHaveLength(1);
     });
   });
 });

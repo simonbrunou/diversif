@@ -20,6 +20,8 @@ export interface QueueSyncedDetail {
 
 const DB_NAME = 'diversif-offline';
 const STORE = 'log';
+// The Web Lock every tab's flush() takes, so one tab replays at a time.
+const FLUSH_LOCK = 'diversif-offline-flush';
 
 let inFlight: Promise<void> | null = null;
 
@@ -175,7 +177,7 @@ async function postOne(
     // /login to /en/login for English-locale users). Bare /login covers FR
     // since FR is the unprefixed default. The session expired before this
     // row could replay — the action never ran, so the row must be kept
-    // (never deleted) until a later replay actually succeeds; flush()
+    // (never deleted) until a later replay actually succeeds; replayQueue()
     // handles retaining + surfacing it.
     if (/^\/(?:[a-z]{2}\/)?login(?:\?|$)/.test(result.location)) {
       return 'needs-reauth';
@@ -199,63 +201,61 @@ async function postOne(
 // pass holding it skips its own; that pass replays every row. Without Web
 // Locks (older browsers, and happy-dom, whose navigator.locks is null) each
 // tab keeps its own pass.
-const FLUSH_LOCK = 'diversif-offline-flush';
-
 export function flush(transport: Transport = fetchTransport): Promise<void> {
   if (inFlight) return inFlight;
   inFlight = (async () => {
+    const synced: string[] = [];
     try {
       const locks = navigator.locks;
       if (locks) {
         await locks.request(FLUSH_LOCK, { ifAvailable: true }, async (lock) => {
-          if (lock) await replayQueue(transport);
+          if (lock) await replayQueue(transport, synced);
         });
       } else {
-        await replayQueue(transport);
+        await replayQueue(transport, synced);
       }
     } finally {
       inFlight = null;
+      // Announced once per pass, and only for rows already deleted: a row
+      // replayed again after a failed delete or a closed tab returns its
+      // cached redirect, which would celebrate the same repas twice.
+      if (synced.length > 0) {
+        emit('queue:synced', { queryStrings: synced } satisfies QueueSyncedDetail);
+      }
     }
   })();
   return inFlight;
 }
 
-async function replayQueue(transport: Transport): Promise<void> {
-  const synced: string[] = [];
-  try {
-    const rows = await readAllOrdered();
-    for (const row of rows) {
-      const outcome = await postOne(row, transport);
-      if (typeof outcome === 'object') {
-        await deleteRow(row.key);
-        synced.push(outcome.qs);
-      } else if (outcome === 'drop') {
-        await deleteRow(row.key);
-      } else if (outcome === 'needs-reauth') {
-        // Retained, not deleted (see the QueuedSubmit.status comment).
-        // Only write + emit on the actual transition, so re-attempting
-        // an already-marked row on every subsequent flush poll doesn't
-        // spam queue:changed while the user is still logged out. Continue
-        // to the next row instead of `break`ing like 'retry' below: every
-        // other queued row shares the same expired session and deserves
-        // its own chance to be marked/surfaced in this same pass, not be
-        // wedged behind this one until it happens to succeed first.
-        if (row.status !== 'needs-reauth') {
-          await markNeedsReauth(row);
-        }
-      } else {
-        // 'retry': a transient/systemic failure (network drop, 5xx,
-        // 409/429) — stop processing; subsequent rows will be tried on
-        // the next flush.
-        break;
+// Replays the queued rows in order, and adds to `synced` the redirect query
+// string of each row it replayed and deleted, so that flush() still announces
+// them when a later row throws.
+async function replayQueue(transport: Transport, synced: string[]): Promise<void> {
+  const rows = await readAllOrdered();
+  for (const row of rows) {
+    const outcome = await postOne(row, transport);
+    if (typeof outcome === 'object') {
+      await deleteRow(row.key);
+      synced.push(outcome.qs);
+    } else if (outcome === 'drop') {
+      await deleteRow(row.key);
+    } else if (outcome === 'needs-reauth') {
+      // Retained, not deleted (see the QueuedSubmit.status comment).
+      // Only write + emit on the actual transition, so re-attempting
+      // an already-marked row on every subsequent flush poll doesn't
+      // spam queue:changed while the user is still logged out. Continue
+      // to the next row instead of `break`ing like 'retry' below: every
+      // other queued row shares the same expired session and deserves
+      // its own chance to be marked/surfaced in this same pass, not be
+      // wedged behind this one until it happens to succeed first.
+      if (row.status !== 'needs-reauth') {
+        await markNeedsReauth(row);
       }
-    }
-  } finally {
-    // Announced once per pass, and only for rows already deleted: a row
-    // replayed again after a failed delete or a closed tab returns its
-    // cached redirect, which would celebrate the same repas twice.
-    if (synced.length > 0) {
-      emit('queue:synced', { queryStrings: synced } satisfies QueueSyncedDetail);
+    } else {
+      // 'retry': a transient/systemic failure (network drop, 5xx,
+      // 409/429) — stop processing; subsequent rows will be tried on
+      // the next flush.
+      break;
     }
   }
 }
