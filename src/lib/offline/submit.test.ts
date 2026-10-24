@@ -234,31 +234,6 @@ describe('submitRepas', () => {
       expect(sent[0].get('givenAt')).toBe(new Date(GIVEN_AT).toISOString());
     });
 
-    // The edit forms post to `?/update&from=…` (#443): the action key and
-    // the query next to it must reach the server as the form resolved them.
-    it('posts to the action URL as given, its query included', async () => {
-      const urls: string[] = [];
-      const editAction: Transport = async (url) => {
-        urls.push(url);
-        return new Response(
-          JSON.stringify({ type: 'redirect', status: 303, location: '/child/1/foods/5' }),
-          { headers: { 'content-type': 'application/json' } }
-        );
-      };
-      const action = 'http://localhost/child/1/log/5?/update&from=detail';
-      const outcome = await submitRepas(
-        form({ foodId: 10, givenAt: GIVEN_AT, reaction: 'ras' }),
-        { action },
-        editAction
-      );
-
-      expect(urls).toEqual([action]);
-      expect(outcome).toEqual({
-        kind: 'sent',
-        result: { type: 'redirect', status: 303, location: '/child/1/foods/5' }
-      });
-    });
-
     it('hands back the error a hook answered before the action ran, errorId included', async () => {
       const { carotte, action } = await setup();
       const outcome = await submitRepas(

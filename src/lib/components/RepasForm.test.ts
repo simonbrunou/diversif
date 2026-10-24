@@ -141,6 +141,18 @@ describe('RepasForm', () => {
     expect(goto).not.toHaveBeenCalled();
   });
 
+  // The edit forms post to `?/update&from=…` (#443): the query next to the
+  // action key must reach the server as the form resolved it.
+  it('posts an edit to its resolved action, the query after the action key included', async () => {
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(async () => redirect());
+    const form = renderForm({ action: '?/update&from=detail' });
+
+    await fireEvent.submit(form);
+    await waitFor(() => expect(applyAction).toHaveBeenCalledTimes(1));
+
+    expect(new URL(String(fetchSpy.mock.calls[0][0])).search).toBe('?/update&from=detail');
+  });
+
   it('keeps an edit form that cannot reach the server, and says so', async () => {
     spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
     const form = renderForm({ action: '?/update' });

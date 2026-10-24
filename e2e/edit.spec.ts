@@ -133,9 +133,9 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
 });
 
 // The repas is logged with JavaScript; this carries the session into a new
-// context with JavaScript on or off (the openWithoutJavaScript helper of the
-// account specs, for both paths). The caller closes the returned page's
-// context.
+// context with JavaScript on or off: gdpr.spec.ts's openWithoutJavaScript,
+// for both paths (#498 shares one helper). The caller closes the returned
+// page's context.
 async function openSession(browser: Browser, page: Page, javaScript: boolean): Promise<Page> {
   const context = await browser.newContext({
     javaScriptEnabled: javaScript,
@@ -176,7 +176,10 @@ for (const javaScript of [true, false]) {
   test.describe(`a refused save ${javaScript ? 'with' : 'without'} JavaScript`, () => {
     for (const mode of FORM_MODES) {
       for (const { from, landsAt } of ORIGINS) {
-        test(`keeps ?from=${from} on the ${mode.name} editor`, async ({ browser, page }) => {
+        test(`the ${mode.name} editor opened from ${from} saves back there`, async ({
+          browser,
+          page
+        }) => {
           const childId = await childOfEightMonths(page);
           await logRepas(page, childId, [...mode.aliments]);
           const entryId = await feedEntryId(page, childId, mode.feedRow);
