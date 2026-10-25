@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * check-bundle-size: fails when the post-build artifact tree exceeds
  * thresholds in scripts/bundle-budget.json.
@@ -8,8 +8,8 @@
  *   - Sum of all those JS files must be ≤ maxTotalJsBytes.
  *   - Every file under static/ must be ≤ maxStaticAssetBytes.
  *
- * Run via `npm run check:budget` (which builds first), or directly
- * after `npm run build` via `node scripts/check-bundle-size.mjs`.
+ * Run via `bun run check:budget` (which builds first), or directly
+ * after `bun run build` via `bun scripts/check-bundle-size.ts`.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,11 +23,11 @@ function kb(bytes) {
   return `${(bytes / 1024).toFixed(1)} KB`;
 }
 
-// Rounded to 0.1 KB, a few bytes over the limit print as equal sizes
-// (« 1103.5 KB > 1103.5 KB » for 14 bytes, #513), so a violation also gives
-// the exact byte counts.
+// Sizes rounded to 0.1 KB can print as equal for an overrun of a few bytes
+// (« 1103.5 KB > 1103.5 KB » for 14 bytes, #513), so a violation gives the
+// exact bytes and the overrun.
 function over(size, limit) {
-  return `${kb(size)} > ${kb(limit)}, ${size} > ${limit} bytes`;
+  return `${kb(size)}, ${size} bytes: ${size - limit} over ${limit}`;
 }
 
 function walk(dir, files = []) {
@@ -46,7 +46,7 @@ function walk(dir, files = []) {
 if (!fs.existsSync(CLIENT_DIR)) {
   console.error(
     `Build output not found at ${CLIENT_DIR}.\n` +
-      `Run \`npm run build\` first, or use \`npm run check:budget\` which builds + checks together.`
+      `Run \`bun run build\` first, or use \`bun run check:budget\` which builds + checks together.`
   );
   process.exit(1);
 }
@@ -94,5 +94,5 @@ if (violations.length > 0) {
 }
 
 console.log(
-  `Bundle budget OK (${kb(totalJs)} JS across ${jsFiles.length} chunks; ${staticFiles.length} static assets).`
+  `Bundle budget OK (${kb(totalJs)}, ${totalJs} of ${budget.maxTotalJsBytes} bytes JS across ${jsFiles.length} chunks; ${staticFiles.length} static assets).`
 );
