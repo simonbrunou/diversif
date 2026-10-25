@@ -208,12 +208,13 @@ export function readRepas(ctx: Pick<RepasContext, 'childId'>, entryId: number): 
 // parent's pick is written when it is more severe, the change stands when they
 // are equal, and a less severe pick refuses the whole edit, so a stale form
 // never downgrades a promotion (#421) and the parent is told. The refusal
-// carries every row's stored reaction for the form to show. A form that posts
-// no loaded value (a bundle from before PR #434, or a hand-made request) can't
-// tell a deliberate change from a stale one: a reaction other than the stored
-// one refuses the edit and asks the parent to reload (#446). Rows are checked
-// in order, so when one row has no loaded value and another lost a race, the
-// first of them picks the refusal.
+// carries every row's stored reaction for the form to show. A reaction posted
+// without its loaded value (by a single-entry form from before PR #434, or a
+// hand-made request: the meal form has always posted it) can't be told apart
+// from a stale one: a reaction other than the stored one refuses the edit and
+// asks the parent to reload (#446). Rows are checked in order, so when one row
+// has no loaded value and another lost a race, the first of them picks the
+// refusal.
 function writeReactions(
   tx: Tx,
   childId: number,
