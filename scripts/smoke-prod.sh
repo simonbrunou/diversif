@@ -75,22 +75,29 @@ contains_sha() {
   git -C "$REPO" merge-base --is-ancestor "$SHA" "$live" 2>/dev/null
 }
 
+# on_main: the full SHA of <sha> when origin/main contains it, else nothing.
+on_main() {
+  local full
+  full="$(git -C "$REPO" rev-parse --verify --quiet "$SHA^{commit}" 2>/dev/null)" || return 1
+  git -C "$REPO" merge-base --is-ancestor "$full" origin/main 2>/dev/null && printf '%s' "$full"
+}
+
+# not_deployable <reason>: fail before the wait, which <sha> could never end.
+not_deployable() {
+  fail "$1"
+  printf 'smoke-prod: pass the new main head (git fetch origin && git rev-parse origin/main)\n'
+  exit 1
+}
+
 if [ -n "$SHA" ]; then
-  # A mistyped SHA can never go live: fail now instead of after the wait.
-  resolve() { git -C "$REPO" rev-parse --verify --quiet "$SHA^{commit}" 2>/dev/null; }
-  full="$(resolve)"
-  if [ -z "$full" ]; then
-    fetched=1
-    git -C "$REPO" fetch -q origin 2>/dev/null
-    full="$(resolve)"
-  fi
-  if [ -z "$full" ]; then
-    fail "$SHA names no single commit in this clone, even after git fetch origin"
-    printf 'smoke-prod: pass the new main head (git rev-parse origin/main)\n'
-    exit 1
-  fi
-  SHA="$full"
   deadline=$(($(date +%s) + WAIT))
+  [[ "$SHA" =~ ^[0-9a-f]{7,40}$ ]] || not_deployable "$SHA is not a commit SHA"
+  # Only main deploys. When the fetch fails (offline, no origin), the wait
+  # below still matches <sha> as a prefix of the live SHA.
+  if git -C "$REPO" fetch -q origin 2>/dev/null; then
+    full="$(on_main)" || not_deployable "$SHA names no single commit on origin/main"
+    SHA="$full"
+  fi
   while :; do
     read_live
     case "$live" in "$SHA"*) [ -n "$live" ] && break ;; esac
