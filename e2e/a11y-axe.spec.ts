@@ -112,8 +112,10 @@ test('a11y axe: AllergenInfoDialog open @responsive', async ({ page }) => {
 // other E2E job running, against 13.7 s locally.
 //
 // Each group keeps test.slow(). The comment above each test.slow() gives
-// the group's time in CI run 255, where no other Playwright job ran but
-// other CI jobs shared the runner.
+// the group's times in CI runs 255 and 256. In both, no other diversif E2E
+// job ran but other CI jobs shared the runner. Run 256 was the slower one:
+// its Playwright run took 14.9 min against 6.3 min, and five 30 s tests in
+// other specs timed out.
 test.describe('a11y axe — auth routes @responsive', () => {
   // The account test needs the child too: /account lists the parent's
   // children, and the single test swept it with one child.
@@ -151,7 +153,8 @@ test.describe('a11y axe — auth routes @responsive', () => {
   }
 
   test('walks the account pages', async ({ page }) => {
-    // Run 255: 20.5 s desktop, 12.1 s mobile (3.7 to 4.8 s locally).
+    // Runs 255 and 256: 20.5 and 33.9 s on desktop, 12.1 and 28.6 s on
+    // mobile (3.7 to 4.8 s locally).
     test.slow();
     await signUpForSweep(page);
 
@@ -172,7 +175,8 @@ test.describe('a11y axe — auth routes @responsive', () => {
   });
 
   test('walks a child with no entries', async ({ page }) => {
-    // Run 255: 22.6 s desktop, 16.2 s mobile (6.1 to 7.5 s locally).
+    // Runs 255 and 256: 22.6 and 47.1 s on desktop, 16.2 and 45.5 s on
+    // mobile (6.1 to 7.5 s locally).
     test.slow();
     const childId = await signUpForSweep(page);
 
@@ -190,10 +194,8 @@ test.describe('a11y axe — auth routes @responsive', () => {
   });
 
   test('walks a child with entries and its dialogs', async ({ page }) => {
-    // Run 255: 18.3 s desktop, 14.9 s mobile (6.3 to 16.8 s locally). Under
-    // 20 s, but far slower than this spec's public-route tests in the same
-    // log (1.8 to 8.9 s), the other case in which docs/agents/testing.md
-    // asks for test.slow().
+    // Runs 255 and 256: 18.3 and 32.8 s on desktop, 14.9 and 35.4 s on
+    // mobile (6.3 to 16.8 s locally).
     test.slow();
     const childId = await signUpForSweep(page);
 
