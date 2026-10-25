@@ -91,11 +91,13 @@ not_deployable() {
 
 if [ -n "$SHA" ]; then
   deadline=$(($(date +%s) + WAIT))
+  # version.json reports a lowercase SHA.
+  SHA="$(printf '%s' "$SHA" | tr 'A-F' 'a-f')"
   [[ "$SHA" =~ ^[0-9a-f]{7,40}$ ]] || not_deployable "$SHA is not a commit SHA"
   # Only main deploys. When the fetch fails (offline, no origin), the wait
   # below still matches <sha> as a prefix of the live SHA.
   if git -C "$REPO" fetch -q origin 2>/dev/null; then
-    full="$(on_main)" || not_deployable "$SHA names no single commit on origin/main"
+    full="$(on_main)" || not_deployable "$SHA is not a commit on origin/main"
     SHA="$full"
   fi
   while :; do
