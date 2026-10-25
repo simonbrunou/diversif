@@ -6,13 +6,14 @@
 #   scripts/smoke-prod.sh [<sha>]
 #
 # SMOKE_BASE_URL overrides the target (default https://diversif.app).
-# SMOKE_WAIT is how long to wait for <sha> to go live, in seconds (default 600).
+# SMOKE_WAIT is how long to wait for <sha> to go live, in seconds (default
+# 540, so a failed wait still ends inside one 600 s agent Bash call).
 # What each check expects, and why: docs/agents/deploy.md.
 set -uo pipefail
 
 BASE="${SMOKE_BASE_URL:-https://diversif.app}"
 SHA="${1:-}"
-WAIT="${SMOKE_WAIT:-600}"
+WAIT="${SMOKE_WAIT:-540}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -75,6 +76,20 @@ contains_sha() {
 }
 
 if [ -n "$SHA" ]; then
+  # A mistyped SHA can never go live: fail now instead of after the wait.
+  resolve() { git -C "$REPO" rev-parse --verify --quiet "$SHA^{commit}" 2>/dev/null; }
+  full="$(resolve)"
+  if [ -z "$full" ]; then
+    fetched=1
+    git -C "$REPO" fetch -q origin 2>/dev/null
+    full="$(resolve)"
+  fi
+  if [ -z "$full" ]; then
+    fail "$SHA names no single commit in this clone, even after git fetch origin"
+    printf 'smoke-prod: pass the new main head (git rev-parse origin/main)\n'
+    exit 1
+  fi
+  SHA="$full"
   deadline=$(($(date +%s) + WAIT))
   while :; do
     read_live
