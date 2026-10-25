@@ -89,22 +89,23 @@ export function entryRow(id: number) {
 }
 
 /**
- * A co-parent adds a symptom to a RAS entry through the real writer, as
- * between the edit form's load and its submit: insertSymptom promotes it to
- * inconfort, or to reaction for a severe symptom. Returns what it promoted to.
+ * A symptom on a RAS entry, added through the real writer by the seeded
+ * parent, the way a co-parent's would land between the edit form's load and
+ * its submit: insertSymptom promotes the entry to inconfort, or to reaction
+ * for a severe symptom. Returns what it promoted to.
  */
 export async function addSymptom(
-  ctx: RepasContext,
+  { child, user }: { child: { id: number }; user: { id: number } },
   entryId: number,
   label: 'rougeur' | 'gonflement' = 'rougeur'
 ) {
   const { promotedTo } = await insertSymptom({
     foodEntryId: entryId,
-    childId: ctx.childId,
+    childId: child.id,
     observedAt: new Date(),
     label,
     note: null,
-    createdBy: ctx.user.id,
+    createdBy: user.id,
     currentReaction: 'ras'
   });
   return promotedTo;

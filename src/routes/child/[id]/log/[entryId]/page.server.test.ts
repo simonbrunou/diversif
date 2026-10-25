@@ -174,7 +174,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     expect(loaded.reaction).toBe('ras');
     const pomme = await seedFood({ name: 'Pomme', category: 'fruits' });
 
-    expect(await addSymptom(ctx.ctx, ctx.ids[0], 'rougeur')).toBe('inconfort');
+    expect(await addSymptom(ctx, ctx.ids[0], 'rougeur')).toBe('inconfort');
 
     // The parent fixes the time, aliment and notes; the picker still shows the
     // reaction the form loaded.
@@ -203,7 +203,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     // stored reaction back to show, and nothing is written.
     const ctx = await setup();
     const loaded = await loadForm(ctx);
-    expect(await addSymptom(ctx.ctx, ctx.ids[0], 'gonflement')).toBe('reaction');
+    expect(await addSymptom(ctx, ctx.ids[0], 'gonflement')).toBe('reaction');
 
     const r = await submit(ctx, {
       foodId: String(ctx.carotte.id),
@@ -237,7 +237,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
 
   it('a deliberate reaction change on an up-to-date form still applies', async () => {
     const ctx = await setup();
-    expect(await addSymptom(ctx.ctx, ctx.ids[0], 'rougeur')).toBe('inconfort');
+    expect(await addSymptom(ctx, ctx.ids[0], 'rougeur')).toBe('inconfort');
     // The form loads after the promotion, so it is not stale.
     const loaded = await loadForm(ctx);
     expect(loaded.reaction).toBe('inconfort');
@@ -256,9 +256,13 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
   // #446: a single-entry form from before PR #434, or a hand-made meal request,
   // posts a reaction without its loaded value.
   it.each([
-    ['a standalone entry', 1, (ctx: Ctx) => ({ foodId: String(ctx.carotte.id), reaction: 'ras' })],
     [
-      'a meal',
+      'a stale standalone form',
+      1,
+      (ctx: Ctx) => ({ foodId: String(ctx.carotte.id), reaction: 'ras' })
+    ],
+    [
+      'a hand-made meal request',
       2,
       (ctx: Ctx) => ({
         [`reaction.${ctx.ids[0]}`]: 'ras',
@@ -267,10 +271,10 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
       })
     ]
   ] as const)(
-    'a stale form for %s without the loaded reaction is refused with a 400 that asks to reload, and writes nothing',
+    '%s without the loaded reaction is refused with a 400 that asks to reload, and writes nothing',
     async (_, aliments, reactionFields) => {
       const ctx = await setup(aliments);
-      expect(await addSymptom(ctx.ctx, ctx.ids[aliments - 1])).toBe('inconfort');
+      expect(await addSymptom(ctx, ctx.ids[aliments - 1])).toBe('inconfort');
       const before = entryRows(ctx.child.id);
 
       const r = await submit(ctx, {

@@ -123,8 +123,9 @@ function preparedMealField(form: FormData): PreparedMealChoice {
 
 // `reaction{suffix}` is the submitted value, `reactionLoaded{suffix}` the
 // value the form rendered. A single-entry form rendered before PR #434 doesn't
-// post it (the meal form always has): `loaded` is then null, and the write
-// refuses any reaction other than the row's current one (#446).
+// post it (the meal form always has), and a hand-made request may not either:
+// `loaded` is then null, and the write refuses any reaction other than the
+// row's current one (#446).
 function reactionEditField(form: FormData, suffix: string): ReactionEdit | null {
   const to = text(form, `reaction${suffix}`);
   if (to === undefined) return null;
