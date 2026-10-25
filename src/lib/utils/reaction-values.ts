@@ -8,9 +8,18 @@ export type ReactionId = (typeof REACTION_VALUES)[number];
 // The one worst-reaction ordering (ras < inconfort < reaction), derived from
 // REACTION_VALUES so the rank can never drift from the id space. Shared by the
 // "worst reaction" aggregations (the child history, the allergen history,
-// meals.ts, the Carnet, menu and pediatrician-report loads) instead of each
-// re-declaring the same literal map.
+// meals.ts, the Carnet, menu and pediatrician-report loads) and, through
+// moreSevere, by the repas edit's reaction rule (src/lib/server/repas and the
+// edit page) instead of each re-declaring the same literal map.
 export const REACTION_RANK = Object.fromEntries(REACTION_VALUES.map((id, i) => [id, i])) as Record<
   ReactionId,
   number
 >;
+
+/** The more severe of two reactions (`a` when they are equal). */
+export function moreSevere(a: ReactionId, b: ReactionId): ReactionId {
+  return REACTION_RANK[a] >= REACTION_RANK[b] ? a : b;
+}
+
+/** Reactions by food entry id: a meal form's loaded snapshot, or the stored values a refused edit hands back (#445). */
+export type ReactionsByEntry = Record<number, ReactionId>;

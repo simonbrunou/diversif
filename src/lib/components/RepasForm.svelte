@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import type { HTMLFormAttributes } from 'svelte/elements';
-  import { applyAction } from '$app/forms';
+  import { applyAction, type ActionResult } from '$app/forms';
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
   import { submitRepas, type Submitted } from '#lib/offline/submit.js';
@@ -12,11 +12,13 @@
   // (src/lib/offline/submit.ts) instead of use:enhance. This component only
   // applies the outcome: the server's answer goes to the page as use:enhance
   // would apply it, a queued repas goes back to the dashboard, and a failure
-  // keeps the form as typed.
+  // keeps the form as typed. An applied answer then goes to `onapplied`, for
+  // what the page does with it.
 
   let {
     busy = $bindable(false),
     queueFor,
+    onapplied,
     children,
     ...attributes
   }: Omit<HTMLFormAttributes, 'method' | 'onsubmit' | 'children'> & {
@@ -24,6 +26,8 @@
     busy?: boolean;
     /** The child to queue the repas for when the server can't be reached: the log form only. */
     queueFor?: number;
+    /** Called with the server's answer once it is applied to the page. */
+    onapplied?: (result: ActionResult) => void;
     children: Snippet;
   } = $props();
 
@@ -38,7 +42,10 @@
         action: form.action,
         queueFor
       });
-      if (outcome.kind === 'sent') await applyAction(outcome.result);
+      if (outcome.kind === 'sent') {
+        await applyAction(outcome.result);
+        onapplied?.(outcome.result);
+      }
     } finally {
       busy = false;
     }

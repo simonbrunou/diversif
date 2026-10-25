@@ -20,9 +20,11 @@ function entryNotFound(): never {
   error(404, m.errorsFoodEntryNotFound());
 }
 
-function refused(refusal: RepasRefusal) {
-  if (refusal.status === 404) entryNotFound();
-  return fail(refusal.status, { errorKey: refusal.errorKey });
+// The form gets the refusal's errorKey and, for a reaction refusal (#445), the
+// stored reactions to show and post as loaded, so the next save goes through.
+function refused({ ok: _ok, status, ...data }: RepasRefusal) {
+  if (status === 404) entryNotFound();
+  return fail(status, data);
 }
 
 function entryContext({ locals, params }: Pick<RequestEvent, 'locals' | 'params'>) {

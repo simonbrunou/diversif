@@ -230,21 +230,46 @@ describe('editRepas: a standalone entry', () => {
 
 describe('editRepas: the reaction a symptom promoted (#421)', () => {
   // A co-parent adds a symptom to the repas after the edit form was loaded
-  // with the entry at RAS: insertSymptom promotes it to inconfort.
-  async function promotedAfterLoad() {
+  // with the entry at RAS: insertSymptom promotes it to inconfort, or to
+  // reaction for a severe symptom.
+  async function promotedAfterLoad(label: 'rougeur' | 'gonflement' = 'rougeur') {
     const seeded = await standalone();
     await insertSymptom({
       foodEntryId: seeded.entryId,
       childId: seeded.child.id,
       observedAt: new Date(),
-      label: 'rougeur',
+      label,
       note: null,
       createdBy: seeded.user.id,
       currentReaction: 'ras'
     });
-    expect(entryRow(seeded.entryId)?.reaction).toBe('inconfort');
+    expect(entryRow(seeded.entryId)?.reaction).toBe(label === 'rougeur' ? 'inconfort' : 'reaction');
     return seeded;
   }
+
+  it('refuses a stale form’s reaction change that is less severe than the promotion, and writes nothing', async () => {
+    const { ctx, entryId } = await promotedAfterLoad('gonflement');
+    const before = readRepas(ctx, entryId);
+    const pomme = await seedFood({ name: 'Pomme', category: 'fruits' });
+    const refused = editRepas(
+      ctx,
+      entryId,
+      entryForm(pomme.id, {
+        givenAt: '2024-06-02T10:00:00.000Z',
+        reaction: 'inconfort',
+        reactionLoaded: 'ras',
+        texture: 'lisse',
+        notes: 'jamais enregistré'
+      })
+    );
+    expect(refused).toEqual({
+      ok: false,
+      status: 409,
+      errorKey: 'errorsLogReactionChanged',
+      reactions: { [entryId]: 'reaction' }
+    });
+    expect(readRepas(ctx, entryId)).toEqual(before);
+  });
 
   it('keeps the promoted reaction when a stale form edits the time, aliment or notes', async () => {
     const { ctx, entryId } = await promotedAfterLoad();
@@ -257,7 +282,8 @@ describe('editRepas: the reaction a symptom promoted (#421)', () => {
     });
   });
 
-  it('does not let a stale reaction change overwrite the promotion', async () => {
+  // #445: the more severe of the parent's choice and the promotion wins.
+  it('writes a stale form’s reaction change that is more severe than the promotion', async () => {
     const { ctx, entryId, carotte } = await promotedAfterLoad();
     ok(
       editRepas(
@@ -266,7 +292,19 @@ describe('editRepas: the reaction a symptom promoted (#421)', () => {
         entryForm(carotte.id, { reaction: 'reaction', reactionLoaded: 'ras' })
       )
     );
-    expect(readRepas(ctx, entryId)?.entry.reaction).toBe('inconfort');
+    expect(readRepas(ctx, entryId)?.entry.reaction).toBe('reaction');
+  });
+
+  it('saves a stale form that picked the promoted reaction itself', async () => {
+    const { ctx, entryId, carotte } = await promotedAfterLoad();
+    ok(
+      editRepas(
+        ctx,
+        entryId,
+        entryForm(carotte.id, { reaction: 'inconfort', reactionLoaded: 'ras', notes: 'vu' })
+      )
+    );
+    expect(readRepas(ctx, entryId)?.entry).toMatchObject({ reaction: 'inconfort', notes: 'vu' });
   });
 
   it('writes a reaction the parent deliberately changed', async () => {
@@ -326,14 +364,55 @@ describe('editRepas: a meal', () => {
     ]);
   });
 
-  it('keeps a reaction promoted after the form loaded, even when the stale form changes it', async () => {
+  it('keeps a reaction promoted after the form loaded when the stale form leaves it alone', async () => {
     const { ctx, ids } = await meal(2);
     promote(ids[1], 'reaction');
-    // Date-only edit (submitted == loaded) and a genuine change from the
-    // stale loaded value: neither may clobber the promotion.
+    // Submitted == loaded: the parent didn't touch that reaction.
     ok(editRepas(ctx, ids[0], mealForm({ [ids[1]]: ['ras', 'ras'] }, { notes: 'new note' })));
-    ok(editRepas(ctx, ids[0], mealForm({ [ids[1]]: ['inconfort', 'ras'] })));
     expect(readRepas(ctx, ids[1])?.meal?.members[1].reaction).toBe('reaction');
+  });
+
+  // #445, per aliment: the more severe of the parent's choice and the promotion wins.
+  it('writes a stale form’s change that is more severe than the promotion, and leaves an equal one alone', async () => {
+    const { ctx, ids, child } = await meal(3);
+    promote(ids[0], 'inconfort');
+    promote(ids[1], 'inconfort');
+    ok(
+      editRepas(
+        ctx,
+        ids[0],
+        mealForm({ [ids[0]]: ['reaction', 'ras'], [ids[1]]: ['inconfort', 'ras'] })
+      )
+    );
+    expect(entryRows(child.id).map((r) => r.reaction)).toEqual(['reaction', 'inconfort', 'ras']);
+  });
+
+  it('refuses a stale form’s change that is less severe than the promotion, and writes nothing', async () => {
+    const { ctx, ids, child } = await meal(3);
+    promote(ids[0], 'inconfort');
+    promote(ids[2], 'reaction');
+    const before = entryRows(child.id);
+    // ids[0]'s escalation alone would be written; ids[2]'s downgrade refuses
+    // the whole edit, the shared fields and ids[0] included.
+    const refused = editRepas(
+      ctx,
+      ids[0],
+      mealForm(
+        {
+          [ids[0]]: ['reaction', 'ras'],
+          [ids[1]]: ['inconfort', 'ras'],
+          [ids[2]]: ['inconfort', 'ras']
+        },
+        { notes: 'jamais enregistré', texture: 'lisse' }
+      )
+    );
+    expect(refused).toEqual({
+      ok: false,
+      status: 409,
+      errorKey: 'errorsLogReactionChanged',
+      reactions: { [ids[0]]: 'inconfort', [ids[1]]: 'ras', [ids[2]]: 'reaction' }
+    });
+    expect(entryRows(child.id)).toEqual(before);
   });
 
   it('refuses an invalid meal edit and leaves every aliment unchanged', async () => {

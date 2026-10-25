@@ -1,11 +1,17 @@
 import { describe, expect, it, mock } from 'bun:test';
-import { render, fireEvent } from '@testing-library/svelte';
+import { render, fireEvent, waitFor } from '@testing-library/svelte';
 import '../../../../../test/component';
 
 // svelte-sonner's real dist can't load under bun test (see log.hint.test.ts),
 // and RepasForm imports it. $app/forms comes from bunfig.preload.ts.
 mock.module('svelte-sonner', () => ({
   toast: { error: () => {}, success: () => {} }
+}));
+
+// The server's answer to the next save, as RepasForm's durable submit returns it.
+let answer: unknown = null;
+mock.module('#lib/offline/submit.js', () => ({
+  submitRepas: async () => ({ kind: 'sent', result: answer })
 }));
 
 // Static imports hoist above mock.module, so the component under test must be
@@ -195,6 +201,51 @@ describe('child/[id]/log/[entryId] +page.svelte — meal mode', () => {
       expect(updateForm.getAttribute('action')).toBe(`?/update&from=${from}`);
     }
   );
+
+  // #445: after the form loaded, a symptom promoted Carotte to inconfort, a
+  // severe one promoted Pomme to reaction, and a co-parent lowered Banane to
+  // RAS. The parent picked reaction for Carotte, inconfort for Pomme and
+  // Poire, and left Banane alone. Pomme's pick, below its stored reaction, is
+  // refused.
+  it('after a reaction refusal, reseeds each reaction that changed since the form loaded', async () => {
+    const data = makeMealData();
+    data.meal!.members = [
+      { id: 501, foodId: 10, foodName: 'Carotte', reaction: 'ras' },
+      { id: 502, foodId: 11, foodName: 'Pomme', reaction: 'ras' },
+      { id: 503, foodId: 12, foodName: 'Poire', reaction: 'ras' },
+      { id: 504, foodId: 13, foodName: 'Banane', reaction: 'reaction' }
+    ];
+    const { container } = render(Page, { props: { data, form: null } });
+    const updateForm = container.querySelector<HTMLFormElement>('form[action^="?/update"]')!;
+    const pick = (id: number, value: string) =>
+      fireEvent.click(updateForm.querySelector(`input[name="reaction.${id}"][value="${value}"]`)!);
+    const shown = (id: number) => [
+      updateForm.querySelector<HTMLInputElement>(`input[name="reaction.${id}"]:checked`)?.value,
+      updateForm.querySelector<HTMLInputElement>(`input[name="reactionLoaded.${id}"]`)?.value
+    ];
+
+    await pick(501, 'reaction');
+    await pick(502, 'inconfort');
+    await pick(503, 'inconfort');
+    answer = {
+      type: 'failure',
+      status: 409,
+      data: {
+        errorKey: 'errorsLogReactionChanged',
+        reactions: { 501: 'inconfort', 502: 'reaction', 503: 'ras', 504: 'ras' }
+      }
+    };
+    await fireEvent.submit(updateForm);
+    // A pick below the stored reaction gives way to it.
+    await waitFor(() => expect(shown(502)).toEqual(['reaction', 'reaction']));
+    // A pick above it stays, now posted against the stored value.
+    expect(shown(501)).toEqual(['reaction', 'inconfort']);
+    // An untouched picker follows the stored value, even a lower one, so the
+    // next save does not write the old value back over the co-parent's.
+    expect(shown(504)).toEqual(['ras', 'ras']);
+    // Poire did not change since the form loaded: the parent's pick stands.
+    expect(shown(503)).toEqual(['inconfort', 'ras']);
+  });
 
   it('shows a refused update inside the meal form', () => {
     const { container } = render(Page, {

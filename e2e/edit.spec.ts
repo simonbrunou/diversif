@@ -7,8 +7,9 @@ import {
 } from './_helpers';
 
 // The edit page's four actions (update, delete, deleteMeal, removeIngredient)
-// end to end, through the repas write module: one test per form mode. At the
-// end, what a refused save keeps, with and without JavaScript.
+// end to end, through the repas write module: one test per form mode. Then a
+// reaction change that a symptom overtook (#445) and what a refused save
+// keeps (#443), each with and without JavaScript.
 
 async function childOfEightMonths(page: Page): Promise<string> {
   const birthDate = new Date();
@@ -136,6 +137,71 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
   await page.goto(`/child/${childId}`);
   await expect(page.getByTestId('feed-row-edit')).toHaveCount(0);
 });
+
+// #445: a severe symptom, added from another tab, promotes the repas to
+// « Réaction marquée » while the editor still shows it RAS. A less severe pick
+// is refused with a message, and the editor shows the stored reaction, so the
+// save that follows goes through. With JavaScript the refusal applies in
+// place and keeps the note; without it SvelteKit renders the page again from
+// `load`.
+for (const javaScript of [true, false]) {
+  test(`refuses a reaction change that a symptom overtook, then saves, ${javaScript ? 'with' : 'without'} JavaScript`, async ({
+    browser,
+    page
+  }) => {
+    // 2.0 to 2.2 s locally, but 19.7 to 20.5 s in a CI run that shared the
+    // runner with four other jobs (#513's first run).
+    test.slow();
+    const childId = await childOfEightMonths(page);
+    await logRepas(page, childId, ['Poire']);
+    const entryId = await feedEntryId(page, childId, 'feed-row-detail');
+    const editor = javaScript ? page : await openWithoutJavaScript(browser, page);
+    try {
+      await editor.goto(`/child/${childId}/log/${entryId}?from=detail`);
+      if (javaScript) await awaitHydration(editor);
+      await expect(editor.locator('input[name="reactionLoaded"]')).toHaveValue('ras');
+
+      // A second tab of the same context, like a co-parent's: no cold start.
+      const other = await page.context().newPage();
+      try {
+        await other.goto(`/child/${childId}/foods/${entryId}`);
+        await awaitHydration(other);
+        await other.getByRole('button', { name: 'Signaler une réaction tardive' }).click();
+        await reactionOption(other, 'label', 'gonflement').click();
+        await other.getByRole('button', { name: 'Enregistrer le symptôme' }).click();
+        await expect(other.getByRole('dialog')).toBeHidden();
+      } finally {
+        await other.close();
+      }
+
+      const note = editor.getByLabel('Note');
+      await reactionOption(editor, 'reaction', 'inconfort').click();
+      await note.fill('A grimacé');
+      const save = editor.getByRole('button', { name: 'Enregistrer', exact: true });
+      await save.click();
+      await expect(editor.getByRole('alert')).toHaveText(
+        'Une réaction a changé entre-temps, par exemple après l’ajout d’un symptôme : vérifiez-la avant d’enregistrer.'
+      );
+      await expect(editor.locator('input[name="reaction"][value="reaction"]')).toBeChecked();
+      await expect(editor.locator('input[name="reactionLoaded"]')).toHaveValue('reaction');
+      if (javaScript) {
+        await expect(note).toHaveValue('A grimacé');
+      } else {
+        // Nothing was saved: `load` renders the stored, empty note.
+        await expect(note).toHaveValue('');
+        await note.fill('A grimacé');
+      }
+
+      await save.click();
+      await expect(editor).toHaveURL(new RegExp(`/child/${childId}/foods/${entryId}$`));
+      await editor.goto(`/child/${childId}/log/${entryId}`);
+      await expect(editor.locator('input[name="reaction"][value="reaction"]')).toBeChecked();
+      await expect(note).toHaveValue('A grimacé');
+    } finally {
+      if (editor !== page) await editor.context().close();
+    }
+  });
+}
 
 // A datetime-local value `days` back at 10:00, in the test runner's local
 // time. The browser shares that zone; without JavaScript the server parses the

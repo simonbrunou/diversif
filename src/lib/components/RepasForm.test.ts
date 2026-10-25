@@ -28,7 +28,11 @@ const fields = createRawSnippet(() => ({
     `<div><input name="foodId" value="7"><input name="givenAt" value="2026-05-07T12:30"><button type="submit">Enregistrer</button></div>`
 }));
 
-function renderForm(props: { queueFor?: number; action?: string }) {
+function renderForm(props: {
+  queueFor?: number;
+  action?: string;
+  onapplied?: (result: { type: string }) => void;
+}) {
   let busy = false;
   const { container } = render(RepasForm, {
     props: {
@@ -153,15 +157,35 @@ describe('RepasForm', () => {
     expect(new URL(String(fetchSpy.mock.calls[0][0])).search).toBe('?/update&from=detail');
   });
 
+  // The edit page reads a reaction refusal's stored reactions there (#445).
+  it('hands the server answer to onapplied once it is applied', async () => {
+    spyOn(globalThis, 'fetch').mockImplementation(async () => redirect());
+    const onapplied = (result: { type: string }) => events.push(`onapplied ${result.type}`);
+    const form = renderForm({ action: '?/update', onapplied });
+
+    await fireEvent.submit(form);
+    await waitFor(() => expect(events).toContain('busy=false'));
+
+    expect(events).toEqual([
+      'busy=true',
+      'applyAction started',
+      'applyAction done',
+      'onapplied redirect',
+      'busy=false'
+    ]);
+  });
+
   it('keeps an edit form that cannot reach the server, and says so', async () => {
     spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
-    const form = renderForm({ action: '?/update' });
+    const onapplied = mock(() => {});
+    const form = renderForm({ action: '?/update', onapplied });
 
     await fireEvent.submit(form);
     await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
 
     expect(toast.error.mock.calls[0][0]).toContain('Impossible de joindre le serveur');
     expect(applyAction).not.toHaveBeenCalled();
+    expect(onapplied).not.toHaveBeenCalled();
     expect(goto).not.toHaveBeenCalled();
     expect(await count()).toBe(0);
     expect(events).toEqual(['busy=true', 'busy=false']);
