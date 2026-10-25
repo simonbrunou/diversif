@@ -140,6 +140,7 @@
   "errorsLogTextureInvalid": "Texture invalide.",
   "errorsLogNoteTooLong": "Note trop longue.",
   "errorsLogReactionChanged": "Une réaction a changé entre-temps, par exemple après l’ajout d’un symptôme : vérifiez-la avant d’enregistrer.",
+  "errorsLogPageOutdated": "Cette page n’est plus à jour. Rechargez-la, puis réessayez.",
   "errorsLogMealNotFound": "Repas introuvable.",
   "errorsLogInvalidRequest": "Requête invalide.",
   "errorsSettingsInviteCapReached": "Trop d’invitations actives pour cet enfant. Révoquez-en une avant d’en générer une nouvelle.",

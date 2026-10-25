@@ -208,7 +208,13 @@ export function readRepas(ctx: Pick<RepasContext, 'childId'>, entryId: number): 
 // parent's pick is written when it is more severe, the change stands when they
 // are equal, and a less severe pick refuses the whole edit, so a stale form
 // never downgrades a promotion (#421) and the parent is told. The refusal
-// carries every row's stored reaction for the form to show.
+// carries every row's stored reaction for the form to show. Without its loaded
+// value, a reaction edit can't tell a deliberate change from a stale one. Only
+// a single-entry form from before PR #434 or a hand-made request posts one so
+// (the meal form has always posted the value), and a reaction other than the
+// stored one then refuses the edit and asks the parent to reload (#446). Rows
+// are checked in order, so when one row has no loaded value and another lost a
+// race, the first of them picks the refusal.
 function writeReactions(
   tx: Tx,
   childId: number,
@@ -217,10 +223,10 @@ function writeReactions(
 ): void {
   for (const row of rows) {
     const edit = edits.get(row.id);
-    if (!edit) continue;
-    const loaded = edit.loaded ?? row.reaction;
-    if (edit.to === loaded || edit.to === row.reaction) continue;
-    if (row.reaction !== loaded && moreSevere(edit.to, row.reaction) !== edit.to) {
+    if (!edit || edit.to === row.reaction) continue;
+    if (edit.loaded === null) refuse('errorsLogPageOutdated');
+    if (edit.to === edit.loaded) continue;
+    if (row.reaction !== edit.loaded && moreSevere(edit.to, row.reaction) !== edit.to) {
       const stored = Object.fromEntries(rows.map((r) => [r.id, r.reaction]));
       throw new RepasAbort(409, 'errorsLogReactionChanged', stored);
     }

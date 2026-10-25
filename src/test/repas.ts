@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 import { expect } from 'bun:test';
 import { foodEntries, foods } from '#lib/server/db/schema.js';
+import { insertSymptom } from '#lib/server/db/symptoms.js';
 import type { RepasContext, RepasRefusal } from '#lib/server/repas/index.js';
 import { testDb } from './db';
 import { seedChild, seedUser } from './route';
@@ -85,6 +86,29 @@ export function entryRows(childId: number) {
 
 export function entryRow(id: number) {
   return testDb.select().from(foodEntries).where(eq(foodEntries.id, id)).get();
+}
+
+/**
+ * A symptom on a RAS entry, added through the real writer by the seeded
+ * parent, the way a co-parent's would land between the edit form's load and
+ * its submit: insertSymptom promotes the entry to inconfort, or to reaction
+ * for a severe symptom. Returns what it promoted to.
+ */
+export async function addSymptom(
+  { child, user }: { child: { id: number }; user: { id: number } },
+  entryId: number,
+  label: 'rougeur' | 'gonflement' = 'rougeur'
+) {
+  const { promotedTo } = await insertSymptom({
+    foodEntryId: entryId,
+    childId: child.id,
+    observedAt: new Date(),
+    label,
+    note: null,
+    createdBy: user.id,
+    currentReaction: 'ras'
+  });
+  return promotedTo;
 }
 
 /** Stand-in for insertSymptom promoting a row between the edit form's load and its submit. */

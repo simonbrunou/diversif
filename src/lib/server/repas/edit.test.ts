@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../test/db';
 import { seedChild } from '../../../test/route';
 import {
+  addSymptom,
   entryRow,
   entryRows,
   expectRefusal,
@@ -14,7 +15,6 @@ import {
   seedRepasChild
 } from '../../../test/repas';
 import { foods } from '#lib/server/db/schema.js';
-import { insertSymptom } from '#lib/server/db/symptoms.js';
 import { editRepas, logRepas, readRepas, type RepasContext } from './index';
 
 beforeEach(async () => {
@@ -207,6 +207,7 @@ describe('editRepas: a standalone entry', () => {
         form({ 'customFood.name': '  ', givenAt: recently(), reaction: 'ras' }),
         'errorsLogNoFoodSelected'
       ],
+      [entryForm(carotte.id, { reactionLoaded: 'pas-une-reaction' }), 'errorsAuthBadInput'],
       // A standalone entry holds one aliment.
       [entryForm(carotte.id, { 'customFood.name': 'Compote' }), 'errorsAuthBadInput'],
       [form({ foodId: carotte.id, givenAt: recently() }), 'errorsAuthBadInput']
@@ -234,16 +235,9 @@ describe('editRepas: the reaction a symptom promoted (#421)', () => {
   // reaction for a severe symptom.
   async function promotedAfterLoad(label: 'rougeur' | 'gonflement' = 'rougeur') {
     const seeded = await standalone();
-    await insertSymptom({
-      foodEntryId: seeded.entryId,
-      childId: seeded.child.id,
-      observedAt: new Date(),
-      label,
-      note: null,
-      createdBy: seeded.user.id,
-      currentReaction: 'ras'
-    });
-    expect(entryRow(seeded.entryId)?.reaction).toBe(label === 'rougeur' ? 'inconfort' : 'reaction');
+    expect(await addSymptom(seeded, seeded.entryId, label)).toBe(
+      label === 'rougeur' ? 'inconfort' : 'reaction'
+    );
     return seeded;
   }
 
@@ -319,12 +313,86 @@ describe('editRepas: the reaction a symptom promoted (#421)', () => {
     );
     expect(readRepas(ctx, entryId)?.entry.reaction).toBe('reaction');
   });
+});
 
-  it('compares against the stored reaction when the form predates the loaded field', async () => {
-    const { ctx, entryId, carotte } = await standalone();
-    const posted = form({ foodId: carotte.id, givenAt: recently(), reaction: 'inconfort' });
-    ok(editRepas(ctx, entryId, posted));
-    expect(readRepas(ctx, entryId)?.entry.reaction).toBe('inconfort');
+// #446: a single-entry form from before PR #434 or a hand-made request posts a
+// reaction without the value it loaded (the meal form has always posted it).
+// The write then can't tell a deliberate change from a stale one, so a
+// changed reaction refuses the edit and asks the parent to reload, and an
+// unchanged one lets the rest of the edit through. Both edit paths agree.
+// `openedOn` is the entry the editor was opened on, `rowWithoutLoaded` the row
+// whose reaction the form posts without its loaded value.
+describe.each([
+  [
+    'a standalone entry',
+    async () => {
+      const { ctx, child, user, carotte, entryId } = await standalone();
+      return {
+        ctx,
+        child,
+        user,
+        openedOn: entryId,
+        rowWithoutLoaded: entryId,
+        post: (reaction: string, fields: Record<string, string> = {}) => {
+          const posted = entryForm(carotte.id, { reaction, ...fields });
+          posted.delete('reactionLoaded');
+          return posted;
+        }
+      };
+    }
+  ],
+  [
+    'an aliment inside a meal',
+    async () => {
+      const { ctx, child, user, ids } = await meal(2);
+      return {
+        ctx,
+        child,
+        user,
+        openedOn: ids[0],
+        rowWithoutLoaded: ids[1],
+        post: (reaction: string, fields: Record<string, string> = {}) => {
+          const posted = mealForm(
+            { [ids[0]]: ['ras', 'ras'], [ids[1]]: [reaction, 'ras'] },
+            fields
+          );
+          posted.delete(`reactionLoaded.${ids[1]}`);
+          return posted;
+        }
+      };
+    }
+  ]
+] as const)('editRepas: %s, a reaction posted without its loaded value (#446)', (_, setup) => {
+  // A symptom promotes the row from RAS to inconfort after the form loaded.
+  async function promoted() {
+    const seeded = await setup();
+    expect(await addSymptom(seeded, seeded.rowWithoutLoaded)).toBe('inconfort');
+    return seeded;
+  }
+
+  it('refuses a reaction other than the promoted one, and writes nothing', async () => {
+    const { ctx, child, openedOn, post } = await promoted();
+    const before = entryRows(child.id);
+    expectRefusal(
+      editRepas(ctx, openedOn, post('ras', { texture: 'lisse', notes: 'jamais enregistré' })),
+      400,
+      'errorsLogPageOutdated'
+    );
+    expect(entryRows(child.id)).toEqual(before);
+  });
+
+  it('saves the other fields when the reaction is the promoted one', async () => {
+    const { ctx, openedOn, rowWithoutLoaded, post } = await promoted();
+    ok(editRepas(ctx, openedOn, post('inconfort', { notes: 'vu' })));
+    expect(entryRow(rowWithoutLoaded)).toMatchObject({ reaction: 'inconfort', notes: 'vu' });
+  });
+
+  // A change the parent meant is refused too: it looks the same as a stale one.
+  it('refuses a reaction change on a row nothing promoted', async () => {
+    const { ctx, child, openedOn, post } = await setup();
+    const before = entryRows(child.id);
+    expectRefusal(editRepas(ctx, openedOn, post('reaction')), 400, 'errorsLogPageOutdated');
+    expect(entryRows(child.id)).toEqual(before);
   });
 });
 
@@ -413,6 +481,40 @@ describe('editRepas: a meal', () => {
       reactions: { [ids[0]]: 'inconfort', [ids[1]]: 'ras', [ids[2]]: 'reaction' }
     });
     expect(entryRows(child.id)).toEqual(before);
+  });
+
+  // #446 next to #445: one aliment lost a race to a promotion, another is
+  // posted without its loaded value. The rows are checked in order, so the
+  // first of them picks the refusal, and either way nothing is written.
+  async function raceAndUnloaded(racedFirst: boolean) {
+    const { ctx, ids, child } = await meal(2);
+    const [raced, unloaded] = racedFirst ? ids : [ids[1], ids[0]];
+    promote(raced, 'reaction');
+    const before = entryRows(child.id);
+    const posted = mealForm(
+      { [raced]: ['inconfort', 'ras'], [unloaded]: ['inconfort', 'ras'] },
+      { notes: 'jamais enregistré' }
+    );
+    posted.delete(`reactionLoaded.${unloaded}`);
+    const refused = editRepas(ctx, ids[0], posted);
+    return { refused, raced, unloaded, before, after: entryRows(child.id) };
+  }
+
+  it('answers a lost race on the first aliment before a missing loaded value on the next', async () => {
+    const { refused, raced, unloaded, before, after } = await raceAndUnloaded(true);
+    expect(refused).toEqual({
+      ok: false,
+      status: 409,
+      errorKey: 'errorsLogReactionChanged',
+      reactions: { [raced]: 'reaction', [unloaded]: 'ras' }
+    });
+    expect(after).toEqual(before);
+  });
+
+  it('answers a missing loaded value on the first aliment before a lost race on the next', async () => {
+    const { refused, before, after } = await raceAndUnloaded(false);
+    expectRefusal(refused, 400, 'errorsLogPageOutdated');
+    expect(after).toEqual(before);
   });
 
   it('refuses an invalid meal edit and leaves every aliment unchanged', async () => {

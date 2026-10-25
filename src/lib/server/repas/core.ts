@@ -30,6 +30,7 @@ export type RepasErrorKey =
   | 'errorsLogMealNotFound'
   | 'errorsLogNoFoodSelected'
   | 'errorsLogNoteTooLong'
+  | 'errorsLogPageOutdated'
   | 'errorsLogReactionChanged'
   | 'errorsLogTextureInvalid'
   | 'errorsLogTooManyFoods';

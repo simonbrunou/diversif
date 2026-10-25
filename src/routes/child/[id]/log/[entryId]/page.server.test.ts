@@ -1,8 +1,15 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { resetTestDb } from '../../../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser, seedMembership } from '../../../../../test/route';
-import { entryRow, form, ok, seedFood, seedRepasChild } from '../../../../../test/repas';
-import { insertSymptom } from '#lib/server/db/symptoms.js';
+import {
+  addSymptom,
+  entryRow,
+  entryRows,
+  form,
+  ok,
+  seedFood,
+  seedRepasChild
+} from '../../../../../test/repas';
 import { logRepas } from '#lib/server/repas/index.js';
 import { load, actions } from './+page.server';
 
@@ -157,19 +164,6 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     return (await load(ctx.event() as unknown as LoadEvent)).entry;
   }
 
-  async function addSymptom(ctx: Ctx, label: 'rougeur' | 'gonflement') {
-    const result = await insertSymptom({
-      foodEntryId: ctx.ids[0],
-      childId: ctx.child.id,
-      observedAt: new Date('2024-06-01T11:00:00Z'),
-      label,
-      note: null,
-      createdBy: ctx.user.id,
-      currentReaction: 'ras'
-    });
-    return result.promotedTo;
-  }
-
   function submit(ctx: Ctx, formData: Record<string, string>) {
     return captureFlow(() => actions.update(ctx.event({ formData }) as unknown as ActionEvent));
   }
@@ -180,7 +174,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     expect(loaded.reaction).toBe('ras');
     const pomme = await seedFood({ name: 'Pomme', category: 'fruits' });
 
-    expect(await addSymptom(ctx, 'rougeur')).toBe('inconfort');
+    expect(await addSymptom(ctx, ctx.ids[0], 'rougeur')).toBe('inconfort');
 
     // The parent fixes the time, aliment and notes; the picker still shows the
     // reaction the form loaded.
@@ -209,7 +203,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     // stored reaction back to show, and nothing is written.
     const ctx = await setup();
     const loaded = await loadForm(ctx);
-    expect(await addSymptom(ctx, 'gonflement')).toBe('reaction');
+    expect(await addSymptom(ctx, ctx.ids[0], 'gonflement')).toBe('reaction');
 
     const r = await submit(ctx, {
       foodId: String(ctx.carotte.id),
@@ -243,7 +237,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
 
   it('a deliberate reaction change on an up-to-date form still applies', async () => {
     const ctx = await setup();
-    expect(await addSymptom(ctx, 'rougeur')).toBe('inconfort');
+    expect(await addSymptom(ctx, ctx.ids[0], 'rougeur')).toBe('inconfort');
     // The form loads after the promotion, so it is not stale.
     const loaded = await loadForm(ctx);
     expect(loaded.reaction).toBe('inconfort');
@@ -258,6 +252,44 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
 
     expect(entryRow(ctx.ids[0])?.reaction).toBe('ras');
   });
+
+  // #446: a single-entry form from before PR #434, or a hand-made meal request,
+  // posts a reaction without its loaded value.
+  it.each([
+    [
+      'a stale standalone form',
+      1,
+      (ctx: Ctx) => ({ foodId: String(ctx.carotte.id), reaction: 'ras' })
+    ],
+    [
+      'a hand-made meal request',
+      2,
+      (ctx: Ctx) => ({
+        [`reaction.${ctx.ids[0]}`]: 'ras',
+        [`reactionLoaded.${ctx.ids[0]}`]: 'ras',
+        [`reaction.${ctx.ids[1]}`]: 'ras'
+      })
+    ]
+  ] as const)(
+    '%s without the loaded reaction is refused with a 400 that asks to reload, and writes nothing',
+    async (_, aliments, reactionFields) => {
+      const ctx = await setup(aliments);
+      expect(await addSymptom(ctx, ctx.ids[aliments - 1])).toBe('inconfort');
+      const before = entryRows(ctx.child.id);
+
+      const r = await submit(ctx, {
+        givenAt: '2024-06-01T12:30:00.000Z',
+        notes: 'jamais enregistré',
+        ...reactionFields(ctx)
+      });
+      expect(r).toEqual({
+        kind: 'return',
+        value: { status: 400, data: { errorKey: 'errorsLogPageOutdated' } }
+      });
+
+      expect(entryRows(ctx.child.id)).toEqual(before);
+    }
+  );
 });
 
 describe('child/[id]/log/[entryId] delete actions', () => {
