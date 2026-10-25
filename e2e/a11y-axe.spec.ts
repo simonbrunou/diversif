@@ -111,9 +111,11 @@ test('a11y axe: AllergenInfoDialog open @responsive', async ({ page }) => {
 // desktop project it took 45.4 s in run 251 and 1.2 min in run 253, with no
 // other E2E job running, against 13.7 s locally.
 //
-// Each group keeps test.slow(). Locally the three tests below took 3.7 to
-// 4.8 s, 6.1 to 7.5 s and 6.3 to 16.8 s. Runs 251 and 253 ran the single
-// test 3.3 and 5.3 times slower than its 13.7 s locally.
+// Each group keeps test.slow(). The comment above each call gives the
+// group's time in CI run 255, where no other E2E job ran but the run's
+// unit-test and Docker jobs shared the runner with the desktop project.
+// Runs 251 and 253 ran the single test 3.3 and 5.3 times slower than its
+// 13.7 s locally.
 test.describe('a11y axe — auth routes @responsive', () => {
   // The account test needs the child too: /account lists the parent's
   // children, and the single test swept it with one child.
@@ -151,6 +153,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
   }
 
   test('walks the account pages', async ({ page }) => {
+    // Run 255: 20.5 s desktop, 12.1 s mobile (3.7 to 4.8 s locally).
     test.slow();
     await signUpForSweep(page);
 
@@ -171,6 +174,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
   });
 
   test('walks a child with no entries', async ({ page }) => {
+    // Run 255: 22.6 s desktop, 16.2 s mobile (6.1 to 7.5 s locally).
     test.slow();
     const childId = await signUpForSweep(page);
 
@@ -188,6 +192,9 @@ test.describe('a11y axe — auth routes @responsive', () => {
   });
 
   test('walks a child with entries and its dialogs', async ({ page }) => {
+    // Run 255: 18.3 s desktop, 14.9 s mobile (6.3 to 16.8 s locally). That
+    // is below the 20 s at which docs/agents/testing.md asks for test.slow(),
+    // but its local time varies the most of the three, so it keeps it.
     test.slow();
     const childId = await signUpForSweep(page);
 
