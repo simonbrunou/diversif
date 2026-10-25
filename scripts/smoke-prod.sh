@@ -6,13 +6,14 @@
 #   scripts/smoke-prod.sh [<sha>]
 #
 # SMOKE_BASE_URL overrides the target (default https://diversif.app).
-# SMOKE_WAIT is how long to wait for <sha> to go live, in seconds (default 600).
+# SMOKE_WAIT is how long to wait for <sha> to go live, in seconds (default
+# 540, so a failed wait still ends inside one 600 s agent Bash call).
 # What each check expects, and why: docs/agents/deploy.md.
 set -uo pipefail
 
 BASE="${SMOKE_BASE_URL:-https://diversif.app}"
 SHA="${1:-}"
-WAIT="${SMOKE_WAIT:-600}"
+WAIT="${SMOKE_WAIT:-540}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -74,8 +75,31 @@ contains_sha() {
   git -C "$REPO" merge-base --is-ancestor "$SHA" "$live" 2>/dev/null
 }
 
+# on_main: the full SHA of <sha> when origin/main contains it, else nothing.
+on_main() {
+  local full
+  full="$(git -C "$REPO" rev-parse --verify --quiet "$SHA^{commit}" 2>/dev/null)" || return 1
+  git -C "$REPO" merge-base --is-ancestor "$full" origin/main 2>/dev/null && printf '%s' "$full"
+}
+
+# not_deployable <reason>: fail before the wait, which <sha> could never end.
+not_deployable() {
+  fail "$1"
+  printf 'smoke-prod: pass the new main head (git fetch origin && git rev-parse origin/main)\n'
+  exit 1
+}
+
 if [ -n "$SHA" ]; then
   deadline=$(($(date +%s) + WAIT))
+  # version.json reports a lowercase SHA.
+  SHA="$(printf '%s' "$SHA" | tr 'A-F' 'a-f')"
+  [[ "$SHA" =~ ^[0-9a-f]{7,40}$ ]] || not_deployable "$SHA is not a commit SHA"
+  # Only main deploys. When the fetch fails (offline, no origin), the wait
+  # below still matches <sha> as a prefix of the live SHA.
+  if git -C "$REPO" fetch -q origin 2>/dev/null; then
+    full="$(on_main)" || not_deployable "$SHA is not a commit on origin/main"
+    SHA="$full"
+  fi
   while :; do
     read_live
     case "$live" in "$SHA"*) [ -n "$live" ] && break ;; esac
