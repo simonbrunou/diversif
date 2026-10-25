@@ -123,8 +123,8 @@ function preparedMealField(form: FormData): PreparedMealChoice {
 
 // `reaction{suffix}` is the submitted value, `reactionLoaded{suffix}` the
 // value the form rendered. Forms rendered before the loaded field existed
-// don't post it: `loaded` is then null and the write compares against the
-// row's current value instead.
+// don't post it: `loaded` is then null, and the write refuses any reaction
+// other than the row's current one (#446).
 function reactionEditField(form: FormData, suffix: string): ReactionEdit | null {
   const to = text(form, `reaction${suffix}`);
   if (to === undefined) return null;

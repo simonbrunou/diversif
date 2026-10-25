@@ -258,6 +258,25 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
 
     expect(entryRow(ctx.ids[0])?.reaction).toBe('ras');
   });
+
+  // #446: a form from before PR #434 posts no `reactionLoaded`.
+  it('a stale form without the loaded reaction is refused with a 400 that asks to reload, and writes nothing', async () => {
+    const ctx = await setup();
+    expect(await addSymptom(ctx, 'rougeur')).toBe('inconfort');
+
+    const r = await submit(ctx, {
+      foodId: String(ctx.carotte.id),
+      givenAt: '2024-06-01T12:30:00.000Z',
+      reaction: 'ras',
+      notes: 'jamais enregistré'
+    });
+    expect(r).toEqual({
+      kind: 'return',
+      value: { status: 400, data: { errorKey: 'errorsLogPageOutdated' } }
+    });
+
+    expect(entryRow(ctx.ids[0])).toMatchObject({ reaction: 'inconfort', notes: null });
+  });
 });
 
 describe('child/[id]/log/[entryId] delete actions', () => {
