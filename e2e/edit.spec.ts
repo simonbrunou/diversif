@@ -149,8 +149,8 @@ for (const javaScript of [true, false]) {
     browser,
     page
   }) => {
-    // 2.0 to 2.2 s locally, against 1.6 to 1.8 s for the refused-save tests
-    // below, which took up to 29 s on a CI runner shared with other jobs.
+    // 2.0 to 2.2 s locally, but 19.7 to 20.5 s in a CI run that shared the
+    // runner with four other jobs (#513's first run).
     test.slow();
     const childId = await childOfEightMonths(page);
     await logRepas(page, childId, ['Poire']);
