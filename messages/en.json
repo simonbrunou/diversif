@@ -139,7 +139,7 @@
   "errorsLogIdempotencyConflict": "Idempotency key conflict.",
   "errorsLogTextureInvalid": "Invalid texture.",
   "errorsLogNoteTooLong": "Note too long.",
-  "errorsLogReactionChanged": "A reaction changed in the meantime, for example after a symptom was added. Check it before saving.",
+  "errorsLogReactionChanged": "A reaction changed in the meantime, for example after a symptom was added: check it before saving.",
   "errorsLogMealNotFound": "Meal not found.",
   "errorsLogInvalidRequest": "Invalid request.",
   "errorsSettingsInviteCapReached": "Too many active invitations for this child. Revoke one before generating a new one.",

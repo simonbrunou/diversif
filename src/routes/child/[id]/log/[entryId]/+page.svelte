@@ -14,7 +14,7 @@
   import { formatDateInputValue } from '#lib/utils/dates.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import type { TextureKey } from '#lib/utils/textures.js';
-  import { moreSevere, type ReactionId } from '#lib/utils/reaction-values.js';
+  import { moreSevere, type ReactionId, type ReactionsByEntry } from '#lib/utils/reaction-values.js';
   import type { ActionResult } from '$app/forms';
   import { Trash, X } from '@lucide/svelte';
   import * as m from '#lib/paraglide/messages.js';
@@ -31,7 +31,7 @@
   let reaction = $state<ReactionId>(data.entry.reaction);
   // The stored value the form loaded, for the server's dirty-only reaction
   // guard, same role as mealReactionsLoaded below: it must never follow the
-  // picker. Only a reaction refusal moves it (showStoredReactions).
+  // picker. Only a reaction refusal moves it (reseedReactions).
   // svelte-ignore state_referenced_locally
   let reactionLoaded = $state<ReactionId>(data.entry.reaction);
   // svelte-ignore state_referenced_locally
@@ -47,43 +47,49 @@
   // svelte-ignore state_referenced_locally
   let mealMembers = $state((data.meal?.members ?? []).map((mem) => ({ ...mem })));
 
-  // Snapshot of each member's stored reaction AT LOAD TIME, kept apart from
-  // the pickers above. The `update` action only writes a member's reaction
-  // when the submitted `reaction.{id}` differs from `reactionLoaded.{id}`. If
-  // this snapshot tracked the same mutable value as the picker instead,
-  // submitted would always equal loaded and that guard would never fire:
-  // reaction edits would silently no-op. Only a reaction refusal moves it
-  // (showStoredReactions).
+  // Each member's stored reaction as the form loaded it, kept apart from the
+  // pickers above. The `update` action only writes a member's reaction when
+  // the submitted `reaction.{id}` differs from `reactionLoaded.{id}`. If this
+  // snapshot tracked the same mutable value as the picker instead, submitted
+  // would always equal loaded and that guard would never fire: reaction edits
+  // would silently no-op. Only a reaction refusal moves it (reseedReactions).
   // svelte-ignore state_referenced_locally
-  let mealReactionsLoaded = $state<Record<number, ReactionId>>(
+  let mealReactionsLoaded = $state<ReactionsByEntry>(
     Object.fromEntries((data.meal?.members ?? []).map((mem) => [mem.id, mem.reaction]))
   );
 
   // A reaction refusal (#445): a symptom or a co-parent changed a reaction
-  // since the form loaded, and the parent's pick was less severe. Each changed
-  // reaction now posts its stored value as loaded, so the next save goes
-  // through, and its picker shows the more severe of the parent's pick and
-  // the stored value, which is what the server would have kept. Without
-  // JavaScript the page reloads instead, and `load` seeds both from the
-  // stored values.
-  function showStoredReactions(result: ActionResult) {
+  // since the form loaded, and the parent's pick for it was less severe. The
+  // refusal hands back every stored reaction; each one that changed is now
+  // posted as loaded, so the next save goes through. Without JavaScript the
+  // page reloads instead, and `load` seeds every picker from the stored values.
+  function reseedReactions(result: ActionResult) {
     if (result.type !== 'failure') return;
-    const stored = result.data?.reactions as Record<number, ReactionId> | undefined;
+    const stored = result.data?.reactions as ReactionsByEntry | undefined;
     if (!stored) return;
     if (!data.meal) {
-      const now = stored[data.entry.id];
-      if (now && now !== reactionLoaded) {
-        reactionLoaded = now;
-        reaction = moreSevere(reaction, now);
-      }
+      [reaction, reactionLoaded] = reseed(reaction, reactionLoaded, stored[data.entry.id]);
       return;
     }
     for (const member of mealMembers) {
-      const now = stored[member.id];
-      if (!now || now === mealReactionsLoaded[member.id]) continue;
-      mealReactionsLoaded[member.id] = now;
-      member.reaction = moreSevere(member.reaction, now);
+      [member.reaction, mealReactionsLoaded[member.id]] = reseed(
+        member.reaction,
+        mealReactionsLoaded[member.id],
+        stored[member.id]
+      );
     }
+  }
+
+  // One reaction's [pick, loaded] after a refusal. An untouched picker follows
+  // the stored value, even a lower one a co-parent saved. A pick the parent
+  // made keeps the more severe of it and the stored value, as the server would.
+  function reseed(
+    pick: ReactionId,
+    loaded: ReactionId,
+    stored: ReactionId | undefined
+  ): [ReactionId, ReactionId] {
+    if (!stored || stored === loaded) return [pick, loaded];
+    return [pick === loaded ? stored : moreSevere(pick, stored), stored];
   }
 
   let mealSaving = $state(false);
@@ -126,7 +132,7 @@
       action={updateAction}
       class="grid gap-5"
       bind:busy={mealSaving}
-      onapplied={showStoredReactions}
+      onapplied={reseedReactions}
     >
       <FormError messageKey={form?.errorKey} {form} />
 
@@ -266,7 +272,7 @@
       action={updateAction}
       class="grid gap-5"
       bind:busy={saving}
-      onapplied={showStoredReactions}
+      onapplied={reseedReactions}
     >
       <FormError messageKey={form?.errorKey} {form} />
 

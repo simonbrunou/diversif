@@ -295,6 +295,18 @@ describe('editRepas: the reaction a symptom promoted (#421)', () => {
     expect(readRepas(ctx, entryId)?.entry.reaction).toBe('reaction');
   });
 
+  it('saves a stale form that picked the promoted reaction itself', async () => {
+    const { ctx, entryId, carotte } = await promotedAfterLoad();
+    ok(
+      editRepas(
+        ctx,
+        entryId,
+        entryForm(carotte.id, { reaction: 'inconfort', reactionLoaded: 'ras', notes: 'vu' })
+      )
+    );
+    expect(readRepas(ctx, entryId)?.entry).toMatchObject({ reaction: 'inconfort', notes: 'vu' });
+  });
+
   it('writes a reaction the parent deliberately changed', async () => {
     const { ctx, entryId, carotte } = await promotedAfterLoad();
     // Reloaded form: it now loads inconfort, and the parent picks reaction.

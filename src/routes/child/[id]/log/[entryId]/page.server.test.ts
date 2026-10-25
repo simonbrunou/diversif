@@ -202,7 +202,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
     });
   });
 
-  it('a deliberate reaction change that raced a more severe promotion is refused with the stored reaction', async () => {
+  it('a deliberate reaction change that raced a more severe promotion is refused with the stored reaction, and the next save goes through', async () => {
     // The dirty-only check alone lets this write through (submitted 'inconfort'
     // differs from loaded 'ras'). It must neither downgrade the severe
     // promotion (#421) nor redirect as if it saved (#445): the form gets the

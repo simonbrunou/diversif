@@ -71,7 +71,7 @@ describe('child/[id]/log/[entryId] +page.svelte — single entry', () => {
   // #445: a symptom promoted the entry to `reaction` after the form loaded it
   // at RAS, and the parent's less severe pick is refused. The form must show
   // the stored reaction and post it as loaded, or the next save is refused too.
-  it('shows the stored reaction after a reaction refusal, and keeps what the parent typed', async () => {
+  it('shows the stored reaction after a reaction refusal, keeps what the parent typed, and leaves it on a later refusal', async () => {
     const { container } = render(Page, { props: { data: makeEntryData(), form: null } });
     const updateForm = container.querySelector<HTMLFormElement>('form[action^="?/update"]')!;
     const loaded = updateForm.querySelector<HTMLInputElement>('input[name="reactionLoaded"]')!;

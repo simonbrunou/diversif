@@ -202,15 +202,18 @@ describe('child/[id]/log/[entryId] +page.svelte — meal mode', () => {
     }
   );
 
-  // #445: after the form loaded, a symptom promoted Carotte to inconfort and
-  // a severe one promoted Pomme to reaction. The parent escalated Carotte,
-  // lowered Pomme and changed Poire; Pomme's change is refused.
-  it('after a reaction refusal, reseeds each changed reaction to the more severe of the pick and the stored value', async () => {
+  // #445: after the form loaded, a symptom promoted Carotte to inconfort, a
+  // severe one promoted Pomme to reaction, and a co-parent lowered Banane to
+  // RAS. The parent picked reaction for Carotte, inconfort for Pomme and
+  // Poire, and left Banane alone. Pomme's pick, below its stored reaction, is
+  // refused.
+  it('after a reaction refusal, reseeds each reaction that changed since the form loaded', async () => {
     const data = makeMealData();
     data.meal!.members = [
       { id: 501, foodId: 10, foodName: 'Carotte', reaction: 'ras' },
       { id: 502, foodId: 11, foodName: 'Pomme', reaction: 'ras' },
-      { id: 503, foodId: 12, foodName: 'Poire', reaction: 'ras' }
+      { id: 503, foodId: 12, foodName: 'Poire', reaction: 'ras' },
+      { id: 504, foodId: 13, foodName: 'Banane', reaction: 'reaction' }
     ];
     const { container } = render(Page, { props: { data, form: null } });
     const updateForm = container.querySelector<HTMLFormElement>('form[action^="?/update"]')!;
@@ -229,13 +232,17 @@ describe('child/[id]/log/[entryId] +page.svelte — meal mode', () => {
       status: 409,
       data: {
         errorKey: 'errorsLogReactionChanged',
-        reactions: { 501: 'inconfort', 502: 'reaction', 503: 'ras' }
+        reactions: { 501: 'inconfort', 502: 'reaction', 503: 'ras', 504: 'ras' }
       }
     };
     await fireEvent.submit(updateForm);
+    // A pick below the stored reaction gives way to it.
     await waitFor(() => expect(shown(502)).toEqual(['reaction', 'reaction']));
-    // Carotte keeps the parent's escalation, now against its stored value.
+    // A pick above it stays, now posted against the stored value.
     expect(shown(501)).toEqual(['reaction', 'inconfort']);
+    // An untouched picker follows the stored value, even a lower one, so the
+    // next save does not write the old value back over the co-parent's.
+    expect(shown(504)).toEqual(['ras', 'ras']);
     // Poire did not change since the form loaded: the parent's pick stands.
     expect(shown(503)).toEqual(['inconfort', 'ras']);
   });
