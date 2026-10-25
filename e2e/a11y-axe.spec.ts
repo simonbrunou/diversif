@@ -111,11 +111,9 @@ test('a11y axe: AllergenInfoDialog open @responsive', async ({ page }) => {
 // desktop project it took 45.4 s in run 251 and 1.2 min in run 253, with no
 // other E2E job running, against 13.7 s locally.
 //
-// Each group keeps test.slow(). The comment above each call gives the
-// group's time in CI run 255, where no other E2E job ran but the run's
-// unit-test and Docker jobs shared the runner with the desktop project.
-// Runs 251 and 253 ran the single test 3.3 and 5.3 times slower than its
-// 13.7 s locally.
+// Each group keeps test.slow(). The comment above each test.slow() gives
+// the group's time in CI run 255, where no other Playwright job ran but
+// other CI jobs shared the runner.
 test.describe('a11y axe — auth routes @responsive', () => {
   // The account test needs the child too: /account lists the parent's
   // children, and the single test swept it with one child.
@@ -192,9 +190,10 @@ test.describe('a11y axe — auth routes @responsive', () => {
   });
 
   test('walks a child with entries and its dialogs', async ({ page }) => {
-    // Run 255: 18.3 s desktop, 14.9 s mobile (6.3 to 16.8 s locally). That
-    // is below the 20 s at which docs/agents/testing.md asks for test.slow(),
-    // but its local time varies the most of the three, so it keeps it.
+    // Run 255: 18.3 s desktop, 14.9 s mobile (6.3 to 16.8 s locally). Under
+    // 20 s, but far slower than this spec's public-route tests in the same
+    // log (1.8 to 8.9 s), the other case in which docs/agents/testing.md
+    // asks for test.slow().
     test.slow();
     const childId = await signUpForSweep(page);
 
