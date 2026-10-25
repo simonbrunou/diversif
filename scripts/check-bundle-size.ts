@@ -23,6 +23,13 @@ function kb(bytes) {
   return `${(bytes / 1024).toFixed(1)} KB`;
 }
 
+// Rounded to 0.1 KB, a few bytes over the limit print as equal sizes
+// (« 1103.5 KB > 1103.5 KB » for 14 bytes, #513), so a violation also gives
+// the exact byte counts.
+function over(size, limit) {
+  return `${kb(size)} > ${kb(limit)}, ${size} > ${limit} bytes`;
+}
+
 function walk(dir, files = []) {
   if (!fs.existsSync(dir)) return files;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -61,20 +68,18 @@ const violations = [];
 for (const f of jsFiles) {
   if (f.size > budget.maxJsChunkBytes) {
     const rel = path.relative(ROOT, f.path);
-    violations.push(`JS chunk too large: ${rel} (${kb(f.size)} > ${kb(budget.maxJsChunkBytes)})`);
+    violations.push(`JS chunk too large: ${rel} (${over(f.size, budget.maxJsChunkBytes)})`);
   }
 }
 
 if (totalJs > budget.maxTotalJsBytes) {
-  violations.push(`Total JS too large: ${kb(totalJs)} > ${kb(budget.maxTotalJsBytes)}`);
+  violations.push(`Total JS too large: ${over(totalJs, budget.maxTotalJsBytes)}`);
 }
 
 for (const f of staticFiles) {
   if (f.size > budget.maxStaticAssetBytes) {
     const rel = path.relative(ROOT, f.path);
-    violations.push(
-      `Static asset too large: ${rel} (${kb(f.size)} > ${kb(budget.maxStaticAssetBytes)})`
-    );
+    violations.push(`Static asset too large: ${rel} (${over(f.size, budget.maxStaticAssetBytes)})`);
   }
 }
 
