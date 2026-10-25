@@ -184,8 +184,13 @@ for (const javaScript of [true, false]) {
       );
       await expect(editor.locator('input[name="reaction"][value="reaction"]')).toBeChecked();
       await expect(editor.locator('input[name="reactionLoaded"]')).toHaveValue('reaction');
-      if (javaScript) await expect(note).toHaveValue('A grimacé');
-      else await note.fill('A grimacé');
+      if (javaScript) {
+        await expect(note).toHaveValue('A grimacé');
+      } else {
+        // Nothing was saved: `load` renders the stored, empty note.
+        await expect(note).toHaveValue('');
+        await note.fill('A grimacé');
+      }
 
       await save.click();
       await expect(editor).toHaveURL(new RegExp(`/child/${childId}/foods/${entryId}$`));

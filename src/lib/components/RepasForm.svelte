@@ -11,9 +11,9 @@
   // A repas form (log or edit) sent through the durable submit
   // (src/lib/offline/submit.ts) instead of use:enhance. This component only
   // applies the outcome: the server's answer goes to the page as use:enhance
-  // would apply it, then to `onapplied` for what the page does with it, a
-  // queued repas goes back to the dashboard, and a failure keeps the form as
-  // typed.
+  // would apply it, a queued repas goes back to the dashboard, and a failure
+  // keeps the form as typed. An applied answer then goes to `onapplied`, for
+  // what the page does with it.
 
   let {
     busy = $bindable(false),

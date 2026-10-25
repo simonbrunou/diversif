@@ -21,5 +21,5 @@ export function moreSevere(a: ReactionId, b: ReactionId): ReactionId {
   return REACTION_RANK[a] >= REACTION_RANK[b] ? a : b;
 }
 
-/** Stored reactions by food entry id, as a refused repas edit hands them back (#445). */
+/** Reactions by food entry id: a meal form's loaded snapshot, or the stored values a refused edit hands back (#445). */
 export type ReactionsByEntry = Record<number, ReactionId>;

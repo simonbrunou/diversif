@@ -43,7 +43,8 @@
   let deleteOpen = $state(false);
 
   // Meal mode: a mutable per-member copy of each ingredient's reaction, seeded
-  // once from the loaded meal (mirrors the single-entry `reaction` above).
+  // once from the loaded meal (mirrors the single-entry `reaction` above). A
+  // reaction refusal reseeds it (reseedReactions).
   // svelte-ignore state_referenced_locally
   let mealMembers = $state((data.meal?.members ?? []).map((mem) => ({ ...mem })));
 

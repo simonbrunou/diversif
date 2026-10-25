@@ -220,7 +220,7 @@ function writeReactions(
     if (!edit) continue;
     const loaded = edit.loaded ?? row.reaction;
     if (edit.to === loaded || edit.to === row.reaction) continue;
-    if (row.reaction !== loaded && moreSevere(edit.to, row.reaction) === row.reaction) {
+    if (row.reaction !== loaded && moreSevere(edit.to, row.reaction) !== edit.to) {
       const stored = Object.fromEntries(rows.map((r) => [r.id, r.reaction]));
       throw new RepasAbort(409, 'errorsLogReactionChanged', stored);
     }
