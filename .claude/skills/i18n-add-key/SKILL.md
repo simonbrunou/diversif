@@ -30,3 +30,9 @@ key — never hardcode text in a component.
 ## Pitfalls
 - Adding to only one locale → `lint:i18n` (and the commit hook) fail.
 - Pluralization / interpolation must match the paraglide message syntax used by sibling keys.
+- An older bundle shows `errorsGenericFallback` for a key added after its build. With
+  JavaScript, a tab still running that bundle turns a key that an action or a load returns into
+  text with its own compiled messages (`resolveMessageKey` in `src/lib/forms/tracked-enhance.ts`).
+  Without JavaScript, and for a key the server resolves itself, the current text shows. When only such a tab can trigger the key, as with #446's
+  `errorsLogPageOutdated` (#517), reuse a key the older bundles ship if one fits. Otherwise
+  record the fallback in the PR and in a follow-up issue.

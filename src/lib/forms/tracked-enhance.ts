@@ -69,11 +69,12 @@ export function trackSubmission(
 /**
  * Resolve a paraglide message key by string. Used when a server action
  * returns a key (e.g. `form.profileSuccessKey = 'errorsAccountProfileSuccess'`)
- * that the page needs to surface inline or via toast.success/error. Falls
- * back to a generic message if the key is unknown — should never happen in
- * practice but keeps the message from rendering `undefined`.
+ * that the page needs to surface inline or via toast.success/error. An
+ * unknown key gets a generic message instead of `undefined`. A key is
+ * unknown when server code mistypes it, or when a tab still runs a bundle
+ * built before the key (see the i18n-add-key skill's pitfalls).
  */
 export function resolveMessageKey(key: string): string {
   const fn = m[key as keyof typeof m] as (() => string) | undefined;
-  return fn?.() ?? /* v8 ignore next */ m.errorsGenericFallback();
+  return fn?.() ?? m.errorsGenericFallback();
 }
