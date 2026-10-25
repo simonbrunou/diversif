@@ -51,6 +51,10 @@ function reactionOption(page: Page, name: string, value: string) {
 }
 
 test('edits a standalone repas and lands back on its detail page', async ({ page }) => {
+  // 2.3 to 2.5 s locally, 27.1 s in a CI run that shared the runner with
+  // other jobs (#513's first run), past 30 s in an overloaded one (#513's second
+  // run, attempt 1).
+  test.slow();
   const childId = await childOfEightMonths(page);
   await logRepas(page, childId, ['Poire']);
   const entryId = await feedEntryId(page, childId, 'feed-row-detail');
@@ -91,6 +95,10 @@ test('edits a standalone repas and lands back on its detail page', async ({ page
 });
 
 test('edits a meal, removes aliments, then deletes the meal', async ({ page }) => {
+  // 2.4 to 2.7 s locally, 23.1 s in a CI run that shared the runner with
+  // other jobs (#513's first run), past 30 s in an overloaded one (#513's second
+  // run, attempt 1).
+  test.slow();
   const childId = await childOfEightMonths(page);
   await logRepas(page, childId, ['Poire', 'Pomme', 'Carotte', 'Banane']);
   // The dashboard opens a meal on its lowest entry id: Poire's.
@@ -149,8 +157,10 @@ for (const javaScript of [true, false]) {
     browser,
     page
   }) => {
-    // 2.0 to 2.2 s locally, but 19.7 to 20.5 s in a CI run that shared the
-    // runner with four other jobs (#513's first run).
+    // 2.0 to 2.2 s locally. In CI: 19.7 to 20.5 s in a run that shared the
+    // runner with other jobs (#513's first run), and 1.0 to 1.4 min, close to the
+    // 90 s budget, in an overloaded one where the older edit tests above timed
+    // out (#513's second run, attempt 1).
     test.slow();
     const childId = await childOfEightMonths(page);
     await logRepas(page, childId, ['Poire']);
