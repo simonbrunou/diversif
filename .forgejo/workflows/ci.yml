@@ -297,10 +297,11 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.4.3
-      # Two tiers: a strict production-dependency audit (only what ships in
-      # the Docker runtime image) and a looser all-dependencies audit
-      # (production + dev/build tooling). Both are set to `high` — the
-      # tightest level either scope actually needs today, since the
+      # Two scopes: production dependencies only (the set the Dockerfile's
+      # runtime image installs) and all dependencies (production + dev/build
+      # tooling, the set the Railpack production deploy ships, #529). Both
+      # are set to `high` — the tightest level either scope actually needs
+      # today, since the
       # `overrides` block in package.json forces a transitive package onto a
       # patched release when its parent hasn't repinned yet. The commit that
       # added each override says why; `git log -G'"<name>":' --
@@ -336,7 +337,7 @@ jobs:
       # bundled into build/index.js. It pulls in brace-expansion
       # transitively (glob → minimatch); harmless dead weight, but worth
       # knowing why it's there if `bun audit` ever flags that chain.
-      - name: Production dependencies (ships in the runtime image)
+      - name: Production dependencies only
         run: scripts/audit-deps.sh production
       - name: All dependencies (dev + build tooling included)
         run: scripts/audit-deps.sh all

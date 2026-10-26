@@ -7,19 +7,20 @@
 #   scripts/audit-deps.sh [production|all]
 #
 # production: installs package.json with its devDependencies stripped into a
-#   temporary directory, then audits that install, so only the packages the
-#   runtime image installs count. It resolves from the ranges, without
-#   bun.lock, so it audits the newest versions they allow, which can be newer
-#   than the image's (the Dockerfile's prod-deps stage installs from bun.lock)
-#   and can change from one run to the next. Bun 1.4 also accepts
-#   `bun audit --production`, though `--help` doesn't list it; this scope
-#   doesn't rely on it.
+#   temporary directory, then audits that install: the production
+#   dependencies, the set the Dockerfile's prod-deps stage installs. That
+#   stage installs from bun.lock, while this scope resolves from the ranges,
+#   so it audits the newest versions they allow, which can change from one
+#   run to the next. Bun 1.4 also accepts `bun audit --production`, though
+#   `--help` doesn't list it; this scope doesn't rely on it.
 # all: runs `bun install --frozen-lockfile` in the repo, dev and build tooling
-#   included (locally that also runs the `prepare` script), then audits it.
+#   included, then audits it. The install also syncs the checkout's
+#   node_modules to bun.lock. The Railpack production deploy ships this whole
+#   set (#529).
 # With no argument it runs both scopes and fails if either fails.
 # The local Bun can differ from the version CI pins (#528).
 # Exit 0: no advisory at high or above. Exit 2: a wrong call. Any other
-# exit: an advisory or a failed install, named in the output.
+# exit: an advisory or a failed install, and the output names it.
 set -uo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -34,7 +35,7 @@ trap cleanup EXIT
 # Each scope chains its commands with && instead of relying on set -e, which
 # bash ignores inside a function called from an `||` list.
 audit_production() {
-  echo "== audit-deps: production dependencies (what the runtime image installs)"
+  echo "== audit-deps: production dependencies only"
   TMP="$(mktemp -d)" &&
     PKG_IN="$REPO/package.json" PKG_OUT="$TMP/package.json" bun -e '
       const pkg = require(process.env.PKG_IN);
@@ -54,16 +55,16 @@ usage() {
   exit 2
 }
 
+if [ $# -eq 0 ]; then
+  status=0
+  audit_production || status=$?
+  audit_all || status=$?
+  exit "$status"
+fi
 if [ $# -gt 1 ]; then usage; fi
 
-case "${1-}" in
+case "$1" in
   production) audit_production ;;
   all) audit_all ;;
-  "")
-    status=0
-    audit_production || status=$?
-    audit_all || status=$?
-    exit "$status"
-    ;;
   *) usage ;;
 esac
