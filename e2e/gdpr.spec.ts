@@ -156,6 +156,8 @@ test.describe('account deletion without JavaScript', () => {
       await expect(noJs.getByRole('alert')).toHaveText(
         'Saisissez votre adresse e-mail exacte pour confirmer.'
       );
+      // On a new document only focus gets the alert read out (#469).
+      await expect(noJs.getByRole('alert')).toBeFocused();
       // The wrong address stays, so it can be corrected; the password never does (#471).
       const emailField = noJs.getByLabel(/Saisissez votre adresse e-mail/i);
       const passwordField = noJs.getByLabel(/Confirmez avec votre mot de passe/i);
@@ -165,6 +167,7 @@ test.describe('account deletion without JavaScript', () => {
       await fillDeletionFields(noJs, email, 'wrong-password-123');
       await deleteButton(noJs).click();
       await expect(noJs.getByRole('alert')).toHaveText('Mot de passe actuel incorrect.');
+      await expect(noJs.getByRole('alert')).toBeFocused();
       await expect(emailField).toHaveValue(email);
       await expect(passwordField).toHaveValue('');
 

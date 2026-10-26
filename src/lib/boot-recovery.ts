@@ -40,7 +40,7 @@ function claimReload(): boolean {
 
 /** Handles one unhandled rejection; only a network failure before hydration means the app could not start. */
 export function recoverFromFailedBoot(reason: unknown): void {
-  if (document.documentElement.dataset.hydrated === 'true' || !isNetworkFailure(reason)) return;
+  if (isHydrated() || !isNetworkFailure(reason)) return;
   // Claimed even offline, so « Réessayer » failing later shows the banner again.
   if (claimReload() && navigator.onLine) {
     location.reload();
@@ -67,4 +67,13 @@ export function markHydrated(): void {
   } catch {
     // No sessionStorage: claimReload never set the key.
   }
+}
+
+/**
+ * Whether the root layout has mounted. False on the server and while the
+ * client hydrates the server-rendered page, so markup rendered while it is
+ * false came from the server (FormError reads it per alert).
+ */
+export function isHydrated(): boolean {
+  return typeof document !== 'undefined' && document.documentElement.dataset.hydrated === 'true';
 }

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { fireEvent, screen } from '@testing-library/svelte';
 import * as m from '#lib/paraglide/messages.js';
 import { stubGlobal } from '../test/bun-test-utils';
-import { markHydrated, recoverFromFailedBoot } from './boot-recovery';
+import { isHydrated, markHydrated, recoverFromFailedBoot } from './boot-recovery';
 
 // What Chromium rejects kit.start() with when the root layout chunk fails (DIVERSIF-D).
 const ROOT_CHUNK_FAILURE = new TypeError(
@@ -130,5 +130,18 @@ describe('recoverFromFailedBoot', () => {
 
     expect(reload).not.toHaveBeenCalled();
     expect(banner()).toHaveLength(0);
+  });
+});
+
+describe('isHydrated', () => {
+  it('is false until the root layout marks the app as started', () => {
+    expect(isHydrated()).toBe(false);
+    markHydrated();
+    expect(isHydrated()).toBe(true);
+  });
+
+  it('is false on the server, where there is no document', () => {
+    stubGlobal('document', undefined);
+    expect(isHydrated()).toBe(false);
   });
 });
