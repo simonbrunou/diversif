@@ -13,7 +13,11 @@ What a production deploy does, how to check one from a workstation, and where to
 
 ## Check a deploy
 
-After a merge, run `scripts/smoke-prod.sh <sha>` with the new `main` head SHA (`git fetch origin && git rev-parse origin/main`). Run it in one foreground Bash call with `timeout: 600000`. It polls `/_app/version.json` until that SHA is live, for 540 s at most (`SMOKE_WAIT` in seconds overrides it), so a failed wait still ends inside that call. Then it runs public HTTP checks only. It fails at once on an argument that is not a SHA, and on a SHA that `origin/main` does not contain after a `git fetch origin`. When that fetch fails, it skips the `origin/main` check and waits. A newer `main` commit that contains the SHA counts as live, so a second merge during the wait does not fail the run. Its last line reads `smoke-prod: N of N checks passed on https://diversif.app`, and it exits 1 on any failure. What it expects:
+After a merge, run `scripts/smoke-prod.sh <sha>` with the new `main` head SHA (`git fetch origin && git rev-parse origin/main`). Run it in one foreground Bash call with `timeout: 600000`. It polls `/_app/version.json` until that SHA is live, for 540 s at most (`SMOKE_WAIT` in seconds overrides it), so a failed wait still ends inside that call. Then it runs public HTTP checks only. It fails at once on an argument that is not a SHA, and on a SHA that `origin/main` does not contain after a `git fetch origin`. When that fetch fails, it skips the `origin/main` check and waits. A newer `main` commit that contains the SHA counts as live, so a second merge during the wait does not fail the run. Its last line reads `smoke-prod: N of N checks passed on https://diversif.app`.
+
+It exits 1 when a check fails or `/_app/version.json` never reports a version. When an older commit still serves after the wait, it prints a `PENDING` line, skips the checks and exits 3: the deploy is still running, or it failed. Run homelab-stacks `scripts/coolify-deploy-status.sh` with the diversif app uuid from its header and the SHA. Its exit 0 or 3 means run `smoke-prod.sh` again. On any other exit, its last line says what went wrong.
+
+What it expects:
 
 - `/`, `/guide` and `/en` answer 200 `text/html`.
 - `/` carries a `Content-Security-Policy` with `default-src 'self'`, `Strict-Transport-Security` (sent only when `NODE_ENV=production`, see `src/hooks.server.ts`) and `X-Frame-Options: DENY`.
