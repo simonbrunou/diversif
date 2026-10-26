@@ -324,12 +324,13 @@ jobs:
       # that falls behind. Re-add it only after checking in bun.lock that
       # every copy still resolves to a version its consumer accepts.
       #
-      # Bun 1.4 accepts `bun audit --production` (an alias of `--prod`),
-      # though `--help` doesn't list it. The production-only step below doesn't
-      # rely on it: it audits a from-scratch install of a package.json with
-      # devDependencies stripped, so only the packages that really end up in
-      # the Docker runtime image's node_modules (see Dockerfile's prod-deps
-      # stage) are considered.
+      # Both steps run scripts/audit-deps.sh, one scope each. Run it with no
+      # argument to check both scopes locally the way this job does; its
+      # header says how each scope installs. Bun 1.4 accepts
+      # `bun audit --production` (an alias of `--prod`), though `--help`
+      # doesn't list it. The production scope doesn't rely on it: it audits an
+      # install of package.json with devDependencies stripped, so only the
+      # packages the Docker runtime image's prod-deps stage installs count.
       #
       # Note: @sentry/sveltekit (a real production dependency) declares
       # @sentry/bundler-plugins as a hard `dependency` rather than a
@@ -341,19 +342,6 @@ jobs:
       # transitively (glob → minimatch); harmless dead weight, but worth
       # knowing why it's there if `bun audit` ever flags that chain.
       - name: Production dependencies (strict — ships in the runtime image)
-        run: |
-          set -e
-          mkdir -p /tmp/prod-audit
-          bun -e "
-            const pkg = require('./package.json');
-            delete pkg.devDependencies;
-            require('fs').writeFileSync('/tmp/prod-audit/package.json', JSON.stringify(pkg));
-          "
-          cd /tmp/prod-audit
-          bun install --ignore-scripts
-          bun audit --audit-level=high
+        run: scripts/audit-deps.sh production
       - name: All dependencies (dev + build tooling included)
-        run: |
-          set -e
-          bun install --frozen-lockfile
-          bun audit --audit-level=high
+        run: scripts/audit-deps.sh all
