@@ -324,13 +324,8 @@ jobs:
       # that falls behind. Re-add it only after checking in bun.lock that
       # every copy still resolves to a version its consumer accepts.
       #
-      # Both steps run scripts/audit-deps.sh, one scope each. Run it with no
-      # argument to check both scopes locally the way this job does; its
-      # header says how each scope installs. Bun 1.4 accepts
-      # `bun audit --production` (an alias of `--prod`), though `--help`
-      # doesn't list it. The production scope doesn't rely on it: it audits an
-      # install of package.json with devDependencies stripped, so only the
-      # packages the Docker runtime image's prod-deps stage installs count.
+      # Both steps run scripts/audit-deps.sh, one scope each. Its header says
+      # how each scope installs; run it with no argument to check both locally.
       #
       # Note: @sentry/sveltekit (a real production dependency) declares
       # @sentry/bundler-plugins as a hard `dependency` rather than a
@@ -341,7 +336,7 @@ jobs:
       # bundled into build/index.js. It pulls in brace-expansion
       # transitively (glob → minimatch); harmless dead weight, but worth
       # knowing why it's there if `bun audit` ever flags that chain.
-      - name: Production dependencies (strict — ships in the runtime image)
+      - name: Production dependencies (ships in the runtime image)
         run: scripts/audit-deps.sh production
       - name: All dependencies (dev + build tooling included)
         run: scripts/audit-deps.sh all

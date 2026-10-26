@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
 # Run the dependency audit of CI's `bun-audit` job, which calls this script
-# once per scope, so a local run checks exactly what CI checks. Why the gate
+# once per scope, so a local run runs the same commands as CI. Why the gate
 # sits at `high` and how the `overrides` block keeps it clean: the comment on
 # that job in .forgejo/workflows/ci.yml.
 #
 #   scripts/audit-deps.sh [production|all]
 #
 # production: installs package.json with its devDependencies stripped into a
-#   temporary directory, then audits that install. It resolves from the
-#   ranges, without bun.lock, so it audits the newest versions they allow.
-# all: installs the repo from bun.lock (--frozen-lockfile), dev and build
-#   tooling included, then audits it.
+#   temporary directory, then audits that install, so only the packages the
+#   runtime image installs count. It resolves from the ranges, without
+#   bun.lock, so it audits the newest versions they allow, which can be newer
+#   than the image's (the Dockerfile's prod-deps stage installs from bun.lock)
+#   and can change from one run to the next. Bun 1.4 also accepts
+#   `bun audit --production`, though `--help` doesn't list it; this scope
+#   doesn't rely on it.
+# all: runs `bun install --frozen-lockfile` in the repo, dev and build tooling
+#   included (locally that also runs the `prepare` script), then audits it.
 # With no argument it runs both scopes and fails if either fails.
+# The local Bun can differ from the version CI pins (#528).
 # Exit 0: no advisory at high or above. Exit 2: a wrong call. Any other
-# exit: an advisory or a failed install, printed above it.
+# exit: an advisory or a failed install, named in the output.
 set -uo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -28,7 +34,7 @@ trap cleanup EXIT
 # Each scope chains its commands with && instead of relying on set -e, which
 # bash ignores inside a function called from an `||` list.
 audit_production() {
-  echo "== audit-deps: production dependencies (strict: ships in the runtime image)"
+  echo "== audit-deps: production dependencies (what the runtime image installs)"
   TMP="$(mktemp -d)" &&
     PKG_IN="$REPO/package.json" PKG_OUT="$TMP/package.json" bun -e '
       const pkg = require(process.env.PKG_IN);
@@ -43,17 +49,21 @@ audit_all() {
   (cd "$REPO" && bun install --frozen-lockfile && bun audit --audit-level="$LEVEL")
 }
 
-case "${1:-both}" in
+usage() {
+  echo "usage: scripts/audit-deps.sh [production|all]" >&2
+  exit 2
+}
+
+if [ $# -gt 1 ]; then usage; fi
+
+case "${1-}" in
   production) audit_production ;;
   all) audit_all ;;
-  both)
+  "")
     status=0
     audit_production || status=$?
     audit_all || status=$?
     exit "$status"
     ;;
-  *)
-    echo "usage: scripts/audit-deps.sh [production|all]" >&2
-    exit 2
-    ;;
+  *) usage ;;
 esac
