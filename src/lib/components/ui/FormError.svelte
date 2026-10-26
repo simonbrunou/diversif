@@ -2,6 +2,7 @@
   import type { Snippet } from 'svelte';
   import { cn } from '#lib/utils/cn.js';
   import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
+  import { isHydrated } from '#lib/boot-recovery.js';
 
   // Either an action's message key, `<FormError messageKey={form?.errorKey} {form} />`,
   // or prose passed as children. `form` is the page's action data that carried
@@ -12,6 +13,12 @@
   // without that step. `form` is required with `messageKey`; forgetting it
   // makes svelte-check report the `children` variant as missing instead.
   // Prose given without `form` (Field) stays in place when it repeats.
+  //
+  // A refusal without JavaScript loads a new document, and screen readers do
+  // not read an alert that is already in the page at load. So an alert the
+  // server rendered takes focus on load instead, and the screen reader reads
+  // it (#469). An alert inserted after hydration, the JavaScript path, leaves
+  // focus where it is: screen readers announce its insertion.
   type Props = { class?: string } & (
     | { messageKey: string | null | undefined; form: object | null | undefined; children?: never }
     | { children: Snippet; form?: object | null; messageKey?: never }
@@ -20,10 +27,17 @@
   let { class: className = '', messageKey, form, children }: Props = $props();
 </script>
 
-{#if children || messageKey}
-  {#key form}
+{#key form}
+  {#if children || messageKey}
+    <!-- The key replaces the alert, so this check runs once per alert. An
+         alert that renders before the app has hydrated came from the server. -->
+    {@const serverRendered = !isHydrated()}
+    <!-- The rule flags autofocus, but a screen reader reads a server-rendered alert only once it has focus. -->
+    <!-- svelte-ignore a11y_autofocus -->
     <div
       role="alert"
+      tabindex="-1"
+      autofocus={serverRendered}
       class={cn(
         // `text-destructive` is the coral background hue (≈2.4:1 on canvas, worse
         // on the destructive-tinted card). `text-severe-text` is the readable
@@ -38,5 +52,5 @@
         {resolveMessageKey(messageKey)}
       {/if}
     </div>
-  {/key}
-{/if}
+  {/if}
+{/key}

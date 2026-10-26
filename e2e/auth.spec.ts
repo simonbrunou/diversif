@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { awaitHydration, signUp } from './_helpers';
+import { awaitHydration, openWithoutJavaScript, signUp } from './_helpers';
 
 test.describe('signup → onboarding', () => {
   test('signup creates an account and redirects to onboarding @responsive', async ({ page }) => {
@@ -40,17 +40,46 @@ test.describe('signup → onboarding', () => {
     const submit = page.getByRole('button', { name: 'Se connecter', exact: true });
     const refusal = 'Adresse e-mail ou mot de passe incorrect.';
 
+    // An alert inserted with JavaScript leaves focus alone (#469). The submit
+    // button turns disabled while the request runs, which drops focus to the
+    // body, where an autofocused alert would take it.
+    const alertHasFocus = () =>
+      page.getByRole('alert').evaluate((el) => el === document.activeElement);
+
     await email.fill('nobody-reinsert@example.com');
     await password.fill('wrong-pass');
     await submit.click();
     await expect(page.getByRole('alert')).toHaveText(refusal);
+    expect(await page.getByRole('alert').count()).toBe(1);
+    expect(await alertHasFocus()).toBe(false);
     await page.getByRole('alert').evaluate((el) => el.setAttribute('data-e2e-first', ''));
 
     await password.fill('wrong-pass');
     await submit.click();
     await expect(page.locator('[role="alert"]:not([data-e2e-first])')).toHaveText(refusal);
-    await expect(page.getByRole('alert')).toHaveCount(1);
+    expect(await page.getByRole('alert').count()).toBe(1);
+    expect(await alertHasFocus()).toBe(false);
     await expect(page.locator('html[data-e2e-same-page]')).toHaveCount(1);
+  });
+});
+
+test.describe('login without JavaScript', () => {
+  test('a refused login moves focus to the alert, so screen readers read it (#469)', async ({
+    browser,
+    page
+  }) => {
+    const noJs = await openWithoutJavaScript(browser, page);
+    try {
+      await noJs.goto('/login');
+      await noJs.getByLabel('Adresse e-mail').fill('nobody-nojs@example.com');
+      await noJs.getByLabel('Mot de passe', { exact: true }).fill('wrong-pass');
+      await noJs.getByRole('button', { name: 'Se connecter', exact: true }).click();
+      const alert = noJs.getByRole('alert');
+      await expect(alert).toHaveText('Adresse e-mail ou mot de passe incorrect.');
+      await expect(alert).toBeFocused();
+    } finally {
+      await noJs.context().close();
+    }
   });
 });
 
