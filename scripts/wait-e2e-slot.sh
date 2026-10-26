@@ -102,13 +102,40 @@ busy_runs() {
   echo "checked"
 }
 
+# Two sessions that wait on the same run see it end at the same poll, and
+# both start an E2E job (#471's and #472's retros, 2026-10-26). So a clear
+# check also claims the slot in a file the sessions on this host share, and
+# another worktree's claim younger than CLAIM_TTL counts as busy. The TTL
+# covers the pre-push hook (about 80 s) before a new run shows up, so a
+# session whose push then fails holds the slot that long.
+CLAIM="${E2E_SLOT_CLAIM:-${XDG_RUNTIME_DIR:-/tmp}/diversif-e2e-slot.claim}"
+CLAIM_TTL=240
+ME="$(git -C "$REPO" rev-parse --show-toplevel)"
+
+# Write this worktree's claim, or print the other one and fail. The lock
+# ends with the $(...) subshell this runs in.
+claim_slot() {
+  local now at holder
+  now=$(date +%s)
+  exec 9>>"$CLAIM.lock"
+  ! command -v flock >/dev/null || flock 9
+  read -r at holder 2>/dev/null <"$CLAIM"
+  [[ "${at:-}" =~ ^[0-9]+$ ]] || at=0
+  if [ -n "${holder:-}" ] && [ "$holder" != "$ME" ] && [ $((now - at)) -lt "$CLAIM_TTL" ]; then
+    echo "claimed by $holder $((now - at)) s ago"
+    return 1
+  fi
+  printf '%s %s\n' "$now" "$ME" >"$CLAIM"
+}
 
 deadline=$((start + WAIT))
 while :; do
   out="$(busy_runs)"
   if [ "$out" = "checked" ]; then
-    echo "wait-e2e-slot: clear at $(date +%T)"
-    exit 0
+    out="$(claim_slot)" && {
+      echo "wait-e2e-slot: clear at $(date +%T)"
+      exit 0
+    }
   fi
   busy="${out%checked}"
   busy="${busy%$'\n'}"
