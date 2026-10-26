@@ -41,8 +41,8 @@ test.describe('signup → onboarding', () => {
     const refusal = 'Adresse e-mail ou mot de passe incorrect.';
 
     // An alert inserted with JavaScript leaves focus alone (#469). The submit
-    // button turns disabled while it waits, which drops focus to the body,
-    // where an autofocused alert would take it.
+    // button turns disabled while the request runs, which drops focus to the
+    // body, where an autofocused alert would take it.
     const alertHasFocus = () =>
       page.getByRole('alert').evaluate((el) => el === document.activeElement);
 

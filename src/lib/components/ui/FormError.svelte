@@ -16,8 +16,8 @@
   //
   // A refusal without JavaScript loads a new document, and screen readers do
   // not read an alert that is already in the page at load. So an alert the
-  // server rendered takes focus on load instead, and the reader reads it out
-  // (#469). An alert inserted after hydration, the JavaScript path, leaves
+  // server rendered takes focus on load instead, and the screen reader reads
+  // it (#469). An alert inserted after hydration, the JavaScript path, leaves
   // focus where it is: screen readers announce its insertion.
   type Props = { class?: string } & (
     | { messageKey: string | null | undefined; form: object | null | undefined; children?: never }

@@ -83,9 +83,9 @@ describe('FormError with a message key', () => {
   });
 });
 
-// The focus rule from FormError's header (#469). Each test stands for a
-// server-rendered alert with one that renders before the root layout marks
-// the app hydrated.
+// These tests cover the focus rule in FormError's header (#469). An alert
+// that renders before the root layout marks the app hydrated stands in for a
+// server-rendered one.
 describe('FormError focus', () => {
   afterEach(() => {
     delete document.documentElement.dataset.hydrated;
@@ -132,8 +132,9 @@ describe('FormError focus', () => {
     const first = screen.getByRole('alert');
     expect(document.activeElement).toBe(first);
     markHydrated();
-    // The page lost focus since, as it does when the submit button is
-    // disabled: an autofocused alert would take it back from the body.
+    // Move focus from the alert to the body, as disabling the submit button
+    // does. Autofocus acts only when the body has focus, so the new alert
+    // would take it from there.
     first.blur();
     await rerender({ messageKey: refusal.errorKey, form: { ...refusal } });
     await tick();
