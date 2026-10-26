@@ -23,16 +23,17 @@ async function seed() {
   });
 }
 
-// A refusal echoes the typed email, so a no-JS re-render can refill the
-// field (#471). The password never comes back.
 type Refusal = { status: number; data: { deleteErrorKey: string; confirmEmail: string } };
 
-async function refuse(u: Awaited<ReturnType<typeof seed>>, formData: Record<string, string>) {
-  return (await actions.default!(
-    makeRouteEvent({ user: safeUser(u), formData }) as unknown as Parameters<
-      NonNullable<typeof actions.default>
-    >[0]
+async function submitRefused(
+  u: Awaited<ReturnType<typeof seed>>,
+  formData: Record<string, string>
+) {
+  const event = makeRouteEvent({ user: safeUser(u), formData });
+  const r = (await actions.default!(
+    event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
   )) as Refusal;
+  return { event, r };
 }
 
 describe('account/delete load', () => {
@@ -69,13 +70,7 @@ describe('account/delete deleteAccount', () => {
 
   it('fails when the typed email does not match', async () => {
     const u = await seed();
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: ' Wrong@Example.com ' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as Refusal;
+    const { event, r } = await submitRefused(u, { confirmEmail: ' Wrong@Example.com ' });
     expect(r.status).toBe(400);
     // Exactly as typed, so the visitor can correct it.
     expect(r.data).toEqual({
@@ -119,10 +114,7 @@ describe('account/delete deleteAccount', () => {
 
   it('fails when the confirmEmail field is missing entirely', async () => {
     const u = await seed();
-    const event = makeRouteEvent({ user: safeUser(u), formData: {} });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as Refusal;
+    const { event, r } = await submitRefused(u, {});
     expect(r.status).toBe(400);
     expect(r.data).toEqual({
       deleteErrorKey: 'errorsAccountDeleteEmailMismatch',
@@ -134,13 +126,7 @@ describe('account/delete deleteAccount', () => {
 
   it('fails when currentPassword is missing', async () => {
     const u = await seed();
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: 'p@example.com' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as Refusal;
+    const { event, r } = await submitRefused(u, { confirmEmail: 'p@example.com' });
     expect(r.status).toBe(400);
     expect(r.data).toEqual({
       deleteErrorKey: 'errorsAccountPasswordIncorrect',
@@ -152,13 +138,10 @@ describe('account/delete deleteAccount', () => {
 
   it('fails when currentPassword is wrong', async () => {
     const u = await seed();
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: 'p@example.com', currentPassword: 'wrong-current' }
+    const { event, r } = await submitRefused(u, {
+      confirmEmail: 'p@example.com',
+      currentPassword: 'wrong-current'
     });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as Refusal;
     expect(r.status).toBe(400);
     expect(r.data).toEqual({
       deleteErrorKey: 'errorsAccountPasswordIncorrect',
@@ -172,17 +155,11 @@ describe('account/delete deleteAccount', () => {
     const u = await seed();
     // Every refusal path: a mismatch with the right password, five wrong
     // passwords, then the right one once the budget of five is spent.
-    const refusals = [
-      await refuse(u, { confirmEmail: 'autre@example.com', currentPassword: 'current-password-12' })
-    ];
-    for (let i = 0; i < 5; i++) {
-      refusals.push(
-        await refuse(u, { confirmEmail: 'p@example.com', currentPassword: 'wrong-current' })
-      );
-    }
-    refusals.push(
-      await refuse(u, { confirmEmail: 'p@example.com', currentPassword: 'current-password-12' })
-    );
+    const submit = async (confirmEmail: string, currentPassword: string) =>
+      (await submitRefused(u, { confirmEmail, currentPassword })).r;
+    const refusals = [await submit('autre@example.com', 'current-password-12')];
+    for (let i = 0; i < 5; i++) refusals.push(await submit('p@example.com', 'wrong-current'));
+    refusals.push(await submit('p@example.com', 'current-password-12'));
     expect(refusals.map((r) => r.status)).toEqual([400, 400, 400, 400, 400, 400, 429]);
     expect(refusals.at(-1)!.data).toEqual({
       deleteErrorKey: 'errorsAuthRateLimited',

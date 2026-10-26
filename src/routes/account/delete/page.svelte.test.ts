@@ -58,7 +58,7 @@ describe('account/delete page', () => {
     // Seeded once, like login's email: a later result never overwrites typing.
     await fireEvent.input(email, { target: { value: 'p@example.com' } });
     await rerender({
-      form: { deleteErrorKey: 'errorsAccountPasswordIncorrect', confirmEmail: 'autre@example.com' }
+      form: { deleteErrorKey: 'errorsAccountPasswordIncorrect', confirmEmail: 'tiers@example.com' }
     });
     expect(email.value).toBe('p@example.com');
   });
