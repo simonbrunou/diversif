@@ -8,6 +8,8 @@
 # SMOKE_BASE_URL overrides the target (default https://diversif.app).
 # SMOKE_WAIT is how long to wait for <sha> to go live, in seconds (default
 # 540, so a failed wait still ends inside one 600 s agent Bash call).
+# Exit 0: every check passed. 1: a check failed, or <sha> is not on main.
+# 3: <sha> did not go live in time, so the checks did not run.
 # What each check expects, and why: docs/agents/deploy.md.
 set -uo pipefail
 
@@ -111,7 +113,8 @@ if [ -n "$SHA" ]; then
         fail "/_app/version.json returned $got after ${WAIT}s"
       fi
       printf 'smoke-prod: %s not live on %s, checks skipped\n' "$SHA" "$BASE"
-      exit 1
+      printf 'smoke-prod: the deploy is still running or it failed; ask homelab-stacks scripts/coolify-deploy-status.sh (exit 3: run smoke-prod again, 1: the deploy failed)\n'
+      exit 3
     fi
     sleep 15
   done
