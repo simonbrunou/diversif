@@ -104,10 +104,7 @@
   },
   "overrides": {
     "esbuild": "^0.28.1",
-    "@opentelemetry/core": "^2.8.0",
     "devalue": "^5.9.4",
-    "browserslist": "^4.28.7",
-    "baseline-browser-mapping": "^2.11.0",
     "nanoid": "^6.0.0",
     "postcss": "^8.5.29",
     "postcss-selector-parser": "^7.1.3"
