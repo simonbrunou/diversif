@@ -20,13 +20,13 @@ export const actions: Actions = {
     const confirmEmail = typeof raw.confirmEmail === 'string' ? raw.confirmEmail : '';
     const currentPassword = typeof raw.currentPassword === 'string' ? raw.currentPassword : '';
     if (!matchesAccountEmail(confirmEmail, user.email)) {
-      return fail(400, { deleteErrorKey: 'errorsAccountDeleteEmailMismatch' });
+      return fail(400, { deleteErrorKey: 'errorsAccountDeleteEmailMismatch', confirmEmail });
     }
     // Fresh-auth: typed email is visible on the page, so a stolen session
     // cookie alone shouldn't be enough to permanently destroy the account.
     // Require the current password as proof the request comes from the owner.
     const fresh = await requireFreshAuth(locals, currentPassword, 'deleteErrorKey');
-    if (!fresh.ok) return fresh.failure;
+    if (!fresh.ok) return fail(fresh.failure.status, { ...fresh.failure.data, confirmEmail });
 
     await deleteUserAccount(user.id);
     await endSession(event);
