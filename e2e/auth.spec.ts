@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { awaitHydration, signUp } from './_helpers';
+import { awaitHydration, openWithoutJavaScript, signUp } from './_helpers';
 
 test.describe('signup → onboarding', () => {
   test('signup creates an account and redirects to onboarding @responsive', async ({ page }) => {
@@ -40,10 +40,9 @@ test.describe('signup → onboarding', () => {
     const submit = page.getByRole('button', { name: 'Se connecter', exact: true });
     const refusal = 'Adresse e-mail ou mot de passe incorrect.';
 
-    // With JavaScript the alert's insertion is what screen readers announce, so
-    // it leaves focus alone (#469). The submit button is disabled while it
-    // waits, which drops focus to the body, where an autofocused alert would
-    // take it.
+    // An alert inserted with JavaScript leaves focus alone (#469). The submit
+    // button turns disabled while it waits, which drops focus to the body,
+    // where an autofocused alert would take it.
     const alertHasFocus = () =>
       page.getByRole('alert').evaluate((el) => el === document.activeElement);
 
@@ -58,7 +57,7 @@ test.describe('signup → onboarding', () => {
     await password.fill('wrong-pass');
     await submit.click();
     await expect(page.locator('[role="alert"]:not([data-e2e-first])')).toHaveText(refusal);
-    await expect(page.getByRole('alert')).toHaveCount(1);
+    expect(await page.getByRole('alert').count()).toBe(1);
     expect(await alertHasFocus()).toBe(false);
     await expect(page.locator('html[data-e2e-same-page]')).toHaveCount(1);
   });
@@ -66,13 +65,11 @@ test.describe('signup → onboarding', () => {
 
 test.describe('login without JavaScript', () => {
   test('a refused login moves focus to the alert, so screen readers read it (#469)', async ({
-    browser
+    browser,
+    page
   }) => {
-    // A refusal loads a new document, where an alert already in the page is
-    // not read out on its own.
-    const context = await browser.newContext({ javaScriptEnabled: false });
+    const noJs = await openWithoutJavaScript(browser, page);
     try {
-      const noJs = await context.newPage();
       await noJs.goto('/login');
       await noJs.getByLabel('Adresse e-mail').fill('nobody-nojs@example.com');
       await noJs.getByLabel('Mot de passe', { exact: true }).fill('wrong-pass');
@@ -81,7 +78,7 @@ test.describe('login without JavaScript', () => {
       await expect(alert).toHaveText('Adresse e-mail ou mot de passe incorrect.');
       await expect(alert).toBeFocused();
     } finally {
-      await context.close();
+      await noJs.context().close();
     }
   });
 });

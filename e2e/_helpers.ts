@@ -28,7 +28,8 @@ export async function awaitHydration(page: Page): Promise<void> {
 
 /**
  * signUp needs a hydrated page, so the account is created with JavaScript;
- * this carries its session into a new context with JavaScript disabled.
+ * this carries its session into a new context with JavaScript disabled. A
+ * page that never signed in gives a visitor with no session.
  * The caller closes the returned page's context.
  */
 export async function openWithoutJavaScript(browser: Browser, page: Page): Promise<Page> {

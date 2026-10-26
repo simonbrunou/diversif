@@ -83,9 +83,9 @@ describe('FormError with a message key', () => {
   });
 });
 
-// A no-JS refusal loads a new document, where an alert already in the page is
-// not read out, so a server-rendered alert takes focus instead (#469). An
-// alert rendered before the root layout marks the app hydrated stands for one.
+// The focus rule from FormError's header (#469). Each test stands for a
+// server-rendered alert with one that renders before the root layout marks
+// the app hydrated.
 describe('FormError focus', () => {
   afterEach(() => {
     delete document.documentElement.dataset.hydrated;
@@ -132,6 +132,8 @@ describe('FormError focus', () => {
     const first = screen.getByRole('alert');
     expect(document.activeElement).toBe(first);
     markHydrated();
+    // The page lost focus since, as it does when the submit button is
+    // disabled: an autofocused alert would take it back from the body.
     first.blur();
     await rerender({ messageKey: refusal.errorKey, form: { ...refusal } });
     await tick();

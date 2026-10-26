@@ -70,9 +70,9 @@ export function markHydrated(): void {
 }
 
 /**
- * Whether the root layout has mounted. False on the server and while the
- * client hydrates the server-rendered page, so markup rendered while it is
- * false came from the server (FormError reads it per alert).
+ * Tells whether the root layout has mounted (see markHydrated). It returns
+ * false on the server and while the client hydrates the server-rendered page,
+ * so markup that renders while it returns false came from the server.
  */
 export function isHydrated(): boolean {
   return typeof document !== 'undefined' && document.documentElement.dataset.hydrated === 'true';

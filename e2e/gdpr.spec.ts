@@ -156,7 +156,7 @@ test.describe('account deletion without JavaScript', () => {
       await expect(noJs.getByRole('alert')).toHaveText(
         'Saisissez votre adresse e-mail exacte pour confirmer.'
       );
-      // On a new document only focus gets the alert read out (#469).
+      // A server-rendered alert takes focus, so screen readers read it (#469).
       await expect(noJs.getByRole('alert')).toBeFocused();
       // The wrong address stays, so it can be corrected; the password never does (#471).
       const emailField = noJs.getByLabel(/Saisissez votre adresse e-mail/i);

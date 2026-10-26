@@ -16,9 +16,9 @@
   //
   // A refusal without JavaScript loads a new document, and screen readers do
   // not read an alert that is already in the page at load. So an alert the
-  // server rendered takes focus on load instead (#469). One inserted after
-  // hydration, the JavaScript path, leaves focus where it is: its insertion
-  // is what screen readers announce.
+  // server rendered takes focus on load instead, and the reader reads it out
+  // (#469). An alert inserted after hydration, the JavaScript path, leaves
+  // focus where it is: screen readers announce its insertion.
   type Props = { class?: string } & (
     | { messageKey: string | null | undefined; form: object | null | undefined; children?: never }
     | { children: Snippet; form?: object | null; messageKey?: never }
@@ -29,10 +29,10 @@
 
 {#key form}
   {#if children || messageKey}
-    <!-- Read once per alert, since the key replaces it: before the app has
-         hydrated, the alert can only have come from the server. -->
+    <!-- The key replaces the alert, so this check runs once per alert. An
+         alert that renders before the app has hydrated came from the server. -->
     {@const serverRendered = !isHydrated()}
-    <!-- Autofocus on purpose: a server-rendered alert is only read out if it takes focus. -->
+    <!-- The rule flags autofocus, but a screen reader reads a server-rendered alert only once it has focus. -->
     <!-- svelte-ignore a11y_autofocus -->
     <div
       role="alert"
