@@ -56,10 +56,11 @@ describe('account/delete page', () => {
     expect(password.value).toBe('');
 
     // Seeded once, like login's email: a later result never overwrites typing.
+    await fireEvent.input(email, { target: { value: 'p@example.com' } });
     await rerender({
-      form: { deleteErrorKey: 'errorsAccountPasswordIncorrect', confirmEmail: 'p@example.com' }
+      form: { deleteErrorKey: 'errorsAccountPasswordIncorrect', confirmEmail: 'autre@example.com' }
     });
-    expect(email.value).toBe('autre@example.com');
+    expect(email.value).toBe('p@example.com');
   });
 
   it('renders no alert before any submission', () => {

@@ -23,6 +23,18 @@ async function seed() {
   });
 }
 
+// A refusal echoes the typed email, so a no-JS re-render can refill the
+// field (#471). The password never comes back.
+type Refusal = { status: number; data: { deleteErrorKey: string; confirmEmail: string } };
+
+async function refuse(u: Awaited<ReturnType<typeof seed>>, formData: Record<string, string>) {
+  return (await actions.default!(
+    makeRouteEvent({ user: safeUser(u), formData }) as unknown as Parameters<
+      NonNullable<typeof actions.default>
+    >[0]
+  )) as Refusal;
+}
+
 describe('account/delete load', () => {
   it('redirects unauthenticated users to /login', async () => {
     const r = await captureFlow(() =>
@@ -59,13 +71,17 @@ describe('account/delete deleteAccount', () => {
     const u = await seed();
     const event = makeRouteEvent({
       user: safeUser(u),
-      formData: { confirmEmail: 'wrong@example.com' }
+      formData: { confirmEmail: ' Wrong@Example.com ' }
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
+    )) as Refusal;
     expect(r.status).toBe(400);
-    expect(r.data.deleteErrorKey).toBe('errorsAccountDeleteEmailMismatch');
+    // Exactly as typed, so the visitor can correct it.
+    expect(r.data).toEqual({
+      deleteErrorKey: 'errorsAccountDeleteEmailMismatch',
+      confirmEmail: ' Wrong@Example.com '
+    });
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
     // A refused attempt keeps the account, so the browser keeps its storage.
     expect(event.setHeaders).not.toHaveBeenCalled();
@@ -106,8 +122,12 @@ describe('account/delete deleteAccount', () => {
     const event = makeRouteEvent({ user: safeUser(u), formData: {} });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
+    )) as Refusal;
     expect(r.status).toBe(400);
+    expect(r.data).toEqual({
+      deleteErrorKey: 'errorsAccountDeleteEmailMismatch',
+      confirmEmail: ''
+    });
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
     expect(event.setHeaders).not.toHaveBeenCalled();
   });
@@ -120,9 +140,12 @@ describe('account/delete deleteAccount', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
+    )) as Refusal;
     expect(r.status).toBe(400);
-    expect(r.data.deleteErrorKey).toBe('errorsAccountPasswordIncorrect');
+    expect(r.data).toEqual({
+      deleteErrorKey: 'errorsAccountPasswordIncorrect',
+      confirmEmail: 'p@example.com'
+    });
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
     expect(event.setHeaders).not.toHaveBeenCalled();
   });
@@ -135,84 +158,36 @@ describe('account/delete deleteAccount', () => {
     });
     const r = (await actions.default!(
       event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
+    )) as Refusal;
     expect(r.status).toBe(400);
-    expect(r.data.deleteErrorKey).toBe('errorsAccountPasswordIncorrect');
-    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
-    expect(event.setHeaders).not.toHaveBeenCalled();
-  });
-
-  it('keeps the typed email after a wrong password', async () => {
-    const u = await seed();
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: 'p@example.com', currentPassword: 'wrong-current' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string; confirmEmail: string } };
-    expect(r.status).toBe(400);
-    // Echoed so a no-JS re-render can refill the field (#471).
     expect(r.data).toEqual({
       deleteErrorKey: 'errorsAccountPasswordIncorrect',
       confirmEmail: 'p@example.com'
     });
+    expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
+    expect(event.setHeaders).not.toHaveBeenCalled();
   });
 
-  it('keeps a mismatched email exactly as typed, so it can be corrected', async () => {
+  it('never echoes the password, the rate-limited refusal included', async () => {
     const u = await seed();
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: ' Autre@Example.com ', currentPassword: 'current-password-12' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string; confirmEmail: string } };
-    expect(r.status).toBe(400);
-    expect(r.data).toEqual({
-      deleteErrorKey: 'errorsAccountDeleteEmailMismatch',
-      confirmEmail: ' Autre@Example.com '
-    });
-  });
-
-  it('keeps the typed email and the 429 once fresh-auth is rate limited', async () => {
-    const u = await seed();
-    const submit = (currentPassword: string) =>
-      actions.default!(
-        makeRouteEvent({
-          user: safeUser(u),
-          formData: { confirmEmail: 'p@example.com', currentPassword }
-        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    // Every refusal path: a mismatch with the right password, five wrong
+    // passwords, then the right one once the budget of five is spent.
+    const refusals = [
+      await refuse(u, { confirmEmail: 'autre@example.com', currentPassword: 'current-password-12' })
+    ];
+    for (let i = 0; i < 5; i++) {
+      refusals.push(
+        await refuse(u, { confirmEmail: 'p@example.com', currentPassword: 'wrong-current' })
       );
-    for (let i = 0; i < 5; i++) await submit('wrong-current');
-
-    const r = (await submit('current-password-12')) as {
-      status: number;
-      data: { deleteErrorKey: string; confirmEmail: string };
-    };
-    expect(r.status).toBe(429);
-    expect(r.data).toEqual({
+    }
+    refusals.push(
+      await refuse(u, { confirmEmail: 'p@example.com', currentPassword: 'current-password-12' })
+    );
+    expect(refusals.map((r) => r.status)).toEqual([400, 400, 400, 400, 400, 400, 429]);
+    expect(refusals.at(-1)!.data).toEqual({
       deleteErrorKey: 'errorsAuthRateLimited',
       confirmEmail: 'p@example.com'
     });
-  });
-
-  it('never echoes the password in a refusal payload', async () => {
-    const u = await seed();
-    const submit = (confirmEmail: string, currentPassword: string) =>
-      actions.default!(
-        makeRouteEvent({
-          user: safeUser(u),
-          formData: { confirmEmail, currentPassword }
-        }) as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-      ) as Promise<{ status: number; data: Record<string, string> }>;
-
-    // Every refusal path: a mismatch with the right password, five wrong
-    // passwords, then the right one once the budget of five is spent.
-    const refusals = [await submit('autre@example.com', 'current-password-12')];
-    for (let i = 0; i < 5; i++) refusals.push(await submit('p@example.com', 'wrong-current'));
-    refusals.push(await submit('p@example.com', 'current-password-12'));
-    expect(refusals.map((r) => r.status)).toEqual([400, 400, 400, 400, 400, 400, 429]);
     for (const r of refusals) {
       const payload = JSON.stringify(r.data);
       expect(payload).not.toContain('current-password-12');
