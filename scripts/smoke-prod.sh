@@ -8,8 +8,9 @@
 # SMOKE_BASE_URL overrides the target (default https://diversif.app).
 # SMOKE_WAIT is how long to wait for <sha> to go live, in seconds (default
 # 540, so a failed wait still ends inside one 600 s agent Bash call).
-# Exit 0: every check passed. 1: a check failed, or <sha> is not on main.
-# 3: <sha> did not go live in time, so the checks did not run.
+# Exit 0: every check passed. 1: a check failed, the site did not answer, or
+# <sha> is not a commit on main. 3: the site still serves an older commit
+# after SMOKE_WAIT, so the checks did not run (deploy.md says what next).
 # What each check expects, and why: docs/agents/deploy.md.
 set -uo pipefail
 
@@ -107,13 +108,14 @@ if [ -n "$SHA" ]; then
     case "$live" in "$SHA"*) [ -n "$live" ] && break ;; esac
     contains_sha && break
     if [ "$(date +%s)" -ge "$deadline" ]; then
-      if [ -n "$live" ]; then
-        fail "/_app/version.json is $live, not $SHA after ${WAIT}s"
-      else
+      if [ -z "$live" ]; then
         fail "/_app/version.json returned $got after ${WAIT}s"
+        printf 'smoke-prod: %s not live on %s, checks skipped\n' "$SHA" "$BASE"
+        exit 1
       fi
-      printf 'smoke-prod: %s not live on %s, checks skipped\n' "$SHA" "$BASE"
-      printf 'smoke-prod: the deploy is still running or it failed; ask homelab-stacks scripts/coolify-deploy-status.sh (exit 3: run smoke-prod again, 1: the deploy failed)\n'
+      # An older commit still serves: the deploy may still be running.
+      printf 'PENDING /_app/version.json is %s, not %s after %ss\n' "$live" "$SHA" "$WAIT"
+      printf 'smoke-prod: checks skipped; run homelab-stacks scripts/coolify-deploy-status.sh\n'
       exit 3
     fi
     sleep 15
