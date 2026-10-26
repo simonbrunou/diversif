@@ -12,12 +12,12 @@
 # (default 420, so a call ends inside a 600 s shell timeout even when every
 # request takes its full 20 s) and prints each busy run it sees.
 # A clear check then claims the slot for this worktree in the file
-# E2E_SLOT_CLAIM (default $XDG_RUNTIME_DIR/diversif-e2e-slot.claim), and
-# another worktree's fresh claim counts as busy (see claim_slot).
+# E2E_SLOT_CLAIM (default diversif-e2e-slot.claim in $XDG_RUNTIME_DIR, else
+# in /tmp), and another worktree's fresh claim counts as busy (claim_slot).
 # Exit 0: no other E2E job waits or runs, and no other worktree holds a claim.
 # Exit 3: still busy, run it again. Exit 2: no token on this host, the forge
 # refused it, or a wrong call (a bad SHA or E2E_WAIT, a JOB that ci.yml no
-# longer names, or no directory for the claim file).
+# longer names, or a claim file it cannot write).
 #
 # It reads `actions/runs` and each run's jobs. `actions/tasks` lists only the
 # jobs a runner has taken, so a queued run and an E2E job still waiting for a
@@ -50,7 +50,8 @@ WAIT=$((10#$WAIT))
 [ -z "$OWN" ] || [[ "$OWN" =~ ^[0-9a-f]{7,40}$ ]] || die "'$OWN' is not a commit SHA"
 grep -qxF "    name: $JOB" "$REPO/.forgejo/workflows/ci.yml" ||
   die "ci.yml has no job named '$JOB': update JOB in this script"
-[ -d "$(dirname "$CLAIM")" ] || die "no directory for the claim file $CLAIM"
+[ -d "$(dirname "$CLAIM")" ] && [ -w "$(dirname "$CLAIM")" ] && [ ! -d "$CLAIM" ] ||
+  die "cannot write the claim file $CLAIM"
 
 keys="$HOME/.local/share/forgejo-cli/keys.json"
 [ -f "$keys" ] || keys="$HOME/Library/Application Support/forgejo-cli/keys.json"
@@ -112,9 +113,9 @@ busy_runs() {
 # both start an E2E job (#471's and #472's retros, 2026-10-26). So a clear
 # check also claims the slot in a file the sessions on this host share, and
 # another worktree's claim younger than CLAIM_TTL counts as busy. The new run
-# shows up only once the session has written its PR body or passed the
-# pre-push hook (about 80 s), so the TTL is 240 s, and a session that then
-# starts nothing holds the slot that long.
+# shows up only after the pre-push hook (about 80 s) or after the session
+# writes its PR body. 240 s is three times the hook, to leave room for that
+# writing, and a session that then starts nothing holds the slot that long.
 CLAIM_TTL=240
 ME="$(git -C "$REPO" rev-parse --show-toplevel)"
 
@@ -124,9 +125,12 @@ ME="$(git -C "$REPO" rev-parse --show-toplevel)"
 # meet there.
 claim_slot() {
   local now age at holder
-  exec 9>>"$CLAIM.lock"
-  if command -v flock >/dev/null && ! flock -w 30 9; then
-    echo "the claim lock stayed held for 30 s"
+  exec 9>>"$CLAIM.lock" || {
+    echo "cannot open $CLAIM.lock"
+    return 1
+  }
+  if command -v flock >/dev/null && ! flock -w 10 9; then
+    echo "the claim lock stayed held for 10 s"
     return 1
   fi
   now=$(date +%s)
