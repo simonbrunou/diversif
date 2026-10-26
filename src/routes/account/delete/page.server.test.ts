@@ -23,6 +23,19 @@ async function seed() {
   });
 }
 
+type Refusal = { status: number; data: { deleteErrorKey: string; confirmEmail: string } };
+
+async function submitRefused(
+  u: Awaited<ReturnType<typeof seed>>,
+  formData: Record<string, string>
+) {
+  const event = makeRouteEvent({ user: safeUser(u), formData });
+  const r = (await actions.default!(
+    event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+  )) as Refusal;
+  return { event, r };
+}
+
 describe('account/delete load', () => {
   it('redirects unauthenticated users to /login', async () => {
     const r = await captureFlow(() =>
@@ -57,15 +70,13 @@ describe('account/delete deleteAccount', () => {
 
   it('fails when the typed email does not match', async () => {
     const u = await seed();
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: 'wrong@example.com' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
+    const { event, r } = await submitRefused(u, { confirmEmail: ' Wrong@Example.com ' });
     expect(r.status).toBe(400);
-    expect(r.data.deleteErrorKey).toBe('errorsAccountDeleteEmailMismatch');
+    // Exactly as typed, so the visitor can correct it.
+    expect(r.data).toEqual({
+      deleteErrorKey: 'errorsAccountDeleteEmailMismatch',
+      confirmEmail: ' Wrong@Example.com '
+    });
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
     // A refused attempt keeps the account, so the browser keeps its storage.
     expect(event.setHeaders).not.toHaveBeenCalled();
@@ -103,43 +114,62 @@ describe('account/delete deleteAccount', () => {
 
   it('fails when the confirmEmail field is missing entirely', async () => {
     const u = await seed();
-    const event = makeRouteEvent({ user: safeUser(u), formData: {} });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
+    const { event, r } = await submitRefused(u, {});
     expect(r.status).toBe(400);
+    expect(r.data).toEqual({
+      deleteErrorKey: 'errorsAccountDeleteEmailMismatch',
+      confirmEmail: ''
+    });
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
     expect(event.setHeaders).not.toHaveBeenCalled();
   });
 
   it('fails when currentPassword is missing', async () => {
     const u = await seed();
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: 'p@example.com' }
-    });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
+    const { event, r } = await submitRefused(u, { confirmEmail: 'p@example.com' });
     expect(r.status).toBe(400);
-    expect(r.data.deleteErrorKey).toBe('errorsAccountPasswordIncorrect');
+    expect(r.data).toEqual({
+      deleteErrorKey: 'errorsAccountPasswordIncorrect',
+      confirmEmail: 'p@example.com'
+    });
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
     expect(event.setHeaders).not.toHaveBeenCalled();
   });
 
   it('fails when currentPassword is wrong', async () => {
     const u = await seed();
-    const event = makeRouteEvent({
-      user: safeUser(u),
-      formData: { confirmEmail: 'p@example.com', currentPassword: 'wrong-current' }
+    const { event, r } = await submitRefused(u, {
+      confirmEmail: 'p@example.com',
+      currentPassword: 'wrong-current'
     });
-    const r = (await actions.default!(
-      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
-    )) as { status: number; data: { deleteErrorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.deleteErrorKey).toBe('errorsAccountPasswordIncorrect');
+    expect(r.data).toEqual({
+      deleteErrorKey: 'errorsAccountPasswordIncorrect',
+      confirmEmail: 'p@example.com'
+    });
     expect((await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0]).toBeDefined();
     expect(event.setHeaders).not.toHaveBeenCalled();
+  });
+
+  it('never echoes the password, the rate-limited refusal included', async () => {
+    const u = await seed();
+    // Every refusal path: a mismatch with the right password, five wrong
+    // passwords, then the right one once the budget of five is spent.
+    const submit = async (confirmEmail: string, currentPassword: string) =>
+      (await submitRefused(u, { confirmEmail, currentPassword })).r;
+    const refusals = [await submit('autre@example.com', 'current-password-12')];
+    for (let i = 0; i < 5; i++) refusals.push(await submit('p@example.com', 'wrong-current'));
+    refusals.push(await submit('p@example.com', 'current-password-12'));
+    expect(refusals.map((r) => r.status)).toEqual([400, 400, 400, 400, 400, 400, 429]);
+    expect(refusals.at(-1)!.data).toEqual({
+      deleteErrorKey: 'errorsAuthRateLimited',
+      confirmEmail: 'p@example.com'
+    });
+    for (const r of refusals) {
+      const payload = JSON.stringify(r.data);
+      expect(payload).not.toContain('current-password-12');
+      expect(payload).not.toContain('wrong-current');
+    }
   });
 
   it('deletes the user, signs the device out and redirects to /account/deleted', async () => {

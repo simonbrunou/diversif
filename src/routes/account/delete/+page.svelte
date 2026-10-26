@@ -14,7 +14,11 @@
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
-  let confirmDeleteEmail = $state('');
+  // Seeded once from a refused no-JS POST, like login's email: later prop
+  // changes must not overwrite what the user is typing. The password is
+  // never echoed, so its field always starts empty.
+  // svelte-ignore state_referenced_locally
+  let confirmDeleteEmail = $state(form?.confirmEmail ?? '');
   let confirmDeletePassword = $state('');
   let deletingAccount = $state(false);
   const confirmed = $derived(

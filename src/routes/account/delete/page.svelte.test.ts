@@ -43,6 +43,26 @@ describe('account/delete page', () => {
     expect(getByRole('alert').textContent).toContain('Mot de passe actuel incorrect.');
   });
 
+  it('refills the typed email after a refusal, and never the password', async () => {
+    const { getByLabelText, rerender } = renderPage('p@example.com', {
+      deleteErrorKey: 'errorsAccountPasswordIncorrect',
+      confirmEmail: 'autre@example.com'
+    });
+    const email = getByLabelText(
+      'Saisissez votre adresse e-mail pour confirmer'
+    ) as HTMLInputElement;
+    const password = getByLabelText('Confirmez avec votre mot de passe') as HTMLInputElement;
+    expect(email.value).toBe('autre@example.com');
+    expect(password.value).toBe('');
+
+    // Seeded once, like login's email: a later result never overwrites typing.
+    await fireEvent.input(email, { target: { value: 'p@example.com' } });
+    await rerender({
+      form: { deleteErrorKey: 'errorsAccountPasswordIncorrect', confirmEmail: 'tiers@example.com' }
+    });
+    expect(email.value).toBe('p@example.com');
+  });
+
   it('renders no alert before any submission', () => {
     const { queryByRole } = renderPage('p@example.com');
     expect(queryByRole('alert')).toBeNull();

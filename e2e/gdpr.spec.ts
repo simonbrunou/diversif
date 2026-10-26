@@ -156,10 +156,17 @@ test.describe('account deletion without JavaScript', () => {
       await expect(noJs.getByRole('alert')).toHaveText(
         'Saisissez votre adresse e-mail exacte pour confirmer.'
       );
+      // The wrong address stays, so it can be corrected; the password never does (#471).
+      const emailField = noJs.getByLabel(/Saisissez votre adresse e-mail/i);
+      const passwordField = noJs.getByLabel(/Confirmez avec votre mot de passe/i);
+      await expect(emailField).toHaveValue('autre@example.com');
+      await expect(passwordField).toHaveValue('');
 
       await fillDeletionFields(noJs, email, 'wrong-password-123');
       await deleteButton(noJs).click();
       await expect(noJs.getByRole('alert')).toHaveText('Mot de passe actuel incorrect.');
+      await expect(emailField).toHaveValue(email);
+      await expect(passwordField).toHaveValue('');
 
       // Deleting the account would have ended this session too.
       await noJs.goto('/account/delete');
