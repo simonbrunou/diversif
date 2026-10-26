@@ -8,10 +8,11 @@
 # SMOKE_BASE_URL overrides the target (default https://diversif.app).
 # SMOKE_WAIT is how long to wait for <sha> to go live, in seconds (default
 # 540, so a failed wait still ends inside one 600 s agent Bash call).
-# Exit 0: every check passed. 1: a check failed, the site did not answer, or
-# <sha> is not a commit on main. 3: the site still serves an older commit
-# after SMOKE_WAIT, so the checks did not run (deploy.md says what next).
-# What each check expects, and why: docs/agents/deploy.md.
+# Exit 0: every check passed. 1: a check failed, /_app/version.json never
+# reported a version, or <sha> is not a commit on main. 3: an older commit
+# still served after SMOKE_WAIT, so the checks did not run.
+# What each check expects, why, and what to run after exit 3:
+# docs/agents/deploy.md.
 set -uo pipefail
 
 BASE="${SMOKE_BASE_URL:-https://diversif.app}"
@@ -103,19 +104,22 @@ if [ -n "$SHA" ]; then
     full="$(on_main)" || not_deployable "$SHA is not a commit on origin/main"
     SHA="$full"
   fi
+  last_live=''
   while :; do
     read_live
     case "$live" in "$SHA"*) [ -n "$live" ] && break ;; esac
     contains_sha && break
+    [ -z "$live" ] || last_live="$live"
     if [ "$(date +%s)" -ge "$deadline" ]; then
-      if [ -z "$live" ]; then
+      if [ -z "$last_live" ]; then
         fail "/_app/version.json returned $got after ${WAIT}s"
         printf 'smoke-prod: %s not live on %s, checks skipped\n' "$SHA" "$BASE"
         exit 1
       fi
-      # An older commit still serves: the deploy may still be running.
-      printf 'PENDING /_app/version.json is %s, not %s after %ss\n' "$live" "$SHA" "$WAIT"
-      printf 'smoke-prod: checks skipped; run homelab-stacks scripts/coolify-deploy-status.sh\n'
+      # An older commit served: the deploy may still be running.
+      printf 'PENDING /_app/version.json is %s, not %s after %ss\n' "$last_live" "$SHA" "$WAIT"
+      printf 'smoke-prod: checks skipped; run homelab-stacks %s <app uuid> %s\n' \
+        scripts/coolify-deploy-status.sh "$SHA"
       exit 3
     fi
     sleep 15
