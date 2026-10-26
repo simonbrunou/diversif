@@ -116,6 +116,7 @@ describe('FormError focus', () => {
   it('leaves focus alone for an alert a FormError mounted during hydration shows later', async () => {
     const { rerender } = render(FormError, { props: { messageKey: undefined, form: null } });
     markHydrated();
+    expect(document.activeElement?.tagName).toBe('BODY');
     const form = { errorKey: 'errorsAccountPasswordIncorrect' };
     await rerender({ messageKey: form.errorKey, form });
     await tick();
@@ -136,6 +137,7 @@ describe('FormError focus', () => {
     // does. Autofocus acts only when the body has focus, so the new alert
     // would take it from there.
     first.blur();
+    expect(document.activeElement?.tagName).toBe('BODY');
     await rerender({ messageKey: refusal.errorKey, form: { ...refusal } });
     await tick();
     expect(screen.getByRole('alert')).not.toBe(first);
