@@ -25,7 +25,7 @@
       "allowedVersions": "<6"
     },
     {
-      "description": "Open the group:allNonMajor PR once a week, in the lockFileMaintenance window (Monday before 4am UTC), and auto-merge it once CI passes. A group auto-merges only when every update in it does, so this covers production minors too. Security PRs ignore this schedule and the group: Renovate forces its vulnerabilityAlerts defaults onto them (#465).",
+      "description": "Open the group:allNonMajor PR once a week, in the lockFileMaintenance window (Monday before 4am UTC), and auto-merge it once CI passes. A group auto-merges only when every update in it does, so this covers production minors too. Security PRs skip this schedule and the group, since Renovate forces its vulnerabilityAlerts defaults onto them, but keep this auto-merge (#465).",
       "matchUpdateTypes": ["minor", "patch"],
       "schedule": ["* 0-3 * * 1"],
       "automerge": true
