@@ -9,7 +9,7 @@
 // Trade-off worth it: 99% pass rate per-file vs ~85% combined.
 //
 // Usage:
-//   bun scripts/bun-test.ts                    # run all tests under src/ and eslint-rules/
+//   bun scripts/bun-test.ts                    # run all tests under src/, eslint-rules/ and scripts/
 //   bun scripts/bun-test.ts --coverage         # forwarded to bun test
 //   bun scripts/bun-test.ts src/lib/utils       # subset path
 
@@ -50,9 +50,9 @@ const passthroughFlags = args.filter(
   (a) => (a.startsWith('--') || a.startsWith('-')) && !a.startsWith('--coverage')
 );
 const paths = args.filter((a) => !a.startsWith('-'));
-// eslint-rules/ holds the repo's own lint rules; the coverage gate below
-// still counts only src/.
-const roots = paths.length > 0 ? paths : ['src', 'eslint-rules'];
+// eslint-rules/ holds the repo's own lint rules and scripts/ the operator
+// scripts; the coverage gate below still counts only src/.
+const roots = paths.length > 0 ? paths : ['src', 'eslint-rules', 'scripts'];
 
 const covRoot = path.join(process.cwd(), 'coverage', 'raw');
 if (wantCoverage && !reportOnly) rmSync(covRoot, { recursive: true, force: true });
