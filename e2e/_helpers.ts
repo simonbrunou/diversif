@@ -40,6 +40,15 @@ export async function openWithoutJavaScript(browser: Browser, page: Page): Promi
   return context.newPage();
 }
 
+/**
+ * How many elements show exactly `text`. Count right after the result
+ * shows, in one call: a toast would expire within 4 s and a retrying
+ * assertion would wait it out (docs/agents/testing.md).
+ */
+export async function countText(page: Page, text: string): Promise<number> {
+  return page.getByText(text, { exact: true }).count();
+}
+
 /** The password every `signUp()` account gets, for fresh-auth prompts and re-logins. */
 export const SIGNUP_PASSWORD = 'hunter2-very-long';
 

@@ -8,11 +8,12 @@
 //
 // `resolveMessageKey` turns an action- or load-returned key into prose: inside
 // FormError, whose `messageKey` prop renders the action refusals of login,
-// signup, the account pages (profile, password, passkeys, delete), the repas
-// forms and join/[code]; inside FormSuccess, for the account pages' success
-// messages; in account/passkeys' delete dialog; in join/[code]'s load-error
-// paragraph; as a toast in child settings; and in the
-// passkeys/registration/options endpoint (fresh-auth failures).
+// signup, the account pages (profile, password, passkeys, delete), child
+// settings, the repas forms and join/[code]; inside FormSuccess, for the
+// account pages' and child settings' success messages; in the dialogs of
+// account/passkeys and child settings; in join/[code]'s load-error
+// paragraph; and in the passkeys/registration/options endpoint (fresh-auth
+// failures).
 
 import * as m from '#lib/paraglide/messages.js';
 
@@ -69,7 +70,7 @@ export function trackSubmission(
 /**
  * Resolve a paraglide message key by string. Used when a server action
  * returns a key (e.g. `form.profileSuccessKey = 'errorsAccountProfileSuccess'`)
- * that the page needs to surface inline or via toast.success/error. An
+ * that the page needs to show inline or in a dialog. An
  * unknown key gets a generic message instead of `undefined`. A key is
  * unknown when server code mistypes it, or when a tab still runs a bundle
  * built before the key (see the i18n-add-key skill's pitfalls).

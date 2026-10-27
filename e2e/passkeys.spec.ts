@@ -1,5 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
-import { awaitHydration, openWithoutJavaScript, signUp, SIGNUP_PASSWORD } from './_helpers';
+import {
+  awaitHydration,
+  countText,
+  openWithoutJavaScript,
+  signUp,
+  SIGNUP_PASSWORD
+} from './_helpers';
 
 async function addVirtualAuthenticator(page: Page) {
   const client = await page.context().newCDPSession(page);
@@ -43,12 +49,6 @@ async function submitDelete(page: Page, password: string) {
   await dialog.getByLabel('Mot de passe actuel', { exact: true }).fill(password);
   await dialog.getByRole('button', { name: 'Supprimer', exact: true }).click();
   return dialog;
-}
-
-// Counted right after the result shows: a toast would expire within 4 s and
-// a retrying assertion would wait it out (docs/agents/testing.md).
-async function countText(page: Page, text: string) {
-  return page.getByText(text, { exact: true }).count();
 }
 
 /**

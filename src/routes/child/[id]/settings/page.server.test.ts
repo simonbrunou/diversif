@@ -90,6 +90,17 @@ describe('settings setDiet action', () => {
     )[0];
     expect(freshB?.dietaryExclusions).toEqual(['porc']); // untouched by the rejected call
   });
+
+  it('returns the diet success key for the page', async () => {
+    const { u, c, m } = await setup();
+    const event = eventWithDiet(u, [m], c.id, ['porc']);
+
+    const r = (await actions.setDiet!(
+      event as unknown as Parameters<NonNullable<typeof actions.setDiet>>[0]
+    )) as { dietSuccessKey: string };
+
+    expect(r.dietSuccessKey).toBe('errorsSettingsDietSuccess');
+  });
 });
 
 describe('settings load dietaryExclusions', () => {

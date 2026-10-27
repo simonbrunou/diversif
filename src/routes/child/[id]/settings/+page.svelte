@@ -4,6 +4,8 @@
   import Input from '#lib/components/ui/Input.svelte';
   import Field from '#lib/components/ui/Field.svelte';
   import Card from '#lib/components/ui/Card.svelte';
+  import FormError from '#lib/components/ui/FormError.svelte';
+  import FormSuccess from '#lib/components/ui/FormSuccess.svelte';
 
   import ConfirmModal from '#lib/components/ui/ConfirmModal.svelte';
   import { enhance } from '$app/forms';
@@ -34,28 +36,23 @@
   let removeMemberOpen = $state(false);
   let removeMemberId = $state<number | null>(null);
 
+  // Each result shows next to the form that produced it, under a field named
+  // for its card (`childErrorKey`, `dietSuccessKey`, …), with JavaScript or
+  // without. The dialogs' refusals come back as `errorKey`, which no message
+  // on the page reads: the dialog that posted stays open and shows it, so it
+  // never also shows behind the dialog. Only that dialog has `failed` set,
+  // so every dialog can take the same message.
+  const dialogFailureMessage = $derived(
+    form?.errorKey ? resolveMessageKey(form.errorKey) : m.errorsGenericFallback()
+  );
+
+  // askRemoveMember always assigns the id before opening, so the modal can
+  // never post a stale member; it stays mounted after the first ask so its
+  // exit animation isn't cut off by an unmount.
   function askRemoveMember(userId: number) {
     removeMemberId = userId;
     removeMemberOpen = true;
   }
-
-  // Identity dedup: the same retained `form` object must never re-toast if
-  // this effect picks up another dependency later.
-  // (askRemoveMember always assigns the id before opening, so the modal can
-  // never post a stale member; it stays mounted after the first ask so its
-  // exit animation isn't cut off by an unmount.)
-  let lastFormSeen: typeof form;
-  $effect(() => {
-    if (form !== lastFormSeen) {
-      lastFormSeen = form;
-      if (form?.success) {
-        toast.success(form.success);
-      }
-      if (form?.errorKey) {
-        toast.error(resolveMessageKey(form.errorKey));
-      }
-    }
-  });
 
   async function copy(value: string) {
     try {
@@ -78,12 +75,14 @@
   {#if data.role === 'owner'}
     <Card class="p-4">
       <h2 class="text-base font-semibold">{m.settingsInformationsHeading()}</h2>
+      <FormSuccess messageKey={form?.childSuccessKey} {form} class="mt-3" />
       <form
         method="POST"
         action="?/updateChild"
         class="mt-3 grid gap-3"
         use:enhance={trackSubmission((v) => (savingChild = v))}
       >
+        <FormError messageKey={form?.childErrorKey} {form} />
         <Field name="name" label={m.commonFirstName()}>
           <Input id="name" name="name" required maxlength={80} value={data.child.name} />
         </Field>
@@ -101,6 +100,7 @@
 
   <Card class="p-4">
     <h2 class="text-base font-semibold">{m.settingsDietHeading()}</h2>
+    <FormSuccess messageKey={form?.dietSuccessKey} {form} class="mt-3" />
     <form
       method="POST"
       action="?/setDiet"
@@ -131,6 +131,7 @@
 
   <Card class="p-4">
     <h2 class="text-base font-semibold">{m.settingsMembersHeading()}</h2>
+    <FormSuccess messageKey={form?.memberSuccessKey} {form} class="mt-3" />
     <ul class="mt-3 divide-y">
       {#each data.members as member (member.userId)}
         <li class="flex items-center justify-between py-3">
@@ -166,6 +167,8 @@
       <p class="mt-1 text-sm text-muted-foreground">
         {m.settingsInviteDescription()}
       </p>
+      <FormSuccess messageKey={form?.invitationSuccessKey} {form} class="mt-3" />
+      <FormError messageKey={form?.invitationErrorKey} {form} class="mt-3" />
 
       <div class="mt-3">
         <Button type="button" variant="secondary" onclick={() => (inviteOpen = true)}>
@@ -235,6 +238,7 @@
   destructive
   requireText={data.child.name}
   requirePassword
+  failureMessage={dialogFailureMessage}
 />
 
 {#if removeMemberId !== null}
@@ -247,6 +251,7 @@
     loadingLabel={m.settingsRemoveMemberLoadingLabel()}
     destructive
     hiddenFields={{ userId: removeMemberId }}
+    failureMessage={dialogFailureMessage}
   />
 {/if}
 
@@ -258,6 +263,7 @@
   confirmLabel={m.settingsLeaveConfirmLabel()}
   loadingLabel={m.settingsLeaveLoadingLabel()}
   destructive
+  failureMessage={dialogFailureMessage}
 />
 
 <ConfirmModal
@@ -268,4 +274,5 @@
   confirmLabel={m.settingsInviteGenerateCta()}
   loadingLabel={m.settingsInviteGenerating()}
   requirePassword
+  failureMessage={dialogFailureMessage}
 />

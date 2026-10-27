@@ -191,9 +191,9 @@ describe('settings updateChild action', () => {
     });
     const r = (await actions.updateChild!(
       event as unknown as Parameters<NonNullable<typeof actions.updateChild>>[0]
-    )) as { status: number; data: { errorKey: string } };
+    )) as { status: number; data: { childErrorKey: string } };
     expect(r.status).toBe(400);
-    expect(r.data.errorKey).toBe('errorsAuthBadInput');
+    expect(r.data.childErrorKey).toBe('errorsAuthBadInput');
   });
 
   it('fails on empty name', async () => {
@@ -220,8 +220,8 @@ describe('settings updateChild action', () => {
     });
     const r = (await actions.updateChild!(
       event as unknown as Parameters<NonNullable<typeof actions.updateChild>>[0]
-    )) as { success: string };
-    expect(r.success).toBeTruthy();
+    )) as { childSuccessKey: string };
+    expect(r.childSuccessKey).toBe('errorsSettingsChildSuccess');
     const fresh = (await testDb.select().from(children).where(eq(children.id, c.id)).limit(1))[0];
     expect(fresh?.name).toBe('Lulu');
     expect(fresh?.birthDate).toBe('2024-02-15');
