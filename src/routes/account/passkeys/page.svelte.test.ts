@@ -2,23 +2,16 @@ import { afterEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { render, fireEvent, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import '../../../test/component';
+import { captureEnhance } from '../../../test/enhanced-submit';
 
 const toastError = mock();
 const toastSuccess = mock();
 const startRegistration = mock();
-// The delete dialog's use:enhance callback, so a test can play SvelteKit's
-// part: run it, then apply a result through `update`.
-type Submit = (input: {
-  cancel: () => void;
-}) => ((opts: { result: { type: string }; update: () => Promise<void> }) => Promise<void>) | void;
-let enhancedSubmit: Submit | undefined;
+// Keeps the delete dialog's use:enhance callback, so a test can play
+// SvelteKit's part.
+const forms = captureEnhance();
 mock.module('$app/state', () => ({ page: { url: new URL('http://localhost/account/passkeys') } }));
-mock.module('$app/forms', () => ({
-  enhance: (_form: HTMLFormElement, submit: Submit) => {
-    enhancedSubmit = submit;
-    return { destroy: () => {} };
-  }
-}));
+mock.module('$app/forms', () => forms.module());
 mock.module('$app/navigation', () => ({
   refreshAll: async () => {},
   afterNavigate: () => {},
@@ -38,7 +31,6 @@ afterEach(() => {
   toastError.mockClear();
   toastSuccess.mockClear();
   startRegistration.mockClear();
-  enhancedSubmit = undefined;
 });
 
 const passkey = {
@@ -61,11 +53,11 @@ async function submitDelete(
   view: ReturnType<typeof renderPage>,
   result: { type: 'success' | 'failure'; data: ActionData }
 ) {
-  await fireEvent.click(view.getByRole('button', { name: 'Supprimer' }));
-  const settle = enhancedSubmit?.({ cancel: () => {} });
-  if (!settle) throw new Error('the delete dialog did not register use:enhance');
-  await settle({ result, update: () => view.rerender({ form: result.data }) });
-  await tick();
+  await forms.submit(
+    () => fireEvent.click(view.getByRole('button', { name: 'Supprimer' })),
+    result,
+    () => view.rerender({ form: result.data })
+  );
 }
 
 describe('account/passkeys messages', () => {

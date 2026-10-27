@@ -57,8 +57,8 @@ describe('settings removeMember action', () => {
     });
     const r = (await actions.removeMember!(
       event as unknown as Parameters<NonNullable<typeof actions.removeMember>>[0]
-    )) as { success: string };
-    expect(r.success).toBeTruthy();
+    )) as { memberSuccessKey: string };
+    expect(r.memberSuccessKey).toBe('errorsSettingsMemberRemovedSuccess');
     const remaining = await testDb.select().from(memberships).where(eq(memberships.childId, c.id));
     expect(remaining.find((mm) => mm.userId === other.id)).toBeUndefined();
   });

@@ -1,5 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
-import { awaitHydration, openWithoutJavaScript, signUp, SIGNUP_PASSWORD } from './_helpers';
+import {
+  awaitHydration,
+  countText,
+  openWithoutJavaScript,
+  signUp,
+  SIGNUP_PASSWORD
+} from './_helpers';
 
 const NEW_PASSWORD = 'correct-horse-battery';
 
@@ -71,17 +77,16 @@ test.describe('account messages with JavaScript', () => {
     await changeButton(page).click();
     await expect(page.getByRole('alert')).toHaveText('Mot de passe actuel incorrect.');
     // The button reads « Modifier » again once the result has been applied.
-    // Count right then: a toast would expire within 4 s and a retrying
-    // assertion would wait it out (docs/agents/testing.md).
+    // Count right then (countText).
     await expect(changeButton(page)).toBeEnabled();
-    expect(await page.getByText('Mot de passe actuel incorrect.').count()).toBe(1);
+    expect(await countText(page, 'Mot de passe actuel incorrect.')).toBe(1);
 
     await fillPasswordChange(page, SIGNUP_PASSWORD);
     await changeButton(page).click();
     await expect(page.getByRole('status')).toHaveText('Mot de passe modifié.');
     await expect(changeButton(page)).toBeEnabled();
-    expect(await page.getByText('Mot de passe modifié.').count()).toBe(1);
-    expect(await page.getByText('Mot de passe actuel incorrect.').count()).toBe(0);
+    expect(await countText(page, 'Mot de passe modifié.')).toBe(1);
+    expect(await countText(page, 'Mot de passe actuel incorrect.')).toBe(0);
   });
 
   test('the profile page shows each result once', async ({ page }) => {
@@ -96,14 +101,14 @@ test.describe('account messages with JavaScript', () => {
     await saveButton.click();
     await expect(page.getByRole('alert')).toHaveText('Nom invalide.');
     await expect(saveButton).toBeEnabled();
-    expect(await page.getByText('Nom invalide.').count()).toBe(1);
+    expect(await countText(page, 'Nom invalide.')).toBe(1);
 
     await name.fill('Camille');
     await saveButton.click();
     await expect(page.getByRole('status')).toHaveText('Profil mis à jour.');
     await expect(saveButton).toBeEnabled();
-    expect(await page.getByText('Profil mis à jour.').count()).toBe(1);
-    expect(await page.getByText('Nom invalide.').count()).toBe(0);
+    expect(await countText(page, 'Profil mis à jour.')).toBe(1);
+    expect(await countText(page, 'Nom invalide.')).toBe(0);
     await expect(name).toHaveValue('Camille');
   });
 });

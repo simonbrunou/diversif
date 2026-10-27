@@ -10,7 +10,7 @@ export function unique(prefix: string): string {
  * on the same email seed. Always includes the worker index — Playwright
  * sets TEST_WORKER_INDEX in every worker, including single-worker runs.
  */
-export function uniqueForWorker(prefix: string): string {
+function uniqueForWorker(prefix: string): string {
   const w = process.env.TEST_WORKER_INDEX ?? '0';
   return `${unique(prefix)}-w${w}`;
 }
@@ -38,6 +38,22 @@ export async function openWithoutJavaScript(browser: Browser, page: Page): Promi
     storageState: await page.context().storageState()
   });
   return context.newPage();
+}
+
+/**
+ * How many elements show exactly `text`. Count right after the result
+ * shows, in one call: a toast would expire within 4 s and a retrying
+ * assertion would wait it out (docs/agents/testing.md).
+ */
+export async function countText(page: Page, text: string): Promise<number> {
+  return page.getByText(text, { exact: true }).count();
+}
+
+/** A `YYYY-MM-DD` birth date `months` months before today, for `signUpAndCreateChild`. */
+export function birthDateMonthsAgo(months: number): string {
+  const date = new Date();
+  date.setMonth(date.getMonth() - months);
+  return date.toISOString().slice(0, 10);
 }
 
 /** The password every `signUp()` account gets, for fresh-auth prompts and re-logins. */
@@ -182,7 +198,7 @@ export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
  * Assert the visible dialog rendered as a bottom-sheet (side="bottom",
  * the resolved side of "auto" on a sub-768px viewport).
  */
-export async function expectBottomSheet(page: Page): Promise<void> {
+async function expectBottomSheet(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute('data-side', 'bottom');
@@ -194,7 +210,7 @@ export async function expectBottomSheet(page: Page): Promise<void> {
  * of `expectBottomSheet` — the exact desktop placement is a component-level
  * decision (e.g. side="auto" resolves to "center" on md+).
  */
-export async function expectNotBottomSheet(page: Page): Promise<void> {
+async function expectNotBottomSheet(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute('data-side', /^(top|right|left|center)$/);

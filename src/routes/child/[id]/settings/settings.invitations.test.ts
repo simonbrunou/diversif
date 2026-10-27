@@ -69,12 +69,26 @@ describe('settings createInvitation action', () => {
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
-    )) as { success: string; code: string };
+    )) as { code: string };
     expect(r.code).toMatch(/^BEBE-/);
     const stored = (
       await testDb.select().from(invitations).where(eq(invitations.code, r.code)).limit(1)
     )[0];
     expect(stored).toBeDefined();
+  });
+
+  it('returns the invitation success key for the page', async () => {
+    const { u, c, m } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: { currentPassword: PASSWORD }
+    });
+    const r = (await actions.createInvitation!(
+      event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
+    )) as { invitationSuccessKey: string };
+    expect(r.invitationSuccessKey).toBe('errorsSettingsInviteCreatedSuccess');
   });
 
   it('requires the current password before creating an invitation', async () => {
@@ -171,7 +185,7 @@ describe('settings createInvitation action', () => {
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
-    )) as { success: string; code: string };
+    )) as { code: string };
     expect(r.code).toBe('BEBE-BBBBBB');
     expect(generateInviteCodeRawSpy).toHaveBeenCalledTimes(2);
   });
@@ -190,6 +204,20 @@ describe('settings revokeInvitation action', () => {
       event as unknown as Parameters<NonNullable<typeof actions.revokeInvitation>>[0]
     )) as { status: number };
     expect(r.status).toBe(400);
+  });
+
+  it('returns the missing-code refusal under the invitation field', async () => {
+    const { u, c, m } = await setup();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      memberships: [m],
+      params: { id: String(c.id) },
+      formData: {}
+    });
+    const r = (await actions.revokeInvitation!(
+      event as unknown as Parameters<NonNullable<typeof actions.revokeInvitation>>[0]
+    )) as { data: { invitationErrorKey: string } };
+    expect(r.data.invitationErrorKey).toBe('errorsSettingsInviteCodeMissing');
   });
 
   it('deletes the matching invitation', async () => {
@@ -211,8 +239,8 @@ describe('settings revokeInvitation action', () => {
     });
     const r = (await actions.revokeInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.revokeInvitation>>[0]
-    )) as { success: string };
-    expect(r.success).toBeTruthy();
+    )) as { invitationSuccessKey: string };
+    expect(r.invitationSuccessKey).toBe('errorsSettingsInviteRevokedSuccess');
     const stored = (
       await testDb.select().from(invitations).where(eq(invitations.code, 'BEBE-ZZZZZZ')).limit(1)
     )[0];

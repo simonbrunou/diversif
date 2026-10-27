@@ -108,7 +108,7 @@ export const actions: Actions = {
     requireOwnership(locals, childId);
     const raw = Object.fromEntries(await request.formData());
     const parsed = updateSchema.safeParse(raw);
-    if (!parsed.success) return fail(400, { errorKey: 'errorsAuthBadInput' });
+    if (!parsed.success) return fail(400, { childErrorKey: 'errorsAuthBadInput' });
 
     await db
       .update(children)
@@ -118,7 +118,7 @@ export const actions: Actions = {
         updatedAt: new Date()
       })
       .where(eq(children.id, childId));
-    return { success: 'Enfant mis à jour.' };
+    return { childSuccessKey: 'errorsSettingsChildSuccess' };
   },
 
   // Member-allowed (NOT requireOwnership) : a co-parent setting "no pork" or
@@ -133,7 +133,7 @@ export const actions: Actions = {
       .update(children)
       .set({ dietaryExclusions: chosen, updatedAt: new Date() })
       .where(eq(children.id, childId));
-    return { success: 'Régime alimentaire mis à jour.' };
+    return { dietSuccessKey: 'errorsSettingsDietSuccess' };
   },
 
   createInvitation: async ({ params, request, locals }) => {
@@ -170,7 +170,7 @@ export const actions: Actions = {
     const code = await createInvitationForChild({ childId, createdBy: user.id });
     if (!code) return fail(500, { errorKey: 'errorsSettingsInviteGenerationFailed' });
     audit({ type: 'invite.created', userId: user.id, childId });
-    return { success: 'Code généré.', code };
+    return { invitationSuccessKey: 'errorsSettingsInviteCreatedSuccess', code };
   },
 
   revokeInvitation: async ({ params, request, locals }) => {
@@ -179,12 +179,12 @@ export const actions: Actions = {
     const { user } = requireOwnership(locals, childId);
     const data = await request.formData();
     const code = String(data.get('code') ?? '');
-    if (!code) return fail(400, { errorKey: 'errorsSettingsInviteCodeMissing' });
+    if (!code) return fail(400, { invitationErrorKey: 'errorsSettingsInviteCodeMissing' });
     await db
       .delete(invitations)
       .where(and(eq(invitations.code, code), eq(invitations.childId, childId)));
     audit({ type: 'invite.revoked', userId: user.id, childId });
-    return { success: 'Invitation révoquée.' };
+    return { invitationSuccessKey: 'errorsSettingsInviteRevokedSuccess' };
   },
 
   removeMember: async ({ params, request, locals }) => {
@@ -203,7 +203,7 @@ export const actions: Actions = {
       .delete(memberships)
       .where(and(eq(memberships.childId, childId), eq(memberships.userId, userId)));
     audit({ type: 'membership.removed', userId: owner.id, childId, removedUserId: userId });
-    return { success: 'Membre retiré.' };
+    return { memberSuccessKey: 'errorsSettingsMemberRemovedSuccess' };
   },
 
   leaveChild: async ({ params, locals }) => {
