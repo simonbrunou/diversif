@@ -18,7 +18,8 @@
 #   node_modules to bun.lock. The Railpack production deploy ships this whole
 #   set (#529).
 # With no argument it runs both scopes and fails if either fails.
-# The local Bun can differ from the version CI pins (#528).
+# The dev shell's Bun can lag the version CI pins: scripts/check-bun-pins.sh
+# prints the pinned version and warns when the shell runs another (#528).
 # Exit 0: no advisory at high or above. Exit 2: a wrong call. Any other
 # exit: an advisory or a failed install, and the output names it.
 set -uo pipefail

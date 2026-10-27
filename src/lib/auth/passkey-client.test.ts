@@ -13,7 +13,16 @@ let toastErrorCalls: string[] = [];
 mock.module('svelte-sonner', () => ({
   toast: { error: (message: string) => toastErrorCalls.push(message) }
 }));
+// Records the default navigate (goto) for the tests that pass no `deps`.
+let gotoCalls: unknown[][] = [];
+mock.module('$app/navigation', () => ({
+  goto: (...args: unknown[]) => {
+    gotoCalls.push(args);
+    return Promise.resolve();
+  }
+}));
 
+import { stubGlobal } from '../../test/bun-test-utils';
 import { authenticateWithPasskey, signInWithPasskey } from './passkey-client';
 
 type FakeResponse = { ok: boolean; json: () => Promise<unknown> };
@@ -190,6 +199,30 @@ describe('signInWithPasskey', () => {
         showError: () => {}
       })
     ).rejects.toThrow('nav aborted');
+    expect(busy).toEqual([true, false]);
+  });
+
+  // The call sites pass no `deps`: this runs the defaults end to end, the
+  // real ceremony over the global fetch, goto and the svelte-sonner toast.
+  // Bun 1.4.4 counts the `deps = {}` default as a line of its own (#528).
+  it('without deps, runs the ceremony over fetch and navigates home with goto', async () => {
+    gotoCalls = [];
+    toastErrorCalls = [];
+    const fetchFn = fakeFetch({
+      options: { ok: true, json: async () => ({ challenge: 'c' }) },
+      verify: { ok: true, json: async () => ({ ok: true }) }
+    });
+    stubGlobal('fetch', fetchFn);
+    const busy: boolean[] = [];
+    await signInWithPasskey((v) => busy.push(v));
+    // A toast would arrive through a fire-and-forget dynamic import; flush it.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetchFn.calls.map((c) => c.url)).toEqual([
+      '/passkeys/authentication/options',
+      '/passkeys/authentication/verify'
+    ]);
+    expect(gotoCalls).toEqual([['/', { refreshAll: true }]]);
+    expect(toastErrorCalls).toEqual([]);
     expect(busy).toEqual([true, false]);
   });
 });
