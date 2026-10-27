@@ -8,17 +8,18 @@
 # It reads each pin from the file that sets it:
 #   .forgejo/workflows/ci.yml  the `bun-version` input of every
 #     oven-sh/setup-bun step. A step without one runs whatever Bun setup-bun
-#     picks, so the inputs must be as many as the steps.
+#     picks, so each step must carry its own, and a `bun-version` outside such
+#     a step fails too.
 #   railpack.json  `packages.bun`, the Bun of the production build
 #     (docs/agents/deploy.md).
-#   Dockerfile  the version part of every `FROM oven/bun:<tag>` (1.4.4 out of
-#     1.4.4-debian@sha256:...).
+#   Dockerfile  the x.y.z part of every `FROM [<registry>/]oven/bun:<tag>`
+#     (1.4.4 out of 1.4.4-debian@sha256:...).
 # The bun group in renovate.json moves the three together. The dev shell's
 # Bun follows nixpkgs and may lag them, so a `bun --version` that differs
 # prints a warning only (docs/agents/testing.md).
 # Exit 0: every pin reads the same version. Exit 1: the pins differ or one is
 # missing, and the output names each file, line and value. Exit 2: a wrong
-# call.
+# call, a <repo dir> that does not exist, or no bun on PATH.
 set -uo pipefail
 
 if [ $# -gt 1 ]; then
@@ -45,71 +46,106 @@ where=()
 version=()
 status=0
 
-missing() {
+pin() {
+  where+=("$1")
+  version+=("$2")
+}
+
+fail() {
   echo "check-bun-pins: $1" >&2
   status=1
 }
 
 read_ci() {
-  local file="$ROOT/$CI" steps inputs=0 line value
+  local file="$ROOT/$CI" kind line value steps=0
   if [ ! -f "$file" ]; then
-    missing "$CI not found"
+    fail "$CI not found"
     return
   fi
-  steps=$(grep -cE '^[[:space:]-]*uses:[[:space:]]*oven-sh/setup-bun@' "$file")
-  while IFS= read -r line; do
-    value=$(printf '%s\n' "${line#*:}" |
-      sed -E "s/^[[:space:]]*bun-version:[[:space:]]*['\"]?([^'\"[:space:]#]*).*/\1/")
-    where+=("$CI:${line%%:*}")
-    version+=("$value")
-    inputs=$((inputs + 1))
-  done < <(grep -nE '^[[:space:]]*bun-version:' "$file")
+  # A step ends at the next line indented no deeper than its `-`. Prints
+  # `pin <line> <value>` per input, `nopin <line>` for a setup-bun step
+  # without one, `stray <line>` for an input outside such a step.
+  while read -r kind line value; do
+    case "$kind" in
+      pin)
+        steps=$((steps + 1))
+        pin "$CI:$line" "$value"
+        ;;
+      nopin)
+        steps=$((steps + 1))
+        fail "$CI:$line oven-sh/setup-bun step has no bun-version"
+        ;;
+      stray) fail "$CI:$line bun-version is not in an oven-sh/setup-bun step" ;;
+    esac
+  done < <(awk -v q="'" '
+    function indent(s) { match(s, /^ */); return RLENGTH }
+    function close_step() { if (open) print "nopin", open; open = 0 }
+    /^[ \t]*(#|$)/ { next }
+    {
+      ind = indent($0)
+      if (open && ind <= step) close_step()
+      if ($0 ~ /^ *- /) dash = ind
+    }
+    /^[ \t-]*uses:[ \t]*oven-sh\/setup-bun@/ { open = NR; step = dash; next }
+    /^[ \t]*bun-version:/ {
+      v = $0
+      sub(/^[ \t]*bun-version:[ \t]*/, "", v)
+      sub(/[ \t]*#.*$/, "", v)
+      gsub(/"/, "", v)
+      gsub(q, "", v)
+      if (open) { print "pin", NR, v; open = 0 } else print "stray", NR
+    }
+    END { close_step() }
+  ' "$file")
   if [ "$steps" -eq 0 ]; then
-    missing "$CI has no oven-sh/setup-bun step"
-  elif [ "$inputs" -ne "$steps" ]; then
-    missing "$CI has $steps oven-sh/setup-bun steps but $inputs bun-version inputs"
+    fail "$CI has no oven-sh/setup-bun step"
   fi
 }
 
 read_railpack() {
   local file="$ROOT/$RAILPACK" value
   if [ ! -f "$file" ]; then
-    missing "$RAILPACK not found"
+    fail "$RAILPACK not found"
     return
   fi
   value=$(PIN_FILE="$file" bun -e '
-    const v = JSON.parse(require("fs").readFileSync(process.env.PIN_FILE, "utf8")).packages?.bun;
+    let config;
+    try {
+      config = JSON.parse(require("fs").readFileSync(process.env.PIN_FILE, "utf8"));
+    } catch {
+      process.exit(1);
+    }
+    const v = config.packages?.bun;
     if (typeof v === "string") console.log(v);
   ') || {
-    missing "$RAILPACK is not valid JSON"
+    fail "$RAILPACK is not valid JSON"
     return
   }
   if [ -z "$value" ]; then
-    missing "$RAILPACK has no packages.bun"
+    fail "$RAILPACK has no packages.bun"
     return
   fi
-  where+=("$RAILPACK packages.bun")
-  version+=("$value")
+  pin "$RAILPACK packages.bun" "$value"
 }
 
 read_dockerfile() {
-  local file="$ROOT/$DOCKERFILE" line tag found=0
+  local file="$ROOT/$DOCKERFILE" line tag value found=0
   if [ ! -f "$file" ]; then
-    missing "$DOCKERFILE not found"
+    fail "$DOCKERFILE not found"
     return
   fi
   while IFS= read -r line; do
     found=1
     # The tag, without the digest: empty when the image has no tag.
     tag=$(printf '%s\n' "$line" | sed -nE 's#.*oven/bun:([^[:space:]@]+).*#\1#p')
-    where+=("$DOCKERFILE:${line%%:*}")
-    version+=("$(printf '%s\n' "$tag" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' || true)")
-    if [ -z "${version[${#version[@]} - 1]}" ]; then
-      missing "$DOCKERFILE:${line%%:*} oven/bun tag '${tag}' carries no version"
+    value=$(printf '%s\n' "$tag" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' || true)
+    pin "$DOCKERFILE:${line%%:*}" "$value"
+    if [ -z "$value" ]; then
+      fail "$DOCKERFILE:${line%%:*} oven/bun tag '${tag}' does not start with an x.y.z version"
     fi
-  done < <(grep -niE '^[[:space:]]*FROM[[:space:]]+(--[^[:space:]]+[[:space:]]+)*oven/bun([:@[:space:]]|$)' "$file")
+  done < <(grep -niE '^[[:space:]]*FROM[[:space:]]+(--[^[:space:]]+[[:space:]]+)*([^[:space:]]+/)?oven/bun([:@[:space:]]|$)' "$file")
   if [ "$found" -eq 0 ]; then
-    missing "$DOCKERFILE has no FROM oven/bun line"
+    fail "$DOCKERFILE has no FROM oven/bun line"
   fi
 }
 

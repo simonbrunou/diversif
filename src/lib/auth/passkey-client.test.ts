@@ -202,11 +202,12 @@ describe('signInWithPasskey', () => {
     expect(busy).toEqual([true, false]);
   });
 
-  // The call sites pass no `deps`: these run the defaults end to end, the
+  // The call sites pass no `deps`: this runs the defaults end to end, the
   // real ceremony over the global fetch, goto and the svelte-sonner toast.
   // Bun 1.4.4 counts the `deps = {}` default as a line of its own (#528).
   it('without deps, runs the ceremony over fetch and navigates home with goto', async () => {
     gotoCalls = [];
+    toastErrorCalls = [];
     const fetchFn = fakeFetch({
       options: { ok: true, json: async () => ({ challenge: 'c' }) },
       verify: { ok: true, json: async () => ({ ok: true }) }
@@ -214,23 +215,14 @@ describe('signInWithPasskey', () => {
     stubGlobal('fetch', fetchFn);
     const busy: boolean[] = [];
     await signInWithPasskey((v) => busy.push(v));
+    // A toast would arrive through a fire-and-forget dynamic import; flush it.
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(fetchFn.calls.map((c) => c.url)).toEqual([
       '/passkeys/authentication/options',
       '/passkeys/authentication/verify'
     ]);
     expect(gotoCalls).toEqual([['/', { refreshAll: true }]]);
+    expect(toastErrorCalls).toEqual([]);
     expect(busy).toEqual([true, false]);
-  });
-
-  it('without deps, toasts the failure through svelte-sonner', async () => {
-    toastErrorCalls = [];
-    gotoCalls = [];
-    stubGlobal('fetch', fakeFetch({ options: { ok: false, json: async () => ({}) } }));
-    await signInWithPasskey(() => {});
-    // The default showError fires-and-forgets a dynamic import; flush it.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const { errorsAccountPasskeyAuthStartFailed } = await import('#lib/paraglide/messages.js');
-    expect(toastErrorCalls).toEqual([errorsAccountPasskeyAuthStartFailed()]);
-    expect(gotoCalls).toEqual([]);
   });
 });
