@@ -43,7 +43,7 @@
   // stays open and shows it, so it never also shows behind the dialog. Only
   // that dialog has `failed` set, so every dialog can take the same message.
   // A dialog posts only with JavaScript, so no page load carries `errorKey`.
-  // `result` is `{}` before any submission, so each read below needs no check.
+  // `result` is `{}` while `form` is null, so each read below needs no check.
   const result: Partial<NonNullable<ActionData>> = $derived(form ?? {});
   const dialogFailureMessage = $derived(
     result.errorKey ? resolveMessageKey(result.errorKey) : m.errorsGenericFallback()
