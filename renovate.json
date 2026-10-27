@@ -29,6 +29,23 @@
       "matchUpdateTypes": ["minor", "patch"],
       "schedule": ["* 0-3 * * 1"],
       "automerge": true
+    },
+    {
+      "description": "One Bun for CI, production and the Docker image (#528): the setup-bun bun-version inputs and railpack.json (npm package bun) move with the Dockerfile's oven/bun tags in one PR, for every update type, so scripts/check-bun-pins.sh stays green. This rule comes after the group:allNonMajor rules so it overrides their group, and it sets groupSlug because the preset's groupSlug would otherwise keep bun on renovate/all-minor-patch. A group of its own keeps a red bun PR (npm publishes a Bun before its Docker tag exists) from holding the weekly group. Same weekly window as that group.",
+      "matchPackageNames": ["bun", "oven/bun"],
+      "groupName": "bun",
+      "groupSlug": "bun",
+      "schedule": ["* 0-3 * * 1"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Read the production Bun pin, packages.bun in railpack.json, which no built-in manager reads, as the npm package bun: the datasource and name the github-actions manager gives setup-bun's bun-version input (#528).",
+      "managerFilePatterns": ["/^railpack\\.json$/"],
+      "matchStrings": ["\"bun\"\\s*:\\s*\"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "bun"
     }
   ]
 }
