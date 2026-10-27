@@ -50,7 +50,11 @@ let overrides: Record<string, Answer> = {};
 const hits = new Map<string, number>();
 
 function render({ status, headers = {}, body = '' }: Answer): string {
-  const lines = [`HTTP/1.1 ${status} X`, `Content-Length: ${body.length}`, 'Connection: close'];
+  const lines = [
+    `HTTP/1.1 ${status} X`,
+    `Content-Length: ${Buffer.byteLength(body)}`,
+    'Connection: close'
+  ];
   for (const [name, value] of Object.entries(headers)) lines.push(`${name}: ${value}`);
   return `${lines.join('\r\n')}\r\n\r\n${body}`;
 }
@@ -77,6 +81,7 @@ const server = Bun.listen<{ request: string }>({
   }
 });
 const base = `http://127.0.0.1:${server.port}`;
+const allPassed = `smoke-prod: 11 of 11 checks passed on ${base}`;
 
 let binDir: string;
 let sleepLog: string;
@@ -100,6 +105,8 @@ beforeEach(() => {
   writeFileSync(sleepLog, '');
 });
 
+// Async spawn: the server answers on this process's event loop, which
+// Bun.spawnSync would block until the script gave up.
 async function smoke(baseUrl = base) {
   const proc = Bun.spawn({
     cmd: ['bash', scriptPath],
@@ -107,7 +114,10 @@ async function smoke(baseUrl = base) {
       ...process.env,
       PATH: `${binDir}:${process.env.PATH}`,
       SMOKE_BASE_URL: baseUrl,
-      SLEEP_LOG: sleepLog
+      SLEEP_LOG: sleepLog,
+      // A proxy from the shell would answer for the local server.
+      no_proxy: '*',
+      NO_PROXY: '*'
     },
     stdout: 'pipe',
     stderr: 'pipe'
@@ -128,11 +138,11 @@ async function smoke(baseUrl = base) {
   };
 }
 
-describe('smoke-prod.sh', () => {
+describe('scripts/smoke-prod.sh', () => {
   it('passes 11 of 11 without a SHA when every check answers', async () => {
     const run = await smoke();
     expect(run.stderr).toBe('');
-    expect(run.last).toBe(`smoke-prod: 11 of 11 checks passed on ${base}`);
+    expect(run.last).toBe(allPassed);
     expect(run.code).toBe(0);
     expect(run.retries).toEqual([]);
     expect(run.sleeps).toEqual([]);
@@ -141,12 +151,13 @@ describe('smoke-prod.sh', () => {
   it('retries a request that gets no answer, 5 s later, and counts one PASS', async () => {
     drops = { '/healthz': 1 };
     const run = await smoke();
-    expect(run.retries).toEqual([
-      'RETRY /healthz got no answer (curl: (52) Empty reply from server), attempt 2 of 4 in 5 s'
-    ]);
+    expect(run.retries).toHaveLength(1);
+    expect(run.retries[0]).toMatch(
+      /^RETRY \/healthz got no answer \(curl: \(52\) [^)]+\), attempt 2 of 4 in 5 s$/
+    );
     expect(run.sleeps).toEqual(['5']);
     expect(run.lines).toContain('PASS /healthz ok, db ok');
-    expect(run.last).toBe(`smoke-prod: 11 of 11 checks passed on ${base}`);
+    expect(run.last).toBe(allPassed);
     expect(run.code).toBe(0);
   });
 
@@ -168,7 +179,7 @@ describe('smoke-prod.sh', () => {
     expect(run.lines).toContain("PASS CSP has default-src 'self'");
     expect(run.lines).toContain('PASS HSTS max-age=31536000; includeSubDomains');
     expect(run.lines).toContain('PASS X-Frame-Options DENY');
-    expect(run.last).toBe(`smoke-prod: 11 of 11 checks passed on ${base}`);
+    expect(run.last).toBe(allPassed);
   });
 
   it('leaves each later check its own retries after one passed on a retry', async () => {
@@ -182,14 +193,13 @@ describe('smoke-prod.sh', () => {
       'RETRY /offline, attempt 4 of 4 in 5 s'
     ]);
     expect(run.sleeps).toEqual(['5', '5', '5', '5', '5']);
-    expect(run.last).toBe(`smoke-prod: 11 of 11 checks passed on ${base}`);
+    expect(run.last).toBe(allPassed);
     expect(run.code).toBe(0);
   });
 
   it('on a dead host retries only the first check, then fails the others at once', async () => {
-    const closed = Bun.listen({ hostname: '127.0.0.1', port: 0, socket: { data() {} } });
-    const deadBase = `http://127.0.0.1:${closed.port}`;
-    closed.stop(true);
+    // Port 9 (discard) is privileged, so no test process on the host can listen there.
+    const deadBase = 'http://127.0.0.1:9';
     const run = await smoke(deadBase);
     expect(run.retries).toHaveLength(3);
     run.retries.forEach((line, i) => {

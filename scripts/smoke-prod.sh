@@ -44,26 +44,24 @@ fetch() {
   fi
 }
 
-# fetch_check <path>: fetch for a check, retrying up to 3 times, 5 s apart,
-# while the request gets no HTTP answer: during the container swap a request
-# can time out or be refused. Any HTTP status is an answer, 5xx included.
-# Once one check has used up its retries the host is down, not swapping, so
-# later checks get one try each: a run where every request times out still
-# ends inside one 600 s agent Bash call.
+# fetch_retry <path>: fetch, retrying up to 3 times, 5 s apart, while the
+# request gets no HTTP answer: during the container swap a request can time
+# out or be refused. Any HTTP status is an answer, 5xx included. Once one
+# check has used up its retries the script takes the host as down, not
+# swapping, so later checks get one try each: a run where every request times
+# out still ends inside one 600 s agent Bash call.
 host_down=''
-fetch_check() {
-  local attempt=1
-  fetch "$1"
-  while [ "$code" = 000 ] && [ -z "$host_down" ]; do
-    if [ "$attempt" -eq 4 ]; then
-      host_down=1
-      return
+fetch_retry() {
+  local attempt tries=4 delay=5
+  for ((attempt = 1; attempt <= tries; attempt++)); do
+    if [ "$attempt" -gt 1 ]; then
+      printf 'RETRY %s got %s, attempt %d of %d in %d s\n' "$1" "$got" "$attempt" "$tries" "$delay"
+      sleep "$delay"
     fi
-    attempt=$((attempt + 1))
-    printf 'RETRY %s got %s, attempt %d of 4 in 5 s\n' "$1" "$got" "$attempt"
-    sleep 5
     fetch "$1"
+    if [ "$code" != 000 ] || [ -n "$host_down" ]; then return; fi
   done
+  host_down=1
 }
 
 # header <name>: the value of that response header from the last fetch.
@@ -73,7 +71,7 @@ header() {
 
 # expect <path> <status> [<content-type glob>]: fetch, then check both.
 expect() {
-  fetch_check "$1"
+  fetch_retry "$1"
   # shellcheck disable=SC2053 # $3 is a glob on purpose.
   if [ "$code" = "$2" ] && [[ "$ctype" == ${3:-*} ]]; then
     pass "$1 $code ${ctype:-}"
@@ -164,7 +162,7 @@ expect /_app/env.js 200 '*javascript*'
 expect /service-worker.js 200 '*javascript*'
 expect /sw.js 404
 
-fetch_check /healthz
+fetch_retry /healthz
 if [ "$code" = 200 ] && grep -q '"ok":true' "$TMP/body" && grep -q '"db":"ok"' "$TMP/body"; then
   pass "/healthz ok, db ok"
 else
@@ -172,7 +170,7 @@ else
 fi
 
 # Served with no Content-Type today; text/html is fine too.
-fetch_check /offline
+fetch_retry /offline
 if [ "$code" = 200 ] && grep -qi '<html' "$TMP/body" && [[ -z "$ctype" || "$ctype" == text/html* ]]; then
   pass "/offline 200 HTML (Content-Type: ${ctype:-none})"
 else

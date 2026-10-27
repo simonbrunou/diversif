@@ -50,8 +50,8 @@ const passthroughFlags = args.filter(
   (a) => (a.startsWith('--') || a.startsWith('-')) && !a.startsWith('--coverage')
 );
 const paths = args.filter((a) => !a.startsWith('-'));
-// eslint-rules/ holds the repo's own lint rules and scripts/ the operator
-// scripts; the coverage gate below still counts only src/.
+// eslint-rules/ holds the repo's own lint rules and scripts/ its shell and
+// Bun scripts; the coverage gate below still counts only src/.
 const roots = paths.length > 0 ? paths : ['src', 'eslint-rules', 'scripts'];
 
 const covRoot = path.join(process.cwd(), 'coverage', 'raw');
