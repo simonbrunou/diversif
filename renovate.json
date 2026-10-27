@@ -3,6 +3,11 @@
   "extends": ["config:recommended", "helpers:pinGitHubActionDigests", "group:allNonMajor"],
   "platformAutomerge": true,
   "rangeStrategy": "bump",
+  "rebaseWhen": "conflicted",
+  "pin": {
+    "description": "Repeats the top-level rebaseWhen: Renovate's built-in pin config sets behind-base-branch, which would override it for pin updates, so a pin PR would rebase, and run CI with its E2E job, on every main move (#515).",
+    "rebaseWhen": "conflicted"
+  },
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["* 0-3 * * 1"]
