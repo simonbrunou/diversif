@@ -66,7 +66,7 @@ export function expectRefusal(
   status: RepasRefusal['status'],
   errorKey: RepasRefusal['errorKey']
 ): void {
-  expect(result).toEqual({ ok: false, status, errorKey });
+  expect(result).toEqual<RepasRefusal>({ ok: false, status, errorKey });
 }
 
 /** An ISO givenAt a few minutes ago: inside the meal-date bounds for any seeded child. */

@@ -1,7 +1,11 @@
 import * as Sentry from '@sentry/sveltekit';
-import type { Event } from '@sentry/sveltekit';
+import type { BrowserOptions, Event } from '@sentry/sveltekit';
 
-type Transport = NonNullable<Parameters<typeof Sentry.init>[0]['transport']>;
+// Not `Parameters<typeof Sentry.init>[0]['transport']`: init takes a union of
+// three option types, which gives a union of transport types and leaves the
+// parameters below untyped. The browser and server SDKs both open the
+// transport with the url and headers it records.
+type Transport = NonNullable<BrowserOptions['transport']>;
 
 /** The payload of each envelope item type these tests read, as it went on the wire. */
 type Sent = {
