@@ -25,7 +25,6 @@ const { default: Page } = await import('./+page.svelte');
 afterEach(() => {
   toast.error.mockClear();
   toast.success.mockClear();
-  forms.reset();
   overwriteGetLocale(() => baseLocale);
 });
 

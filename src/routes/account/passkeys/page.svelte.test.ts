@@ -31,7 +31,6 @@ afterEach(() => {
   toastError.mockClear();
   toastSuccess.mockClear();
   startRegistration.mockClear();
-  forms.reset();
 });
 
 const passkey = {
