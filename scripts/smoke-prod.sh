@@ -9,10 +9,11 @@
 # SMOKE_WAIT is how long to wait for <sha> to go live, in seconds (default
 # 540, so a failed wait still ends inside one 600 s agent Bash call).
 # Exit 0: every check passed. 1: a check failed, /_app/version.json never
-# reported a version, or <sha> is not a commit on main. 3: an older commit
-# still served after SMOKE_WAIT, so the checks did not run. A check whose
-# curl call fails (no answer, or one cut short) is retried up to 3 times, 5 s
-# apart.
+# reported a version, <sha> is not a commit on main, or, given a <sha>, this
+# file is not the scripts/smoke-prod.sh of a git checkout. 3: an older
+# commit still served after SMOKE_WAIT, so the checks did not run. A check
+# whose curl call fails (no answer, or one cut short) is retried up to 3
+# times, 5 s apart.
 # What each check expects, why, and what to run after exit 3:
 # docs/agents/deploy.md.
 set -uo pipefail
@@ -108,10 +109,11 @@ on_main() {
   git -C "$REPO" merge-base --is-ancestor "$full" origin/main 2>/dev/null && printf '%s' "$full"
 }
 
-# not_deployable <reason>: fail before the wait, which <sha> could never end.
+# not_deployable <reason> [<hint>]: fail before the wait, which <sha> could
+# never end.
 not_deployable() {
   fail "$1"
-  printf 'smoke-prod: pass the new main head (git fetch origin && git rev-parse origin/main)\n'
+  printf 'smoke-prod: %s\n' "${2:-pass the new main head (git fetch origin && git rev-parse origin/main)}"
   exit 1
 }
 
@@ -120,6 +122,12 @@ if [ -n "$SHA" ]; then
   # version.json reports a lowercase SHA.
   SHA="$(printf '%s' "$SHA" | tr 'A-F' 'a-f')"
   [[ "$SHA" =~ ^[0-9a-f]{7,40}$ ]] || not_deployable "$SHA is not a commit SHA"
+  # A copy elsewhere can tell neither whether <sha> is on main nor whether a
+  # newer live commit contains it: its wait ends only on a live SHA that
+  # starts with <sha>, so a later merge makes it time out.
+  git -C "$REPO" ls-files --error-unmatch scripts/smoke-prod.sh >/dev/null 2>&1 ||
+    not_deployable "$0 is not the scripts/smoke-prod.sh of a git checkout" \
+      "run scripts/smoke-prod.sh by its path in a checkout, not a copy or a link"
   # Only main deploys. When the fetch fails (offline, no origin), the wait
   # below still matches <sha> as a prefix of the live SHA.
   if git -C "$REPO" fetch -q origin 2>/dev/null; then
