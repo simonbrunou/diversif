@@ -23,9 +23,17 @@ async function registerPasskey(page: Page, name: string) {
   // current password.
   await page.getByLabel('Mot de passe', { exact: true }).fill(SIGNUP_PASSWORD);
   await page.getByLabel('Nom de la nouvelle clé').fill(name);
+  // The empty state « Aucune clé enregistrée. » stays on screen until the
+  // list refresh that follows the toast, and a substring toast locator
+  // matches both (#509). Before the click no toast has shown yet, so the
+  // toast locator must find nothing. A substring locator would find the
+  // empty state there and fail every run, not only under load.
+  await expect(page.getByText('Aucune clé enregistrée.', { exact: true })).toBeVisible();
+  const registeredToast = page.getByText('Clé enregistrée.', { exact: true });
+  expect(await registeredToast.count()).toBe(0);
   await page.getByRole('button', { name: 'Ajouter une clé', exact: true }).click();
 
-  await expect(page.getByText('Clé enregistrée.')).toBeVisible();
+  await expect(registeredToast).toBeVisible();
   await expect(page.getByLabel('Nom de la clé')).toHaveValue(name);
 }
 
@@ -150,6 +158,6 @@ test.describe('passkeys', () => {
     await submitDelete(page, SIGNUP_PASSWORD);
     await expect(page.getByRole('status')).toHaveText('Clé supprimée.');
     expect(await countText(page, 'Clé supprimée.')).toBe(1);
-    await expect(page.getByText('Aucune clé enregistrée.')).toBeVisible();
+    await expect(page.getByText('Aucune clé enregistrée.', { exact: true })).toBeVisible();
   });
 });
