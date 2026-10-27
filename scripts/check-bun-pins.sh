@@ -20,6 +20,8 @@
 # Exit 0: every pin reads the same version. Exit 1: the pins differ or one is
 # missing, and the output names each file, line and value. Exit 2: a wrong
 # call, a <repo dir> that does not exist, or no bun on PATH.
+# scripts/check-bun-pins.test.ts runs it on edited copies of the three files,
+# one failure class per test: add a test there when the parsing changes.
 set -uo pipefail
 
 if [ $# -gt 1 ]; then
