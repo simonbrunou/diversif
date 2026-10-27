@@ -62,9 +62,11 @@ read_ci() {
     fail "$CI not found"
     return
   fi
-  # A step ends at the next line indented no deeper than its `-`. Prints
-  # `pin <line> <value>` per input, `nopin <line>` for a setup-bun step
-  # without one, `stray <line>` for an input outside such a step.
+  # A step ends at the next line indented no deeper than its `-`, and its
+  # `with:` block at the next line indented no deeper than `with:`. Prints
+  # `pin <line> <value>` per input in a setup-bun step's `with:`,
+  # `nopin <line>` for a setup-bun step without one, `stray <line>` for a
+  # `bun-version` anywhere else (setup-bun ignores one under `env:`).
   while read -r kind line value; do
     case "$kind" in
       pin)
@@ -79,21 +81,32 @@ read_ci() {
     esac
   done < <(awk -v q="'" '
     function indent(s) { match(s, /^ */); return RLENGTH }
-    function close_step() { if (open) print "nopin", open; open = 0 }
+    function close_step() { if (open) print "nopin", open; open = 0; inwith = 0 }
+    { sub(/\r$/, "") }
     /^[ \t]*(#|$)/ { next }
     {
       ind = indent($0)
       if (open && ind <= step) close_step()
-      if ($0 ~ /^ *- /) dash = ind
+      if (inwith && ind <= withind) inwith = 0
+      # A list item: remember its dash by the column its keys start at.
+      if (match($0, /^ *- +/)) dash[RLENGTH] = ind
     }
-    /^[ \t-]*uses:[ \t]*oven-sh\/setup-bun@/ { open = NR; step = dash; next }
+    $0 ~ ("^[ \t-]*uses:[ \t]*[\"" q "]?oven-sh/setup-bun@") {
+      open = NR
+      # `- uses:` opens the step; a bare `uses:` belongs to the item whose
+      # keys start at its column.
+      if ($0 ~ /^ *- /) step = ind
+      else step = (ind in dash) ? dash[ind] : ind - 2
+      next
+    }
+    open && /^[ \t]*with:[ \t]*(#.*)?$/ { inwith = 1; withind = ind; next }
     /^[ \t]*bun-version:/ {
       v = $0
       sub(/^[ \t]*bun-version:[ \t]*/, "", v)
       sub(/[ \t]*#.*$/, "", v)
       gsub(/"/, "", v)
       gsub(q, "", v)
-      if (open) { print "pin", NR, v; open = 0 } else print "stray", NR
+      if (open && inwith) { print "pin", NR, v; open = 0; inwith = 0 } else print "stray", NR
     }
     END { close_step() }
   ' "$file")
@@ -115,7 +128,7 @@ read_railpack() {
     } catch {
       process.exit(1);
     }
-    const v = config.packages?.bun;
+    const v = config?.packages?.bun;
     if (typeof v === "string") console.log(v);
   ') || {
     fail "$RAILPACK is not valid JSON"
@@ -140,13 +153,20 @@ read_dockerfile() {
     tag=$(printf '%s\n' "$line" | sed -nE 's#.*oven/bun:([^[:space:]@]+).*#\1#p')
     value=$(printf '%s\n' "$tag" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' || true)
     pin "$DOCKERFILE:${line%%:*}" "$value"
-    if [ -z "$value" ]; then
+    if [ -z "$tag" ]; then
+      fail "$DOCKERFILE:${line%%:*} oven/bun has no tag"
+    elif [ -z "$value" ]; then
       fail "$DOCKERFILE:${line%%:*} oven/bun tag '${tag}' does not start with an x.y.z version"
     fi
   done < <(grep -niE '^[[:space:]]*FROM[[:space:]]+(--[^[:space:]]+[[:space:]]+)*([^[:space:]]+/)?oven/bun([:@[:space:]]|$)' "$file")
   if [ "$found" -eq 0 ]; then
     fail "$DOCKERFILE has no FROM oven/bun line"
   fi
+  # An image named by a build arg (FROM ${IMAGE}) hides its tag from this
+  # check, so it fails instead of passing that stage unread.
+  while IFS= read -r line; do
+    fail "$DOCKERFILE:${line%%:*} FROM takes its image from a build arg, which this check cannot read"
+  done < <(grep -niE '^[[:space:]]*FROM[[:space:]]+(--[^[:space:]]+[[:space:]]+)*[^[:space:]]*\$' "$file")
 }
 
 read_ci
