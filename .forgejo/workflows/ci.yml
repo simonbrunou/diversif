@@ -24,7 +24,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
+      # CI's bun-version inputs, railpack.json (production) and the
+      # Dockerfile's oven/bun tags must read one Bun (#528). The script's
+      # header lists what it reads.
+      - name: One Bun version in CI, production and the Docker image
+        run: scripts/check-bun-pins.sh
       - run: bun install --frozen-lockfile
       - run: bun run lint
       - run: bun run check
@@ -38,7 +43,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       # dependency-cruiser resolves #lib through package.json `imports` and
       # SvelteKit's types through tsconfig.json, which extends the generated
@@ -61,7 +66,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       # knip resolves #lib/$app imports and skips generated output, so it needs
       # paraglide's messages + SvelteKit's synced tsconfig/$types present first.
@@ -84,7 +89,7 @@ jobs:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       # Generate paraglide messages + SvelteKit's tsconfig/$types so fallow can
       # resolve #lib / $app / ./$types imports while analyzing changed files.
@@ -109,7 +114,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       - run: bun run test:coverage
       - name: Upload coverage report
@@ -127,7 +132,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       - name: Install Playwright browsers
         run: bun run test:e2e:install
@@ -152,7 +157,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       # The build's prerender uses an in-memory SQLite stub (see
       # src/lib/server/db/index.ts: `building` -> :memory:), so no DB service
@@ -166,7 +171,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       - run: bun run build
       # Bootstrap a real database the same way the app does on boot: start the
@@ -296,7 +301,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.4.3
+          bun-version: 1.4.4
       # Two scopes: production dependencies only (the set the Dockerfile's
       # runtime image installs) and all dependencies (production + dev/build
       # tooling, the set the Railpack production deploy ships, #529). Both
