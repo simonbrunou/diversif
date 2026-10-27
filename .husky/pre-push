@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# pre-push: fast static gates only — lint (prettier + eslint + i18n) and
-# typecheck (svelte-check). The full test suite (unit/component, the
-# test:coverage 100% threshold, docker --check, and Playwright e2e) was
-# intentionally removed so pushes aren't held up for minutes. GitHub Actions
-# CI still runs all of those and gates the branch.
+# pre-push: fast static gates only — lint (prettier + eslint + i18n),
+# typecheck (svelte-check) and the Fallow audit. The full test suite
+# (unit/component, the test:coverage 100% threshold, docker --check, and
+# Playwright e2e) was intentionally removed so pushes aren't held up for
+# minutes. Forgejo CI still runs all of those and gates the branch.
 #
 # Set SKIP_PUSH_TESTS=1 to bypass even these static checks.
 set -euo pipefail
@@ -24,6 +24,18 @@ ok "lint passed"
 log "typecheck (svelte-check)"
 bun run check
 ok "typecheck passed"
+
+# CI's `Fallow audit` job, run the same way (pinned devDependency, diffed
+# from the merge-base with origin/main), so a dead export or a complexity rise
+# fails here in seconds instead of in CI. `check` above has already generated
+# the paraglide messages and $types it reads. Without FALLOW_AUDIT_BASE,
+# fallow diffs against the branch's own upstream, and after `push -u` that
+# diff holds only the unpushed commits. A branch stacked on another sets
+# FALLOW_AUDIT_BASE=origin/<parent> for the push.
+base="${FALLOW_AUDIT_BASE:-origin/main}"
+log "fallow audit (changed files vs $base)"
+FALLOW_AUDIT_BASE="$base" node_modules/.bin/fallow audit
+ok "fallow audit passed"
 
 end=$(date +%s)
 printf '\n\033[1;32mpre-push static gates passed in %ss\033[0m\n' "$((end - start))"
