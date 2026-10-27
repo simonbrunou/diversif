@@ -198,7 +198,8 @@ describe('scripts/smoke-prod.sh', () => {
   });
 
   it('on a dead host retries only the first check, then fails the others at once', async () => {
-    // Port 9 (discard) is privileged, so no test process on the host can listen there.
+    // Port 9 (discard) is outside the ephemeral range that port-0 listeners
+    // draw from, so no other test's server lands there.
     const deadBase = 'http://127.0.0.1:9';
     const run = await smoke(deadBase);
     expect(run.retries).toHaveLength(3);

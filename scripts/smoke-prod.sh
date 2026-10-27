@@ -11,7 +11,8 @@
 # Exit 0: every check passed. 1: a check failed, /_app/version.json never
 # reported a version, or <sha> is not a commit on main. 3: an older commit
 # still served after SMOKE_WAIT, so the checks did not run. A check whose
-# request gets no HTTP answer is retried up to 3 times, 5 s apart.
+# curl call fails (no answer, or one cut short) is retried up to 3 times, 5 s
+# apart.
 # What each check expects, why, and what to run after exit 3:
 # docs/agents/deploy.md.
 set -uo pipefail
@@ -44,10 +45,10 @@ fetch() {
   fi
 }
 
-# fetch_retry <path>: fetch, retrying up to 3 times, 5 s apart, while the
-# request gets no HTTP answer: during the container swap a request can time
-# out or be refused. Any HTTP status is an answer, 5xx included. Once one
-# check has used up its retries the script takes the host as down, not
+# fetch_retry <path>: fetch, retrying up to 3 times, 5 s apart, while curl
+# fails ($code 000): during the container swap a request can time out, be
+# refused or be cut short. A full answer is never retried, 5xx included. Once
+# one check has used up its retries the script treats the host as down, not
 # swapping, so later checks get one try each: a run where every request times
 # out still ends inside one 600 s agent Bash call.
 host_down=''
