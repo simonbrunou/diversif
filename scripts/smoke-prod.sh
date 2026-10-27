@@ -10,7 +10,9 @@
 # 540, so a failed wait still ends inside one 600 s agent Bash call).
 # Exit 0: every check passed. 1: a check failed, /_app/version.json never
 # reported a version, or <sha> is not a commit on main. 3: an older commit
-# still served after SMOKE_WAIT, so the checks did not run.
+# still served after SMOKE_WAIT, so the checks did not run. A check whose
+# curl call fails (no answer, or one cut short) is retried up to 3 times, 5 s
+# apart.
 # What each check expects, why, and what to run after exit 3:
 # docs/agents/deploy.md.
 set -uo pipefail
@@ -43,6 +45,26 @@ fetch() {
   fi
 }
 
+# fetch_retry <path>: fetch, retrying up to 3 times, 5 s apart, while curl
+# fails ($code 000): during the container swap a request can time out, be
+# refused or be cut short. A full answer is never retried, 5xx included. Once
+# one check has used up its retries the script treats the host as down, not
+# swapping, so later checks get one try each: a run where every request times
+# out still ends inside one 600 s agent Bash call.
+host_down=''
+fetch_retry() {
+  local attempt tries=4 delay=5
+  for ((attempt = 1; attempt <= tries; attempt++)); do
+    if [ "$attempt" -gt 1 ]; then
+      printf 'RETRY %s got %s, attempt %d of %d in %d s\n' "$1" "$got" "$attempt" "$tries" "$delay"
+      sleep "$delay"
+    fi
+    fetch "$1"
+    if [ "$code" != 000 ] || [ -n "$host_down" ]; then return; fi
+  done
+  host_down=1
+}
+
 # header <name>: the value of that response header from the last fetch.
 header() {
   grep -i "^$1:" "$TMP/headers" | head -n 1 | cut -d: -f2- | tr -d '\r' | sed 's/^ *//'
@@ -50,7 +72,7 @@ header() {
 
 # expect <path> <status> [<content-type glob>]: fetch, then check both.
 expect() {
-  fetch "$1"
+  fetch_retry "$1"
   # shellcheck disable=SC2053 # $3 is a glob on purpose.
   if [ "$code" = "$2" ] && [[ "$ctype" == ${3:-*} ]]; then
     pass "$1 $code ${ctype:-}"
@@ -141,7 +163,7 @@ expect /_app/env.js 200 '*javascript*'
 expect /service-worker.js 200 '*javascript*'
 expect /sw.js 404
 
-fetch /healthz
+fetch_retry /healthz
 if [ "$code" = 200 ] && grep -q '"ok":true' "$TMP/body" && grep -q '"db":"ok"' "$TMP/body"; then
   pass "/healthz ok, db ok"
 else
@@ -149,7 +171,7 @@ else
 fi
 
 # Served with no Content-Type today; text/html is fine too.
-fetch /offline
+fetch_retry /offline
 if [ "$code" = 200 ] && grep -qi '<html' "$TMP/body" && [[ -z "$ctype" || "$ctype" == text/html* ]]; then
   pass "/offline 200 HTML (Content-Type: ${ctype:-none})"
 else

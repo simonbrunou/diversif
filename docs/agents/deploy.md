@@ -17,6 +17,8 @@ After a merge, run `scripts/smoke-prod.sh <sha>` with the new `main` head SHA (`
 
 It exits 1 when a check fails or `/_app/version.json` never reports a version. When an older commit still serves after the wait, it prints a `PENDING` line, skips the checks and exits 3: the deploy is still running, or it failed. Run homelab-stacks `scripts/coolify-deploy-status.sh` with the diversif app uuid from its header and the SHA. Its exit 0 or 3 means run `smoke-prod.sh` again. On any other exit, its last line says what went wrong.
 
+A request sent during the container swap can get no answer, or only part of one. So when curl exits with an error (a timeout, a refused or reset connection, an empty reply, a body cut short), the script tries that check again, up to 3 more times, 5 s apart. Each retry prints a `RETRY` line with the check, the attempt number and the curl error. A check that passes on a retry counts as one pass. A full answer with a wrong status, content type, header or body fails at once, a 5xx included. Once one check has used up its retries, the script treats the host as down, and later checks whose curl call fails get no retry. The wait on `/_app/version.json` keeps its own 15 s polling and does not retry this way.
+
 What it expects:
 
 - `/`, `/guide` and `/en` answer 200 `text/html`.
