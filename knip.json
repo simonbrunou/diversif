@@ -19,8 +19,7 @@
     "prettier-plugin-svelte",
     "prettier-plugin-tailwindcss",
     "svelte-check",
-    "happy-dom",
-    "fallow"
+    "happy-dom"
   ],
   "ignoreBinaries": ["Tools"]
 }
