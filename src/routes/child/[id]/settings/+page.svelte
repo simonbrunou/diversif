@@ -43,8 +43,10 @@
   // stays open and shows it, so it never also shows behind the dialog. Only
   // that dialog has `failed` set, so every dialog can take the same message.
   // A dialog posts only with JavaScript, so no page load carries `errorKey`.
+  // `result` is `{}` before any submission, so each read below needs no check.
+  const result: Partial<NonNullable<ActionData>> = $derived(form ?? {});
   const dialogFailureMessage = $derived(
-    form?.errorKey ? resolveMessageKey(form.errorKey) : m.errorsGenericFallback()
+    result.errorKey ? resolveMessageKey(result.errorKey) : m.errorsGenericFallback()
   );
 
   // askRemoveMember always assigns the id before opening, so the modal can
@@ -76,14 +78,14 @@
   {#if data.role === 'owner'}
     <Card class="p-4">
       <h2 class="text-base font-semibold">{m.settingsInformationsHeading()}</h2>
-      <FormSuccess messageKey={form?.childSuccessKey} {form} class="mt-3" />
+      <FormSuccess messageKey={result.childSuccessKey} {form} class="mt-3" />
       <form
         method="POST"
         action="?/updateChild"
         class="mt-3 grid gap-3"
         use:enhance={trackSubmission((v) => (savingChild = v))}
       >
-        <FormError messageKey={form?.childErrorKey} {form} />
+        <FormError messageKey={result.childErrorKey} {form} />
         <Field name="name" label={m.commonFirstName()}>
           <Input id="name" name="name" required maxlength={80} value={data.child.name} />
         </Field>
@@ -101,7 +103,7 @@
 
   <Card class="p-4">
     <h2 class="text-base font-semibold">{m.settingsDietHeading()}</h2>
-    <FormSuccess messageKey={form?.dietSuccessKey} {form} class="mt-3" />
+    <FormSuccess messageKey={result.dietSuccessKey} {form} class="mt-3" />
     <form
       method="POST"
       action="?/setDiet"
@@ -132,7 +134,7 @@
 
   <Card class="p-4">
     <h2 class="text-base font-semibold">{m.settingsMembersHeading()}</h2>
-    <FormSuccess messageKey={form?.memberSuccessKey} {form} class="mt-3" />
+    <FormSuccess messageKey={result.memberSuccessKey} {form} class="mt-3" />
     <ul class="mt-3 divide-y">
       {#each data.members as member (member.userId)}
         <li class="flex items-center justify-between py-3">
@@ -168,8 +170,8 @@
       <p class="mt-1 text-sm text-muted-foreground">
         {m.settingsInviteDescription()}
       </p>
-      <FormSuccess messageKey={form?.invitationSuccessKey} {form} class="mt-3" />
-      <FormError messageKey={form?.invitationErrorKey} {form} class="mt-3" />
+      <FormSuccess messageKey={result.invitationSuccessKey} {form} class="mt-3" />
+      <FormError messageKey={result.invitationErrorKey} {form} class="mt-3" />
 
       <div class="mt-3">
         <Button type="button" variant="secondary" onclick={() => (inviteOpen = true)}>

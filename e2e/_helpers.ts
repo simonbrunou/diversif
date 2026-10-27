@@ -10,7 +10,7 @@ export function unique(prefix: string): string {
  * on the same email seed. Always includes the worker index — Playwright
  * sets TEST_WORKER_INDEX in every worker, including single-worker runs.
  */
-export function uniqueForWorker(prefix: string): string {
+function uniqueForWorker(prefix: string): string {
   const w = process.env.TEST_WORKER_INDEX ?? '0';
   return `${unique(prefix)}-w${w}`;
 }
@@ -198,7 +198,7 @@ export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
  * Assert the visible dialog rendered as a bottom-sheet (side="bottom",
  * the resolved side of "auto" on a sub-768px viewport).
  */
-export async function expectBottomSheet(page: Page): Promise<void> {
+async function expectBottomSheet(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute('data-side', 'bottom');
@@ -210,7 +210,7 @@ export async function expectBottomSheet(page: Page): Promise<void> {
  * of `expectBottomSheet` — the exact desktop placement is a component-level
  * decision (e.g. side="auto" resolves to "center" on md+).
  */
-export async function expectNotBottomSheet(page: Page): Promise<void> {
+async function expectNotBottomSheet(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute('data-side', /^(top|right|left|center)$/);
