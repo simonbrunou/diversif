@@ -1,7 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests", "group:allNonMajor"],
   "platformAutomerge": true,
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-3 * * 1"]
+  },
   "packageRules": [
     {
       "description": "Auto-merge low-risk updates once CI passes",
@@ -18,6 +23,12 @@
       "description": "Hold devalue below 6: SvelteKit 3 depends on devalue ^5.9.4, and its streaming serializer throws 'Invalid JavaScript fragment' under devalue 6. CI stays green unless a route streams a promise. Lift this once SvelteKit moves to devalue 6.",
       "matchPackageNames": ["devalue"],
       "allowedVersions": "<6"
+    },
+    {
+      "description": "Open the group:allNonMajor PR once a week, in the lockFileMaintenance window (Monday before 4am UTC), and auto-merge it once CI passes. A group auto-merges only when every update in it does, so this covers production minors too. Security PRs skip this schedule and the group, since Renovate forces its vulnerabilityAlerts defaults onto them, but keep this auto-merge (#465).",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": ["* 0-3 * * 1"],
+      "automerge": true
     }
   ]
 }
