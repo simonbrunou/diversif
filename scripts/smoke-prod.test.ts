@@ -4,7 +4,15 @@
 // on PATH logs its argument and returns at once, so the retry spacing is
 // asserted without waiting for it. The SHA wait is left out: it fetches origin.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -107,13 +115,17 @@ beforeEach(() => {
 
 // Async spawn: the server answers on this process's event loop, which
 // Bun.spawnSync would block until the script gave up.
-async function smoke(baseUrl = base) {
+async function smoke(
+  baseUrl = base,
+  { script = scriptPath, args = [] as string[], wait = '' } = {}
+) {
   const proc = Bun.spawn({
-    cmd: ['bash', scriptPath],
+    cmd: ['bash', script, ...args],
     env: {
       ...process.env,
       PATH: `${binDir}:${process.env.PATH}`,
       SMOKE_BASE_URL: baseUrl,
+      ...(wait ? { SMOKE_WAIT: wait } : {}),
       SLEEP_LOG: sleepLog,
       // A proxy from the shell would answer for the local server.
       no_proxy: '*',
@@ -214,5 +226,37 @@ describe('scripts/smoke-prod.sh', () => {
     expect(run.lines.find((line) => line.startsWith('FAIL / '))).toContain('curl: (7)');
     expect(run.last).toBe(`smoke-prod: 11 of 11 checks failed on ${deadBase}`);
     expect(run.code).toBe(1);
+  });
+
+  // A copy can tell neither whether the SHA is on main nor whether the newer
+  // live commit contains it. Without the guard it polls version.json until
+  // SMOKE_WAIT runs out and exits 3 with PENDING, as #484's deploy check did.
+  it.each([
+    ['in a plain directory', false],
+    ['untracked inside another git repo', true]
+  ])('with a SHA, fails at once when run as a copy %s', async (_where, insideRepo) => {
+    const root = mkdtempSync(path.join(binDir, 'copy-'));
+    if (insideRepo) expect(Bun.spawnSync({ cmd: ['git', 'init', '-q', root] }).exitCode).toBe(0);
+    const copy = path.join(root, 'scripts', 'smoke-prod.sh');
+    mkdirSync(path.dirname(copy), { recursive: true });
+    copyFileSync(scriptPath, copy);
+    overrides['/_app/version.json'] = {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: '{"version":"fedcba9876543210fedcba9876543210fedcba98"}'
+    };
+    const run = await smoke(base, {
+      script: copy,
+      args: ['0123456789abcdef0123456789abcdef01234567'],
+      wait: '2'
+    });
+    expect(run.lines.find((line) => line.startsWith('FAIL '))).toBe(
+      `FAIL ${copy} is not the scripts/smoke-prod.sh of a git checkout`
+    );
+    expect(run.last).toBe(
+      'smoke-prod: run scripts/smoke-prod.sh by its path in a checkout, not a copy or a link'
+    );
+    expect(run.code).toBe(1);
+    expect(hits.size).toBe(0);
   });
 });
