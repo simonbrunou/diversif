@@ -1,6 +1,7 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import {
   awaitHydration,
+  birthDateMonthsAgo,
   countText,
   openWithoutJavaScript,
   signUpAndCreateChild,
@@ -8,19 +9,12 @@ import {
 } from './_helpers';
 
 // Child settings shows each action's result next to its own form (#484).
-// Two forms on the page have a « Enregistrer » button, and every card keeps
-// an empty status region, so locators are scoped to a form and successes are
-// read by their text.
+// Two forms on the page have a « Enregistrer » button, and each card that
+// shows a success keeps an empty status region, so locators are scoped to a
+// form and successes are read by their text.
 
 async function openSettings(page: Page, emailPrefix: string): Promise<string> {
-  const sevenMonthsAgo = new Date();
-  sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-  const childId = await signUpAndCreateChild(
-    page,
-    'Lulu',
-    sevenMonthsAgo.toISOString().slice(0, 10),
-    emailPrefix
-  );
+  const childId = await signUpAndCreateChild(page, 'Lulu', birthDateMonthsAgo(7), emailPrefix);
   await page.goto(`/child/${childId}/settings`);
   await awaitHydration(page);
   return childId;

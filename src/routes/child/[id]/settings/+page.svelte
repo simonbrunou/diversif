@@ -36,12 +36,13 @@
   let removeMemberOpen = $state(false);
   let removeMemberId = $state<number | null>(null);
 
-  // Each result shows next to the form that produced it, under a field named
-  // for its card (`childErrorKey`, `dietSuccessKey`, …), with JavaScript or
-  // without. The dialogs' refusals come back as `errorKey`, which no message
-  // on the page reads: the dialog that posted stays open and shows it, so it
-  // never also shows behind the dialog. Only that dialog has `failed` set,
-  // so every dialog can take the same message.
+  // Each result shows next to the form that produced it, with JavaScript or
+  // without: the action returns its message key under a name for its card
+  // (`childErrorKey`, `dietSuccessKey`, …). The dialogs' refusals come back as
+  // `errorKey`, which no message on the page reads: the dialog that posted
+  // stays open and shows it, so it never also shows behind the dialog. Only
+  // that dialog has `failed` set, so every dialog can take the same message.
+  // A dialog posts only with JavaScript, so no page load carries `errorKey`.
   const dialogFailureMessage = $derived(
     form?.errorKey ? resolveMessageKey(form.errorKey) : m.errorsGenericFallback()
   );

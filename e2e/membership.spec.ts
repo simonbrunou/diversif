@@ -1,5 +1,5 @@
 import { expect, test, type Page, type BrowserContext } from '@playwright/test';
-import { signUp, signUpAndCreateChild, SIGNUP_PASSWORD } from './_helpers';
+import { countText, signUp, signUpAndCreateChild, SIGNUP_PASSWORD } from './_helpers';
 
 // Shared helper so the onboarding fill is hardened against the hydration
 // race (see _helpers.ts) — a local fill+click copy used to flake here.
@@ -73,6 +73,9 @@ test.describe('membership permissions', () => {
       await expect(dialog).toContainText(/Retirer ce membre/);
       await dialog.getByRole('button', { name: /^Retirer$/ }).click();
       await expect(dialog).toBeHidden();
+      // Its success shows once, on the page, after the dialog has closed.
+      await expect(ownerPage.getByText('Membre retiré.', { exact: true })).toBeVisible();
+      expect(await countText(ownerPage, 'Membre retiré.')).toBe(1);
       await expect(ownerPage.locator('body')).not.toContainText('Co-parent');
     } finally {
       await ownerCtx.close();

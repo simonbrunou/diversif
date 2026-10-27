@@ -49,6 +49,13 @@ export async function countText(page: Page, text: string): Promise<number> {
   return page.getByText(text, { exact: true }).count();
 }
 
+/** A `YYYY-MM-DD` birth date `months` months before today, for `signUpAndCreateChild`. */
+export function birthDateMonthsAgo(months: number): string {
+  const date = new Date();
+  date.setMonth(date.getMonth() - months);
+  return date.toISOString().slice(0, 10);
+}
+
 /** The password every `signUp()` account gets, for fresh-auth prompts and re-logins. */
 export const SIGNUP_PASSWORD = 'hunter2-very-long';
 

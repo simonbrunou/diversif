@@ -69,7 +69,7 @@ describe('settings createInvitation action', () => {
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
-    )) as { success: string; code: string };
+    )) as { code: string };
     expect(r.code).toMatch(/^BEBE-/);
     const stored = (
       await testDb.select().from(invitations).where(eq(invitations.code, r.code)).limit(1)
@@ -185,7 +185,7 @@ describe('settings createInvitation action', () => {
     });
     const r = (await actions.createInvitation!(
       event as unknown as Parameters<NonNullable<typeof actions.createInvitation>>[0]
-    )) as { success: string; code: string };
+    )) as { code: string };
     expect(r.code).toBe('BEBE-BBBBBB');
     expect(generateInviteCodeRawSpy).toHaveBeenCalledTimes(2);
   });

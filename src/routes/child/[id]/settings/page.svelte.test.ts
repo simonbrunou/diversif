@@ -2,24 +2,14 @@ import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import '../../../../test/component';
+import { captureEnhance } from '../../../../test/enhanced-submit';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 
-// The last use:enhance callback that registered, so a test can play
-// SvelteKit's part for a dialog: run it, then apply a result through
-// `update`. The page's two enhanced forms register at mount, and a dialog's
-// form registers once its opener is clicked, so after a click it holds the
-// dialog's.
-type Submit = (input: {
-  cancel: () => void;
-}) => ((opts: { result: { type: string }; update: () => Promise<void> }) => Promise<void>) | void;
-let enhancedSubmit: Submit | undefined;
+// Keeps the dialogs' use:enhance callbacks, so a test can play SvelteKit's
+// part. The page's own two enhanced forms register at mount.
+const forms = captureEnhance();
 mock.module('$app/state', () => ({ page: { url: new URL('http://localhost/child/7/settings') } }));
-mock.module('$app/forms', () => ({
-  enhance: (_form: HTMLFormElement, submit: Submit) => {
-    enhancedSubmit = submit;
-    return { destroy: () => {} };
-  }
-}));
+mock.module('$app/forms', () => forms.module());
 mock.module('$app/navigation', () => ({ afterNavigate: () => {}, goto: async () => {} }));
 mock.module('$app/env', () => ({ browser: false }));
 // The page renders its results inline; a toast would show them a second time.
@@ -35,7 +25,7 @@ const { default: Page } = await import('./+page.svelte');
 afterEach(() => {
   toast.error.mockClear();
   toast.success.mockClear();
-  enhancedSubmit = undefined;
+  forms.reset();
   overwriteGetLocale(() => baseLocale);
 });
 
@@ -137,12 +127,11 @@ async function submitDialog(
   opener: string,
   result: { type: 'success' | 'failure'; data: ActionData }
 ) {
-  enhancedSubmit = undefined;
-  await fireEvent.click(view.getAllByRole('button', { name: opener })[0]);
-  const settle = enhancedSubmit?.({ cancel: () => {} });
-  if (!settle) throw new Error(`the « ${opener} » dialog did not register use:enhance`);
-  await settle({ result, update: () => view.rerender({ form: result.data }) });
-  await tick();
+  await forms.submit(
+    () => fireEvent.click(view.getByRole('button', { name: opener })),
+    result,
+    () => view.rerender({ form: result.data })
+  );
 }
 
 describe('child settings dialogs', () => {
