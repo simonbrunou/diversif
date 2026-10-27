@@ -13,7 +13,16 @@ let toastErrorCalls: string[] = [];
 mock.module('svelte-sonner', () => ({
   toast: { error: (message: string) => toastErrorCalls.push(message) }
 }));
+// Records the default navigate (goto) for the tests that pass no `deps`.
+let gotoCalls: unknown[][] = [];
+mock.module('$app/navigation', () => ({
+  goto: (...args: unknown[]) => {
+    gotoCalls.push(args);
+    return Promise.resolve();
+  }
+}));
 
+import { stubGlobal } from '../../test/bun-test-utils';
 import { authenticateWithPasskey, signInWithPasskey } from './passkey-client';
 
 type FakeResponse = { ok: boolean; json: () => Promise<unknown> };
@@ -191,5 +200,37 @@ describe('signInWithPasskey', () => {
       })
     ).rejects.toThrow('nav aborted');
     expect(busy).toEqual([true, false]);
+  });
+
+  // The call sites pass no `deps`: these run the defaults end to end, the
+  // real ceremony over the global fetch, goto and the svelte-sonner toast.
+  // Bun 1.4.4 counts the `deps = {}` default as a line of its own (#528).
+  it('without deps, runs the ceremony over fetch and navigates home with goto', async () => {
+    gotoCalls = [];
+    const fetchFn = fakeFetch({
+      options: { ok: true, json: async () => ({ challenge: 'c' }) },
+      verify: { ok: true, json: async () => ({ ok: true }) }
+    });
+    stubGlobal('fetch', fetchFn);
+    const busy: boolean[] = [];
+    await signInWithPasskey((v) => busy.push(v));
+    expect(fetchFn.calls.map((c) => c.url)).toEqual([
+      '/passkeys/authentication/options',
+      '/passkeys/authentication/verify'
+    ]);
+    expect(gotoCalls).toEqual([['/', { refreshAll: true }]]);
+    expect(busy).toEqual([true, false]);
+  });
+
+  it('without deps, toasts the failure through svelte-sonner', async () => {
+    toastErrorCalls = [];
+    gotoCalls = [];
+    stubGlobal('fetch', fakeFetch({ options: { ok: false, json: async () => ({}) } }));
+    await signInWithPasskey(() => {});
+    // The default showError fires-and-forgets a dynamic import; flush it.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const { errorsAccountPasskeyAuthStartFailed } = await import('#lib/paraglide/messages.js');
+    expect(toastErrorCalls).toEqual([errorsAccountPasskeyAuthStartFailed()]);
+    expect(gotoCalls).toEqual([]);
   });
 });
