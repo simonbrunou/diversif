@@ -1,8 +1,10 @@
 // scripts/smoke-prod.sh against a local server that answers every check the
 // way production does, except where a test makes it drop a request (close the
-// connection without an answer) or answer with another status. A fake `sleep`
-// on PATH logs its argument and returns at once, so the retry spacing is
-// asserted without waiting for it. The SHA wait is left out: it fetches origin.
+// connection without an answer), leave one unanswered or answer with another
+// status. A fake `sleep` on PATH logs its argument and returns at once, so the
+// retry spacing is asserted without waiting for it. A run with a SHA uses a
+// tracked copy of the script in a git repo with no origin remote: its fetch
+// fails, so the wait matches the SHA as a prefix of the live one.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
 import {
   chmodSync,
@@ -51,10 +53,13 @@ const production: Record<string, Answer> = {
   '/offline': { status: 200, body: '<!doctype html><html></html>' }
 };
 
-// Per test: the requests to drop (path -> how many first requests) and the
-// answers that differ from production.
+// Per test: the requests to drop (path -> how many first requests), the
+// answers that differ from production, and the replies that depend on the
+// request's number (path -> a function of it). A reply of 'hang' keeps the
+// connection open and never answers; undefined falls through to the others.
 let drops: Record<string, number> = {};
 let overrides: Record<string, Answer> = {};
+let replies: Record<string, (n: number) => Answer | 'hang' | undefined> = {};
 const hits = new Map<string, number>();
 
 function render({ status, headers = {}, body = '' }: Answer): string {
@@ -80,16 +85,32 @@ const server = Bun.listen<{ request: string }>({
       const requestPath = socket.data.request.split(' ')[1];
       const n = (hits.get(requestPath) ?? 0) + 1;
       hits.set(requestPath, n);
+      const reply = replies[requestPath]?.(n);
+      if (reply === 'hang') return;
       if (n <= (drops[requestPath] ?? 0)) {
         socket.end();
         return;
       }
-      socket.end(render(overrides[requestPath] ?? production[requestPath] ?? { status: 404 }));
+      socket.end(
+        render(reply ?? overrides[requestPath] ?? production[requestPath] ?? { status: 404 })
+      );
     }
   }
 });
 const base = `http://127.0.0.1:${server.port}`;
 const allPassed = `smoke-prod: 11 of 11 checks passed on ${base}`;
+
+// A host that accepts every connection and never answers.
+const silent = Bun.listen({ hostname: '127.0.0.1', port: 0, socket: { data() {} } });
+const silentBase = `http://127.0.0.1:${silent.port}`;
+
+const oldSha = 'fedcba9876543210fedcba9876543210fedcba98';
+const newSha = '0123456789abcdef0123456789abcdef01234567';
+const version = (sha: string): Answer => ({
+  status: 200,
+  headers: { 'Content-Type': 'application/json' },
+  body: `{"version":"${sha}"}`
+});
 
 let binDir: string;
 let sleepLog: string;
@@ -103,29 +124,49 @@ beforeAll(() => {
 
 afterAll(() => {
   server.stop(true);
+  silent.stop(true);
   rmSync(binDir, { recursive: true, force: true });
 });
 
 beforeEach(() => {
   drops = {};
   overrides = {};
+  replies = {};
   hits.clear();
   writeFileSync(sleepLog, '');
 });
 
+// A tracked copy of the script in a new git repo with no origin remote.
+function trackedCopy(): string {
+  const root = mkdtempSync(path.join(binDir, 'repo-'));
+  const copy = path.join(root, 'scripts', 'smoke-prod.sh');
+  mkdirSync(path.dirname(copy), { recursive: true });
+  copyFileSync(scriptPath, copy);
+  for (const cmd of [
+    ['git', 'init', '-q', root],
+    ['git', '-C', root, 'add', 'scripts/smoke-prod.sh']
+  ]) {
+    expect(Bun.spawnSync({ cmd }).exitCode).toBe(0);
+  }
+  return copy;
+}
+
 // Async spawn: the server answers on this process's event loop, which
-// Bun.spawnSync would block until the script gave up.
+// Bun.spawnSync would block until the script gave up. realSleep leaves the
+// fake `sleep` off PATH, so the wait's sleeps take real time.
 async function smoke(
   baseUrl = base,
-  { script = scriptPath, args = [] as string[], wait = '' } = {}
+  { script = scriptPath, args = [] as string[], wait = '', checkTime = '', realSleep = false } = {}
 ) {
+  const started = performance.now();
   const proc = Bun.spawn({
     cmd: ['bash', script, ...args],
     env: {
       ...process.env,
-      PATH: `${binDir}:${process.env.PATH}`,
+      PATH: realSleep ? process.env.PATH : `${binDir}:${process.env.PATH}`,
       SMOKE_BASE_URL: baseUrl,
       ...(wait ? { SMOKE_WAIT: wait } : {}),
+      ...(checkTime ? { SMOKE_CHECK_TIME: checkTime } : {}),
       SLEEP_LOG: sleepLog,
       // A proxy from the shell would answer for the local server.
       no_proxy: '*',
@@ -141,6 +182,7 @@ async function smoke(
   ]);
   const lines = stdout.trimEnd().split('\n');
   return {
+    ms: performance.now() - started,
     code,
     stderr,
     lines,
@@ -259,4 +301,89 @@ describe('scripts/smoke-prod.sh', () => {
     expect(run.code).toBe(1);
     expect(hits.size).toBe(0);
   });
+
+  // Every run ends by one deadline, SMOKE_WAIT + SMOKE_CHECK_TIME seconds after
+  // it starts, so that it fits in one 600 s agent Bash call. Bash startup and
+  // the exit trap fall outside the script's clock, hence the slack. Before the
+  // deadline, each unanswered request below took curl's full 20 s.
+  const slack = 500;
+  const budgetFails = (lines: string[]) =>
+    lines.filter((line) => line.endsWith(' not run: the time budget ran out'));
+
+  it('with a SHA that goes live late in the wait, fails the checks left past the deadline', async () => {
+    replies = {
+      '/_app/version.json': (n) => version(n === 1 ? oldSha : newSha),
+      '/guide': () => 'hang'
+    };
+    // The real sleep after the first poll is cut so that the second poll, the
+    // last one of the wait, starts 1 s before SMOKE_WAIT ends.
+    const run = await smoke(base, {
+      script: trackedCopy(),
+      args: [newSha],
+      wait: '2',
+      checkTime: '1',
+      realSleep: true
+    });
+    expect(run.ms).toBeLessThan(3000 + slack);
+    expect(run.ms).toBeGreaterThan(2500);
+    expect(hits.get('/_app/version.json')).toBe(2);
+    expect(run.lines).toContain(`PASS /_app/version.json is ${newSha}`);
+    expect(run.lines).toContain("PASS CSP has default-src 'self'");
+    // Too little time left for a 5 s retry: the check keeps its curl error.
+    expect(run.retries).toEqual([]);
+    expect(run.lines.find((line) => line.startsWith('FAIL /guide '))).toMatch(
+      /^FAIL \/guide returned no answer \(curl: \(28\) [^)]+\), expected 200 text\/html\*$/
+    );
+    expect(budgetFails(run.lines)).toEqual(
+      ['/en', '/_app/env.js', '/service-worker.js', '/sw.js', '/healthz', '/offline'].map(
+        (check) => `FAIL ${check} not run: the time budget ran out`
+      )
+    );
+    expect(hits.has('/en')).toBe(false);
+    expect(run.last).toBe(`smoke-prod: 7 of 12 checks failed on ${base}`);
+    expect(run.code).toBe(1);
+  }, 10_000);
+
+  it.each([
+    [
+      'exits 3 when an older commit served',
+      (n: number) => (n === 1 ? version(oldSha) : 'hang'),
+      `PENDING /_app/version.json is ${oldSha}, not ${newSha} after 2s`,
+      3
+    ],
+    [
+      'exits 1 when no version came',
+      () => 'hang' as const,
+      /^FAIL \/_app\/version\.json returned no answer \(curl: \(28\) [^)]+\) after 2s$/,
+      1
+    ]
+  ])(
+    'with a SHA, ends a failed wait by SMOKE_WAIT and %s',
+    async (_outcome, reply, line, code) => {
+      replies = { '/_app/version.json': reply };
+      const run = await smoke(base, { script: trackedCopy(), args: [newSha], wait: '2' });
+      // The last poll gets only the time left in the wait, not curl's 20 s.
+      expect(run.ms).toBeLessThan(2000 + 2000);
+      expect(run.lines.some((l) => (typeof line === 'string' ? l === line : line.test(l)))).toBe(
+        true
+      );
+      expect(run.code).toBe(code);
+      expect(hits.size).toBe(1);
+    },
+    10_000
+  );
+
+  it('without a SHA, ends by the deadline on a host that never answers', async () => {
+    const run = await smoke(silentBase, { wait: '1', checkTime: '1' });
+    expect(run.ms).toBeLessThan(2000 + slack);
+    expect(run.retries).toEqual([]);
+    expect(run.lines.find((line) => line.startsWith('FAIL / '))).toContain('curl: (28)');
+    expect(budgetFails(run.lines)).toEqual(
+      ['/guide', '/en', '/_app/env.js', '/service-worker.js', '/sw.js', '/healthz', '/offline'].map(
+        (check) => `FAIL ${check} not run: the time budget ran out`
+      )
+    );
+    expect(run.last).toBe(`smoke-prod: 11 of 11 checks failed on ${silentBase}`);
+    expect(run.code).toBe(1);
+  }, 10_000);
 });
