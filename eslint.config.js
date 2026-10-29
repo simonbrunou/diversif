@@ -85,9 +85,10 @@ export default ts.config(
       'no-restricted-syntax': [
         'error',
         {
-          // `.name` for d.setMonth(), `.value` for d['setMonth']().
+          // `.name` for d.setMonth(), `.value` for d['setMonth'](), and for
+          // d[`setMonth`]() the text of a template with no ${} in it.
           selector:
-            'CallExpression:matches([callee.property.name=/^set(UTC)?Month$/], [callee.property.value=/^set(UTC)?Month$/])',
+            'CallExpression:matches([callee.property.name=/^set(UTC)?Month$/], [callee.property.value=/^set(UTC)?Month$/], [callee.property.expressions.length=0][callee.property.quasis.0.value.cooked=/^set(UTC)?Month$/])',
           message:
             'Get a birth date from birthDateMonthsAgo in e2e/_helpers.ts: it clamps the day to the end of a shorter month (#563).'
         }
