@@ -26,7 +26,7 @@ function server(answer: () => Response | Promise<Response>) {
 }
 
 /** Like server(), answering the calls in turn. */
-function serverAnswering(...answers: (() => Response)[]) {
+function serverAnswering(...answers: (() => Response | Promise<Response>)[]) {
   let call = 0;
   return server(() => answers[call++]());
 }
@@ -410,6 +410,72 @@ describe('queue', () => {
     location = '/child/1?logged=1';
     await flush(transport);
 
+    expect(await countRows()).toBe(0);
+    expect(await needsReauthCount()).toBe(0);
+  });
+
+  // Regression for #497: the logout purge clear()s the queue while a pass
+  // that read the rows before it is still replaying. The replay then meets
+  // the ended session, and marking the in-memory row needs-reauth put the
+  // previous user's repas back on the device.
+  it('does not put back a row cleared while its replay was in flight', async () => {
+    const sent = Promise.withResolvers<void>();
+    const answer = Promise.withResolvers<Response>();
+    const { transport } = server(() => {
+      sent.resolve();
+      return answer.promise;
+    });
+    const reauth: unknown[] = [];
+    const onReauth = (e: Event) => reauth.push((e as CustomEvent).detail);
+    let changed = 0;
+    const onChanged = () => changed++;
+    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+    window.addEventListener('queue:needsReauth', onReauth);
+    window.addEventListener('queue:changed', onChanged);
+
+    const pass = flush(transport);
+    try {
+      await sent.promise;
+      await clear();
+    } finally {
+      // Ends the pass even when a step fails, so the tests after this one
+      // don't get its pending promise back from flush().
+      answer.resolve(goodActionResult('/login'));
+      await pass;
+      window.removeEventListener('queue:needsReauth', onReauth);
+      window.removeEventListener('queue:changed', onChanged);
+    }
+
+    expect(await countRows()).toBe(0);
+    expect(await needsReauthCount()).toBe(0);
+    expect(reauth).toEqual([]);
+    // clear()'s own queue:changed only.
+    expect(changed).toBe(1);
+  });
+
+  it('does not put back a later row cleared while an earlier replay was in flight', async () => {
+    const sent = Promise.withResolvers<void>();
+    const answer = Promise.withResolvers<Response>();
+    const { transport, calls } = serverAnswering(
+      () => {
+        sent.resolve();
+        return answer.promise;
+      },
+      () => goodActionResult('/login')
+    );
+    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+    await enqueue({ key: 'k2', childId: 1, formData: { foodId: '2' }, queuedAt: 2 });
+
+    const pass = flush(transport);
+    try {
+      await sent.promise;
+      await clear();
+    } finally {
+      answer.resolve(goodActionResult());
+      await pass;
+    }
+
+    expect(calls).toHaveLength(2);
     expect(await countRows()).toBe(0);
     expect(await needsReauthCount()).toBe(0);
   });
@@ -926,6 +992,25 @@ describe('queue', () => {
       expect(await countRows()).toBe(0);
       expect(calls).toHaveLength(1);
       await first;
+    });
+
+    // The logout purge must not wait for another tab's pass: a replay request
+    // has no timeout (#496), so that wait would have no bound (#497).
+    it('clears the queue while another tab holds the flush lock', async () => {
+      await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+      const releaseOtherTab = locks.holdElsewhere(FLUSH_LOCK);
+      try {
+        // A race, not a bare await, so that a clear() waiting on the lock
+        // fails the test instead of running into its timeout.
+        const first = await Promise.race([
+          clear().then(() => 'cleared'),
+          Bun.sleep(500).then(() => 'waiting')
+        ]);
+        expect(first).toBe('cleared');
+        expect(await countRows()).toBe(0);
+      } finally {
+        await releaseOtherTab();
+      }
     });
 
     it('rejects and frees the lock when its pass throws', async () => {

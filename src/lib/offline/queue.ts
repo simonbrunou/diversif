@@ -94,10 +94,35 @@ async function deleteRow(key: string): Promise<void> {
   emit('queue:changed');
 }
 
+// Marks the row only while it is still in the store. A pass reads every row
+// up front, and the logout purge can clear() the queue while the pass is
+// still replaying, in another tab or in this one: an unconditional put of the
+// in-memory row put the previous user's repas back after the logout (#497).
+// The get and the put share one readwrite transaction, and the put is issued
+// from the get's success handler, with no promise in between, so IndexedDB
+// runs clear()'s transaction wholly before or wholly after this one. When the
+// row is gone it writes nothing and emits nothing.
 async function markNeedsReauth(row: QueuedSubmit): Promise<void> {
-  await tx('readwrite', async (store) => {
-    await reqAsPromise(store.put({ ...row, status: 'needs-reauth' }));
-  });
+  const marked = await tx(
+    'readwrite',
+    (store) =>
+      new Promise<boolean>((resolve, reject) => {
+        const get = store.get(row.key);
+        get.onsuccess = () => {
+          const stored = get.result as QueuedSubmit | undefined;
+          if (!stored) {
+            resolve(false);
+            return;
+          }
+          reqAsPromise(store.put({ ...stored, status: 'needs-reauth' })).then(
+            () => resolve(true),
+            reject
+          );
+        };
+        get.onerror = () => reject(get.error);
+      })
+  );
+  if (!marked) return;
   emit('queue:changed');
   emit('queue:needsReauth', { key: row.key });
 }
@@ -247,7 +272,8 @@ async function replayQueue(transport: Transport, synced: string[]): Promise<void
       // to the next row instead of `break`ing like 'retry' below: every
       // other queued row shares the same expired session and deserves
       // its own chance to be marked/surfaced in this same pass, not be
-      // wedged behind this one until it happens to succeed first.
+      // wedged behind this one until it happens to succeed first. A row
+      // the logout purge cleared since the pass read it stays gone.
       if (row.status !== 'needs-reauth') {
         await markNeedsReauth(row);
       }
