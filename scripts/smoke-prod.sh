@@ -60,7 +60,8 @@ late() { fail "$1 not run: the time budget ran out"; }
 # fetch <path> [<end>]: body to $TMP/body, headers to $TMP/headers, sets $code
 # and $ctype, and $got to a readable "<code> <content type>" for FAIL lines.
 # The request gets 20 s, or less so that it ends by <end> (the run deadline by
-# default). Once <end> has passed it is not sent and $code is 'late'.
+# default). Once <end> has passed it is not sent: $code is 'late', and $got
+# keeps the answer to the request before.
 fetch() {
   local out max
   : >"$TMP/body"
@@ -126,15 +127,10 @@ expect() {
 }
 
 # Sets $live to the SHA /_app/version.json reports, or '' when unreadable.
-# The request ends by the end of the wait, but gets 1 s at least, so that
-# SMOKE_WAIT=0 still polls once.
+# The request ends by the end of the wait.
 read_live() {
-  local end
   live=''
-  clock
-  end=$((now + 1000))
-  [ "$wait_end" -le "$end" ] || end="$wait_end"
-  fetch /_app/version.json "$end"
+  fetch /_app/version.json "$wait_end"
   [ "$code" = 200 ] && live="$(sed -n 's/.*"version":"\([^"]*\)".*/\1/p' "$TMP/body")"
 }
 
@@ -194,7 +190,12 @@ if [ -n "$SHA" ]; then
     pause=$((wait_end - now - 1000))
     if [ "$pause" -le 0 ]; then
       if [ -z "$last_live" ]; then
-        fail "/_app/version.json returned $got after ${WAIT}s"
+        # No $got when SMOKE_WAIT left no time for even one poll.
+        if [ -n "${got:-}" ]; then
+          fail "/_app/version.json returned $got after ${WAIT}s"
+        else
+          late /_app/version.json
+        fi
         printf 'smoke-prod: %s not live on %s, checks skipped\n' "$SHA" "$BASE"
         exit 1
       fi

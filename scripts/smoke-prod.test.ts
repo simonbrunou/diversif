@@ -373,6 +373,15 @@ describe('scripts/smoke-prod.sh', () => {
     10_000
   );
 
+  it('with a SHA and SMOKE_WAIT=0, sends no request and exits 1', async () => {
+    const run = await smoke(base, { script: trackedCopy(), args: [newSha], wait: '0' });
+    expect(run.stderr).toBe('');
+    expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
+    expect(run.last).toBe(`smoke-prod: ${newSha} not live on ${base}, checks skipped`);
+    expect(run.code).toBe(1);
+    expect(hits.size).toBe(0);
+  });
+
   it('without a SHA, ends by the deadline on a host that never answers', async () => {
     const run = await smoke(silentBase, { wait: '1', checkTime: '1' });
     expect(run.ms).toBeLessThan(2000 + slack);
