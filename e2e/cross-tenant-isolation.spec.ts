@@ -1,5 +1,5 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
-import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
+import { birthDateMonthsAgo, dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 // Cross-tenant data isolation (audit item T1). Unit tests already prove the
 // guards in isolation (src/lib/server/guards.test.ts) and the nested-id
@@ -9,15 +9,6 @@ import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 // a +page.server.ts prelude is caught. The tenant boundary is the child: a user
 // with a valid session but no membership on child A must be denied every read
 // and write against A's data.
-
-// A birth date that keeps the child ~8 months old at run time, matching the
-// proven logging specs (texture/bento-reaction-detail) so the seeded foods we
-// search for stay age-appropriate.
-function eightMonthsAgo(): string {
-  const d = new Date();
-  d.setMonth(d.getMonth() - 8);
-  return d.toISOString().slice(0, 10);
-}
 
 // Log one food via the /log page and return the new entry's id, parsed from
 // the entry-detail URL reached through the foods feed.
@@ -55,9 +46,12 @@ test.describe('cross-tenant data isolation', () => {
     const pageA = await ctxA.newPage();
     const pageB = await ctxB.newPage();
     try {
-      // User A: owner of child A with one logged food entry.
+      // User A: owner of child A with one logged food entry. Both children are
+      // 8 months old, matching the proven logging specs
+      // (texture/bento-reaction-detail), so the seeded foods we search for stay
+      // age-appropriate.
       const childIdA = Number(
-        await signUpAndCreateChild(pageA, 'AliceKid', eightMonthsAgo(), 'tenantA')
+        await signUpAndCreateChild(pageA, 'AliceKid', birthDateMonthsAgo(8), 'tenantA')
       );
       await pageA.goto(`/child/${childIdA}`);
       await dismissWelcomeIfPresent(pageA);
@@ -66,7 +60,7 @@ test.describe('cross-tenant data isolation', () => {
       // User B: an unrelated parent with their OWN child B. B therefore has a
       // valid session and a membership — just not on child A.
       const childIdB = Number(
-        await signUpAndCreateChild(pageB, 'BobKid', eightMonthsAgo(), 'tenantB')
+        await signUpAndCreateChild(pageB, 'BobKid', birthDateMonthsAgo(8), 'tenantB')
       );
       await pageB.goto(`/child/${childIdB}`);
       await dismissWelcomeIfPresent(pageB);

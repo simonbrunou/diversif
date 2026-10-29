@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import {
   awaitHydration,
+  birthDateMonthsAgo,
   dismissWelcomeIfPresent,
   openWithoutJavaScript,
   signUpAndCreateChild
@@ -12,9 +13,7 @@ import {
 // keeps (#443), each with and without JavaScript.
 
 async function childOfEightMonths(page: Page): Promise<string> {
-  const birthDate = new Date();
-  birthDate.setMonth(birthDate.getMonth() - 8);
-  const childId = await signUpAndCreateChild(page, 'Emma', birthDate.toISOString().slice(0, 10));
+  const childId = await signUpAndCreateChild(page, 'Emma', birthDateMonthsAgo(8));
   await dismissWelcomeIfPresent(page);
   return childId;
 }

@@ -1,14 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
+import { birthDateMonthsAgo, dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 test.describe('Bilan pour le pédiatre — print', () => {
   test('hides app chrome and shows the printed footer under print emulation', async ({ page }) => {
     // 8-month-old via dynamic birth date — avoids time-bomb regressions.
-    const today = new Date();
-    const birthDate = new Date(today);
-    birthDate.setMonth(birthDate.getMonth() - 8);
-    const birthDateStr = birthDate.toISOString().slice(0, 10);
-    const childId = await signUpAndCreateChild(page, 'Emma', birthDateStr);
+    const childId = await signUpAndCreateChild(page, 'Emma', birthDateMonthsAgo(8));
     await page.goto(`/child/${childId}`);
     await dismissWelcomeIfPresent(page);
 

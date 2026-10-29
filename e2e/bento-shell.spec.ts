@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
+import { birthDateMonthsAgo, dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 // Mobile-only suite (@mobile-only tag). The mobile Playwright project
 // renders these against an iPhone 14 viewport (390 × 844), which is sub-`lg:`
@@ -46,10 +46,7 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
   });
 
   test('switches between the four tabs', async ({ page }) => {
-    const sevenMonthsAgo = new Date();
-    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
-    const childId = await signUpAndCreateChild(page, 'Lulu', dateStr);
+    const childId = await signUpAndCreateChild(page, 'Lulu', birthDateMonthsAgo(7));
 
     await page.goto(`/child/${childId}`);
     await dismissWelcomeIfPresent(page);
@@ -91,10 +88,7 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
   test('FAB navigates to log page, food saves, returns to home with the entry', async ({
     page
   }) => {
-    const sevenMonthsAgo = new Date();
-    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
-    const childId = await signUpAndCreateChild(page, 'Mia', dateStr);
+    const childId = await signUpAndCreateChild(page, 'Mia', birthDateMonthsAgo(7));
 
     await page.goto(`/child/${childId}`);
     await dismissWelcomeIfPresent(page);
@@ -120,10 +114,7 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
   });
 
   test('Carnet Allergènes segment is reachable via URL', async ({ page }) => {
-    const sevenMonthsAgo = new Date();
-    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
-    const childId = await signUpAndCreateChild(page, 'Sam', dateStr);
+    const childId = await signUpAndCreateChild(page, 'Sam', birthDateMonthsAgo(7));
 
     await page.goto(`/child/${childId}/foods`);
     await dismissWelcomeIfPresent(page);

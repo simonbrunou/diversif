@@ -76,6 +76,23 @@ export default ts.config(
     }
   },
   {
+    // An inline `setMonth(getMonth() - n)` rolls over at a month's end: on
+    // 29 October, 8 months back is 29 February, read as 1 March, and the child
+    // is a month younger (#563). birthDateMonthsAgo clamps the day instead.
+    files: ['e2e/**/*.ts'],
+    ignores: ['e2e/_helpers.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CallExpression[callee.property.name=/^set(UTC)?Month$/]',
+          message:
+            'Get a birth date from birthDateMonthsAgo in e2e/_helpers.ts: it clamps the day to the end of a shorter month (#563).'
+        }
+      ]
+    }
+  },
+  {
     files: ['src/lib/server/**/*.ts'],
     ignores: ['**/*.test.ts', '**/*.spec.ts'],
     plugins: { drizzle },
