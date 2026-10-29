@@ -303,10 +303,13 @@ describe('scripts/smoke-prod.sh', () => {
   });
 
   // Every run ends by one deadline, SMOKE_WAIT + SMOKE_CHECK_TIME seconds after
-  // it starts, so that it fits in one 600 s agent Bash call. Bash startup and
-  // the exit trap fall outside the script's clock, hence the slack. Before the
-  // deadline, each unanswered request below took curl's full 20 s.
-  const slack = 500;
+  // it starts, so that it fits in one 600 s agent Bash call. A run still ends
+  // a little past it: bash starts before the script reads its clock, and
+  // curl's exit, the last FAIL lines and the exit trap come after. That
+  // overshoot is about 20 ms locally and reached 887 ms on a loaded CI runner
+  // (run 346), hence the slack. Before the deadline, each unanswered request
+  // below took curl's full 20 s.
+  const slack = 2000;
   const budgetFails = (lines: string[]) =>
     lines.filter((line) => line.endsWith(' not run: the time budget ran out'));
 
