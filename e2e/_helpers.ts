@@ -49,10 +49,19 @@ export async function countText(page: Page, text: string): Promise<number> {
   return page.getByText(text, { exact: true }).count();
 }
 
-/** A `YYYY-MM-DD` birth date `months` months before today, for `signUpAndCreateChild`. */
+/**
+ * A `YYYY-MM-DD` birth date `months` months before today, for
+ * `signUpAndCreateChild`. The day is clamped to the end of a shorter month:
+ * 8 months before 29 October is 28 February, where `setMonth` alone rolls
+ * over to 1 March and makes the child a month younger.
+ */
 export function birthDateMonthsAgo(months: number): string {
   const date = new Date();
+  const day = date.getDate();
+  date.setDate(1);
   date.setMonth(date.getMonth() - months);
+  const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  date.setDate(Math.min(day, lastDay));
   return date.toISOString().slice(0, 10);
 }
 
