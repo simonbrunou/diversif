@@ -107,6 +107,31 @@ describe('signup default action', () => {
     expect(r.data.errorKey).toBe('errorsAuthBadInput');
   });
 
+  it('refuses a displayName of only spaces and creates no account (#506)', async () => {
+    const event = makeRouteEvent({ formData: form({ displayName: '   ' }) });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { errorKey: string; email: string; displayName: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.errorKey).toBe('errorsAuthBadInput');
+    expect(r.data.email).toBe('new@example.com');
+    expect(r.data.displayName).toBe('   ');
+    const rows = await testDb.select().from(users).where(eq(users.email, 'new@example.com'));
+    expect(rows).toHaveLength(0);
+  });
+
+  it('stores the displayName trimmed (#506)', async () => {
+    const event = makeRouteEvent({ formData: form({ displayName: '  Bob  ' }) });
+    const r = await captureFlow(() =>
+      actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
+    );
+    expect(r.kind).toBe('redirect');
+    const created = (
+      await testDb.select().from(users).where(eq(users.email, 'new@example.com')).limit(1)
+    )[0];
+    expect(created?.displayName).toBe('Bob');
+  });
+
   for (const missing of ['acceptTos', 'acceptPrivacy', 'confirmAge15'] as const) {
     it(`fails when ${missing} is not checked`, async () => {
       const event = makeRouteEvent({ formData: form({ [missing]: undefined }) });

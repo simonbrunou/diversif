@@ -52,6 +52,36 @@ describe('account/profile updateProfile', () => {
     expect(r.status).toBe(400);
   });
 
+  it('refuses a displayName of only spaces and keeps the stored name (#506)', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { displayName: '   ' }
+    });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { status: number; data: { profileErrorKey: string } };
+    expect(r.status).toBe(400);
+    expect(r.data.profileErrorKey).toBe('errorsAccountProfileNameInvalid');
+    const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
+    expect(fresh?.displayName).toBe(u.displayName);
+  });
+
+  it('applies the 80-character limit to the trimmed name', async () => {
+    const u = await seed();
+    const name = 'a'.repeat(80);
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { displayName: `  ${name}  ` }
+    });
+    const r = (await actions.default!(
+      event as unknown as Parameters<NonNullable<typeof actions.default>>[0]
+    )) as { profileSuccessKey: string };
+    expect(r.profileSuccessKey).toBe('errorsAccountProfileSuccess');
+    const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
+    expect(fresh?.displayName).toBe(name);
+  });
+
   it('updates the displayName on success', async () => {
     const u = await seed();
     const event = makeRouteEvent({

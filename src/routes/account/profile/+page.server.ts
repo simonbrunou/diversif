@@ -7,7 +7,8 @@ import { parseFormWithKey } from '#lib/server/forms.js';
 import type { Actions, PageServerLoad } from './$types';
 
 const profileSchema = z.object({
-  displayName: z.string().min(1).max(80)
+  // Trimmed before the length checks, so a name of only spaces fails min(1).
+  displayName: z.string().trim().min(1).max(80)
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -25,7 +26,7 @@ export const actions: Actions = {
     if (!parsed.ok) return parsed.failure;
     await db
       .update(users)
-      .set({ displayName: parsed.data.displayName.trim() })
+      .set({ displayName: parsed.data.displayName })
       .where(eq(users.id, user.id));
     return { profileSuccessKey: 'errorsAccountProfileSuccess' };
   }

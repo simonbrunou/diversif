@@ -45,7 +45,8 @@ const schema = z.object({
       PASSWORD_MIN_LENGTH,
       `Mot de passe trop court (${PASSWORD_MIN_LENGTH} caractères minimum)`
     ),
-  displayName: z.string().min(1, 'Nom requis').max(80),
+  // Trimmed before the length checks, so a name of only spaces fails min(1).
+  displayName: z.string().trim().min(1, 'Nom requis').max(80),
   inviteCode: z
     .string()
     .optional()
