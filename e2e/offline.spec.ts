@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { awaitHydration, signUpAndCreateChild } from './_helpers';
+import { awaitHydration, birthDateMonthsAgo, signUpAndCreateChild } from './_helpers';
 
 // Rows waiting in the offline queue's IndexedDB store.
 function queuedRows(page: Page): Promise<number> {
@@ -27,14 +27,7 @@ function queuedRows(page: Page): Promise<number> {
 // that only one of two open tabs replays it ("two open tabs replay a queued
 // repas once and celebrate it once").
 test('queues a log submission while offline', async ({ page }) => {
-  const sevenMonthsAgo = new Date();
-  sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-  const childId = await signUpAndCreateChild(
-    page,
-    'Lulu',
-    sevenMonthsAgo.toISOString().slice(0, 10),
-    'offline'
-  );
+  const childId = await signUpAndCreateChild(page, 'Lulu', birthDateMonthsAgo(7), 'offline');
 
   await page.goto(`/child/${childId}/log`);
 
@@ -75,14 +68,7 @@ test('queues a log submission while offline', async ({ page }) => {
 test('a transport failure while online queues the entry instead of wiping the form', async ({
   page
 }) => {
-  const sevenMonthsAgo = new Date();
-  sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-  const childId = await signUpAndCreateChild(
-    page,
-    'Mimi',
-    sevenMonthsAgo.toISOString().slice(0, 10),
-    'flaky'
-  );
+  const childId = await signUpAndCreateChild(page, 'Mimi', birthDateMonthsAgo(7), 'flaky');
 
   await page.goto(`/child/${childId}/log`);
 
@@ -121,14 +107,7 @@ test('a transport failure while online queues the entry instead of wiping the fo
 // the queue replays it, even with a second queued repas replaying right
 // behind it, not reduced to "Synchronisé." toasts.
 test('a queued first repas is celebrated when it replays on reconnect', async ({ page }) => {
-  const sevenMonthsAgo = new Date();
-  sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-  const childId = await signUpAndCreateChild(
-    page,
-    'Nino',
-    sevenMonthsAgo.toISOString().slice(0, 10),
-    'replay'
-  );
+  const childId = await signUpAndCreateChild(page, 'Nino', birthDateMonthsAgo(7), 'replay');
 
   await page.goto(`/child/${childId}/log`);
   // Patched once: the second repas is reached by client-side navigation,
@@ -177,14 +156,7 @@ test('two open tabs replay a queued repas once and celebrate it once', async ({
   page,
   context
 }) => {
-  const sevenMonthsAgo = new Date();
-  sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-  const childId = await signUpAndCreateChild(
-    page,
-    'Lino',
-    sevenMonthsAgo.toISOString().slice(0, 10),
-    'twotabs'
-  );
+  const childId = await signUpAndCreateChild(page, 'Lino', birthDateMonthsAgo(7), 'twotabs');
 
   // The second tab opens before the repas is queued: its mount flush would
   // otherwise replay the row on load, before any reconnect.

@@ -1,12 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { signUpAndCreateChild } from './_helpers';
+import { birthDateMonthsAgo, signUpAndCreateChild } from './_helpers';
 
 test.describe('child dashboard golden path', () => {
   test('signup → create child → reach dashboard', async ({ page }) => {
-    const sevenMonthsAgo = new Date();
-    sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-    const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
-    await signUpAndCreateChild(page, 'Lulu', dateStr);
+    await signUpAndCreateChild(page, 'Lulu', birthDateMonthsAgo(7));
     await expect(page.locator('body')).toContainText('Lulu');
   });
 

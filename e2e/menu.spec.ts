@@ -1,25 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
-
-// A birth date that keeps the child ~8 months old at run time — lands in the
-// '6-9' stage, which uses the solid-food meal templates (midi/goûter/soir)
-// rather than the <4-month "milk only" branch, matching the pattern
-// used by cross-tenant-isolation.spec.ts / report.spec.ts.
-function eightMonthsAgo(): string {
-  const d = new Date();
-  d.setMonth(d.getMonth() - 8);
-  return d.toISOString().slice(0, 10);
-}
-
-function twoMonthsAgo(): string {
-  const d = new Date();
-  d.setMonth(d.getMonth() - 2);
-  return d.toISOString().slice(0, 10);
-}
+import { birthDateMonthsAgo, dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 test.describe('menu du jour', () => {
   test('reachable from the dashboard and shows a real day menu', async ({ page }) => {
-    const childId = await signUpAndCreateChild(page, 'Nino', eightMonthsAgo());
+    // An 8-month-old lands in the '6-9' stage, which uses the solid-food meal
+    // templates (midi/goûter/soir) rather than the <4-month "milk only" branch.
+    const childId = await signUpAndCreateChild(page, 'Nino', birthDateMonthsAgo(8));
     await page.goto(`/child/${childId}`);
     await dismissWelcomeIfPresent(page);
 
@@ -41,7 +27,7 @@ test.describe('menu du jour', () => {
   });
 
   test('shows the milk-only message for a child under 4 months', async ({ page }) => {
-    const childId = await signUpAndCreateChild(page, 'Tiny', twoMonthsAgo());
+    const childId = await signUpAndCreateChild(page, 'Tiny', birthDateMonthsAgo(2));
     await page.goto(`/child/${childId}/menu`);
 
     await expect(

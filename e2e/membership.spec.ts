@@ -1,13 +1,16 @@
 import { expect, test, type Page, type BrowserContext } from '@playwright/test';
-import { countText, signUp, signUpAndCreateChild, SIGNUP_PASSWORD } from './_helpers';
+import {
+  birthDateMonthsAgo,
+  countText,
+  signUp,
+  signUpAndCreateChild,
+  SIGNUP_PASSWORD
+} from './_helpers';
 
 // Shared helper so the onboarding fill is hardened against the hydration
 // race (see _helpers.ts) — a local fill+click copy used to flake here.
 async function signUpOwnerAndCreateChild(page: Page, name: string): Promise<{ childId: number }> {
-  const sevenMonthsAgo = new Date();
-  sevenMonthsAgo.setMonth(sevenMonthsAgo.getMonth() - 7);
-  const dateStr = sevenMonthsAgo.toISOString().slice(0, 10);
-  const childId = Number(await signUpAndCreateChild(page, name, dateStr, 'owner'));
+  const childId = Number(await signUpAndCreateChild(page, name, birthDateMonthsAgo(7), 'owner'));
   return { childId };
 }
 
