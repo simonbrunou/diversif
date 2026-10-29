@@ -1,16 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
+import { birthDateMonthsAgo, dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
 
 test('texture picker defaults to age-appropriate value and surfaces on the feed', async ({
   page
 }) => {
-  // Compute a birth date that keeps the child always ~8 months old at test run time,
-  // so the expected default texture stays "petits-morceaux" (threshold: age < 10 months).
-  const today = new Date();
-  const birthDate = new Date(today);
-  birthDate.setMonth(birthDate.getMonth() - 8);
-  const birthDateStr = birthDate.toISOString().slice(0, 10);
-  const childId = await signUpAndCreateChild(page, 'Emma', birthDateStr);
+  // Keep the child 8 months old at test run time, so the expected default
+  // texture stays "petits-morceaux" (8 <= age < 10 months).
+  const childId = await signUpAndCreateChild(page, 'Emma', birthDateMonthsAgo(8));
   await page.goto(`/child/${childId}`);
   await dismissWelcomeIfPresent(page);
 

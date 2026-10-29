@@ -49,11 +49,23 @@ export async function countText(page: Page, text: string): Promise<number> {
   return page.getByText(text, { exact: true }).count();
 }
 
-/** A `YYYY-MM-DD` birth date `months` months before today, for `signUpAndCreateChild`. */
+/**
+ * A `YYYY-MM-DD` birth date `months` months before today (local time), for
+ * `signUpAndCreateChild`. The day is clamped to the end of a shorter month:
+ * 8 months before 29 October 2026 is 28 February 2026, where `setMonth` alone
+ * rolls over to 1 March and makes the child a month younger. The date is
+ * written from its local parts: `toISOString()` gives the day before when
+ * the local time is just past midnight east of UTC.
+ */
 export function birthDateMonthsAgo(months: number): string {
   const date = new Date();
+  const day = date.getDate();
+  date.setDate(1);
   date.setMonth(date.getMonth() - months);
-  return date.toISOString().slice(0, 10);
+  const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  date.setDate(Math.min(day, lastDay));
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 /** The password every `signUp()` account gets, for fresh-auth prompts and re-logins. */
