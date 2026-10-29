@@ -11,7 +11,8 @@
 # A run, with a SHA or without, ends SMOKE_WAIT + SMOKE_CHECK_TIME seconds
 # after it starts at the latest (590 s by default), so it fits in one 600 s
 # agent Bash call: a check left with no time fails with "not run: the time
-# budget ran out".
+# budget ran out". The one exception is a `git fetch origin` that hangs: it
+# has no timeout of its own, and its time counts against the deadline.
 # Exit 0: every check passed. 1: a check failed, /_app/version.json never
 # reported a version, <sha> is not a commit on main, or, given a <sha>, this
 # file is not the scripts/smoke-prod.sh of a git checkout. 3: an older
@@ -28,16 +29,19 @@ WAIT="${SMOKE_WAIT:-540}"
 CHECK_TIME="${SMOKE_CHECK_TIME:-50}"
 
 # clock: sets $now to the time in milliseconds. Bash before 5.0 (macOS's
-# /bin/bash) has no EPOCHREALTIME, so the clock falls back to whole seconds.
+# /bin/bash) has no EPOCHREALTIME, so the clock falls back to whole seconds,
+# rounded up so that the time left is never overstated.
 clock() {
   if [ -n "${EPOCHREALTIME:-}" ]; then
     now="${EPOCHREALTIME//[!0-9]/}" # microseconds; the separator follows the locale
     now="${now%???}"
   else
-    now="$(date +%s)000"
+    now="$(($(date +%s) + 1))000"
   fi
 }
 clock
+# The run starts at the second the rounded-up clock read is in.
+[ -n "${EPOCHREALTIME:-}" ] || now=$((now - 1000))
 wait_end=$((now + WAIT * 1000))
 run_end=$((wait_end + CHECK_TIME * 1000))
 
