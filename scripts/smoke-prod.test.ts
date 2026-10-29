@@ -319,16 +319,19 @@ describe('scripts/smoke-prod.sh', () => {
       '/guide': () => 'hang'
     };
     // The real sleep after the first poll is cut so that the second poll, the
-    // last one of the wait, starts 1 s before SMOKE_WAIT ends.
+    // last one of the wait, starts 1 s before SMOKE_WAIT ends. A 4 s wait
+    // leaves the first poll 3 s: with a 2 s wait, a first poll slowed by a
+    // loaded CI runner left no time for the second (run 347).
     const run = await smoke(base, {
       script: trackedCopy(),
       args: [newSha],
-      wait: '2',
+      wait: '4',
       checkTime: '1',
       realSleep: true
     });
-    expect(run.ms).toBeLessThan(3000 + slack);
-    expect(run.ms).toBeGreaterThan(2500);
+    expect(run.ms).toBeLessThan(5000 + slack);
+    // /guide hangs until the deadline, which the run cannot beat.
+    expect(run.ms).toBeGreaterThan(4500);
     expect(hits.get('/_app/version.json')).toBe(2);
     expect(run.lines).toContain(`PASS /_app/version.json is ${newSha}`);
     expect(run.lines).toContain("PASS CSP has default-src 'self'");
