@@ -128,6 +128,31 @@ describe('check-bun-pins.sh passes', () => {
     expect(code).toBe(0);
     expect(out).toContain('7 pins read Bun 1.2.3');
   });
+
+  it.each([
+    [
+      'an escape directive that keeps the backslash',
+      1,
+      `# escape=\\\n${lineText('Dockerfile', 1)}`
+    ],
+    ['a registry with a port', 5, 'FROM localhost:5000/oven/bun:1.2.3'],
+    [
+      'a FROM continued over lines that hold a comment and a blank line',
+      3,
+      'FROM --platform=linux/amd64 \\\n  # the deps stage\n\n  docker.io/oven/bun:1.2.3 \\\n  AS deps'
+    ],
+    // A build arg in a flag leaves the image's tag readable, so it passes.
+    [
+      'a --platform flag that reads a build arg',
+      3,
+      'FROM --platform=$BUILDPLATFORM docker.io/oven/bun:1.2.3 AS deps'
+    ]
+  ])('on %s', (_name, at, text) => {
+    setLine('Dockerfile', at, text);
+    const { code, out } = run();
+    expect(code).toBe(0);
+    expect(out).toContain('7 pins read Bun 1.2.3');
+  });
 });
 
 describe('check-bun-pins.sh fails when a pin differs, listing every pin', () => {
@@ -144,6 +169,74 @@ describe('check-bun-pins.sh fails when a pin differs, listing every pin', () => 
   it.each([1, 3, 5])('the Dockerfile stage on line %d', (at) => {
     setLine('Dockerfile', at, lineText('Dockerfile', at).replace('1.2.3', '9.9.9'));
     failsWith(`Dockerfile:${at}  9.9.9`);
+  });
+
+  // Lines BuildKit's parser reads as a FROM oven/bun:9.9.9 stage: the line
+  // `at` of the fixture becomes `text`, and the stage starts on line `from`.
+  it.each([
+    [
+      'an oven/bun image on the continued line of a FROM',
+      5,
+      'FROM \\\n  oven/bun:9.9.9 AS extra',
+      5
+    ],
+    ['a continuation that splits the image mid-word', 5, 'FROM oven/b\\\nun:9.9.9', 5],
+    ['a no-break space before FROM', 5, ' FROM oven/bun:9.9.9', 5],
+    ['a vertical tab after FROM', 5, 'FROM\voven/bun:9.9.9', 5],
+    ['a continuation line that ends in two CRs', 5, 'FROM \\\r\r\noven/bun:9.9.9', 5],
+    [
+      'a FROM on the first line, after a UTF-8 byte order mark',
+      1,
+      '﻿FROM oven/bun:9.9.9 AS builder',
+      1
+    ],
+    [
+      'a FROM after a line that ends in an escaped backslash',
+      2,
+      'RUN echo \\\\\nFROM oven/bun:9.9.9',
+      3
+    ],
+    [
+      'a FROM after a comment line that ends in a backslash',
+      2,
+      '# a comment \\\nFROM oven/bun:9.9.9',
+      3
+    ],
+    [
+      'a FROM after heredocs, whatever their end words',
+      2,
+      'RUN <<EOF-END\necho ok\nEOF-END\nFROM oven/bun:9.9.9\nRUN <<EOF\necho ok\nEOF',
+      5
+    ],
+    // Known limit, failing closed: the check reads a heredoc body like any
+    // other line rather than risk skipping a real stage (see the script header).
+    [
+      'a heredoc body line that starts with FROM oven/bun:<tag>',
+      2,
+      'RUN <<EOF\nFROM oven/bun:9.9.9\nEOF',
+      3
+    ],
+    [
+      'a FROM after a heredoc body that reads like a stage name',
+      2,
+      'RUN <<EOF\nFROM alpine AS oven/bun:9.9.9\nEOF\nFROM oven/bun:9.9.9',
+      5
+    ],
+    [
+      'a FROM after a heredoc end word that ends in a backslash',
+      2,
+      "RUN <<'EOF\\'\necho ok\nEOF\\\nFROM oven/bun:9.9.9",
+      5
+    ],
+    [
+      'a FROM split over two lines after a heredoc end word that ends in a backslash',
+      2,
+      "RUN <<'EOF\\'\necho ok\nEOF\\\nFROM \\\noven/bun:9.9.9",
+      5
+    ]
+  ])('%s', (_name, at, text, from) => {
+    setLine('Dockerfile', at, text);
+    failsWith('the Bun pins differ', `Dockerfile:${from}  9.9.9`);
   });
 });
 
@@ -221,6 +314,23 @@ describe('check-bun-pins.sh fails when it cannot read a pin', () => {
       failsWith('Dockerfile:6 FROM takes its image from a build arg');
     }
   );
+
+  it.each([
+    [
+      'on line 1',
+      `# escape=\`\n${lineText('Dockerfile', 1)}\nRUN echo ok\\\nFROM oven/bun:9.9.9`,
+      1
+    ],
+    [
+      'in capitals, after a syntax directive',
+      `# syntax=docker/dockerfile:1\n#  ESCAPE = \`\n${lineText('Dockerfile', 1)}`,
+      2
+    ],
+    ['after a leading space', ` # escape=\`\n${lineText('Dockerfile', 1)}`, 1]
+  ])('a Dockerfile whose escape directive makes a backslash literal: %s', (_name, text, at) => {
+    setLine('Dockerfile', 1, text);
+    failsWith(`Dockerfile:${at} sets an escape character other than a backslash`);
+  });
 
   it('a Dockerfile with no oven/bun stage', () => {
     for (const at of [1, 3, 5]) setLine('Dockerfile', at, 'FROM debian:bookworm-slim');

@@ -13,7 +13,16 @@
 #   railpack.json  `packages.bun`, the Bun of the production build
 #     (docs/agents/deploy.md).
 #   Dockerfile  the x.y.z part of every `FROM [<registry>/]oven/bun:<tag>`
-#     (1.4.4 out of 1.4.4-debian@sha256:...).
+#     (1.4.4 out of 1.4.4-debian@sha256:...). It reads lines, continuations
+#     and comments as BuildKit's parser does (see read_dockerfile). Where
+#     this script could read a Dockerfile otherwise than Docker does, it
+#     fails rather than skip a line: a heredoc body (RUN <<EOF) reads like
+#     any other line, so a body line FROM oven/bun:<tag> counts as a stage,
+#     and so does a line that starts with FROM inside a continued
+#     instruction, read with the lines that continue it; an escape directive
+#     other than a backslash fails. Skipping heredoc bodies would take
+#     BuildKit's parser, and any way this script read one differently could
+#     let a real stage go unread.
 # The bun group in renovate.json moves the three together. The dev shell's
 # Bun follows nixpkgs and may lag them, so a `bun --version` that differs
 # prints a warning only (docs/agents/testing.md).
@@ -143,32 +152,129 @@ read_railpack() {
   pin "$RAILPACK packages.bun" "$value"
 }
 
+# Whether a FROM line named an oven/bun image.
+found_bun=0
+
+# Read one FROM: its line number and image.
+read_from() {
+  local n="$1" image="$2" ref name last tag value
+  # An image named by a build arg (FROM ${IMAGE}) hides its tag from this
+  # check, so it fails instead of passing that stage unread.
+  if [[ "$image" == *'$'* ]]; then
+    fail "$DOCKERFILE:$n FROM takes its image from a build arg, which this check cannot read"
+    return
+  fi
+  ref=${image%%@*}
+  # The tag follows the last colon after the last slash, so a registry port
+  # (localhost:5000/oven/bun) is not read as a tag.
+  name=$ref
+  tag=
+  last=${ref##*/}
+  if [[ "$last" == *:* ]]; then
+    tag=${last##*:}
+    name=${ref%:*}
+  fi
+  if [[ ! "$name" =~ (^|/)oven/bun$ ]]; then
+    return
+  fi
+  found_bun=1
+  value=
+  if [[ "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then value=${BASH_REMATCH[0]}; fi
+  pin "$DOCKERFILE:$n" "$value"
+  if [ -z "$tag" ]; then
+    fail "$DOCKERFILE:$n oven/bun has no tag"
+  elif [ -z "$value" ]; then
+    fail "$DOCKERFILE:$n oven/bun tag '${tag}' does not start with an x.y.z version"
+  fi
+}
+
 read_dockerfile() {
-  local file="$ROOT/$DOCKERFILE" line tag value found=0
+  local file="$ROOT/$DOCKERFILE" entry n i
+  local -a words
   if [ ! -f "$file" ]; then
     fail "$DOCKERFILE not found"
     return
   fi
-  while IFS= read -r line; do
-    found=1
-    # The tag, without the digest: empty when the image has no tag.
-    tag=$(printf '%s\n' "$line" | sed -nE 's#.*oven/bun:([^[:space:]@]+).*#\1#p')
-    value=$(printf '%s\n' "$tag" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' || true)
-    pin "$DOCKERFILE:${line%%:*}" "$value"
-    if [ -z "$tag" ]; then
-      fail "$DOCKERFILE:${line%%:*} oven/bun has no tag"
-    elif [ -z "$value" ]; then
-      fail "$DOCKERFILE:${line%%:*} oven/bun tag '${tag}' does not start with an x.y.z version"
+  while IFS= read -r entry; do
+    n=${entry%%:*}
+    entry=${entry#*:}
+    if [ "$entry" = '#escape' ]; then
+      fail "$DOCKERFILE:$n sets an escape character other than a backslash, which this check does not read"
+      continue
     fi
-  done < <(grep -niE '^[[:space:]]*FROM[[:space:]]+(--[^[:space:]]+[[:space:]]+)*([^[:space:]]+/)?oven/bun([:@[:space:]]|$)' "$file")
-  if [ "$found" -eq 0 ]; then
+    read -ra words <<<"$entry"
+    # Skip the flags (--platform=...) between FROM and the image.
+    i=1
+    while [[ "${words[i]:-}" == --* ]]; do i=$((i + 1)); done
+    read_from "$n" "${words[i]:-}"
+  done < <(
+    # One `<line>:FROM ...` per FROM instruction, read line by line as
+    # BuildKit's parser (frontend/dockerfile/parser/parser.go, Parse) reads
+    # a Dockerfile: trailing CRs and, on line 1, a UTF-8 byte order mark
+    # dropped; leading Unicode spaces trimmed from an instruction's first
+    # line; comment lines, and blank lines inside an instruction, skipped; a
+    # line that ends in one backslash (not two) continued into the next
+    # with no separator; words split on tabs, vertical tabs, form feeds, CRs
+    # and spaces. Two rules read more than Docker, failing closed: a line
+    # that starts with FROM inside a continued instruction also prints, with
+    # the lines that continue it, since Docker may end the instruction
+    # before it (a heredoc end word that ends in a backslash); and any escape
+    # directive other than a backslash prints `<line>:#escape`, since
+    # escape=` makes a backslash literal and this parser does not follow it.
+    LC_ALL=C awk '
+      # bytes.TrimLeftFunc(s, unicode.IsSpace), on UTF-8 bytes.
+      function ltrim(s) {
+        while (match(s, /^([\t\n\v\f\r ]|\302[\205\240]|\341\232\200|\342\200[\200-\212\250\251\257]|\342\201\237|\343\200\200)/))
+          s = substr(s, RLENGTH + 1)
+        return s
+      }
+      # The column of s where a FROM instruction word starts, or 0.
+      function from_at(s, t) {
+        t = ltrim(s)
+        if (tolower(t) !~ /^from([\t\v\f\r ]|$)/) return 0
+        return length(s) - length(t) + 1
+      }
+      function out(n, s) {
+        gsub(/[\t\v\f\r]/, " ", s)
+        print n ":" s
+      }
+      # The instruction if it is a FROM, then each FROM line inside it: the
+      # rest of buf from the column at[k] where line inner[k] starts.
+      function emit(k, c) {
+        if ((c = from_at(buf))) out(start, substr(buf, c))
+        for (k = 1; k <= froms; k++) if (inner[k] != start) out(inner[k], substr(buf, at[k]))
+      }
+      { sub(/\r+$/, "") }
+      NR == 1 { sub(/^\357\273\277/, "") }
+      {
+        t = ltrim($0)
+        if (t ~ /^#/) {
+          d = ltrim(substr(t, 2))
+          if (tolower(d) ~ /^escape[\t\n\v\f\r ]*=/ && d !~ /=[\t\n\v\f\r ]*\\[\t\n\v\f\r ]*$/) print NR ":#escape"
+          next
+        }
+        if (t == "") next
+        line = cont ? $0 : t
+        if (!cont) {
+          buf = ""
+          start = NR
+          froms = 0
+        } else if ((c = from_at(line))) {
+          froms++
+          inner[froms] = NR
+          at[froms] = length(buf) + c
+        }
+        cont = line ~ /(^|[^\\])\\[ \t]*$/
+        if (cont) sub(/\\[ \t]*$/, "", line)
+        buf = buf line
+        if (!cont) emit()
+      }
+      END { if (cont) emit() }
+    ' "$file" | grep -iE '^[0-9]+:(FROM|#escape$)'
+  )
+  if [ "$found_bun" -eq 0 ]; then
     fail "$DOCKERFILE has no FROM oven/bun line"
   fi
-  # An image named by a build arg (FROM ${IMAGE}) hides its tag from this
-  # check, so it fails instead of passing that stage unread.
-  while IFS= read -r line; do
-    fail "$DOCKERFILE:${line%%:*} FROM takes its image from a build arg, which this check cannot read"
-  done < <(grep -niE '^[[:space:]]*FROM[[:space:]]+(--[^[:space:]]+[[:space:]]+)*[^[:space:]]*\$' "$file")
 }
 
 read_ci
