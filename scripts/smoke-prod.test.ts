@@ -8,7 +8,8 @@
 // tests give that repo an origin whose fetch stalls instead: a local bare repo
 // whose upload-pack command sleeps 15 s first. They use the real `sleep`,
 // since the fake one would end the stall at once, and the timer that cuts the
-// fetch too.
+// fetch too. The one that reads the timer's delay from the fake one calls the
+// real one by its path.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
 import {
   chmodSync,
@@ -17,13 +18,14 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
-  statSync,
   writeFileSync
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const scriptPath = path.resolve(import.meta.dir, 'smoke-prod.sh');
+// The real sleep, for an upload-pack that must stall under the fake one.
+const sleepBin = Bun.which('sleep');
 
 interface Answer {
   status: number;
@@ -455,8 +457,8 @@ describe('scripts/smoke-prod.sh', () => {
   // KILL at it, and counts as a failed one. Each stall lasts 15 s, past the
   // deadline and its slack, and each test's timeout is above it, so a run the
   // cut misses fails on its time.
-  // This upload-pack notes the TERM and outlives it, and so does its sleep:
-  // only KILL ends them. Started with TERM ignored, git outlives TERM too.
+  // This upload-pack outlives TERM, and so does its sleep: only KILL ends
+  // them. Started with TERM ignored, git outlives TERM too.
   it.each([
     ['', 0],
     [' when started with TERM ignored', 1000]
@@ -465,9 +467,13 @@ describe('scripts/smoke-prod.sh', () => {
     async (_when, outlived) => {
       const dir = mkdtempSync(path.join(binDir, 'upload-pack-'));
       const [pidFile, termFile] = [path.join(dir, 'pid'), path.join(dir, 'term')];
+      // Upload-pack notes the TERM only where the KILL comes 1 s after it.
+      // When git exits on the TERM, the KILL follows at once and can land
+      // before the note on a loaded runner (#581).
+      const onTerm = outlived ? `echo >${termFile}` : '';
       const run = await smoke(base, {
         script: trackedCopy(
-          `trap "echo >${termFile}" TERM; (trap "" TERM; exec sleep 15) & echo $! >${pidFile};` +
+          `trap "${onTerm}" TERM; (trap "" TERM; exec sleep 15) & echo $! >${pidFile};` +
             ' wait $!; wait $!; git upload-pack'
         ),
         args: [newSha],
@@ -480,12 +486,8 @@ describe('scripts/smoke-prod.sh', () => {
       // The fetch stalls until the cut: the TERM ends git, else the KILL.
       expect(run.ms).toBeGreaterThan(1500 + outlived);
       expect(run.stderr).toBe('');
-      // TERM came first, then KILL ended upload-pack's sleep too.
-      expect(readIfThere(termFile)).toBe('\n');
-      // TERM comes 1 s before the 3 s deadline, so about 2 s after the fetch
-      // started (when upload-pack wrote its pid file), not 3 s. Load delays
-      // the pid file more than the TERM, which narrows the gap.
-      expect(statSync(termFile).mtimeMs - statSync(pidFile).mtimeMs).toBeLessThan(2500);
+      expect(readIfThere(termFile)).toBe(outlived ? '\n' : '');
+      // KILL ended upload-pack's sleep too.
       const sleeper = Number(readFileSync(pidFile, 'utf8'));
       for (let i = 0; i < 40 && running(sleeper); i++) await Bun.sleep(50);
       expect(running(sleeper)).toBe(false);
@@ -500,6 +502,22 @@ describe('scripts/smoke-prod.sh', () => {
     },
     20_000
   );
+
+  // The fake sleep logs the timer's first delay, the one before the TERM: at
+  // most 2 s with a 3 s deadline. A wall-clock bound on the TERM's arrival
+  // failed under CI load (#581).
+  it('with a SHA, sends a stalled fetch of origin TERM 1 s before the deadline', async () => {
+    const run = await smoke(base, {
+      script: trackedCopy(`${sleepBin} 15; git upload-pack`),
+      args: [newSha],
+      wait: '0',
+      checkTime: '3'
+    });
+    expect(Number(run.sleeps[0])).toBeLessThanOrEqual(2);
+    expect(Number(run.sleeps[0])).toBeGreaterThan(1);
+    expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
+    expect(run.code).toBe(1);
+  });
 
   it('with a SHA, cuts the fetch for an unknown live commit by the deadline', async () => {
     // Fails the fetch before the wait at once and stalls the next one.
