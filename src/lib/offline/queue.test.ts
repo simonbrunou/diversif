@@ -102,6 +102,70 @@ const networkFailure = (): Response => {
   throw new TypeError('Failed to fetch');
 };
 
+// A replay deadline short enough to wait out: Bun's runner can't advance
+// setTimeout (see advanceTimersByTimeAsync in src/test/bun-test-utils.ts).
+const SHORT_DEADLINE_MS = 50;
+
+/** Rejects with the signal's reason once it aborts, as fetch does, and never resolves. */
+const untilAborted = (signal: AbortSignal) =>
+  new Promise<never>((_, reject) => {
+    signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+  });
+
+/** Headers at once, then a body that errors only once the signal aborts, as fetch's does. */
+const stalledBody = async (signal: AbortSignal) =>
+  new Response(
+    new ReadableStream({
+      start(body) {
+        signal.addEventListener('abort', () => body.error(signal.reason), { once: true });
+      }
+    }),
+    { status: 200, headers: { 'content-type': 'application/json' } }
+  );
+
+/**
+ * Queues one row and runs a pass, with SHORT_DEADLINE_MS, against a server
+ * whose reply stalls: `reply` gets a signal that aborts with the request's own
+ * init.signal, as fetch's does. Checks that the pass ended, that the request's
+ * signal aborted no sooner than the deadline, and that the row is still
+ * queued. A pass still running after 3 s fails the check, and the server then
+ * hangs up so that the tests after it don't get its pending promise back from
+ * flush().
+ */
+async function expectPassEndsAtDeadline(reply: (signal: AbortSignal) => Promise<Response>) {
+  const hangUp = new AbortController();
+  // Per call: how long after the call its init.signal aborted.
+  const abortedAfter: (number | undefined)[] = [];
+  const transport: Transport = (_url, init) => {
+    const call = abortedAfter.push(undefined) - 1;
+    const sentAt = Date.now();
+    init.signal?.addEventListener('abort', () => (abortedAfter[call] = Date.now() - sentAt), {
+      once: true
+    });
+    const replying = new AbortController();
+    for (const s of [init.signal, hangUp.signal]) {
+      s?.addEventListener('abort', () => replying.abort(s.reason), { once: true });
+    }
+    return reply(replying.signal);
+  };
+  await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
+
+  const pass = flush(transport, SHORT_DEADLINE_MS);
+  try {
+    const first = await Promise.race([
+      pass.then(() => 'ended'),
+      Bun.sleep(3000).then(() => 'stalled')
+    ]);
+    expect(first).toBe('ended');
+  } finally {
+    hangUp.abort(new TypeError('Failed to fetch'));
+    await pass;
+  }
+  expect(abortedAfter).toHaveLength(1);
+  expect(abortedAfter[0]).toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - 1);
+  expect(await countRows()).toBe(1);
+}
+
 /** A fake IDBOpenDBRequest that fires onerror instead of onsuccess. */
 function failingOpenRequest(error: DOMException): IDBOpenDBRequest {
   const fakeReq = {
@@ -228,6 +292,11 @@ describe('queue', () => {
     await flush(transport);
 
     expect(await countRows()).toBe(1);
+  });
+
+  // happy-dom's navigator.locks is null: the pass runs without Web Locks.
+  it('ends its pass at the deadline when a replay gets no answer, and keeps the row queued', async () => {
+    await expectPassEndsAtDeadline(untilAborted);
   });
 
   it('leaves the row queued on type:error 5xx', async () => {
@@ -973,6 +1042,23 @@ describe('queue', () => {
       expect(await otherTabTryLock()).not.toBeNull();
     });
 
+    // A stalled replay kept the lock, and every other tab's pass, until the
+    // browser gave up on the request (#496).
+    it('ends a pass whose replay gets no answer at the deadline, and frees the lock', async () => {
+      await expectPassEndsAtDeadline(untilAborted);
+      expect(await otherTabTryLock()).not.toBeNull();
+
+      const { transport, calls } = server(() => goodActionResult());
+      await flush(transport);
+      expect(calls).toHaveLength(1);
+      expect(await countRows()).toBe(0);
+    });
+
+    it('ends a pass whose answer body stalls at the deadline, and frees the lock', async () => {
+      await expectPassEndsAtDeadline(stalledBody);
+      expect(await otherTabTryLock()).not.toBeNull();
+    });
+
     it('hands a second flush in the same tab the running pass instead of skipping', async () => {
       const sent = Promise.withResolvers<void>();
       const answer = Promise.withResolvers<Response>();
@@ -994,8 +1080,8 @@ describe('queue', () => {
       await first;
     });
 
-    // The logout purge must not wait for another tab's pass: a replay request
-    // has no timeout (#496), so that wait would have no bound (#497).
+    // The logout purge must not wait for another tab's pass (#497): that pass
+    // holds the lock for as long as its replays take, up to 30 s each (#496).
     it('clears the queue while another tab holds the flush lock', async () => {
       await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
       const releaseOtherTab = locks.holdElsewhere(FLUSH_LOCK);

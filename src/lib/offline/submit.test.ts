@@ -84,6 +84,22 @@ describe('submitRepas', () => {
     expect(entryRows(child.id)[0].givenAt.getTime()).toBe(new Date(GIVEN_AT).getTime());
   });
 
+  // Only the queue's replay has a deadline (#496): what a slow online submit
+  // should do once one passes is a decision of its own.
+  it('sends the repas with no deadline', async () => {
+    const { child, carotte, transport, action } = await setup();
+    const signals: (AbortSignal | null | undefined)[] = [];
+    await submitRepas(
+      form({ foodId: carotte.id, givenAt: GIVEN_AT, reaction: 'ras' }),
+      { action, queueFor: child.id },
+      (url, init) => {
+        signals.push(init.signal);
+        return transport(url, init);
+      }
+    );
+    expect(signals).toEqual([undefined]);
+  });
+
   it('hands back a refusal with its decoded errorKey, and queues nothing', async () => {
     const { child, transport, action } = await setup();
     const outcome = await submitRepas(
