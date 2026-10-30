@@ -140,7 +140,9 @@ REPO="$(dirname "$0")/.."
 # Fails when the fetch fails or is cut off. Job control (set -m) starts the
 # fetch and its timer each in a process group of its own, so that one kill
 # ends git with its ssh or upload-pack child, and another the timer with its
-# sleep. Their output goes to /dev/null: none keeps the script's open.
+# sleep. Their output goes to /dev/null: none keeps the script's open. The
+# timer gets KILL: it inherits a TERM the script was started ignoring, while
+# git catches TERM anyway and resets it for its children.
 fetch_origin() {
   local pid timer status
   clock
@@ -153,7 +155,7 @@ fetch_origin() {
   set +m
   wait "$pid"
   status=$?
-  kill -TERM -- -"$timer" 2>/dev/null
+  kill -KILL -- -"$timer" 2>/dev/null
   return "$status"
 }
 
