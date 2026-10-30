@@ -22,6 +22,12 @@ const DB_NAME = 'diversif-offline';
 const STORE = 'log';
 // The Web Lock every tab's flush() takes, so one tab replays at a time.
 const FLUSH_LOCK = 'diversif-offline-flush';
+// How long one replay request may take, its answer's body included, before
+// flush() cancels it and keeps the row for the next pass. A log action answers
+// in well under a second. 30 s leaves room for a slow mobile handshake and
+// upload, and stays under the layout's 60 s flush poll, so the first poll
+// after a stalled replay finds the lock free (#496).
+const REPLAY_DEADLINE_MS = 30_000;
 
 let inFlight: Promise<void> | null = null;
 
@@ -183,17 +189,18 @@ function dropRow(status: number, reason: 'error' | 'failure'): 'drop' {
 // has none.
 async function postOne(
   row: QueuedSubmit,
-  transport: Transport
+  transport: Transport,
+  deadlineMs: number
 ): Promise<{ qs: string } | 'drop' | 'retry' | 'needs-reauth'> {
   // The key travels as a form field, as with the online submit. Rows queued
   // before #325 don't carry the field, so it is always copied from the row.
-  const answer = await postAction(transport, `/child/${row.childId}/log`, {
-    ...row.formData,
-    idempotencyKey: row.key
-  });
-  // Only the action's own verdict drops a row. A hook's error, or an answer
-  // from something else (a proxy, a captive portal, even a 4xx page), keeps
-  // it for the next flush.
+  const fields = { ...row.formData, idempotencyKey: row.key };
+  const answer = await withDeadline(deadlineMs, (signal) =>
+    postAction(transport, `/child/${row.childId}/log`, fields, signal)
+  );
+  // Only the action's own verdict drops a row. A hook's error, an answer
+  // from something else (a proxy, a captive portal, even a 4xx page), or none
+  // before the deadline keeps it for the next flush.
   if (answer.kind !== 'action') return 'retry';
   const { result } = answer;
 
@@ -220,13 +227,40 @@ async function postOne(
   return dropRow(result.status, 'failure');
 }
 
+// Runs `send` with a signal that aborts `ms` after the call, as
+// AbortSignal.timeout(ms) would. That API came after AbortController and
+// after Web Locks (Safari 16 and Firefox 100, against Safari 15.4 and Firefox
+// 96 for Web Locks), so a browser that flush() serves without locks may lack
+// it. The timer stops once `send` settles.
+async function withDeadline<T>(ms: number, send: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(new DOMException('The replay deadline passed', 'TimeoutError')),
+    ms
+  );
+  try {
+    return await send(controller.signal);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // Every open tab flushes on reconnect, and inFlight only coalesces the passes
 // of one tab: two tabs replayed the same rows and both toasted them (#452).
 // The pass runs under a Web Lock instead, and a tab that finds another tab's
 // pass holding it skips its own; that pass replays every row. Without Web
 // Locks (older browsers, and happy-dom, whose navigator.locks is null) each
 // tab keeps its own pass.
-export function flush(transport: Transport = fetchTransport): Promise<void> {
+//
+// A replay request that has not finished within `deadlineMs` counts as a
+// network failure, with or without the lock: the row stays queued and the
+// pass ends. A stalled request (a half-open mobile connection, a proxy that
+// never answers) otherwise kept the lock, and every other tab's pass, until
+// the browser gave up on it (#496). Tests pass a short deadline.
+export function flush(
+  transport: Transport = fetchTransport,
+  deadlineMs = REPLAY_DEADLINE_MS
+): Promise<void> {
   if (inFlight) return inFlight;
   inFlight = (async () => {
     const synced: string[] = [];
@@ -234,10 +268,10 @@ export function flush(transport: Transport = fetchTransport): Promise<void> {
       const locks = navigator.locks;
       if (locks) {
         await locks.request(FLUSH_LOCK, { ifAvailable: true }, async (lock) => {
-          if (lock) await replayQueue(transport, synced);
+          if (lock) await replayQueue(transport, deadlineMs, synced);
         });
       } else {
-        await replayQueue(transport, synced);
+        await replayQueue(transport, deadlineMs, synced);
       }
     } finally {
       inFlight = null;
@@ -255,10 +289,14 @@ export function flush(transport: Transport = fetchTransport): Promise<void> {
 // Replays the queued rows in order, and adds to `synced` the redirect query
 // string of each row it replayed and deleted, so that flush() still announces
 // them when a later row throws.
-async function replayQueue(transport: Transport, synced: string[]): Promise<void> {
+async function replayQueue(
+  transport: Transport,
+  deadlineMs: number,
+  synced: string[]
+): Promise<void> {
   const rows = await readAllOrdered();
   for (const row of rows) {
-    const outcome = await postOne(row, transport);
+    const outcome = await postOne(row, transport, deadlineMs);
     if (typeof outcome === 'object') {
       await deleteRow(row.key);
       synced.push(outcome.qs);
@@ -278,9 +316,9 @@ async function replayQueue(transport: Transport, synced: string[]): Promise<void
         await markNeedsReauth(row);
       }
     } else {
-      // 'retry': a transient/systemic failure (network drop, 5xx,
-      // 409/429) — stop processing; subsequent rows will be tried on
-      // the next flush.
+      // 'retry': a transient/systemic failure (network drop, no answer
+      // before the deadline, 5xx, 409/429) — stop processing; subsequent
+      // rows will be tried on the next flush.
       break;
     }
   }

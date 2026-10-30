@@ -12,6 +12,9 @@ import { parse } from 'devalue';
  */
 export type Transport = (url: string, init: RequestInit) => Promise<Response>;
 
+// No deadline of its own: the queue's replay hands one in as init.signal (30 s,
+// REPLAY_DEADLINE_MS in queue.ts says why), and an online submit passes none
+// (#496).
 export const fetchTransport: Transport = (url, init) => fetch(url, init);
 
 /**
@@ -58,11 +61,16 @@ export const UNREACHABLE: Answer = { kind: 'unreachable' };
 
 const RESULT_TYPES = new Set(['success', 'failure', 'redirect', 'error']);
 
-/** POST `fields` to a SvelteKit action the way `use:enhance` does. */
+/**
+ * POST `fields` to a SvelteKit action the way `use:enhance` does. A `signal`
+ * goes to the transport as fetch takes it: once it aborts, the request or its
+ * body read rejects, and the answer is `unreachable`.
+ */
 export async function postAction(
   transport: Transport,
   url: string,
-  fields: Fields
+  fields: Fields,
+  signal?: AbortSignal
 ): Promise<Answer> {
   let response: Response;
   try {
@@ -74,7 +82,8 @@ export async function postAction(
         'x-sveltekit-action': 'true'
       },
       cache: 'no-store',
-      body: bodyOf(fields)
+      body: bodyOf(fields),
+      ...(signal ? { signal } : {})
     });
   } catch {
     return UNREACHABLE;
