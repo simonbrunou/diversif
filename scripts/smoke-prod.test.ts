@@ -4,10 +4,11 @@
 // status. A fake `sleep` on PATH logs its argument and returns at once, so the
 // retry spacing is asserted without waiting for it. A run with a SHA uses a
 // tracked copy of the script in a git repo with no origin remote: its fetch
-// fails, so the wait matches the SHA as a prefix of the live one. Two tests
-// give that repo an origin whose fetch stalls instead: a local bare repo whose
-// upload-pack command sleeps 15 s first. They use the real `sleep`, since the
-// fake one would end the stall at once, and the timer that cuts the fetch too.
+// fails, so the wait matches the SHA as a prefix of the live one. The stall
+// tests give that repo an origin whose fetch stalls instead: a local bare repo
+// whose upload-pack command sleeps 15 s first. They use the real `sleep`,
+// since the fake one would end the stall at once, and the timer that cuts the
+// fetch too.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
 import {
   chmodSync,
@@ -186,14 +187,24 @@ function running(pid: number): boolean {
 
 // Async spawn: the server answers on this process's event loop, which
 // Bun.spawnSync would block until the script gave up. realSleep leaves the
-// fake `sleep` off PATH, so the wait's sleeps take real time.
+// fake `sleep` off PATH, so the wait's sleeps take real time. termIgnored
+// starts the script with TERM ignored, which its children inherit.
 async function smoke(
   baseUrl = base,
-  { script = scriptPath, args = [] as string[], wait = '', checkTime = '', realSleep = false } = {}
+  {
+    script = scriptPath,
+    args = [] as string[],
+    wait = '',
+    checkTime = '',
+    realSleep = false,
+    termIgnored = false
+  } = {}
 ) {
   const started = performance.now();
   const proc = Bun.spawn({
-    cmd: ['bash', script, ...args],
+    cmd: termIgnored
+      ? ['bash', '-c', 'trap "" TERM; exec bash "$0" "$@"', script, ...args]
+      : ['bash', script, ...args],
     env: {
       ...process.env,
       PATH: realSleep ? process.env.PATH : `${binDir}:${process.env.PATH}`,
@@ -424,28 +435,42 @@ describe('scripts/smoke-prod.sh', () => {
   // A fetch of origin that stalls is cut at the deadline and counts as a
   // failed one. Each stall lasts 15 s, past the deadline and its slack, and
   // each test's timeout is above it, so a run the cut misses fails on its time.
-  it('with a SHA, cuts a fetch of origin that stalls before the wait at the deadline', async () => {
-    const pidFile = path.join(mkdtempSync(path.join(binDir, 'upload-pack-')), 'pid');
-    const run = await smoke(base, {
-      script: trackedCopy(`echo $$ >${pidFile}; sleep 15; git upload-pack`),
-      args: [newSha],
-      wait: '2',
-      checkTime: '1',
-      realSleep: true
-    });
-    expect(run.ms).toBeLessThan(3000 + slack);
-    expect(run.stderr).toBe('');
-    // The cut ends git's upload-pack child too, and the shell that runs it.
-    const shell = Number(readFileSync(pidFile, 'utf8'));
-    for (let i = 0; i < 40 && running(shell); i++) await Bun.sleep(50);
-    expect(running(shell)).toBe(false);
-    // No origin/main check, then a wait with no time left for a poll.
-    expect(run.lines.filter((line) => line.includes('is not a commit on origin/main'))).toEqual([]);
-    expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
-    expect(run.last).toBe(`smoke-prod: ${newSha} not live on ${base}, checks skipped`);
-    expect(run.code).toBe(1);
-    expect(hits.size).toBe(0);
-  }, 20_000);
+  // This upload-pack ignores TERM, so only KILL ends it. Started with TERM
+  // ignored, git outlives TERM too, until the KILL 1 s later.
+  it.each([
+    ['', 0],
+    [' plus 1 s when started with TERM ignored', 1000]
+  ])(
+    'with a SHA, cuts a fetch of origin that stalls before the wait at the deadline%s',
+    async (_when, grace) => {
+      const pidFile = path.join(mkdtempSync(path.join(binDir, 'upload-pack-')), 'pid');
+      const run = await smoke(base, {
+        script: trackedCopy(`trap "" TERM; sleep 15 & echo $! >${pidFile}; wait; git upload-pack`),
+        args: [newSha],
+        wait: '2',
+        checkTime: '1',
+        realSleep: true,
+        termIgnored: grace > 0
+      });
+      expect(run.ms).toBeLessThan(3000 + grace + slack);
+      // The fetch stalls until the cut: TERM at the deadline, or KILL after it.
+      expect(run.ms).toBeGreaterThan(2500 + grace);
+      expect(run.stderr).toBe('');
+      // The cut ends upload-pack's sleep too.
+      const sleeper = Number(readFileSync(pidFile, 'utf8'));
+      for (let i = 0; i < 40 && running(sleeper); i++) await Bun.sleep(50);
+      expect(running(sleeper)).toBe(false);
+      // No origin/main check, then a wait with no time left for a poll.
+      expect(run.lines.filter((line) => line.includes('is not a commit on origin/main'))).toEqual(
+        []
+      );
+      expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
+      expect(run.last).toBe(`smoke-prod: ${newSha} not live on ${base}, checks skipped`);
+      expect(run.code).toBe(1);
+      expect(hits.size).toBe(0);
+    },
+    20_000
+  );
 
   it('with a SHA, cuts the fetch for an unknown live commit at the deadline', async () => {
     // Fails the fetch before the wait at once and stalls the next one.

@@ -136,13 +136,16 @@ read_live() {
 
 REPO="$(dirname "$0")/.."
 
-# fetch_origin: git fetch origin, cut off at the run deadline at the latest.
-# Fails when the fetch fails or is cut off. Job control (set -m) starts the
-# fetch and its timer each in a process group of its own, so that one kill
-# ends git with its ssh or upload-pack child, and another the timer with its
-# sleep. Their output goes to /dev/null: none keeps the script's open. The
-# timer gets KILL: it inherits a TERM the script was started ignoring, while
-# git catches TERM anyway and resets it for its children.
+# fetch_origin: git fetch origin, cut off at the run deadline. Fails when the
+# fetch fails or is cut off. Job control (set -m) starts the fetch and its
+# timer each in a process group of its own, so that a kill reaches git with
+# its ssh or upload-pack child, and the timer with its sleep. Their output
+# goes to /dev/null: none keeps the script's open. At the deadline the timer
+# sends the fetch TERM, which lets git remove its lock files. Git then exits,
+# unless the script was started with TERM ignored and git's child ignores it
+# too: KILL follows 1 s later. Once git has exited past the deadline, KILL
+# also ends a child that ignored TERM. The timer gets KILL, since it inherits
+# a TERM the script was started ignoring.
 fetch_origin() {
   local pid timer status
   clock
@@ -150,12 +153,19 @@ fetch_origin() {
   set -m
   git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &
   pid=$!
-  { sleep "$(secs $((run_end - now)))"; kill -TERM -- -"$pid"; } </dev/null >/dev/null 2>&1 &
+  {
+    sleep "$(secs $((run_end - now)))"
+    kill -TERM -- -"$pid"
+    sleep 1
+    kill -KILL -- -"$pid"
+  } </dev/null >/dev/null 2>&1 &
   timer=$!
   set +m
   # Bash reports a job a signal killed on stderr, unless wait reaps it there.
   wait "$pid" 2>/dev/null
   status=$?
+  clock
+  [ "$now" -lt "$run_end" ] || kill -KILL -- -"$pid" 2>/dev/null
   kill -KILL -- -"$timer" 2>/dev/null
   wait "$timer" 2>/dev/null
   return "$status"
