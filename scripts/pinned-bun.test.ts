@@ -3,14 +3,21 @@
 // copies the script beside a railpack.json of its own, which pins 1.2.3, and
 // unzips into a PINNED_BUN_DIR of its own. The fake bun prints a version.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const repo = path.resolve(import.meta.dir, '..');
 const VERSION = '1.2.3';
-// One zip per host the script knows, so the tests pass on any of them.
-const ASSETS = ['bun-linux-x64', 'bun-linux-aarch64', 'bun-darwin-aarch64', 'bun-darwin-x64'];
+const ASSET = 'bun-linux-x64';
 
 const base = mkdtempSync(path.join(tmpdir(), 'pinned-bun-'));
 // The current test's copy of the repo: base/<test number>.
@@ -34,7 +41,7 @@ beforeEach(() => {
   writeRailpack({ packages: { bun: VERSION } });
   releases = path.join(dir, 'releases');
   cache = path.join(dir, 'cache');
-  writeRelease(fakeBun(VERSION));
+  writeRelease(zipOf(`${ASSET}/bun`, fakeBun(VERSION)));
 });
 
 function writeRailpack(json: unknown): void {
@@ -47,23 +54,20 @@ function fakeBun(version: string): string {
 }
 
 /**
- * Release bun-v<VERSION> as GitHub serves it: one <asset>.zip holding
- * <asset>/bun, and SHASUMS256.txt, whose lines `sums` may rewrite.
+ * Release bun-v<VERSION> as GitHub serves it: <ASSET>.zip, and the
+ * SHASUMS256.txt line for it, which `sums` may rewrite.
  */
-function writeRelease(bun: string, sums: (line: string) => string = (line) => line): void {
+function writeRelease(zip: Uint8Array, sums: (line: string) => string = (line) => line): void {
   const out = path.join(releases, `bun-v${VERSION}`);
   mkdirSync(out, { recursive: true });
-  const lines: string[] = [];
-  for (const asset of ASSETS) {
-    const zip = zipOf(`${asset}/bun`, new TextEncoder().encode(bun));
-    writeFileSync(path.join(out, `${asset}.zip`), zip);
-    lines.push(sums(`${new Bun.CryptoHasher('sha256').update(zip).digest('hex')}  ${asset}.zip`));
-  }
-  writeFileSync(path.join(out, 'SHASUMS256.txt'), `${lines.join('\n')}\n`);
+  writeFileSync(path.join(out, `${ASSET}.zip`), zip);
+  const sum = new Bun.CryptoHasher('sha256').update(zip).digest('hex');
+  writeFileSync(path.join(out, 'SHASUMS256.txt'), `${sums(`${sum}  ${ASSET}.zip`)}\n`);
 }
 
 /** A zip of one stored (uncompressed) executable file, which unzip unpacks with its mode. */
-function zipOf(name: string, data: Uint8Array): Uint8Array {
+function zipOf(name: string, text: string): Uint8Array {
+  const data = new TextEncoder().encode(text);
   const nameBytes = new TextEncoder().encode(name);
   const crc = Bun.hash.crc32(data);
   const local = new DataView(new ArrayBuffer(30));
@@ -104,16 +108,26 @@ function zipOf(name: string, data: Uint8Array): Uint8Array {
   return zip;
 }
 
-function run(args: string[], env: Record<string, string> = {}) {
+function env(extra: Record<string, string> = {}): Record<string, string> {
+  return {
+    ...(process.env as Record<string, string>),
+    PINNED_BUN_RELEASES: `file://${releases}`,
+    PINNED_BUN_DIR: cache,
+    ...extra
+  };
+}
+
+function run(args: string[], extra: Record<string, string> = {}) {
   const p = Bun.spawnSync([path.join(dir, 'scripts', 'pinned-bun.sh'), ...args], {
-    env: {
-      ...process.env,
-      PINNED_BUN_RELEASES: `file://${releases}`,
-      PINNED_BUN_DIR: cache,
-      ...env
-    }
+    env: env(extra)
   });
   return { code: p.exitCode, out: p.stdout.toString(), err: p.stderr.toString() };
+}
+
+function failsWith(message: string, args: string[] = ['true'], extra = {}): void {
+  const { code, err } = run(args, extra);
+  expect(err).toContain(message);
+  expect(code).toBe(2);
 }
 
 describe('pinned-bun.sh', () => {
@@ -122,6 +136,8 @@ describe('pinned-bun.sh', () => {
     expect(err).toContain(`downloading Bun ${VERSION}`);
     expect(code).toBe(0);
     expect(out).toBe(`${VERSION}\n`);
+    // Nothing left of the download but the install and its lock.
+    expect(readdirSync(cache).sort()).toEqual([VERSION, `${VERSION}.lock`]);
   });
 
   it('reuses the Bun it unzipped instead of downloading it again', () => {
@@ -134,31 +150,44 @@ describe('pinned-bun.sh', () => {
     expect(err).not.toContain('downloading');
   });
 
+  it('waits for a run that is installing the same version, then reuses its install', async () => {
+    rmSync(releases, { recursive: true });
+    mkdirSync(cache);
+    const installed = path.join(cache, VERSION, ASSET);
+    // Another run: it takes the lock, says so, and installs a second later.
+    const other = Bun.spawn(
+      [
+        'flock',
+        path.join(cache, `${VERSION}.lock`),
+        'sh',
+        '-c',
+        `echo locked; sleep 1; mkdir -p ${installed}; printf '${fakeBun(VERSION)}' > ${installed}/bun; chmod +x ${installed}/bun`
+      ],
+      { stdout: 'pipe' }
+    );
+    const reader = other.stdout.getReader();
+    expect(new TextDecoder().decode((await reader.read()).value)).toBe('locked\n');
+
+    const { code, out, err } = run(['bun', '--version']);
+    expect(err).not.toContain('downloading');
+    expect(code).toBe(0);
+    expect(out).toBe(`${VERSION}\n`);
+    expect(await other.exited).toBe(0);
+  });
+
+  it('installs over an install directory left without its bun', () => {
+    mkdirSync(path.join(cache, VERSION, ASSET), { recursive: true });
+    const { code, out } = run(['bun', '--version']);
+    expect(code).toBe(0);
+    expect(out).toBe(`${VERSION}\n`);
+  });
+
   it("exits with the command's own code", () => {
     expect(run(['sh', '-c', 'exit 7']).code).toBe(7);
   });
 
   it('fails without a command', () => {
-    const { code, err } = run([]);
-    expect(code).toBe(2);
-    expect(err).toContain('usage: scripts/pinned-bun.sh <command>');
-  });
-
-  it('refuses a zip that does not match SHASUMS256.txt, and keeps nothing', () => {
-    writeRelease(fakeBun(VERSION), (line) => line.replace(/^[0-9a-f]{64}/, '0'.repeat(64)));
-
-    const { code, err } = run(['true']);
-    expect(code).toBe(2);
-    expect(err).toContain('does not match its SHASUMS256.txt line');
-    expect(existsSync(path.join(cache, VERSION))).toBe(false);
-  });
-
-  it('fails when the release cannot be downloaded', () => {
-    const { code, err } = run(['true'], {
-      PINNED_BUN_RELEASES: `file://${path.join(dir, 'missing')}`
-    });
-    expect(code).toBe(2);
-    expect(err).toContain('the download from');
+    failsWith('usage: scripts/pinned-bun.sh <command>', []);
   });
 
   it.each([
@@ -166,15 +195,53 @@ describe('pinned-bun.sh', () => {
     ['a version that is not x.y.z', { packages: { bun: 'latest' } }]
   ])('refuses a railpack.json with %s', (_, json) => {
     writeRailpack(json);
-    const { code, err } = run(['true']);
-    expect(code).toBe(2);
-    expect(err).toContain('railpack.json holds no x.y.z packages.bun');
+    failsWith('railpack.json holds no x.y.z packages.bun');
   });
 
-  it('refuses an unzipped bun that reports another version', () => {
-    writeRelease(fakeBun('9.9.9'));
-    const { code, err } = run(['true']);
-    expect(code).toBe(2);
-    expect(err).toContain(`reports '9.9.9', not ${VERSION}`);
+  it('refuses another system than x86_64 Linux', () => {
+    const bin = path.join(dir, 'bin');
+    mkdirSync(bin);
+    writeFileSync(
+      path.join(bin, 'uname'),
+      '#!/bin/sh\ncase "$1" in -s) echo Darwin ;; -m) echo arm64 ;; esac\n'
+    );
+    chmodSync(path.join(bin, 'uname'), 0o755);
+    failsWith('runs on x86_64 Linux only', ['true'], { PATH: `${bin}:${process.env.PATH}` });
+  });
+
+  it('fails when the release cannot be downloaded', () => {
+    failsWith('the download from', ['true'], {
+      PINNED_BUN_RELEASES: `file://${path.join(dir, 'missing')}`
+    });
+  });
+
+  it('refuses a zip that does not match SHASUMS256.txt, and keeps nothing', () => {
+    writeRelease(zipOf(`${ASSET}/bun`, fakeBun(VERSION)), (line) =>
+      line.replace(/^[0-9a-f]{64}/, '0'.repeat(64))
+    );
+    failsWith('does not match its SHASUMS256.txt line');
+    expect(readdirSync(cache)).toEqual([`${VERSION}.lock`]);
+  });
+
+  it('fails on a zip that does not unzip', () => {
+    writeRelease(new TextEncoder().encode('not a zip'));
+    failsWith(`could not unzip ${ASSET}.zip`);
+  });
+
+  it('fails when it cannot write the install', () => {
+    mkdirSync(cache);
+    writeFileSync(path.join(cache, VERSION), 'a file where the version directory goes');
+    failsWith(`could not move Bun ${VERSION}`);
+  });
+
+  it('refuses a downloaded bun that reports another version', () => {
+    writeRelease(zipOf(`${ASSET}/bun`, fakeBun('9.9.9')));
+    failsWith(`reports '9.9.9', not ${VERSION}`);
+  });
+
+  it('refuses a cached bun that reports another version', () => {
+    expect(run(['true']).code).toBe(0);
+    writeFileSync(path.join(cache, VERSION, ASSET, 'bun'), fakeBun('9.9.9'));
+    failsWith(`reports '9.9.9', not ${VERSION}`);
   });
 });
