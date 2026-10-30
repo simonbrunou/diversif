@@ -165,11 +165,20 @@ function trackedCopy(uploadpack?: string): string {
   return copy;
 }
 
-// Whether a process exists. A dead one still does until its parent reaps it.
+// Whether a process runs. A dead one still exists, as a zombie, until
+// something reaps it. In a CI job container, which has no init, nothing does,
+// so on Linux a zombie counts as gone.
 function running(pid: number): boolean {
   try {
     process.kill(pid, 0);
-    return true;
+  } catch {
+    return false;
+  }
+  if (process.platform !== 'linux') return true;
+  try {
+    // The state follows the command name, which sits in parentheses.
+    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+    return stat[stat.lastIndexOf(')') + 2] !== 'Z';
   } catch {
     return false;
   }
@@ -426,8 +435,7 @@ describe('scripts/smoke-prod.sh', () => {
     });
     expect(run.ms).toBeLessThan(3000 + slack);
     expect(run.stderr).toBe('');
-    // The cut ends git's upload-pack child too: the shell that runs it is gone
-    // once something reaps it.
+    // The cut ends git's upload-pack child too, and the shell that runs it.
     const shell = Number(readFileSync(pidFile, 'utf8'));
     for (let i = 0; i < 40 && running(shell); i++) await Bun.sleep(50);
     expect(running(shell)).toBe(false);
