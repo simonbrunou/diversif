@@ -5,7 +5,6 @@
 - **Stack & commands**: see `README.md` (Bun-native: SvelteKit on `@sveltejs/adapter-node` run under Bun + SQLite via `bun:sqlite` + Drizzle + WebAuthn passkeys + `Bun.password` Argon2id).
 - **Product, tone, users**: see `PRODUCT.md`.
 - **Tests**: `bun run test`, never bare `bun test` (component tests need the wrapper's `--conditions=browser`). It runs `bun:test` against an in-process `bun:sqlite` `:memory:` database (same engine as prod) — no Docker required. E2E: `bun run test:e2e` (Playwright; the script resets a throwaway SQLite file first). Before writing or debugging a test, read `docs/agents/testing.md`.
-- **Starting an E2E job** (opening or reopening a PR, pushing to its branch, merging to `main`, rerunning the E2E job or a whole run): run `scripts/wait-e2e-slot.sh` first and chain the command with `&&` (`docs/agents/testing.md`, "Start an E2E job only when no other one runs or waits").
 - **Deploy**: a merge to `main` deploys to production. What a deploy does, how to check one, and where to read a production environment value: `docs/agents/deploy.md`.
 - **Claude Code setup** (reproducing plugins/skills/hooks/MCPs on a new machine): see `docs/claude-setup.md`. On a fresh clone, run `scripts/claude-setup.sh`, then open the project in Claude Code to auto-install plugins.
 
