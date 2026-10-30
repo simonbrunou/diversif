@@ -25,8 +25,9 @@ const FLUSH_LOCK = 'diversif-offline-flush';
 // How long one replay request may take, its answer's body included, before
 // flush() cancels it and keeps the row for the next pass. A log action answers
 // in well under a second. 30 s leaves room for a slow mobile handshake and
-// upload, and stays under the layout's 60 s flush poll, so the first poll
-// after a stalled replay finds the lock free (#496).
+// upload, and is half the layout's 60 s flush poll: the pass ends as soon as
+// a replay times out, so a stalled replay holds the lock for 30 s at most and
+// makes another tab skip one of its polls at most (#496).
 const REPLAY_DEADLINE_MS = 30_000;
 
 let inFlight: Promise<void> | null = null;

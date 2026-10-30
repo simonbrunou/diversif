@@ -124,35 +124,47 @@ const stalledBody = async (signal: AbortSignal) =>
   );
 
 /**
- * A server whose replies stall: `reply` gets a signal that aborts with the
- * request's own init.signal, the way fetch's request does, or on hangUp().
- * Calling hangUp() in a finally ends the pass even when no deadline fired, so
- * the tests after it don't get its pending promise back from flush().
- * `aborts` records, per call, the request's signal and how long after the
- * call it aborted.
+ * Queues one row and runs a pass, with SHORT_DEADLINE_MS, against a server
+ * whose reply stalls: `reply` gets a signal that aborts with the request's own
+ * init.signal, as fetch's does. Checks that the pass ended, that the request's
+ * signal aborted no sooner than the deadline, and that the row is still
+ * queued. A pass still running after 3 s fails the check, and the server then
+ * hangs up so that the tests after it don't get its pending promise back from
+ * flush().
  */
-function stalledServer(reply: (signal: AbortSignal) => Promise<Response>) {
+async function expectPassEndsAtDeadline(reply: (signal: AbortSignal) => Promise<Response>) {
   const hangUp = new AbortController();
-  const aborts: { signal: AbortSignal | undefined; after?: number }[] = [];
+  // Per call: how long after the call its init.signal aborted.
+  const abortedAfter: (number | undefined)[] = [];
   const transport: Transport = (_url, init) => {
+    const call = abortedAfter.push(undefined) - 1;
     const sentAt = Date.now();
-    const seen: (typeof aborts)[number] = { signal: init.signal ?? undefined };
-    aborts.push(seen);
-    init.signal?.addEventListener('abort', () => (seen.after = Date.now() - sentAt), {
+    init.signal?.addEventListener('abort', () => (abortedAfter[call] = Date.now() - sentAt), {
       once: true
     });
-    const call = new AbortController();
+    const replying = new AbortController();
     for (const s of [init.signal, hangUp.signal]) {
-      s?.addEventListener('abort', () => call.abort(s.reason), { once: true });
+      s?.addEventListener('abort', () => replying.abort(s.reason), { once: true });
     }
-    return reply(call.signal);
+    return reply(replying.signal);
   };
-  return { transport, aborts, hangUp: () => hangUp.abort(new TypeError('Failed to fetch')) };
-}
+  await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
 
-/** 'ended' once `pass` settles, 'stalled' if it is still running after 3 s. */
-const settles = (pass: Promise<void>) =>
-  Promise.race([pass.then(() => 'ended'), Bun.sleep(3000).then(() => 'stalled')]);
+  const pass = flush(transport, SHORT_DEADLINE_MS);
+  try {
+    const first = await Promise.race([
+      pass.then(() => 'ended'),
+      Bun.sleep(3000).then(() => 'stalled')
+    ]);
+    expect(first).toBe('ended');
+  } finally {
+    hangUp.abort(new TypeError('Failed to fetch'));
+    await pass;
+  }
+  expect(abortedAfter).toHaveLength(1);
+  expect(abortedAfter[0]).toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - 1);
+  expect(await countRows()).toBe(1);
+}
 
 /** A fake IDBOpenDBRequest that fires onerror instead of onsuccess. */
 function failingOpenRequest(error: DOMException): IDBOpenDBRequest {
@@ -284,20 +296,7 @@ describe('queue', () => {
 
   // happy-dom's navigator.locks is null: the pass runs without Web Locks.
   it('ends its pass at the deadline when a replay gets no answer, and keeps the row queued', async () => {
-    const { transport, aborts, hangUp } = stalledServer(untilAborted);
-    await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
-
-    const pass = flush(transport, SHORT_DEADLINE_MS);
-    try {
-      expect(await settles(pass)).toBe('ended');
-    } finally {
-      hangUp();
-      await pass;
-    }
-
-    expect(aborts).toHaveLength(1);
-    expect(aborts[0].after).toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - 1);
-    expect(await countRows()).toBe(1);
+    await expectPassEndsAtDeadline(untilAborted);
   });
 
   it('leaves the row queued on type:error 5xx', async () => {
@@ -1046,43 +1045,17 @@ describe('queue', () => {
     // A stalled replay kept the lock, and every other tab's pass, until the
     // browser gave up on the request (#496).
     it('ends a pass whose replay gets no answer at the deadline, and frees the lock', async () => {
-      const { transport, aborts, hangUp } = stalledServer(untilAborted);
-      await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
-
-      const pass = flush(transport, SHORT_DEADLINE_MS);
-      try {
-        expect(await settles(pass)).toBe('ended');
-      } finally {
-        hangUp();
-        await pass;
-      }
-
-      expect(aborts).toHaveLength(1);
-      expect(aborts[0].after).toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - 1);
-      expect(await countRows()).toBe(1);
+      await expectPassEndsAtDeadline(untilAborted);
       expect(await otherTabTryLock()).not.toBeNull();
 
-      const { transport: answering, calls } = server(() => goodActionResult());
-      await flush(answering);
+      const { transport, calls } = server(() => goodActionResult());
+      await flush(transport);
       expect(calls).toHaveLength(1);
       expect(await countRows()).toBe(0);
     });
 
-    it('ends a pass whose answer body stalls at the deadline, and keeps the row queued', async () => {
-      const { transport, aborts, hangUp } = stalledServer(stalledBody);
-      await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
-
-      const pass = flush(transport, SHORT_DEADLINE_MS);
-      try {
-        expect(await settles(pass)).toBe('ended');
-      } finally {
-        hangUp();
-        await pass;
-      }
-
-      expect(aborts).toHaveLength(1);
-      expect(aborts[0].after).toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - 1);
-      expect(await countRows()).toBe(1);
+    it('ends a pass whose answer body stalls at the deadline, and frees the lock', async () => {
+      await expectPassEndsAtDeadline(stalledBody);
       expect(await otherTabTryLock()).not.toBeNull();
     });
 
