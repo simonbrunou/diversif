@@ -107,6 +107,14 @@ function failsWith(...messages: string[]): string {
   return err;
 }
 
+// Run on the test's copy and expect exit 0, reading the fixture's seven pins.
+function passes(): void {
+  const { code, out, err } = run();
+  expect(err).not.toContain(`${CI}:`);
+  expect(code).toBe(0);
+  expect(out).toContain('7 pins read Bun 1.2.3');
+}
+
 describe('check-bun-pins.sh passes', () => {
   it('on the repo pins', () => {
     const { code, out } = run([repo]);
@@ -153,12 +161,100 @@ describe('check-bun-pins.sh passes', () => {
     expect(code).toBe(0);
     expect(out).toContain('7 pins read Bun 1.2.3');
   });
+
+  // The body of a block scalar is shell text: what it says about
+  // bun-version or setup-bun is no pin.
+  const body = [
+    'echo "bun-version: 9.9.9"',
+    'bun-version: 1.2.3',
+    'uses: oven-sh/setup-bun@abc123',
+    '- { uses: oven-sh/setup-bun@abc123, with: { bun-version: 9.9.9 } }'
+  ];
+  it.each([
+    ['- run: |', ['      - run: |', ...body.map((l) => `          ${l}`)]],
+    [
+      'run: >- under - name:',
+      ['      - name: Install', '        run: >-', ...body.map((l) => `          ${l}`)]
+    ]
+  ])('on a block scalar body (%s) that mentions bun-version and setup-bun', (_name, text) => {
+    setLine(CI, 9, text.join('\n'));
+    passes();
+  });
+
+  it.each(['with: &inputs', 'with: !!map # tagged', 'with: !!map &inputs', '"with":'])(
+    'on a block mapping of inputs named as %s',
+    (withLine) => {
+      setLine(CI, 7, `        ${withLine}`);
+      passes();
+    }
+  );
+
+  it.each([
+    ['a plain value and a comment', 'bun-version: 1.2.3 # pinned'],
+    ['a plain value and a tab before the comment', 'bun-version: 1.2.3\t# pinned'],
+    ['a double-quoted key', '"bun-version": 1.2.3'],
+    ['a single-quoted key', "'bun-version': 1.2.3"],
+    ['a blank before the colon', 'bun-version : 1.2.3'],
+    ['an anchor on the key', '&pin bun-version: 1.2.3']
+  ])('on a bun-version input written as %s', (_name, text) => {
+    setLine(CI, 8, `          ${text}`);
+    passes();
+  });
+
+  it.each([
+    ['a comment that names setup-bun', 1, 'name: CI # example oven-sh/setup-bun@abc123'],
+    ['a comment that names bun-version', 5, `${lineText(CI, 5)} # bun-version: 9.9.9`],
+    ['a backslash in plain and single-quoted text', 9, `      - run: echo "a\\b" 'c\\d'`],
+    ['a double-quoted backslash inside a single-quoted string', 1, `name: 'Example: "a\\b"'`],
+    ['a * and a ? inside plain text', 9, '      - run: ls *.md && test "$x" = a?b'],
+    ['a flow collection closed on its line', 1, 'name: CI\non: { push: { branches: [main] } }'],
+    ['an expression in plain text', 9, '      - run: echo ${{ github.sha }}'],
+    ['a key named after bun-version', 9, '      - env: { my-bun-version: 9.9.9 }']
+  ])('on %s, which YAML reads as text', (_name, at, text) => {
+    setLine(CI, at, text);
+    passes();
+  });
 });
 
 describe('check-bun-pins.sh fails when a pin differs, listing every pin', () => {
   it.each([8, 18, 28])('the ci.yml input on line %d', (at) => {
     setLine(CI, at, lineText(CI, at).replace('1.2.3', '9.9.9'));
     failsWith('the Bun pins differ', `${CI}:${at}  9.9.9`, 'railpack.json packages.bun  1.2.3');
+  });
+
+  it.each([
+    ['a full URL', '      - uses: https://github.com/oven-sh/setup-bun@abc123'],
+    ['another letter case', '      - uses: Oven-Sh/Setup-Bun@abc123']
+  ])('the input of a setup-bun step whose uses: names the action by %s', (_name, uses) => {
+    setLine(CI, 6, uses);
+    setLine(CI, 8, '          bun-version: 9.9.9');
+    failsWith('the Bun pins differ', `${CI}:8  9.9.9`);
+  });
+
+  it.each(['"bun-version": 9.9.9', "'bun-version': 9.9.9"])(
+    'the input of a setup-bun step under a quoted key: %s',
+    (key) => {
+      setLine(CI, 8, `          ${key}`);
+      failsWith('the Bun pins differ', `${CI}:8  9.9.9`);
+    }
+  );
+
+  it('the input of a setup-bun step after a block scalar body, which ends at the dash column', () => {
+    setLine(
+      CI,
+      9,
+      '      - run: |\n          echo hi\n      - uses: oven-sh/setup-bun@abc123\n        with:\n          bun-version: 9.9.9'
+    );
+    failsWith('the Bun pins differ', `${CI}:13  9.9.9`);
+  });
+
+  it('the input of a setup-bun step after a key whose comment ends in `: |`, which starts no block scalar', () => {
+    setLine(
+      CI,
+      28,
+      `${lineText(CI, 28)}\n  hidden: # note: |\n    steps:\n      - uses: oven-sh/setup-bun@abc123\n        with:\n          bun-version: 9.9.9`
+    );
+    failsWith('the Bun pins differ', `${CI}:33  9.9.9`);
   });
 
   it('railpack.json packages.bun', () => {
@@ -271,6 +367,153 @@ describe('check-bun-pins.sh fails when it cannot read a pin', () => {
     failsWith(`${CI}:7 bun-version is not in an oven-sh/setup-bun step`);
   });
 
+  // The value setup-bun receives is what YAML reads: the text inside the
+  // quotes, or a plain scalar up to a # after a blank.
+  it.each([
+    ['a double-quoted # in the value', '"1.2.3#oops"', '1.2.3#oops'],
+    ['a plain # with no blank before it', '1.2.3#oops', '1.2.3#oops'],
+    ['two parts', '1.2', '1.2'],
+    ['a dist-tag', 'latest', 'latest'],
+    ['a v prefix', 'v1.2.3', 'v1.2.3'],
+    ['a blank inside the quotes', '" 1.2.3"', ' 1.2.3'],
+    ['a tab before the version inside the quotes', '"\t1.2.3"', '\t1.2.3'],
+    ['a tab after the version inside the quotes', '"1.2.3\t"', '1.2.3\t'],
+    ['text after the closing quote', '"1.2.3" 4', '"1.2.3" 4'],
+    ['no value', '', ''],
+    ['a block scalar', '|\n            1.2.3', '|']
+  ])('a bun-version with %s', (_name, written, value) => {
+    setLine(CI, 8, `          bun-version: ${written}`);
+    const err = failsWith(`${CI}:8 bun-version '${value}' is not an x.y.z version`);
+    expect(err).not.toContain('continues on the next line');
+  });
+
+  it.each([
+    ['double-quoted', '"1.2.3\n            oops"'],
+    ['single-quoted', "'1.2.3\n            oops'"]
+  ])('a %s bun-version that runs onto the next line', (_name, written) => {
+    setLine(CI, 8, `          bun-version: ${written}`);
+    failsWith(
+      `${CI}:8 leaves a quoted string open onto the next line, which this check cannot read`
+    );
+  });
+
+  it.each([
+    [8, 'on a deeper line', '          bun-version: 1.2.3\n            oops'],
+    [8, 'after a blank line', '          bun-version: 1.2.3\n\n            oops'],
+    [8, 'as a value on the next line', '          bun-version:\n            1.2.3'],
+    [28, 'on a deeper line at the end of the file', '        bun-version: 1.2.3\n          oops']
+  ])('a plain bun-version on line %d that continues %s', (at, _name, text) => {
+    setLine(CI, at, text);
+    failsWith(`${CI}:${at} bun-version continues on the next line, which this check cannot read`);
+  });
+
+  it('a bun-version nested deeper than the inputs of with:', () => {
+    setLine(CI, 8, '          other:\n            bun-version: 1.2.3');
+    failsWith(
+      `${CI}:9 bun-version is nested deeper than the inputs of the step's with:`,
+      `${CI}:6 oven-sh/setup-bun step has no bun-version`
+    );
+  });
+
+  it('a bun-version under a with: nested in another key of the step', () => {
+    setLine(CI, 8, '');
+    setLine(CI, 7, '        env:\n          with:\n            bun-version: 1.2.3');
+    failsWith(
+      `${CI}:9 bun-version is not in an oven-sh/setup-bun step`,
+      `${CI}:6 oven-sh/setup-bun step has no bun-version`
+    );
+  });
+
+  it('a bun-version set twice in one step', () => {
+    setLine(CI, 8, `${lineText(CI, 8)}\n          bun-version: 1.2.3`);
+    failsWith(`${CI}:9 oven-sh/setup-bun step sets bun-version twice`);
+  });
+
+  it('a step whose with: comes before its uses:', () => {
+    setLine(CI, 8, '');
+    setLine(CI, 7, '');
+    setLine(
+      CI,
+      6,
+      '      - with:\n          bun-version: 1.2.3\n        uses: oven-sh/setup-bun@abc123'
+    );
+    failsWith(
+      `${CI}:7 bun-version is not in an oven-sh/setup-bun step`,
+      `${CI}:8 oven-sh/setup-bun step has no bun-version`
+    );
+  });
+
+  it.each([
+    ['with its inputs', '{ uses: oven-sh/setup-bun@abc123, with: { bun-version: 9.9.9 } }'],
+    ['without with:', '{ uses: oven-sh/setup-bun@abc123 }'],
+    ['in a flow sequence of steps', '[ { uses: oven-sh/setup-bun@abc123 } ]']
+  ])('a setup-bun step written as one flow mapping %s', (_name, step) => {
+    setLine(CI, 8, `${lineText(CI, 8)}\n      - ${step}`);
+    failsWith(
+      `${CI}:9 names setup-bun@ in a flow mapping or sequence ({ uses: ... }), which this check cannot read`
+    );
+  });
+
+  it('a setup-bun step written as a flow mapping over several lines', () => {
+    setLine(
+      CI,
+      8,
+      `${lineText(CI, 8)}\n      - { name: Setup Bun,\n          uses: oven-sh/setup-bun@abc123 }`
+    );
+    failsWith(
+      `${CI}:9 leaves a flow mapping or sequence open onto the next line, which this check cannot read`
+    );
+  });
+
+  it.each([
+    [
+      'a full URL',
+      'https://github.com/oven-sh/setup-bun@abc123',
+      'oven-sh/setup-bun step has no bun-version'
+    ],
+    [
+      'another letter case',
+      'Oven-Sh/Setup-Bun@abc123',
+      'oven-sh/setup-bun step has no bun-version'
+    ],
+    [
+      'a tag',
+      '!!str oven-sh/setup-bun@abc123',
+      'names setup-bun@ outside a uses: key this check reads (after a tag or an anchor, or in plain text)'
+    ]
+  ])(
+    'a setup-bun step without with: whose uses: names the action by %s',
+    (_name, action, message) => {
+      setLine(CI, 8, '');
+      setLine(CI, 7, '');
+      setLine(CI, 6, `      - uses: ${action}`);
+      failsWith(`${CI}:6 ${message}`);
+    }
+  );
+
+  it.each([
+    ['a flow mapping', '        with: { bun-version: 1.2.3 }'],
+    [
+      'a flow mapping with a nested bun-version',
+      '        with: { other: { bun-version: 9.9.9 }, bun-version: 1.2.3 }'
+    ],
+    [
+      'a flow mapping over several lines',
+      '        with: {\n          bun-version: 1.2.3\n        }'
+    ],
+    ['an alias', '        with: *inputs'],
+    ['an anchor then an alias', '        with: &a *b'],
+    ['a tag other than !!map', '        with: !!str'],
+    ['an anchor with no name', '        with: & '],
+    ['a block scalar', '        with: |\n          bun-version: 1.2.3']
+  ])('a setup-bun step whose with: is %s', (_name, text) => {
+    setLine(CI, 8, '');
+    setLine(CI, 7, text);
+    failsWith(
+      `${CI}:7 oven-sh/setup-bun step does not write with: as a block mapping, which this check cannot read`
+    );
+  });
+
   it('a ci.yml with no setup-bun step', () => {
     writeFileSync(
       path.join(dir, CI),
@@ -335,6 +578,78 @@ describe('check-bun-pins.sh fails when it cannot read a pin', () => {
   it('a Dockerfile with no oven/bun stage', () => {
     for (const at of [1, 3, 5]) setLine('Dockerfile', at, 'FROM debian:bookworm-slim');
     failsWith('Dockerfile has no FROM oven/bun line');
+  });
+});
+
+// YAML decodes these forms into text other than the line spells, so a
+// bun-version or a setup-bun step written with them would pass unread.
+describe('check-bun-pins.sh fails on a YAML form that can spell a key or value as other text', () => {
+  it.each([
+    // Line `at` of the fixture becomes `text`, and the escape is on line `on`.
+    ['an escaped bun-version key', 8, '          "bun\\x2dversion": 9.9.9', 8],
+    ['an escaped bun-version value', 8, '          bun-version: "1.2.\\x33"', 8],
+    ['an escaped setup-bun in uses:', 6, '      - uses: "oven-sh/setup\\x2dbun@abc123"', 6],
+    [
+      'a step written as one flow mapping with escaped keys',
+      8,
+      `${lineText(CI, 8)}\n      - { "us\\x65s": "oven-sh/setup\\x2dbun@abc123", with: { "bun\\x2dversion": 9.9.9 } }`,
+      9
+    ]
+  ])('%s', (_name, at, text, on) => {
+    setLine(CI, at, text);
+    failsWith(
+      `${CI}:${on} holds an escape in a double-quoted string, which this check cannot read`
+    );
+  });
+
+  it('an alias as an input key', () => {
+    setLine(CI, 1, 'name: &key bun-version');
+    setLine(CI, 8, '          *key : 9.9.9');
+    failsWith(
+      `${CI}:8 uses a YAML alias, which this check cannot read`,
+      `${CI}:6 oven-sh/setup-bun step has no bun-version`
+    );
+  });
+
+  it('an alias as the bun-version value', () => {
+    setLine(CI, 1, 'name: &pin 9.9.9');
+    setLine(CI, 8, '          bun-version: *pin');
+    failsWith(`${CI}:8 uses a YAML alias, which this check cannot read`);
+  });
+
+  it('an alias as the action of uses:, and the anchor that names setup-bun', () => {
+    setLine(CI, 1, 'name: &action oven-sh/setup-bun@abc123');
+    setLine(CI, 6, '      - uses: *action');
+    failsWith(
+      `${CI}:1 names setup-bun@ outside a uses: key this check reads`,
+      `${CI}:6 uses a YAML alias`
+    );
+  });
+
+  it('an explicit bun-version key', () => {
+    setLine(CI, 8, '          ? bun-version\n          : 9.9.9');
+    failsWith(`${CI}:8 uses a YAML explicit key (?), which this check cannot read`);
+  });
+
+  it.each([
+    ['a !!binary key that decodes to bun-version', 8, '          !!binary YnVuLXZlcnNpb24=: 9.9.9'],
+    ['a !!str key', 8, '          !!str bun-version: 9.9.9'],
+    ['a local tag on the bun-version value', 8, '          bun-version: !pin 1.2.3'],
+    [
+      'a !!binary uses: that decodes to setup-bun',
+      5,
+      '      - uses: !!binary b3Zlbi1zaC9zZXR1cC1idW5AYWJjMTIz'
+    ]
+  ])('%s', (_name, at, text) => {
+    setLine(CI, at, text);
+    failsWith(`${CI}:${at} uses a YAML tag other than !!map, which this check cannot read`);
+  });
+
+  it('a quoted string that runs onto the next line', () => {
+    setLine(CI, 1, 'name: "CI\n  main"');
+    failsWith(
+      `${CI}:1 leaves a quoted string open onto the next line, which this check cannot read`
+    );
   });
 });
 
