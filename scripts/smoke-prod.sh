@@ -153,9 +153,11 @@ fetch_origin() {
   { sleep "$(secs $((run_end - now)))"; kill -TERM -- -"$pid"; } </dev/null >/dev/null 2>&1 &
   timer=$!
   set +m
-  wait "$pid"
+  # Bash reports a job a signal killed on stderr, unless wait reaps it there.
+  wait "$pid" 2>/dev/null
   status=$?
   kill -KILL -- -"$timer" 2>/dev/null
+  wait "$timer" 2>/dev/null
   return "$status"
 }
 
