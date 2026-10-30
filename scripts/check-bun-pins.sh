@@ -507,5 +507,6 @@ echo "check-bun-pins: ${#version[@]} pins read Bun $expected ($CI, $RAILPACK, $D
 running=$(bun --version)
 if [ "$running" != "$expected" ]; then
   echo "check-bun-pins: warning: this shell runs Bun $running, not $expected." \
-    "The dev shell's Bun follows nixpkgs (docs/agents/testing.md)." >&2
+    "The dev shell's Bun follows nixpkgs (docs/agents/testing.md);" \
+    "scripts/pinned-bun.sh <command> runs a command with Bun $expected." >&2
 fi
