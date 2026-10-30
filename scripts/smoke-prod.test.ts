@@ -4,7 +4,10 @@
 // status. A fake `sleep` on PATH logs its argument and returns at once, so the
 // retry spacing is asserted without waiting for it. A run with a SHA uses a
 // tracked copy of the script in a git repo with no origin remote: its fetch
-// fails, so the wait matches the SHA as a prefix of the live one.
+// fails, so the wait matches the SHA as a prefix of the live one. Two tests
+// give that repo an origin whose fetch stalls instead: a local bare repo whose
+// upload-pack command sleeps 15 s first. They use the real `sleep`, since the
+// fake one would end the stall at once, and the timer that cuts the fetch too.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
 import {
   chmodSync,
@@ -136,16 +139,27 @@ beforeEach(() => {
   writeFileSync(sleepLog, '');
 });
 
-// A tracked copy of the script in a new git repo with no origin remote.
-function trackedCopy(): string {
+// A tracked copy of the script in a new git repo. Given an upload-pack
+// command, its origin remote is a local bare repo that runs that command for
+// each fetch. Without one, the repo has no origin.
+function trackedCopy(uploadpack?: string): string {
   const root = mkdtempSync(path.join(binDir, 'repo-'));
   const copy = path.join(root, 'scripts', 'smoke-prod.sh');
   mkdirSync(path.dirname(copy), { recursive: true });
   copyFileSync(scriptPath, copy);
-  for (const cmd of [
+  const cmds = [
     ['git', 'init', '-q', root],
     ['git', '-C', root, 'add', 'scripts/smoke-prod.sh']
-  ]) {
+  ];
+  if (uploadpack) {
+    const origin = mkdtempSync(path.join(binDir, 'origin-'));
+    cmds.push(
+      ['git', 'init', '-q', '--bare', origin],
+      ['git', '-C', root, 'remote', 'add', 'origin', origin],
+      ['git', '-C', root, 'config', 'remote.origin.uploadpack', uploadpack]
+    );
+  }
+  for (const cmd of cmds) {
     expect(Bun.spawnSync({ cmd }).exitCode).toBe(0);
   }
   return copy;
@@ -387,6 +401,63 @@ describe('scripts/smoke-prod.sh', () => {
     expect(run.code).toBe(1);
     expect(hits.size).toBe(0);
   });
+
+  // A fetch of origin that stalls is cut at the deadline and counts as a
+  // failed one. Each stall lasts 15 s, past the deadline and its slack, and
+  // each test's timeout is above it, so a run the cut misses fails on its time.
+  it('with a SHA, cuts a fetch of origin that stalls before the wait at the deadline', async () => {
+    const run = await smoke(base, {
+      script: trackedCopy('sleep 15; git upload-pack'),
+      args: [newSha],
+      wait: '2',
+      checkTime: '1',
+      realSleep: true
+    });
+    expect(run.ms).toBeLessThan(3000 + slack);
+    expect(run.stderr).toBe('');
+    // No origin/main check, then a wait with no time left for a poll.
+    expect(run.lines.filter((line) => line.includes('is not a commit on origin/main'))).toEqual([]);
+    expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
+    expect(run.last).toBe(`smoke-prod: ${newSha} not live on ${base}, checks skipped`);
+    expect(run.code).toBe(1);
+    expect(hits.size).toBe(0);
+  }, 20_000);
+
+  it('with a SHA, cuts the fetch for an unknown live commit at the deadline', async () => {
+    // Fails the fetch before the wait at once and stalls the next one.
+    const uploadpack = path.join(mkdtempSync(path.join(binDir, 'upload-pack-')), 'stall-second');
+    writeFileSync(
+      uploadpack,
+      [
+        '#!/bin/sh',
+        'n=$(cat "$0.count" 2>/dev/null || echo 0)',
+        'echo $((n + 1)) >"$0.count"',
+        '[ "$n" -ge 1 ] || exit 1',
+        'sleep 15',
+        'exec git upload-pack "$@"',
+        ''
+      ].join('\n')
+    );
+    chmodSync(uploadpack, 0o755);
+    replies = { '/_app/version.json': () => version(oldSha) };
+    const run = await smoke(base, {
+      script: trackedCopy(uploadpack),
+      args: [newSha],
+      wait: '2',
+      checkTime: '1',
+      realSleep: true
+    });
+    expect(run.ms).toBeLessThan(3000 + slack);
+    // The cut comes at the run deadline, not at the end of the wait: a newer
+    // commit read by the wait's last poll still leaves its fetch time to end.
+    expect(run.ms).toBeGreaterThan(2500);
+    expect(run.stderr).toBe('');
+    expect(readFileSync(`${uploadpack}.count`, 'utf8')).toBe('2\n');
+    // The stalled fetch, not the polling, used up the wait: one poll only.
+    expect(hits.get('/_app/version.json')).toBe(1);
+    expect(run.lines).toContain(`PENDING /_app/version.json is ${oldSha}, not ${newSha} after 2s`);
+    expect(run.code).toBe(3);
+  }, 20_000);
 
   it('without a SHA, ends by the deadline on a host that never answers', async () => {
     const run = await smoke(silentBase, { wait: '1', checkTime: '1' });

@@ -11,8 +11,8 @@
 # A run, with a SHA or without, ends SMOKE_WAIT + SMOKE_CHECK_TIME seconds
 # after it starts at the latest (590 s by default), so it fits in one 600 s
 # agent Bash call: a check left with no time fails with "not run: the time
-# budget ran out". The one exception is a `git fetch origin` that hangs: it
-# has no timeout of its own, and its time counts against the deadline.
+# budget ran out". A `git fetch origin` still running at the deadline is cut
+# off there and counts as a failed fetch.
 # Exit 0: every check passed. 1: a check failed, /_app/version.json never
 # reported a version, <sha> is not a commit on main, or, given a <sha>, this
 # file is not the scripts/smoke-prod.sh of a git checkout. 3: an older
@@ -134,15 +134,37 @@ read_live() {
   [ "$code" = 200 ] && live="$(sed -n 's/.*"version":"\([^"]*\)".*/\1/p' "$TMP/body")"
 }
 
+REPO="$(dirname "$0")/.."
+
+# fetch_origin: git fetch origin, cut off at the run deadline at the latest.
+# Fails when the fetch fails or is cut off. Job control (set -m) starts the
+# fetch and its timer each in a process group of its own, so that one kill
+# ends git with its ssh or upload-pack child, and another the timer with its
+# sleep. Their output goes to /dev/null: none keeps the script's open.
+fetch_origin() {
+  local pid timer status
+  clock
+  [ "$run_end" -gt "$now" ] || return 1
+  set -m
+  git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &
+  pid=$!
+  { sleep "$(secs $((run_end - now)))"; kill -TERM -- -"$pid"; } </dev/null >/dev/null 2>&1 &
+  timer=$!
+  set +m
+  wait "$pid"
+  status=$?
+  kill -TERM -- -"$timer" 2>/dev/null
+  return "$status"
+}
+
 # A newer merge can replace <sha> before the wait ends: a live commit that
 # contains <sha> counts as live too. Fetches origin once if $live is unknown.
-REPO="$(dirname "$0")/.."
 fetched=''
 contains_sha() {
   [[ "$live" =~ ^[0-9a-f]{7,40}$ ]] || return 1
   if ! git -C "$REPO" cat-file -e "$live^{commit}" 2>/dev/null && [ -z "$fetched" ]; then
     fetched=1
-    git -C "$REPO" fetch -q origin 2>/dev/null
+    fetch_origin
   fi
   git -C "$REPO" merge-base --is-ancestor "$SHA" "$live" 2>/dev/null
 }
@@ -172,9 +194,9 @@ if [ -n "$SHA" ]; then
   git -C "$REPO" ls-files --error-unmatch scripts/smoke-prod.sh >/dev/null 2>&1 ||
     not_deployable "$0 is not the scripts/smoke-prod.sh of a git checkout" \
       "run scripts/smoke-prod.sh by its path in a checkout, not a copy or a link"
-  # Only main deploys. When the fetch fails (offline, no origin), the wait
-  # below still matches <sha> as a prefix of the live SHA.
-  if git -C "$REPO" fetch -q origin 2>/dev/null; then
+  # Only main deploys. When the fetch fails (offline, no origin) or is cut off,
+  # the wait below still matches <sha> as a prefix of the live SHA.
+  if fetch_origin; then
     full="$(on_main)" || not_deployable "$SHA is not a commit on origin/main"
     SHA="$full"
   fi
