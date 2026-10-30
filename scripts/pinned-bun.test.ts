@@ -154,25 +154,52 @@ describe('pinned-bun.sh', () => {
     rmSync(releases, { recursive: true });
     mkdirSync(cache);
     const installed = path.join(cache, VERSION, ASSET);
-    // Another run: it takes the lock, says so, and installs a second later.
+    // Another run: it takes the lock, says so, and installs only once the
+    // test writes a line to it, after the script has said it waits.
     const other = Bun.spawn(
       [
         'flock',
         path.join(cache, `${VERSION}.lock`),
         'sh',
         '-c',
-        `echo locked; sleep 1; mkdir -p ${installed}; printf '${fakeBun(VERSION)}' > ${installed}/bun; chmod +x ${installed}/bun`
+        `echo locked; read go; mkdir -p ${installed}; printf '${fakeBun(VERSION)}' > ${installed}/bun; chmod +x ${installed}/bun`
       ],
-      { stdout: 'pipe' }
+      { stdin: 'pipe', stdout: 'pipe' }
     );
-    const reader = other.stdout.getReader();
-    expect(new TextDecoder().decode((await reader.read()).value)).toBe('locked\n');
+    const locked = await other.stdout.getReader().read();
+    expect(new TextDecoder().decode(locked.value)).toBe('locked\n');
+    // The script starts once the other run holds the lock.
+    const script = Bun.spawn([path.join(dir, 'scripts', 'pinned-bun.sh'), 'bun', '--version'], {
+      env: env(),
+      stdout: 'pipe',
+      stderr: 'pipe'
+    });
+    try {
+      let err = '';
+      const stderr = script.stderr.getReader();
+      const waits = (async () => {
+        while (!err.includes('waiting for another run')) {
+          const { done, value } = await stderr.read();
+          if (done) return false;
+          err += new TextDecoder().decode(value);
+        }
+        return true;
+      })();
+      expect(await Promise.race([waits, Bun.sleep(3000).then(() => false)])).toBe(true);
 
-    const { code, out, err } = run(['bun', '--version']);
-    expect(err).not.toContain('downloading');
-    expect(code).toBe(0);
-    expect(out).toBe(`${VERSION}\n`);
-    expect(await other.exited).toBe(0);
+      other.stdin.write('go\n');
+      await other.stdin.end();
+      expect(await script.exited).toBe(0);
+      for (let chunk = await stderr.read(); !chunk.done; chunk = await stderr.read()) {
+        err += new TextDecoder().decode(chunk.value);
+      }
+      expect(err).not.toContain('downloading');
+      expect(await new Response(script.stdout).text()).toBe(`${VERSION}\n`);
+      expect(await other.exited).toBe(0);
+    } finally {
+      other.kill();
+      script.kill();
+    }
   });
 
   it('installs over an install directory left without its bun', () => {

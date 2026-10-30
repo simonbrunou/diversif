@@ -46,7 +46,10 @@ dir="$cache/$version"
 mkdir -p -m 700 "$cache" 2>/dev/null || fail "could not create $cache"
 # Held until the command starts: one run installs a version at a time.
 exec 9>"$dir.lock" || fail "could not open $dir.lock"
-flock 9 || fail "could not lock $dir.lock"
+if ! flock -n 9; then
+  echo "pinned-bun: waiting for another run to install Bun $version" >&2
+  flock 9 || fail "could not lock $dir.lock"
+fi
 if [ ! -x "$dir/$asset/bun" ]; then
   # In the cache, so the move below is a rename on one file system.
   tmp=$(mktemp -d "$cache/.download.XXXXXX") || fail "could not create a directory in $cache"
