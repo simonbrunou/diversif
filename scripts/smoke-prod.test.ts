@@ -166,6 +166,15 @@ function trackedCopy(uploadpack?: string): string {
   return copy;
 }
 
+// A file's content, or '' while it does not exist.
+function readIfThere(file: string): string {
+  try {
+    return readFileSync(file, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
 // Whether a process runs. A dead one still exists, as a zombie, until
 // something reaps it. In a CI job container, which has no init, nothing does,
 // so on Linux a zombie counts as gone.
@@ -189,6 +198,8 @@ function running(pid: number): boolean {
 // Bun.spawnSync would block until the script gave up. realSleep leaves the
 // fake `sleep` off PATH, so the wait's sleeps take real time. termIgnored
 // starts the script with TERM ignored, which its children inherit.
+// interruptOn sends the script alone SIGINT, as a Ctrl-C does once job control
+// moved its fetch to a group of its own, when that file has content.
 async function smoke(
   baseUrl = base,
   {
@@ -197,7 +208,8 @@ async function smoke(
     wait = '',
     checkTime = '',
     realSleep = false,
-    termIgnored = false
+    termIgnored = false,
+    interruptOn = ''
   } = {}
 ) {
   const started = performance.now();
@@ -219,6 +231,12 @@ async function smoke(
     stdout: 'pipe',
     stderr: 'pipe'
   });
+  if (interruptOn) {
+    void (async () => {
+      while (proc.exitCode === null && !readIfThere(interruptOn)) await Bun.sleep(20);
+      proc.kill('SIGINT');
+    })();
+  }
   const [stdout, stderr, code] = await Promise.all([
     Bun.readableStreamToText(proc.stdout),
     Bun.readableStreamToText(proc.stderr),
@@ -432,31 +450,37 @@ describe('scripts/smoke-prod.sh', () => {
     expect(hits.size).toBe(0);
   });
 
-  // A fetch of origin that stalls is cut at the deadline and counts as a
-  // failed one. Each stall lasts 15 s, past the deadline and its slack, and
-  // each test's timeout is above it, so a run the cut misses fails on its time.
-  // This upload-pack ignores TERM, so only KILL ends it. Started with TERM
-  // ignored, git outlives TERM too, until the KILL 1 s later.
+  // A fetch of origin that stalls is cut, TERM 1 s before the deadline and
+  // KILL at it, and counts as a failed one. Each stall lasts 15 s, past the
+  // deadline and its slack, and each test's timeout is above it, so a run the
+  // cut misses fails on its time.
+  // This upload-pack notes the TERM and outlives it, and so does its sleep:
+  // only KILL ends them. Started with TERM ignored, git outlives TERM too.
   it.each([
     ['', 0],
-    [' plus 1 s when started with TERM ignored', 1000]
+    [' when started with TERM ignored', 1000]
   ])(
-    'with a SHA, cuts a fetch of origin that stalls before the wait at the deadline%s',
-    async (_when, grace) => {
-      const pidFile = path.join(mkdtempSync(path.join(binDir, 'upload-pack-')), 'pid');
+    'with a SHA, cuts a fetch of origin that stalls before the wait by the deadline%s',
+    async (_when, outlived) => {
+      const dir = mkdtempSync(path.join(binDir, 'upload-pack-'));
+      const [pidFile, termFile] = [path.join(dir, 'pid'), path.join(dir, 'term')];
       const run = await smoke(base, {
-        script: trackedCopy(`trap "" TERM; sleep 15 & echo $! >${pidFile}; wait; git upload-pack`),
+        script: trackedCopy(
+          `trap "echo >${termFile}" TERM; (trap "" TERM; exec sleep 15) & echo $! >${pidFile};` +
+            ' wait $!; wait $!; git upload-pack'
+        ),
         args: [newSha],
         wait: '2',
         checkTime: '1',
         realSleep: true,
-        termIgnored: grace > 0
+        termIgnored: outlived > 0
       });
-      expect(run.ms).toBeLessThan(3000 + grace + slack);
-      // The fetch stalls until the cut: TERM at the deadline, or KILL after it.
-      expect(run.ms).toBeGreaterThan(2500 + grace);
+      expect(run.ms).toBeLessThan(3000 + slack);
+      // The fetch stalls until the cut: the TERM ends git, else the KILL.
+      expect(run.ms).toBeGreaterThan(1500 + outlived);
       expect(run.stderr).toBe('');
-      // The cut ends upload-pack's sleep too.
+      // TERM came first, then KILL ended upload-pack's sleep too.
+      expect(readIfThere(termFile)).toBe('\n');
       const sleeper = Number(readFileSync(pidFile, 'utf8'));
       for (let i = 0; i < 40 && running(sleeper); i++) await Bun.sleep(50);
       expect(running(sleeper)).toBe(false);
@@ -472,7 +496,7 @@ describe('scripts/smoke-prod.sh', () => {
     20_000
   );
 
-  it('with a SHA, cuts the fetch for an unknown live commit at the deadline', async () => {
+  it('with a SHA, cuts the fetch for an unknown live commit by the deadline', async () => {
     // Fails the fetch before the wait at once and stalls the next one.
     const uploadpack = path.join(mkdtempSync(path.join(binDir, 'upload-pack-')), 'stall-second');
     writeFileSync(
@@ -490,16 +514,17 @@ describe('scripts/smoke-prod.sh', () => {
     chmodSync(uploadpack, 0o755);
     replies = { '/_app/version.json': () => version(oldSha) };
     // The first fetch and the first poll must fit in the wait, so it leaves
-    // them 4 s, as in the late-SHA test above.
+    // them 4 s, as in the late-SHA test above. The 2 s for the checks put the
+    // cut 1 s after the wait ends.
     const run = await smoke(base, {
       script: trackedCopy(uploadpack),
       args: [newSha],
       wait: '4',
-      checkTime: '1',
+      checkTime: '2',
       realSleep: true
     });
-    expect(run.ms).toBeLessThan(5000 + slack);
-    // The cut comes at the run deadline, not at the end of the wait: a newer
+    expect(run.ms).toBeLessThan(6000 + slack);
+    // The cut comes by the run deadline, not by the end of the wait: a newer
     // commit read by the wait's last poll still leaves its fetch time to end.
     expect(run.ms).toBeGreaterThan(4500);
     expect(run.stderr).toBe('');
@@ -508,6 +533,24 @@ describe('scripts/smoke-prod.sh', () => {
     expect(hits.get('/_app/version.json')).toBe(1);
     expect(run.lines).toContain(`PENDING /_app/version.json is ${oldSha}, not ${newSha} after 4s`);
     expect(run.code).toBe(3);
+  }, 20_000);
+
+  it('with a SHA, ends a fetch of origin that a Ctrl-C interrupts', async () => {
+    const pidFile = path.join(mkdtempSync(path.join(binDir, 'upload-pack-')), 'pid');
+    const run = await smoke(base, {
+      script: trackedCopy(`sleep 15 & echo $! >${pidFile}; wait; git upload-pack`),
+      args: [newSha],
+      wait: '2',
+      checkTime: '1',
+      realSleep: true,
+      interruptOn: pidFile
+    });
+    expect(run.code).toBe(130);
+    expect(run.stderr).toBe('');
+    // The exit trap ends the fetch, which the SIGINT never reached.
+    const sleeper = Number(readFileSync(pidFile, 'utf8'));
+    for (let i = 0; i < 40 && running(sleeper); i++) await Bun.sleep(50);
+    expect(running(sleeper)).toBe(false);
   }, 20_000);
 
   it('without a SHA, ends by the deadline on a host that never answers', async () => {

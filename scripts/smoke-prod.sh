@@ -11,8 +11,8 @@
 # A run, with a SHA or without, ends SMOKE_WAIT + SMOKE_CHECK_TIME seconds
 # after it starts at the latest (590 s by default), so it fits in one 600 s
 # agent Bash call: a check left with no time fails with "not run: the time
-# budget ran out". A `git fetch origin` still running at the deadline is cut
-# off there and counts as a failed fetch.
+# budget ran out". A `git fetch origin` still running 1 s before the deadline
+# is cut off and counts as a failed fetch.
 # Exit 0: every check passed. 1: a check failed, /_app/version.json never
 # reported a version, <sha> is not a commit on main, or, given a <sha>, this
 # file is not the scripts/smoke-prod.sh of a git checkout. 3: an older
@@ -49,7 +49,11 @@ run_end=$((wait_end + CHECK_TIME * 1000))
 secs() { printf '%d.%03d' $(($1 / 1000)) $(($1 % 1000)); }
 
 TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+# It also ends a fetch_origin still running, which job control keeps out of
+# reach of a Ctrl-C: TERM to the fetch, KILL to its timer.
+trap 'rm -rf "$TMP"
+[ -z "${fetch_pid:-}" ] || kill -TERM -- -"$fetch_pid" 2>/dev/null
+[ -z "${fetch_pid:-}" ] || kill -KILL -- -"$fetch_timer" 2>/dev/null' EXIT
 
 passed=0
 failed=0
@@ -136,38 +140,45 @@ read_live() {
 
 REPO="$(dirname "$0")/.."
 
-# fetch_origin: git fetch origin, cut off at the run deadline. Fails when the
+# fetch_origin: git fetch origin, cut off by the run deadline. Fails when the
 # fetch fails or is cut off. Job control (set -m) starts the fetch and its
 # timer each in a process group of its own, so that a kill reaches git with
 # its ssh or upload-pack child, and the timer with its sleep. Their output
-# goes to /dev/null: none keeps the script's open. At the deadline the timer
-# sends the fetch TERM, which lets git remove its lock files. Git then exits,
-# unless the script was started with TERM ignored and git's child ignores it
-# too: KILL follows 1 s later. Once git has exited past the deadline, KILL
-# also ends a child that ignored TERM. The timer gets KILL, since it inherits
-# a TERM the script was started ignoring.
+# goes to /dev/null: none keeps the script's open. The timer sends the fetch
+# TERM 1 s before the deadline, which lets git remove its lock files, then
+# KILL at the deadline: a script started with TERM ignored passes that on,
+# and git then outlives TERM when its child ignores it too. Once git has
+# exited after the TERM, KILL ends a child that ignored it. The timer gets
+# KILL, as it may ignore TERM too, and signals nothing once the script is
+# gone. The exit trap ends a fetch that the script's own end interrupts.
+fetch_pid=''
 fetch_origin() {
-  local pid timer status
+  local term cut status
   clock
   [ "$run_end" -gt "$now" ] || return 1
+  # The time to the TERM, and when it comes: at once with under 1 s left.
+  term=$((run_end - now - 1000))
+  [ "$term" -gt 0 ] || term=0
+  cut=$((now + term))
   set -m
   git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &
-  pid=$!
+  fetch_pid=$!
   {
-    sleep "$(secs $((run_end - now)))"
-    kill -TERM -- -"$pid"
-    sleep 1
-    kill -KILL -- -"$pid"
+    sleep "$(secs "$term")"
+    kill -0 $$ && kill -TERM -- -"$fetch_pid"
+    sleep "$(secs $((run_end - cut)))"
+    kill -0 $$ && kill -KILL -- -"$fetch_pid"
   } </dev/null >/dev/null 2>&1 &
-  timer=$!
+  fetch_timer=$!
   set +m
   # Bash reports a job a signal killed on stderr, unless wait reaps it there.
-  wait "$pid" 2>/dev/null
+  wait "$fetch_pid" 2>/dev/null
   status=$?
   clock
-  [ "$now" -lt "$run_end" ] || kill -KILL -- -"$pid" 2>/dev/null
-  kill -KILL -- -"$timer" 2>/dev/null
-  wait "$timer" 2>/dev/null
+  [ "$now" -lt "$cut" ] || kill -KILL -- -"$fetch_pid" 2>/dev/null
+  kill -KILL -- -"$fetch_timer" 2>/dev/null
+  wait "$fetch_timer" 2>/dev/null
+  fetch_pid=''
   return "$status"
 }
 
