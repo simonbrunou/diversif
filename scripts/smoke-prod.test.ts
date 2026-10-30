@@ -504,17 +504,18 @@ describe('scripts/smoke-prod.sh', () => {
   );
 
   // The fake sleep logs the timer's first delay, the one before the TERM: at
-  // most 2 s with a 3 s deadline. A wall-clock bound on the TERM's arrival
-  // failed under CI load (#581).
+  // most 9 s with a 10 s deadline, less the script's setup before the fetch,
+  // which gets 4 s here. A wall-clock bound on the TERM's arrival failed
+  // under CI load (#581).
   it('with a SHA, sends a stalled fetch of origin TERM 1 s before the deadline', async () => {
     const run = await smoke(base, {
       script: trackedCopy(`${sleepBin} 15; git upload-pack`),
       args: [newSha],
       wait: '0',
-      checkTime: '3'
+      checkTime: '10'
     });
-    expect(Number(run.sleeps[0])).toBeLessThanOrEqual(2);
-    expect(Number(run.sleeps[0])).toBeGreaterThan(1);
+    expect(Number(run.sleeps[0])).toBeLessThanOrEqual(9);
+    expect(Number(run.sleeps[0])).toBeGreaterThan(5);
     expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
     expect(run.code).toBe(1);
   });
