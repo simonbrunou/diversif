@@ -14,6 +14,7 @@
 - **French UI, no anglicisms.** Use "Enregistrer" not "logger", "Régularité" not "Streak", "Adresse e-mail" not "Email", "Bilan" not "Stats". PR reviewers reject regressions.
 - **Use Bun, not npm/Node.** `bun install`, `bun run X`. `bun --bun <cmd>` forces tools with Node shebangs (vite, drizzle-kit, playwright, svelte-check) to run under Bun — without it, server code that imports `bun` / `bun:sqlite` fails to resolve.
 - **Pre-commit**: husky runs `lint-staged` (prettier + eslint). Don't bypass with `--no-verify`.
+- **Before you start a CI E2E job** (open or reopen a PR, push to an open one, rerun the E2E job or a whole run, merge), run `scripts/wait-e2e-slot.sh && <that command>` in one foreground shell call with `timeout: 600000`, and run it again on exit 3. Why, and the other exit codes: `docs/agents/testing.md`, "Start an E2E job only when no other one runs or waits".
 
 ## graphify
 
@@ -41,7 +42,7 @@ The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also 
 
 1. Merge `origin/main` into the branch and resolve the conflict.
 2. Run `bun run test`.
-3. Push, and wait for CI on the new head.
+3. Push behind `scripts/wait-e2e-slot.sh &&`, and wait for CI on the new head.
 4. Check all three conditions again on the new pushed SHA.
 
 The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
