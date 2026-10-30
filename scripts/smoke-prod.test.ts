@@ -483,8 +483,9 @@ describe('scripts/smoke-prod.sh', () => {
       // TERM came first, then KILL ended upload-pack's sleep too.
       expect(readIfThere(termFile)).toBe('\n');
       // TERM comes 1 s before the 3 s deadline, so about 2 s after the fetch
-      // started (when upload-pack wrote its pid file), not 3 s.
-      expect(statSync(termFile).mtimeMs - statSync(pidFile).mtimeMs).toBeLessThan(2800);
+      // started (when upload-pack wrote its pid file), not 3 s. Load delays
+      // the pid file more than the TERM, which narrows the gap.
+      expect(statSync(termFile).mtimeMs - statSync(pidFile).mtimeMs).toBeLessThan(2500);
       const sleeper = Number(readFileSync(pidFile, 'utf8'));
       for (let i = 0; i < 40 && running(sleeper); i++) await Bun.sleep(50);
       expect(running(sleeper)).toBe(false);

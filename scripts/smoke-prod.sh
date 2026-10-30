@@ -151,7 +151,7 @@ REPO="$(dirname "$0")/.."
 # exited after the TERM, KILL ends a child that ignored it. The timer gets
 # KILL, as it may ignore TERM too, and signals nothing once the script is
 # gone. The exit trap sends TERM to a fetch that the script's own end
-# interrupts.
+# interrupts: a child that ignores TERM outlives it.
 fetch_pid=''
 fetch_timer=''
 fetch_origin() {
