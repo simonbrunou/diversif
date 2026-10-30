@@ -95,4 +95,25 @@ describe('account/profile updateProfile', () => {
     const fresh = (await testDb.select().from(users).where(eq(users.id, u.id)).limit(1))[0];
     expect(fresh?.displayName).toBe('New Name');
   });
+
+  it('hands the saved name to the page rendered by the same request (#505)', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { displayName: '  New Name  ' }
+    });
+    await actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0]);
+    expect(event.locals.user?.displayName).toBe('New Name');
+    expect(event.locals.user?.id).toBe(u.id);
+  });
+
+  it('leaves the request user alone when the name is refused', async () => {
+    const u = await seed();
+    const event = makeRouteEvent({
+      user: safeUser(u),
+      formData: { displayName: '' }
+    });
+    await actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0]);
+    expect(event.locals.user?.displayName).toBe(u.displayName);
+  });
 });
