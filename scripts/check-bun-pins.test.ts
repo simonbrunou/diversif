@@ -376,6 +376,8 @@ describe('check-bun-pins.sh fails when it cannot read a pin', () => {
     ['a dist-tag', 'latest', 'latest'],
     ['a v prefix', 'v1.2.3', 'v1.2.3'],
     ['a blank inside the quotes', '" 1.2.3"', ' 1.2.3'],
+    ['a tab before the version inside the quotes', '"\t1.2.3"', '\t1.2.3'],
+    ['a tab after the version inside the quotes', '"1.2.3\t"', '1.2.3\t'],
     ['text after the closing quote', '"1.2.3" 4', '"1.2.3" 4'],
     ['no value', '', ''],
     ['a block scalar', '|\n            1.2.3', '|']

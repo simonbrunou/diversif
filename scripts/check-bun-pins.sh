@@ -84,7 +84,7 @@ fail() {
 }
 
 read_ci() {
-  local file="$ROOT/$CI" kind line value steps=0
+  local file="$ROOT/$CI" entry kind line value steps=0
   if [ ! -f "$file" ]; then
     fail "$CI not found"
     return
@@ -92,8 +92,14 @@ read_ci() {
   # The awk program prints one tab-separated line per step and per refused
   # line, a kind and a line number: `pin <line> <value>` for a setup-bun
   # step's bun-version input, and a kind of its own for each form the header
-  # lists as failing. The value keeps its blanks, so `" 1.4.4"` fails.
-  while IFS=$'\t' read -r kind line value; do
+  # lists as failing. The value is the rest of the line after the second
+  # tab, split off by hand since `read` would trim blanks and tabs around
+  # it, so `" 1.4.4"` and `"<tab>1.4.4"` fail.
+  while IFS= read -r entry; do
+    kind=${entry%%$'\t'*}
+    entry=${entry#*$'\t'}
+    line=${entry%%$'\t'*}
+    value=${entry:${#line}+1}
     case "$kind" in
       pin)
         steps=$((steps + 1))
