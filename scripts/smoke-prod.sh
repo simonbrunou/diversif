@@ -49,11 +49,11 @@ run_end=$((wait_end + CHECK_TIME * 1000))
 secs() { printf '%d.%03d' $(($1 / 1000)) $(($1 % 1000)); }
 
 TMP="$(mktemp -d)"
-# It also ends a fetch_origin still running, which job control keeps out of
-# reach of a Ctrl-C: TERM to the fetch, KILL to its timer.
+# It also sends TERM to a fetch_origin still running, which job control keeps
+# out of reach of a Ctrl-C, and KILL to its timer.
 trap 'rm -rf "$TMP"
 [ -z "${fetch_pid:-}" ] || kill -TERM -- -"$fetch_pid" 2>/dev/null
-[ -z "${fetch_pid:-}" ] || kill -KILL -- -"$fetch_timer" 2>/dev/null' EXIT
+[ -z "${fetch_timer:-}" ] || kill -KILL -- -"$fetch_timer" 2>/dev/null' EXIT
 
 passed=0
 failed=0
@@ -150,8 +150,10 @@ REPO="$(dirname "$0")/.."
 # and git then outlives TERM when its child ignores it too. Once git has
 # exited after the TERM, KILL ends a child that ignored it. The timer gets
 # KILL, as it may ignore TERM too, and signals nothing once the script is
-# gone. The exit trap ends a fetch that the script's own end interrupts.
+# gone. The exit trap sends TERM to a fetch that the script's own end
+# interrupts.
 fetch_pid=''
+fetch_timer=''
 fetch_origin() {
   local term cut status
   clock
@@ -176,9 +178,10 @@ fetch_origin() {
   status=$?
   clock
   [ "$now" -lt "$cut" ] || kill -KILL -- -"$fetch_pid" 2>/dev/null
+  fetch_pid=''
   kill -KILL -- -"$fetch_timer" 2>/dev/null
   wait "$fetch_timer" 2>/dev/null
-  fetch_pid=''
+  fetch_timer=''
   return "$status"
 }
 

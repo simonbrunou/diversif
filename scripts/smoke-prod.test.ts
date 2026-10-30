@@ -17,6 +17,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -481,6 +482,9 @@ describe('scripts/smoke-prod.sh', () => {
       expect(run.stderr).toBe('');
       // TERM came first, then KILL ended upload-pack's sleep too.
       expect(readIfThere(termFile)).toBe('\n');
+      // TERM comes 1 s before the 3 s deadline, so about 2 s after the fetch
+      // started (when upload-pack wrote its pid file), not 3 s.
+      expect(statSync(termFile).mtimeMs - statSync(pidFile).mtimeMs).toBeLessThan(2800);
       const sleeper = Number(readFileSync(pidFile, 'utf8'));
       for (let i = 0; i < 40 && running(sleeper); i++) await Bun.sleep(50);
       expect(running(sleeper)).toBe(false);
@@ -547,7 +551,7 @@ describe('scripts/smoke-prod.sh', () => {
     });
     expect(run.code).toBe(130);
     expect(run.stderr).toBe('');
-    // The exit trap ends the fetch, which the SIGINT never reached.
+    // The exit trap's TERM ends the fetch, which the SIGINT never reached.
     const sleeper = Number(readFileSync(pidFile, 'utf8'));
     for (let i = 0; i < 40 && running(sleeper); i++) await Bun.sleep(50);
     expect(running(sleeper)).toBe(false);
