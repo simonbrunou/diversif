@@ -28,6 +28,9 @@ export const actions: Actions = {
       .update(users)
       .set({ displayName: parsed.data.displayName })
       .where(eq(users.id, user.id));
+    // Without JavaScript, SvelteKit renders the page in this same request, and
+    // the root layout hands it `locals.user`, read before the save.
+    locals.user = { ...user, displayName: parsed.data.displayName };
     return { profileSuccessKey: 'errorsAccountProfileSuccess' };
   }
 };

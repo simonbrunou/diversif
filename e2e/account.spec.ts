@@ -57,9 +57,6 @@ test.describe('account messages without JavaScript', () => {
       await noJs.getByLabel('Nom affiché').fill('Camille');
       await noJs.getByRole('button', { name: 'Enregistrer', exact: true }).click();
       await expect(noJs.getByRole('status')).toHaveText('Profil mis à jour.');
-      // Reload before reading the field: the page rendered with the action
-      // still shows the old name.
-      await noJs.goto('/account/profile');
       await expect(noJs.getByLabel('Nom affiché')).toHaveValue('Camille');
     } finally {
       await noJs.context().close();
