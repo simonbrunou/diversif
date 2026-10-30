@@ -10,8 +10,8 @@
 # scripts/check-bun-pins.sh keeps equal to CI's and the Dockerfile's. The
 # first run for a version downloads that release's bun-linux-x64.zip from
 # GitHub, checks it against the release's SHASUMS256.txt and unzips it into
-# $PINNED_BUN_DIR/<version> (default ~/.cache/bun-pinned, which only this
-# user can write); later runs reuse it. A run that starts while another one
+# $PINNED_BUN_DIR/<version> (default ~/.cache/bun-pinned, in this user's
+# home rather than the shared /tmp); later runs reuse it. A run that starts while another one
 # installs the same version waits for it under a lock, then reuses its
 # install. PINNED_BUN_RELEASES replaces the download base
 # (https://github.com/oven-sh/bun/releases/download) for the tests in

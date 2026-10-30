@@ -2,6 +2,7 @@
 // (PINNED_BUN_RELEASES=file://...), so no test touches the network. Each test
 // copies the script beside a railpack.json of its own, which pins 1.2.3, and
 // unzips into a PINNED_BUN_DIR of its own. The fake bun prints a version.
+import type { Subprocess } from 'bun';
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test';
 import {
   chmodSync,
@@ -153,28 +154,30 @@ describe('pinned-bun.sh', () => {
   it('waits for a run that is installing the same version, then reuses its install', async () => {
     rmSync(releases, { recursive: true });
     mkdirSync(cache);
-    const installed = path.join(cache, VERSION, ASSET);
-    // Another run: it takes the lock, says so, and installs only once the
-    // test writes a line to it, after the script has said it waits.
+    // Another run, one shell that holds the lock on its own fd: it takes the
+    // lock, says so, and installs only once the test writes a line to it.
     const other = Bun.spawn(
       [
-        'flock',
-        path.join(cache, `${VERSION}.lock`),
         'sh',
         '-c',
-        `echo locked; read go; mkdir -p ${installed}; printf '${fakeBun(VERSION)}' > ${installed}/bun; chmod +x ${installed}/bun`
+        'exec 9>"$1"; flock 9 && echo locked; read go; mkdir -p "$2"; printf %s "$3" > "$2/bun"; chmod +x "$2/bun"',
+        'sh',
+        path.join(cache, `${VERSION}.lock`),
+        path.join(cache, VERSION, ASSET),
+        fakeBun(VERSION)
       ],
       { stdin: 'pipe', stdout: 'pipe' }
     );
-    const locked = await other.stdout.getReader().read();
-    expect(new TextDecoder().decode(locked.value)).toBe('locked\n');
-    // The script starts once the other run holds the lock.
-    const script = Bun.spawn([path.join(dir, 'scripts', 'pinned-bun.sh'), 'bun', '--version'], {
-      env: env(),
-      stdout: 'pipe',
-      stderr: 'pipe'
-    });
+    let script: Subprocess<'ignore', 'pipe', 'pipe'> | undefined;
     try {
+      const locked = await other.stdout.getReader().read();
+      expect(new TextDecoder().decode(locked.value)).toBe('locked\n');
+      // The script starts once the other run holds the lock.
+      script = Bun.spawn([path.join(dir, 'scripts', 'pinned-bun.sh'), 'bun', '--version'], {
+        env: env(),
+        stdout: 'pipe',
+        stderr: 'pipe'
+      });
       let err = '';
       const stderr = script.stderr.getReader();
       const waits = (async () => {
@@ -186,6 +189,10 @@ describe('pinned-bun.sh', () => {
         return true;
       })();
       expect(await Promise.race([waits, Bun.sleep(3000).then(() => false)])).toBe(true);
+      // Still blocked on the lock: a script that went on would find no bun
+      // and no release, and exit 2 at once.
+      await Bun.sleep(300);
+      expect(script.exitCode).toBeNull();
 
       other.stdin.write('go\n');
       await other.stdin.end();
@@ -198,7 +205,8 @@ describe('pinned-bun.sh', () => {
       expect(await other.exited).toBe(0);
     } finally {
       other.kill();
-      script.kill();
+      script?.kill();
+      await Promise.all([other.exited, script?.exited]);
     }
   });
 
