@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import { SITE, absoluteUrl, type SeoInput } from '#lib/seo.js';
 
   let {
@@ -21,8 +22,9 @@
   const ogImageFallback = $derived(absoluteUrl(SITE.defaultOrigin, SITE.ogImageFallback));
 </script>
 
+<PageTitle {title} />
+
 <svelte:head>
-  <title>{title}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonical} />
   {#if alternateLocales.length > 0}

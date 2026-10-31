@@ -22,6 +22,7 @@
   import AppShellBento from '#lib/components/AppShellBento.svelte';
   import ReloadPrompt from '#lib/components/ReloadPrompt.svelte';
   import JsonLd from '#lib/components/JsonLd.svelte';
+  import { currentTitle } from '#lib/components/PageTitle.svelte';
   import { organizationJsonLd, websiteJsonLd, SITE } from '#lib/seo.js';
   import type { LayoutData } from './$types';
 
@@ -70,6 +71,15 @@
     if (document.documentElement.lang !== locale) {
       document.documentElement.lang = locale;
     }
+  });
+
+  // Svelte sets document.title when a page's <title> mounts and never restores
+  // it, so after a client navigation away from a page that named itself, this
+  // puts the app-wide title back (#483). Effect only: a <title> here would
+  // compete with the page's on the server, where hooks.server.ts adds the
+  // app-wide one instead (see #lib/server/document-title.ts).
+  $effect(() => {
+    document.title = currentTitle();
   });
 
   // Purge the service-worker 'pages' cache + the offline IndexedDB queue when

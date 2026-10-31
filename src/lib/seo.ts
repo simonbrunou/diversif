@@ -4,6 +4,10 @@
 
 export const SITE = {
   name: 'Diversif',
+  // The document title of a page that names none of its own, in both locales.
+  // hooks.server.ts serves it and the root layout restores it on the client;
+  // a page names itself with PageTitle (#483).
+  title: 'Diversif · Diversification alimentaire bébé',
   // Canonical origin used for every public surface (sitemap, robots, JSON-LD,
   // OpenGraph/Twitter `og:url`). It must remain stable across every deploy
   // (prod + preview), since canonicals should always point at the prod URL —

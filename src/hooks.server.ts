@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/sveltekit';
 import { handleServerError, tagHandleChainError } from '#lib/sentry-policy.js';
 import type { Locale } from '#lib/paraglide/runtime.js';
 import { paraglideMiddleware } from '#lib/paraglide/server.js';
+import { withFallbackTitle } from '#lib/server/document-title.js';
 
 /**
  * Every server-side error gets a short id, shown on /+error.svelte; a reported
@@ -76,10 +77,13 @@ const appHandle = async (
   // first paint is correct without waiting for the inline theme-init script.
   // 'system' can't be resolved server-side (no prefers-color-scheme on the
   // request), so that case stays with the inline script.
+  //
+  // A page that names itself renders its own <title>; any other gets the
+  // app-wide one here (see #lib/server/document-title.ts).
   const darkTheme = event.cookies.get('theme') === 'dark';
   const response = await resolve(event, {
     transformPageChunk: ({ html }) => {
-      let out = html.replace('%paraglide.lang%', locale);
+      let out = withFallbackTitle(html.replace('%paraglide.lang%', locale));
       if (darkTheme) out = out.replace('<html ', '<html class="dark" ');
       return out;
     }
