@@ -13,8 +13,10 @@
   import RepasForm from '#lib/components/RepasForm.svelte';
   import { defaultTextureForAgeMonths, type TextureKey } from '#lib/utils/textures.js';
   import { formatDateInputValue } from '#lib/utils/dates.js';
+  import { formatParisDateTimeLocal } from '#lib/utils/paris-date.js';
   import { ageInMonths } from '#lib/utils/age.js';
   import { getTipsFor, pickRotatingTip } from '#lib/content/guidance.js';
+  import { browser } from '$app/env';
   import { page } from '$app/state';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import { normalize } from '#lib/utils/search.js';
@@ -27,7 +29,10 @@
     form
   }: { data: PageData; form: ActionData } = $props();
 
-  let givenAt = $state(formatDateInputValue());
+  // The server renders "now" on Paris clocks, the zone it reads a form posted
+  // without JavaScript in. The browser renders its own zone, the one
+  // submitRepas converts from, and hydration puts that value in the input.
+  let givenAt = $state(browser ? formatDateInputValue() : formatParisDateTimeLocal(new Date()));
   // The datetime-local input reports '' while one of its segments is cleared
   // mid-edit, and `new Date('')` is an Invalid Date that ageInMonths cannot
   // format. Age-based defaults pause until the date is complete again.

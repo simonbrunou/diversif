@@ -84,6 +84,11 @@ export default defineConfig({
     stderr: 'pipe',
     env: {
       NODE_ENV: 'production',
+      // Production runs in UTC (the image sets no TZ) and the dev host runs
+      // Paris time, so a server-side zone bug would pass locally and fail only
+      // in production. The no-JavaScript repas time test in edit.spec.ts
+      // relies on this (#485).
+      TZ: 'UTC',
       DATABASE_PATH: process.env.DATABASE_PATH ?? './e2e-test.db',
       // Marks this server as an end-to-end run so the signup throttle relaxes
       // its 20/hr cap — a single Playwright suite legitimately creates dozens

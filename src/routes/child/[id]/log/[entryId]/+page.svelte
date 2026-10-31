@@ -12,7 +12,9 @@
   import TexturePicker from '#lib/components/TexturePicker.svelte';
   import RepasForm from '#lib/components/RepasForm.svelte';
   import { formatDateInputValue } from '#lib/utils/dates.js';
+  import { formatParisDateTimeLocal } from '#lib/utils/paris-date.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
+  import { browser } from '$app/env';
   import type { TextureKey } from '#lib/utils/textures.js';
   import { moreSevere, type ReactionId, type ReactionsByEntry } from '#lib/utils/reaction-values.js';
   import type { ActionResult } from '$app/forms';
@@ -25,8 +27,14 @@
     form
   }: { data: PageData; form: ActionData } = $props();
 
+  // The server renders the stored time on Paris clocks, the zone it reads a
+  // form posted without JavaScript in. The browser renders its own zone, the
+  // one submitRepas converts from, and hydration puts that value in the input.
   // svelte-ignore state_referenced_locally
-  let givenAt = $state(formatDateInputValue(new Date(data.entry.givenAt)));
+  const storedGivenAt = new Date(data.entry.givenAt);
+  let givenAt = $state(
+    browser ? formatDateInputValue(storedGivenAt) : formatParisDateTimeLocal(storedGivenAt)
+  );
   // svelte-ignore state_referenced_locally
   let reaction = $state<ReactionId>(data.entry.reaction);
   // The stored value the form loaded, for the server's dirty-only reaction
