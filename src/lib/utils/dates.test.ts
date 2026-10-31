@@ -9,6 +9,7 @@ import {
   formatTime,
   toEpochMs
 } from './dates';
+import { pinHostZone } from '../../test/bun-test-utils';
 
 describe('isValidBirthDate', () => {
   it('accepts real ISO dates', () => {
@@ -142,6 +143,21 @@ describe('formatDateInputValue', () => {
 
   it('defaults to "now" when no argument is provided', () => {
     expect(formatDateInputValue()).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+  });
+
+  // The browser renders a repas form in its own zone, the one localInputToIso
+  // converts from, so a parent outside France keeps their local time. The
+  // server renders Paris time instead (date-input.ts, #485).
+  describe.each([
+    ['UTC', '2026-06-01T10:00'],
+    ['Europe/Paris', '2026-06-01T12:00'],
+    ['Asia/Tokyo', '2026-06-01T19:00']
+  ])('on a host in %s', (zone, value) => {
+    pinHostZone(zone);
+
+    it(`gives ${value} for 2026-06-01T10:00:00Z, read on the host's clock`, () => {
+      expect(formatDateInputValue(new Date('2026-06-01T10:00:00Z'))).toBe(value);
+    });
   });
 });
 

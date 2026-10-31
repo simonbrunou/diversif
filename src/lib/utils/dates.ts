@@ -46,16 +46,20 @@ export function formatRelative(date: Date | number, now: Date = new Date()): str
   return `${day} ${month} ${year} ${time}`;
 }
 
+/**
+ * YYYY-MM-DDTHH:mm for <input type="datetime-local">, in the host's zone: the
+ * browser's, the zone `localInputToIso` converts from. The server, whose zone
+ * is UTC in production, renders Paris time instead (`dateInputValue`, #485).
+ */
 export function formatDateInputValue(date: Date = new Date()): string {
-  // YYYY-MM-DDTHH:mm for <input type="datetime-local">
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${formatHHmm(date)}`;
 }
 
 // <input type="datetime-local"> produces TZ-naive strings ("2026-05-17T12:27").
-// Per ECMA-262, the server parses those in *its* local TZ — typically UTC in
-// containers — so a user's "12:27 CEST" round-trips as "12:27 UTC" and the
-// browser then re-renders it as "14:27 CEST" (+2h). Anchoring to ISO here on
-// the client closes that gap before the form leaves the browser.
+// The server reads those as Paris time (parseParisDateTimeLocal), which is
+// right for a form posted without JavaScript. With JavaScript, anchoring to
+// ISO here reads the value in the browser's zone instead, so a parent outside
+// France keeps the local time they typed.
 export function localInputToIso(value: string): string {
   if (!value) return value;
   if (/[Zz]|[+-]\d{2}:?\d{2}$/.test(value)) return value;

@@ -3,7 +3,24 @@
 // unstubAllGlobals, waitFor, advanceTimersByTimeAsync) onto bun:test
 // primitives.
 
-import { setSystemTime } from 'bun:test';
+import { afterEach, beforeEach, setSystemTime } from 'bun:test';
+
+// Runs every test of the calling describe block with the host in `zone`, then
+// restores the zone the process had (docs/agents/testing.md, "Time-zone
+// logic"). Bun reads process.env.TZ again at run time.
+export function pinHostZone(zone: string): void {
+  let hostZone: string | undefined;
+
+  beforeEach(() => {
+    hostZone = process.env.TZ;
+    process.env.TZ = zone;
+  });
+
+  afterEach(() => {
+    if (hostZone === undefined) delete process.env.TZ;
+    else process.env.TZ = hostZone;
+  });
+}
 
 // stubGlobal / unstubAllGlobals: vitest tracks an internal stack of
 // originals and restores them on call. We do the same.

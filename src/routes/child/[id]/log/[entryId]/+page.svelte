@@ -11,7 +11,7 @@
   import ReactionPicker from '#lib/components/ReactionPicker.svelte';
   import TexturePicker from '#lib/components/TexturePicker.svelte';
   import RepasForm from '#lib/components/RepasForm.svelte';
-  import { formatDateInputValue } from '#lib/utils/dates.js';
+  import { dateInputValue } from '#lib/utils/date-input.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import type { TextureKey } from '#lib/utils/textures.js';
   import { moreSevere, type ReactionId, type ReactionsByEntry } from '#lib/utils/reaction-values.js';
@@ -26,7 +26,7 @@
   }: { data: PageData; form: ActionData } = $props();
 
   // svelte-ignore state_referenced_locally
-  let givenAt = $state(formatDateInputValue(new Date(data.entry.givenAt)));
+  let givenAt = $state(dateInputValue(new Date(data.entry.givenAt)));
   // svelte-ignore state_referenced_locally
   let reaction = $state<ReactionId>(data.entry.reaction);
   // The stored value the form loaded, for the server's dirty-only reaction

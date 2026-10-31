@@ -143,3 +143,52 @@ export function latestParisWallClock(hh: number, mm: number, nowMs: number): Dat
   const prev = previousCivilDate(today.year, today.month, today.day);
   return new Date(parisWallClockToUtcMs(prev.year, prev.month, prev.day, hh, mm));
 }
+
+/** What Paris clocks read at `instant`, as an `<input type="datetime-local">`
+ * value (`YYYY-MM-DDTHH:mm`), independent of server/browser TZ. */
+export function formatParisDateTimeLocal(instant: Date): string {
+  return new Date(parisWallClockAsUtcMs(instant.getTime())).toISOString().slice(0, 16);
+}
+
+const DAY_MS = 24 * 3_600_000;
+
+// What an `<input type="datetime-local">` posts: no zone, seconds and
+// milliseconds optional.
+const DATETIME_LOCAL = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/;
+
+/**
+ * Reads an `<input type="datetime-local">` value, which carries no zone, as
+ * what Paris clocks read, independent of server/browser TZ. A form posted
+ * without JavaScript sends that value as typed. The JavaScript path sends an
+ * ISO instant instead (`localInputToIso`): a value with `Z` or an offset, or
+ * any other shape, goes to `new Date` unchanged. A date or time that does not
+ * exist on the calendar (`2026-02-30T10:00`) gives an Invalid Date.
+ *
+ * On a daylight-saving change day this resolves a time the way a browser in
+ * Paris parses it (ECMA-262 applies the offset in effect just before the
+ * change), so both submit paths store the same instant. A skipped time
+ * (02:30 on the last Sunday of March) reads as 03:30 CEST, and a repeated one
+ * (02:30 on the last Sunday of October) as its first, CEST occurrence,
+ * where `parisWallClockToUtcMs` above picks the CET one.
+ */
+export function parseParisDateTimeLocal(value: string): Date {
+  const match = DATETIME_LOCAL.exec(value);
+  if (!match) return new Date(value);
+  const [, year, month, day, hh, mm, ss = '00', fraction = ''] = match;
+  const wallMs = Date.UTC(+year, +month - 1, +day, +hh, +mm, +ss);
+  // Date.UTC rolls an impossible field over (February 30 becomes March 2).
+  const wall = `${year}-${month}-${day}T${hh}:${mm}:${ss}`;
+  if (new Date(wallMs).toISOString().slice(0, 19) !== wall) return new Date(NaN);
+
+  // The offsets a day either side are the zone's offsets before and after
+  // any change that night. Each one that reads back as the typed wall clock
+  // is a real occurrence: two on the repeated hour, none on the skipped one.
+  const offsetBefore = parisOffsetMinutesAt(wallMs - DAY_MS);
+  const offsetAfter = parisOffsetMinutesAt(wallMs + DAY_MS);
+  const occurrences = [offsetBefore, offsetAfter]
+    .map((offset) => wallMs - offset * 60_000)
+    .filter((ms) => parisWallClockAsUtcMs(ms) === wallMs);
+  const instantMs =
+    occurrences.length > 0 ? Math.min(...occurrences) : wallMs - offsetBefore * 60_000;
+  return new Date(instantMs + Number(fraction.padEnd(3, '0')));
+}

@@ -18,7 +18,14 @@ async function childOfEightMonths(page: Page): Promise<string> {
   return childId;
 }
 
-async function logRepas(page: Page, childId: string, aliments: string[]): Promise<void> {
+// `givenAt` is a datetime-local value in the browser's zone; without it the
+// repas keeps the form's "now".
+async function logRepas(
+  page: Page,
+  childId: string,
+  aliments: string[],
+  givenAt?: string
+): Promise<void> {
   await page.goto(`/child/${childId}/log`);
   await awaitHydration(page);
   for (const name of aliments) {
@@ -29,6 +36,7 @@ async function logRepas(page: Page, childId: string, aliments: string[]): Promis
       .click();
   }
   await expect(page.locator('input[type="hidden"][name="foodId"]')).toHaveCount(aliments.length);
+  if (givenAt) await page.getByLabel('Quand ?').fill(givenAt);
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   // The dashboard strips the milestone query once it has celebrated.
   await expect(page).toHaveURL(new RegExp(`/child/${childId}(\\?.*)?$`));
@@ -212,15 +220,72 @@ for (const javaScript of [true, false]) {
   });
 }
 
-// A datetime-local value `days` back at 10:00, in the test runner's local
-// time. The browser shares that zone; without JavaScript the server parses the
-// value in its own. A few days back falls between the birth day and now in
-// any zone.
-function daysAgoInput(days: number): string {
+// A datetime-local value `days` back at `time`, on the test runner's local
+// date. With JavaScript the browser reads it in its own zone; without it the
+// server reads it as Paris time. A few days back falls between the birth day
+// and now in any zone.
+function daysAgoInput(days: number, time = '10:00'): string {
   const d = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T10:00`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${time}`;
 }
+
+// What Paris clocks read at `ms`, as a datetime-local value.
+function parisInput(ms: number): string {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Paris',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(ms);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value;
+  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`;
+}
+
+// #485: without JavaScript the server renders the repas time and reads the one
+// the parent types. Both are Paris time, while the server's own zone is UTC
+// (playwright.config.ts), as in production. The repas is logged with
+// JavaScript from a browser in Paris, so it stores the Paris time typed.
+test.describe('a repas time without JavaScript', () => {
+  test.use({ timezoneId: 'Europe/Paris' });
+
+  test('is shown and saved in Paris time', async ({ browser, page }) => {
+    // 2.0 s locally. A signup, a logged repas, then three pages without
+    // JavaScript: as much work as the refused-save tests below, which took up
+    // to 29 s on a CI runner shared with other jobs.
+    test.slow();
+    const loggedAt = daysAgoInput(3, '12:30');
+    const typed = daysAgoInput(3, '09:15');
+    const childId = await childOfEightMonths(page);
+    await logRepas(page, childId, ['Poire'], loggedAt);
+    const entryId = await feedEntryId(page, childId, 'feed-row-detail');
+    const noJs = await openWithoutJavaScript(browser, page);
+    try {
+      await noJs.goto(`/child/${childId}/log/${entryId}?from=detail`);
+      const when = noJs.getByLabel('Quand ?');
+      await expect(when).toHaveValue(loggedAt);
+      await when.fill(typed);
+      await noJs.getByRole('button', { name: 'Enregistrer', exact: true }).click();
+      await expect(noJs).toHaveURL(new RegExp(`/child/${childId}/foods/${entryId}$`));
+      await expect(noJs.getByText(/ · 09:15 · /)).toBeVisible();
+
+      // The log form starts from "now" on Paris clocks: one of the minutes
+      // the page load spanned.
+      const start = Date.now();
+      await noJs.goto(`/child/${childId}/log`);
+      const minutes: string[] = [];
+      for (let ms = start - (start % 60_000); ms <= Date.now(); ms += 60_000) {
+        minutes.push(parisInput(ms));
+      }
+      expect(minutes).toContain(await noJs.getByLabel('Quand ?').inputValue());
+    } finally {
+      await noJs.context().close();
+    }
+  });
+});
 
 // Where a save goes back to, for each `from` the editor can be opened with.
 const ORIGINS = [

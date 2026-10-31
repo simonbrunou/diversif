@@ -1,3 +1,4 @@
+import { parseParisDateTimeLocal } from '#lib/utils/paris-date.js';
 import { REACTION_VALUES, type ReactionId } from '#lib/utils/reaction-values.js';
 import { isTextureKey, type TextureKey } from '#lib/utils/textures.js';
 import { refuse, type RepasErrorKey } from './core';
@@ -63,10 +64,13 @@ function positiveInt(raw: string, errorKey: RepasErrorKey): number {
   return Number.isInteger(n) && n > 0 ? n : refuse(errorKey);
 }
 
+// A form posted without JavaScript sends the datetime-local value as typed:
+// Paris time, whatever the server's zone. The JavaScript path sends an ISO
+// instant (#485).
 function givenAtField(form: FormData): Date {
   const raw = text(form, 'givenAt');
   if (!raw) refuse('errorsLogDateRequired');
-  const givenAt = new Date(raw);
+  const givenAt = parseParisDateTimeLocal(raw);
   if (Number.isNaN(givenAt.getTime())) refuse('errorsLogDateInvalid');
   return givenAt;
 }

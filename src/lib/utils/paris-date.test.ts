@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { PARIS_TIME_ZONE, parisDateParts, latestParisWallClock } from './paris-date';
+import { pinHostZone } from '../../test/bun-test-utils';
+import {
+  PARIS_TIME_ZONE,
+  formatParisDateTimeLocal,
+  parisDateParts,
+  parseParisDateTimeLocal,
+  latestParisWallClock
+} from './paris-date';
 
 describe('PARIS_TIME_ZONE', () => {
   it('is the Europe/Paris IANA identifier', () => {
@@ -106,5 +113,80 @@ describe('latestParisWallClock', () => {
     // back a whole day to yesterday's 02:30.
     const now = Date.parse('2026-10-25T00:45:00Z');
     expect(latestParisWallClock(2, 30, now).toISOString()).toBe('2026-10-25T00:30:00.000Z');
+  });
+});
+
+// A repas form's datetime-local value (#485): the server renders and reads it
+// in UTC in production, and a browser anywhere.
+describe.each(['UTC', 'Europe/Paris', 'America/Montreal', 'Asia/Tokyo'])(
+  'datetime-local values in Paris time, on a host in %s',
+  (zone) => {
+    pinHostZone(zone);
+
+    describe('formatParisDateTimeLocal', () => {
+      it.each([
+        ['a summer instant (CEST)', '2026-06-01T10:00:00Z', '2026-06-01T12:00'],
+        ['a winter instant (CET)', '2026-01-15T10:00:00Z', '2026-01-15T11:00'],
+        ['an instant past Paris midnight', '2026-06-01T22:30:00Z', '2026-06-02T00:30']
+      ])('gives what Paris clocks read at %s', (_, iso, value) => {
+        expect(formatParisDateTimeLocal(new Date(iso))).toBe(value);
+      });
+    });
+
+    describe('parseParisDateTimeLocal', () => {
+      it.each([
+        ['a summer time (CEST)', '2026-06-01T12:30', '2026-06-01T10:30:00.000Z'],
+        ['a winter time (CET)', '2026-01-15T12:30', '2026-01-15T11:30:00.000Z'],
+        ['a time with seconds', '2026-06-01T12:30:45', '2026-06-01T10:30:45.000Z'],
+        ['a time with milliseconds', '2026-06-01T12:30:45.5', '2026-06-01T10:30:45.500Z'],
+        ['a time past Paris midnight', '2026-06-02T00:10', '2026-06-01T22:10:00.000Z'],
+        // 02:00 to 02:59 does not exist: 02:30 reads as 03:30 CEST.
+        ['the skipped hour', '2026-03-29T02:30', '2026-03-29T01:30:00.000Z'],
+        ['the minute after the jump', '2026-03-29T03:00', '2026-03-29T01:00:00.000Z'],
+        // 02:00 to 02:59 happens twice: 02:30 reads as the first, CEST one.
+        ['the repeated hour', '2026-10-25T02:30', '2026-10-25T00:30:00.000Z'],
+        ['the minute after the repeat', '2026-10-25T03:00', '2026-10-25T02:00:00.000Z']
+      ])('reads %s as Paris time', (_, value, iso) => {
+        expect(parseParisDateTimeLocal(value).toISOString()).toBe(iso);
+      });
+
+      it.each(['2026-06-01T10:30:00Z', '2026-06-01T10:30:00.000Z', '2026-06-01T12:30:00+02:00'])(
+        'reads %s, which carries a zone, as that instant',
+        (value) => {
+          expect(parseParisDateTimeLocal(value).toISOString()).toBe('2026-06-01T10:30:00.000Z');
+        }
+      );
+
+      it.each(['2026-02-30T10:00', '2026-13-01T10:00', '2026-06-01T24:00', 'not-a-date', ''])(
+        'gives an Invalid Date for %p',
+        (value) => {
+          expect(Number.isNaN(parseParisDateTimeLocal(value).getTime())).toBe(true);
+        }
+      );
+
+      it('reads back what formatParisDateTimeLocal renders', () => {
+        const stored = new Date('2026-06-01T10:30:00Z');
+        expect(parseParisDateTimeLocal(formatParisDateTimeLocal(stored))).toEqual(stored);
+      });
+    });
+  }
+);
+
+// With JavaScript, a browser in Paris parses the value with `new Date`
+// (localInputToIso) and posts that instant. Without JavaScript the server
+// must store the same one, including on both change nights.
+describe('parseParisDateTimeLocal against a browser in Paris', () => {
+  pinHostZone('Europe/Paris');
+
+  it.each(['2026-03-29', '2026-10-25', '2026-06-01'])('agrees every minute of %s', (day) => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const disagreements: string[] = [];
+    for (let minute = 0; minute < 24 * 60; minute++) {
+      const value = `${day}T${pad(Math.floor(minute / 60))}:${pad(minute % 60)}`;
+      if (parseParisDateTimeLocal(value).getTime() !== new Date(value).getTime()) {
+        disagreements.push(value);
+      }
+    }
+    expect(disagreements).toEqual([]);
   });
 });
