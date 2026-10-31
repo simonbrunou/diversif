@@ -26,6 +26,8 @@ import path from 'node:path';
 const scriptPath = path.resolve(import.meta.dir, 'smoke-prod.sh');
 // The real sleep, for an upload-pack that must stall under the fake one.
 const sleepBin = Bun.which('sleep');
+// The real curl, which the logging one runs by its path.
+const curlBin = Bun.which('curl');
 
 interface Answer {
   status: number;
@@ -121,12 +123,22 @@ const version = (sha: string): Answer => ({
 
 let binDir: string;
 let sleepLog: string;
+let curlDir: string;
+let curlLog: string;
 
 beforeAll(() => {
   binDir = mkdtempSync(path.join(tmpdir(), 'smoke-prod-test-'));
   sleepLog = path.join(binDir, 'sleeps');
   writeFileSync(path.join(binDir, 'sleep'), '#!/bin/sh\necho "$*" >>"$SLEEP_LOG"\n');
   chmodSync(path.join(binDir, 'sleep'), 0o755);
+  curlDir = path.join(binDir, 'logged-curl');
+  curlLog = path.join(binDir, 'curls');
+  mkdirSync(curlDir);
+  writeFileSync(
+    path.join(curlDir, 'curl'),
+    `#!/bin/sh\necho "$*" >>"$CURL_LOG"\nexec ${curlBin} "$@"\n`
+  );
+  chmodSync(path.join(curlDir, 'curl'), 0o755);
 });
 
 afterAll(() => {
@@ -141,6 +153,7 @@ beforeEach(() => {
   replies = {};
   hits.clear();
   writeFileSync(sleepLog, '');
+  writeFileSync(curlLog, '');
 });
 
 // A tracked copy of the script in a new git repo. Given an upload-pack
@@ -200,8 +213,9 @@ function running(pid: number): boolean {
 // Async spawn: the server answers on this process's event loop, which
 // Bun.spawnSync would block until the script gave up. realSleep leaves the
 // fake `sleep` off PATH, so the wait's sleeps take real time. termIgnored
-// starts the script with TERM ignored, which its children inherit.
-// interruptOn sends the script alone SIGINT, as a Ctrl-C does once job control
+// starts the script with TERM ignored, which its children inherit. logCurl
+// puts a curl first on PATH that logs each call's arguments, then runs the
+// real one. interruptOn sends the script alone SIGINT, as a Ctrl-C does once job control
 // moved its fetch to a group of its own, when that file has content.
 async function smoke(
   baseUrl = base,
@@ -212,6 +226,7 @@ async function smoke(
     checkTime = '',
     realSleep = false,
     termIgnored = false,
+    logCurl = false,
     interruptOn = ''
   } = {}
 ) {
@@ -222,11 +237,12 @@ async function smoke(
       : ['bash', script, ...args],
     env: {
       ...process.env,
-      PATH: realSleep ? process.env.PATH : `${binDir}:${process.env.PATH}`,
+      PATH: `${logCurl ? `${curlDir}:` : ''}${realSleep ? '' : `${binDir}:`}${process.env.PATH}`,
       SMOKE_BASE_URL: baseUrl,
       ...(wait ? { SMOKE_WAIT: wait } : {}),
       ...(checkTime ? { SMOKE_CHECK_TIME: checkTime } : {}),
       SLEEP_LOG: sleepLog,
+      CURL_LOG: curlLog,
       // A proxy from the shell would answer for the local server.
       no_proxy: '*',
       NO_PROXY: '*'
@@ -253,7 +269,12 @@ async function smoke(
     lines,
     last: lines.at(-1),
     retries: lines.filter((line) => line.startsWith('RETRY')),
-    sleeps: readFileSync(sleepLog, 'utf8').split('\n').filter(Boolean)
+    sleeps: readFileSync(sleepLog, 'utf8').split('\n').filter(Boolean),
+    // Each call's arguments, split on spaces: the URL comes last.
+    curls: readFileSync(curlLog, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((call) => call.split(' '))
   };
 }
 
@@ -373,7 +394,9 @@ describe('scripts/smoke-prod.sh', () => {
   // curl's exit, the last FAIL lines and the exit trap come after. That
   // overshoot is about 20 ms locally and reached 887 ms on a loaded CI runner
   // (run 346), hence the slack. Before the deadline, each unanswered request
-  // below took curl's full 20 s.
+  // below took curl's full 20 s. The test on a host that never answers reads
+  // its deadline from curl's --max-time instead: a stall overshot it by 2.7 s
+  // (run 354, #575).
   const slack = 2000;
   const budgetFails = (lines: string[]) =>
     lines.filter((line) => line.endsWith(' not run: the time budget ran out'));
@@ -577,9 +600,25 @@ describe('scripts/smoke-prod.sh', () => {
     expect(running(sleeper)).toBe(false);
   }, 20_000);
 
+  // The only request, for /, must end by the run deadline, 5 s after the
+  // script first reads its clock: the --max-time the script hands curl proves
+  // it. The wall clock cannot, as bash's start-up and the work after curl
+  // gives up fall outside the deadline, and a loaded runner stalls them for
+  // seconds. The 5 s leave the request time to start after such a stall, not
+  // fail as not run. The wall-clock bound only tells a run that ends near the
+  // deadline from one that waits curl's own 20 s.
   it('without a SHA, ends by the deadline on a host that never answers', async () => {
-    const run = await smoke(silentBase, { wait: '1', checkTime: '1' });
-    expect(run.ms).toBeLessThan(2000 + slack);
+    const [wait, checkTime] = [1, 4];
+    const run = await smoke(silentBase, {
+      wait: `${wait}`,
+      checkTime: `${checkTime}`,
+      logCurl: true
+    });
+    expect(run.curls.map((args) => args.at(-1))).toEqual([`${silentBase}/`]);
+    const maxTime = Number(run.curls[0][run.curls[0].indexOf('--max-time') + 1]);
+    expect(maxTime).toBeGreaterThan(0);
+    expect(maxTime).toBeLessThanOrEqual(wait + checkTime);
+    expect(run.ms).toBeLessThan(15_000);
     expect(run.retries).toEqual([]);
     expect(run.lines.find((line) => line.startsWith('FAIL / '))).toContain('curl: (28)');
     expect(budgetFails(run.lines)).toEqual(
@@ -589,5 +628,5 @@ describe('scripts/smoke-prod.sh', () => {
     );
     expect(run.last).toBe(`smoke-prod: 11 of 11 checks failed on ${silentBase}`);
     expect(run.code).toBe(1);
-  }, 10_000);
+  }, 30_000);
 });
