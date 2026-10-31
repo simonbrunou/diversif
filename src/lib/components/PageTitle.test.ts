@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test';
+import path from 'node:path';
 import { render, cleanup } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { SITE } from '#lib/seo.js';
@@ -37,5 +38,20 @@ describe('PageTitle', () => {
     // The change replaced the claim instead of stacking a second one.
     unmount();
     expect(currentTitle()).toBe(APP_TITLE);
+  });
+
+  it('is the only component that renders a <title>', async () => {
+    // A second source would bring #483 back: the server keeps one <title> by
+    // tree position, which a component bind: breaks (#596), and a title that
+    // no PageTitle claims stays on the tab after a client navigation.
+    const src = path.resolve(import.meta.dir, '../..');
+    const others: string[] = [];
+    for await (const file of new Bun.Glob('**/*.svelte').scan(src)) {
+      if (file === 'lib/components/PageTitle.svelte') continue;
+      const code = (await Bun.file(path.join(src, file)).text()).replace(/<!--[\s\S]*?-->/g, '');
+      const heads = code.match(/<svelte:head>[\s\S]*?<\/svelte:head>/g) ?? [];
+      if (heads.some((head) => /<title[\s>]/.test(head))) others.push(file);
+    }
+    expect(others).toEqual([]);
   });
 });
