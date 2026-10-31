@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'bun:test';
 import path from 'node:path';
 import { render, cleanup } from '@testing-library/svelte';
 import { tick } from 'svelte';
+import { parse } from 'svelte/compiler';
 import { SITE } from '#lib/seo.js';
 import PageTitle, { currentTitle } from './PageTitle.svelte';
 
@@ -44,16 +45,20 @@ describe('PageTitle', () => {
     // A second source would bring #483 back: the server keeps one <title> by
     // tree position, which a component bind: breaks (#596), and a title that
     // no PageTitle claims stays on the tab after a client navigation.
+    // Svelte's parser marks a <title> as TitleElement only where it names the
+    // document: directly in <svelte:head>, not in an SVG and not in attribute
+    // text. Markup that a {@html} tag writes into the head is not seen.
+    const hasTitleElement = (node: unknown): boolean =>
+      typeof node === 'object' &&
+      node !== null &&
+      ((node as { type?: unknown }).type === 'TitleElement' ||
+        Object.values(node).some(hasTitleElement));
     const src = path.resolve(import.meta.dir, '../..');
     const others: string[] = [];
     for await (const file of new Bun.Glob('**/*.svelte').scan(src)) {
       if (file === 'lib/components/PageTitle.svelte') continue;
-      const code = (await Bun.file(path.join(src, file)).text()).replace(/<!--[\s\S]*?-->/g, '');
-      const heads = code.match(/<svelte:head\b[^>]*>[\s\S]*?<\/svelte:head>/g) ?? [];
-      // An SVG's <title> labels the drawing, not the document.
-      const documentTitle = (head: string) =>
-        /<title[\s>]/.test(head.replace(/<svg\b[\s\S]*?<\/svg>/g, ''));
-      if (heads.some(documentTitle)) others.push(file);
+      const ast = parse(await Bun.file(path.join(src, file)).text(), { modern: true });
+      if (hasTitleElement(ast.fragment)) others.push(file);
     }
     expect(others).toEqual([]);
   });
