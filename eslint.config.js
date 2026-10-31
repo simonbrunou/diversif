@@ -4,6 +4,7 @@ import svelte from 'eslint-plugin-svelte';
 import drizzle from 'eslint-plugin-drizzle';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
+import e2e from './eslint-rules/e2e.js';
 import lucide from './eslint-rules/lucide.js';
 
 export default ts.config(
@@ -94,6 +95,14 @@ export default ts.config(
         }
       ]
     }
+  },
+  {
+    // Playwright's getByText matches a substring by default (#509, #546).
+    // The helpers file counts too: a helper that wraps getByText must match
+    // exactly unless it says why not.
+    files: ['e2e/**/*.ts'],
+    plugins: { e2e },
+    rules: { 'e2e/exact-get-by-text': 'error' }
   },
   {
     files: ['src/lib/server/**/*.ts'],

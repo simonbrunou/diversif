@@ -38,6 +38,7 @@ test('reloads once when the root layout chunk fails, then starts', async ({ page
 
   await awaitHydration(page);
   expect(loads.count).toBe(2);
+  // eslint-disable-next-line e2e/exact-get-by-text -- an absence check: BANNER_TEXT starts the banner's longer message
   await expect(page.getByText(BANNER_TEXT)).toHaveCount(0);
 });
 

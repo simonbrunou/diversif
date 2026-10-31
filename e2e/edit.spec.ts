@@ -78,7 +78,9 @@ test('edits a standalone repas and lands back on its detail page', async ({ page
   await page.getByLabel('Quand ?').fill('2099-01-01T10:00');
   await page.getByLabel('Note').fill('jamais enregistré');
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
-  await expect(page.getByText('La date du repas ne peut pas être dans le futur.')).toBeVisible();
+  await expect(
+    page.getByText('La date du repas ne peut pas être dans le futur.', { exact: true })
+  ).toBeVisible();
   await expect(page).toHaveURL(new RegExp(`/child/${childId}/log/${entryId}$`));
   await page.reload();
   await expect(page.getByLabel('Note')).toHaveValue('A grimacé');
@@ -268,7 +270,7 @@ for (const javaScript of [true, false]) {
             await editor.getByLabel('Quand ?').fill('2099-01-01T10:00');
             await save.click();
             await expect(
-              editor.getByText('La date du repas ne peut pas être dans le futur.')
+              editor.getByText('La date du repas ne peut pas être dans le futur.', { exact: true })
             ).toBeVisible();
             await expect(editor.locator('form[action^="?/update"] input[name="from"]')).toHaveValue(
               from

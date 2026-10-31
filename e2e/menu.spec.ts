@@ -15,7 +15,7 @@ test.describe('menu du jour', () => {
 
     // The quantities card and at least one meal slot render from the seeded
     // catalog even with no food logged yet (full-variety discover slots).
-    await expect(page.getByText('Combien lui donner ?')).toBeVisible();
+    await expect(page.getByText('Combien lui donner ?', { exact: true })).toBeVisible();
     await expect(page.getByText('Midi', { exact: true })).toBeVisible();
 
     // Clicking a suggested food routes into the log flow for that food,
@@ -31,7 +31,9 @@ test.describe('menu du jour', () => {
     await page.goto(`/child/${childId}/menu`);
 
     await expect(
-      page.getByText('Avant 4 mois révolus, le lait maternel ou infantile est le seul aliment.')
+      page.getByText('Avant 4 mois révolus, le lait maternel ou infantile est le seul aliment.', {
+        exact: true
+      })
     ).toBeVisible();
   });
 });
