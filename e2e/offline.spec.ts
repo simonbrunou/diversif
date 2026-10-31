@@ -49,7 +49,7 @@ test('queues a log submission while offline', async ({ page }) => {
   await page.getByRole('button', { name: /^enregistrer$/i }).click();
 
   await expect(
-    page.getByText('Enregistré hors-ligne, sera synchronisé.', { exact: false })
+    page.getByText('Enregistré hors-ligne, sera synchronisé.', { exact: true })
   ).toBeVisible({ timeout: 8000 });
 
   // After the queued toast, the page navigates back to the child dashboard.
@@ -92,7 +92,7 @@ test('a transport failure while online queues the entry instead of wiping the fo
 
   // Must degrade to the offline-queue toast, never the error boundary.
   await expect(
-    page.getByText('Enregistré hors-ligne, sera synchronisé.', { exact: false })
+    page.getByText('Enregistré hors-ligne, sera synchronisé.', { exact: true })
   ).toBeVisible({ timeout: 8000 });
   await expect(page.getByText(/erreur/i)).toHaveCount(0);
 
@@ -145,7 +145,7 @@ test('a queued first repas is celebrated when it replays on reconnect', async ({
   // counts once instead of retrying: toHaveCount(0) would wait out the 4 s
   // toast and pass after a "Synchronisé." toast has come and gone.
   await expect.poll(() => queuedRows(page), { timeout: 8000 }).toBe(0);
-  await expect(page.getByText('Premier repas noté.')).toBeVisible();
+  await expect(page.getByText('Premier repas noté.', { exact: true })).toBeVisible();
   expect(await page.getByText('Synchronisé.', { exact: true }).count()).toBe(0);
 });
 
@@ -216,11 +216,14 @@ test('two open tabs replay a queued repas once and celebrate it once', async ({
   // the toast in every tab that replayed, then count once: a retrying
   // toHaveCount would let a duplicate expire after 4 s and pass.
   await expect.poll(() => queuedRows(page), { timeout: 8000 }).toBe(0);
-  for (const p of replayers) await expect(p.getByText('Premier repas noté.')).toBeVisible();
-  const toasts = async (text: string, options?: { exact: boolean }) =>
-    (await page.getByText(text, options).count()) + (await other.getByText(text, options).count());
+  for (const p of replayers) {
+    await expect(p.getByText('Premier repas noté.', { exact: true })).toBeVisible();
+  }
+  const toasts = async (text: string) =>
+    (await page.getByText(text, { exact: true }).count()) +
+    (await other.getByText(text, { exact: true }).count());
   expect(await toasts('Premier repas noté.')).toBe(1);
-  expect(await toasts('Synchronisé.', { exact: true })).toBe(0);
+  expect(await toasts('Synchronisé.')).toBe(0);
   expect(replayers.size).toBe(1);
 });
 

@@ -37,7 +37,7 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
       page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link').first(),
       page.getByRole('button', { name: /^Abricot/ }),
       page.getByRole('button', { name: 'Ajouter un aliment hors catalogue' }),
-      page.getByText('Comment choisir ?'),
+      page.getByText('Comment choisir ?', { exact: true }),
       page.getByRole('button', { name: 'Effacer la texture' })
     ];
     for (const target of targets) {
@@ -110,6 +110,7 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
 
     // Server redirects back to /child/<id>; recent feed surfaces the new entry.
     await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
+    // eslint-disable-next-line e2e/exact-get-by-text -- the row reads « Poire · Écrasée », the texture the form preselects at 7 months
     await expect(page.getByText('Poire').first()).toBeVisible();
   });
 
