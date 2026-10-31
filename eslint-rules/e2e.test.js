@@ -30,6 +30,13 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       "page.getByText('a', { exact: true as const });",
       'page.getByText(/a/ as RegExp);',
       "page.getByText!('a', { exact: true });",
+      // A spread of an array literal puts its values where the source shows.
+      "page.getByText(...['a'], { exact: true });",
+      "page.getByText(...['a', { exact: true }]);",
+      "page.getByText(...[...['a']], { exact: true });",
+      'page.getByText(...[/a/]);',
+      "page.getByText('a', { exact: true }, ...rest);",
+      'page.getByText(/a/, ...rest);',
       "page.getByRole('button', { name: 'a' });",
       // Not Playwright's method, or a method name only run time knows.
       "getByText('a');",
@@ -64,6 +71,10 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
         errors: substring(6)
       },
       { code: "page.getByText('a', ...rest);", errors: substring(6) },
+      { code: "page.getByText(...['a'], ...rest);", errors: substring(6) },
+      { code: 'page.getByText(...[...args], { exact: true });', errors: substring(6) },
+      { code: "page.getByText(...[...args, 'a'], { exact: true });", errors: substring(6) },
+      { code: "page.getByText(...[, 'a'], { exact: true });", errors: substring(6) },
       { code: "page['getByText']('a');", errors: substring(6) },
       { code: "page[`getByText`]('a');", errors: substring(6) },
       { code: "page?.getByText('a');", errors: substring(7) },
