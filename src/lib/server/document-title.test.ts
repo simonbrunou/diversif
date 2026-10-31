@@ -20,6 +20,12 @@ describe('withFallbackTitle', () => {
     expect(withFallbackTitle(html)).toBe(html);
   });
 
+  it('does not count a comment in the head that names the <title> element', () => {
+    expect(withFallbackTitle('<head><!-- no <title> here --></head><body>x</body>')).toBe(
+      `<head><!-- no <title> here -->${APP_TITLE}</head><body>x</body>`
+    );
+  });
+
   it('does not count a <title> in the body', () => {
     expect(withFallbackTitle('<head></head><body><svg><title>Logo</title></svg></body>')).toBe(
       `<head>${APP_TITLE}</head><body><svg><title>Logo</title></svg></body>`

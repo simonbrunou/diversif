@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test';
 import { testDb, resetTestDb } from './test/db';
 import * as m from '#lib/paraglide/messages.js';
+import { SITE } from '#lib/seo.js';
 import { copyCookies, makeRouteEvent } from './test/route';
 import { users, memberships, children } from '#lib/server/db/schema.js';
 
@@ -265,9 +266,7 @@ describe('handle', () => {
         new Response(opts.transformPageChunk({ html: '<head></head><body>x</body>', done: true }))
     );
     const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
-    expect(await response.text()).toBe(
-      '<head><title>Diversif · Diversification alimentaire bébé</title></head><body>x</body>'
-    );
+    expect(await response.text()).toBe(`<head><title>${SITE.title}</title></head><body>x</body>`);
   });
 
   it('adds class="dark" to <html> when the theme cookie is dark', async () => {

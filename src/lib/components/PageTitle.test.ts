@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, cleanup } from '@testing-library/svelte';
 import { tick } from 'svelte';
+import { SITE } from '#lib/seo.js';
 import PageTitle, { currentTitle } from './PageTitle.svelte';
 
-const APP_TITLE = 'Diversif · Diversification alimentaire bébé';
+const APP_TITLE = SITE.title;
 
 afterEach(() => cleanup());
 

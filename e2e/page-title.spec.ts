@@ -79,7 +79,9 @@ test.describe('document title with JavaScript', () => {
     // step below stayed a client navigation.
     await page.evaluate(() => document.documentElement.setAttribute('data-e2e-same-page', ''));
 
-    // A refused login re-renders the form on the same route.
+    // The first two steps pass on main too: they guard against a fix that
+    // resets the title on every navigation. A refused login re-renders the
+    // form on the same route.
     await page.getByLabel('Adresse e-mail').fill('nobody-title@example.com');
     await page.getByLabel('Mot de passe', { exact: true }).fill('wrong-pass');
     await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
@@ -99,13 +101,21 @@ test.describe('document title with JavaScript', () => {
     await expect(page).toHaveURL(/\/guide$/);
     await expect(page).toHaveTitle(GUIDE_TITLE);
 
+    await followLink(page, '/login');
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveTitle(LOGIN_TITLE);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/guide$/);
+    await expect(page).toHaveTitle(GUIDE_TITLE);
+
     await page.goBack();
     await expect(page.getByRole('heading', { name: 'Invitation', exact: true })).toBeVisible();
     await expect(page).toHaveTitle(APP_TITLE);
 
-    await page.goBack();
-    await expect(page).toHaveURL(/\/login\?e2e=title$/);
-    await expect(page).toHaveTitle(LOGIN_TITLE);
+    await page.goForward();
+    await expect(page).toHaveURL(/\/guide$/);
+    await expect(page).toHaveTitle(GUIDE_TITLE);
 
     await expect(page.locator('html[data-e2e-same-page]')).toHaveCount(1);
   });
