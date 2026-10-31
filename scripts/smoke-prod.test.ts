@@ -401,15 +401,37 @@ describe('scripts/smoke-prod.sh', () => {
   const budgetFails = (lines: string[]) =>
     lines.filter((line) => line.endsWith(' not run: the time budget ran out'));
 
-  it('with a SHA that goes live late in the wait, fails the checks left past the deadline', async () => {
+  // After a poll that reads an older commit, the wait sleeps until 1 s before
+  // SMOKE_WAIT ends, so that its last poll still gets that 1 s (#541). The
+  // fake sleep logs the pause and returns at once, so the second poll needs no
+  // real time. The pause is SMOKE_WAIT less 1 s less the setup before it,
+  // which gets 6 s here: a stalled runner held a run for 3.7 s in CI (#572).
+  // Under the real sleep, that stall left no time for the second poll (runs
+  // 347 and 353). The pause comes last in the log: the timers of the two
+  // fetches of origin before it log theirs first, and no check after it
+  // retries. Above 16 s, SMOKE_WAIT would log the flat 15 s pause instead.
+  it('with a SHA, polls again 1 s before SMOKE_WAIT ends after an older commit served', async () => {
+    replies = { '/_app/version.json': (n) => version(n === 1 ? oldSha : newSha) };
+    const wait = 14;
+    const run = await smoke(base, { script: trackedCopy(), args: [newSha], wait: `${wait}` });
+    const pause = Number(run.sleeps.at(-1));
+    expect(pause).toBeLessThanOrEqual(wait - 1);
+    expect(pause).toBeGreaterThan(wait - 7);
+    expect(hits.get('/_app/version.json')).toBe(2);
+    expect(run.lines).toContain(`PASS /_app/version.json is ${newSha}`);
+    expect(run.last).toBe(`smoke-prod: 12 of 12 checks passed on ${base}`);
+    expect(run.code).toBe(0);
+  });
+
+  // The checks share one deadline with the wait, SMOKE_WAIT + SMOKE_CHECK_TIME
+  // after the start, so a SHA that goes live late leaves them only what
+  // remains. Here it is live on the first poll, which gets the whole 4 s wait,
+  // and /guide hangs until 5 s after the start, not 1 s after the poll.
+  it('with a SHA live on the first poll, fails the checks left past the run deadline', async () => {
     replies = {
-      '/_app/version.json': (n) => version(n === 1 ? oldSha : newSha),
+      '/_app/version.json': () => version(newSha),
       '/guide': () => 'hang'
     };
-    // The real sleep after the first poll is cut so that the second poll, the
-    // last one of the wait, starts 1 s before SMOKE_WAIT ends. A 4 s wait
-    // leaves the first poll 3 s: with a 2 s wait, a first poll slowed by a
-    // loaded CI runner left no time for the second (run 347).
     const run = await smoke(base, {
       script: trackedCopy(),
       args: [newSha],
@@ -420,7 +442,7 @@ describe('scripts/smoke-prod.sh', () => {
     expect(run.ms).toBeLessThan(5000 + slack);
     // /guide hangs until the deadline, which the run cannot beat.
     expect(run.ms).toBeGreaterThan(4500);
-    expect(hits.get('/_app/version.json')).toBe(2);
+    expect(hits.get('/_app/version.json')).toBe(1);
     expect(run.lines).toContain(`PASS /_app/version.json is ${newSha}`);
     expect(run.lines).toContain("PASS CSP has default-src 'self'");
     // Too little time left for a 5 s retry: the check keeps its curl error.
@@ -561,8 +583,8 @@ describe('scripts/smoke-prod.sh', () => {
     chmodSync(uploadpack, 0o755);
     replies = { '/_app/version.json': () => version(oldSha) };
     // The first fetch and the first poll must fit in the wait, so it leaves
-    // them 4 s, as in the late-SHA test above. The 2 s for the checks put the
-    // cut 1 s after the wait ends.
+    // them 4 s, as the test of a SHA live on the first poll leaves its poll.
+    // The 2 s for the checks put the cut 1 s after the wait ends.
     const run = await smoke(base, {
       script: trackedCopy(uploadpack),
       args: [newSha],
