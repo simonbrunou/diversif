@@ -403,9 +403,10 @@ describe('scripts/smoke-prod.sh', () => {
 
   // After a poll that reads an older commit, the wait sleeps until 1 s before
   // SMOKE_WAIT ends, so that its last poll still gets that 1 s (#541). The
-  // fake sleep logs the pause and returns at once, so the second poll needs no
-  // real time. The pause is SMOKE_WAIT less 1 s less the setup before it,
-  // which gets 6 s here: a stalled runner held a run for 3.7 s in CI (#572).
+  // fake sleep logs the pause and returns at once, so the second poll follows
+  // the first right away. The pause is SMOKE_WAIT less 1 s less the time the
+  // setup and the first poll took, which get 6 s here: a stalled runner held
+  // a run for 3.7 s in CI (#572).
   // Under the real sleep, that stall left no time for the second poll (runs
   // 347 and 353). The pause comes last in the log: the timers of the two
   // fetches of origin before it log theirs first, and no check after it
