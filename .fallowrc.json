@@ -7,17 +7,12 @@
   // they look like unused files. export-user.ts is also the input of the
   // `build:scripts` package.json script (bundled into build/scripts/); it
   // stays listed so it remains an entry however fallow reads that command.
-  // SvelteKit itself loads the last three, which the plugin doesn't know:
-  // src/instrumentation.server.ts (before any other server module), src/env.ts
-  // (the $app/env/* variable definitions) and src/service-worker/index.ts.
+  // Fallow finds src/service-worker/index.ts only through the `check` script's `tsc -p src/service-worker`; if that call leaves `check`, list the file here again.
   "entry": [
     "scripts/cleanup.ts",
     "scripts/export-user.ts",
     "scripts/generate-icons.ts",
-    "scripts/list-stale-users.ts",
-    "src/instrumentation.server.ts",
-    "src/env.ts",
-    "src/service-worker/index.ts"
+    "scripts/list-stale-users.ts"
   ],
 
   // Runtime-essential but never imported from JS, so static analysis can't see
@@ -25,14 +20,7 @@
   //  - Prettier auto-loads both plugins from node_modules (verified: `prettier
   //    --check` formats .svelte files and sorts Tailwind classes with no
   //    explicit `plugins` entry in .prettierrc).
-  //  - The two @fontsource-variable packages are pulled in via `@import` in
-  //    src/app.css (CSS-only), never imported from a module.
-  "ignoreDependencies": [
-    "prettier-plugin-svelte",
-    "prettier-plugin-tailwindcss",
-    "@fontsource-variable/inter",
-    "@fontsource-variable/fraunces"
-  ],
+  "ignoreDependencies": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
 
   "ignoreExports": [
     {
