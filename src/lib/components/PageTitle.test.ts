@@ -45,21 +45,44 @@ describe('PageTitle', () => {
     // A second source would bring #483 back: the server keeps one <title> by
     // tree position, which a component bind: breaks (#596), and a title that
     // no PageTitle claims stays on the tab after a client navigation.
-    // Svelte's parser marks a <title> as TitleElement only where it names the
-    // document: directly in <svelte:head>, not in an SVG and not in attribute
-    // text. Markup that a {@html} tag writes into the head is not seen.
-    const hasTitleElement = (node: unknown): boolean =>
-      typeof node === 'object' &&
-      node !== null &&
-      ((node as { type?: unknown }).type === 'TitleElement' ||
-        Object.values(node).some(hasTitleElement));
     const src = path.resolve(import.meta.dir, '../..');
     const others: string[] = [];
     for await (const file of new Bun.Glob('**/*.svelte').scan(src)) {
       if (file === 'lib/components/PageTitle.svelte') continue;
-      const ast = parse(await Bun.file(path.join(src, file)).text(), { modern: true });
-      if (hasTitleElement(ast.fragment)) others.push(file);
+      if (rendersHeadTitle(await Bun.file(path.join(src, file)).text())) others.push(file);
     }
     expect(others).toEqual([]);
+  });
+});
+
+// Svelte's parser marks a <title> directly in <svelte:head> as TitleElement.
+// One under a component there is a RegularElement, yet the component can
+// render it into the head, so any <title> inside the head counts, except an
+// SVG's, which labels the drawing. Attribute text holds no element. Markup
+// that a {@html} tag writes into the head is not seen.
+function rendersHeadTitle(code: string): boolean {
+  const walk = (node: unknown, inHead: boolean): boolean => {
+    if (typeof node !== 'object' || node === null) return false;
+    const { type, name } = node as { type?: unknown; name?: unknown };
+    if (type === 'TitleElement' || (inHead && type === 'RegularElement' && name === 'title')) {
+      return true;
+    }
+    if (type === 'RegularElement' && name === 'svg') return false;
+    return Object.values(node).some((child) => walk(child, inHead || type === 'SvelteHead'));
+  };
+  return walk(parse(code, { modern: true }).fragment, false);
+}
+
+describe('the <title> source guard', () => {
+  it.each([
+    ['<svelte:head><title>x</title></svelte:head>', true],
+    ['<svelte:head ><title>x</title></svelte:head>', true],
+    ['<svelte:head>{#if ok}<title>x</title>{/if}</svelte:head>', true],
+    ['<svelte:head><Wrapper><title>x</title></Wrapper></svelte:head>', true],
+    ['<svelte:head><svg><title>x</title></svg></svelte:head>', false],
+    ['<svelte:head><meta content="<title>x</title>" /></svelte:head>', false],
+    ['<svg><title>x</title></svg>', false]
+  ])('reads %s as %p', (code, expected) => {
+    expect(rendersHeadTitle(code)).toBe(expected);
   });
 });
