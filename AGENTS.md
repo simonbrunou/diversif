@@ -46,7 +46,7 @@ The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also 
 
 The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
 
-After the merge, check the deploy with `scripts/smoke-prod.sh <sha>`, where `<sha>` is the newest `main` commit that changes a file outside `*.md` and `docs/`. A merge that changes only `*.md` or `docs/` files deploys nothing (see `docs/agents/deploy.md`).
+After the merge, check the deploy with `scripts/smoke-prod.sh <sha>`, where `<sha>` is the newest `main` commit that started a deploy. A merge that changes only `*.md` or `docs/` files deploys nothing (see `docs/agents/deploy.md`).
 
 ## Agent skills
 
