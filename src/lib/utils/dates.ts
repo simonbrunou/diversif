@@ -49,7 +49,7 @@ export function formatRelative(date: Date | number, now: Date = new Date()): str
 /**
  * YYYY-MM-DDTHH:mm for <input type="datetime-local">, in the host's zone: the
  * browser's, the zone `localInputToIso` converts from. The server, whose zone
- * is UTC in production, renders `formatParisDateTimeLocal` instead (#485).
+ * is UTC in production, renders Paris time instead (`dateInputValue`, #485).
  */
 export function formatDateInputValue(date: Date = new Date()): string {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${formatHHmm(date)}`;

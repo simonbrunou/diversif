@@ -253,28 +253,34 @@ test.describe('a repas time without JavaScript', () => {
   test.use({ timezoneId: 'Europe/Paris' });
 
   test('is shown and saved in Paris time', async ({ browser, page }) => {
-    // A signup, a logged repas, then three pages without JavaScript.
+    // 2.0 s locally. A signup, a logged repas, then three pages without
+    // JavaScript: as much work as the refused-save tests below, which took up
+    // to 29 s on a CI runner shared with other jobs.
     test.slow();
+    const loggedAt = daysAgoInput(3, '12:30');
+    const typed = daysAgoInput(3, '09:15');
     const childId = await childOfEightMonths(page);
-    await logRepas(page, childId, ['Poire'], daysAgoInput(3, '12:30'));
+    await logRepas(page, childId, ['Poire'], loggedAt);
     const entryId = await feedEntryId(page, childId, 'feed-row-detail');
     const noJs = await openWithoutJavaScript(browser, page);
     try {
       await noJs.goto(`/child/${childId}/log/${entryId}?from=detail`);
       const when = noJs.getByLabel('Quand ?');
-      await expect(when).toHaveValue(daysAgoInput(3, '12:30'));
-      await when.fill(daysAgoInput(3, '09:15'));
+      await expect(when).toHaveValue(loggedAt);
+      await when.fill(typed);
       await noJs.getByRole('button', { name: 'Enregistrer', exact: true }).click();
       await expect(noJs).toHaveURL(new RegExp(`/child/${childId}/foods/${entryId}$`));
       await expect(noJs.getByText(/ · 09:15 · /)).toBeVisible();
 
-      // The log form starts from "now" on Paris clocks.
-      const before = Date.now();
+      // The log form starts from "now" on Paris clocks: one of the minutes
+      // the page load spanned.
+      const start = Date.now();
       await noJs.goto(`/child/${childId}/log`);
-      const after = Date.now();
-      expect([parisInput(before), parisInput(after)]).toContain(
-        await noJs.getByLabel('Quand ?').inputValue()
-      );
+      const minutes: string[] = [];
+      for (let ms = start - (start % 60_000); ms <= Date.now(); ms += 60_000) {
+        minutes.push(parisInput(ms));
+      }
+      expect(minutes).toContain(await noJs.getByLabel('Quand ?').inputValue());
     } finally {
       await noJs.context().close();
     }

@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
+import { pinHostZone } from '../../test/bun-test-utils';
 import {
   PARIS_TIME_ZONE,
   formatParisDateTimeLocal,
@@ -6,20 +7,6 @@ import {
   parseParisDateTimeLocal,
   latestParisWallClock
 } from './paris-date';
-
-function pinHostZone(zone: string): void {
-  let hostZone: string | undefined;
-
-  beforeEach(() => {
-    hostZone = process.env.TZ;
-    process.env.TZ = zone;
-  });
-
-  afterEach(() => {
-    if (hostZone === undefined) delete process.env.TZ;
-    else process.env.TZ = hostZone;
-  });
-}
 
 describe('PARIS_TIME_ZONE', () => {
   it('is the Europe/Paris IANA identifier', () => {

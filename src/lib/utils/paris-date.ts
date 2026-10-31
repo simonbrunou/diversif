@@ -183,11 +183,12 @@ export function parseParisDateTimeLocal(value: string): Date {
   // The offsets a day either side are the zone's offsets before and after
   // any change that night. Each one that reads back as the typed wall clock
   // is a real occurrence: two on the repeated hour, none on the skipped one.
-  const before = parisOffsetMinutesAt(wallMs - DAY_MS);
-  const after = parisOffsetMinutesAt(wallMs + DAY_MS);
-  const occurrences = [before, after]
+  const offsetBefore = parisOffsetMinutesAt(wallMs - DAY_MS);
+  const offsetAfter = parisOffsetMinutesAt(wallMs + DAY_MS);
+  const occurrences = [offsetBefore, offsetAfter]
     .map((offset) => wallMs - offset * 60_000)
     .filter((ms) => parisWallClockAsUtcMs(ms) === wallMs);
-  const instantMs = occurrences.length > 0 ? Math.min(...occurrences) : wallMs - before * 60_000;
+  const instantMs =
+    occurrences.length > 0 ? Math.min(...occurrences) : wallMs - offsetBefore * 60_000;
   return new Date(instantMs + Number(fraction.padEnd(3, '0')));
 }
