@@ -5,7 +5,7 @@
 - **Stack & commands**: see `README.md` (Bun-native: SvelteKit on `@sveltejs/adapter-node` run under Bun + SQLite via `bun:sqlite` + Drizzle + WebAuthn passkeys + `Bun.password` Argon2id).
 - **Product, tone, users**: see `PRODUCT.md`.
 - **Tests**: `bun run test`, never bare `bun test` (component tests need the wrapper's `--conditions=browser`). It runs `bun:test` against an in-process `bun:sqlite` `:memory:` database (same engine as prod) — no Docker required. E2E: `bun run test:e2e` (Playwright; the script resets a throwaway SQLite file first). Before writing or debugging a test, read `docs/agents/testing.md`.
-- **Deploy**: a merge to `main` deploys to production. What a deploy does, how to check one, and where to read a production environment value: `docs/agents/deploy.md`.
+- **Deploy**: a merge to `main` deploys to production, also when it changes only tests or scripts. What a deploy does, how to check one, and where to read a production environment value: `docs/agents/deploy.md`.
 - **Claude Code setup** (reproducing plugins/skills/hooks/MCPs on a new machine): see `docs/claude-setup.md`. On a fresh clone, run `scripts/claude-setup.sh`, then open the project in Claude Code to auto-install plugins.
 
 ## Conventions agents must respect
@@ -46,7 +46,7 @@ The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also 
 
 The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
 
-After the merge, check the deploy with `scripts/smoke-prod.sh <sha>`, where `<sha>` is the newest `main` commit that changes a deployed file. A merge that changes only `*.md` or `docs/` files deploys nothing (see `docs/agents/deploy.md`).
+After the merge, check the deploy with `scripts/smoke-prod.sh <sha>`, where `<sha>` is the newest `main` commit that started a deploy. A merge that changes only `*.md` or `docs/` files deploys nothing (see `docs/agents/deploy.md`).
 
 ## Agent skills
 
