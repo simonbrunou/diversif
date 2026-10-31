@@ -7,30 +7,35 @@
 // disables the rule on that line and says why.
 //
 // Checked: `x.getByText()`, `x['getByText']()` and x[`getByText`]() (a
-// template with no `${}`), chained or optional. The options must be an
-// object literal whose last `exact` key, spread or computed key is
-// `exact: true`, so `{ exact: true, ...options }` fails: the spread can set
-// it back to false. Options held in a variable fail too, since the rule
-// cannot read them.
-// Not checked: a method reached through a variable name (`x[name]()`) or
-// copied off its locator (`const { getByText } = page`), which also loses
-// the `this` Playwright needs.
+// template with no `${}`), chained or optional, with TypeScript's `as`,
+// `satisfies`, `!` and `<T>` wrappers removed from the method, the text, the
+// options and their values. The options must be an object literal whose last
+// `exact` key, spread or computed key is `exact: true`, so
+// `{ exact: true, ...options }` fails: the spread can set it back to false.
+// Options held in a variable fail too, since the rule cannot read them.
+// Not checked: a method reached through a variable name (`x[name]()`),
+// copied off its locator (`const { getByText } = page`, which also loses the
+// `this` Playwright needs) or called through `.call()`, `.apply()` or
+// `.bind()`.
+import { fixedText, typeWrappers } from './ast.js';
 
-function isGetByText({ property, computed }) {
-  if (!computed) return property.type === 'Identifier' && property.name === 'getByText';
-  if (property.type === 'Literal') return property.value === 'getByText';
-  return (
-    property.type === 'TemplateLiteral' &&
-    property.expressions.length === 0 &&
-    property.quasis[0].value.cooked === 'getByText'
-  );
+// The value under TypeScript wrappers and the parentheses that end an
+// optional chain, as in `(page?.getByText)('a')`.
+function unwrap(node) {
+  while (typeWrappers.has(node?.type) || node?.type === 'ChainExpression') node = node.expression;
+  return node;
+}
+
+function isGetByText(callee) {
+  if (callee?.type !== 'MemberExpression') return false;
+  const { property, computed } = callee;
+  return (computed ? fixedText(unwrap(property)) : property.name) === 'getByText';
 }
 
 // The key a property sets, or undefined when only run time knows it.
 function keyName({ key, computed }) {
   if (key.type === 'Literal') return String(key.value);
-  if (key.type === 'Identifier' && !computed) return key.name;
-  return undefined;
+  return computed ? fixedText(unwrap(key)) : key.name;
 }
 
 // The last member that can set `exact` decides it: an `exact` key, a spread,
@@ -40,12 +45,9 @@ function setsExact(options) {
   const last = options.properties.findLast(
     (member) => member.type === 'SpreadElement' || [undefined, 'exact'].includes(keyName(member))
   );
-  return (
-    last?.type === 'Property' &&
-    keyName(last) === 'exact' &&
-    last.value.type === 'Literal' &&
-    last.value.value === true
-  );
+  if (last?.type !== 'Property' || keyName(last) !== 'exact') return false;
+  const value = unwrap(last.value);
+  return value.type === 'Literal' && value.value === true;
 }
 
 const exactGetByText = {
@@ -61,11 +63,12 @@ const exactGetByText = {
   create(context) {
     return {
       CallExpression(node) {
-        if (node.callee.type !== 'MemberExpression' || !isGetByText(node.callee)) return;
-        const [text, options] = node.arguments;
+        const callee = unwrap(node.callee);
+        if (!isGetByText(callee)) return;
+        const [text, options] = node.arguments.map(unwrap);
         if (text?.type === 'Literal' && text.regex) return;
         if (setsExact(options)) return;
-        context.report({ node: node.callee.property, messageId: 'substring' });
+        context.report({ node: callee.property, messageId: 'substring' });
       }
     };
   }

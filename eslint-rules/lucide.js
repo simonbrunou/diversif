@@ -19,6 +19,7 @@
 // let in. A static check stops there. (`require()` is already an error under
 // @typescript-eslint/no-require-imports.)
 import { readdirSync, readFileSync } from 'node:fs';
+import { fixedText, typeWrappers } from './ast.js';
 
 const lucidePackage = '@lucide/svelte';
 const componentTypeSuffix = '.svelte.d.ts';
@@ -106,13 +107,6 @@ const { exportsByName, deprecatedByFile } = readLucide(
 const barrels = new Set([lucidePackage, `${lucidePackage}/icons`, `${lucidePackage}/icons/index`]);
 const deepPrefix = `${lucidePackage}/icons/`;
 
-const typeWrappers = new Set([
-  'TSAsExpression',
-  'TSSatisfiesExpression',
-  'TSNonNullExpression',
-  'TSTypeAssertion'
-]);
-
 // The paths an import source can load. Static imports and import types
 // always have one string; a dynamic import can load each side of a `?:` and
 // of a logical operator (`||`, `??`, `&&`) and the last item of a `(a, b)`
@@ -128,16 +122,6 @@ function sourceBranches(node) {
   if (node?.type === 'SequenceExpression') return sourceBranches(node.expressions.at(-1));
   if (typeWrappers.has(node?.type)) return sourceBranches(node.expression);
   return [node];
-}
-
-// The text of a source fixed at compile time: a string literal or a template
-// literal with no `${}`.
-function fixedText(node) {
-  if (node?.type === 'Literal' && typeof node.value === 'string') return node.value;
-  if (node?.type === 'TemplateLiteral' && node.expressions.length === 0) {
-    return node.quasis[0].value.cooked;
-  }
-  return undefined;
 }
 
 const isLucide = (text) => text === lucidePackage || text.startsWith(`${lucidePackage}/`);
