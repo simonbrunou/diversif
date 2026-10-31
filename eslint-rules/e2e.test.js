@@ -57,6 +57,13 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       { code: "(page?.getByText)('a');", errors: substring(8) },
       { code: 'page.getByText(new RegExp(a));', errors: substring(6) },
       { code: "page.getByText(f('a', { exact: true }));", errors: substring(6) },
+      { code: 'page.getByText(...args);', errors: substring(6) },
+      // The spread can hold the options too, and they land second.
+      {
+        code: "page.getByText(...['a', { exact: false }], { exact: true });",
+        errors: substring(6)
+      },
+      { code: "page.getByText('a', ...rest);", errors: substring(6) },
       { code: "page['getByText']('a');", errors: substring(6) },
       { code: "page[`getByText`]('a');", errors: substring(6) },
       { code: "page?.getByText('a');", errors: substring(7) },

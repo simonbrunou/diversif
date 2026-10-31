@@ -12,7 +12,9 @@
 // options and their values. The options must be an object literal whose last
 // `exact` key, spread or computed key is `exact: true`, so
 // `{ exact: true, ...options }` fails: the spread can set it back to false.
-// Options held in a variable fail too, since the rule cannot read them.
+// Options held in a variable fail too, since the rule cannot read them, and
+// so does a spread first argument (`getByText(...args, { exact: true })`),
+// since the rule cannot tell which value lands second.
 // Not checked: a method reached through a variable name (`x[name]()`),
 // copied off its locator (`const { getByText } = page`, which also loses the
 // `this` Playwright needs) or called through `.call()`, `.apply()` or
@@ -67,7 +69,7 @@ const exactGetByText = {
         if (!isGetByText(callee)) return;
         const [text, options] = node.arguments.map(unwrap);
         if (text?.type === 'Literal' && text.regex) return;
-        if (setsExact(options)) return;
+        if (text?.type !== 'SpreadElement' && setsExact(options)) return;
         context.report({ node: callee.property, messageId: 'substring' });
       }
     };
