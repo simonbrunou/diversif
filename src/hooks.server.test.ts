@@ -255,6 +255,21 @@ describe('handle', () => {
     expect(body).not.toContain('%paraglide.lang%');
   });
 
+  it('gives a page that renders no <title> the app-wide one', async () => {
+    const { event } = makeEvent(null, '/join/nope');
+    const resolve = mock(
+      async (
+        _event,
+        opts: { transformPageChunk: (c: { html: string; done: boolean }) => string }
+      ) =>
+        new Response(opts.transformPageChunk({ html: '<head></head><body>x</body>', done: true }))
+    );
+    const response = await handle({ event, resolve } as unknown as Parameters<typeof handle>[0]);
+    expect(await response.text()).toBe(
+      '<head><title>Diversif · Diversification alimentaire bébé</title></head><body>x</body>'
+    );
+  });
+
   it('adds class="dark" to <html> when the theme cookie is dark', async () => {
     const { event } = makeEvent(null, '/', 'dark');
     const resolve = mock(

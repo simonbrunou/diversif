@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '#lib/components/ui/Button.svelte';
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { Printer } from '@lucide/svelte';
   import type { Snippet } from 'svelte';
@@ -21,8 +22,9 @@
   }
 </script>
 
+<PageTitle {title} />
+
 <svelte:head>
-  <title>{title}</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
