@@ -49,8 +49,11 @@ describe('PageTitle', () => {
     for await (const file of new Bun.Glob('**/*.svelte').scan(src)) {
       if (file === 'lib/components/PageTitle.svelte') continue;
       const code = (await Bun.file(path.join(src, file)).text()).replace(/<!--[\s\S]*?-->/g, '');
-      const heads = code.match(/<svelte:head>[\s\S]*?<\/svelte:head>/g) ?? [];
-      if (heads.some((head) => /<title[\s>]/.test(head))) others.push(file);
+      const heads = code.match(/<svelte:head\b[^>]*>[\s\S]*?<\/svelte:head>/g) ?? [];
+      // An SVG's <title> labels the drawing, not the document.
+      const documentTitle = (head: string) =>
+        /<title[\s>]/.test(head.replace(/<svg\b[\s\S]*?<\/svg>/g, ''));
+      if (heads.some(documentTitle)) others.push(file);
     }
     expect(others).toEqual([]);
   });
