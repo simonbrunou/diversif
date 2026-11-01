@@ -209,7 +209,13 @@ describe('check-bun-pins.sh passes', () => {
     ['a * and a ? inside plain text', 9, '      - run: ls *.md && test "$x" = a?b'],
     ['a flow collection closed on its line', 1, 'name: CI\non: { push: { branches: [main] } }'],
     ['an expression in plain text', 9, '      - run: echo ${{ github.sha }}'],
-    ['a key named after bun-version', 9, '      - env: { my-bun-version: 9.9.9 }']
+    ['a key named after bun-version', 9, '      - env: { my-bun-version: 9.9.9 }'],
+    ['a plain key with no blank after its colon in a flow mapping', 9, '      - env: {A:"b\\x2d"}'],
+    [
+      'a uses: >- inside a run: | body',
+      9,
+      '      - run: |\n          uses: >-\n            oven-sh/setup-bun@abc123'
+    ]
   ])('on %s, which YAML reads as text', (_name, at, text) => {
     setLine(CI, at, text);
     passes();
@@ -602,6 +608,28 @@ describe('check-bun-pins.sh fails on a YAML form that can spell a key or value a
     );
   });
 
+  // In a flow collection, a colon right after a quoted key or a closed
+  // collection starts a value even with no blank after it.
+  it.each([
+    ['a double-quoted key', '      - {"uses":"oven-sh/setup\\x2dbun@abc123"}'],
+    ['a double-quoted key and a blank', '      - {"uses" :"oven-sh/setup\\x2dbun@abc123"}'],
+    ['a single-quoted key', `      - {'uses':"oven-sh/setup\\x2dbun@abc123"}`],
+    ['a closed flow sequence', '      - {[a]:"oven-sh/setup\\x2dbun@abc123"}'],
+    ['a closed empty flow sequence', '      - {[]:"oven-sh/setup\\x2dbun@abc123"}']
+  ])(
+    'an escaped setup-bun in a flow mapping, after %s then a colon with no blank after it',
+    (_name, text) => {
+      setLine(CI, 9, text);
+      failsWith(`${CI}:9 holds an escape in a double-quoted string, which this check cannot read`);
+    }
+  );
+
+  it('an alias as the action of a JSON-style uses: key', () => {
+    setLine(CI, 1, 'name: &action oven-sh/setup-bun@abc123');
+    setLine(CI, 9, '      - {"uses":*action}');
+    failsWith(`${CI}:9 uses a YAML alias, which this check cannot read`);
+  });
+
   it('an alias as an input key', () => {
     setLine(CI, 1, 'name: &key bun-version');
     setLine(CI, 8, '          *key : 9.9.9');
@@ -639,6 +667,11 @@ describe('check-bun-pins.sh fails on a YAML form that can spell a key or value a
       'a !!binary uses: that decodes to setup-bun',
       5,
       '      - uses: !!binary b3Zlbi1zaC9zZXR1cC1idW5AYWJjMTIz'
+    ],
+    [
+      'a !!binary uses: after a JSON-style key with no blank after its colon',
+      9,
+      '      - {"uses":!!binary b3Zlbi1zaC9zZXR1cC1idW5AYWJjMTIz}'
     ]
   ])('%s', (_name, at, text) => {
     setLine(CI, at, text);
@@ -650,6 +683,30 @@ describe('check-bun-pins.sh fails on a YAML form that can spell a key or value a
     failsWith(
       `${CI}:1 leaves a quoted string open onto the next line, which this check cannot read`
     );
+  });
+});
+
+// This reader skips the body of a block scalar, so a uses: written as one
+// would hide the action it names.
+describe('check-bun-pins.sh fails on a uses: written as a block scalar', () => {
+  const blockUses = (line: number) =>
+    `${CI}:${line} uses: names its action in a block scalar (| or >), which this check cannot read`;
+
+  it.each([
+    ['- uses: >-', '      - uses: >-', 9],
+    ['- uses: |', '      - uses: |', 9],
+    ['- "uses": >-', '      - "uses": >-', 9],
+    ["- 'uses': |-", "      - 'uses': |-", 9],
+    ['- Uses: > in another letter case', '      - Uses: >', 9],
+    ['uses: > under - name:', '      - name: Setup Bun\n        uses: >', 10]
+  ])('%s that names setup-bun', (_name, header, line) => {
+    setLine(CI, 9, `${header}\n          oven-sh/setup-bun@abc123`);
+    failsWith(blockUses(line));
+  });
+
+  it('that names another action, which this reader cannot tell', () => {
+    setLine(CI, 9, '      - uses: >-\n          actions/checkout@v4');
+    failsWith(blockUses(9));
   });
 });
 
