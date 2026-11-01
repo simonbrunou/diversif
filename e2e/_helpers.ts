@@ -205,6 +205,12 @@ export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
   // failures). Give it a short window to appear before concluding absence;
   // only a timeout means absence — anything else (page closed, strict-mode
   // violation) is a real failure that must surface here, not three steps later.
+  // Start that window only once the page has hydrated: the dialog cannot open
+  // before then, so after a page.goto on a loaded runner a window that starts
+  // earlier can end before the dialog had its chance, and the dialog then
+  // opens over the next click (#603). awaitHydration() sits outside the catch
+  // below on purpose: its timeout means a stuck page, not "no dialog".
+  await awaitHydration(page);
   const appeared = await dismiss
     .waitFor({ state: 'visible', timeout: 2_000 })
     .then(() => true)
