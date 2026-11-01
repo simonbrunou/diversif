@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import Input from '#lib/components/ui/Input.svelte';
@@ -71,6 +72,8 @@
   }
 
 </script>
+
+<PageTitle title={m.chromeChildPageTitle({ page: m.settingsTitle(), name: data.child.name })} />
 
 <div class="mx-auto w-full px-4 max-w-2xl space-y-6 py-6">
   <BackHeader title={m.settingsTitle()} subtitle={data.child.name} fallback={`/child/${data.child.id}`} />

@@ -1,6 +1,7 @@
 <script lang="ts">
   import AujourdhuiBento from '#lib/components/bento/AujourdhuiBento.svelte';
   import CoparentActivity from '#lib/components/bento/CoparentActivity.svelte';
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import WelcomeDialog from '#lib/components/WelcomeDialog.svelte';
   import TipCard from '#lib/components/TipCard.svelte';
   import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
@@ -36,6 +37,10 @@
     history.replaceState({}, '', url);
   });
 </script>
+
+<PageTitle
+  title={m.chromeChildPageTitle({ page: m.chromeTabsAujourdhui(), name: data.child.name })}
+/>
 
 {#if form?.errorKey}
   <!-- ?/dismissReminder can fail(400) on a malformed key. Before this the

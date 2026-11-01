@@ -3,9 +3,11 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import Button from '#lib/components/ui/Button.svelte';
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import ProblemReportDialog from '#lib/components/ProblemReportDialog.svelte';
   import { TriangleAlert } from '@lucide/svelte';
   import * as m from '#lib/paraglide/messages.js';
+  import { SITE } from '#lib/seo.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
 
   const status = $derived(page.status);
@@ -24,6 +26,8 @@
     page.error?.errorId ? { errorId: page.error.errorId } : {}
   );
 </script>
+
+<PageTitle title={`${title} · ${SITE.name}`} />
 
 <div class="mx-auto w-full px-4 flex max-w-md flex-1 flex-col items-center justify-center gap-5 py-16 text-center">
   <div class="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-severe-text">

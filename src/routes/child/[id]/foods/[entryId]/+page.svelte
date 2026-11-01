@@ -2,6 +2,7 @@
   import ReactionDetailBento from '#lib/components/bento/ReactionDetailBento.svelte';
   import RasCard from '#lib/components/bento/RasCard.svelte';
   import AddSymptomSheet from '#lib/components/bento/AddSymptomSheet.svelte';
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
@@ -15,6 +16,13 @@
     localizedHref(`/child/${data.childId}/log/${data.entryId}?from=detail`)
   );
 </script>
+
+<PageTitle
+  title={m.chromeChildPageTitle({
+    page: m.reactionTitle({ food: data.food }),
+    name: data.child.name
+  })}
+/>
 
 {#if data.isRas}
   <div class="flex flex-col">

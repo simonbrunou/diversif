@@ -7,6 +7,7 @@
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
   import Card from '#lib/components/ui/Card.svelte';
   import ConfirmModal from '#lib/components/ui/ConfirmModal.svelte';
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import FoodCombobox from '#lib/components/FoodCombobox.svelte';
   import ReactionPicker from '#lib/components/ReactionPicker.svelte';
   import TexturePicker from '#lib/components/TexturePicker.svelte';
@@ -119,7 +120,17 @@
   // refused save there: `from` must be in it for `load` to keep the editor's
   // origin, or the next save lands on the carnet (#443).
   const updateAction = $derived(`?/update&from=${data.from}`);
+
+  // The heading each mode shows below, framed with the child's name.
+  const pageTitle = $derived(
+    m.chromeChildPageTitle({
+      page: data.meal ? m.mealEditTitle() : m.logEditTitle(),
+      name: data.child.name
+    })
+  );
 </script>
+
+<PageTitle title={pageTitle} />
 
 {#if data.meal}
   <div class="mx-auto w-full px-4 max-w-xl space-y-5 py-6">

@@ -31,6 +31,7 @@
   "chromeTabsCarnet": "Carnet",
   "chromeTabsDecouvrir": "Découvrir",
   "chromeTabsProfil": "Profil",
+  "chromeChildPageTitle": "{page} : {name} · Diversif",
   "chromeFabLog": "Enregistrer un repas",
   "chromeFabLogShort": "Enregistrer",
   "chromeHeaderChangeChild": "changer",

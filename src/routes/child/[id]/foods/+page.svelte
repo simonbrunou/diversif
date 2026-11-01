@@ -3,6 +3,8 @@
   import { page } from '$app/state';
   import CarnetBento from '#lib/components/bento/CarnetBento.svelte';
   import type { Segment } from '#lib/components/bento/CarnetSegments.svelte';
+  import PageTitle from '#lib/components/PageTitle.svelte';
+  import * as m from '#lib/paraglide/messages.js';
 
   let { data }: { data: PageData } = $props();
 
@@ -22,6 +24,8 @@
     texturesTried: data.texturesTried ?? 0
   });
 </script>
+
+<PageTitle title={m.chromeChildPageTitle({ page: m.chromeTabsCarnet(), name: data.child.name })} />
 
 <CarnetBento
   childId={String(data.child?.id ?? '')}

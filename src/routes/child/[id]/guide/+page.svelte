@@ -1,5 +1,6 @@
 <script lang="ts">
   import DiscoverBento from '#lib/components/bento/DiscoverBento.svelte';
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import Callout from '#lib/components/ui/Callout.svelte';
   import LinkRow from '#lib/components/ui/LinkRow.svelte';
   import { localizedHref } from '#lib/utils/localized-href.js';
@@ -9,6 +10,10 @@
 
   let { data }: { data: PageData } = $props();
 </script>
+
+<PageTitle
+  title={m.chromeChildPageTitle({ page: m.chromeTabsDecouvrir(), name: data.child.name })}
+/>
 
 {#if data.ageMonths < 4}
   <Callout variant="info" class="mb-3">

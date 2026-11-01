@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import Card from '#lib/components/ui/Card.svelte';
@@ -6,6 +7,7 @@
   import SectionHeader from '#lib/components/ui/SectionHeader.svelte';
   import { purgeBeforeSubmit } from '#lib/offline/purge.js';
   import * as m from '#lib/paraglide/messages.js';
+  import { SITE } from '#lib/seo.js';
 
   let confirmOpen = $state(false);
   let loggingOutEverywhere = $state(false);
@@ -23,6 +25,7 @@
   }
 </script>
 
+<PageTitle title={`${m.authAccountSessionsSection()} · ${SITE.name}`} />
 <BackHeader title={m.authAccountSessionsSection()} />
 
 <div class="space-y-4">

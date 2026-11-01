@@ -149,7 +149,19 @@ export async function signUpAndCreateChild(
   emailPrefix = 'bento'
 ): Promise<string> {
   await signUp(page, emailPrefix);
+  return submitChildForm(page, name, birthDate);
+}
 
+/**
+ * Create one more child for the signed-in parent through /child/new, return
+ * the new id.
+ */
+export async function createChild(page: Page, name: string, birthDate: string): Promise<string> {
+  await page.goto('/child/new');
+  return submitChildForm(page, name, birthDate);
+}
+
+async function submitChildForm(page: Page, name: string, birthDate: string): Promise<string> {
   // The signup submit was enhanced (client-side redirect), so the document
   // usually stays hydrated — but await it anyway: it's a no-op when the
   // attribute is already set and covers any full-page navigation fallback.
