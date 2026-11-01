@@ -50,10 +50,16 @@ secs() { printf '%d.%03d' $(($1 / 1000)) $(($1 % 1000)); }
 
 TMP="$(mktemp -d)"
 # It also sends TERM to a fetch_origin still running, which job control keeps
-# out of reach of a Ctrl-C, and KILL to its timer.
-trap 'rm -rf "$TMP"
+# out of reach of a Ctrl-C, and KILL to its timer. It acts only in the main
+# shell: on bash 5.2, a child bash forks for a command keeps this trap until
+# it execs, and a terminating signal that reaches it before then runs the
+# trap in the child, which would remove the main shell's $TMP (#606). The
+# child still dies of that signal. Bash 3.2 has no BASHPID: $$ stands in.
+trap '[ "${BASHPID:-$$}" = "$$" ] && {
+rm -rf "$TMP"
 [ -z "${fetch_pid:-}" ] || kill -TERM -- -"$fetch_pid" 2>/dev/null
-[ -z "${fetch_timer:-}" ] || kill -KILL -- -"$fetch_timer" 2>/dev/null' EXIT
+[ -z "${fetch_timer:-}" ] || kill -KILL -- -"$fetch_timer" 2>/dev/null
+}' EXIT
 
 passed=0
 failed=0
