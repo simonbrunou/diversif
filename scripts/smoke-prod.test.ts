@@ -507,9 +507,10 @@ describe('scripts/smoke-prod.sh', () => {
   // trap until it execs git, and a TERM that reaches it before then runs the
   // trap there. Under the fake sleep the timer's TERM comes at once, and in
   // CI a loaded runner once held the child long enough: it removed the main
-  // shell's $TMP (#606). This copy holds the child 50 ms before exec, with a
-  // command substitution, so that the TERM always lands in that window. Bash
-  // 5.3 never runs the trap there, so only a 5.2 run (CI's) can fail.
+  // shell's $TMP (#606). This copy holds the child before exec, in a command
+  // substitution whose sleep only the TERM to the fetch's process group ends,
+  // so that the TERM lands in that window however late the timer sends it.
+  // Bash 5.3 never runs the trap there, so only a 5.2 run (CI's) can fail.
   it("with a SHA, keeps $TMP when its fetch's child gets TERM before it execs", async () => {
     const copy = trackedCopy();
     const fetchLine = '  git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &\n';
@@ -517,7 +518,7 @@ describe('scripts/smoke-prod.sh', () => {
     expect(source).toContain(fetchLine);
     writeFileSync(
       copy,
-      source.replace(fetchLine, fetchLine.replace('"$REPO"', `"$REPO$(${sleepBin} 0.05)"`))
+      source.replace(fetchLine, fetchLine.replace('"$REPO"', `"$REPO$(${sleepBin} 15)"`))
     );
     const tmpDir = mkdtempSync(path.join(binDir, 'tmpdir-'));
     const run = await smoke(base, { script: copy, args: [newSha], wait: '0', tmpDir });
