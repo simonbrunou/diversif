@@ -149,7 +149,19 @@ export async function signUpAndCreateChild(
   emailPrefix = 'bento'
 ): Promise<string> {
   await signUp(page, emailPrefix);
+  return submitChildForm(page, name, birthDate);
+}
 
+/**
+ * Create one more child for the signed-in parent through /child/new, return
+ * the new id.
+ */
+export async function createChild(page: Page, name: string, birthDate: string): Promise<string> {
+  await page.goto('/child/new');
+  return submitChildForm(page, name, birthDate);
+}
+
+async function submitChildForm(page: Page, name: string, birthDate: string): Promise<string> {
   // The signup submit was enhanced (client-side redirect), so the document
   // usually stays hydrated — but await it anyway: it's a no-op when the
   // attribute is already set and covers any full-page navigation fallback.
@@ -168,8 +180,8 @@ export async function signUpAndCreateChild(
   await page.getByRole('button', { name: /^créer$/i }).click();
   // Same 15s bump as the signup-step assertion : the /child/new action
   // inserts a child + a membership and redirects to /child/<id>, which
-  // can exceed the 5s default under workers:2 contention on a shared
-  // Postgres in CI.
+  // can exceed the 5s default under workers:2 contention on the shared
+  // SQLite file in CI.
   await expect(page).toHaveURL(/\/child\/\d+$/, { timeout: 15_000 });
 
   const url = page.url();

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import Card from '#lib/components/ui/Card.svelte';
@@ -9,6 +10,7 @@
   import { enhance } from '$app/forms';
   import { onMount } from 'svelte';
   import * as m from '#lib/paraglide/messages.js';
+  import { SITE } from '#lib/seo.js';
   import { trackSubmission } from '#lib/forms/tracked-enhance.js';
   import { matchesAccountEmail } from '#lib/utils/account-email.js';
   import type { ActionData, PageData } from './$types';
@@ -34,6 +36,7 @@
   });
 </script>
 
+<PageTitle title={`${m.authAccountDeleteSection()} · ${SITE.name}`} />
 <BackHeader title={m.authAccountDeleteSection()} />
 
 <Card as="section" variant="tile-butter" class="px-4 py-3">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import ConfirmModal from '#lib/components/ui/ConfirmModal.svelte';
@@ -12,6 +13,7 @@
   import { toast } from 'svelte-sonner';
   import * as m from '#lib/paraglide/messages.js';
   import { getLocale } from '#lib/paraglide/runtime.js';
+  import { SITE } from '#lib/seo.js';
   import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
   import type { ActionData, PageData } from './$types';
 
@@ -111,6 +113,7 @@
   }
 </script>
 
+<PageTitle title={`${m.authAccountPasskeysSection()} · ${SITE.name}`} />
 <BackHeader title={m.authAccountPasskeysSection()} />
 
 <FormSuccess messageKey={form?.passkeySuccessKey} {form} class="mb-4" />

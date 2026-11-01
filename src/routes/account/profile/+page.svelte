@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import Input from '#lib/components/ui/Input.svelte';
@@ -7,6 +8,7 @@
   import FormSuccess from '#lib/components/ui/FormSuccess.svelte';
   import { enhance } from '$app/forms';
   import * as m from '#lib/paraglide/messages.js';
+  import { SITE } from '#lib/seo.js';
   import { trackSubmission } from '#lib/forms/tracked-enhance.js';
   import type { ActionData, PageData } from './$types';
 
@@ -14,6 +16,7 @@
   let saving = $state(false);
 </script>
 
+<PageTitle title={`${m.authAccountProfileSection()} · ${SITE.name}`} />
 <BackHeader title={m.authAccountProfileSection()} />
 
 <FormSuccess messageKey={form?.profileSuccessKey} {form} class="mb-4" />

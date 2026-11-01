@@ -86,3 +86,63 @@ describe('the <title> source guard', () => {
     expect(rendersHeadTitle(code)).toBe(expected);
   });
 });
+
+// The components that render a page's PageTitle. A page renders one of them
+// anywhere in its markup, a branch of an {#if} included: the landing page
+// names itself differently signed in and signed out.
+const TITLE_COMPONENTS = new Set(['PageTitle', 'Seo', 'PrintShell']);
+
+function rendersTitleComponent(code: string): boolean {
+  const walk = (node: unknown): boolean => {
+    if (typeof node !== 'object' || node === null) return false;
+    const { type, name } = node as { type?: unknown; name?: unknown };
+    if (type === 'Component' && typeof name === 'string' && TITLE_COMPONENTS.has(name)) return true;
+    return Object.values(node).some(walk);
+  };
+  return walk(parse(code, { modern: true }).fragment);
+}
+
+async function routeFiles(pattern: string): Promise<{ file: string; code: string }[]> {
+  const routes = path.resolve(import.meta.dir, '../../routes');
+  const files: { file: string; code: string }[] = [];
+  for await (const file of new Bun.Glob(pattern).scan(routes)) {
+    files.push({ file, code: await Bun.file(path.join(routes, file)).text() });
+  }
+  return files;
+}
+
+describe('every route names itself', () => {
+  it('renders PageTitle, Seo or PrintShell on every page and error page', async () => {
+    // Without one, the page carries the app-wide title, and a screen reader
+    // announces the same title on every such page (#597).
+    const pages = await routeFiles('**/{+page,+error}.svelte');
+    // The glob reaches both file names and a nested dynamic segment.
+    expect(pages.map((p) => p.file)).toEqual(
+      expect.arrayContaining(['+error.svelte', 'child/[id]/foods/+page.svelte'])
+    );
+    const untitled = pages.filter(({ code }) => !rendersTitleComponent(code)).map((p) => p.file);
+    expect(untitled).toEqual([]);
+  });
+
+  it('renders none of them in a layout', async () => {
+    // A layout title next to the page's would be two sources, and Svelte's
+    // server render can pick the layout's under a component bind: (#596).
+    const layouts = await routeFiles('**/+layout.svelte');
+    expect(layouts.map((l) => l.file)).toEqual(
+      expect.arrayContaining(['+layout.svelte', 'child/[id]/+layout.svelte'])
+    );
+    const titled = layouts.filter(({ code }) => rendersTitleComponent(code)).map((l) => l.file);
+    expect(titled).toEqual([]);
+  });
+
+  it.each([
+    ['<PageTitle title="x" />', true],
+    ['{#if ok}<Seo title="x" path="/" />{/if}', true],
+    ['<PrintShell title="x">y</PrintShell>', true],
+    ['<!-- <PageTitle title="x" /> -->', false],
+    ['<p>PageTitle</p>', false],
+    ['<OtherTitle title="x" />', false]
+  ])('reads %s as %p', (code, expected) => {
+    expect(rendersTitleComponent(code)).toBe(expected);
+  });
+});

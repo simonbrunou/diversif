@@ -1,12 +1,16 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import * as m from '#lib/paraglide/messages.js';
+  import { SITE } from '#lib/seo.js';
   import { WifiOff } from '@lucide/svelte';
 
   function retry() {
     location.reload();
   }
 </script>
+
+<PageTitle title={`${m.offlineFallbackTitle()} · ${SITE.name}`} />
 
 <div class="mx-auto flex max-w-md flex-col items-center px-4 py-16 text-center">
   <div

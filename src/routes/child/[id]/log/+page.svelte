@@ -6,6 +6,7 @@
   import Textarea from '#lib/components/ui/Textarea.svelte';
   import FormError from '#lib/components/ui/FormError.svelte';
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import FoodCombobox from '#lib/components/FoodCombobox.svelte';
   import ReactionPicker from '#lib/components/ReactionPicker.svelte';
   import TexturePicker from '#lib/components/TexturePicker.svelte';
@@ -86,6 +87,8 @@
     foodComboboxKey += 1;
   }
 </script>
+
+<PageTitle title={m.chromeChildPageTitle({ page: m.logFormTitle(), name: data.child.name })} />
 
 <div class="mx-auto w-full px-4 max-w-xl space-y-5 py-6">
   <BackHeader

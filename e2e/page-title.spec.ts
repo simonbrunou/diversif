@@ -2,19 +2,20 @@ import { test, expect, type Page } from '@playwright/test';
 import {
   awaitHydration,
   birthDateMonthsAgo,
+  createChild,
   openWithoutJavaScript,
   signUpAndCreateChild
 } from './_helpers';
 
 // A document names itself with its first <title>, so a page that served the
 // app-wide title before its own read as the app-wide one without JavaScript
-// (#483). Every page serves exactly one.
-const APP_TITLE = 'Diversif · Diversification alimentaire bébé';
+// (#483). Every page serves exactly one, and it is the page's own (#597).
 const LOGIN_TITLE = 'Connexion';
 const GUIDE_TITLE = 'Guide de la diversification alimentaire : bébé de 4 mois à 3 ans · Diversif';
+const INVITE_TITLE = 'Invitation · Diversif';
 // Fails the invite-code format check, so /join renders its error card for an
-// anonymous visitor instead of redirecting to /signup, which has a title.
-const NO_TITLE_PATH = '/join/nope';
+// anonymous visitor instead of redirecting to /signup.
+const INVITE_PATH = '/join/nope';
 
 const headTitles = (page: Page) => page.locator('head > title');
 
@@ -41,17 +42,40 @@ test.describe('document title without JavaScript', () => {
     }
   });
 
-  // A guard rather than a repro: this page served one title before #483 too.
-  test('a page without a title of its own serves only the app-wide title', async ({
+  test('the invite page serves only its own title', async ({ browser, page }) => {
+    const noJs = await openWithoutJavaScript(browser, page);
+    try {
+      await noJs.goto(INVITE_PATH);
+      await expect(noJs.getByRole('heading', { name: 'Invitation', exact: true })).toBeVisible();
+      await expect(headTitles(noJs)).toHaveCount(1);
+      await expect(noJs).toHaveTitle(INVITE_TITLE);
+    } finally {
+      await noJs.context().close();
+    }
+  });
+
+  test('a signed-in page serves only its own title, a child page with the name', async ({
     browser,
     page
   }) => {
+    const childId = await signUpAndCreateChild(page, 'Emma', birthDateMonthsAgo(8), 'title-own');
     const noJs = await openWithoutJavaScript(browser, page);
     try {
-      await noJs.goto(NO_TITLE_PATH);
-      await expect(noJs.getByRole('heading', { name: 'Invitation', exact: true })).toBeVisible();
+      await noJs.goto(`/child/${childId}/foods`);
+      await expect(noJs.getByRole('heading', { name: 'Emma', exact: true })).toBeAttached();
       await expect(headTitles(noJs)).toHaveCount(1);
-      await expect(noJs).toHaveTitle(APP_TITLE);
+      await expect(noJs).toHaveTitle('Carnet : Emma · Diversif');
+
+      // English punctuates the framing its own way: no space before the colon.
+      await noJs.goto(`/en/child/${childId}/foods`);
+      await expect(noJs.locator('html')).toHaveAttribute('lang', 'en');
+      await expect(headTitles(noJs)).toHaveCount(1);
+      await expect(noJs).toHaveTitle('Log: Emma · Diversif');
+
+      await noJs.goto('/account/password');
+      await expect(noJs.getByLabel('Mot de passe actuel')).toBeVisible();
+      await expect(headTitles(noJs)).toHaveCount(1);
+      await expect(noJs).toHaveTitle('Mot de passe · Diversif');
     } finally {
       await noJs.context().close();
     }
@@ -93,9 +117,9 @@ test.describe('document title with JavaScript', () => {
     await expect(page).toHaveURL(/\/login\?e2e=title$/);
     await expect(page).toHaveTitle(LOGIN_TITLE);
 
-    await followLink(page, NO_TITLE_PATH);
+    await followLink(page, INVITE_PATH);
     await expect(page.getByRole('heading', { name: 'Invitation', exact: true })).toBeVisible();
-    await expect(page).toHaveTitle(APP_TITLE);
+    await expect(page).toHaveTitle(INVITE_TITLE);
 
     await followLink(page, '/guide');
     await expect(page).toHaveURL(/\/guide$/);
@@ -111,11 +135,29 @@ test.describe('document title with JavaScript', () => {
 
     await page.goBack();
     await expect(page.getByRole('heading', { name: 'Invitation', exact: true })).toBeVisible();
-    await expect(page).toHaveTitle(APP_TITLE);
+    await expect(page).toHaveTitle(INVITE_TITLE);
 
     await page.goForward();
     await expect(page).toHaveURL(/\/guide$/);
     await expect(page).toHaveTitle(GUIDE_TITLE);
+
+    await expect(page.locator('html[data-e2e-same-page]')).toHaveCount(1);
+  });
+
+  test("follows the child's name to another child's page on the same route", async ({ page }) => {
+    const emmaId = await signUpAndCreateChild(page, 'Emma', birthDateMonthsAgo(8), 'title-kids');
+    const leoId = await createChild(page, 'Léo', birthDateMonthsAgo(10));
+
+    await page.goto(`/child/${emmaId}/foods`);
+    await awaitHydration(page);
+    await expect(page).toHaveTitle('Carnet : Emma · Diversif');
+    await page.evaluate(() => document.documentElement.setAttribute('data-e2e-same-page', ''));
+
+    // The same route with another id: SvelteKit keeps the page mounted.
+    await followLink(page, `/child/${leoId}/foods`);
+    await expect(page).toHaveURL(new RegExp(`/child/${leoId}/foods$`));
+    await expect(page.getByRole('heading', { name: 'Léo', exact: true })).toBeAttached();
+    await expect(page).toHaveTitle('Carnet : Léo · Diversif');
 
     await expect(page.locator('html[data-e2e-same-page]')).toHaveCount(1);
   });

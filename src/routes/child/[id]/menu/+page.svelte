@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
   import QuantitiesCard from '#lib/components/menu/QuantitiesCard.svelte';
   import MenuDay from '#lib/components/menu/MenuDay.svelte';
@@ -7,6 +8,8 @@
 
   let { data }: { data: PageData } = $props();
 </script>
+
+<PageTitle title={m.chromeChildPageTitle({ page: m.menuTitle(), name: data.child.name })} />
 
 <div class="mx-auto w-full max-w-2xl space-y-4 px-4 py-6">
   <BackHeader

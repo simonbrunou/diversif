@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import Card from '#lib/components/ui/Card.svelte';
   import Button from '#lib/components/ui/Button.svelte';
   import FormError from '#lib/components/ui/FormError.svelte';
@@ -6,11 +7,14 @@
   import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import * as m from '#lib/paraglide/messages.js';
+  import { SITE } from '#lib/seo.js';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let submitting = $state(false);
 </script>
+
+<PageTitle title={`${m.joinTitle()} · ${SITE.name}`} />
 
 <div class="mx-auto w-full px-4 flex max-w-md flex-1 flex-col justify-center py-10">
   <Card class="p-6 text-center">

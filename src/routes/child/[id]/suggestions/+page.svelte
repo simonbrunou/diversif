@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PageTitle from '#lib/components/PageTitle.svelte';
   import BackHeader from '#lib/components/ui/BackHeader.svelte';
   import CalloutCard from '#lib/components/ui/CalloutCard.svelte';
   import TipCard from '#lib/components/TipCard.svelte';
@@ -31,6 +32,8 @@
   const otherGroups = $derived(groupByCategory(data.others));
   const hasSuggestions = $derived(data.priorityAllergens.length > 0 || data.others.length > 0);
 </script>
+
+<PageTitle title={m.chromeChildPageTitle({ page: m.suggestionsTitle(), name: data.child.name })} />
 
 <div class="mx-auto w-full px-4 max-w-2xl space-y-6 py-6">
   <BackHeader
