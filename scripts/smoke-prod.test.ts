@@ -16,6 +16,7 @@ import {
   copyFileSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync
@@ -216,7 +217,8 @@ function running(pid: number): boolean {
 // starts the script with TERM ignored, which its children inherit. logCurl
 // puts a curl first on PATH that logs each call's arguments, then runs the
 // real one. interruptOn sends the script alone SIGINT, as a Ctrl-C does once job control
-// moved its fetch to a group of its own, when that file has content.
+// moved its fetch to a group of its own, when that file has content. tmpDir
+// is the TMPDIR its mktemp -d creates $TMP in.
 async function smoke(
   baseUrl = base,
   {
@@ -227,7 +229,8 @@ async function smoke(
     realSleep = false,
     termIgnored = false,
     logCurl = false,
-    interruptOn = ''
+    interruptOn = '',
+    tmpDir = ''
   } = {}
 ) {
   const started = performance.now();
@@ -241,6 +244,7 @@ async function smoke(
       SMOKE_BASE_URL: baseUrl,
       ...(wait ? { SMOKE_WAIT: wait } : {}),
       ...(checkTime ? { SMOKE_CHECK_TIME: checkTime } : {}),
+      ...(tmpDir ? { TMPDIR: tmpDir } : {}),
       SLEEP_LOG: sleepLog,
       CURL_LOG: curlLog,
       // A proxy from the shell would answer for the local server.
@@ -497,6 +501,36 @@ describe('scripts/smoke-prod.sh', () => {
     expect(run.last).toBe(`smoke-prod: ${newSha} not live on ${base}, checks skipped`);
     expect(run.code).toBe(1);
     expect(hits.size).toBe(0);
+  });
+
+  // On bash 5.2, the child bash forks for the fetch keeps the script's EXIT
+  // trap until it execs git, and a TERM that reaches it before then runs the
+  // trap there. Under the fake sleep the timer's TERM comes at once, and in
+  // CI a loaded runner once held the child long enough: it removed the main
+  // shell's $TMP (#606). This copy holds the child before exec for up to 15 s,
+  // in a command substitution whose sleep is in the fetch's process group:
+  // the timer's TERM ends both, and lands in that window even when a loaded
+  // runner delays the timer by seconds. The KILL right after it could still
+  // beat the trap and pass the old trap too; it did not in 80 runs under bash
+  // 5.2. Bash 5.3 never runs the trap there, so only a 5.2 run (CI's) fails.
+  it("with a SHA, keeps $TMP when its fetch's child gets TERM before it execs", async () => {
+    const copy = trackedCopy();
+    const fetchLine = '  git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &\n';
+    const source = readFileSync(copy, 'utf8');
+    expect(source).toContain(fetchLine);
+    writeFileSync(
+      copy,
+      source.replace(fetchLine, fetchLine.replace('"$REPO"', `"$REPO$(${sleepBin} 15)"`))
+    );
+    const tmpDir = mkdtempSync(path.join(binDir, 'tmpdir-'));
+    const run = await smoke(base, { script: copy, args: [newSha], wait: '0', tmpDir });
+    expect(run.stderr).toBe('');
+    expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
+    expect(run.last).toBe(`smoke-prod: ${newSha} not live on ${base}, checks skipped`);
+    expect(run.code).toBe(1);
+    expect(hits.size).toBe(0);
+    // The main shell's trap still removed $TMP.
+    expect(readdirSync(tmpDir)).toEqual([]);
   });
 
   // A fetch of origin that stalls is cut, TERM 1 s before the deadline and
