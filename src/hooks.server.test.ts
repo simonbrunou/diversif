@@ -230,10 +230,12 @@ describe('handle', () => {
 
   it('substitutes %paraglide.lang% in the rendered HTML', async () => {
     const { event } = makeEvent(null, '/en/mentions-legales');
-    // SvelteKit can split the response across chunks; the <html lang>
-    // placeholder lives in the very first chunk that gets streamed. Asserting
-    // both done=false and done=true chunks get the substitution prevents a
-    // regression where gating on `done` leaks `%paraglide.lang%` to the wire.
+    // SvelteKit 3.0.0 transforms the whole document in one `done: true` call
+    // and sends streamed `load` data after it untransformed. The
+    // `done: false` call guards a later SvelteKit that flushes chunks
+    // early, as its `// TODO flush chunks as early as we can` plans: the
+    // <html lang> placeholder would then arrive in a `done: false` chunk, and
+    // gating on `done` would leak `%paraglide.lang%` to the wire.
     const resolve = mock(
       async (
         _event,

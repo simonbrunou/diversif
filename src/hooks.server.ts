@@ -66,11 +66,13 @@ const appHandle = async (
   event.locals.user = user;
   event.locals.memberships = user ? await listMembershipsForUser(user.id) : [];
 
-  // Replace %paraglide.lang% in app.html with the resolved locale. Run on
-  // every chunk: the placeholder sits in the opening <html> tag, which can
-  // land in any chunk when SvelteKit streams a response : gating on `done`
-  // would leak `%paraglide.lang%` to the client whenever the head is flushed
-  // before the closing chunk.
+  // Replace %paraglide.lang% in app.html with the resolved locale. SvelteKit
+  // 3.0.0 calls `transformPageChunk` once per page, with `done: true`, on the
+  // whole document, and sends streamed `load` data after it untransformed.
+  // The transform still ignores `done`, so it stays right for a SvelteKit that
+  // flushes the head early, as its own `// TODO flush chunks as early as we
+  // can` plans: the placeholder sits in the opening <html> tag, which would
+  // then arrive in a `done: false` chunk.
   //
   // The theme cookie (written by #lib/utils/theme alongside localStorage)
   // lets SSR emit class="dark" on <html> for explicit-dark users, so the
