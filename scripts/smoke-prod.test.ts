@@ -507,10 +507,12 @@ describe('scripts/smoke-prod.sh', () => {
   // trap until it execs git, and a TERM that reaches it before then runs the
   // trap there. Under the fake sleep the timer's TERM comes at once, and in
   // CI a loaded runner once held the child long enough: it removed the main
-  // shell's $TMP (#606). This copy holds the child before exec, in a command
-  // substitution whose sleep only the TERM to the fetch's process group ends,
-  // so that the TERM lands in that window however late the timer sends it.
-  // Bash 5.3 never runs the trap there, so only a 5.2 run (CI's) can fail.
+  // shell's $TMP (#606). This copy holds the child before exec for up to 15 s,
+  // in a command substitution whose sleep is in the fetch's process group:
+  // the timer's TERM ends both, and lands in that window even when a loaded
+  // runner delays the timer by seconds. The KILL right after it could still
+  // beat the trap and pass the old trap too; it did not in 80 runs under bash
+  // 5.2. Bash 5.3 never runs the trap there, so only a 5.2 run (CI's) fails.
   it("with a SHA, keeps $TMP when its fetch's child gets TERM before it execs", async () => {
     const copy = trackedCopy();
     const fetchLine = '  git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &\n';
