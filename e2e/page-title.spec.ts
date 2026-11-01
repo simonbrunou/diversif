@@ -58,6 +58,11 @@ test.describe('document title without JavaScript', () => {
     browser,
     page
   }) => {
+    // A signup and three pages. Runs 400 and 403: 6.9 s, then 35.3 s
+    // (timeout) and 28.8 s on the retry, on desktop (1.4 s locally). In run
+    // 403 no other diversif E2E job ran, but cinder's test jobs shared the
+    // runner.
+    test.slow();
     const childId = await signUpAndCreateChild(page, 'Emma', birthDateMonthsAgo(8), 'title-own');
     const noJs = await openWithoutJavaScript(browser, page);
     try {
