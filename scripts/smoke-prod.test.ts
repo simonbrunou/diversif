@@ -6,10 +6,10 @@
 // tracked copy of the script in a git repo with no origin remote: its fetch
 // fails, so the wait matches the SHA as a prefix of the live one. The stall
 // tests give that repo an origin whose fetch stalls instead: a local bare repo
-// whose upload-pack command sleeps 15 s first. They use the real `sleep`,
-// since the fake one would end the stall at once, and the timer that cuts the
-// fetch too. The one that reads the timer's delay from the fake one calls the
-// real one by its path.
+// whose upload-pack command first sleeps past the run deadline. They use the
+// real `sleep`, since the fake one would end the stall at once, and the timer
+// that cuts the fetch too. The one that reads the timer's delay from the fake
+// one calls the real one by its path.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
 import {
   chmodSync,
@@ -393,17 +393,24 @@ describe('scripts/smoke-prod.sh', () => {
   });
 
   // Every run ends by one deadline, SMOKE_WAIT + SMOKE_CHECK_TIME seconds after
-  // it starts, so that it fits in one 600 s agent Bash call. A run still ends
-  // a little past it: bash starts before the script reads its clock, and
-  // curl's exit, the last FAIL lines and the exit trap come after. That
-  // overshoot is about 20 ms locally and reached 887 ms on a loaded CI runner
-  // (run 346), hence the slack. Before the deadline, each unanswered request
-  // below took curl's full 20 s. The test on a host that never answers reads
-  // its deadline from curl's --max-time instead: a stall overshot it by 2.7 s
-  // (run 354, #575).
-  const slack = 2000;
+  // it starts, so that it fits in one 600 s agent Bash call. The wall clock
+  // cannot prove it: bash starts before the script reads its clock, and
+  // curl's exit, the last FAIL lines and the exit trap come after, so a
+  // loaded runner stalls a run past its deadline by seconds (2.7 s in run
+  // 354, #575). The tests read the limits the script hands its tools instead:
+  // each request's --max-time through the logging curl, at most the time from
+  // the start to the end of the wait for a poll, to the run deadline for a
+  // check, and the timer's and the wait's delays through the fake sleep. A
+  // wall-clock upper bound only tells a run that ends near its deadline from
+  // one that waits out curl's own 20 s or a stalled fetch, so it sits at
+  // least 5 s from each, and the test's timeout above the longer wait. A
+  // lower bound holds under any stall, which only makes a run longer. Every
+  // step that must come before the wait or the run ends gets at least 6 s
+  // from the start: a stalled runner held a run for 3.7 s in CI (#572).
   const budgetFails = (lines: string[]) =>
     lines.filter((line) => line.endsWith(' not run: the time budget ran out'));
+  // The --max-time, in seconds, of one call in run.curls.
+  const maxTime = (args: string[]) => Number(args[args.indexOf('--max-time') + 1]);
 
   // After a poll that reads an older commit, the wait sleeps until 1 s before
   // SMOKE_WAIT ends, so that its last poll still gets that 1 s (#541). The
@@ -430,23 +437,32 @@ describe('scripts/smoke-prod.sh', () => {
 
   // The checks share one deadline with the wait, SMOKE_WAIT + SMOKE_CHECK_TIME
   // after the start, so a SHA that goes live late leaves them only what
-  // remains. Here it is live on the first poll, which gets the whole 4 s wait,
-  // and /guide hangs until 5 s after the start, not 1 s after the poll.
+  // remains. Here it is live on the first poll, which gets the whole 6 s wait,
+  // and /guide hangs until 7 s after the start, not 1 s after the poll.
   it('with a SHA live on the first poll, fails the checks left past the run deadline', async () => {
     replies = {
       '/_app/version.json': () => version(newSha),
       '/guide': () => 'hang'
     };
+    const [wait, checkTime] = [6, 1];
     const run = await smoke(base, {
       script: trackedCopy(),
       args: [newSha],
-      wait: '4',
-      checkTime: '1',
-      realSleep: true
+      wait: `${wait}`,
+      checkTime: `${checkTime}`,
+      realSleep: true,
+      logCurl: true
     });
-    expect(run.ms).toBeLessThan(5000 + slack);
+    expect(run.curls.map((args) => args.at(-1))).toEqual(
+      ['/_app/version.json', '/', '/guide'].map((check) => `${base}${check}`)
+    );
+    run.curls.forEach((args, i) => {
+      expect(maxTime(args)).toBeGreaterThan(0);
+      expect(maxTime(args)).toBeLessThanOrEqual(i === 0 ? wait : wait + checkTime);
+    });
+    expect(run.ms).toBeLessThan(15_000);
     // /guide hangs until the deadline, which the run cannot beat.
-    expect(run.ms).toBeGreaterThan(4500);
+    expect(run.ms).toBeGreaterThan(6500);
     expect(hits.get('/_app/version.json')).toBe(1);
     expect(run.lines).toContain(`PASS /_app/version.json is ${newSha}`);
     expect(run.lines).toContain("PASS CSP has default-src 'self'");
@@ -463,35 +479,48 @@ describe('scripts/smoke-prod.sh', () => {
     expect(hits.has('/en')).toBe(false);
     expect(run.last).toBe(`smoke-prod: 7 of 12 checks failed on ${base}`);
     expect(run.code).toBe(1);
-  }, 10_000);
+  }, 30_000);
 
+  // The first poll gets 6 s. The run waits out the last one, which hangs.
   it.each([
     [
       'exits 3 when an older commit served',
       (n: number) => (n === 1 ? version(oldSha) : 'hang'),
-      `PENDING /_app/version.json is ${oldSha}, not ${newSha} after 2s`,
+      `PENDING /_app/version.json is ${oldSha}, not ${newSha} after 6s`,
       3
     ],
     [
       'exits 1 when no version came',
       () => 'hang' as const,
-      /^FAIL \/_app\/version\.json returned no answer \(curl: \(28\) [^)]+\) after 2s$/,
+      /^FAIL \/_app\/version\.json returned no answer \(curl: \(28\) [^)]+\) after 6s$/,
       1
     ]
   ])(
     'with a SHA, ends a failed wait by SMOKE_WAIT and %s',
     async (_outcome, reply, line, code) => {
       replies = { '/_app/version.json': reply };
-      const run = await smoke(base, { script: trackedCopy(), args: [newSha], wait: '2' });
+      const wait = 6;
+      const run = await smoke(base, {
+        script: trackedCopy(),
+        args: [newSha],
+        wait: `${wait}`,
+        logCurl: true
+      });
       // The last poll gets only the time left in the wait, not curl's 20 s.
-      expect(run.ms).toBeLessThan(2000 + 2000);
+      expect(run.curls.length).toBeGreaterThan(0);
+      for (const args of run.curls) {
+        expect(args.at(-1)).toBe(`${base}/_app/version.json`);
+        expect(maxTime(args)).toBeGreaterThan(0);
+        expect(maxTime(args)).toBeLessThanOrEqual(wait);
+      }
+      expect(run.ms).toBeLessThan(15_000);
       expect(run.lines.some((l) => (typeof line === 'string' ? l === line : line.test(l)))).toBe(
         true
       );
       expect(run.code).toBe(code);
       expect(hits.size).toBe(1);
     },
-    10_000
+    30_000
   );
 
   it('with a SHA and SMOKE_WAIT=0, sends no request and exits 1', async () => {
@@ -534,9 +563,10 @@ describe('scripts/smoke-prod.sh', () => {
   });
 
   // A fetch of origin that stalls is cut, TERM 1 s before the deadline and
-  // KILL at it, and counts as a failed one. Each stall lasts 15 s, past the
-  // deadline and its slack, and each test's timeout is above it, so a run the
-  // cut misses fails on its time.
+  // KILL at it, and counts as a failed one. Each stall lasts 30 s, at least
+  // 5 s past the wall-clock bound, and each test's timeout is above it, so a
+  // run the cut misses fails on its time. The TERM comes 6 s after the start,
+  // which leaves the fetch and its upload-pack time to start.
   // This upload-pack outlives TERM, and so does its sleep: only KILL ends
   // them. Started with TERM ignored, git outlives TERM too.
   it.each([
@@ -553,18 +583,18 @@ describe('scripts/smoke-prod.sh', () => {
       const onTerm = outlived ? `echo >${termFile}` : '';
       const run = await smoke(base, {
         script: trackedCopy(
-          `trap "${onTerm}" TERM; (trap "" TERM; exec sleep 15) & echo $! >${pidFile};` +
+          `trap "${onTerm}" TERM; (trap "" TERM; exec sleep 30) & echo $! >${pidFile};` +
             ' wait $!; wait $!; git upload-pack'
         ),
         args: [newSha],
         wait: '2',
-        checkTime: '1',
+        checkTime: '5',
         realSleep: true,
         termIgnored: outlived > 0
       });
-      expect(run.ms).toBeLessThan(3000 + slack);
+      expect(run.ms).toBeLessThan(15_000);
       // The fetch stalls until the cut: the TERM ends git, else the KILL.
-      expect(run.ms).toBeGreaterThan(1500 + outlived);
+      expect(run.ms).toBeGreaterThan(5500 + outlived);
       expect(run.stderr).toBe('');
       expect(readIfThere(termFile)).toBe(outlived ? '\n' : '');
       // KILL ended upload-pack's sleep too.
@@ -580,21 +610,22 @@ describe('scripts/smoke-prod.sh', () => {
       expect(run.code).toBe(1);
       expect(hits.size).toBe(0);
     },
-    20_000
+    40_000
   );
 
   // The fake sleep logs the timer's first delay, the one before the TERM: at
-  // most 9 s with a 10 s deadline, less the script's setup before the fetch,
-  // which gets 4 s here. A wall-clock bound on the TERM's arrival failed
+  // most 11 s with a 12 s deadline, less the script's setup before the fetch,
+  // which gets 6 s here. Under the fake sleep the TERM comes at once, so the
+  // deadline costs no time. A wall-clock bound on the TERM's arrival failed
   // under CI load (#581).
   it('with a SHA, sends a stalled fetch of origin TERM 1 s before the deadline', async () => {
     const run = await smoke(base, {
       script: trackedCopy(`${sleepBin} 15; git upload-pack`),
       args: [newSha],
       wait: '0',
-      checkTime: '10'
+      checkTime: '12'
     });
-    expect(Number(run.sleeps[0])).toBeLessThanOrEqual(9);
+    expect(Number(run.sleeps[0])).toBeLessThanOrEqual(11);
     expect(Number(run.sleeps[0])).toBeGreaterThan(5);
     expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
     expect(run.code).toBe(1);
@@ -610,7 +641,7 @@ describe('scripts/smoke-prod.sh', () => {
         'n=$(cat "$0.count" 2>/dev/null || echo 0)',
         'echo $((n + 1)) >"$0.count"',
         '[ "$n" -ge 1 ] || exit 1',
-        'sleep 15',
+        'sleep 30',
         'exec git upload-pack "$@"',
         ''
       ].join('\n')
@@ -618,34 +649,42 @@ describe('scripts/smoke-prod.sh', () => {
     chmodSync(uploadpack, 0o755);
     replies = { '/_app/version.json': () => version(oldSha) };
     // The first fetch and the first poll must fit in the wait, so it leaves
-    // them 4 s, as the test of a SHA live on the first poll leaves its poll.
-    // The 2 s for the checks put the cut 1 s after the wait ends.
+    // them 6 s, as the test of a SHA live on the first poll leaves its poll.
+    // The 2 s for the checks put the cut 1 s after the wait ends. The stall
+    // lasts 30 s, as in the tests of a fetch that stalls before the wait.
+    const wait = 6;
     const run = await smoke(base, {
       script: trackedCopy(uploadpack),
       args: [newSha],
-      wait: '4',
+      wait: `${wait}`,
       checkTime: '2',
-      realSleep: true
+      realSleep: true,
+      logCurl: true
     });
-    expect(run.ms).toBeLessThan(6000 + slack);
+    expect(run.curls.map((args) => args.at(-1))).toEqual([`${base}/_app/version.json`]);
+    expect(maxTime(run.curls[0])).toBeGreaterThan(0);
+    expect(maxTime(run.curls[0])).toBeLessThanOrEqual(wait);
+    expect(run.ms).toBeLessThan(15_000);
     // The cut comes by the run deadline, not by the end of the wait: a newer
     // commit read by the wait's last poll still leaves its fetch time to end.
-    expect(run.ms).toBeGreaterThan(4500);
+    expect(run.ms).toBeGreaterThan(6500);
     expect(run.stderr).toBe('');
     expect(readFileSync(`${uploadpack}.count`, 'utf8')).toBe('2\n');
     // The stalled fetch, not the polling, used up the wait: one poll only.
     expect(hits.get('/_app/version.json')).toBe(1);
-    expect(run.lines).toContain(`PENDING /_app/version.json is ${oldSha}, not ${newSha} after 4s`);
+    expect(run.lines).toContain(`PENDING /_app/version.json is ${oldSha}, not ${newSha} after 6s`);
     expect(run.code).toBe(3);
-  }, 20_000);
+  }, 40_000);
 
+  // The timer's TERM would come 6 s after the start, which leaves the fetch
+  // and its upload-pack time to start. The Ctrl-C ends the run before it.
   it('with a SHA, ends a fetch of origin that a Ctrl-C interrupts', async () => {
     const pidFile = path.join(mkdtempSync(path.join(binDir, 'upload-pack-')), 'pid');
     const run = await smoke(base, {
       script: trackedCopy(`sleep 15 & echo $! >${pidFile}; wait; git upload-pack`),
       args: [newSha],
       wait: '2',
-      checkTime: '1',
+      checkTime: '5',
       realSleep: true,
       interruptOn: pidFile
     });
@@ -672,9 +711,8 @@ describe('scripts/smoke-prod.sh', () => {
       logCurl: true
     });
     expect(run.curls.map((args) => args.at(-1))).toEqual([`${silentBase}/`]);
-    const maxTime = Number(run.curls[0][run.curls[0].indexOf('--max-time') + 1]);
-    expect(maxTime).toBeGreaterThan(0);
-    expect(maxTime).toBeLessThanOrEqual(wait + checkTime);
+    expect(maxTime(run.curls[0])).toBeGreaterThan(0);
+    expect(maxTime(run.curls[0])).toBeLessThanOrEqual(wait + checkTime);
     expect(run.ms).toBeLessThan(15_000);
     expect(run.retries).toEqual([]);
     expect(run.lines.find((line) => line.startsWith('FAIL / '))).toContain('curl: (28)');
