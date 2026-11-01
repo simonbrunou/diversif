@@ -110,6 +110,12 @@ test.describe('passkeys', () => {
     browser,
     page
   }) => {
+    // 1.9 s locally. In CI, 25.1 s in run 308, which shared the runner with
+    // its own unit job and cinder's test and container jobs. 27.0 s in run
+    // 333, which run 332's diversif E2E job overlapped. A timeout on both
+    // attempts in run 403, where no other diversif E2E job ran but its own
+    // unit job and cinder's test jobs shared the runner.
+    test.slow();
     await addVirtualAuthenticator(page);
     await signUp(page, 'passkey-messages');
     await registerPasskey(page, 'Téléphone');
