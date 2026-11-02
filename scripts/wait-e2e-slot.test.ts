@@ -15,22 +15,27 @@ const JOB = 'End-to-end tests (Playwright)';
 // The script's stale bound for a waiter's last poll.
 const WAITER_TTL = 120;
 // A test makes up to seven calls, each about 50 ms of bash, git, curl and
-// jq. A loaded CI runner stalls a process for seconds (testing.md, « A
-// wall-clock assertion »), so the tests get 30 s instead of the 5 s default.
+// jq. A loaded CI runner stalls a process for seconds (#572), so the tests
+// get 30 s instead of the 5 s default.
 const TIMEOUT = 30_000;
+// The commit of the busy run, which a waiter can name as its own.
+const RUN_SHA = 'ab'.repeat(20);
 
-// Per test: whether another run's E2E job is running, and whether the forge
-// answers every request with a 401.
+// Per test: whether another run's E2E job is running, whether the forge
+// answers every request with a 401, and what to run when it answers for the
+// run list.
 let busy = false;
 let refuse = false;
+let onRunList: (() => void) | null = null;
 
 // The answer to one request path, query string left out: the run list (the
 // script's first probe asks for it too) or run 7's jobs.
 function answer(requestPath: string): { status: number; body: string } {
   if (refuse) return { status: 401, body: '' };
   if (requestPath.endsWith('/actions/runs')) {
+    onRunList?.();
     const runs = busy
-      ? [{ id: 7, index_in_repo: 41, title: 'another PR', commit_sha: 'ab'.repeat(20) }]
+      ? [{ id: 7, index_in_repo: 41, title: 'another PR', commit_sha: RUN_SHA }]
       : [];
     return { status: 200, body: JSON.stringify({ workflow_runs: runs }) };
   }
@@ -122,21 +127,24 @@ afterAll(() => {
 beforeEach(() => {
   busy = false;
   refuse = false;
+  onRunList = null;
   rmSync(claimDir, { recursive: true, force: true });
   mkdirSync(claimDir);
 });
 
 // Async spawn: the fake forge answers on this process's event loop, which
-// Bun.spawnSync would block.
-async function call(w: Waiter) {
+// Bun.spawnSync would block. args holds the waiter's own SHA, if any.
+async function call(w: Waiter, args: string[] = []) {
   const proc = Bun.spawn({
-    cmd: ['bash', w.script],
+    cmd: ['bash', w.script, ...args],
     env: {
       ...process.env,
       HOME: home,
       E2E_SLOT_API: api,
       E2E_SLOT_CLAIM: claim,
       E2E_WAIT: '0',
+      // The clock times it prints, which ahead() compares.
+      TZ: 'UTC',
       // A proxy from the shell would answer for the fake forge.
       no_proxy: '*',
       NO_PROXY: '*'
@@ -149,6 +157,8 @@ async function call(w: Waiter) {
     Bun.readableStreamToText(proc.stderr),
     proc.exited
   ]);
+  // Only an exit 2 writes to stderr: anything else there is a bash error.
+  if (code !== 2) expect(stderr).toBe('');
   return { code, stdout, stderr };
 }
 
@@ -175,9 +185,15 @@ function holder(): string {
   return readFileSync(claim, 'utf8').trim().split(' ').slice(1).join(' ');
 }
 
-const ahead = (w: Waiter) =>
+// The line that prints a waiter ahead, with the UTC clock time it joined
+// when the test knows it: call runs the script with TZ=UTC.
+const ahead = (w: Waiter, joined?: number) =>
   new RegExp(
-    `^ahead in the queue: ${RegExp.escape(w.id)}, waiting since \\d\\d:\\d\\d:\\d\\d$`,
+    `^ahead in the queue: ${RegExp.escape(w.id)}, waiting since ${
+      joined === undefined
+        ? '\\d\\d:\\d\\d:\\d\\d'
+        : new Date(joined * 1000).toISOString().slice(11, 19)
+    }$`,
     'm'
   );
 
@@ -260,8 +276,51 @@ describe('scripts/wait-e2e-slot.sh', () => {
       expect(second.who).toBe(b.id);
 
       busy = false;
-      expect((await call(b)).stdout).toMatch(ahead(a));
+      expect((await call(b)).stdout).toMatch(ahead(a, joined));
       expect((await call(a)).code).toBe(0);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'orders the waiters by the time they joined, before their place in the file',
+    async () => {
+      const t = now();
+      writeFileSync(queueFile, `${t - 30} ${t} ${a.id}\n${t - 90} ${t} ${b.id}\n`);
+      const later = await call(a);
+      expect(later.stdout).toMatch(ahead(b, t - 90));
+      expect(later.code).toBe(3);
+      expect((await call(b)).code).toBe(0);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'keeps a later waiter behind when only its own check reads clear',
+    async () => {
+      busy = true;
+      expect((await call(a)).code).toBe(3);
+      // The busy run is B's own, which its check leaves out.
+      const behind = await call(b, [RUN_SHA.slice(0, 7)]);
+      expect(behind.stdout).not.toContain('run 7');
+      expect(behind.stdout).toMatch(ahead(a));
+      expect(behind.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'puts the holder of a fresh claim before every waiter when it calls again',
+    async () => {
+      expect((await call(a)).code).toBe(0);
+      expect((await call(b)).code).toBe(3);
+      // A's chained command failed before it started an E2E job.
+      const again = await call(a);
+      expect(again.stdout).not.toContain('ahead in the queue');
+      expect(again.code).toBe(0);
+      expect(holder()).toBe(a.id);
+      expect(queue().map((line) => line.who)).toEqual([b.id]);
+      expect((await call(b)).stdout).toContain(`claimed by ${a.id}`);
     },
     TIMEOUT
   );
@@ -284,6 +343,24 @@ describe('scripts/wait-e2e-slot.sh', () => {
       expect(run.stdout).not.toContain('ahead in the queue');
       expect(run.code).toBe(0);
       expect(queue()).toEqual([]);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'refreshes its line before the forge check as well as after it',
+    async () => {
+      const t = now();
+      writeFileSync(queueFile, `${t - 300} ${t - 100} ${a.id}\n`);
+      const stamps: number[] = [];
+      onRunList = () => stamps.push(queue().find((line) => line.who === a.id)?.seen ?? 0);
+      busy = true;
+      expect((await call(a)).code).toBe(3);
+      // The first probe sees the old stamp, the forge check a refreshed one.
+      expect(stamps).toHaveLength(2);
+      expect(stamps[0]).toBe(t - 100);
+      expect(stamps[1]).toBeGreaterThanOrEqual(t);
+      expect(queue()[0].joined).toBe(t - 300);
     },
     TIMEOUT
   );

@@ -18,7 +18,8 @@
 # for this worktree in the file E2E_SLOT_CLAIM (default
 # diversif-e2e-slot.claim in $XDG_RUNTIME_DIR, else in /tmp), but only once
 # no live waiter joined before it, and another worktree's fresh claim counts
-# as busy (take_turn). Each busy poll prints the waiters ahead of you.
+# as busy (take_turn). While this worktree's own claim is fresh, it goes
+# before every waiter. Each busy poll prints the waiters ahead of you.
 # Exit 0: no other E2E job waits or runs, no other worktree holds a claim
 # and no other waiter is ahead. Exit 3: still busy or behind another waiter,
 # run it again. Exit 2: no token on this host, the forge refused it, or a
@@ -44,10 +45,19 @@ CLAIM="${E2E_SLOT_CLAIM:-${XDG_RUNTIME_DIR:-/tmp}/diversif-e2e-slot.claim}"
 QUEUE="$CLAIM.queue"
 # The identity of this worktree in the claim and in the queue.
 ME="$(git -C "$REPO" rev-parse --show-toplevel 2>/dev/null)"
+# Whoever polled first after a run ended took the slot, so on 2026-11-01 the
+# #600 session waited 70 min while two sessions that came later started
+# three E2E jobs (#615). So each poll refreshes this worktree's line in the
+# queue, before and after its forge check, and a waiter whose line is
+# WAITER_TTL old drops out. Two refreshes come at most 30 s apart, or one
+# forge check apart when the forge is slower; between two calls come the gap
+# while the agent reads exit 3 and the next call's first request. 120 s
+# leaves room for both, and a session that ended holds the queue that long.
+WAITER_TTL=120
 
 # Take the claim lock on fd 9, or print why not and fail. The lock ends with
-# the shell that took it: take_turn runs in a $(...) subshell, so a session
-# never holds it through its 30 s sleep. Without flock (macOS) the
+# the shell that took it: take_turn runs in a subshell, so a session never
+# holds it through its 30 s sleep. Without flock (macOS) the
 # read-check-write of the claim and the queue is unguarded, and sessions that
 # poll 30 s apart rarely meet there.
 lock() {
@@ -61,15 +71,57 @@ lock() {
   fi
 }
 
+# An epoch stamp as a clock time: GNU date, else BSD date (macOS).
+clock() {
+  date -d "@$1" +%T 2>/dev/null || date -r "$1" +%T
+}
+
+# Read the queue's live lines, in file order, into the caller's variables:
+# rest, the other worktrees' lines; queue, the same with this worktree's
+# line kept in its place with its seen stamp set to $1 (now), or added at
+# the end; ahead, one line for each waiter that joined before this worktree,
+# or in the same second above it. Base 10, and a stamp from the future
+# counts as stale.
+read_queue() {
+  local now=$1 joined seen who line age mine="" above=1
+  queue="" rest="" ahead=""
+  while read -r joined seen who; do
+    [[ "${joined:-}" =~ ^[0-9]+$ && "${seen:-}" =~ ^[0-9]+$ && -n "${who:-}" ]] || continue
+    age=$((now - 10#$seen))
+    [ "$age" -ge 0 ] && [ "$age" -lt "$WAITER_TTL" ] || continue
+    line="$((10#$joined)) $((10#$seen)) $who"
+    if [ "$who" = "$ME" ]; then
+      [ -z "$mine" ] || continue
+      mine=$((10#$joined))
+      line="$mine $now $ME"
+    else
+      rest+="$line"$'\n'
+    fi
+    queue+="$line"$'\n'
+  done 2>/dev/null <"$QUEUE"
+  if [ -z "$mine" ]; then
+    mine=$now
+    queue+="$now $now $ME"$'\n'
+  fi
+  # The here-string adds a blank line after queue's last newline.
+  while read -r joined seen who; do
+    if [ -z "${who:-}" ]; then
+      continue
+    elif [ "$who" = "$ME" ]; then
+      above=""
+    elif [ "$joined" -lt "$mine" ] || { [ "$joined" -eq "$mine" ] && [ -n "$above" ]; }; then
+      ahead+="ahead in the queue: $who, waiting since $(clock "$joined")"$'\n'
+    fi
+  done <<<"$queue"
+}
+
 # Drop this worktree's line from the queue, if it can: die calls it, also
 # before the claim file's directory was checked.
 leave_queue() {
-  local joined seen who rest=""
+  local queue rest ahead
   [ -n "$ME" ] && [ -f "$QUEUE" ] || return 0
   lock >/dev/null 2>&1 || return 0
-  while read -r joined seen who; do
-    [ "${who:-}" = "$ME" ] || rest+="$joined $seen $who"$'\n'
-  done 2>/dev/null <"$QUEUE"
+  read_queue "$(date +%s)"
   printf '%s' "$rest" 2>/dev/null >"$QUEUE"
 }
 
@@ -159,68 +211,47 @@ busy_runs() {
 # writes its PR body. 240 s is three times the hook, to leave room for that
 # writing, and a session that then starts nothing holds the slot that long.
 CLAIM_TTL=240
-# Whoever polled first after a run ended took the slot, so on 2026-11-01 the
-# #600 session waited 70 min while two sessions that came later started
-# three E2E jobs (#615). So every poll also refreshes this worktree's line in
-# the queue, and a waiter whose line is WAITER_TTL old drops out. Polls come
-# 30 s apart plus the forge requests; between two calls come the gap while
-# the agent reads exit 3 and the next call's first check. 120 s leaves room
-# for both, and a session that ended holds the queue that long.
-WAITER_TTL=120
 
-# An epoch stamp as a clock time: GNU date, else BSD date (macOS).
-clock() {
-  date -d "@$1" +%T 2>/dev/null || date -r "$1" +%T
-}
-
-# Refresh this worktree's line in the queue, keeping its join time, or add
-# it at the end. When $1 is 1 (the forge check read clear), no live waiter
-# joined before it and no other worktree holds a fresh claim, write the
-# claim, leave the queue and succeed. Otherwise print that claim and each
-# waiter ahead, and fail.
+# Refresh this worktree's line in the queue. When $1 is 1 (the forge check
+# read clear), no waiter is ahead and no other worktree holds a fresh claim,
+# write the claim, leave the queue and succeed. Otherwise print that claim
+# and each waiter ahead, and fail. This worktree's own fresh claim puts it
+# ahead of every waiter: the command it chained after its exit 0 failed
+# before it started an E2E job (a pre-push hook, say), and it calls again.
 take_turn() {
-  local now age at holder joined seen who mine="" queue="" rest="" ahead=""
+  local now at holder age queue rest ahead reasons=""
   lock || return 1
   now=$(date +%s)
-  # Base 10, and a stamp from the future counts as stale.
-  while read -r joined seen who; do
-    [[ "${joined:-}" =~ ^[0-9]+$ && "${seen:-}" =~ ^[0-9]+$ && -n "${who:-}" ]] || continue
-    age=$((now - 10#$seen))
-    [ "$age" -ge 0 ] && [ "$age" -lt "$WAITER_TTL" ] || continue
-    joined=$((10#$joined))
-    if [ "$who" = "$ME" ]; then
-      [ -z "$mine" ] || continue
-      mine=1
-      queue+="$joined $now $ME"$'\n'
-      continue
-    fi
-    [ -n "$mine" ] || ahead+="ahead in the queue: $who, waiting since $(clock "$joined")"$'\n'
-    queue+="$joined $((10#$seen)) $who"$'\n'
-    rest+="$joined $((10#$seen)) $who"$'\n'
-  done 2>/dev/null <"$QUEUE"
-  [ -n "$mine" ] || queue+="$now $now $ME"$'\n'
+  read_queue "$now"
   read -r at holder 2>/dev/null <"$CLAIM"
   [[ "${at:-}" =~ ^[0-9]+$ ]] || at=0
   age=$((now - 10#$at))
-  if [ -n "${holder:-}" ] && [ "$holder" != "$ME" ] && [ "$age" -ge 0 ] &&
-    [ "$age" -lt "$CLAIM_TTL" ]; then
-    ahead="claimed by $holder $age s ago"$'\n'"$ahead"
-  elif [ "$1" = 1 ] && [ -z "$ahead" ]; then
+  if [ -n "${holder:-}" ] && [ "$age" -ge 0 ] && [ "$age" -lt "$CLAIM_TTL" ]; then
+    if [ "$holder" = "$ME" ]; then
+      ahead=""
+    else
+      reasons="claimed by $holder $age s ago"$'\n'
+    fi
+  fi
+  if [ -z "$reasons" ] && [ "$1" = 1 ] && [ -z "$ahead" ]; then
     printf '%s %s\n' "$now" "$ME" 2>/dev/null >"$CLAIM" &&
       printf '%s' "$rest" 2>/dev/null >"$QUEUE" && return 0
-    ahead="cannot write $CLAIM or $QUEUE"$'\n'
+    reasons="cannot write $CLAIM or $QUEUE"$'\n'
   fi
-  printf '%s' "$queue" 2>/dev/null >"$QUEUE" || ahead+="cannot write $QUEUE"$'\n'
-  printf '%s' "$ahead"
+  printf '%s' "$queue" 2>/dev/null >"$QUEUE" || reasons+="cannot write $QUEUE"$'\n'
+  printf '%s%s' "$reasons" "$ahead"
   return 1
 }
 
 deadline=$((start + WAIT))
 while :; do
+  # Refresh this worktree's line before the forge check too (WAITER_TTL), in
+  # a subshell so that the lock ends with it.
+  (take_turn 0 >/dev/null)
   out="$(busy_runs)"
   clear=0
   [ "$out" = "checked" ] && clear=1
-  turn="$(take_turn "$clear")" && {
+  reasons="$(take_turn "$clear")" && {
     echo "wait-e2e-slot: clear at $(date +%T)"
     exit 0
   }
@@ -230,7 +261,7 @@ while :; do
     busy="${busy%$'\n'}"
     printf '%s\n' "${busy:-the check stopped before it read every run}"
   fi
-  [ -z "$turn" ] || printf '%s\n' "$turn"
+  [ -z "$reasons" ] || printf '%s\n' "$reasons"
   if [ $(($(date +%s) + 30)) -ge "$deadline" ]; then
     echo "wait-e2e-slot: still busy after $(($(date +%s) - start))s," \
       "run it again at once to keep your place in the queue"
