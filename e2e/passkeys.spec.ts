@@ -71,6 +71,9 @@ test.describe('passkeys', () => {
   test('registers a passkey via /account/passkeys and signs in with it on /login', async ({
     page
   }) => {
+    // 1.2 s locally. In CI, 28.0 s in run 403, where no other diversif E2E
+    // job ran but its own unit job and cinder's test jobs shared the runner.
+    test.slow();
     await addVirtualAuthenticator(page);
     // /login's onMount pre-arms a *passive* conditional-UI ceremony
     // (browserSupportsWebAuthnAutofill → startAuthentication) against this
