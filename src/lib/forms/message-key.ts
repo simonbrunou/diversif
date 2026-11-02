@@ -12,9 +12,8 @@
 import * as m from '#lib/paraglide/messages.js';
 
 /**
- * Resolve a paraglide message key by string. Used when a server action
- * returns a key (e.g. `form.profileSuccessKey = 'errorsAccountProfileSuccess'`)
- * that the page needs to show inline or in a dialog. An
+ * Resolve a paraglide message key by string, such as the one a server action
+ * returns in `form.profileSuccessKey = 'errorsAccountProfileSuccess'`. An
  * unknown key gets a generic message instead of `undefined`. A key is
  * unknown when server code mistypes it, or when a tab still runs a bundle
  * built before the key (see the i18n-add-key skill's pitfalls).

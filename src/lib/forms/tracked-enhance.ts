@@ -1,6 +1,6 @@
 // Shared use:enhance helper.
 //
-// `trackSubmission` backs every enhanced form in the app: the account pages
+// `trackSubmission` backs the enhanced forms of the account pages
 // (password/profile/delete), child settings, login, signup, join/[code],
 // ConfirmModal and AddSymptomSheet — each previously declared a diverging
 // inline closure. account/passkeys posts with use:enhance only from its

@@ -24,7 +24,7 @@ key — never hardcode text in a component.
    bun run paraglide && bun lint:i18n
    ```
    `lint:i18n` fails on missing/extra keys or placeholder mismatches between locales.
-5. Use the generated message function in the component (import from `$lib/paraglide/messages`),
+5. Use the generated message function in the component (import from `#lib/paraglide/messages.js`),
    never the raw string. Don't edit `src/lib/paraglide/` — it's generated.
 
 ## Pitfalls
