@@ -53,6 +53,8 @@ ME="$(git -C "$REPO" rev-parse --show-toplevel 2>/dev/null)"
 # forge check apart when the forge is slower; between two calls come the gap
 # while the agent reads exit 3 and the next call's first request. 120 s
 # leaves room for both, and a session that ended holds the queue that long.
+# A forge check that takes longer (five runs whose every request takes its
+# full 20 s) still sends the waiter to the back.
 WAITER_TTL=120
 
 # Take the claim lock on fd 9, or print why not and fail. The lock ends with

@@ -325,6 +325,22 @@ describe('scripts/wait-e2e-slot.sh', () => {
     TIMEOUT
   );
 
+  it.each([
+    ['stale', -300],
+    ['from the future', 60]
+  ])(
+    'queues the holder of a claim %s behind the waiters',
+    async (_, offset) => {
+      const t = now();
+      writeFileSync(claim, `${t + offset} ${a.id}\n`);
+      writeFileSync(queueFile, `${t} ${t} ${b.id}\n`);
+      const run = await call(a);
+      expect(run.stdout).toMatch(ahead(b));
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
   it(
     'drops a waiter that stopped polling, or whose stamp lies in the future',
     async () => {
@@ -351,14 +367,14 @@ describe('scripts/wait-e2e-slot.sh', () => {
     'refreshes its line before the forge check as well as after it',
     async () => {
       const t = now();
-      writeFileSync(queueFile, `${t - 300} ${t - 100} ${a.id}\n`);
+      writeFileSync(queueFile, `${t - 300} ${t - 60} ${a.id}\n`);
       const stamps: number[] = [];
       onRunList = () => stamps.push(queue().find((line) => line.who === a.id)?.seen ?? 0);
       busy = true;
       expect((await call(a)).code).toBe(3);
       // The first probe sees the old stamp, the forge check a refreshed one.
       expect(stamps).toHaveLength(2);
-      expect(stamps[0]).toBe(t - 100);
+      expect(stamps[0]).toBe(t - 60);
       expect(stamps[1]).toBeGreaterThanOrEqual(t);
       expect(queue()[0].joined).toBe(t - 300);
     },
