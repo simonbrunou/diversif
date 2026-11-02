@@ -12,7 +12,8 @@
   import { enhance } from '$app/forms';
   import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
-  import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { resolveMessageKey } from '#lib/forms/message-key.js';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
   import * as m from '#lib/paraglide/messages.js';
   import { DIET_EXCLUSIONS, type DietExclusion } from '#lib/utils/diet.js';
   import type { ActionData, PageData } from './$types';
