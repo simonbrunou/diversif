@@ -94,6 +94,13 @@ test.describe('document title without JavaScript', () => {
       await expect(noJs.getByRole('button', { name: /imprimer/i })).toBeVisible();
       await expect(headTitles(noJs)).toHaveCount(1);
       await expect(noJs).toHaveTitle('Bilan pour le pédiatre : Emma · Diversif');
+
+      // English punctuates the framing its own way: no space before the colon.
+      await noJs.goto(`/en/child/${childId}/report`);
+      await expect(noJs.locator('html')).toHaveAttribute('lang', 'en');
+      await expect(noJs.getByRole('button', { name: /print/i })).toBeVisible();
+      await expect(headTitles(noJs)).toHaveCount(1);
+      await expect(noJs).toHaveTitle('Pediatrician summary: Emma · Diversif');
     } finally {
       await noJs.context().close();
     }
