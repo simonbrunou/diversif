@@ -4,7 +4,8 @@
   import Button from '#lib/components/ui/Button.svelte';
   import FormError from '#lib/components/ui/FormError.svelte';
   import { enhance } from '$app/forms';
-  import { resolveMessageKey, trackSubmission } from '#lib/forms/tracked-enhance.js';
+  import { resolveMessageKey } from '#lib/forms/message-key.js';
+  import { trackSubmission } from '#lib/forms/tracked-enhance.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
   import * as m from '#lib/paraglide/messages.js';
   import { SITE } from '#lib/seo.js';

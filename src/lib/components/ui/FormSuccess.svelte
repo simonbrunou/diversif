@@ -1,6 +1,6 @@
 <script lang="ts">
   import Callout from './Callout.svelte';
-  import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
+  import { resolveMessageKey } from '#lib/forms/message-key.js';
 
   // An action's success key, `<FormSuccess messageKey={form?.savedKey} {form} />`,
   // shown as a success Callout: FormError's counterpart for a result that

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { cn } from '#lib/utils/cn.js';
-  import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
+  import { resolveMessageKey } from '#lib/forms/message-key.js';
   import { isHydrated } from '#lib/boot-recovery.js';
 
   // Either an action's message key, `<FormError messageKey={form?.errorKey} {form} />`,

@@ -1,21 +1,12 @@
-// Shared use:enhance helpers.
+// Shared use:enhance helper.
 //
-// `trackSubmission` backs every enhanced form in the app: the account pages
-// (password/profile/passkeys/delete), child settings, login, signup, join/[code],
+// `trackSubmission` backs the enhanced forms of the account pages
+// (password/profile/delete), child settings, login, signup, join/[code],
 // ConfirmModal and AddSymptomSheet — each previously declared a diverging
-// inline closure. The repas forms (log, edit) don't use use:enhance: they
-// submit through RepasForm.svelte and the durable submit module.
-//
-// `resolveMessageKey` turns an action- or load-returned key into prose: inside
-// FormError, whose `messageKey` prop renders the action refusals of login,
-// signup, the account pages (profile, password, passkeys, delete), child
-// settings, the repas forms and join/[code]; inside FormSuccess, for the
-// account pages' and child settings' success messages; in the dialogs of
-// account/passkeys and child settings; in join/[code]'s load-error
-// paragraph; and in the passkeys/registration/options endpoint (fresh-auth
-// failures).
-
-import * as m from '#lib/paraglide/messages.js';
+// inline closure. account/passkeys posts with use:enhance only from its
+// delete dialog, so it reaches `trackSubmission` through ConfirmModal. The
+// repas forms (log, edit) don't use use:enhance: they submit through
+// RepasForm.svelte and the durable submit module.
 
 /**
  * Wraps a use:enhance callback so a `submitting` state flag is flipped on
@@ -65,17 +56,4 @@ export function trackSubmission(
       if (!succeeded) opts.onFailure?.();
     };
   };
-}
-
-/**
- * Resolve a paraglide message key by string. Used when a server action
- * returns a key (e.g. `form.profileSuccessKey = 'errorsAccountProfileSuccess'`)
- * that the page needs to show inline or in a dialog. An
- * unknown key gets a generic message instead of `undefined`. A key is
- * unknown when server code mistypes it, or when a tab still runs a bundle
- * built before the key (see the i18n-add-key skill's pitfalls).
- */
-export function resolveMessageKey(key: string): string {
-  const fn = m[key as keyof typeof m] as (() => string) | undefined;
-  return fn?.() ?? m.errorsGenericFallback();
 }
