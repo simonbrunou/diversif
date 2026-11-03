@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
 import { resolveMessageKey } from './message-key';
 
-// The test runtime resolves messages in the base locale, French. Each test
-// asserts the exact catalogue text (messages/fr.json), so a lookup that
-// returned the key, the English text or the fallback for a known key fails.
+// bunfig.preload.ts pins the test locale to French. Each test asserts the
+// exact catalogue text (messages/fr.json), so a lookup that returned the key,
+// the English text or the fallback for a known key fails.
 describe('resolveMessageKey', () => {
   it('returns the resolved FR message for a known key', () => {
     expect(resolveMessageKey('chromeBack')).toBe('Retour');
