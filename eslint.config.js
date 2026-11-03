@@ -5,6 +5,7 @@ import drizzle from 'eslint-plugin-drizzle';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 import e2e from './eslint-rules/e2e.js';
+import i18n from './eslint-rules/i18n.js';
 import lucide from './eslint-rules/lucide.js';
 
 export default ts.config(
@@ -75,6 +76,13 @@ export default ts.config(
       // bare Map here. Disable rather than churn to SvelteMap needlessly.
       'svelte/prefer-svelte-reactivity': 'off'
     }
+  },
+  {
+    // A literal « : » between two messages shows the French space before the
+    // colon in English too (#624).
+    files: ['**/*.svelte'],
+    plugins: { i18n },
+    rules: { 'i18n/no-literal-colon-separator': 'error' }
   },
   {
     // An inline `setMonth(getMonth() - n)` rolls over at a month's end: on
