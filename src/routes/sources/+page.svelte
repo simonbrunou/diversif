@@ -9,7 +9,7 @@
   import { localizedHref } from '#lib/utils/localized-href.js';
   import { page } from '$app/state';
   import { SOURCES, ALL_SOURCE_IDS } from '#lib/content/sources.js';
-  import { Library, ExternalLink } from '@lucide/svelte';
+  import { ExternalLink } from '@lucide/svelte';
 
   const siteUrl = SITE.defaultOrigin;
 
@@ -57,10 +57,6 @@
 
   <section lang="fr" class="space-y-8">
     <header class="space-y-2">
-      <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-primary-strong">
-        <Library size={14} aria-hidden="true" />
-        Sources
-      </div>
       <h1 class="text-2xl font-semibold leading-tight md:text-3xl">Sources et références</h1>
       <p class="max-w-2xl text-sm text-muted-foreground">
         Toutes les recommandations affichées dans Diversif s'appuient sur des sources publiques et

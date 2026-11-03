@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 import StagesBentoGrid from './StagesBentoGrid.svelte';
 
 afterEach(() => {
@@ -52,6 +53,13 @@ describe('StagesBentoGrid', () => {
       expect(label('9 à 12 mois')).toBe(inactiveLabel);
     }
   );
+
+  it("sets each stage tile's text in the tile's own foreground (#360)", () => {
+    render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
+    const tiles = screen.getAllByRole('button');
+    expect(tiles.length).toBe(4);
+    for (const tile of tiles) expectPairedForeground(tile);
+  });
 
   it('calls onOpen with the stage id when a tile is tapped', async () => {
     const onOpen = mock();
