@@ -85,6 +85,8 @@ new RuleTester({
     { code: '{#await p}{a}{/await} : {b}', errors: separator(22) },
     { code: '{#await p then v}{v}{/await} : {b}', errors: separator(29) },
     { code: '{#await p}texte{:catch e}{e}{/await} : {b}', errors: separator(37) },
+    // A snippet inside a component is a prop the component renders.
+    { code: '<Label>{#snippet header()}{a}{/snippet}</Label> : {b}', errors: separator(48) },
     // Text at the top level of the component.
     { code: '{a} : {b}', errors: separator(4) },
     { code: '<p>{@html a} : {b}</p>', errors: separator(13) },

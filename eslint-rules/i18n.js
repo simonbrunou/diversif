@@ -23,9 +23,9 @@
 // `{a}. Adresse postale : {b}` on the French-only privacy page.
 // Not checked: a colon that a message carries next to a markup space
 // (`<strong>{a}</strong> {m.after()}` with after = ": …"), a string in a tag
-// (`{a}{' : '}{b}`), a markup comment next to the text
-// (`{a}<!-- x --> : {b}`), string concatenation (`a + ' : ' + b`) and .ts
-// files.
+// (`{a}{' : '}{b}`), a markup comment, a {#snippet} or a {@const} between the
+// text and a dynamic part (`{a}<!-- x --> : {b}`), string concatenation
+// (`a + ' : ' + b`) and .ts files.
 
 const bareSeparator = /^[^\p{L}\p{N}]*\s:[^\p{L}\p{N}]*$/u;
 
@@ -34,12 +34,15 @@ const bareSeparator = /^[^\p{L}\p{N}]*\s:[^\p{L}\p{N}]*$/u;
 const branches = ['children', 'else', 'pending', 'then', 'catch'];
 
 // A `{…}` tag that renders something, or an element or block that holds one.
-// A {#snippet} renders nothing where it stands.
-function isDynamic(node) {
-  if (!node || node.type === 'SvelteSnippetBlock') return false;
+function holdsTag(node) {
+  if (!node) return false;
   if (node.type === 'SvelteMustacheTag' || node.type === 'SvelteRenderTag') return true;
-  return branches.some((key) => [node[key]].flat().some(isDynamic));
+  return branches.some((key) => [node[key]].flat().some(holdsTag));
 }
+
+// A {#snippet} renders nothing where it stands. One inside a component is a
+// prop the component renders, so holdsTag looks into it.
+const isDynamic = (node) => node?.type !== 'SvelteSnippetBlock' && holdsTag(node);
 
 // Whether the parts on both sides of `node` in `parts` are dynamic.
 function betweenDynamicParts(parts, node) {
