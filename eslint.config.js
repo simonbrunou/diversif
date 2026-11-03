@@ -78,8 +78,8 @@ export default ts.config(
     }
   },
   {
-    // A literal « : » between two messages shows the French space before the
-    // colon in English too (#624).
+    // A literal « : » between two messages or data values shows the French
+    // space before the colon in English too (#624).
     files: ['**/*.svelte'],
     plugins: { i18n },
     rules: { 'i18n/no-literal-colon-separator': 'error' }

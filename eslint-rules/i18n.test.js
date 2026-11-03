@@ -15,9 +15,9 @@ const svelteParser = svelte.configs['flat/recommended'].find((c) => c.languageOp
 const component = (code) => ({ code, filename: 'Component.svelte' });
 const separator = (column, line = 1) => [{ messageId: 'separator', line, column }];
 
-// Each invalid form, again with U+00A0 and U+202F before the colon, written
-// as themselves and as entities.
-const spaces = [' ', ' ', ' '];
+// Each invalid form, again with U+00A0 and U+202F before the colon. The
+// entity forms come in the invalid list below.
+const spaces = [' ', String.fromCodePoint(0xa0), String.fromCodePoint(0x202f)];
 const spacedForms = spaces.flatMap((space) => [
   { code: `<p>{a}${space}: {b}</p>`, errors: separator(7) },
   { code: `<p><strong>{a}</strong>${space}: {b}</p>`, errors: separator(24) },
@@ -51,16 +51,19 @@ new RuleTester({
     '<script>const t = `Label : ${b}`;</script>',
     '<script>const t = `${a} : texte`;</script>',
     '<script>const t = `a : b`;</script>',
-    // Static text before the colon, between two dynamic parts: the form of
-    // the French-only privacy page.
+    // A word in the text between two dynamic parts: the form of the
+    // French-only privacy page.
     '<p><a href="mailto:{e}">{e}</a>. Adresse postale : {b}.</p>',
-    '<p>{a} : ({b})</p>',
+    '<p>{a} : texte {b}</p>',
     '<p title="{a}, adresse : {b}"></p>',
     '<script>const t = `${a}, adresse : ${b}`;</script>',
     // A tagged template with an invalid escape has no cooked text.
     '<script>const t = tag`${a} \\u : ${b}`;</script>',
-    // An element with no `{…}` tag inside is static.
+    // An element or block with no `{…}` tag inside is static, and a snippet
+    // renders nothing where it stands.
     '<p><Icon /> : {b}</p>',
+    '{#if x}texte{/if} : {b}',
+    '{#snippet s()}{a}{/snippet} : {b}',
     // A space with no colon.
     '<p>{a} {b}</p>',
     // A reported line under a disable comment. RuleTester names the rule
@@ -73,12 +76,25 @@ new RuleTester({
     { code: '<p>{a}&nbsp;: {b}</p>', errors: separator(7) },
     { code: '<p>{a}&#8239;: {b}</p>', errors: separator(7) },
     { code: '<p title="{a}&nbsp;: {b}"></p>', errors: separator(14) },
-    // A component or a block that holds a `{…}` tag is dynamic too.
+    // A component or a block that holds a `{…}` tag, in any branch, is
+    // dynamic too.
     { code: '<p><Label>{a}</Label> : {b}</p>', errors: separator(22) },
     { code: '{#if x}<span>{a}</span>{/if} : {b}', errors: separator(29) },
+    { code: '{#if x}texte{:else}{a}{/if} : {b}', errors: separator(28) },
+    { code: '{#each xs as x}texte{:else}{a}{/each} : {b}', errors: separator(38) },
+    { code: '{#await p}{a}{/await} : {b}', errors: separator(22) },
+    { code: '{#await p then v}{v}{/await} : {b}', errors: separator(29) },
+    { code: '{#await p}texte{:catch e}{e}{/await} : {b}', errors: separator(37) },
     // Text at the top level of the component.
     { code: '{a} : {b}', errors: separator(4) },
     { code: '<p>{@html a} : {b}</p>', errors: separator(13) },
+    { code: '<p>{@render s()} : {b}</p>', errors: separator(17) },
+    // Punctuation around the separator is no word.
+    { code: '<p>{a} : ({b})</p>', errors: separator(7) },
+    { code: '<p>({a}) : {b}</p>', errors: separator(8) },
+    { code: '<p>{a} : « {b} »</p>', errors: separator(7) },
+    { code: '<p title="({a}) : {b}"></p>', errors: separator(15) },
+    { code: '<script>const t = `${a} : (${b})`;</script>', errors: separator(23) },
     // A newline before the colon renders as a space.
     { code: '<p>\n  {a}\n  : {b}\n</p>', errors: separator(6, 2) },
     // Each separator of a longer chain.

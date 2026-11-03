@@ -7,29 +7,44 @@
 // French-only content (the guide, the legal pages) disables the rule on the
 // line and says why.
 //
-// Checked, in .svelte files: a text that holds only a colon and whitespace,
-// with whitespace before the colon (JavaScript's \s, which covers U+00A0 and
-// U+202F, written as themselves or as entities), when it is
-// - markup text whose siblings on both sides are a `{…}` tag, or an element
-//   or block that holds one somewhere inside: `{a} : {b}`,
-//   `<strong>{a}</strong> : {b}`;
+// Checked, in .svelte files: a text with whitespace before a colon
+// (JavaScript's \s, which covers U+00A0 and U+202F, written as themselves or
+// as entities) and no letter or digit in it, when it is
+// - markup text whose siblings on both sides are a `{…}` tag (`{@html}` and
+//   `{@render}` included), or an element or block that holds one somewhere
+//   inside, in any branch: `{a} : {b}`, `<strong>{a}</strong> : {b}`,
+//   `({a}) : {b}`;
 // - the text of an attribute or style: directive value between two `{…}`
 //   tags: `title="{a} : {b}"`;
 // - the text of a template literal between two `${}`, in markup or in the
 //   script: `${a} : ${b}`.
-// A ternary's colon is code, not text, so `{a ? b : c}` passes. A text with
-// static content on either side of the colon passes too: `Label : {b}`, or
+// A ternary's colon is code, not text, so `{a ? b : c}` passes. A text with a
+// word in it passes too: its label or its text is static, as in
 // `{a}. Adresse postale : {b}` on the French-only privacy page.
 // Not checked: a colon that a message carries next to a markup space
-// (`<strong>{a}</strong> {m.after()}` with after = ": …"), string
-// concatenation (`a + ' : ' + b`) and .ts files.
+// (`<strong>{a}</strong> {m.after()}` with after = ": …"), a string in a tag
+// (`{a}{' : '}{b}`), a markup comment next to the text
+// (`{a}<!-- x --> : {b}`), string concatenation (`a + ' : ' + b`) and .ts
+// files.
 
-const spacedColon = /^\s+:\s*$/;
+const bareSeparator = /^[^\p{L}\p{N}]*\s:[^\p{L}\p{N}]*$/u;
 
-// A `{…}` tag, or an element or block whose children hold one.
-function holdsMustache(node) {
-  if (node?.type === 'SvelteMustacheTag') return true;
-  return Array.isArray(node?.children) && node.children.some(holdsMustache);
+// The branches of a node that render in its place: an element's or a
+// block's children, an {#if}'s or {#each}'s {:else}, an {#await}'s three.
+const branches = ['children', 'else', 'pending', 'then', 'catch'];
+
+// A `{…}` tag that renders something, or an element or block that holds one.
+// A {#snippet} renders nothing where it stands.
+function isDynamic(node) {
+  if (!node || node.type === 'SvelteSnippetBlock') return false;
+  if (node.type === 'SvelteMustacheTag' || node.type === 'SvelteRenderTag') return true;
+  return branches.some((key) => [node[key]].flat().some(isDynamic));
+}
+
+// Whether the parts on both sides of `node` in `parts` are dynamic.
+function betweenDynamicParts(parts, node) {
+  const index = parts.indexOf(node);
+  return isDynamic(parts[index - 1]) && isDynamic(parts[index + 1]);
 }
 
 const noLiteralColonSeparator = {
@@ -48,25 +63,22 @@ const noLiteralColonSeparator = {
     const report = (node) => context.report({ node, messageId: 'separator' });
     return {
       SvelteText(node) {
-        if (!spacedColon.test(node.value)) return;
-        const siblings = node.parent.children ?? node.parent.body;
-        const index = siblings.indexOf(node);
-        if (holdsMustache(siblings[index - 1]) && holdsMustache(siblings[index + 1])) report(node);
+        if (!bareSeparator.test(node.value)) return;
+        if (betweenDynamicParts(node.parent.children ?? node.parent.body, node)) report(node);
       },
       // The text parts of an attribute or a style: directive value.
       SvelteLiteral(node) {
-        if (!spacedColon.test(node.value)) return;
-        const parts = node.parent.value;
-        const index = parts.indexOf(node);
-        if (holdsMustache(parts[index - 1]) && holdsMustache(parts[index + 1])) report(node);
+        if (bareSeparator.test(node.value) && betweenDynamicParts(node.parent.value, node)) {
+          report(node);
+        }
       },
       TemplateLiteral(node) {
         // Only the quasis between two expressions: the first and the last
         // have static text, or nothing, on one side.
         for (const quasi of node.quasis.slice(1, -1)) {
-          // A tagged template with an invalid escape has no cooked text, and
-          // a text with an escape in it is no bare separator.
-          if (spacedColon.test(quasi.value.cooked ?? '')) report(quasi);
+          // A tagged template with an invalid escape (`\u` alone) has no
+          // cooked text. Valid escapes such as `\u00a0` are cooked.
+          if (bareSeparator.test(quasi.value.cooked ?? '')) report(quasi);
         }
       }
     };
