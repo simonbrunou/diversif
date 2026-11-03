@@ -8,9 +8,14 @@
 #
 # It leaves out the runs of <own sha> (full or a prefix of 7+ characters),
 # by default origin/<current branch>: your branch's pushed head, whose run
-# your next push cancels. It polls every 30 s for up to E2E_WAIT seconds
-# (default 420, so a call ends inside a 600 s shell timeout even when every
-# request takes its full 20 s) and prints each busy run it sees.
+# your next push cancels. When the chained command works on a branch other
+# than the checked-out one (it opens or merges that branch's PR, or reruns
+# its run), pass that branch's pushed SHA: the default would leave out the
+# checked-out branch's run, a real competitor then (#631). The testing doc's
+# section names the SHA for each case. It polls every 30 s for up to
+# E2E_WAIT seconds (default 420, so a call ends inside a 600 s shell timeout
+# even when every request takes its full 20 s) and prints each busy run it
+# sees.
 # Each poll also queues this worktree in E2E_SLOT_CLAIM.queue, and the
 # worktrees on this host take the slot in the order they joined. A call that
 # ends on exit 3 keeps its place for the next call; a waiter that has not
