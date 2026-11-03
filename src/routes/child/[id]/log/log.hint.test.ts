@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../../../test/component';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 
 // Component-level mocks for the page's non-DB dependencies, following the
 // existing recipe used by src/lib/components/AppShellBento.test.ts and
@@ -194,5 +195,71 @@ describe('log +page.svelte — meal date input', () => {
     await fireEvent.input(givenAt, { target: { value: '2024-06-15T12:00' } });
     expect(checkedTexture()).toBe('lisse');
     expect(container.textContent).toContain('par défaut pour 5 mois');
+  });
+});
+
+describe('log +page.svelte — reaction help', () => {
+  afterEach(() => {
+    overwriteGetLocale(() => baseLocale);
+  });
+
+  // Each item of the « Comment choisir ? » list: its text with the markup's
+  // indentation collapsed (a no-break space stays as it is), and the text and
+  // class of each bold part.
+  function helpItems(container: HTMLElement) {
+    const list = container.querySelector('strong.text-reaction-ras-foreground')!.closest('ul')!;
+    return Array.from(list.querySelectorAll('li')).map((li) => ({
+      text: li.textContent!.replace(/[ \t\n]+/g, ' ').trim(),
+      bold: Array.from(li.querySelectorAll('strong')).map((s) => [s.textContent, s.className])
+    }));
+  }
+
+  // The French text stays as it was before #624; English has no space before
+  // the colon.
+  it.each([
+    [
+      'fr',
+      [
+        {
+          text: 'Tout va bien : bébé a bien toléré, aucun signe particulier.',
+          bold: [['Tout va bien', 'text-reaction-ras-foreground']]
+        },
+        {
+          text: 'Petit inconfort : symptôme digestif ou cutané léger après l’aliment. Arrêtez-le et demandez rapidement un avis médical avant de le reproposer.',
+          bold: [['Petit inconfort', 'text-reaction-inconfort-foreground']]
+        },
+        {
+          text: 'Réaction marquée : urticaire, œdème, vomissements, gêne respiratoire. Arrêtez tout de suite et consultez. En cas de gêne respiratoire, d’œdème des lèvres ou de la langue, de malaise ou de plusieurs symptômes, appelez le 15 ou le 112.',
+          bold: [
+            ['Réaction marquée', 'text-reaction-reaction-foreground'],
+            ['Arrêtez tout de suite', '']
+          ]
+        }
+      ]
+    ],
+    [
+      'en',
+      [
+        {
+          text: 'All good: baby tolerated it well, no particular sign.',
+          bold: [['All good', 'text-reaction-ras-foreground']]
+        },
+        {
+          text: 'Mild discomfort: a mild digestive or skin symptom after the food. Stop it and seek medical advice promptly before offering it again.',
+          bold: [['Mild discomfort', 'text-reaction-inconfort-foreground']]
+        },
+        {
+          text: 'Marked reaction: hives, swelling, vomiting, breathing difficulty. Stop immediately and seek care. For breathing trouble, swollen lips or tongue, faintness, or several symptoms, call emergency services.',
+          bold: [
+            ['Marked reaction', 'text-reaction-reaction-foreground'],
+            ['Stop immediately', '']
+          ]
+        }
+      ]
+    ]
+  ] as const)('puts the %s colon after each bold label', (locale, items) => {
+    overwriteGetLocale(() => locale);
+    const { container } = render(Page, { props: { data: makeData([]), form: null } });
+    expect(helpItems(container)).toEqual(items);
   });
 });
