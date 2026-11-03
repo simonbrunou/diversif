@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 import StagesBentoGrid from './StagesBentoGrid.svelte';
 
 afterEach(() => {
@@ -53,14 +54,11 @@ describe('StagesBentoGrid', () => {
     }
   );
 
-  // The Paired Foreground Rule (DESIGN.md): text on the lilac tile takes
-  // lilac's own foreground, never ink-soft (#360).
-  it("sets each one-liner in the lilac tile's foreground", () => {
+  it("sets each stage tile's text in the tile's own foreground (#360)", () => {
     render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
-    const oneLiner = screen.getByText('Diversifier le panier');
-    expect(oneLiner.closest('button')?.classList.contains('bg-tile-lilac')).toBe(true);
-    expect(oneLiner.classList.contains('text-tile-lilac-foreground')).toBe(true);
-    expect(oneLiner.className).not.toContain('ink-soft');
+    const tiles = screen.getAllByRole('button');
+    expect(tiles.length).toBe(4);
+    for (const tile of tiles) expectPairedForeground(tile);
   });
 
   it('calls onOpen with the stage id when a tile is tapped', async () => {

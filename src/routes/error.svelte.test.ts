@@ -24,8 +24,7 @@ describe('error page status (#360)', () => {
     render(ErrorPage);
 
     const title = screen.getByRole('heading', { level: 1, name: 'Page introuvable' });
-    // outerHTML, not the element: a failing toBeNull() on a happy-dom node
-    // prints the whole window object.
+    // outerHTML: see docs/agents/testing.md, "An element that must be absent".
     expect(title.previousElementSibling?.outerHTML ?? null).toBeNull();
 
     const status = screen.getByText('Erreur 404');

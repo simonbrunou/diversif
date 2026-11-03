@@ -17,8 +17,7 @@ describe.each([
   it('opens on its h1, with no kicker above it', () => {
     render(Page);
     const title = screen.getByRole('heading', { level: 1 });
-    // outerHTML, not the element: a failing toBeNull() on a happy-dom node
-    // prints the whole window object.
+    // outerHTML: see docs/agents/testing.md, "An element that must be absent".
     expect(title.previousElementSibling?.outerHTML ?? null).toBeNull();
     const header = title.closest('header');
     expect(header).not.toBeNull();
