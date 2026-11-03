@@ -12,8 +12,8 @@
 // as entities) and no letter or digit in it, when it is
 // - markup text whose siblings on both sides are a `{…}` tag (`{@html}` and
 //   `{@render}` included), or an element or block that holds one somewhere
-//   inside, in any branch: `{a} : {b}`, `<strong>{a}</strong> : {b}`,
-//   `({a}) : {b}`;
+//   inside, in any branch or in a snippet it passes to a component:
+//   `{a} : {b}`, `<strong>{a}</strong> : {b}`, `({a}) : {b}`;
 // - the text of an attribute or style: directive value between two `{…}`
 //   tags: `title="{a} : {b}"`;
 // - the text of a template literal between two `${}`, in markup or in the
@@ -33,15 +33,20 @@ const bareSeparator = /^[^\p{L}\p{N}]*\s:[^\p{L}\p{N}]*$/u;
 // block's children, an {#if}'s or {#each}'s {:else}, an {#await}'s three.
 const branches = ['children', 'else', 'pending', 'then', 'catch'];
 
+// A {#snippet} renders nothing where it stands. A component, or a special
+// element such as <svelte:boundary>, takes one in its children as a prop and
+// renders it.
+const isComponent = (node) => node?.type === 'SvelteElement' && node.kind !== 'html';
+
 // A `{…}` tag that renders something, or an element or block that holds one.
 function holdsTag(node) {
   if (!node) return false;
+  if (node.type === 'SvelteSnippetBlock' && !isComponent(node.parent)) return false;
   if (node.type === 'SvelteMustacheTag' || node.type === 'SvelteRenderTag') return true;
   return branches.some((key) => [node[key]].flat().some(holdsTag));
 }
 
-// A {#snippet} renders nothing where it stands. One inside a component is a
-// prop the component renders, so holdsTag looks into it.
+// A snippet next to the text renders elsewhere, even inside a component.
 const isDynamic = (node) => node?.type !== 'SvelteSnippetBlock' && holdsTag(node);
 
 // Whether the parts on both sides of `node` in `parts` are dynamic.

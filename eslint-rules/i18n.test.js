@@ -64,6 +64,9 @@ new RuleTester({
     '<p><Icon /> : {b}</p>',
     '{#if x}texte{/if} : {b}',
     '{#snippet s()}{a}{/snippet} : {b}',
+    '<p>{#snippet s()}{a}{/snippet}</p> : {b}',
+    '{#if x}{#snippet s()}{a}{/snippet}{/if} : {b}',
+    '<Label>{#snippet s()}{a}{/snippet} : {b}</Label>',
     // A space with no colon.
     '<p>{a} {b}</p>',
     // A reported line under a disable comment. RuleTester names the rule
@@ -87,6 +90,10 @@ new RuleTester({
     { code: '{#await p}texte{:catch e}{e}{/await} : {b}', errors: separator(37) },
     // A snippet inside a component is a prop the component renders.
     { code: '<Label>{#snippet header()}{a}{/snippet}</Label> : {b}', errors: separator(48) },
+    {
+      code: '<svelte:boundary>{#snippet failed()}{a}{/snippet}</svelte:boundary> : {b}',
+      errors: separator(68)
+    },
     // Text at the top level of the component.
     { code: '{a} : {b}', errors: separator(4) },
     { code: '<p>{@html a} : {b}</p>', errors: separator(13) },
