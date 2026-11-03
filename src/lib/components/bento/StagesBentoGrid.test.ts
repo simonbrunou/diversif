@@ -53,6 +53,16 @@ describe('StagesBentoGrid', () => {
     }
   );
 
+  // The Paired Foreground Rule (DESIGN.md): text on the lilac tile takes
+  // lilac's own foreground, never ink-soft (#360).
+  it("sets each one-liner in the lilac tile's foreground", () => {
+    render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
+    const oneLiner = screen.getByText('Diversifier le panier');
+    expect(oneLiner.closest('button')?.classList.contains('bg-tile-lilac')).toBe(true);
+    expect(oneLiner.classList.contains('text-tile-lilac-foreground')).toBe(true);
+    expect(oneLiner.className).not.toContain('ink-soft');
+  });
+
   it('calls onOpen with the stage id when a tile is tapped', async () => {
     const onOpen = mock();
     render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen } });

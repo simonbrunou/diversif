@@ -42,6 +42,19 @@ describe('StageDetailSheet', () => {
     expect(screen.getByText(/600 à 800 ml/)).toBeTruthy();
   });
 
+  // The Paired Foreground Rule (DESIGN.md): each row label takes its own
+  // tint's foreground, never ink-soft (#360).
+  it.each([
+    ['Texture', 'mint'],
+    ['Lait', 'butter']
+  ] as const)('sets the %s row label in the %s foreground', (label, tint) => {
+    render(StageDetailSheet, { props: { open: true, stage } });
+    const el = screen.getByText(label);
+    expect(el.parentElement?.classList.contains(`bg-tile-${tint}/40`)).toBe(true);
+    expect(el.classList.contains(`text-tile-${tint}-foreground`)).toBe(true);
+    expect(el.className).not.toContain('ink-soft');
+  });
+
   it('renders red flags when present', () => {
     render(StageDetailSheet, { props: { open: true, stage } });
     expect(screen.getByText('Refus persistant > 1 semaine')).toBeTruthy();

@@ -30,7 +30,7 @@
         )}
       >
         <p class="font-display text-lg italic leading-tight">{stage.title}</p>
-        <p class="mt-1 text-xs text-ink-soft">{stage.oneLiner}</p>
+        <p class="mt-1 text-xs text-tile-lilac-foreground">{stage.oneLiner}</p>
       </button>
     {/each}
   </div>

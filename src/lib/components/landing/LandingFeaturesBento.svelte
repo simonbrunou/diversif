@@ -5,24 +5,29 @@
   const features = $derived([
     {
       tile: 'bg-tile-mint',
+      // Body copy takes the tile's own ink (DESIGN.md, The Paired Foreground Rule).
+      fg: 'text-tile-mint-foreground',
       icon: Apple,
       title: m.landingFeatureCarnetTitle(),
       body: m.landingFeatureCarnetBody()
     },
     {
       tile: 'bg-tile-butter',
+      fg: 'text-tile-butter-foreground',
       icon: Clock,
       title: m.landingFeatureAllergensTitle(),
       body: m.landingFeatureAllergensBody()
     },
     {
       tile: 'bg-tile-sky',
+      fg: 'text-tile-sky-foreground',
       icon: ShieldCheck,
       title: m.landingFeatureCoparentsTitle(),
       body: m.landingFeatureCoparentsBody()
     },
     {
       tile: 'bg-tile-lilac',
+      fg: 'text-tile-lilac-foreground',
       icon: BookOpen,
       title: m.landingFeatureGuideTitle(),
       body: m.landingFeatureGuideBody()
@@ -38,7 +43,7 @@
         <article class="rounded-tile {f.tile} p-5 shadow-soft">
           <f.icon size={20} class="text-ink" aria-hidden="true" />
           <h3 class="mt-3 text-base font-bold leading-tight">{f.title}</h3>
-          <p class="mt-1 text-sm text-ink-soft">{f.body}</p>
+          <p class="mt-1 text-sm {f.fg}">{f.body}</p>
         </article>
       {/each}
     </div>

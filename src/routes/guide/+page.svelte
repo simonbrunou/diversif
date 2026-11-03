@@ -11,7 +11,6 @@
   import { page } from '$app/state';
   import * as m from '#lib/paraglide/messages.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
-  import { BookOpen } from '@lucide/svelte';
 
   const siteUrl = SITE.defaultOrigin;
 
@@ -77,10 +76,6 @@
 
   <section lang="fr" class="space-y-8">
   <header class="space-y-2">
-    <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-primary-strong">
-      <BookOpen size={14} aria-hidden="true" />
-      Guide
-    </div>
     <h1 class="text-2xl font-semibold leading-tight md:text-3xl">
       Diversifier en confiance, sources à l'appui
     </h1>
