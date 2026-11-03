@@ -30,6 +30,24 @@ describe('WelcomeDialog', () => {
     expect(screen.getByText('Prêt·e à explorer')).toBeTruthy();
   });
 
+  // Each text message carries its colon: in French, with a space before it.
+  it('puts the French colon after each bold label of step 1', async () => {
+    render(WelcomeDialog, {
+      props: { open: true, childId: 1, formAction: '?/dismissReminder' }
+    });
+    await fireEvent.click(screen.getByText('Suivant'));
+    const items = Array.from(document.querySelectorAll('[role="dialog"] li')).map((li) =>
+      li.textContent!.replace(/[ \t\n]+/g, ' ').trim()
+    );
+    expect(items).toEqual([
+      'Enregistrer : notez chaque aliment donné et la réaction observée.',
+      'Carnet des allergènes : visualisez les 12 allergènes suivis et leur progression.',
+      'Suggestions : des aliments à introduire bientôt selon l’âge.',
+      'Guide : étapes, allergènes, textures, sources officielles.',
+      'Rappels : des rappels au bon moment quand un aliment ou un allergène attend depuis longtemps.'
+    ]);
+  });
+
   it('renders the "Ouvrir le guide" CTA on the last step as a submit of the dismiss form', async () => {
     render(WelcomeDialog, {
       props: { open: true, childId: 9, formAction: '?/dismissReminder' }

@@ -41,6 +41,7 @@
     </h3>
     <ul class="mt-2 grid gap-1 text-sm text-foreground/90 sm:grid-cols-2">
       {#each CHOKING_HAZARDS as c, i (i)}
+        <!-- eslint-disable-next-line i18n/no-literal-colon-separator -- the guide is French-only content (README), and CHOKING_HAZARDS is French text -->
         <li><strong>{c.food}</strong> : {c.rule}</li>
       {/each}
     </ul>

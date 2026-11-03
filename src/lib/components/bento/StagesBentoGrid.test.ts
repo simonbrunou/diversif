@@ -1,8 +1,12 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { render, screen, fireEvent, cleanup } from '@testing-library/svelte';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import StagesBentoGrid from './StagesBentoGrid.svelte';
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  overwriteGetLocale(() => baseLocale);
+});
 
 describe('StagesBentoGrid', () => {
   const stages = [
@@ -31,6 +35,23 @@ describe('StagesBentoGrid', () => {
     const inactive = screen.getByText('9 à 12 mois').closest('button');
     expect(inactive?.getAttribute('aria-current')).toBeNull();
   });
+
+  // The stage titles are French-only content; the colon after them follows
+  // the locale (#624).
+  it.each([
+    ['fr', '6 à 9 mois : Étape actuelle', '9 à 12 mois : Voir le guide de cette étape'],
+    ['en', '6 à 9 mois: Current stage', "9 à 12 mois: Open this stage's guide"]
+  ] as const)(
+    'names each tile with its title and state in the %s aria-label',
+    (locale, activeLabel, inactiveLabel) => {
+      overwriteGetLocale(() => locale);
+      render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
+      const label = (title: string) =>
+        screen.getByText(title).closest('button')?.getAttribute('aria-label');
+      expect(label('6 à 9 mois')).toBe(activeLabel);
+      expect(label('9 à 12 mois')).toBe(inactiveLabel);
+    }
+  );
 
   it('calls onOpen with the stage id when a tile is tapped', async () => {
     const onOpen = mock();

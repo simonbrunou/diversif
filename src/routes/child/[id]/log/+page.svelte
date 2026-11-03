@@ -213,15 +213,16 @@
           <Info size={12} aria-hidden="true" />
           {m.logFormReactionHelpToggle()}
         </summary>
+        <!-- Each text message starts with the colon in its locale's form: " : …" in fr, ": …" in en (#624). -->
         <ul class="mt-2 space-y-1.5 pl-4 text-muted-foreground">
           <li>
-            <strong class="text-reaction-ras-foreground">{m.logFormReactionHelpRasBold()}</strong> : {m.logFormReactionHelpRasText()}
+            <strong class="text-reaction-ras-foreground">{m.logFormReactionHelpRasBold()}</strong>{m.logFormReactionHelpRasText()}
           </li>
           <li>
-            <strong class="text-reaction-inconfort-foreground">{m.logFormReactionHelpInconfortBold()}</strong> : {m.logFormReactionHelpInconfortText()}
+            <strong class="text-reaction-inconfort-foreground">{m.logFormReactionHelpInconfortBold()}</strong>{m.logFormReactionHelpInconfortText()}
           </li>
           <li>
-            <strong class="text-reaction-reaction-foreground">{m.logFormReactionHelpReactionBold()}</strong> : {m.logFormReactionHelpReactionText1()}
+            <strong class="text-reaction-reaction-foreground">{m.logFormReactionHelpReactionBold()}</strong>{m.logFormReactionHelpReactionText1()}
             <strong>{m.logFormReactionHelpReactionStopBold()}</strong> {m.logFormReactionHelpReactionText2()}
           </li>
         </ul>

@@ -2,6 +2,7 @@
   import PrintShell from '#lib/components/PrintShell.svelte';
   import * as m from '#lib/paraglide/messages.js';
   import { severityOf, symptomLabelText, type SymptomLabel } from '#lib/content/symptoms.js';
+  import { getReactionLabel } from '#lib/utils/reactions.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -29,7 +30,13 @@
     <h2 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
       {m.printFoodSection()}
     </h2>
-    <p class="text-sm">{data.foodName} : {data.givenAt} ({data.reaction})</p>
+    <p class="text-sm">
+      {m.printFoodLine({
+        food: data.foodName,
+        date: data.givenAt,
+        reaction: getReactionLabel(data.reaction)
+      })}
+    </p>
   </section>
 
   <section class="space-y-2">

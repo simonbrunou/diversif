@@ -30,6 +30,12 @@ key — never hardcode text in a component.
 ## Pitfalls
 - Adding to only one locale → `lint:i18n` (and the commit hook) fail.
 - Pluralization / interpolation must match the paraglide message syntax used by sibling keys.
+- A colon after a label goes in a message, never in markup: fr puts a space before it, en does
+  not (`i18n/no-literal-colon-separator`, #624). Put the whole phrase in one message
+  (`chromeChildPageTitle`, fr `{page} : {name}`). When the label is bold markup, start the text
+  message after it with the colon (fr `" : …"`, en `": …"`), as `logFormReactionHelpRasText`
+  and `dialogsWelcomeStep1Bullet1After` do, and keep that leading punctuation when you edit the
+  text.
 - An older bundle shows `errorsGenericFallback` for a key added after its build. With
   JavaScript, a tab still running that bundle turns a key that an action or a load returns into
   text with its own compiled messages (`resolveMessageKey` in `src/lib/forms/message-key.ts`).
