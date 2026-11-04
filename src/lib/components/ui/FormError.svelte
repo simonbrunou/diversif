@@ -2,7 +2,7 @@
   import type { Snippet } from 'svelte';
   import { cn } from '#lib/utils/cn.js';
   import { resolveMessageKey } from '#lib/forms/message-key.js';
-  import { isHydrated } from '#lib/boot-recovery.js';
+  import { isHydrated } from '#lib/hydration.js';
 
   // Either an action's message key, `<FormError messageKey={form?.errorKey} {form} />`,
   // or prose passed as children. `form` is the page's action data that carried

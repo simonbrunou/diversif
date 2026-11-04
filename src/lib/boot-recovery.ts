@@ -7,11 +7,12 @@
  * here.
  *
  * A dropped request or a chunk a redeploy removed is usually gone on the next
- * load, so the page reloads once. Until the app boots again (markHydrated),
- * any further failure shows a banner asking the parent to check their
- * connection and retry, so an outage that lasts cannot loop. Offline, the
- * banner shows straight away: a reload would only swap the page for the
- * browser's own error page.
+ * load, so the page reloads once. Until the app boots again, any further
+ * failure shows a banner asking the parent to check their connection and
+ * retry, so an outage that lasts cannot loop. Offline, the banner shows
+ * straight away: a reload would only swap the page for the browser's own
+ * error page. Recovery ends once the app hydrates: #lib/hydration.ts owns
+ * that marker, and tells this module when the root layout sets it.
  *
  * Out of reach: a failed entry/start or entry/app chunk stops before
  * hooks.client.ts runs. A root chunk that loads but throws is a bug Sentry
@@ -23,9 +24,19 @@
 import { mount } from 'svelte';
 import BootFailureBanner from '#lib/components/BootFailureBanner.svelte';
 import { isNetworkFailure } from '#lib/network-failure.js';
+import { isHydrated, onHydrated } from '#lib/hydration.js';
 
 /** sessionStorage key, set while this tab's recovery reload has not led to a boot. */
 const RELOAD_PENDING_KEY = 'diversif:boot-reload-pending';
+
+// The app started, so a later failed boot in this tab may reload again.
+onHydrated(() => {
+  try {
+    sessionStorage.removeItem(RELOAD_PENDING_KEY);
+  } catch {
+    // No sessionStorage: claimReload never set the key.
+  }
+});
 
 /** Claims the tab's one recovery reload. Without sessionStorage there is no loop guard, so no reload. */
 function claimReload(): boolean {
@@ -53,27 +64,4 @@ export function recoverFromFailedBoot(reason: unknown): void {
     anchor: document.body.firstChild ?? undefined,
     props: { onretry: () => location.reload() }
   });
-}
-
-/**
- * Marks the app as started: the root layout calls this once mounted. Ends a
- * pending recovery, so a later failed boot in this tab may reload again; e2e
- * tests also wait on the attribute before their first interaction.
- */
-export function markHydrated(): void {
-  document.documentElement.dataset.hydrated = 'true';
-  try {
-    sessionStorage.removeItem(RELOAD_PENDING_KEY);
-  } catch {
-    // No sessionStorage: claimReload never set the key.
-  }
-}
-
-/**
- * Tells whether the root layout has mounted (see markHydrated). It returns
- * false on the server and while the client hydrates the server-rendered page,
- * so markup that renders while it returns false came from the server.
- */
-export function isHydrated(): boolean {
-  return typeof document !== 'undefined' && document.documentElement.dataset.hydrated === 'true';
 }
