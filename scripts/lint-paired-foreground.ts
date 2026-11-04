@@ -120,10 +120,13 @@ function bare(cls: string): string {
     .replace(/\/(?:\d+|\[[^\]]*\])$/, '');
 }
 
-// `bg-*` utilities that set no colour of their own, so the tint behind them
-// still shows. A gradient's colours come from its `from-*`/`to-*` stops, which
-// this lint does not read, so it does not end the tint either.
-const NOT_A_BACKGROUND =
+/**
+ * `bg-*` utilities that set no colour of their own, so the tint behind them
+ * still shows. A gradient's colours come from its `from-*`/`to-*` stops, which
+ * are not read, so it does not end the tint either. expectPairedForeground
+ * (src/test/paired-foreground.ts) uses the same list.
+ */
+export const NOT_A_BACKGROUND =
   /^bg-(?:transparent|none|inherit|fixed|local|scroll|auto|cover|contain|no-repeat|repeat(?:-\w+)?|clip-\S+|origin-\S+|blend-\S+|(?:top|bottom|left|right|center)(?:-(?:left|right))?|(?:linear|radial|conic|gradient)(?:-\S+)?)$/;
 
 /** A class, where it starts, and whether it applies in every branch (static text). */

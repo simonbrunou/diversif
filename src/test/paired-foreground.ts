@@ -1,4 +1,5 @@
 import { expect } from 'bun:test';
+import { NOT_A_BACKGROUND } from '../../scripts/lint-paired-foreground';
 
 const TILES = ['peach', 'butter', 'mint', 'sky', 'lilac'];
 
@@ -22,10 +23,6 @@ const TINT = new RegExp(`(?:^|[\\s:!])bg-(${[...PAIRED_TINTS.keys()].join('|')})
 // inherited colour, rather than set a colour of their own.
 const NOT_A_COLOUR =
   /^text-(?:\d*x[sl]|sm|base|lg|left|center|right|justify|start|end|wrap|nowrap|balance|pretty|ellipsis|clip|current|inherit|\[\d[^\]]*\])$/;
-// bg-* utilities that set no colour, so the tint behind them still shows. A
-// gradient's colours come from its from-*/to-* stops, which are not read here.
-const NOT_A_BACKGROUND =
-  /^bg-(?:transparent|none|inherit|fixed|local|scroll|auto|cover|contain|no-repeat|repeat(?:-\w+)?|clip-\S+|origin-\S+|blend-\S+|(?:top|bottom|left|right|center)(?:-(?:left|right))?|(?:linear|radial|conic|gradient)(?:-\S+)?)$/;
 
 function classes(el: Element): string[] {
   return (el.getAttribute('class') ?? '').split(/\s+/).filter(Boolean);
