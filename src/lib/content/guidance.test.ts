@@ -16,6 +16,7 @@ import {
   pickRotatingTip
 } from './guidance';
 import { ALL_SOURCE_IDS, SOURCES } from './sources';
+import { stageRange } from './stage-range';
 
 describe('content invariants', () => {
   it('every allergen has a guidance entry', () => {
@@ -56,6 +57,12 @@ describe('content invariants', () => {
       expect(s.milkTarget.length).toBeGreaterThan(0);
       expect(s.sources.length).toBeGreaterThan(0);
     }
+  });
+
+  // The guide's badge and Aujourd'hui's stage card print stageRange(); the
+  // title they sit beside or link to must name the same range.
+  it('every stage title opens with the range its badge and reminder print', () => {
+    expect(STAGES.map((s) => s.title.split(' · ')[0])).toEqual(STAGES.map((s) => stageRange(s)));
   });
 
   it('texture progression is age-monotonic', () => {

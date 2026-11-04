@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
+import { getStageForAgeMonths } from '#lib/content/guidance.js';
 import { childHistoryFrom, type HistoryEntry } from './child-history';
 import { ttlForReminderKey, type Reminder } from './reminders';
 import {
@@ -116,6 +118,34 @@ describe('reminders', () => {
 
     it('does not fire before its window', () => {
       expect(keys(remind({ ageMonths: 5 }))).not.toContain('stage-transition:6m');
+    });
+
+    // The card's "Voir le guide" opens the stage the child is in, so its
+    // title names that stage's range, not the card's own two-month window:
+    // a 9-month-old read "9–11 mois" on the card and "9–12 mois" in the guide.
+    const stageCardTitle = (ageMonths: number) =>
+      remind({ ageMonths }).find((r) => r.key.startsWith('stage-transition:'))?.title;
+
+    for (const ageMonths of [6, 7, 9, 10, 12, 13]) {
+      it(`names the guide stage's range at ${ageMonths} months`, () => {
+        const stageRange = getStageForAgeMonths(ageMonths).title.split(' · ')[0];
+        expect(stageCardTitle(ageMonths)).toStartWith(`${stageRange} : `);
+      });
+    }
+
+    describe('in English', () => {
+      afterEach(() => overwriteGetLocale(() => baseLocale));
+
+      for (const [ageMonths, range] of [
+        [6, '6–9 months'],
+        [9, '9–12 months'],
+        [12, '12 months–3 years']
+      ] as const) {
+        it(`names the guide stage's range at ${ageMonths} months`, () => {
+          overwriteGetLocale(() => 'en');
+          expect(stageCardTitle(ageMonths)).toStartWith(`${range}: `);
+        });
+      }
     });
   });
 

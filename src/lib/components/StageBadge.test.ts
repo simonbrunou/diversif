@@ -1,14 +1,31 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/svelte';
 import '../../test/component';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import StageBadge from './StageBadge.svelte';
 import { STAGES } from '#lib/content/guidance.js';
 
+afterEach(() => overwriteGetLocale(() => baseLocale));
+
 describe('StageBadge', () => {
-  it('renders the stage id and an icon', () => {
-    const stage = STAGES[0];
-    const { container } = render(StageBadge, { props: { stage } });
-    expect(container.textContent).toContain(stage.id);
+  // The badge sits beside its stage's title in the guide: both name the same
+  // range, "12 mois–3 ans", never the id's "12-36 mois".
+  for (const stage of STAGES) {
+    it(`names the range of its stage's title for ${stage.id}`, () => {
+      const { container } = render(StageBadge, { props: { stage } });
+      const titleRange = stage.title.split(' · ')[0];
+      expect(container.textContent?.trim()).toBe(`Étape ${titleRange}`);
+    });
+  }
+
+  it('names the range in English', () => {
+    overwriteGetLocale(() => 'en');
+    const { container } = render(StageBadge, { props: { stage: STAGES[STAGES.length - 1] } });
+    expect(container.textContent?.trim()).toBe('Stage 12 months–3 years');
+  });
+
+  it('renders an icon', () => {
+    const { container } = render(StageBadge, { props: { stage: STAGES[0] } });
     expect(container.querySelector('svg')).not.toBeNull();
   });
 

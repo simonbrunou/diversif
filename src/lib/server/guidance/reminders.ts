@@ -16,7 +16,8 @@ import { getCategoryLabel, type CategoryId } from '#lib/utils/categories.js';
 // gone.
 import * as m from '#lib/paraglide/messages.js';
 import type { SourceId } from '#lib/content/sources.js';
-import { FORBIDDEN_FOODS } from '#lib/content/guidance.js';
+import { FORBIDDEN_FOODS, getStageForAgeMonths } from '#lib/content/guidance.js';
+import { stageRange } from '#lib/content/stage-range.js';
 import { DAY_MS, daysBefore, elapsedDays, utcDayOf } from '#lib/utils/civil-calendar.js';
 import type { AllergenHistory } from './allergen-history';
 import type { FoodHistory, HistoryEntry } from './child-history';
@@ -136,25 +137,25 @@ function ruleWelcome({ input, childPath }: RuleContext): Draft[] {
 function ruleStageTransitions({ input, childPath }: RuleContext): Draft[] {
   const stageTransitions: Array<{
     months: number;
-    title: string;
+    title: (range: string) => string;
     body: string;
     sources: SourceId[];
   }> = [
     {
       months: 6,
-      title: m.reminderStage6Title(),
+      title: (range) => m.reminderStage6Title({ range }),
       body: m.reminderStage6Body(),
       sources: ['hcsp-2020', 'espghan-2017']
     },
     {
       months: 9,
-      title: m.reminderStage9Title(),
+      title: (range) => m.reminderStage9Title({ range }),
       body: m.reminderStage9Body(),
       sources: ['spf-pnns-guide']
     },
     {
       months: 12,
-      title: m.reminderStage12Title(),
+      title: (range) => m.reminderStage12Title({ range }),
       body: m.reminderStage12Body(),
       sources: ['spf-pnns-guide', 'hcsp-2020']
     }
@@ -163,7 +164,9 @@ function ruleStageTransitions({ input, childPath }: RuleContext): Draft[] {
     .filter((st) => input.ageMonths >= st.months && input.ageMonths < st.months + 2)
     .map((st): Draft => ({
       keySuffix: `${st.months}m`,
-      title: st.title,
+      // The card shows for two months but announces the stage its CTA opens,
+      // so it names that stage's range, as the guide does: "9–12 mois".
+      title: st.title(stageRange(getStageForAgeMonths(st.months))),
       body: st.body,
       cta: { label: m.reminderCtaSeeGuide(), href: `${childPath}/guide` },
       sources: st.sources,

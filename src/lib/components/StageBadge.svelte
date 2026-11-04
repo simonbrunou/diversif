@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Stage, StageId } from '#lib/content/guidance.js';
+  import { stageRange } from '#lib/content/stage-range.js';
   import { Baby } from '@lucide/svelte';
   import { cn } from '#lib/utils/cn.js';
   import * as m from '#lib/paraglide/messages.js';
@@ -23,5 +24,5 @@
   )}
 >
   <Baby size={14} aria-hidden="true" />
-  {m.stageBadgeLabel({ stage: stage.id })}
+  {m.stageBadgeLabel({ range: stageRange(stage) })}
 </span>
