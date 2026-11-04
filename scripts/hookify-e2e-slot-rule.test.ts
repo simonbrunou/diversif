@@ -3,11 +3,13 @@
 // reads the rule in Python: a hand-rolled frontmatter parser, then each
 // condition ANDed, `regex_match` as re.search with re.IGNORECASE. This file
 // ports those two steps for the keys the rule uses, so CI runs the rule's
-// cases on every change. The pattern uses no syntax that Python and
-// JavaScript read differently, and on 2026-11-04 the port and hookify's own
-// RuleEngine agreed on every case below, for the rule before and after #653.
+// cases on every change. Python and JavaScript read the pattern alike only
+// in the syntax they share and on ASCII input, so two tests hold both. Where
+// hookify is installed (the dev hosts, not CI), the last test runs its own
+// engine on every case and compares the verdicts.
 import { describe, expect, it } from 'bun:test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 
 const rulePath = path.resolve(
@@ -91,6 +93,9 @@ const STARTS = [
   'echo 640 | xargs fj pr merge'
 ];
 
+const MERGE = 'fj pr -R origin merge 640 -d';
+const SUBST = 'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$B")"';
+
 // Slot checks that gate whatever follows them.
 const SLOTS: Record<string, string> = {
   'no argument': 'scripts/wait-e2e-slot.sh && ',
@@ -99,13 +104,10 @@ const SLOTS: Record<string, string> = {
   'quoted rev-parse': 'scripts/wait-e2e-slot.sh "$(git rev-parse origin/x)" && ',
   'single-quoted SHA': "scripts/wait-e2e-slot.sh 'c2403f8' && ",
   'after cd and T=': 'cd /w && T=$(cat k) && scripts/wait-e2e-slot.sh c2403f8 && ',
-  'rev-parse, inner quotes': 'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$B")" && ',
+  'rev-parse, inner quotes': SUBST + ' && ',
   'curl | jq, inner quotes':
     'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && '
 };
-
-const MERGE = 'fj pr -R origin merge 640 -d';
-const SUBST = 'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$B")"';
 
 // A slot call that gates nothing, or that the rule cannot read.
 const MUST_BLOCK: Record<string, string> = {
@@ -144,7 +146,11 @@ const MUST_BLOCK: Record<string, string> = {
   'redirect to a file': 'scripts/wait-e2e-slot.sh > /tmp/slot.out && ' + MERGE,
   'redirect 2>&1': 'scripts/wait-e2e-slot.sh 2>&1 && ' + MERGE,
   'variable, redirect':
-    'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" > /tmp/slot.out && ' + MERGE
+    'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" > /tmp/slot.out && ' + MERGE,
+  // hookify matches the pattern with re.IGNORECASE, the marker with a
+  // case-sensitive substring test.
+  'upper case': 'FJ PR MERGE 640',
+  'upper-case marker': MERGE + '  # NO-E2E-JOB'
 };
 
 // A slot call chained with && on one shell line, and commands that start
@@ -178,6 +184,34 @@ const MUST_PASS: Record<string, string> = {
   status: 'fj pr -R origin status 642'
 };
 
+const COMMANDS = [
+  ...STARTS.flatMap((start) => [
+    start,
+    start + '  # no-e2e-job',
+    ...Object.values(SLOTS).map((slot) => slot + start)
+  ]),
+  ...Object.values(MUST_BLOCK),
+  ...Object.values(MUST_PASS)
+];
+
+// hookify's own engine, run on the commands passed as JSON.
+const HOOKIFY = path.join(homedir(), '.claude/plugins/cache/claude-plugins-official/hookify/0.1.1');
+const HOOKIFY_VERDICTS = `
+import json, sys
+sys.path.insert(0, sys.argv[1])
+from core.config_loader import load_rule_file
+from core.rule_engine import RuleEngine
+rule = load_rule_file(sys.argv[2])
+engine = RuleEngine()
+out = []
+for command in json.loads(sys.argv[3]):
+    event = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": command}}
+    decision = engine.evaluate_rules([rule], event).get("hookSpecificOutput", {})
+    out.append(decision.get("permissionDecision") == "deny")
+print(json.dumps(out))
+`;
+const hasHookify = existsSync(path.join(HOOKIFY, 'core/rule_engine.py')) && !!Bun.which('python3');
+
 describe('block-e2e-start-without-slot', () => {
   it('loads as hookify reads it', () => {
     expect(rule.keys).toMatchObject({
@@ -208,19 +242,57 @@ describe('block-e2e-start-without-slot', () => {
 
   // A nested quantifier in the argument group backtracks without end on an
   // argument that never closes: hookify ran over 120 s on such a mutant.
-  // This engine gives up and returns false, so these tests fail either way.
+  // Bun 1.4's regex engine gives up after about a second and returns false,
+  // which fails the first two of these.
   it.each([
     ['plain', 'a'.repeat(20_000)],
     ['quoted strings', '"x"'.repeat(7_000)],
     ['nested openings', 'a"$(b'.repeat(4_000)]
-  ])('reads an unclosed 20,000-character argument fast: %s', (_, body) => {
-    const start = performance.now();
-    expect(blocks('scripts/wait-e2e-slot.sh "$(' + body + ' && ' + MERGE)).toBe(true);
-    expect(performance.now() - start).toBeLessThan(500);
-  });
+  ])('blocks an unclosed 20,000-character argument: %s', (_, body) =>
+    expect(blocks('scripts/wait-e2e-slot.sh "$(' + body + ' && ' + MERGE)).toBe(true)
+  );
 
   it('names the variable form in its message', () =>
     expect(rule.message).toContain(
       '`H=$(git rev-parse origin/<branch>) && scripts/wait-e2e-slot.sh "$H" && <command>`'
     ));
+
+  // \s, \b and case folding differ between the engines outside ASCII.
+  it('keeps the pattern and every case to ASCII', () => {
+    const ascii = /^[\t\n -~]*$/;
+    expect(rule.conditions[0].pattern).toMatch(ascii);
+    expect(COMMANDS.filter((command) => !ascii.test(command))).toEqual([]);
+  });
+
+  // Each engine rejects or misreads some of the other's syntax: Python's
+  // (?P<name>) and inline flags, JavaScript's (?<name>), \k, \p{}, \u{} and
+  // [^]. The pattern keeps to escapes and groups both read the same way.
+  it('uses only regex syntax Python and JavaScript share', () => {
+    const pattern = rule.conditions[0].pattern;
+    const escapes = pattern.match(/\\[\s\S]/g) ?? [];
+    expect(escapes.filter((e) => !/^\\[sSbntr.\\$(){}[\]|*+?^/-]$/.test(e))).toEqual([]);
+    const unescaped = pattern.replace(/\\[\s\S]/g, '__');
+    expect(unescaped.match(/\(\?[^:!=]/g) ?? []).toEqual([]);
+    expect(unescaped).not.toMatch(/\[\^?\]/);
+  });
+
+  it.skipIf(!hasHookify)(
+    "matches hookify's own verdict on every case",
+    () => {
+      const run = Bun.spawnSync([
+        'python3',
+        '-I',
+        '-c',
+        HOOKIFY_VERDICTS,
+        HOOKIFY,
+        rulePath,
+        JSON.stringify(COMMANDS)
+      ]);
+      expect(run.stderr.toString()).toBe('');
+      const verdicts: boolean[] = JSON.parse(run.stdout.toString());
+      expect(COMMANDS.filter((command, i) => verdicts[i] !== blocks(command))).toEqual([]);
+      expect(verdicts).toHaveLength(COMMANDS.length);
+    },
+    30_000
+  );
 });
