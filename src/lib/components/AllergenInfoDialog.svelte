@@ -34,20 +34,22 @@
   class="max-w-lg"
 >
   {#if guidance}
+    <!-- The sheet renders at <body>, under <html lang="en"> on /en pages, but
+         the guidance is French only: each guidance text says so. -->
     <div class="text-sm">
       <div class="flex items-center gap-2">
         <Badge variant="default">
-          {guidance.timing}
+          <span lang="fr">{guidance.timing}</span>
         </Badge>
         <span class="text-xs text-muted-foreground">{m.allergenDialogSeverityMajor()}</span>
       </div>
 
       <SheetSection title={m.allergenDialogWhyEarlyTitle()} icon={ShieldCheck}>
-        <p class="text-foreground/90">{guidance.why}</p>
+        <p lang="fr" class="text-foreground/90">{guidance.why}</p>
       </SheetSection>
 
       <SheetSection title={m.allergenDialogHowToOfferTitle()} icon={CircleCheck}>
-        <ul class="list-disc space-y-1 pl-5 text-foreground/90">
+        <ul lang="fr" class="list-disc space-y-1 pl-5 text-foreground/90">
           {#each guidance.howToOffer as item, i (i)}
             <li>{item}</li>
           {/each}
@@ -55,7 +57,7 @@
       </SheetSection>
 
       <SheetSection title={m.allergenDialogFirstSignsTitle()} icon={CircleAlert}>
-        <ul class="list-disc space-y-1 pl-5 text-foreground/90">
+        <ul lang="fr" class="list-disc space-y-1 pl-5 text-foreground/90">
           {#each guidance.firstSigns as item, i (i)}
             <li>{item}</li>
           {/each}
@@ -64,12 +66,12 @@
 
       <SheetSection title={m.allergenDialogSevereSignsTitle()}>
         <Callout variant="warning">
-          <ul class="list-disc space-y-1 pl-5">
+          <ul lang="fr" class="list-disc space-y-1 pl-5">
             {#each guidance.severeSigns as item, i (i)}
               <li>{item}</li>
             {/each}
           </ul>
-          <p class="mt-2">{guidance.whatToDo}</p>
+          <p lang="fr" class="mt-2">{guidance.whatToDo}</p>
         </Callout>
       </SheetSection>
 
