@@ -39,14 +39,21 @@
 <PageTitle title={`${m.authAccountDeleteSection()} · ${SITE.name}`} />
 <BackHeader title={m.authAccountDeleteSection()} />
 
+<!-- The butter tile pairs its own foreground (DESIGN.md, The Paired Foreground
+     Rule), so the header and the labels take it with text-current rather than
+     their usual grey or red. The destructive button still carries the danger. -->
 <Card as="section" variant="tile-butter" class="px-4 py-3">
-  <SectionHeader as="h2" tone="destructive">{m.authAccountDeleteSection()}</SectionHeader>
-  <p class="mb-3 text-sm text-ink-soft">{m.authAccountDeleteDescription()}</p>
+  <SectionHeader as="h2" class="text-current">{m.authAccountDeleteSection()}</SectionHeader>
+  <p class="mb-3 text-sm">{m.authAccountDeleteDescription()}</p>
   <form method="POST" class="grid gap-3" use:enhance={trackSubmission((v) => (deletingAccount = v))}>
     <!-- Inline rather than a toast: the Toaster is client-only, and a
          refused no-JS POST re-renders this page with nothing else to say why. -->
     <FormError messageKey={form?.deleteErrorKey} {form} />
-    <Field name="confirmEmail" label={m.authAccountDeleteConfirmLabel()}>
+    <Field
+      name="confirmEmail"
+      label={m.authAccountDeleteConfirmLabel()}
+      labelClass="text-current"
+    >
       <Input
         id="confirmEmail"
         name="confirmEmail"
@@ -57,7 +64,11 @@
         required
       />
     </Field>
-    <Field name="deletePassword" label={m.authAccountDeletePasswordLabel()}>
+    <Field
+      name="deletePassword"
+      label={m.authAccountDeletePasswordLabel()}
+      labelClass="text-current"
+    >
       <Input
         id="deletePassword"
         name="currentPassword"

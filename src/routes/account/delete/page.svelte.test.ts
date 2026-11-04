@@ -1,6 +1,7 @@
 import { describe, expect, it, mock } from 'bun:test';
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../../test/component';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 
 mock.module('$app/state', () => ({ page: { url: new URL('http://localhost/account/delete') } }));
 mock.module('$app/forms', () => ({ enhance: () => ({ destroy: () => {} }) }));
@@ -85,4 +86,20 @@ describe('account/delete page', () => {
     await fireEvent.input(email, { target: { value: 'autre@example.com' } });
     expect(button.hasAttribute('disabled')).toBe(true);
   });
+
+  it.each([
+    ['before any submission', null],
+    ['with a refusal shown', { deleteErrorKey: 'errorsAccountPasswordIncorrect' } as const]
+  ])(
+    "sets the section's header, text and labels in the butter tile's own foreground %s (#649)",
+    (_case, form) => {
+      const { container, getByText } = renderPage('p@example.com', form);
+      const section = container.querySelector('section.bg-tile-butter');
+      if (!section) throw new Error('no butter section');
+      expect(section.contains(getByText('Saisissez votre adresse e-mail pour confirmer'))).toBe(
+        true
+      );
+      expectPairedForeground(section);
+    }
+  );
 });
