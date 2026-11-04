@@ -24,6 +24,17 @@ describe('StageBadge', () => {
     expect(container.textContent?.trim()).toBe('Stage 12 months–3 years');
   });
 
+  // /guide wraps its stages in <section lang="fr">, also on /en/guide, where
+  // the badge prints English: it carries its own lang so a screen reader
+  // doesn't read "Stage 9–12 months" with French pronunciation.
+  for (const locale of ['fr', 'en'] as const) {
+    it(`declares the ${locale} locale it prints in`, () => {
+      overwriteGetLocale(() => locale);
+      const { container } = render(StageBadge, { props: { stage: STAGES[0] } });
+      expect(container.querySelector('span')?.getAttribute('lang')).toBe(locale);
+    });
+  }
+
   it('renders an icon', () => {
     const { container } = render(StageBadge, { props: { stage: STAGES[0] } });
     expect(container.querySelector('svg')).not.toBeNull();

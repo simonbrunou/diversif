@@ -12,6 +12,7 @@
   import { ALLERGENS, getAllergenLabel, type AllergenId } from '#lib/utils/allergens.js';
   import { ALLERGEN_GUIDANCE } from '#lib/content/guidance.js';
   import * as m from '#lib/paraglide/messages.js';
+  import { getLocale } from '#lib/paraglide/runtime.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
 
   let openAllergenId = $state<AllergenId | null>(null);
@@ -103,7 +104,9 @@
         class="rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <div class="flex items-center justify-between gap-2">
-          <span class="font-medium">{getAllergenLabel(a.id)}</span>
+          <!-- Inside <section lang="fr">: a localized label declares its own
+               lang (src/routes/fr-only-sections.svelte.test.ts). -->
+          <span lang={getLocale()} class="font-medium">{getAllergenLabel(a.id)}</span>
             <Badge variant="default" class="shrink-0 text-3xs">
               {g.timing}
           </Badge>

@@ -4,6 +4,7 @@
   import { APPROACHES } from '#lib/content/guidance.js';
   import { Users } from '@lucide/svelte';
   import * as m from '#lib/paraglide/messages.js';
+  import { getLocale } from '#lib/paraglide/runtime.js';
 </script>
 
 <section id="approches" class="scroll-mt-6 space-y-3">
@@ -16,7 +17,12 @@
       <Card class="p-4">
         <h3 class="text-sm font-semibold">{a.title}</h3>
         <p class="mt-1 text-sm text-foreground/90">{a.body}</p>
-        <h4 class="mt-2 text-2xs font-semibold uppercase tracking-wider text-reaction-ras-foreground">
+        <!-- The guide sits in <section lang="fr">: a localized label declares
+             its own lang (src/routes/fr-only-sections.svelte.test.ts). -->
+        <h4
+          lang={getLocale()}
+          class="mt-2 text-2xs font-semibold uppercase tracking-wider text-reaction-ras-foreground"
+        >
           {m.guideApproachesPros()}
         </h4>
         <ul class="mt-1 list-disc space-y-0.5 pl-5 text-sm">
@@ -24,7 +30,10 @@
             <li>{p}</li>
           {/each}
         </ul>
-        <h4 class="mt-2 text-2xs font-semibold uppercase tracking-wider text-reaction-inconfort-foreground">
+        <h4
+          lang={getLocale()}
+          class="mt-2 text-2xs font-semibold uppercase tracking-wider text-reaction-inconfort-foreground"
+        >
           {m.guideApproachesCons()}
         </h4>
         <ul class="mt-1 list-disc space-y-0.5 pl-5 text-sm">
