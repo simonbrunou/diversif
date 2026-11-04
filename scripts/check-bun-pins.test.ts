@@ -8,6 +8,7 @@
 // instead: they assert only that the check never passes a workflow the
 // parser reads as a violation.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test';
+import { execFile } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -1182,19 +1183,21 @@ for (const [name, form] of itemForms) {
   for (const step of steps) {
     const { inputs, others, last } = inputsOf(step);
     // The entries after uses:: the with: as it is, with bun-version 9.9.9,
-    // nested under extra:, moved to the step's keys, and removed.
+    // nested under extra:, moved to the step's keys, and removed, and with a
+    // second bun-version added: to the step's keys, and in upper case beside
+    // the step's own, which the runner reads as the same input.
+    const stepKeyPin: Entry = [BV, PIN];
     const variants: [name: string, rest: Entry[]][] = [
       ['', [['with', inputs]]],
       [`, with ${BV}: 9.9.9`, [['with', [...others, [BV, '9.9.9']]]]],
       [`, with ${BV} nested under extra:`, [['with', [...others, ['extra', [[BV, PIN]]]]]]],
+      [`, with ${BV} moved to the step's keys`, [stepKeyPin, ['with', others]]],
+      [`, without ${BV}`, [['with', others]]],
+      [`, with a ${BV} added to the step's keys`, [stepKeyPin, ['with', inputs]]],
       [
-        `, with ${BV} moved to the step's keys`,
-        [
-          [BV, PIN],
-          ['with', others]
-        ]
-      ],
-      [`, without ${BV}`, [['with', others]]]
+        `, with ${BV.toUpperCase()}: 9.9.9 added to the with:`,
+        [['with', [...inputs, [BV.toUpperCase(), '9.9.9']]]]
+      ]
     ];
     for (const [variant, rest] of variants) {
       const lines = form([...step.entries, addedUses, ...rest], step.dash);
@@ -1258,20 +1261,17 @@ function parserViolations(text: string): string[] {
 // Run the check without blocking, so the cases run side by side. A run still
 // going after 30 s is stuck: killed, it has no exit code. Each case's own
 // timeout (CASE_TIMEOUT) sits above that wait, so the kill fires first and
-// the failure shows the check's output.
+// the failure shows the check's output. This takes execFile, not Bun.spawn:
+// killing the script leaves its awk reader running, which keeps the pipes
+// open, and execFile closes them where Bun.spawn's streams would wait.
 const CASE_TIMEOUT = 60_000;
-async function runAsync(target: string) {
-  const proc = Bun.spawn([scriptPath, target], {
-    stdout: 'pipe',
-    stderr: 'pipe',
-    timeout: 30_000
+function runAsync(target: string): Promise<{ code: number | null; out: string; err: string }> {
+  return new Promise((resolve) => {
+    execFile(scriptPath, [target], { encoding: 'utf8', timeout: 30_000 }, (error, out, err) => {
+      const code = error === null ? 0 : typeof error.code === 'number' ? error.code : null;
+      resolve({ code, out, err });
+    });
   });
-  const [out, err] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text()
-  ]);
-  await proc.exited;
-  return { code: proc.exitCode, out, err };
 }
 
 describe('check-bun-pins.sh compared with a YAML parser', () => {
