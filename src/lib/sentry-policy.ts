@@ -60,7 +60,10 @@ type Caught = { kind?: string; error: unknown };
  */
 type Verdict = 'expected' | 'quiet' | 'unreachable' | 'report';
 
-/** SvelteKit's message for an unknown error; the error page shows it for a reported error or a 4xx. */
+/**
+ * SvelteKit's message for an unknown error. Operator-facing: the stderr line
+ * and the Sentry event carry it, and the error page shows errorPageMessage.
+ */
 const INTERNAL_ERROR = 'Internal Error';
 
 /**
@@ -73,6 +76,19 @@ function statusAndMessage({ kind, error }: Caught): { status: number; message: s
   return kind === 'unknown'
     ? { status: 500, message: INTERNAL_ERROR }
     : (error as { status: number; message: string });
+}
+
+/**
+ * The description /+error.svelte shows for an error the hooks answer, in the
+ * request's language: SvelteKit's own message is English and, for a 404,
+ * says the server failed when no page matches the address. Server-side, an
+ * error escaping the handle chain falls outside paraglide's request scope and
+ * gets the base locale (French).
+ */
+function errorPageMessage(caught: Caught): string {
+  return statusAndMessage(caught).status === 404
+    ? m.errorsGenericDescription404()
+    : m.errorsGenericFallback();
 }
 
 /**
@@ -287,7 +303,7 @@ export const replayOptions: NonNullable<Parameters<typeof Sentry.replayIntegrati
 
 /**
  * Client handleError. Only a reported error gets an errorId; a 4xx gets the
- * generic message, as the server's error page would.
+ * same localized description as the server's error page would.
  *
  * Tags omit `method` (which the server hook records): SvelteKit's
  * `NavigationEvent` has no `request` property in the browser, and there is no
@@ -302,7 +318,7 @@ export const handleClientError: HandleClientError = (caught) => {
     case 'expected':
       return;
     case 'quiet':
-      return { message: INTERNAL_ERROR };
+      return { message: errorPageMessage(caught) };
     case 'unreachable':
       return { message: m.errorsNetwork() };
   }
@@ -317,7 +333,7 @@ export const handleClientError: HandleClientError = (caught) => {
       }
     }
   });
-  return { message: INTERNAL_ERROR, errorId };
+  return { message: errorPageMessage(caught), errorId };
 };
 
 /** The server-side Sentry variables, from `process.env`. */
@@ -413,7 +429,8 @@ export function tagHandleChainError(error: unknown, event: RequestEvent): void {
 
 /**
  * Server handleError: a reported error gets the stderr line and a Sentry
- * event, and the error page gets only its errorId. A 4xx also gets an errorId
+ * event, and the error page gets its errorId and a localized description
+ * (errorPageMessage), never the error's own text. A 4xx also gets an errorId
  * (no event, no stderr line) so /+error.svelte can show it for a support
  * request.
  */
@@ -422,12 +439,12 @@ export const handleServerError: HandleServerError = (caught) => {
   const outcome = verdict('server', caught);
   if (outcome === 'expected') return;
   const errorId = (isObject(error) && handleChainErrorIds.get(error)) || newErrorId();
-  if (outcome === 'quiet') return { message: INTERNAL_ERROR, errorId };
+  if (outcome === 'quiet') return { message: errorPageMessage(caught), errorId };
   const { status, message } = statusAndMessage(caught);
   logServerError(caught, errorId, status, message);
   Sentry.captureException(error, {
     mechanism: HANDLE_ERROR_MECHANISM,
     captureContext: { tags: serverTags(errorId, status, event) }
   });
-  return { message: INTERNAL_ERROR, errorId };
+  return { message: errorPageMessage(caught), errorId };
 };

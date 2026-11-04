@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import * as Sentry from '@sentry/sveltekit';
 import { error as kitError, redirect } from '@sveltejs/kit';
+import * as m from '#lib/paraglide/messages.js';
+import * as paraglide from '#lib/paraglide/runtime.js';
 import { recordingTransport } from '../test/sentry-recorder';
 import { handleServerError, serverSentryOptions, tagHandleChainError } from './sentry-policy';
 
@@ -66,8 +68,10 @@ describe('server handleError', () => {
       event: requestEvent('/child/18/log/9', '/child/[id]/log/[entryId]')
     } as Caught);
 
+    // The error page gets a localized line (#650); the stderr line below
+    // keeps SvelteKit's English message for the operator.
     expect(body).toEqual({
-      message: 'Internal Error',
+      message: m.errorsGenericFallback(),
       errorId: expect.stringMatching(/^[0-9a-f]{8}$/)
     });
     const [event] = await recorder.sent('event');
@@ -116,7 +120,7 @@ describe('server handleError', () => {
     } as Caught);
 
     expect(body).toEqual({
-      message: 'Internal Error',
+      message: m.errorsGenericFallback(),
       errorId: expect.stringMatching(/^[0-9a-f]{8}$/)
     });
     expect(await recorder.sent('event')).toHaveLength(1);
@@ -126,25 +130,39 @@ describe('server handleError', () => {
   });
 
   it.each([
-    ['framework', { status: 404, message: 'Not Found' }],
-    ['validation', { status: 400, message: 'Bad Request' }]
+    ['framework', { status: 404, message: 'Not Found' }, m.errorsGenericDescription404()],
+    ['validation', { status: 400, message: 'Bad Request' }, m.errorsGenericFallback()]
   ] as const)(
     'skips the event and the stderr line for a %s 4xx, still giving the error page an errorId',
-    async (kind, error) => {
+    async (kind, error, message) => {
       const body = handleServerError({
         kind,
         error,
         event: requestEvent('/wp-admin', null)
       } as Caught);
 
-      expect(body).toEqual({
-        message: 'Internal Error',
-        errorId: expect.stringMatching(/^[0-9a-f]{8}$/)
-      });
+      expect(body).toEqual({ message, errorId: expect.stringMatching(/^[0-9a-f]{8}$/) });
+      expect(body!.message).not.toBe('Internal Error');
       expect(await recorder.sent('event')).toEqual([]);
       expect(stderr).not.toHaveBeenCalled();
     }
   );
+
+  it('describes a 404 in the request locale', () => {
+    const getLocale = paraglide.getLocale;
+    paraglide.overwriteGetLocale(() => 'en');
+    try {
+      const body = handleServerError({
+        kind: 'framework',
+        error: { status: 404, message: 'Not Found' },
+        event: requestEvent('/en/nope', null)
+      } as Caught);
+
+      expect(body!.message).toBe('No page matches this address.');
+    } finally {
+      paraglide.overwriteGetLocale(getLocale);
+    }
+  });
 
   it.each([404, 503])(
     'leaves the body of an error(%i, ...) thrown by route code untouched, unreported',

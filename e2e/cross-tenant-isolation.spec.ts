@@ -90,6 +90,12 @@ test.describe('cross-tenant data isolation', () => {
       //    entry query is scoped by both id AND childId, so this is a 404.
       const confusion = await pageB.goto(`/child/${childIdB}/foods/${entryIdA}`);
       expect(confusion?.status(), 'child B + child A’s entry must 404, not leak').toBe(404);
+      // The route's own error(404, …) body is the description, not the line
+      // the hooks give an address no route matches (#650).
+      const notFoundTitle = pageB.getByRole('heading', { level: 1, name: 'Page introuvable' });
+      await expect(notFoundTitle.locator('xpath=following-sibling::p[1]')).toHaveText(
+        'Entrée introuvable.'
+      );
 
       // 3. Mutation denial: B POSTs the dismissReminder action against child A.
       //    Set the Origin header to the app origin so SvelteKit's CSRF check

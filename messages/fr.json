@@ -112,6 +112,7 @@
   "legalCookiesTitle": "Cookies",
   "legalCookiesUpdated": "Dernière mise à jour : 20 mai 2026.",
   "errorsGenericFallback": "Une erreur s’est produite.",
+  "errorsGenericDescription404": "Aucune page ne correspond à cette adresse.",
   "errorsNetwork": "Impossible de joindre le serveur. Vérifiez votre connexion, puis réessayez.",
   "errorsAuthRateLimited": "Trop de tentatives. Réessayez plus tard.",
   "errorsAuthRateLimitedSeconds": "Trop de tentatives. Réessayez dans {seconds} s.",
