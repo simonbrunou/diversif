@@ -8,7 +8,6 @@
 // instead: they assert only that the check never passes a workflow the
 // parser reads as a violation.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test';
-import { execFile } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -463,7 +462,7 @@ describe('check-bun-pins.sh fails when it cannot read a pin', () => {
     (text) => {
       setLine(CI, 8, `${lineText(CI, 8)}\n          ${text}`);
       failsWith(
-        `${CI}:9 names an input with a letter outside ASCII, which the runner may hand setup-bun as bun-version`
+        `${CI}:9 names an input with a character outside ASCII, which the runner may hand setup-bun as bun-version`
       );
     }
   );
@@ -1037,6 +1036,12 @@ const steps: Step[] = [
   }
 ];
 
+// A step's inputs, those but bun-version, and the line of its last input.
+function inputsOf(step: Step): { inputs: Entry[]; others: Entry[]; last: number } {
+  const inputs = step.inputs.map(([, input]) => input);
+  return { inputs, others: inputs.filter(([k]) => k !== BV), last: step.inputs.at(-1)![0] };
+}
+
 // The fixture's ci.yml with line `at` (1-based) replaced by edits[at], which
 // may hold no line or several.
 function edited(edits: Record<number, string[]>): string {
@@ -1057,7 +1062,7 @@ const after = (at: number, lines: string[]) => ({ [at]: [ciLines[at - 1]!, ...li
 // fixture's layout: `- ` at column 6.
 const ADDED = 'a setup-bun step without a bun-version added after line 9';
 const addedUses: Entry = ['uses', ACTION];
-const noCache: Entry = ['with', [['no-cache', 'true']]];
+const withNoCache: Entry = ['with', [['no-cache', 'true']]];
 const addedStep = (lines: string[]) => edited(after(9, dashed(lines, 6)));
 
 // Whether the parser rejects `text` for duplicate keys and nothing else.
@@ -1078,8 +1083,7 @@ for (const [name, form] of forms) {
     // more.
     const keys = step.dash + 2;
     const inputAt = keys + 2;
-    const inputs = step.inputs.map(([, input]) => input);
-    const last = step.inputs.at(-1)![0];
+    const { inputs, others, last } = inputsOf(step);
     // The uses:, a line added to the step before its with:, and each input
     // but bun-version, each as it is and with the step's bun-version
     // removed, where the parser reads a violation.
@@ -1116,7 +1120,6 @@ for (const [name, form] of forms) {
       const lines = form(['with', written], keys);
       return lines && edited(replaced(step.with, last, lines));
     };
-    const others = inputs.filter(([k]) => k !== BV);
     addCase(name, `the with: on line ${step.with}`, withBlock(inputs));
     addCase(
       name,
@@ -1163,8 +1166,8 @@ for (const [name, form] of forms) {
     added && edited(after(5, ['        with:', ...added]))
   );
   const uses = form(addedUses, 8);
-  addCase(name, `the uses: of ${ADDED}`, uses && addedStep([...uses, ...block(noCache, 8)]));
-  const inputs = form(noCache, 8);
+  addCase(name, `the uses: of ${ADDED}`, uses && addedStep([...uses, ...block(withNoCache, 8)]));
+  const inputs = form(withNoCache, 8);
   addCase(name, `the with: of ${ADDED}`, inputs && addedStep([...block(addedUses, 8), ...inputs]));
   const input = form(['no-cache', 'true'], 10);
   addCase(
@@ -1177,20 +1180,28 @@ for (const [name, form] of forms) {
 for (const [name, form] of itemForms) {
   const item = `the step as ${name}`;
   for (const step of steps) {
-    const inputs = step.inputs.map(([, input]) => input);
-    const others = inputs.filter(([k]) => k !== BV);
-    const last = step.inputs.at(-1)![0];
-    const variants: [name: string, written: Entry[]][] = [
-      ['', inputs],
-      [`, with ${BV}: 9.9.9`, [...others, [BV, '9.9.9']]],
-      [`, without ${BV}`, others]
+    const { inputs, others, last } = inputsOf(step);
+    // The entries after uses:: the with: as it is, with bun-version 9.9.9,
+    // nested under extra:, moved to the step's keys, and removed.
+    const variants: [name: string, rest: Entry[]][] = [
+      ['', [['with', inputs]]],
+      [`, with ${BV}: 9.9.9`, [['with', [...others, [BV, '9.9.9']]]]],
+      [`, with ${BV} nested under extra:`, [['with', [...others, ['extra', [[BV, PIN]]]]]]],
+      [
+        `, with ${BV} moved to the step's keys`,
+        [
+          [BV, PIN],
+          ['with', others]
+        ]
+      ],
+      [`, without ${BV}`, [['with', others]]]
     ];
-    for (const [variant, written] of variants) {
-      const lines = form([...step.entries, addedUses, ['with', written]], step.dash);
+    for (const [variant, rest] of variants) {
+      const lines = form([...step.entries, addedUses, ...rest], step.dash);
       addCase(item, `on line ${step.item}${variant}`, edited(replaced(step.item, last, lines)));
     }
   }
-  addCase(item, ADDED, edited(after(9, form([addedUses, noCache], 6))));
+  addCase(item, ADDED, edited(after(9, form([addedUses, withNoCache], 6))));
 }
 
 // The setup-bun steps the parser reads whose with: holds no bun-version of
@@ -1244,14 +1255,23 @@ function parserViolations(text: string): string[] {
   return violations;
 }
 
-function runAsync(target: string): Promise<{ code: number | null; out: string; err: string }> {
-  return new Promise((resolve) => {
-    // A run still going after 30 s is stuck: killed, it exits with no code.
-    execFile(scriptPath, [target], { encoding: 'utf8', timeout: 30_000 }, (error, out, err) => {
-      const code = error === null ? 0 : typeof error.code === 'number' ? error.code : null;
-      resolve({ code, out, err });
-    });
+// Run the check without blocking, so the cases run side by side. A run still
+// going after 30 s is stuck: killed, it has no exit code. Each case's own
+// timeout (CASE_TIMEOUT) sits above that wait, so the kill fires first and
+// the failure shows the check's output.
+const CASE_TIMEOUT = 60_000;
+async function runAsync(target: string) {
+  const proc = Bun.spawn([scriptPath, target], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+    timeout: 30_000
   });
+  const [out, err] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text()
+  ]);
+  await proc.exited;
+  return { code: proc.exitCode, out, err };
 }
 
 describe('check-bun-pins.sh compared with a YAML parser', () => {
@@ -1275,18 +1295,22 @@ describe('check-bun-pins.sh compared with a YAML parser', () => {
   // Each case runs in its own directory, so the cases run side by side.
   describe.concurrent('never passes a case the parser reads as a violation', () => {
     for (const [i, { name, text }] of cases.entries()) {
-      it(name, async () => {
-        const violations = parserViolations(text);
-        const at = path.join(base, 'yaml', String(i));
-        mkdirSync(path.join(at, '.forgejo', 'workflows'), { recursive: true });
-        for (const [file, content] of Object.entries({ ...fixture, [CI]: text })) {
-          writeFileSync(path.join(at, file), content);
-        }
-        const { code, out, err } = await runAsync(at);
-        const codes: (number | null)[] = [0, 1];
-        expect(codes, `check-bun-pins.sh exited ${code}:\n${out}${err}`).toContain(code);
-        if (code === 0) expect(violations, `check-bun-pins.sh passed on\n${text}`).toEqual([]);
-      });
+      it(
+        name,
+        async () => {
+          const violations = parserViolations(text);
+          const caseDir = path.join(base, 'yaml', String(i));
+          mkdirSync(path.join(caseDir, '.forgejo', 'workflows'), { recursive: true });
+          for (const [file, content] of Object.entries({ ...fixture, [CI]: text })) {
+            writeFileSync(path.join(caseDir, file), content);
+          }
+          const { code, out, err } = await runAsync(caseDir);
+          const codes: (number | null)[] = [0, 1];
+          expect(codes, `check-bun-pins.sh exited ${code}:\n${out}${err}`).toContain(code);
+          if (code === 0) expect(violations, `check-bun-pins.sh passed on\n${text}`).toEqual([]);
+        },
+        CASE_TIMEOUT
+      );
     }
   });
 });

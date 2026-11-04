@@ -26,7 +26,7 @@
 #     in flow style (with: { bun-version: 1.4.4 }); any line that names
 #     setup-bun@ outside its comment and outside a `uses:` this reader opens
 #     a step on, a USES: key in another letter case included; an input of a
-#     setup-bun step whose key holds a letter outside ASCII, since Go
+#     setup-bun step whose key holds a character outside ASCII, since Go
 #     upper-cases ſ to S and ı to I (bun-verſion reads BUN-VERSION); a
 #     `uses:` whose value is a block scalar (uses: >-), whatever action its
 #     skipped body names; a `bun-version` value that runs onto the next
@@ -146,7 +146,7 @@ read_ci() {
         fail "$CI:$line names setup-bun@ under a uses key not in lower case, which the runner does not read as uses:"
         ;;
       twice) fail "$CI:$line oven-sh/setup-bun step sets bun-version twice" ;;
-      nonascii) fail "$CI:$line names an input with a letter outside ASCII, which the runner may hand setup-bun as bun-version" ;;
+      nonascii) fail "$CI:$line names an input with a character outside ASCII, which the runner may hand setup-bun as bun-version" ;;
       nested) fail "$CI:$line bun-version is nested deeper than the inputs of the step's with:, so setup-bun does not read it" ;;
       stray) fail "$CI:$line bun-version is not in an oven-sh/setup-bun step" ;;
       escape) fail "$CI:$line holds an escape in a double-quoted string, which this check cannot read" ;;
@@ -353,7 +353,9 @@ read_ci() {
     # The inputs are the keys at the indentation of the first line under
     # with:. A bun-version nested deeper is no input. Go upper-cases a few
     # letters outside ASCII to ASCII ones (ſ to S, ı to I), so an input key
-    # that holds one could read BUN-VERSION, and it fails.
+    # that holds one could read BUN-VERSION. This reader cannot tell those
+    # letters from other characters, so any character outside ASCII in an
+    # input key fails.
     inwith {
       if (inputind < 0) inputind = ind
       if (ind == inputind && code ~ /^[^:]*[^\t -~]/) { print "nonascii", NR; next }
