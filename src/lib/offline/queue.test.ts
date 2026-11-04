@@ -84,11 +84,12 @@ const failureActionResult = (status: number) =>
     headers: { 'content-type': 'application/json' }
   });
 
-// Mirrors what the real server actually sends for a thrown action error:
+// Mirrors the shape the real server sends for a thrown action error:
 // SvelteKit's handle_action_json_request puts the numeric status ONLY on
 // the HTTP response (never in the JSON body), and this app's own
-// hooks.server.ts:handleError replaces the message with a localized
-// description + errorId for every status < 500.
+// hooks.server.ts:handleError answers with a message + errorId for every
+// status < 500. The message text (a localized description in production)
+// does not matter to the queue.
 const errorActionResult = (status: number) =>
   new Response(
     JSON.stringify({ type: 'error', error: { message: 'Internal Error', errorId: 'deadbeef' } }),

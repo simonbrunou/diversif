@@ -18,6 +18,9 @@
  * to the Sentry issue and, on the server, to the `[diversif:error]` stderr
  * line. The scrub rules themselves live in #lib/sentry.ts; the /monitoring
  * tunnel also scrubs the replay frames no SDK hook sees.
+ *
+ * Since the handleError hooks answer the error page, they also pick the
+ * description it shows for an error no route described (errorPageMessage).
  */
 
 import * as Sentry from '@sentry/sveltekit';
@@ -62,7 +65,7 @@ type Verdict = 'expected' | 'quiet' | 'unreachable' | 'report';
 
 /**
  * SvelteKit's message for an unknown error. Operator-facing: the stderr line
- * and the Sentry event carry it, and the error page shows errorPageMessage.
+ * of a reported error carries it, and the error page shows errorPageMessage.
  */
 const INTERNAL_ERROR = 'Internal Error';
 
@@ -80,10 +83,10 @@ function statusAndMessage({ kind, error }: Caught): { status: number; message: s
 
 /**
  * The description /+error.svelte shows for an error the hooks answer, in the
- * request's language: SvelteKit's own message is English and, for a 404,
- * says the server failed when no page matches the address. Server-side, an
- * error escaping the handle chain falls outside paraglide's request scope and
- * gets the base locale (French).
+ * request's language, in place of SvelteKit's English message (#650). A 404
+ * says that no page matches the address; anything else gets the generic line.
+ * Server-side, an error escaping the handle chain falls outside paraglide's
+ * request scope and gets the base locale (French).
  */
 function errorPageMessage(caught: Caught): string {
   return statusAndMessage(caught).status === 404

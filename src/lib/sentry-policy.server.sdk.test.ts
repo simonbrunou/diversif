@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import * as Sentry from '@sentry/sveltekit';
 import { error as kitError, redirect } from '@sveltejs/kit';
 import * as m from '#lib/paraglide/messages.js';
-import * as paraglide from '#lib/paraglide/runtime.js';
+import { paraglideMiddleware } from '#lib/paraglide/server.js';
 import { recordingTransport } from '../test/sentry-recorder';
 import { handleServerError, serverSentryOptions, tagHandleChainError } from './sentry-policy';
 
@@ -142,27 +142,32 @@ describe('server handleError', () => {
       } as Caught);
 
       expect(body).toEqual({ message, errorId: expect.stringMatching(/^[0-9a-f]{8}$/) });
-      expect(body!.message).not.toBe('Internal Error');
       expect(await recorder.sent('event')).toEqual([]);
       expect(stderr).not.toHaveBeenCalled();
     }
   );
 
-  it('describes a 404 in the request locale', () => {
-    const getLocale = paraglide.getLocale;
-    paraglide.overwriteGetLocale(() => 'en');
-    try {
-      const body = handleServerError({
-        kind: 'framework',
-        error: { status: 404, message: 'Not Found' },
-        event: requestEvent('/en/nope', null)
-      } as Caught);
+  it.each([
+    ['framework', { status: 404, message: 'Not Found' }, 'No page matches this address.'],
+    ['unknown', new Error('boom'), 'An error occurred.']
+  ] as const)(
+    'describes a %s error in the language of the request it answers',
+    async (kind, error, message) => {
+      // hooks.server.ts runs the app's handle, and so SvelteKit's resolve
+      // and this hook, inside paraglide's per-request scope.
+      const answer = await paraglideMiddleware(
+        new Request('https://diversif.app/en/nope'),
+        () =>
+          new Response(
+            JSON.stringify(
+              handleServerError({ kind, error, event: requestEvent('/en/nope', null) } as Caught)
+            )
+          )
+      );
 
-      expect(body!.message).toBe('No page matches this address.');
-    } finally {
-      paraglide.overwriteGetLocale(getLocale);
+      expect((await answer.json()).message).toBe(message);
     }
-  });
+  );
 
   it.each([404, 503])(
     'leaves the body of an error(%i, ...) thrown by route code untouched, unreported',

@@ -3,8 +3,9 @@ import { awaitHydration } from './_helpers';
 
 // An address no route matches gets SvelteKit's own 404, which the server
 // hook answers with a localized description in the URL's language. Before
-// #650 it answered with SvelteKit's English "Internal Error", which also
-// said the server failed when the page simply does not exist.
+// #650 the hook answered it with "Internal Error", SvelteKit's English
+// message for an unknown error, which also said the server failed when the
+// page simply does not exist.
 for (const { path, lang, title, description, reference } of [
   {
     path: '/nope',
@@ -27,10 +28,10 @@ for (const { path, lang, title, description, reference } of [
     await awaitHydration(page);
 
     await expect(page.locator('html')).toHaveAttribute('lang', lang);
-    const heading = page.getByRole('heading', { level: 1, name: title });
-    await expect(heading).toBeVisible();
-    await expect(heading.locator('xpath=following-sibling::p[1]')).toHaveText(description);
-    await expect(heading.locator('xpath=following-sibling::p[2]')).toHaveText(reference);
+    await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
+    await expect(page.getByText(description, { exact: true })).toBeVisible();
+    // eslint-disable-next-line e2e/exact-get-by-text -- `reference` is an anchored RegExp, not a substring
+    await expect(page.getByText(reference)).toBeVisible();
     // The serialized error SvelteKit embeds for hydration too.
     expect(await page.content()).not.toContain('Internal Error');
   });
