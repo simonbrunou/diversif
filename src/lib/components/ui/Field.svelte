@@ -2,20 +2,17 @@
   import type { Snippet } from 'svelte';
   import { cn } from '#lib/utils/cn.js';
   import Label from './Label.svelte';
-  import FormError from './FormError.svelte';
 
   let {
     name,
     label,
     hint,
-    error,
     class: className = '',
     children
   }: {
     name: string;
     label: string;
     hint?: string;
-    error?: string;
     class?: string;
     children: Snippet;
   } = $props();
@@ -26,8 +23,5 @@
   {@render children()}
   {#if hint}
     <p class="text-xs text-ink-soft">{hint}</p>
-  {/if}
-  {#if error}
-    <FormError>{error}</FormError>
   {/if}
 </div>
