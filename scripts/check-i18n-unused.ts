@@ -24,10 +24,10 @@ const raw = fs.readFileSync(path.join(ROOT, 'messages/fr.json'), 'utf8');
 const data = JSON.parse(raw);
 const keys = Object.keys(data).filter((k) => k !== '$schema');
 
-const sources = [];
-const keepTokens = new Set();
+const sources: string[] = [];
+const keepTokens = new Set<string>();
 
-function collectKeepTokens(text) {
+function collectKeepTokens(text: string): void {
   for (const match of text.matchAll(KEEP_DIRECTIVE)) {
     for (const token of match[1].trim().split(/\s+/)) {
       if (token) keepTokens.add(token);
@@ -35,14 +35,14 @@ function collectKeepTokens(text) {
   }
 }
 
-function ingestSourceFile(full, name) {
+function ingestSourceFile(full: string, name: string): void {
   if (!SOURCE_EXT.test(name)) return;
   const text = fs.readFileSync(full, 'utf8');
   sources.push(text);
   collectKeepTokens(text);
 }
 
-function walk(dir) {
+function walk(dir: string): void {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDED_DIRS.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
@@ -58,11 +58,11 @@ walk(SRC);
 
 const haystack = sources.join('\n');
 
-function escapeRegex(s) {
+function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-const dead = [];
+const dead: string[] = [];
 for (const key of keys) {
   if (keepTokens.has(key)) continue;
   const k = escapeRegex(key);
