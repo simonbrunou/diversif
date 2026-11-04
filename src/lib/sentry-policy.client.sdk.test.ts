@@ -50,7 +50,7 @@ describe('client handleError', () => {
     );
 
     expect(body).toEqual({
-      message: 'Internal Error',
+      message: m.errorsGenericFallback(),
       errorId: expect.stringMatching(/^[0-9a-f]{8}$/)
     });
     const [event] = await recorder.sent('event');
@@ -84,8 +84,17 @@ describe('client handleError', () => {
       '/child/[id]/nope'
     );
 
-    expect(body).toEqual({ message: 'Internal Error' });
+    expect(body).toEqual({ message: m.errorsGenericDescription404() });
     expect(await recorder.sent('event')).toEqual([]);
+  });
+
+  it('gives any other client-side 4xx the generic description', () => {
+    const body = navigationError(
+      { kind: 'framework', error: { status: 400, message: 'Bad Request' } },
+      '/child/[id]/log'
+    );
+
+    expect(body).toEqual({ message: m.errorsGenericFallback() });
   });
 
   it('tells the parent to check their connection on a network failure, without reporting it', async () => {
