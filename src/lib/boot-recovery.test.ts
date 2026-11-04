@@ -12,6 +12,13 @@ const ROOT_CHUNK_FAILURE = new TypeError(
 
 const banner = () => document.querySelectorAll('[data-boot-failure]');
 const stubReload = () => spyOn(location, 'reload').mockImplementation(() => {});
+// What a browser that blocks storage does on every sessionStorage call.
+const denySessionStorage = () => {
+  const denied = () => {
+    throw new DOMException('The operation is insecure.', 'SecurityError');
+  };
+  stubGlobal('sessionStorage', { getItem: denied, setItem: denied, removeItem: denied });
+};
 
 // Before, not after: the preload's afterEach (body, spies, stubbed globals)
 // runs after this file's, so a stubbed sessionStorage would still be in place.
@@ -80,27 +87,13 @@ describe('recoverFromFailedBoot', () => {
 
   it('never reloads without sessionStorage to guard against a loop', () => {
     const reload = stubReload();
-    const denied = () => {
-      throw new DOMException('The operation is insecure.', 'SecurityError');
-    };
-    stubGlobal('sessionStorage', { getItem: denied, setItem: denied, removeItem: denied });
+    denySessionStorage();
 
     recoverFromFailedBoot(ROOT_CHUNK_FAILURE);
     markHydrated();
 
     expect(reload).not.toHaveBeenCalled();
     expect(banner()).toHaveLength(1);
-  });
-
-  it('lets the app start without sessionStorage', () => {
-    const denied = () => {
-      throw new DOMException('The operation is insecure.', 'SecurityError');
-    };
-    stubGlobal('sessionStorage', { getItem: denied, setItem: denied, removeItem: denied });
-
-    markHydrated();
-
-    expect(isHydrated()).toBe(true);
   });
 
   it('puts the banner first in the page and reloads when the parent presses Réessayer', async () => {
@@ -142,5 +135,19 @@ describe('recoverFromFailedBoot', () => {
 
     expect(reload).not.toHaveBeenCalled();
     expect(banner()).toHaveLength(0);
+  });
+});
+
+// Boot recovery clears its reload key in an onHydrated callback. The reload
+// tests above prove that it clears the key. This one proves that a
+// sessionStorage that throws does not stop the root layout from setting the
+// marker.
+describe('the onHydrated callback', () => {
+  it('lets the app start without sessionStorage', () => {
+    denySessionStorage();
+
+    markHydrated();
+
+    expect(isHydrated()).toBe(true);
   });
 });

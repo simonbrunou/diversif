@@ -1,10 +1,11 @@
 /**
  * The hydration marker, `<html data-hydrated="true">`: the root layout sets it
  * once mounted, and it stays set across client-side navigations (the root
- * layout never unmounts). Only this module reads or writes the attribute.
- * Boot recovery reads it to tell a failed start from a later failure, and
- * FormError to tell a server-rendered alert from one inserted after
- * hydration. The e2e helper awaitHydration waits on the attribute itself.
+ * layout never unmounts). In the app, only this module reads or writes the
+ * attribute. Boot recovery reads it to tell a failed start from a later
+ * failure, and FormError to tell a server-rendered alert from one inserted
+ * after hydration. Outside the app, the e2e helper awaitHydration waits on
+ * the attribute itself.
  *
  * This module imports nothing from the app, so a UI primitive can read the
  * marker without loading boot recovery.
