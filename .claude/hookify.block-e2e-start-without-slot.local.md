@@ -1,4 +1,5 @@
 ---
+# scripts/hookify-e2e-slot-rule.test.ts runs this rule over each start form and slot call. Give it a case for each form an edit changes.
 name: block-e2e-start-without-slot
 enabled: true
 event: bash
