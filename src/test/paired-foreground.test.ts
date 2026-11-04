@@ -78,6 +78,10 @@ describe('expectPairedForeground', () => {
       '<div class="bg-tile-mint text-tile-mint-foreground"><p class="hover:bg-card text-ink">x</p></div>'
     ],
     [
+      'ink inside a bg-* utility that sets no colour',
+      '<div class="bg-tile-mint text-tile-mint-foreground"><p class="bg-transparent text-ink">x</p></div>'
+    ],
+    [
       'ink inside a wash of another tint',
       '<div class="bg-tile-mint text-tile-mint-foreground"><p class="bg-tile-sky/40 text-ink">x</p></div>'
     ]
