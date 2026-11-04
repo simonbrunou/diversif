@@ -10,25 +10,32 @@
 #     oven-sh/setup-bun step (its `uses:` may name the action by a full URL,
 #     in any letter case). A step without one runs whatever Bun setup-bun
 #     picks, so each step must carry its own, and it must read an x.y.z
-#     version. A `bun-version` anywhere else fails too: under env:, outside
-#     any setup-bun step, or nested deeper than the inputs of `with:`, which
-#     are the keys at the indentation of the first line under it. A quoted
-#     value keeps its text up to the closing quote, and a plain one loses
-#     only a comment (a # after a blank). The step and its `with:` must be
-#     block mappings, `uses:` before `with:`, as in this repo's ci.yml (an
-#     anchor or !!map may name the `with:`), and the body of a block scalar
-#     (run: |) is skipped. Reading any other form would take a YAML parser,
-#     so these fail rather than pass a pin the check did not read: a step or
-#     `with:` in flow style (with: { bun-version: 1.4.4 }); any line that
-#     names setup-bun@ outside its comment and outside a `uses:` this reader
-#     opens a step on; a `uses:` whose value is a block scalar (uses: >-),
-#     whatever action its skipped body names; a `bun-version` value that
-#     runs onto the next line; and, anywhere in the file, an escape in a
-#     double-quoted string ("bun\x2dversion", or
-#     {"uses":"oven-sh/setup\x2dbun@v2"}, where a JSON-style key needs no
-#     blank after its colon), an alias (*name), an explicit key (? ), a tag
-#     other than !!map (!!binary decodes to other text), and a quoted string
-#     or a flow collection left open at the line end.
+#     version. The runner reads the `uses:` and `with:` keys by their exact
+#     names, but hands setup-bun each input as INPUT_<key in upper case>, so
+#     this check reads the `bun-version` input in any letter case: a
+#     Bun-Version beside a bun-version sets it twice. A `bun-version`
+#     anywhere else fails too: under env:, outside any setup-bun step, or
+#     nested deeper than the inputs of `with:`, which are the keys at the
+#     indentation of the first line under it. A quoted value keeps its text
+#     up to the closing quote, and a plain one loses only a comment (a #
+#     after a blank). The step and its `with:` must be block mappings,
+#     `uses:` before `with:`, as in this repo's ci.yml (an anchor or !!map
+#     may name the `with:`), and the body of a block scalar (run: |) is
+#     skipped. Reading any other form would take a YAML parser, so these
+#     fail rather than pass a pin the check did not read: a step or `with:`
+#     in flow style (with: { bun-version: 1.4.4 }); any line that names
+#     setup-bun@ outside its comment and outside a `uses:` this reader opens
+#     a step on, a USES: key in another letter case included; an input of a
+#     setup-bun step whose key holds a letter outside ASCII, since Go
+#     upper-cases ſ to S and ı to I (bun-verſion reads BUN-VERSION); a
+#     `uses:` whose value is a block scalar (uses: >-), whatever action its
+#     skipped body names; a `bun-version` value that runs onto the next
+#     line; and, anywhere in the file, an escape in a double-quoted string
+#     ("bun\x2dversion", or {"uses":"oven-sh/setup\x2dbun@v2"}, where a
+#     JSON-style key needs no blank after its colon), an alias (*name), an
+#     explicit key (? ), a tag other than !!map (!!binary decodes to other
+#     text), and a quoted string or a flow collection left open at the line
+#     end.
 #   railpack.json  `packages.bun`, the Bun of the production build
 #     (docs/agents/deploy.md).
 #   Dockerfile  the x.y.z part of every `FROM [<registry>/]oven/bun:<tag>`
@@ -49,7 +56,9 @@
 # missing, and the output names each file, line and value. Exit 2: a wrong
 # call, a <repo dir> that does not exist, or no bun on PATH.
 # scripts/check-bun-pins.test.ts runs it on edited copies of the three files,
-# one failure class per test: add a test there when the parsing changes.
+# one failure class per test: add a test there when the parsing changes. Its
+# last cases compare the ci.yml reader with a YAML parser on generated
+# workflows (#652): add a form there when this reader learns a new one.
 set -uo pipefail
 
 if [ $# -gt 1 ]; then
@@ -132,7 +141,12 @@ read_ci() {
         steps=$((steps + 1))
         fail "$CI:$line names setup-bun@ outside a uses: key this check reads (after a tag or an anchor, or in plain text), which this check cannot read"
         ;;
+      caseuses)
+        steps=$((steps + 1))
+        fail "$CI:$line names setup-bun@ under a uses key not in lower case, which the runner does not read as uses:"
+        ;;
       twice) fail "$CI:$line oven-sh/setup-bun step sets bun-version twice" ;;
+      nonascii) fail "$CI:$line names an input with a letter outside ASCII, which the runner may hand setup-bun as bun-version" ;;
       nested) fail "$CI:$line bun-version is nested deeper than the inputs of the step's with:, so setup-bun does not read it" ;;
       stray) fail "$CI:$line bun-version is not in an oven-sh/setup-bun step" ;;
       escape) fail "$CI:$line holds an escape in a double-quoted string, which this check cannot read" ;;
@@ -148,10 +162,16 @@ read_ci() {
       OFS = "\t"
       body = -1
       # The input key, plain or quoted, after an optional anchor. The colon
-      # must follow, so bun-version-file is another key.
+      # must follow, so bun-version-file is another key. An input is matched
+      # in any letter case, as the runner hands setup-bun each one as
+      # INPUT_<key in upper case>; elsewhere the key matches as written.
       BV = "^[ \t]*(&[^ \t]+[ \t]+)?(bun-version|\"bun-version\"|" q "bun-version" q ")[ \t]*:"
       # A with: key, plain or quoted.
       WITH = "^[ \t]*[\"" q "]?with[\"" q "]?[ \t]*:"
+      # A uses: key, plain or quoted, and one that names oven-sh/setup-bun@,
+      # or a full URL to it.
+      USESKEY = "^[ \t-]*[\"" q "]?uses[\"" q "]?[ \t]*:"
+      USES = USESKEY "[ \t]*[\"" q "]?([^ \t\"" q "]*/)?oven-sh/setup-bun@"
     }
     function indent(s) { match(s, /^ */); return RLENGTH }
     function reset() { open = 0; inwith = 0; bv = 0; cont = 0; follow = 0 }
@@ -280,15 +300,18 @@ read_ci() {
         body = RLENGTH
         # The body is skipped, so a uses: written as one (uses: >-) would
         # hide its action: it prints `blockuses`, whatever the body names.
-        # The key is matched in lower case, as the rule that opens a step
-        # matches it.
+        # The key is matched in any letter case, so a USES: >- fails too.
         if (tolower($0) ~ ("^ *(- +)*[\"" q "]?uses[\"" q "]?[ \t]*:")) print "blockuses", NR
       }
       scan($0)
       low = tolower(code)
     }
-    # oven-sh/setup-bun@<ref>, or a full URL to it.
-    low ~ ("^[ \t-]*[\"" q "]?uses[\"" q "]?[ \t]*:[ \t]*[\"" q "]?([^ \t\"" q "]*/)?oven-sh/setup-bun@") {
+    # oven-sh/setup-bun@<ref>, or a full URL to it, in any letter case. The
+    # runner reads the uses: key by its exact name, so a USES: key opens no
+    # step there, and it fails here rather than pass a pin the runner never
+    # hands setup-bun.
+    low ~ USES {
+      if (code !~ USESKEY) { print "caseuses", NR; next }
       close_step()
       open = NR
       # `- uses:` opens the step; a bare `uses:` belongs to the item whose
@@ -328,11 +351,14 @@ read_ci() {
     unclosed { print "unclosed", NR; next }
     openflow { print "openflow", NR; next }
     # The inputs are the keys at the indentation of the first line under
-    # with:. A bun-version nested deeper is no input.
+    # with:. A bun-version nested deeper is no input. Go upper-cases a few
+    # letters outside ASCII to ASCII ones (ſ to S, ı to I), so an input key
+    # that holds one could read BUN-VERSION, and it fails.
     inwith {
       if (inputind < 0) inputind = ind
+      if (ind == inputind && code ~ /^[^:]*[^\t -~]/) { print "nonascii", NR; next }
       if ($0 ~ BV && ind > inputind) { print "nested", NR; next }
-      if ($0 ~ BV && ind == inputind) {
+      if (low ~ BV && ind == inputind) {
         if (bv) print "twice", NR
         else { bv = NR; bvval = value($0); bvind = ind; follow = 1 }
         next

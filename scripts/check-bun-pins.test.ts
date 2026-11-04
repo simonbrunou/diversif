@@ -4,8 +4,11 @@
 // and stage shapes the script must read: three setup-bun steps, one
 // railpack.json pin and three oven/bun stages. A test edits one line into
 // one failure class and asserts the exit code and the message that names
-// the pin.
+// the pin. The cases at the end compare the check with a YAML parser
+// instead: they assert only that the check never passes a workflow the
+// parser reads as a violation.
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test';
+import { execFile } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -17,6 +20,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { parseDocument } from 'yaml';
 
 const repo = path.resolve(import.meta.dir, '..');
 const scriptPath = path.join(repo, 'scripts', 'check-bun-pins.sh');
@@ -200,6 +204,15 @@ describe('check-bun-pins.sh passes', () => {
     setLine(CI, 8, `          ${text}`);
     passes();
   });
+
+  // The runner hands setup-bun each input as INPUT_<key in upper case>.
+  it.each(['Bun-Version: 1.2.3', 'BUN-VERSION: 1.2.3'])(
+    'on a bun-version input in another letter case: %s',
+    (text) => {
+      setLine(CI, 8, `          ${text}`);
+      passes();
+    }
+  );
 
   it.each([
     ['a comment that names setup-bun', 1, 'name: CI # example oven-sh/setup-bun@abc123'],
@@ -433,6 +446,39 @@ describe('check-bun-pins.sh fails when it cannot read a pin', () => {
   it('a bun-version set twice in one step', () => {
     setLine(CI, 8, `${lineText(CI, 8)}\n          bun-version: 1.2.3`);
     failsWith(`${CI}:9 oven-sh/setup-bun step sets bun-version twice`);
+  });
+
+  // The runner hands setup-bun both as INPUT_BUN-VERSION, in Go's map order.
+  it.each(['Bun-Version: 9.9.9', 'BUN-VERSION: 9.9.9'])(
+    'a bun-version set twice in one step, the second time as %s',
+    (text) => {
+      setLine(CI, 8, `${lineText(CI, 8)}\n          ${text}`);
+      failsWith(`${CI}:9 oven-sh/setup-bun step sets bun-version twice`);
+    }
+  );
+
+  // Go's strings.ToUpper turns ſ into S and ı into I.
+  it.each(['bun-verſion: 9.9.9', 'bun-versıon: 9.9.9'])(
+    'an input of a setup-bun step written as %s, which the runner upper-cases to BUN-VERSION',
+    (text) => {
+      setLine(CI, 8, `${lineText(CI, 8)}\n          ${text}`);
+      failsWith(
+        `${CI}:9 names an input with a letter outside ASCII, which the runner may hand setup-bun as bun-version`
+      );
+    }
+  );
+
+  // The runner reads the uses: key by its exact name, so these steps never
+  // run setup-bun.
+  it.each([
+    [6, '      - USES: oven-sh/setup-bun@abc123', 8],
+    [13, '        Uses: "oven-sh/setup-bun@abc123"', 18]
+  ])('a setup-bun step on line %d whose uses: key is not in lower case: %s', (at, text, input) => {
+    setLine(CI, at, text);
+    failsWith(
+      `${CI}:${at} names setup-bun@ under a uses key not in lower case, which the runner does not read as uses:`,
+      `${CI}:${input} bun-version is not in an oven-sh/setup-bun step`
+    );
   });
 
   it('a step whose with: comes before its uses:', () => {
@@ -731,5 +777,516 @@ describe('check-bun-pins.sh exits 2', () => {
     const { code, err } = run([dir], { PATH: bin });
     expect(code).toBe(2);
     expect(err).toContain('needs bun on PATH');
+  });
+});
+
+// The check reads ci.yml with an awk line reader, and each gap in it was
+// found by hand (#564, #589). Here a YAML parser reads the same workflows
+// (#652, ported from sutom#204). Each case writes one entry of the fixture's
+// setup-bun steps in one YAML form (or a whole step, or a step or a
+// bun-version it adds), and parses the result with eemeli/yaml, which
+// resolves << merge keys as go-yaml does for Forgejo. Bun.YAML would not do:
+// it reads a !!binary scalar as its base64 text and takes a duplicate key.
+// The check may refuse any case. It must never exit 0 on one in which the
+// parser finds a setup-bun step whose with: holds no bun-version of 1.2.3
+// (the fixture's railpack.json and Dockerfile pin, so an x.y.z other than
+// that one is a pin the check misread), or a bun-version key anywhere else.
+
+// A mapping entry: a key and a scalar, or a key and the entries of a block
+// mapping.
+type Entry = [key: string, value: string | Entry[]];
+// One YAML form: the lines of an entry whose key sits at column `at`, or
+// null when the form does not apply to that entry.
+type Form = (entry: Entry, at: number) => string[] | null;
+// One form of a whole step: the lines of the list item whose dash sits at
+// column `dash`.
+type ItemForm = (entries: Entry[], dash: number) => string[];
+
+const BV = 'bun-version';
+const PIN = '1.2.3';
+const ACTION = 'oven-sh/setup-bun@abc123';
+
+const pad = (n: number) => ' '.repeat(n);
+const hex = (s: string) => `\\x${s.charCodeAt(0).toString(16).padStart(2, '0')}`;
+
+function block([key, value]: Entry, at: number, writtenKey = key): string[] {
+  return typeof value === 'string'
+    ? [`${pad(at)}${writtenKey}: ${value}`]
+    : [`${pad(at)}${writtenKey}:`, ...value.flatMap((entry) => block(entry, at + 2))];
+}
+
+function flow(entries: Entry[]): string {
+  const items = entries.map(([k, v]) => `${k}: ${typeof v === 'string' ? v : flow(v)}`);
+  return `{ ${items.join(', ')} }`;
+}
+
+// The lines after a { that ends the line of a key or a dash at column `at`:
+// one entry a line, deeper than the key, as eemeli/yaml requires, then the }.
+function flowLines(entries: Entry[], at: number): string[] {
+  const items = entries.map(
+    ([k, v]) => `${pad(at + 4)}${k}: ${typeof v === 'string' ? v : flow(v)},`
+  );
+  return [...items, `${pad(at + 2)}}`];
+}
+
+function json(entries: Entry[]): string {
+  const items = entries.map(
+    ([k, v]) => `${JSON.stringify(k)}:${typeof v === 'string' ? JSON.stringify(v) : json(v)}`
+  );
+  return `{${items.join(',')}}`;
+}
+
+// A form that applies to scalar entries only, or to block mappings only.
+const scalarOnly =
+  (write: (key: string, value: string, at: number) => string[]): Form =>
+  ([key, value], at) =>
+    typeof value === 'string' ? write(key, value, at) : null;
+const mappingOnly =
+  (write: (key: string, value: Entry[], at: number) => string[]): Form =>
+  ([key, value], at) =>
+    typeof value === 'string' ? null : write(key, value, at);
+// The block lines of an entry, with `text` (an anchor or a tag) written
+// after its key.
+const afterKey = (entry: Entry, at: number, text: string) => {
+  const [first, ...rest] = block(entry, at);
+  return [first!.replace(/:( |$)/, `: ${text}$1`), ...rest];
+};
+
+const forms: [name: string, form: Form][] = [
+  ['plain', (entry, at) => block(entry, at)],
+  ['a double-quoted key', (entry, at) => block(entry, at, `"${entry[0]}"`)],
+  ['a single-quoted key', (entry, at) => block(entry, at, `'${entry[0]}'`)],
+  // The runner reads uses: and with: by their exact names, and hands
+  // setup-bun each input as INPUT_<name in upper case>, with Go's
+  // strings.ToUpper, which also turns ſ into S and ı into I.
+  ['a key in upper case', (entry, at) => block(entry, at, entry[0].toUpperCase())],
+  [
+    'a key with a letter the runner upper-cases to ASCII',
+    ([k, v], at) =>
+      k.includes('s')
+        ? block([k, v], at, k.replace('s', 'ſ'))
+        : k.includes('i')
+          ? block([k, v], at, k.replace('i', 'ı'))
+          : null
+  ],
+  ['a tab after the colon', scalarOnly((k, v, at) => [`${pad(at)}${k}:\t${v}`])],
+  ['a double-quoted value', scalarOnly((k, v, at) => [`${pad(at)}${k}: "${v}"`])],
+  ['a single-quoted value', scalarOnly((k, v, at) => [`${pad(at)}${k}: '${v}'`])],
+  [
+    'a comment after it',
+    (entry, at) => {
+      const [first, ...rest] = block(entry, at);
+      return [`${first} # bun-version: 9.9.9 uses: oven-sh/setup-bun@v2`, ...rest];
+    }
+  ],
+  [
+    'a comment line before it',
+    (entry, at) => [`${pad(at)}# with: { bun-version: 9.9.9 }`, ...block(entry, at)]
+  ],
+  ['the !!str tag', scalarOnly((k, v, at) => [`${pad(at)}${k}: !!str ${v}`])],
+  ['the !!map tag', mappingOnly((k, v, at) => afterKey([k, v], at, '!!map'))],
+  ['the !!binary tag', scalarOnly((k, v, at) => [`${pad(at)}${k}: !!binary ${btoa(v)}`])],
+  ['a local tag', (entry, at) => afterKey(entry, at, '!pin')],
+  ['an anchor on the value', (entry, at) => afterKey(entry, at, '&v')],
+  ['an anchor on the key', (entry, at) => block(entry, at, `&k ${entry[0]}`)],
+  [
+    'an alias of an anchor on another key',
+    ([k, v], at) => [...afterKey([`x-${k}`, v], at, '&v'), `${pad(at)}${k}: *v`]
+  ],
+  ['a merge key', mappingOnly((k, v, at) => [`${pad(at)}${k}:`, `${pad(at + 2)}<<: ${flow(v)}`])],
+  ['a flow mapping', mappingOnly((k, v, at) => [`${pad(at)}${k}: ${flow(v)}`])],
+  ['a JSON-style flow mapping', mappingOnly((k, v, at) => [`${pad(at)}${k}: ${json(v)}`])],
+  [
+    'a flow mapping over several lines',
+    mappingOnly((k, v, at) => [`${pad(at)}${k}: {`, ...flowLines(v, at)])
+  ],
+  ['a flow sequence', scalarOnly((k, v, at) => [`${pad(at)}${k}: [${v}]`])],
+  [
+    'a literal block scalar',
+    scalarOnly((k, v, at) => [`${pad(at)}${k}: |-`, `${pad(at + 2)}${v}`])
+  ],
+  ['a folded block scalar', scalarOnly((k, v, at) => [`${pad(at)}${k}: >-`, `${pad(at + 2)}${v}`])],
+  [
+    'a block scalar after an anchor',
+    scalarOnly((k, v, at) => [`${pad(at)}${k}: &v |-`, `${pad(at + 2)}${v}`])
+  ],
+  [
+    'the value on the next line',
+    scalarOnly((k, v, at) => [`${pad(at)}${k}:`, `${pad(at + 2)}${v}`])
+  ],
+  [
+    'a plain value continued on a deeper line',
+    scalarOnly((k, v, at) => [`${pad(at)}${k}: ${v}`, `${pad(at + 2)}oops`])
+  ],
+  [
+    'a double-quoted value over two lines',
+    scalarOnly((k, v, at) => [`${pad(at)}${k}: "${v}`, `${pad(at + 2)}"`])
+  ],
+  [
+    'an escape in the key',
+    (entry, at) => block(entry, at, `"${hex(entry[0])}${entry[0].slice(1)}"`)
+  ],
+  [
+    'an escape in the value',
+    scalarOnly((k, v, at) => [`${pad(at)}${k}: "${hex(v)}${v.slice(1)}"`])
+  ],
+  [
+    'an explicit key',
+    ([k, v], at) =>
+      typeof v === 'string'
+        ? [`${pad(at)}? ${k}`, `${pad(at)}: ${v}`]
+        : [`${pad(at)}? ${k}`, `${pad(at)}:`, ...block([k, v], at).slice(1)]
+  ],
+  // The entry under another key, or as text in the body of a block scalar.
+  ['under another key', (entry, at) => [`${pad(at)}other:`, ...block(entry, at + 2)]],
+  [
+    'in the body of a block scalar that is a list item',
+    (entry, at) => [`${pad(at)}args:`, `${pad(at + 2)}- |`, ...block(entry, at + 4)]
+  ],
+  [
+    'in the body of a block scalar whose key holds a blank',
+    (entry, at) => [`${pad(at)}my key: |`, ...block(entry, at + 2)]
+  ],
+  [
+    'in the body of a block scalar after an anchor',
+    (entry, at) => [`${pad(at)}notes: &n |`, ...block(entry, at + 2)]
+  ],
+  [
+    'in the body of a block scalar whose quoted key holds a blank',
+    (entry, at) => [`${pad(at)}"my key": |`, ...block(entry, at + 2)]
+  ],
+  // The entry in a setup-bun step nested in another value, which YAML reads
+  // as no step. A second uses: there would be a duplicate key.
+  [
+    'under another key, beside a uses: of setup-bun',
+    (entry, at) =>
+      entry[0] === 'uses'
+        ? null
+        : [`${pad(at)}other:`, `${pad(at + 2)}uses: ${ACTION}`, ...block(entry, at + 2)]
+  ],
+  [
+    'in a setup-bun step in a list under another key',
+    (entry, at) =>
+      entry[0] === 'uses'
+        ? null
+        : [`${pad(at)}args:`, `${pad(at + 2)}- uses: ${ACTION}`, ...block(entry, at + 4)]
+  ]
+];
+
+const itemForms: [name: string, form: ItemForm][] = [
+  ['a flow mapping', (entries, dash) => [`${pad(dash)}- ${flow(entries)}`]],
+  ['a JSON-style flow mapping', (entries, dash) => [`${pad(dash)}- ${json(entries)}`]],
+  [
+    'a JSON-style flow mapping with its dashes escaped',
+    (entries, dash) => [`${pad(dash)}- ${json(entries).replaceAll('-', '\\x2d')}`]
+  ],
+  [
+    'a flow mapping over several lines',
+    (entries, dash) => [`${pad(dash)}- {`, ...flowLines(entries, dash)]
+  ],
+  [
+    'an anchor on the item',
+    (entries, dash) => [`${pad(dash)}- &step`, ...entries.flatMap((e) => block(e, dash + 2))]
+  ],
+  [
+    'the !!map tag on the item',
+    (entries, dash) => [`${pad(dash)}- !!map`, ...entries.flatMap((e) => block(e, dash + 2))]
+  ],
+  ['a merge key', (entries, dash) => [`${pad(dash)}- <<: ${flow(entries)}`]]
+];
+
+// The lines of a list item whose keys sit at column dash + 2, with the dash
+// on its first line that is no comment.
+function dashed(lines: string[], dash: number): string[] {
+  const first = lines.findIndex((line) => !/^\s*#/.test(line));
+  return lines.map((line, i) => (i === first ? `${pad(dash)}- ${line.slice(dash + 2)}` : line));
+}
+
+// The fixture's setup-bun steps: the first line of the item, the column of
+// its dash, the lines of its uses: and with:, the entries the item forms
+// write before uses: (they leave out step c's env:, a list), and the inputs
+// by line. The last input, bun-version, is on the last line of the step.
+type Step = {
+  item: number;
+  dash: number;
+  uses: number;
+  with: number;
+  entries: Entry[];
+  inputs: [line: number, input: Entry][];
+};
+const steps: Step[] = [
+  { item: 6, dash: 6, uses: 6, with: 7, entries: [], inputs: [[8, [BV, PIN]]] },
+  {
+    item: 12,
+    dash: 6,
+    uses: 13,
+    with: 14,
+    entries: [['name', 'Setup Bun']],
+    inputs: [
+      [17, ['no-cache', 'true']],
+      [18, [BV, PIN]]
+    ]
+  },
+  {
+    item: 22,
+    dash: 4,
+    uses: 26,
+    with: 27,
+    entries: [['name', 'Setup Bun after a nested list']],
+    inputs: [[28, [BV, PIN]]]
+  }
+];
+
+// The fixture's ci.yml with line `at` (1-based) replaced by edits[at], which
+// may hold no line or several.
+function edited(edits: Record<number, string[]>): string {
+  return `${ciLines.flatMap((line, i) => edits[i + 1] ?? [line]).join('\n')}\n`;
+}
+
+// Lines `from` to `to` replaced by `lines`.
+function replaced(from: number, to: number, lines: string[]): Record<number, string[]> {
+  const edits: Record<number, string[]> = { [from]: lines };
+  for (let at = from + 1; at <= to; at++) edits[at] = [];
+  return edits;
+}
+
+// Line `at` kept, and `lines` added after it.
+const after = (at: number, lines: string[]) => ({ [at]: [ciLines[at - 1]!, ...lines] });
+
+// A setup-bun step without a bun-version, added after line 9 in the
+// fixture's layout: `- ` at column 6.
+const ADDED = 'a setup-bun step without a bun-version added after line 9';
+const addedUses: Entry = ['uses', ACTION];
+const noCache: Entry = ['with', [['no-cache', 'true']]];
+const addedStep = (lines: string[]) => edited(after(9, dashed(lines, 6)));
+
+// Whether the parser rejects `text` for duplicate keys and nothing else.
+function duplicateKeysOnly(text: string): boolean {
+  const { errors } = parseDocument(text, { merge: true });
+  return errors.length > 0 && errors.every((e) => e.code === 'DUPLICATE_KEY');
+}
+
+type Case = { name: string; form: string; text: string };
+const cases: Case[] = [{ name: 'the unmodified fixture', form: 'none', text: fixture[CI]! }];
+function addCase(form: string, where: string, text: string | null): void {
+  if (text !== null) cases.push({ name: `${form}: ${where}`, form, text });
+}
+
+for (const [name, form] of forms) {
+  for (const step of steps) {
+    // The step's keys sit two columns right of its dash, and its inputs two
+    // more.
+    const keys = step.dash + 2;
+    const inputAt = keys + 2;
+    const inputs = step.inputs.map(([, input]) => input);
+    const last = step.inputs.at(-1)![0];
+    // The uses:, a line added to the step before its with:, and each input
+    // but bun-version, each as it is and with the step's bun-version
+    // removed, where the parser reads a violation.
+    const variants: [name: string, edits: Record<number, string[]>][] = [
+      ['', {}],
+      [`, with the ${BV} on line ${last} removed`, { [last]: [] }]
+    ];
+    for (const [variant, edits] of variants) {
+      const uses = form(addedUses, keys);
+      const usesLines = uses && (step.uses === step.item ? dashed(uses, step.dash) : uses);
+      addCase(
+        name,
+        `the uses: on line ${step.uses}${variant}`,
+        usesLines && edited({ ...edits, [step.uses]: usesLines })
+      );
+      const id = form(['id', 'setup'], keys);
+      addCase(
+        name,
+        `a line added after line ${step.uses}${variant}`,
+        id && edited({ ...edits, ...after(step.uses, id) })
+      );
+      for (const [line, input] of step.inputs.slice(0, -1)) {
+        const lines = form(input, inputAt);
+        addCase(
+          name,
+          `the input on line ${line}${variant}`,
+          lines && edited({ ...edits, [line]: lines })
+        );
+      }
+    }
+    // The with: block, as it is, with bun-version 9.9.9, nested under
+    // extra:, and removed.
+    const withBlock = (written: Entry[]) => {
+      const lines = form(['with', written], keys);
+      return lines && edited(replaced(step.with, last, lines));
+    };
+    const others = inputs.filter(([k]) => k !== BV);
+    addCase(name, `the with: on line ${step.with}`, withBlock(inputs));
+    addCase(
+      name,
+      `the with: on line ${step.with}, with ${BV}: 9.9.9`,
+      withBlock([...others, [BV, '9.9.9']])
+    );
+    addCase(
+      name,
+      `the with: on line ${step.with}, with ${BV} nested under extra:`,
+      withBlock([...others, ['extra', [[BV, PIN]]]])
+    );
+    addCase(name, `the with: on line ${step.with}, without ${BV}`, withBlock(others));
+    // The bun-version input, as it is, with 9.9.9, nested under extra:, and
+    // moved to the step's keys.
+    const input = form([BV, PIN], inputAt);
+    addCase(name, `the input on line ${last}`, input && edited({ [last]: input }));
+    const other = form([BV, '9.9.9'], inputAt);
+    addCase(name, `the input on line ${last}, reading 9.9.9`, other && edited({ [last]: other }));
+    const nested = form([BV, PIN], inputAt + 2);
+    addCase(
+      name,
+      `the input on line ${last}, nested under extra:`,
+      nested && edited({ [last]: [`${pad(inputAt)}extra:`, ...nested] })
+    );
+    const moved = form([BV, PIN], keys);
+    addCase(
+      name,
+      `the input on line ${last}, moved to the step's keys after line ${step.uses}`,
+      moved && edited({ [last]: [], ...after(step.uses, moved) })
+    );
+    // A second bun-version after the step's own. Most forms write the same
+    // key again, which YAML rejects as a duplicate, so those cases drop out.
+    const second = form([BV, '9.9.9'], inputAt);
+    const beside = second && edited(after(last, second));
+    if (beside !== null && !duplicateKeysOnly(beside)) {
+      addCase(name, `a ${BV}: 9.9.9 added after line ${last}`, beside);
+    }
+  }
+  // A bun-version added to the with: of the checkout step on line 5.
+  const added = form([BV, PIN], 10);
+  addCase(
+    name,
+    `a ${BV} added to a with: of the step on line 5`,
+    added && edited(after(5, ['        with:', ...added]))
+  );
+  const uses = form(addedUses, 8);
+  addCase(name, `the uses: of ${ADDED}`, uses && addedStep([...uses, ...block(noCache, 8)]));
+  const inputs = form(noCache, 8);
+  addCase(name, `the with: of ${ADDED}`, inputs && addedStep([...block(addedUses, 8), ...inputs]));
+  const input = form(['no-cache', 'true'], 10);
+  addCase(
+    name,
+    `the input of ${ADDED}`,
+    input && addedStep([...block(addedUses, 8), '        with:', ...input])
+  );
+}
+
+for (const [name, form] of itemForms) {
+  const item = `the step as ${name}`;
+  for (const step of steps) {
+    const inputs = step.inputs.map(([, input]) => input);
+    const others = inputs.filter(([k]) => k !== BV);
+    const last = step.inputs.at(-1)![0];
+    const variants: [name: string, written: Entry[]][] = [
+      ['', inputs],
+      [`, with ${BV}: 9.9.9`, [...others, [BV, '9.9.9']]],
+      [`, without ${BV}`, others]
+    ];
+    for (const [variant, written] of variants) {
+      const lines = form([...step.entries, addedUses, ['with', written]], step.dash);
+      addCase(item, `on line ${step.item}${variant}`, edited(replaced(step.item, last, lines)));
+    }
+  }
+  addCase(item, ADDED, edited(after(9, form([addedUses, noCache], 6))));
+}
+
+// The setup-bun steps the parser reads whose with: holds no bun-version of
+// 1.2.3, as `<job> step <n>`, and every other bun-version key, by its path.
+// A step's uses: and with: are read by their exact names, and its inputs in
+// upper case, as the runner reads them (see `forms`): two inputs that both
+// read BUN-VERSION leave setup-bun's version to Go's map order. A !!binary
+// scalar is bytes here, which go-yaml hands Forgejo as text, so it is read
+// as text. A workflow the parser rejects throws: the generator wrote no
+// YAML.
+function parserViolations(text: string): string[] {
+  const doc = parseDocument(text, { merge: true });
+  if (doc.errors.length > 0) {
+    throw new Error(`the parser rejects this case: ${doc.errors[0]!.message}\n${text}`);
+  }
+  const asText = (v: unknown) =>
+    typeof v === 'string' ? v : v instanceof Uint8Array ? new TextDecoder().decode(v) : undefined;
+  const get = (node: unknown, key: string): unknown =>
+    node instanceof Map ? [...node].find(([k]) => asText(k) === key)?.[1] : undefined;
+  const violations: string[] = [];
+  const root: unknown = doc.toJS({ mapAsMap: true });
+  // The paths of the with: of each setup-bun step.
+  const inputs = new Set<string>();
+  const jobs = get(root, 'jobs');
+  for (const [job, body] of jobs instanceof Map ? jobs : []) {
+    const jobSteps = get(body, 'steps');
+    (Array.isArray(jobSteps) ? jobSteps : []).forEach((step: unknown, i) => {
+      const uses = asText(get(step, 'uses'))?.toLowerCase();
+      if (uses === undefined || !/^(.*\/)?oven-sh\/setup-bun@/.test(uses)) return;
+      inputs.add(`/jobs/${asText(job)}/steps/${i}/with`);
+      const stepInputs = get(step, 'with');
+      const pins = [...(stepInputs instanceof Map ? stepInputs : [])].filter(
+        ([k]) => asText(k)?.toUpperCase() === BV.toUpperCase()
+      );
+      if (pins.length !== 1 || asText(pins[0]![1]) !== PIN) {
+        violations.push(`${asText(job)} step ${i + 1}`);
+      }
+    });
+  }
+  // Every bun-version key, keys that are collections included.
+  const walk = (node: unknown, at: string): void => {
+    if (Array.isArray(node)) node.forEach((item, i) => walk(item, `${at}/${i}`));
+    if (!(node instanceof Map)) return;
+    for (const [k, v] of node) {
+      if (asText(k) === BV && !inputs.has(at)) violations.push(`${BV} at ${at || '/'}`);
+      walk(k, `${at}/?`);
+      walk(v, `${at}/${asText(k) ?? '?'}`);
+    }
+  };
+  walk(root, '');
+  return violations;
+}
+
+function runAsync(target: string): Promise<{ code: number | null; out: string; err: string }> {
+  return new Promise((resolve) => {
+    // A run still going after 30 s is stuck: killed, it exits with no code.
+    execFile(scriptPath, [target], { encoding: 'utf8', timeout: 30_000 }, (error, out, err) => {
+      const code = error === null ? 0 : typeof error.code === 'number' ? error.code : null;
+      resolve({ code, out, err });
+    });
+  });
+}
+
+describe('check-bun-pins.sh compared with a YAML parser', () => {
+  it('reads the unmodified fixture as the parser does: every step pins 1.2.3', () => {
+    expect(parserViolations(fixture[CI]!)).toEqual([]);
+    passes();
+  });
+
+  it('generates, for every form, a case the parser reads as a violation, each under its own name', () => {
+    const names = [
+      ...forms.map(([name]) => name),
+      ...itemForms.map(([name]) => `the step as ${name}`)
+    ];
+    const found = new Set(
+      cases.filter((c) => parserViolations(c.text).length > 0).map((c) => c.form)
+    );
+    expect(names.filter((name) => !found.has(name))).toEqual([]);
+    expect(new Set(cases.map((c) => c.name)).size).toBe(cases.length);
+  });
+
+  // Each case runs in its own directory, so the cases run side by side.
+  describe.concurrent('never passes a case the parser reads as a violation', () => {
+    for (const [i, { name, text }] of cases.entries()) {
+      it(name, async () => {
+        const violations = parserViolations(text);
+        const at = path.join(base, 'yaml', String(i));
+        mkdirSync(path.join(at, '.forgejo', 'workflows'), { recursive: true });
+        for (const [file, content] of Object.entries({ ...fixture, [CI]: text })) {
+          writeFileSync(path.join(at, file), content);
+        }
+        const { code, out, err } = await runAsync(at);
+        const codes: (number | null)[] = [0, 1];
+        expect(codes, `check-bun-pins.sh exited ${code}:\n${out}${err}`).toContain(code);
+        if (code === 0) expect(violations, `check-bun-pins.sh passed on\n${text}`).toEqual([]);
+      });
+    }
   });
 });
