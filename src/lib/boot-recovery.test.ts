@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { fireEvent, screen } from '@testing-library/svelte';
 import * as m from '#lib/paraglide/messages.js';
 import { stubGlobal } from '../test/bun-test-utils';
-import { isHydrated, markHydrated, recoverFromFailedBoot } from './boot-recovery';
+import { isHydrated, markHydrated, resetHydration } from './hydration';
+import { recoverFromFailedBoot } from './boot-recovery';
 
 // What Chromium rejects kit.start() with when the root layout chunk fails (DIVERSIF-D).
 const ROOT_CHUNK_FAILURE = new TypeError(
@@ -11,11 +12,18 @@ const ROOT_CHUNK_FAILURE = new TypeError(
 
 const banner = () => document.querySelectorAll('[data-boot-failure]');
 const stubReload = () => spyOn(location, 'reload').mockImplementation(() => {});
+// What a browser that blocks storage does on every sessionStorage call.
+const denySessionStorage = () => {
+  const denied = () => {
+    throw new DOMException('The operation is insecure.', 'SecurityError');
+  };
+  stubGlobal('sessionStorage', { getItem: denied, setItem: denied, removeItem: denied });
+};
 
 // Before, not after: the preload's afterEach (body, spies, stubbed globals)
 // runs after this file's, so a stubbed sessionStorage would still be in place.
 beforeEach(() => {
-  delete document.documentElement.dataset.hydrated;
+  resetHydration();
   sessionStorage.clear();
 });
 
@@ -46,7 +54,7 @@ describe('recoverFromFailedBoot', () => {
     markHydrated();
 
     // A later page load in the same tab.
-    delete document.documentElement.dataset.hydrated;
+    resetHydration();
     recoverFromFailedBoot(ROOT_CHUNK_FAILURE);
 
     expect(reload).toHaveBeenCalledTimes(2);
@@ -79,10 +87,7 @@ describe('recoverFromFailedBoot', () => {
 
   it('never reloads without sessionStorage to guard against a loop', () => {
     const reload = stubReload();
-    const denied = () => {
-      throw new DOMException('The operation is insecure.', 'SecurityError');
-    };
-    stubGlobal('sessionStorage', { getItem: denied, setItem: denied, removeItem: denied });
+    denySessionStorage();
 
     recoverFromFailedBoot(ROOT_CHUNK_FAILURE);
     markHydrated();
@@ -133,15 +138,16 @@ describe('recoverFromFailedBoot', () => {
   });
 });
 
-describe('isHydrated', () => {
-  it('is false until the root layout marks the app as started', () => {
-    expect(isHydrated()).toBe(false);
-    markHydrated();
-    expect(isHydrated()).toBe(true);
-  });
+// Boot recovery clears its reload key in an onHydrated callback. The reload
+// tests above prove that it clears the key. This one proves that a
+// sessionStorage that throws does not stop the root layout from setting the
+// marker.
+describe('the onHydrated callback', () => {
+  it('lets the app start without sessionStorage', () => {
+    denySessionStorage();
 
-  it('is false on the server, where there is no document', () => {
-    stubGlobal('document', undefined);
-    expect(isHydrated()).toBe(false);
+    markHydrated();
+
+    expect(isHydrated()).toBe(true);
   });
 });

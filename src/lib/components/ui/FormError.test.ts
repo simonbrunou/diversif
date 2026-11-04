@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import { tick } from 'svelte';
-import { markHydrated } from '#lib/boot-recovery.js';
+import { markHydrated, resetHydration } from '#lib/hydration.js';
 import { textSnippet } from '../../../test/component';
 import FormError from './FormError.svelte';
 
@@ -87,9 +87,7 @@ describe('FormError with a message key', () => {
 // that renders before the root layout marks the app hydrated stands in for a
 // server-rendered one.
 describe('FormError focus', () => {
-  afterEach(() => {
-    delete document.documentElement.dataset.hydrated;
-  });
+  afterEach(() => resetHydration());
 
   it('takes focus when it is part of the server-rendered page', async () => {
     const form = { errorKey: 'errorsAccountPasswordIncorrect' };
