@@ -60,56 +60,69 @@ export type PairedForegroundViolation = {
   use: string[];
 };
 
+/** Each alias name and the names it points at, in any theme block. */
+type Aliases = Map<string, Set<string>>;
+
 /**
- * Reads the tints and the forbidden foregrounds from app.css. A declaration
+ * Every `--name` app.css declares, and its aliases. A declaration
  * `--x: var(--y)` (theme tables) or `--color-x: hsl(var(--y))` (`@theme`)
- * makes `x` an alias of `y`, so a new alias of ink is caught without editing
- * this script.
+ * makes `x` an alias of `y`.
  */
-export function rulesFromCss(css: string): PairedForegroundRules {
+function readDeclarations(css: string): { declared: Set<string>; aliases: Aliases } {
   const declared = new Set<string>();
-  const aliases = new Map<string, Set<string>>();
+  const aliases: Aliases = new Map();
   for (const [, name, value] of css.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) {
     declared.add(name);
     const target = /^(?:hsl\()?var\(--([\w-]+)\)\)?$/.exec(value.trim())?.[1];
-    if (!target) continue;
     const alias = name.replace(/^color-/, '');
-    if (alias === target) continue;
-    if (!aliases.has(alias)) aliases.set(alias, new Set());
-    aliases.get(alias)?.add(target);
+    if (!target || alias === target) continue;
+    aliases.set(alias, (aliases.get(alias) ?? new Set<string>()).add(target));
   }
+  return { declared, aliases };
+}
 
-  const forbidden = new Set(INK_AND_GREYS);
+/**
+ * Adds to `found` every alias whose chain reaches one of its names, with the
+ * value `valueOf(alias, the name it reached)`.
+ */
+function addAliases(
+  found: Map<string, string>,
+  aliases: Aliases,
+  valueOf: (alias: string, target: string) => string
+): void {
   for (let grew = true; grew;) {
     grew = false;
     for (const [alias, targets] of aliases) {
-      if (!forbidden.has(alias) && [...targets].some((t) => forbidden.has(t))) {
-        forbidden.add(alias);
-        grew = true;
-      }
-    }
-  }
-
-  const tints = new Map<string, string>();
-  for (const name of declared) {
-    if (/^(?:tile|reaction)-[a-z]+$/.test(name) && declared.has(`${name}-foreground`)) {
-      tints.set(name, `text-${name}-foreground`);
-    }
-  }
-  // An alias of a tint (`--warning: var(--tile-butter)`, `--color-accent-sky:
-  // hsl(var(--tile-sky))`) paints the same tint: it pairs its own -foreground
-  // when it declares one, else the tint's.
-  for (let grew = true; grew;) {
-    grew = false;
-    for (const [alias, targets] of aliases) {
-      const tint = [...targets].find((t) => tints.has(t));
-      if (tints.has(alias) || !tint) continue;
-      const own = `${alias}-foreground`;
-      tints.set(alias, declared.has(own) ? `text-${own}` : (tints.get(tint) ?? ''));
+      const target = [...targets].find((t) => found.has(t));
+      if (found.has(alias) || target === undefined) continue;
+      found.set(alias, valueOf(alias, target));
       grew = true;
     }
   }
-  return { tints, forbidden };
+}
+
+/**
+ * Reads the tints and the forbidden foregrounds from app.css, aliases
+ * included, so a new alias of ink or of a tint is caught without editing this
+ * script.
+ */
+export function rulesFromCss(css: string): PairedForegroundRules {
+  const { declared, aliases } = readDeclarations(css);
+  const greys = new Map(INK_AND_GREYS.map((g) => [g, g]));
+  addAliases(greys, aliases, (alias) => alias);
+  const tints = new Map(
+    [...declared]
+      .filter((name) => /^(?:tile|reaction)-[a-z]+$/.test(name))
+      .filter((name) => declared.has(`${name}-foreground`))
+      .map((name) => [name, `text-${name}-foreground`])
+  );
+  // An alias of a tint (`--warning: var(--tile-butter)`, `--color-accent-sky:
+  // hsl(var(--tile-sky))`) paints the same tint: it pairs its own -foreground
+  // when it declares one, else the tint's.
+  addAliases(tints, aliases, (alias, tint) =>
+    declared.has(`${alias}-foreground`) ? `text-${alias}-foreground` : (tints.get(tint) ?? '')
+  );
+  return { tints, forbidden: new Set(greys.keys()) };
 }
 
 /** A class with its variants, `!` and `/NN` removed. */
@@ -192,6 +205,53 @@ function elementClasses(attributes: SvelteAttribute[]): ClassToken[] {
 }
 
 /**
+ * The tints an element's classes set, and whether one of its classes paints a
+ * background of another colour in every branch.
+ */
+function classBackground(
+  classes: ClassToken[],
+  rules: PairedForegroundRules
+): { tints: Tint[]; setsBackground: boolean } {
+  const tints: Tint[] = [];
+  let setsBackground = false;
+  for (const { cls, offset, always } of classes) {
+    const b = bare(cls);
+    if (!b.startsWith('bg-')) continue;
+    const name = b.slice('bg-'.length);
+    if (rules.tints.has(name)) tints.push({ name, label: cls, offset });
+    else if (always && !cls.includes(':') && !NOT_A_BACKGROUND.test(b)) setsBackground = true;
+  }
+  return { tints, setsBackground };
+}
+
+/** The tile tints a `<Card variant="tile-*">` sets, static or in any branch. */
+function cardTints(node: EstreeNode, rules: PairedForegroundRules): Tint[] {
+  const variant = (node.attributes as SvelteAttribute[]).find(
+    (a) => a.type === 'Attribute' && a.name === 'variant'
+  );
+  const values: ClassToken[] = [];
+  if (variant) attributeClasses(variant.value, values);
+  return values
+    .filter(({ cls }) => /^tile-/.test(cls) && rules.tints.has(cls))
+    .map(({ cls, offset }) => ({ name: cls, label: `Card variant="${cls}"`, offset }));
+}
+
+/** The tint in force on an element and its children: its own, none, or its parent's. */
+function ownContext(
+  node: EstreeNode,
+  classes: ClassToken[],
+  inherited: Context,
+  rules: PairedForegroundRules
+): Context {
+  const own = classBackground(classes, rules);
+  // ui/Card sets a background for every variant: bg-card unless a tile.
+  const isCard = node.type === 'Component' && node.name === 'Card';
+  const tints = isCard ? [...own.tints, ...cardTints(node, rules)] : own.tints;
+  if (tints.length > 0) return { tints };
+  return own.setsBackground || isCard ? null : inherited;
+}
+
+/**
  * Every class that sets ink or a grey on a tint, in one Svelte file's source.
  * Throws on a file the Svelte parser rejects.
  */
@@ -214,37 +274,9 @@ export function findPairedForegroundViolations(
   const lines = source.split('\n');
   const violations: PairedForegroundViolation[] = [];
 
-  function ownContext(node: EstreeNode, classes: ClassToken[], inherited: Context): Context {
-    const tints: Tint[] = [];
-    let setsBackground = false;
-    for (const { cls, offset, always } of classes) {
-      const b = bare(cls);
-      if (!b.startsWith('bg-')) continue;
-      const name = b.slice('bg-'.length);
-      if (rules.tints.has(name)) tints.push({ name, label: cls, offset });
-      else if (always && !cls.includes(':') && !NOT_A_BACKGROUND.test(b)) setsBackground = true;
-    }
-    if (node.type === 'Component' && node.name === 'Card') {
-      // ui/Card sets a background for every variant: bg-card unless a tile.
-      setsBackground = true;
-      const variant = (node.attributes as SvelteAttribute[]).find(
-        (a) => a.type === 'Attribute' && a.name === 'variant'
-      );
-      const values: ClassToken[] = [];
-      if (variant) attributeClasses(variant.value, values);
-      for (const { cls, offset } of values) {
-        if (/^tile-/.test(cls) && rules.tints.has(cls)) {
-          tints.push({ name: cls, label: `Card variant="${cls}"`, offset });
-        }
-      }
-    }
-    if (tints.length > 0) return { tints };
-    return setsBackground ? null : inherited;
-  }
-
   function visitElement(node: EstreeNode, inherited: Context): Context {
     const classes = elementClasses(node.attributes as SvelteAttribute[]);
-    const context = ownContext(node, classes, inherited);
+    const context = ownContext(node, classes, inherited, rules);
     if (!context) return context;
     for (const { cls, offset } of classes) {
       const b = bare(cls);
