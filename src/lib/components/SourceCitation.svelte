@@ -1,14 +1,24 @@
 <script lang="ts">
   import { SOURCES, type SourceId } from '#lib/content/sources.js';
   import { ExternalLink } from '@lucide/svelte';
+  import { cn } from '#lib/utils/cn.js';
 
-  let { ids, inline = false }: { ids: SourceId[]; inline?: boolean } = $props();
+  let {
+    ids,
+    inline = false,
+    class: className = ''
+  }: {
+    ids: SourceId[];
+    inline?: boolean;
+    /** Merged into the list's classes, e.g. `text-current` on a tint. */
+    class?: string;
+  } = $props();
 
   const sources = $derived(ids.map((id) => ({ id, ...SOURCES[id] })));
 </script>
 
 {#if inline}
-  <span class="inline-flex flex-wrap gap-1 text-2xs text-muted-foreground">
+  <span class={cn('inline-flex flex-wrap gap-1 text-2xs text-muted-foreground', className)}>
     {#each sources as s, i (s.id)}
       <a
         href={s.url}
@@ -22,7 +32,7 @@
     {/each}
   </span>
 {:else}
-  <ul class="mt-2 space-y-1 text-2xs text-muted-foreground">
+  <ul class={cn('mt-2 space-y-1 text-2xs text-muted-foreground', className)}>
     {#each sources as s (s.id)}
       <li>
         <a

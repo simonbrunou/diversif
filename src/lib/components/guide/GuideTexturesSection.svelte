@@ -34,18 +34,20 @@
     </ul>
   </Card>
 
-  <Card class="border-reaction-inconfort/30 bg-reaction-inconfort/5 p-4">
-    <h3 class="flex items-center gap-2 text-sm font-semibold text-reaction-inconfort-foreground">
+  <Card
+    class="border-reaction-inconfort/30 bg-reaction-inconfort/5 p-4 text-reaction-inconfort-foreground"
+  >
+    <h3 class="flex items-center gap-2 text-sm font-semibold">
       <TriangleAlert size={14} aria-hidden="true" />
       Étouffement : règles de découpe
     </h3>
-    <ul class="mt-2 grid gap-1 text-sm text-foreground/90 sm:grid-cols-2">
+    <ul class="mt-2 grid gap-1 text-sm sm:grid-cols-2">
       {#each CHOKING_HAZARDS as c, i (i)}
         <!-- eslint-disable-next-line i18n/no-literal-colon-separator -- the guide is French-only content (README), and CHOKING_HAZARDS is French text -->
         <li><strong>{c.food}</strong> : {c.rule}</li>
       {/each}
     </ul>
-    <p class="mt-3 text-xs text-muted-foreground">
+    <p class="mt-3 text-xs">
       Bébé mange toujours <strong>assis bien droit</strong>, dans une chaise haute adaptée,
       <strong>jamais seul</strong>, jamais en voiture, ni en poussette, ni allongé.
     </p>
