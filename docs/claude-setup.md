@@ -103,8 +103,9 @@ For diversif:
 
 - the 20 plugins + 4 marketplaces — installed at session start, **provided the
   environment's network access is Trusted/Custom** (not None);
-- every hook in `.claude/settings.json`, the 2 hookify rules, the project skills
-  (`migration`, `gen-test`, **`council`**) and the `security-reviewer` agent;
+- every hook in `.claude/settings.json`, the hookify rules (`.claude/hookify.*.local.md`),
+  the project skills (`create-migration`, `fallow`, `i18n-add-key`, `pre-launch-check`)
+  and the `tenant-isolation-auditor` and `webauthn-auth-reviewer` agents;
 - `bun install` runs automatically via the committed `SessionStart` hook
   (`scripts/session-bootstrap.sh`, gated on `CLAUDE_CODE_REMOTE`).
 
