@@ -23,9 +23,9 @@
   // So it renders action results only: `form`, or a value derived from it,
   // never a value from load data. SvelteKit fills `form` only after a POST
   // to an action, so the server renders such an alert only on the page that
-  // answers that POST. An alert fed from load data would render on every GET
-  // and take focus there, past the page heading and the start of its form
-  // (#535).
+  // answers that POST. An alert fed from load data would render on every GET,
+  // and each page the server renders would give it focus, past the page
+  // heading and the start of its form (#535).
   type Props = { class?: string } & (
     | { messageKey: string | null | undefined; form: object | null | undefined; children?: never }
     | { children: Snippet; form?: object | null; messageKey?: never }
