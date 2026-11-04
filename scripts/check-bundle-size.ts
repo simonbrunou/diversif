@@ -19,18 +19,22 @@ const CLIENT_DIR = path.join(ROOT, '.svelte-kit/output/client/_app/immutable');
 const STATIC_DIR = path.join(ROOT, 'static');
 const BUDGET_PATH = path.join(ROOT, 'scripts/bundle-budget.json');
 
-function kb(bytes) {
+// scripts/bundle-budget.json, in bytes.
+type Budget = { maxJsChunkBytes: number; maxTotalJsBytes: number; maxStaticAssetBytes: number };
+type SizedFile = { path: string; size: number };
+
+function kb(bytes: number): string {
   return `${(bytes / 1024).toFixed(1)} KB`;
 }
 
 // Sizes rounded to 0.1 KB can print as equal for an overrun of a few bytes
 // (« 1103.5 KB > 1103.5 KB » for 14 bytes, #513), so a violation gives the
 // exact bytes and the overrun.
-function over(size, limit) {
+function over(size: number, limit: number): string {
   return `${kb(size)}, ${size} bytes: ${size - limit} over ${limit}`;
 }
 
-function walk(dir, files = []) {
+function walk(dir: string, files: SizedFile[] = []): SizedFile[] {
   if (!fs.existsSync(dir)) return files;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
@@ -51,11 +55,13 @@ if (!fs.existsSync(CLIENT_DIR)) {
   process.exit(1);
 }
 
-let budget;
+let budget: Budget;
 try {
   budget = JSON.parse(fs.readFileSync(BUDGET_PATH, 'utf8'));
 } catch (err) {
-  console.error(`Failed to read ${BUDGET_PATH}: ${err.message}`);
+  console.error(
+    `Failed to read ${BUDGET_PATH}: ${err instanceof Error ? err.message : String(err)}`
+  );
   process.exit(1);
 }
 
@@ -63,7 +69,7 @@ const jsFiles = walk(CLIENT_DIR).filter((f) => f.path.endsWith('.js'));
 const staticFiles = walk(STATIC_DIR);
 const totalJs = jsFiles.reduce((s, f) => s + f.size, 0);
 
-const violations = [];
+const violations: string[] = [];
 
 for (const f of jsFiles) {
   if (f.size > budget.maxJsChunkBytes) {
