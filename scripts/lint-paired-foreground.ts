@@ -21,9 +21,13 @@
  *   `class:name={...}` directive: dynamic classes hid the #360 sites from the
  *   contrast lint. A class held in a variable (`{f.tile}`) is not read.
  *
- * Escape marker: `paired-foreground-ok` on the flagged line, with a one-line
- * reason beside it, for a class the conservative dynamic read flags on an
- * untinted branch.
+ * - Only a background set in the static part of a class (`class="bg-card"`,
+ *   not `class={on ? 'bg-card' : ''}`) or by a `<Card>` ends the tint: one
+ *   set in a single branch leaves the other branches on the tint.
+ *
+ * Escape marker: `paired-foreground-ok: <reason>` on the flagged line, for a
+ * class the conservative dynamic read flags on an untinted branch. A marker
+ * with no reason after its colon does not count.
  *
  * Run via `bun run lint:paired-foreground` (part of `bun run lint`).
  */
@@ -32,6 +36,7 @@ import path from 'node:path';
 import { parse } from 'svelte/compiler';
 
 export const ESCAPE_MARKER = 'paired-foreground-ok';
+const ESCAPE_WITH_REASON = new RegExp(`${ESCAPE_MARKER}:\\s*[^\\s*-]`);
 
 /** Ink and the greys: never a foreground on a tint. */
 const INK_AND_GREYS = ['ink', 'ink-soft', 'foreground', 'muted-foreground'];
@@ -116,11 +121,13 @@ function bare(cls: string): string {
 }
 
 // `bg-*` utilities that set no colour of their own, so the tint behind them
-// still shows.
+// still shows. A gradient's colours come from its `from-*`/`to-*` stops, which
+// this lint does not read, so it does not end the tint either.
 const NOT_A_BACKGROUND =
-  /^bg-(?:transparent|none|inherit|fixed|local|scroll|auto|cover|contain|no-repeat|repeat(?:-\w+)?|clip-\S+|origin-\S+|blend-\S+|(?:top|bottom|left|right|center)(?:-(?:left|right))?)$/;
+  /^bg-(?:transparent|none|inherit|fixed|local|scroll|auto|cover|contain|no-repeat|repeat(?:-\w+)?|clip-\S+|origin-\S+|blend-\S+|(?:top|bottom|left|right|center)(?:-(?:left|right))?|(?:linear|radial|conic|gradient)(?:-\S+)?)$/;
 
-type ClassToken = { cls: string; offset: number };
+/** A class, where it starts, and whether it applies in every branch (static text). */
+type ClassToken = { cls: string; offset: number; always: boolean };
 type Tint = { name: string; label: string; offset: number };
 type Context = { tints: Tint[] } | null;
 
@@ -132,8 +139,10 @@ function isNode(value: unknown): value is EstreeNode {
   );
 }
 
-function splitClasses(text: string, offset: number, out: ClassToken[]): void {
-  for (const m of text.matchAll(/\S+/g)) out.push({ cls: m[0], offset: offset + (m.index ?? 0) });
+function splitClasses(text: string, offset: number, out: ClassToken[], always = false): void {
+  for (const m of text.matchAll(/\S+/g)) {
+    out.push({ cls: m[0], offset: offset + (m.index ?? 0), always });
+  }
 }
 
 /** Every string literal in a JS expression, split into classes. */
@@ -161,7 +170,7 @@ function literalClasses(node: unknown, out: ClassToken[]): void {
 function attributeClasses(value: unknown, out: ClassToken[]): void {
   for (const part of Array.isArray(value) ? value : [value]) {
     if (!isNode(part)) continue;
-    if (part.type === 'Text') splitClasses(String(part.raw), part.start, out);
+    if (part.type === 'Text') splitClasses(String(part.raw), part.start, out, true);
     else if (part.type === 'ExpressionTag') literalClasses(part.expression, out);
   }
 }
@@ -173,7 +182,7 @@ function elementClasses(attributes: SvelteAttribute[]): ClassToken[] {
   for (const attr of attributes) {
     if (attr.type === 'Attribute' && attr.name === 'class') attributeClasses(attr.value, out);
     else if (attr.type === 'ClassDirective') {
-      out.push({ cls: attr.name, offset: attr.start + 'class:'.length });
+      out.push({ cls: attr.name, offset: attr.start + 'class:'.length, always: false });
     }
   }
   return out;
@@ -205,12 +214,12 @@ export function findPairedForegroundViolations(
   function ownContext(node: EstreeNode, classes: ClassToken[], inherited: Context): Context {
     const tints: Tint[] = [];
     let setsBackground = false;
-    for (const { cls, offset } of classes) {
+    for (const { cls, offset, always } of classes) {
       const b = bare(cls);
       if (!b.startsWith('bg-')) continue;
       const name = b.slice('bg-'.length);
       if (rules.tints.has(name)) tints.push({ name, label: cls, offset });
-      else if (!cls.includes(':') && !NOT_A_BACKGROUND.test(b)) setsBackground = true;
+      else if (always && !cls.includes(':') && !NOT_A_BACKGROUND.test(b)) setsBackground = true;
     }
     if (node.type === 'Component' && node.name === 'Card') {
       // ui/Card sets a background for every variant: bg-card unless a tile.
@@ -238,7 +247,7 @@ export function findPairedForegroundViolations(
       const b = bare(cls);
       if (!b.startsWith('text-') || !rules.forbidden.has(b.slice('text-'.length))) continue;
       const line = lineOf(offset);
-      if (lines[line - 1]?.includes(ESCAPE_MARKER)) continue;
+      if (ESCAPE_WITH_REASON.test(lines[line - 1] ?? '')) continue;
       const seen = new Set<string>();
       const tints = context.tints.filter((t) => !seen.has(t.label) && seen.add(t.label));
       violations.push({

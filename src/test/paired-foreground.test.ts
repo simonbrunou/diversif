@@ -31,6 +31,14 @@ describe('expectPairedForeground', () => {
       '<div class="border bg-reaction-inconfort/5 p-4 text-reaction-inconfort-foreground"><p class="text-xs">x</p></div>'
     ],
     [
+      'an alias of a tile and its own foreground',
+      '<div class="bg-warning/20 text-warning-foreground"><p class="text-xs">x</p></div>'
+    ],
+    [
+      "an accent alias of a tile and the tile's foreground",
+      '<div class="bg-accent-sky/15 text-tile-sky-foreground"><p class="text-xs">x</p></div>'
+    ],
+    [
       'an input inside that paints its own background',
       '<section class="bg-tile-butter text-tile-butter-foreground"><input class="bg-canvas text-foreground placeholder:text-ink-soft"><button class="bg-severe text-severe-foreground"><span class="text-ink">x</span></button></section>'
     ]
@@ -76,6 +84,10 @@ describe('expectPairedForeground', () => {
     [
       'ink inside a background set only on hover',
       '<div class="bg-tile-mint text-tile-mint-foreground"><p class="hover:bg-card text-ink">x</p></div>'
+    ],
+    [
+      'ink inside a gradient, whose stops are not read',
+      '<div class="bg-tile-mint text-tile-mint-foreground"><p class="bg-linear-to-r text-ink">x</p></div>'
     ],
     [
       'ink inside a bg-* utility that sets no colour',

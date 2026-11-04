@@ -10,6 +10,7 @@ import {
   formatViolation,
   rulesFromCss
 } from './lint-paired-foreground';
+import { PAIRED_TINTS } from '../src/test/paired-foreground';
 
 const appCss = readFileSync(path.resolve(import.meta.dir, '../src/app.css'), 'utf8');
 const rules = rulesFromCss(appCss);
@@ -124,6 +125,26 @@ describe('findPairedForegroundViolations', () => {
       'a tile inside an untinted surface inside a tile',
       '<div class="bg-tile-mint"><div class="bg-card"><p class="bg-tile-sky/40 text-ink">x</p></div></div>',
       ['1:text-ink']
+    ],
+    [
+      'a grey whose own background is set in one branch only',
+      "<div class=\"bg-tile-mint\"><p class={cn('text-ink-soft', on && 'bg-card')}>x</p></div>",
+      ['1:text-ink-soft']
+    ],
+    [
+      'ink under an ancestor whose background is set in one branch only',
+      '<div class="bg-tile-mint"><div class={on ? \'bg-card\' : \'\'}><p class="text-ink">x</p></div></div>',
+      ['1:text-ink']
+    ],
+    [
+      'ink on a gradient inside a tint',
+      '<div class="bg-tile-mint"><p class="bg-linear-to-r text-ink">x</p></div>',
+      ['1:text-ink']
+    ],
+    [
+      'a grey whose escape marker gives no reason',
+      '<div class="bg-tile-mint">\n  <p class="text-ink-soft">x</p><!-- paired-foreground-ok -->\n</div>',
+      ['2:text-ink-soft']
     ]
   ])('flags %s', (_case, markup, expected) => {
     expect(flagged(markup)).toEqual(expected);
@@ -231,6 +252,10 @@ describe('rulesFromCss', () => {
 
   it('reads a tile with no -foreground token as no tint', () => {
     expect(fixture.tints.has('tile-plain')).toBe(false);
+  });
+
+  it('reads the same tints, paired the same way, as expectPairedForeground', () => {
+    expect(new Map([...rules.tints].sort())).toEqual(new Map([...PAIRED_TINTS].sort()));
   });
 
   it('reads the tints and the greys app.css declares today', () => {
