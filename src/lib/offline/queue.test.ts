@@ -87,7 +87,7 @@ const failureActionResult = (status: number) =>
 // Mirrors what the real server actually sends for a thrown action error:
 // SvelteKit's handle_action_json_request puts the numeric status ONLY on
 // the HTTP response (never in the JSON body), and this app's own
-// hooks.server.ts:handleError replaces the message with a generic localized
+// hooks.server.ts:handleError replaces the message with a localized
 // description + errorId for every status < 500.
 const errorActionResult = (status: number) =>
   new Response(
