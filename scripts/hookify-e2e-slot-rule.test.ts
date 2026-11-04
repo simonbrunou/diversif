@@ -4,9 +4,10 @@
 // condition ANDed, `regex_match` as re.search with re.IGNORECASE. This file
 // ports those two steps for the keys the rule uses, so CI runs the rule's
 // cases on every change. Python and JavaScript read the pattern alike only
-// in the syntax they share and on ASCII input, so two tests hold both. Where
-// hookify is installed (the dev hosts, not CI), the last test runs its own
-// engine on every case and compares the verdicts.
+// in the syntax they share and on printable ASCII, tab and newline, so two
+// tests keep the pattern and the cases to those. Where Claude Code installed
+// hookify (CI has none), the last test runs hookify's own engine on every
+// case and compares the verdicts.
 import { describe, expect, it } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -194,8 +195,15 @@ const COMMANDS = [
   ...Object.values(MUST_PASS)
 ];
 
-// hookify's own engine, run on the commands passed as JSON.
-const HOOKIFY = path.join(homedir(), '.claude/plugins/cache/claude-plugins-official/hookify/0.1.1');
+// hookify's own engine, at the path Claude Code installed it to, run on the
+// commands passed as JSON. A newer hookify than the 0.1.1 this file ports
+// runs too, so a change in its parser or engine that alters a verdict on
+// these cases fails here.
+const INSTALLED = path.join(homedir(), '.claude/plugins/installed_plugins.json');
+const HOOKIFY: string | undefined = existsSync(INSTALLED)
+  ? JSON.parse(readFileSync(INSTALLED, 'utf8')).plugins?.['hookify@claude-plugins-official']?.[0]
+      ?.installPath
+  : undefined;
 const HOOKIFY_VERDICTS = `
 import json, sys
 sys.path.insert(0, sys.argv[1])
@@ -210,7 +218,8 @@ for command in json.loads(sys.argv[3]):
     out.append(decision.get("permissionDecision") == "deny")
 print(json.dumps(out))
 `;
-const hasHookify = existsSync(path.join(HOOKIFY, 'core/rule_engine.py')) && !!Bun.which('python3');
+const hasHookify =
+  !!HOOKIFY && existsSync(path.join(HOOKIFY, 'core/rule_engine.py')) && !!Bun.which('python3');
 
 describe('block-e2e-start-without-slot', () => {
   it('loads as hookify reads it', () => {
@@ -257,16 +266,18 @@ describe('block-e2e-start-without-slot', () => {
       '`H=$(git rev-parse origin/<branch>) && scripts/wait-e2e-slot.sh "$H" && <command>`'
     ));
 
-  // \s, \b and case folding differ between the engines outside ASCII.
-  it('keeps the pattern and every case to ASCII', () => {
+  // \s, \b and case folding differ between the engines outside printable
+  // ASCII, tab and newline: Python's \s also matches \x1c, for one.
+  it('keeps the pattern and every case to printable ASCII, tab and newline', () => {
     const ascii = /^[\t\n -~]*$/;
     expect(rule.conditions[0].pattern).toMatch(ascii);
     expect(COMMANDS.filter((command) => !ascii.test(command))).toEqual([]);
   });
 
   // Each engine rejects or misreads some of the other's syntax: Python's
-  // (?P<name>) and inline flags, JavaScript's (?<name>), \k, \p{}, \u{} and
-  // [^]. The pattern keeps to escapes and groups both read the same way.
+  // (?P<name>), inline flags, {,n} and a $ that also matches before a final
+  // newline; JavaScript's (?<name>), \k, \p{}, \u{} and [^]. The pattern
+  // keeps to escapes and groups both read the same way.
   it('uses only regex syntax Python and JavaScript share', () => {
     const pattern = rule.conditions[0].pattern;
     const escapes = pattern.match(/\\[\s\S]/g) ?? [];
@@ -274,17 +285,18 @@ describe('block-e2e-start-without-slot', () => {
     const unescaped = pattern.replace(/\\[\s\S]/g, '__');
     expect(unescaped.match(/\(\?[^:!=]/g) ?? []).toEqual([]);
     expect(unescaped).not.toMatch(/\[\^?\]/);
+    expect(unescaped).not.toMatch(/\{,|\$/);
   });
 
   it.skipIf(!hasHookify)(
-    "matches hookify's own verdict on every case",
+    "matches the installed hookify's own verdict on every case",
     () => {
       const run = Bun.spawnSync([
         'python3',
         '-I',
         '-c',
         HOOKIFY_VERDICTS,
-        HOOKIFY,
+        HOOKIFY ?? '',
         rulePath,
         JSON.stringify(COMMANDS)
       ]);
