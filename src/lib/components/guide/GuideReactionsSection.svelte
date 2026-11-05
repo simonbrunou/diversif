@@ -36,7 +36,9 @@
           Conduite à tenir
         </h4>
         <p class="mt-1 text-sm {tone.body}"><EmphasisText text={r.whatToDo} /></p>
-        <div class="mt-2"><SourceCitation ids={r.sources} inline class={tone.sources} /></div>
+        <div class="mt-2">
+          <SourceCitation ids={r.sources} inline class={tone.sources} /><!-- paired-foreground-ok: text-current on the tinted card, which the component test checks -->
+        </div>
       </Card>
     {/each}
   </div>

@@ -29,7 +29,7 @@
   class={cn(
     'flex items-start gap-3 rounded-tile border px-3 py-2 shadow-soft',
     severity === 'neutral' && 'border-border bg-surface',
-    severity === 'warn' && 'border-warning bg-tile-butter',
+    severity === 'warn' && 'border-warning bg-tile-butter text-tile-butter-foreground',
     severity === 'severe' && 'border-severe bg-severe text-severe-foreground'
   )}
 >

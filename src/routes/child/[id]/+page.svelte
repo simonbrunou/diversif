@@ -61,7 +61,7 @@
     >
       <a
         href={localizedHref('/guide')}
-        class="inline-flex items-center font-medium text-primary-strong hover:underline"
+        class="inline-flex items-center font-medium underline underline-offset-2"
       >
         {m.preDiversificationCta()} →
       </a>

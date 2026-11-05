@@ -17,7 +17,9 @@
   <ul class="mt-2 flex flex-col gap-2">
     {#each activityGroups as group (group.members[0].id)}
       <li class="flex items-center gap-3 rounded-tile bg-surface px-3 py-2 shadow-soft">
-        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-tile-lilac text-xs font-bold">
+        <span
+          class="flex h-8 w-8 items-center justify-center rounded-full bg-tile-lilac text-xs font-bold text-tile-lilac-foreground"
+        >
           {group.members[0].loggedByName.charAt(0)}
         </span>
         <span class="flex-1 text-sm">

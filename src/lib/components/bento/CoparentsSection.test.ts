@@ -3,10 +3,24 @@ import { render, screen, cleanup } from '@testing-library/svelte';
 import CoparentsSection from './CoparentsSection.svelte';
 import * as m from '#lib/paraglide/messages.js';
 import type { CoparentEntry } from '#lib/server/guidance/child-history.js';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 
 afterEach(() => cleanup());
 
 describe('CoparentsSection', () => {
+  it("sets each initials disc in the lilac tint's own foreground (#667)", () => {
+    render(CoparentsSection, {
+      props: {
+        childName: 'Léo',
+        coparents: [{ id: '1', displayName: 'Alice', role: 'co-parent' }],
+        inviteHref: '/child/abc/settings#invite'
+      }
+    });
+    const disc = screen.getByText('A');
+    expect(disc.classList.contains('bg-tile-lilac')).toBe(true);
+    expectPairedForeground(disc);
+  });
+
   it('renders an entry per coparent', () => {
     render(CoparentsSection, {
       props: {

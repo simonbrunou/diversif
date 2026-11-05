@@ -1,10 +1,25 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import LandingHeroBento from './LandingHeroBento.svelte';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 
 afterEach(() => cleanup());
 
 describe('LandingHeroBento', () => {
+  it.each([
+    ['signed-out', null],
+    ['signed-in', { id: '1', name: 'Léo' }]
+  ])(
+    "sets the %s hero, title and links, in the peach tint's own foreground (#667)",
+    (_who, child) => {
+      const { container } = render(LandingHeroBento, { props: { child } });
+      const hero = container.querySelector('section');
+      if (!hero) throw new Error('no hero');
+      expect(hero.classList.contains('bg-tile-peach')).toBe(true);
+      expectPairedForeground(hero);
+    }
+  );
+
   it('renders the bento mark, headline, and signup CTA for signed-out visitors', () => {
     render(LandingHeroBento, { props: { child: null } });
     expect(screen.getByLabelText('Diversif')).toBeTruthy();

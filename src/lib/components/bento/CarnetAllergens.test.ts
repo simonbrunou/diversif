@@ -98,6 +98,17 @@ describe('CarnetAllergens', () => {
     }
   );
 
+  it.each([
+    ['cleared', 'bg-tile-mint'],
+    ['todo', 'bg-tile-butter']
+  ] as const)("sets the %s pill in its tint's own foreground (#667)", (state, tint) => {
+    render(CarnetAllergens, { props: { items: [row('Sésame', state)] } });
+    const pill = screen.getByText('Sésame').closest('li')?.querySelector(':scope > span');
+    if (!pill) throw new Error('no pill on the row');
+    expect(pill.classList.contains(tint)).toBe(true);
+    expectPairedForeground(pill);
+  });
+
   it.each(['cleared', 'todo'] as const)(
     'keeps the grey caption on a %s row, which sits on the canvas',
     (state) => {
