@@ -26,10 +26,12 @@
             rel="noopener noreferrer"
             class="inline-flex items-start gap-1.5 rounded text-sm font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <span>{s.label}</span>
+            <span lang={s.labelLang}>{s.label}</span>
             <ExternalLink size={12} class="mt-1 shrink-0" aria-hidden="true" />
           </a>
-          <div class="mt-0.5 text-xs text-muted-foreground">{s.org} · {s.year}</div>
+          <div class="mt-0.5 text-xs text-muted-foreground">
+            <span lang={s.orgLang}>{s.org}</span> · {s.year}
+          </div>
         </li>
       {/each}
     </ul>

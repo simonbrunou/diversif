@@ -4,6 +4,7 @@ import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import GuidePage from './guide/+page.svelte';
 import AllergensPage from './allergens/+page.svelte';
 import { ALLERGENS, getAllergenLabel, type AllergenId } from '#lib/utils/allergens.js';
+import { ALL_SOURCE_IDS, SOURCES } from '#lib/content/sources.js';
 
 afterEach(() => {
   cleanup();
@@ -33,7 +34,19 @@ function frSectionTexts(Page: typeof GuidePage, locale: 'fr' | 'en'): Text[] {
 // prints English there, so it must declare lang="en", or a screen reader
 // reads "Advantages" or "Peanut" with French pronunciation. A text that reads
 // the same in both renders is French content, unless it is an allergen name
-// spelled alike in both languages ("Gluten").
+// spelled alike in both languages ("Gluten"), or a source title or org name
+// the catalog declares English (#665). An inline citation prints its org name
+// and year as one text: "NEJM (Perkin et al.) (2016)".
+const englishSourceTexts = new Set(
+  ALL_SOURCE_IDS.flatMap((id) => {
+    const s = SOURCES[id];
+    return [
+      ...(s.labelLang === 'en' ? [s.label] : []),
+      ...(s.orgLang === 'en' ? [s.org, `${s.org} (${s.year})`] : [])
+    ];
+  })
+);
+
 describe.each([
   ['/guide', GuidePage],
   ['/allergens', AllergensPage]
@@ -75,7 +88,11 @@ describe.each([
 
   it('keeps French text out of the elements it tags English', () => {
     const french = en.filter(
-      (t, i) => !changed(i) && t.langEl?.getAttribute('lang') === 'en' && !namesAlike.has(t.text)
+      (t, i) =>
+        !changed(i) &&
+        t.langEl?.getAttribute('lang') === 'en' &&
+        !namesAlike.has(t.text) &&
+        !englishSourceTexts.has(t.text)
     );
     expect(french.map((t) => t.text)).toEqual([]);
   });
