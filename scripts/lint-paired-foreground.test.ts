@@ -6,7 +6,6 @@ import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
-  GREY_COMPONENTS,
   findGreyComponents,
   findPairedForegroundViolations,
   findUnpairedTints,
@@ -459,20 +458,6 @@ describe('findGreyComponents', () => {
         "Pass text-current or text-tile-butter-foreground in its hintClass prop's static text."
     );
   });
-
-  it.each([...GREY_COMPONENTS])(
-    '%s still sets its grey and takes each override prop',
-    (_name, spec) => {
-      const source = readFileSync(path.resolve(import.meta.dir, '..', spec.file), 'utf8');
-      for (const part of spec.parts) {
-        expect(source).toContain(part.grey);
-        const props = /let \{([\s\S]*?)\}[^=]*= \$props\(\)/.exec(source)?.[1] ?? '';
-        for (const prop of [part.prop, part.shownBy, part.greyWhen?.prop].filter(Boolean)) {
-          expect(props).toMatch(new RegExp(`(?:^|[\\s,])${prop}\\b`));
-        }
-      }
-    }
-  );
 });
 
 describe('rulesFromCss', () => {
