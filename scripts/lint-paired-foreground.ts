@@ -534,6 +534,32 @@ function staticValue(attr: SvelteAttribute): string | undefined {
   return parts.map((p) => String((p as EstreeNode).raw)).join('');
 }
 
+/** Whether a call renders `part` with its grey: the part shows and its grey applies. */
+function rendersGrey(node: EstreeNode, part: GreyPart): boolean {
+  const spread = (node.attributes as SvelteAttribute[]).some((a) => a.type === 'SpreadAttribute');
+  if (part.shownBy && !attribute(node, part.shownBy) && !spread) return false;
+  if (!part.greyWhen) return true;
+  const set = attribute(node, part.greyWhen.prop);
+  const value = set && staticValue(set);
+  return value === undefined || part.greyWhen.values.includes(value);
+}
+
+/**
+ * Whether the static text of a call's `prop` sets `text-current`,
+ * `text-inherit` or one of `use`, with no variant.
+ */
+function overridesGrey(node: EstreeNode, prop: string, use: string[]): boolean {
+  const attr = attribute(node, prop);
+  const classes: ClassToken[] = [];
+  if (attr) attributeClasses(attr.value, classes);
+  return classes.some(
+    (c) =>
+      c.always &&
+      variantOf(c.cls) === '' &&
+      ['text-current', 'text-inherit', ...use].includes(bare(c.cls))
+  );
+}
+
 /**
  * Every call to a GREY_COMPONENTS component inside a tint that leaves its grey
  * in place, in one Svelte file's source. The call overrides it with
@@ -551,25 +577,7 @@ export function findGreyComponents(source: string, rules: PairedForegroundRules)
     const line = lineOf(node.start);
     if (marked(line)) return;
     for (const part of spec.parts) {
-      const spread = (node.attributes as SvelteAttribute[]).some(
-        (a) => a.type === 'SpreadAttribute'
-      );
-      if (part.shownBy && !attribute(node, part.shownBy) && !spread) continue;
-      if (part.greyWhen) {
-        const set = attribute(node, part.greyWhen.prop);
-        const value = set && staticValue(set);
-        if (value !== undefined && !part.greyWhen.values.includes(value)) continue;
-      }
-      const prop = attribute(node, part.prop);
-      const overrides: ClassToken[] = [];
-      if (prop) attributeClasses(prop.value, overrides);
-      const overridden = overrides.some(
-        (c) =>
-          c.always &&
-          variantOf(c.cls) === '' &&
-          ['text-current', 'text-inherit', ...inForce.use].includes(bare(c.cls))
-      );
-      if (overridden) continue;
+      if (!rendersGrey(node, part) || overridesGrey(node, part.prop, inForce.use)) continue;
       found.push({
         line,
         component: String(node.name),
