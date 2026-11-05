@@ -1,15 +1,16 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * check-i18n-unused: fails when any key in messages/fr.json is not
  * referenced from src/. A key is "referenced" if any of these patterns
  * matches in a .ts / .js / .svelte file under src/ (excluding generated
  * paraglide output):
  *
- *   1. Call or reference: m.KEY(  or  m.KEY handed on as a function
+ *   1. Member access: m.KEY with no identifier character after it, so a call
+ *      (m.KEY() or a message function handed on (f(raw, m.KEY))
  *   2. String literal: 'KEY'  "KEY"  `KEY`
  *   3. Keep directive: // i18n-keep: KEY ...
  *
- * Run via `npm run lint:i18n`.
+ * Run via `bun run lint:i18n`.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -36,21 +37,21 @@ export function findUnusedKeys(keys: string[], sources: string[]): string[] {
   return keys.filter((key) => {
     if (keepTokens.has(key)) return false;
     const k = escapeRegex(key);
-    // m.KEY not followed by another identifier character: a call
-    // (`m.KEY(`) or a message function passed on (`parseIntParam(raw, m.KEY)`),
-    // but not m.KEYSuffix, a longer key.
-    const memberRe = new RegExp(`\\bm\\.${k}(?![\\w$])`);
+    // The messages object m itself (not $m or foo.m), then KEY with no
+    // identifier character after it (not m.KEYSuffix, a longer key).
+    const memberRe = new RegExp(`(?<![\\w$.])m\\.${k}(?![\\w$])`);
     const literalRe = new RegExp(`['"\`]${k}['"\`]`);
     return !(memberRe.test(haystack) || literalRe.test(haystack));
   });
 }
 
-function readSources(dir: string, out: string[]): string[] {
+function readSources(dir: string): string[] {
+  const out: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDED_DIRS.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      readSources(full, out);
+      out.push(...readSources(full));
     } else if (entry.isFile() && SOURCE_EXT.test(entry.name)) {
       out.push(fs.readFileSync(full, 'utf8'));
     }
@@ -62,7 +63,7 @@ if (import.meta.main) {
   const root = process.cwd();
   const data = JSON.parse(fs.readFileSync(path.join(root, 'messages/fr.json'), 'utf8'));
   const keys = Object.keys(data).filter((k) => k !== '$schema');
-  const dead = findUnusedKeys(keys, readSources(path.join(root, 'src'), []));
+  const dead = findUnusedKeys(keys, readSources(path.join(root, 'src')));
 
   if (dead.length > 0) {
     console.error(`Found ${dead.length} unused i18n key(s) in messages/fr.json:`);
