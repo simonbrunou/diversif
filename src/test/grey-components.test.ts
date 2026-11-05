@@ -58,10 +58,25 @@ async function load(file: string): Promise<Component<Record<string, unknown>>> {
   return mod.default;
 }
 
-/** The grey or `text-current` an element's own classes set, if any. */
+/** A class with its variants, `!` and `/NN` removed. */
+function bare(cls: string): string {
+  return cls
+    .slice(cls.lastIndexOf(':') + 1)
+    .replace(/^!|!$/g, '')
+    .replace(/\/\d+$/, '');
+}
+
+/**
+ * The grey, behind any variant, or else `text-current` that an element's own
+ * classes set. A grey wins over `text-current` on one element: app.css emits
+ * the grey utilities after it.
+ */
 function ownColour(el: Element): string | undefined {
   const classes = [...el.classList];
-  return classes.includes('text-current') ? 'text-current' : classes.find((c) => GREYS.has(c));
+  return (
+    classes.find((c) => GREYS.has(bare(c))) ??
+    (classes.includes('text-current') ? 'text-current' : undefined)
+  );
 }
 
 /**
