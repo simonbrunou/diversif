@@ -1,10 +1,10 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * lint-i18n: fails when any French value in messages/fr.json contains a
  * straight (ASCII) apostrophe between two letters. The convention is to use
  * the typographic apostrophe (’) inside words: « l’accueil », « aujourd’hui ».
  *
- * Run via `npm run lint:i18n`.
+ * Run via `bun run lint:i18n`.
  */
 import fs from 'node:fs';
 

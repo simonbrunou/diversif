@@ -10,6 +10,8 @@ describe('findUnusedKeys', () => {
     // #659: parseIntParam(raw, m.errorsEntryIdInvalid) was reported unused.
     ['a message function passed on', 'parseIntParam(params.entryId, m.errorsFoo);'],
     ['a reference at the end of the text', 'const msg = m.errorsFoo'],
+    ['a call at the start of the text', 'm.errorsFoo();'],
+    ['a spread call', 'list.push(...m.errorsFoo());'],
     ['a single-quoted key', "fail(400, { errorKey: 'errorsFoo' });"],
     ['a double-quoted key', 'fail(400, { errorKey: "errorsFoo" });'],
     ['a key in backticks', 'const key = `errorsFoo`;'],

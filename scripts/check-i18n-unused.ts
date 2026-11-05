@@ -5,8 +5,9 @@
  * matches in a .ts / .js / .svelte file under src/ (excluding generated
  * paraglide output):
  *
- *   1. Member access: m.KEY with no identifier character after it, so a call
- *      (m.KEY() or a message function handed on (f(raw, m.KEY))
+ *   1. Member access on the messages object: m.KEY with no identifier
+ *      character after it, a call (`m.KEY()`, `...m.KEY()`) or a message
+ *      function handed on (`f(raw, m.KEY)`), but not $m.KEY or foo.m.KEY
  *   2. String literal: 'KEY'  "KEY"  `KEY`
  *   3. Keep directive: // i18n-keep: KEY ...
  *
@@ -37,9 +38,10 @@ export function findUnusedKeys(keys: string[], sources: string[]): string[] {
   return keys.filter((key) => {
     if (keepTokens.has(key)) return false;
     const k = escapeRegex(key);
-    // The messages object m itself (not $m or foo.m), then KEY with no
-    // identifier character after it (not m.KEYSuffix, a longer key).
-    const memberRe = new RegExp(`(?<![\\w$.])m\\.${k}(?![\\w$])`);
+    // The messages object m itself: no identifier character before it ($m)
+    // and no lone dot (foo.m), though a spread's three dots pass (...m).
+    // Then KEY with no identifier character after it (not m.KEYSuffix).
+    const memberRe = new RegExp(`(?<![\\w$]|(?<!\\.)\\.)m\\.${k}(?![\\w$])`);
     const literalRe = new RegExp(`['"\`]${k}['"\`]`);
     return !(memberRe.test(haystack) || literalRe.test(haystack));
   });
