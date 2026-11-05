@@ -472,7 +472,8 @@ type GreyPart = {
 /**
  * The components that set a grey inside themselves, so the call site shows
  * none for the lint to read. src/test/grey-components.test.ts renders each
- * one: it must set that grey, and each part's prop must remove it.
+ * one on every branch: each part's element must carry that grey, and the
+ * part's prop must replace it on that element.
  */
 export const GREY_COMPONENTS: ReadonlyMap<string, { file: string; parts: GreyPart[] }> = new Map([
   [
