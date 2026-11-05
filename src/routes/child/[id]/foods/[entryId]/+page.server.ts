@@ -42,7 +42,7 @@ async function loadEntryForChild(entryId: number, childId: number) {
 
 export const load: PageServerLoad = async ({ locals, params }) => {
   const { childId } = requireChildContext(locals, params);
-  const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
+  const entryId = parseIntParam(params.entryId, () => m.errorsEntryIdInvalid());
 
   const row = await loadEntryForChild(entryId, childId);
 
@@ -77,7 +77,7 @@ const addSchema = z.object({
 export const actions: Actions = {
   addSymptom: async ({ locals, params, request }) => {
     const { user, childId } = requireChildContext(locals, params);
-    const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
+    const entryId = parseIntParam(params.entryId, () => m.errorsEntryIdInvalid());
 
     const raw = Object.fromEntries(await request.formData());
     const parsed = addSchema.safeParse(raw);
@@ -128,7 +128,7 @@ export const actions: Actions = {
 
   deleteSymptom: async ({ locals, params, request }) => {
     const { user, childId } = requireChildContext(locals, params);
-    const entryId = parseIntParam(params.entryId, "Identifiant d'entrée");
+    const entryId = parseIntParam(params.entryId, () => m.errorsEntryIdInvalid());
     await loadEntryForChild(entryId, childId);
 
     const raw = Object.fromEntries(await request.formData());

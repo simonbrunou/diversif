@@ -119,6 +119,8 @@ describe('POST /passkeys/registration/verify', () => {
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
     );
     expect(r.kind).toBe('error');
+    // French copy with no anglicism: « défi », not « Challenge » (#659).
+    expect(r).toEqual({ kind: 'error', status: 400, message: 'Défi expiré ou invalide' });
   });
 
   it('errors 400 when the challenge belongs to a different user', async () => {

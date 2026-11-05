@@ -1,4 +1,6 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test';
+import * as m from '#lib/paraglide/messages.js';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent } from '../../../../test/route';
 
@@ -93,6 +95,30 @@ describe('POST /passkeys/authentication/options', () => {
     );
     expect(r.kind).toBe('error');
     if (r.kind === 'error') expect(r.status).toBe(429);
+  });
+
+  describe('the 429 body', () => {
+    afterEach(() => overwriteGetLocale(() => baseLocale));
+
+    // A pinned clock puts every hit at one instant, so the limiter's
+    // retryAfterSeconds is the whole 5-minute window: 300.
+    it.each([
+      ['fr', 'Trop de tentatives. Réessayez dans 300 s.'],
+      ['en', 'Too many attempts. Try again in 300s.']
+    ] as const)('is errorsAuthRateLimitedSeconds in %s', async (locale, text) => {
+      setSystemTime(new Date('2026-01-01T12:00:00Z'));
+      overwriteGetLocale(() => locale);
+      mocks.generateAuthenticationOptions.mockResolvedValue({ challenge: 'x' });
+      for (let i = 0; i < 20; i++) {
+        await POST(makeModalEvent() as unknown as Parameters<typeof POST>[0]);
+      }
+      const event = makeModalEvent();
+      const r = await captureFlow(
+        () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+      );
+      expect(r).toEqual({ kind: 'error', status: 429, message: text });
+      expect(text).toBe(m.errorsAuthRateLimitedSeconds({ seconds: 300 }));
+    });
   });
 
   function makeAutofillEvent() {
