@@ -3,6 +3,7 @@ import { render, fireEvent, screen } from '@testing-library/svelte';
 import '../../test/component';
 import AllergenInfoDialog from './AllergenInfoDialog.svelte';
 import { ALLERGEN_GUIDANCE } from '#lib/content/guidance.js';
+import { ALLERGENS } from '#lib/utils/allergens.js';
 import * as m from '#lib/paraglide/messages.js';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 
@@ -19,6 +20,18 @@ describe('AllergenInfoDialog', () => {
     expect(screen.getByText(/Comment l’introduire/)).toBeTruthy();
     expect(screen.getByText(/Premiers signes/)).toBeTruthy();
     expect(screen.getByText(/Sources/)).toBeTruthy();
+  });
+
+  // guidance.ts marks safety points as **…**: the dialog sets them in <strong>
+  // and prints no marker (#668).
+  it.each(ALLERGENS.map((a) => a.id))('prints no ** in the %s guidance', (allergenId) => {
+    render(AllergenInfoDialog, { props: { allergenId } });
+    expect(document.body.textContent).not.toContain('**');
+  });
+
+  it('sets the marked safety point of the peanut guidance in <strong>', () => {
+    render(AllergenInfoDialog, { props: { allergenId: 'arachide' } });
+    expect(screen.getByText('Jamais').tagName).toBe('STRONG');
   });
 
   // The dialog renders at <body>, under <html lang="en"> on /en pages, but its

@@ -4,6 +4,7 @@
   import Callout from '#lib/components/ui/Callout.svelte';
   import Badge from '#lib/components/ui/Badge.svelte';
   import SourceCitation from './SourceCitation.svelte';
+  import EmphasisText from './EmphasisText.svelte';
   import { ALLERGEN_GUIDANCE } from '#lib/content/guidance.js';
   import { getAllergenLabel, type AllergenId } from '#lib/utils/allergens.js';
   import { CircleCheck, CircleAlert, ShieldCheck } from '@lucide/svelte';
@@ -51,7 +52,7 @@
       <SheetSection title={m.allergenDialogHowToOfferTitle()} icon={CircleCheck}>
         <ul lang="fr" class="list-disc space-y-1 pl-5 text-foreground/90">
           {#each guidance.howToOffer as item, i (i)}
-            <li>{item}</li>
+            <li><EmphasisText text={item} /></li>
           {/each}
         </ul>
       </SheetSection>
@@ -71,7 +72,7 @@
               <li>{item}</li>
             {/each}
           </ul>
-          <p lang="fr" class="mt-2">{guidance.whatToDo}</p>
+          <p lang="fr" class="mt-2"><EmphasisText text={guidance.whatToDo} /></p>
         </Callout>
       </SheetSection>
 
