@@ -19,6 +19,15 @@ describe('GuideReactionsSection', () => {
     expectPairedForeground(card);
   });
 
+  it('sets the marked safety point of the reaction card in <strong>, with no ** (#668)', () => {
+    render(GuideReactionsSection);
+    const card = cardOf('Symptômes pouvant évoquer une réaction allergique');
+    const strong = screen.getByText('appeler le 15 ou le 112 sans attendre');
+    expect(strong.tagName).toBe('STRONG');
+    expect(card.contains(strong)).toBe(true);
+    expect(card.textContent).not.toContain('**');
+  });
+
   it("sets the emergency card in the reaction tint's own foreground (#649)", () => {
     render(GuideReactionsSection);
     const card = cardOf(/Urgence : appeler le/);

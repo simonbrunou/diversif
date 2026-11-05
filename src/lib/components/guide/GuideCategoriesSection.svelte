@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from '#lib/components/ui/Card.svelte';
   import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import EmphasisText from '#lib/components/EmphasisText.svelte';
   import { CATEGORY_GUIDANCE } from '#lib/content/guidance.js';
   import { CATEGORIES } from '#lib/utils/categories.js';
   import { UtensilsCrossed } from '@lucide/svelte';
@@ -21,11 +22,11 @@
           <dl class="mt-2 grid grid-cols-1 gap-1 text-xs text-muted-foreground">
             <div>
               <dt class="inline font-medium text-foreground/80">Quand :</dt>
-              <dd class="inline">{g.whenStart}</dd>
+              <dd class="inline"><EmphasisText text={g.whenStart} /></dd>
             </div>
             <div>
               <dt class="inline font-medium text-foreground/80">Fréquence :</dt>
-              <dd class="inline">{g.cadence}</dd>
+              <dd class="inline"><EmphasisText text={g.cadence} /></dd>
             </div>
             {#if g.examples.length > 0}
               <div>

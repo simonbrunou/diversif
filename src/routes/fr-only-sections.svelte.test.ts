@@ -74,6 +74,13 @@ describe.each([
     expect(en.some((_, i) => changed(i))).toBe(true);
   });
 
+  // guidance.ts marks safety points as **…**, which the page sets in <strong>
+  // (#668).
+  it('prints no ** in either locale', () => {
+    const marked = [...fr, ...en].filter((t) => t.text.includes('**'));
+    expect(marked.map((t) => t.text)).toEqual([]);
+  });
+
   it('tags every text that follows the locale with that locale', () => {
     const untagged = en.filter((t, i) => changed(i) && t.langEl?.getAttribute('lang') !== 'en');
     expect(untagged.map((t) => t.text)).toEqual([]);
