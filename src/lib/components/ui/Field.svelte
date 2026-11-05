@@ -9,6 +9,7 @@
     hint,
     class: className = '',
     labelClass = '',
+    hintClass = '',
     children
   }: {
     name: string;
@@ -17,6 +18,8 @@
     class?: string;
     /** Merged into the label's classes, e.g. `text-current` on a tint. */
     labelClass?: string;
+    /** Merged into the hint's classes, e.g. `text-current` on a tint. */
+    hintClass?: string;
     children: Snippet;
   } = $props();
 </script>
@@ -25,6 +28,6 @@
   <Label for={name} class={labelClass}>{label}</Label>
   {@render children()}
   {#if hint}
-    <p class="text-xs text-ink-soft">{hint}</p>
+    <p class={cn('text-xs text-ink-soft', hintClass)}>{hint}</p>
   {/if}
 </div>

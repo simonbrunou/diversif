@@ -25,6 +25,20 @@
  *   not `class={on ? 'bg-card' : ''}`) or by a `<Card>` ends the tint: one
  *   set in a single branch leaves the other branches on the tint.
  *
+ * Two more checks catch what that read cannot see (#667):
+ *
+ * - Unpaired tint: a tint class on an element with content needs its paired
+ *   `text-*-foreground` in the same string, or in the static class text.
+ *   Without it the text inherits ink, with no class for the read above to
+ *   flag.
+ * - Grey component: `Label`, `Field`, `SectionHeader` and `SourceCitation` set
+ *   a grey inside themselves (GREY_COMPONENTS). Inside a tint, a call
+ *   overrides it with `text-current`, `text-inherit` or the paired foreground
+ *   in the static text of the matching class prop.
+ *
+ * Tints held in script values (a `TONES` record) are not read: their
+ * component tests assert expectPairedForeground (src/test/paired-foreground.ts).
+ *
  * Escape marker: `paired-foreground-ok: <reason>` on the flagged line, for a
  * class the conservative dynamic read flags on an untinted branch. A marker
  * with no reason after its colon does not count.
@@ -142,10 +156,16 @@ function bare(cls: string): string {
 export const NOT_A_BACKGROUND =
   /^bg-(?:transparent|none|inherit|fixed|local|scroll|auto|cover|contain|no-repeat|repeat(?:-\w+)?|clip-\S+|origin-\S+|blend-\S+|(?:top|bottom|left|right|center)(?:-(?:left|right))?|(?:linear|radial|conic|gradient)(?:-\S+)?)$/;
 
-/** A class, where it starts, and whether it applies in every branch (static text). */
-type ClassToken = { cls: string; offset: number; always: boolean };
+/**
+ * A class, where it starts, whether it applies in every branch (static text),
+ * and the string it sits in: the start of its string literal, template
+ * literal or class directive, or `STATIC` for the static text.
+ */
+type ClassToken = { cls: string; offset: number; always: boolean; group: number };
 type Tint = { name: string; label: string; offset: number };
 type Context = { tints: Tint[] } | null;
+
+const STATIC = -1;
 
 type EstreeNode = { type: string; start: number; end: number; [key: string]: unknown };
 
@@ -155,9 +175,9 @@ function isNode(value: unknown): value is EstreeNode {
   );
 }
 
-function splitClasses(text: string, offset: number, out: ClassToken[], always = false): void {
+function splitClasses(text: string, offset: number, out: ClassToken[], group: number): void {
   for (const m of text.matchAll(/\S+/g)) {
-    out.push({ cls: m[0], offset: offset + (m.index ?? 0), always });
+    out.push({ cls: m[0], offset: offset + (m.index ?? 0), always: group === STATIC, group });
   }
 }
 
@@ -169,12 +189,15 @@ function literalClasses(node: unknown, out: ClassToken[]): void {
   }
   if (!isNode(node)) return;
   if (node.type === 'Literal' && typeof node.value === 'string') {
-    splitClasses(node.value, node.start + 1, out);
+    splitClasses(node.value, node.start + 1, out, node.start);
     return;
   }
-  // The static parts of a template literal (`bg-tile-mint ${x}`).
-  if (node.type === 'TemplateElement') {
-    splitClasses((node.value as { raw: string }).raw, node.start, out);
+  // The static parts of a template literal (`bg-tile-mint ${x}`), one string.
+  if (node.type === 'TemplateLiteral') {
+    for (const quasi of node.quasis as EstreeNode[]) {
+      splitClasses((quasi.value as { raw: string }).raw, quasi.start, out, node.start);
+    }
+    literalClasses(node.expressions, out);
     return;
   }
   for (const [key, value] of Object.entries(node)) {
@@ -186,7 +209,7 @@ function literalClasses(node: unknown, out: ClassToken[]): void {
 function attributeClasses(value: unknown, out: ClassToken[]): void {
   for (const part of Array.isArray(value) ? value : [value]) {
     if (!isNode(part)) continue;
-    if (part.type === 'Text') splitClasses(String(part.raw), part.start, out, true);
+    if (part.type === 'Text') splitClasses(String(part.raw), part.start, out, STATIC);
     else if (part.type === 'ExpressionTag') literalClasses(part.expression, out);
   }
 }
@@ -198,7 +221,8 @@ function elementClasses(attributes: SvelteAttribute[]): ClassToken[] {
   for (const attr of attributes) {
     if (attr.type === 'Attribute' && attr.name === 'class') attributeClasses(attr.value, out);
     else if (attr.type === 'ClassDirective') {
-      out.push({ cls: attr.name, offset: attr.start + 'class:'.length, always: false });
+      const offset = attr.start + 'class:'.length;
+      out.push({ cls: attr.name, offset, always: false, group: offset });
     }
   }
   return out;
@@ -251,6 +275,75 @@ function ownContext(
   return own.setsBackground || isCard ? null : inherited;
 }
 
+/** A 1-based line lookup for offsets in `source`, and whether a line carries the marker. */
+function lineIndex(source: string): {
+  lineOf: (offset: number) => number;
+  marked: (line: number) => boolean;
+} {
+  const lineStarts = [0];
+  for (const m of source.matchAll(/\n/g)) lineStarts.push((m.index ?? 0) + 1);
+  const lines = source.split('\n');
+  return {
+    lineOf: (offset) => {
+      let lo = 0;
+      let hi = lineStarts.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (lineStarts[mid] <= offset) lo = mid;
+        else hi = mid - 1;
+      }
+      return lo + 1;
+    },
+    marked: (line) => ESCAPE_WITH_REASON.test(lines[line - 1] ?? '')
+  };
+}
+
+/**
+ * Calls `onElement` on every element and component of one Svelte file, with
+ * its classes and the tint in force on it (its own, else its parent's, unless
+ * it sets a background of its own). Throws on a file the parser rejects.
+ */
+function walkTints(
+  source: string,
+  rules: PairedForegroundRules,
+  onElement: (node: EstreeNode, classes: ClassToken[], context: Context) => void
+): void {
+  function visit(node: unknown, context: Context): void {
+    if (Array.isArray(node)) {
+      for (const child of node) visit(child, context);
+      return;
+    }
+    if (!isNode(node)) return;
+    let inner = context;
+    if (Array.isArray(node.attributes)) {
+      const classes = elementClasses(node.attributes as SvelteAttribute[]);
+      inner = ownContext(node, classes, context, rules);
+      onElement(node, classes, inner);
+    }
+    for (const value of Object.values(node)) {
+      if (isNode(value) && value.type === 'Fragment') visit(value.nodes, inner);
+    }
+  }
+
+  const ast = parse(source, { modern: true });
+  visit(ast.fragment.nodes, null);
+}
+
+/** The distinct tints in force, in order, and the line of the first. */
+function tintsInForce(
+  context: { tints: Tint[] },
+  rules: PairedForegroundRules,
+  lineOf: (offset: number) => number
+): { tints: string[]; tintLine: number; use: string[] } {
+  const seen = new Set<string>();
+  const tints = context.tints.filter((t) => !seen.has(t.label) && seen.add(t.label));
+  return {
+    tints: tints.map((t) => t.label),
+    tintLine: lineOf(tints[0].offset),
+    use: tints.map((t) => rules.tints.get(t.name) ?? '')
+  };
+}
+
 /**
  * Every class that sets ink or a grey on a tint, in one Svelte file's source.
  * Throws on a file the Svelte parser rejects.
@@ -259,57 +352,18 @@ export function findPairedForegroundViolations(
   source: string,
   rules: PairedForegroundRules
 ): PairedForegroundViolation[] {
-  const lineStarts = [0];
-  for (const m of source.matchAll(/\n/g)) lineStarts.push((m.index ?? 0) + 1);
-  const lineOf = (offset: number): number => {
-    let lo = 0;
-    let hi = lineStarts.length - 1;
-    while (lo < hi) {
-      const mid = (lo + hi + 1) >> 1;
-      if (lineStarts[mid] <= offset) lo = mid;
-      else hi = mid - 1;
-    }
-    return lo + 1;
-  };
-  const lines = source.split('\n');
+  const { lineOf, marked } = lineIndex(source);
   const violations: PairedForegroundViolation[] = [];
-
-  function visitElement(node: EstreeNode, inherited: Context): Context {
-    const classes = elementClasses(node.attributes as SvelteAttribute[]);
-    const context = ownContext(node, classes, inherited, rules);
-    if (!context) return context;
+  walkTints(source, rules, (_node, classes, context) => {
+    if (!context) return;
     for (const { cls, offset } of classes) {
       const b = bare(cls);
       if (!b.startsWith('text-') || !rules.forbidden.has(b.slice('text-'.length))) continue;
       const line = lineOf(offset);
-      if (ESCAPE_WITH_REASON.test(lines[line - 1] ?? '')) continue;
-      const seen = new Set<string>();
-      const tints = context.tints.filter((t) => !seen.has(t.label) && seen.add(t.label));
-      violations.push({
-        line,
-        cls,
-        tints: tints.map((t) => t.label),
-        tintLine: lineOf(tints[0].offset),
-        use: tints.map((t) => rules.tints.get(t.name) ?? '')
-      });
+      if (marked(line)) continue;
+      violations.push({ line, cls, ...tintsInForce(context, rules, lineOf) });
     }
-    return context;
-  }
-
-  function visit(node: unknown, context: Context): void {
-    if (Array.isArray(node)) {
-      for (const child of node) visit(child, context);
-      return;
-    }
-    if (!isNode(node)) return;
-    const inner = Array.isArray(node.attributes) ? visitElement(node, context) : context;
-    for (const value of Object.values(node)) {
-      if (isNode(value) && value.type === 'Fragment') visit(value.nodes, inner);
-    }
-  }
-
-  const ast = parse(source, { modern: true });
-  visit(ast.fragment.nodes, null);
+  });
   return violations;
 }
 
@@ -317,6 +371,211 @@ export function formatViolation(file: string, v: PairedForegroundViolation): str
   const tint = v.tints.join(', ');
   const use = v.use.join(' or ');
   return `${file}:${v.line}: ${v.cls} on ${tint} (line ${v.tintLine}). Set ${use} on the tinted element and let its text inherit it.`;
+}
+
+export type UnpairedTint = {
+  line: number;
+  /** The tint class as written, variants included. */
+  tint: string;
+  /** The tint's paired text utility. */
+  use: string;
+};
+
+/** A class's variant prefix (`dark:`, `hover:`), empty for none. */
+function variantOf(cls: string): string {
+  return cls.slice(0, cls.lastIndexOf(':') + 1);
+}
+
+/** Nodes that put something on screen inside an element. */
+const CONTENT = new Set([
+  'ExpressionTag',
+  'RenderTag',
+  'HtmlTag',
+  'Component',
+  'SvelteComponent',
+  'SvelteSelf',
+  'SlotElement'
+]);
+
+/** Whether any of `nodes`, or anything under them, is text or renders some. */
+function hasContent(nodes: unknown): boolean {
+  if (Array.isArray(nodes)) return nodes.some(hasContent);
+  if (!isNode(nodes)) return false;
+  if (nodes.type === 'Text') return /\S/.test(String(nodes.data));
+  if (CONTENT.has(nodes.type)) return true;
+  return Object.values(nodes).some(
+    (v) => isNode(v) && v.type === 'Fragment' && hasContent(v.nodes)
+  );
+}
+
+/**
+ * Every tint class on an element with content whose paired text utility is
+ * neither in the same string as the tint nor in the element's static class
+ * text, in one Svelte file's source. Without it the text inherits ink. A
+ * utility in another branch of a dynamic class does not count, and neither
+ * does one behind a variant the tint does not share (`hover:`). A `<Card
+ * variant="tile-*">` sets its own foreground and is not checked.
+ */
+export function findUnpairedTints(source: string, rules: PairedForegroundRules): UnpairedTint[] {
+  const { lineOf, marked } = lineIndex(source);
+  const unpaired: UnpairedTint[] = [];
+  walkTints(source, rules, (node, classes) => {
+    const tints = classes.filter((c) => {
+      const b = bare(c.cls);
+      return b.startsWith('bg-') && rules.tints.has(b.slice('bg-'.length));
+    });
+    if (tints.length === 0) return;
+    const content =
+      node.type === 'Component' ||
+      Object.values(node).some((v) => isNode(v) && v.type === 'Fragment' && hasContent(v.nodes));
+    if (!content) return;
+    for (const tint of tints) {
+      const use = rules.tints.get(bare(tint.cls).slice('bg-'.length)) ?? '';
+      const paired = classes.some(
+        (c) =>
+          (c.always || c.group === tint.group) &&
+          bare(c.cls) === use &&
+          ['', variantOf(tint.cls)].includes(variantOf(c.cls))
+      );
+      const line = lineOf(tint.offset);
+      if (!paired && !marked(line)) unpaired.push({ line, tint: tint.cls, use });
+    }
+  });
+  return unpaired;
+}
+
+export function formatUnpairedTint(file: string, u: UnpairedTint): string {
+  return `${file}:${u.line}: ${u.tint} sets no foreground of its own, so its text inherits ink. Add ${u.use} to the string that holds the tint, or to the static class text, and let its text inherit it.`;
+}
+
+/** One grey a component sets inside itself, and the prop a caller overrides it with. */
+type GreyPart = {
+  /** The class prop whose classes merge over the grey. */
+  prop: string;
+  /** The grey, as the component writes it. */
+  grey: string;
+  /** The part renders only when the call passes this prop. */
+  shownBy?: string;
+  /**
+   * The grey applies only when this prop is absent or holds one of these
+   * values. A value the lint cannot read counts as one of them.
+   */
+  greyWhen?: { prop: string; values: string[] };
+};
+
+/**
+ * The components that set a grey inside themselves, so the call site shows
+ * none for the lint to read. Their test checks each one still sets that grey
+ * and takes that prop.
+ */
+export const GREY_COMPONENTS: ReadonlyMap<string, { file: string; parts: GreyPart[] }> = new Map([
+  [
+    'Label',
+    {
+      file: 'src/lib/components/ui/Label.svelte',
+      parts: [{ prop: 'class', grey: 'text-ink-soft' }]
+    }
+  ],
+  [
+    'Field',
+    {
+      file: 'src/lib/components/ui/Field.svelte',
+      parts: [
+        { prop: 'labelClass', grey: 'text-ink-soft' },
+        { prop: 'hintClass', grey: 'text-ink-soft', shownBy: 'hint' }
+      ]
+    }
+  ],
+  [
+    'SectionHeader',
+    {
+      file: 'src/lib/components/ui/SectionHeader.svelte',
+      parts: [
+        { prop: 'class', grey: 'text-ink-soft', greyWhen: { prop: 'tone', values: ['default'] } }
+      ]
+    }
+  ],
+  [
+    'SourceCitation',
+    {
+      file: 'src/lib/components/SourceCitation.svelte',
+      parts: [{ prop: 'class', grey: 'text-muted-foreground' }]
+    }
+  ]
+]);
+
+export type GreyComponent = {
+  line: number;
+  component: string;
+  grey: string;
+  /** The class prop that would override the grey. */
+  prop: string;
+  tints: string[];
+  tintLine: number;
+  use: string[];
+};
+
+function attribute(node: EstreeNode, name: string): SvelteAttribute | undefined {
+  return (node.attributes as SvelteAttribute[]).find(
+    (a) => a.type === 'Attribute' && a.name === name
+  );
+}
+
+/** An attribute's static text (`tone="destructive"`), or undefined when it holds an expression. */
+function staticValue(attr: SvelteAttribute): string | undefined {
+  const parts = Array.isArray(attr.value) ? attr.value : [attr.value];
+  if (!parts.every((p) => isNode(p) && p.type === 'Text')) return undefined;
+  return parts.map((p) => String((p as EstreeNode).raw)).join('');
+}
+
+/**
+ * Every call to a GREY_COMPONENTS component inside a tint that leaves its grey
+ * in place, in one Svelte file's source. The call overrides it with
+ * `text-current`, `text-inherit` or the tint's paired foreground in the
+ * static text of the part's class prop. A class in one branch of a dynamic
+ * prop does not count, as a background in one branch does not end a tint.
+ */
+export function findGreyComponents(source: string, rules: PairedForegroundRules): GreyComponent[] {
+  const { lineOf, marked } = lineIndex(source);
+  const found: GreyComponent[] = [];
+  walkTints(source, rules, (node, _classes, context) => {
+    const spec = node.type === 'Component' ? GREY_COMPONENTS.get(String(node.name)) : undefined;
+    if (!spec || !context) return;
+    const inForce = tintsInForce(context, rules, lineOf);
+    const line = lineOf(node.start);
+    if (marked(line)) return;
+    for (const part of spec.parts) {
+      if (part.shownBy && !attribute(node, part.shownBy)) continue;
+      if (part.greyWhen) {
+        const set = attribute(node, part.greyWhen.prop);
+        const value = set && staticValue(set);
+        if (value !== undefined && !part.greyWhen.values.includes(value)) continue;
+      }
+      const prop = attribute(node, part.prop);
+      const overrides: ClassToken[] = [];
+      if (prop) attributeClasses(prop.value, overrides);
+      const overridden = overrides.some(
+        (c) =>
+          c.always &&
+          variantOf(c.cls) === '' &&
+          ['text-current', 'text-inherit', ...inForce.use].includes(bare(c.cls))
+      );
+      if (overridden) continue;
+      found.push({
+        line,
+        component: String(node.name),
+        grey: part.grey,
+        prop: part.prop,
+        ...inForce
+      });
+    }
+  });
+  return found;
+}
+
+export function formatGreyComponent(file: string, g: GreyComponent): string {
+  const use = ['text-current', ...g.use].join(' or ');
+  return `${file}:${g.line}: <${g.component}> sets ${g.grey} inside itself, on ${g.tints.join(', ')} (line ${g.tintLine}). Pass ${use} in its ${g.prop} prop's static text.`;
 }
 
 function svelteFiles(dir: string, out: string[] = []): string[] {
@@ -336,19 +595,24 @@ if (import.meta.main) {
   for (const full of svelteFiles(path.join(root, 'src')).sort()) {
     const file = path.relative(root, full);
     try {
-      const found = findPairedForegroundViolations(fs.readFileSync(full, 'utf8'), rules);
-      for (const v of found) problems.push(formatViolation(file, v));
+      const source = fs.readFileSync(full, 'utf8');
+      for (const v of findPairedForegroundViolations(source, rules)) {
+        problems.push(formatViolation(file, v));
+      }
+      for (const u of findUnpairedTints(source, rules)) problems.push(formatUnpairedTint(file, u));
+      for (const g of findGreyComponents(source, rules))
+        problems.push(formatGreyComponent(file, g));
     } catch (error) {
       problems.push(`${file}: could not parse: ${(error as Error).message}`);
     }
   }
   if (problems.length > 0) {
-    console.error(`Found ${problems.length} grey or ink foreground(s) on a tint:`);
+    console.error(`Found ${problems.length} break(s) of The Paired Foreground Rule:`);
     for (const p of problems) console.error(`  ${p}`);
     console.error(
       "\nDESIGN.md, The Paired Foreground Rule: text on a tint uses that tint's own\n" +
-        '-foreground token. If the class only applies to an untinted branch of a dynamic\n' +
-        `class, add a \`${ESCAPE_MARKER}: <reason>\` comment on its line.`
+        '-foreground token. If the lint reads a branch that never sits on the tint, add a\n' +
+        `\`${ESCAPE_MARKER}: <reason>\` comment on the flagged line.`
     );
     process.exit(1);
   }

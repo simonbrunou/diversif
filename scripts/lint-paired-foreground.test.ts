@@ -6,7 +6,12 @@ import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
+  GREY_COMPONENTS,
+  findGreyComponents,
   findPairedForegroundViolations,
+  findUnpairedTints,
+  formatGreyComponent,
+  formatUnpairedTint,
   formatViolation,
   rulesFromCss
 } from './lint-paired-foreground';
@@ -216,6 +221,253 @@ describe('findPairedForegroundViolations', () => {
       findPairedForegroundViolations('<div class="bg-tile-mint">{#if}</div>', rules)
     ).toThrow();
   });
+});
+
+function unpaired(markup: string): string[] {
+  return findUnpairedTints(markup, rules).map((u) => `${u.line}:${u.tint}`);
+}
+
+describe('findUnpairedTints', () => {
+  it.each([
+    [
+      'a static tint with text and no foreground',
+      '<div class="bg-tile-mint">x</div>',
+      ['1:bg-tile-mint']
+    ],
+    [
+      'a tint whose text sits two levels down',
+      '<section class="bg-tile-peach">\n  <div><h1 class="text-4xl">x</h1></div>\n</section>',
+      ['1:bg-tile-peach']
+    ],
+    [
+      'a tint whose only text child pairs the foreground itself',
+      '<section class="bg-tile-sky"><h2 class="text-tile-sky-foreground">x</h2></section>',
+      ['1:bg-tile-sky']
+    ],
+    [
+      'a tint whose foreground sits only in another branch',
+      "<span class={cn('px-2', a && 'bg-tile-mint', b && 'text-tile-mint-foreground')}>x</span>",
+      ['1:bg-tile-mint']
+    ],
+    [
+      'a tint in one branch beside a branch that pairs another tint',
+      "<li\n  class={cn(\n    'p-3',\n    warn && 'border-warning bg-tile-butter',\n    severe && 'bg-tile-peach text-tile-peach-foreground'\n  )}\n>\n  {label}\n</li>",
+      ['4:bg-tile-butter']
+    ],
+    ['a tint behind a variant', '<div class="dark:bg-tile-sky">x</div>', ['1:dark:bg-tile-sky']],
+    [
+      'a foreground behind a variant the tint does not share',
+      '<div class="bg-tile-sky hover:text-tile-sky-foreground">x</div>',
+      ['1:bg-tile-sky']
+    ],
+    ['a tint set by a class directive', '<li class:bg-tile-mint={on}>x</li>', ['1:bg-tile-mint']],
+    [
+      'an alias of a tint, which pairs the tint’s foreground',
+      '<div class="bg-accent-sky/15 text-info-foreground">x</div>',
+      ['1:bg-accent-sky/15']
+    ],
+    [
+      'a tint whose content is an expression',
+      '<span class="bg-tile-lilac">{name}</span>',
+      ['1:bg-tile-lilac']
+    ],
+    [
+      'a tint whose content is a render tag',
+      '<div class="bg-tile-mint">{@render children()}</div>',
+      ['1:bg-tile-mint']
+    ],
+    [
+      'a tint whose content is a component',
+      '<div class="bg-tile-mint"><Icon /></div>',
+      ['1:bg-tile-mint']
+    ],
+    [
+      'a tint whose content sits in a block',
+      '<ul class="bg-tile-mint">{#each xs as x}<li>{x}</li>{/each}</ul>',
+      ['1:bg-tile-mint']
+    ],
+    [
+      'a marker with no reason',
+      '<div class="bg-tile-mint"><!-- paired-foreground-ok -->\n  x\n</div>',
+      ['1:bg-tile-mint']
+    ]
+  ])('flags %s', (_case, markup, expected) => {
+    expect(unpaired(markup)).toEqual(expected);
+  });
+
+  it.each([
+    [
+      'the foreground in the same literal',
+      "<li class={cn('p-3', on && 'bg-tile-mint text-tile-mint-foreground')}>x</li>"
+    ],
+    [
+      'the foreground in the static text',
+      "<li class=\"text-tile-mint-foreground {on ? 'bg-tile-mint' : ''}\">x</li>"
+    ],
+    [
+      'the foreground in another part of the same template literal',
+      '<li class={`bg-tile-mint ${pad} text-tile-mint-foreground`}>x</li>'
+    ],
+    [
+      'the foreground behind the variant the tint carries',
+      '<div class="dark:bg-tile-sky dark:text-tile-sky-foreground">x</div>'
+    ],
+    ['a tint element with no content', '<span class="h-2 w-2 bg-tile-mint"></span>'],
+    [
+      'a tint element holding only whitespace and a comment',
+      '<div class="bg-tile-mint">\n  <!-- x -->\n</div>'
+    ],
+    ['a Card variant="tile-*"', '<Card variant="tile-lilac"><p>x</p></Card>'],
+    [
+      'a marker with a reason',
+      '<div class="bg-tile-mint"><!-- paired-foreground-ok: only a swatch shows -->\n  x\n</div>'
+    ],
+    ['a tint held in a variable', '<div class="p-3 {tone}">x</div>']
+  ])('passes %s', (_case, markup) => {
+    expect(unpaired(markup)).toEqual([]);
+  });
+
+  it('names the tint, its line and the utility to add', () => {
+    const [u] = findUnpairedTints('<p>\n  <span class="bg-tile-lilac">{x}</span>\n</p>', rules);
+    expect(formatUnpairedTint('src/x.svelte', u)).toBe(
+      'src/x.svelte:2: bg-tile-lilac sets no foreground of its own, so its text inherits ink. ' +
+        'Add text-tile-lilac-foreground to the string that holds the tint, or to the static class text, and let its text inherit it.'
+    );
+  });
+});
+
+function greyCalls(markup: string): string[] {
+  return findGreyComponents(markup, rules).map((g) => `${g.line}:${g.component}.${g.prop}`);
+}
+
+const ON_A_TINT = (call: string) =>
+  `<div class="bg-tile-mint text-tile-mint-foreground">\n  ${call}\n</div>`;
+const OFF_A_TINT = (call: string) => `<div class="bg-card">\n  ${call}\n</div>`;
+
+describe('findGreyComponents', () => {
+  it.each([
+    [
+      'Label',
+      '<Label for="x">x</Label>',
+      '<Label for="x" class="text-current">x</Label>',
+      'Label.class'
+    ],
+    [
+      'Field’s label',
+      '<Field name="x" label="X"><input /></Field>',
+      '<Field name="x" label="X" labelClass="text-current"><input /></Field>',
+      'Field.labelClass'
+    ],
+    [
+      'Field’s hint',
+      '<Field name="x" label="X" labelClass="text-current" hint="h"><input /></Field>',
+      '<Field name="x" label="X" labelClass="text-current" hint="h" hintClass="text-current"><input /></Field>',
+      'Field.hintClass'
+    ],
+    [
+      'SectionHeader',
+      '<SectionHeader>x</SectionHeader>',
+      '<SectionHeader class="text-current">x</SectionHeader>',
+      'SectionHeader.class'
+    ],
+    [
+      'SourceCitation',
+      '<SourceCitation ids={ids} inline />',
+      '<SourceCitation ids={ids} inline class="text-current" />',
+      'SourceCitation.class'
+    ]
+  ])(
+    'flags %s on a tint, passes it with text-current or off a tint',
+    (_name, bareCall, overridden, flag) => {
+      expect(greyCalls(ON_A_TINT(bareCall))).toEqual([`2:${flag}`]);
+      expect(greyCalls(ON_A_TINT(overridden))).toEqual([]);
+      expect(greyCalls(OFF_A_TINT(bareCall))).toEqual([]);
+    }
+  );
+
+  it.each([
+    [
+      'a SectionHeader with a tone the lint cannot read',
+      '<SectionHeader tone={t}>x</SectionHeader>',
+      ['2:SectionHeader.class']
+    ],
+    [
+      'an override in one branch only',
+      "<Label class={on ? 'text-current' : ''}>x</Label>",
+      ['2:Label.class']
+    ],
+    [
+      'an override held in a variable',
+      '<SourceCitation ids={ids} class={tone.sources} />',
+      ['2:SourceCitation.class']
+    ],
+    [
+      'an override behind a variant',
+      '<Label class="hover:text-current">x</Label>',
+      ['2:Label.class']
+    ],
+    [
+      'an override with another tint’s foreground',
+      '<Label class="text-tile-sky-foreground">x</Label>',
+      ['2:Label.class']
+    ],
+    ['a marker with no reason', '<Label>x</Label><!-- paired-foreground-ok -->', ['2:Label.class']]
+  ])('flags %s', (_case, call, expected) => {
+    expect(greyCalls(ON_A_TINT(call))).toEqual(expected);
+  });
+
+  it.each([
+    ['a destructive SectionHeader', '<SectionHeader tone="destructive">x</SectionHeader>'],
+    ['the tint’s own foreground', '<Label class="font-bold text-tile-mint-foreground">x</Label>'],
+    ['text-inherit', '<SourceCitation ids={ids} class="text-inherit" />'],
+    [
+      'a Field with no hint, its label overridden',
+      '<Field name="x" label="X" labelClass="text-current">y</Field>'
+    ],
+    [
+      'a marker with a reason',
+      '<Label>x</Label><!-- paired-foreground-ok: the card test checks it -->'
+    ],
+    ['a component of another name', '<Badge>x</Badge>']
+  ])('passes %s', (_case, call) => {
+    expect(greyCalls(ON_A_TINT(call))).toEqual([]);
+  });
+
+  it('reads a Card variant="tile-*" as a tint, and a surface inside it as none', () => {
+    expect(
+      greyCalls('<Card variant="tile-butter">\n  <SectionHeader>x</SectionHeader>\n</Card>')
+    ).toEqual(['2:SectionHeader.class']);
+    expect(
+      greyCalls(
+        '<Card variant="tile-butter">\n  <div class="bg-card"><Label>x</Label></div>\n</Card>'
+      )
+    ).toEqual([]);
+  });
+
+  it('names the component, its grey, the tint and the prop to set', () => {
+    const [g] = findGreyComponents(
+      '<Card variant="tile-butter">\n  <Field name="x" label="X" hint="h" labelClass="text-current">y</Field>\n</Card>',
+      rules
+    );
+    expect(formatGreyComponent('src/x.svelte', g)).toBe(
+      'src/x.svelte:2: <Field> sets text-ink-soft inside itself, on Card variant="tile-butter" (line 1). ' +
+        "Pass text-current or text-tile-butter-foreground in its hintClass prop's static text."
+    );
+  });
+
+  it.each([...GREY_COMPONENTS])(
+    '%s still sets its grey and takes each override prop',
+    (_name, spec) => {
+      const source = readFileSync(path.resolve(import.meta.dir, '..', spec.file), 'utf8');
+      for (const part of spec.parts) {
+        expect(source).toContain(part.grey);
+        const props = /let \{([\s\S]*?)\}[^=]*= \$props\(\)/.exec(source)?.[1] ?? '';
+        for (const prop of [part.prop, part.shownBy, part.greyWhen?.prop].filter(Boolean)) {
+          expect(props).toMatch(new RegExp(`(?:^|[\\s,])${prop}\\b`));
+        }
+      }
+    }
+  );
 });
 
 describe('rulesFromCss', () => {
