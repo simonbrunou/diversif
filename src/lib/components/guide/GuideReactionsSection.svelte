@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from '#lib/components/ui/Card.svelte';
   import SourceCitation from '#lib/components/SourceCitation.svelte';
+  import EmphasisText from '#lib/components/EmphasisText.svelte';
   import { REACTION_GUIDANCE, EMERGENCY_NUMBER } from '#lib/content/guidance.js';
   import { HeartPulse, Phone } from '@lucide/svelte';
 
@@ -34,7 +35,7 @@
         <h4 class="mt-2 text-2xs font-semibold uppercase tracking-wider {tone.eyebrow}">
           Conduite à tenir
         </h4>
-        <p class="mt-1 text-sm {tone.body}">{r.whatToDo}</p>
+        <p class="mt-1 text-sm {tone.body}"><EmphasisText text={r.whatToDo} /></p>
         <div class="mt-2"><SourceCitation ids={r.sources} inline class={tone.sources} /></div>
       </Card>
     {/each}

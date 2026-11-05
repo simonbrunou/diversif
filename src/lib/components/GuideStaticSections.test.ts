@@ -16,6 +16,19 @@ describe('GuideStaticSections', () => {
     }
   });
 
+  // guidance.ts marks safety points as **…**: the guide sets them in <strong>
+  // and prints no marker (#668).
+  it('prints no ** and sets the marked guidance in <strong>', () => {
+    const { container } = render(GuideStaticSections, { props: {} });
+    expect(container.textContent).not.toContain('**');
+    const marked = [
+      'appeler le 15 ou le 112 sans attendre',
+      'continuer à le proposer régulièrement',
+      'liquide'
+    ];
+    expect(marked.map((t) => screen.getByText(t).tagName)).toEqual(['STRONG', 'STRONG', 'STRONG']);
+  });
+
   it('opens the allergen info dialog on click', async () => {
     render(GuideStaticSections, { props: {} });
     // The egg allergen card is a button. Find the first allergen "Voir les détails" trigger.
