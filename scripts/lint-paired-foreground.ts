@@ -471,8 +471,8 @@ type GreyPart = {
 
 /**
  * The components that set a grey inside themselves, so the call site shows
- * none for the lint to read. Their test checks each one still sets that grey
- * and takes that prop.
+ * none for the lint to read. src/test/grey-components.test.ts renders each
+ * one: it must set that grey, and each part's prop must remove it.
  */
 export const GREY_COMPONENTS: ReadonlyMap<string, { file: string; parts: GreyPart[] }> = new Map([
   [
