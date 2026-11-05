@@ -457,7 +457,10 @@ type GreyPart = {
   prop: string;
   /** The grey, as the component writes it. */
   grey: string;
-  /** The part renders only when the call passes this prop. */
+  /**
+   * The part renders only when the call passes this prop, by name or, for
+   * all the lint can tell, in a `{...spread}`.
+   */
   shownBy?: string;
   /**
    * The grey applies only when this prop is absent or holds one of these
@@ -548,7 +551,10 @@ export function findGreyComponents(source: string, rules: PairedForegroundRules)
     const line = lineOf(node.start);
     if (marked(line)) return;
     for (const part of spec.parts) {
-      if (part.shownBy && !attribute(node, part.shownBy)) continue;
+      const spread = (node.attributes as SvelteAttribute[]).some(
+        (a) => a.type === 'SpreadAttribute'
+      );
+      if (part.shownBy && !attribute(node, part.shownBy) && !spread) continue;
       if (part.greyWhen) {
         const set = attribute(node, part.greyWhen.prop);
         const value = set && staticValue(set);

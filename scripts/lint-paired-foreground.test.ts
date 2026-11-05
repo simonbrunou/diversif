@@ -411,6 +411,11 @@ describe('findGreyComponents', () => {
       '<Label class="text-tile-sky-foreground">x</Label>',
       ['2:Label.class']
     ],
+    [
+      'a Field whose spread may pass a hint',
+      '<Field name="x" label="X" labelClass="text-current" {...props}>y</Field>',
+      ['2:Field.hintClass']
+    ],
     ['a marker with no reason', '<Label>x</Label><!-- paired-foreground-ok -->', ['2:Label.class']]
   ])('flags %s', (_case, call, expected) => {
     expect(greyCalls(ON_A_TINT(call))).toEqual(expected);
