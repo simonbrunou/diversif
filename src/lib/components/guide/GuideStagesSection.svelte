@@ -64,10 +64,10 @@
             </div>
           </div>
           {#if s.redFlags.length > 0}
-            <div class="rounded-md border border-reaction-inconfort/30 bg-reaction-inconfort/5 p-3">
-              <div
-                class="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider text-reaction-inconfort-foreground"
-              >
+            <div
+              class="rounded-md border border-reaction-inconfort/30 bg-reaction-inconfort/5 p-3 text-reaction-inconfort-foreground"
+            >
+              <div class="flex items-center gap-2 text-2xs font-semibold uppercase tracking-wider">
                 <TriangleAlert size={12} aria-hidden="true" />
                 À surveiller
               </div>

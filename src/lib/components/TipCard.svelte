@@ -1,30 +1,47 @@
 <script lang="ts" module>
   export type TipTone = 'info' | 'warn' | 'important' | 'celebrate';
 
-  const TONES: Record<TipTone, { wrapper: string; eyebrow: string; iconBg: string }> = {
+  // A tinted card sets its tint's own foreground and everything inside
+  // inherits it: the body, the children and the sources drop their ink and
+  // grey (DESIGN.md, The Paired Foreground Rule). The lint cannot read these
+  // script-held tints; TipCard.test.ts checks them.
+  const TONES: Record<
+    TipTone,
+    { wrapper: string; eyebrow: string; iconBg: string; body: string; sources: string }
+  > = {
     info: {
-      wrapper: 'border-accent-sky/40 bg-accent-sky/15 dark:bg-accent-sky/10',
       // `text-info` is the sky background hue (≈1.2:1 on the sky-tinted
-      // wrapper). `text-info-foreground` is the deep navy paired text color.
-      eyebrow: 'text-info-foreground',
-      iconBg: 'bg-accent-sky/40 dark:bg-accent-sky/15 text-info-foreground'
+      // wrapper). `text-tile-sky-foreground` is the deep navy paired text.
+      wrapper: 'border-accent-sky/40 bg-accent-sky/15 dark:bg-accent-sky/10 text-tile-sky-foreground',
+      eyebrow: '',
+      iconBg: 'bg-accent-sky/40 dark:bg-accent-sky/15 text-tile-sky-foreground',
+      body: '',
+      sources: 'text-current'
     },
     warn: {
-      wrapper: 'border-reaction-inconfort/30 bg-reaction-inconfort/10',
-      // Same fix as `info`: the bare reaction-inconfort token is the butter
+      // Same as `info`: the bare reaction-inconfort token is the butter
       // background hue. The `-foreground` variant is the dark readable text.
-      eyebrow: 'text-reaction-inconfort-foreground',
-      iconBg: 'bg-reaction-inconfort/20 text-reaction-inconfort-foreground'
+      wrapper:
+        'border-reaction-inconfort/30 bg-reaction-inconfort/10 text-reaction-inconfort-foreground',
+      eyebrow: '',
+      iconBg: 'bg-reaction-inconfort/20 text-reaction-inconfort-foreground',
+      body: '',
+      sources: 'text-current'
     },
     important: {
       wrapper: 'border-primary/40 bg-accent',
       eyebrow: 'text-primary-strong',
-      iconBg: 'bg-primary text-primary-foreground'
+      iconBg: 'bg-primary text-primary-foreground',
+      body: 'text-foreground/90',
+      sources: ''
     },
     celebrate: {
-      wrapper: 'border-accent-butter/50 bg-accent-butter/25 dark:bg-accent-butter/10',
-      eyebrow: 'text-tile-butter-foreground',
-      iconBg: 'bg-accent-butter/60 dark:bg-accent-butter/20 text-tile-butter-foreground'
+      wrapper:
+        'border-accent-butter/50 bg-accent-butter/25 dark:bg-accent-butter/10 text-tile-butter-foreground',
+      eyebrow: '',
+      iconBg: 'bg-accent-butter/60 dark:bg-accent-butter/20 text-tile-butter-foreground',
+      body: '',
+      sources: 'text-current'
     }
   };
 </script>
@@ -79,14 +96,14 @@
       <h3 class="mt-0.5 text-sm font-semibold leading-snug">{title}</h3>
     {/if}
     {#if body}
-      <p class="mt-1 text-sm leading-relaxed text-foreground/90">{body}</p>
+      <p class={cn('mt-1 text-sm leading-relaxed', t.body)}>{body}</p>
     {/if}
     {#if children}
-      <div class="mt-2 text-sm leading-relaxed text-foreground/90">{@render children()}</div>
+      <div class={cn('mt-2 text-sm leading-relaxed', t.body)}>{@render children()}</div>
     {/if}
     {#if sources && sources.length > 0}
       <div class="mt-2">
-        <SourceCitation ids={sources} inline />
+        <SourceCitation ids={sources} inline class={t.sources} />
       </div>
     {/if}
   </div>

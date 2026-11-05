@@ -9,6 +9,7 @@ mock.module('$app/forms', () => ({
 }));
 
 import SymptomRow from './SymptomRow.svelte';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 
 afterEach(async () => {
   cleanup();
@@ -56,6 +57,16 @@ describe('SymptomRow', () => {
       props: { ...baseProps, label: 'vomissement', observedAt: '12:00', note: null }
     });
     expect(container.querySelector('.bg-tile-butter')).toBeTruthy();
+  });
+
+  it("sets the warn row, label, time and note, in the butter tint's own foreground (#667)", () => {
+    render(SymptomRow, {
+      props: { ...baseProps, label: 'vomissement', observedAt: '12:00', note: 'après le repas' }
+    });
+    const row = screen.getByText('après le repas').closest('li');
+    if (!row) throw new Error('no row around the note');
+    expect(row.classList.contains('bg-tile-butter')).toBe(true);
+    expectPairedForeground(row);
   });
 
   it('applies severe background and aria-live for severe severity', () => {

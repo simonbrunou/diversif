@@ -3,6 +3,7 @@ import { render } from '@testing-library/svelte';
 import { Heart } from '@lucide/svelte';
 import '../../test/component';
 import { textSnippet } from '../../test/component';
+import { expectPairedForeground } from '../../test/paired-foreground';
 import TipCard from './TipCard.svelte';
 
 describe('TipCard', () => {
@@ -44,6 +45,29 @@ describe('TipCard', () => {
     const link = container.querySelector('a');
     expect(link?.getAttribute('target')).toBe('_blank');
   });
+
+  it.each([
+    ['info', 'bg-accent-sky/15'],
+    ['warn', 'bg-reaction-inconfort/10'],
+    ['celebrate', 'bg-accent-butter/25']
+  ] as const)(
+    "sets the %s card, body, children and sources in its tint's own foreground (#667)",
+    (tone, tint) => {
+      const { container } = render(TipCard, {
+        props: {
+          tone,
+          eyebrow: 'Astuce',
+          body: 'Corps',
+          sources: ['spf-pnns-guide'],
+          children: textSnippet('Suite')
+        }
+      });
+      const card = container.firstElementChild;
+      if (!card) throw new Error('no card');
+      expect(card.classList.contains(tint)).toBe(true);
+      expectPairedForeground(card);
+    }
+  );
 
   it('uses a custom icon', () => {
     const { container } = render(TipCard, {

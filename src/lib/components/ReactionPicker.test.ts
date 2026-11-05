@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { render, fireEvent } from '@testing-library/svelte';
 import '../../test/component';
 import ReactionPicker from './ReactionPicker.svelte';
+import { expectPairedForeground } from '../../test/paired-foreground';
 
 describe('ReactionPicker', () => {
   it('renders 3 radio inputs', () => {
@@ -49,6 +50,16 @@ describe('ReactionPicker', () => {
       expect(cls).toContain('has-[:focus-visible]:ring-ring');
     }
   });
+
+  it.each(['ras', 'inconfort', 'reaction'] as const)(
+    "sets the active %s option, label and description, in its tint's own foreground (#667)",
+    (value) => {
+      const { container } = render(ReactionPicker, { props: { name: 'r', value } });
+      const option = container.querySelector(`input[value="${value}"]`)?.closest('label');
+      if (!option) throw new Error('no option');
+      expectPairedForeground(option);
+    }
+  );
 
   it('shows a non-color check badge on the active option (so selection is not color-only)', () => {
     const { container } = render(ReactionPicker, {

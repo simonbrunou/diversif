@@ -78,8 +78,8 @@
         <span
           class={cn(
             'rounded-full px-2 py-0.5 text-xs font-semibold',
-            item.state === 'cleared' && 'bg-tile-mint',
-            item.state === 'todo' && 'bg-tile-butter',
+            item.state === 'cleared' && 'bg-tile-mint text-tile-mint-foreground',
+            item.state === 'todo' && 'bg-tile-butter text-tile-butter-foreground',
             item.state === 'reaction' && 'bg-reaction-reaction text-reaction-reaction-foreground',
             item.state === 'inconfort' &&
               'bg-reaction-inconfort/20 text-reaction-inconfort-foreground',
