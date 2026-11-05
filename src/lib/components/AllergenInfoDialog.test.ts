@@ -4,6 +4,7 @@ import '../../test/component';
 import AllergenInfoDialog from './AllergenInfoDialog.svelte';
 import { ALLERGEN_GUIDANCE } from '#lib/content/guidance.js';
 import { SOURCES } from '#lib/content/sources.js';
+import { langWithin } from '../../test/source-lang';
 import * as m from '#lib/paraglide/messages.js';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 
@@ -61,16 +62,20 @@ describe('AllergenInfoDialog', () => {
     });
 
     // The cited titles keep their own language: LEAP's is English, the
-    // HCSP's French (#665).
+    // HCSP's French (#665). Each title must carry it inside the source list,
+    // whatever the dialog wraps the list in.
     it('tags each cited title with its own language', () => {
       overwriteGetLocale(() => 'en');
       render(AllergenInfoDialog, { props: { allergenId: 'arachide' } });
       expect(ALLERGEN_GUIDANCE.arachide.sources).toEqual(
         expect.arrayContaining(['leap-2015', 'hcsp-2020'])
       );
+      const leap = screen.getByText(SOURCES['leap-2015'].label);
+      const list = leap.closest('ul');
+      if (!list) throw new Error('the cited titles sit in no list');
       expect({
-        leap: langOf(SOURCES['leap-2015'].label),
-        hcsp: langOf(SOURCES['hcsp-2020'].label)
+        leap: langWithin(leap, list),
+        hcsp: langWithin(screen.getByText(SOURCES['hcsp-2020'].label), list)
       }).toEqual({ leap: 'en', hcsp: 'fr' });
     });
   });
