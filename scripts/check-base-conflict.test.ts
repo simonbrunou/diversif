@@ -128,6 +128,23 @@ describe('check-base-conflict.sh', () => {
   );
 
   it(
+    'checks a branch pushed as HEAD or as a raw sha',
+    () => {
+      // `git push origin HEAD` and `git push origin <sha>:refs/heads/x` put
+      // HEAD or the sha where the local ref goes.
+      commit(other, 'a.txt', 'two from main\n');
+      git(other, 'push', '-q', 'origin', 'HEAD:main');
+      const sha = commit(work, 'a.txt', 'two from the branch\n');
+      for (const localRef of ['HEAD', sha]) {
+        const r = check([], { stdin: `${localRef} ${sha} refs/heads/feature ${ZERO}\n` });
+        expect({ localRef, code: r.code }).toEqual({ localRef, code: 1 });
+        expect(r.err).toContain('Merge conflict in a.txt');
+      }
+    },
+    TIMEOUT
+  );
+
+  it(
     'skips a deleted branch and a tag',
     () => {
       const sha = commit(work, 'a.txt', 'two from the branch\n');
@@ -164,11 +181,17 @@ describe('check-base-conflict.sh', () => {
   it(
     'checks the local ref and says so when the fetch fails',
     () => {
-      const sha = commit(work, 'b.txt', 'new file\n');
+      // The local ref already holds the conflicting main; only it can show
+      // the conflict once the remote is gone.
+      commit(other, 'a.txt', 'two from main\n');
+      git(other, 'push', '-q', 'origin', 'HEAD:main');
+      git(work, 'fetch', '-q', 'origin');
+      const sha = commit(work, 'a.txt', 'two from the branch\n');
       git(work, 'remote', 'set-url', 'origin', path.join(root, 'gone.git'));
       const r = check([sha]);
-      expect(r.code).toBe(0);
+      expect(r.code).toBe(1);
       expect(r.err).toContain('could not fetch origin/main; checking the local ref');
+      expect(r.err).toContain('Merge conflict in a.txt');
     },
     TIMEOUT
   );
@@ -181,6 +204,29 @@ describe('check-base-conflict.sh', () => {
       const r = check([sha], { base: 'main' });
       expect(r.code).toBe(2);
       expect(r.err).toContain("base 'main' is not <remote>/<branch>");
+    },
+    TIMEOUT
+  );
+
+  it(
+    'exits 2 on a base branch the remote does not have',
+    () => {
+      const sha = commit(work, 'b.txt', 'new file\n');
+      const r = check([sha], { base: 'origin/nope' });
+      expect(r.code).toBe(2);
+      expect(r.err).toContain('no commit at origin/nope');
+    },
+    TIMEOUT
+  );
+
+  it(
+    'exits 2 when git merge-tree fails, on a commit with no common history',
+    () => {
+      git(work, 'checkout', '-q', '--orphan', 'lone');
+      const sha = commit(work, 'z.txt', 'unrelated\n');
+      const r = check([sha]);
+      expect(r.code).toBe(2);
+      expect(r.err).toContain('git merge-tree failed');
     },
     TIMEOUT
   );

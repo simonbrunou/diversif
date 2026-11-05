@@ -35,10 +35,16 @@ fi
 
 commits=("$@")
 if [ ${#commits[@]} -eq 0 ]; then
-  # A deleted branch comes as "(delete)", and a tag has nothing to merge.
-  while read -r local_ref local_sha _remote_ref _remote_sha; do
-    case "$local_ref" in
-      refs/heads/*) commits+=("$local_sha") ;;
+  # The remote ref names the branch: the local ref reads HEAD or a raw sha
+  # after `git push origin HEAD`. A delete sends the all-zero local sha, and
+  # a tag has nothing to merge.
+  while read -r _local_ref local_sha remote_ref _remote_sha; do
+    case "$remote_ref" in
+      refs/heads/*) ;;
+      *) continue ;;
+    esac
+    case "$local_sha" in
+      *[!0]*) commits+=("$local_sha") ;;
     esac
   done
 fi
@@ -70,7 +76,7 @@ for commit in "${commits[@]}"; do
     1)
       echo "check-base-conflict: $short conflicts with $base:" >&2
       printf '%s\n' "$out" | grep '^CONFLICT' >&2
-      echo "Merge $base into the branch, resolve, run bun run test, then push (AGENTS.md, Merge authority)." >&2
+      echo "Merge $base into the branch and resolve it as AGENTS.md, Merge authority, says, then push again." >&2
       status=1
       ;;
     *)

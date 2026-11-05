@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# pre-push: fast static gates only — a conflict check against the base
-# branch, lint (prettier + eslint + i18n),
+# pre-push: fast gates only — a conflict check against the base branch
+# (one fetch), then the static ones: lint (prettier + eslint + i18n),
 # typecheck (svelte-check, then tsc on the service worker and scripts/) and
 # the Fallow audit. The full test suite (unit/component, the test:coverage
 # 100% threshold, docker --check, and Playwright e2e) was intentionally
@@ -27,7 +27,7 @@ base="${FALLOW_AUDIT_BASE:-origin/main}"
 # base means a merge commit and a second CI run, so refuse it before this
 # push starts the first (#665's session waited 52 minutes for the second).
 # The script fetches the base first, since the local ref can be old.
-log "conflicts with $base"
+log "conflict check (vs $base)"
 scripts/check-base-conflict.sh
 ok "no conflict with $base"
 
