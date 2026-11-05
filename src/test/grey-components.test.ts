@@ -53,23 +53,32 @@ const NOT_GREY: Record<string, Record<string, unknown>> = {
   SectionHeader: { tone: 'destructive' }
 };
 
-async function load(file: string): Promise<Component<Record<string, unknown>>> {
-  const mod = await import(path.resolve(import.meta.dir, '../..', file));
-  return mod.default;
-}
+/**
+ * Each GREY_COMPONENTS component, compiled once here rather than inside the
+ * first test's 5 s budget, which a loaded runner can overrun.
+ */
+const LOADED = new Map(
+  await Promise.all(
+    [...GREY_COMPONENTS].map(async ([name, spec]) => {
+      const mod = await import(path.resolve(import.meta.dir, '../..', spec.file));
+      return [name, mod.default as Component<Record<string, unknown>>] as const;
+    })
+  )
+);
 
-/** A class with its variants, `!` and `/NN` removed. */
+/** A class with its variants, `!` and `/NN` or `/[..]` removed, as the lint reads it. */
 function bare(cls: string): string {
   return cls
     .slice(cls.lastIndexOf(':') + 1)
     .replace(/^!|!$/g, '')
-    .replace(/\/\d+$/, '');
+    .replace(/\/(?:\d+|\[[^\]]*\])$/, '');
 }
 
 /**
  * The grey, behind any variant, or else `text-current` that an element's own
- * classes set. A grey wins over `text-current` on one element: app.css emits
- * the grey utilities after it.
+ * classes set. A grey wins over `text-current` on one element, as
+ * `text-ink-soft` and `text-muted-foreground` do in the compiled CSS; for the
+ * other greys the test errs toward the grey.
  */
 function ownColour(el: Element): string | undefined {
   const classes = [...el.classList];
@@ -80,17 +89,19 @@ function ownColour(el: Element): string | undefined {
 }
 
 /**
- * In a render of `file` with `props`: the colour, a grey or `text-current`,
- * that the element at `selector` takes from itself or its nearest ancestor
- * (`null` with no such element, `undefined` with neither), how many elements
- * carry a grey, and how many carry `text-current`.
+ * In a render of the GREY_COMPONENTS entry `name` with `props`: the colour,
+ * a grey or `text-current`, that the element at `selector` takes from itself
+ * or its nearest ancestor (`null` with no such element, `undefined` with
+ * neither), how many elements carry a grey, and how many carry `text-current`.
  */
-async function inspect(
-  file: string,
+function inspect(
+  name: string,
   props: Record<string, unknown>,
   selector: string
-): Promise<{ colour: string | null | undefined; greys: number; currents: number }> {
-  const { container, unmount } = render(await load(file), { props });
+): { colour: string | null | undefined; greys: number; currents: number } {
+  const component = LOADED.get(name);
+  if (!component) throw new Error(`${name} did not load`);
+  const { container, unmount } = render(component, { props });
   const el = container.querySelector(selector);
   let colour: string | null | undefined = el ? undefined : null;
   for (let e: Element | null = el; e && !colour; e = e.parentElement) colour = ownColour(e);
@@ -127,8 +138,8 @@ describe.each([...GREY_COMPONENTS])('%s', (name, spec) => {
 
   it.each(cases)(
     'render $render: its $prop part carries the grey, once per part',
-    async ({ part, props, selector, greys }) => {
-      expect(await inspect(spec.file, props, selector)).toEqual({
+    ({ part, props, selector, greys }) => {
+      expect(inspect(name, props, selector)).toEqual({
         colour: part.grey,
         greys,
         currents: 0
@@ -138,9 +149,9 @@ describe.each([...GREY_COMPONENTS])('%s', (name, spec) => {
 
   it.each(cases)(
     'render $render: text-current in its $prop prop replaces that grey there only',
-    async ({ part, props, selector, greys }) => {
+    ({ part, props, selector, greys }) => {
       const overridden = { ...props, [part.prop]: 'text-current' };
-      expect(await inspect(spec.file, overridden, selector)).toEqual({
+      expect(inspect(name, overridden, selector)).toEqual({
         colour: 'text-current',
         greys: greys - 1,
         currents: 1
@@ -150,9 +161,9 @@ describe.each([...GREY_COMPONENTS])('%s', (name, spec) => {
 
   it.each(cases.filter((c) => c.part.shownBy))(
     'render $render: renders no $prop part without its shownBy prop',
-    async ({ part, props, selector, greys }) => {
+    ({ part, props, selector, greys }) => {
       const hidden = { ...props, [part.shownBy as string]: undefined };
-      expect(await inspect(spec.file, hidden, selector)).toEqual({
+      expect(inspect(name, hidden, selector)).toEqual({
         colour: null,
         greys: greys - 1,
         currents: 0
@@ -162,11 +173,11 @@ describe.each([...GREY_COMPONENTS])('%s', (name, spec) => {
 
   it.each(cases.filter((c) => c.part.greyWhen))(
     'render $render: sets no grey on its $prop part for a greyWhen value outside the list',
-    async ({ part, props, selector, greys }) => {
+    ({ part, props, selector, greys }) => {
       const other = NOT_GREY[name];
       expect(other).toBeDefined();
       expect(part.greyWhen?.values).not.toContain(other[part.greyWhen?.prop as string]);
-      expect(await inspect(spec.file, { ...props, ...other }, selector)).toEqual({
+      expect(inspect(name, { ...props, ...other }, selector)).toEqual({
         colour: undefined,
         greys: greys - 1,
         currents: 0
