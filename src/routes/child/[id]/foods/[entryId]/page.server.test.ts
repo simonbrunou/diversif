@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { testDb, resetTestDb } from '../../../../../test/db';
 import {
@@ -16,6 +16,7 @@ import { audit } from '#lib/server/audit.js';
 
 import { foodEntries, foods, symptoms } from '#lib/server/db/schema.js';
 import { load, actions } from './+page.server';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 
 beforeEach(async () => {
   await resetTestDb();
@@ -568,4 +569,30 @@ describe('texture in entry-detail loader', () => {
     );
     expect(data.texture).toBeNull();
   });
+});
+
+// The 400 body is the error page's description: each of the three handlers
+// that parse entryId hands parseIntParam the message key, not French prose.
+describe('an invalid entry id in English', () => {
+  afterEach(() => overwriteGetLocale(() => baseLocale));
+
+  it.each(['load', 'addSymptom', 'deleteSymptom'] as const)(
+    '%s answers 400 Invalid entry ID.',
+    async (handler) => {
+      const ctx = await setup();
+      overwriteGetLocale(() => 'en');
+      const event = makeRouteEvent({
+        user: safeUser(ctx.u),
+        memberships: [ctx.m],
+        params: { id: String(ctx.c.id), entryId: 'abc' },
+        url: 'http://localhost/',
+        formData: { label: 'rougeur', note: '', observedAt: '11:42', symptomId: '1' }
+      });
+      const run = handler === 'load' ? load : actions[handler]!;
+      await expect((run as (e: unknown) => Promise<unknown>)(event)).rejects.toMatchObject({
+        status: 400,
+        body: { message: 'Invalid entry ID.' }
+      });
+    }
+  );
 });

@@ -11,6 +11,7 @@ import {
 import { startSession } from '#lib/server/session.js';
 import { audit } from '#lib/server/audit.js';
 import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { RequestHandler } from './$types';
 
 const PASSKEY_LIMIT = { name: 'passkey-auth', limit: 20, windowMs: 5 * 60 * 1000 };
@@ -22,7 +23,7 @@ export const POST: RequestHandler = async (event) => {
   const ip = clientKey(event);
   const rl = checkRateLimit(PASSKEY_LIMIT, ip);
   if (!rl.allowed) {
-    throw error(429, `Trop de tentatives. Réessayez dans ${rl.retryAfterSeconds}s.`);
+    throw error(429, m.errorsAuthRateLimitedSeconds({ seconds: rl.retryAfterSeconds }));
   }
 
   const { response } = await parsePasskeyResponseBody(request);
@@ -40,7 +41,7 @@ export const POST: RequestHandler = async (event) => {
     (await consumeChallenge(modalToken, 'authentication')) ??
     (await consumeChallenge(autofillToken, 'authentication'));
   if (!challenge) {
-    throw error(400, 'Challenge expiré ou invalide');
+    throw error(400, 'Défi expiré ou invalide');
   }
 
   const result = await finishAuthentication({

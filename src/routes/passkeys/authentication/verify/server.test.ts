@@ -1,4 +1,6 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test';
+import * as m from '#lib/paraglide/messages.js';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import { testDb, resetTestDb } from '../../../../test/db';
 import { captureFlow, makeRouteEvent } from '../../../../test/route';
 
@@ -98,6 +100,32 @@ describe('POST /passkeys/authentication/verify', () => {
     if (r.kind === 'error') expect(r.status).toBe(429);
   });
 
+  describe('the 429 body', () => {
+    afterEach(() => overwriteGetLocale(() => baseLocale));
+
+    // A pinned clock puts every hit at one instant, so the limiter's
+    // retryAfterSeconds is the whole 5-minute window: 300.
+    it.each([
+      ['fr', 'Trop de tentatives. Réessayez dans 300 s.'],
+      ['en', 'Too many attempts. Try again in 300s.']
+    ] as const)('is errorsAuthRateLimitedSeconds in %s', async (locale, text) => {
+      setSystemTime(new Date('2026-01-01T12:00:00Z'));
+      overwriteGetLocale(() => locale);
+      for (let i = 0; i < 20; i++) {
+        const event = makeReq({ body: { response: { id: 'x' } } });
+        await captureFlow(
+          () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+        );
+      }
+      const event = makeReq({ body: { response: { id: 'x' } } });
+      const r = await captureFlow(
+        () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
+      );
+      expect(r).toEqual({ kind: 'error', status: 429, message: text });
+      expect(text).toBe(m.errorsAuthRateLimitedSeconds({ seconds: 300 }));
+    });
+  });
+
   it('errors 400 on invalid JSON', async () => {
     const event = makeReq({ body: 'not json' });
     const r = await captureFlow(
@@ -120,6 +148,8 @@ describe('POST /passkeys/authentication/verify', () => {
       () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
     );
     expect(r.kind).toBe('error');
+    // French copy with no anglicism: « défi », not « Challenge » (#659).
+    expect(r).toEqual({ kind: 'error', status: 400, message: 'Défi expiré ou invalide' });
   });
 
   it('returns 400 when verification fails', async () => {

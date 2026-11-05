@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, describe, expect, it } from 'bun:test';
+import * as m from '#lib/paraglide/messages.js';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import {
   parseChildIdParam,
   parseIntParam,
@@ -114,35 +116,35 @@ describe('parseChildIdParam', () => {
 
 describe('parseIntParam', () => {
   it('returns the parsed integer for a valid positive string', () => {
-    expect(parseIntParam('5', 'Foo')).toBe(5);
-    expect(parseIntParam('100', 'Foo')).toBe(100);
+    expect(parseIntParam('5', m.errorsEntryIdInvalid)).toBe(5);
+    expect(parseIntParam('100', m.errorsEntryIdInvalid)).toBe(100);
   });
 
   it('throws 400 when the raw value is undefined', () => {
-    expectError(() => parseIntParam(undefined, 'Foo'), 400);
+    expectError(() => parseIntParam(undefined, m.errorsEntryIdInvalid), 400);
   });
 
   it('throws 400 on non-numeric strings', () => {
-    expectError(() => parseIntParam('abc', 'Foo'), 400);
+    expectError(() => parseIntParam('abc', m.errorsEntryIdInvalid), 400);
   });
 
   it('throws 400 on zero', () => {
-    expectError(() => parseIntParam('0', 'Foo'), 400);
+    expectError(() => parseIntParam('0', m.errorsEntryIdInvalid), 400);
   });
 
   it('throws 400 on negative values', () => {
-    expectError(() => parseIntParam('-1', 'Foo'), 400);
+    expectError(() => parseIntParam('-1', m.errorsEntryIdInvalid), 400);
   });
 
   it('throws 400 on fractional values', () => {
-    expectError(() => parseIntParam('1.5', 'Foo'), 400);
+    expectError(() => parseIntParam('1.5', m.errorsEntryIdInvalid), 400);
   });
 
-  it('includes the kind in the error message', () => {
-    const err = expectError(() => parseIntParam(undefined, 'Identifiant'), 400) as {
-      body?: { message?: string };
-    };
-    expect(err.body?.message).toMatch(/Identifiant/);
+  it('uses the message key for a missing and an invalid value', () => {
+    for (const raw of [undefined, 'abc']) {
+      const err = expectError(() => parseIntParam(raw, m.errorsEntryIdInvalid), 400);
+      expect(err.body?.message).toBe('Identifiant d’entrée invalide.');
+    }
   });
 });
 
@@ -204,4 +206,59 @@ describe('requireOwnership', () => {
     };
     expectError(() => requireOwnership(makeLocals({ user: fakeUser, memberships: [m] }), 7), 403);
   });
+});
+
+// Each refusal's body is the error page's description, so it follows the
+// request's locale. Literal strings, not m.key() under the same locale: that
+// comparison would pass even if a guard ignored the locale.
+describe('guard refusal bodies follow the locale', () => {
+  afterEach(() => {
+    overwriteGetLocale(() => baseLocale);
+  });
+
+  const member: Membership = { userId: 1, childId: 7, role: 'member', createdAt: new Date() };
+  const refusals = [
+    {
+      name: 'parseChildIdParam 404',
+      status: 404,
+      run: () => parseChildIdParam({ id: 'abc' }),
+      fr: 'Enfant introuvable.',
+      en: 'Child not found.'
+    },
+    {
+      name: 'requireMembership 403',
+      status: 403,
+      run: () => requireMembership(makeLocals({ user: fakeUser }), 7),
+      fr: 'Accès refusé.',
+      en: 'Access denied.'
+    },
+    {
+      name: 'requireOwnership 403',
+      status: 403,
+      run: () => requireOwnership(makeLocals({ user: fakeUser, memberships: [member] }), 7),
+      fr: 'Action réservée au créateur.',
+      en: 'Only the creator can do this.'
+    },
+    {
+      name: 'parseIntParam 400',
+      status: 400,
+      run: () => parseIntParam('abc', m.errorsEntryIdInvalid),
+      fr: 'Identifiant d’entrée invalide.',
+      en: 'Invalid entry ID.'
+    }
+  ];
+
+  for (const locale of ['fr', 'en'] as const) {
+    it.each(refusals)(`$name reads in ${locale}`, (refusal) => {
+      overwriteGetLocale(() => locale);
+      const err = expectError(refusal.run, refusal.status);
+      expect(err.body?.message).toBe(refusal[locale]);
+    });
+
+    it(`parseChildIdParam's 404 equals errorsChildNotFound in ${locale}`, () => {
+      overwriteGetLocale(() => locale);
+      const err = expectError(() => parseChildIdParam({}), 404);
+      expect(err.body?.message).toBe(m.errorsChildNotFound());
+    });
+  }
 });

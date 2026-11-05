@@ -1,18 +1,26 @@
 import { error } from '@sveltejs/kit';
 import { localizedRedirect } from './redirect';
+import * as m from '#lib/paraglide/messages.js';
 import type { Membership, SafeUser } from '#lib/types.js';
 
+// error() bodies render verbatim as the error page's description, so every
+// guard resolves a message key at the moment it throws: inside the request,
+// paraglide's per-request locale is in effect (same as the child layout).
+
 /**
- * Generic integer param parser. Throws a 400 HTTP error with a French message
- * when the raw value is missing, non-integer, or non-positive.
+ * Generic integer param parser. Throws a 400 HTTP error when the raw value is
+ * missing, non-integer, or non-positive. `invalid` is the message function
+ * (e.g. `() => m.errorsEntryIdInvalid()`), called only when it throws. A missing value
+ * shares it: a route param is never undefined, so that branch only keeps the
+ * 400 contract.
  */
-export function parseIntParam(raw: string | undefined, kind: string): number {
-  if (raw === undefined) throw error(400, `${kind} manquant`);
+export function parseIntParam(raw: string | undefined, invalid: () => string): number {
+  if (raw === undefined) throw error(400, invalid());
   const n = Number.parseInt(raw, 10);
   // Reject floats like "1.5": parseInt truncates them to 1 which passes
   // isInteger, so we also guard that the string is a bare integer literal.
   if (!Number.isInteger(n) || n <= 0 || String(n) !== raw.trim()) {
-    throw error(400, `${kind} invalide`);
+    throw error(400, invalid());
   }
   return n;
 }
@@ -29,7 +37,7 @@ export function parseChildIdParamOrNull(params: Partial<Record<string, string>>)
 
 export function parseChildIdParam(params: Partial<Record<string, string>>): number {
   const n = parseChildIdParamOrNull(params);
-  if (n === null) throw error(404, 'Enfant introuvable');
+  if (n === null) throw error(404, m.errorsChildNotFound());
   return n;
 }
 
@@ -53,7 +61,7 @@ export function requireMembership(
   const user = requireUser(locals);
   const membership = locals.memberships.find((m) => m.childId === childId && m.userId === user.id);
   if (!membership) {
-    throw error(403, 'Accès refusé');
+    throw error(403, m.errorsChildAccessDenied());
   }
   return { user, membership };
 }
@@ -64,7 +72,7 @@ export function requireOwnership(
 ): { user: SafeUser; membership: Membership } {
   const result = requireMembership(locals, childId);
   if (result.membership.role !== 'owner') {
-    throw error(403, 'Action réservée au créateur');
+    throw error(403, m.errorsChildOwnerOnly());
   }
   return result;
 }

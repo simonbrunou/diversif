@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import { resetTestDb } from '../../../../../test/db';
 import { captureFlow, makeRouteEvent, safeUser, seedMembership } from '../../../../../test/route';
 import {
@@ -71,6 +72,22 @@ describe('child/[id]/log/[entryId] load', () => {
     );
     expect([invalid.kind, invalid.kind === 'error' && invalid.status]).toEqual(['error', 400]);
     expect([missing.kind, missing.kind === 'error' && missing.status]).toEqual(['error', 404]);
+  });
+
+  describe('an invalid entryId', () => {
+    afterEach(() => overwriteGetLocale(() => baseLocale));
+
+    it.each([
+      ['fr', 'Identifiant d’entrée invalide.'],
+      ['en', 'Invalid entry ID.']
+    ] as const)('reads in %s on the error page', async (locale, text) => {
+      const { event, child } = await setup();
+      overwriteGetLocale(() => locale);
+      const r = await captureFlow(() =>
+        load(event({ params: { id: String(child.id), entryId: 'abc' } }) as unknown as LoadEvent)
+      );
+      expect(r).toEqual({ kind: 'error', status: 400, message: text });
+    });
   });
 
   it('returns the entry with givenAt as a timestamp, the aliments and where to go back', async () => {

@@ -29,7 +29,7 @@ function refused({ ok: _ok, status, ...data }: RepasRefusal) {
 
 function entryContext({ locals, params }: Pick<RequestEvent, 'locals' | 'params'>) {
   const ctx = requireChildContext(locals, params);
-  return { ctx, entryId: parseIntParam(params.entryId, "Identifiant d'entrée") };
+  return { ctx, entryId: parseIntParam(params.entryId, () => m.errorsEntryIdInvalid()) };
 }
 
 export const load: PageServerLoad = async (event) => {

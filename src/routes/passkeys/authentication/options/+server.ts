@@ -9,6 +9,7 @@ import {
   isOriginAllowedForRPID
 } from '#lib/server/passkeys.js';
 import { checkRateLimit, clientKey } from '#lib/server/rate-limit.js';
+import * as m from '#lib/paraglide/messages.js';
 import type { RequestHandler } from './$types';
 
 // The endpoint is unauthenticated (a visitor needs a fresh challenge before
@@ -56,7 +57,7 @@ export const POST: RequestHandler = async (event) => {
   const bucket = mode === 'autofill' ? PASSKEY_AUTOFILL_OPTIONS_LIMIT : PASSKEY_OPTIONS_LIMIT;
   const rl = checkRateLimit(bucket, ip);
   if (!rl.allowed) {
-    throw error(429, `Trop de tentatives. Réessayez dans ${rl.retryAfterSeconds}s.`);
+    throw error(429, m.errorsAuthRateLimitedSeconds({ seconds: rl.retryAfterSeconds }));
   }
 
   const options = await buildAuthenticationOptions({ rpID: RP_ID });
