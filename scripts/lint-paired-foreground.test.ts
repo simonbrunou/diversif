@@ -327,10 +327,10 @@ describe('findUnpairedTints', () => {
     expect(unpaired(markup)).toEqual([]);
   });
 
-  it('names the tint, its line and the utility to add', () => {
+  it('names the element, the tint, its line and the utility to add', () => {
     const [u] = findUnpairedTints('<p>\n  <span class="bg-tile-lilac">{x}</span>\n</p>', rules);
     expect(formatUnpairedTint('src/x.svelte', u)).toBe(
-      'src/x.svelte:2: bg-tile-lilac sets no foreground of its own, so its text inherits ink. ' +
+      'src/x.svelte:2: <span> holds bg-tile-lilac but sets no foreground of its own, so its text inherits ink. ' +
         'Add text-tile-lilac-foreground to the string that holds the tint, or to the static class text, and let its text inherit it.'
     );
   });

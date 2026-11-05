@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
-import { render, cleanup } from '@testing-library/svelte';
+import { render, cleanup, screen } from '@testing-library/svelte';
 import '../../../test/component';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 import * as m from '#lib/paraglide/messages.js';
 import type { CoparentEntry } from '#lib/server/guidance/child-history.js';
 
@@ -121,5 +122,22 @@ describe('child/[id] +page.svelte — co-parent activity section wiring', () => 
     // The `{#if data.coparentActivity.length > 0}` gate keeps the whole
     // section (title included) out of the DOM for solo parents / no activity.
     expect(container.textContent).not.toContain(m.dashboardCoparentActivityTitle());
+  });
+});
+
+describe('child/[id] +page.svelte — pre-diversification tip', () => {
+  it("sets the tip and its guide link in the sky tint's own foreground (#667)", () => {
+    const data = {
+      ...makeData([]),
+      ageMonths: 3,
+      stats: { foodsIntroduced: 0, weekCount: 0 }
+    } as unknown as PageData;
+    render(Page, { props: { data } });
+    const link = screen.getByText(new RegExp(m.preDiversificationCta()));
+    let tip: Element | null = link;
+    while (tip && !tip.classList.contains('bg-accent-sky/15')) tip = tip.parentElement;
+    if (!tip) throw new Error('no sky tip around the guide link');
+    expect(link.classList.contains('underline')).toBe(true);
+    expectPairedForeground(tip);
   });
 });

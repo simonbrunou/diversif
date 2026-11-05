@@ -375,6 +375,8 @@ export function formatViolation(file: string, v: PairedForegroundViolation): str
 
 export type UnpairedTint = {
   line: number;
+  /** The element or component that holds the tint (`span`, `Card`). */
+  element: string;
   /** The tint class as written, variants included. */
   tint: string;
   /** The tint's paired text utility. */
@@ -438,14 +440,15 @@ export function findUnpairedTints(source: string, rules: PairedForegroundRules):
           ['', variantOf(tint.cls)].includes(variantOf(c.cls))
       );
       const line = lineOf(tint.offset);
-      if (!paired && !marked(line)) unpaired.push({ line, tint: tint.cls, use });
+      if (paired || marked(line)) continue;
+      unpaired.push({ line, element: String(node.name), tint: tint.cls, use });
     }
   });
   return unpaired;
 }
 
 export function formatUnpairedTint(file: string, u: UnpairedTint): string {
-  return `${file}:${u.line}: ${u.tint} sets no foreground of its own, so its text inherits ink. Add ${u.use} to the string that holds the tint, or to the static class text, and let its text inherit it.`;
+  return `${file}:${u.line}: <${u.element}> holds ${u.tint} but sets no foreground of its own, so its text inherits ink. Add ${u.use} to the string that holds the tint, or to the static class text, and let its text inherit it.`;
 }
 
 /** One grey a component sets inside itself, and the prop a caller overrides it with. */

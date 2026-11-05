@@ -39,6 +39,24 @@ describe('Field', () => {
     expect(screen.getByText('8 caractères minimum')).toBeTruthy();
   });
 
+  it('sets the label and the hint in the colour their class props pass, for a field on a tint (#667)', () => {
+    render(Field, {
+      props: {
+        name: 'email',
+        label: 'Adresse e-mail',
+        hint: '8 caractères minimum',
+        labelClass: 'text-current',
+        hintClass: 'text-current',
+        children: inputSnippet('email')
+      }
+    });
+    for (const text of ['Adresse e-mail', '8 caractères minimum']) {
+      const el = screen.getByText(text);
+      expect(el.classList.contains('text-current')).toBe(true);
+      expect(el.classList.contains('text-ink-soft')).toBe(false);
+    }
+  });
+
   it('forwards a custom class onto the wrapper', () => {
     const { container } = render(Field, {
       props: {
