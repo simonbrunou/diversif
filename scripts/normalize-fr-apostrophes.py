@@ -3,7 +3,7 @@
 
 Run from the project root: `python3 scripts/normalize-fr-apostrophes.py`.
 
-The CI lint (npm run lint:i18n) enforces the same rule and fails on any
+The CI lint (bun run lint:i18n) enforces the same rule and fails on any
 straight apostrophe between two letters in a FR value.
 """
 from __future__ import annotations

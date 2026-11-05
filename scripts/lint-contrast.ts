@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * lint-contrast: two checks.
  *
@@ -27,7 +27,7 @@
  * short justification nearby) for sites that are genuinely fine, e.g. large
  * display text where 3:1 suffices.
  *
- * Run via `npm run lint:contrast` (part of `npm run lint`).
+ * Run via `bun run lint:contrast` (part of `bun run lint`).
  */
 import fs from 'node:fs';
 import path from 'node:path';
