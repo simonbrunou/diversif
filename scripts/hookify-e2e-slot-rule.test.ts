@@ -93,6 +93,13 @@ const STARTS = [
   'curl -s -X POST -H "Authorization: token $T" "$A/actions/jobs/15510/rerun"',
   'curl -X POST "${REPO_API}/actions/runs/3405/rerun"',
   'curl -X POST $BASE/pulls/642/merge',
+  'curl -X POST "$BASE"/pulls/642/merge',
+  'curl -X POST ${REPO_API}/actions/jobs/13858/rerun',
+  'curl -X POST "$API2/pulls/642/merge"',
+  'curl -X POST "$_API/actions/jobs/13858/rerun"',
+  'curl -X POST "${API%/}/actions/runs/3405/rerun"',
+  'curl -X POST "${API:-x}/pulls/642/merge"',
+  'curl -X POST "$1/actions/jobs/13858/rerun"',
   'for n in 1 2; do fj pr merge $n; done',
   'if true; then fj pr merge 640; fi',
   'echo 640 | xargs fj pr merge'
