@@ -30,6 +30,11 @@
       "allowedVersions": "<6"
     },
     {
+      "description": "Hold typescript below 7 (#619): TypeScript 7.0 drops the TypeScript 6 JavaScript API (its '.' export, lib/version.cjs, holds only version and versionMajorMinor), and typescript-eslint, svelte-check and @sveltejs/kit call that API, so bun run check and bun run lint fail under 7. Lift this rule once npm view <pkg>@latest peerDependencies accepts ^7 for each of typescript-eslint, svelte-check and @sveltejs/kit. The name match is exact, so typescript-eslint is not held.",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    },
+    {
       "description": "Open the group:allNonMajor PR once a week, in the lockFileMaintenance window (Monday before 4am UTC), and auto-merge it once CI passes. A group auto-merges only when every update in it does, so this covers production minors too. Security PRs skip this schedule and the group, since Renovate forces its vulnerabilityAlerts defaults onto them, but keep this auto-merge (#465).",
       "matchUpdateTypes": ["minor", "patch"],
       "schedule": ["* 0-3 * * 1"],
