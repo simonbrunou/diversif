@@ -35,6 +35,11 @@
       "allowedVersions": "<7"
     },
     {
+      "description": "Open no PR for ghcr.io/renovatebot/renovate, the image of .forgejo/workflows/renovate-config.yml: that job must run the Renovate the bot runs. The bot's tag (image: in renovate/renovate-config's .forgejo/workflows/renovate.yml) moves only when someone merges that repo's image PR, which does not automerge. Move this repo's tag to the bot's new one at the same time.",
+      "matchDepNames": ["ghcr.io/renovatebot/renovate"],
+      "enabled": false
+    },
+    {
       "description": "Open the group:allNonMajor PR once a week, in the lockFileMaintenance window (Monday before 4am UTC), and auto-merge it once CI passes. A group auto-merges only when every update in it does, so this covers production minors too. Security PRs skip this schedule and the group, since Renovate forces its vulnerabilityAlerts defaults onto them, but keep this auto-merge (#465).",
       "matchUpdateTypes": ["minor", "patch"],
       "schedule": ["* 0-3 * * 1"],

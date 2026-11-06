@@ -1,0 +1,38 @@
+# Validates renovate.json with the Renovate the bot runs. The rest of CI only
+# checks the file's format (prettier). A misspelt option would merge. The bot
+# would then open no more PRs here and file an "Action Required: Fix Renovate
+# Configuration" issue instead. The paths filter runs this job only when a PR's
+# diff from main touches these files. Forgejo can also run it once on a PR that
+# merged main in, since it may diff from an older merge base.
+name: Renovate config
+
+on:
+  push:
+    branches: [main]
+    paths: [renovate.json, .forgejo/workflows/renovate-config.yml]
+  pull_request:
+    paths: [renovate.json, .forgejo/workflows/renovate-config.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: renovate-config-validator --strict
+    runs-on: ubuntu-latest
+    # The check takes about 15 s. The cap frees the runner slot if it hangs,
+    # instead of the runner's 1 h job timeout.
+    timeout-minutes: 10
+    container:
+      # The bot's tag, from image: in renovate/renovate-config's
+      # .forgejo/workflows/renovate.yml. A renovate.json rule keeps Renovate
+      # from moving this one on its own; move it when the bot's tag moves. The
+      # CI runner shares the bot runner's Docker daemon on CT 125, so the
+      # bot's tag is already pulled.
+      image: ghcr.io/renovatebot/renovate:44.132.2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # --strict also fails a config that needs migrating, such as one that
+      # still uses the deprecated matchPackagePatterns. With no file argument
+      # the validator reads the repo config (renovate.json here).
+      - run: renovate-config-validator --strict
