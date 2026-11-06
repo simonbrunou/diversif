@@ -29,6 +29,8 @@ const scriptPath = path.resolve(import.meta.dir, 'smoke-prod.sh');
 const sleepBin = Bun.which('sleep');
 // The real curl, which the logging one runs by its path.
 const curlBin = Bun.which('curl');
+// The real git, which the logging one runs by its path.
+const gitBin = Bun.which('git');
 
 interface Answer {
   status: number;
@@ -218,7 +220,9 @@ function running(pid: number): boolean {
 // puts a curl first on PATH that logs each call's arguments, then runs the
 // real one. interruptOn sends the script alone SIGINT, as a Ctrl-C does once job control
 // moved its fetch to a group of its own, when that file has content. tmpDir
-// is the TMPDIR its mktemp -d creates $TMP in.
+// is the TMPDIR its mktemp -d creates $TMP in. binFirst puts that directory
+// first on PATH, ahead of the fake sleep and the logging curl. locale sets
+// LC_ALL.
 async function smoke(
   baseUrl = base,
   {
@@ -230,7 +234,9 @@ async function smoke(
     termIgnored = false,
     logCurl = false,
     interruptOn = '',
-    tmpDir = ''
+    tmpDir = '',
+    binFirst = '',
+    locale = ''
   } = {}
 ) {
   const started = performance.now();
@@ -240,11 +246,12 @@ async function smoke(
       : ['bash', script, ...args],
     env: {
       ...process.env,
-      PATH: `${logCurl ? `${curlDir}:` : ''}${realSleep ? '' : `${binDir}:`}${process.env.PATH}`,
+      PATH: `${binFirst ? `${binFirst}:` : ''}${logCurl ? `${curlDir}:` : ''}${realSleep ? '' : `${binDir}:`}${process.env.PATH}`,
       SMOKE_BASE_URL: baseUrl,
       ...(wait ? { SMOKE_WAIT: wait } : {}),
       ...(checkTime ? { SMOKE_CHECK_TIME: checkTime } : {}),
       ...(tmpDir ? { TMPDIR: tmpDir } : {}),
+      ...(locale ? { LC_ALL: locale } : {}),
       SLEEP_LOG: sleepLog,
       CURL_LOG: curlLog,
       // A proxy from the shell would answer for the local server.
@@ -532,6 +539,10 @@ describe('scripts/smoke-prod.sh', () => {
     expect(hits.size).toBe(0);
   });
 
+  // The line of fetch_origin that starts the fetch, which the next two tests
+  // rewrite in their copies.
+  const fetchLine = '  git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &\n';
+
   // On bash 5.2, the child bash forks for the fetch keeps the script's EXIT
   // trap until it execs git, and a TERM that reaches it before then runs the
   // trap there. Under the fake sleep the timer's TERM comes at once, and in
@@ -544,7 +555,6 @@ describe('scripts/smoke-prod.sh', () => {
   // 5.2. Bash 5.3 never runs the trap there, so only a 5.2 run (CI's) fails.
   it("with a SHA, keeps $TMP when its fetch's child gets TERM before it execs", async () => {
     const copy = trackedCopy();
-    const fetchLine = '  git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &\n';
     const source = readFileSync(copy, 'utf8');
     expect(source).toContain(fetchLine);
     writeFileSync(
@@ -561,6 +571,63 @@ describe('scripts/smoke-prod.sh', () => {
     // The main shell's trap still removed $TMP.
     expect(readdirSync(tmpDir)).toEqual([]);
   });
+
+  // On bash 5.2, that child also keeps the main shell's state from the middle
+  // of its fork. After a simple command in the trap, it waits for the main
+  // shell's last child, which it never forked, and bash prints "wait_for: No
+  // record of process <pid>" on stderr, as in CI run 488 (#674). A command
+  // substitution in the child clears that state, so the test above never
+  // printed it. This copy holds the child in a word expansion that forks
+  // nothing: a pattern substitution over 800,000 spaces. A TERM ends it at
+  // once. Left alone, it lasts about 7 s in the C locale, which leaves the
+  // timer the 6 s that a step gets against a stalled runner (#572), and 20 to
+  // 40 times longer in a UTF-8 one. This test's sleep returns at once for the
+  // timer's delay before the TERM and lasts 20 s between the TERM and the
+  // KILL, so the KILL cannot end the child before the trap does. A git first
+  // on PATH logs each call: an ls-files call and no fetch call, in a run well
+  // under those 20 s, show that the TERM ended the child before it ran git.
+  // Bash 5.3 never runs the trap there, so only a 5.2 run (CI's) fails with a
+  // simple command as the guard.
+  it("with a SHA, prints no bash warning when its fetch's child gets TERM before it execs", async () => {
+    const copy = trackedCopy();
+    const source = readFileSync(copy, 'utf8');
+    expect(source).toContain(fetchLine);
+    writeFileSync(
+      copy,
+      source.replace(
+        fetchLine,
+        `  printf -v hold '%*s' 800000 ''\n${fetchLine.replace('"$REPO"', '"$REPO${hold// /}"')}`
+      )
+    );
+    const bin = mkdtempSync(path.join(binDir, 'held-'));
+    const gitLog = path.join(bin, 'calls');
+    writeFileSync(path.join(bin, 'git'), `#!/bin/sh\necho "$*" >>${gitLog}\nexec ${gitBin} "$@"\n`);
+    writeFileSync(
+      path.join(bin, 'sleep'),
+      `#!/bin/sh\n[ ! -e "$0.first" ] || exec ${sleepBin} 20\n: >"$0.first"\n`
+    );
+    chmodSync(path.join(bin, 'git'), 0o755);
+    chmodSync(path.join(bin, 'sleep'), 0o755);
+    const tmpDir = mkdtempSync(path.join(binDir, 'tmpdir-'));
+    const run = await smoke(base, {
+      script: copy,
+      args: [newSha],
+      wait: '0',
+      tmpDir,
+      binFirst: bin,
+      locale: 'C'
+    });
+    expect(run.ms).toBeLessThan(15_000);
+    const calls = readFileSync(gitLog, 'utf8').split('\n').filter(Boolean);
+    expect(calls.some((call) => call.includes(' ls-files --error-unmatch '))).toBe(true);
+    expect(calls.filter((call) => call.includes(' fetch '))).toEqual([]);
+    expect(run.stderr).toBe('');
+    expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
+    expect(run.last).toBe(`smoke-prod: ${newSha} not live on ${base}, checks skipped`);
+    expect(run.code).toBe(1);
+    expect(hits.size).toBe(0);
+    expect(readdirSync(tmpDir)).toEqual([]);
+  }, 30_000);
 
   // A fetch of origin that stalls is cut, TERM 1 s before the deadline and
   // KILL at it, and counts as a failed one. Each stall lasts 30 s, at least
