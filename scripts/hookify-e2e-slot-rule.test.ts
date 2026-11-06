@@ -89,6 +89,10 @@ const STARTS = [
   'curl -X POST "$API/actions/jobs/13858/rerun"',
   'curl -X POST "${API}/pulls/642/merge"',
   'curl -X POST "$API"/pulls/642/merge',
+  // Any variable can hold the API base: the #674 session used $A.
+  'curl -s -X POST -H "Authorization: token $T" "$A/actions/jobs/15510/rerun"',
+  'curl -X POST "${REPO_API}/actions/runs/3405/rerun"',
+  'curl -X POST $BASE/pulls/642/merge',
   'for n in 1 2; do fj pr merge $n; done',
   'if true; then fj pr merge 640; fi',
   'echo 640 | xargs fj pr merge'
@@ -180,6 +184,9 @@ const MUST_PASS: Record<string, string> = {
   'variable first': 'H=$(git rev-parse "origin/$B") && scripts/wait-e2e-slot.sh "$H" && ' + MERGE,
   "message's variable form":
     'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" && ' + MERGE,
+  // Another repo's job, named in the URL: no diversif E2E job starts.
+  'rerun in another repo':
+    'curl -X POST https://git.sbrn.eu/api/v1/repos/simonbrunou/cinder/actions/jobs/13858/rerun',
   push: 'git push -q origin HEAD',
   search: 'fj pr -R origin search',
   status: 'fj pr -R origin status 642'
