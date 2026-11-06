@@ -55,7 +55,11 @@ TMP="$(mktemp -d)"
 # it execs, and a terminating signal that reaches it before then runs the
 # trap in the child, which would remove the main shell's $TMP (#606). The
 # child still dies of that signal. Bash 3.2 has no BASHPID: $$ stands in.
-trap '[ "${BASHPID:-$$}" = "$$" ] && {
+# The guard is a [[ ]] conditional command, not a simple command such as
+# [: the child also keeps the main shell's state from the middle of its
+# fork, so after a simple command it waits for a child it never forked and
+# prints "wait_for: No record of process" on the script's stderr (#674).
+trap '[[ "${BASHPID:-$$}" == "$$" ]] && {
 rm -rf "$TMP"
 [ -z "${fetch_pid:-}" ] || kill -TERM -- -"$fetch_pid" 2>/dev/null
 [ -z "${fetch_timer:-}" ] || kill -KILL -- -"$fetch_timer" 2>/dev/null
