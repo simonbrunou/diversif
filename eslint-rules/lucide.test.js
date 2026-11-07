@@ -14,7 +14,7 @@ const swissFrancReason =
   'Removed because the depicted concept became obsolete and no longer had relevant use cases.';
 
 // These cases run against the installed @lucide/svelte, so they also prove
-// that its current files still parse. They name icons that 1.51.0
+// that its current files still parse. They name icons that 1.66.0
 // deprecates: a Lucide release that drops one fails its case on purpose, and
 // the case then moves to another icon that release deprecates.
 new RuleTester({ languageOptions: { parser: ts.parser } }).run(
@@ -354,7 +354,28 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
   }
 );
 
-// A minimal dist/ in the shape @lucide/svelte 1.51.0 ships.
+// An icon's component type in the shape @lucide/svelte 1.66.0 ships: every
+// icon marks its `__iconNode` export @deprecated, and `note` adds lines to
+// the component's own doc comment.
+const iconType = (name, note = '') =>
+  [
+    "import type { LucideIconData, LucideIconNode } from '../types.js';",
+    'export declare const __iconData: LucideIconData;',
+    '/**',
+    ' * @deprecated Access `__iconData` instead.',
+    ' */',
+    'export declare const __iconNode: LucideIconNode[];',
+    "import type { LucideProps } from '../types.js';",
+    '/**',
+    ' * Lucide SVG icon component, renders SVG Element with children.',
+    note,
+    ' */',
+    `declare const ${name}: import("svelte").Component<LucideProps, {}, "">;`,
+    `type ${name} = ReturnType<typeof ${name}>;`,
+    `export default ${name};`
+  ].join('\n');
+
+// A minimal dist/ in the shape @lucide/svelte 1.66.0 ships.
 const files = {
   'icons/index.d.ts': [
     "export { default as Trash } from './trash.svelte';",
@@ -372,8 +393,11 @@ const files = {
     "default as LucideTrash2 } from '../icons/trash-2.js';"
   ].join('\n'),
   'aliases/suffixed.d.ts': "export { default as TrashIcon } from '../icons/trash.js';",
-  'icons/trash.svelte.d.ts': '/** Lucide SVG icon component. */',
-  'icons/swiss-franc.svelte.d.ts': '/**\n * @deprecated Removed because it became obsolete.\n */',
+  'icons/trash.svelte.d.ts': iconType('Trash'),
+  'icons/swiss-franc.svelte.d.ts': iconType(
+    'SwissFranc',
+    ' *\n * @deprecated Removed because it became obsolete.'
+  ),
   // The component carries the same note; only its .svelte.d.ts is read.
   'icons/swiss-franc.svelte': '<!-- @deprecated Removed because it became obsolete. -->'
 };
@@ -450,8 +474,23 @@ describe('readLucide', () => {
     ],
     [
       'a removal note whose reason is not on its line',
-      { 'icons/swiss-franc.svelte.d.ts': '/**\n * @deprecated\n * Removed.\n */' },
+      { 'icons/swiss-franc.svelte.d.ts': iconType('SwissFranc', ' * @deprecated\n * Removed.') },
       'no reason after @deprecated in icons/swiss-franc.svelte.d.ts'
+    ],
+    [
+      'a note on another declaration than the component or __iconNode',
+      {
+        'icons/trash.svelte.d.ts': iconType('Trash').replace(
+          'export declare const __iconData',
+          '/** @deprecated Gone. */\nexport declare const __iconData'
+        )
+      },
+      '@deprecated on __iconData in icons/trash.svelte.d.ts'
+    ],
+    [
+      'a note outside a doc comment',
+      { 'icons/trash.svelte.d.ts': `${iconType('Trash')}\n// @deprecated Removed.` },
+      '@deprecated outside a doc comment in icons/trash.svelte.d.ts'
     ]
   ])('throws on %s', (_case, overrides, detail) => {
     expect(() => readLucide(dist(overrides))).toThrow(detail);

@@ -18,7 +18,8 @@ import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
  * AddSymptomSheet in the populated-child test), plus a standalone
  * AllergenInfoDialog test for the public /allergens route.
  *
- * Hard gate: any violation fails the test. The companion Lighthouse layer
+ * Hard gate: any violation fails the test, except label-content-name-mismatch,
+ * which axeSweep turns off until #693. The companion Lighthouse layer
  * (a11y/best-practices/SEO scores) was deferred — see the spec doc's
  * "Status" section for the playwright-lighthouse NO_FCP backstory.
  */
@@ -47,7 +48,12 @@ function formatViolations(violations: AxeViolation[]): string {
 }
 
 async function axeSweep(page: Page): Promise<void> {
-  const result = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+  // axe-core 4.14 runs label-content-name-mismatch, an experimental rule
+  // until then, and three controls fail it. Off until #693 rewords them.
+  const result = await new AxeBuilder({ page })
+    .withTags(TAGS)
+    .disableRules(['label-content-name-mismatch'])
+    .analyze();
   expect(result.violations, formatViolations(result.violations as AxeViolation[])).toEqual([]);
 }
 

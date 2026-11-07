@@ -13,11 +13,16 @@ test.use({ serviceWorkers: 'block' });
 const ROOT_LAYOUT_CHUNK = '**/_app/immutable/nodes/0.*.js';
 const BANNER_TEXT = 'Impossible de joindre le serveur';
 
-/** Fails the root layout chunk the first `times` it is requested. */
-async function failRootLayout(page: Page, times: number) {
-  let failed = 0;
+/**
+ * Fails every request for the root layout chunk during the first `documents`
+ * document loads. Failing only the first request is not enough: since
+ * Playwright 1.64 (Chromium 156), the browser requests the chunk again when
+ * its modulepreload failed, and the app starts with no reload.
+ */
+async function failRootLayout(page: Page, documents: number) {
+  const loads = countDocumentLoads(page);
   await page.route(ROOT_LAYOUT_CHUNK, (route) =>
-    failed++ < times ? route.abort('failed') : route.continue()
+    loads.count <= documents ? route.abort('failed') : route.continue()
   );
 }
 
