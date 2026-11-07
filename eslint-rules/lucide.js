@@ -85,26 +85,31 @@ const countNotes = (text) => text.split('@deprecated').length - 1;
 // replacement, in the doc comment of their component type (the file's
 // default export). Since 1.60.0 every icon's file also marks its
 // `__iconNode` data export @deprecated, which says nothing about the icon.
-// A note anywhere else stops the lint run.
+// A note anywhere else stops the lint run. Returns the removal reason, or
+// undefined for a current icon.
+function readRemovalReason(source, path) {
+  const component = /^export default (\w+);$/m.exec(source)?.[1];
+  let notesRead = 0;
+  let reason;
+  for (const [, doc, name] of source.matchAll(documentedDeclaration)) {
+    if (!doc.includes('@deprecated')) continue;
+    notesRead += countNotes(doc);
+    if (name === '__iconNode') continue;
+    if (name !== component) fail(`@deprecated on ${name} in ${path}`);
+    reason = /@deprecated (\S.*)/.exec(doc)?.[1];
+    if (!reason) fail(`no reason after @deprecated in ${path}`);
+  }
+  if (notesRead !== countNotes(source)) fail(`@deprecated outside a doc comment in ${path}`);
+  return reason;
+}
+
 function readRemovals(dist) {
   const removals = [];
   for (const entry of readdirSync(new URL('icons/', dist))) {
     if (!entry.endsWith(componentTypeSuffix)) continue;
     const path = `icons/${entry}`;
-    const source = readText(dist, path);
-    if (!source.includes('@deprecated')) continue;
-    const component = /^export default (\w+);$/m.exec(source)?.[1];
-    let notesRead = 0;
-    for (const [, doc, name] of source.matchAll(documentedDeclaration)) {
-      if (!doc.includes('@deprecated')) continue;
-      notesRead += countNotes(doc);
-      if (name === '__iconNode') continue;
-      if (name !== component) fail(`@deprecated on ${name} in ${path}`);
-      const reason = /@deprecated (\S.*)/.exec(doc)?.[1];
-      if (!reason) fail(`no reason after @deprecated in ${path}`);
-      removals.push([entry.slice(0, -componentTypeSuffix.length), { reason }]);
-    }
-    if (notesRead !== countNotes(source)) fail(`@deprecated outside a doc comment in ${path}`);
+    const reason = readRemovalReason(readText(dist, path), path);
+    if (reason) removals.push([entry.slice(0, -componentTypeSuffix.length), { reason }]);
   }
   return removals;
 }
