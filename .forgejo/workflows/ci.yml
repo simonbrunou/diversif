@@ -125,8 +125,43 @@ jobs:
           path: coverage
           retention-days: 14
 
+  # Tells the e2e job whether a PR's change reaches the app. A PR that changes
+  # only Markdown files and docs/ skips E2E: nothing the app builds or the E2E
+  # tests run reads those paths. A push to main always runs it. See
+  # scripts/e2e-needed.sh for both.
+  changes:
+    name: Changed paths (E2E needed?)
+    runs-on: ubuntu-latest
+    outputs:
+      e2e: ${{ steps.paths.outputs.e2e }}
+    steps:
+      # A push to main needs no checkout: its step prints true.
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Full history, for the merge base of a PR with its base branch.
+          fetch-depth: 0
+      - id: paths
+        name: Decide whether E2E runs
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            e2e="$(scripts/e2e-needed.sh "origin/$BASE_REF")"
+            echo "E2E needed: $e2e (the branch's changes since origin/$BASE_REF)"
+          else
+            e2e=true
+            echo "E2E needed: true (a push to main)"
+          fi
+          echo "e2e=$e2e" >>"$GITHUB_OUTPUT"
+
   e2e:
     name: End-to-end tests (Playwright)
+    needs: changes
+    # Skipped when changes printed false. A failed changes job turns the run
+    # red and skips E2E too: rerun the whole run.
+    if: needs.changes.outputs.e2e != 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
