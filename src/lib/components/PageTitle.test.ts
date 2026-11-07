@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { render, cleanup } from '@testing-library/svelte';
 import { tick } from 'svelte';
@@ -41,16 +42,23 @@ describe('PageTitle', () => {
     expect(currentTitle()).toBe(APP_TITLE);
   });
 
-  it('is the only component that renders a <title>', async () => {
+  it('is the only component that renders a <title>', () => {
     // A second source would bring #483 back: the server keeps one <title> by
     // tree position, which a component bind: breaks (#596), and a title that
     // no PageTitle claims stays on the tab after a client navigation.
+    // On a loaded runner, parsing and awaiting a read of every file once took
+    // this test past the 5 s timeout (#687). rendersHeadTitle now skips the
+    // parse for most files, and the reads are synchronous.
     const src = path.resolve(import.meta.dir, '../..');
+    const scanned: string[] = [];
     const others: string[] = [];
-    for await (const file of new Bun.Glob('**/*.svelte').scan(src)) {
+    for (const file of new Bun.Glob('**/*.svelte').scanSync(src)) {
+      scanned.push(file);
       if (file === 'lib/components/PageTitle.svelte') continue;
-      if (rendersHeadTitle(await Bun.file(path.join(src, file)).text())) others.push(file);
+      if (rendersHeadTitle(readFileSync(path.join(src, file), 'utf8'))) others.push(file);
     }
+    // The scan must reach the file it skips: one that found no file would pass.
+    expect(scanned).toContain('lib/components/PageTitle.svelte');
     expect(others).toEqual([]);
   });
 });
@@ -60,7 +68,13 @@ describe('PageTitle', () => {
 // render it into the head, so any <title> inside the head counts, except an
 // SVG's, which labels the drawing. Attribute text holds no element. Markup
 // that a {@html} tag writes into the head is not seen.
+//
+// The parser builds either node only from the literal text `<title`, so a
+// file without that text, as most are, needs no parse (#687). The parser
+// still decides every file that holds it: it replaced a regex that flagged
+// title text in an attribute value (ed4e7ca).
 function rendersHeadTitle(code: string): boolean {
+  if (!code.includes('<title')) return false;
   const walk = (node: unknown, inHead: boolean): boolean => {
     if (typeof node !== 'object' || node === null) return false;
     const { type, name } = node as { type?: unknown; name?: unknown };
@@ -81,7 +95,11 @@ describe('the <title> source guard', () => {
     ['<svelte:head><Wrapper><title>x</title></Wrapper></svelte:head>', true],
     ['<svelte:head><svg><title>x</title></svg></svelte:head>', false],
     ['<svelte:head><meta content="<title>x</title>" /></svelte:head>', false],
-    ['<svg><title>x</title></svg>', false]
+    ['<svg><title>x</title></svg>', false],
+    ['<svelte:head><title\n>x</title></svelte:head>', true],
+    // The parser rejects this, so it passes only when the text check, which
+    // finds no <title, decides it.
+    ['{#if', false]
   ])('reads %s as %p', (code, expected) => {
     expect(rendersHeadTitle(code)).toBe(expected);
   });
