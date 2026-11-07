@@ -1280,17 +1280,27 @@ describe('check-bun-pins.sh compared with a YAML parser', () => {
     passes();
   });
 
-  it('generates, for every form, a case the parser reads as a violation, each under its own name', () => {
-    const names = [
-      ...forms.map(([name]) => name),
-      ...itemForms.map(([name]) => `the step as ${name}`)
-    ];
-    const found = new Set(
-      cases.filter((c) => parserViolations(c.text).length > 0).map((c) => c.form)
-    );
-    expect(names.filter((name) => !found.has(name))).toEqual([]);
-    expect(new Set(cases.map((c) => c.name)).size).toBe(cases.length);
-  });
+  it(
+    'generates, for every form, a case the parser reads as a violation, each under its own name',
+    () => {
+      const names = [
+        ...forms.map(([name]) => name),
+        ...itemForms.map(([name]) => `the step as ${name}`)
+      ];
+      const found = new Set(
+        cases.filter((c) => parserViolations(c.text).length > 0).map((c) => c.form)
+      );
+      expect(names.filter((name) => !found.has(name))).toEqual([]);
+      expect(new Set(cases.map((c) => c.name)).size).toBe(cases.length);
+    },
+    // The body parses every case in one synchronous loop. Bun checks a
+    // synchronous test's timeout only once the body returns, so a timeout
+    // cannot stop it: it only sets how slow a run counts as a regression.
+    // With Bun 1.4.4 the body took 289 ms on an idle host and 828 ms in CI
+    // run 510. Under load the runner's 5 s timeout failed it: with 24 copies
+    // of this file on 16 cores, 16 copies failed it at 5.6 to 11.9 s (#690).
+    CASE_TIMEOUT
+  );
 
   // Each case runs in its own directory, so the cases run side by side.
   describe.concurrent('never passes a case the parser reads as a violation', () => {
