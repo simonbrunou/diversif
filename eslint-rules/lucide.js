@@ -83,7 +83,7 @@ const countNotes = (text) => text.split('@deprecated').length - 1;
 
 // Removed icons keep their file and carry the note, a reason with no
 // replacement, in the doc comment of their component type (the file's
-// default export). Since 1.66.0 every icon's file also marks its
+// default export). Since 1.60.0 every icon's file also marks its
 // `__iconNode` data export @deprecated, which says nothing about the icon.
 // A note anywhere else stops the lint run.
 function readRemovals(dist) {

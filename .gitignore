@@ -37,7 +37,7 @@ graphify-out/????-??-??/
 src/lib/paraglide/
 # The inlang SDK manages project.inlang/ itself: it writes its own
 # .gitignore, README.md, .meta.json, cache/ and .lix/ when it compiles. Only
-# settings.json and the vendored modules/ stay tracked.
+# settings.json, project_id and the vendored modules/ stay tracked.
 project.inlang/.gitignore
 project.inlang/.meta.json
 project.inlang/README.md

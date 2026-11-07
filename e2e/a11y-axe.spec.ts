@@ -18,7 +18,8 @@ import { dismissWelcomeIfPresent, signUpAndCreateChild } from './_helpers';
  * AddSymptomSheet in the populated-child test), plus a standalone
  * AllergenInfoDialog test for the public /allergens route.
  *
- * Hard gate: any violation fails the test. The companion Lighthouse layer
+ * Hard gate: any violation fails the test, except label-content-name-mismatch,
+ * which axeSweep turns off until #693. The companion Lighthouse layer
  * (a11y/best-practices/SEO scores) was deferred — see the spec doc's
  * "Status" section for the playwright-lighthouse NO_FCP backstory.
  */
