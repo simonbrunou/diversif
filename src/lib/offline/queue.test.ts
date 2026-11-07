@@ -128,21 +128,35 @@ const stalledBody = async (signal: AbortSignal) =>
  * Queues one row and runs a pass, with SHORT_DEADLINE_MS, against a server
  * whose reply stalls: `reply` gets a signal that aborts with the request's own
  * init.signal, as fetch's does. Checks that the pass ended, that the request's
- * signal aborted no sooner than the deadline, and that the row is still
- * queued. A pass still running after 3 s fails the check, and the server then
- * hangs up so that the tests after it don't get its pending promise back from
- * flush().
+ * signal aborted no sooner than the deadline after the pass started, and that
+ * the row is still queued. A pass still running after 3 s fails the check, and
+ * the server then hangs up so that the tests after it don't get its pending
+ * promise back from flush().
+ *
+ * `stallMs` blocks the event loop as soon as the server is called, before it
+ * does anything else, as a loaded runner can once the queue has armed its
+ * deadline timer (#685). A clock read anywhere in the server then comes after
+ * the stall.
  */
-async function expectPassEndsAtDeadline(reply: (signal: AbortSignal) => Promise<Response>) {
+async function expectPassEndsAtDeadline(
+  reply: (signal: AbortSignal) => Promise<Response>,
+  { stallMs = 0 } = {}
+) {
   const hangUp = new AbortController();
-  // Per call: how long after the call its init.signal aborted.
+  // Per call: how long after the pass started its init.signal aborted. The
+  // clock read comes before flush() arms the deadline timer, so a stall after
+  // it only makes the time longer. Read in the server, it came after the
+  // timer started, and run 510 measured 46 ms for a 50 ms deadline (#685).
   const abortedAfter: (number | undefined)[] = [];
+  let passStartedAt = 0;
   const transport: Transport = (_url, init) => {
+    if (stallMs > 0) Bun.sleepSync(stallMs);
     const call = abortedAfter.push(undefined) - 1;
-    const sentAt = Date.now();
-    init.signal?.addEventListener('abort', () => (abortedAfter[call] = Date.now() - sentAt), {
-      once: true
-    });
+    init.signal?.addEventListener(
+      'abort',
+      () => (abortedAfter[call] = Date.now() - passStartedAt),
+      { once: true }
+    );
     const replying = new AbortController();
     for (const s of [init.signal, hangUp.signal]) {
       s?.addEventListener('abort', () => replying.abort(s.reason), { once: true });
@@ -151,6 +165,7 @@ async function expectPassEndsAtDeadline(reply: (signal: AbortSignal) => Promise<
   };
   await enqueue({ key: 'k1', childId: 1, formData: { foodId: '1' }, queuedAt: 1 });
 
+  passStartedAt = Date.now();
   const pass = flush(transport, SHORT_DEADLINE_MS);
   try {
     const first = await Promise.race([
@@ -298,6 +313,12 @@ describe('queue', () => {
   // happy-dom's navigator.locks is null: the pass runs without Web Locks.
   it('ends its pass at the deadline when a replay gets no answer, and keeps the row queued', async () => {
     await expectPassEndsAtDeadline(untilAborted);
+  });
+
+  // A stall between the timer's start and the request shortened the time
+  // measured from the request, and failed the bound on a loaded runner (#685).
+  it('counts the deadline from before the pass starts, so a stall after the timer starts leaves it whole', async () => {
+    await expectPassEndsAtDeadline(untilAborted, { stallMs: 10 });
   });
 
   it('leaves the row queued on type:error 5xx', async () => {
