@@ -77,17 +77,34 @@ function readAliasNotes(dist, exportsByName) {
   });
 }
 
+// A doc comment and the `declare const` it documents.
+const documentedDeclaration = /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*(?:export )?declare const (\w+)/g;
+const countNotes = (text) => text.split('@deprecated').length - 1;
+
 // Removed icons keep their file and carry the note, a reason with no
-// replacement, on their own component type.
+// replacement, in the doc comment of their component type (the file's
+// default export). Since 1.66.0 every icon's file also marks its
+// `__iconNode` data export @deprecated, which says nothing about the icon.
+// A note anywhere else stops the lint run.
 function readRemovals(dist) {
   const removals = [];
   for (const entry of readdirSync(new URL('icons/', dist))) {
     if (!entry.endsWith(componentTypeSuffix)) continue;
-    const source = readText(dist, `icons/${entry}`);
+    const path = `icons/${entry}`;
+    const source = readText(dist, path);
     if (!source.includes('@deprecated')) continue;
-    const reason = /@deprecated (\S.*)/.exec(source)?.[1];
-    if (!reason) fail(`no reason after @deprecated in icons/${entry}`);
-    removals.push([entry.slice(0, -componentTypeSuffix.length), { reason }]);
+    const component = /^export default (\w+);$/m.exec(source)?.[1];
+    let notesRead = 0;
+    for (const [, doc, name] of source.matchAll(documentedDeclaration)) {
+      if (!doc.includes('@deprecated')) continue;
+      notesRead += countNotes(doc);
+      if (name === '__iconNode') continue;
+      if (name !== component) fail(`@deprecated on ${name} in ${path}`);
+      const reason = /@deprecated (\S.*)/.exec(doc)?.[1];
+      if (!reason) fail(`no reason after @deprecated in ${path}`);
+      removals.push([entry.slice(0, -componentTypeSuffix.length), { reason }]);
+    }
+    if (notesRead !== countNotes(source)) fail(`@deprecated outside a doc comment in ${path}`);
   }
   return removals;
 }
