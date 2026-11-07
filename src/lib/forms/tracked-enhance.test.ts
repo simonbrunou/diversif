@@ -1,5 +1,5 @@
 import { describe, expect, it, mock } from 'bun:test';
-import { trackSubmission, resolveMessageKey } from './tracked-enhance';
+import { trackSubmission } from './tracked-enhance';
 
 const noCancel = { cancel: () => {} };
 
@@ -67,14 +67,5 @@ describe('trackSubmission', () => {
     });
     expect(order).toEqual(['update', 'onFailure']);
     expect(updateArg).toEqual({ reset: false });
-  });
-});
-
-describe('resolveMessageKey', () => {
-  it('returns the resolved FR message for a known key', () => {
-    // chromeBack is a known key in the paraglide bundle.
-    const out = resolveMessageKey('chromeBack');
-    expect(typeof out).toBe('string');
-    expect(out.length).toBeGreaterThan(0);
   });
 });

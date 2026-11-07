@@ -21,14 +21,16 @@
         type="button"
         onclick={() => onOpen(stage.id)}
         aria-current={active ? 'step' : undefined}
-        aria-label={`${stage.title} : ${active ? m.decouvrirStageActiveAria() : m.decouvrirStageOpenAria()}`}
+        aria-label={active
+          ? m.decouvrirStageActiveAria({ title: stage.title })
+          : m.decouvrirStageOpenAria({ title: stage.title })}
         class={cn(
-          'rounded-tile bg-tile-lilac p-4 text-left shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01] active:scale-[0.99]',
+          'rounded-tile bg-tile-lilac p-4 text-left text-tile-lilac-foreground shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01] active:scale-[0.99]',
           active && 'ring-2 ring-primary'
         )}
       >
         <p class="font-display text-lg italic leading-tight">{stage.title}</p>
-        <p class="mt-1 text-xs text-ink-soft">{stage.oneLiner}</p>
+        <p class="mt-1 text-xs">{stage.oneLiner}</p>
       </button>
     {/each}
   </div>

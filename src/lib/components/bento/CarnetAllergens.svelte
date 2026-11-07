@@ -31,6 +31,16 @@
     }
     return `${it.triedCount}× · ${it.lastTried ?? '—'}`;
   }
+
+  // A row on a tint sets that tint's foreground and its caption inherits it
+  // (DESIGN.md, The Paired Foreground Rule). Only the canvas rows keep a grey.
+  const CAPTION_TONE: Record<Item['state'], string> = {
+    cleared: 'text-ink-soft',
+    todo: 'text-ink-soft',
+    inconfort: '',
+    reaction: '',
+    fading: ''
+  };
 </script>
 
 {#if items.length === 0}
@@ -51,22 +61,25 @@
       <li
         class={cn(
           'flex items-center justify-between rounded-tile border border-border/40 bg-canvas p-3 shadow-soft',
-          item.state === 'reaction' && 'border-severe/40 bg-reaction-reaction/20',
-          item.state === 'inconfort' && 'border-reaction-inconfort/40 bg-reaction-inconfort/10',
-          item.state === 'fading' && 'border-tile-peach-foreground/30 bg-tile-peach/20'
+          item.state === 'reaction' &&
+            'border-severe/40 bg-reaction-reaction/20 text-reaction-reaction-foreground',
+          item.state === 'inconfort' &&
+            'border-reaction-inconfort/40 bg-reaction-inconfort/10 text-reaction-inconfort-foreground',
+          item.state === 'fading' &&
+            'border-tile-peach-foreground/30 bg-tile-peach/20 text-tile-peach-foreground'
         )}
       >
         <div>
           <p class="text-sm font-bold leading-tight">{item.label}</p>
-          <p class="text-xs text-ink-soft">
+          <p class="text-xs {CAPTION_TONE[item.state]}">
             {caption(item)}
           </p>
         </div>
         <span
           class={cn(
             'rounded-full px-2 py-0.5 text-xs font-semibold',
-            item.state === 'cleared' && 'bg-tile-mint',
-            item.state === 'todo' && 'bg-tile-butter',
+            item.state === 'cleared' && 'bg-tile-mint text-tile-mint-foreground',
+            item.state === 'todo' && 'bg-tile-butter text-tile-butter-foreground',
             item.state === 'reaction' && 'bg-reaction-reaction text-reaction-reaction-foreground',
             item.state === 'inconfort' &&
               'bg-reaction-inconfort/20 text-reaction-inconfort-foreground',

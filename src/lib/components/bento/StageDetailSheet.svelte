@@ -41,12 +41,12 @@
 
   <SheetSection title={m.stageDetailTextureMilkTitle()}>
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <div class="rounded-tile bg-tile-mint/40 p-3 text-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">{m.textureDetailRowLabel()}</p>
+      <div class="rounded-tile bg-tile-mint/40 p-3 text-sm text-tile-mint-foreground">
+        <p class="text-xs font-semibold uppercase tracking-wider">{m.textureDetailRowLabel()}</p>
         <p class="mt-1">{stage.textures}</p>
       </div>
-      <div class="rounded-tile bg-tile-butter/40 p-3 text-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">
+      <div class="rounded-tile bg-tile-butter/40 p-3 text-sm text-tile-butter-foreground">
+        <p class="text-xs font-semibold uppercase tracking-wider">
           {m.stageDetailMilkRowLabel()}
         </p>
         <p class="mt-1">{stage.milkTarget}</p>

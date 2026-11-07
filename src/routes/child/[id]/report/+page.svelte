@@ -17,7 +17,9 @@
   let { data }: { data: PageData } = $props();
 </script>
 
-<PrintShell title="{m.reportHandoffTitle()} : {data.child.name} · Diversif">
+<PrintShell
+  title={m.chromeChildPageTitle({ page: m.reportHandoffTitle(), name: data.child.name })}
+>
   {#snippet toolbarStart()}
     <a
       href={localizedHref(`/child/${data.child.id}`)}

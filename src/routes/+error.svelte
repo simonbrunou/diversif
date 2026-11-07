@@ -34,14 +34,16 @@
     <TriangleAlert size={28} aria-hidden="true" />
   </div>
   <div>
-    <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">{m.errorsGenericLabel({ status })}</p>
-    <h1 class="mt-1 text-2xl font-semibold">{title}</h1>
+    <h1 class="text-2xl font-semibold">{title}</h1>
     <p class="mt-2 text-sm text-muted-foreground">{message}</p>
-    {#if page.error?.errorId}
-      <p class="mt-2 text-xs text-muted-foreground/80">
-        {m.errorsGenericRef()} <code class="font-mono">{page.error.errorId}</code>
-      </p>
-    {/if}
+    <!-- The status sits with the reference as a plain caption: stacked above
+         the title as an uppercase label it was an eyebrow (DESIGN.md Don'ts). -->
+    <p class="mt-2 text-xs text-muted-foreground">
+      {m.errorsGenericLabel({ status })}
+      {#if page.error?.errorId}
+        · {m.errorsGenericRef()} <code class="font-mono">{page.error.errorId}</code>
+      {/if}
+    </p>
   </div>
   <div class="flex flex-wrap justify-center gap-2">
     <Button href={localizedHref('/')}>{m.errorsGenericHome()}</Button>

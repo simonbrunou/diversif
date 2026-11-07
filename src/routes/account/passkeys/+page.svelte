@@ -14,7 +14,7 @@
   import * as m from '#lib/paraglide/messages.js';
   import { getLocale } from '#lib/paraglide/runtime.js';
   import { SITE } from '#lib/seo.js';
-  import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
+  import { resolveMessageKey } from '#lib/forms/message-key.js';
   import type { ActionData, PageData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();

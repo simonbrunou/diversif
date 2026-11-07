@@ -12,8 +12,8 @@
   import { ALLERGENS, getAllergenLabel, type AllergenId } from '#lib/utils/allergens.js';
   import { ALLERGEN_GUIDANCE } from '#lib/content/guidance.js';
   import * as m from '#lib/paraglide/messages.js';
+  import { getLocale } from '#lib/paraglide/runtime.js';
   import { localizedHref } from '#lib/utils/localized-href.js';
-  import { ShieldCheck } from '@lucide/svelte';
 
   let openAllergenId = $state<AllergenId | null>(null);
 
@@ -68,10 +68,6 @@
 
   <section lang="fr" class="space-y-8">
   <header class="space-y-2">
-    <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-primary-strong">
-      <ShieldCheck size={14} aria-hidden="true" />
-      Allergènes
-    </div>
     <h1 class="text-2xl font-semibold leading-tight md:text-3xl">Les 12 allergènes suivis</h1>
     <p class="max-w-2xl text-sm text-muted-foreground">
       Les recommandations actuelles sont claires : ne plus retarder l'introduction des allergènes
@@ -108,7 +104,9 @@
         class="rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <div class="flex items-center justify-between gap-2">
-          <span class="font-medium">{getAllergenLabel(a.id)}</span>
+          <!-- Inside <section lang="fr">: a localized label declares its own
+               lang (src/routes/fr-only-sections.svelte.test.ts). -->
+          <span lang={getLocale()} class="font-medium">{getAllergenLabel(a.id)}</span>
             <Badge variant="default" class="shrink-0 text-3xs">
               {g.timing}
           </Badge>

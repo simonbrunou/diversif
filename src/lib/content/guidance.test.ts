@@ -15,7 +15,9 @@ import {
   getTipsFor,
   pickRotatingTip
 } from './guidance';
+import * as guidance from './guidance';
 import { ALL_SOURCE_IDS, SOURCES } from './sources';
+import { stageRange } from './stage-range';
 
 describe('content invariants', () => {
   it('every allergen has a guidance entry', () => {
@@ -58,6 +60,12 @@ describe('content invariants', () => {
     }
   });
 
+  // The guide's badge and Aujourd'hui's stage card print stageRange(); the
+  // title they sit beside or link to must name the same range.
+  it('every stage title opens with the range its badge and reminder print', () => {
+    expect(STAGES.map((s) => s.title.split(' · ')[0])).toEqual(STAGES.map((s) => stageRange(s)));
+  });
+
   it('texture progression is age-monotonic', () => {
     for (let i = 1; i < TEXTURE_PROGRESSION.length; i++) {
       expect(TEXTURE_PROGRESSION[i].ageMonths).toBeGreaterThan(
@@ -77,6 +85,82 @@ describe('content invariants', () => {
       expect(f.reason.length).toBeGreaterThan(10);
       expect(f.sources.length).toBeGreaterThan(0);
     }
+  });
+});
+
+// The fields the UI prints through EmphasisText.svelte, which sets **…** in
+// <strong>. Every other field prints as plain text (or as JSON-LD, like the
+// allergen `why` on /allergens), where a marker would show raw (#668).
+const EMPHASIS_FIELDS: Record<string, readonly string[]> = {
+  ALLERGEN_GUIDANCE: ['howToOffer', 'whatToDo'],
+  CATEGORY_GUIDANCE: ['whenStart', 'cadence'],
+  REACTION_GUIDANCE: ['whatToDo']
+};
+
+/** Names an array entry by its `id` or `level`, else by its index. */
+function entryName(value: unknown, index: number): string {
+  if (value && typeof value === 'object') {
+    const v = value as Record<string, unknown>;
+    if (typeof v.id === 'string') return v.id;
+    if (typeof v.level === 'string') return v.level;
+  }
+  return String(index);
+}
+
+/** Every string under `value`, with its path: table, entry, field, then any index. */
+function* strings(value: unknown, path: string[]): Generator<{ path: string[]; text: string }> {
+  if (typeof value === 'string') yield { path, text: value };
+  else if (Array.isArray(value))
+    for (const [i, v] of value.entries()) yield* strings(v, [...path, entryName(v, i)]);
+  else if (value && typeof value === 'object')
+    for (const [k, v] of Object.entries(value)) yield* strings(v, [...path, k]);
+}
+
+/** Each misplaced `**` in the exported tables: outside EMPHASIS_FIELDS, or unpaired inside them. */
+function markerFaults(tables: Record<string, unknown>): string[] {
+  const faults: string[] = [];
+  for (const [table, value] of Object.entries(tables)) {
+    for (const { path, text } of strings(value, [table])) {
+      const markers = text.split('**').length - 1;
+      if (markers === 0) continue;
+      const where = path.join('.');
+      if (!EMPHASIS_FIELDS[table]?.includes(path[2])) faults.push(`${where}: ** in plain text`);
+      else if (markers % 2 === 1) faults.push(`${where}: unpaired **`);
+    }
+  }
+  return faults;
+}
+
+describe('emphasis markers', () => {
+  it('appear only in the fields set in <strong>, in pairs', () => {
+    expect(markerFaults(guidance)).toEqual([]);
+  });
+
+  it('are found in a field printed as plain text', () => {
+    expect(
+      markerFaults({
+        STAGES: [{ id: '4-6', textures: 'Purée **lisse**.' }],
+        ALLERGEN_GUIDANCE: { arachide: { why: 'Le **LEAP**.' } },
+        EMERGENCY_NUMBER: '**15**'
+      })
+    ).toEqual([
+      'STAGES.4-6.textures: ** in plain text',
+      'ALLERGEN_GUIDANCE.arachide.why: ** in plain text',
+      'EMERGENCY_NUMBER: ** in plain text'
+    ]);
+  });
+
+  it('are found unpaired in a field set in <strong>', () => {
+    expect(
+      markerFaults({
+        REACTION_GUIDANCE: [{ level: 'reaction', whatToDo: '**appeler le 15** ou **le 112' }],
+        ALLERGEN_GUIDANCE: { lait: { howToOffer: ['Le **lait** liquide.', 'Le lait**'] } },
+        CATEGORY_GUIDANCE: { produits_laitiers: { cadence: '**Chaque** semaine.' } }
+      })
+    ).toEqual([
+      'REACTION_GUIDANCE.reaction.whatToDo: unpaired **',
+      'ALLERGEN_GUIDANCE.lait.howToOffer.1: unpaired **'
+    ]);
   });
 });
 

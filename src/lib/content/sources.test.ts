@@ -15,6 +15,28 @@ describe('SOURCES catalog', () => {
     }
   });
 
+  // Titles and org names mix French and English, and the renderers tag each
+  // with the language declared here (#665).
+  it('every entry declares the language of its title and of its org name', () => {
+    const undeclared = ALL_SOURCE_IDS.filter(
+      (id) =>
+        !['fr', 'en'].includes(SOURCES[id].labelLang) || !['fr', 'en'].includes(SOURCES[id].orgLang)
+    );
+    expect(undeclared).toEqual([]);
+  });
+
+  it.each([
+    // An English title from an org with a French name.
+    ['who-cf', 'en', 'fr'],
+    ['espghan-2017', 'en', 'en'],
+    ['hcsp-2020', 'fr', 'fr']
+  ] as const)('%s declares a title in %s and an org name in %s', (id, labelLang, orgLang) => {
+    expect({ labelLang: SOURCES[id].labelLang, orgLang: SOURCES[id].orgLang }).toEqual({
+      labelLang,
+      orgLang
+    });
+  });
+
   it('exposes ids matching SOURCES keys', () => {
     expect(ALL_SOURCE_IDS.sort()).toEqual(
       (Object.keys(SOURCES) as (keyof typeof SOURCES)[]).sort()

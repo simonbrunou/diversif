@@ -39,24 +39,22 @@ describe('Field', () => {
     expect(screen.getByText('8 caractères minimum')).toBeTruthy();
   });
 
-  it('renders FormError when error is provided', () => {
+  it('sets the label and the hint in the colour their class props pass, for a field on a tint (#667)', () => {
     render(Field, {
       props: {
         name: 'email',
         label: 'Adresse e-mail',
-        error: 'Adresse invalide',
+        hint: '8 caractères minimum',
+        labelClass: 'text-current',
+        hintClass: 'text-current',
         children: inputSnippet('email')
       }
     });
-    const err = screen.getByRole('alert');
-    expect(err.textContent).toContain('Adresse invalide');
-  });
-
-  it('does not render FormError when no error', () => {
-    render(Field, {
-      props: { name: 'email', label: 'Adresse e-mail', children: inputSnippet('email') }
-    });
-    expect(screen.queryByRole('alert')).toBeNull();
+    for (const text of ['Adresse e-mail', '8 caractères minimum']) {
+      const el = screen.getByText(text);
+      expect(el.classList.contains('text-current')).toBe(true);
+      expect(el.classList.contains('text-ink-soft')).toBe(false);
+    }
   });
 
   it('forwards a custom class onto the wrapper', () => {

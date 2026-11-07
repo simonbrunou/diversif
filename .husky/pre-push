@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# pre-push: fast static gates only — lint (prettier + eslint + i18n),
-# typecheck (svelte-check) and the Fallow audit. The full test suite
-# (unit/component, the test:coverage 100% threshold, docker --check, and
-# Playwright e2e) was intentionally removed so pushes aren't held up for
-# minutes. Forgejo CI still runs all of those and gates the branch.
+# pre-push: fast gates only — a conflict check against the base branch
+# (one fetch), then the static ones: lint (prettier + eslint + i18n),
+# typecheck (svelte-check, then tsc on the service worker and scripts/) and
+# the Fallow audit. The full test suite (unit/component, the test:coverage
+# 100% threshold, docker --check, and Playwright e2e) was intentionally
+# removed so pushes aren't held up for minutes. Forgejo CI still runs all of
+# those and gates the branch.
 #
 # Set SKIP_PUSH_TESTS=1 to bypass even these static checks.
 set -euo pipefail
@@ -17,11 +19,23 @@ start=$(date +%s)
 log() { printf '\n\033[1;34m→ %s\033[0m\n' "$1"; }
 ok()  { printf '\033[1;32m✓ %s\033[0m\n' "$1"; }
 
+# The branch the pushed commits merge into: origin/main, or origin/<parent>
+# for a branch stacked on another (see the Fallow audit below).
+base="${FALLOW_AUDIT_BASE:-origin/main}"
+
+# First, while git's pre-push lines are still on stdin: a conflict with the
+# base means a merge commit and a second CI run, so refuse it before this
+# push starts the first (#665's session waited 52 minutes for the second).
+# The script fetches the base first, since the local ref can be old.
+log "conflict check (vs $base)"
+scripts/check-base-conflict.sh
+ok "no conflict with $base"
+
 log "lint (prettier + eslint + i18n)"
 bun run lint
 ok "lint passed"
 
-log "typecheck (svelte-check)"
+log "typecheck (svelte-check + tsc)"
 bun run check
 ok "typecheck passed"
 
@@ -32,7 +46,6 @@ ok "typecheck passed"
 # fallow diffs against the branch's own upstream, and after `push -u` that
 # diff holds only the unpushed commits. A branch stacked on another sets
 # FALLOW_AUDIT_BASE=origin/<parent> for the push.
-base="${FALLOW_AUDIT_BASE:-origin/main}"
 log "fallow audit (changed files vs $base)"
 FALLOW_AUDIT_BASE="$base" node_modules/.bin/fallow audit
 ok "fallow audit passed"

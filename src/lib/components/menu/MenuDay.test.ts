@@ -4,6 +4,7 @@ import MenuDay from './MenuDay.svelte';
 import { QUANTITIES } from '#lib/content/quantities.js';
 import type { Menu } from '#lib/server/menu/engine.js';
 import type { Food } from '#lib/server/db/schema.js';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 
 afterEach(() => cleanup());
 
@@ -120,5 +121,21 @@ describe('MenuDay', () => {
       }
     });
     expect(screen.getByText('Texture lisse, sans morceaux.')).toBeTruthy();
+  });
+
+  it("sets the allergène-du-jour card, caution included, in the lilac tile's own foreground (#649)", () => {
+    const oeuf = makeFood({ id: 3, name: 'Œuf', category: 'oeufs', allergenType: 'oeuf' });
+    render(MenuDay, {
+      props: {
+        menu: makeMenu({
+          allergenFocus: { food: oeuf, mode: 'introduce', caution: 'Texture lisse, sans morceaux.' }
+        }),
+        childId: 7
+      }
+    });
+    const card = screen.getByText('Texture lisse, sans morceaux.').closest('.bg-tile-lilac');
+    expect(card?.textContent).toContain('Repère allergène');
+    if (!card) throw new Error('no lilac card around the caution');
+    expectPairedForeground(card);
   });
 });

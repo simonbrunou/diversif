@@ -30,6 +30,16 @@
       "allowedVersions": "<6"
     },
     {
+      "description": "Hold typescript below 7 (#619): TypeScript 7.0 drops the TypeScript 6 JavaScript API (its '.' export, lib/version.cjs, holds only version and versionMajorMinor), and typescript-eslint, svelte-check and @sveltejs/kit call that API, so bun run check and bun run lint fail under 7. Lift this rule once npm view <pkg>@latest peerDependencies accepts ^7 for each of typescript-eslint, svelte-check and @sveltejs/kit. The name match is exact, so typescript-eslint is not held.",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    },
+    {
+      "description": "Open no PR for ghcr.io/renovatebot/renovate, the image of .forgejo/workflows/renovate-config.yml: that job must run the Renovate the bot runs. The bot's tag (image: in renovate/renovate-config's .forgejo/workflows/renovate.yml) moves only when someone merges that repo's image PR, which does not automerge. Move this repo's tag to the bot's new one at the same time.",
+      "matchDepNames": ["ghcr.io/renovatebot/renovate"],
+      "enabled": false
+    },
+    {
       "description": "Open the group:allNonMajor PR once a week, in the lockFileMaintenance window (Monday before 4am UTC), and auto-merge it once CI passes. A group auto-merges only when every update in it does, so this covers production minors too. Security PRs skip this schedule and the group, since Renovate forces its vulnerabilityAlerts defaults onto them, but keep this auto-merge (#465).",
       "matchUpdateTypes": ["minor", "patch"],
       "schedule": ["* 0-3 * * 1"],

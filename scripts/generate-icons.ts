@@ -3,7 +3,9 @@ import { deflateSync } from 'node:zlib';
 import { crc32 } from 'node:zlib';
 import { resolve } from 'node:path';
 
-function chunk(type, data) {
+type Rgb = [r: number, g: number, b: number];
+
+function chunk(type: string, data: Buffer): Buffer {
   const len = Buffer.alloc(4);
   len.writeUInt32BE(data.length, 0);
   const typeBuf = Buffer.from(type, 'ascii');
@@ -13,7 +15,7 @@ function chunk(type, data) {
   return Buffer.concat([len, typeBuf, data, crcBuf]);
 }
 
-function makePng(size, [r, g, b], [or, og, ob], dotRadiusFrac = 0.32) {
+function makePng(size: number, [r, g, b]: Rgb, [or, og, ob]: Rgb, dotRadiusFrac = 0.32): Buffer {
   const rowSize = size * 3;
   const raw = Buffer.alloc((rowSize + 1) * size);
   const cx = size / 2;
@@ -61,8 +63,8 @@ function makePng(size, [r, g, b], [or, og, ob], dotRadiusFrac = 0.32) {
 const out = resolve('static', 'icons');
 mkdirSync(out, { recursive: true });
 
-const sage = [107, 142, 107]; // #6b8e6b
-const cream = [250, 250, 247]; // #fafaf7
+const sage: Rgb = [107, 142, 107]; // #6b8e6b
+const cream: Rgb = [250, 250, 247]; // #fafaf7
 
 writeFileSync(resolve(out, 'icon-192.png'), makePng(192, sage, cream));
 writeFileSync(resolve(out, 'icon-512.png'), makePng(512, sage, cream));

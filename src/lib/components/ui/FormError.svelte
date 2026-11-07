@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { cn } from '#lib/utils/cn.js';
-  import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
-  import { isHydrated } from '#lib/boot-recovery.js';
+  import { resolveMessageKey } from '#lib/forms/message-key.js';
+  import { isHydrated } from '#lib/hydration.js';
 
   // Either an action's message key, `<FormError messageKey={form?.errorKey} {form} />`,
   // or prose passed as children. `form` is the page's action data that carried
@@ -12,13 +12,20 @@
   // today; the key keeps the guarantee when a new result replaces the old one
   // without that step. `form` is required with `messageKey`; forgetting it
   // makes svelte-check report the `children` variant as missing instead.
-  // Prose given without `form` (Field) stays in place when it repeats.
+  // Prose children given without `form` stay in place when they repeat.
   //
   // A refusal without JavaScript loads a new document, and screen readers do
   // not read an alert that is already in the page at load. So an alert the
   // server rendered takes focus on load instead, and the screen reader reads
   // it (#469). An alert inserted after hydration, the JavaScript path, leaves
   // focus where it is: screen readers announce its insertion.
+  //
+  // So it renders action results only: `form`, or a value derived from it,
+  // never a value from load data. SvelteKit fills `form` only after a POST
+  // to an action, so the server renders such an alert only on the page that
+  // answers that POST. An alert fed from load data would render on every GET,
+  // and each page the server renders would give it focus, past the page
+  // heading and the start of its form (#535).
   type Props = { class?: string } & (
     | { messageKey: string | null | undefined; form: object | null | undefined; children?: never }
     | { children: Snippet; form?: object | null; messageKey?: never }

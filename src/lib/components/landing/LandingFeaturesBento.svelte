@@ -2,27 +2,29 @@
   import * as m from '#lib/paraglide/messages.js';
   import { Apple, Clock, ShieldCheck, BookOpen } from '@lucide/svelte';
 
+  // Each tile sets its own foreground, which its icon, title and body inherit
+  // (DESIGN.md, The Paired Foreground Rule).
   const features = $derived([
     {
-      tile: 'bg-tile-mint',
+      tile: 'bg-tile-mint text-tile-mint-foreground',
       icon: Apple,
       title: m.landingFeatureCarnetTitle(),
       body: m.landingFeatureCarnetBody()
     },
     {
-      tile: 'bg-tile-butter',
+      tile: 'bg-tile-butter text-tile-butter-foreground',
       icon: Clock,
       title: m.landingFeatureAllergensTitle(),
       body: m.landingFeatureAllergensBody()
     },
     {
-      tile: 'bg-tile-sky',
+      tile: 'bg-tile-sky text-tile-sky-foreground',
       icon: ShieldCheck,
       title: m.landingFeatureCoparentsTitle(),
       body: m.landingFeatureCoparentsBody()
     },
     {
-      tile: 'bg-tile-lilac',
+      tile: 'bg-tile-lilac text-tile-lilac-foreground',
       icon: BookOpen,
       title: m.landingFeatureGuideTitle(),
       body: m.landingFeatureGuideBody()
@@ -36,9 +38,9 @@
     <div class="mt-6 grid gap-3 sm:grid-cols-2">
       {#each features as f, i (i)}
         <article class="rounded-tile {f.tile} p-5 shadow-soft">
-          <f.icon size={20} class="text-ink" aria-hidden="true" />
+          <f.icon size={20} aria-hidden="true" />
           <h3 class="mt-3 text-base font-bold leading-tight">{f.title}</h3>
-          <p class="mt-1 text-sm text-ink-soft">{f.body}</p>
+          <p class="mt-1 text-sm">{f.body}</p>
         </article>
       {/each}
     </div>

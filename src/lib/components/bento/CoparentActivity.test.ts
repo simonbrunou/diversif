@@ -3,10 +3,29 @@ import { render, screen, cleanup } from '@testing-library/svelte';
 import CoparentActivity from './CoparentActivity.svelte';
 import * as m from '#lib/paraglide/messages.js';
 import type { CoparentEntry } from '#lib/server/guidance/child-history.js';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 
 afterEach(() => cleanup());
 
 describe('CoparentActivity', () => {
+  it("sets the initials disc in the lilac tint's own foreground (#667)", () => {
+    const activity: CoparentEntry[] = [
+      {
+        id: 1,
+        foodName: 'Carotte',
+        category: 'legumes',
+        reaction: 'ras',
+        givenAt: Date.now(),
+        loggedByName: 'Alice',
+        mealId: null
+      }
+    ];
+    render(CoparentActivity, { props: { activity } });
+    const disc = screen.getByText('A');
+    expect(disc.classList.contains('bg-tile-lilac')).toBe(true);
+    expectPairedForeground(disc);
+  });
+
   it('groups a co-parent 3-ingredient meal into ONE "N ingrédients" line, singleton unchanged', () => {
     // Three ingredients sharing a mealId (contiguous, per the loader's
     // givenAt-desc/id-asc ordering) must fold into ONE line showing a count —

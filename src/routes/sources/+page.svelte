@@ -9,7 +9,7 @@
   import { localizedHref } from '#lib/utils/localized-href.js';
   import { page } from '$app/state';
   import { SOURCES, ALL_SOURCE_IDS } from '#lib/content/sources.js';
-  import { Library, ExternalLink } from '@lucide/svelte';
+  import { ExternalLink } from '@lucide/svelte';
 
   const siteUrl = SITE.defaultOrigin;
 
@@ -57,10 +57,6 @@
 
   <section lang="fr" class="space-y-8">
     <header class="space-y-2">
-      <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-primary-strong">
-        <Library size={14} aria-hidden="true" />
-        Sources
-      </div>
       <h1 class="text-2xl font-semibold leading-tight md:text-3xl">Sources et références</h1>
       <p class="max-w-2xl text-sm text-muted-foreground">
         Toutes les recommandations affichées dans Diversif s'appuient sur des sources publiques et
@@ -81,10 +77,12 @@
               rel="noopener noreferrer"
               class="inline-flex items-start gap-1.5 text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
             >
-              <span>{s.label}</span>
+              <span lang={s.labelLang}>{s.label}</span>
               <ExternalLink size={12} class="mt-1 shrink-0" aria-hidden="true" />
             </a>
-            <div class="mt-1 text-xs text-muted-foreground">{s.org} · {s.year}</div>
+            <div class="mt-1 text-xs text-muted-foreground">
+              <span lang={s.orgLang}>{s.org}</span> · {s.year}
+            </div>
           </Card>
         </li>
       {/each}

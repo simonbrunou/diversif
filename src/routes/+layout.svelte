@@ -16,7 +16,7 @@
   import * as m from '#lib/paraglide/messages.js';
   import { applyTheme, getStoredTheme } from '#lib/utils/theme.js';
   import { celebrateSynced } from '#lib/utils/milestones.js';
-  import { markHydrated } from '#lib/boot-recovery.js';
+  import { markHydrated } from '#lib/hydration.js';
   import PublicHeader from '#lib/components/PublicHeader.svelte';
   import PublicFooter from '#lib/components/PublicFooter.svelte';
   import AppShellBento from '#lib/components/AppShellBento.svelte';

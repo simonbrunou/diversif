@@ -78,7 +78,9 @@
         {getReactionLabel(r.id)}
       </span>
       {#if active}
-        <span class="text-2xs text-muted-foreground">{getReactionDescription(r.id)}</span>
+        <!-- Inherits the reaction's own foreground from the tinted label
+             (DESIGN.md, The Paired Foreground Rule). -->
+        <span class="text-2xs">{getReactionDescription(r.id)}</span>
       {/if}
     </label>
   {/each}

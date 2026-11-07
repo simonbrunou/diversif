@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
+import { expectPairedForeground } from '../../../test/paired-foreground';
 import LandingFeaturesBento from './LandingFeaturesBento.svelte';
 
 afterEach(() => cleanup());
@@ -14,5 +15,12 @@ describe('LandingFeaturesBento', () => {
     render(LandingFeaturesBento);
     const headings = screen.getAllByRole('heading', { level: 3 });
     expect(headings.length).toBe(4);
+  });
+
+  it("sets each feature tile's text in that tile's own foreground (#360)", () => {
+    render(LandingFeaturesBento);
+    const articles = screen.getAllByRole('article');
+    expect(articles.length).toBe(4);
+    for (const article of articles) expectPairedForeground(article);
   });
 });

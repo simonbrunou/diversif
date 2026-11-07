@@ -9,7 +9,7 @@ import {
 } from '#lib/server/passkeys.js';
 import { requireUser } from '#lib/server/guards.js';
 import { requireFreshAuth } from '#lib/server/fresh-auth.js';
-import { resolveMessageKey } from '#lib/forms/tracked-enhance.js';
+import { resolveMessageKey } from '#lib/forms/message-key.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ locals, cookies, request, url }) => {
