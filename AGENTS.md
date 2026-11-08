@@ -13,7 +13,7 @@
 - **French UI, no anglicisms.** Use "Enregistrer" not "logger", "Régularité" not "Streak", "Adresse e-mail" not "Email", "Bilan" not "Stats". PR reviewers reject regressions.
 - **Use Bun, not npm/Node.** `bun install`, `bun run X`. `bun --bun <cmd>` forces tools with Node shebangs (vite, drizzle-kit, playwright, svelte-check) to run under Bun — without it, server code that imports `bun` / `bun:sqlite` fails to resolve.
 - **Pre-commit**: husky runs `lint-staged` (prettier + eslint). Don't bypass with `--no-verify`.
-- **Before you start a CI E2E job** (open or reopen a PR, push to an open one, rerun the E2E job or a whole run, merge), run `scripts/wait-e2e-slot.sh && <that command>` in one foreground shell call with `timeout: 600000`, and run it again at once on exit 3, which keeps your place in its queue. When that command works on a branch other than the checked-out one, pass that branch's pushed SHA: `scripts/wait-e2e-slot.sh <sha> && <that command>`. Why, which SHA in each case, and the other exit codes: `docs/agents/testing.md`, "Start an E2E job only when no other one runs or waits". Run a branch's review and re-checks before you open its PR ("Review a branch before you open its PR", same file), and paste that file's "Rules for review sub-agents" into each reviewer's brief.
+- **Before you start a CI E2E job** (open or reopen a PR, push to an open one, rerun the E2E job or a whole run, merge), run `scripts/wait-e2e-slot.sh && <that command>` in one foreground shell call with `timeout: 600000`, and run it again at once on exit 3, which keeps your place in its queue. When that command works on a branch other than the checked-out one, pass that branch's pushed SHA: `scripts/wait-e2e-slot.sh <sha> && <that command>`. Why, which SHA in each case, and the other exit codes: `docs/agents/testing.md`, "Start an E2E job only when no other one runs or waits". Run a branch's review and re-checks before you open its PR ("Review a branch before you open its PR", same file).
 - **A tool call that fails with only `Blocked by hook`** hit an `action: block` rule in `.claude/hookify.*.local.md`. Hookify sends no `permissionDecisionReason`, so that text is all you see. Pick the `block-*` rule whose name fits your call. Its message says why the rule blocks the call and what to do instead.
 
 ## graphify
@@ -32,7 +32,7 @@ Rules:
 
 Agents may merge their own PR without asking once all three hold:
 
-- a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent) and you fixed its real findings, nits aside (the global agent rules define a nit);
+- a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent, each reviewer briefed with « Rules for review sub-agents » from `docs/agents/testing.md`) and you fixed its real findings, nits aside (the global agent rules define a nit);
 - CI is green on the pushed SHA;
 - the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0.
 
