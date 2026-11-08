@@ -74,9 +74,16 @@ const base = mkdtempSync(path.join(tmpdir(), 'check-bun-pins-'));
 let dir = '';
 let testNumber = 0;
 
+// The tree holds one fixture copy per test and one per YAML case. Bun checks
+// a synchronous hook's timeout only once the hook returns, so a timeout cannot
+// stop the rmSync: it only sets how slow a removal counts as a failure. #691
+// ran 24 copies of this file at once on 16 cores, three times. In one run the
+// removal took 130 ms to 3.1 s; in the other two the runner's 5 s timeout
+// failed one copy's hook, at 5.2 s and 6.0 s, as `(fail) (unnamed)`.
+const CLEANUP_TIMEOUT = 60_000;
 afterAll(() => {
   rmSync(base, { recursive: true, force: true });
-});
+}, CLEANUP_TIMEOUT);
 
 beforeEach(() => {
   testNumber += 1;
