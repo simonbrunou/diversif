@@ -216,7 +216,8 @@ async function postOne(
   if (answer.kind !== 'action') return 'retry';
   const { result } = answer;
   // The log action refused a row queued by another user than the session's
-  // (#566), before any guard or write. The row is dropped with no toast: the
+  // (#566), after the logged-in check and before the child and membership
+  // checks or any write. The row is dropped with no toast: the
   // signed-in parent never queued it, and it is not theirs to hear about.
   if (result.type === 'failure' && result.data?.queuedByOther === true) return 'drop';
 
