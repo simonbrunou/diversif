@@ -166,6 +166,28 @@ describe('submitRepas', () => {
     });
   });
 
+  // #566: the replay sends the owner, and the log action drops the row when
+  // another user's session replays it. The online attempt runs under the
+  // session that submitted, so it does not send it.
+  it('records the user who queued the repas on the row, outside the fields it sends', async () => {
+    const { child, carotte, user, sent, action } = await setup();
+    const unreachableAfterSending: Transport = async (_url, init) => {
+      sent.push(new URLSearchParams(String(init.body)));
+      throw new TypeError('Failed to fetch');
+    };
+    const outcome = await submitRepas(
+      form({ foodId: carotte.id, givenAt: GIVEN_AT, reaction: 'ras' }),
+      { action, queueFor: child.id, queuedBy: user.id },
+      unreachableAfterSending
+    );
+
+    expect(outcome).toEqual({ kind: 'queued' });
+    expect(sent[0].has('queuedBy')).toBe(false);
+    const [row] = (await rawRows()) as { queuedBy?: number; formData: Record<string, unknown> }[];
+    expect(row.queuedBy).toBe(user.id);
+    expect(row.formData).not.toHaveProperty('queuedBy');
+  });
+
   it('queues a submit whose answer never came back, under the key the server already saw', async () => {
     const { child, carotte, transport, action } = await setup();
     // The action runs and writes, then the answer is lost on the way back.

@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
-import { render, fireEvent } from '@testing-library/svelte';
+import { render, fireEvent, waitFor } from '@testing-library/svelte';
+import 'fake-indexeddb/auto';
 import '../../../../test/component';
+import { rawRows } from '../../../../test/offline-db';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
+import { clear } from '#lib/offline/queue.js';
 
 // Component-level mocks for the page's non-DB dependencies, following the
 // existing recipe used by src/lib/components/AppShellBento.test.ts and
@@ -261,5 +264,26 @@ describe('log +page.svelte — reaction help', () => {
     overwriteGetLocale(() => locale);
     const { container } = render(Page, { props: { data: makeData([]), form: null } });
     expect(helpItems(container)).toEqual(items);
+  });
+});
+
+describe('log +page.svelte — offline queue', () => {
+  afterEach(async () => {
+    delete (navigator as { onLine?: boolean }).onLine;
+    await clear();
+  });
+
+  // #566: the replay of a row another user queued is dropped, so the row
+  // must record the signed-in user, from the root layout's data.
+  it('records the signed-in user on a repas it queues', async () => {
+    Object.defineProperty(navigator, 'onLine', { get: () => false, configurable: true });
+    const data = { ...makeData([]), user: { id: 42 } } as unknown as PageData;
+    const { container } = render(Page, { props: { data, form: null } });
+
+    await fireEvent.submit(container.querySelector('form')!);
+
+    await waitFor(async () =>
+      expect(((await rawRows()) as { queuedBy?: number }[]).map((r) => r.queuedBy)).toEqual([42])
+    );
   });
 });

@@ -7,8 +7,8 @@ import {
   seedChild,
   seedMembership
 } from '../../../../test/route';
-import { seedFood, seedRepasChild } from '../../../../test/repas';
-import { foodEntries, preparedMeals } from '#lib/server/db/schema.js';
+import { entryRows, seedFood, seedRepasChild } from '../../../../test/repas';
+import { foodEntries, idempotencyKeys, preparedMeals } from '#lib/server/db/schema.js';
 import { load, actions } from './+page.server';
 
 // The repas rules live in src/lib/server/repas (tested there). These tests
@@ -112,5 +112,69 @@ describe('child/[id]/log default action', () => {
       }) as unknown as ActionEvent
     );
     expect(refused).toMatchObject({ status: 400, data: { errorKey: 'errorsLogNoFoodSelected' } });
+  });
+
+  // #566: the queue's replay sends the id of the user who queued the row.
+  describe('a replay with queuedBy', () => {
+    const replay = (foodId: number, queuedBy: number) => ({
+      ...fields(foodId),
+      idempotencyKey: 'replayed-key',
+      queuedBy: String(queuedBy)
+    });
+
+    it('refuses a row another user queued with queuedByOther, writing nothing', async () => {
+      const { event, child, user, carotte } = await setup();
+      const refused = await actions.default(
+        event({ formData: replay(carotte.id, user.id + 1) }) as unknown as ActionEvent
+      );
+      expect(refused).toMatchObject({ status: 403, data: { queuedByOther: true } });
+      expect(entryRows(child.id)).toEqual([]);
+      expect(testDb.select().from(idempotencyKeys).all()).toEqual([]);
+    });
+
+    // Without it, a malformed id answered 404 and a user without access 403,
+    // which the queue reads as access revoked and toasts.
+    it('refuses it before the child and membership checks', async () => {
+      const { child, user, carotte } = await setup();
+      for (const id of ['abc', String(child.id)]) {
+        const refused = await captureFlow(() =>
+          actions.default(
+            makeRouteEvent({
+              user: safeUser(user),
+              memberships: [],
+              params: { id },
+              formData: replay(carotte.id, user.id + 1)
+            }) as unknown as ActionEvent
+          )
+        );
+        expect(refused).toMatchObject({
+          kind: 'return',
+          value: { status: 403, data: { queuedByOther: true } }
+        });
+      }
+    });
+
+    it('logs a row the signed-in user queued', async () => {
+      const { event, child, user, carotte } = await setup();
+      const r = await captureFlow(() =>
+        actions.default(event({ formData: replay(carotte.id, user.id) }) as unknown as ActionEvent)
+      );
+      expect(r).toMatchObject({ kind: 'redirect', status: 303 });
+      expect(entryRows(child.id)).toHaveLength(1);
+    });
+
+    it('sends a logged-out replay to /login first, whoever queued it', async () => {
+      const { child, user, carotte } = await setup();
+      const r = await captureFlow(() =>
+        actions.default(
+          makeRouteEvent({
+            user: null,
+            params: { id: String(child.id) },
+            formData: replay(carotte.id, user.id + 1)
+          }) as unknown as ActionEvent
+        )
+      );
+      expect(r).toEqual({ kind: 'redirect', status: 303, location: '/login' });
+    });
   });
 });

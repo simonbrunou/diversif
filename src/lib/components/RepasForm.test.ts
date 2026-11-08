@@ -3,6 +3,7 @@ import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import 'fake-indexeddb/auto';
 import '../../test/component';
+import { rawRows } from '../../test/offline-db';
 
 // RepasForm only applies the durable submit's outcome to the page; these
 // stand-ins record what it applied, in order. The submit itself runs for
@@ -30,6 +31,7 @@ const fields = createRawSnippet(() => ({
 
 function renderForm(props: {
   queueFor?: number;
+  queuedBy?: number;
   action?: string;
   onapplied?: (result: { type: string }) => void;
 }) {
@@ -120,6 +122,16 @@ describe('RepasForm', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(applyAction).not.toHaveBeenCalled();
     expect(await count()).toBe(1);
+  });
+
+  it('records the user who queued the repas on the queued row (#566)', async () => {
+    goOffline();
+    const form = renderForm({ queueFor: 1, queuedBy: 42 });
+
+    await fireEvent.submit(form);
+    await waitFor(() => expect(goto).toHaveBeenCalledWith('/child/1'));
+
+    expect(((await rawRows()) as { queuedBy?: number }[]).map((r) => r.queuedBy)).toEqual([42]);
   });
 
   it('goes back to the dashboard in the parent’s language', async () => {

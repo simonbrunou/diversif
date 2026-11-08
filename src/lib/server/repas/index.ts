@@ -18,6 +18,7 @@ import {
   parseEntryEditForm,
   parseLogForm,
   parseMealEditForm,
+  queuedByField,
   removeIdField,
   type LogDraft,
   type ReactionEdit
@@ -143,6 +144,17 @@ function insertRepas(tx: Tx, ctx: RepasContext, draft: LogDraft): Logged {
 
   const milestones = measureMilestones(tx, ctx.childId, baseline, now.getTime());
   return { redirect: milestonesPath(ctx.childId, milestones), entryIds, milestones };
+}
+
+/**
+ * True when the request replays a repas that another user than `userId`
+ * queued on the device (the form's `queuedBy` field): the previous user's
+ * row, left behind by a logout or an expired session (#566). A request with
+ * no `queuedBy` is never foreign.
+ */
+export function queuedByOther(form: FormData, userId: number): boolean {
+  const queuedBy = queuedByField(form);
+  return queuedBy !== null && queuedBy !== String(userId);
 }
 
 /**

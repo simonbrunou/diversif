@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import 'fake-indexeddb/auto';
+import { stringify } from 'devalue';
 
 import { rawRows } from '../../test/offline-db';
 import { clear, count, enqueue, flush, needsReauthCount } from './queue';
@@ -866,6 +867,47 @@ describe('queue', () => {
       window.removeEventListener('queue:accessRevoked', onRevoked);
     });
   }
+
+  it('sends the user who queued the row with its replay, and no owner for a row without one', async () => {
+    const { transport, calls } = server(() => goodActionResult());
+    await enqueue({ key: 'mine', childId: 1, formData: { foodId: '1' }, queuedAt: 1, queuedBy: 7 });
+    await enqueue({ key: 'older', childId: 1, formData: { foodId: '2' }, queuedAt: 2 });
+
+    await flush(transport);
+
+    expect(calls.map((c) => c.body.get('queuedBy'))).toEqual(['7', null]);
+  });
+
+  // #566: the log action refuses a row another user queued with a failure
+  // carrying queuedByOther. The signed-in parent never queued it, so it goes
+  // without a toast, and the pass goes on.
+  it('drops a row another user queued without a toast, and replays the next row in the same pass', async () => {
+    const foreign = () =>
+      new Response(
+        JSON.stringify({ type: 'failure', status: 403, data: stringify({ queuedByOther: true }) }),
+        { status: 403, headers: { 'content-type': 'application/json' } }
+      );
+    const { transport, calls } = serverAnswering(foreign, () => goodActionResult());
+    await enqueue({
+      key: 'theirs',
+      childId: 1,
+      formData: { foodId: '1' },
+      queuedAt: 1,
+      queuedBy: 7
+    });
+    await enqueue({ key: 'mine', childId: 1, formData: { foodId: '2' }, queuedAt: 2, queuedBy: 8 });
+    const events: string[] = [];
+    const record = (e: Event) => events.push(e.type);
+    const names = ['queue:changed', 'queue:dropped', 'queue:accessRevoked', 'queue:synced'];
+    for (const name of names) window.addEventListener(name, record);
+
+    await flush(transport);
+    for (const name of names) window.removeEventListener(name, record);
+
+    expect(calls.map((c) => c.body.get('idempotencyKey'))).toEqual(['theirs', 'mine']);
+    expect(await countRows()).toBe(0);
+    expect(events).toEqual(['queue:changed', 'queue:changed', 'queue:synced']);
+  });
 
   it('enqueue rejects when indexedDB.open fires onerror', async () => {
     // Cover the req.onerror path in openDb() and reqAsPromise() by injecting
