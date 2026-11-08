@@ -1,5 +1,5 @@
 // .claude/hookify.block-e2e-start-without-slot.local.md against the commands
-// it must block or pass (#645, #651). Claude Code's hookify plugin (0.1.1)
+// it must block or pass (#645, #651, #655). Claude Code's hookify plugin (0.1.1)
 // reads the rule in Python: a hand-rolled frontmatter parser, then each
 // condition ANDed, `regex_match` as re.search with re.IGNORECASE. This file
 // ports those two steps for the keys the rule uses, so CI runs the rule's
@@ -118,7 +118,9 @@ const SLOTS: Record<string, string> = {
   'after cd and T=': 'cd /w && T=$(cat k) && scripts/wait-e2e-slot.sh c2403f8 && ',
   'rev-parse, inner quotes': SUBST + ' && ',
   'curl | jq, inner quotes':
-    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && '
+    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && ',
+  redirect: 'scripts/wait-e2e-slot.sh > /tmp/slot.out 2>&1 && ',
+  'SHA, redirect': 'scripts/wait-e2e-slot.sh c2403f8 > /tmp/slot.out 2>&1 && '
 };
 
 // A slot call that gates nothing, or that the rule cannot read.
@@ -155,10 +157,38 @@ const MUST_BLOCK: Record<string, string> = {
     'scripts/wait-e2e-slot.sh `git rev-parse "origin/$B"` && ' + MERGE,
   'backtick, quoted, double quotes':
     'scripts/wait-e2e-slot.sh "`git rev-parse "origin/$B"`" && ' + MERGE,
-  'redirect to a file': 'scripts/wait-e2e-slot.sh > /tmp/slot.out && ' + MERGE,
-  'redirect 2>&1': 'scripts/wait-e2e-slot.sh 2>&1 && ' + MERGE,
-  'variable, redirect':
-    'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" > /tmp/slot.out && ' + MERGE,
+  // A pipe hands && the exit status of its last command, not the script's.
+  'redirect piped then &&': 'scripts/wait-e2e-slot.sh 2>&1 | tail -1 && ' + MERGE,
+  'redirect to a file piped then &&':
+    'scripts/wait-e2e-slot.sh > /tmp/slot.out | tail -1 && ' + MERGE,
+  'redirect then semicolon': 'scripts/wait-e2e-slot.sh > /tmp/slot.out; ' + MERGE,
+  'redirect then rc=$?':
+    'scripts/wait-e2e-slot.sh > /tmp/slot.out 2>&1; rc=$?; if [ $rc -eq 0 ]; then ' +
+    MERGE +
+    '; fi',
+  'redirect then ||': 'scripts/wait-e2e-slot.sh > /tmp/slot.out || ' + MERGE,
+  'redirect, newline then &&': 'scripts/wait-e2e-slot.sh > /tmp/slot.out\ntrue && ' + MERGE,
+  'redirect before the SHA': 'scripts/wait-e2e-slot.sh > /tmp/slot.out c2403f8 && ' + MERGE,
+  // The rule reads output redirects only.
+  '>|': 'scripts/wait-e2e-slot.sh >| /tmp/slot.out && ' + MERGE,
+  'process substitution': 'scripts/wait-e2e-slot.sh > >(tee /tmp/slot.out) && ' + MERGE,
+  'input redirect': 'scripts/wait-e2e-slot.sh < /dev/null && ' + MERGE,
+  'here-string': 'scripts/wait-e2e-slot.sh <<< x && ' + MERGE,
+  // A target that took in a backslash, a $ or a backtick inside "…", or a
+  // quote or backtick outside it, would end before the shell's word does.
+  // The && then sits inside that word, and the merge after ; runs ungated.
+  'target, escaped quote': 'scripts/wait-e2e-slot.sh > "a\\" && x"; ' + MERGE,
+  'target, quoted subst': 'scripts/wait-e2e-slot.sh > "$(echo " && x")"; ' + MERGE,
+  'target, backtick': 'scripts/wait-e2e-slot.sh > `echo && x`; ' + MERGE,
+  'target, quoted backtick': 'scripts/wait-e2e-slot.sh > "`echo " && x"`"; ' + MERGE,
+  'target, quote inside': 'scripts/wait-e2e-slot.sh > /tmp/a" && x"; ' + MERGE,
+  'target, single quote inside': "scripts/wait-e2e-slot.sh > /tmp/a' && x'; " + MERGE,
+  // The shell ends the target's word there, so the && gates the command
+  // after the pipe, the semicolon or the &, and the redirect on the new line.
+  'redirect piped, no blanks': 'scripts/wait-e2e-slot.sh > /tmp/slot.out|cat && ' + MERGE,
+  'redirect then semicolon, no blank': 'scripts/wait-e2e-slot.sh > /tmp/slot.out;true && ' + MERGE,
+  'redirect in the background': 'scripts/wait-e2e-slot.sh > /tmp/slot.out&true && ' + MERGE,
+  'newline, then a redirect and &&': 'scripts/wait-e2e-slot.sh\n2>&1 && ' + MERGE,
   // hookify matches the pattern with re.IGNORECASE, the marker with a
   // case-sensitive substring test.
   'upper case': 'FJ PR MERGE 640',
@@ -191,6 +221,24 @@ const MUST_PASS: Record<string, string> = {
   'variable first': 'H=$(git rev-parse "origin/$B") && scripts/wait-e2e-slot.sh "$H" && ' + MERGE,
   "message's variable form":
     'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" && ' + MERGE,
+  // Output redirects after the argument keep the script's exit status.
+  'redirect to a file': 'scripts/wait-e2e-slot.sh > /tmp/slot.out && ' + MERGE,
+  'redirect 2>&1': 'scripts/wait-e2e-slot.sh 2>&1 && ' + MERGE,
+  'variable, redirect':
+    'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" > /tmp/slot.out && ' + MERGE,
+  'redirect, no blank': 'scripts/wait-e2e-slot.sh >/tmp/slot.out && ' + MERGE,
+  'stderr to /dev/null': 'scripts/wait-e2e-slot.sh 2>/dev/null && ' + MERGE,
+  'SHA, redirect, no blank': 'scripts/wait-e2e-slot.sh c2403f8 >/tmp/slot.out && ' + MERGE,
+  'SHA, stderr to a file': 'scripts/wait-e2e-slot.sh c2403f8 2> /tmp/slot.err && ' + MERGE,
+  append: 'scripts/wait-e2e-slot.sh >> /tmp/slot.out 2>&1 && ' + MERGE,
+  '&>': 'scripts/wait-e2e-slot.sh &> /tmp/slot.out && ' + MERGE,
+  '&>>': 'scripts/wait-e2e-slot.sh &>>/tmp/slot.out && ' + MERGE,
+  '>&2': 'scripts/wait-e2e-slot.sh >&2 && ' + MERGE,
+  'double-quoted target': 'scripts/wait-e2e-slot.sh > "/tmp/slot out.log" && ' + MERGE,
+  'single-quoted target': "scripts/wait-e2e-slot.sh 2>> '/tmp/slot out.log' && " + MERGE,
+  'subst, redirect': SUBST + ' > /tmp/slot.out 2>&1 && ' + MERGE,
+  'SHA, redirect, continuations':
+    'scripts/wait-e2e-slot.sh c2403f8 \\\n  > /tmp/slot.out 2>&1 \\\n  && ' + MERGE,
   // Another repo's job, named in the URL: no diversif E2E job starts.
   'rerun in another repo':
     'curl -X POST https://git.sbrn.eu/api/v1/repos/simonbrunou/cinder/actions/jobs/13858/rerun',
@@ -267,18 +315,29 @@ describe('block-e2e-start-without-slot', () => {
   // argument that never closes: hookify ran over 120 s on such a mutant.
   // Bun 1.4's regex engine gives up after about a second and returns false,
   // which fails the first two of these.
+  // The same goes for a long run of redirects that never reaches &&.
+  const unclosed = (body: string) => 'scripts/wait-e2e-slot.sh "$(' + body + ' && ' + MERGE;
+  const redirects = (redirect: string) =>
+    'scripts/wait-e2e-slot.sh' + redirect.repeat(5_000) + '; ' + MERGE;
   it.each([
-    ['plain', 'a'.repeat(20_000)],
-    ['quoted strings', '"x"'.repeat(7_000)],
-    ['nested openings', 'a"$(b'.repeat(4_000)]
-  ])('blocks an unclosed 20,000-character argument: %s', (_, body) =>
-    expect(blocks('scripts/wait-e2e-slot.sh "$(' + body + ' && ' + MERGE)).toBe(true)
+    ['plain', unclosed('a'.repeat(20_000))],
+    ['quoted strings', unclosed('"x"'.repeat(7_000))],
+    ['nested openings', unclosed('a"$(b'.repeat(4_000))],
+    ['5,000 redirects 2>&1, no &&', redirects(' 2>&1')],
+    ['5,000 redirects to a file, no &&', redirects(' >> /tmp/slot.out')]
+  ])('blocks an unclosed 20,000-character argument: %s', (_, command) =>
+    expect(blocks(command)).toBe(true)
   );
 
   it('names the variable form in its message', () =>
     expect(rule.message).toContain(
       '`H=$(git rev-parse origin/<branch>) && scripts/wait-e2e-slot.sh "$H" && <command>`'
     ));
+
+  it('names the pipe as the form that blocks, not a redirect', () => {
+    expect(rule.message).toContain('It never lets a pipe through.');
+    expect(rule.message).not.toContain('drop it');
+  });
 
   // \s, \b and case folding differ between the engines outside printable
   // ASCII, tab and newline: Python's \s also matches \x1c, for one.
