@@ -2,8 +2,8 @@
 # Wait until no other CI run of this repo has its E2E job waiting or running,
 # before a push, a merge to main or a rerun starts another one. The rule and
 # why: docs/agents/testing.md, « Start an E2E job only when no other one runs
-# or waits ». Only ci.yml has an E2E job, so it reads only that workflow's
-# runs, and a ci.yml run that lists no E2E job yet counts as busy.
+# or waits ». Only ci.yml has an E2E job, so it skips the runs of other
+# workflows, and a ci.yml run that lists no E2E job yet counts as busy.
 #
 #   scripts/wait-e2e-slot.sh [<own sha>]
 #

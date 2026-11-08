@@ -58,8 +58,7 @@ function answer(requestPath: string): { status: number; body: string } {
   return { status: 404, body: '' };
 }
 
-// A run that waits beside run 7, with the fields a test gives it, and the
-// one job of renovate-config.yml, which waits for a runner slot (#698).
+// A run that waits beside run 7, with the fields a test gives it.
 function waitingRun(fields: Record<string, unknown>) {
   return {
     id: 8,
@@ -70,6 +69,7 @@ function waitingRun(fields: Record<string, unknown>) {
     ...fields
   };
 }
+// The one job of renovate-config.yml, which waits for a runner slot (#698).
 const VALIDATOR = { name: 'renovate-config-validator --strict', status: 'waiting' };
 
 // Raw HTTP over Bun.listen: the test preload replaces the global Response
