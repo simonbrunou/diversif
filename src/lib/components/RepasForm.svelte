@@ -57,8 +57,9 @@
       await goto(localizedHref(`/child/${queueFor}`)).catch(() => {});
     } else if (outcome.kind === 'failed') {
       // The log form fails only when IndexedDB refused the row; an edit,
-      // never queued, fails whenever the server couldn't be reached (the
-      // message use:enhance's error page showed).
+      // never queued, fails whenever no answer came from the app: the browser
+      // is offline, the request failed, or another server's page answered
+      // (the message use:enhance's error page showed).
       toast.error(queueFor === undefined ? m.errorsNetwork() : m.offlineQueueFailedToast());
     } else if (outcome.kind === 'timedOut') {
       // An edit with no answer before the deadline: the server may have

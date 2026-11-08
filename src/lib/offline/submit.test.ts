@@ -86,7 +86,11 @@ async function submitToStalledServer(
   return { outcome, requests };
 }
 
-/** The one request was cancelled by the deadline, no sooner. */
+/**
+ * The deadline's timer cancelled the one request (its signal aborted with a
+ * TimeoutError), and no sooner than SHORT_DEADLINE_MS after the submit
+ * started, less 1 ms of timer rounding.
+ */
 function expectCancelledAtDeadline(
   requests: { signal?: AbortSignal | null; abortedAfter?: number }[]
 ) {
