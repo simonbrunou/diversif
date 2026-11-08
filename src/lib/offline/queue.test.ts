@@ -3,6 +3,7 @@ import 'fake-indexeddb/auto';
 import { stringify } from 'devalue';
 
 import { rawRows } from '../../test/offline-db';
+import { stalledBody, untilAborted } from '../../test/stalled-reply';
 import { clear, count, enqueue, flush, needsReauthCount } from './queue';
 import type { Transport } from './wire';
 
@@ -107,23 +108,6 @@ const networkFailure = (): Response => {
 // A replay deadline short enough to wait out: Bun's runner can't advance
 // setTimeout (see advanceTimersByTimeAsync in src/test/bun-test-utils.ts).
 const SHORT_DEADLINE_MS = 50;
-
-/** Rejects with the signal's reason once it aborts, as fetch does, and never resolves. */
-const untilAborted = (signal: AbortSignal) =>
-  new Promise<never>((_, reject) => {
-    signal.addEventListener('abort', () => reject(signal.reason), { once: true });
-  });
-
-/** Headers at once, then a body that errors only once the signal aborts, as fetch's does. */
-const stalledBody = async (signal: AbortSignal) =>
-  new Response(
-    new ReadableStream({
-      start(body) {
-        signal.addEventListener('abort', () => body.error(signal.reason), { once: true });
-      }
-    }),
-    { status: 200, headers: { 'content-type': 'application/json' } }
-  );
 
 /**
  * Queues one row and runs a pass, with SHORT_DEADLINE_MS, against a server

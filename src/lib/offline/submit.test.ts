@@ -11,8 +11,9 @@ mock.module('#lib/server/audit.js', () => ({ audit: mock() }));
 import { seedLogScene } from '../../test/log-action-transport';
 import { rawRows } from '../../test/offline-db';
 import { entryRows, form } from '../../test/repas';
+import { stalledBody, untilAborted } from '../../test/stalled-reply';
 import { clear, count, flush } from './queue';
-import { submitRepas } from './submit';
+import { submitRepas, type SubmitTarget } from './submit';
 import type { Transport } from './wire';
 
 async function setup() {
@@ -34,6 +35,71 @@ function goOffline(): void {
 }
 
 const unreachable: Transport = () => Promise.reject(new TypeError('Failed to fetch'));
+
+// A submit deadline short enough to wait out: Bun's runner can't advance
+// setTimeout (see advanceTimersByTimeAsync in src/test/bun-test-utils.ts).
+const SHORT_DEADLINE_MS = 50;
+
+const stalls = [
+  ['gets no answer', untilAborted],
+  ['gets headers, then a body that never ends', stalledBody]
+] as const;
+
+/**
+ * Submits a repas, with SHORT_DEADLINE_MS, to a server whose reply never
+ * finishes on its own (`reply`, from src/test/stalled-reply.ts). Hands back
+ * the outcome and, per request, the fields it carried, its signal and how long
+ * after the submit started that signal aborted. The clock read comes before
+ * submitRepas arms its timer, so a stall in between only makes that time
+ * longer (#685).
+ */
+async function submitToStalledServer(
+  reply: (signal: AbortSignal) => Promise<Response>,
+  target: SubmitTarget
+) {
+  const requests: {
+    fields: URLSearchParams;
+    signal?: AbortSignal | null;
+    abortedAfter?: number;
+  }[] = [];
+  let startedAt = 0;
+  const transport: Transport = (_url, init) => {
+    const request: (typeof requests)[number] = {
+      fields: new URLSearchParams(String(init.body)),
+      signal: init.signal
+    };
+    requests.push(request);
+    // Without a signal nothing would ever end the reply: fail it at once.
+    if (!init.signal) return Promise.reject(new TypeError('Failed to fetch'));
+    init.signal.addEventListener('abort', () => (request.abortedAfter = Date.now() - startedAt), {
+      once: true
+    });
+    return reply(init.signal);
+  };
+  startedAt = Date.now();
+  const outcome = await submitRepas(
+    form({ foodId: 1, givenAt: GIVEN_AT, reaction: 'ras' }),
+    target,
+    transport,
+    SHORT_DEADLINE_MS
+  );
+  return { outcome, requests };
+}
+
+/**
+ * The deadline's timer cancelled the one request (its signal aborted with a
+ * TimeoutError), and no sooner than SHORT_DEADLINE_MS after the submit
+ * started, less 1 ms of timer rounding.
+ */
+function expectCancelledAtDeadline(
+  requests: { signal?: AbortSignal | null; abortedAfter?: number }[]
+) {
+  expect(requests).toHaveLength(1);
+  const [{ signal, abortedAfter }] = requests;
+  expect(signal?.aborted).toBe(true);
+  expect((signal?.reason as DOMException | undefined)?.name).toBe('TimeoutError');
+  expect(abortedAfter).toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - 1);
+}
 
 // SvelteKit's answer when a hook throws before the action runs.
 const hookCrashed: Transport = async () =>
@@ -84,12 +150,12 @@ describe('submitRepas', () => {
     expect(entryRows(child.id)[0].givenAt.getTime()).toBe(new Date(GIVEN_AT).getTime());
   });
 
-  // Only the queue's replay has a deadline (#496): what a slow online submit
-  // should do once one passes is a decision of its own.
-  it('sends the repas with no deadline', async () => {
+  // The online submit has a deadline, as the queue's replay does (#577); an
+  // answer that beats it leaves the request's signal alone.
+  it('sends the repas with a deadline that an answer in time does not trip', async () => {
     const { child, carotte, transport, action } = await setup();
     const signals: (AbortSignal | null | undefined)[] = [];
-    await submitRepas(
+    const outcome = await submitRepas(
       form({ foodId: carotte.id, givenAt: GIVEN_AT, reaction: 'ras' }),
       { action, queueFor: child.id },
       (url, init) => {
@@ -97,7 +163,10 @@ describe('submitRepas', () => {
         return transport(url, init);
       }
     );
-    expect(signals).toEqual([undefined]);
+    expect(outcome.kind).toBe('sent');
+    expect(signals).toHaveLength(1);
+    expect(signals[0]).toBeInstanceOf(AbortSignal);
+    expect(signals[0]?.aborted).toBe(false);
   });
 
   it('hands back a refusal with its decoded errorKey, and queues nothing', async () => {
@@ -207,6 +276,26 @@ describe('submitRepas', () => {
     expect(await count()).toBe(0);
     expect(entryRows(child.id)).toHaveLength(1);
   });
+
+  // A stalled request (a half-open mobile connection, a proxy that never
+  // answers) kept the form busy until the browser gave up on it (#577).
+  it.each(stalls)(
+    'queues a submit whose request %s by the deadline, under the key the request carried',
+    async (_, reply) => {
+      const { child } = await setup();
+      const { outcome, requests } = await submitToStalledServer(reply, {
+        action: `http://localhost/child/${child.id}/log`,
+        queueFor: child.id
+      });
+
+      expect(outcome).toEqual({ kind: 'queued' });
+      expectCancelledAtDeadline(requests);
+      const rows = (await rawRows()) as { key: string; childId: number }[];
+      expect(rows).toHaveLength(1);
+      expect(rows[0].childId).toBe(child.id);
+      expect(rows[0].key).toBe(requests[0].fields.get('idempotencyKey')!);
+    }
+  );
 
   it('queues when something other than the app answers (a proxy or captive portal page)', async () => {
     const { child, carotte, action } = await setup();
@@ -328,6 +417,23 @@ describe('submitRepas', () => {
       expect(outcome).toEqual({ kind: 'failed' });
       expect(await count()).toBe(0);
     });
+
+    // A timeout can't tell whether the server saved the edit, so it is not a
+    // failure: the form says the save may not have gone through (#577).
+    it.each(stalls)(
+      'times out, queueing nothing, when the request %s by the deadline',
+      async (_, reply) => {
+        const { child } = await setup();
+        const { outcome, requests } = await submitToStalledServer(reply, {
+          action: `http://localhost/child/${child.id}/log/1?/update`
+        });
+
+        expect(outcome).toEqual({ kind: 'timedOut' });
+        expectCancelledAtDeadline(requests);
+        expect(requests[0].fields.has('idempotencyKey')).toBe(false);
+        expect(await count()).toBe(0);
+      }
+    );
 
     it('fails without touching the network while the browser reports offline', async () => {
       const { carotte, transport, sent, action } = await setup();

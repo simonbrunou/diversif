@@ -1,4 +1,4 @@
-import { fetchTransport, postAction, type Fields, type Transport } from './wire';
+import { fetchTransport, postAction, withDeadline, type Fields, type Transport } from './wire';
 
 export interface QueuedSubmit {
   key: string;
@@ -242,24 +242,6 @@ async function postOne(
   // type === 'failure' (the log action never answers 'success')
   if (result.status === 409 || result.status === 429) return 'retry';
   return dropRow(result.status, 'failure');
-}
-
-// Runs `send` with a signal that aborts `ms` after the call, as
-// AbortSignal.timeout(ms) would. That API came after AbortController and
-// after Web Locks (Safari 16 and Firefox 100, against Safari 15.4 and Firefox
-// 96 for Web Locks), so a browser that flush() serves without locks may lack
-// it. The timer stops once `send` settles.
-async function withDeadline<T>(ms: number, send: (signal: AbortSignal) => Promise<T>): Promise<T> {
-  const controller = new AbortController();
-  const timer = setTimeout(
-    () => controller.abort(new DOMException('The replay deadline passed', 'TimeoutError')),
-    ms
-  );
-  try {
-    return await send(controller.signal);
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 // Every open tab flushes on reconnect, and inFlight only coalesces the passes
