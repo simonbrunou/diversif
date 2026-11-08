@@ -2,7 +2,8 @@
 # Wait until no other CI run of this repo has its E2E job waiting or running,
 # before a push, a merge to main or a rerun starts another one. The rule and
 # why: docs/agents/testing.md, « Start an E2E job only when no other one runs
-# or waits ».
+# or waits ». Only ci.yml has an E2E job, so it reads only that workflow's
+# runs, and a ci.yml run that lists no E2E job yet counts as busy.
 #
 #   scripts/wait-e2e-slot.sh [<own sha>]
 #
@@ -28,8 +29,8 @@
 # Exit 0: no other E2E job waits or runs, no other worktree holds a claim
 # and no other waiter is ahead. Exit 3: still busy or behind another waiter,
 # run it again. Exit 2: no token on this host, the forge refused it, or a
-# wrong call (a bad SHA or E2E_WAIT, a JOB that ci.yml no longer names, or a
-# claim file it cannot write); it also drops this worktree from the queue.
+# wrong call (a bad SHA or E2E_WAIT, a JOB that WORKFLOW no longer names, or
+# a claim file it cannot write); it also drops this worktree from the queue.
 # E2E_SLOT_API replaces the forge's repo API URL, for the test.
 #
 # It reads `actions/runs` and each run's jobs. `actions/tasks` lists only the
@@ -40,7 +41,9 @@
 set -uo pipefail
 
 API="${E2E_SLOT_API:-https://git.sbrn.eu/api/v1/repos/simonbrunou/diversif}"
-# The job's `name:` in .forgejo/workflows/ci.yml; checked below.
+# The workflow file in .forgejo/workflows that holds the E2E job, and that
+# job's `name:` there; checked below. A run's `workflow_id` is this file name.
+WORKFLOW="ci.yml"
 JOB="End-to-end tests (Playwright)"
 REPO="$(dirname "$0")/.."
 WAIT="${E2E_WAIT:-420}"
@@ -148,8 +151,8 @@ OWN="$(printf '%s' "$OWN" | tr '[:upper:]' '[:lower:]')"
 [[ "$WAIT" =~ ^[0-9]+$ ]] || die "E2E_WAIT must be a number of seconds, got '$WAIT'"
 WAIT=$((10#$WAIT))
 [ -z "$OWN" ] || [[ "$OWN" =~ ^[0-9a-f]{7,40}$ ]] || die "'$OWN' is not a commit SHA"
-grep -qxF "    name: $JOB" "$REPO/.forgejo/workflows/ci.yml" ||
-  die "ci.yml has no job named '$JOB': update JOB in this script"
+grep -qxF "    name: $JOB" "$REPO/.forgejo/workflows/$WORKFLOW" ||
+  die "$WORKFLOW has no job named '$JOB': update JOB in this script"
 [ -d "$(dirname "$CLAIM")" ] && [ -w "$(dirname "$CLAIM")" ] && [ ! -d "$CLAIM" ] &&
   [ ! -d "$QUEUE" ] || die "cannot write the claim file $CLAIM or its queue"
 [ -n "$ME" ] || die "$REPO is not inside a git worktree"
@@ -171,9 +174,14 @@ case "$code" in
 esac
 
 # Print one line per busy run, then "checked" once every run was read. A
-# request that fails, an empty or misshapen reply, a run with no E2E job and
-# any job state but a finished one all count as busy, and so does a check
-# that stops before "checked": a false "clear" starts two E2E jobs at once.
+# request that fails, an empty or misshapen reply, a WORKFLOW run with no E2E
+# job (a queued run may not list its jobs yet) and any job state but a
+# finished one all count as busy, and so does a check that stops before
+# "checked": a false "clear" starts two E2E jobs at once. A run of another
+# workflow never has the E2E job, so it is skipped: on 2026-11-07 a
+# renovate-config.yml run whose one job waited for a runner slot read busy
+# for 3.5 min (#698). A run whose workflow_id is not a non-empty string is
+# misshapen, and goes through the jobs check.
 busy_runs() {
   local runs active id label jobs e2e
   runs="$(api 'actions/runs?status=waiting&status=running')" || {
@@ -186,8 +194,9 @@ busy_runs() {
     return
   }
   # A run has `commit_sha`; its `head_sha` and `head_branch` read null here.
-  active="$(jq -r --arg own "$OWN" '.workflow_runs[]
+  active="$(jq -r --arg own "$OWN" --arg workflow "$WORKFLOW" '.workflow_runs[]
       | select($own == "" or ((.commit_sha // "") | startswith($own) | not))
+      | select(.workflow_id | type != "string" or . == "" or . == $workflow)
       | "\(.id) #\(.index_in_repo) \(.title)"' <<<"$runs")"
   while read -r id label; do
     [ -n "$id" ] || continue

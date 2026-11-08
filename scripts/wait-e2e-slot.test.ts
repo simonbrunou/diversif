@@ -27,23 +27,50 @@ const RUN_SHA = 'ab'.repeat(20);
 let busy = false;
 let refuse = false;
 let onRunList: (() => void) | null = null;
+// Per test: the runs the forge lists after run 7, each with its jobs.
+let others: { run: Record<string, unknown>; jobs: unknown[] }[] = [];
 
 // The answer to one request path, query string left out: the run list (the
-// script's first probe asks for it too) or run 7's jobs.
+// script's first probe asks for it too) or a run's jobs.
 function answer(requestPath: string): { status: number; body: string } {
   if (refuse) return { status: 401, body: '' };
   if (requestPath.endsWith('/actions/runs')) {
     onRunList?.();
-    const runs = busy
-      ? [{ id: 7, index_in_repo: 41, title: 'another PR', commit_sha: RUN_SHA }]
+    const runs: Record<string, unknown>[] = busy
+      ? [
+          {
+            id: 7,
+            index_in_repo: 41,
+            title: 'another PR',
+            commit_sha: RUN_SHA,
+            workflow_id: 'ci.yml'
+          }
+        ]
       : [];
+    runs.push(...others.map((other) => other.run));
     return { status: 200, body: JSON.stringify({ workflow_runs: runs }) };
   }
   if (requestPath.endsWith('/actions/runs/7/jobs')) {
     return { status: 200, body: JSON.stringify([{ name: JOB, status: 'running' }]) };
   }
+  const other = others.find(({ run }) => requestPath.endsWith(`/actions/runs/${run.id}/jobs`));
+  if (other) return { status: 200, body: JSON.stringify(other.jobs) };
   return { status: 404, body: '' };
 }
+
+// A run that waits beside run 7, with the fields a test gives it, and the
+// one job of renovate-config.yml, which waits for a runner slot (#698).
+function waitingRun(fields: Record<string, unknown>) {
+  return {
+    id: 8,
+    index_in_repo: 42,
+    title: 'a waiting run',
+    commit_sha: 'cd'.repeat(20),
+    status: 'waiting',
+    ...fields
+  };
+}
+const VALIDATOR = { name: 'renovate-config-validator --strict', status: 'waiting' };
 
 // Raw HTTP over Bun.listen: the test preload replaces the global Response
 // with happy-dom's, which Bun.serve refuses.
@@ -128,6 +155,7 @@ beforeEach(() => {
   busy = false;
   refuse = false;
   onRunList = null;
+  others = [];
   rmSync(claimDir, { recursive: true, force: true });
   mkdirSync(claimDir);
 });
@@ -396,6 +424,58 @@ describe('scripts/wait-e2e-slot.sh', () => {
       refuse = false;
       busy = false;
       expect((await call(b)).code).toBe(0);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'reads a waiting run of another workflow as clear, and prints no line for it',
+    async () => {
+      others = [{ run: waitingRun({ workflow_id: 'renovate-config.yml' }), jobs: [VALIDATOR] }];
+      const run = await call(a);
+      expect(run.stdout).toMatch(/^wait-e2e-slot: clear at \d\d:\d\d:\d\d$/m);
+      expect(run.stdout).not.toMatch(/^run /m);
+      expect(run.code).toBe(0);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'reads a waiting ci.yml run that lists no E2E job yet as busy',
+    async () => {
+      others = [{ run: waitingRun({ workflow_id: 'ci.yml' }), jobs: [] }];
+      const run = await call(a);
+      expect(run.stdout).toMatch(/^run 8 #42 a waiting run: E2E missing$/m);
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it.each([
+    ['no workflow_id', {}],
+    ['a null workflow_id', { workflow_id: null }],
+    ['a workflow_id that is not a string', { workflow_id: 3 }],
+    ['an empty workflow_id', { workflow_id: '' }]
+  ])(
+    'reads a waiting run with %s and no E2E job as busy',
+    async (_, fields) => {
+      others = [{ run: waitingRun(fields), jobs: [VALIDATOR] }];
+      const run = await call(a);
+      expect(run.stdout).toMatch(/^run 8 #42 a waiting run: E2E missing$/m);
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'prints only the ci.yml run when a run of another workflow waits beside it',
+    async () => {
+      busy = true;
+      others = [{ run: waitingRun({ workflow_id: 'renovate-config.yml' }), jobs: [VALIDATOR] }];
+      const run = await call(a);
+      expect(run.stdout).toMatch(/^run 7 #41 another PR: E2E running$/m);
+      expect(run.stdout).not.toContain('run 8');
+      expect(run.code).toBe(3);
     },
     TIMEOUT
   );
