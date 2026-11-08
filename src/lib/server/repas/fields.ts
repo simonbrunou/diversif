@@ -150,6 +150,15 @@ export function idempotencyKeyField(form: FormData): string | null {
   return key;
 }
 
+/**
+ * The id of the user who queued the repas, as the queue's replay sends it
+ * (src/lib/offline/queue.ts), or null when the request carries none: the
+ * online submit, the form without JavaScript, and rows queued before #566.
+ */
+export function queuedByField(form: FormData): string | null {
+  return text(form, 'queuedBy') ?? null;
+}
+
 export function parseLogForm(form: FormData): LogDraft {
   return {
     aliments: alimentsField(form),

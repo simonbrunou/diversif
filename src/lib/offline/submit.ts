@@ -25,6 +25,12 @@ export type SubmitTarget = {
    * only: it makes the submit durable. Edits are never queued.
    */
   queueFor?: number;
+  /**
+   * The signed-in user's id, stored on a queued row with `queueFor`: the
+   * replay drops a row queued by another user than the session's (#566).
+   * The online attempt does not send it.
+   */
+  queuedBy?: number;
 };
 
 export async function submitRepas(
@@ -55,7 +61,8 @@ export async function submitRepas(
     key: durable.key,
     childId: durable.childId,
     formData: fields,
-    queuedAt: Date.now()
+    queuedAt: Date.now(),
+    ...(target.queuedBy === undefined ? {} : { queuedBy: target.queuedBy })
   });
 }
 

@@ -18,6 +18,7 @@
   let {
     busy = $bindable(false),
     queueFor,
+    queuedBy,
     onapplied,
     children,
     ...attributes
@@ -26,6 +27,8 @@
     busy?: boolean;
     /** The child to queue the repas for when the server can't be reached: the log form only. */
     queueFor?: number;
+    /** The signed-in user's id, recorded on the queued repas: the log form only. */
+    queuedBy?: number;
     /** Called with the server's answer once it is applied to the page. */
     onapplied?: (result: ActionResult) => void;
     children: Snippet;
@@ -40,7 +43,8 @@
     try {
       outcome = await submitRepas(new FormData(form, event.submitter), {
         action: form.action,
-        queueFor
+        queueFor,
+        queuedBy
       });
       if (outcome.kind === 'sent') {
         await applyAction(outcome.result);
