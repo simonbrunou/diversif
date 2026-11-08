@@ -12,10 +12,31 @@ import { parse } from 'devalue';
  */
 export type Transport = (url: string, init: RequestInit) => Promise<Response>;
 
-// No deadline of its own: the queue's replay hands one in as init.signal (30 s,
-// REPLAY_DEADLINE_MS in queue.ts says why), and an online submit passes none
-// (#496).
+// No deadline of its own: each caller hands one in as init.signal, through
+// withDeadline below. The queue's replay takes REPLAY_DEADLINE_MS (queue.ts,
+// #496), an online submit SUBMIT_DEADLINE_MS (submit.ts, #577); each says why.
 export const fetchTransport: Transport = (url, init) => fetch(url, init);
+
+// Runs `send` with a signal that aborts `ms` after the call, as
+// AbortSignal.timeout(ms) would. That API came after AbortController and
+// after Web Locks (Safari 16 and Firefox 100, against Safari 15.4 and Firefox
+// 96 for Web Locks), so a browser that the queue's flush() serves without
+// locks may lack it. The timer stops once `send` settles.
+export async function withDeadline<T>(
+  ms: number,
+  send: (signal: AbortSignal) => Promise<T>
+): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(new DOMException('The request deadline passed', 'TimeoutError')),
+    ms
+  );
+  try {
+    return await send(controller.signal);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 /**
  * A form's fields as a queued row stores them. A key the form repeats (a

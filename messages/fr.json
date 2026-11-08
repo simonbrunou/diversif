@@ -114,6 +114,7 @@
   "errorsGenericFallback": "Une erreur s’est produite.",
   "errorsGenericDescription404": "Aucune page ne correspond à cette adresse.",
   "errorsNetwork": "Impossible de joindre le serveur. Vérifiez votre connexion, puis réessayez.",
+  "errorsSaveTimedOut": "L’enregistrement n’a peut-être pas abouti. Vérifiez votre connexion, puis réessayez.",
   "errorsAuthRateLimited": "Trop de tentatives. Réessayez plus tard.",
   "errorsAuthRateLimitedSeconds": "Trop de tentatives. Réessayez dans {seconds} s.",
   "errorsAuthBadInput": "Champs invalides.",
