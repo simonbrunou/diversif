@@ -42,7 +42,7 @@ export default ts.config(
       '.e2e-data/',
       'static/',
       'project.inlang/modules/',
-      // paraglide 2.x compiler output: every generated module starts with
+      // paraglide compiler output (2.x and later): every generated module starts with
       // /* eslint-disable */, which trips reportUnusedDisableDirectives as
       // hundreds of warnings. Generated code isn't ours to lint.
       'src/lib/paraglide/'

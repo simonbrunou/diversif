@@ -3,7 +3,10 @@
 // scripts/compile-paraglide.ts (check/lint/test, which run outside vite).
 // The two MUST compile identical runtimes — strategy and urlPatterns are
 // baked into the generated runtime.js, so drift here would mean tests
-// exercising different routing than production.
+// exercising different routing than production. Since paraglide 3 the two
+// runtimes differ in one line: runtime.js exports `isDevelopment`, true
+// from compile() and false from a production vite build. Nothing in this
+// runtime or the app reads it.
 
 import type { CompilerOptions } from '@inlang/paraglide-js';
 
