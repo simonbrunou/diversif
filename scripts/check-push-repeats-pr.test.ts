@@ -2,7 +2,8 @@
 // per test. The base repo holds this checkout's copy of each file ALLOWED
 // names, so every listed difference has its hit, and a fixture workflow with
 // the shapes the script must pass: `push` to `main` and a bare
-// `pull_request`, `${{ github.run_id }}` in a name, `if: always()` on a
+// `pull_request`, `${{ github.run_id }}` in a name (and beside it, in one
+// case, `${{ github.run_attempt }}`), `if: always()` on a
 // cleanup step, and a runner variable name in Markdown. Each other case edits
 // one file into one difference and asserts exit 1 and the line that names
 // it, so removing any rule from the script turns a case red. The runner
@@ -165,6 +166,19 @@ describe('check-push-repeats-pr passes', () => {
     () => {
       expectPass({
         [FIXTURE]: fixtureWith('      - uses: https://data.forgejo.org/actions/setup-node@v7')
+      });
+    },
+    TIMEOUT
+  );
+  it(
+    "the job's attempt beside the run id in a name",
+    () => {
+      expectPass({
+        [FIXTURE]: edit(
+          baseFixture,
+          'ci-${{ github.run_id }}',
+          'ci-${{ github.run_id }}-${{ github.run_attempt }}'
+        )
       });
     },
     TIMEOUT
@@ -339,7 +353,7 @@ describe('check-push-repeats-pr finds a difference', () => {
           'ci-${{ github.run_id }}-${{ github.ref }}'
         )
       },
-      /fixture\.yml \.jobs\.test\.env\.IMAGE: an expression other than run_id and runner\.temp: \$\{\{ github\.ref \}\}/
+      /fixture\.yml \.jobs\.test\.env\.IMAGE: an expression other than run_id, run_attempt and runner\.temp: \$\{\{ github\.ref \}\}/
     ],
     [
       "the index form github['event_name']",

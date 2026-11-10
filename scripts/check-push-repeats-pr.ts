@@ -22,9 +22,10 @@
 //   cannot read;
 // - in a workflow, in any other YAML file under .forgejo/, or in an
 //   action.yml or action.yaml anywhere: an `if` key whose value is not
-//   `always()`, a `${{ }}` expression other than `${{ github.run_id }}` and
-//   `${{ runner.temp }}`, a step that uses actions/github-script, whose code
-//   gets the event, and a value or key that names a runner variable (below);
+//   `always()`, a `${{ }}` expression other than `${{ github.run_id }}`,
+//   `${{ github.run_attempt }}` and `${{ runner.temp }}`, a step that uses
+//   actions/github-script, whose code gets the event, and a value or key that
+//   names a runner variable (below);
 // - in any other file outside Markdown and graphify-out/, a line holding a
 //   name made of GITHUB, GITEA, FORGEJO or FORGE and an underscore, which a
 //   script could read the event through, or the names of the actions
@@ -72,9 +73,11 @@ const GH = RUNNER[0];
 const EVENT_READS = [['@actions', 'github'].join('/'), ['event', 'Name'].join('')];
 const RUNNER_NAME = new RegExp([...RUNNER, ...EVENT_READS].join('|'));
 const ALLOWED_TRIGGERS = new Set(['push', 'pull_request', 'schedule', 'workflow_dispatch']);
-// The same value on both events: this run's id and the runner's temp
-// directory.
-const SAME_ON_BOTH = new Set(['github.run_id', 'runner.temp']);
+// Values that do not depend on the event: this run's id, this job's attempt
+// and the runner's temp directory. A push run's jobs start at attempt 1 as a
+// PR run's do; a re-run of a job raises its attempt whichever event started
+// the run (#697).
+const SAME_ON_BOTH = new Set(['github.run_id', 'github.run_attempt', 'runner.temp']);
 const EXPRESSION = /\$\{\{([\s\S]*?)\}\}/g;
 const CI = '.forgejo/workflows/ci.yml';
 const RENOVATE = '.forgejo/workflows/renovate-config.yml';
@@ -336,7 +339,7 @@ function checkText(file: string, where: string, text: string, hits: Hit[], what 
       file,
       where,
       value: text,
-      reason: `an expression other than run_id and runner.temp: ${m[0]}`
+      reason: `an expression other than run_id, run_attempt and runner.temp: ${m[0]}`
     });
   }
   if (RUNNER_NAME.test(text)) {
