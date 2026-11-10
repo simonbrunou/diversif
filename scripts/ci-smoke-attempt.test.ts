@@ -359,7 +359,7 @@ describe('the removal step', () => {
 
   // Attempt 1 left all three, so the step reaches all six calls.
   it.each(['ps', 'rm', 'volume ls', 'volume rm', 'images', 'image rm'])(
-    'fails at a failed docker %s, before it reports the attempt',
+    'fails at a failed docker %s with an ::error:: line, before it reports the attempt',
     (call) => {
       const s = stub({
         containers: { [container(1)]: volume(1) },
@@ -367,8 +367,10 @@ describe('the removal step', () => {
         images: [image(1)]
       });
       const r = runRemoval(s, '2', { fail: call });
-      expect(r.code).not.toBe(0);
-      expect(r.out).toBe('');
+      expect(r.code).toBe(1);
+      expect(r.out).toBe(
+        '::error::a docker call failed while removing what attempt 1 of this run left\n'
+      );
       expect(r.err).toBe(`Error response from daemon: stub failure on ${call}\n`);
       expect(calls(s).at(-1)!.startsWith(`${call} `)).toBe(true);
     },

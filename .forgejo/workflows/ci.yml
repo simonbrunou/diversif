@@ -272,8 +272,9 @@ jobs:
       # --force, which exits 0 on a name an earlier attempt's own cleanup step
       # removed after the check. `shell: bash` runs the text as
       # `bash --noprofile --norc -e -o pipefail`, so a failed docker call fails
-      # the step, and the for loop needs bash. scripts/ci-smoke-attempt.test.ts
-      # runs this text against a stub docker.
+      # the step once the ERR trap has named the attempt, and the for loop and
+      # the trap need bash. scripts/ci-smoke-attempt.test.ts runs this text
+      # against a stub docker.
       - name: Remove earlier attempts' container, volume and image
         shell: bash
         env:
@@ -295,6 +296,7 @@ jobs:
           if [ "$RUN_ATTEMPT" = 1 ]; then
             echo "This is attempt 1: no earlier attempt to clean up"
           fi
+          trap 'echo "::error::a docker call failed while removing what attempt $n of this run left"' ERR
           for ((n = 1; n < RUN_ATTEMPT; n++)); do
             container="$container_base-$n"
             volume="$volume_base-$n"
