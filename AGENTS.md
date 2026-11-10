@@ -35,7 +35,7 @@ Agents may merge their own PR without asking once all three hold:
 - CI is green on the pushed SHA;
 - the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0.
 
-When the branch is behind `main` but has no conflict, merge it as it is. Merging `origin/main` into it first costs a full CI run, so skip that step. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows such a break. After you merge, check that run along with the deploy. If a newer merge cancelled it, check the run on the newer `main` commit instead. If the run is red, take each failure in turn. While #478 is open, an E2E timeout that « Triaging a red run » in `docs/agents/testing.md` lists as runner overload gets a sighting there, as that bullet says. A job the runner cancelled mid-step (`[runner]: context canceled`, no failed test) gets the rerun that section describes. For any other failure, comment the run, its SHA and the failing test or step on the open issue that tracks that failure, or file a Forgejo issue labelled `needs-triage` when none does.
+When the branch is behind `main` but has no conflict, merge it as it is. Merging `origin/main` into it first costs a full CI run, so skip that step. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows such a break, and « After every merge » below says when to wait for it.
 
 The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also exits 1 when it cannot find the SHA, and then prints `not something we can merge` instead. In that case, fetch or correct the SHA and run the check again. On a conflict:
 
@@ -46,7 +46,15 @@ The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also 
 
 The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).
 
-After the merge, check the deploy with `scripts/smoke-prod.sh <sha>`, where `<sha>` is the newest `main` commit that started a deploy. A merge that changes only `*.md` or `docs/` files deploys nothing (see `docs/agents/deploy.md`).
+After every merge, decide whether to wait for the CI run the merge starts on `main`:
+
+1. Run `git fetch origin`. Read the merge SHA from `merge_commit_sha` in `python3 -I ~/.agents/skills/forgejo-issues/scripts/forgejo.py get diversif#<n>`, since `fj pr -R origin merge` prints none.
+2. Run `git rev-parse <merge SHA>^{tree} <pushed SHA>^{tree}`.
+   - Two different hashes mean the merge commit holds files that no CI run tested together, as when the branch was behind `main`. Wait for `main`'s run (step 3).
+   - The same hash twice means the merge commit holds the files the PR's run passed, since that run checks out the pushed SHA itself. Then run `nix develop -c bun scripts/check-push-repeats-pr.ts <pushed SHA> <merge SHA>` in the PR's worktree, its head still at the pushed SHA. The script compares the two trees again, reads the workflows and the other files at the pushed SHA, and exits 0 only when the `push` run on `main` repeats the PR run's jobs and steps, apart from the differences its `ALLOWED` list keeps on purpose, each with its reason. On exit 0, skip the wait. On any other exit, or when the script cannot run, wait as for different hashes. It prints each difference it found. A PR whose run skipped `End-to-end tests (Playwright)` (a change to Markdown and `docs/` only) still skips the wait: with equal trees, each file the PR did not change against its merge base keeps the version of the `main` commit it merged onto, so `main`'s E2E job tests that commit's app files again. The skip means the merge adds nothing the PR's run did not test, not that `main`'s run will be green: a new advisory or a flaky test can still turn it red.
+3. To wait, run `python3 -I ~/.agents/skills/forgejo-issues/scripts/forgejo.py ci diversif --follow main` alone in a shell call, and run it again on exit 3. When a newer merge cancels the run, it follows `main` to the newer commit's run, which you then check instead. If the run is red, take each failure in turn. While #478 is open, an E2E timeout that « Triaging a red run » in `docs/agents/testing.md` lists as runner overload gets a sighting there, as that bullet says. A job the runner cancelled mid-step (`[runner]: context canceled`, no failed test) gets the rerun that section describes. For any other failure, comment the run, its SHA and the failing test or step on the open issue that tracks that failure, or file a Forgejo issue labelled `needs-triage` when none does. When the merge itself broke `main` (two PRs that pass alone but fail together), also fix it in a new PR.
+
+Check the deploy whatever the hashes say: run `scripts/smoke-prod.sh <sha>`, where `<sha>` is the newest `main` commit that started a deploy. A merge that changes only `*.md` or `docs/` files deploys nothing (see `docs/agents/deploy.md`).
 
 ## Agent skills
 
