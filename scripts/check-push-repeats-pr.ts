@@ -190,8 +190,9 @@ export const ALLOWED: Allowed[] = [
       'the same paths as pull_request. The push run diffs the merge commit against the main ' +
       'commit it merged onto. The merge takes from that commit each file the PR did not change ' +
       'against its merge base, so with equal trees every file in that diff is one the PR ' +
-      'changed, and the PR run, which diffs from its merge base, starts the validator ' +
-      'whenever the push run does'
+      'changed, and the PR run starts the validator whenever the push run does. One exception: ' +
+      'Forgejo can diff a PR from an older merge base (the workflow header), and a PR that put ' +
+      'a filtered file back to that older base content then skips the validator'
   },
   {
     file: RENOVATE,
