@@ -33,7 +33,7 @@ services:
     # below point at a real S3-compatible bucket (Cloudflare R2 recommended)
     # — see DEPLOY.md B1 for the setup steps. Ordinary `docker compose up`
     # for local dev is unaffected.
-    image: litestream/litestream:0.5.17
+    image: litestream/litestream:0.5.18
     profiles: [backup]
     container_name: diversif-litestream
     command: replicate
