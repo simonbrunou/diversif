@@ -19,15 +19,17 @@ agent saw just "Blocked by hook" (#663). Changes from hookify 0.1.1:
   .claude/hookify.*.local.md under the working directory. The hook finds them
   from any working directory, and hookify, still installed, finds none here.
   They load in file name order, so several matches combine in a fixed order.
-- A block answers with `permissionDecisionReason` and no `systemMessage`; a
-  warn with `additionalContext` and no `permissionDecision`, so the call still
-  goes through Claude Code's permission checks.
+- A block answers with `permissionDecisionReason` and drops `systemMessage`:
+  the reason is the tool error, which the session's transcript shows the
+  person watching too. A warn adds `additionalContext` for the agent and keeps
+  `systemMessage` for that person. It sets no `permissionDecision`, so the
+  call still goes through Claude Code's permission checks.
 - Only PreToolUse: the Stop branch and the self-test blocks are gone. hookify
   also runs on PostToolUse, with the same tool input and the same rules, so
   there it repeats PreToolUse's verdict: a block can no longer stop a call
   that PreToolUse let through, and a warn would show its message a second time.
 - An error in the hook still lets the call through, as in hookify, and tells
-  the agent that no rule checked the call.
+  the agent too that no rule checked the call.
 
 Rule files keep hookify's format, and the matching code (the frontmatter
 parser, the conditions, the fields each tool exposes, regex_match with
@@ -370,11 +372,13 @@ class RuleEngine:
 
         # If only warnings, let the call go on and give the agent the messages
         if warning_rules:
+            message = combine(warning_rules)
             return {
                 "hookSpecificOutput": {
                     "hookEventName": "PreToolUse",
-                    "additionalContext": combine(warning_rules)
-                }
+                    "additionalContext": message
+                },
+                "systemMessage": message
             }
 
         # No matches - allow operation
@@ -572,15 +576,17 @@ def main():
         result = respond(json.load(sys.stdin))
     except Exception as e:
         # Let the call through, as hookify does, but say no rule checked it
+        message = (
+            f"The repo's rule hook (.claude/rule-hook/hook.py) failed with "
+            f"{type(e).__name__}: {e}. No rule in .claude/rule-hook/rules/ "
+            f"checked this call."
+        )
         result = {
             "hookSpecificOutput": {
                 "hookEventName": "PreToolUse",
-                "additionalContext": (
-                    f"The repo's rule hook (.claude/rule-hook/hook.py) failed with "
-                    f"{type(e).__name__}: {e}. No rule in .claude/rule-hook/rules/ "
-                    f"checked this call."
-                )
-            }
+                "additionalContext": message
+            },
+            "systemMessage": message
         }
     print(json.dumps(result))
 

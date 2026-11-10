@@ -24,8 +24,10 @@ const deny = (...names: string[]) => ({
   }
 });
 
+// The agent reads additionalContext, the person watching reads systemMessage.
 const warn = (...names: string[]) => ({
-  hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: combined(...names) }
+  hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: combined(...names) },
+  systemMessage: combined(...names)
 });
 
 // One call each block rule refuses.
@@ -103,6 +105,7 @@ describe('.claude/rule-hook/hook.py', () => {
     expect(run.output?.hookSpecificOutput?.additionalContext).toStartWith(
       "The repo's rule hook (.claude/rule-hook/hook.py) failed with JSONDecodeError"
     );
+    expect(run.output?.systemMessage).toBe(run.output?.hookSpecificOutput?.additionalContext);
   });
 
   // The hook skips a rule file it cannot parse and a pattern it cannot

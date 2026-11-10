@@ -18,6 +18,7 @@ export type HookOutput = {
     permissionDecisionReason?: string;
     additionalContext?: string;
   };
+  systemMessage?: string;
 };
 
 export type Rule = {

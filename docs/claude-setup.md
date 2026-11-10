@@ -39,7 +39,8 @@ inside a plugin**, installing the plugins also restores the MCP servers.
   - `PreToolUse` (every tool) → `.claude/rule-hook/hook.py` — checks the call
     against the rules in `.claude/rule-hook/rules/*.md`. A matching `block` rule
     denies the call and its message becomes the tool error the agent reads; a
-    `warn` rule lets the call go on and adds its message to the agent's context.
+    `warn` rule lets the call go on, adds its message to the agent's context and
+    shows it to you.
     The rule files keep hookify's format, and the hook copies hookify 0.1.1's
     engine (Apache-2.0, `.claude/rule-hook/LICENSE`); hookify itself puts these
     messages where the agent never reads them (#663). Needs `python3`, standard
