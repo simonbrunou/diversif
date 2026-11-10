@@ -377,6 +377,25 @@ describe('the removal step', () => {
     TIMEOUT
   );
 
+  it(
+    'names the attempt it was removing when a docker call fails',
+    () => {
+      const s = stub({
+        containers: { [container(2)]: '' },
+        volumes: [volume(2)],
+        images: [image(2)]
+      });
+      const r = runRemoval(s, '3', { fail: 'volume rm' });
+      expect(r.code).toBe(1);
+      expect(r.out).toBe(
+        `Attempt 1: container ${container(1)} absent, volume ${volume(1)} absent, image ${image(1)} absent\n` +
+          '::error::a docker call failed while removing what attempt 2 of this run left\n'
+      );
+      expect(r.err).toBe('Error response from daemon: stub failure on volume rm\n');
+    },
+    TIMEOUT
+  );
+
   // A forge that stopped sending run_attempt would give every attempt one name.
   it.each(['', '0', '01', 'a', '2x', '-1', ' 2'])(
     'fails before any docker call on run_attempt %p',
