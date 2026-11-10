@@ -10,6 +10,13 @@ import type { CompilerOptions } from '@inlang/paraglide-js';
 export const paraglideCompilerOptions: CompilerOptions = {
   project: './project.inlang',
   outdir: './src/lib/paraglide',
+  // Physical message files, one module per message. Paraglide 3's vite
+  // plugin defaults to "virtual-modules", where messages.js re-exports
+  // `virtual:paraglide/...` ids that only vite resolves: `bun build`
+  // (build:scripts) then fails to bundle scripts/export-user.ts, whose
+  // schema import pulls in the messages. compile() defaults to
+  // "message-modules", so naming it here also keeps both paths on one layout.
+  outputStructure: 'message-modules',
   // url-only resolution preserves the 1.x behavior exactly: the locale is a
   // pure function of the pathname (FR at /, EN under /en), no cookie or
   // Accept-Language negotiation, hence the server middleware never issues
