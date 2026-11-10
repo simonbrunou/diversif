@@ -13,7 +13,7 @@ scripts/claude-setup.sh         # installs standalone skills, seeds local settin
 ```
 
 Prereqs to run `claude-setup.sh`: `git`, `jq`. For the agent tooling itself once
-set up: `bun`, `gh`, `python3` (used by the graphify hook), plus the external
+set up: `bun`, `gh`, `python3` (used by the graphify hook and the rule hook), plus the external
 **graphify** CLI (see below). Tip: in a Claude Code session you can run a command
 yourself by typing `! <command>` at the prompt.
 
@@ -36,6 +36,14 @@ inside a plugin**, installing the plugins also restores the MCP servers.
 - **MCP servers** (bundled in those plugins): github, svelte, playwright,
   chrome-devtools, context7.
 - **Hooks** (`hooks`):
+  - `PreToolUse` (every tool) → `.claude/rule-hook/hook.py` — checks the call
+    against the rules in `.claude/rule-hook/rules/*.md`. A matching `block` rule
+    denies the call and its message becomes the tool error the agent reads; a
+    `warn` rule lets the call go on and adds its message to the agent's context.
+    The rule files keep hookify's format, and the hook copies hookify 0.1.1's
+    engine (Apache-2.0, `.claude/rule-hook/LICENSE`); hookify itself puts these
+    messages where the agent never reads them (#663). Needs `python3`, standard
+    library only.
   - `PreToolUse` (Bash) — graphify: nudges Claude to read `graphify-out/` before
     grepping raw files.
   - `PostToolUse` (Bash) → `.claude/hooks/code-review-on-push.sh` — after a
@@ -103,7 +111,7 @@ For diversif:
 
 - the 20 plugins + 4 marketplaces — installed at session start, **provided the
   environment's network access is Trusted/Custom** (not None);
-- every hook in `.claude/settings.json`, the hookify rules (`.claude/hookify.*.local.md`),
+- every hook in `.claude/settings.json`, the rule hook's rules (`.claude/rule-hook/rules/`),
   the project skills (`create-migration`, `fallow`, `i18n-add-key`, `pre-launch-check`)
   and the `tenant-isolation-auditor` and `webauthn-auth-reviewer` agents;
 - `bun install` runs automatically via the committed `SessionStart` hook

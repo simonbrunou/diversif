@@ -1,76 +1,35 @@
-// .claude/hookify.block-e2e-start-without-slot.local.md against the commands
-// it must block or pass (#645, #651, #655). Claude Code's hookify plugin (0.1.1)
-// reads the rule in Python: a hand-rolled frontmatter parser, then each
-// condition ANDed, `regex_match` as re.search with re.IGNORECASE. This file
-// ports those two steps for the keys the rule uses, so CI runs the rule's
-// cases on every change. Python and JavaScript read the pattern alike only
-// in the syntax they share and on printable ASCII, tab and newline, so two
-// tests keep the pattern and the cases to those. Where Claude Code installed
-// hookify (CI has none), the last test runs hookify's own engine on every
-// case and compares the verdicts.
+// .claude/rule-hook/rules/block-e2e-start-without-slot.md against the
+// commands it must block or pass (#645, #651, #655). Each case goes through
+// the repo's PreToolUse hook, .claude/rule-hook/hook.py, as a Bash call:
+// its own loader and engine (hookify 0.1.1's, in Python: a hand-rolled
+// frontmatter parser, each condition ANDed, `regex_match` as re.search with
+// re.IGNORECASE), so CI checks the verdicts Claude Code gets (#663).
 import { describe, expect, it } from 'bun:test';
-import { existsSync, readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import path from 'node:path';
+import {
+  type HookOutput,
+  loadRuleFiles,
+  preToolUse,
+  respondAll,
+  RULES_DIR,
+  runHook
+} from './rule-hook';
 
-const rulePath = path.resolve(
-  import.meta.dir,
-  '../.claude/hookify.block-e2e-start-without-slot.local.md'
-);
+const RULE = 'block-e2e-start-without-slot';
+const rule = loadRuleFiles([path.join(RULES_DIR, `${RULE}.md`)])[0];
 
-type Condition = { field: string; operator: string; pattern: string };
-
-// hookify strips blanks, then double quotes, then single quotes from each
-// value's ends (core/config_loader.py, extract_frontmatter).
-const unquote = (value: string) =>
-  value
-    .trim()
-    .replace(/^"+|"+$/g, '')
-    .replace(/^'+|'+$/g, '');
-
-function loadRule(file: string) {
-  const content = readFileSync(file, 'utf8');
-  if (!content.startsWith('---')) throw new Error(`${file} has no frontmatter`);
-  const [, front, ...body] = content.split('---');
-  const keys: Record<string, string> = {};
-  const conditions: Condition[] = [];
-  let current: Record<string, string> | null = null;
-  for (const line of front.split('\n')) {
-    const stripped = line.trim();
-    if (!stripped || stripped.startsWith('#')) continue;
-    const indent = line.length - line.trimStart().length;
-    if (stripped.startsWith('-')) {
-      const [k, v] = splitKey(stripped.slice(1));
-      current = { [k]: v };
-      conditions.push(current as Condition);
-    } else if (indent === 0) {
-      const [k, v] = splitKey(line);
-      keys[k] = v;
-      current = null;
-    } else if (indent > 2 && current) {
-      const [k, v] = splitKey(stripped);
-      current[k] = v;
-    }
+// A deny from this rule: no other Bash rule matches these cases, so a deny
+// that names another rule, or none, fails the test that asked.
+function denies(output: HookOutput | null | undefined) {
+  if (output == null) throw new Error('the hook gave no answer');
+  const decision = output.hookSpecificOutput?.permissionDecision;
+  if (decision === undefined) return false;
+  const reason = output.hookSpecificOutput?.permissionDecisionReason ?? '';
+  if (decision !== 'deny' || reason !== `**[${RULE}]**\n${rule.message}`) {
+    throw new Error(`unexpected answer: ${JSON.stringify(output)}`);
   }
-  return { keys, conditions, message: body.join('---').trim() };
+  return true;
 }
-
-function splitKey(text: string): [string, string] {
-  const colon = text.indexOf(':');
-  return [text.slice(0, colon).trim(), unquote(text.slice(colon + 1))];
-}
-
-const rule = loadRule(rulePath);
-const checks = rule.conditions.map((c) => {
-  if (c.field !== 'command') throw new Error(`field ${c.field} is not ported`);
-  if (c.operator === 'regex_match') {
-    const regex = new RegExp(c.pattern, 'i');
-    return (command: string) => regex.test(command);
-  }
-  if (c.operator === 'not_contains') return (command: string) => !command.includes(c.pattern);
-  throw new Error(`operator ${c.operator} is not ported`);
-});
-const blocks = (command: string) => checks.every((check) => check(command));
 
 // Each command that starts an E2E job.
 const STARTS = [
@@ -257,41 +216,26 @@ const COMMANDS = [
   ...Object.values(MUST_PASS)
 ];
 
-// hookify's own engine, at the path Claude Code installed it to, run on the
-// commands passed as JSON. A newer hookify than the 0.1.1 this file ports
-// runs too, so a change in its parser or engine that alters a verdict on
-// these cases fails here.
-const INSTALLED = path.join(homedir(), '.claude/plugins/installed_plugins.json');
-const HOOKIFY: string | undefined = existsSync(INSTALLED)
-  ? JSON.parse(readFileSync(INSTALLED, 'utf8')).plugins?.['hookify@claude-plugins-official']?.[0]
-      ?.installPath
-  : undefined;
-const HOOKIFY_VERDICTS = `
-import json, sys
-sys.path.insert(0, sys.argv[1])
-from core.config_loader import load_rule_file
-from core.rule_engine import RuleEngine
-rule = load_rule_file(sys.argv[2])
-engine = RuleEngine()
-out = []
-for command in json.loads(sys.argv[3]):
-    event = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": command}}
-    decision = engine.evaluate_rules([rule], event).get("hookSpecificOutput", {})
-    out.append(decision.get("permissionDecision") == "deny")
-print(json.dumps(out))
-`;
-const hasHookify =
-  !!HOOKIFY && existsSync(path.join(HOOKIFY, 'core/rule_engine.py')) && !!Bun.which('python3');
+// The hook's answer to every case, from one Python process.
+const answers = respondAll(COMMANDS.map((command) => preToolUse('Bash', { command })));
+const verdicts = new Map(COMMANDS.map((command, i) => [command, answers[i]]));
+const blocks = (command: string) => {
+  if (!verdicts.has(command)) throw new Error(`not in COMMANDS: ${command}`);
+  return denies(verdicts.get(command));
+};
 
 describe('block-e2e-start-without-slot', () => {
-  it('loads as hookify reads it', () => {
-    expect(rule.keys).toMatchObject({
-      name: 'block-e2e-start-without-slot',
-      enabled: 'true',
+  it("loads with the hook's own loader", () => {
+    expect(rule).toMatchObject({
+      name: RULE,
+      enabled: true,
       event: 'bash',
       action: 'block'
     });
-    expect(rule.conditions.map((c) => c.operator)).toEqual(['regex_match', 'not_contains']);
+    expect(rule.conditions.map((c) => [c.field, c.operator])).toEqual([
+      ['command', 'regex_match'],
+      ['command', 'not_contains']
+    ]);
     expect(rule.conditions[1].pattern).toBe('# no-e2e-job');
   });
 
@@ -313,9 +257,10 @@ describe('block-e2e-start-without-slot', () => {
 
   // A nested quantifier in the argument group backtracks without end on an
   // argument that never closes: hookify ran over 120 s on such a mutant.
-  // Bun 1.4's regex engine gives up after about a second and returns false,
-  // which fails the first two of these.
-  // The same goes for a long run of redirects that never reaches &&.
+  // The same goes for a long run of redirects that never reaches &&. Claude
+  // Code stops a hook after its 10 s timeout and runs the call, so each case
+  // runs the hook in a process of its own with the same 10 s limit; a hook
+  // stopped there gives no answer, and the test fails.
   const unclosed = (body: string) => 'scripts/wait-e2e-slot.sh "$(' + body + ' && ' + MERGE;
   const redirects = (redirect: string) =>
     'scripts/wait-e2e-slot.sh' + redirect.repeat(5_000) + '; ' + MERGE;
@@ -325,8 +270,10 @@ describe('block-e2e-start-without-slot', () => {
     ['nested openings', unclosed('a"$(b'.repeat(4_000))],
     ['5,000 redirects 2>&1, no &&', redirects(' 2>&1')],
     ['5,000 redirects to a file, no &&', redirects(' >> /tmp/slot.out')]
-  ])('blocks an unclosed 20,000-character argument: %s', (_, command) =>
-    expect(blocks(command)).toBe(true)
+  ])(
+    'blocks an unclosed 20,000-character argument: %s',
+    (_, command) => expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(true),
+    15_000
   );
 
   it('names the variable form in its message', () =>
@@ -338,46 +285,4 @@ describe('block-e2e-start-without-slot', () => {
     expect(rule.message).toContain('It never lets a pipe through.');
     expect(rule.message).not.toContain('drop it');
   });
-
-  // \s, \b and case folding differ between the engines outside printable
-  // ASCII, tab and newline: Python's \s also matches \x1c, for one.
-  it('keeps the pattern and every case to printable ASCII, tab and newline', () => {
-    const ascii = /^[\t\n -~]*$/;
-    expect(rule.conditions[0].pattern).toMatch(ascii);
-    expect(COMMANDS.filter((command) => !ascii.test(command))).toEqual([]);
-  });
-
-  // Each engine rejects or misreads some of the other's syntax: Python's
-  // (?P<name>), inline flags, {,n} and a $ that also matches before a final
-  // newline; JavaScript's (?<name>), \k, \p{}, \u{} and [^]. The pattern
-  // keeps to escapes and groups both read the same way.
-  it('uses only regex syntax Python and JavaScript share', () => {
-    const pattern = rule.conditions[0].pattern;
-    const escapes = pattern.match(/\\[\s\S]/g) ?? [];
-    expect(escapes.filter((e) => !/^\\[sSbntr.\\$(){}[\]|*+?^/-]$/.test(e))).toEqual([]);
-    const unescaped = pattern.replace(/\\[\s\S]/g, '__');
-    expect(unescaped.match(/\(\?[^:!=]/g) ?? []).toEqual([]);
-    expect(unescaped).not.toMatch(/\[\^?\]/);
-    expect(unescaped).not.toMatch(/\{,|\$/);
-  });
-
-  it.skipIf(!hasHookify)(
-    "matches the installed hookify's own verdict on every case",
-    () => {
-      const run = Bun.spawnSync([
-        'python3',
-        '-I',
-        '-c',
-        HOOKIFY_VERDICTS,
-        HOOKIFY ?? '',
-        rulePath,
-        JSON.stringify(COMMANDS)
-      ]);
-      expect(run.stderr.toString()).toBe('');
-      const verdicts: boolean[] = JSON.parse(run.stdout.toString());
-      expect(COMMANDS.filter((command, i) => verdicts[i] !== blocks(command))).toEqual([]);
-      expect(verdicts).toHaveLength(COMMANDS.length);
-    },
-    30_000
-  );
 });
