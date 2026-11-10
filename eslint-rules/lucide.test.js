@@ -14,14 +14,17 @@ const swissFrancReason =
   'Removed because the depicted concept became obsolete and no longer had relevant use cases.';
 
 // These cases run against the installed @lucide/svelte, so they also prove
-// that its current files still parse. They name icons that 1.66.0
+// that its current files still parse. They name icons that 1.70.0
 // deprecates: a Lucide release that drops one fails its case on purpose, and
-// the case then moves to another icon that release deprecates.
+// the case then moves to another icon that release deprecates. A release
+// that renames a replacement fails its case too (1.68.0 renamed CircleAlert
+// to CircleExclamationPoint): the case then takes the new name.
 new RuleTester({ languageOptions: { parser: ts.parser } }).run(
   'lucide/no-deprecated-icons',
   lucide.rules['no-deprecated-icons'],
   {
     valid: [
+      // CircleAlert is an alias with no @deprecated note since 1.68.0.
       "import { Trash, CircleAlert, LucideTrash, TrashIcon, Icon, defaultAttributes, type LucideIcon } from '@lucide/svelte';",
       "import Trash from '@lucide/svelte/icons/trash';",
       "import * as context from '@lucide/svelte/context';",
@@ -66,18 +69,21 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
         errors: [
           {
             messageId: 'replaced',
-            data: { name: 'LucideAlertCircle', replacement: 'LucideCircleAlert' }
+            data: { name: 'LucideAlertCircle', replacement: 'LucideCircleExclamationPoint' }
           },
           {
             messageId: 'replaced',
-            data: { name: 'AlertTriangleIcon', replacement: 'TriangleAlertIcon' }
+            data: { name: 'AlertTriangleIcon', replacement: 'TriangleExclamationPointIcon' }
           }
         ]
       },
       {
         code: "import type { AlertCircle } from '@lucide/svelte';",
         errors: [
-          { messageId: 'replaced', data: { name: 'AlertCircle', replacement: 'CircleAlert' } }
+          {
+            messageId: 'replaced',
+            data: { name: 'AlertCircle', replacement: 'CircleExclamationPoint' }
+          }
         ]
       },
       {
@@ -354,7 +360,7 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
   }
 );
 
-// An icon's component type in the shape @lucide/svelte 1.66.0 ships: every
+// An icon's component type in the shape @lucide/svelte 1.70.0 ships: every
 // icon marks its `__iconNode` export @deprecated, and `note` adds lines to
 // the component's own doc comment.
 const iconType = (name, note = '') =>
@@ -375,7 +381,7 @@ const iconType = (name, note = '') =>
     `export default ${name};`
   ].join('\n');
 
-// A minimal dist/ in the shape @lucide/svelte 1.66.0 ships.
+// A minimal dist/ in the shape @lucide/svelte 1.70.0 ships.
 const files = {
   'icons/index.d.ts': [
     "export { default as Trash } from './trash.svelte';",
