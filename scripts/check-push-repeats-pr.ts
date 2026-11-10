@@ -151,10 +151,11 @@ export const ALLOWED: Allowed[] = [
     kind: 'push-extra',
     why:
       'decides whether E2E runs: on a PR, false when the branch changes only Markdown and docs/ ' +
-      'against the main commit it is based on (scripts/e2e-needed.sh); on a push, always true. ' +
-      'With equal trees the PR head contains the main commit it merges onto, so a PR run that ' +
-      "skipped E2E changed no file E2E reads against that commit, and main's E2E job tests that " +
-      "commit's app files again. That commit's own run tests them, or, when this merge cancelled " +
+      'against its merge base with main (scripts/e2e-needed.sh); on a push, always true. With ' +
+      'equal trees, each file the PR did not change keeps the version of the main commit it ' +
+      'merges onto: the merge takes that version, and the trees match. So after a PR run that ' +
+      "skipped E2E, main's E2E job tests that commit's app files again. That commit's own run " +
+      'tests them, or, when this merge cancelled ' +
       'it, its merger follows main to this run (AGENTS.md). Pinned whole: it branches on the event'
   },
   {
