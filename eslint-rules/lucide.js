@@ -33,12 +33,12 @@ function fail(detail) {
 }
 
 // Maps every export name to the stem of the file it comes from under
-// dist/icons/ (circle-alert, or alert-circle for the old name's re-export
-// file), which is also its deep-import path. Each name exists plain
-// (CircleAlert), Lucide-prefixed (LucideCircleAlert) and Icon-suffixed
-// (CircleAlertIcon). `toSameStyle` writes a plain name in
-// the style of the name it is stored under, so a suggested replacement
-// matches the import it replaces.
+// dist/icons/ (circle-exclamation-point, or alert-circle for an old name's
+// re-export file), which is also its deep-import path. Each name exists plain
+// (CircleExclamationPoint), Lucide-prefixed (LucideCircleExclamationPoint)
+// and Icon-suffixed (CircleExclamationPointIcon). `toSameStyle` writes a
+// plain name in the style of the name it is stored under, so a suggested
+// replacement matches the import it replaces.
 function readExports(dist) {
   const exportsByName = new Map();
   for (const [path, toSameStyle] of [
@@ -59,8 +59,10 @@ function readExports(dist) {
   return exportsByName;
 }
 
-// Renamed and merged icons keep their old name as an alias whose note names
-// the new one: `@deprecated ... use {@link CircleAlert} instead`.
+// Renamed and merged icons keep their old name as an alias. A deprecated
+// alias carries a note that names the new one: `@deprecated ... use
+// {@link CircleExclamationPoint} instead`. An alias with no note, such as
+// CircleAlert since 1.68.0, is a current name.
 function readAliasNotes(dist, exportsByName) {
   const source = readText(dist, 'aliases/aliases.d.ts');
   const notes = [
