@@ -152,11 +152,11 @@ export const ALLOWED: Allowed[] = [
     why:
       'decides whether E2E runs: on a PR, false when the branch changes only Markdown and docs/ ' +
       'against its merge base with main (scripts/e2e-needed.sh); on a push, always true. With ' +
-      'equal trees, each file the PR did not change keeps the version of the main commit it ' +
-      'merges onto: the merge takes that version, and the trees match. So after a PR run that ' +
-      "skipped E2E, main's E2E job tests that commit's app files again. That commit's own run " +
-      'tests them, or, when this merge cancelled ' +
-      'it, its merger follows main to this run (AGENTS.md). Pinned whole: it branches on the event'
+      'equal trees, each file the PR did not change against its merge base keeps the version ' +
+      'of the main commit it merges onto: the merge takes that version, and the trees match. ' +
+      "So after a PR run that skipped E2E, main's E2E job tests that commit's app files again. " +
+      "That commit's own run tests them, or, when this merge cancelled it, its merger follows " +
+      'main to this run (AGENTS.md). Pinned whole: it branches on the event'
   },
   {
     file: 'scripts/e2e-needed.sh',
@@ -188,9 +188,10 @@ export const ALLOWED: Allowed[] = [
     kind: 'pr-only',
     why:
       'the same paths as pull_request. The push run diffs the merge commit against the main ' +
-      "commit it merged onto; with equal trees that is the PR head's diff from that commit. " +
-      'The PR run diffs from its merge base, that commit or an older one (the workflow header), ' +
-      'so it starts the validator whenever the push run does'
+      'commit it merged onto. The merge takes from that commit each file the PR did not change ' +
+      'against its merge base, so with equal trees every file in that diff is one the PR ' +
+      'changed, and the PR run, which diffs from its merge base, starts the validator ' +
+      'whenever the push run does'
   },
   {
     file: RENOVATE,
