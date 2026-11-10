@@ -19,6 +19,8 @@ export const paraglideCompilerOptions: CompilerOptions = {
   // (build:scripts) then fails to bundle scripts/export-user.ts, whose
   // schema import pulls in the messages. compile() defaults to
   // "message-modules", so naming it here also keeps both paths on one layout.
+  // That includes `vite dev`, where paraglide 2 used "locale-modules", so the
+  // dev server now loads one module per message instead of one per locale.
   outputStructure: 'message-modules',
   // url-only resolution preserves the 1.x behavior exactly: the locale is a
   // pure function of the pathname (FR at /, EN under /en), no cookie or
