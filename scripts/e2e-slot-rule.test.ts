@@ -165,9 +165,13 @@ const MUST_BLOCK: Record<string, string> = {
   'subst, process substitution': 'scripts/wait-e2e-slot.sh "$(echo >(cat )" && x ")"; ' + MERGE,
   // A case pattern's ) does not end the "$(…)".
   'subst, case pattern': 'scripts/wait-e2e-slot.sh "$(case x in x)" && y" ;; esac)"; ' + MERGE,
-  // zsh only: zsh reads {case as { and the keyword, bash as a command name.
+  // zsh only: zsh reads {case as { and the keyword, and &! as an operator
+  // (run in the background and disown); bash reads {case and !case as
+  // command names.
   'subst, case pattern after {':
     'scripts/wait-e2e-slot.sh "$({case x in x)" && y" ;; esac;})"; ' + MERGE,
+  'subst, case pattern after &!':
+    'scripts/wait-e2e-slot.sh "$(true&!case x in x)" && y" ;; esac)"; ' + MERGE,
   // bash only: zsh refuses these two commands.
   'quoted backtick, escaped backtick': 'scripts/wait-e2e-slot.sh "`echo \\`" && x `"; ' + MERGE,
   'quoted backtick, three backticks': 'scripts/wait-e2e-slot.sh "`a`b`" && x `"; ' + MERGE,
