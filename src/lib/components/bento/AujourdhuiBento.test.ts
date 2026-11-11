@@ -101,4 +101,38 @@ describe('AujourdhuiBento', () => {
     render(AujourdhuiBento, { props: baseProps });
     expect(screen.queryByRole('complementary')).toBeNull();
   });
+
+  // The lg tray places its two column stacks with grid placement, not with
+  // per-column wrappers (#363), so the modules keep the phone's DOM order,
+  // and with it the reading and tab order, at every width. A wrapper per
+  // column would put the destinations before the allergens and the feed.
+  it('keeps the modules in reading order: reminders, stat tiles, allergens, feed, destinations', () => {
+    render(AujourdhuiBento, {
+      props: {
+        ...baseProps,
+        reminders: [
+          {
+            key: 'lead',
+            severity: 'info' as const,
+            title: 'Rappel',
+            body: 'Corps',
+            dismissable: false
+          }
+        ]
+      }
+    });
+    const modules = [
+      screen.getByRole('complementary'),
+      screen.getByRole('article', { name: m.aujourdhuiBilanAliments() }),
+      screen.getByRole('region', { name: m.aujourdhuiAllergensTitle() }),
+      screen.getByText(m.aujourdhuiRecentTitle()),
+      screen.getByRole('navigation', { name: m.aujourdhuiHandoffsLabel() })
+    ];
+    const following = modules
+      .slice(1)
+      .map((el, i) =>
+        Boolean(modules[i].compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)
+      );
+    expect(following).toEqual([true, true, true, true]);
+  });
 });

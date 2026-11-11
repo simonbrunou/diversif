@@ -98,16 +98,45 @@
   tray instead of the phone stack stretched across a 768px well: the stat
   tiles stack narrow in column one (they were 366x108 letterboxes with the
   number in the left 8%), the allergen strip and the feed take the wide spans
-  they actually need, and the two hand-off destinations sit together in the
-  last column. Vertical rhythm still comes from each child's own mb-3, so the
+  they actually need, and the two hand-off destinations sit together under the
+  stat tiles. Vertical rhythm still comes from each child's own mb-3, so the
   grid only supplies column gaps (gap-y-0).
+
+  Below the reminders, the tray is two column stacks (#363). Column one holds
+  the stat tiles (rows 2 and 3), then the destinations (row 4). Columns two
+  and three hold the allergen strip (row 2), then the feed (rows 3 to 5).
+  When the stat tiles and the allergen strip shared one row, the taller stat
+  tiles set its height and left an empty band under the allergen strip, before
+  the feed. Placement alone builds the two stacks, with no CSS order or
+  per-column wrapper, so the DOM, reading and tab order stay reminders, stat
+  tiles, allergens, feed, destinations.
+
+  Row 5 holds only the feed. The part of the feed's height that rows 3 and 4
+  do not hold goes there, so those rows size to column one alone. With the
+  feed in rows 3 and 4 only, its height spread over both and pushed the
+  destinations down, 154px in the e2e check. Row 5 is 1fr because the grid
+  algorithm gives an item that crosses a flexible track its extra height in
+  flexible tracks only. An auto row 5 laid out the same in Chromium, which
+  grows the empty track first, but that rests on finer rules of how a grid
+  shares out extra space.
+
+  This assumes the stat tiles are at least as tall as the allergen strip. With
+  their "this week" line they measure 202px, margin left out, and nine flagged
+  allergens give the strip 192px. In a week with no new food and the streak at its record, the
+  stat tiles measure 178px, while seven allergens due again wrap the strip onto
+  three rows, 216px. The strip then sets row 2, and a 38px band shows between
+  the stat tiles and the destinations. The old layout left the same band under
+  the stat tiles (#730).
 -->
-<div class="lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-3 lg:gap-y-0">
-  <div class="min-w-0 lg:col-span-3">
+<div
+  // fallow-ignore-next-line css-token-drift -- the row tracks of this one tray (#363), not a design value a token would name
+  class="lg:grid lg:grid-cols-3 lg:grid-rows-[auto_auto_auto_auto_1fr] lg:items-start lg:gap-x-3 lg:gap-y-0"
+>
+  <div class="min-w-0 lg:col-span-3 lg:row-start-1">
     <ReminderStrip {reminders} />
   </div>
 
-  <div class="min-w-0 lg:col-span-1">
+  <div class="min-w-0 lg:col-start-1 lg:row-span-2 lg:row-start-2">
     <StatTiles
       foodsIntroduced={stats.foodsIntroduced}
       weekCount={stats.weekCount}
@@ -116,7 +145,7 @@
     />
   </div>
 
-  <div class="min-w-0 lg:col-span-2">
+  <div class="min-w-0 lg:col-span-2 lg:col-start-2 lg:row-start-2">
     <AllergensSnapshot
       items={allergenPills}
       {clearedCount}
@@ -124,7 +153,7 @@
     />
   </div>
 
-  <div class="min-w-0 lg:col-span-2">
+  <div class="min-w-0 lg:col-span-2 lg:col-start-2 lg:row-span-3 lg:row-start-3">
     <RecentFeed entries={recent} {childId} />
   </div>
 
@@ -134,7 +163,7 @@
     that happened" were indistinguishable. surface-2 with no shadow reads as
     chrome, which is what they are, and drops the ghost-card double elevation.
   -->
-  <nav aria-label={m.aujourdhuiHandoffsLabel()} class="min-w-0 lg:col-span-1">
+  <nav aria-label={m.aujourdhuiHandoffsLabel()} class="min-w-0 lg:col-start-1 lg:row-start-4">
     <ul class="flex flex-col gap-2">
       {#each handoffs as handoff (handoff.href)}
         <li>

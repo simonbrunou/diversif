@@ -3,6 +3,7 @@ import {
   awaitHydration,
   birthDateMonthsAgo,
   dismissWelcomeIfPresent,
+  logRepas,
   openWithoutJavaScript,
   signUpAndCreateChild
 } from './_helpers';
@@ -16,30 +17,6 @@ async function childOfEightMonths(page: Page): Promise<string> {
   const childId = await signUpAndCreateChild(page, 'Emma', birthDateMonthsAgo(8));
   await dismissWelcomeIfPresent(page);
   return childId;
-}
-
-// `givenAt` is a datetime-local value in the browser's zone; without it the
-// repas keeps the form's "now".
-async function logRepas(
-  page: Page,
-  childId: string,
-  aliments: string[],
-  givenAt?: string
-): Promise<void> {
-  await page.goto(`/child/${childId}/log`);
-  await awaitHydration(page);
-  for (const name of aliments) {
-    await page.getByPlaceholder('Rechercher un aliment…').fill(name);
-    await page
-      .getByRole('button', { name: new RegExp(`^${name}`) })
-      .first()
-      .click();
-  }
-  await expect(page.locator('input[type="hidden"][name="foodId"]')).toHaveCount(aliments.length);
-  if (givenAt) await page.getByLabel('Quand ?').fill(givenAt);
-  await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
-  // The dashboard strips the milestone query once it has celebrated.
-  await expect(page).toHaveURL(new RegExp(`/child/${childId}(\\?.*)?$`));
 }
 
 // The id an edit link of the dashboard's recent feed points to.
@@ -262,7 +239,7 @@ test.describe('a repas time without JavaScript', () => {
     const loggedAt = daysAgoInput(3, '12:30');
     const typed = daysAgoInput(3, '09:15');
     const childId = await childOfEightMonths(page);
-    await logRepas(page, childId, ['Poire'], loggedAt);
+    await logRepas(page, childId, ['Poire'], { givenAt: loggedAt });
     const entryId = await feedEntryId(page, childId, 'feed-row-detail');
     const noJs = await openWithoutJavaScript(browser, page);
     try {

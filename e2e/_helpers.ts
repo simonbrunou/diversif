@@ -191,6 +191,37 @@ async function submitChildForm(page: Page, name: string, birthDate: string): Pro
 }
 
 /**
+ * Log one repas of `aliments` through /child/<id>/log, then wait for the
+ * redirect back to the dashboard. `givenAt` is a datetime-local value in the
+ * browser's zone; without it the repas keeps the form's "now". `reaction` is
+ * a ReactionPicker label such as « Réaction marquée »; without it the repas
+ * keeps the form's default, « Tout va bien ».
+ */
+export async function logRepas(
+  page: Page,
+  childId: string,
+  aliments: string[],
+  { givenAt, reaction }: { givenAt?: string; reaction?: string } = {}
+): Promise<void> {
+  await page.goto(`/child/${childId}/log`);
+  await awaitHydration(page);
+  for (const name of aliments) {
+    await page.getByPlaceholder('Rechercher un aliment…').fill(name);
+    await page
+      .getByRole('button', { name: new RegExp(`^${name}`) })
+      .first()
+      .click();
+  }
+  await expect(page.locator('input[type="hidden"][name="foodId"]')).toHaveCount(aliments.length);
+  if (givenAt) await page.getByLabel('Quand ?').fill(givenAt);
+  // Scoped to the fieldset: the severity helper below it repeats the labels.
+  if (reaction) await page.locator('fieldset').getByText(reaction, { exact: true }).click();
+  await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
+  // The dashboard strips the milestone query once it has celebrated.
+  await expect(page).toHaveURL(new RegExp(`/child/${childId}(\\?.*)?$`));
+}
+
+/**
  * New accounts auto-open a 3-step welcome modal whose backdrop intercepts
  * pointer events on the bento chrome below. Dismiss it via the "Plus tard"
  * form button — that persists `showWelcomeDialog=false` for the session, so
