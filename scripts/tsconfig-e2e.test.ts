@@ -1,5 +1,5 @@
-// tsconfig.e2e.json and the `bun run check` step that runs it (#363 retro).
-// Before them, no tsconfig included e2e/ or playwright.config.ts. A spec that
+// Tests tsconfig.e2e.json and the `bun run check` step that runs it (#363
+// retro). Before them, no tsconfig included e2e/ or playwright.config.ts. A spec that
 // called a helper it never imported passed lint and check, then failed with a
 // ReferenceError in each test that called it.
 import { describe, expect, it } from 'bun:test';
@@ -42,17 +42,24 @@ describe('tsconfig.e2e.json', () => {
     expect(fileNames).toEqual(expect.arrayContaining(expected));
   });
 
-  // A helper named like a global of the e2e program (DOM's open or name, for
-  // instance) would resolve to that global in a spec that forgets to import
-  // it, and check would pass.
+  // A helper can share its name with a global of the e2e program, such as
+  // DOM's open, or with a global that a declaration file under e2e/ adds. A
+  // spec that uses it without an import then resolves to that global, and
+  // check passes. The probe runs in the program check builds, so it sees the
+  // same globals.
   it('reports each helper a spec uses without importing it', () => {
     const host = ts.createCompilerHost(options);
-    const helpersProgram = ts.createProgram([helpersPath], options, host);
-    const checker = helpersProgram.getTypeChecker();
-    const helpersModule = checker.getSymbolAtLocation(helpersProgram.getSourceFile(helpersPath)!)!;
+    const checkProgram = ts.createProgram(fileNames, options, host);
+    const checker = checkProgram.getTypeChecker();
+    const helpersModule = checker.getSymbolAtLocation(checkProgram.getSourceFile(helpersPath)!)!;
     const helpers = checker
       .getExportsOfModule(helpersModule)
-      .filter((symbol) => symbol.flags & ts.SymbolFlags.Value)
+      .filter((symbol) => {
+        // `export { open }` gives an alias symbol: read the value it names.
+        const target =
+          symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+        return target.flags & ts.SymbolFlags.Value;
+      })
       .map((symbol) => symbol.name)
       .sort();
     expect(helpers).toContain('logRepas');
@@ -65,7 +72,7 @@ describe('tsconfig.e2e.json', () => {
       file === probePath
         ? ts.createSourceFile(file, probe, languageVersion)
         : getSourceFile.call(host, file, languageVersion, ...rest);
-    const program = ts.createProgram([probePath], options, host, helpersProgram);
+    const program = ts.createProgram([...fileNames, probePath], options, host, checkProgram);
     const unresolved = ts
       .getPreEmitDiagnostics(program, program.getSourceFile(probePath))
       .filter((diagnostic) => diagnostic.code === 2304) // Cannot find name '…'.
