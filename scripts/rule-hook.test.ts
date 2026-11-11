@@ -63,6 +63,7 @@ const KILLS_BY_NAME = [
   'fuser -k 4173/tcp',
   'fuser -v -k -n tcp 3123',
   'fuser --kill 4173/tcp',
+  'fuser -4k 4173/tcp',
   'fuser -v -n tcp \\\n  -k 4173',
   "pkill -f 'bun build/index.js' #no-kill-by-name"
 ];

@@ -7,7 +7,7 @@ action: block
 conditions:
   - field: command
     operator: regex_match
-    pattern: \b(pkill|killall)\b|\bpgrep\b[\s\S]*\bkill\b|\bkill\b[\s\S]*\bpgrep\b|\bfuser\b(?:[^;&|\n]|\\\n)*\s((?-i:-[a-zA-Z]*k)|--kill\b)
+    pattern: \b(pkill|killall)\b|\bpgrep\b[\s\S]*\bkill\b|\bkill\b[\s\S]*\bpgrep\b|\bfuser\b(?:[^;&|\n]|\\\n)*\s((?-i:-[a-zA-Z46]*k)|--kill\b)
   - field: command
     operator: not_contains
     pattern: # no-kill-by-name
