@@ -563,8 +563,9 @@ describe('block-e2e-start-without-slot', () => {
   );
 });
 
-// The #710 cases and each passing slot form, run in a shell from a
-// directory where scripts/wait-e2e-slot.sh exits with $SLOT_EXIT, fj prints
+// The #710 cases, each MUST_PASS case that merges and each slot form but
+// the one after cd and T= (see PASSING), run in a shell from a directory
+// where scripts/wait-e2e-slot.sh exits with $SLOT_EXIT, fj prints
 // MERGED for a merge, and git, curl and jq print nothing. A /tmp/ path in a
 // command points into that directory, and so do zsh's here-document files
 // (TMPPREFIX). So a case runs as it would in the repo, with no forge call,
@@ -584,9 +585,9 @@ describe('the #710 cases in a shell', () => {
   const GROUP_CASES = SHELL_GROUPS.flatMap(([group, cases, shells]) =>
     Object.entries(cases).map(([name, command]) => ({ group, name, command, shells }))
   );
-  // The slot form after cd and T= stays out: its cd /w fails in the sandbox,
-  // so its merge would never run whatever the slot script does. Its slot
-  // call is the short SHA form, which runs here.
+  // The slot form after cd and T= stays out: its cd /w and cat k fail in the
+  // sandbox, so its merge would never run whatever the slot script does. Its
+  // slot call is the short SHA form, which runs here.
   const PASSING = [
     ...Object.entries(MUST_PASS).filter(([, command]) => command.includes(MERGE)),
     ...Object.entries(SLOTS)
