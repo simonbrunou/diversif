@@ -98,14 +98,14 @@
   tray instead of the phone stack stretched across a 768px well: the stat
   tiles stack narrow in column one (they were 366x108 letterboxes with the
   number in the left 8%), the allergen strip and the feed take the wide spans
-  they actually need, and the two hand-off destinations sit together in the
-  last column. Vertical rhythm still comes from each child's own mb-3, so the
+  they actually need, and the two hand-off destinations sit together under the
+  stat tiles. Vertical rhythm still comes from each child's own mb-3, so the
   grid only supplies column gaps (gap-y-0).
 
-  Below the reminders, the tray is two column stacks that never share a row
-  height (#363). Column one holds the stat tiles (rows 2 and 3), then the
-  destinations (row 4). Columns two and three hold the allergen strip (row 2),
-  then the feed (rows 3 to 5). When the stat tiles and the allergen strip
+  Below the reminders, the tray is two column stacks (#363). Column one holds
+  the stat tiles (rows 2 and 3), then the destinations (row 4). Columns two
+  and three hold the allergen strip (row 2), then the feed (rows 3 to 5).
+  When the stat tiles and the allergen strip
   shared one row, the taller stat tiles set its height and left an empty band
   under the allergen strip, before the feed. Placement alone builds the two
   stacks, with no CSS order or per-column wrapper, so the DOM, reading and tab
@@ -121,8 +121,8 @@
   shares out extra space.
 
   This assumes the stat tiles are at least as tall as the allergen strip. With
-  their "this week" line they measure 202px, and nine flagged allergens give
-  the strip 192px. In a week with no new food and the streak at its record, the
+  their "this week" line they measure 202px, margin left out, and nine flagged
+  allergens give the strip 192px. In a week with no new food and the streak at its record, the
   stat tiles measure 178px, while seven allergens due again wrap the strip onto
   three rows, 216px. The strip then sets row 2, and a 38px band shows between
   the stat tiles and the destinations. The old layout left the same band under

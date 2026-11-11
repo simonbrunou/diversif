@@ -1,45 +1,21 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import {
-  awaitHydration,
   birthDateMonthsAgo,
   dismissWelcomeIfPresent,
+  logRepas,
   signUpAndCreateChild
 } from './_helpers';
 
 /**
- * #363: from lg, the Aujourd'hui tray is two column stacks that never share a
- * row height. The stat tiles sit over the destinations in column one, the
- * allergen strip over the feed in columns two and three. When the stat tiles
- * and the allergen strip shared one row, the taller stat tiles left an empty
- * band under the allergen strip, before the feed.
+ * #363: from lg, the Aujourd'hui tray is two column stacks. The stat tiles sit
+ * over the destinations in column one, the allergen strip over the feed in
+ * columns two and three. When the stat tiles and the allergen strip shared one
+ * row, the taller stat tiles left an empty band under the allergen strip,
+ * before the feed.
  *
  * Each module carries the tray's vertical rhythm as its own margin-bottom
  * (mb-3), so "no band" means the next module starts one margin below.
  */
-
-// One repas of `aliments`, then back on the dashboard. Without `reaction`, the
-// form keeps its default, « Tout va bien ».
-async function logRepas(
-  page: Page,
-  childId: string,
-  aliments: string[],
-  reaction?: string
-): Promise<void> {
-  await page.goto(`/child/${childId}/log`);
-  await awaitHydration(page);
-  for (const name of aliments) {
-    await page.getByPlaceholder('Rechercher un aliment…').fill(name);
-    await page
-      .getByRole('button', { name: new RegExp(`^${name}`) })
-      .first()
-      .click();
-  }
-  await expect(page.locator('input[type="hidden"][name="foodId"]')).toHaveCount(aliments.length);
-  // Scoped to the fieldset: the severity helper below it repeats the labels.
-  if (reaction) await page.locator('fieldset').getByText(reaction, { exact: true }).click();
-  await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`/child/${childId}(\\?.*)?$`));
-}
 
 type Box = { top: number; bottom: number; left: number; right: number; marginBottom: number };
 
@@ -78,7 +54,7 @@ test('the lg tray leaves no band under the allergen strip or the stat tiles', as
   // separate repas fill the feed's five rows, so the feed is taller than
   // column one below the allergen strip, and a feed placed in rows 3 and 4
   // alone pushes the destinations down.
-  await logRepas(page, childId, ['Œuf entier'], 'Réaction marquée');
+  await logRepas(page, childId, ['Œuf entier'], { reaction: 'Réaction marquée' });
   for (const aliment of ['Poire', 'Pomme', 'Carotte', 'Banane']) {
     await logRepas(page, childId, [aliment]);
   }
