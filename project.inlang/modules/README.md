@@ -13,8 +13,9 @@ package's `dist/index.js` into this directory.
 
 The v1 message-lint-rule modules (`empty-pattern`, `missing-translation`)
 were removed with the paraglide-js 2.x migration: the inlang SDK v2 no longer
-loads message lint rules. `scripts/lint-i18n.ts` (straight apostrophes in
-`fr.json`) and `scripts/check-i18n-unused.ts` (unused `fr.json` keys) took
-over part of their job. Nothing replaces `missing-translation`: the paraglide
-compiler (2.x and 3.x) compiles a key missing from one locale without a
-warning, and that locale then shows the base locale's text (#723).
+loads message lint rules. Nothing replaces them; #723 tracks the missing-key
+half. The paraglide compiler (2.x and 3.x) compiles a key missing from one
+locale without a warning: a key missing from `en.json` shows the French text,
+and one missing from `fr.json` shows the key name. `scripts/lint-i18n.ts` and
+`scripts/check-i18n-unused.ts` check other things: straight apostrophes in
+`fr.json`, and `fr.json` keys that nothing in `src/` references.
