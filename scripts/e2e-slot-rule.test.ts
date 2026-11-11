@@ -1,5 +1,5 @@
 // .claude/rule-hook/rules/block-e2e-start-without-slot.md against the
-// commands it must block or pass (#645, #651, #655). Each case goes through
+// commands it must block or pass (#645, #651, #655, #710). Each case goes through
 // the repo's PreToolUse hook, .claude/rule-hook/hook.py, as a Bash call:
 // its own loader and engine (hookify 0.1.1's, in Python: a hand-rolled
 // frontmatter parser, each condition ANDed, `regex_match` as re.search with
@@ -65,7 +65,10 @@ const STARTS = [
 ];
 
 const MERGE = 'fj pr -R origin merge 640 -d';
-const SUBST = 'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$B")"';
+// A "$(…)" the rule reads: no quotes inside, a plain variable at most.
+const SUBST = 'scripts/wait-e2e-slot.sh "$(git rev-parse origin/$B)"';
+// The same call with quotes inside the "$(…)", which the rule blocks (#710).
+const INNER_QUOTES = 'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$B")"';
 
 // Slot checks that gate whatever follows them.
 const SLOTS: Record<string, string> = {
@@ -75,9 +78,9 @@ const SLOTS: Record<string, string> = {
   'quoted rev-parse': 'scripts/wait-e2e-slot.sh "$(git rev-parse origin/x)" && ',
   'single-quoted SHA': "scripts/wait-e2e-slot.sh 'c2403f8' && ",
   'after cd and T=': 'cd /w && T=$(cat k) && scripts/wait-e2e-slot.sh c2403f8 && ',
-  'rev-parse, inner quotes': SUBST + ' && ',
-  'curl | jq, inner quotes':
-    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && ',
+  'rev-parse, variable': SUBST + ' && ',
+  'curl | jq, variable':
+    'scripts/wait-e2e-slot.sh "$(curl -s $API/pulls/640 | jq -r .head.sha)" && ',
   redirect: 'scripts/wait-e2e-slot.sh > /tmp/slot.out 2>&1 && ',
   'SHA, redirect': 'scripts/wait-e2e-slot.sh c2403f8 > /tmp/slot.out 2>&1 && '
 };
@@ -116,6 +119,109 @@ const MUST_BLOCK: Record<string, string> = {
     'scripts/wait-e2e-slot.sh `git rev-parse "origin/$B"` && ' + MERGE,
   'backtick, quoted, double quotes':
     'scripts/wait-e2e-slot.sh "`git rev-parse "origin/$B"`" && ' + MERGE,
+  // Quotes inside a "$(…)": #651 let these through, #710 sends them to the
+  // variable form.
+  'rev-parse, inner quotes': INNER_QUOTES + ' && ' + MERGE,
+  'curl | jq, inner quotes':
+    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && ' + MERGE,
+  'continuation, subst':
+    'scripts/wait-e2e-slot.sh \\\n  "$(git rev-parse "origin/$B")" && ' + MERGE,
+  'subst, two levels':
+    'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$(git branch --show-current)")" && ' + MERGE,
+  'subst, three levels': 'scripts/wait-e2e-slot.sh "$(a "$(b "c")")" && ' + MERGE,
+  'subst, single quotes inside':
+    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r \'.head.sha\')" && ' + MERGE,
+  'subst, redirect': INNER_QUOTES + ' > /tmp/slot.out 2>&1 && ' + MERGE,
+  // An argument whose quote, backslash, backtick, $, #, <, parenthesis or
+  // case carries the shell's word past the end the rule reads. The && then
+  // sits inside that word, and the merge after the ; or the newline runs
+  // ungated (#710). Behind a slot script that exits 3, bash and zsh both
+  // read each of these that way, unless a comment below says otherwise.
+  'argument, escaped quote': 'scripts/wait-e2e-slot.sh "a\\" && x"; ' + MERGE,
+  'argument, quoted subst': 'scripts/wait-e2e-slot.sh "$(echo " && x")"; ' + MERGE,
+  'argument, backtick': 'scripts/wait-e2e-slot.sh `x && y`; ' + MERGE,
+  'argument, quoted backtick, double quotes': 'scripts/wait-e2e-slot.sh "`echo " && x"`"; ' + MERGE,
+  'argument, braced parameter': 'scripts/wait-e2e-slot.sh "${a:-" && x"}"; ' + MERGE,
+  'argument, comment': 'scripts/wait-e2e-slot.sh #a && x\n' + MERGE,
+  'argument, quote inside': 'scripts/wait-e2e-slot.sh a" && x"; ' + MERGE,
+  'argument, single quote inside': "scripts/wait-e2e-slot.sh a' && x'; " + MERGE,
+  'subst, escaped quote in an inner string':
+    'scripts/wait-e2e-slot.sh "$(echo "\\")" && x ")")"; ' + MERGE,
+  'subst, backtick in an inner string':
+    'scripts/wait-e2e-slot.sh "$(echo "`echo ")" && x`")"; ' + MERGE,
+  'subst, subst in an inner string':
+    'scripts/wait-e2e-slot.sh "$(echo "$(echo ")" && x ")")")"; ' + MERGE,
+  'subst, braced parameter in an inner string':
+    'scripts/wait-e2e-slot.sh "$(echo "${a:-")" && x }")"; ' + MERGE,
+  'unquoted subst, && inside': 'scripts/wait-e2e-slot.sh $(echo && x); ' + MERGE,
+  'subst, comment': 'scripts/wait-e2e-slot.sh "$(echo # )" && x\n)"; ' + MERGE,
+  'subst, here-document': 'scripts/wait-e2e-slot.sh "$(cat <<E\n)" && x\nE\n)"; ' + MERGE,
+  'subst, single-quoted string': 'scripts/wait-e2e-slot.sh "$(echo \')" && x \')"; ' + MERGE,
+  'subst, escaped parenthesis': 'scripts/wait-e2e-slot.sh "$(echo \\)" && x ")"; ' + MERGE,
+  'subst, backtick': 'scripts/wait-e2e-slot.sh "$(echo `)" && x `)"; ' + MERGE,
+  'subst, braced parameter': 'scripts/wait-e2e-slot.sh "$(echo ${a:-)" && x "})"; ' + MERGE,
+  'subst, process substitution': 'scripts/wait-e2e-slot.sh "$(echo >(cat )" && x ")"; ' + MERGE,
+  'argument, process substitution': 'scripts/wait-e2e-slot.sh <(echo && x); ' + MERGE,
+  'argument, nested braced parameter': 'scripts/wait-e2e-slot.sh ${a:-${b} && x}; ' + MERGE,
+  'argument, quoted nested braced parameter':
+    'scripts/wait-e2e-slot.sh "${a:-${b}" && x "}"; ' + MERGE,
+  'subst, nested braced parameter':
+    'scripts/wait-e2e-slot.sh "$(echo ${a:-${b})" && x "})"; ' + MERGE,
+  'unquoted subst, nested braced parameter':
+    'scripts/wait-e2e-slot.sh $(echo${a:-${b}) && x}); ' + MERGE,
+  'unquoted subst, quote inside': 'scripts/wait-e2e-slot.sh $(echo") && x "); ' + MERGE,
+  'unquoted subst, single quote inside': "scripts/wait-e2e-slot.sh $(echo') && x '); " + MERGE,
+  'unquoted subst, escaped parenthesis': 'scripts/wait-e2e-slot.sh $(echo\\) && x ); ' + MERGE,
+  'unquoted subst, backtick': 'scripts/wait-e2e-slot.sh $(echo`) && x `); ' + MERGE,
+  'unquoted subst, process substitution': 'scripts/wait-e2e-slot.sh $(echo>(cat) && x); ' + MERGE,
+  'unquoted subst, comment': 'scripts/wait-e2e-slot.sh $(#) && x\n); ' + MERGE,
+  // A case pattern's ) does not end the "$(…)".
+  'subst, case pattern': 'scripts/wait-e2e-slot.sh "$(case x in x)" && y" ;; esac)"; ' + MERGE,
+  'subst, case pattern after a blank':
+    'scripts/wait-e2e-slot.sh "$( case x in x)" && y" ;; esac)"; ' + MERGE,
+  'subst, case pattern after ;':
+    'scripts/wait-e2e-slot.sh "$(true;case x in x)" && y" ;; esac)"; ' + MERGE,
+  'subst, case pattern after &&':
+    'scripts/wait-e2e-slot.sh "$(true&&case x in x)" && y" ;; esac)"; ' + MERGE,
+  'subst, case pattern after |':
+    'scripts/wait-e2e-slot.sh "$(true|case x in x)" && y" ;; esac)"; ' + MERGE,
+  // zsh only: bash refuses the whole command.
+  'argument, $[': 'scripts/wait-e2e-slot.sh "$[1" && "2]"; ' + MERGE,
+  // Only zsh hides the && in these two: it reads {case as { and the
+  // keyword, and &! as an operator (run in the background and disown).
+  // bash reads {case and !case as command names and ends the "$(…)" at the
+  // first ), so its && is real, but bash still runs the merge after the ;,
+  // the gap #715 tracks.
+  'subst, case pattern after {':
+    'scripts/wait-e2e-slot.sh "$({case x in x)" && y" ;; esac;})"; ' + MERGE,
+  'subst, case pattern after &!':
+    'scripts/wait-e2e-slot.sh "$(true&!case x in x)" && y" ;; esac)"; ' + MERGE,
+  // bash only: zsh refuses these two commands.
+  'quoted backtick, escaped backtick': 'scripts/wait-e2e-slot.sh "`echo \\`" && x `"; ' + MERGE,
+  'quoted backtick, three backticks': 'scripts/wait-e2e-slot.sh "`a`b`" && x `"; ' + MERGE,
+  // Both shells end the argument at its closing quote and run the merge
+  // after the first ;. A "…" branch that read past that quote would take
+  // "a"; MERGE; "b" as the argument, and the && after it as the slot call's.
+  'two quoted arguments, merge between': 'scripts/wait-e2e-slot.sh "a"; ' + MERGE + '; "b" && x',
+  // The shell ends the argument there, so the && gates the command after
+  // the ;, the pipe or the &.
+  'SHA then semicolon, no blank': 'scripts/wait-e2e-slot.sh c2403f8;true && ' + MERGE,
+  'SHA piped, no blanks': 'scripts/wait-e2e-slot.sh c2403f8|cat && ' + MERGE,
+  'SHA in the background': 'scripts/wait-e2e-slot.sh c2403f8&true && ' + MERGE,
+  // No shell runs the merge after these. Each holds one character the
+  // argument group refuses where no case above needs it refused.
+  'subst, ) inside': 'scripts/wait-e2e-slot.sh "$(echo a)b)" && ' + MERGE,
+  'subst, [ inside': 'scripts/wait-e2e-slot.sh "$(echo $a[1])" && ' + MERGE,
+  'string, [ inside': 'scripts/wait-e2e-slot.sh "$a[1]" && ' + MERGE,
+  'argument, ) inside': 'scripts/wait-e2e-slot.sh a)b && ' + MERGE,
+  'argument, [ inside': 'scripts/wait-e2e-slot.sh $a[1] && ' + MERGE,
+  'argument, backslash': 'scripts/wait-e2e-slot.sh a\\b && ' + MERGE,
+  'unquoted subst, ) inside': 'scripts/wait-e2e-slot.sh $(echo)a) && ' + MERGE,
+  'unquoted subst, < inside': 'scripts/wait-e2e-slot.sh $(cat<x) && ' + MERGE,
+  'unquoted subst, [ inside': 'scripts/wait-e2e-slot.sh $(echo$a[1]) && ' + MERGE,
+  'unquoted subst, && inside, no blank': 'scripts/wait-e2e-slot.sh $(a&&b) && ' + MERGE,
+  'unquoted subst, ; inside': 'scripts/wait-e2e-slot.sh $(a;b) && ' + MERGE,
+  'unquoted subst, | inside': 'scripts/wait-e2e-slot.sh $(a|b) && ' + MERGE,
   // A pipe hands && the exit status of its last command, not the script's.
   'redirect piped then &&': 'scripts/wait-e2e-slot.sh 2>&1 | tail -1 && ' + MERGE,
   'redirect to a file piped then &&':
@@ -165,13 +271,15 @@ const MUST_PASS: Record<string, string> = {
   // One shell line: the script refuses `true` with exit 2, so the merge
   // stays gated.
   'continuation, word': 'scripts/wait-e2e-slot.sh \\\ntrue && ' + MERGE,
-  'continuation, subst':
-    'scripts/wait-e2e-slot.sh \\\n  "$(git rev-parse "origin/$B")" && ' + MERGE,
-  'subst, two levels':
-    'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$(git branch --show-current)")" && ' + MERGE,
-  'subst, three levels': 'scripts/wait-e2e-slot.sh "$(a "$(b "c")")" && ' + MERGE,
-  'subst, single quotes inside':
-    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r \'.head.sha\')" && ' + MERGE,
+  'continuation, plain subst':
+    'scripts/wait-e2e-slot.sh \\\n  "$(git rev-parse origin/x)" && ' + MERGE,
+  'plain subst, redirect inside':
+    'scripts/wait-e2e-slot.sh "$(git rev-parse origin/x 2>/dev/null)" && ' + MERGE,
+  // case is a keyword only where a command starts.
+  'subst, a word ending in case':
+    'scripts/wait-e2e-slot.sh "$(git rev-parse origin/fix-case 2>/dev/null)" && ' + MERGE,
+  'braced variable': 'scripts/wait-e2e-slot.sh "${H}" && ' + MERGE,
+  'unquoted variable': 'scripts/wait-e2e-slot.sh $H && ' + MERGE,
   'empty subst': 'scripts/wait-e2e-slot.sh "$()" && ' + MERGE,
   'unquoted subst, no blank': 'scripts/wait-e2e-slot.sh $(cat) && ' + MERGE,
   'backtick, quoted': 'scripts/wait-e2e-slot.sh "`git rev-parse origin/x`" && ' + MERGE,
@@ -195,7 +303,8 @@ const MUST_PASS: Record<string, string> = {
   '>&2': 'scripts/wait-e2e-slot.sh >&2 && ' + MERGE,
   'double-quoted target': 'scripts/wait-e2e-slot.sh > "/tmp/slot out.log" && ' + MERGE,
   'single-quoted target': "scripts/wait-e2e-slot.sh 2>> '/tmp/slot out.log' && " + MERGE,
-  'subst, redirect': SUBST + ' > /tmp/slot.out 2>&1 && ' + MERGE,
+  'plain subst, redirect':
+    'scripts/wait-e2e-slot.sh "$(git rev-parse origin/x)" > /tmp/slot.out 2>&1 && ' + MERGE,
   'SHA, redirect, continuations':
     'scripts/wait-e2e-slot.sh c2403f8 \\\n  > /tmp/slot.out 2>&1 \\\n  && ' + MERGE,
   // Another repo's job, named in the URL: no diversif E2E job starts.
@@ -268,6 +377,10 @@ describe('block-e2e-start-without-slot', () => {
     ['plain', unclosed('a'.repeat(20_000))],
     ['quoted strings', unclosed('"x"'.repeat(7_000))],
     ['nested openings', unclosed('a"$(b'.repeat(4_000))],
+    // The case lookahead scans to the end of the text and tries each blank.
+    ['blanks', unclosed(' a'.repeat(10_000))],
+    ['variables, quoted', 'scripts/wait-e2e-slot.sh "' + '$H'.repeat(10_000) + ' && ' + MERGE],
+    ['variables, unquoted', 'scripts/wait-e2e-slot.sh ' + '$H'.repeat(10_000) + '; ' + MERGE],
     ['5,000 redirects 2>&1, no &&', redirects(' 2>&1')],
     ['5,000 redirects to a file, no &&', redirects(' >> /tmp/slot.out')]
   ])(
