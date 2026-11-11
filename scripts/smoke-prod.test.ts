@@ -635,22 +635,21 @@ describe('scripts/smoke-prod.sh', () => {
   // run the cut misses fails on its time. The TERM comes 6 s after the start,
   // which leaves the fetch and its upload-pack time to start.
   // This upload-pack outlives TERM, and so does its sleep: only KILL ends
-  // them. Started with TERM ignored, git outlives TERM too.
+  // them. Started with TERM ignored, git outlives TERM too, so that run lasts
+  // until the KILL, at least 1 s after the TERM. No assertion needs a process
+  // to run between the TERM and the KILL, as a TERM trap that writes a file
+  // would: in main run 565, upload-pack's trap file was still empty after
+  // that KILL (#712).
   it.each([
     ['', 0],
     [' when started with TERM ignored', 1000]
   ])(
     'with a SHA, cuts a fetch of origin that stalls before the wait by the deadline%s',
     async (_when, outlived) => {
-      const dir = mkdtempSync(path.join(binDir, 'upload-pack-'));
-      const [pidFile, termFile] = [path.join(dir, 'pid'), path.join(dir, 'term')];
-      // Upload-pack notes the TERM only where the KILL comes 1 s after it.
-      // When git exits on the TERM, the KILL follows at once and can land
-      // before the note on a loaded runner (#581).
-      const onTerm = outlived ? `echo >${termFile}` : '';
+      const pidFile = path.join(mkdtempSync(path.join(binDir, 'upload-pack-')), 'pid');
       const run = await smoke(base, {
         script: trackedCopy(
-          `trap "${onTerm}" TERM; (trap "" TERM; exec sleep 30) & echo $! >${pidFile};` +
+          `trap "" TERM; (trap "" TERM; exec sleep 30) & echo $! >${pidFile};` +
             ' wait $!; wait $!; git upload-pack'
         ),
         args: [newSha],
@@ -663,7 +662,6 @@ describe('scripts/smoke-prod.sh', () => {
       // The fetch stalls until the cut: the TERM ends git, else the KILL.
       expect(run.ms).toBeGreaterThan(5500 + outlived);
       expect(run.stderr).toBe('');
-      expect(readIfThere(termFile)).toBe(outlived ? '\n' : '');
       // KILL ended upload-pack's sleep too.
       const sleeper = Number(readFileSync(pidFile, 'utf8'));
       for (let i = 0; i < 40 && running(sleeper); i++) await Bun.sleep(50);
