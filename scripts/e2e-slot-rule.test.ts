@@ -161,7 +161,6 @@ const MUST_BLOCK: Record<string, string> = {
   'subst, backtick': 'scripts/wait-e2e-slot.sh "$(echo `)" && x `)"; ' + MERGE,
   'subst, braced parameter': 'scripts/wait-e2e-slot.sh "$(echo ${a:-)" && x "})"; ' + MERGE,
   'subst, process substitution': 'scripts/wait-e2e-slot.sh "$(echo >(cat )" && x ")"; ' + MERGE,
-  'two quoted arguments, merge between': 'scripts/wait-e2e-slot.sh "a"; ' + MERGE + '; "b" && x',
   'argument, process substitution': 'scripts/wait-e2e-slot.sh <(echo && x); ' + MERGE,
   'argument, nested braced parameter': 'scripts/wait-e2e-slot.sh ${a:-${b} && x}; ' + MERGE,
   'argument, quoted nested braced parameter':
@@ -200,6 +199,10 @@ const MUST_BLOCK: Record<string, string> = {
   // bash only: zsh refuses these two commands.
   'quoted backtick, escaped backtick': 'scripts/wait-e2e-slot.sh "`echo \\`" && x `"; ' + MERGE,
   'quoted backtick, three backticks': 'scripts/wait-e2e-slot.sh "`a`b`" && x `"; ' + MERGE,
+  // Both shells end the argument at its closing quote and run the merge
+  // after the first ;. A "…" branch that read past that quote would take
+  // "a"; MERGE; "b" as the argument, and the && after it as the slot call's.
+  'two quoted arguments, merge between': 'scripts/wait-e2e-slot.sh "a"; ' + MERGE + '; "b" && x',
   // The shell ends the argument there, so the && gates the command after
   // the ;, the pipe or the &.
   'SHA then semicolon, no blank': 'scripts/wait-e2e-slot.sh c2403f8;true && ' + MERGE,
