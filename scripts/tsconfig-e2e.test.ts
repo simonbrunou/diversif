@@ -55,10 +55,13 @@ describe('tsconfig.e2e.json', () => {
     const helpers = checker
       .getExportsOfModule(helpersModule)
       .filter((symbol) => {
+        // A spec names a default export itself, so no global can catch it.
+        if (symbol.name === ts.InternalSymbolName.Default) return false;
+        if (!(symbol.flags & ts.SymbolFlags.Alias)) return symbol.flags & ts.SymbolFlags.Value;
+        // `export type { X }` and `export { type X }` export no value.
+        if (symbol.declarations?.some(ts.isTypeOnlyImportOrExportDeclaration)) return false;
         // `export { open }` gives an alias symbol: read the value it names.
-        const target =
-          symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
-        return target.flags & ts.SymbolFlags.Value;
+        return checker.getAliasedSymbol(symbol).flags & ts.SymbolFlags.Value;
       })
       .map((symbol) => symbol.name)
       .sort();
@@ -75,10 +78,11 @@ describe('tsconfig.e2e.json', () => {
     const program = ts.createProgram([...fileNames, probePath], options, host, checkProgram);
     const unresolved = ts
       .getPreEmitDiagnostics(program, program.getSourceFile(probePath))
-      .filter((diagnostic) => diagnostic.code === 2304) // Cannot find name '…'.
+      // 2304: Cannot find name 'x'. 2552: the same, then "Did you mean 'y'?".
+      .filter((diagnostic) => diagnostic.code === 2304 || diagnostic.code === 2552)
       .map(
         (diagnostic) =>
-          /'(.+)'/.exec(ts.flattenDiagnosticMessageText(diagnostic.messageText, ''))?.[1]
+          /'([^']+)'/.exec(ts.flattenDiagnosticMessageText(diagnostic.messageText, ''))?.[1]
       )
       .sort();
     expect(unresolved).toEqual(helpers);
