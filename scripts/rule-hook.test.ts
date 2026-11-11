@@ -3,6 +3,15 @@
 // reach the agent in permissionDecisionReason, a warn rule's in
 // additionalContext. scripts/e2e-slot-rule.test.ts covers the E2E rule's own
 // cases.
+//
+// A rule that reads a command's options needs a test case for each way to
+// write the option. List them before review: the long and short forms in the
+// command's usage (`fuser --help` prints `-k,--kill`), a short option inside a
+// cluster (`-4k`), an option after a `\` line break, and letter case. hook.py
+// compiles each regex_match pattern with re.IGNORECASE, so a `-…k` pattern
+// also matches the `K` of `-SIGKILL`, a signal name: scope a part that must
+// keep its case with `(?-i:…)`. On block-kill-by-name, review found these
+// forms in three rounds after the first fix (#722).
 import { describe, expect, it } from 'bun:test';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
