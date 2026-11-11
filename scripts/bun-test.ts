@@ -13,9 +13,51 @@
 //   bun scripts/bun-test.ts --coverage         # forwarded to bun test
 //   bun scripts/bun-test.ts src/lib/utils       # subset path
 
-import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeSync } from 'node:fs';
 import path from 'node:path';
 import bunfig from '../bunfig.toml';
+
+// Writes `text` to stderr in full before it returns, however late the reader
+// drains the pipe (#683). process.stderr.write hands the pipe what it takes at
+// once and leaves the rest to the event loop, which the loop below never lets
+// run before process.exit: in main run 510 that cut a failed file's dump after
+// 160 KiB, before the line that named the fail. writeSync blocks instead, but
+// can write part of the text, and throws EAGAIN on a full pipe that is
+// non-blocking. In `bun run test` it is: `bun run paraglide` before this
+// runner leaves the shared stderr pipe O_NONBLOCK (/proc/self/fdinfo/2 reads
+// flags 04001 after it).
+function writeStderr(text: string): void {
+  const bytes = Buffer.from(text);
+  for (let offset = 0; offset < bytes.length;) {
+    try {
+      offset += writeSync(2, bytes, offset, bytes.length - offset);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EAGAIN') throw error;
+      Bun.sleepSync(10);
+    }
+  }
+}
+
+const withNewline = (text: string): string => (text.endsWith('\n') ? text : `${text}\n`);
+
+// A failed file's dump: the file's output without its (pass) lines, which
+// keeps every line that names the fail (each (fail) line and the reason line
+// under it, the error block, bun's counts), then the full output. A file with
+// 1601 cases prints 1601 (pass) lines in CI, and the lines that name its fail
+// come after them. With no (pass) line to leave out, the full output alone.
+function dumpFailedFile(file: string, out: string, problem: string | null): void {
+  const withoutPass = out
+    .split('\n')
+    .filter((line) => !line.startsWith('(pass) '))
+    .join('\n');
+  writeStderr(
+    (problem ? `!! ${file}: ${problem}\n` : '') +
+      (withoutPass === out
+        ? ''
+        : `== ${file}: output without its (pass) lines ==\n${withNewline(withoutPass)}`) +
+      `== ${file}: full output ==\n${withNewline(out)}`
+  );
+}
 
 function collectFiles(roots: string[]): string[] {
   const files: string[] = [];
@@ -126,14 +168,13 @@ for (let i = 0; !reportOnly && i < files.length; i++) {
   console.log(`[${i + 1}/${files.length}] ${status.padEnd(4)} ${counts.padEnd(15)} ${f}`);
   if (fail > 0 || runnerBroken) {
     failedFiles.push(f);
+    let reason: string | null = null;
     if (runnerBroken) {
-      const reason = parsedNothing
+      reason = parsedNothing
         ? "runner: couldn't parse bun test output"
         : `runner: bun exited ${exitCode} with no parsed counts`;
-      process.stderr.write(`!! ${f}: ${reason}\n`);
     }
-    // Emit the file's output so failure details aren't lost.
-    process.stderr.write(out);
+    dumpFailedFile(f, out, reason);
   }
 }
 

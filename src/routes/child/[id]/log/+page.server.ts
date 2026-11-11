@@ -3,9 +3,9 @@ import { localizedRedirect } from '#lib/server/redirect.js';
 import { asc, eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.js';
 import { foodEntries, preparedMeals } from '#lib/server/db/schema.js';
-import { requireChildContext } from '#lib/server/guards.js';
+import { requireChildContext, requireUser } from '#lib/server/guards.js';
 import { loadVisibleFoodsForChild } from '#lib/server/food-resolution.js';
-import { logRepas } from '#lib/server/repas/index.js';
+import { logRepas, queuedByOther } from '#lib/server/repas/index.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -42,8 +42,15 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions: Actions = {
   // The offline-queue replay (src/lib/offline/queue.ts) posts here too.
   default: async ({ request, params, locals }) => {
-    const ctx = requireChildContext(locals, params);
+    // A logged-out replay still gets the /login redirect first: the queue
+    // keeps the row for its user's next login (#308).
+    const user = requireUser(locals);
     const form = await request.formData();
+    // A replay of a row another user queued (#566) is refused before the
+    // child and membership checks and the write, so it never meets their
+    // 403/404 or the idempotency 409. The queue drops it without a toast.
+    if (queuedByOther(form, user.id)) return fail(403, { queuedByOther: true as const });
+    const ctx = requireChildContext(locals, params);
     const logged = logRepas(ctx, form);
     if (!logged.ok) return fail(logged.status, { errorKey: logged.errorKey });
     throw localizedRedirect(locals.locale, 303, logged.redirect);

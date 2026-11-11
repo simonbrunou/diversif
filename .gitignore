@@ -49,3 +49,5 @@ project.inlang/.lix/
 .fallow/
 .direnv/
 result
+# Python bytecode
+__pycache__/

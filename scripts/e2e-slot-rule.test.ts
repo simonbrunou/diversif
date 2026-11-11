@@ -1,76 +1,35 @@
-// .claude/hookify.block-e2e-start-without-slot.local.md against the commands
-// it must block or pass (#645, #651). Claude Code's hookify plugin (0.1.1)
-// reads the rule in Python: a hand-rolled frontmatter parser, then each
-// condition ANDed, `regex_match` as re.search with re.IGNORECASE. This file
-// ports those two steps for the keys the rule uses, so CI runs the rule's
-// cases on every change. Python and JavaScript read the pattern alike only
-// in the syntax they share and on printable ASCII, tab and newline, so two
-// tests keep the pattern and the cases to those. Where Claude Code installed
-// hookify (CI has none), the last test runs hookify's own engine on every
-// case and compares the verdicts.
+// .claude/rule-hook/rules/block-e2e-start-without-slot.md against the
+// commands it must block or pass (#645, #651, #655). Each case goes through
+// the repo's PreToolUse hook, .claude/rule-hook/hook.py, as a Bash call:
+// its own loader and engine (hookify 0.1.1's, in Python: a hand-rolled
+// frontmatter parser, each condition ANDed, `regex_match` as re.search with
+// re.IGNORECASE), so CI checks the verdicts Claude Code gets (#663).
 import { describe, expect, it } from 'bun:test';
-import { existsSync, readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import path from 'node:path';
+import {
+  type HookOutput,
+  loadRuleFiles,
+  preToolUse,
+  respondAll,
+  RULES_DIR,
+  runHook
+} from './rule-hook';
 
-const rulePath = path.resolve(
-  import.meta.dir,
-  '../.claude/hookify.block-e2e-start-without-slot.local.md'
-);
+const RULE = 'block-e2e-start-without-slot';
+const rule = loadRuleFiles([path.join(RULES_DIR, `${RULE}.md`)])[0];
 
-type Condition = { field: string; operator: string; pattern: string };
-
-// hookify strips blanks, then double quotes, then single quotes from each
-// value's ends (core/config_loader.py, extract_frontmatter).
-const unquote = (value: string) =>
-  value
-    .trim()
-    .replace(/^"+|"+$/g, '')
-    .replace(/^'+|'+$/g, '');
-
-function loadRule(file: string) {
-  const content = readFileSync(file, 'utf8');
-  if (!content.startsWith('---')) throw new Error(`${file} has no frontmatter`);
-  const [, front, ...body] = content.split('---');
-  const keys: Record<string, string> = {};
-  const conditions: Condition[] = [];
-  let current: Record<string, string> | null = null;
-  for (const line of front.split('\n')) {
-    const stripped = line.trim();
-    if (!stripped || stripped.startsWith('#')) continue;
-    const indent = line.length - line.trimStart().length;
-    if (stripped.startsWith('-')) {
-      const [k, v] = splitKey(stripped.slice(1));
-      current = { [k]: v };
-      conditions.push(current as Condition);
-    } else if (indent === 0) {
-      const [k, v] = splitKey(line);
-      keys[k] = v;
-      current = null;
-    } else if (indent > 2 && current) {
-      const [k, v] = splitKey(stripped);
-      current[k] = v;
-    }
+// A deny from this rule: no other Bash rule matches these cases, so a deny
+// that names another rule, or none, fails the test that asked.
+function denies(output: HookOutput | null | undefined) {
+  if (output == null) throw new Error('the hook gave no answer');
+  const decision = output.hookSpecificOutput?.permissionDecision;
+  if (decision === undefined) return false;
+  const reason = output.hookSpecificOutput?.permissionDecisionReason ?? '';
+  if (decision !== 'deny' || reason !== `**[${RULE}]**\n${rule.message}`) {
+    throw new Error(`unexpected answer: ${JSON.stringify(output)}`);
   }
-  return { keys, conditions, message: body.join('---').trim() };
+  return true;
 }
-
-function splitKey(text: string): [string, string] {
-  const colon = text.indexOf(':');
-  return [text.slice(0, colon).trim(), unquote(text.slice(colon + 1))];
-}
-
-const rule = loadRule(rulePath);
-const checks = rule.conditions.map((c) => {
-  if (c.field !== 'command') throw new Error(`field ${c.field} is not ported`);
-  if (c.operator === 'regex_match') {
-    const regex = new RegExp(c.pattern, 'i');
-    return (command: string) => regex.test(command);
-  }
-  if (c.operator === 'not_contains') return (command: string) => !command.includes(c.pattern);
-  throw new Error(`operator ${c.operator} is not ported`);
-});
-const blocks = (command: string) => checks.every((check) => check(command));
 
 // Each command that starts an E2E job.
 const STARTS = [
@@ -118,7 +77,9 @@ const SLOTS: Record<string, string> = {
   'after cd and T=': 'cd /w && T=$(cat k) && scripts/wait-e2e-slot.sh c2403f8 && ',
   'rev-parse, inner quotes': SUBST + ' && ',
   'curl | jq, inner quotes':
-    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && '
+    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && ',
+  redirect: 'scripts/wait-e2e-slot.sh > /tmp/slot.out 2>&1 && ',
+  'SHA, redirect': 'scripts/wait-e2e-slot.sh c2403f8 > /tmp/slot.out 2>&1 && '
 };
 
 // A slot call that gates nothing, or that the rule cannot read.
@@ -155,10 +116,38 @@ const MUST_BLOCK: Record<string, string> = {
     'scripts/wait-e2e-slot.sh `git rev-parse "origin/$B"` && ' + MERGE,
   'backtick, quoted, double quotes':
     'scripts/wait-e2e-slot.sh "`git rev-parse "origin/$B"`" && ' + MERGE,
-  'redirect to a file': 'scripts/wait-e2e-slot.sh > /tmp/slot.out && ' + MERGE,
-  'redirect 2>&1': 'scripts/wait-e2e-slot.sh 2>&1 && ' + MERGE,
-  'variable, redirect':
-    'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" > /tmp/slot.out && ' + MERGE,
+  // A pipe hands && the exit status of its last command, not the script's.
+  'redirect piped then &&': 'scripts/wait-e2e-slot.sh 2>&1 | tail -1 && ' + MERGE,
+  'redirect to a file piped then &&':
+    'scripts/wait-e2e-slot.sh > /tmp/slot.out | tail -1 && ' + MERGE,
+  'redirect then semicolon': 'scripts/wait-e2e-slot.sh > /tmp/slot.out; ' + MERGE,
+  'redirect then rc=$?':
+    'scripts/wait-e2e-slot.sh > /tmp/slot.out 2>&1; rc=$?; if [ $rc -eq 0 ]; then ' +
+    MERGE +
+    '; fi',
+  'redirect then ||': 'scripts/wait-e2e-slot.sh > /tmp/slot.out || ' + MERGE,
+  'redirect, newline then &&': 'scripts/wait-e2e-slot.sh > /tmp/slot.out\ntrue && ' + MERGE,
+  'redirect before the SHA': 'scripts/wait-e2e-slot.sh > /tmp/slot.out c2403f8 && ' + MERGE,
+  // The rule reads output redirects only.
+  '>|': 'scripts/wait-e2e-slot.sh >| /tmp/slot.out && ' + MERGE,
+  'process substitution': 'scripts/wait-e2e-slot.sh > >(tee /tmp/slot.out) && ' + MERGE,
+  'input redirect': 'scripts/wait-e2e-slot.sh < /dev/null && ' + MERGE,
+  'here-string': 'scripts/wait-e2e-slot.sh <<< x && ' + MERGE,
+  // A target that took in a backslash, a $ or a backtick inside "…", or a
+  // quote or backtick outside it, would end before the shell's word does.
+  // The && then sits inside that word, and the merge after ; runs ungated.
+  'target, escaped quote': 'scripts/wait-e2e-slot.sh > "a\\" && x"; ' + MERGE,
+  'target, quoted subst': 'scripts/wait-e2e-slot.sh > "$(echo " && x")"; ' + MERGE,
+  'target, backtick': 'scripts/wait-e2e-slot.sh > `echo && x`; ' + MERGE,
+  'target, quoted backtick': 'scripts/wait-e2e-slot.sh > "`echo " && x"`"; ' + MERGE,
+  'target, quote inside': 'scripts/wait-e2e-slot.sh > /tmp/a" && x"; ' + MERGE,
+  'target, single quote inside': "scripts/wait-e2e-slot.sh > /tmp/a' && x'; " + MERGE,
+  // The shell ends the target's word there, so the && gates the command
+  // after the pipe, the semicolon or the &, and the redirect on the new line.
+  'redirect piped, no blanks': 'scripts/wait-e2e-slot.sh > /tmp/slot.out|cat && ' + MERGE,
+  'redirect then semicolon, no blank': 'scripts/wait-e2e-slot.sh > /tmp/slot.out;true && ' + MERGE,
+  'redirect in the background': 'scripts/wait-e2e-slot.sh > /tmp/slot.out&true && ' + MERGE,
+  'newline, then a redirect and &&': 'scripts/wait-e2e-slot.sh\n2>&1 && ' + MERGE,
   // hookify matches the pattern with re.IGNORECASE, the marker with a
   // case-sensitive substring test.
   'upper case': 'FJ PR MERGE 640',
@@ -191,6 +180,24 @@ const MUST_PASS: Record<string, string> = {
   'variable first': 'H=$(git rev-parse "origin/$B") && scripts/wait-e2e-slot.sh "$H" && ' + MERGE,
   "message's variable form":
     'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" && ' + MERGE,
+  // Output redirects after the argument keep the script's exit status.
+  'redirect to a file': 'scripts/wait-e2e-slot.sh > /tmp/slot.out && ' + MERGE,
+  'redirect 2>&1': 'scripts/wait-e2e-slot.sh 2>&1 && ' + MERGE,
+  'variable, redirect':
+    'H=$(git rev-parse origin/x) && scripts/wait-e2e-slot.sh "$H" > /tmp/slot.out && ' + MERGE,
+  'redirect, no blank': 'scripts/wait-e2e-slot.sh >/tmp/slot.out && ' + MERGE,
+  'stderr to /dev/null': 'scripts/wait-e2e-slot.sh 2>/dev/null && ' + MERGE,
+  'SHA, redirect, no blank': 'scripts/wait-e2e-slot.sh c2403f8 >/tmp/slot.out && ' + MERGE,
+  'SHA, stderr to a file': 'scripts/wait-e2e-slot.sh c2403f8 2> /tmp/slot.err && ' + MERGE,
+  append: 'scripts/wait-e2e-slot.sh >> /tmp/slot.out 2>&1 && ' + MERGE,
+  '&>': 'scripts/wait-e2e-slot.sh &> /tmp/slot.out && ' + MERGE,
+  '&>>': 'scripts/wait-e2e-slot.sh &>>/tmp/slot.out && ' + MERGE,
+  '>&2': 'scripts/wait-e2e-slot.sh >&2 && ' + MERGE,
+  'double-quoted target': 'scripts/wait-e2e-slot.sh > "/tmp/slot out.log" && ' + MERGE,
+  'single-quoted target': "scripts/wait-e2e-slot.sh 2>> '/tmp/slot out.log' && " + MERGE,
+  'subst, redirect': SUBST + ' > /tmp/slot.out 2>&1 && ' + MERGE,
+  'SHA, redirect, continuations':
+    'scripts/wait-e2e-slot.sh c2403f8 \\\n  > /tmp/slot.out 2>&1 \\\n  && ' + MERGE,
   // Another repo's job, named in the URL: no diversif E2E job starts.
   'rerun in another repo':
     'curl -X POST https://git.sbrn.eu/api/v1/repos/simonbrunou/cinder/actions/jobs/13858/rerun',
@@ -209,41 +216,26 @@ const COMMANDS = [
   ...Object.values(MUST_PASS)
 ];
 
-// hookify's own engine, at the path Claude Code installed it to, run on the
-// commands passed as JSON. A newer hookify than the 0.1.1 this file ports
-// runs too, so a change in its parser or engine that alters a verdict on
-// these cases fails here.
-const INSTALLED = path.join(homedir(), '.claude/plugins/installed_plugins.json');
-const HOOKIFY: string | undefined = existsSync(INSTALLED)
-  ? JSON.parse(readFileSync(INSTALLED, 'utf8')).plugins?.['hookify@claude-plugins-official']?.[0]
-      ?.installPath
-  : undefined;
-const HOOKIFY_VERDICTS = `
-import json, sys
-sys.path.insert(0, sys.argv[1])
-from core.config_loader import load_rule_file
-from core.rule_engine import RuleEngine
-rule = load_rule_file(sys.argv[2])
-engine = RuleEngine()
-out = []
-for command in json.loads(sys.argv[3]):
-    event = {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": command}}
-    decision = engine.evaluate_rules([rule], event).get("hookSpecificOutput", {})
-    out.append(decision.get("permissionDecision") == "deny")
-print(json.dumps(out))
-`;
-const hasHookify =
-  !!HOOKIFY && existsSync(path.join(HOOKIFY, 'core/rule_engine.py')) && !!Bun.which('python3');
+// The hook's answer to every case, from one Python process.
+const answers = respondAll(COMMANDS.map((command) => preToolUse('Bash', { command })));
+const verdicts = new Map(COMMANDS.map((command, i) => [command, answers[i]]));
+const blocks = (command: string) => {
+  if (!verdicts.has(command)) throw new Error(`not in COMMANDS: ${command}`);
+  return denies(verdicts.get(command));
+};
 
 describe('block-e2e-start-without-slot', () => {
-  it('loads as hookify reads it', () => {
-    expect(rule.keys).toMatchObject({
-      name: 'block-e2e-start-without-slot',
-      enabled: 'true',
+  it("loads with the hook's own loader", () => {
+    expect(rule).toMatchObject({
+      name: RULE,
+      enabled: true,
       event: 'bash',
       action: 'block'
     });
-    expect(rule.conditions.map((c) => c.operator)).toEqual(['regex_match', 'not_contains']);
+    expect(rule.conditions.map((c) => [c.field, c.operator])).toEqual([
+      ['command', 'regex_match'],
+      ['command', 'not_contains']
+    ]);
     expect(rule.conditions[1].pattern).toBe('# no-e2e-job');
   });
 
@@ -265,14 +257,23 @@ describe('block-e2e-start-without-slot', () => {
 
   // A nested quantifier in the argument group backtracks without end on an
   // argument that never closes: hookify ran over 120 s on such a mutant.
-  // Bun 1.4's regex engine gives up after about a second and returns false,
-  // which fails the first two of these.
+  // The same goes for a long run of redirects that never reaches &&. Claude
+  // Code stops a hook after its 10 s timeout and runs the call, so each case
+  // runs the hook in a process of its own with the same 10 s limit; a hook
+  // stopped there gives no answer, and the test fails.
+  const unclosed = (body: string) => 'scripts/wait-e2e-slot.sh "$(' + body + ' && ' + MERGE;
+  const redirects = (redirect: string) =>
+    'scripts/wait-e2e-slot.sh' + redirect.repeat(5_000) + '; ' + MERGE;
   it.each([
-    ['plain', 'a'.repeat(20_000)],
-    ['quoted strings', '"x"'.repeat(7_000)],
-    ['nested openings', 'a"$(b'.repeat(4_000)]
-  ])('blocks an unclosed 20,000-character argument: %s', (_, body) =>
-    expect(blocks('scripts/wait-e2e-slot.sh "$(' + body + ' && ' + MERGE)).toBe(true)
+    ['plain', unclosed('a'.repeat(20_000))],
+    ['quoted strings', unclosed('"x"'.repeat(7_000))],
+    ['nested openings', unclosed('a"$(b'.repeat(4_000))],
+    ['5,000 redirects 2>&1, no &&', redirects(' 2>&1')],
+    ['5,000 redirects to a file, no &&', redirects(' >> /tmp/slot.out')]
+  ])(
+    'blocks an unclosed 20,000-character argument: %s',
+    (_, command) => expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(true),
+    15_000
   );
 
   it('names the variable form in its message', () =>
@@ -280,45 +281,8 @@ describe('block-e2e-start-without-slot', () => {
       '`H=$(git rev-parse origin/<branch>) && scripts/wait-e2e-slot.sh "$H" && <command>`'
     ));
 
-  // \s, \b and case folding differ between the engines outside printable
-  // ASCII, tab and newline: Python's \s also matches \x1c, for one.
-  it('keeps the pattern and every case to printable ASCII, tab and newline', () => {
-    const ascii = /^[\t\n -~]*$/;
-    expect(rule.conditions[0].pattern).toMatch(ascii);
-    expect(COMMANDS.filter((command) => !ascii.test(command))).toEqual([]);
+  it('names the pipe as the form that blocks, not a redirect', () => {
+    expect(rule.message).toContain('It never lets a pipe through.');
+    expect(rule.message).not.toContain('drop it');
   });
-
-  // Each engine rejects or misreads some of the other's syntax: Python's
-  // (?P<name>), inline flags, {,n} and a $ that also matches before a final
-  // newline; JavaScript's (?<name>), \k, \p{}, \u{} and [^]. The pattern
-  // keeps to escapes and groups both read the same way.
-  it('uses only regex syntax Python and JavaScript share', () => {
-    const pattern = rule.conditions[0].pattern;
-    const escapes = pattern.match(/\\[\s\S]/g) ?? [];
-    expect(escapes.filter((e) => !/^\\[sSbntr.\\$(){}[\]|*+?^/-]$/.test(e))).toEqual([]);
-    const unescaped = pattern.replace(/\\[\s\S]/g, '__');
-    expect(unescaped.match(/\(\?[^:!=]/g) ?? []).toEqual([]);
-    expect(unescaped).not.toMatch(/\[\^?\]/);
-    expect(unescaped).not.toMatch(/\{,|\$/);
-  });
-
-  it.skipIf(!hasHookify)(
-    "matches the installed hookify's own verdict on every case",
-    () => {
-      const run = Bun.spawnSync([
-        'python3',
-        '-I',
-        '-c',
-        HOOKIFY_VERDICTS,
-        HOOKIFY ?? '',
-        rulePath,
-        JSON.stringify(COMMANDS)
-      ]);
-      expect(run.stderr.toString()).toBe('');
-      const verdicts: boolean[] = JSON.parse(run.stdout.toString());
-      expect(COMMANDS.filter((command, i) => verdicts[i] !== blocks(command))).toEqual([]);
-      expect(verdicts).toHaveLength(COMMANDS.length);
-    },
-    30_000
-  );
 });

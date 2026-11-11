@@ -114,6 +114,7 @@
   "errorsGenericFallback": "An error occurred.",
   "errorsGenericDescription404": "No page matches this address.",
   "errorsNetwork": "Unable to reach the server. Check your connection, then try again.",
+  "errorsSaveTimedOut": "The save may not have gone through. Check your connection, then try again.",
   "errorsAuthRateLimited": "Too many attempts. Please try again later.",
   "errorsAuthRateLimitedSeconds": "Too many attempts. Try again in {seconds}s.",
   "errorsAuthBadInput": "Invalid fields.",

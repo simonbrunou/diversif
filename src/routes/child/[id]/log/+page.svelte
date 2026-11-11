@@ -97,7 +97,12 @@
     fallback={`/child/${data.child.id}`}
   />
 
-  <RepasForm class="grid gap-5" queueFor={data.child.id} bind:busy={submitting}>
+  <RepasForm
+    class="grid gap-5"
+    queueFor={data.child.id}
+    queuedBy={data.user?.id}
+    bind:busy={submitting}
+  >
     <FormError messageKey={form?.errorKey} {form} />
 
     {#if data.preparedMeals.length > 0}

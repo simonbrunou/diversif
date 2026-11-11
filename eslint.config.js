@@ -120,5 +120,30 @@ export default ts.config(
       'drizzle/enforce-delete-with-where': ['error', { drizzleObjectName: ['db', 'tx'] }],
       'drizzle/enforce-update-with-where': ['error', { drizzleObjectName: ['db', 'tx'] }]
     }
+  },
+  {
+    // Bun's process.stdout.write and process.stderr.write hand a pipe what it
+    // takes at once and leave the rest to the event loop, and process.exit
+    // drops that rest: in main run 510 the test runner's dump of a failed
+    // file stopped after 160 KiB, before the line that named the fail (#683).
+    // What console.log and console.error print reaches the reader in full,
+    // even when process.exit follows at once. The selectors catch the dot
+    // form on process (process.stdout.write) and on a bare stdout or stderr
+    // (imported from node:process, or destructured from process). Bracket
+    // access, an alias of the stream and globalThis.process get through.
+    files: ['scripts/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...[
+          'MemberExpression[computed=false][property.name="write"][object.type="MemberExpression"][object.computed=false][object.object.name="process"][object.property.name=/^std(out|err)$/]',
+          'MemberExpression[computed=false][property.name="write"][object.type="Identifier"][object.name=/^std(out|err)$/]'
+        ].map((selector) => ({
+          selector,
+          message:
+            'Print with console.log or console.error: Bun drops what process.stdout.write or process.stderr.write has not handed the pipe yet when process.exit runs (#683).'
+        }))
+      ]
+    }
   }
 );

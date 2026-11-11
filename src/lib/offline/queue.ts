@@ -1,4 +1,4 @@
-import { fetchTransport, postAction, type Fields, type Transport } from './wire';
+import { fetchTransport, postAction, withDeadline, type Fields, type Transport } from './wire';
 
 export interface QueuedSubmit {
   key: string;
@@ -10,6 +10,12 @@ export interface QueuedSubmit {
   // via a persistent "log back in to sync" affordance, and only cleared
   // once a subsequent replay actually succeeds — see #308.
   status?: 'needs-reauth';
+  // The id of the user who queued the row, kept outside formData so the
+  // online attempt never sends it. The replay sends it, and the log action
+  // refuses a row queued by another user than the session's: the next person
+  // to log in on the device must not replay the previous one's repas (#566).
+  // Rows queued before #566 carry none and replay under whoever is signed in.
+  queuedBy?: number;
 }
 
 // Detail of the queue:synced event flush() dispatches on window: one replay
@@ -177,6 +183,8 @@ function emit(name: string, detail?: unknown): void {
 // that distinctly (queue:accessRevoked) so the parent understands the
 // entry is gone because the carnet is gone, not because of an unexplained
 // bug; every other non-retriable status keeps the generic queue:dropped.
+// The one silent drop, a row queued by another user, never gets here (see
+// postOne).
 function dropRow(status: number, reason: 'error' | 'failure'): 'drop' {
   if (status === 401 || status === 403 || status === 404) {
     emit('queue:accessRevoked', { status });
@@ -196,7 +204,9 @@ async function postOne(
 ): Promise<{ qs: string } | 'drop' | 'retry' | 'needs-reauth'> {
   // The key travels as a form field, as with the online submit. Rows queued
   // before #325 don't carry the field, so it is always copied from the row.
-  const fields = { ...row.formData, idempotencyKey: row.key };
+  // The row's owner travels the same way, for the rows that record one.
+  const fields: Fields = { ...row.formData, idempotencyKey: row.key };
+  if (row.queuedBy !== undefined) fields.queuedBy = String(row.queuedBy);
   const answer = await withDeadline(deadlineMs, (signal) =>
     postAction(transport, `/child/${row.childId}/log`, fields, signal)
   );
@@ -205,6 +215,11 @@ async function postOne(
   // before the deadline keeps it for the next flush.
   if (answer.kind !== 'action') return 'retry';
   const { result } = answer;
+  // The log action refused a row queued by another user than the session's
+  // (#566), after the logged-in check and before the child and membership
+  // checks or any write. The row is dropped with no toast: the
+  // signed-in parent never queued it, and it is not theirs to hear about.
+  if (result.type === 'failure' && result.data?.queuedByOther === true) return 'drop';
 
   if (result.type === 'redirect') {
     // Match every locale-prefixed login redirect (paraglide rewrites bare
@@ -227,24 +242,6 @@ async function postOne(
   // type === 'failure' (the log action never answers 'success')
   if (result.status === 409 || result.status === 429) return 'retry';
   return dropRow(result.status, 'failure');
-}
-
-// Runs `send` with a signal that aborts `ms` after the call, as
-// AbortSignal.timeout(ms) would. That API came after AbortController and
-// after Web Locks (Safari 16 and Firefox 100, against Safari 15.4 and Firefox
-// 96 for Web Locks), so a browser that flush() serves without locks may lack
-// it. The timer stops once `send` settles.
-async function withDeadline<T>(ms: number, send: (signal: AbortSignal) => Promise<T>): Promise<T> {
-  const controller = new AbortController();
-  const timer = setTimeout(
-    () => controller.abort(new DOMException('The replay deadline passed', 'TimeoutError')),
-    ms
-  );
-  try {
-    return await send(controller.signal);
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 // Every open tab flushes on reconnect, and inFlight only coalesces the passes

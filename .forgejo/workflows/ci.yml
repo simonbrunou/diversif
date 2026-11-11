@@ -125,8 +125,43 @@ jobs:
           path: coverage
           retention-days: 14
 
+  # Tells the e2e job whether a PR's change reaches the app. A PR that changes
+  # only Markdown files and docs/ skips E2E: nothing the app builds or the E2E
+  # tests run reads those paths. A push to main always runs it. See
+  # scripts/e2e-needed.sh for both.
+  changes:
+    name: Changed paths (E2E needed?)
+    runs-on: ubuntu-latest
+    outputs:
+      e2e: ${{ steps.paths.outputs.e2e }}
+    steps:
+      # A push to main needs no checkout: its step prints true.
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Full history, for the merge base of a PR with its base branch.
+          fetch-depth: 0
+      - id: paths
+        name: Decide whether E2E runs
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            e2e="$(scripts/e2e-needed.sh "origin/$BASE_REF")"
+            echo "E2E needed: $e2e (the branch's changes since origin/$BASE_REF)"
+          else
+            e2e=true
+            echo "E2E needed: true (a push to main)"
+          fi
+          echo "e2e=$e2e" >>"$GITHUB_OUTPUT"
+
   e2e:
     name: End-to-end tests (Playwright)
+    needs: changes
+    # Skipped when changes printed false. A failed changes job turns the run
+    # red and skips E2E too: rerun the whole run.
+    if: needs.changes.outputs.e2e != 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -212,12 +247,83 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # The job drives the runner CT's Docker daemon, shared by every job on the
-      # runner: names are per run so two concurrent runs never collide.
-      SMOKE_IMAGE: diversif:ci-smoke-${{ github.run_id }}
-      SMOKE_CONTAINER: diversif-smoke-${{ github.run_id }}
-      SMOKE_VOLUME: diversif-smoke-data-${{ github.run_id }}
+      # runner. Names carry the run id so two concurrent runs never collide, and
+      # the attempt so a re-run never shares them with an earlier attempt of its
+      # run (#697). An attempt the runner lost runs no cleanup step and leaves
+      # its container, volume and image behind: the re-run's docker run would
+      # then fail on the name, or mount the earlier attempt's database. An
+      # attempt cut off from the forge can still be running when the re-run
+      # starts, and with one name per run its cleanup step would remove the
+      # re-run's container, volume and image. Forgejo numbers run_attempt per
+      # job, not per run: re-running only this job makes it 2 while the other
+      # jobs stay at 1.
+      SMOKE_IMAGE: diversif:ci-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+      SMOKE_CONTAINER: diversif-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+      SMOKE_VOLUME: diversif-smoke-data-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # #697: remove what earlier attempts of this run left behind, by name. The
+      # names are this attempt's with its number swapped out. Each check matches
+      # the exact name: Docker's name filter matches a substring, so attempt 1's
+      # check would also list attempt 10's. The container goes before its
+      # volume, since Docker refuses to remove a volume that a container still
+      # mounts, stopped or not. The image goes by tag, never by ID: a push run
+      # and a pull_request run of one SHA build the same image ID. Each rm keeps
+      # --force, which exits 0 on a name an earlier attempt's own cleanup step
+      # removed after the check. `shell: bash` runs the text as
+      # `bash --noprofile --norc -e -o pipefail`, so a failed docker call fails
+      # the step once the ERR trap has named the attempt, and the for loop and
+      # the trap need bash. scripts/ci-smoke-attempt.test.ts runs this text
+      # against a stub docker.
+      - name: Remove earlier attempts' container, volume and image
+        shell: bash
+        env:
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          case "$RUN_ATTEMPT" in
+            '' | 0* | *[!0-9]*)
+              echo "::error::github.run_attempt is '$RUN_ATTEMPT', not a positive integer, so the smoke container, volume and image names do not tell this run's attempts apart"
+              exit 1
+              ;;
+          esac
+          container_base=${SMOKE_CONTAINER%-"$RUN_ATTEMPT"}
+          volume_base=${SMOKE_VOLUME%-"$RUN_ATTEMPT"}
+          image_base=${SMOKE_IMAGE%-"$RUN_ATTEMPT"}
+          if [ "$container_base" = "$SMOKE_CONTAINER" ] || [ "$volume_base" = "$SMOKE_VOLUME" ] || [ "$image_base" = "$SMOKE_IMAGE" ]; then
+            echo "::error::SMOKE_CONTAINER ($SMOKE_CONTAINER), SMOKE_VOLUME ($SMOKE_VOLUME) and SMOKE_IMAGE ($SMOKE_IMAGE) must all end in -$RUN_ATTEMPT"
+            exit 1
+          fi
+          if [ "$RUN_ATTEMPT" = 1 ]; then
+            echo "This is attempt 1: no earlier attempt to clean up"
+          fi
+          trap 'echo "::error::a docker call failed while removing what attempt $n of this run left"' ERR
+          for ((n = 1; n < RUN_ATTEMPT; n++)); do
+            container="$container_base-$n"
+            volume="$volume_base-$n"
+            image="$image_base-$n"
+            found=$(docker ps --all --quiet --filter "name=^/$container\$")
+            if [ -n "$found" ]; then
+              docker rm --force "$container" >/dev/null
+              container_state=removed
+            else
+              container_state=absent
+            fi
+            found=$(docker volume ls --quiet --filter "name=^$volume\$")
+            if [ -n "$found" ]; then
+              docker volume rm --force "$volume" >/dev/null
+              volume_state=removed
+            else
+              volume_state=absent
+            fi
+            found=$(docker images --quiet "$image")
+            if [ -n "$found" ]; then
+              docker image rm --force "$image" >/dev/null
+              image_state=removed
+            else
+              image_state=absent
+            fi
+            echo "Attempt $n: container $container $container_state, volume $volume $volume_state, image $image $image_state"
+          done
       # No push, just proves the image still builds — the runtime stage has
       # broken before (missing patches/ dir, see Dockerfile) with nothing in
       # CI to catch it.
@@ -232,8 +338,11 @@ jobs:
       - name: Start the built image against a throwaway data volume
         # A fresh named volume, not a bind mount: the daemon cannot see the job's
         # runner.temp. A new volume inherits /app/data's ownership from the image
-        # (uid 1001, see Dockerfile), so it is writable without a chmod.
-        run: docker run -d --name "$SMOKE_CONTAINER" -v "$SMOKE_VOLUME:/app/data" "$SMOKE_IMAGE"
+        # (uid 1001, see Dockerfile), so it is writable without a chmod. The
+        # echo puts the attempt's names in the job log.
+        run: |
+          echo "Starting container $SMOKE_CONTAINER from image $SMOKE_IMAGE on volume $SMOKE_VOLUME"
+          docker run -d --name "$SMOKE_CONTAINER" -v "$SMOKE_VOLUME:/app/data" "$SMOKE_IMAGE"
       # Bounded at 90s (18 x 5s): well past start-period=20s + interval=30s
       # (Dockerfile HEALTHCHECK), so a container that never migrates/boots
       # cleanly fails the job instead of the workflow hanging on it.

@@ -12,12 +12,13 @@
   // (src/lib/offline/submit.ts) instead of use:enhance. This component only
   // applies the outcome: the server's answer goes to the page as use:enhance
   // would apply it, a queued repas goes back to the dashboard, and a failure
-  // keeps the form as typed. An applied answer then goes to `onapplied`, for
-  // what the page does with it.
+  // or an edit past the submit's deadline keeps the form as typed. An applied
+  // answer then goes to `onapplied`, for what the page does with it.
 
   let {
     busy = $bindable(false),
     queueFor,
+    queuedBy,
     onapplied,
     children,
     ...attributes
@@ -26,6 +27,8 @@
     busy?: boolean;
     /** The child to queue the repas for when the server can't be reached: the log form only. */
     queueFor?: number;
+    /** The signed-in user's id, recorded on the queued repas: the log form only. */
+    queuedBy?: number;
     /** Called with the server's answer once it is applied to the page. */
     onapplied?: (result: ActionResult) => void;
     children: Snippet;
@@ -40,7 +43,8 @@
     try {
       outcome = await submitRepas(new FormData(form, event.submitter), {
         action: form.action,
-        queueFor
+        queueFor,
+        queuedBy
       });
       if (outcome.kind === 'sent') {
         await applyAction(outcome.result);
@@ -57,9 +61,14 @@
       await goto(localizedHref(`/child/${queueFor}`)).catch(() => {});
     } else if (outcome.kind === 'failed') {
       // The log form fails only when IndexedDB refused the row; an edit,
-      // never queued, fails whenever the app didn't answer (the message
-      // use:enhance's error page showed).
+      // never queued, fails whenever no answer came from the app: the browser
+      // is offline, the request failed, or another server's page answered
+      // (the message use:enhance's error page showed).
       toast.error(queueFor === undefined ? m.errorsNetwork() : m.offlineQueueFailedToast());
+    } else if (outcome.kind === 'timedOut') {
+      // An edit with no answer before the deadline: the server may have
+      // saved it, and saving again writes the same values (#577).
+      toast.error(m.errorsSaveTimedOut());
     }
   }
 </script>
