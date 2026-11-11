@@ -135,15 +135,13 @@ const MUST_BLOCK: Record<string, string> = {
   // An argument whose quote, backslash, backtick, $, #, <, parenthesis or
   // case carries the shell's word past the end the rule reads. The && then
   // sits inside that word, and the merge after the ; or the newline runs
-  // ungated: behind a slot script that exits 3, bash and zsh run it after
-  // each of these, unless a comment names one shell (#710).
+  // ungated (#710). Behind a slot script that exits 3, bash and zsh both
+  // read each of these that way, unless a comment below says otherwise.
   'argument, escaped quote': 'scripts/wait-e2e-slot.sh "a\\" && x"; ' + MERGE,
   'argument, quoted subst': 'scripts/wait-e2e-slot.sh "$(echo " && x")"; ' + MERGE,
   'argument, backtick': 'scripts/wait-e2e-slot.sh `x && y`; ' + MERGE,
   'argument, quoted backtick, double quotes': 'scripts/wait-e2e-slot.sh "`echo " && x"`"; ' + MERGE,
   'argument, braced parameter': 'scripts/wait-e2e-slot.sh "${a:-" && x"}"; ' + MERGE,
-  // zsh only: bash refuses the whole command.
-  'argument, $[': 'scripts/wait-e2e-slot.sh "$[1" && "2]"; ' + MERGE,
   'argument, comment': 'scripts/wait-e2e-slot.sh #a && x\n' + MERGE,
   'argument, quote inside': 'scripts/wait-e2e-slot.sh a" && x"; ' + MERGE,
   'argument, single quote inside': "scripts/wait-e2e-slot.sh a' && x'; " + MERGE,
@@ -188,9 +186,13 @@ const MUST_BLOCK: Record<string, string> = {
     'scripts/wait-e2e-slot.sh "$(true&&case x in x)" && y" ;; esac)"; ' + MERGE,
   'subst, case pattern after |':
     'scripts/wait-e2e-slot.sh "$(true|case x in x)" && y" ;; esac)"; ' + MERGE,
-  // zsh only: zsh reads {case as { and the keyword, and &! as an operator
-  // (run in the background and disown); bash reads {case and !case as
-  // command names.
+  // zsh only: bash refuses the whole command.
+  'argument, $[': 'scripts/wait-e2e-slot.sh "$[1" && "2]"; ' + MERGE,
+  // Only zsh hides the && in these two: it reads {case as { and the
+  // keyword, and &! as an operator (run in the background and disown).
+  // bash reads {case and !case as command names and ends the "$(…)" at the
+  // first ), so its && is real, but bash still runs the merge after the ;,
+  // the gap #715 tracks.
   'subst, case pattern after {':
     'scripts/wait-e2e-slot.sh "$({case x in x)" && y" ;; esac;})"; ' + MERGE,
   'subst, case pattern after &!':
