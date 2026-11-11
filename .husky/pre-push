@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # pre-push: fast gates only — a conflict check against the base branch
 # (one fetch), then the static ones: lint (prettier + eslint + i18n),
-# typecheck (svelte-check, then tsc on the service worker and scripts/) and
+# typecheck (svelte-check, then tsc on the service worker, scripts/ and e2e/) and
 # the Fallow audit. The full test suite (unit/component, the test:coverage
 # 100% threshold, docker --check, and Playwright e2e) was intentionally
 # removed so pushes aren't held up for minutes. Forgejo CI still runs all of

@@ -13,7 +13,7 @@
     "preview": "bun --bun node_modules/vite/bin/vite.js preview",
     "_paraglide_note": "scripts/compile-paraglide.ts runs paraglide-js 3.x's compile() under bun with the options in paraglide.config.ts, the object paraglideVitePlugin in vite.config.ts also reads. Both compile into the same gitignored outdir with the same strategy and urlPatterns, so `bun run check/test` exercise the locale routing that `bun run build` ships. paraglide.config.ts names the two runtime.js lines that still differ.",
     "paraglide": "bun scripts/compile-paraglide.ts",
-    "check": "bun run paraglide && bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun --bun node_modules/svelte-check/bin/svelte-check --tsconfig ./tsconfig.json --threshold warning && bun --bun node_modules/typescript/bin/tsc -p src/service-worker && bun --bun node_modules/typescript/bin/tsc -p tsconfig.scripts.json",
+    "check": "bun run paraglide && bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun --bun node_modules/svelte-check/bin/svelte-check --tsconfig ./tsconfig.json --threshold warning && bun --bun node_modules/typescript/bin/tsc -p src/service-worker && bun --bun node_modules/typescript/bin/tsc -p tsconfig.scripts.json && bun --bun node_modules/typescript/bin/tsc -p tsconfig.e2e.json",
     "check:watch": "bun --bun node_modules/@sveltejs/kit/src/cli.js sync && bun --bun node_modules/svelte-check/bin/svelte-check --tsconfig ./tsconfig.json --threshold warning --watch",
     "check:budget": "bun run build && bun scripts/check-bundle-size.ts",
     "depcruise": "bun --bun node_modules/dependency-cruiser/bin/dependency-cruiser.mjs --config .dependency-cruiser.cjs src",
