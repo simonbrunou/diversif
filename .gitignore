@@ -21,6 +21,7 @@ data
 .omp/
 .playwright-mcp/
 *.log
+*.pid
 coverage
 .e2e-data
 playwright-report

@@ -81,11 +81,13 @@ How to run, write and triage this repo's tests. Commands live in `package.json`;
 Dev mode registers no service worker and serves unbundled modules instead of the `/_app/immutable/` chunks, so chunk-load and service-worker failures show only on a production build. Reproduce them there, and rebuild and restart after every code change (a build takes about 30 s):
 
 ```sh
-nix develop -c env ORIGIN=http://localhost:3123 bun run build
-nix develop -c env DATABASE_PATH=/tmp/diversif-repro.db PORT=3123 WEBAUTHN_RP_ID=localhost NODE_ENV=production bun build/index.js
+nix develop -c env ORIGIN=http://localhost:5722 bun run build
+nix develop -c env DATABASE_PATH=repro.db PORT=5722 WEBAUTHN_RP_ID=localhost NODE_ENV=production bun build/index.js > repro.log 2>&1 & echo $! > repro.pid
 ```
 
-The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENTRY_DSN` is set. It is read at run time, so for a browser Sentry repro add a fake one to the `bun build/index.js` line (for example `PUBLIC_SENTRY_DSN=https://0123456789abcdef0123456789abcdef@o1.ingest.de.sentry.io/2`), with `PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0` and `PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=0` to keep traces and replays out of the envelopes. Leave `SENTRY_DSN` unset, and intercept `/monitoring` in the browser to read the envelopes: the tunnel would otherwise relay them to the DSN's host. Delete `/tmp/diversif-repro.db*` afterwards.
+5722 is the port for #722. Take 5000 plus your issue number, so that it differs from the port « E2E from a worktree: give the run a free port » gives the E2E run of the same worktree, check first that `ss -ltn 'sport = :<port>'` shows no listener, and give `ORIGIN` the same port. A server that finds its port taken exits, and its `repro.pid` then names no process. The three files sit in the worktree, where git ignores them. Stop the server with `kill "$(cat repro.pid)"`, then check with the same `ss` call that the port is free: `nix develop -c` execs bun, so that PID is the server's own. A kill by name or by port also stops other worktrees' servers, E2E runs included. The repo's rule hook blocks `pkill`, `killall`, `fuser -k` and a command that holds both `pgrep` and `kill` (`.claude/rule-hook/rules/block-kill-by-name.md`).
+
+The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENTRY_DSN` is set. It is read at run time, so for a browser Sentry repro add a fake one to the `bun build/index.js` line (for example `PUBLIC_SENTRY_DSN=https://0123456789abcdef0123456789abcdef@o1.ingest.de.sentry.io/2`), with `PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0` and `PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=0` to keep traces and replays out of the envelopes. Leave `SENTRY_DSN` unset, and intercept `/monitoring` in the browser to read the envelopes: the tunnel would otherwise relay them to the DSN's host. Delete `repro.db*`, `repro.log` and `repro.pid` afterwards.
 
 ## Triaging a red run
 
