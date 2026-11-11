@@ -48,20 +48,26 @@ const BLOCKS: [string, string, Record<string, unknown>][] = [
   ['block-no-verify', 'Bash', { command: 'git commit --no-verify -m x' }]
 ];
 
-// A kill by name reaches every worktree's process of that name, another
+// A kill by name or by port reaches every worktree's process, another
 // worktree's E2E server included (#722). A kill of the PID you started, a
-// pgrep and a command with the escape comment go through.
+// pgrep or fuser that kills nothing, and a command with the escape comment go
+// through.
 const KILLS_BY_NAME = [
   "pkill -f 'bun build/index.js'",
   'pkill -f "bun build/index.js"; sleep 1',
   'nix develop -c pkill -f playwright',
   'sudo -n pkill -f vite',
-  'killall bun'
+  'killall bun',
+  "kill $(pgrep -f 'bun build/index.js')",
+  "pgrep -f 'bun build/index.js' | xargs -r kill",
+  'fuser -k 4173/tcp',
+  'fuser -v -k -n tcp 3123'
 ];
 const OTHER_KILLS = [
-  'kill "$(cat /tmp/diversif-repro.pid)"',
+  'kill "$(cat repro.pid)"',
   'kill $!',
   "pgrep -af 'bun build/index.js'",
+  'fuser -v -n tcp 4173',
   "rg -n 'pkill' docs # no-kill-by-name"
 ];
 

@@ -82,12 +82,12 @@ Dev mode registers no service worker and serves unbundled modules instead of the
 
 ```sh
 nix develop -c env ORIGIN=http://localhost:3123 bun run build
-nix develop -c env DATABASE_PATH=/tmp/diversif-repro.db PORT=3123 WEBAUTHN_RP_ID=localhost NODE_ENV=production bun build/index.js > /tmp/diversif-repro.log 2>&1 & echo $! > /tmp/diversif-repro.pid
+nix develop -c env DATABASE_PATH=repro.db PORT=3123 WEBAUTHN_RP_ID=localhost NODE_ENV=production bun build/index.js > repro.log 2>&1 & echo $! > repro.pid
 ```
 
-Stop it with `kill "$(cat /tmp/diversif-repro.pid)"`: `nix develop -c` execs bun, so that PID is the server's own. A kill by name, such as `pkill -f 'bun build/index.js'`, also stops other worktrees' servers, E2E runs included, and the repo's rule hook blocks it (`.claude/rule-hook/rules/block-kill-by-name.md`).
+The three files sit in the worktree, where git ignores them. Stop the server with `kill "$(cat repro.pid)"`: `nix develop -c` execs bun, so that PID is the server's own. A kill by name or by port also stops other worktrees' servers, E2E runs included. The repo's rule hook blocks `pkill`, `killall`, `fuser -k` and a command that holds both `pgrep` and `kill` (`.claude/rule-hook/rules/block-kill-by-name.md`).
 
-The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENTRY_DSN` is set. It is read at run time, so for a browser Sentry repro add a fake one to the `bun build/index.js` line (for example `PUBLIC_SENTRY_DSN=https://0123456789abcdef0123456789abcdef@o1.ingest.de.sentry.io/2`), with `PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0` and `PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=0` to keep traces and replays out of the envelopes. Leave `SENTRY_DSN` unset, and intercept `/monitoring` in the browser to read the envelopes: the tunnel would otherwise relay them to the DSN's host. Delete `/tmp/diversif-repro.db*` afterwards.
+The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENTRY_DSN` is set. It is read at run time, so for a browser Sentry repro add a fake one to the `bun build/index.js` line (for example `PUBLIC_SENTRY_DSN=https://0123456789abcdef0123456789abcdef@o1.ingest.de.sentry.io/2`), with `PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0` and `PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=0` to keep traces and replays out of the envelopes. Leave `SENTRY_DSN` unset, and intercept `/monitoring` in the browser to read the envelopes: the tunnel would otherwise relay them to the DSN's host. Delete `repro.db*`, `repro.log` and `repro.pid` afterwards.
 
 ## Triaging a red run
 
