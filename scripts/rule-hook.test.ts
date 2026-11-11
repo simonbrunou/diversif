@@ -44,7 +44,25 @@ const BLOCKS: [string, string, Record<string, unknown>][] = [
     'Edit',
     { file_path: `${REPO}/src/lib/paraglide/messages.js`, old_string: 'a', new_string: 'b' }
   ],
+  ['block-kill-by-name', 'Bash', { command: "pkill -f 'bun build/index.js'" }],
   ['block-no-verify', 'Bash', { command: 'git commit --no-verify -m x' }]
+];
+
+// A kill by name reaches every worktree's process of that name, another
+// worktree's E2E server included (#722). A kill of the PID you started, a
+// pgrep and a command with the escape comment go through.
+const KILLS_BY_NAME = [
+  "pkill -f 'bun build/index.js'",
+  'pkill -f "bun build/index.js"; sleep 1',
+  'nix develop -c pkill -f playwright',
+  'sudo -n pkill -f vite',
+  'killall bun'
+];
+const OTHER_KILLS = [
+  'kill "$(cat /tmp/diversif-repro.pid)"',
+  'kill $!',
+  "pgrep -af 'bun build/index.js'",
+  "rg -n 'pkill' docs # no-kill-by-name"
 ];
 
 describe('.claude/rule-hook/hook.py', () => {
@@ -54,6 +72,14 @@ describe('.claude/rule-hook/hook.py', () => {
     expect(run.exitCode).toBe(0);
     expect(run.output).toEqual(deny(name));
   });
+
+  it.each(KILLS_BY_NAME)('block-kill-by-name: denies %s', (command) =>
+    expect(runHook(preToolUse('Bash', { command })).output).toEqual(deny('block-kill-by-name'))
+  );
+
+  it.each(OTHER_KILLS)('block-kill-by-name: lets %s through', (command) =>
+    expect(runHook(preToolUse('Bash', { command })).output).toEqual({})
+  );
 
   it('verify-i18n-on-message-edit: lets the call go on, its message as context', () => {
     const input = { file_path: `${REPO}/messages/en.json`, old_string: 'a', new_string: 'b' };
@@ -112,7 +138,7 @@ describe('.claude/rule-hook/hook.py', () => {
   // compile, with a line on stderr only.
   it('loads every rule file, and Python compiles each pattern', () => {
     const files = readdirSync(RULES_DIR).filter((file) => file.endsWith('.md'));
-    expect(files).toHaveLength(7);
+    expect(files).toHaveLength(8);
     const rules = loadRuleFiles(files.map((file) => path.join(RULES_DIR, file)));
     for (const [i, rule] of rules.entries()) {
       expect(rule).toMatchObject({ name: path.basename(files[i], '.md'), enabled: true });
