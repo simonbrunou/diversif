@@ -61,7 +61,8 @@ const KILLS_BY_NAME = [
   "kill $(pgrep -f 'bun build/index.js')",
   "pgrep -f 'bun build/index.js' | xargs -r kill",
   'fuser -k 4173/tcp',
-  'fuser -v -k -n tcp 3123'
+  'fuser -v -k -n tcp 3123',
+  'fuser --kill 4173/tcp'
 ];
 const OTHER_KILLS = [
   'kill "$(cat repro.pid)"',
