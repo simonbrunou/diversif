@@ -87,10 +87,11 @@ const SLOTS: Record<string, string> = {
   'SHA, redirect': 'scripts/wait-e2e-slot.sh c2403f8 > /tmp/slot.out 2>&1 && '
 };
 
-// The cases #710 added, grouped by the shells that run the merge behind a
-// slot script that exits 3. `runs the merge only in the shells its group
-// names` below checks each group in bash and, where it is installed, zsh.
-// The comments inside a group say why; no test reads them.
+// The blocking cases #710 added or moved, grouped by the shells that run
+// their merge behind a slot script that exits 3. SHELL_GROUPS names the
+// shells of each group, and « the #710 cases in a shell » below checks
+// them in bash and, where it is installed, zsh. The comments inside a group
+// say why; no test reads them.
 const MERGE_IN_BOTH_SHELLS: Record<string, string> = {
   // An argument whose quote, backslash, backtick, $, #, <, parenthesis or
   // case carries the shell's word past the end the rule reads. The && then
@@ -169,15 +170,30 @@ const MERGE_IN_ZSH_ONLY: Record<string, string> = {
   'argument, $[': 'scripts/wait-e2e-slot.sh "$[1" && "2]"; ' + MERGE
 };
 
-// Only bash runs the merge: zsh refuses these two commands.
+// Only bash runs the merge: zsh stops on a parse error before the slot
+// script runs.
 const MERGE_IN_BASH_ONLY: Record<string, string> = {
   'quoted backtick, escaped backtick': 'scripts/wait-e2e-slot.sh "`echo \\`" && x `"; ' + MERGE,
   'quoted backtick, three backticks': 'scripts/wait-e2e-slot.sh "`a`b`" && x `"; ' + MERGE
 };
 
-// No shell runs the merge after these. Each holds one character the
-// argument group refuses where no other case needs it refused.
+// No shell runs the merge after these: the && gates it, or the shell
+// refuses the command. The rule blocks them by decision.
 const MERGE_IN_NO_SHELL: Record<string, string> = {
+  // Quotes inside a "$(…)": #651 let these through, #710 sends them to the
+  // variable form.
+  'rev-parse, inner quotes': INNER_QUOTES + ' && ' + MERGE,
+  'curl | jq, inner quotes':
+    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && ' + MERGE,
+  'continuation, subst':
+    'scripts/wait-e2e-slot.sh \\\n  "$(git rev-parse "origin/$B")" && ' + MERGE,
+  'subst, two levels':
+    'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$(git branch --show-current)")" && ' + MERGE,
+  'subst, three levels': 'scripts/wait-e2e-slot.sh "$(a "$(b "c")")" && ' + MERGE,
+  'subst, single quotes inside':
+    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r \'.head.sha\')" && ' + MERGE,
+  'subst, redirect': INNER_QUOTES + ' > /tmp/slot.out 2>&1 && ' + MERGE,
+  // Each holds one character the argument group refuses.
   'subst, ) inside': 'scripts/wait-e2e-slot.sh "$(echo a)b)" && ' + MERGE,
   'subst, [ inside': 'scripts/wait-e2e-slot.sh "$(echo $a[1])" && ' + MERGE,
   'string, [ inside': 'scripts/wait-e2e-slot.sh "$a[1]" && ' + MERGE,
@@ -191,6 +207,14 @@ const MERGE_IN_NO_SHELL: Record<string, string> = {
   'unquoted subst, ; inside': 'scripts/wait-e2e-slot.sh $(a;b) && ' + MERGE,
   'unquoted subst, | inside': 'scripts/wait-e2e-slot.sh $(a|b) && ' + MERGE
 };
+
+// Each group with the shells that run its merge.
+const SHELL_GROUPS: [string, Record<string, string>, readonly string[]][] = [
+  ['both shells', MERGE_IN_BOTH_SHELLS, ['bash', 'zsh']],
+  ['zsh only', MERGE_IN_ZSH_ONLY, ['zsh']],
+  ['bash only', MERGE_IN_BASH_ONLY, ['bash']],
+  ['no shell', MERGE_IN_NO_SHELL, []]
+];
 
 // A slot call that gates nothing, or that the rule cannot read.
 const MUST_BLOCK: Record<string, string> = {
@@ -226,23 +250,7 @@ const MUST_BLOCK: Record<string, string> = {
     'scripts/wait-e2e-slot.sh `git rev-parse "origin/$B"` && ' + MERGE,
   'backtick, quoted, double quotes':
     'scripts/wait-e2e-slot.sh "`git rev-parse "origin/$B"`" && ' + MERGE,
-  // Quotes inside a "$(…)": #651 let these through, #710 sends them to the
-  // variable form.
-  'rev-parse, inner quotes': INNER_QUOTES + ' && ' + MERGE,
-  'curl | jq, inner quotes':
-    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r .head.sha)" && ' + MERGE,
-  'continuation, subst':
-    'scripts/wait-e2e-slot.sh \\\n  "$(git rev-parse "origin/$B")" && ' + MERGE,
-  'subst, two levels':
-    'scripts/wait-e2e-slot.sh "$(git rev-parse "origin/$(git branch --show-current)")" && ' + MERGE,
-  'subst, three levels': 'scripts/wait-e2e-slot.sh "$(a "$(b "c")")" && ' + MERGE,
-  'subst, single quotes inside':
-    'scripts/wait-e2e-slot.sh "$(curl -s "$API/pulls/640" | jq -r \'.head.sha\')" && ' + MERGE,
-  'subst, redirect': INNER_QUOTES + ' > /tmp/slot.out 2>&1 && ' + MERGE,
-  ...MERGE_IN_BOTH_SHELLS,
-  ...MERGE_IN_ZSH_ONLY,
-  ...MERGE_IN_BASH_ONLY,
-  ...MERGE_IN_NO_SHELL,
+  ...Object.assign({}, ...SHELL_GROUPS.map(([, cases]) => cases)),
   // A pipe hands && the exit status of its last command, not the script's.
   'redirect piped then &&': 'scripts/wait-e2e-slot.sh 2>&1 | tail -1 && ' + MERGE,
   'redirect to a file piped then &&':
@@ -336,22 +344,32 @@ const MUST_PASS: Record<string, string> = {
   status: 'fj pr -R origin status 642'
 };
 
-// Each clause of the message's sentence on the arguments the rule reads,
-// with arguments it says pass and arguments it says block. A probe is
-// `scripts/wait-e2e-slot.sh <argument> && <merge>`. An edit to the pattern
-// that flips a probe, or to the message that drops a clause, fails a test,
+// Each clause of the message's sentences on the arguments the rule reads,
+// in their order, with the text that follows it there, arguments it says
+// pass and arguments it says block. A probe is
+// `scripts/wait-e2e-slot.sh <argument> && <merge>`. The message must hold
+// exactly these clauses between « It reads only these arguments: » and
+// « Any other argument blocks. ». An edit to the pattern that flips a probe,
+// or to those sentences that adds, drops or changes a clause, fails a test,
 // so the two change together (#710's review found the message overstating
 // what blocks).
-const ARGUMENT_CLAIMS: { clause: string; passes: string[]; blocks: string[] }[] = [
+const ARGUMENT_CLAIMS: {
+  clause: string;
+  followedBy: string;
+  passes: string[];
+  blocks: string[];
+}[] = [
   {
     clause:
       'an unquoted word, such as a SHA, with no quote, `\\`, `#`, `[`, backtick or parenthesis',
+    followedBy: ', ',
     passes: ['c2403f8', 'x/y-z.w'],
     blocks: ['a"b"', "a'b'", 'a\\b', 'a#b', 'a[1]', 'a`b`', 'a(b', 'a)b']
   },
   {
     clause:
       'other than the parentheses of a `$(…)` in it with no blank, quote, `\\`, backtick, parenthesis, `#`, `<`, `[`, `&`, `;` or `|` inside',
+    followedBy: '; ',
     passes: ['$(cat)', '$(git)', 'a$(cat)b', '$(cat)$(cat)', '$H$(cat)'],
     blocks: [
       '$(echo x)',
@@ -362,8 +380,8 @@ const ARGUMENT_CLAIMS: { clause: string; passes: string[]; blocks: string[] }[] 
       '$(echo\\x)',
       '$(echo`x`)',
       '$((x))',
+      '$(a(b)',
       '$(echo)x)',
-      '$(a)(b)',
       '$(#)',
       '$(cat<x)',
       '$(echo[x])',
@@ -372,14 +390,16 @@ const ARGUMENT_CLAIMS: { clause: string; passes: string[]; blocks: string[] }[] 
       '$(a|b)'
     ]
   },
-  { clause: "a `'…'`", passes: ["'a#b\\c$(d)`e[f\"'"], blocks: [] },
+  { clause: "a `'…'`", followedBy: '; ', passes: ["'a#b\\c$(d)`e[f\"'"], blocks: [] },
   {
     clause: 'a `"…"` with no `\\`, `[` or backtick',
+    followedBy: '; ',
     passes: ['"a # b"', '"$H/$1x"'],
     blocks: ['"a\\b"', '"a[1]"', '"a`b`"']
   },
   {
     clause: 'a `"$(…)"` with no quote, `\\`, backtick, parenthesis, `#`, `<` or `[` inside',
+    followedBy: ', ',
     passes: [
       '"$()"',
       '"$(git rev-parse origin/$B)"',
@@ -392,6 +412,7 @@ const ARGUMENT_CLAIMS: { clause: string; passes: string[]; blocks: string[] }[] 
       '"$(echo \\x)"',
       '"$(echo `x`)"',
       '"$( (x) )"',
+      '"$(a (b)"',
       '"$(echo x)y)"',
       '"$(echo #)"',
       '"$(cat <x)"',
@@ -401,6 +422,7 @@ const ARGUMENT_CLAIMS: { clause: string; passes: string[]; blocks: string[] }[] 
   {
     clause:
       'and no `case` with a blank after it that starts the `$(…)` or follows a blank, `;`, `&`, `|`, `{` or `!`',
+    followedBy: '; and ',
     passes: [
       '"$(echo case)"',
       '"$(echo showcase x)"',
@@ -421,24 +443,16 @@ const ARGUMENT_CLAIMS: { clause: string; passes: string[]; blocks: string[] }[] 
   },
   {
     clause: 'a `` "`…`" `` with no `"`, `\\` or other backtick inside',
+    followedBy: '. ',
     passes: ['"`git rev-parse origin/x`"', '"`echo $(x) ${a:-b} \'c\' # d`"'],
     blocks: ['"`echo "x"`"', '"`echo \\x`"', '"`a`b`c`"']
   },
   {
     clause:
       'Outside `\'…\'` and `` "`…`" ``, each `$` must start a plain variable, such as `$H`, `$1` or `${H}`, or one of the two `$(…)` forms',
+    followedBy: '. ',
     passes: ['$H', '${H}', 'a$H', '"$H"', '"${H}"', '"$1"'],
-    blocks: [
-      '${a:-x}',
-      '"${a:-x}"',
-      '$((1))',
-      '"$[1]"',
-      '$$',
-      '"$?"',
-      '$@x',
-      '"$(echo ${a:-x})"',
-      '$(echo$$)'
-    ]
+    blocks: ['${a:-x}', '"${a:-x}"', '$$', '"$?"', '$@x', '"$(echo ${a:-x})"', '$(echo$$)']
   }
 ];
 const slotCall = (argument: string) => 'scripts/wait-e2e-slot.sh ' + argument + ' && ' + MERGE;
@@ -536,63 +550,90 @@ describe('block-e2e-start-without-slot', () => {
     expect(rule.message).toContain(clause)
   );
 
+  it('lists exactly those clauses as the arguments it reads', () =>
+    expect(rule.message).toContain(
+      'It reads only these arguments: ' +
+        ARGUMENT_CLAIMS.map(({ clause, followedBy }) => clause + followedBy).join('') +
+        'Any other argument blocks.'
+    ));
+
   it.each(CLAIM_PROBES)('reads an argument as its message says (%s): %s', (_, argument, blocked) =>
     expect(blocks(slotCall(argument))).toBe(blocked)
   );
 });
 
-// Each #710 case run in a shell, from a directory where
-// scripts/wait-e2e-slot.sh exits 3 (busy) and fj prints MERGED for a merge,
-// so the case runs as it would in the repo, with no forge call and no
-// merge. The CI image has no zsh, so CI checks the bash half only.
+// The #710 cases and each passing slot form, run in a shell from a
+// directory where scripts/wait-e2e-slot.sh exits with $SLOT_EXIT, fj prints
+// MERGED for a merge, and git, curl and jq print nothing. A /tmp/ path in a
+// command points into that directory. So a case runs as it would in the
+// repo, with no forge call, no merge and no file outside the directory. The
+// CI image has no zsh, so CI checks the bash half only.
 describe('the #710 cases in a shell', () => {
   const sandbox = mkdtempSync(path.join(tmpdir(), 'e2e-slot-rule-'));
   const stub = (file: string, body: string) => {
     mkdirSync(path.dirname(path.join(sandbox, file)), { recursive: true });
     writeFileSync(path.join(sandbox, file), '#!/bin/sh\n' + body + '\n', { mode: 0o755 });
   };
-  stub('scripts/wait-e2e-slot.sh', 'exit 3');
+  stub('scripts/wait-e2e-slot.sh', 'exit "$SLOT_EXIT"');
   stub('bin/fj', 'case "$*" in *merge*) echo MERGED ;; esac');
+  for (const tool of ['git', 'curl', 'jq']) stub('bin/' + tool, 'exit 0');
   afterAll(() => rmSync(sandbox, { recursive: true, force: true }));
 
-  const GROUPS: [string, Record<string, string>, string[]][] = [
-    ['both shells', MERGE_IN_BOTH_SHELLS, ['bash', 'zsh']],
-    ['zsh only', MERGE_IN_ZSH_ONLY, ['zsh']],
-    ['bash only', MERGE_IN_BASH_ONLY, ['bash']],
-    ['no shell', MERGE_IN_NO_SHELL, []]
+  const GROUP_CASES = SHELL_GROUPS.flatMap(([group, cases, shells]) =>
+    Object.entries(cases).map(([name, command]) => ({ group, name, command, shells }))
+  );
+  const PASSING = [
+    ...Object.entries(MUST_PASS).filter(([, command]) => command.includes(MERGE)),
+    ...Object.entries(SLOTS).map(([name, slot]) => ['slot form ' + name, slot + MERGE] as const)
   ];
+  // The cd /w before its slot call fails in the sandbox.
+  const NO_CONTROL = new Set(['slot form after cd and T=']);
 
   describe.each(['bash', 'zsh'])('%s', (shell) => {
     const bin = Bun.which(shell);
-    // zsh -f reads no startup file but /etc/zshenv; bash -c reads none.
-    const runsMerge = (command: string) => {
-      const run = Bun.spawnSync([bin ?? shell, ...(shell === 'zsh' ? ['-f'] : []), '-c', command], {
-        cwd: sandbox,
-        env: { HOME: sandbox, PATH: path.join(sandbox, 'bin') + ':' + process.env.PATH },
-        stdin: 'ignore',
-        stderr: 'ignore',
-        timeout: 10_000
-      });
+    // zsh -f reads only its build's global zshenv; bash -c reads no startup
+    // file. A shell that hangs fails the test on its timeout.
+    const runsMerge = (command: string, slotExit: number) => {
+      const run = Bun.spawnSync(
+        [
+          bin ?? shell,
+          ...(shell === 'zsh' ? ['-f'] : []),
+          '-c',
+          command.replaceAll('/tmp/', sandbox + '/')
+        ],
+        {
+          cwd: sandbox,
+          env: {
+            HOME: sandbox,
+            PATH: path.join(sandbox, 'bin') + ':' + process.env.PATH,
+            SLOT_EXIT: String(slotExit)
+          },
+          stdin: 'ignore',
+          stderr: 'ignore'
+        }
+      );
       return run.stdout.toString().includes('MERGED');
     };
 
-    describe.skipIf(bin === null)('behind a slot script that exits 3', () => {
+    describe.skipIf(bin === null)('behind a slot script', () => {
       it('gates the merge with && and runs it after ;', () => {
-        expect(runsMerge('scripts/wait-e2e-slot.sh && ' + MERGE)).toBe(false);
-        expect(runsMerge('scripts/wait-e2e-slot.sh; ' + MERGE)).toBe(true);
+        expect(runsMerge('scripts/wait-e2e-slot.sh && ' + MERGE, 3)).toBe(false);
+        expect(runsMerge('scripts/wait-e2e-slot.sh; ' + MERGE, 3)).toBe(true);
+        expect(runsMerge('scripts/wait-e2e-slot.sh && ' + MERGE, 0)).toBe(true);
       });
 
-      it.each(
-        GROUPS.flatMap(([group, cases, shells]) =>
-          Object.entries(cases).map(([name, command]) => [
-            group,
-            name,
-            command,
-            shells.includes(shell)
-          ])
-        )
-      )('runs the merge only in the shells its group names (%s): %s', (_, __, command, merges) =>
-        expect(runsMerge(command as string)).toBe(merges)
+      it.each(GROUP_CASES)(
+        'that exits 3 runs the merge only in the shells its group names ($group): $name',
+        ({ command, shells }) => expect(runsMerge(command, 3)).toBe(shells.includes(shell))
+      );
+
+      it.each(PASSING)('that exits 3 keeps the merge gated: %s', (_, command) =>
+        expect(runsMerge(command, 3)).toBe(false)
+      );
+
+      it.each(PASSING.filter(([name]) => !NO_CONTROL.has(name)))(
+        'that exits 0 lets the merge run: %s',
+        (_, command) => expect(runsMerge(command, 0)).toBe(true)
       );
     });
   });
