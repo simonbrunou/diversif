@@ -1,7 +1,7 @@
 // Tests tsconfig.e2e.json and the `bun run check` step that runs it (#363
-// retro). Before them, no tsconfig included e2e/ or playwright.config.ts. A spec that
-// called a helper it never imported passed lint and check, then failed with a
-// ReferenceError in each test that called it.
+// retro). Before them, no tsconfig included e2e/ or playwright.config.ts. A
+// spec that called a helper it never imported passed lint and check, then
+// failed with a ReferenceError in each test that called it.
 import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -21,6 +21,22 @@ const config = ts.getParsedCommandLineOfConfigFile(
 );
 if (!config) throw new Error('tsconfig.e2e.json did not parse');
 const { options, fileNames, errors } = config;
+
+// The name a spec calls an export of e2e/_helpers.ts by, or undefined when the
+// export holds no value.
+function specName(checker: ts.TypeChecker, symbol: ts.Symbol): string | undefined {
+  // `export type { X }` and `export { type X }` export no value.
+  if (symbol.declarations?.some(ts.isTypeOnlyImportOrExportDeclaration)) return undefined;
+  // `export { open }` and `export default logRepas` give alias symbols: read
+  // the value each one names.
+  const target = symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+  if (!(target.flags & ts.SymbolFlags.Value)) return undefined;
+  if (symbol.name !== ts.InternalSymbolName.Default) return symbol.name;
+  // A spec imports a default export under the name it was declared with.
+  if (target.name !== ts.InternalSymbolName.Default) return target.name;
+  const declared = target.declarations?.[0] && ts.getNameOfDeclaration(target.declarations[0]);
+  return declared && ts.isIdentifier(declared) ? declared.text : undefined;
+}
 
 describe('tsconfig.e2e.json', () => {
   it('runs in bun run check, which the Lint + typecheck job runs', () => {
@@ -47,24 +63,19 @@ describe('tsconfig.e2e.json', () => {
   // spec that uses it without an import then resolves to that global, and
   // check passes. The probe runs in the program check builds, so it sees the
   // same globals.
-  it('reports each helper a spec uses without importing it', () => {
+  it('leaves each helper unresolved in a spec that does not import it', () => {
     const host = ts.createCompilerHost(options);
     const checkProgram = ts.createProgram(fileNames, options, host);
     const checker = checkProgram.getTypeChecker();
     const helpersModule = checker.getSymbolAtLocation(checkProgram.getSourceFile(helpersPath)!)!;
-    const helpers = checker
-      .getExportsOfModule(helpersModule)
-      .filter((symbol) => {
-        // A spec names a default export itself, so no global can catch it.
-        if (symbol.name === ts.InternalSymbolName.Default) return false;
-        if (!(symbol.flags & ts.SymbolFlags.Alias)) return symbol.flags & ts.SymbolFlags.Value;
-        // `export type { X }` and `export { type X }` export no value.
-        if (symbol.declarations?.some(ts.isTypeOnlyImportOrExportDeclaration)) return false;
-        // `export { open }` gives an alias symbol: read the value it names.
-        return checker.getAliasedSymbol(symbol).flags & ts.SymbolFlags.Value;
-      })
-      .map((symbol) => symbol.name)
-      .sort();
+    const helpers = [
+      ...new Set(
+        checker
+          .getExportsOfModule(helpersModule)
+          .map((symbol) => specName(checker, symbol))
+          .filter((name) => name !== undefined)
+      )
+    ];
     expect(helpers).toContain('logRepas');
 
     const probePath = path.join(repo, 'e2e/unimported-helpers.probe.ts');
@@ -76,15 +87,15 @@ describe('tsconfig.e2e.json', () => {
         ? ts.createSourceFile(file, probe, languageVersion)
         : getSourceFile.call(host, file, languageVersion, ...rest);
     const program = ts.createProgram([...fileNames, probePath], options, host, checkProgram);
-    const unresolved = ts
-      .getPreEmitDiagnostics(program, program.getSourceFile(probePath))
-      // 2304: Cannot find name 'x'. 2552: the same, then "Did you mean 'y'?".
-      .filter((diagnostic) => diagnostic.code === 2304 || diagnostic.code === 2552)
-      .map(
-        (diagnostic) =>
-          /'([^']+)'/.exec(ts.flattenDiagnosticMessageText(diagnostic.messageText, ''))?.[1]
-      )
-      .sort();
-    expect(unresolved).toEqual(helpers);
+    const probeChecker = program.getTypeChecker();
+    const probed = program
+      .getSourceFile(probePath)!
+      .statements.filter(ts.isExpressionStatement)
+      .map((statement) => (statement.expression as ts.VoidExpression).expression as ts.Identifier);
+    expect(probed.map((identifier) => identifier.text)).toEqual(helpers);
+    const resolved = probed
+      .filter((identifier) => probeChecker.getSymbolAtLocation(identifier) !== undefined)
+      .map((identifier) => identifier.text);
+    expect(resolved).toEqual([]);
   }, 30_000);
 });
