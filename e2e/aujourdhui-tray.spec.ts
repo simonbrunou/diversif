@@ -45,8 +45,10 @@ function trayModules(page: Page) {
 }
 
 test('the lg tray leaves no band under the allergen strip or the stat tiles', async ({ page }) => {
-  // 4.6 s locally. It signs up and logs five repas, and the bento-reaction-
-  // detail tests, which sign up and log one, took 12 to 30 s in busy CI runs.
+  // 4.6 s locally, 17.4 s in CI run 595, where cinder's test jobs and the
+  // run's own unit job shared the runner. It signs up and logs five repas.
+  // The first bento-reaction-detail test took 7.2 s in run 595 and 28.7 s in
+  // run 426, so a busier run can push this one past the 30 s default.
   test.slow();
   const childId = await signUpAndCreateChild(page, 'Léonie', birthDateMonthsAgo(7));
   await dismissWelcomeIfPresent(page);

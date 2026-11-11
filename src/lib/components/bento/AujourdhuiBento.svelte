@@ -105,11 +105,11 @@
   Below the reminders, the tray is two column stacks (#363). Column one holds
   the stat tiles (rows 2 and 3), then the destinations (row 4). Columns two
   and three hold the allergen strip (row 2), then the feed (rows 3 to 5).
-  When the stat tiles and the allergen strip
-  shared one row, the taller stat tiles set its height and left an empty band
-  under the allergen strip, before the feed. Placement alone builds the two
-  stacks, with no CSS order or per-column wrapper, so the DOM, reading and tab
-  order stay reminders, stat tiles, allergens, feed, destinations.
+  When the stat tiles and the allergen strip shared one row, the taller stat
+  tiles set its height and left an empty band under the allergen strip, before
+  the feed. Placement alone builds the two stacks, with no CSS order or
+  per-column wrapper, so the DOM, reading and tab order stay reminders, stat
+  tiles, allergens, feed, destinations.
 
   Row 5 holds only the feed. The part of the feed's height that rows 3 and 4
   do not hold goes there, so those rows size to column one alone. With the
