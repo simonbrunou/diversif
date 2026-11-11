@@ -22,20 +22,25 @@ const config = ts.getParsedCommandLineOfConfigFile(
 if (!config) throw new Error('tsconfig.e2e.json did not parse');
 const { options, fileNames, errors } = config;
 
-// The name a spec calls an export of e2e/_helpers.ts by, or undefined when the
-// export holds no value.
+// The name a spec calls an export of e2e/_helpers.ts by. Undefined when the
+// export holds no value, or when it is a default export with no name of its
+// own (`export default function () {}`, `export default 42`).
 function specName(checker: ts.TypeChecker, symbol: ts.Symbol): string | undefined {
+  const declaration = symbol.declarations?.[0];
   // `export type { X }` and `export { type X }` export no value.
-  if (symbol.declarations?.some(ts.isTypeOnlyImportOrExportDeclaration)) return undefined;
+  if (!declaration || ts.isTypeOnlyImportOrExportDeclaration(declaration)) return undefined;
   // `export { open }` and `export default logRepas` give alias symbols: read
   // the value each one names.
   const target = symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
   if (!(target.flags & ts.SymbolFlags.Value)) return undefined;
   if (symbol.name !== ts.InternalSymbolName.Default) return symbol.name;
-  // A spec imports a default export under the name it was declared with.
-  if (target.name !== ts.InternalSymbolName.Default) return target.name;
-  const declared = target.declarations?.[0] && ts.getNameOfDeclaration(target.declarations[0]);
-  return declared && ts.isIdentifier(declared) ? declared.text : undefined;
+  // A spec imports a default export under the name the export statement or
+  // the declaration gives it.
+  if (ts.isExportSpecifier(declaration)) return (declaration.propertyName ?? declaration.name).text;
+  const name = ts.isExportAssignment(declaration)
+    ? declaration.expression
+    : ts.getNameOfDeclaration(declaration);
+  return name && ts.isIdentifier(name) ? name.text : undefined;
 }
 
 describe('tsconfig.e2e.json', () => {
