@@ -46,9 +46,9 @@ describe('tsconfig.e2e.json', () => {
   // DOM's open, or with a global that a declaration file under e2e/ adds. A
   // spec that uses it without an import then resolves to that global, and
   // check passes. The probe runs in the program check builds, so it sees the
-  // same globals. It reads only helpers exported by a direct named
-  // declaration (`export function x`, `export const x`), the one form
-  // e2e/_helpers.ts uses, and the test refuses any other export form.
+  // same globals. It reads helpers exported by a named declaration
+  // (`export function x`, `export const x`), the one form e2e/_helpers.ts
+  // uses, or through `export *`. The test refuses alias and default exports.
   // 1.2 s locally: the 30 s budget leaves room for a busy runner.
   it('leaves each helper unresolved in a spec that does not import it', () => {
     const host = ts.createCompilerHost(options);
