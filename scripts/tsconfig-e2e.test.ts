@@ -22,27 +22,6 @@ const config = ts.getParsedCommandLineOfConfigFile(
 if (!config) throw new Error('tsconfig.e2e.json did not parse');
 const { options, fileNames, errors } = config;
 
-// The name a spec calls an export of e2e/_helpers.ts by. Undefined when the
-// export holds no value, or when it is a default export with no name of its
-// own (`export default function () {}`, `export default 42`).
-function specName(checker: ts.TypeChecker, symbol: ts.Symbol): string | undefined {
-  const declaration = symbol.declarations?.[0];
-  // `export type { X }` and `export { type X }` export no value.
-  if (!declaration || ts.isTypeOnlyImportOrExportDeclaration(declaration)) return undefined;
-  // `export { open }` and `export default logRepas` give alias symbols: read
-  // the value each one names.
-  const target = symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
-  if (!(target.flags & ts.SymbolFlags.Value)) return undefined;
-  if (symbol.name !== ts.InternalSymbolName.Default) return symbol.name;
-  // A spec imports a default export under the name the export statement or
-  // the declaration gives it.
-  if (ts.isExportSpecifier(declaration)) return (declaration.propertyName ?? declaration.name).text;
-  const name = ts.isExportAssignment(declaration)
-    ? declaration.expression
-    : ts.getNameOfDeclaration(declaration);
-  return name && ts.isIdentifier(name) ? name.text : undefined;
-}
-
 describe('tsconfig.e2e.json', () => {
   it('runs in bun run check, which the Lint + typecheck job runs', () => {
     const pkg = JSON.parse(readFileSync(path.join(repo, 'package.json'), 'utf8')) as {
@@ -67,20 +46,28 @@ describe('tsconfig.e2e.json', () => {
   // DOM's open, or with a global that a declaration file under e2e/ adds. A
   // spec that uses it without an import then resolves to that global, and
   // check passes. The probe runs in the program check builds, so it sees the
-  // same globals.
+  // same globals. It reads only helpers exported by a direct named
+  // declaration (`export function x`, `export const x`), the one form
+  // e2e/_helpers.ts uses, and the test refuses any other export form.
+  // 1.2 s locally: the 30 s budget leaves room for a busy runner.
   it('leaves each helper unresolved in a spec that does not import it', () => {
     const host = ts.createCompilerHost(options);
     const checkProgram = ts.createProgram(fileNames, options, host);
     const checker = checkProgram.getTypeChecker();
     const helpersModule = checker.getSymbolAtLocation(checkProgram.getSourceFile(helpersPath)!)!;
-    const helpers = [
-      ...new Set(
-        checker
-          .getExportsOfModule(helpersModule)
-          .map((symbol) => specName(checker, symbol))
-          .filter((name) => name !== undefined)
+    const exported = checker.getExportsOfModule(helpersModule);
+    const otherForms = exported
+      .filter(
+        (symbol) =>
+          symbol.flags & ts.SymbolFlags.Alias || symbol.name === ts.InternalSymbolName.Default
       )
-    ];
+      .map((symbol) => symbol.name);
+    // Export each helper by a direct named declaration, or teach this probe
+    // the new form.
+    expect({ exportedByAnotherForm: otherForms }).toEqual({ exportedByAnotherForm: [] });
+    const helpers = exported
+      .filter((symbol) => symbol.flags & ts.SymbolFlags.Value)
+      .map((symbol) => symbol.name);
     expect(helpers).toContain('logRepas');
 
     const probePath = path.join(repo, 'e2e/unimported-helpers.probe.ts');
@@ -97,7 +84,6 @@ describe('tsconfig.e2e.json', () => {
       .getSourceFile(probePath)!
       .statements.filter(ts.isExpressionStatement)
       .map((statement) => (statement.expression as ts.VoidExpression).expression as ts.Identifier);
-    expect(probed.map((identifier) => identifier.text)).toEqual(helpers);
     const resolved = probed
       .filter((identifier) => probeChecker.getSymbolAtLocation(identifier) !== undefined)
       .map((identifier) => identifier.text);
