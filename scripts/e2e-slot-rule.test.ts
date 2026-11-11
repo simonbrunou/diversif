@@ -3,7 +3,9 @@
 // the repo's PreToolUse hook, .claude/rule-hook/hook.py, as a Bash call:
 // its own loader and engine (hookify 0.1.1's, in Python: a hand-rolled
 // frontmatter parser, each condition ANDed, `regex_match` as re.search with
-// re.IGNORECASE), so CI checks the verdicts Claude Code gets (#663).
+// re.IGNORECASE), so CI checks the verdicts Claude Code gets (#663). Before you
+// make the rule read a new option, see scripts/rule-hook.test.ts's header for
+// the ways to write one that each need a case.
 import { afterAll, describe, expect, it } from 'bun:test';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
