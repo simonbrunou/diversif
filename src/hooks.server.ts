@@ -53,7 +53,7 @@ const PERMISSIONS_POLICY =
  * (audit item 9): `setLanguageTag` mutated a module-level global, and the
  * session awaits below yield the event loop, so two concurrent requests
  * with different locales could cross-contaminate each other's SSR output.
- * With paraglide 2.x the locale lives in per-request async context instead.
+ * Since paraglide 2.x the locale lives in per-request async context instead.
  */
 const appHandle = async (
   event: Parameters<Handle>[0]['event'],

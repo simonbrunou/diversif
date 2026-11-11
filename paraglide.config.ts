@@ -3,13 +3,28 @@
 // scripts/compile-paraglide.ts (check/lint/test, which run outside vite).
 // The two MUST compile identical runtimes — strategy and urlPatterns are
 // baked into the generated runtime.js, so drift here would mean tests
-// exercising different routing than production.
+// exercising different routing than production. The two runtime.js files
+// still differ in two lines. `isServer` is `typeof window === 'undefined'`
+// from compile(); the vite plugin puts `import.meta.env?.SSR` in front of
+// it, which vite resolves at build time in the server and client bundles
+// (paraglide 2 did the same). `isDevelopment`, new in paraglide 3, is true
+// from compile() and false from a production vite build. Nothing in this
+// runtime or the app reads it.
 
 import type { CompilerOptions } from '@inlang/paraglide-js';
 
 export const paraglideCompilerOptions: CompilerOptions = {
   project: './project.inlang',
   outdir: './src/lib/paraglide',
+  // Physical message files, one module per message. Paraglide 3's vite
+  // plugin defaults to "virtual-modules", where messages.js re-exports
+  // `virtual:paraglide/...` ids that only vite resolves: `bun build`
+  // (build:scripts) then fails to bundle scripts/export-user.ts, whose
+  // schema import pulls in the messages. compile() defaults to
+  // "message-modules", so naming it here also keeps both paths on one layout.
+  // That includes `vite dev`, where paraglide 2 used "locale-modules", so the
+  // dev server now loads one module per message instead of one per locale.
+  outputStructure: 'message-modules',
   // url-only resolution preserves the 1.x behavior exactly: the locale is a
   // pure function of the pathname (FR at /, EN under /en), no cookie or
   // Accept-Language negotiation, hence the server middleware never issues

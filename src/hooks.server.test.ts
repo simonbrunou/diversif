@@ -22,7 +22,7 @@ mock.module('@sentry/sveltekit', () => ({
 
 // The real paraglideMiddleware runs in these tests (no mock): it resolves
 // the locale from the request URL and wraps appHandle in an
-// AsyncLocalStorage scope, so the tests below exercise the actual 2.x
+// AsyncLocalStorage scope, so the tests below exercise the actual
 // per-request locale isolation — see the concurrency regression test.
 
 // The exported `handle` is sequence(sentryHandle, localizedHandle); sequence()

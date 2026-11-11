@@ -60,7 +60,7 @@
   );
 
   // Keep the <html lang> attribute in sync with the URL on the client. The
-  // paraglide 2.x runtime itself needs no syncing — its `url` strategy
+  // paraglide runtime itself needs no syncing — its `url` strategy
   // re-reads window.location on every getLocale() call — but the <html lang>
   // attribute was rendered by SSR (hooks.server.ts) and only this $effect
   // updates it across client-side navigations after hydration.

@@ -10,7 +10,7 @@ Web app to track a baby's food diversification, with parent sharing. Self-hosted
 - SvelteKit 3 (Svelte 5 + TypeScript) on `@sveltejs/adapter-node`, configured in `vite.config.ts`; `#lib/*` subpath imports (package.json `imports`) replace `$lib`
 - SQLite via `bun:sqlite` + Drizzle ORM (in-memory `bun:sqlite` in tests)
 - Tailwind CSS, in-house auth (`Bun.password` Argon2id sessions, WebAuthn passkeys)
-- i18n via `@inlang/paraglide-js` 2.x (FR default, `/en/` for English; URL-based locale, AsyncLocalStorage on the server)
+- i18n via `@inlang/paraglide-js` 3.x (FR default, `/en/` for English; URL-based locale, AsyncLocalStorage on the server)
 - PWA: a SvelteKit service worker (`src/service-worker/`, Workbox precache + runtime caching, `/offline` fallback) with an in-page offline log queue
 - Observability via `@sentry/sveltekit` (errors, sampled performance tracing, server logs, `diversif-cleanup` cron monitor, error-only masked session replay, in-app user feedback — all PII-scrubbed and relayed through a same-origin `/monitoring` tunnel, never contacted directly by the browser)
 - Deployed in a single `oven/bun` Docker image
@@ -128,7 +128,7 @@ DATABASE_PATH=/chemin/vers/diversif.db bun scripts/export-user.ts user@example.c
 
 ## Internationalisation
 
-The UI is bilingual — French (default) and English under `/en/`, via paraglide. Message-key parity between `messages/fr.json` and `messages/en.json` is enforced by `bun run lint:i18n`. **Legal and marketing pages (mentions légales, politique de confidentialité, CGU, guide, sources, allergènes) are intentionally French-only _content_** — only the app chrome translates. Localise those pages only if reaching an English-speaking audience becomes a goal.
+The UI is bilingual — French (default) and English under `/en/`, via paraglide. Nothing checks message-key parity between `messages/fr.json` and `messages/en.json` yet: `bun run lint:i18n` and the paraglide compiler both pass a key missing from one file (#723). **Legal and marketing pages (mentions légales, politique de confidentialité, CGU, guide, sources, allergènes) are intentionally French-only _content_** — only the app chrome translates. Localise those pages only if reaching an English-speaking audience becomes a goal.
 
 ## License
 
