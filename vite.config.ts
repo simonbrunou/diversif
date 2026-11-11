@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import tailwindcss from '@tailwindcss/vite';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { paraglideCompilerOptions } from './paraglide.config.ts';
-import adapter from '@sveltejs/adapter-node';
+import { nodeAdapter } from './scripts/node-adapter.ts';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { sentrySvelteKit } from '@sentry/sveltekit/vite';
@@ -84,7 +84,8 @@ const SENTRY_BUILD_OPTIONS = {
   },
   sourcemaps: {
     // build.sourcemap is set explicitly below: remove every map after
-    // upload so the runtime image never serves them.
+    // upload so the runtime image holds none. nodeAdapter() keeps them out of
+    // adapter-node's asset table, so their URLs answer 404 (#722).
     filesToDeleteAfterUpload: ['./build/**/*.map', './.svelte-kit/output/**/*.map']
   }
 };
@@ -98,7 +99,7 @@ const SENTRY_BUILD_OPTIONS = {
  * never fires under SvelteKit 3: environments now build inside Vite's
  * buildApp, and the adapter runs in SvelteKit's own `post` buildApp hook. Left
  * alone, no release or deploy marker is created and the hidden source maps
- * stay in ./build/client, where adapter-node serves them publicly. Remove
+ * stay in ./build/client and ship in the image. Remove
  * this plugin once @sentry/sveltekit uploads after SvelteKit 3's adapter, or
  * releases get two deploy markers per build.
  */
@@ -169,7 +170,9 @@ export default defineConfig({
       preprocess: vitePreprocess(),
       // adapter-node default output is ./build; keep it explicit so the
       // Docker entrypoint's `bun ./build/index.js` path is unambiguous.
-      adapter: adapter({ out: 'build' }),
+      // nodeAdapter() keeps the client source maps out of adapter-node's asset
+      // table: see scripts/node-adapter.ts.
+      adapter: nodeAdapter({ out: 'build' }),
       // See BUILD_ORIGIN above.
       //
       // relative: false makes asset URLs root-relative (`/_app/...`). The
@@ -253,9 +256,10 @@ export default defineConfig({
     // them. Without the token (local builds, CI without Sentry creds), no
     // .map files are written — nothing for an attacker to fetch.
     //
-    // 'hidden' (vs 'true') omits the //# sourceMappingURL= comment, but
-    // the .map files would still be reachable by URL-guessing without the
-    // post-upload delete (sentryUploadAfterAdapter above).
+    // 'hidden' (vs 'true') omits the //# sourceMappingURL= comment. The
+    // post-upload delete keeps the .map files out of the image, and
+    // nodeAdapter() keeps their URLs out of adapter-node's asset table, so a
+    // guessed map URL answers 404.
     sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
     rollupOptions: {
       // `bun` and `bun:*` (bun:sql, bun:test, etc.) are runtime built-ins
