@@ -62,13 +62,17 @@ const KILLS_BY_NAME = [
   "pgrep -f 'bun build/index.js' | xargs -r kill",
   'fuser -k 4173/tcp',
   'fuser -v -k -n tcp 3123',
-  'fuser --kill 4173/tcp'
+  'fuser --kill 4173/tcp',
+  'fuser -v -n tcp \\\n  -k 4173',
+  "pkill -f 'bun build/index.js' #no-kill-by-name"
 ];
 const OTHER_KILLS = [
   'kill "$(cat repro.pid)"',
+  'kill "$(cat repro.pid)"; ss -ltn \'sport = :5722\'',
   'kill $!',
   "pgrep -af 'bun build/index.js'",
   'fuser -v -n tcp 4173',
+  'fuser -SIGKILL -v -n tcp 4173',
   "rg -n 'pkill' docs # no-kill-by-name"
 ];
 
