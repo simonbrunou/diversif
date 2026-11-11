@@ -163,8 +163,31 @@ const MUST_BLOCK: Record<string, string> = {
   'subst, backtick': 'scripts/wait-e2e-slot.sh "$(echo `)" && x `)"; ' + MERGE,
   'subst, braced parameter': 'scripts/wait-e2e-slot.sh "$(echo ${a:-)" && x "})"; ' + MERGE,
   'subst, process substitution': 'scripts/wait-e2e-slot.sh "$(echo >(cat )" && x ")"; ' + MERGE,
+  'two quoted arguments, merge between': 'scripts/wait-e2e-slot.sh "a"; ' + MERGE + '; "b" && x',
+  'argument, process substitution': 'scripts/wait-e2e-slot.sh <(echo && x); ' + MERGE,
+  'argument, nested braced parameter': 'scripts/wait-e2e-slot.sh ${a:-${b} && x}; ' + MERGE,
+  'argument, quoted nested braced parameter':
+    'scripts/wait-e2e-slot.sh "${a:-${b}" && x "}"; ' + MERGE,
+  'subst, nested braced parameter':
+    'scripts/wait-e2e-slot.sh "$(echo ${a:-${b})" && x "})"; ' + MERGE,
+  'unquoted subst, nested braced parameter':
+    'scripts/wait-e2e-slot.sh $(echo${a:-${b}) && x}); ' + MERGE,
+  'unquoted subst, quote inside': 'scripts/wait-e2e-slot.sh $(echo") && x "); ' + MERGE,
+  'unquoted subst, single quote inside': "scripts/wait-e2e-slot.sh $(echo') && x '); " + MERGE,
+  'unquoted subst, escaped parenthesis': 'scripts/wait-e2e-slot.sh $(echo\\) && x ); ' + MERGE,
+  'unquoted subst, backtick': 'scripts/wait-e2e-slot.sh $(echo`) && x `); ' + MERGE,
+  'unquoted subst, process substitution': 'scripts/wait-e2e-slot.sh $(echo>(cat) && x); ' + MERGE,
+  'unquoted subst, comment': 'scripts/wait-e2e-slot.sh $(#) && x\n); ' + MERGE,
   // A case pattern's ) does not end the "$(…)".
   'subst, case pattern': 'scripts/wait-e2e-slot.sh "$(case x in x)" && y" ;; esac)"; ' + MERGE,
+  'subst, case pattern after a blank':
+    'scripts/wait-e2e-slot.sh "$( case x in x)" && y" ;; esac)"; ' + MERGE,
+  'subst, case pattern after ;':
+    'scripts/wait-e2e-slot.sh "$(true;case x in x)" && y" ;; esac)"; ' + MERGE,
+  'subst, case pattern after &&':
+    'scripts/wait-e2e-slot.sh "$(true&&case x in x)" && y" ;; esac)"; ' + MERGE,
+  'subst, case pattern after |':
+    'scripts/wait-e2e-slot.sh "$(true|case x in x)" && y" ;; esac)"; ' + MERGE,
   // zsh only: zsh reads {case as { and the keyword, and &! as an operator
   // (run in the background and disown); bash reads {case and !case as
   // command names.
@@ -175,29 +198,6 @@ const MUST_BLOCK: Record<string, string> = {
   // bash only: zsh refuses these two commands.
   'quoted backtick, escaped backtick': 'scripts/wait-e2e-slot.sh "`echo \\`" && x `"; ' + MERGE,
   'quoted backtick, three backticks': 'scripts/wait-e2e-slot.sh "`a`b`" && x `"; ' + MERGE,
-  'two quoted arguments, merge between': 'scripts/wait-e2e-slot.sh "a"; ' + MERGE + '; "b" && x',
-  'argument, process substitution': 'scripts/wait-e2e-slot.sh <(echo && x); ' + MERGE,
-  'argument, nested braced parameter': 'scripts/wait-e2e-slot.sh ${a:-${b} && x}; ' + MERGE,
-  'argument, quoted nested braced parameter':
-    'scripts/wait-e2e-slot.sh "${a:-${b}" && x "}"; ' + MERGE,
-  'subst, nested braced parameter':
-    'scripts/wait-e2e-slot.sh "$(echo ${a:-${b})" && x "})"; ' + MERGE,
-  'subst, case pattern after a blank':
-    'scripts/wait-e2e-slot.sh "$( case x in x)" && y" ;; esac)"; ' + MERGE,
-  'subst, case pattern after ;':
-    'scripts/wait-e2e-slot.sh "$(true;case x in x)" && y" ;; esac)"; ' + MERGE,
-  'subst, case pattern after &&':
-    'scripts/wait-e2e-slot.sh "$(true&&case x in x)" && y" ;; esac)"; ' + MERGE,
-  'subst, case pattern after |':
-    'scripts/wait-e2e-slot.sh "$(true|case x in x)" && y" ;; esac)"; ' + MERGE,
-  'unquoted subst, nested braced parameter':
-    'scripts/wait-e2e-slot.sh $(echo${a:-${b}) && x}); ' + MERGE,
-  'unquoted subst, quote inside': 'scripts/wait-e2e-slot.sh $(echo") && x "); ' + MERGE,
-  'unquoted subst, single quote inside': "scripts/wait-e2e-slot.sh $(echo') && x '); " + MERGE,
-  'unquoted subst, escaped parenthesis': 'scripts/wait-e2e-slot.sh $(echo\\) && x ); ' + MERGE,
-  'unquoted subst, backtick': 'scripts/wait-e2e-slot.sh $(echo`) && x `); ' + MERGE,
-  'unquoted subst, process substitution': 'scripts/wait-e2e-slot.sh $(echo>(cat) && x); ' + MERGE,
-  'unquoted subst, comment': 'scripts/wait-e2e-slot.sh $(#) && x\n); ' + MERGE,
   // The shell ends the argument there, so the && gates the command after
   // the ;, the pipe or the &.
   'SHA then semicolon, no blank': 'scripts/wait-e2e-slot.sh c2403f8;true && ' + MERGE,
