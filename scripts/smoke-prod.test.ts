@@ -636,10 +636,10 @@ describe('scripts/smoke-prod.sh', () => {
   // which leaves the fetch and its upload-pack time to start.
   // This upload-pack outlives TERM, and so does its sleep: only KILL ends
   // them. Started with TERM ignored, git outlives TERM too, so that run lasts
-  // until the KILL, at least 1 s after the TERM. Each assertion holds however
-  // late a loaded runner runs a process. A file that a TERM trap writes does
-  // not: in main run 565, upload-pack's trap file was still empty after that
-  // KILL (#712).
+  // until the KILL, at least 1 s after the TERM. No assertion needs a process
+  // to run between the TERM and the KILL, as a TERM trap that writes a file
+  // would: in main run 565, upload-pack's trap file was still empty after
+  // that KILL (#712).
   it.each([
     ['', 0],
     [' when started with TERM ignored', 1000]
