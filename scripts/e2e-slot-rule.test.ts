@@ -348,8 +348,9 @@ const MUST_PASS: Record<string, string> = {
 // in their order, with the text that follows it there, arguments it says
 // pass and arguments it says block. A probe is
 // `scripts/wait-e2e-slot.sh <argument> && <merge>`. The message must hold
-// exactly these clauses between « It reads only these arguments: » and
-// « Any other argument blocks. ». An edit to the pattern that flips a probe,
+// exactly these clauses between « so the rule blocks it. It reads only these
+// arguments: » and « Any other argument blocks. For those arguments, », the
+// sentences on either side. An edit to the pattern that flips a probe,
 // or to those sentences that adds, drops or changes a clause, fails a test,
 // so the two change together (#710's review found the message overstating
 // what blocks).
@@ -552,9 +553,9 @@ describe('block-e2e-start-without-slot', () => {
 
   it('lists exactly those clauses as the arguments it reads', () =>
     expect(rule.message).toContain(
-      'It reads only these arguments: ' +
+      'so the rule blocks it. It reads only these arguments: ' +
         ARGUMENT_CLAIMS.map(({ clause, followedBy }) => clause + followedBy).join('') +
-        'Any other argument blocks.'
+        'Any other argument blocks. For those arguments,'
     ));
 
   it.each(CLAIM_PROBES)('reads an argument as its message says (%s): %s', (_, argument, blocked) =>
@@ -565,9 +566,10 @@ describe('block-e2e-start-without-slot', () => {
 // The #710 cases and each passing slot form, run in a shell from a
 // directory where scripts/wait-e2e-slot.sh exits with $SLOT_EXIT, fj prints
 // MERGED for a merge, and git, curl and jq print nothing. A /tmp/ path in a
-// command points into that directory. So a case runs as it would in the
-// repo, with no forge call, no merge and no file outside the directory. The
-// CI image has no zsh, so CI checks the bash half only.
+// command points into that directory, and so do zsh's here-document files
+// (TMPPREFIX). So a case runs as it would in the repo, with no forge call,
+// no merge and no file outside the directory. The CI image has no zsh, so CI
+// checks the bash half only.
 describe('the #710 cases in a shell', () => {
   const sandbox = mkdtempSync(path.join(tmpdir(), 'e2e-slot-rule-'));
   const stub = (file: string, body: string) => {
@@ -582,12 +584,15 @@ describe('the #710 cases in a shell', () => {
   const GROUP_CASES = SHELL_GROUPS.flatMap(([group, cases, shells]) =>
     Object.entries(cases).map(([name, command]) => ({ group, name, command, shells }))
   );
+  // The slot form after cd and T= stays out: its cd /w fails in the sandbox,
+  // so its merge would never run whatever the slot script does. Its slot
+  // call is the short SHA form, which runs here.
   const PASSING = [
     ...Object.entries(MUST_PASS).filter(([, command]) => command.includes(MERGE)),
-    ...Object.entries(SLOTS).map(([name, slot]) => ['slot form ' + name, slot + MERGE] as const)
+    ...Object.entries(SLOTS)
+      .filter(([name]) => name !== 'after cd and T=')
+      .map(([name, slot]) => ['slot form ' + name, slot + MERGE] as const)
   ];
-  // The cd /w before its slot call fails in the sandbox.
-  const NO_CONTROL = new Set(['slot form after cd and T=']);
 
   describe.each(['bash', 'zsh'])('%s', (shell) => {
     const bin = Bun.which(shell);
@@ -606,7 +611,8 @@ describe('the #710 cases in a shell', () => {
           env: {
             HOME: sandbox,
             PATH: path.join(sandbox, 'bin') + ':' + process.env.PATH,
-            SLOT_EXIT: String(slotExit)
+            SLOT_EXIT: String(slotExit),
+            TMPPREFIX: path.join(sandbox, 'zsh')
           },
           stdin: 'ignore',
           stderr: 'ignore'
@@ -631,9 +637,8 @@ describe('the #710 cases in a shell', () => {
         expect(runsMerge(command, 3)).toBe(false)
       );
 
-      it.each(PASSING.filter(([name]) => !NO_CONTROL.has(name)))(
-        'that exits 0 lets the merge run: %s',
-        (_, command) => expect(runsMerge(command, 0)).toBe(true)
+      it.each(PASSING)('that exits 0 lets the merge run: %s', (_, command) =>
+        expect(runsMerge(command, 0)).toBe(true)
       );
     });
   });
