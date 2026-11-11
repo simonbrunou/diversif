@@ -3,8 +3,11 @@
 // scripts/compile-paraglide.ts (check/lint/test, which run outside vite).
 // The two MUST compile identical runtimes — strategy and urlPatterns are
 // baked into the generated runtime.js, so drift here would mean tests
-// exercising different routing than production. Since paraglide 3 the two
-// runtimes differ in one line: runtime.js exports `isDevelopment`, true
+// exercising different routing than production. The two runtime.js files
+// still differ in two lines. `isServer` is `typeof window === 'undefined'`
+// from compile(); the vite plugin puts `import.meta.env?.SSR` in front of
+// it, which vite resolves at build time in the server and client bundles
+// (paraglide 2 did the same). `isDevelopment`, new in paraglide 3, is true
 // from compile() and false from a production vite build. Nothing in this
 // runtime or the app reads it.
 
