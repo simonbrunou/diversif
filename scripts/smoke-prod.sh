@@ -77,14 +77,16 @@ late() { fail "$1 not run: the time budget ran out"; }
 
 # The SHA budget: once the wait has seen <sha> live, a page that an older
 # build still serves is fetched again every SHA_PAUSE seconds until SHA_TIME
-# seconds after that moment. It is one budget for all pages: 60 s is about
-# twice the 32 s that Coolify's logs show between the new container's start
-# and the old one's removal (#542). Each new fetch starts after a pause, so at
+# seconds after that moment, or until the run deadline when that comes first.
+# It is one budget for all pages: 60 s is about twice the 29 to 31 s during
+# which both containers answered on a measured deploy (docs/agents/deploy.md,
+# #542). Each new fetch starts after a pause, so at
 # most SHA_TIME / SHA_PAUSE of them fit in the budget. The script counts them
 # too, so that a pause that takes no time (the tests' fake sleep) ends it all
 # the same.
 SHA_TIME=60
 SHA_PAUSE=5
+sha_start=''
 sha_end=''
 sha_pauses=$((SHA_TIME / SHA_PAUSE))
 
@@ -169,7 +171,7 @@ fetch_page() {
     accepted "$held" && return
     clock
     if [ "$sha_pauses" -le 0 ] || [ $((now + SHA_PAUSE * 1000)) -gt "$sha_end" ]; then
-      stale="holds build $held after the ${SHA_TIME} s SHA budget, expected $SHA or a newer main commit"
+      stale="holds build $held after the $(((sha_end - sha_start) / 1000)) s SHA budget, expected $SHA or a newer main commit"
       return
     fi
     sha_pauses=$((sha_pauses - 1))
@@ -343,6 +345,7 @@ if [ -n "$SHA" ]; then
   done
   pass "/_app/version.json is $live"
   clock
+  sha_start=$now
   sha_end=$((now + SHA_TIME * 1000))
   [ "$sha_end" -le "$run_end" ] || sha_end=$run_end
 fi
