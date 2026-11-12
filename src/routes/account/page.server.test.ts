@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../test/db';
-import { captureFlow, makeRouteEvent, safeUser, seedUser } from '../../test/route';
+import { captureFlow, makeRouteEvent, safeUser, seedUser, loadData } from '../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
@@ -45,8 +45,8 @@ describe('account load', () => {
       createdAt: new Date(),
       lastUsedAt: null
     });
-    const out = await load(
-      makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0])
     );
     expect(out.passkeys.length).toBe(1);
     expect(out.passkeys[0].id).toBe('p1');
@@ -63,7 +63,7 @@ describe('account load : bento data', () => {
 
     const event = makeRouteEvent({ user: safeUser(u) });
 
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
 
     expect(Array.isArray(out.children)).toBe(true);
     expect(out.children.length).toBe(1);
@@ -87,7 +87,7 @@ describe('account load : bento data', () => {
     await seedMembership({ userId: u.id, childId: child.id, role: 'owner' });
 
     const event = makeRouteEvent({ user: safeUser(u) });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
 
     expect(out.children.length).toBe(1);
     expect(out.children[0].name).toBe('Solo');
@@ -104,7 +104,7 @@ describe('account load : bento data', () => {
     await seedMembership({ userId: u.id, childId: solo.id, role: 'owner' });
 
     const event = makeRouteEvent({ user: safeUser(u) });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
 
     expect(out.children.length).toBe(2);
     const sharedOut = out.children.find((c) => c.name === 'Partagé');
@@ -116,7 +116,7 @@ describe('account load : bento data', () => {
   it('picks up locale from locals', async () => {
     const u = await seed();
     const event = makeRouteEvent({ user: safeUser(u), locale: 'en' });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.locale).toBe('en');
   });
 
@@ -124,7 +124,7 @@ describe('account load : bento data', () => {
     const u = await seed();
     const event = makeRouteEvent({ user: safeUser(u) });
     event.cookies.set('theme', 'dark', {});
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.theme).toBe('dark');
   });
 
@@ -132,7 +132,7 @@ describe('account load : bento data', () => {
     const u = await seed();
     const event = makeRouteEvent({ user: safeUser(u) });
     event.cookies.set('theme', 'purple', {});
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.theme).toBe('system');
   });
 });

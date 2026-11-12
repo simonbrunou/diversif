@@ -9,7 +9,7 @@ import { PARIS_TIME_ZONE } from '#lib/utils/paris-date.js';
 import * as m from '#lib/paraglide/messages.js';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load = (async ({ locals, params }) => {
   const { childId } = requireChildContext(locals, params);
   const entryId = Number(params.entryId);
 
@@ -55,4 +55,4 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     })),
     generatedAt: dtf.format(now)
   };
-};
+}) satisfies PageServerLoad;

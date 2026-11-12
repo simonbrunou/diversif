@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
-import { captureFlow, makeRouteEvent, safeUser, seedMembership } from '../../../test/route';
+import {
+  captureFlow,
+  makeRouteEvent,
+  safeUser,
+  seedMembership,
+  loadData
+} from '../../../test/route';
 import { seedFood, seedRepasChild } from '../../../test/repas';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -63,11 +69,13 @@ async function setup() {
 
   async function view(iso: string) {
     setSystemTime(new Date(iso));
-    const aujourdhui = await loadAujourdhui(event() as unknown as AujourdhuiEvent);
-    const carnet = await loadCarnet(
-      event({
-        url: `http://localhost/child/${seeded.child.id}/foods`
-      }) as unknown as CarnetEvent
+    const aujourdhui = loadData(await loadAujourdhui(event() as unknown as AujourdhuiEvent));
+    const carnet = loadData(
+      await loadCarnet(
+        event({
+          url: `http://localhost/child/${seeded.child.id}/foods`
+        }) as unknown as CarnetEvent
+      )
     );
     if (!('weeklyEntries' in carnet)) throw new Error('expected the Carnet tiles');
     return { aujourdhui, carnet, now: new Date(iso) };

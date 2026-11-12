@@ -3,6 +3,7 @@ import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import 'fake-indexeddb/auto';
 import '../../test/component';
+import { fetchAnswering } from '../../test/bun-test-utils';
 import { rawRows } from '../../test/offline-db';
 
 // RepasForm only applies the durable submit's outcome to the page; these
@@ -77,7 +78,9 @@ afterEach(() => {
 
 describe('RepasForm', () => {
   it('posts the form and applies the server answer, busy until it is applied', async () => {
-    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(async () => redirect());
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(
+      fetchAnswering(async () => redirect())
+    );
     const form = renderForm({ queueFor: 1 });
 
     await fireEvent.submit(form);
@@ -98,7 +101,7 @@ describe('RepasForm', () => {
   it('ignores a second submit while the first is in flight', async () => {
     let answer: (r: Response) => void = () => {};
     const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(
-      () => new Promise<Response>((resolve) => (answer = resolve))
+      fetchAnswering(() => new Promise<Response>((resolve) => (answer = resolve)))
     );
     const form = renderForm({ queueFor: 1 });
 
@@ -160,7 +163,9 @@ describe('RepasForm', () => {
   // The edit forms post to `?/update&from=…` (#443): the query next to the
   // action key must reach the server as the form resolved it.
   it('posts an edit to its resolved action, the query after the action key included', async () => {
-    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(async () => redirect());
+    const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(
+      fetchAnswering(async () => redirect())
+    );
     const form = renderForm({ action: '?/update&from=detail' });
 
     await fireEvent.submit(form);
@@ -171,7 +176,7 @@ describe('RepasForm', () => {
 
   // The edit page reads a reaction refusal's stored reactions there (#445).
   it('hands the server answer to onapplied once it is applied', async () => {
-    spyOn(globalThis, 'fetch').mockImplementation(async () => redirect());
+    spyOn(globalThis, 'fetch').mockImplementation(fetchAnswering(async () => redirect()));
     const onapplied = (result: { type: string }) => events.push(`onapplied ${result.type}`);
     const form = renderForm({ action: '?/update', onapplied });
 

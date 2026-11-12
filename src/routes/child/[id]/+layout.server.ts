@@ -6,7 +6,7 @@ import { requireChildContext } from '#lib/server/guards.js';
 import * as m from '#lib/paraglide/messages.js';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals, params }) => {
+export const load = (async ({ locals, params }) => {
   // requireUser before the integer check so unauthed visitors hit /login
   // rather than a 404 when the URL has a malformed id.
   const { childId, membership } = requireChildContext(locals, params);
@@ -27,4 +27,4 @@ export const load: LayoutServerLoad = async ({ locals, params }) => {
     },
     membership
   };
-};
+}) satisfies LayoutServerLoad;

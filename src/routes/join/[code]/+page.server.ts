@@ -80,7 +80,7 @@ async function userHasMembership(userId: number, childId: number): Promise<boole
  * consumption happens in the POST action below, so link previews / prefetches
  * cannot accidentally consume a one-shot code.
  */
-export const load: PageServerLoad = async (event) => {
+export const load = (async (event) => {
   const { params, locals } = event;
   const code = params.code.toUpperCase();
 
@@ -118,7 +118,7 @@ export const load: PageServerLoad = async (event) => {
     child: { id: inv.childId, name: inv.childName },
     inviter: inv.inviterName
   };
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   default: async (event) => {

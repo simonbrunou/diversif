@@ -77,7 +77,7 @@ describe('CoparentsSection', () => {
       {
         id: 3,
         foodName: 'Poulet',
-        category: 'proteines',
+        category: 'viandes',
         reaction: 'ras',
         givenAt: Date.now(),
         loggedByName: 'Alice',

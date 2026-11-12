@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../test/db';
-import { makeRouteEvent, safeUser, seedChild, seedMembership, seedUser } from '../test/route';
+import {
+  makeRouteEvent,
+  safeUser,
+  seedChild,
+  seedMembership,
+  seedUser,
+  loadData
+} from '../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
@@ -12,15 +19,17 @@ beforeEach(async () => {
 
 describe('+layout.server load', () => {
   it('returns no children when user is logged out', async () => {
-    const out = await load(makeRouteEvent({ user: null }) as unknown as Parameters<typeof load>[0]);
+    const out = loadData(
+      await load(makeRouteEvent({ user: null }) as unknown as Parameters<typeof load>[0])
+    );
     expect(out.user).toBeNull();
     expect(out.children).toEqual([]);
   });
 
   it('returns no children when user has no memberships', async () => {
     const u = await seedUser();
-    const out = await load(
-      makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0])
     );
     expect(out.user?.id).toBe(u.id);
     expect(out.children).toEqual([]);
@@ -33,10 +42,12 @@ describe('+layout.server load', () => {
     const m1 = await seedMembership({ userId: u.id, childId: c1.id, role: 'owner' });
     const m2 = await seedMembership({ userId: u.id, childId: c2.id, role: 'member' });
 
-    const out = await load(
-      makeRouteEvent({ user: safeUser(u), memberships: [m1, m2] }) as unknown as Parameters<
-        typeof load
-      >[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({ user: safeUser(u), memberships: [m1, m2] }) as unknown as Parameters<
+          typeof load
+        >[0]
+      )
     );
     expect(out.children.map((c) => c.name).sort()).toEqual(['Alice', 'Bob']);
     expect(out.children.find((c) => c.name === 'Alice')?.role).toBe('owner');
@@ -51,11 +62,13 @@ describe('+layout.server load', () => {
       role: 'owner' as const,
       createdAt: new Date()
     };
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [fakeMembership]
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [fakeMembership]
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(out.children).toEqual([]);
   });
@@ -64,7 +77,9 @@ describe('+layout.server load', () => {
   // so locale prefixes never reach the load, and the static /child/new route
   // shadows [id]). The load only validates the digits-only shape.
   it('returns null currentChildId when the route has no id param', async () => {
-    const out = await load(makeRouteEvent({ user: null }) as unknown as Parameters<typeof load>[0]);
+    const out = loadData(
+      await load(makeRouteEvent({ user: null }) as unknown as Parameters<typeof load>[0])
+    );
     expect(out.currentChildId).toBeNull();
   });
 
@@ -79,22 +94,28 @@ describe('+layout.server load', () => {
       params: { id: String(c.id) }
     });
 
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.currentChildId).toBe(String(c.id));
   });
 
   it('returns null currentChildId for an id param the child routes refuse', async () => {
     for (const id of ['new', '12abc', '', '0', '-3']) {
-      const out = await load(
-        makeRouteEvent({ user: null, params: { id } }) as unknown as Parameters<typeof load>[0]
+      const out = loadData(
+        await load(
+          makeRouteEvent({ user: null, params: { id } }) as unknown as Parameters<typeof load>[0]
+        )
       );
       expect(out.currentChildId).toBeNull();
     }
   });
 
   it('normalizes a zero-padded id param like the child routes do', async () => {
-    const out = await load(
-      makeRouteEvent({ user: null, params: { id: '007' } }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({ user: null, params: { id: '007' } }) as unknown as Parameters<
+          typeof load
+        >[0]
+      )
     );
     expect(out.currentChildId).toBe('7');
   });

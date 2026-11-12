@@ -6,7 +6,10 @@ import { clear, enqueue } from './queue';
 
 type CachesLike = { delete: (name: string) => Promise<boolean> };
 
-const globalWithCaches = globalThis as typeof globalThis & { caches?: CachesLike };
+// Bun has no CacheStorage: each test installs a stub with only `delete`, or none.
+const globalWithCaches = globalThis as Omit<typeof globalThis, 'caches'> & {
+  caches?: CachesLike;
+};
 const ORIG_CACHES = globalWithCaches.caches;
 
 async function countRows(): Promise<number> {

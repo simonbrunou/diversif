@@ -3,7 +3,7 @@ import { getStageForAgeMonths, getAllStagesForBento } from '#lib/content/guidanc
 import { requireChildContext } from '#lib/server/guards.js';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent, locals, params }) => {
+export const load = (async ({ parent, locals, params }) => {
   // Explicit in-file membership guard (see report/+page.server.ts for rationale):
   // belt-and-braces alongside the layout guard reached via `await parent()`.
   requireChildContext(locals, params);
@@ -17,4 +17,4 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
     currentStageId,
     stages
   };
-};
+}) satisfies PageServerLoad;

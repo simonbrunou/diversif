@@ -17,9 +17,10 @@ mock.module('$app/env', () => ({
   building: false
 }));
 
+const getLocale = mock((): 'fr' | 'en' => 'fr');
 mock.module('#lib/paraglide/runtime.js', () => ({
   ...actualParaglide,
-  getLocale: mock(() => 'fr')
+  getLocale
 }));
 
 // Restore the real module after this file's tests so the next file isn't
@@ -50,8 +51,7 @@ describe('LocaleSwitcher', () => {
   it('strips the /en prefix before resolving (avoids /en/en/... and same-URL flips)', async () => {
     const state = await import('$app/state');
     const original = state.page.url;
-    const runtime = await import('#lib/paraglide/runtime.js');
-    runtime.getLocale.mockReturnValue('en');
+    getLocale.mockReturnValue('en');
     Object.assign(state.page, {
       url: { pathname: '/en/login', search: '', hash: '' }
     });
@@ -106,8 +106,7 @@ describe('LocaleSwitcher', () => {
   });
 
   it('flips data-active and aria-current when the locale is en', async () => {
-    const runtime = await import('#lib/paraglide/runtime.js');
-    runtime.getLocale.mockReturnValue('en');
+    getLocale.mockReturnValue('en');
 
     render(LocaleSwitcher);
     const fr = screen.getByRole('link', { name: /fr/i });
@@ -119,8 +118,7 @@ describe('LocaleSwitcher', () => {
   });
 
   it('renders ≥44px row options with endonym labels in the rows variant', async () => {
-    const runtime = await import('#lib/paraglide/runtime.js');
-    runtime.getLocale.mockReturnValue('fr');
+    getLocale.mockReturnValue('fr');
 
     render(LocaleSwitcher, { props: { variant: 'rows' } });
     const fr = screen.getByRole('link', { name: /Français/ });

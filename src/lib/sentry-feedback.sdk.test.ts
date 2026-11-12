@@ -1,5 +1,6 @@
 import { expect, it, mock } from 'bun:test';
 import * as Sentry from '@sentry/sveltekit';
+import type { BrowserOptions } from '@sentry/sveltekit';
 
 // Against the real browser SDK (sentry-feedback.test.ts stubs it): whether
 // tags leak depends on how the SDK's scope stack treats withScope callbacks.
@@ -15,7 +16,7 @@ it('keeps a report’s errorId off events captured while the report is in flight
   Sentry.init({
     dsn: 'https://key@o1.ingest.sentry.io/1',
     defaultIntegrations: false,
-    transport: () => ({
+    transport: (() => ({
       send: async (envelope) => {
         for (const [header, payload] of envelope[1]) {
           const { tags } = payload as { tags?: Record<string, string> };
@@ -31,7 +32,7 @@ it('keeps a report’s errorId off events captured while the report is in flight
         return { statusCode: 200 };
       },
       flush: async () => true
-    })
+    })) satisfies NonNullable<BrowserOptions['transport']>
   });
   const { sendProblemReport } = await import('./sentry-feedback');
 

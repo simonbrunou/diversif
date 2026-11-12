@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import { resetTestDb } from '../../../../../test/db';
-import { captureFlow, makeRouteEvent, safeUser, seedMembership } from '../../../../../test/route';
+import {
+  captureFlow,
+  makeRouteEvent,
+  safeUser,
+  seedMembership,
+  loadData
+} from '../../../../../test/route';
 import {
   addSymptom,
   entryRow,
@@ -92,10 +98,12 @@ describe('child/[id]/log/[entryId] load', () => {
 
   it('returns the entry with givenAt as a timestamp, the aliments and where to go back', async () => {
     const { event, ids, carotte, child } = await setup();
-    const data = await load(
-      event({
-        url: `http://localhost/child/${child.id}/log/${ids[0]}?from=detail`
-      }) as unknown as LoadEvent
+    const data = loadData(
+      await load(
+        event({
+          url: `http://localhost/child/${child.id}/log/${ids[0]}?from=detail`
+        }) as unknown as LoadEvent
+      )
     );
     expect(data.entry).toEqual({
       id: ids[0],
@@ -112,12 +120,14 @@ describe('child/[id]/log/[entryId] load', () => {
 
   it('defaults where to go back to the carnet, and returns a meal’s aliments', async () => {
     const { event, ids, child } = await setup(2);
-    const fromDashboard = await load(
-      event({
-        url: `http://localhost/child/${child.id}/log/${ids[0]}?from=dashboard`
-      }) as unknown as LoadEvent
+    const fromDashboard = loadData(
+      await load(
+        event({
+          url: `http://localhost/child/${child.id}/log/${ids[0]}?from=dashboard`
+        }) as unknown as LoadEvent
+      )
     );
-    const data = await load(event() as unknown as LoadEvent);
+    const data = loadData(await load(event() as unknown as LoadEvent));
     expect(fromDashboard.from).toBe('dashboard');
     expect(data.from).toBe('foods');
     expect(data.meal?.members.map((m) => m.id)).toEqual(ids);
@@ -127,10 +137,12 @@ describe('child/[id]/log/[entryId] load', () => {
   // form posted to, so the edit forms carry `from` next to the action key.
   it('keeps where to go back on the action URL a refused save renders at', async () => {
     const { event, ids, child } = await setup();
-    const data = await load(
-      event({
-        url: `http://localhost/child/${child.id}/log/${ids[0]}?/update&from=detail`
-      }) as unknown as LoadEvent
+    const data = loadData(
+      await load(
+        event({
+          url: `http://localhost/child/${child.id}/log/${ids[0]}?/update&from=detail`
+        }) as unknown as LoadEvent
+      )
     );
     expect(data.from).toBe('detail');
   });
@@ -178,7 +190,7 @@ describe('child/[id]/log/[entryId] update vs a concurrent symptom promotion', ()
   type Ctx = Awaited<ReturnType<typeof setup>>;
 
   async function loadForm(ctx: Ctx) {
-    return (await load(ctx.event() as unknown as LoadEvent)).entry;
+    return loadData(await load(ctx.event() as unknown as LoadEvent)).entry;
   }
 
   function submit(ctx: Ctx, formData: Record<string, string>) {

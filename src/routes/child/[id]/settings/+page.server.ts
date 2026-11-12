@@ -23,7 +23,7 @@ import type { Actions, PageServerLoad } from './$types';
 // don't count, so revoking or letting one lapse frees a slot.
 const MAX_ACTIVE_INVITES_PER_CHILD = 10;
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load = (async ({ params, locals }) => {
   const { childId, membership } = requireChildContext(locals, params);
 
   const memberRows = await db
@@ -94,7 +94,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     // halves (write + read); the write half lives in the setDiet action.
     dietaryExclusions: parseDietExclusions(childDiet?.dietaryExclusions)
   };
-};
+}) satisfies PageServerLoad;
 
 const updateSchema = z.object({
   name: z.string().min(1).max(80),

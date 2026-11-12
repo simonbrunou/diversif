@@ -1,7 +1,7 @@
 import { localizedRedirect } from '#lib/server/redirect.js';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, parent }) => {
+export const load = (async ({ locals, parent }) => {
   if (!locals.user) {
     return { kind: 'landing' as const };
   }
@@ -15,4 +15,4 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
     throw localizedRedirect(locals.locale, 303, `/child/${children[0].id}`);
   }
   return { kind: 'picker' as const, children };
-};
+}) satisfies PageServerLoad;

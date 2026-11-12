@@ -363,13 +363,14 @@ describe('logRepas: plats préparés', () => {
       })
       .returning();
     const fields = { foodId: carotte.id, givenAt: recently(), reaction: 'ras' };
-    for (const extra of [
+    const extras: Record<string, string | number>[] = [
       { preparedMealId: foreign.id },
       { preparedMealId: 'abc' },
       { 'preparedMeal.brand': 'Yooji' },
       { 'preparedMeal.name': 'Purée verte' },
       { 'preparedMeal.brand': 'x'.repeat(61), 'preparedMeal.name': 'Purée verte' }
-    ]) {
+    ];
+    for (const extra of extras) {
       expectRefusal(logRepas(ctx, form({ ...fields, ...extra })), 400, 'errorsAuthBadInput');
     }
     expect(entryRows(child.id)).toEqual([]);

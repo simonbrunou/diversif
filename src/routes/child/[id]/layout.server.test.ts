@@ -6,7 +6,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -95,12 +96,14 @@ describe('child/[id] +layout.server load', () => {
     const u = await seedUser();
     const c = await seedChild({ createdBy: u.id, name: 'Lulu' });
     const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) }
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) }
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(out.child.id).toBe(c.id);
     expect(out.child.name).toBe('Lulu');

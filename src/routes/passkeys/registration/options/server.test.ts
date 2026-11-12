@@ -12,6 +12,7 @@ const mocks = {
 };
 mock.module('@simplewebauthn/server', () => mocks);
 
+import type { RequestEvent } from '@sveltejs/kit';
 import { POST } from './+server';
 import { hashPassword } from '#lib/server/auth.js';
 import { users, webauthnChallenges } from '#lib/server/db/schema.js';
@@ -46,7 +47,7 @@ async function seed() {
   )[0];
 }
 
-function withJsonBody(event: ReturnType<typeof makeRouteEvent>, body: unknown) {
+function withJsonBody(event: ReturnType<typeof makeRouteEvent<RequestEvent>>, body: unknown) {
   (event as { request: Request }).request = new Request(event.url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

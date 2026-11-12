@@ -12,7 +12,7 @@ import { seedLogScene } from '../../test/log-action-transport';
 import { rawRows } from '../../test/offline-db';
 import { entryRows, form } from '../../test/repas';
 import { stalledBody, untilAborted } from '../../test/stalled-reply';
-import { clear, count, flush } from './queue';
+import { clear, count, flush, type QueuedSubmit } from './queue';
 import { submitRepas, type SubmitTarget } from './submit';
 import type { Transport } from './wire';
 
@@ -192,10 +192,13 @@ describe('submitRepas', () => {
   it('hands back a server error with its HTTP status rather than queueing it', async () => {
     const { child, carotte, action } = await setup();
     const crashed: Transport = async () =>
-      new Response(JSON.stringify({ type: 'error', error: { message: 'Internal Error' } }), {
-        status: 500,
-        headers: { 'content-type': 'application/json' }
-      });
+      new Response(
+        JSON.stringify({ type: 'error', error: { status: 500, message: 'Internal Error' } }),
+        {
+          status: 500,
+          headers: { 'content-type': 'application/json' }
+        }
+      );
     const outcome = await submitRepas(
       form({ foodId: carotte.id, givenAt: GIVEN_AT, reaction: 'ras' }),
       { action, queueFor: child.id },
@@ -204,7 +207,7 @@ describe('submitRepas', () => {
 
     expect(outcome).toEqual({
       kind: 'sent',
-      result: { type: 'error', status: 500, error: { message: 'Internal Error' } }
+      result: { type: 'error', status: 500, error: { status: 500, message: 'Internal Error' } }
     });
     expect(await count()).toBe(0);
   });
@@ -220,7 +223,7 @@ describe('submitRepas', () => {
 
     expect(outcome).toEqual({ kind: 'queued' });
     expect(sent).toHaveLength(0);
-    const [row] = (await rawRows()) as { key: string }[];
+    const [row] = (await rawRows()) as QueuedSubmit[];
     expect(row).toEqual({
       key: expect.stringMatching(/^[0-9a-f-]{36}$/),
       childId: child.id,

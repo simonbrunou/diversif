@@ -147,7 +147,7 @@ describe('pruneExpiredKeys', () => {
   });
 
   afterEach(() => {
-    setSystemTime(null);
+    setSystemTime();
   });
 
   it('deletes only rows older than the threshold and returns the count', async () => {

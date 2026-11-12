@@ -6,7 +6,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -66,12 +67,14 @@ describe('settings load', () => {
       }
     ]);
 
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) }
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) }
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(out.members.length).toBe(1);
     expect(out.invitations.map((i) => i.code)).toEqual(['BEBE-AAAAAA']);
@@ -89,12 +92,14 @@ describe('settings load', () => {
     const peer = await seedUser({ email: 'peer@example.com' });
     await seedMembership({ userId: peer.id, childId: c.id, role: 'member' });
 
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(owner),
-        memberships: [ownerMembership],
-        params: { id: String(c.id) }
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(owner),
+          memberships: [ownerMembership],
+          params: { id: String(c.id) }
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
 
     const byUserId = new Map(out.members.map((m) => [m.userId, m]));
@@ -115,12 +120,14 @@ describe('settings load', () => {
     const peer = await seedUser({ email: 'peer@example.com' });
     await seedMembership({ userId: peer.id, childId: c.id, role: 'member' });
 
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(viewer),
-        memberships: [viewerMembership],
-        params: { id: String(c.id) }
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(viewer),
+          memberships: [viewerMembership],
+          params: { id: String(c.id) }
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
 
     expect(out.role).toBe('member');
@@ -150,12 +157,14 @@ describe('settings load', () => {
       usedBy: null
     });
 
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(viewer),
-        memberships: [viewerMembership],
-        params: { id: String(c.id) }
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(viewer),
+          memberships: [viewerMembership],
+          params: { id: String(c.id) }
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
 
     expect(out.role).toBe('member');

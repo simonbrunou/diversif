@@ -4,10 +4,10 @@ import { requireUser } from '#lib/server/guards.js';
 import { audit } from '#lib/server/audit.js';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load = (async ({ locals }) => {
   requireUser(locals);
   return {};
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   logoutEverywhere: async (event) => {

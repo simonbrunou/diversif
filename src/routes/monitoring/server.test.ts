@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, spyOn } from 'bun:test';
 import { deflateSync, gzipSync, unzipSync } from 'node:zlib';
 import { _clearAllRateLimits } from '#lib/server/rate-limit.js';
+import { fetchAnswering } from '../../test/bun-test-utils';
 import { POST } from './+server';
 
 const ORIGINAL_DSN = process.env.PUBLIC_SENTRY_DSN;
@@ -14,7 +15,7 @@ afterEach(() => {
 // Envelope header + one item header + a payload containing non-UTF-8 bytes
 // (as a real gzip-compressed replay segment would), to prove the route
 // forwards the body as raw bytes rather than round-tripping it through text.
-function buildEnvelope(dsn: string): Uint8Array {
+function buildEnvelope(dsn: string): Uint8Array<ArrayBuffer> {
   const encoder = new TextEncoder();
   const headerLine = encoder.encode(`${JSON.stringify({ dsn })}\n`);
   const itemHeaderLine = encoder.encode(`${JSON.stringify({ type: 'attachment', length: 3 })}\n`);
@@ -26,11 +27,11 @@ function buildEnvelope(dsn: string): Uint8Array {
   return out;
 }
 
-function makeRequest(body: Uint8Array, headers: Record<string, string> = {}): Request {
+function makeRequest(body: Uint8Array<ArrayBuffer>, headers: Record<string, string> = {}): Request {
   return new Request('http://localhost/monitoring', { method: 'POST', body, headers });
 }
 
-function post(request: Request, clientAddress = '198.51.100.7'): Promise<Response> {
+async function post(request: Request, clientAddress = '198.51.100.7'): Promise<Response> {
   return POST({ request, getClientAddress: () => clientAddress } as unknown as Parameters<
     typeof POST
   >[0]);
@@ -108,7 +109,7 @@ describe('POST /monitoring', () => {
     expect(url).toBe('https://o1.ingest.de.sentry.io/api/42/envelope/');
     expect(init?.body).toBeInstanceOf(Uint8Array);
     if (init?.body instanceof Uint8Array) {
-      expect(init.body).toEqual(bytes);
+      expect<Uint8Array>(init.body).toEqual(bytes);
     }
     const sentHeaders = new Headers(init?.headers);
     expect(sentHeaders.get('Content-Type')).toBe('application/x-sentry-envelope');
@@ -234,7 +235,7 @@ describe('POST /monitoring — throttling', () => {
   it('answers 429 with Retry-After once one address exceeds 240 envelopes a minute', async () => {
     process.env.PUBLIC_SENTRY_DSN = CONFIGURED_DSN;
     const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(
-      async () => new Response(null, { status: 200 })
+      fetchAnswering(async () => new Response(null, { status: 200 }))
     );
     for (let i = 0; i < 240; i++) {
       expect((await post(makeRequest(buildEnvelope(CONFIGURED_DSN)))).status).toBe(200);
@@ -253,7 +254,7 @@ describe('POST /monitoring — throttling', () => {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-function concat(...parts: Uint8Array[]): Uint8Array {
+function concat(...parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
   const out = new Uint8Array(parts.reduce((size, part) => size + part.length, 0));
   let offset = 0;
   for (const part of parts) {
@@ -275,7 +276,7 @@ const RECORDED_FRAMES = [
 
 // replay_event (JSON, no length header, as the SDK sends it) followed by a
 // replay_recording whose payload is `{"segment_id":0}\n` + the encoded frames.
-function replayEnvelope(recording: Uint8Array): Uint8Array {
+function replayEnvelope(recording: Uint8Array): Uint8Array<ArrayBuffer> {
   const payload = concat(encoder.encode('{"segment_id":0}\n'), recording);
   return concat(
     encoder.encode(`${JSON.stringify({ dsn: CONFIGURED_DSN })}\n`),
@@ -342,7 +343,7 @@ describe('POST /monitoring — replay recordings', () => {
     expect(fetchSpy.mock.calls[0][1]?.body).toEqual(envelope);
   });
 
-  const malformed: Array<[string, Uint8Array]> = [
+  const malformed: Array<[string, Uint8Array<ArrayBuffer>]> = [
     [
       'an item header that is not an object',
       encoder.encode(`${JSON.stringify({ dsn: CONFIGURED_DSN })}\nnull\n{}`)

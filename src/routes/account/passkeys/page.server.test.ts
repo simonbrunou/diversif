@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
 import { testDb, resetTestDb } from '../../../test/db';
-import { makeRouteEvent, safeUser, seedUser } from '../../../test/route';
+import { makeRouteEvent, safeUser, seedUser, loadData } from '../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
@@ -60,8 +60,8 @@ describe('account/passkeys load', () => {
   it('returns the passkey list for authenticated users', async () => {
     const u = await seed();
     await seedKey(u.id);
-    const out = await load(
-      makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(makeRouteEvent({ user: safeUser(u) }) as unknown as Parameters<typeof load>[0])
     );
     expect(out.passkeys.length).toBe(1);
     expect(out.passkeys[0].id).toBe('p1');

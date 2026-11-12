@@ -6,7 +6,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -124,20 +125,22 @@ describe('child/[id] +page.server load', () => {
 
   it('returns dashboard data with no entries', async () => {
     const { u, c, m } = await setup();
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          parent: async () => ({
+            child: {
+              id: c.id,
+              name: c.name,
+              birthDate: c.birthDate,
+              createdAt: c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(out.recent).toEqual([]);
     expect(out.stats.foodsIntroduced).toBe(0);
@@ -151,20 +154,22 @@ describe('child/[id] +page.server load', () => {
     // l'heure" card, so the log-nudging welcome modal must stay hidden rather
     // than contradict it (and burn the one-shot onboarding before it's useful).
     const recentBirth = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: recentBirth,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          parent: async () => ({
+            child: {
+              id: c.id,
+              name: c.name,
+              birthDate: recentBirth,
+              createdAt: c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(out.stats.foodsIntroduced).toBe(0);
     expect(out.showWelcomeDialog).toBe(false);
@@ -172,20 +177,22 @@ describe('child/[id] +page.server load', () => {
 
   it('returns dashboard data with entries and hides welcome dialog', async () => {
     const { u, c, m } = await setup({ entries: 3 });
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          parent: async () => ({
+            child: {
+              id: c.id,
+              name: c.name,
+              birthDate: c.birthDate,
+              createdAt: c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(out.recent.length).toBe(3);
     expect(out.stats.foodsIntroduced).toBe(1);
@@ -232,20 +239,22 @@ describe('child/[id] +page.server load', () => {
         mealId: sharedMealId
       });
     }
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          parent: async () => ({
+            child: {
+              id: c.id,
+              name: c.name,
+              birthDate: c.birthDate,
+              createdAt: c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(out.recent).toHaveLength(3);
     const groups = groupByMeal(out.recent);
@@ -281,20 +290,22 @@ describe('child/[id] +page.server load', () => {
       loggedBy: u.id,
       createdAt: new Date()
     });
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({
-          child: {
-            id: c.id,
-            name: c.name,
-            birthDate: c.birthDate,
-            createdAt: c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          parent: async () => ({
+            child: {
+              id: c.id,
+              name: c.name,
+              birthDate: c.birthDate,
+              createdAt: c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     // Same shape as the Carnet Allergènes segment: all 12 tracked allergens.
     expect(out.bentoAllergens).toHaveLength(12);
@@ -343,19 +354,19 @@ describe('child/[id] +page.server load', () => {
       })
       .returning();
     const key = `observation-window:${entry.id}`;
-    const card = (await loadAs(eventFor(ctx))).reminders.find((r) => r.key === key);
+    const card = loadData(await loadAs(eventFor(ctx))).reminders.find((r) => r.key === key);
     expect(card?.cta?.href).toBe(`/child/${ctx.c.id}/foods/${entry.id}`);
     expect(card?.severity).toBe('warn');
 
     await dismissAs(eventFor(ctx, key));
-    expect((await loadAs(eventFor(ctx))).reminders.map((r) => r.key)).not.toContain(key);
+    expect(loadData(await loadAs(eventFor(ctx))).reminders.map((r) => r.key)).not.toContain(key);
   });
 
   it('keeps the welcome dialog closed once dismissed through the action', async () => {
     const ctx = await setup();
-    expect((await loadAs(eventFor(ctx))).showWelcomeDialog).toBe(true);
+    expect(loadData(await loadAs(eventFor(ctx))).showWelcomeDialog).toBe(true);
     await dismissAs(eventFor(ctx, 'welcome-dialog'));
-    expect((await loadAs(eventFor(ctx))).showWelcomeDialog).toBe(false);
+    expect(loadData(await loadAs(eventFor(ctx))).showWelcomeDialog).toBe(false);
   });
 });
 

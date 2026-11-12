@@ -6,7 +6,7 @@ import { dismissReminder, loadDismissals } from '#lib/server/guidance/dismissals
 import { requireChildContext } from '#lib/server/guards.js';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, locals, parent }) => {
+export const load = (async ({ params, locals, parent }) => {
   // Same ordering as the layout: redirect guests to /login *before* a
   // malformed id can turn the response into a 404.
   const { user, childId } = requireChildContext(locals, params);
@@ -40,7 +40,7 @@ export const load: PageServerLoad = async ({ params, locals, parent }) => {
       !dismissals.has('welcome-dialog') && history.foodsIntroduced === 0 && ageMonths >= 4,
     ageMonths
   };
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   dismissReminder: async ({ request, params, locals }) => {

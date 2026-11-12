@@ -165,3 +165,12 @@ export async function advanceTimersByTimeAsync(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, 0));
   await new Promise((r) => setTimeout(r, 0));
 }
+
+/**
+ * A `fetch` that answers every call with `answer()`, for
+ * `spyOn(globalThis, 'fetch').mockImplementation(...)`: Bun's `typeof fetch`
+ * also carries `fetch.preconnect`, which a bare arrow function lacks.
+ */
+export function fetchAnswering(answer: () => Promise<Response>): typeof fetch {
+  return Object.assign(answer, { preconnect: fetch.preconnect });
+}

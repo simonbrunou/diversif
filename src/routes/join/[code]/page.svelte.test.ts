@@ -26,7 +26,10 @@ describe('join/[code] page', () => {
   });
 
   it('gives the retry delay when rate-limited', () => {
-    const { getByRole } = renderPage({ errorKey: 'errorsAuthRateLimited', retryAfterSeconds: 42 });
+    // ActionData has no retryAfterSeconds: TypeScript folds the action's
+    // rate-limit failure into its other `{ errorKey: string }` failures.
+    const rateLimited = { errorKey: 'errorsAuthRateLimited', retryAfterSeconds: 42 };
+    const { getByRole } = renderPage(rateLimited);
     expect(getByRole('alert').textContent?.trim()).toBe('Trop de tentatives. Réessayez dans 42 s.');
   });
 

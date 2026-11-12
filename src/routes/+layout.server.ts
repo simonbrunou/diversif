@@ -5,7 +5,7 @@ import { inArray } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { ChildSummary } from '#lib/types.js';
 
-export const load: LayoutServerLoad = async ({ locals, params }) => {
+export const load = (async ({ locals, params }) => {
   let childList: ChildSummary[] = [];
   if (locals.user && locals.memberships.length > 0) {
     const childIds = locals.memberships.map((m) => m.childId);
@@ -38,4 +38,4 @@ export const load: LayoutServerLoad = async ({ locals, params }) => {
     children: childList,
     currentChildId
   };
-};
+}) satisfies LayoutServerLoad;

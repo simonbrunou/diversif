@@ -332,11 +332,11 @@ describe('symptoms queries', () => {
     // bun:test's .rejects checks isPromise() before awaiting.
     await expect(
       (async () =>
+        // @ts-expect-error — runtime-only check that the DB rejects unknown labels
         await testDb.insert(symptoms).values({
           foodEntryId: entry.id,
           childId: c.id,
           observedAt: new Date(),
-          // @ts-expect-error — runtime-only check that the DB rejects unknown labels
           label: 'not-a-known-label',
           note: null,
           createdBy: u.id

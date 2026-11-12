@@ -5,7 +5,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -140,7 +141,7 @@ describe('child/[id]/foods load', () => {
         createdAt: new Date()
       }
     ]);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     if (!('bentoFoods' in out)) throw new Error('expected bentoFoods in load result');
     const carrotEntry = out.bentoFoods.find((f) => f.name === 'Carotte');
     expect(carrotEntry).toBeDefined();
@@ -181,7 +182,7 @@ describe('child/[id]/foods load', () => {
       })
       .returning();
 
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     if (!('bentoFoods' in out)) throw new Error('expected bentoFoods in load result');
     const carrotEntry = out.bentoFoods.find((f) => f.name === 'Carotte');
     expect(carrotEntry).toBeDefined();
@@ -194,7 +195,7 @@ describe('child/[id]/foods load', () => {
     // No entries seeded : bentoFoods should be empty but the field definition
     // allows null; verify the loader doesn't crash on an empty result set.
     const ctx = await setup();
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     if (!('bentoFoods' in out)) throw new Error('expected bentoFoods in load result');
     expect(out.bentoFoods).toHaveLength(0);
   });
@@ -237,7 +238,7 @@ describe('child/[id]/foods load', () => {
         createdAt: new Date()
       }
     ]);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     if (!('bentoAllergens' in out)) throw new Error('expected bentoAllergens in load result');
     const peanut = out.bentoAllergens.find((a) => a.id === 'arachide');
     expect(peanut).toBeDefined();
@@ -267,7 +268,7 @@ describe('child/[id]/foods load', () => {
       await ctx.log(ctx.apple.id, 'ras', 1);
       await ctx.log(ctx.carrot.id, 'ras', 2);
       await ctx.log(ctx.carrot.id, 'ras', 30);
-      const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+      const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
       if (!('weeklyEntries' in out)) throw new Error('expected weeklyEntries in load result');
       expect(out.weeklyEntries.counts).toHaveLength(7);
       expect(out.weeklyEntries.counts.reduce((s, n) => s + n, 0)).toBe(5);
@@ -276,7 +277,7 @@ describe('child/[id]/foods load', () => {
       expect(out.weeklyEntries.counts[4]).toBe(1); // two days ago
       expect(out.weeklyEntries.anchorUtc).toBe(Date.UTC(2026, 4, 15));
     } finally {
-      setSystemTime(null);
+      setSystemTime();
     }
   });
 
@@ -298,7 +299,7 @@ describe('child/[id]/foods load', () => {
         createdAt: new Date(nowMs)
       });
 
-      const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+      const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
       if (!('weeklyEntries' in out)) throw new Error('expected weeklyEntries in load result');
       // anchorUtc must reflect the Paris civil day (Jan 10), not the UTC
       // civil day (Jan 9) `now` still falls on.
@@ -306,7 +307,7 @@ describe('child/[id]/foods load', () => {
       expect(out.weeklyEntries.counts[6]).toBe(1); // today (Paris Jan 10)
       expect(out.weeklyEntries.counts[5]).toBe(0); // not yesterday (Paris Jan 9)
     } finally {
-      setSystemTime(null);
+      setSystemTime();
     }
   });
 
@@ -325,14 +326,14 @@ describe('child/[id]/foods load', () => {
         texture
       }))
     );
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     if (!('texturesTried' in out)) throw new Error('expected texturesTried in load result');
     expect(out.texturesTried).toBe(2);
   });
 
   it('texturesTried is 0 with no entries', async () => {
     const ctx = await setup();
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     if (!('texturesTried' in out)) throw new Error('expected texturesTried in load result');
     expect(out.texturesTried).toBe(0);
   });
@@ -385,7 +386,7 @@ describe('child/[id]/foods load', () => {
         createdAt: new Date()
       }
     ]);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`));
     expect(out.entries).toEqual([]);
     if (!('bentoAllergens' in out))
       throw new Error('expected bentoAllergens in repeat-empty branch');

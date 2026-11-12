@@ -21,7 +21,7 @@ const data = { user: { displayName: 'Camille' } } as unknown as PageData;
 
 describe('account/profile page', () => {
   itShowsActionMessagesInline({
-    renderPage: (form) => render(Page, { props: { data, form: form as ActionData } }),
+    renderPage: (form: ActionData) => render(Page, { props: { data, form } }),
     toast,
     refusal: {
       form: { profileErrorKey: 'errorsAccountProfileNameInvalid' },

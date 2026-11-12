@@ -19,7 +19,7 @@ const { default: Page } = await import('./+page.svelte');
 
 describe('account/password page', () => {
   itShowsActionMessagesInline({
-    renderPage: (form) => render(Page, { props: { form: form as ActionData } }),
+    renderPage: (form: ActionData) => render(Page, { props: { form } }),
     toast,
     refusal: {
       form: { passwordErrorKey: 'errorsAccountPasswordIncorrect' },

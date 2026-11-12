@@ -62,10 +62,10 @@ const schema = z.object({
   })
 });
 
-export const load: PageServerLoad = async ({ locals, url }) => {
+export const load = (async ({ locals, url }) => {
   requireGuest(locals);
   return { inviteCode: url.searchParams.get('code')?.toUpperCase() ?? '' };
-};
+}) satisfies PageServerLoad;
 
 class InviteRace extends Error {}
 
