@@ -5,7 +5,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -38,7 +39,7 @@ describe('child/[id]/guide load', () => {
       ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.currentStageId).toMatch(/4-6|6-9|9-12|12-36/);
   });
 
@@ -50,7 +51,7 @@ describe('child/[id]/guide load', () => {
       ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: dateStr } })
     });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.currentStageId).toBe('');
     expect(out.ageMonths).toBeLessThan(4);
   });
@@ -64,7 +65,7 @@ describe('child/[id]/guide load', () => {
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
 
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
 
     expect(Array.isArray(out.stages)).toBe(true);
     expect(out.stages).toHaveLength(4);
@@ -90,7 +91,7 @@ describe('child/[id]/guide load', () => {
       parent: async () => ({ child: { id: c.id, birthDate: '2022-01-01' } })
     });
 
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.currentStageId).toBe('12-36');
   });
 });

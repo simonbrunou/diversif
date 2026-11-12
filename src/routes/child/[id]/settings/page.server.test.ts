@@ -6,7 +6,9 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData,
+  type RouteEventOptions
 } from '../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -20,25 +22,20 @@ beforeEach(async () => {
   await resetTestDb();
 });
 
-// setDiet takes multiple `diet` values from the same form field, which the
-// shared makeRouteEvent({ formData }) shorthand can't express (one value per
-// key). Build the multi-value FormData body directly and swap it onto the
-// event returned by makeRouteEvent, reusing its cookies/locals/params scaffolding.
+// setDiet takes multiple `diet` values from the same form field: makeRouteEvent
+// appends each item of an array form value under the same key.
 function eventWithDiet(
   user: Parameters<typeof safeUser>[0],
-  memberships: Parameters<typeof makeRouteEvent>[0] extends { memberships?: infer M } ? M : never,
+  memberships: RouteEventOptions['memberships'],
   childId: number,
   values: string[]
 ) {
-  const event = makeRouteEvent({
+  return makeRouteEvent({
     user: safeUser(user),
     memberships,
-    params: { id: String(childId) }
+    params: { id: String(childId) },
+    formData: { diet: values }
   });
-  const form = new FormData();
-  for (const v of values) form.append('diet', v);
-  event.request = new Request(event.url, { method: 'POST', body: form });
-  return event;
 }
 
 describe('settings setDiet action', () => {
@@ -114,12 +111,14 @@ describe('settings load dietaryExclusions', () => {
       .set({ dietaryExclusions: ['porc', 'stale'] as never })
       .where(eq(children.id, c.id));
 
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) }
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) }
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
 
     expect(out.dietaryExclusions).toEqual(['porc']);

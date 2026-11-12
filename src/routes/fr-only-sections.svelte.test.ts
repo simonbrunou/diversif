@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import { cleanup, render } from '@testing-library/svelte';
+import type { Component } from 'svelte';
 import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import GuidePage from './guide/+page.svelte';
 import AllergensPage from './allergens/+page.svelte';
@@ -14,7 +15,7 @@ afterEach(() => {
 type Text = { text: string; langEl: Element | null };
 
 /** Each text inside the page's French-only section, with the element it takes its lang from. */
-function frSectionTexts(Page: typeof GuidePage, locale: 'fr' | 'en'): Text[] {
+function frSectionTexts(Page: Component, locale: 'fr' | 'en'): Text[] {
   overwriteGetLocale(() => locale);
   const { container } = render(Page);
   const section = container.querySelector('section[lang="fr"]');

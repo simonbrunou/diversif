@@ -6,7 +6,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -143,7 +144,7 @@ describe('child/[id]/foods load', () => {
     const ctx = await setup();
     await ctx.log(ctx.carrot.id, 'ras', 1);
     await ctx.log(ctx.apple.id, 'ras', 2);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     expect(out.entries.length).toBe(2);
     expect(out.filters).toEqual({ q: '', category: '', reaction: '', repeat: false });
   });
@@ -152,7 +153,9 @@ describe('child/[id]/foods load', () => {
     const ctx = await setup();
     await ctx.log(ctx.carrot.id, 'ras', 1);
     await ctx.log(ctx.apple.id, 'ras', 2);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?category=fruits`);
+    const out = loadData(
+      await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?category=fruits`)
+    );
     expect(out.entries.length).toBe(1);
     expect(out.entries[0].foodName).toBe('Pomme');
   });
@@ -161,14 +164,18 @@ describe('child/[id]/foods load', () => {
     const ctx = await setup();
     await ctx.log(ctx.carrot.id, 'ras', 1);
     await ctx.log(ctx.apple.id, 'inconfort', 2);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?reaction=inconfort`);
+    const out = loadData(
+      await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?reaction=inconfort`)
+    );
     expect(out.entries.map((e) => e.foodName)).toEqual(['Pomme']);
   });
 
   it('ignores reaction filter for unknown values', async () => {
     const ctx = await setup();
     await ctx.log(ctx.carrot.id, 'ras', 1);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?reaction=bogus`);
+    const out = loadData(
+      await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?reaction=bogus`)
+    );
     expect(out.entries.length).toBe(1);
   });
 
@@ -176,13 +183,13 @@ describe('child/[id]/foods load', () => {
     const ctx = await setup();
     await ctx.log(ctx.carrot.id, 'ras', 1);
     await ctx.log(ctx.apple.id, 'ras', 2);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?q=pom`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?q=pom`));
     expect(out.entries.map((e) => e.foodName)).toEqual(['Pomme']);
   });
 
   it('repeat=1 with no candidates returns empty', async () => {
     const ctx = await setup();
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`));
     expect(out.entries).toEqual([]);
     expect(out.filters.repeat).toBe(true);
   });
@@ -193,7 +200,7 @@ describe('child/[id]/foods load', () => {
     await ctx.log(ctx.apple.id, 'ras', 1);
     await ctx.log(ctx.apple.id, 'ras', 2);
     await ctx.log(ctx.apple.id, 'ras', 3);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`));
     expect(out.entries.map((e) => e.foodName)).toEqual(['Carotte']);
   });
 
@@ -203,7 +210,7 @@ describe('child/[id]/foods load', () => {
     await ctx.log(ctx.carrot.id, 'ras', 2);
     await ctx.log(ctx.apple.id, 'ras', 1);
     await ctx.log(ctx.apple.id, 'inconfort', 3);
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?repeat=1`));
     expect(out.entries.map((e) => e.foodName)).toEqual(['Carotte', 'Carotte']);
   });
 
@@ -218,7 +225,7 @@ describe('child/[id]/foods load', () => {
       loggedBy: null,
       createdAt: new Date()
     });
-    const out = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const out = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     expect(out.entries).toHaveLength(1);
     expect(out.entries[0].loggedByName).toBe('Compte supprimé');
   });
@@ -248,12 +255,14 @@ describe('child/[id]/foods load', () => {
     // Accent/case-insensitive search (matches #lib/utils/search's normalize())
     // must still find it despite it being outside the top-200-by-recency
     // window.
-    const searched = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?q=epinard`);
+    const searched = loadData(
+      await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods?q=epinard`)
+    );
     expect(searched.entries.map((e) => e.foodName)).toEqual(['Épinard']);
 
     // foodCount/categoryCount must reflect the full unbounded history, not
     // just the capped rendered-entries window.
-    const all = await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`);
+    const all = loadData(await loadFor(ctx, `http://localhost/child/${ctx.c.id}/foods`));
     expect(all.foodCount).toBe(2); // Carotte + Épinard
     expect(all.categoryCount).toBe(1); // both are 'legumes'
     expect(all.entries.length).toBe(200); // rendered list still capped

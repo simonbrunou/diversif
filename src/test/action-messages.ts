@@ -5,19 +5,20 @@
 
 import { expect, it, type mock } from 'bun:test';
 
-type ActionPayload = Record<string, string>;
 type ToastMock = ReturnType<typeof mock>;
-type View = {
+type View<Form> = {
   getByRole: (role: string) => HTMLElement;
   queryByRole: (role: string) => HTMLElement | null;
-  rerender: (props: { form: ActionPayload }) => Promise<void>;
+  rerender: (props: { form: Form }) => Promise<void>;
 };
 
-export function itShowsActionMessagesInline(opts: {
-  renderPage: (form: ActionPayload | null) => View;
+// Form is the page's ActionData without null. The view is a type parameter so that a
+// page's `render` call infers its own query set instead of one from View.
+export function itShowsActionMessagesInline<Form, V extends View<Form>>(opts: {
+  renderPage: (form: Form | null) => V;
   toast: { error: ToastMock; success: ToastMock };
-  refusal: { form: ActionPayload; text: string };
-  success: { form: ActionPayload; text: string };
+  refusal: { form: Form; text: string };
+  success: { form: Form; text: string };
 }) {
   const { renderPage, toast, refusal, success } = opts;
 

@@ -7,35 +7,55 @@ afterEach(() => cleanup());
 describe('CarnetStats', () => {
   it('renders the diversity score', () => {
     render(CarnetStats, {
-      props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [3, 5, 2, 8, 4, 1, 0] }
+      props: {
+        diversityScore: 7,
+        distinctFoods: 23,
+        texturesTried: 2,
+        weeklyEntries: [3, 5, 2, 8, 4, 1, 0]
+      }
     });
     expect(screen.getByText('7')).toBeTruthy();
   });
 
   it('explains what the diversity number counts (categories tasted, all-time)', () => {
     render(CarnetStats, {
-      props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [3, 5, 2, 8, 4, 1, 0] }
+      props: {
+        diversityScore: 7,
+        distinctFoods: 23,
+        texturesTried: 2,
+        weeklyEntries: [3, 5, 2, 8, 4, 1, 0]
+      }
     });
     expect(screen.getByText('catégories d’aliments goûtées')).toBeTruthy();
   });
 
   it('renders the foods total', () => {
     render(CarnetStats, {
-      props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [] }
+      props: { diversityScore: 7, distinctFoods: 23, texturesTried: 2, weeklyEntries: [] }
     });
     expect(screen.getByText('23')).toBeTruthy();
   });
 
   it('renders one bar per entry in weeklyEntries', () => {
     const { container } = render(CarnetStats, {
-      props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [3, 5, 2, 8, 4, 1, 0] }
+      props: {
+        diversityScore: 7,
+        distinctFoods: 23,
+        texturesTried: 2,
+        weeklyEntries: [3, 5, 2, 8, 4, 1, 0]
+      }
     });
     expect(container.querySelectorAll('[data-bar]').length).toBe(7);
   });
 
   it('renders a day-of-week label under each bar', () => {
     const { container } = render(CarnetStats, {
-      props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [3, 5, 2, 8, 4, 1, 0] }
+      props: {
+        diversityScore: 7,
+        distinctFoods: 23,
+        texturesTried: 2,
+        weeklyEntries: [3, 5, 2, 8, 4, 1, 0]
+      }
     });
     const labels = container.querySelectorAll('[data-day]');
     expect(labels.length).toBe(7);
@@ -54,7 +74,12 @@ describe('CarnetStats', () => {
     // full strings distinct on their own ("M · 3 entrées" vs "M · 5 entrées"),
     // so a whole-label assertion passes on the very bug this defends against.
     const { container } = render(CarnetStats, {
-      props: { diversityScore: 7, distinctFoods: 23, weeklyEntries: [3, 5, 2, 8, 4, 1, 0] }
+      props: {
+        diversityScore: 7,
+        distinctFoods: 23,
+        texturesTried: 2,
+        weeklyEntries: [3, 5, 2, 8, 4, 1, 0]
+      }
     });
     const names = [...container.querySelectorAll('[data-bar]')].map((b) =>
       b.getAttribute('aria-label')
@@ -74,6 +99,7 @@ describe('CarnetStats', () => {
       props: {
         diversityScore: 7,
         distinctFoods: 23,
+        texturesTried: 2,
         weeklyEntries: [0, 0, 0, 0, 0, 0, 1],
         anchorUtc: anchor
       }

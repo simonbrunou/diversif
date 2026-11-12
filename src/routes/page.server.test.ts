@@ -47,8 +47,8 @@ describe('+page.server load', () => {
 
   it('returns picker kind when user has multiple children', async () => {
     const children = [
-      { id: 1, name: 'A', birthDate: '2024-01-01', role: 'owner' },
-      { id: 2, name: 'B', birthDate: '2024-02-01', role: 'member' }
+      { id: 1, name: 'A', birthDate: '2024-01-01', role: 'owner' as const },
+      { id: 2, name: 'B', birthDate: '2024-02-01', role: 'member' as const }
     ];
     const event = makeRouteEvent({
       user: safeUser({ ...fakeUser }),

@@ -17,7 +17,7 @@ describe('CATEGORIES', () => {
 
   it('contains the expected base groups', () => {
     const ids = CATEGORIES.map((c) => c.id);
-    for (const expected of ['legumes', 'fruits', 'feculents', 'autre']) {
+    for (const expected of ['legumes', 'fruits', 'feculents', 'autre'] as const) {
       expect(ids).toContain(expected);
     }
   });

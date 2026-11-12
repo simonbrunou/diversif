@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import type { Breadcrumb, Event } from '@sentry/sveltekit';
 import {
   scrubEvent,
   scrubBrowserEvent,
@@ -40,14 +41,14 @@ describe('scrubPathname', () => {
 });
 
 describe('scrubEvent', () => {
-  function baseEvent() {
+  function baseEvent(): Event {
     return {
       tags: { errorId: 'abcd1234', route: '/child/[id]/log/[entryId]' },
       request: {
         url: 'https://diversif.app/child/42/log/9?cid=secret',
         data: { foo: 'bar' },
         query_string: 'cid=secret&foo=bar',
-        cookies: 'session=...',
+        cookies: { session: '...' },
         headers: { authorization: 'Bearer x' }
       },
       user: { id: '7', email: 'a@example.com', ip_address: '1.2.3.4' },
@@ -69,8 +70,8 @@ describe('scrubEvent', () => {
 
   it('drops query strings even when route tag is missing', () => {
     const e = baseEvent();
-    delete e.tags.route;
-    e.request.url = 'https://diversif.app/foo?cid=abc';
+    delete e.tags!.route;
+    e.request!.url = 'https://diversif.app/foo?cid=abc';
     const out = scrubEvent(e)!;
     expect(out.request!.url).toBe('https://diversif.app/foo');
   });
@@ -261,11 +262,14 @@ describe('scrubEvent', () => {
   });
 
   it('drops client identifiers and query attributes from a transaction trace and its spans', () => {
-    const out = scrubEvent({
+    const traceIds = { span_id: '1234567890abcdef', trace_id: '1234567890abcdef1234567890abcdef' };
+    const spanFields = { ...traceIds, start_timestamp: 0, status: 'ok' };
+    const out = scrubEvent<Event>({
       type: 'transaction',
       transaction: 'GET /child/[id]/foods',
       contexts: {
         trace: {
+          ...traceIds,
           data: {
             'url.full': 'https://diversif.app/child/18/foods?cat=fruits',
             'url.query': 'cat=fruits',
@@ -280,6 +284,7 @@ describe('scrubEvent', () => {
       },
       spans: [
         {
+          ...spanFields,
           description: 'GET /child/18/foods?cat=fruits',
           data: { url: '/child/18/foods', 'http.query': '?cat=fruits' }
         }
@@ -291,13 +296,14 @@ describe('scrubEvent', () => {
       'sentry.op': 'http.server'
     });
     expect(out.spans![0]).toEqual({
+      ...spanFields,
       description: 'GET /child/[id]/foods',
       data: { url: '/child/[id]/foods' }
     });
   });
 
   it('keeps a feedback message but scrubs its page URL and contact fields', () => {
-    const out = scrubEvent({
+    const out = scrubEvent<Event>({
       type: 'feedback',
       contexts: {
         feedback: {
@@ -461,7 +467,7 @@ describe('scrubSpan', () => {
 
 describe('scrubLog', () => {
   it('drops user attributes and scrubs URL attributes', () => {
-    const log = {
+    const log: { message: string; attributes: Record<string, unknown> } = {
       message: 'cleanup completed',
       attributes: { 'user.email': 'a@example.com', 'url.path': '/child/18', expiredSessions: 3 }
     };
@@ -551,7 +557,8 @@ describe('scrubRecordingEvent', () => {
   });
 
   it('strips the selector and node details of ui.* breadcrumb frames', () => {
-    const out = scrubRecordingEvent({
+    // The payload's type is widened: the scrub deletes fields the literal has.
+    const out = scrubRecordingEvent<{ data: { tag: string; payload: object } }>({
       data: {
         tag: 'breadcrumb',
         payload: {
@@ -616,7 +623,7 @@ describe('filterIncomingBreadcrumb', () => {
     expect(filterIncomingBreadcrumb(b)).toBe(b);
   });
   it('keeps breadcrumbs without a category', () => {
-    const b = { message: 'no category here' };
+    const b: Breadcrumb = { message: 'no category here' };
     expect(filterIncomingBreadcrumb(b)).toBe(b);
   });
 });

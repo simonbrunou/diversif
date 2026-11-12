@@ -3,7 +3,7 @@ import { isE2E } from './e2e';
 
 const ORIG_E2E = process.env.E2E;
 const ORIG_ORIGIN = process.env.ORIGIN;
-const globals = globalThis as { __BUILD_ORIGIN__: string };
+const globals = globalThis as typeof globalThis & { __BUILD_ORIGIN__: string };
 
 function setEnv(e2e: string | undefined, buildOrigin: string) {
   if (e2e === undefined) delete process.env.E2E;

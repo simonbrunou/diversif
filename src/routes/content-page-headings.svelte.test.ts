@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { cleanup, render, screen } from '@testing-library/svelte';
+import type { Component } from 'svelte';
 import GuidePage from './guide/+page.svelte';
 import AllergensPage from './allergens/+page.svelte';
 import SourcesPage from './sources/+page.svelte';
@@ -9,11 +10,14 @@ afterEach(() => cleanup());
 // DESIGN.md: "Don't put an eyebrow above a heading", and sage marks only
 // actions (The One Voice Rule). These three headers carried a sage, uppercase
 // kicker repeating the page name above the h1 (#360).
-describe.each([
+// Typed as one Component: render takes a single component type, not a union.
+const pages: [string, Component][] = [
   ['/guide', GuidePage],
   ['/allergens', AllergensPage],
   ['/sources', SourcesPage]
-] as const)('%s header', (_route, Page) => {
+];
+
+describe.each(pages)('%s header', (_route, Page) => {
   it('opens on its h1, with no kicker above it', () => {
     render(Page);
     const title = screen.getByRole('heading', { level: 1 });

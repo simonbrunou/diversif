@@ -117,7 +117,7 @@ describe('POST /passkeys/authentication/options', () => {
         () => POST(event as unknown as Parameters<typeof POST>[0]) as unknown as Promise<Response>
       );
       expect(r).toEqual({ kind: 'error', status: 429, message: text });
-      expect(text).toBe(m.errorsAuthRateLimitedSeconds({ seconds: 300 }));
+      expect<string>(text).toBe(m.errorsAuthRateLimitedSeconds({ seconds: 300 }));
     });
   });
 

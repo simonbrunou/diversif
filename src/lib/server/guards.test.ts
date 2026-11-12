@@ -16,7 +16,12 @@ const fakeUser: SafeUser = {
   id: 1,
   email: 'a@example.com',
   displayName: 'A',
-  createdAt: new Date('2024-01-01T00:00:00Z')
+  createdAt: new Date('2024-01-01T00:00:00Z'),
+  tosAcceptedAt: null,
+  privacyAcceptedAt: null,
+  ageConfirmedAt: null,
+  lastLoginAt: null,
+  lastExportAt: null
 };
 
 function makeLocals(opts: { user?: SafeUser | null; memberships?: Membership[] }): App.Locals {

@@ -209,7 +209,9 @@ describe('log +page.svelte — reaction help', () => {
   // Each item of the « Comment choisir ? » list: its text with the markup's
   // indentation collapsed (a no-break space stays as it is), and the text and
   // class of each bold part.
-  function helpItems(container: HTMLElement) {
+  function helpItems(
+    container: HTMLElement
+  ): readonly { text: string; bold: readonly (readonly (string | null)[])[] }[] {
     const list = container.querySelector('strong.text-reaction-ras-foreground')!.closest('ul')!;
     return Array.from(list.querySelectorAll('li')).map((li) => ({
       text: li.textContent!.replace(/[ \t\n]+/g, ' ').trim(),

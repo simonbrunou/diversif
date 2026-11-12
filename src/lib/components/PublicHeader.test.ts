@@ -11,7 +11,12 @@ const user: SafeUser = {
   id: 1,
   email: 'a@example.com',
   displayName: 'A',
-  createdAt: new Date()
+  createdAt: new Date(),
+  tosAcceptedAt: null,
+  privacyAcceptedAt: null,
+  ageConfirmedAt: null,
+  lastLoginAt: null,
+  lastExportAt: null
 };
 
 describe('PublicHeader', () => {

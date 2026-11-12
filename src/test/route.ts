@@ -1,23 +1,48 @@
-import { expect, mock } from 'bun:test';
+import { expect, mock, type Mock } from 'bun:test';
+import type { Cookies, RequestEvent } from '@sveltejs/kit';
 import { testDb, schema } from './db';
 import type { SafeUser } from '#lib/types.js';
 
 type Membership = typeof schema.memberships.$inferSelect;
 
-type CookieRecord = { value: string; opts: Record<string, unknown> };
+type CookieOptions = NonNullable<Parameters<Cookies['set']>[2]>;
+type CookieRecord = { value: string; opts: CookieOptions };
 
-function makeCookies(initial: Record<string, string> = {}) {
+/**
+ * A cookie jar that satisfies SvelteKit's `Cookies`, with `get`, `set` and
+ * `delete` kept as mocks so tests can read their calls, and `_store` holding
+ * each cookie's value and options.
+ */
+export type FakeCookies = Cookies & {
+  get: Mock<(name: string) => string | undefined>;
+  set: Mock<(name: string, value: string, opts?: CookieOptions) => void>;
+  delete: Mock<(name: string, opts?: CookieOptions) => void>;
+  _store: Map<string, CookieRecord>;
+};
+
+function makeCookies(initial: Record<string, string> = {}): FakeCookies {
   const store = new Map<string, CookieRecord>();
   for (const [k, v] of Object.entries(initial)) store.set(k, { value: v, opts: {} });
 
-  const get = mock((name: string) => store.get(name)?.value ?? null);
-  const set = mock((name: string, value: string, opts: Record<string, unknown> = {}) => {
+  const get = mock((name: string) => store.get(name)?.value);
+  const set = mock((name: string, value: string, opts: CookieOptions = {}) => {
     store.set(name, { value, opts });
   });
-  const del = mock((name: string, _opts: Record<string, unknown> = {}) => {
+  const del = mock((name: string, _opts?: CookieOptions) => {
     store.delete(name);
   });
-  return { get, set, delete: del, _store: store };
+  const notFaked = (method: string) => () => {
+    throw new Error(`the fake cookie jar does not implement cookies.${method}`);
+  };
+  return {
+    get,
+    getAll: () => [...store].map(([name, { value }]) => ({ name, value })),
+    set,
+    delete: del,
+    parse: notFaked('parse'),
+    serialize: notFaked('serialize'),
+    _store: store
+  };
 }
 
 /**
@@ -26,7 +51,7 @@ function makeCookies(initial: Record<string, string> = {}) {
  * need it because the signed-out jar has already dropped its own cookie, so
  * only a copy proves the session was revoked server-side.
  */
-export function copyCookies(jar: ReturnType<typeof makeCookies>): Record<string, string> {
+export function copyCookies(jar: FakeCookies): Record<string, string> {
   return Object.fromEntries([...jar._store].map(([name, { value }]) => [name, value]));
 }
 
@@ -51,7 +76,23 @@ function appendFormValue(formData: FormData, key: string, value: string | string
   }
 }
 
-export function makeRouteEvent(opts: RouteEventOptions = {}) {
+/** The parts of a fake event whose fake type tests read beyond the real one. */
+type FakeEventParts = {
+  cookies: FakeCookies;
+  setHeaders: Mock<(headers: Record<string, string>) => void>;
+};
+
+/**
+ * A fake SvelteKit event for a handler under test. Its type is the event the
+ * handler expects: TypeScript infers `E` from the argument's place, so
+ * `load(makeRouteEvent({ ... }))` type-checks against that route's
+ * `PageServerLoadEvent`. Outside an argument, `E` is a plain `RequestEvent`.
+ * The fake fills only the fields listed below; a handler that reads another
+ * one gets `undefined` at run time, whatever the type says.
+ */
+export function makeRouteEvent<E extends object = RequestEvent>(
+  opts: RouteEventOptions = {}
+): E & FakeEventParts {
   const url = new URL(opts.url ?? 'http://localhost/');
   const cookies = makeCookies(opts.cookies);
   const formData = new FormData();
@@ -87,7 +128,17 @@ export function makeRouteEvent(opts: RouteEventOptions = {}) {
       }
     })
   };
-  return event;
+  return event as unknown as E & FakeEventParts;
+}
+
+/**
+ * The data a load returned, failing the test when it returned nothing. A
+ * load's generated type is `void | PageData`, since a load may end without a
+ * return; narrowing here keeps each test's reads typed against `PageData`.
+ */
+export function loadData<T>(result: T): Exclude<T, void> {
+  if (result === undefined) throw new Error('load returned nothing');
+  return result as Exclude<T, void>;
 }
 
 /**
@@ -184,7 +235,13 @@ export async function seedMembership(opts: {
   )[0];
 }
 
-export function safeUser(u: Omit<typeof schema.users.$inferSelect, 'passwordHash'>): SafeUser {
+type UserRow = typeof schema.users.$inferSelect;
+
+/** The SafeUser of a user row; a fake user may leave out the nullable dates. */
+export function safeUser(
+  u: Pick<UserRow, 'id' | 'email' | 'displayName' | 'createdAt'> &
+    Partial<Omit<UserRow, 'passwordHash'>>
+): SafeUser {
   return {
     id: u.id,
     email: u.email,

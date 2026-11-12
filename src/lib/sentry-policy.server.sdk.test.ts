@@ -4,6 +4,7 @@ import { error as kitError, redirect } from '@sveltejs/kit';
 import * as m from '#lib/paraglide/messages.js';
 import { paraglideMiddleware } from '#lib/paraglide/server.js';
 import { recordingTransport } from '../test/sentry-recorder';
+import { syncResult } from '../test/sync-result';
 import { handleServerError, serverSentryOptions, tagHandleChainError } from './sentry-policy';
 
 // Tests resolve the browser build of the SDK, so the server options run on a
@@ -62,11 +63,13 @@ describe('server handleError', () => {
     const error = new TypeError('No child 18 for parent@example.com');
 
     Sentry.setUser({ id: '7', email: 'parent@example.com' });
-    const body = handleServerError({
-      kind: 'unknown',
-      error,
-      event: requestEvent('/child/18/log/9', '/child/[id]/log/[entryId]')
-    } as Caught);
+    const body = syncResult(
+      handleServerError({
+        kind: 'unknown',
+        error,
+        event: requestEvent('/child/18/log/9', '/child/[id]/log/[entryId]')
+      } as Caught)
+    );
 
     // The error page gets a localized line (#650); the stderr line below
     // keeps SvelteKit's English message for the operator.
@@ -101,11 +104,13 @@ describe('server handleError', () => {
   });
 
   it('tags an unmatched route as null and scrubs the raw path for stderr', async () => {
-    const body = handleServerError({
-      kind: 'unknown',
-      error: new Error('boom'),
-      event: requestEvent('/child/18/guide', null, null)
-    } as Caught);
+    const body = syncResult(
+      handleServerError({
+        kind: 'unknown',
+        error: new Error('boom'),
+        event: requestEvent('/child/18/guide', null, null)
+      } as Caught)
+    );
 
     const [event] = await recorder.sent('event');
     expect(event.tags).toMatchObject({ errorId: body!.errorId, route: null });
@@ -113,11 +118,13 @@ describe('server handleError', () => {
   });
 
   it('reports a thrown non-Error without crashing', async () => {
-    const body = handleServerError({
-      kind: 'unknown',
-      error: null,
-      event: requestEvent('/', '/')
-    } as Caught);
+    const body = syncResult(
+      handleServerError({
+        kind: 'unknown',
+        error: null,
+        event: requestEvent('/', '/')
+      } as Caught)
+    );
 
     expect(body).toEqual({
       message: m.errorsGenericFallback(),
@@ -135,11 +142,13 @@ describe('server handleError', () => {
   ] as const)(
     'skips the event and the stderr line for a %s 4xx, still giving the error page an errorId',
     async (kind, error, message) => {
-      const body = handleServerError({
-        kind,
-        error,
-        event: requestEvent('/wp-admin', null)
-      } as Caught);
+      const body = syncResult(
+        handleServerError({
+          kind,
+          error,
+          event: requestEvent('/wp-admin', null)
+        } as Caught)
+      );
 
       expect(body).toEqual({ message, errorId: expect.stringMatching(/^[0-9a-f]{8}$/) });
       expect(await recorder.sent('event')).toEqual([]);
@@ -172,11 +181,13 @@ describe('server handleError', () => {
   it.each([404, 503])(
     'leaves the body of an error(%i, ...) thrown by route code untouched, unreported',
     async (status) => {
-      const body = handleServerError({
-        kind: 'app',
-        error: { message: 'Enfant introuvable', status },
-        event: requestEvent('/child/18', '/child/[id]')
-      } as Caught);
+      const body = syncResult(
+        handleServerError({
+          kind: 'app',
+          error: { message: 'Enfant introuvable', status },
+          event: requestEvent('/child/18', '/child/[id]')
+        } as Caught)
+      );
 
       expect(body).toBeUndefined();
       expect(await recorder.sent('event')).toEqual([]);
@@ -257,7 +268,7 @@ describe('an error escaping the handle chain', () => {
     Sentry.captureException(error, {
       mechanism: { type: 'auto.function.sveltekit.handle', handled: false }
     });
-    const body = handleServerError({ kind: 'unknown', error, event } as Caught);
+    const body = syncResult(handleServerError({ kind: 'unknown', error, event } as Caught));
 
     const events = await recorder.sent('event');
     expect(events).toHaveLength(1);

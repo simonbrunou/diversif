@@ -6,7 +6,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -136,7 +137,7 @@ describe('child/[id]/suggestions load', () => {
       allergen: 'arachide'
     });
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
 
     expect(out.priorityAllergens.find((f) => f.id === peanut.id)).toBeDefined();
     expect(out.others.find((f) => f.id === young.id)).toBeDefined();
@@ -169,7 +170,7 @@ describe('child/[id]/suggestions load', () => {
       createdAt: new Date()
     });
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
 
     // peanut already introduced : should not appear at all
     expect(out.priorityAllergens.find((f) => f.id === peanut.id)).toBeUndefined();
@@ -193,7 +194,7 @@ describe('child/[id]/suggestions load', () => {
       allergen: 'lait'
     });
 
-    const before = await loadFor(ctx);
+    const before = loadData(await loadFor(ctx));
     expect(before.priorityAllergens.some((food) => food.id === butter.id)).toBe(false);
     expect(before.others.some((food) => food.id === butter.id)).toBe(true);
     expect(before.priorityAllergens.some((food) => food.id === yogurt.id)).toBe(true);
@@ -208,7 +209,7 @@ describe('child/[id]/suggestions load', () => {
       createdAt: new Date()
     });
 
-    const after = await loadFor(ctx);
+    const after = loadData(await loadFor(ctx));
 
     expect(after.priorityAllergens.some((food) => food.id === butter.id)).toBe(false);
     expect(after.others.some((food) => food.id === butter.id)).toBe(false);
@@ -223,13 +224,15 @@ describe('child/[id]/suggestions load', () => {
     const c = await seedChild({ createdBy: u.id, birthDate: dateStr });
     const m = await seedMembership({ userId: u.id, childId: c.id, role: 'owner' });
     const okFood = await insertFood({ name: 'Carotte', category: 'legumes', age: 4 });
-    const out = await load(
-      makeRouteEvent({
-        user: safeUser(u),
-        memberships: [m],
-        params: { id: String(c.id) },
-        parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
-      }) as unknown as Parameters<typeof load>[0]
+    const out = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(u),
+          memberships: [m],
+          params: { id: String(c.id) },
+          parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(out.priorityAllergens).toEqual([]);
     expect(out.others.find((f) => f.id === okFood.id)).toBeUndefined();
@@ -259,7 +262,7 @@ describe('child/[id]/suggestions load', () => {
       createdAt: new Date()
     });
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
 
     expect(out.priorityAllergens.some((f) => f.id === otherMilk.id)).toBe(false);
     expect(out.others.some((f) => f.id === otherMilk.id)).toBe(false);
@@ -289,7 +292,7 @@ describe('child/[id]/suggestions load', () => {
       createdAt: new Date()
     });
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
 
     expect([...out.priorityAllergens, ...out.others].some((f) => f.id === yogurt.id)).toBe(false);
   });

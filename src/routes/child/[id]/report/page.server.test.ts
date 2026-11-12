@@ -5,7 +5,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -105,7 +106,7 @@ describe('child/[id]/report load', () => {
       ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.totals.foods).toBe(0);
     expect(out.totals.entries).toBe(0);
     expect(out.totals.allergensIntroduced).toBe(0);
@@ -128,7 +129,7 @@ describe('child/[id]/report load', () => {
       ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
 
     expect(out.totals.foods).toBe(2);
     expect(out.totals.entries).toBe(3);
@@ -153,7 +154,7 @@ describe('child/[id]/report load', () => {
       ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(out.notable.length).toBe(N);
   });
 
@@ -183,7 +184,7 @@ describe('child/[id]/report load', () => {
       ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
 
     expect(out.notable.length).toBe(1);
     expect(out.notable[0].foodName).toBe('Saumon');
@@ -227,7 +228,7 @@ describe('child/[id]/report load', () => {
       ...guard,
       parent: async () => ({ child: { id: c.id, birthDate: c.birthDate } })
     });
-    const out = await load(event as unknown as Parameters<typeof load>[0]);
+    const out = loadData(await load(event as unknown as Parameters<typeof load>[0]));
 
     // The whole point of this app: two DIFFERENT reactions logged in the same
     // meal must stay as TWO distinct notable lines — grouping them would hide
@@ -270,11 +271,13 @@ describe('child/[id]/report load', () => {
     const beurre = await seedFood('Beurre', 'matieres_grasses', 'lait');
     await logEntry(c.id, beurre.id, u.id, new Date('2026-04-22'), 'ras');
 
-    const data = await load(
-      makeRouteEvent({
-        ...guard,
-        parent: async () => ({ child: c })
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          ...guard,
+          parent: async () => ({ child: c })
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
 
     const oeufRow = data.allergens.find((a) => a.id === 'oeuf');
@@ -305,7 +308,7 @@ describe('child/[id]/report load', () => {
       ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    const data = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(data.stage.id).toBe('9-12');
     expect(data.stage.title).toBeTruthy();
     expect(data.stage.textures).toBeTruthy();
@@ -346,7 +349,7 @@ describe('child/[id]/report load', () => {
       ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    const data = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(data.mostAdvancedTexture).toBe('ecrasee'); // finger is parallel/opt-in — excluded
   });
 
@@ -356,7 +359,7 @@ describe('child/[id]/report load', () => {
       ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    const data = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(data.mostAdvancedTexture).toBeNull();
   });
 
@@ -417,7 +420,7 @@ describe('child/[id]/report load', () => {
       ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    const data = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(data.textureDistribution.totalWithTexture).toBe(3);
     expect(data.textureDistribution.counts.lisse).toBe(2);
     expect(data.textureDistribution.counts.ecrasee).toBe(1);
@@ -433,7 +436,7 @@ describe('child/[id]/report load', () => {
       ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    const data = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(data.textureDistribution.totalWithTexture).toBe(0);
     for (const k of Object.keys(data.textureDistribution.counts)) {
       expect(
@@ -472,7 +475,7 @@ describe('child/[id]/report load', () => {
       ...ctx.guard,
       parent: async () => ({ child: ctx.c })
     });
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    const data = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(data.textureDistribution.totalWithTexture).toBe(1);
     expect(data.textureDistribution.counts.lisse).toBe(1);
     expect(data.textureDistribution.counts.finger).toBe(0);

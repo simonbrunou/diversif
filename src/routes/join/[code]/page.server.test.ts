@@ -286,11 +286,14 @@ describe('join/[code] default action', () => {
     // transaction's UPDATE, another claim flips used_at. The transaction's
     // conditional WHERE used_at IS NULL should match 0 rows and we should
     // bail without inserting a membership row for `me`.
-    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce(async (fn) => {
-      await testDb
+    // Synchronous like bun:sqlite's transaction: the action reads the claim's
+    // outcome as soon as db.transaction returns.
+    const txSpy = spyOn(testDb, 'transaction').mockImplementationOnce((fn) => {
+      testDb
         .update(invitations)
         .set({ usedAt: new Date(), usedBy: racer.id })
-        .where(eq(invitations.code, 'BEBE-ABCDEF'));
+        .where(eq(invitations.code, 'BEBE-ABCDEF'))
+        .run();
       return testDb.transaction(fn);
     });
 

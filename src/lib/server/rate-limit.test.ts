@@ -13,7 +13,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 
 afterEach(() => {
   _clearAllRateLimits();
-  setSystemTime(null);
+  setSystemTime();
 });
 
 describe('checkRateLimit', () => {

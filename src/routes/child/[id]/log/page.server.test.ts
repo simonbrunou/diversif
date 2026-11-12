@@ -5,7 +5,8 @@ import {
   makeRouteEvent,
   safeUser,
   seedChild,
-  seedMembership
+  seedMembership,
+  loadData
 } from '../../../../test/route';
 import { entryRows, seedFood, seedRepasChild } from '../../../../test/repas';
 import { foodEntries, idempotencyKeys, preparedMeals } from '#lib/server/db/schema.js';
@@ -73,7 +74,7 @@ describe('child/[id]/log load', () => {
       updatedAt: new Date()
     });
 
-    const data = await load(event() as unknown as LoadEvent);
+    const data = loadData(await load(event() as unknown as LoadEvent));
 
     expect(data.foods.map((f) => f.name)).toEqual(['Carotte', 'Mon plat']);
     expect(data.introducedFoodIds).toEqual([mine.id]);

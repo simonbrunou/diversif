@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import * as Sentry from '@sentry/sveltekit';
 import * as m from '#lib/paraglide/messages.js';
 import { recordingTransport } from '../test/sentry-recorder';
+import { syncResult } from '../test/sync-result';
 import { clientSentryOptions, handleClientError, replayOptions } from './sentry-policy';
 
 // The real browser SDK, initialised with the policy's options: only the
@@ -27,10 +28,12 @@ type Caught = Parameters<typeof handleClientError>[0];
 
 /** A navigation error as SvelteKit hands it to the client hook. */
 function navigationError(caught: Pick<Caught, 'kind' | 'error'>, routeId: string, params = {}) {
-  return handleClientError({
-    ...caught,
-    event: { params, route: { id: routeId }, url: new URL(routeId, 'https://diversif.app') }
-  } as Caught) as App.Error | undefined;
+  return syncResult(
+    handleClientError({
+      ...caught,
+      event: { params, route: { id: routeId }, url: new URL(routeId, 'https://diversif.app') }
+    } as Caught)
+  );
 }
 
 beforeEach(async () => {
@@ -348,13 +351,11 @@ describe('client Session Replay', () => {
   });
 
   it('scrubs the frames Replay records around the masked snapshots', () => {
-    const frame = (payload: object) => ({
-      type: 5,
-      timestamp: 0,
-      data: { tag: 'breadcrumb', payload }
-    });
-    const scrub = (payload: object) =>
-      replayOptions.beforeAddRecordingEvent?.(frame(payload) as never);
+    type Frame = Parameters<NonNullable<typeof replayOptions.beforeAddRecordingEvent>>[0];
+    // A custom (type 5) breadcrumb frame; the payload is any breadcrumb shape the test needs.
+    const frame = (payload: object) =>
+      ({ type: 5, timestamp: 0, data: { tag: 'breadcrumb', payload } }) as Frame;
+    const scrub = (payload: object) => replayOptions.beforeAddRecordingEvent?.(frame(payload));
 
     expect(scrub({ category: 'console', message: '[diversif:error]' })).toBeNull();
     // A click keeps its replay node, minus the selector naming the child.

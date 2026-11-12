@@ -3,6 +3,7 @@ import { testDb, resetTestDb } from './test/db';
 import * as m from '#lib/paraglide/messages.js';
 import { SITE } from '#lib/seo.js';
 import { copyCookies, makeRouteEvent } from './test/route';
+import { syncResult } from './test/sync-result';
 import { users, memberships, children } from '#lib/server/db/schema.js';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -319,11 +320,13 @@ describe('handle', () => {
 
     const spy = spyOn(console, 'error').mockImplementation(() => {});
     try {
-      const result = handleError({
-        kind: 'unknown',
-        error: failure,
-        event: { ...event, route: { id: '/child/[id]' } }
-      } as unknown as Parameters<typeof handleError>[0]);
+      const result = syncResult(
+        handleError({
+          kind: 'unknown',
+          error: failure,
+          event: { ...event, route: { id: '/child/[id]' } }
+        } as unknown as Parameters<typeof handleError>[0])
+      );
       expect(setIsolationTagsMock).toHaveBeenCalledWith({
         errorId: result?.errorId,
         status: 500,

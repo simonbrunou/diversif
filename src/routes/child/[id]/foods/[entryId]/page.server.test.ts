@@ -6,13 +6,15 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
-mock.module('#lib/server/audit.js', () => ({ audit: mock() }));
+const audit = mock((_event: AuditEvent) => {});
+mock.module('#lib/server/audit.js', () => ({ audit }));
 
-import { audit } from '#lib/server/audit.js';
+import type { AuditEvent } from '#lib/server/audit.js';
 
 import { foodEntries, foods, symptoms } from '#lib/server/db/schema.js';
 import { load, actions } from './+page.server';
@@ -61,13 +63,15 @@ describe('reaction-detail loader', () => {
   it('returns food name, isRas=false for a reaction entry, and computed nth', async () => {
     const ctx = await setup();
     const entry = await ctx.log('reaction');
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(entry.id) },
-        url: 'http://localhost/'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(entry.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(data.food).toBe('Poire');
     expect(data.isRas).toBe(false);
@@ -78,13 +82,15 @@ describe('reaction-detail loader', () => {
   it('returns isRas=true when reaction is ras', async () => {
     const ctx = await setup();
     const entry = await ctx.log('ras');
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(entry.id) },
-        url: 'http://localhost/'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(entry.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(data.isRas).toBe(true);
   });
@@ -94,13 +100,15 @@ describe('reaction-detail loader', () => {
     await ctx.log('ras', new Date('2026-04-01'));
     await ctx.log('ras', new Date('2026-04-15'));
     const e3 = await ctx.log('reaction', new Date('2026-05-01'));
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(e3.id) },
-        url: 'http://localhost/'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(e3.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(data.nth).toBe(3);
   });
@@ -117,13 +125,15 @@ describe('reaction-detail loader', () => {
       note: 'front',
       createdBy: ctx.u.id
     });
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(entry.id) },
-        url: 'http://localhost/'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(entry.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(data.symptoms).toHaveLength(1);
     expect(data.symptoms[0].label).toBe('rougeur');
@@ -145,13 +155,15 @@ describe('reaction-detail loader', () => {
         note: null,
         createdBy: ctx.u.id
       });
-      const data = await load(
-        makeRouteEvent({
-          user: safeUser(ctx.u),
-          memberships: [ctx.m],
-          params: { id: String(ctx.c.id), entryId: String(entry.id) },
-          url: 'http://localhost/'
-        }) as unknown as Parameters<typeof load>[0]
+      const data = loadData(
+        await load(
+          makeRouteEvent({
+            user: safeUser(ctx.u),
+            memberships: [ctx.m],
+            params: { id: String(ctx.c.id), entryId: String(entry.id) },
+            url: 'http://localhost/'
+          }) as unknown as Parameters<typeof load>[0]
+        )
       );
       // 2026-06-01T10:00:00Z is 12:00 in Europe/Paris (CEST, +2h) — must display
       // Paris wall-clock time, not the server's UTC clock.
@@ -165,14 +177,16 @@ describe('reaction-detail loader', () => {
   it('formats dates with en-GB locale when locale is en', async () => {
     const ctx = await setup();
     const entry = await ctx.log('ras');
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(entry.id) },
-        url: 'http://localhost/',
-        locale: 'en'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(entry.id) },
+          url: 'http://localhost/',
+          locale: 'en'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     // just assert the strings are non-empty : locale formatting is runtime-dependent
     expect(typeof data.date).toBe('string');
@@ -189,8 +203,8 @@ describe('reaction-detail loader', () => {
       url: 'http://localhost/'
     }) as unknown as Parameters<typeof load>[0];
     // strip locale so the ?? 'fr' fallback fires
-    (event.locals as Record<string, unknown>).locale = undefined;
-    const data = await load(event);
+    (event.locals as Partial<App.Locals>).locale = undefined;
+    const data = loadData(await load(event));
     expect(typeof data.date).toBe('string');
     expect(data.date.length).toBeGreaterThan(0);
   });
@@ -324,7 +338,7 @@ describe('addSymptom action', () => {
     const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(row.reaction).toBe('inconfort');
 
-    const promotedCall = (audit as ReturnType<typeof mock>).mock.calls.find(
+    const promotedCall = audit.mock.calls.find(
       (c) => c[0].type === 'food_entry.reaction_promoted'
     )?.[0];
     expect(promotedCall).toMatchObject({ from: 'ras', to: 'inconfort', entryId: entry.id });
@@ -342,7 +356,7 @@ describe('addSymptom action', () => {
     );
     const [row] = await testDb.select().from(foodEntries).where(eq(foodEntries.id, entry.id));
     expect(row.reaction).toBe('reaction');
-    const promotedCall = (audit as ReturnType<typeof mock>).mock.calls.find(
+    const promotedCall = audit.mock.calls.find(
       (c) => c[0].type === 'food_entry.reaction_promoted'
     )?.[0];
     expect(promotedCall).toMatchObject({ from: 'ras', to: 'reaction' });
@@ -393,7 +407,7 @@ describe('addSymptom action', () => {
       // 12:10 UTC (which would be in the future) nor today-at-server-midnight.
       expect(rows[0].observedAt.toISOString()).toBe('2026-06-01T10:10:00.000Z');
     } finally {
-      setSystemTime(null);
+      setSystemTime();
       process.env.TZ = originalTz;
     }
   });
@@ -407,7 +421,7 @@ describe('deleteSymptom action', () => {
   async function seedSymptom(
     ctx: Awaited<ReturnType<typeof setup>>,
     entryId: number,
-    label = 'rougeur'
+    label: (typeof symptoms.$inferInsert)['label'] = 'rougeur'
   ) {
     const [row] = await testDb
       .insert(symptoms)
@@ -545,13 +559,15 @@ describe('texture in entry-detail loader', () => {
         createdAt: new Date()
       })
       .returning();
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(entry.id) },
-        url: 'http://localhost/'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(entry.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(data.texture).toBe('ecrasee');
   });
@@ -559,13 +575,15 @@ describe('texture in entry-detail loader', () => {
   it('returns null texture when not set', async () => {
     const ctx = await setup();
     const entry = await ctx.log('ras');
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(entry.id) },
-        url: 'http://localhost/'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(entry.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(data.texture).toBeNull();
   });

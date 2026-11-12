@@ -27,7 +27,7 @@ describe('drainPool', () => {
       await advanceTimersByTimeAsync(150);
       expect(await promise).toBe('timeout');
     } finally {
-      setSystemTime(null);
+      setSystemTime();
     }
   });
 });
@@ -128,7 +128,7 @@ describe('registerShutdownHandlers', () => {
       exit,
       // The flush closes Sentry, so anything logged after it never reaches
       // Sentry Logs: the drain result has to come first.
-      log: mock((msg: { type: string }) => {
+      log: mock((msg: { type?: unknown }) => {
         if (msg.type === 'shutdown.drained') order.push('drained');
       }),
       flush,

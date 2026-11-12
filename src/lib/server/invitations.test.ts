@@ -29,7 +29,7 @@ describe('createInvitationForChild', () => {
     expect(code!.length).toBeGreaterThanOrEqual(6);
     const rows = await testDb.select().from(invitations);
     expect(rows).toHaveLength(1);
-    expect(rows[0].code).toBe(code);
+    expect(rows[0].code).toBe(code!);
     expect(rows[0].childId).toBe(c.id);
     expect(rows[0].createdBy).toBe(u.id);
     expect(rows[0].usedAt).toBeNull();

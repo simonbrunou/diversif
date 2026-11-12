@@ -27,7 +27,8 @@ function renderPage(email: string, form: ActionData = null) {
 describe('account/delete page', () => {
   it('renders a refused deletion inline, so a no-JS visitor sees why', () => {
     const { getByRole } = renderPage('p@example.com', {
-      deleteErrorKey: 'errorsAccountDeleteEmailMismatch'
+      deleteErrorKey: 'errorsAccountDeleteEmailMismatch',
+      confirmEmail: ''
     });
     expect(getByRole('alert').textContent).toContain(
       'Saisissez votre adresse e-mail exacte pour confirmer.'
@@ -36,7 +37,7 @@ describe('account/delete page', () => {
   });
 
   it('re-inserts the alert on a second identical refusal, so it is announced again', async () => {
-    const refusal = { deleteErrorKey: 'errorsAccountPasswordIncorrect' } as const;
+    const refusal = { deleteErrorKey: 'errorsAccountPasswordIncorrect', confirmEmail: '' } as const;
     const { getByRole, rerender } = renderPage('p@example.com', { ...refusal });
     const first = getByRole('alert');
     await rerender({ form: { ...refusal } });
@@ -89,7 +90,10 @@ describe('account/delete page', () => {
 
   it.each([
     ['before any submission', null],
-    ['with a refusal shown', { deleteErrorKey: 'errorsAccountPasswordIncorrect' } as const]
+    [
+      'with a refusal shown',
+      { deleteErrorKey: 'errorsAccountPasswordIncorrect', confirmEmail: '' } as const
+    ]
   ])(
     "sets the section's header, text and labels in the butter tile's own foreground %s (#649)",
     (_case, form) => {

@@ -347,7 +347,7 @@ describe('login default action', () => {
       await captureFlow(() =>
         actions.default!(event as unknown as Parameters<NonNullable<typeof actions.default>>[0])
       );
-      expect(event.cookies.set.mock.calls[0][2].secure).toBe(true);
+      expect(event.cookies.set.mock.calls[0][2]?.secure).toBe(true);
     } finally {
       process.env.NODE_ENV = orig;
     }

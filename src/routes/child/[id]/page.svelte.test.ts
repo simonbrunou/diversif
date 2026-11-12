@@ -80,7 +80,7 @@ const mealPlusSingleton: CoparentEntry[] = [
   {
     id: 3,
     foodName: 'Poulet',
-    category: 'proteines',
+    category: 'viandes',
     reaction: 'ras',
     givenAt: Date.now(),
     loggedByName: 'Alice',
@@ -101,7 +101,9 @@ afterEach(() => cleanup());
 
 describe('child/[id] +page.svelte — co-parent activity section wiring', () => {
   it('renders the section title + the grouped 3-ingredient line when coparentActivity is non-empty', () => {
-    const { container } = render(Page, { props: { data: makeData(mealPlusSingleton) } });
+    const { container } = render(Page, {
+      props: { data: makeData(mealPlusSingleton), form: null }
+    });
 
     // The gated <section> is present: its SectionHeader title renders...
     expect(container.textContent).toContain(m.dashboardCoparentActivityTitle());
@@ -117,7 +119,7 @@ describe('child/[id] +page.svelte — co-parent activity section wiring', () => 
   });
 
   it('omits the co-parent section entirely when coparentActivity is empty', () => {
-    const { container } = render(Page, { props: { data: makeData([]) } });
+    const { container } = render(Page, { props: { data: makeData([]), form: null } });
 
     // The `{#if data.coparentActivity.length > 0}` gate keeps the whole
     // section (title included) out of the DOM for solo parents / no activity.
@@ -132,7 +134,7 @@ describe('child/[id] +page.svelte — pre-diversification tip', () => {
       ageMonths: 3,
       stats: { foodsIntroduced: 0, weekCount: 0 }
     } as unknown as PageData;
-    render(Page, { props: { data } });
+    render(Page, { props: { data, form: null } });
     const link = screen.getByText(new RegExp(m.preDiversificationCta()));
     let tip: Element | null = link;
     while (tip && !tip.classList.contains('bg-accent-sky/15')) tip = tip.parentElement;

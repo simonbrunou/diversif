@@ -6,7 +6,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -127,7 +128,7 @@ describe('child/[id]/menu load', () => {
       reaction: 'reaction'
     });
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
 
     expect(typeof out.ageMonths).toBe('number');
 
@@ -177,7 +178,7 @@ describe('child/[id]/menu load', () => {
       reaction: 'inconfort'
     });
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
 
     const items = out.menu.meals.flatMap((meal) => meal.items);
     expect(items.length).toBeGreaterThan(0);
@@ -211,7 +212,7 @@ describe('child/[id]/menu load', () => {
     }
     await setDiet(ctx.c.id, ['vegetarien']);
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
     const items = out.menu.meals.flatMap((meal) => meal.items);
 
     expect(items.some((i) => i.food.category === 'viandes' || i.food.category === 'poissons')).toBe(
@@ -246,7 +247,7 @@ describe('child/[id]/menu load', () => {
     }
     await setDiet(ctx.c.id, ['porc']);
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
     const items = out.menu.meals.flatMap((meal) => meal.items);
 
     expect(items.some((i) => i.food.id === porc.id)).toBe(false);
@@ -297,7 +298,7 @@ describe('child/[id]/menu load', () => {
     }
     await setDiet(ctx.c.id, ['sans_poisson']);
 
-    const out = await loadFor(ctx);
+    const out = loadData(await loadFor(ctx));
 
     // Non-null pins down that a real substitute (an already-introduced
     // allergen) was surfaced, not an accidental null from an unrelated gap.
@@ -327,22 +328,24 @@ describe('child/[id]/menu load', () => {
       });
     }
 
-    const today = await loadToday(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id) },
-        parent: async () => ({
-          child: {
-            id: ctx.c.id,
-            name: ctx.c.name,
-            birthDate: ctx.c.birthDate,
-            createdAt: ctx.c.createdAt.getTime()
-          }
-        })
-      }) as unknown as Parameters<typeof loadToday>[0]
+    const today = loadData(
+      await loadToday(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id) },
+          parent: async () => ({
+            child: {
+              id: ctx.c.id,
+              name: ctx.c.name,
+              birthDate: ctx.c.birthDate,
+              createdAt: ctx.c.createdAt.getTime()
+            }
+          })
+        }) as unknown as Parameters<typeof loadToday>[0]
+      )
     );
-    const menu = (await loadFor(ctx)).menu;
+    const menu = loadData(await loadFor(ctx)).menu;
 
     const nudged = today.reminders
       .filter((r) => r.key.startsWith('maintain-allergen:'))

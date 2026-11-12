@@ -5,7 +5,8 @@ import {
   safeUser,
   seedChild,
   seedMembership,
-  seedUser
+  seedUser,
+  loadData
 } from '../../../../../../test/route';
 
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
@@ -60,13 +61,15 @@ async function setup() {
 describe('print loader', () => {
   it('returns child name, food, symptoms, and generated_at (fr locale)', async () => {
     const ctx = await setup();
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
-        url: 'http://localhost/'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
+          url: 'http://localhost/'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(data.childName).toBe(ctx.c.name);
     expect(data.foodName).toBe('Poire');
@@ -79,14 +82,16 @@ describe('print loader', () => {
 
   it('formats dates using en-GB when locale is en', async () => {
     const ctx = await setup();
-    const data = await load(
-      makeRouteEvent({
-        user: safeUser(ctx.u),
-        memberships: [ctx.m],
-        params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
-        url: 'http://localhost/',
-        locale: 'en'
-      }) as unknown as Parameters<typeof load>[0]
+    const data = loadData(
+      await load(
+        makeRouteEvent({
+          user: safeUser(ctx.u),
+          memberships: [ctx.m],
+          params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
+          url: 'http://localhost/',
+          locale: 'en'
+        }) as unknown as Parameters<typeof load>[0]
+      )
     );
     expect(data.childName).toBe(ctx.c.name);
     expect(data.symptoms).toHaveLength(1);
@@ -103,8 +108,8 @@ describe('print loader', () => {
       url: 'http://localhost/'
     });
     // Override locale to undefined to exercise the ?? 'fr' fallback
-    (event.locals as Record<string, unknown>).locale = undefined;
-    const data = await load(event as unknown as Parameters<typeof load>[0]);
+    (event.locals as Partial<App.Locals>).locale = undefined;
+    const data = loadData(await load(event as unknown as Parameters<typeof load>[0]));
     expect(typeof data.givenAt).toBe('string');
     expect(data.givenAt).toMatch(/mai/i);
   });
@@ -134,13 +139,15 @@ describe('print loader', () => {
     process.env.TZ = 'UTC';
     try {
       const ctx = await setup();
-      const data = await load(
-        makeRouteEvent({
-          user: safeUser(ctx.u),
-          memberships: [ctx.m],
-          params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
-          url: 'http://localhost/'
-        }) as unknown as Parameters<typeof load>[0]
+      const data = loadData(
+        await load(
+          makeRouteEvent({
+            user: safeUser(ctx.u),
+            memberships: [ctx.m],
+            params: { id: String(ctx.c.id), entryId: String(ctx.entry.id) },
+            url: 'http://localhost/'
+          }) as unknown as Parameters<typeof load>[0]
+        )
       );
       // givenAt = 2026-05-01T11:30:00Z is 13:30 in Europe/Paris (CEST, +2h);
       // the symptom's 2026-05-01T11:42:00Z is 13:42 Paris. Both must reflect

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime, spyOn } from 'bun:test';
+import type { SQLiteTable } from 'drizzle-orm/sqlite-core';
 import { testDb, resetTestDb } from '../../test/db';
 import {
   idempotencyKeys,
@@ -147,7 +148,7 @@ describe('runCleanup', () => {
       expect(checkRateLimit(opts, 'recentClient').remaining).toBe(3);
       expect(checkRateLimit(opts, 'oldClient').remaining).toBe(4);
     } finally {
-      setSystemTime(null);
+      setSystemTime();
     }
   });
 });
@@ -186,13 +187,21 @@ describe('startCleanupTimer', () => {
 
     let throwsLeft = 2;
     const originalDelete = testDb.delete;
-    const deleteSpy = spyOn(testDb, 'delete').mockImplementation((...args) => {
-      if (throwsLeft > 0) {
-        throwsLeft -= 1;
-        throw new Error('boom');
+    const deleteSpy = spyOn(testDb, 'delete').mockImplementation(
+      <TTable extends SQLiteTable>(table: TTable) => {
+        if (throwsLeft > 0) {
+          throwsLeft -= 1;
+          throw new Error('boom');
+        }
+        // Explicit type arguments keep the delete builder typed by TTable, as
+        // the real method's return is.
+        return originalDelete.call<
+          typeof testDb,
+          [TTable],
+          ReturnType<typeof originalDelete<TTable>>
+        >(testDb, table);
       }
-      return originalDelete.apply(testDb, args as Parameters<typeof originalDelete>);
-    });
+    );
 
     // Fake setInterval/setTimeout so we can advance to the next scheduled run
     // without waiting six real hours; leave microtasks / hrtime alone so the
@@ -215,7 +224,7 @@ describe('startCleanupTimer', () => {
     // sufficient coverage of "logs but does not throw".
 
     stopCleanupTimer();
-    setSystemTime(null);
+    setSystemTime();
     deleteSpy.mockRestore();
     errSpy.mockRestore();
   });

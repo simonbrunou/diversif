@@ -9,7 +9,8 @@ test('fnv1a is unsigned and stable', () => {
 
 test('rotatePick never returns undefined for a non-empty list', () => {
   const items = ['a', 'b', 'c'];
-  for (let d = 0; d < 20; d++) expect(items).toContain(rotatePick(items, 'k', d));
+  for (let d = 0; d < 20; d++)
+    expect<(string | null)[]>(items).toContain(rotatePick(items, 'k', d));
 });
 
 test('rotatePick has no consecutive-day repeat when length >= 2', () => {
