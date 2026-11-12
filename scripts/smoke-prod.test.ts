@@ -908,7 +908,8 @@ describe('scripts/smoke-prod.sh', () => {
     });
 
     // The run deadline comes 12 s after the start, before the 60 s budget
-    // would end, so each new fetch line counts the time left to it.
+    // would end, so each new fetch line counts the time left to it, and the
+    // FAIL line gives the budget the deadline left.
     it('cuts the SHA budget at the run deadline', async () => {
       replies = { ...live(), '/en': () => oldPage('/en') };
       const [wait, checkTime] = [6, 6];
@@ -921,6 +922,10 @@ describe('scripts/smoke-prod.sh', () => {
       const left = refetches(run.lines).map((line) => Number(/(\d+) s of the SHA/.exec(line)?.[1]));
       expect(left.length).toBeGreaterThan(0);
       for (const seconds of left) expect(seconds).toBeLessThanOrEqual(wait + checkTime);
+      const failed = run.lines.find((line) => line.startsWith('FAIL /en '));
+      const budget = Number(/after the (\d+) s SHA budget/.exec(failed ?? '')?.[1]);
+      expect(budget).toBeGreaterThan(0);
+      expect(budget).toBeLessThanOrEqual(wait + checkTime);
       expect(run.code).toBe(1);
     });
 
