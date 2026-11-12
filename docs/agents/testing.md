@@ -99,6 +99,8 @@ The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENT
   - `bento-reaction-detail.spec.ts`: `reaction-detail bento renders for non-RAS entry with all panels`, 90000ms
   - `bento-reaction-detail.spec.ts`: `add-symptom then delete-symptom via the confirm modal`, 90000ms
   - `bento-reaction-detail.spec.ts`: `print page renders without bento chrome and contains key strings`, 90000ms
+  - `child-settings.spec.ts`: `the native forms say why a change was refused…`, 30000ms
+  - `child-settings.spec.ts`: `a refused code stays in its dialog…`, 30000ms
   - `cross-tenant-isolation.spec.ts`: its one test, 30000ms
   - `edit.spec.ts`: `edits a standalone repas…`, 90000ms
   - `edit.spec.ts`: `edits a meal…`, 90000ms
