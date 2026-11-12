@@ -28,7 +28,7 @@ import { unstubAllGlobals } from './src/test/bun-test-utils';
 expect.extend(matchers as never);
 
 // Belt-and-braces reset between tests so cross-file state doesn't leak.
-// setSystemTime(null) returns the clock to real time (vitest had this
+// setSystemTime() returns the clock to real time (vitest had this
 // behaviour implicit via the per-test fake-timer context; bun:test does
 // not). unstubAllGlobals() restores any window/document/etc. that a test
 // replaced via the stubGlobal helper. We also clear the document body —
@@ -40,7 +40,7 @@ afterEach(() => {
   if (typeof document !== 'undefined') {
     document.body.innerHTML = '';
   }
-  setSystemTime(null);
+  setSystemTime();
   unstubAllGlobals();
   // mock.restore() restores all spyOn-created mocks to their originals. Tests
   // that spy on shared singletons (testDb.delete, the cleanup setInterval,

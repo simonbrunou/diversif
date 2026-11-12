@@ -30,7 +30,11 @@
 // copied off its locator (`const { getByText } = page`, which also loses the
 // `this` Playwright needs) or called through `.call()`, `.apply()` or
 // `.bind()`.
-import { fixedText, typeWrappers } from './ast.js';
+/**
+ * @import { TSESTree } from '@typescript-eslint/utils'
+ * @import { RuleModule } from './ast.js'
+ */
+import { fixedText, isTypeWrapper } from './ast.js';
 
 // What a substring call of each method can match, for the message.
 const risks = new Map([
@@ -57,18 +61,25 @@ const issues = new Map([
   ['getByLabel', '#265']
 ]);
 
-// The value under TypeScript wrappers and the parentheses that end an
-// optional chain, as in `(page?.getByText)('a')`.
+/**
+ * The value under TypeScript wrappers and the parentheses that end an
+ * optional chain, as in `(page?.getByText)('a')`.
+ * @param {TSESTree.Node | null | undefined} node
+ */
 function unwrap(node) {
-  while (typeWrappers.has(node?.type) || node?.type === 'ChainExpression') node = node.expression;
+  while (isTypeWrapper(node) || node?.type === 'ChainExpression') node = node.expression;
   return node;
 }
 
-// The values a call receives, in order, as far as the source shows them. A
-// spread of an array literal expands in place. Any other spread ends the
-// list, since the values from there on land where only run time knows;
-// `complete` is then false, so that a spread nested in an array literal
-// ends the outer list too.
+/**
+ * The values a call receives, in order, as far as the source shows them. A
+ * spread of an array literal expands in place. Any other spread ends the
+ * list, since the values from there on land where only run time knows;
+ * `complete` is then false, so that a spread nested in an array literal
+ * ends the outer list too.
+ * @param {(TSESTree.Expression | TSESTree.SpreadElement | null)[]} args
+ * @returns {{ values: (TSESTree.Node | null | undefined)[], complete: boolean }}
+ */
 function runtimeArguments(args) {
   const values = [];
   for (const arg of args) {
@@ -85,47 +96,55 @@ function runtimeArguments(args) {
   return { values, complete: true };
 }
 
-// The method a call reaches, when the source names it.
-function methodName(callee) {
-  if (callee?.type !== 'MemberExpression') return undefined;
-  const { property, computed } = callee;
+/**
+ * The method a call reaches, when the source names it.
+ * @param {TSESTree.MemberExpression} callee
+ */
+function methodName({ property, computed }) {
   return computed ? fixedText(unwrap(property)) : property.name;
 }
 
-// The key a property sets, or undefined when only run time knows it.
+/**
+ * The key a property sets, or undefined when only run time knows it.
+ * @param {TSESTree.Property} property
+ */
 function keyName({ key, computed }) {
   if (key.type === 'Literal') return String(key.value);
   return computed ? fixedText(unwrap(key)) : key.name;
 }
 
-// The last member of an object literal that can set `key`: a `key` key, a
-// spread, or a computed key whose name only run time knows.
-function lastSetter(options, key) {
-  return options.properties.findLast(
+/**
+ * The value of the last member of an object literal that can set `key`: a
+ * `key` key, a spread, or a computed key whose name only run time knows.
+ * Undefined when no member can set it, null when that member is a spread or
+ * a computed key, since only run time knows what it sets.
+ * @param {TSESTree.ObjectExpression} options
+ * @param {string} key
+ */
+function lastValue(options, key) {
+  const last = options.properties.findLast(
     (member) => member.type === 'SpreadElement' || [undefined, key].includes(keyName(member))
   );
-}
-
-// The value of the last member that can set `key`, when that member is a
-// plain `key` property; undefined when no member can set it, null when only
-// run time knows.
-function lastValue(options, key) {
-  const last = lastSetter(options, key);
   if (last === undefined) return undefined;
   if (last.type !== 'Property' || keyName(last) !== key) return null;
   return unwrap(last.value);
 }
 
-const isRegex = (node) => node?.type === 'Literal' && Boolean(node.regex);
+/** @param {TSESTree.Node | null | undefined} node */
+const isRegex = (node) => node?.type === 'Literal' && 'regex' in node && Boolean(node.regex);
 
+/** @param {TSESTree.Node | null | undefined} options */
 function setsExact(options) {
   if (options?.type !== 'ObjectExpression') return false;
   const value = lastValue(options, 'exact');
   return value?.type === 'Literal' && value.value === true;
 }
 
-// getByRole(role) and getByRole(role, options) match by role alone when the
-// options set no `name`, and Playwright ignores `exact` for a regex `name`.
+/**
+ * getByRole(role) and getByRole(role, options) match by role alone when the
+ * options set no `name`, and Playwright ignores `exact` for a regex `name`.
+ * @param {{ values: (TSESTree.Node | null | undefined)[], complete: boolean }} args
+ */
 function roleNeedsNoExact({ values, complete }) {
   const [, options] = values;
   if (options === undefined) return complete;
@@ -134,6 +153,7 @@ function roleNeedsNoExact({ values, complete }) {
   return name === undefined || isRegex(name);
 }
 
+/** @type {RuleModule<TSESTree.Node>} */
 const exactLocator = {
   meta: {
     type: 'problem',
@@ -151,8 +171,10 @@ const exactLocator = {
     return {
       CallExpression(node) {
         const callee = unwrap(node.callee);
-        const method = methodName(callee);
-        if (!risks.has(method)) return;
+        if (callee?.type !== 'MemberExpression') return;
+        const method = methodName(callee) ?? '';
+        const risk = risks.get(method);
+        if (risk === undefined) return;
         const args = runtimeArguments(node.arguments);
         if (method === 'getByRole') {
           if (roleNeedsNoExact(args)) return;
@@ -161,7 +183,7 @@ const exactLocator = {
         context.report({
           node: callee.property,
           messageId: 'substring',
-          data: { risk: risks.get(method), issue: issues.get(method) ?? '#604' }
+          data: { risk, issue: issues.get(method) ?? '#604' }
         });
       }
     };

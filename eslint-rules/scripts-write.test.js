@@ -6,6 +6,7 @@ import { ESLint } from 'eslint';
 
 const eslint = new ESLint({ cwd: new URL('..', import.meta.url).pathname });
 
+/** @param {string} code */
 const lint = async (code, filePath = 'scripts/probe.ts') => {
   const [result] = await eslint.lintText(`${code}\n`, { filePath });
   return result.messages.map(({ ruleId, line, severity, message }) => ({
@@ -16,10 +17,11 @@ const lint = async (code, filePath = 'scripts/probe.ts') => {
   }));
 };
 
+/** @param {number} line */
 const banned = (line) => ({
   ruleId: 'no-restricted-syntax',
   line,
-  severity: 2,
+  severity: /** @type {const} */ (2),
   message: expect.stringMatching(/^Print with console\.log or console\.error: .*\(#683\)\.$/)
 });
 

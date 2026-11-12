@@ -6,17 +6,24 @@ import e2e from './e2e.js';
 RuleTester.describe = describe;
 RuleTester.it = it;
 
+/** @param {number} column */
 const substring = (column) => [{ messageId: 'substring', column }];
 
-// The column of the last `.getBy…` method in the code, the one a chained
-// case reports on.
+/**
+ * The column of the last `.getBy…` method in the code, the one a chained
+ * case reports on.
+ * @param {string} code
+ */
 const last = (code) => ({ code, errors: substring(code.lastIndexOf('.getBy') + 2) });
 
 // The four methods that take a text first, as getByText does.
 const textMethods = ['getByLabel', 'getByPlaceholder', 'getByTitle', 'getByAltText'];
 
-// The getByText cases for access forms, wrappers, spreads and chains, run for
-// each of the four.
+/**
+ * The getByText cases for access forms, wrappers, spreads and chains, run for
+ * each of the four.
+ * @param {string} m
+ */
 const textValid = (m) => [
   `page.${m}('a', { exact: true });`,
   `page.${m}(label, { exact: true });`,
@@ -38,6 +45,7 @@ const textValid = (m) => [
   `page.locator('form').${m}('a', { exact: true }).click();`
 ];
 
+/** @param {string} m */
 const textInvalid = (m) => [
   { code: `page.${m}('a');`, errors: substring(6) },
   { code: `page.${m}('a', { exact: false });`, errors: substring(6) },
@@ -63,6 +71,10 @@ const textInvalid = (m) => [
   last(`page.getByRole('dialog', { name: 'a', exact: true }).${m}('b');`)
 ];
 
+/**
+ * @param {string} risk
+ * @param {string} issue
+ */
 const message = (risk, issue) =>
   `${risk}, ignoring case (${issue}). Pass { exact: true }, or a regex for a pattern, or disable this rule on the line with the reason the test needs a substring.`;
 
@@ -308,11 +320,15 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
 // file included, through eslint.config.js.
 describe('eslint.config.js', () => {
   const eslint = new ESLint({ cwd: new URL('..', import.meta.url).pathname });
+  /**
+   * @param {string} code
+   * @param {string} filePath
+   */
   const lint = async (code, filePath) => {
     const [result] = await eslint.lintText(`${code}\n`, { filePath });
     return result.messages.map(({ ruleId, line, severity }) => ({ ruleId, line, severity }));
   };
-  const reported = [{ ruleId: 'e2e/exact-locator', line: 1, severity: 2 }];
+  const reported = [{ ruleId: 'e2e/exact-locator', line: 1, severity: /** @type {const} */ (2) }];
 
   it.each(['e2e/probe.spec.ts', 'e2e/_helpers.ts'])('reports a substring call in %s', async (f) => {
     expect(await lint("page.getByLabel('a');", f)).toEqual(reported);

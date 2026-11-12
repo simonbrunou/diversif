@@ -10,9 +10,12 @@ RuleTester.it = it;
 // The parser eslint.config.js lints components with, through the Svelte
 // plugin's own config.
 const svelteParser = svelte.configs['flat/recommended'].find((c) => c.languageOptions?.parser)
-  .languageOptions.parser;
+  ?.languageOptions?.parser;
+if (!svelteParser) throw new Error("eslint-plugin-svelte's flat/recommended config sets no parser");
 
+/** @param {string} code */
 const component = (code) => ({ code, filename: 'Component.svelte' });
+/** @param {number} column */
 const separator = (column, line = 1) => [{ messageId: 'separator', line, column }];
 
 // Each invalid form, again with U+00A0 and U+202F before the colon. The
@@ -133,6 +136,7 @@ describe('eslint.config.js', () => {
   const eslint = new ESLint({ cwd: new URL('..', import.meta.url).pathname });
   const script =
     '<script lang="ts">\n  let { a, b }: { a: string; b: string } = $props();\n</script>\n';
+  /** @param {string} markup */
   const lint = async (markup) => {
     const [result] = await eslint.lintText(`${script}${markup}\n`, {
       filePath: 'src/lib/components/Probe.svelte'
