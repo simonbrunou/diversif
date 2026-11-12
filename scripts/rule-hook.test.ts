@@ -271,22 +271,32 @@ describe('.claude/rule-hook/hook.py', () => {
     ).toEqual([]));
 
   it.each([
-    ['no tool_matcher', 'r', null, ['r: no tool_matcher']],
-    ['an empty tool_matcher', 'r', '', ['r: no tool_matcher']],
-    ['an empty quoted tool_matcher', 'r', ' ""', ['r: no tool_matcher']],
-    ['a wildcard', 'r', ' *', ['r: tool_matcher names *']],
+    ['flags a file rule with no tool_matcher', 'r', null, ['r: no tool_matcher']],
+    ['flags an empty tool_matcher', 'r', '', ['r: no tool_matcher']],
+    ['flags an empty quoted tool_matcher', 'r', ' ""', ['r: no tool_matcher']],
+    ['flags a wildcard', 'r', ' *', ['r: tool_matcher names *']],
     [
-      'a tool outside the edit tools',
+      'flags a tool outside the edit tools',
       'r',
       ' Edit|Write|MultiEdit|Read',
       ['r: tool_matcher names Read']
     ],
-    ['a blank inside the matcher', 'r', ' Edit | Write', ['r: tool_matcher names Edit ,  Write']],
-    ['a tool_matcher on block-env-file', ENV_RULE, ' Read', [`${ENV_RULE}: tool_matcher "Read"`]],
-    ['the edit tools', 'r', ' Edit|Write|MultiEdit', []],
-    ['some of the edit tools', 'r', ' Edit', []],
-    ['block-env-file with no tool_matcher', ENV_RULE, null, []]
-  ] as const)('unscopedFileRules: a file rule with %s', (_, name, matcher, found) =>
+    [
+      'flags a blank inside the matcher',
+      'r',
+      ' Edit | Write',
+      ['r: tool_matcher names Edit ,  Write']
+    ],
+    [
+      'flags a tool_matcher on block-env-file',
+      ENV_RULE,
+      ' Read',
+      [`${ENV_RULE}: tool_matcher "Read"`]
+    ],
+    ['passes the edit tools', 'r', ' Edit|Write|MultiEdit', []],
+    ['passes some of the edit tools', 'r', ' Edit', []],
+    ['passes block-env-file with no tool_matcher', ENV_RULE, null, []]
+  ] as const)('unscopedFileRules: %s', (_, name, matcher, found) =>
     expect(unscopedFileRules([fixture(name, 'file', matcher)])).toEqual([...found])
   );
 
