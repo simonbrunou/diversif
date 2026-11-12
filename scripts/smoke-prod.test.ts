@@ -38,6 +38,13 @@ interface Answer {
   body?: string;
 }
 
+const oldSha = 'fedcba9876543210fedcba9876543210fedcba98';
+const newSha = '0123456789abcdef0123456789abcdef01234567';
+
+// A page as SvelteKit renders it, its build SHA in the inline boot script.
+const page = (sha: string) =>
+  `<!doctype html><html><body><script>\n\t\t\t\t\t__sveltekit_4z2lge = {\n\t\t\t\t\t\tbase: "",\n\t\t\t\t\t\tversion: "${sha}"\n\t\t\t\t\t};\n</script></body></html>`;
+
 const html = { 'Content-Type': 'text/html; charset=utf-8' };
 const js = { 'Content-Type': 'text/javascript' };
 const production: Record<string, Answer> = {
@@ -49,10 +56,10 @@ const production: Record<string, Answer> = {
       'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
       'X-Frame-Options': 'DENY'
     },
-    body: '<!doctype html><html></html>'
+    body: page(newSha)
   },
-  '/guide': { status: 200, headers: html, body: '<html></html>' },
-  '/en': { status: 200, headers: html, body: '<html></html>' },
+  '/guide': { status: 200, headers: html, body: page(newSha) },
+  '/en': { status: 200, headers: html, body: page(newSha) },
   '/_app/env.js': { status: 200, headers: js, body: 'export const env = {};' },
   '/service-worker.js': { status: 200, headers: js, body: 'self;' },
   '/sw.js': { status: 404, body: 'Not found' },
@@ -62,16 +69,17 @@ const production: Record<string, Answer> = {
     body: '{"ok":true,"db":"ok","uptimeMs":51000}'
   },
   // Production serves the prerendered page with no Content-Type.
-  '/offline': { status: 200, body: '<!doctype html><html></html>' }
+  '/offline': { status: 200, body: page(newSha) }
 };
 
 // Per test: the requests to drop (path -> how many first requests), the
 // answers that differ from production, and the replies that depend on the
 // request's number (path -> a function of it). A reply of 'hang' keeps the
-// connection open and never answers; undefined falls through to the others.
+// connection open and never answers, one of 'drop' closes it without an
+// answer; undefined falls through to the others.
 let drops: Record<string, number> = {};
 let overrides: Record<string, Answer> = {};
-let replies: Record<string, (n: number) => Answer | 'hang' | undefined> = {};
+let replies: Record<string, (n: number) => Answer | 'hang' | 'drop' | undefined> = {};
 const hits = new Map<string, number>();
 
 function render({ status, headers = {}, body = '' }: Answer): string {
@@ -99,7 +107,7 @@ const server = Bun.listen<{ request: string }>({
       hits.set(requestPath, n);
       const reply = replies[requestPath]?.(n);
       if (reply === 'hang') return;
-      if (n <= (drops[requestPath] ?? 0)) {
+      if (reply === 'drop' || n <= (drops[requestPath] ?? 0)) {
         socket.end();
         return;
       }
@@ -116,8 +124,6 @@ const allPassed = `smoke-prod: 11 of 11 checks passed on ${base}`;
 const silent = Bun.listen({ hostname: '127.0.0.1', port: 0, socket: { data() {} } });
 const silentBase = `http://127.0.0.1:${silent.port}`;
 
-const oldSha = 'fedcba9876543210fedcba9876543210fedcba98';
-const newSha = '0123456789abcdef0123456789abcdef01234567';
 const version = (sha: string): Answer => ({
   status: 200,
   headers: { 'Content-Type': 'application/json' },
@@ -183,6 +189,46 @@ function trackedCopy(uploadpack?: string): string {
     expect(Bun.spawnSync({ cmd }).exitCode).toBe(0);
   }
   return copy;
+}
+
+// Runs git in a repo, with an identity and no signing for its commits, and
+// returns its output.
+function gitIn(repo: string, ...args: string[]): string {
+  const run = Bun.spawnSync({
+    cmd: [
+      'git',
+      '-C',
+      repo,
+      '-c',
+      'user.name=smoke',
+      '-c',
+      'user.email=smoke@example.invalid',
+      '-c',
+      'commit.gpgsign=false',
+      ...args
+    ]
+  });
+  expect(run.exitCode).toBe(0);
+  return run.stdout.toString().trim();
+}
+
+// The repo of a tracked copy of the script.
+const repoOf = (copy: string) => path.dirname(path.dirname(copy));
+
+// Commits an empty commit on top of a repo's HEAD and returns its SHA. Two
+// repos that commit the same message on the same parent within one second
+// make the same commit, so a test that needs distinct ones names them.
+function commitEmpty(repo: string, message = 'newer'): string {
+  gitIn(repo, 'commit', '-q', '--allow-empty', '-m', message);
+  return gitIn(repo, 'rev-parse', 'HEAD');
+}
+
+// Commits a tracked copy's repo twice: the script, then an empty commit on
+// top. Returns both SHAs, the older first.
+function commitTwice(copy: string): [string, string] {
+  gitIn(repoOf(copy), 'commit', '-q', '-m', 'script');
+  const first = gitIn(repoOf(copy), 'rev-parse', 'HEAD');
+  return [first, commitEmpty(repoOf(copy))];
 }
 
 // A file's content, or '' while it does not exist.
@@ -789,4 +835,258 @@ describe('scripts/smoke-prod.sh', () => {
     expect(run.last).toBe(`smoke-prod: 11 of 11 checks failed on ${silentBase}`);
     expect(run.code).toBe(1);
   }, 30_000);
+
+  // With a SHA, each HTML page must hold the build SHA of <sha>, or of a newer
+  // main commit that contains it (#542). The old container can still answer
+  // once /_app/version.json reports <sha>, so a page that holds an older build
+  // is fetched again, 5 s later, within a 60 s budget that all pages share.
+  // Each pause logs a bare '5' through the fake sleep; the fetch timers log
+  // their delays with a decimal point, so the 5s count the pauses.
+  describe('with a SHA, the build SHA in each page', () => {
+    const live = () => ({ '/_app/version.json': () => version(newSha) });
+    const refetches = (lines: string[]) => lines.filter((line) => line.startsWith('REFETCH'));
+    const pauses = (sleeps: string[]) => sleeps.filter((delay) => delay === '5');
+    const oldPage = (path: string): Answer => ({ ...production[path], body: page(oldSha) });
+
+    it.each(['/', '/guide', '/en', '/offline'])(
+      'fetches %s again while it holds an older build, and counts one PASS',
+      async (check) => {
+        replies = { ...live(), [check]: (n) => (n <= 2 ? oldPage(check) : undefined) };
+        const run = await smoke(base, { script: trackedCopy(), args: [newSha] });
+        expect(run.stderr).toBe('');
+        expect(refetches(run.lines)).toHaveLength(2);
+        for (const line of refetches(run.lines)) {
+          expect(line).toMatch(
+            new RegExp(
+              `^REFETCH ${check} holds build ${oldSha}, again in 5 s, \\d+ s of the SHA budget left$`
+            )
+          );
+        }
+        expect(pauses(run.sleeps)).toEqual(['5', '5']);
+        expect(hits.get(check)).toBe(3);
+        expect(run.lines.find((line) => line.startsWith(`PASS ${check} `))).toContain(
+          `build ${newSha}`
+        );
+        expect(run.retries).toEqual([]);
+        expect(run.last).toBe(`smoke-prod: 12 of 12 checks passed on ${base}`);
+        expect(run.code).toBe(0);
+      }
+    );
+
+    // 60 s of budget, 5 s per pause: 12 new fetches at most.
+    it('fails a page that holds an older build once the SHA budget is spent', async () => {
+      replies = { ...live(), '/en': () => oldPage('/en') };
+      const run = await smoke(base, { script: trackedCopy(), args: [newSha] });
+      expect(refetches(run.lines)).toHaveLength(12);
+      expect(pauses(run.sleeps)).toHaveLength(12);
+      expect(hits.get('/en')).toBe(13);
+      expect(run.lines).toContain(
+        `FAIL /en holds build ${oldSha} after the 60 s SHA budget, expected ${newSha} or a newer main commit`
+      );
+      // The checks after it still run, each once.
+      expect(hits.get('/offline')).toBe(1);
+      expect(run.last).toBe(`smoke-prod: 1 of 12 checks failed on ${base}`);
+      expect(run.code).toBe(1);
+    });
+
+    it('shares the SHA budget between the pages', async () => {
+      replies = {
+        ...live(),
+        '/guide': (n) => (n <= 3 ? oldPage('/guide') : undefined),
+        '/en': () => oldPage('/en')
+      };
+      const run = await smoke(base, { script: trackedCopy(), args: [newSha] });
+      expect(hits.get('/guide')).toBe(4);
+      // The 9 new fetches left after /guide's 3.
+      expect(hits.get('/en')).toBe(10);
+      expect(refetches(run.lines)).toHaveLength(12);
+      expect(run.lines.find((line) => line.startsWith('FAIL '))).toStartWith(
+        `FAIL /en holds build ${oldSha} after the 60 s SHA budget`
+      );
+      expect(run.last).toBe(`smoke-prod: 1 of 12 checks failed on ${base}`);
+      expect(run.code).toBe(1);
+    });
+
+    // The run deadline comes 12 s after the start, before the 60 s budget
+    // would end, so each new fetch line counts the time left to it.
+    it('cuts the SHA budget at the run deadline', async () => {
+      replies = { ...live(), '/en': () => oldPage('/en') };
+      const [wait, checkTime] = [6, 6];
+      const run = await smoke(base, {
+        script: trackedCopy(),
+        args: [newSha],
+        wait: `${wait}`,
+        checkTime: `${checkTime}`
+      });
+      const left = refetches(run.lines).map((line) => Number(/(\d+) s of the SHA/.exec(line)?.[1]));
+      expect(left.length).toBeGreaterThan(0);
+      for (const seconds of left) expect(seconds).toBeLessThanOrEqual(wait + checkTime);
+      expect(run.code).toBe(1);
+    });
+
+    // The four pages of a repo whose commits the tests make: each holds sha.
+    const pagesOf = (sha: string) =>
+      Object.fromEntries(
+        ['/', '/guide', '/en', '/offline'].map((check) => [
+          check,
+          () => ({ ...production[check], body: page(sha) })
+        ])
+      );
+
+    it('passes a page that holds a newer main commit containing <sha> on its first fetch', async () => {
+      const copy = trackedCopy();
+      const [sha, newer] = commitTwice(copy);
+      replies = {
+        ...pagesOf(sha),
+        '/_app/version.json': () => version(sha),
+        '/guide': () => ({ ...production['/guide'], body: page(newer) })
+      };
+      const run = await smoke(base, { script: copy, args: [sha] });
+      expect(run.stderr).toBe('');
+      expect(refetches(run.lines)).toEqual([]);
+      expect(hits.get('/guide')).toBe(1);
+      expect(run.lines.find((line) => line.startsWith('PASS /guide '))).toContain(`build ${newer}`);
+      expect(run.last).toBe(`smoke-prod: 12 of 12 checks passed on ${base}`);
+      expect(run.code).toBe(0);
+    });
+
+    it('fetches again a page that holds a commit not containing <sha>', async () => {
+      const copy = trackedCopy();
+      const [older, sha] = commitTwice(copy);
+      replies = {
+        ...pagesOf(sha),
+        '/_app/version.json': () => version(sha),
+        '/guide': (n) => ({ ...production['/guide'], body: page(n === 1 ? older : sha) })
+      };
+      const run = await smoke(base, { script: copy, args: [sha] });
+      expect(refetches(run.lines)).toHaveLength(1);
+      expect(refetches(run.lines)[0]).toStartWith(`REFETCH /guide holds build ${older}, `);
+      expect(run.last).toBe(`smoke-prod: 12 of 12 checks passed on ${base}`);
+      expect(run.code).toBe(0);
+    });
+
+    it.each(['/', '/guide', '/en', '/offline'])(
+      'fails %s at once when it holds no build SHA',
+      async (check) => {
+        replies = { ...live(), [check]: () => ({ ...production[check], body: '<html></html>' }) };
+        const run = await smoke(base, { script: trackedCopy(), args: [newSha] });
+        expect(run.lines).toContain(`FAIL ${check} holds no build SHA (version: "<sha>")`);
+        expect(refetches(run.lines)).toEqual([]);
+        expect(pauses(run.sleeps)).toEqual([]);
+        expect(hits.get(check)).toBe(1);
+        expect(run.last).toBe(`smoke-prod: 1 of 12 checks failed on ${base}`);
+        expect(run.code).toBe(1);
+      }
+    );
+
+    // The old build's answer to / carries none of the headers, so the checks
+    // pass only on the later answer.
+    it('checks the headers of the answer to / that held <sha>', async () => {
+      replies = {
+        ...live(),
+        '/': (n) => (n === 1 ? { status: 200, headers: html, body: page(oldSha) } : undefined)
+      };
+      const run = await smoke(base, { script: trackedCopy(), args: [newSha] });
+      expect(refetches(run.lines)).toHaveLength(1);
+      expect(run.lines).toContain("PASS CSP has default-src 'self'");
+      expect(run.lines).toContain('PASS HSTS max-age=31536000; includeSubDomains');
+      expect(run.lines).toContain('PASS X-Frame-Options DENY');
+      expect(run.last).toBe(`smoke-prod: 12 of 12 checks passed on ${base}`);
+    });
+
+    // The new fetch gets no answer, and its retry 5 s later holds <sha>.
+    it('retries a new fetch that gets no answer', async () => {
+      replies = {
+        ...live(),
+        '/guide': (n) => (n === 1 ? oldPage('/guide') : n === 2 ? 'drop' : undefined)
+      };
+      const run = await smoke(base, { script: trackedCopy(), args: [newSha] });
+      expect(refetches(run.lines)).toHaveLength(1);
+      expect(run.retries).toHaveLength(1);
+      expect(run.retries[0]).toMatch(
+        /^RETRY \/guide got no answer \(curl: \(52\) [^)]+\), attempt 2 of 4 in 5 s$/
+      );
+      expect(hits.get('/guide')).toBe(3);
+      expect(run.last).toBe(`smoke-prod: 12 of 12 checks passed on ${base}`);
+      expect(run.code).toBe(0);
+    });
+
+    // A full answer with another status ends the new fetches at once.
+    it('fails a new fetch that answers 502 at once', async () => {
+      replies = {
+        ...live(),
+        '/guide': (n) => (n === 1 ? oldPage('/guide') : { status: 502, body: 'Bad Gateway' })
+      };
+      const run = await smoke(base, { script: trackedCopy(), args: [newSha] });
+      expect(refetches(run.lines)).toHaveLength(1);
+      expect(hits.get('/guide')).toBe(2);
+      expect(run.lines).toContain(
+        'FAIL /guide returned 502 with no Content-Type, expected 200 text/html*'
+      );
+      expect(run.last).toBe(`smoke-prod: 1 of 12 checks failed on ${base}`);
+      expect(run.code).toBe(1);
+    });
+  });
+
+  // Two newer merges go live: the first during the wait, the second while
+  // the checks run. Each is unknown to the checkout until a fetch of origin
+  // brings it, so the script fetches once for each. Origin is a local bare
+  // repo, and a second clone pushes each merge to it as the server first
+  // serves that merge. The real sleep lets each fetch end before its timer's
+  // TERM, which the fake one would send at once.
+  it('with a SHA, fetches origin again for a newer merge that goes live during the checks', async () => {
+    const copy = trackedCopy();
+    const [sha] = commitTwice(copy);
+    const origin = mkdtempSync(path.join(binDir, 'origin-'));
+    gitIn(origin, 'init', '-q', '--bare');
+    gitIn(repoOf(copy), 'remote', 'add', 'origin', origin);
+    gitIn(repoOf(copy), 'push', '-q', 'origin', `${sha}:refs/heads/main`);
+    const other = mkdtempSync(path.join(binDir, 'other-'));
+    gitIn(other, 'clone', '-q', '-b', 'main', origin, '.');
+    const [second, third] = [commitEmpty(other, 'second merge'), commitEmpty(other, 'third merge')];
+    // The checkout knows neither merge yet.
+    for (const commit of [second, third]) {
+      const known = Bun.spawnSync({
+        cmd: ['git', '-C', repoOf(copy), 'cat-file', '-e', `${commit}^{commit}`]
+      });
+      expect(known.exitCode).not.toBe(0);
+    }
+    const push = (commit: string) => gitIn(other, 'push', '-q', 'origin', `${commit}:main`);
+    replies = {
+      ...Object.fromEntries(
+        ['/guide', '/en', '/offline'].map((check) => [
+          check,
+          () => ({ ...production[check], body: page(third) })
+        ])
+      ),
+      '/_app/version.json': (n) => {
+        if (n === 1) push(second);
+        return version(second);
+      },
+      '/': (n) => {
+        if (n === 1) push(third);
+        return { ...production['/'], body: page(third) };
+      }
+    };
+    const run = await smoke(base, { script: copy, args: [sha], realSleep: true });
+    expect(run.stderr).toBe('');
+    expect(run.lines).toContain(`PASS /_app/version.json is ${second}`);
+    expect(run.lines.filter((line) => line.startsWith('REFETCH'))).toEqual([]);
+    expect(run.lines.find((line) => line.startsWith('PASS / '))).toContain(`build ${third}`);
+    expect(run.last).toBe(`smoke-prod: 12 of 12 checks passed on ${base}`);
+    expect(run.code).toBe(0);
+  }, 30_000);
+
+  it('without a SHA, reads no build SHA', async () => {
+    overrides = {
+      '/guide': { ...production['/guide'], body: page(oldSha) },
+      '/en': { ...production['/en'], body: '<html></html>' }
+    };
+    const run = await smoke();
+    expect(run.lines.filter((line) => line.startsWith('REFETCH'))).toEqual([]);
+    expect(run.lines.filter((line) => line.includes(' build '))).toEqual([]);
+    expect(hits.get('/guide')).toBe(1);
+    expect(run.last).toBe(allPassed);
+    expect(run.code).toBe(0);
+  });
 });

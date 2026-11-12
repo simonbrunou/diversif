@@ -18,7 +18,11 @@
 # file is not the scripts/smoke-prod.sh of a git checkout. 3: an older
 # commit still served after SMOKE_WAIT, so the checks did not run. A check
 # whose curl call fails (no answer, or one cut short) is retried up to 3
-# times, 5 s apart.
+# times, 5 s apart. Given a <sha>, each HTML page must also hold the
+# build SHA of <sha> or of a newer main commit that contains it. A page that
+# holds an older one, served by the old container while the swap ends, is
+# fetched again 5 s later, for up to 60 s from the moment <sha> went live,
+# shared by all pages and cut by the run deadline.
 # What each check expects, why, and what to run after exit 3:
 # docs/agents/deploy.md.
 set -uo pipefail
@@ -70,6 +74,19 @@ failed=0
 pass() { passed=$((passed + 1)); printf 'PASS %s\n' "$1"; }
 fail() { failed=$((failed + 1)); printf 'FAIL %s\n' "$1"; }
 late() { fail "$1 not run: the time budget ran out"; }
+
+# The SHA budget: once the wait has seen <sha> live, a page that an older
+# build still serves is fetched again every SHA_PAUSE seconds until SHA_TIME
+# seconds after that moment. It is one budget for all pages: 60 s is about
+# twice the 32 s that Coolify's logs show between the new container's start
+# and the old one's removal (#542). Each new fetch starts after a pause, so at
+# most SHA_TIME / SHA_PAUSE of them fit in the budget. The script counts them
+# too, so that a pause that takes no time (the tests' fake sleep) ends it all
+# the same.
+SHA_TIME=60
+SHA_PAUSE=5
+sha_end=''
+sha_pauses=$((SHA_TIME / SHA_PAUSE))
 
 # fetch <path> [<end>]: body to $TMP/body, headers to $TMP/headers, sets $code
 # and $ctype, and $got to a readable "<code> <content type>" for FAIL lines.
@@ -127,17 +144,69 @@ header() {
   grep -i "^$1:" "$TMP/headers" | head -n 1 | cut -d: -f2- | tr -d '\r' | sed 's/^ *//'
 }
 
-# expect <path> <status> [<content-type glob>]: fetch, then check both.
-expect() {
+# build: the SHA in the version: "<sha>" of SvelteKit's boot script in the
+# page fetched last, or nothing.
+build() {
+  sed -n 's/.*version: *"\([0-9a-f]*\)".*/\1/p' "$TMP/body" | head -n 1
+}
+
+# fetch_page <path>: fetch_retry <path>. Given a <sha>, while the answer is a
+# 200 page whose build is older than <sha>, fetch it again after SHA_PAUSE
+# seconds, within the SHA budget, through fetch_retry each time. Sets $held
+# to the page's build SHA, and $stale to why the page fails the SHA check, or
+# '' when it passes it or no <sha> was given.
+fetch_page() {
+  stale=''
+  held=''
   fetch_retry "$1"
+  [ -n "$SHA" ] || return
+  while [ "$code" = 200 ]; do
+    held="$(build)"
+    if [ -z "$held" ]; then
+      stale='holds no build SHA (version: "<sha>")'
+      return
+    fi
+    accepted "$held" && return
+    clock
+    if [ "$sha_pauses" -le 0 ] || [ $((now + SHA_PAUSE * 1000)) -gt "$sha_end" ]; then
+      stale="holds build $held after the ${SHA_TIME} s SHA budget, expected $SHA or a newer main commit"
+      return
+    fi
+    sha_pauses=$((sha_pauses - 1))
+    printf 'REFETCH %s holds build %s, again in %d s, %d s of the SHA budget left\n' \
+      "$1" "$held" "$SHA_PAUSE" $(((sha_end - now) / 1000))
+    sleep "$SHA_PAUSE"
+    fetch_retry "$1"
+  done
+}
+
+# judge <path> <status> [<content-type glob>]: check the answer fetch_retry
+# or fetch_page got.
+judge() {
   # shellcheck disable=SC2053 # $3 is a glob on purpose.
   if [ "$code" = late ]; then
     late "$1"
-  elif [ "$code" = "$2" ] && [[ "$ctype" == ${3:-*} ]]; then
-    pass "$1 $code ${ctype:-}"
-  else
+  elif ! { [ "$code" = "$2" ] && [[ "$ctype" == ${3:-*} ]]; }; then
     fail "$1 returned $got, expected $2 ${3:-}"
+  elif [ -n "${stale:-}" ]; then
+    fail "$1 $stale"
+  else
+    pass "$1 $code ${ctype:-}${held:+ build $held}"
   fi
+}
+
+# expect <path> <status> [<content-type glob>]: fetch, then check both.
+expect() {
+  stale=''
+  held=''
+  fetch_retry "$1"
+  judge "$@"
+}
+
+# expect_page <path>: fetch_page, then check for a 200 text/html page.
+expect_page() {
+  fetch_page "$1"
+  judge "$1" 200 'text/html*'
 }
 
 # Sets $live to the SHA /_app/version.json reports, or '' when unreadable.
@@ -195,16 +264,22 @@ fetch_origin() {
   return "$status"
 }
 
-# A newer merge can replace <sha> before the wait ends: a live commit that
-# contains <sha> counts as live too. Fetches origin once if $live is unknown.
-fetched=''
-contains_sha() {
-  [[ "$live" =~ ^[0-9a-f]{7,40}$ ]] || return 1
-  if ! git -C "$REPO" cat-file -e "$live^{commit}" 2>/dev/null && [ -z "$fetched" ]; then
-    fetched=1
+# accepted <commit>: whether <commit> is <sha>, or a newer main commit that
+# contains it. A newer merge can replace <sha> before the wait ends, or while
+# the checks run. A <commit> that starts with <sha> counts, as <sha> stays a
+# prefix when the fetch of origin failed. Fetches origin the first time each
+# unknown <commit> comes up: a merge seen during the wait and a newer one seen
+# during the checks each need their own fetch. An old build's commit that
+# stays unknown after its fetch costs no other one.
+fetched=' '
+accepted() {
+  [[ "$1" =~ ^[0-9a-f]{7,40}$ ]] || return 1
+  case "$1" in "$SHA"*) return 0 ;; esac
+  if ! git -C "$REPO" cat-file -e "$1^{commit}" 2>/dev/null && [[ "$fetched" != *" $1 "* ]]; then
+    fetched="$fetched$1 "
     fetch_origin
   fi
-  git -C "$REPO" merge-base --is-ancestor "$SHA" "$live" 2>/dev/null
+  git -C "$REPO" merge-base --is-ancestor "$SHA" "$1" 2>/dev/null
 }
 
 # on_main: the full SHA of <sha> when origin/main contains it, else nothing.
@@ -241,8 +316,7 @@ if [ -n "$SHA" ]; then
   last_live=''
   while :; do
     read_live
-    case "$live" in "$SHA"*) [ -n "$live" ] && break ;; esac
-    contains_sha && break
+    accepted "$live" && break
     [ -z "$live" ] || last_live="$live"
     # Sleep 15 s between polls, or less so that the last poll still gets 1 s
     # before the wait ends. With no time left for one, the wait is over.
@@ -268,9 +342,12 @@ if [ -n "$SHA" ]; then
     if [ "$pause" -ge 15000 ]; then sleep 15; else sleep "$(secs "$pause")"; fi
   done
   pass "/_app/version.json is $live"
+  clock
+  sha_end=$((now + SHA_TIME * 1000))
+  [ "$sha_end" -le "$run_end" ] || sha_end=$run_end
 fi
 
-expect / 200 'text/html*'
+expect_page /
 if [ "$code" = late ]; then
   # These read the headers of the answer to /, which was never asked for.
   late CSP
@@ -285,8 +362,8 @@ else
   if [ "$xfo" = DENY ]; then pass "X-Frame-Options DENY"; else fail "X-Frame-Options is '${xfo}'"; fi
 fi
 
-expect /guide 200 'text/html*'
-expect /en 200 'text/html*'
+expect_page /guide
+expect_page /en
 expect /_app/env.js 200 '*javascript*'
 expect /service-worker.js 200 '*javascript*'
 expect /sw.js 404
@@ -301,13 +378,15 @@ else
 fi
 
 # Served with no Content-Type today; text/html is fine too.
-fetch_retry /offline
+fetch_page /offline
 if [ "$code" = late ]; then
   late /offline
-elif [ "$code" = 200 ] && grep -qi '<html' "$TMP/body" && [[ -z "$ctype" || "$ctype" == text/html* ]]; then
-  pass "/offline 200 HTML (Content-Type: ${ctype:-none})"
-else
+elif ! { [ "$code" = 200 ] && grep -qi '<html' "$TMP/body" && [[ -z "$ctype" || "$ctype" == text/html* ]]; }; then
   fail "/offline returned $got, expected 200 HTML"
+elif [ -n "$stale" ]; then
+  fail "/offline $stale"
+else
+  pass "/offline 200 HTML (Content-Type: ${ctype:-none})${held:+ build $held}"
 fi
 
 total=$((passed + failed))
