@@ -7,7 +7,7 @@
 # snapshotted/cached — so the pieces that aren't committed to the repo are
 # present at launch:
 #   - the curated standalone skills (via scripts/claude-setup.sh)
-#   - the gh CLI (used by the code-review-on-push hook; not in the cloud image)
+#   - the gh CLI (not in the cloud image)
 #
 # Requires the environment's network access set to Trusted/Custom (to reach
 # GitHub for skills + gh). Prereqs already in the cloud image: git, jq, python3.
@@ -22,13 +22,13 @@ if ! command -v gh >/dev/null 2>&1; then
   if command -v apt-get >/dev/null 2>&1; then
     { sudo apt-get update -y && sudo apt-get install -y gh; } >/dev/null 2>&1 \
       || apt-get install -y gh >/dev/null 2>&1 \
-      || echo "[cloud-setup] could not apt-install gh — the push->/code-review hook will simply no-op without it"
+      || echo "[cloud-setup] could not apt-install gh — install it manually if you need it"
   else
-    echo "[cloud-setup] no apt-get found; install gh manually if you want the push->/code-review hook"
+    echo "[cloud-setup] no apt-get found; install gh manually if you need it"
   fi
 fi
 
 # The external 'graphify' CLI has no public installer here; install it yourself
 # if you want /graphify queries in the cloud. The committed graphify-out/ is
-# readable regardless, so the graphify search-nudge hook keeps working.
+# readable without it.
 echo "[cloud-setup] done. (Install the graphify CLI separately if you want /graphify.)"
