@@ -1,4 +1,15 @@
 <!-- src/lib/components/bento/StatTiles.svelte -->
+<script lang="ts" module>
+  // Nothing logged yet means there is nothing to report. Two tiles reading
+  // "0" and "0 jours" are the pretend-stats the product brief rules out, and
+  // the welcome reminder plus the feed's own empty state already tell a fresh
+  // parent what to do — three voices saying "you have no data" is two too many.
+  // AujourdhuiBento reads the same test to place its destinations (#737).
+  export function statTilesRender(foodsIntroduced: number): boolean {
+    return foodsIntroduced > 0;
+  }
+</script>
+
 <script lang="ts">
   import Card from '#lib/components/ui/Card.svelte';
   import * as m from '#lib/paraglide/messages.js';
@@ -16,11 +27,7 @@
     streakRecord: number;
   } = $props();
 
-  // Nothing logged yet means there is nothing to report. Two tiles reading
-  // "0" and "0 jours" are the pretend-stats the product brief rules out, and
-  // the welcome reminder plus the feed's own empty state already tell a fresh
-  // parent what to do — three voices saying "you have no data" is two too many.
-  const hasData = $derived(foodsIntroduced > 0);
+  const hasData = $derived(statTilesRender(foodsIntroduced));
 
   const streakUnit = $derived(
     streakCurrent === 1 ? m.aujourdhuiBilanStreakUnitOne() : m.aujourdhuiBilanStreakUnitOther()

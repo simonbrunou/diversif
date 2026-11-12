@@ -93,3 +93,82 @@ test('the lg tray leaves no band under the allergen strip or the stat tiles', as
     expect(new Set(boxes.map((box) => Math.round(box.left))).size).toBe(1);
   });
 });
+
+/**
+ * #737: the stat tiles render nothing until the first food is logged. From lg
+ * the destinations then take the stat tiles' cell, column one rows 2 and 3,
+ * beside the allergen strip, instead of starting under the strip's row with a
+ * blank column one above them (152px in French on main).
+ */
+test('the lg tray puts the destinations beside the allergen strip when nothing is logged', async ({
+  page
+}) => {
+  const childId = await signUpAndCreateChild(page, 'Maël', birthDateMonthsAgo(7));
+  await dismissWelcomeIfPresent(page);
+  // The seed state: nothing logged, so the stat tiles render nothing.
+  expect(await page.getByRole('article', { name: 'Aliments', exact: true }).count()).toBe(0);
+
+  const french = trayModules(page);
+  async function expectBesideTheStrip(modules: Omit<ReturnType<typeof trayModules>, 'stats'>) {
+    const [allergens, feed, nav] = await Promise.all(
+      [modules.allergens, modules.feed, modules.nav].map(measure)
+    );
+    expect(nav.right, 'destinations in column one').toBeLessThan(allergens.left);
+    expect(
+      Math.abs(nav.top - allergens.top),
+      'destinations top against the allergen strip top'
+    ).toBeLessThanOrEqual(1);
+    expect(
+      Math.round(feed.top - allergens.bottom),
+      'gap between the allergen strip and the feed'
+    ).toBe(allergens.marginBottom);
+    return { allergens, nav };
+  }
+
+  for (const width of [1024, 1280, 1440]) {
+    await test.step(`${width}px`, async () => {
+      await page.setViewportSize({ width, height: 900 });
+      await expectBesideTheStrip(french);
+    });
+  }
+
+  await test.step('destinations taller than the strip leave the feed in place', async () => {
+    // Placed in row 2 alone, destinations taller than the strip grow that row
+    // and push the feed down (60px with 200px destinations, in the triage
+    // probe). Spanning rows 2 and 3, their extra height goes to row 3, which
+    // starts where the feed does.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await french.nav.evaluate((el) => {
+      (el as HTMLElement).style.minHeight = '200px';
+    });
+    const { allergens, nav } = await expectBesideTheStrip(french);
+    expect(nav.bottom - nav.top, 'destinations taller than the strip').toBeGreaterThan(
+      allergens.bottom + allergens.marginBottom - allergens.top
+    );
+    await french.nav.evaluate((el) => {
+      (el as HTMLElement).style.minHeight = '';
+    });
+  });
+
+  await test.step('nothing covers the moved destinations', async () => {
+    await french.nav.getByRole('link', { name: 'Menu du jour', exact: true }).click();
+    await expect(page).toHaveURL(`/child/${childId}/menu`);
+    await expect(page.getByRole('heading', { name: 'Menu du jour', exact: true })).toBeVisible();
+  });
+
+  // Last, so that the English locale cannot carry over to a French step.
+  await test.step('English, where the destinations are taller than the strip', async () => {
+    await page.goto(`/en/child/${childId}`);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const { allergens, nav } = await expectBesideTheStrip({
+      allergens: page.getByRole('region', { name: 'Allergen tracking', exact: true }),
+      feed: page
+        .locator('section')
+        .filter({ has: page.getByRole('heading', { name: 'Latest meals', exact: true }) }),
+      nav: page.getByRole('navigation', { name: 'Shortcuts', exact: true })
+    });
+    expect(nav.bottom - nav.top, 'destinations taller than the strip').toBeGreaterThan(
+      allergens.bottom - allergens.top
+    );
+  });
+});
