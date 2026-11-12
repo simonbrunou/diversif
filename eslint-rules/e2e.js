@@ -164,7 +164,7 @@ const exactLocator = {
     schema: [],
     messages: {
       substring:
-        '{{risk}}, ignoring case ({{issue}}). Pass { exact: true }, or a regex for a pattern, or disable this rule on the line with the reason the test needs a substring.'
+        '{{risk}}, ignoring case ({{issue}}). Pass { exact: true }, or a regex literal for a pattern, or disable this rule on the line with the reason the test needs a substring. A RegExp the rule cannot read (a variable, new RegExp()) takes { exact: true }, which Playwright ignores for a regex.'
     }
   },
   create(context) {
