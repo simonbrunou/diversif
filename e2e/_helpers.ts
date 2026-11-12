@@ -208,8 +208,7 @@ export async function logRepas(
   for (const name of aliments) {
     await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill(name);
     await page
-      // eslint-disable-next-line e2e/exact-locator -- a RegExp, which the rule cannot tell from a string: the result's name goes on with the food's category
-      .getByRole('button', { name: new RegExp(`^${name}`) })
+      .getByRole('button', { name: new RegExp(`^${name}`), exact: true })
       .first()
       .click();
   }

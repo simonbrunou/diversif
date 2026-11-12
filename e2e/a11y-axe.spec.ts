@@ -143,8 +143,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
   ): Promise<void> {
     await page.goto(`/child/${childId}/log`);
     await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill(query);
-    // eslint-disable-next-line e2e/exact-locator -- `result` is a RegExp, which the rule cannot tell from a string
-    await page.getByRole('button', { name: result }).first().click();
+    await page.getByRole('button', { name: result, exact: true }).first().click();
     await page.locator('fieldset').getByText('Réaction marquée', { exact: true }).click();
     await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);

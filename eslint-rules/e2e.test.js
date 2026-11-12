@@ -30,8 +30,12 @@ const textValid = (m) => [
   `page.${m}(/a/i);`,
   `page.${m}('a', { 'exact': true });`,
   `page.${m}('a', { [\`exact\`]: true });`,
+  `page.${m}('a', { ['exact']: true });`,
   `page.${m}('a', { ...options, exact: true });`,
   `page.${m}('a', { exact: false, exact: true });`,
+  `page.${m}('a', { exact: true, name: 'b' });`,
+  `page.${m}('a', { exact: true as const });`,
+  `${m}('a');`,
   `page['${m}']('a', { exact: true });`,
   `page[\`${m}\`]('a', { exact: true });`,
   `page?.${m}('a', { exact: true });`,
@@ -41,6 +45,9 @@ const textValid = (m) => [
   `page.${m}(/a/ as RegExp);`,
   `page.${m}(...['a', { exact: true }]);`,
   `page.${m}(...['a'], { exact: true });`,
+  `page.${m}(...[...['a']], { exact: true });`,
+  `page.${m}(...[/a/]);`,
+  `page.${m}(/a/, ...rest);`,
   `page.${m}('a', { exact: true }, ...rest);`,
   `page.locator('form').${m}('a', { exact: true }).click();`
 ];
@@ -55,11 +62,22 @@ const textInvalid = (m) => [
   { code: `page.${m}('a', {});`, errors: substring(6) },
   { code: `page.${m}('a', { exact: true, ...options });`, errors: substring(6) },
   { code: `page.${m}('a', { exact: true, [key]: false });`, errors: substring(6) },
+  { code: `page.${m}('a', { exact: 'true' });`, errors: substring(6) },
+  { code: `page.${m}('a', { exact: !0 });`, errors: substring(6) },
+  { code: `page.${m}('a', { exact: true, exact: false });`, errors: substring(6) },
+  { code: `page.${m}('a', { [exact]: true });`, errors: substring(6) },
+  { code: `page.${m}('a', { get exact() { return true; } });`, errors: substring(6) },
   { code: `page.${m}('a', { exact: false } as const);`, errors: substring(6) },
+  { code: `page.${m}('a', { exact: false as true });`, errors: substring(6) },
   { code: `page.${m}(new RegExp(a));`, errors: substring(6) },
+  { code: `page.${m}(f('a', { exact: true }));`, errors: substring(6) },
   { code: `page.${m}(...args);`, errors: substring(6) },
   { code: `page.${m}('a', ...rest);`, errors: substring(6) },
   { code: `page.${m}(...['a', { exact: false }], { exact: true });`, errors: substring(6) },
+  { code: `page.${m}(...['a'], ...rest);`, errors: substring(6) },
+  { code: `page.${m}(...[...args], { exact: true });`, errors: substring(6) },
+  { code: `page.${m}(...[...args, 'a'], { exact: true });`, errors: substring(6) },
+  { code: `page.${m}(...[, 'a'], { exact: true });`, errors: substring(6) },
   { code: `page['${m}']('a');`, errors: substring(6) },
   { code: `page[\`${m}\`]('a');`, errors: substring(6) },
   { code: `page?.${m}('a');`, errors: substring(7) },
@@ -68,7 +86,11 @@ const textInvalid = (m) => [
   { code: `(page.${m} as typeof page.${m})('a');`, errors: substring(7) },
   // The options of a call earlier in the chain are not this call's.
   last(`page.${m}('a', { exact: true }).${m}('b');`),
-  last(`page.getByRole('dialog', { name: 'a', exact: true }).${m}('b');`)
+  last(`page.getByRole('dialog', { name: 'a', exact: true }).${m}('b');`),
+  {
+    code: `page\n  .locator('main')\n  .${m}('a');`,
+    errors: [{ messageId: 'substring', line: 3, column: 4 }]
+  }
 ];
 
 /**
@@ -138,6 +160,9 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       "page.getByRole('button', { name: 'a', ...options, exact: true });",
       "page.getByRole('button', { [key]: 'a', exact: true });",
       "page.getByRole('button', { name: 'a', exact: true } as const);",
+      "page.getByRole('button', { name: 'a', exact: true } satisfies { exact: boolean });",
+      "page.getByRole('button', { name: 'a', exact: true as const });",
+      "page.getByRole('button', { name: new RegExp(`^${a}`), exact: true });",
       "page.getByRole('button', { name: 'a', exact: true }, ...rest);",
       "page.getByRole(...['button', { name: 'a', exact: true }]);",
       "page['getByRole']('button', { name: 'a', exact: true });",
@@ -209,6 +234,12 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       },
       { code: "page.getByRole('button', { name: /a/, name: 'b' });", errors: substring(6) },
       { code: "page.getByRole('button', { name: 'a' } as const);", errors: substring(6) },
+      { code: "page.getByRole('button', { name: 'a', exact: !0 });", errors: substring(6) },
+      { code: "page.getByRole('button', { name: 'a', [exact]: true });", errors: substring(6) },
+      {
+        code: "page.getByRole('button', { name: 'a', exact: false as true });",
+        errors: substring(6)
+      },
       // A regex role is no regex name.
       { code: "page.getByRole(/button/, { name: 'a' });", errors: substring(6) },
       {
@@ -224,6 +255,12 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       { code: "page.getByRole('button', ...rest);", errors: substring(6) },
       { code: "page.getByRole('button', { name: 'a' }, ...rest);", errors: substring(6) },
       { code: 'page.getByRole(...args);', errors: substring(6) },
+      { code: "page.getByRole(...[...args, 'button']);", errors: substring(6) },
+      { code: "page.getByRole(...[, { name: 'a' }]);", errors: substring(6) },
+      {
+        code: "page\n  .locator('main')\n  .getByRole('button', { name: 'a' });",
+        errors: [{ messageId: 'substring', line: 3, column: 4 }]
+      },
       { code: "page.getByRole(...['button'], ...rest);", errors: substring(6) },
       {
         code: "page.getByRole(...['button', { name: 'a' }], { name: 'b', exact: true });",
