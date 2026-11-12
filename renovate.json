@@ -14,14 +14,8 @@
   },
   "packageRules": [
     {
-      "description": "Auto-merge low-risk updates once CI passes",
-      "matchUpdateTypes": ["patch", "pin", "digest", "lockFileMaintenance"],
-      "automerge": true
-    },
-    {
-      "description": "Auto-merge devDependency minor bumps once CI passes",
-      "matchDepTypes": ["devDependencies"],
-      "matchUpdateTypes": ["minor"],
+      "description": "Auto-merge pin, digest and lockFileMaintenance updates once CI passes. The weekly group:allNonMajor rule below auto-merges every minor and patch update (#544).",
+      "matchUpdateTypes": ["pin", "digest", "lockFileMaintenance"],
       "automerge": true
     },
     {
