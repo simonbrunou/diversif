@@ -681,14 +681,14 @@ describe('block-e2e-start-without-slot', () => {
 
   // Long commands with no start command. Python's re searches each to its
   // end, so a check that read on past a list end, a || or a negated slot
-  // call, or a negation that read past a list end or a !, would take time
-  // that grows with the square of the length or faster. As for the cases
-  // above, the bound is the hook's own 10 s limit, and a hook stopped there
-  // gives no answer, which fails the test. The hook answers on each item
-  // count and on four times it, where the rule's search takes 0.12 s or
-  // less. Each such check ran past 10 s: six on the item count already,
-  // and a negation that read past each ! took 8 to 20 s there and 137 s on
-  // four times the ! x items.
+  // call, or a negation that read past a !, would take time that grows
+  // with the square of the length or faster. As for the cases above, the
+  // bound is the hook's own 10 s limit, and a hook stopped there gives no
+  // answer, which fails the test. The hook answers on each item count and
+  // on four times it, where the rule's search takes under 0.2 s. Each such
+  // check ran past 10 s: six on the item count already, and a negation
+  // that read past each ! took 8 to 20 s there and over 130 s on four
+  // times the ! x items.
   it.each([
     ['x || ', 'x || ', 10_000],
     ['! scripts/wait-e2e-slot.sh && ', '! scripts/wait-e2e-slot.sh && ', 5_000],
