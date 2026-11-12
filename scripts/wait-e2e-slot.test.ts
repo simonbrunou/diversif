@@ -6,11 +6,21 @@
 // a single poll: exit 3 when it reads busy, exit 0 when it takes the slot.
 // The tests write stale stamps back-dated instead of waiting them out.
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const scriptPath = path.resolve(import.meta.dir, 'wait-e2e-slot.sh');
+const neededPath = path.resolve(import.meta.dir, 'e2e-needed.sh');
 const JOB = 'End-to-end tests (Playwright)';
 // The script's stale bound for a waiter's last poll.
 const WAITER_TTL = 120;
@@ -29,11 +39,23 @@ let refuse = false;
 let onRunList: (() => void) | null = null;
 // Per test: the runs the forge lists after run 7, each with its jobs.
 let others: { run: Record<string, unknown>; jobs: unknown[] }[] = [];
+// Per test: the forge's answer to `pulls/main/<branch>`, the docs-only
+// check's PR lookup (a status, or 'drop' to close the connection with no
+// reply), and each such request as the forge got it, headers included.
+let pullStatus: number | 'drop' = 404;
+let pullRequests: string[] = [];
 
 // The answer to one request path, query string left out: the run list (the
-// script's first probe asks for it too) or a run's jobs.
-function answer(requestPath: string): { status: number; body: string } {
+// script's first probe asks for it too), a run's jobs, or a PR lookup. null
+// closes the connection with no reply.
+function answer(requestPath: string, request: string): { status: number; body: string } | null {
   if (refuse) return { status: 401, body: '' };
+  if (requestPath.includes('/pulls/')) {
+    pullRequests.push(request);
+    if (pullStatus === 'drop') return null;
+    const pull = pullStatus === 200 ? JSON.stringify({ number: 742, state: 'closed' }) : '';
+    return { status: pullStatus, body: pull };
+  }
   if (requestPath.endsWith('/actions/runs')) {
     onRunList?.();
     const runs: Record<string, unknown>[] = busy
@@ -84,7 +106,12 @@ const server = Bun.listen<{ request: string }>({
     data(socket, chunk) {
       socket.data.request += chunk.toString();
       if (!socket.data.request.includes('\r\n\r\n')) return;
-      const { status, body } = answer(socket.data.request.split(' ')[1].split('?')[0]);
+      const reply = answer(socket.data.request.split(' ')[1].split('?')[0], socket.data.request);
+      if (!reply) {
+        socket.end();
+        return;
+      }
+      const { status, body } = reply;
       socket.end(
         [
           `HTTP/1.1 ${status} X`,
@@ -156,6 +183,8 @@ beforeEach(() => {
   refuse = false;
   onRunList = null;
   others = [];
+  pullStatus = 404;
+  pullRequests = [];
   rmSync(claimDir, { recursive: true, force: true });
   mkdirSync(claimDir);
 });
@@ -224,6 +253,47 @@ const ahead = (w: Waiter, joined?: number) =>
     }$`,
     'm'
   );
+
+// A branch name with every character class the docs-only check accepts:
+// lower and upper case letters, digits, '.', '_', '/' and '-'.
+const BRANCH = 'docs/Retro-681_v2.x';
+const DOCS_ONLY_LINE =
+  /^wait-e2e-slot: clear at \d\d:\d\d:\d\d: the branch changes only Markdown files and docs\/ and has no PR yet, so its PR's E2E job will run no Playwright test$/m;
+
+function git(repo: string, ...args: string[]): string {
+  const run = Bun.spawnSync({
+    cmd: ['git', '-C', repo, '-c', 'user.name=t', '-c', 'user.email=t@t.invalid']
+      .concat(['-c', 'commit.gpgsign=false'])
+      .concat(args)
+  });
+  expect(run.stderr.toString()).toBe('');
+  expect(run.exitCode).toBe(0);
+  return run.stdout.toString().trim();
+}
+
+// A waiter on a branch whose one commit adds `file`, with its origin/main
+// and origin/<branch> refs, as after a push of the branch, and a copy of
+// scripts/e2e-needed.sh, which the docs-only check runs. Each call makes a
+// repo of its own.
+let docsRepos = 0;
+function docsWaiter({ branch = BRANCH, file = 'docs/notes.md' } = {}): Waiter & { repo: string } {
+  const w = waiter(`docs-${++docsRepos}`);
+  const repo = path.dirname(path.dirname(w.script));
+  const needed = path.join(repo, 'scripts', 'e2e-needed.sh');
+  copyFileSync(neededPath, needed);
+  chmodSync(needed, 0o755);
+  git(repo, 'symbolic-ref', 'HEAD', 'refs/heads/main');
+  git(repo, 'add', '.');
+  git(repo, 'commit', '-q', '-m', 'base');
+  git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
+  git(repo, 'checkout', '-q', '-b', branch);
+  mkdirSync(path.dirname(path.join(repo, file)), { recursive: true });
+  writeFileSync(path.join(repo, file), 'a change\n');
+  git(repo, 'add', '.');
+  git(repo, 'commit', '-q', '-m', 'change');
+  git(repo, 'update-ref', `refs/remotes/origin/${branch}`, 'HEAD');
+  return { ...w, repo };
+}
 
 describe('scripts/wait-e2e-slot.sh', () => {
   it(
@@ -475,6 +545,130 @@ describe('scripts/wait-e2e-slot.sh', () => {
       const run = await call(a);
       expect(run.stdout).toMatch(/^run 7 #41 another PR: E2E running$/m);
       expect(run.stdout).not.toContain('run 8');
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+});
+
+// A branch that changes only Markdown files and docs/, is pushed and never
+// had a PR into main clears at once (#681 retro): opening its PR starts a
+// run whose E2E job is skipped. Each other case waits as before, here behind
+// run 7.
+describe('scripts/wait-e2e-slot.sh before the first PR of a docs-only branch', () => {
+  it(
+    'clears at once while another E2E job runs, claims nothing and leaves the queue',
+    async () => {
+      busy = true;
+      const w = docsWaiter();
+      const t = now();
+      writeFileSync(queueFile, `${t - 60} ${t} ${b.id}\n${t - 30} ${t} ${w.id}\n`);
+      const run = await call(w);
+      expect(run.stdout).toMatch(DOCS_ONLY_LINE);
+      expect(run.stdout).not.toContain('run 7');
+      expect(run.code).toBe(0);
+      expect(existsSync(claim)).toBe(false);
+      expect(queue().map((line) => line.who)).toEqual([b.id]);
+      expect(pullRequests).toHaveLength(1);
+      expect(pullRequests[0]).toStartWith(
+        `GET /api/v1/repos/simonbrunou/diversif/pulls/main/${BRANCH} HTTP/1.1\r\n`
+      );
+      expect(pullRequests[0]).toContain('\r\nAuthorization: token fake\r\n');
+    },
+    TIMEOUT
+  );
+
+  it.each([
+    ['a PR, closed', 200],
+    ['a 401', 401],
+    ['a 500', 500],
+    ['no reply', 'drop' as const]
+  ])(
+    'waits when the PR lookup answers %s',
+    async (_, status) => {
+      busy = true;
+      pullStatus = status;
+      const w = docsWaiter();
+      const run = await call(w);
+      expect(pullRequests).toHaveLength(1);
+      expect(run.stdout).not.toMatch(DOCS_ONLY_LINE);
+      expect(run.stdout).toContain('run 7 #41 another PR: E2E running');
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'waits when an <own sha> argument names the branch head',
+    async () => {
+      busy = true;
+      const w = docsWaiter();
+      const run = await call(w, [git(w.repo, 'rev-parse', 'HEAD')]);
+      expect(run.stdout).not.toMatch(DOCS_ONLY_LINE);
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'waits on a docs commit not pushed yet',
+    async () => {
+      busy = true;
+      const w = docsWaiter();
+      writeFileSync(path.join(w.repo, 'docs', 'more.md'), 'more\n');
+      git(w.repo, 'add', '.');
+      git(w.repo, 'commit', '-q', '-m', 'not pushed');
+      const run = await call(w);
+      expect(run.stdout).not.toMatch(DOCS_ONLY_LINE);
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'waits for a branch that changes a file outside docs/ and *.md',
+    async () => {
+      busy = true;
+      const run = await call(docsWaiter({ file: 'src/probe.ts' }));
+      expect(run.stdout).not.toMatch(DOCS_ONLY_LINE);
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'waits when the checkout has no scripts/e2e-needed.sh',
+    async () => {
+      busy = true;
+      const w = docsWaiter();
+      rmSync(path.join(w.repo, 'scripts', 'e2e-needed.sh'));
+      const run = await call(w);
+      expect(run.stdout).not.toMatch(DOCS_ONLY_LINE);
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'waits for a branch name with a character outside [A-Za-z0-9._/-]',
+    async () => {
+      busy = true;
+      const run = await call(docsWaiter({ branch: 'docs/retro#681' }));
+      expect(pullRequests).toEqual([]);
+      expect(run.stdout).not.toMatch(DOCS_ONLY_LINE);
+      expect(run.code).toBe(3);
+    },
+    TIMEOUT
+  );
+
+  it(
+    'waits on a detached HEAD',
+    async () => {
+      busy = true;
+      const w = docsWaiter();
+      git(w.repo, 'checkout', '-q', '--detach');
+      const run = await call(w);
+      expect(run.stdout).not.toMatch(DOCS_ONLY_LINE);
       expect(run.code).toBe(3);
     },
     TIMEOUT
