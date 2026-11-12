@@ -18,4 +18,5 @@ missing from one locale without a warning: a key missing from `en.json` shows
 the French text, and one missing from `fr.json` shows the key name.
 `scripts/check-i18n-parity.ts`, which `bun run lint:i18n` runs, replaces both
 rules (#723): it fails on a key one locale lacks, a `{placeholder}` one
-locale's value lacks, and an empty or whitespace-only value.
+locale's value lacks, an empty or whitespace-only value, a value that is not a
+string, and a `{` or `}` outside a `{letters}` placeholder.
