@@ -107,3 +107,34 @@ export const loadRuleFiles = (files: string[]) => callHook('load_rule_file', fil
 // Each pattern as the hook compiles it (its compile_regex()); throws on a
 // pattern Python cannot compile, which the hook would skip in silence.
 export const compilePatterns = (patterns: string[]) => callHook('compile_regex', patterns);
+
+// The seconds the hook's compiled pattern (its compile_regex()) takes to
+// search each text, timed inside one Python process, so that neither its
+// start-up nor the compile counts.
+const TIMER = `
+import importlib.util, json, sys, time
+spec = importlib.util.spec_from_file_location("hook", sys.argv[1])
+hook = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(hook)
+regex = hook.compile_regex(sys.argv[2])
+out = []
+for text in json.load(sys.stdin):
+    start = time.perf_counter()
+    regex.search(text)
+    out.append(time.perf_counter() - start)
+print(json.dumps(out))
+`;
+
+export function searchSeconds(pattern: string, texts: string[]): number[] {
+  const run = Bun.spawnSync([PYTHON, '-I', '-B', '-c', TIMER, HOOK, pattern], {
+    stdin: Buffer.from(JSON.stringify(texts)),
+    timeout: 60_000
+  });
+  const stderr = run.stderr.toString();
+  if (run.exitCode !== 0 || stderr) {
+    throw new Error(
+      `hook.py search timer exited ${run.exitCode} (${run.signalCode ?? 'no signal'}): ${stderr}`
+    );
+  }
+  return JSON.parse(run.stdout.toString());
+}
