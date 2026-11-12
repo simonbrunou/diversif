@@ -17,10 +17,10 @@ const passwordSchema = z.object({
     .min(PASSWORD_MIN_LENGTH, `Mot de passe trop court (${PASSWORD_MIN_LENGTH} caractères minimum)`)
 });
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load = (async ({ locals }) => {
   requireUser(locals);
   return {};
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   default: async (event) => {

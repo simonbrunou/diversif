@@ -10,7 +10,7 @@ import { buildMenu } from '#lib/server/menu/engine.js';
 import { parisDayOf, weekdayOf } from '#lib/utils/civil-calendar.js';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent, locals }) => {
+export const load = (async ({ params, parent, locals }) => {
   const { childId } = requireChildContext(locals, params);
   const { child } = await parent();
   // One instant for the whole page: the age, the allergen history and the day.
@@ -71,4 +71,4 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
   });
 
   return { ageMonths, menu };
-};
+}) satisfies PageServerLoad;

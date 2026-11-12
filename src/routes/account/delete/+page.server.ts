@@ -7,10 +7,10 @@ import { requireFreshAuth } from '#lib/server/fresh-auth.js';
 import { matchesAccountEmail } from '#lib/utils/account-email.js';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load = (async ({ locals }) => {
   requireUser(locals);
   return {};
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   default: async (event) => {

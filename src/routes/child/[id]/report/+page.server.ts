@@ -121,7 +121,7 @@ function computeTextureDistribution(
   return { counts, totalWithTexture };
 }
 
-export const load: PageServerLoad = async ({ parent, locals, params }) => {
+export const load = (async ({ parent, locals, params }) => {
   // In-file membership guard, consistent with the sibling child routes
   // (foods/log/suggestions/settings all guard in their own load). childId comes
   // straight from the guard so this call is load-bearing — not removable
@@ -204,4 +204,4 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
     allergens,
     notable
   };
-};
+}) satisfies PageServerLoad;

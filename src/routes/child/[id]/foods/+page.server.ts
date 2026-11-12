@@ -143,7 +143,7 @@ async function loadTiles(
 // this window is still found and counted correctly.
 const MAX_RENDERED_ENTRIES = 200;
 
-export const load: PageServerLoad = async ({ params, url, locals }) => {
+export const load = (async ({ params, url, locals }) => {
   const { childId } = requireChildContext(locals, params);
 
   const q = url.searchParams.get('q')?.trim() ?? '';
@@ -225,4 +225,4 @@ export const load: PageServerLoad = async ({ params, url, locals }) => {
     categoryCount,
     ...(await loadTiles(childId, now, history?.allergens))
   };
-};
+}) satisfies PageServerLoad;

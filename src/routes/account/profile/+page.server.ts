@@ -11,10 +11,10 @@ const profileSchema = z.object({
   displayName: z.string().trim().min(1).max(80)
 });
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load = (async ({ locals }) => {
   requireUser(locals);
   return {};
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   default: async ({ request, locals }) => {

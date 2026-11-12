@@ -59,10 +59,10 @@ function safeNextPath(url: URL): string {
   return next !== null && NEXT_PATH_RE.test(next) ? next : '/';
 }
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load = (async ({ locals }) => {
   requireGuest(locals);
   return {};
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   default: async (event) => {

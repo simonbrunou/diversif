@@ -8,7 +8,7 @@ import { loadVisibleFoodsForChild } from '#lib/server/food-resolution.js';
 import { logRepas, queuedByOther } from '#lib/server/repas/index.js';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load = (async ({ locals, params }) => {
   const { childId } = requireChildContext(locals, params);
 
   const list = await loadVisibleFoodsForChild(childId);
@@ -37,7 +37,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     introducedFoodIds: introduced.map((r) => r.foodId),
     preparedMeals: savedPreparedMeals
   };
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   // The offline-queue replay (src/lib/offline/queue.ts) posts here too.

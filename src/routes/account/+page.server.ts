@@ -8,7 +8,7 @@ import type { PageServerLoad } from './$types';
 
 const VALID_THEMES = new Set(['system', 'light', 'dark'] as const);
 
-export const load: PageServerLoad = async ({ locals, cookies }) => {
+export const load = (async ({ locals, cookies }) => {
   const user = requireUser(locals);
   const passkeys = (await listPasskeys(user.id)).map(publicPasskey);
 
@@ -74,4 +74,4 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
     locale,
     theme
   };
-};
+}) satisfies PageServerLoad;

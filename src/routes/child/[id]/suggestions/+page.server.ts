@@ -7,7 +7,7 @@ import { requireChildContext } from '#lib/server/guards.js';
 import { loadAllergenHistory } from '#lib/server/guidance/allergen-history.js';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent, locals }) => {
+export const load = (async ({ params, parent, locals }) => {
   const { childId } = requireChildContext(locals, params);
   const { child } = await parent();
   // One instant for the whole page: the age and the allergen history.
@@ -55,4 +55,4 @@ export const load: PageServerLoad = async ({ params, parent, locals }) => {
     priorityAllergens: priority,
     others
   };
-};
+}) satisfies PageServerLoad;

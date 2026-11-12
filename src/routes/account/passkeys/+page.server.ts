@@ -20,11 +20,11 @@ const deleteSchema = z.object({
   currentPassword: z.string().min(1)
 });
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load = (async ({ locals }) => {
   const user = requireUser(locals);
   const passkeys = (await listPasskeys(user.id)).map(publicPasskey);
   return { passkeys };
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   rename: async ({ request, locals }) => {

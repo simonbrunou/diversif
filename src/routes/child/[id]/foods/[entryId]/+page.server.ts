@@ -40,7 +40,7 @@ async function loadEntryForChild(entryId: number, childId: number) {
   return row;
 }
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load = (async ({ locals, params }) => {
   const { childId } = requireChildContext(locals, params);
   const entryId = parseIntParam(params.entryId, () => m.errorsEntryIdInvalid());
 
@@ -66,7 +66,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     time: formatTime(row.givenAt, intlLocale, { timeZone: PARIS_TIME_ZONE }),
     symptoms: sList
   };
-};
+}) satisfies PageServerLoad;
 
 const addSchema = z.object({
   label: z.enum(SYMPTOM_LABELS as unknown as [SymptomLabel, ...SymptomLabel[]]),

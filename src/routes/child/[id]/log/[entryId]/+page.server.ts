@@ -32,7 +32,7 @@ function entryContext({ locals, params }: Pick<RequestEvent, 'locals' | 'params'
   return { ctx, entryId: parseIntParam(params.entryId, () => m.errorsEntryIdInvalid()) };
 }
 
-export const load: PageServerLoad = async (event) => {
+export const load = (async (event) => {
   const { ctx, entryId } = entryContext(event);
 
   const repas = readRepas(ctx, entryId) ?? entryNotFound();
@@ -48,7 +48,7 @@ export const load: PageServerLoad = async (event) => {
     from,
     meal: repas.meal
   };
-};
+}) satisfies PageServerLoad;
 
 function destinationFor(
   form: FormData,

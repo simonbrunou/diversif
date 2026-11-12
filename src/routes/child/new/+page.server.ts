@@ -39,7 +39,7 @@ function fieldErrors(issues: z.ZodError['issues']): Record<string, string> {
   return errors;
 }
 
-export const load: PageServerLoad = async ({ locals, parent }) => {
+export const load = (async ({ locals, parent }) => {
   requireUser(locals);
   // True only when the user owns no child yet : lets the page render a
   // warmer "welcome aboard" header instead of the utilitarian "Ajouter
@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
   // the warm greeting the first time they create their own child.
   const { children: existing } = await parent();
   return { isFirstChild: existing.every((c) => c.role !== 'owner') };
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
   default: async ({ request, locals }) => {
