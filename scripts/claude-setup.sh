@@ -12,7 +12,7 @@
 #     project in Claude Code and trust it.
 #
 # Prereqs to run this script: git, jq. (Runtime prereqs for the tooling itself:
-# bun, gh, python3 — used by the graphify hook — and the external `graphify`
+# bun, gh, python3 — used by the rule hook — and the external `graphify`
 # CLI. See docs/claude-setup.md.)
 #
 # Usage:

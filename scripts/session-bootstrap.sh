@@ -12,8 +12,8 @@ set -u
 ROOT="${CLAUDE_PROJECT_DIR:-.}"
 cd "$ROOT" || exit 0
 
-# Install app + tooling deps so the format-on-edit hook has a local prettier and
-# the app can build/test. Non-fatal — a failure must never block the session.
+# Install app + tooling deps so the app can build/test. Non-fatal — a failure
+# must never block the session.
 # Note: bun package fetching can hit proxy issues in the cloud sandbox; if so,
 # move deps into the environment Setup Script (see docs/claude-setup.md).
 if command -v bun >/dev/null 2>&1 && [ -f package.json ]; then
