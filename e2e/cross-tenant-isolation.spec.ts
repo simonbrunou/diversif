@@ -18,9 +18,9 @@ async function logFoodAndGetEntryId(
   foodName = 'Poire'
 ): Promise<number> {
   await page.goto(`/child/${childId}/log`);
-  await page.getByPlaceholder('Rechercher un aliment…').fill(foodName);
+  await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill(foodName);
   await page
-    .getByRole('button', { name: new RegExp(`^${foodName}`) })
+    .getByRole('button', { name: new RegExp(`^${foodName}`), exact: true })
     .first()
     .click();
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
@@ -29,7 +29,7 @@ async function logFoodAndGetEntryId(
 
   await page.goto(`/child/${childId}/foods`);
   await page
-    .getByRole('link', { name: new RegExp(foodName, 'i') })
+    .getByRole('link', { name: new RegExp(`^${foodName}`), exact: true })
     .first()
     .click();
   await expect(page).toHaveURL(/\/child\/\d+\/foods\/\d+$/);

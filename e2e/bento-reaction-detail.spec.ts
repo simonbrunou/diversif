@@ -13,11 +13,11 @@ async function logFoodWithReaction(
   foodName: string,
   reactionLabel: string
 ): Promise<void> {
-  await page.getByRole('button', { name: 'Enregistrer un repas' }).click();
+  await page.getByRole('button', { name: 'Enregistrer un repas', exact: true }).click();
   await expect(page).toHaveURL(/\/child\/\d+\/log$/);
-  await page.getByPlaceholder('Rechercher un aliment…').fill(foodName);
+  await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill(foodName);
   await page
-    .getByRole('button', { name: new RegExp(`^${foodName}`) })
+    .getByRole('button', { name: new RegExp(`^${foodName}`), exact: true })
     .first()
     .click();
   // ReactionPicker uses <label> elements; scope to the fieldset because the
@@ -53,7 +53,9 @@ test('reaction-detail bento renders for non-RAS entry with all panels @responsiv
   await expect(page).toHaveURL(/\/child\/\d+\/foods\/\d+$/);
 
   await expect(page.getByText(/On vous accompagne/)).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Symptômes observés' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Symptômes observés', exact: true })
+  ).toBeVisible();
   const emergencyAlert = page.getByRole('alert');
   await expect(emergencyAlert).toContainText('Gêne respiratoire');
   await expect(emergencyAlert).toContainText(/15 ou le 112/);
@@ -77,11 +79,11 @@ test('add-symptom then delete-symptom via the confirm modal @responsive', async 
   await page.goto(`/child/${childId}/foods`);
   await page.getByRole('link', { name: /Poire/i }).first().click();
 
-  await page.getByRole('button', { name: 'Ajouter un symptôme' }).click();
+  await page.getByRole('button', { name: 'Ajouter un symptôme', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await expectDialogMatchesViewport(page);
   await page.getByText('Rougeur', { exact: true }).click();
-  await page.getByRole('button', { name: 'Enregistrer le symptôme' }).click();
+  await page.getByRole('button', { name: 'Enregistrer le symptôme', exact: true }).click();
 
   // The sheet closes before the refreshed list renders, so the only
   // remaining "Rougeur" is the new list row.

@@ -6,12 +6,14 @@ test('Profil bento renders all five sections @responsive', async ({ page }) => {
   await dismissWelcomeIfPresent(page);
 
   await page.goto('/account');
-  await expect(page.getByRole('heading', { name: 'Vos enfants' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Vos enfants', exact: true })).toBeVisible();
   // exact: true to disambiguate from the sr-only "Mon compte" h1 the shell
   // emits on /account for screen readers.
   await expect(page.getByRole('heading', { name: 'Compte', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Vos données (RGPD)' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Légal' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Vos données (RGPD)', exact: true })
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Légal', exact: true })).toBeVisible();
 
   // Bundle 5 canonicalisation: surface should say Carnet / Bilan, never the
   // English-leaning Stats / Streak / Logger.

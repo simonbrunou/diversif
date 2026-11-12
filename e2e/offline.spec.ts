@@ -119,7 +119,7 @@ test('a queued first repas is celebrated when it replays on reconnect', async ({
   // Poire is not an allergen, so the first repas reaches the first-repas
   // milestone and the second one reaches none.
   const queuePoire = async () => {
-    await page.getByPlaceholder('Rechercher un aliment…').fill('Poire');
+    await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill('Poire');
     await page
       .getByRole('button', { name: /^Poire/ })
       .first()
@@ -129,7 +129,7 @@ test('a queued first repas is celebrated when it replays on reconnect', async ({
   };
   await queuePoire();
   // The dashboard opens its welcome dialog over the log CTA.
-  await page.getByRole('dialog').getByRole('button', { name: 'Fermer' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Fermer', exact: true }).click();
   await page.getByRole('link', { name: /enregistrer un premier repas/i }).click();
   await queuePoire();
   expect(await queuedRows(page)).toBe(2);
@@ -170,7 +170,7 @@ test('two open tabs replay a queued repas once and celebrate it once', async ({
     });
   }
 
-  await page.getByPlaceholder('Rechercher un aliment…').fill('Poire');
+  await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill('Poire');
   await page
     .getByRole('button', { name: /^Poire/ })
     .first()

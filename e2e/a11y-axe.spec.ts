@@ -142,8 +142,8 @@ test.describe('a11y axe — auth routes @responsive', () => {
     result: RegExp
   ): Promise<void> {
     await page.goto(`/child/${childId}/log`);
-    await page.getByPlaceholder('Rechercher un aliment…').fill(query);
-    await page.getByRole('button', { name: result }).first().click();
+    await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill(query);
+    await page.getByRole('button', { name: result, exact: true }).first().click();
     await page.locator('fieldset').getByText('Réaction marquée', { exact: true }).click();
     await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
@@ -174,7 +174,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
 
     await test.step('axe: "Se déconnecter partout" confirm dialog open', async () => {
       await page.goto('/account/sessions');
-      await page.getByRole('button', { name: 'Se déconnecter partout' }).click();
+      await page.getByRole('button', { name: 'Se déconnecter partout', exact: true }).click();
       await axeSweepOpenDialog(page);
       await page.keyboard.press('Escape');
     });
@@ -237,7 +237,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
 
     await test.step('axe: FoodCombobox search + selection', async () => {
       await page.goto(`/child/${childId}/log`);
-      const search = page.getByPlaceholder('Rechercher un aliment…');
+      const search = page.getByPlaceholder('Rechercher un aliment…', { exact: true });
       await search.fill('poire');
       // The result-count live region (the companion a11y fix) should
       // announce a match count, not just silently re-render the list.
@@ -256,7 +256,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
       // non-default tile — instead of relying on the age-derived default,
       // so the checked/ring-highlighted DOM state is what gets scanned.
       await page.locator('fieldset').getByText('Écrasée', { exact: true }).click();
-      await expect(page.getByRole('radio', { name: 'Écrasée' })).toBeChecked();
+      await expect(page.getByRole('radio', { name: 'Écrasée', exact: true })).toBeChecked();
       await axeSweepAfterTransition(page);
     });
 
@@ -270,7 +270,7 @@ test.describe('a11y axe — auth routes @responsive', () => {
       await page.getByRole('link', { name: /Poire/i }).first().click();
       await expect(page).toHaveURL(/\/child\/\d+\/foods\/\d+$/);
 
-      await page.getByRole('button', { name: 'Ajouter un symptôme' }).click();
+      await page.getByRole('button', { name: 'Ajouter un symptôme', exact: true }).click();
       await axeSweepOpenDialog(page);
     });
   });

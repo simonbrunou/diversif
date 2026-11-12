@@ -17,7 +17,10 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     await page.setViewportSize({ width: 320, height: 700 });
 
     await page.goto('/signup');
-    const passwordToggle = page.getByRole('button', { name: 'Afficher le mot de passe' });
+    const passwordToggle = page.getByRole('button', {
+      name: 'Afficher le mot de passe',
+      exact: true
+    });
     await expect(passwordToggle).toBeVisible();
     expect((await passwordToggle.boundingBox())?.height).toBeGreaterThanOrEqual(44);
 
@@ -34,11 +37,14 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     }
 
     const targets = [
-      page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link').first(),
+      page
+        .getByRole('navigation', { name: 'Navigation principale', exact: true })
+        .getByRole('link')
+        .first(),
       page.getByRole('button', { name: /^Abricot/ }),
-      page.getByRole('button', { name: 'Ajouter un aliment hors catalogue' }),
+      page.getByRole('button', { name: '+ Ajouter un aliment hors catalogue', exact: true }),
       page.getByText('Comment choisir ?', { exact: true }),
-      page.getByRole('button', { name: 'Effacer la texture' })
+      page.getByRole('button', { name: 'Effacer la texture', exact: true })
     ];
     for (const target of targets) {
       expect((await target.boundingBox())?.height).toBeGreaterThanOrEqual(44);
@@ -52,7 +58,9 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     await dismissWelcomeIfPresent(page);
 
     // Bento bottom nav rendered.
-    await expect(page.getByRole('navigation', { name: 'Navigation principale' })).toBeVisible();
+    await expect(
+      page.getByRole('navigation', { name: 'Navigation principale', exact: true })
+    ).toBeVisible();
 
     // Bottom-nav links are activated via focus + Enter (keyboard nav)
     // rather than .click(). Reason: at iPhone 14's 390×664 viewport, the
@@ -67,19 +75,19 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     // touch works in practice; only Playwright's mouse-based click misroutes.
 
     // Click "Carnet" → /child/<id>/foods
-    const carnetLink = page.getByRole('link', { name: 'Carnet' });
+    const carnetLink = page.getByRole('link', { name: 'Carnet', exact: true });
     await carnetLink.focus();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/child\/\d+\/foods/);
 
     // Click "Découvrir" → /child/<id>/guide
-    const decouvrirLink = page.getByRole('link', { name: 'Découvrir' });
+    const decouvrirLink = page.getByRole('link', { name: 'Découvrir', exact: true });
     await decouvrirLink.focus();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/child\/\d+\/guide/);
 
     // Click "Profil" → /account
-    const profilLink = page.getByRole('link', { name: 'Profil' });
+    const profilLink = page.getByRole('link', { name: 'Profil', exact: true });
     await profilLink.focus();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/account/);
@@ -94,12 +102,14 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     await dismissWelcomeIfPresent(page);
 
     // FAB navigates to the full /log page rather than opening a sheet.
-    await page.getByRole('button', { name: 'Enregistrer un repas' }).click();
+    await page.getByRole('button', { name: 'Enregistrer un repas', exact: true }).click();
     await expect(page).toHaveURL(/\/child\/\d+\/log$/);
-    await expect(page.getByRole('heading', { name: 'Enregistrer un repas' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Enregistrer un repas', exact: true })
+    ).toBeVisible();
 
     // FoodCombobox search.
-    await page.getByPlaceholder('Rechercher un aliment…').fill('poire');
+    await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill('poire');
     // The combobox renders selectable foods as <button> rows, not role=option.
     await page
       .getByRole('button', { name: /^Poire/ })
@@ -110,7 +120,7 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
 
     // Server redirects back to /child/<id>; recent feed surfaces the new entry.
     await expect(page).toHaveURL(/\/child\/\d+(\?.*)?$/);
-    // eslint-disable-next-line e2e/exact-get-by-text -- the row reads « Poire · Écrasée », the texture the form preselects at 7 months
+    // eslint-disable-next-line e2e/exact-locator -- the row reads « Poire · Écrasée », the texture the form preselects at 7 months
     await expect(page.getByText('Poire').first()).toBeVisible();
   });
 
@@ -121,7 +131,7 @@ test.describe('Bento shell : tab navigation @mobile-only', () => {
     await dismissWelcomeIfPresent(page);
 
     // Click the Allergènes segment link.
-    await page.getByRole('link', { name: 'Allergènes' }).click();
+    await page.getByRole('link', { name: 'Allergènes', exact: true }).click();
     await expect(page).toHaveURL(/\/child\/\d+\/foods\?segment=allergens/);
   });
 });

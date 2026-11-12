@@ -46,7 +46,7 @@ test.describe('account messages without JavaScript', () => {
     const noJs = await openWithoutJavaScript(browser, page);
     try {
       await noJs.goto('/account/profile');
-      const name = noJs.getByLabel('Nom affiché');
+      const name = noJs.getByLabel('Nom affiché', { exact: true });
       // The browser's own `required` check would stop an empty name before
       // the server could refuse it.
       await name.evaluate((input) => input.removeAttribute('required'));
@@ -54,10 +54,10 @@ test.describe('account messages without JavaScript', () => {
       await noJs.getByRole('button', { name: 'Enregistrer', exact: true }).click();
       await expect(noJs.getByRole('alert')).toHaveText('Nom invalide.');
 
-      await noJs.getByLabel('Nom affiché').fill('Camille');
+      await noJs.getByLabel('Nom affiché', { exact: true }).fill('Camille');
       await noJs.getByRole('button', { name: 'Enregistrer', exact: true }).click();
       await expect(noJs.getByRole('status')).toHaveText('Profil mis à jour.');
-      await expect(noJs.getByLabel('Nom affiché')).toHaveValue('Camille');
+      await expect(noJs.getByLabel('Nom affiché', { exact: true })).toHaveValue('Camille');
     } finally {
       await noJs.context().close();
     }
@@ -92,7 +92,7 @@ test.describe('account messages with JavaScript', () => {
     await awaitHydration(page);
     const saveButton = page.getByRole('button', { name: 'Enregistrer', exact: true });
 
-    const name = page.getByLabel('Nom affiché');
+    const name = page.getByLabel('Nom affiché', { exact: true });
     await name.evaluate((input) => input.removeAttribute('required'));
     await name.fill('');
     await saveButton.click();

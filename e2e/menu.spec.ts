@@ -9,9 +9,9 @@ test.describe('menu du jour', () => {
     await page.goto(`/child/${childId}`);
     await dismissWelcomeIfPresent(page);
 
-    await page.getByRole('link', { name: 'Menu du jour' }).click();
+    await page.getByRole('link', { name: 'Menu du jour', exact: true }).click();
     await expect(page).toHaveURL(`/child/${childId}/menu`);
-    await expect(page.getByRole('heading', { name: 'Menu du jour' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Menu du jour', exact: true })).toBeVisible();
 
     // The quantities card and at least one meal slot render from the seeded
     // catalog even with no food logged yet (full-variety discover slots).

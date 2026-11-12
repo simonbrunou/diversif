@@ -22,8 +22,8 @@ test.describe('signup consent gates', () => {
     const email = `${unique('blocked')}@example.com`;
     await page.goto('/signup');
     await awaitHydration(page);
-    await page.getByLabel('Votre prénom').fill('Sans consentement');
-    await page.getByLabel('Adresse e-mail').fill(email);
+    await page.getByLabel('Votre prénom', { exact: true }).fill('Sans consentement');
+    await page.getByLabel('Adresse e-mail', { exact: true }).fill(email);
     await page.getByLabel('Mot de passe', { exact: true }).fill(SIGNUP_PASSWORD);
     await page.getByRole('button', { name: /créer mon compte/i }).click();
     // Browsers block submission for unticked required checkboxes; URL stays on /signup.
@@ -133,7 +133,7 @@ test.describe('account deletion without JavaScript', () => {
 
       // The account is gone: its password no longer signs in.
       await noJs.goto('/login');
-      await noJs.getByLabel('Adresse e-mail').fill(email);
+      await noJs.getByLabel('Adresse e-mail', { exact: true }).fill(email);
       await noJs.getByLabel('Mot de passe', { exact: true }).fill(SIGNUP_PASSWORD);
       await noJs.getByRole('button', { name: 'Se connecter', exact: true }).click();
       await expect(noJs.getByRole('alert')).toHaveText('Adresse e-mail ou mot de passe incorrect.');
