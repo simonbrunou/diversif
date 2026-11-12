@@ -80,10 +80,9 @@ late() { fail "$1 not run: the time budget ran out"; }
 # seconds after that moment, or until the run deadline when that comes first.
 # It is one budget for all pages: 60 s is about twice the 29 to 31 s during
 # which both containers answered on a measured deploy (docs/agents/deploy.md,
-# #542). Each new fetch starts after a pause, so at
-# most SHA_TIME / SHA_PAUSE of them fit in the budget. The script counts them
-# too, so that a pause that takes no time (the tests' fake sleep) ends it all
-# the same.
+# #542). Each new fetch starts after a pause, so at most SHA_TIME / SHA_PAUSE
+# of them fit in the budget. The script counts them too, so that a pause that
+# takes no time (the tests' fake sleep) ends it all the same.
 SHA_TIME=60
 SHA_PAUSE=5
 sha_start=''
