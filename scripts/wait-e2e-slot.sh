@@ -27,10 +27,12 @@
 # as busy (take_turn). While this worktree's own claim is fresh, it goes
 # before every waiter. Each busy poll prints the waiters ahead of you.
 # Exit 0: no other E2E job waits or runs, no other worktree holds a claim
-# and no other waiter is ahead. Exit 3: still busy or behind another waiter,
-# run it again. Exit 2: no token on this host, the forge refused it, or a
-# wrong call (a bad SHA or E2E_WAIT, a JOB that WORKFLOW no longer names, or
-# a claim file it cannot write); it also drops this worktree from the queue.
+# and no other waiter is ahead; or, with no argument, at once, claiming
+# nothing, for a pushed docs-only branch that never had a PR (below).
+# Exit 3: still busy or behind another waiter, run it again. Exit 2: no
+# token on this host, the forge refused it, or a wrong call (a bad SHA or
+# E2E_WAIT, a JOB that WORKFLOW no longer names, or a claim file it cannot
+# write); it also drops this worktree from the queue.
 # E2E_SLOT_API replaces the forge's repo API URL, for the test.
 #
 # It reads `actions/runs` and each run's jobs. `actions/tasks` lists only the
@@ -172,6 +174,29 @@ code="$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' \
 case "$code" in
   401 | 403 | 404) die "the forge answered $code: check fj's login and the repo path in API" ;;
 esac
+
+# A pull request run whose branch changes only Markdown files and docs/
+# skips the E2E job (scripts/e2e-needed.sh). While the checked-out branch
+# never had a PR into main, a push to it starts no run and opening its PR
+# starts such a run, so a docs-only branch needs no slot: exit 0 at once,
+# claiming nothing. Every call this check cannot settle waits as before: an
+# <own sha> argument, commits not pushed yet, a branch name outside
+# [A-Za-z0-9._/-], any PR from the branch into main, open or closed (merging
+# it pushes to main, which always runs E2E, and a session that just merged
+# may chain a rerun of main), and any forge answer but a 404. On 2026-11-12
+# the #681 thread waited 23 min for the slot before it opened a PR that
+# changed AGENTS.md alone.
+branch="$(git -C "$REPO" branch --show-current 2>/dev/null)"
+if [ $# -eq 0 ] && [[ "$branch" =~ ^[A-Za-z0-9._/-]+$ ]] &&
+  [ "$(git -C "$REPO" rev-parse HEAD 2>/dev/null)" = "$OWN" ] &&
+  [ "$(cd "$REPO" && scripts/e2e-needed.sh origin/main 2>/dev/null)" = false ] &&
+  [ "$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' \
+    -H "Authorization: token $FJ_TOKEN" "$API/pulls/main/$branch")" = 404 ]; then
+  leave_queue
+  echo "wait-e2e-slot: clear at $(date +%T): the branch changes only Markdown files and docs/" \
+    "and has no PR yet, so its PR's E2E job will run no Playwright test"
+  exit 0
+fi
 
 # Print one line per busy run, then "checked" once every run was read. A
 # request that fails, an empty or misshapen reply, a WORKFLOW run with no E2E

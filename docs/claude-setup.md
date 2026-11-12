@@ -146,3 +146,7 @@ access is handled by Anthropic's proxy — no token needed.
   its entry runs (`.claude/rule-hook/hook.py`, `scripts/session-bootstrap.sh`);
   add or change a rule in `.claude/rule-hook/rules/`; keep machine-local-only
   hooks in `settings.local.json`.
+- **Any of these changes:** `scripts/claude-setup-doc.test.ts` checks this
+  doc's Hooks list, its project skills and agents lists and its MCP lines
+  against `.claude/settings.json`, `.claude/skills/`, `.claude/agents/` and
+  `.mcp.json`, so `bun run test` goes red until the doc follows the change.
