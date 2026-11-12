@@ -16,8 +16,7 @@ import {
   preToolUse,
   respondAll,
   RULES_DIR,
-  runHook,
-  searchSeconds
+  runHook
 } from './rule-hook';
 
 const RULE = 'block-e2e-start-without-slot';
@@ -680,18 +679,16 @@ describe('block-e2e-start-without-slot', () => {
     15_000
   );
 
-  // Long commands with no start command: the hook passes each one of
-  // 10,000 items. Python's re searches each to its end, so a check that
-  // read on past a list end, a || or a negated slot call, or a negation
-  // that read past a list end or a !, would take time that grows with the
-  // square of the length or faster. testing.md « A wall-clock assertion »
-  // keeps an upper bound only with at least 5 s on each side of it. On four
-  // times the items, the rule's search takes 0.12 s or less, and a negation
-  // that read past each ! took 137 s, so the bound is 6 s. The search is
-  // timed inside Python, without the process start-up, and the bound
-  // applies to the fastest of three, since a stall only makes a run longer.
-  // A check that reads on fails on the bound, or when the timer stops it at
-  // 60 s.
+  // Long commands with no start command. Python's re searches each to its
+  // end, so a check that read on past a list end, a || or a negated slot
+  // call, or a negation that read past a list end or a !, would take time
+  // that grows with the square of the length or faster. As for the cases
+  // above, the bound is the hook's own 10 s limit, and a hook stopped there
+  // gives no answer, which fails the test. The hook answers on each item
+  // count and on four times it, where the rule's search takes 0.12 s or
+  // less. Each such check ran past 10 s: six on the item count already,
+  // and a negation that read past each ! took 8 to 20 s there and 137 s on
+  // four times the ! x items.
   it.each([
     ['x || ', 'x || ', 10_000],
     ['! scripts/wait-e2e-slot.sh && ', '! scripts/wait-e2e-slot.sh && ', 5_000],
@@ -701,15 +698,14 @@ describe('block-e2e-start-without-slot', () => {
     ['x & ', 'x & ', 10_000],
     ['x, an escaped blank and a newline', 'x \\ \n', 10_000]
   ] as const)(
-    'passes a long command with no start command, searched in under 6 s at 4 times the size: %s',
+    'passes a long command with no start command, also at four times the items: %s',
     (_, item, count) => {
-      const command = item.repeat(count) + 'echo';
-      expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(false);
-      const longer = item.repeat(count * 4) + 'echo';
-      const seconds = searchSeconds(rule.conditions[0].pattern, [longer, longer, longer]);
-      expect(Math.min(...seconds)).toBeLessThan(6);
+      for (const items of [count, count * 4]) {
+        const command = item.repeat(items) + 'echo';
+        expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(false);
+      }
     },
-    90_000
+    30_000
   );
 
   it('names the variable form in its message', () =>
