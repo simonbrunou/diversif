@@ -134,58 +134,60 @@ function missingPlaceholders(
     .map((p) => `[${locale}] ${key}: lacks the placeholder ${p} that ${otherLocale} has.`);
 }
 
+type Messages = Record<string, unknown>;
+
+const messageKeys = (data: Messages) => Object.keys(data).filter((k) => k !== SCHEMA_KEY);
+
+/** The keys of `have` that `lack` does not hold as its own. */
+function missingKeys(have: Messages, haveLocale: string, lack: Messages, lackLocale: string) {
+  return messageKeys(have)
+    .filter((key) => !Object.hasOwn(lack, key))
+    .map((key) => `[${lackLocale}] ${key}: missing (${haveLocale} has it).`);
+}
+
+/** The problems of a key both files hold: each value, then placeholders. */
+function sharedKeyProblems(key: string, frValue: unknown, enValue: unknown): string[] {
+  const own = [...valueProblems(BASE, key, frValue), ...valueProblems(OTHER, key, enValue)];
+  // Placeholders compare only two readable strings.
+  if (own.length > 0) return own;
+  return [
+    ...missingPlaceholders(OTHER, key, enValue as string, BASE, frValue as string),
+    ...missingPlaceholders(BASE, key, frValue as string, OTHER, enValue as string)
+  ];
+}
+
 /**
  * The parity problems between the base (fr) messages and the other (en)
  * messages, one line per problem, each naming the locale and the key.
  */
 export function findParityProblems(base: unknown, other: unknown): string[] {
-  const problems: string[] = [];
-  const files: [string, unknown][] = [
-    [BASE, base],
-    [OTHER, other]
-  ];
-  for (const [locale, data] of files) {
-    if (jsonType(data) !== 'object') {
-      problems.push(
+  const shapeProblems = (
+    [
+      [BASE, base],
+      [OTHER, other]
+    ] as const
+  )
+    .filter(([, data]) => jsonType(data) !== 'object')
+    .map(
+      ([locale, data]) =>
         `${messageFile(locale)}: the top level is ${jsonType(data)}, not an object of messages.`
-      );
-    }
-  }
-  if (problems.length > 0) return problems;
-
-  const fr = base as Record<string, unknown>;
-  const en = other as Record<string, unknown>;
-  const keys = (data: Record<string, unknown>) => Object.keys(data).filter((k) => k !== SCHEMA_KEY);
-
-  for (const key of keys(fr)) {
-    if (!Object.hasOwn(en, key)) {
-      problems.push(`[${OTHER}] ${key}: missing (${BASE} has it).`);
-    }
-  }
-  for (const key of keys(en)) {
-    if (!Object.hasOwn(fr, key)) {
-      problems.push(`[${BASE}] ${key}: missing (${OTHER} has it).`);
-    }
-  }
-
-  for (const key of keys(fr)) {
-    const frProblems = valueProblems(BASE, key, fr[key]);
-    const enProblems = Object.hasOwn(en, key) ? valueProblems(OTHER, key, en[key]) : [];
-    problems.push(...frProblems, ...enProblems);
-    // Placeholders compare only two readable strings.
-    if (!Object.hasOwn(en, key) || frProblems.length > 0 || enProblems.length > 0) continue;
-    const frValue = fr[key] as string;
-    const enValue = en[key] as string;
-    problems.push(
-      ...missingPlaceholders(OTHER, key, enValue, BASE, frValue),
-      ...missingPlaceholders(BASE, key, frValue, OTHER, enValue)
     );
-  }
-  for (const key of keys(en)) {
-    if (!Object.hasOwn(fr, key)) problems.push(...valueProblems(OTHER, key, en[key]));
-  }
+  if (shapeProblems.length > 0) return shapeProblems;
 
-  return problems;
+  const fr = base as Messages;
+  const en = other as Messages;
+  return [
+    ...missingKeys(fr, BASE, en, OTHER),
+    ...missingKeys(en, OTHER, fr, BASE),
+    ...messageKeys(fr).flatMap((key) =>
+      Object.hasOwn(en, key)
+        ? sharedKeyProblems(key, fr[key], en[key])
+        : valueProblems(BASE, key, fr[key])
+    ),
+    ...messageKeys(en)
+      .filter((key) => !Object.hasOwn(fr, key))
+      .flatMap((key) => valueProblems(OTHER, key, en[key]))
+  ];
 }
 
 /** Reads and parses a file under root, or returns the problem line. */
