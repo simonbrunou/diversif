@@ -191,32 +191,44 @@ function trackedCopy(uploadpack?: string): string {
   return copy;
 }
 
+// Runs git in a repo, with an identity and no signing for its commits, and
+// returns its output.
+function gitIn(repo: string, ...args: string[]): string {
+  const run = Bun.spawnSync({
+    cmd: [
+      'git',
+      '-C',
+      repo,
+      '-c',
+      'user.name=smoke',
+      '-c',
+      'user.email=smoke@example.invalid',
+      '-c',
+      'commit.gpgsign=false',
+      ...args
+    ]
+  });
+  expect(run.exitCode).toBe(0);
+  return run.stdout.toString().trim();
+}
+
+// The repo of a tracked copy of the script.
+const repoOf = (copy: string) => path.dirname(path.dirname(copy));
+
+// Commits an empty commit on top of a repo's HEAD and returns its SHA. Two
+// repos that commit the same message on the same parent within one second
+// make the same commit, so a test that needs distinct ones names them.
+function commitEmpty(repo: string, message = 'newer'): string {
+  gitIn(repo, 'commit', '-q', '--allow-empty', '-m', message);
+  return gitIn(repo, 'rev-parse', 'HEAD');
+}
+
 // Commits a tracked copy's repo twice: the script, then an empty commit on
 // top. Returns both SHAs, the older first.
 function commitTwice(copy: string): [string, string] {
-  const root = path.dirname(path.dirname(copy));
-  const git = (...args: string[]) => {
-    const run = Bun.spawnSync({
-      cmd: [
-        'git',
-        '-C',
-        root,
-        '-c',
-        'user.name=smoke',
-        '-c',
-        'user.email=smoke@example.invalid',
-        '-c',
-        'commit.gpgsign=false',
-        ...args
-      ]
-    });
-    expect(run.exitCode).toBe(0);
-    return run.stdout.toString().trim();
-  };
-  git('commit', '-q', '-m', 'script');
-  const first = git('rev-parse', 'HEAD');
-  git('commit', '-q', '--allow-empty', '-m', 'newer');
-  return [first, git('rev-parse', 'HEAD')];
+  gitIn(repoOf(copy), 'commit', '-q', '-m', 'script');
+  const first = gitIn(repoOf(copy), 'rev-parse', 'HEAD');
+  return [first, commitEmpty(repoOf(copy))];
 }
 
 // A file's content, or '' while it does not exist.
@@ -1015,6 +1027,55 @@ describe('scripts/smoke-prod.sh', () => {
       expect(run.code).toBe(1);
     });
   });
+
+  // Two newer merges go live: the first during the wait, the second while
+  // the checks run. Each is unknown to the checkout until a fetch of origin
+  // brings it, so the script fetches once for each. Origin is a local bare
+  // repo, and a second clone pushes each merge to it as the server first
+  // serves that merge. The real sleep lets each fetch end before its timer's
+  // TERM, which the fake one would send at once.
+  it('with a SHA, fetches origin again for a newer merge that goes live during the checks', async () => {
+    const copy = trackedCopy();
+    const [sha] = commitTwice(copy);
+    const origin = mkdtempSync(path.join(binDir, 'origin-'));
+    gitIn(origin, 'init', '-q', '--bare');
+    gitIn(repoOf(copy), 'remote', 'add', 'origin', origin);
+    gitIn(repoOf(copy), 'push', '-q', 'origin', `${sha}:refs/heads/main`);
+    const other = mkdtempSync(path.join(binDir, 'other-'));
+    gitIn(other, 'clone', '-q', '-b', 'main', origin, '.');
+    const [second, third] = [commitEmpty(other, 'second merge'), commitEmpty(other, 'third merge')];
+    // The checkout knows neither merge yet.
+    for (const commit of [second, third]) {
+      const known = Bun.spawnSync({
+        cmd: ['git', '-C', repoOf(copy), 'cat-file', '-e', `${commit}^{commit}`]
+      });
+      expect(known.exitCode).not.toBe(0);
+    }
+    const push = (commit: string) => gitIn(other, 'push', '-q', 'origin', `${commit}:main`);
+    replies = {
+      ...Object.fromEntries(
+        ['/guide', '/en', '/offline'].map((check) => [
+          check,
+          () => ({ ...production[check], body: page(third) })
+        ])
+      ),
+      '/_app/version.json': (n) => {
+        if (n === 1) push(second);
+        return version(second);
+      },
+      '/': (n) => {
+        if (n === 1) push(third);
+        return { ...production['/'], body: page(third) };
+      }
+    };
+    const run = await smoke(base, { script: copy, args: [sha], realSleep: true });
+    expect(run.stderr).toBe('');
+    expect(run.lines).toContain(`PASS /_app/version.json is ${second}`);
+    expect(run.lines.filter((line) => line.startsWith('REFETCH'))).toEqual([]);
+    expect(run.lines.find((line) => line.startsWith('PASS / '))).toContain(`build ${third}`);
+    expect(run.last).toBe(`smoke-prod: 12 of 12 checks passed on ${base}`);
+    expect(run.code).toBe(0);
+  }, 30_000);
 
   it('without a SHA, reads no build SHA', async () => {
     overrides = {

@@ -267,14 +267,16 @@ fetch_origin() {
 # accepted <commit>: whether <commit> is <sha>, or a newer main commit that
 # contains it. A newer merge can replace <sha> before the wait ends, or while
 # the checks run. A <commit> that starts with <sha> counts, as <sha> stays a
-# prefix when the fetch of origin failed. Fetches origin once, the first time
-# <commit> is unknown.
-fetched=''
+# prefix when the fetch of origin failed. Fetches origin the first time each
+# unknown <commit> comes up: a merge seen during the wait and a newer one seen
+# during the checks each need their own fetch. An old build's commit that
+# stays unknown after its fetch costs no other one.
+fetched=' '
 accepted() {
   [[ "$1" =~ ^[0-9a-f]{7,40}$ ]] || return 1
   case "$1" in "$SHA"*) return 0 ;; esac
-  if ! git -C "$REPO" cat-file -e "$1^{commit}" 2>/dev/null && [ -z "$fetched" ]; then
-    fetched=1
+  if ! git -C "$REPO" cat-file -e "$1^{commit}" 2>/dev/null && [[ "$fetched" != *" $1 "* ]]; then
+    fetched="$fetched$1 "
     fetch_origin
   fi
   git -C "$REPO" merge-base --is-ancestor "$SHA" "$1" 2>/dev/null
