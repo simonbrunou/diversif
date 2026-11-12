@@ -12,6 +12,7 @@ import {
 mock.module('#lib/server/db/index.js', () => ({ db: testDb }));
 
 import { foodEntries, foods } from '#lib/server/db/schema.js';
+import type { CategoryId } from '#lib/utils/categories.js';
 import { load } from './+page.server';
 
 beforeEach(async () => {
@@ -57,7 +58,7 @@ async function setup(opts: { ageMonths?: number } = {}) {
   };
 }
 
-async function seedFood(name: string, category: string, allergen: string | null = null) {
+async function seedFood(name: string, category: CategoryId, allergen: string | null = null) {
   return (
     await testDb
       .insert(foods)
@@ -253,8 +254,8 @@ describe('child/[id]/report load', () => {
   // bilanRows, tested at its interface; this pins the wiring and the total.
   it('aggregates allergens from a mixed entries fixture', async () => {
     const { u, c, guard } = await setup();
-    const oeuf = await seedFood('Œuf', 'proteines', 'oeuf');
-    const arachide = await seedFood('Arachide', 'proteines', 'arachide');
+    const oeuf = await seedFood('Œuf', 'oeufs', 'oeuf');
+    const arachide = await seedFood('Arachide', 'allergenes', 'arachide');
     const carotte = await seedFood('Carotte', 'legumes', null);
 
     // 3 oeuf entries: ras, inconfort, ras → worst=inconfort, exposures=3
