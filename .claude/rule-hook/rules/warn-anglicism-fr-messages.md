@@ -34,8 +34,9 @@ AGENTS.md hard rule: French UI, NO anglicisms. PR reviewers reject regressions.
 
 This is a `warn` rule because the pattern can false-positive on legitimate
 edits (e.g. you're fixing an anglicism and the diff includes both old and
-new context). The authoritative gate is `scripts/lint-i18n.mjs` +
-`scripts/check-i18n-unused.mjs` at commit time.
+new context). No lint checks anglicisms: this warning and PR review are the
+only guard. `bun run lint:i18n` checks other things (apostrophes, unused keys,
+FR/EN parity).
 
 If the match is a legitimate fix, proceed. If it's a regression, use the
 French equivalent above.

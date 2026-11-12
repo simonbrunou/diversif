@@ -19,7 +19,7 @@
     "depcruise": "bun --bun node_modules/dependency-cruiser/bin/dependency-cruiser.mjs --config .dependency-cruiser.cjs src",
     "knip": "node_modules/.bin/knip-bun",
     "lint": "bun run paraglide && bun --bun node_modules/prettier/bin/prettier.cjs --check . && bun --bun node_modules/eslint/bin/eslint.js . && bun run lint:i18n && bun run lint:contrast && bun run lint:paired-foreground",
-    "lint:i18n": "bun scripts/lint-i18n.ts && bun scripts/check-i18n-unused.ts",
+    "lint:i18n": "bun scripts/lint-i18n.ts && bun scripts/check-i18n-unused.ts && bun scripts/check-i18n-parity.ts",
     "lint:contrast": "bun scripts/lint-contrast.ts",
     "lint:paired-foreground": "bun scripts/lint-paired-foreground.ts",
     "format": "bun --bun node_modules/prettier/bin/prettier.cjs --write .",

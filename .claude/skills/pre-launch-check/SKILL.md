@@ -15,8 +15,8 @@ caught locally first. **Stop at the first hard failure**, report it, and don't c
 ## Gate (run in this order)
 ```bash
 bun run check          # paraglide compile + svelte-check (types)
-bun lint               # eslint + prettier + anglicism + i18n-unused
-bun lint:i18n          # FR/EN key + placeholder parity
+bun lint               # prettier + eslint + lint:i18n + contrast + paired foreground
+bun lint:i18n          # fr apostrophes, unused keys, FR/EN key + placeholder + empty-value parity
 bun lint:contrast      # accessibility contrast check
 bun run test:coverage  # unit/integration/component + 100% line-coverage gate (never bare `bun test`)
 bun depcruise          # architecture / dependency boundaries
