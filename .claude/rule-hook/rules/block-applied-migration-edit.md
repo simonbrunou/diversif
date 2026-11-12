@@ -3,6 +3,7 @@ name: block-applied-migration-edit
 enabled: true
 event: file
 action: block
+tool_matcher: Edit|Write|MultiEdit
 conditions:
   - field: file_path
     operator: regex_match
