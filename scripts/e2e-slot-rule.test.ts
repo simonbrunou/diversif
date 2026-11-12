@@ -130,6 +130,18 @@ const START_IN_BOTH_SHELLS: Record<string, string> = {
   // Another ! after the negated slot call: a check that stopped at any !
   // would miss the first one.
   'negated slot call, then another !': '! scripts/wait-e2e-slot.sh && ! false && ' + MERGE,
+  // A redirect or |& before the slot call stays in the negated pipeline.
+  'negated pipeline, 2>&1 before the slot call':
+    '! true 2>&1 | scripts/wait-e2e-slot.sh && ' + MERGE,
+  'negated pipeline, |& before the slot call': '! true |& scripts/wait-e2e-slot.sh && ' + MERGE,
+  'negated pipeline, &> before the slot call':
+    '! true &>/dev/null | scripts/wait-e2e-slot.sh && ' + MERGE,
+  // The shells read a carriage return as text, and a \ before a blank
+  // escapes the blank, so the newline after either ends the list.
+  'chained, then CRLF': 'scripts/wait-e2e-slot.sh && true\r\n' + MERGE,
+  '&& then CRLF': 'scripts/wait-e2e-slot.sh &&\r\n' + MERGE,
+  'chained, then an escaped blank and a newline':
+    'scripts/wait-e2e-slot.sh && echo ok \\ \n' + MERGE,
   // An argument whose quote, backslash, backtick, $, #, <, parenthesis or
   // case carries the shell's word past the end the rule reads. The && then
   // sits inside that word, and the merge after the ; or the newline runs
@@ -396,10 +408,13 @@ const MUST_PASS: Record<string, string> = {
   // A || or a negation reaches no further than the end of its own list.
   '|| in an earlier list': 'true || echo x; scripts/wait-e2e-slot.sh && ' + MERGE,
   '|| in an earlier line': 'true || echo x\nscripts/wait-e2e-slot.sh && ' + MERGE,
+  '|| in an earlier line, escaped blank':
+    'true || echo x \\ \nscripts/wait-e2e-slot.sh && ' + MERGE,
   '|| in an earlier list sent to the background':
     'true || echo x & scripts/wait-e2e-slot.sh && ' + MERGE,
   '! in an earlier list': '! true; scripts/wait-e2e-slot.sh && ' + MERGE,
   '! in an earlier line': '! true\nscripts/wait-e2e-slot.sh && ' + MERGE,
+  '! in an earlier line, escaped blank': '! true \\ \nscripts/wait-e2e-slot.sh && ' + MERGE,
   '! in an earlier list sent to the background': '! true & scripts/wait-e2e-slot.sh && ' + MERGE,
   'negated slot call in an earlier list':
     '! scripts/wait-e2e-slot.sh; scripts/wait-e2e-slot.sh && ' + MERGE,
@@ -407,6 +422,8 @@ const MUST_PASS: Record<string, string> = {
     '! scripts/wait-e2e-slot.sh\nscripts/wait-e2e-slot.sh && ' + MERGE,
   'negated slot call sent to the background':
     '! scripts/wait-e2e-slot.sh & scripts/wait-e2e-slot.sh && ' + MERGE,
+  'negated slot call in an earlier line, escaped blank':
+    '! scripts/wait-e2e-slot.sh \\ \nscripts/wait-e2e-slot.sh && ' + MERGE,
   'negated slot call sent to the background, no blank':
     '! scripts/wait-e2e-slot.sh& scripts/wait-e2e-slot.sh && ' + MERGE,
   // Another repo's job, named in the URL: no diversif E2E job starts.
@@ -639,8 +656,8 @@ describe('block-e2e-start-without-slot', () => {
   );
 
   // The rule reads each list once, from its start to its end, a gated slot
-  // call or a start command (#715), so these finish within the default test
-  // timeout.
+  // call or a start command (#715): 20 ms or less on each of these. As for
+  // the unclosed arguments above, the hook's own 10 s limit is the bound.
   const afterSlot = (link: string) => 'scripts/wait-e2e-slot.sh && ' + link.repeat(10_000) + MERGE;
   it.each([
     ['x; ', afterSlot('x; ')],
@@ -648,39 +665,51 @@ describe('block-e2e-start-without-slot', () => {
     ['x and a newline', afterSlot('x\n')],
     ['x & ', afterSlot('x & ')],
     ['10,000 slot calls, then x; ', 'scripts/wait-e2e-slot.sh && '.repeat(10_000) + 'x; ' + MERGE]
-  ])('blocks a start after 10,000 links that end the chain: %s', (_, command) =>
-    expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(true)
+  ])(
+    'blocks a start after 10,000 links that end the chain: %s',
+    (_, command) => expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(true),
+    15_000
   );
 
-  it('passes a start after 10,000 && links', () =>
-    expect(denies(runHook(preToolUse('Bash', { command: afterSlot('x && ') })).output)).toBe(
-      false
-    ));
-
-  // Long commands with no start command. Python's re searches each to its
-  // end, so a check that read on past a list end, a || or a negated slot
-  // call, or a negation that read past a list end or a !, would take time
-  // that grows with the square of the length. The search is timed inside
-  // Python, without the process start-up. A loaded runner stalls a process
-  // for seconds (testing.md, « A wall-clock assertion »), and a stall only
-  // makes a search longer, so the bound applies to the fastest of three.
-  // The rule takes 20 ms or less on each; a check that read on took 1.5 s
-  // and more.
-  it.each([
-    ['x || ', 'x || '.repeat(10_000) + 'echo'],
-    ['! scripts/wait-e2e-slot.sh && ', '! scripts/wait-e2e-slot.sh && '.repeat(5_000) + 'echo'],
-    ['! x ', '! x '.repeat(10_000)],
-    ['x; ', 'x; '.repeat(10_000) + 'echo'],
-    ['x and a newline', 'x\n'.repeat(10_000) + 'echo'],
-    ['x & ', 'x & '.repeat(10_000) + 'echo']
-  ])(
-    'passes a long command with no start command within 500 ms: %s',
-    (_, command) => {
-      expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(false);
-      const seconds = searchSeconds(rule.conditions[0].pattern, [command, command, command]);
-      expect(Math.min(...seconds)).toBeLessThan(0.5);
-    },
+  it(
+    'passes a start after 10,000 && links',
+    () =>
+      expect(denies(runHook(preToolUse('Bash', { command: afterSlot('x && ') })).output)).toBe(
+        false
+      ),
     15_000
+  );
+
+  // Long commands with no start command: the hook passes each one of
+  // 10,000 items. Python's re searches each to its end, so a check that
+  // read on past a list end, a || or a negated slot call, or a negation
+  // that read past a list end or a !, would take time that grows with the
+  // square of the length or faster. testing.md « A wall-clock assertion »
+  // keeps an upper bound only with at least 5 s on each side of it. On four
+  // times the items, the rule's search takes 0.12 s or less, and a negation
+  // that read past each ! took 137 s, so the bound is 6 s. The search is
+  // timed inside Python, without the process start-up, and the bound
+  // applies to the fastest of three, since a stall only makes a run longer.
+  // A check that reads on fails on the bound, or when the timer stops it at
+  // 60 s.
+  it.each([
+    ['x || ', 'x || ', 10_000],
+    ['! scripts/wait-e2e-slot.sh && ', '! scripts/wait-e2e-slot.sh && ', 5_000],
+    ['! x ', '! x ', 10_000],
+    ['x; ', 'x; ', 10_000],
+    ['x and a newline', 'x\n', 10_000],
+    ['x & ', 'x & ', 10_000],
+    ['x, an escaped blank and a newline', 'x \\ \n', 10_000]
+  ] as const)(
+    'passes a long command with no start command, searched in under 6 s at 4 times the size: %s',
+    (_, item, count) => {
+      const command = item.repeat(count) + 'echo';
+      expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(false);
+      const longer = item.repeat(count * 4) + 'echo';
+      const seconds = searchSeconds(rule.conditions[0].pattern, [longer, longer, longer]);
+      expect(Math.min(...seconds)).toBeLessThan(6);
+    },
+    90_000
   );
 
   it('names the variable form in its message', () =>
@@ -697,7 +726,8 @@ describe('block-e2e-start-without-slot', () => {
   // marker's reach.
   it.each([
     'These end the chain: a `;`, a `||`, a lone `&` (one outside `&&`, `>&`, `&>` and `|&`), ' +
-      'and a newline that ends a line with text on it, unless that line ends in `&&`, `|` or `\\`.',
+      'and a newline that ends a line with text on it, unless that line ends in `&&` or `|`, ' +
+      'blanks after them allowed, or in a `\\` right before the newline.',
     'So a loop or an `if` after the slot call blocks, and so does a `{ … }` group',
     'write a plain `&&` chain instead, such as `scripts/wait-e2e-slot.sh && T=$(…) && curl …`',
     'A negated slot call',
