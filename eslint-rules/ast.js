@@ -3,9 +3,10 @@
  * @import { Rule } from 'eslint'
  * @import { TSESTree } from '@typescript-eslint/utils'
  */
-// The node types come from the parsers eslint.config.js runs, which the
-// typescript-eslint and eslint-plugin-svelte packages install:
-// @typescript-eslint/utils for TSESTree and svelte-eslint-parser for AST.
+// The node types come from the parsers eslint.config.js runs:
+// @typescript-eslint/utils, which typescript-eslint depends on, for TSESTree
+// and svelte-eslint-parser, which eslint-plugin-svelte depends on, for AST.
+// package.json lists both, since Fallow and knip read these @import tags.
 
 /**
  * A rule whose visitors take the nodes of `Node`, a parser's node union,
