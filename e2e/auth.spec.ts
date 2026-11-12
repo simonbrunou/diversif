@@ -17,7 +17,7 @@ test.describe('signup → onboarding', () => {
 
   test('rejects invalid login @responsive', async ({ page }) => {
     await page.goto('/login');
-    await page.getByLabel('Adresse e-mail').fill('nobody-12345@example.com');
+    await page.getByLabel('Adresse e-mail', { exact: true }).fill('nobody-12345@example.com');
     await page.getByLabel('Mot de passe', { exact: true }).fill('wrong-pass');
     await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
     await expect(page.locator('body')).toContainText(/incorrect/i);
@@ -35,7 +35,7 @@ test.describe('signup → onboarding', () => {
     await awaitHydration(page);
     // A full reload would also replace the alert; this mark proves the page stayed.
     await page.evaluate(() => document.documentElement.setAttribute('data-e2e-same-page', ''));
-    const email = page.getByLabel('Adresse e-mail');
+    const email = page.getByLabel('Adresse e-mail', { exact: true });
     const password = page.getByLabel('Mot de passe', { exact: true });
     const submit = page.getByRole('button', { name: 'Se connecter', exact: true });
     const refusal = 'Adresse e-mail ou mot de passe incorrect.';
@@ -71,7 +71,7 @@ test.describe('login without JavaScript', () => {
     const noJs = await openWithoutJavaScript(browser, page);
     try {
       await noJs.goto('/login');
-      await noJs.getByLabel('Adresse e-mail').fill('nobody-nojs@example.com');
+      await noJs.getByLabel('Adresse e-mail', { exact: true }).fill('nobody-nojs@example.com');
       await noJs.getByLabel('Mot de passe', { exact: true }).fill('wrong-pass');
       await noJs.getByRole('button', { name: 'Se connecter', exact: true }).click();
       const alert = noJs.getByRole('alert');

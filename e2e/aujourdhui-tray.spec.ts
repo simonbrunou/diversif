@@ -36,11 +36,11 @@ function trayModules(page: Page) {
   return {
     // The stat tiles' own grid, which carries their mb-3.
     stats: page.getByRole('article', { name: 'Aliments', exact: true }).locator('..'),
-    allergens: page.getByRole('region', { name: 'Suivi des allergènes' }),
+    allergens: page.getByRole('region', { name: 'Suivi des allergènes', exact: true }),
     feed: page
       .locator('section')
-      .filter({ has: page.getByRole('heading', { name: 'Derniers repas' }) }),
-    nav: page.getByRole('navigation', { name: 'Raccourcis' })
+      .filter({ has: page.getByRole('heading', { name: 'Derniers repas', exact: true }) }),
+    nav: page.getByRole('navigation', { name: 'Raccourcis', exact: true })
   };
 }
 

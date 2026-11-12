@@ -28,7 +28,7 @@ async function registerPasskey(page: Page, name: string) {
   // The registration ceremony's fresh-auth check needs the account's own
   // current password.
   await page.getByLabel('Mot de passe', { exact: true }).fill(SIGNUP_PASSWORD);
-  await page.getByLabel('Nom de la nouvelle clé').fill(name);
+  await page.getByLabel('Nom de la nouvelle clé', { exact: true }).fill(name);
   // The empty state « Aucune clé enregistrée. » stays on screen until the
   // list refresh that follows the toast, and a substring toast locator
   // matches both (#509). Before the click no toast has shown yet, so the
@@ -40,7 +40,7 @@ async function registerPasskey(page: Page, name: string) {
   await page.getByRole('button', { name: 'Ajouter une clé', exact: true }).click();
 
   await expect(registeredToast).toBeVisible();
-  await expect(page.getByLabel('Nom de la clé')).toHaveValue(name);
+  await expect(page.getByLabel('Nom de la clé', { exact: true })).toHaveValue(name);
 }
 
 async function submitDelete(page: Page, password: string) {
@@ -124,13 +124,13 @@ test.describe('passkeys', () => {
     await registerPasskey(page, 'Téléphone');
 
     // Rename posts natively, so its result comes with a new page load.
-    await page.getByLabel('Nom de la clé').fill('   ');
+    await page.getByLabel('Nom de la clé', { exact: true }).fill('   ');
     await page.getByRole('button', { name: 'Renommer', exact: true }).click();
     await expect(page.getByRole('alert')).toHaveText('Nom invalide.');
     await awaitHydration(page);
     expect(await countText(page, 'Nom invalide.')).toBe(1);
 
-    await page.getByLabel('Nom de la clé').fill('Téléphone perso');
+    await page.getByLabel('Nom de la clé', { exact: true }).fill('Téléphone perso');
     await page.getByRole('button', { name: 'Renommer', exact: true }).click();
     await expect(page.getByRole('status')).toHaveText('Clé renommée.');
     await awaitHydration(page);
@@ -149,14 +149,14 @@ test.describe('passkeys', () => {
     const noJs = await openWithoutJavaScript(browser, page);
     try {
       await noJs.goto('/account/passkeys');
-      await noJs.getByLabel('Nom de la clé').fill('   ');
+      await noJs.getByLabel('Nom de la clé', { exact: true }).fill('   ');
       await noJs.getByRole('button', { name: 'Renommer', exact: true }).click();
       await expect(noJs.getByRole('alert')).toHaveText('Nom invalide.');
 
-      await noJs.getByLabel('Nom de la clé').fill('Clé du bureau');
+      await noJs.getByLabel('Nom de la clé', { exact: true }).fill('Clé du bureau');
       await noJs.getByRole('button', { name: 'Renommer', exact: true }).click();
       await expect(noJs.getByRole('status')).toHaveText('Clé renommée.');
-      await expect(noJs.getByLabel('Nom de la clé')).toHaveValue('Clé du bureau');
+      await expect(noJs.getByLabel('Nom de la clé', { exact: true })).toHaveValue('Clé du bureau');
     } finally {
       await noJs.context().close();
     }

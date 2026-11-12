@@ -78,7 +78,7 @@ test.describe('document title without JavaScript', () => {
       await expect(noJs).toHaveTitle('Log: Emma · Diversif');
 
       await noJs.goto('/account/password');
-      await expect(noJs.getByLabel('Mot de passe actuel')).toBeVisible();
+      await expect(noJs.getByLabel('Mot de passe actuel', { exact: true })).toBeVisible();
       await expect(headTitles(noJs)).toHaveCount(1);
       await expect(noJs).toHaveTitle('Mot de passe · Diversif');
     } finally {
@@ -118,7 +118,7 @@ test.describe('document title with JavaScript', () => {
     // The first two steps pass on main too: they guard against a fix that
     // resets the title on every navigation. A refused login re-renders the
     // form on the same route.
-    await page.getByLabel('Adresse e-mail').fill('nobody-title@example.com');
+    await page.getByLabel('Adresse e-mail', { exact: true }).fill('nobody-title@example.com');
     await page.getByLabel('Mot de passe', { exact: true }).fill('wrong-pass');
     await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
     await expect(page.getByRole('alert')).toHaveText('Adresse e-mail ou mot de passe incorrect.');

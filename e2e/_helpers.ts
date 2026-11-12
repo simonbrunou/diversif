@@ -95,8 +95,8 @@ export async function signUp(
   const url = opts.inviteCode ? `/signup?code=${opts.inviteCode}` : '/signup';
   await page.goto(url);
   await awaitHydration(page);
-  await page.getByLabel('Votre prénom').fill(opts.displayName ?? 'Parent');
-  await page.getByLabel('Adresse e-mail').fill(email);
+  await page.getByLabel('Votre prénom', { exact: true }).fill(opts.displayName ?? 'Parent');
+  await page.getByLabel('Adresse e-mail', { exact: true }).fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill(password);
   await page.getByLabel(/au moins 15 ans/i).check();
   await page.getByLabel(/conditions générales/i).check();
@@ -122,7 +122,7 @@ export async function signUp(
   // touching any field, so the whole login form is guaranteed mounted.
   const loginSubmit = page.getByRole('button', { name: 'Se connecter', exact: true });
   await loginSubmit.waitFor({ state: 'visible', timeout: 15_000 });
-  await page.getByLabel('Adresse e-mail').fill(email);
+  await page.getByLabel('Adresse e-mail', { exact: true }).fill(email);
   await page.getByLabel('Mot de passe', { exact: true }).fill(password);
   await loginSubmit.click();
   // Bumped from the 5s default : with workers:2 the signup + login actions
@@ -173,7 +173,7 @@ async function submitChildForm(page: Page, name: string, birthDate: string): Pro
   // bug was locator ambiguity across the page transition.
   await awaitHydration(page);
   const nameInput = page.getByLabel('Prénom', { exact: true });
-  const birthInput = page.getByLabel('Date de naissance');
+  const birthInput = page.getByLabel('Date de naissance', { exact: true });
   await nameInput.fill(name);
   await birthInput.fill(birthDate);
   await expect(nameInput).toHaveValue(name);
@@ -206,14 +206,15 @@ export async function logRepas(
   await page.goto(`/child/${childId}/log`);
   await awaitHydration(page);
   for (const name of aliments) {
-    await page.getByPlaceholder('Rechercher un aliment…').fill(name);
+    await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill(name);
     await page
+      // eslint-disable-next-line e2e/exact-locator -- a RegExp, which the rule cannot tell from a string: the result's name goes on with the food's category
       .getByRole('button', { name: new RegExp(`^${name}`) })
       .first()
       .click();
   }
   await expect(page.locator('input[type="hidden"][name="foodId"]')).toHaveCount(aliments.length);
-  if (givenAt) await page.getByLabel('Quand ?').fill(givenAt);
+  if (givenAt) await page.getByLabel('Quand ?', { exact: true }).fill(givenAt);
   // Scoped to the fieldset: the severity helper below it repeats the labels.
   if (reaction) await page.locator('fieldset').getByText(reaction, { exact: true }).click();
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
@@ -228,7 +229,7 @@ export async function logRepas(
  * subsequent navigations stay clean.
  */
 export async function dismissWelcomeIfPresent(page: Page): Promise<void> {
-  const dismiss = page.getByRole('button', { name: 'Plus tard' });
+  const dismiss = page.getByRole('button', { name: 'Plus tard', exact: true });
   // The dialog mounts client-side after hydration, so an instantaneous
   // isVisible() races it : the check returns false, dismissal is skipped, and
   // the dialog opens mid-test — polluting later assertions and axe sweeps

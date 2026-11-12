@@ -18,8 +18,9 @@ async function logFoodAndGetEntryId(
   foodName = 'Poire'
 ): Promise<number> {
   await page.goto(`/child/${childId}/log`);
-  await page.getByPlaceholder('Rechercher un aliment…').fill(foodName);
+  await page.getByPlaceholder('Rechercher un aliment…', { exact: true }).fill(foodName);
   await page
+    // eslint-disable-next-line e2e/exact-locator -- a RegExp, which the rule cannot tell from a string: the result's name goes on with the food's category
     .getByRole('button', { name: new RegExp(`^${foodName}`) })
     .first()
     .click();
@@ -29,6 +30,7 @@ async function logFoodAndGetEntryId(
 
   await page.goto(`/child/${childId}/foods`);
   await page
+    // eslint-disable-next-line e2e/exact-locator -- a RegExp, which the rule cannot tell from a string
     .getByRole('link', { name: new RegExp(foodName, 'i') })
     .first()
     .click();

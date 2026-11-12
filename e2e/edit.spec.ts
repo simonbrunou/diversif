@@ -45,9 +45,9 @@ test('edits a standalone repas and lands back on its detail page', async ({ page
 
   await page.goto(`/child/${childId}/log/${entryId}?from=detail`);
   await awaitHydration(page);
-  await expect(page.getByRole('heading', { name: 'Modifier ce repas' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Modifier ce repas', exact: true })).toBeVisible();
   await reactionOption(page, 'reaction', 'inconfort').click();
-  await page.getByLabel('Note').fill('A grimacé');
+  await page.getByLabel('Une note ? (facultatif)', { exact: true }).fill('A grimacé');
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/child/${childId}/foods/${entryId}$`));
 
@@ -55,20 +55,24 @@ test('edits a standalone repas and lands back on its detail page', async ({ page
   await awaitHydration(page);
   await expect(page.locator('input[name="reaction"][value="inconfort"]')).toBeChecked();
   await expect(page.locator('input[name="reactionLoaded"]')).toHaveValue('inconfort');
-  await expect(page.getByLabel('Note')).toHaveValue('A grimacé');
+  await expect(page.getByLabel('Une note ? (facultatif)', { exact: true })).toHaveValue(
+    'A grimacé'
+  );
 
   // A refused edit stays on the editor with its error (same entry: the
   // layout's per-entry key must not remount and drop the form result), and
   // writes nothing.
-  await page.getByLabel('Quand ?').fill('2099-01-01T10:00');
-  await page.getByLabel('Note').fill('jamais enregistré');
+  await page.getByLabel('Quand ?', { exact: true }).fill('2099-01-01T10:00');
+  await page.getByLabel('Une note ? (facultatif)', { exact: true }).fill('jamais enregistré');
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   await expect(
     page.getByText('La date du repas ne peut pas être dans le futur.', { exact: true })
   ).toBeVisible();
   await expect(page).toHaveURL(new RegExp(`/child/${childId}/log/${entryId}$`));
   await page.reload();
-  await expect(page.getByLabel('Note')).toHaveValue('A grimacé');
+  await expect(page.getByLabel('Une note ? (facultatif)', { exact: true })).toHaveValue(
+    'A grimacé'
+  );
 
   await page.getByRole('button', { name: 'Supprimer ce repas', exact: true }).click();
   await page
@@ -92,16 +96,18 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
 
   await page.goto(`/child/${childId}/log/${anchorId}?from=dashboard`);
   await awaitHydration(page);
-  await expect(page.getByRole('heading', { name: 'Modifier le repas' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Modifier le repas', exact: true })).toBeVisible();
   const remove = page.getByRole('button', { name: 'Retirer', exact: true });
   await expect(remove).toHaveCount(4);
-  await page.getByLabel('Note').fill('Repas du midi');
+  await page.getByLabel('Une note ? (facultatif)', { exact: true }).fill('Repas du midi');
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/child/${childId}$`));
 
   await page.goto(`/child/${childId}/log/${anchorId}`);
   await awaitHydration(page);
-  await expect(page.getByLabel('Note')).toHaveValue('Repas du midi');
+  await expect(page.getByLabel('Une note ? (facultatif)', { exact: true })).toHaveValue(
+    'Repas du midi'
+  );
   const dialog = page.getByRole('dialog');
   const removeConfirmed = async (row: number) => {
     await remove.nth(row).click();
@@ -114,7 +120,7 @@ test('edits a meal, removes aliments, then deletes the meal', async ({ page }) =
   await removeConfirmed(1);
   await expect(remove).toHaveCount(3);
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole('link', { name: 'Pomme' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Pomme', exact: true })).toHaveCount(0);
   await expect(page).toHaveURL(new RegExp(`/log/${anchorId}$`));
 
   // The aliment the editor was opened on: it lands on a survivor.
@@ -162,15 +168,17 @@ for (const javaScript of [true, false]) {
       try {
         await other.goto(`/child/${childId}/foods/${entryId}`);
         await awaitHydration(other);
-        await other.getByRole('button', { name: 'Signaler une réaction tardive' }).click();
+        await other
+          .getByRole('button', { name: 'Signaler une réaction tardive', exact: true })
+          .click();
         await reactionOption(other, 'label', 'gonflement').click();
-        await other.getByRole('button', { name: 'Enregistrer le symptôme' }).click();
+        await other.getByRole('button', { name: 'Enregistrer le symptôme', exact: true }).click();
         await expect(other.getByRole('dialog')).toBeHidden();
       } finally {
         await other.close();
       }
 
-      const note = editor.getByLabel('Note');
+      const note = editor.getByLabel('Une note ? (facultatif)', { exact: true });
       await reactionOption(editor, 'reaction', 'inconfort').click();
       await note.fill('A grimacé');
       const save = editor.getByRole('button', { name: 'Enregistrer', exact: true });
@@ -244,7 +252,7 @@ test.describe('a repas time without JavaScript', () => {
     const noJs = await openWithoutJavaScript(browser, page);
     try {
       await noJs.goto(`/child/${childId}/log/${entryId}?from=detail`);
-      const when = noJs.getByLabel('Quand ?');
+      const when = noJs.getByLabel('Quand ?', { exact: true });
       await expect(when).toHaveValue(loggedAt);
       await when.fill(typed);
       await noJs.getByRole('button', { name: 'Enregistrer', exact: true }).click();
@@ -259,7 +267,7 @@ test.describe('a repas time without JavaScript', () => {
       for (let ms = start - (start % 60_000); ms <= Date.now(); ms += 60_000) {
         minutes.push(parisInput(ms));
       }
-      expect(minutes).toContain(await noJs.getByLabel('Quand ?').inputValue());
+      expect(minutes).toContain(await noJs.getByLabel('Quand ?', { exact: true }).inputValue());
     } finally {
       await noJs.context().close();
     }
@@ -309,7 +317,7 @@ for (const javaScript of [true, false]) {
             if (javaScript) await awaitHydration(editor);
             const save = editor.getByRole('button', { name: 'Enregistrer', exact: true });
 
-            await editor.getByLabel('Quand ?').fill('2099-01-01T10:00');
+            await editor.getByLabel('Quand ?', { exact: true }).fill('2099-01-01T10:00');
             await save.click();
             await expect(
               editor.getByText('La date du repas ne peut pas être dans le futur.', { exact: true })
@@ -318,7 +326,7 @@ for (const javaScript of [true, false]) {
               from
             );
 
-            await editor.getByLabel('Quand ?').fill(daysAgoInput(3));
+            await editor.getByLabel('Quand ?', { exact: true }).fill(daysAgoInput(3));
             await save.click();
             await expect(editor).toHaveURL(landsAt(childId, entryId));
           } finally {

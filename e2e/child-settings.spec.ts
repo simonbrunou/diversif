@@ -65,10 +65,10 @@ test.describe('child settings messages without JavaScript', () => {
       await expect(noJs.getByRole('alert')).toHaveCount(0);
       await expect(childForm(noJs).getByLabel('Prénom', { exact: true })).toHaveValue('Lola');
 
-      await dietForm(noJs).getByLabel('Végétarien').check();
+      await dietForm(noJs).getByLabel('Végétarien', { exact: true }).check();
       await saveButton(dietForm(noJs)).click();
       await expect(noJs.getByText('Régime alimentaire mis à jour.', { exact: true })).toBeVisible();
-      await expect(dietForm(noJs).getByLabel('Végétarien')).toBeChecked();
+      await expect(dietForm(noJs).getByLabel('Végétarien', { exact: true })).toBeChecked();
 
       await noJs.getByRole('button', { name: 'Révoquer', exact: true }).click();
       await expect(noJs.getByText('Invitation révoquée.', { exact: true })).toBeVisible();
@@ -99,7 +99,7 @@ test.describe('child settings messages with JavaScript', () => {
     expect(await countText(page, 'Champs invalides.')).toBe(0);
 
     const dietSave = saveButton(dietForm(page));
-    await dietForm(page).getByLabel('Végétarien').check();
+    await dietForm(page).getByLabel('Végétarien', { exact: true }).check();
     await dietSave.click();
     await expect(page.getByText('Régime alimentaire mis à jour.', { exact: true })).toBeVisible();
     await expect(dietSave).toBeEnabled();
