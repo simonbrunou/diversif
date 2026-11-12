@@ -16,7 +16,8 @@ caught locally first. **Stop at the first hard failure**, report it, and don't c
 ```bash
 bun run check          # paraglide compile + svelte-check (types)
 bun lint               # prettier + eslint + lint:i18n + contrast + paired foreground
-bun lint:i18n          # fr apostrophes, unused keys, FR/EN key + placeholder + empty-value parity
+bun lint:i18n          # fr apostrophes, unused keys, FR/EN parity (keys, placeholders, empty,
+                       # whitespace-only or non-string values, braces outside {letters})
 bun lint:contrast      # accessibility contrast check
 bun run test:coverage  # unit/integration/component + 100% line-coverage gate (never bare `bun test`)
 bun depcruise          # architecture / dependency boundaries
