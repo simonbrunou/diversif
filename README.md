@@ -128,7 +128,7 @@ DATABASE_PATH=/chemin/vers/diversif.db bun scripts/export-user.ts user@example.c
 
 ## Internationalisation
 
-The UI is bilingual — French (default) and English under `/en/`, via paraglide. Nothing checks message-key parity between `messages/fr.json` and `messages/en.json` yet: `bun run lint:i18n` and the paraglide compiler both pass a key missing from one file (#723). **Legal and marketing pages (mentions légales, politique de confidentialité, CGU, guide, sources, allergènes) are intentionally French-only _content_** — only the app chrome translates. Localise those pages only if reaching an English-speaking audience becomes a goal.
+The UI is bilingual — French (default) and English under `/en/`, via paraglide. The paraglide compiler passes a key missing from one of `messages/fr.json` and `messages/en.json` without a warning, so `bun run lint:i18n` checks the two files' parity (`scripts/check-i18n-parity.ts`): the same keys, the same `{placeholders}` in each value, every value a string that is neither empty nor whitespace only, and no `{` or `}` outside a `{letters}` placeholder. **Legal and marketing pages (mentions légales, politique de confidentialité, CGU, guide, sources, allergènes) are intentionally French-only _content_** — only the app chrome translates. Localise those pages only if reaching an English-speaking audience becomes a goal.
 
 ## License
 

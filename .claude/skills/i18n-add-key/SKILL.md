@@ -8,9 +8,9 @@ description: >-
 
 # i18n-add-key
 
-This app is bilingual (paraglide-js, FR + EN) and **French-first with a no-anglicism rule**
-(`warn-anglicism-fr-messages` + `scripts/lint-i18n.mjs` enforce it). Every UI string is a message
-key — never hardcode text in a component.
+This app is bilingual (paraglide-js, FR + EN) and **French-first with a no-anglicism rule**. No
+lint checks anglicisms: the `warn-anglicism-fr-messages` rule-hook warns on some, and PR review
+catches the rest. Every UI string is a message key — never hardcode text in a component.
 
 ## Steps
 1. Pick a key name (existing convention: look at neighbouring keys in `messages/en.json`).
@@ -23,12 +23,16 @@ key — never hardcode text in a component.
    ```bash
    bun run paraglide && bun lint:i18n
    ```
-   `lint:i18n` fails on missing/extra keys or placeholder mismatches between locales.
+   `lint:i18n` fails on a straight apostrophe inside a French word, a key that nothing in `src/`
+   uses, and, through `scripts/check-i18n-parity.ts`, on a key one locale lacks, a `{placeholder}`
+   one locale's value lacks, an empty or whitespace-only value, a value that is not a string, and a
+   `{` or `}` outside a `{letters}` placeholder.
 5. Use the generated message function in the component (import from `#lib/paraglide/messages.js`),
    never the raw string. Don't edit `src/lib/paraglide/` — it's generated.
 
 ## Pitfalls
-- Adding to only one locale → `lint:i18n` (and the commit hook) fail.
+- Adding to only one locale fails `lint:i18n`, which `bun run lint` runs in the pre-push hook and
+  in CI. The pre-commit hook does not run it.
 - Pluralization / interpolation must match the paraglide message syntax used by sibling keys.
 - A colon after a label goes in a message, never in markup: fr puts a space before it, en does
   not (`i18n/no-literal-colon-separator`, #624). Put the whole phrase in one message
