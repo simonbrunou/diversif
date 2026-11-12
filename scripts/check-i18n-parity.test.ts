@@ -85,6 +85,10 @@ describe('findParityProblems', () => {
       '[fr] a: missing (en has it).',
       '[en] a: the value is empty.'
     ]);
+    expect(findParityProblems({ a: ' ' }, {})).toEqual([
+      '[en] a: missing (fr has it).',
+      '[fr] a: the value is whitespace only.'
+    ]);
   });
 
   it.each([
