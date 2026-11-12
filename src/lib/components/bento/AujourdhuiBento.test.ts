@@ -30,6 +30,33 @@ describe('AujourdhuiBento', () => {
     expect(screen.getByText(m.aujourdhuiBilanAlimentsDeltaOther({ count: '2' }))).toBeTruthy();
   });
 
+  // #737: from lg the destinations take the stat tiles' cell (column one, rows
+  // 2 and 3) whenever the stat tiles render nothing, and stay under them in
+  // row 4 otherwise. Both read StatTiles' own threshold, so they agree at the
+  // first logged food. e2e/aujourdhui-tray.spec.ts measures the layout itself.
+  it.each([
+    [0, false, ['lg:row-span-2', 'lg:row-start-2']],
+    [1, true, ['lg:row-start-4']]
+  ])(
+    'with %i foods introduced, stat tiles shown: %p, destinations in %p',
+    (foodsIntroduced, statsShown, navRows) => {
+      const { container } = render(AujourdhuiBento, {
+        props: { ...baseProps, stats: { foodsIntroduced, weekCount: 0 } }
+      });
+      expect(Boolean(screen.queryByRole('article', { name: m.aujourdhuiBilanAliments() }))).toBe(
+        statsShown
+      );
+      const nav = screen.getByRole('navigation', { name: m.aujourdhuiHandoffsLabel() });
+      const rows = [...nav.classList].filter((c) => /^lg:row-/.test(c)).sort();
+      expect(rows).toEqual(navRows);
+      // No empty stat tiles cell is left behind to cover the destinations.
+      const columnOneCells = [...container.querySelectorAll('.lg\\:col-start-1')].map(
+        (el) => el.tagName
+      );
+      expect(columnOneCells).toEqual(statsShown ? ['DIV', 'NAV'] : ['NAV']);
+    }
+  );
+
   it('renders the recent-feed header', () => {
     render(AujourdhuiBento, { props: baseProps });
     expect(screen.getByText(m.aujourdhuiRecentTitle())).toBeTruthy();

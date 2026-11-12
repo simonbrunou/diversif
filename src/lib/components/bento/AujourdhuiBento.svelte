@@ -1,6 +1,6 @@
 <!-- src/lib/components/bento/AujourdhuiBento.svelte -->
 <script lang="ts">
-  import StatTiles from './StatTiles.svelte';
+  import StatTiles, { statTilesRender } from './StatTiles.svelte';
   import AllergensSnapshot, { type AllergenPillState } from './AllergensSnapshot.svelte';
   import ReminderStrip from './ReminderStrip.svelte';
   import RecentFeed from './RecentFeed.svelte';
@@ -77,6 +77,10 @@
 
   const clearedCount = $derived(allergens.filter((a) => a.state === 'cleared').length);
 
+  // StatTiles' own test, so the tray never moves the destinations into a cell
+  // the stat tiles fill, or leaves them under a cell the stat tiles leave empty.
+  const showStatTiles = $derived(statTilesRender(stats.foodsIntroduced));
+
   const handoffs = $derived([
     {
       href: localizedHref(`/child/${childId}/menu`),
@@ -127,6 +131,15 @@
   three rows, 216px. The strip then sets row 2, and a 38px band shows between
   the stat tiles and the destinations. The old layout left the same band under
   the stat tiles (#730).
+
+  The stat tiles render nothing until the first food is logged. The tray then
+  drops their cell, and the destinations take it: column one, rows 2 and 3,
+  their top level with the allergen strip's (#737). Under the strip's row,
+  they left column one blank for 152px. They span both rows so that, when they
+  are taller than the strip, as in English, their extra height goes to row 3,
+  which the feed starts with, and the feed stays one margin under the strip.
+  In row 2 alone they would grow that row and push the feed down. Row 4 is
+  then empty, and the DOM order is unchanged.
 -->
 <div
   // fallow-ignore-next-line css-token-drift -- the row tracks of this one tray (#363), not a design value a token would name
@@ -136,14 +149,16 @@
     <ReminderStrip {reminders} />
   </div>
 
-  <div class="min-w-0 lg:col-start-1 lg:row-span-2 lg:row-start-2">
-    <StatTiles
-      foodsIntroduced={stats.foodsIntroduced}
-      weekCount={stats.weekCount}
-      streakCurrent={streak}
-      {streakRecord}
-    />
-  </div>
+  {#if showStatTiles}
+    <div class="min-w-0 lg:col-start-1 lg:row-span-2 lg:row-start-2">
+      <StatTiles
+        foodsIntroduced={stats.foodsIntroduced}
+        weekCount={stats.weekCount}
+        streakCurrent={streak}
+        {streakRecord}
+      />
+    </div>
+  {/if}
 
   <div class="min-w-0 lg:col-span-2 lg:col-start-2 lg:row-start-2">
     <AllergensSnapshot
@@ -163,7 +178,13 @@
     that happened" were indistinguishable. surface-2 with no shadow reads as
     chrome, which is what they are, and drops the ghost-card double elevation.
   -->
-  <nav aria-label={m.aujourdhuiHandoffsLabel()} class="min-w-0 lg:col-start-1 lg:row-start-4">
+  <nav
+    aria-label={m.aujourdhuiHandoffsLabel()}
+    class={[
+      'min-w-0 lg:col-start-1',
+      showStatTiles ? 'lg:row-start-4' : 'lg:row-span-2 lg:row-start-2'
+    ]}
+  >
     <ul class="flex flex-col gap-2">
       {#each handoffs as handoff (handoff.href)}
         <li>
