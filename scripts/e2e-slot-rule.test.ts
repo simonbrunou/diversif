@@ -661,7 +661,11 @@ describe('block-e2e-start-without-slot', () => {
   // end, so a check that read on past a list end, a || or a negated slot
   // call, or a negation that read past a list end or a !, would take time
   // that grows with the square of the length. The search is timed inside
-  // Python, without the process start-up.
+  // Python, without the process start-up. A loaded runner stalls a process
+  // for seconds (testing.md, « A wall-clock assertion »), and a stall only
+  // makes a search longer, so the bound applies to the fastest of three.
+  // The rule takes 20 ms or less on each; a check that read on took 1.5 s
+  // and more.
   it.each([
     ['x || ', 'x || '.repeat(10_000) + 'echo'],
     ['! scripts/wait-e2e-slot.sh && ', '! scripts/wait-e2e-slot.sh && '.repeat(5_000) + 'echo'],
@@ -673,8 +677,8 @@ describe('block-e2e-start-without-slot', () => {
     'passes a long command with no start command within 500 ms: %s',
     (_, command) => {
       expect(denies(runHook(preToolUse('Bash', { command })).output)).toBe(false);
-      const [seconds] = searchSeconds(rule.conditions[0].pattern, [command]);
-      expect(seconds).toBeLessThan(0.5);
+      const seconds = searchSeconds(rule.conditions[0].pattern, [command, command, command]);
+      expect(Math.min(...seconds)).toBeLessThan(0.5);
     },
     15_000
   );
