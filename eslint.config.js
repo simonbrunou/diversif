@@ -105,12 +105,13 @@ export default ts.config(
     }
   },
   {
-    // Playwright's getByText matches a substring by default (#509, #546).
-    // The helpers file counts too: a helper that wraps getByText must match
-    // exactly unless it says why not.
+    // Playwright's getByText, getByLabel, getByPlaceholder, getByTitle,
+    // getByAltText and a getByRole name match a substring by default (#509,
+    // #546, #604). The helpers file counts too: a helper that wraps one of
+    // them must match exactly unless it says why not.
     files: ['e2e/**/*.ts'],
     plugins: { e2e },
-    rules: { 'e2e/exact-get-by-text': 'error' }
+    rules: { 'e2e/exact-locator': 'error' }
   },
   {
     files: ['src/lib/server/**/*.ts'],
