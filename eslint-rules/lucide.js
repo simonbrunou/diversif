@@ -18,35 +18,67 @@
 // icons reached through a namespace import that a lint suppression comment
 // let in. A static check stops there. (`require()` is already an error under
 // @typescript-eslint/no-require-imports.)
+/**
+ * @import { SourceCode } from 'eslint'
+ * @import { TSESTree } from '@typescript-eslint/utils'
+ * @import { RuleModule } from './ast.js'
+ */
 import { readdirSync, readFileSync } from 'node:fs';
-import { fixedText, typeWrappers } from './ast.js';
+import { childNodes, fixedText, isTypeWrapper } from './ast.js';
+
+/**
+ * An export of @lucide/svelte: the stem of its file under dist/icons/ and
+ * the function that writes a plain icon name in the export's style.
+ * @typedef {{ file: string, toSameStyle: (name: string) => string }} Icon
+ */
+/**
+ * Why an icon file is deprecated: the name that replaces it, or the reason
+ * it was removed.
+ * @typedef {{ replacement: string, reason?: undefined } | { replacement?: undefined, reason: string }} Deprecation
+ */
+/**
+ * The nodes whose source the rule checks for barrels, besides import types.
+ * @typedef {TSESTree.ImportDeclaration | TSESTree.ExportNamedDeclaration | TSESTree.ExportAllDeclaration | TSESTree.ImportExpression} ImportNode
+ */
 
 const lucidePackage = '@lucide/svelte';
 const componentTypeSuffix = '.svelte.d.ts';
 
+/**
+ * @param {URL} dist
+ * @param {string} path
+ */
 const readText = (dist, path) => readFileSync(new URL(path, dist), 'utf8');
 
-// A Lucide release that changes the files read below must stop the lint run
-// rather than quietly check fewer icons.
+/**
+ * A Lucide release that changes the files read below must stop the lint run
+ * rather than quietly check fewer icons.
+ * @param {string} detail
+ * @returns {never}
+ */
 function fail(detail) {
   throw new Error(`eslint-rules/lucide.js cannot parse @lucide/svelte (${detail}).`);
 }
 
-// Maps every export name to the stem of the file it comes from under
-// dist/icons/ (circle-exclamation-point, or alert-circle for an old name's
-// re-export file), which is also its deep-import path. Each name exists plain
-// (CircleExclamationPoint), Lucide-prefixed (LucideCircleExclamationPoint)
-// and Icon-suffixed (CircleExclamationPointIcon). `toSameStyle` writes a
-// plain name in the style of the name it is stored under, so a suggested
-// replacement matches the import it replaces.
+/**
+ * Maps every export name to the stem of the file it comes from under
+ * dist/icons/ (circle-exclamation-point, or alert-circle for an old name's
+ * re-export file), which is also its deep-import path. Each name exists plain
+ * (CircleExclamationPoint), Lucide-prefixed (LucideCircleExclamationPoint)
+ * and Icon-suffixed (CircleExclamationPointIcon). `toSameStyle` writes a
+ * plain name in the style of the name it is stored under, so a suggested
+ * replacement matches the import it replaces.
+ * @param {URL} dist
+ */
 function readExports(dist) {
+  /** @type {Map<string, Icon>} */
   const exportsByName = new Map();
-  for (const [path, toSameStyle] of [
+  for (const [path, toSameStyle] of /** @type {[string, Icon['toSameStyle']][]} */ ([
     ['icons/index.d.ts', (name) => name],
     ['aliases/aliases.d.ts', (name) => name],
     ['aliases/prefixed.d.ts', (name) => `Lucide${name}`],
     ['aliases/suffixed.d.ts', (name) => `${name}Icon`]
-  ]) {
+  ])) {
     const source = readText(dist, path);
     const exportLines = [
       ...source.matchAll(/default as (\w+) \} from '\.\.?\/(?:icons\/)?([\w-]+)\.(?:svelte|js)'/g)
@@ -59,10 +91,15 @@ function readExports(dist) {
   return exportsByName;
 }
 
-// Renamed and merged icons keep their old name as an alias. A deprecated
-// alias carries a note that names the new one: `@deprecated ... use
-// {@link CircleExclamationPoint} instead`. An alias with no note, such as
-// CircleAlert since 1.68.0, is a current name.
+/**
+ * Renamed and merged icons keep their old name as an alias. A deprecated
+ * alias carries a note that names the new one: `@deprecated ... use
+ * {@link CircleExclamationPoint} instead`. An alias with no note, such as
+ * CircleAlert since 1.68.0, is a current name.
+ * @param {URL} dist
+ * @param {Map<string, Icon>} exportsByName
+ * @returns {[string, Deprecation][]}
+ */
 function readAliasNotes(dist, exportsByName) {
   const source = readText(dist, 'aliases/aliases.d.ts');
   const notes = [
@@ -81,14 +118,19 @@ function readAliasNotes(dist, exportsByName) {
 
 // A doc comment and the `declare const` it documents.
 const documentedDeclaration = /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*(?:export )?declare const (\w+)/g;
+/** @param {string} text */
 const countNotes = (text) => text.split('@deprecated').length - 1;
 
-// Removed icons keep their file and carry the note, a reason with no
-// replacement, in the doc comment of their component type (the file's
-// default export). Since 1.60.0 every icon's file also marks its
-// `__iconNode` data export @deprecated, which says nothing about the icon.
-// A note anywhere else stops the lint run. Returns the removal reason, or
-// undefined for a current icon.
+/**
+ * Removed icons keep their file and carry the note, a reason with no
+ * replacement, in the doc comment of their component type (the file's
+ * default export). Since 1.60.0 every icon's file also marks its
+ * `__iconNode` data export @deprecated, which says nothing about the icon.
+ * A note anywhere else stops the lint run. Returns the removal reason, or
+ * undefined for a current icon.
+ * @param {string} source
+ * @param {string} path
+ */
 function readRemovalReason(source, path) {
   const component = /^export default (\w+);$/m.exec(source)?.[1];
   let notesRead = 0;
@@ -105,7 +147,9 @@ function readRemovalReason(source, path) {
   return reason;
 }
 
+/** @param {URL} dist */
 function readRemovals(dist) {
+  /** @type {[string, Deprecation][]} */
   const removals = [];
   for (const entry of readdirSync(new URL('icons/', dist))) {
     if (!entry.endsWith(componentTypeSuffix)) continue;
@@ -116,8 +160,11 @@ function readRemovals(dist) {
   return removals;
 }
 
-// Reads the deprecation tables from a @lucide/svelte dist/ directory (a URL
-// ending in a slash).
+/**
+ * Reads the deprecation tables from a @lucide/svelte dist/ directory (a URL
+ * ending in a slash).
+ * @param {URL} dist
+ */
 export function readLucide(dist) {
   const exportsByName = readExports(dist);
   const deprecatedByFile = new Map([...readAliasNotes(dist, exportsByName), ...readRemovals(dist)]);
@@ -131,45 +178,64 @@ const { exportsByName, deprecatedByFile } = readLucide(
 const barrels = new Set([lucidePackage, `${lucidePackage}/icons`, `${lucidePackage}/icons/index`]);
 const deepPrefix = `${lucidePackage}/icons/`;
 
-// The paths an import source can load. Static imports and import types
-// always have one string; a dynamic import can load each side of a `?:` and
-// of a logical operator (`||`, `??`, `&&`) and the last item of a `(a, b)`
-// sequence, with TypeScript's `as`, `satisfies`, `!` and `<T>` wrappers
-// removed.
+/**
+ * The paths an import source can load. Static imports and import types
+ * always have one string; a dynamic import can load each side of a `?:` and
+ * of a logical operator (`||`, `??`, `&&`) and the last item of a `(a, b)`
+ * sequence, with TypeScript's `as`, `satisfies`, `!` and `<T>` wrappers
+ * removed. An `export { x }` has no source, so no path.
+ * @param {TSESTree.Node | null | undefined} node
+ * @returns {TSESTree.Node[]}
+ */
 function sourceBranches(node) {
-  if (node?.type === 'ConditionalExpression') {
+  if (!node) return [];
+  if (node.type === 'ConditionalExpression') {
     return [...sourceBranches(node.consequent), ...sourceBranches(node.alternate)];
   }
-  if (node?.type === 'LogicalExpression') {
+  if (node.type === 'LogicalExpression') {
     return [...sourceBranches(node.left), ...sourceBranches(node.right)];
   }
-  if (node?.type === 'SequenceExpression') return sourceBranches(node.expressions.at(-1));
-  if (typeWrappers.has(node?.type)) return sourceBranches(node.expression);
+  if (node.type === 'SequenceExpression') return sourceBranches(node.expressions.at(-1));
+  if (isTypeWrapper(node)) return sourceBranches(node.expression);
   return [node];
 }
 
+/**
+ * The name an import or export specifier reads, written `X` or `'X'`.
+ * @param {TSESTree.Identifier | TSESTree.StringLiteral} node
+ */
+const moduleExportName = (node) => (node.type === 'Identifier' ? node.name : node.value);
+
+/** @param {string} text */
 const isLucide = (text) => text === lucidePackage || text.startsWith(`${lucidePackage}/`);
 
 // TypeScript keys whose subtree is a type, never a value the import loads. A
 // function's `returnType` holds a node whose type sits under `typeAnnotation`.
 const typeKeys = new Set(['typeAnnotation', 'typeArguments', 'typeParameters']);
 
-// Whether a string or template part inside a computed source starts with a
-// Lucide path: `@lucide/svelte/icons/${n}`, `'@lucide/svelte/icons/' + n`,
-// or one nested deeper such as `(a ? '@lucide/svelte/icons/x' : b) + c`.
-// Strings under the type keys above (`x as '@lucide/svelte'`,
-// `f<'@lucide/svelte'>()`) don't count; rarer type positions such as a
-// class's `superTypeArguments` are still walked. A tagged
-// template part with an invalid escape has no cooked text, so its raw text
-// is used.
+/**
+ * Whether a string or template part inside a computed source starts with a
+ * Lucide path: `@lucide/svelte/icons/${n}`, `'@lucide/svelte/icons/' + n`,
+ * or one nested deeper such as `(a ? '@lucide/svelte/icons/x' : b) + c`.
+ * Strings under the type keys above (`x as '@lucide/svelte'`,
+ * `f<'@lucide/svelte'>()`) don't count; rarer type positions such as a
+ * class's `superTypeArguments` are still walked. A tagged
+ * template part with an invalid escape has no cooked text, so its raw text
+ * is used.
+ * @param {TSESTree.Node | null | undefined} node
+ * @param {SourceCode.VisitorKeys} visitorKeys
+ * @returns {boolean}
+ */
 function spellsLucide(node, visitorKeys) {
-  if (node?.type === 'Literal') return typeof node.value === 'string' && isLucide(node.value);
-  if (node?.type === 'TemplateElement') return isLucide(node.value.cooked ?? node.value.raw);
-  return (visitorKeys[node?.type] ?? [])
+  if (!node) return false;
+  if (node.type === 'Literal') return typeof node.value === 'string' && isLucide(node.value);
+  if (node.type === 'TemplateElement') return isLucide(node.value.cooked ?? node.value.raw);
+  return (visitorKeys[node.type] ?? [])
     .filter((key) => !typeKeys.has(key))
-    .some((key) => [node[key]].flat().some((child) => spellsLucide(child, visitorKeys)));
+    .some((key) => childNodes(node, key).some((child) => spellsLucide(child, visitorKeys)));
 }
 
+/** @type {RuleModule<TSESTree.Node>} */
 const noDeprecatedIcons = {
   meta: {
     type: 'problem',
@@ -189,6 +255,12 @@ const noDeprecatedIcons = {
     }
   },
   create(context) {
+    /**
+     * @param {TSESTree.Node} node
+     * @param {string} name
+     * @param {Deprecation} note
+     * @param {(name: string) => string} suggest
+     */
     function reportDeprecated(node, name, note, suggest) {
       if (note.replacement) {
         context.report({
@@ -201,12 +273,23 @@ const noDeprecatedIcons = {
       }
     }
 
+    /**
+     * @param {TSESTree.Node} sourceNode
+     * @param {string} path
+     */
     function checkDeepPath(sourceNode, path) {
       const note = deprecatedByFile.get(path.slice(deepPrefix.length));
-      const suggest = (name) => deepPrefix + exportsByName.get(name).file;
+      // readAliasNotes stops the lint run on a replacement it cannot export.
+      /** @param {string} name */
+      const suggest = (name) => deepPrefix + /** @type {Icon} */ (exportsByName.get(name)).file;
       if (note) reportDeprecated(sourceNode, path, note, suggest);
     }
 
+    /**
+     * @param {TSESTree.Node} node
+     * @param {string} name
+     * @param {string} path
+     */
     function checkName(node, name, path) {
       if (name === 'icons') {
         context.report({ node, messageId: 'unnamed', data: { source: path } });
@@ -214,15 +297,22 @@ const noDeprecatedIcons = {
       }
       const icon = exportsByName.get(name);
       const note = icon && deprecatedByFile.get(icon.file);
-      if (note) reportDeprecated(node, name, note, icon.toSameStyle);
+      if (icon && note) reportDeprecated(node, name, note, icon.toSameStyle);
     }
 
-    // `import('@lucide/svelte').X` in a type names the icon in its
-    // qualifier; `.icons.X` starts with the namespace export.
+    /**
+     * `import('@lucide/svelte').X` in a type names the icon in its
+     * qualifier; `.icons.X` starts with the namespace export.
+     * @param {TSESTree.TSImportType} node
+     * @param {string} path
+     * @param {TSESTree.Node} sourceNode
+     */
     function checkImportType(node, path, sourceNode) {
       let first = node.qualifier;
       while (first?.type === 'TSQualifiedName') first = first.left;
-      if (first) {
+      // The type also allows `this`, which the parser reads as an
+      // Identifier in an import type: `import('x').this` has a name.
+      if (first?.type === 'Identifier') {
         checkName(node, first.name, path);
       } else {
         // Like a dynamic import of a barrel: report on the path.
@@ -230,11 +320,16 @@ const noDeprecatedIcons = {
       }
     }
 
+    /**
+     * @param {ImportNode} node
+     * @param {string} path
+     * @param {TSESTree.Node} sourceNode
+     */
     function checkBarrel(node, path, sourceNode) {
-      const specifiers = node.specifiers ?? [];
+      const specifiers = 'specifiers' in node ? node.specifiers : [];
       // `export *` and a dynamic import have no specifiers: report on the
       // path, which also tells a `?:` dynamic import's two sides apart.
-      if (!node.specifiers) {
+      if (!('specifiers' in node)) {
         context.report({ node: sourceNode, messageId: 'unnamed', data: { source: path } });
       } else if (specifiers.some((s) => s.type === 'ImportNamespaceSpecifier')) {
         context.report({ node, messageId: 'unnamed', data: { source: path } });
@@ -245,13 +340,18 @@ const noDeprecatedIcons = {
       // in `local`; either can be a string literal.
       for (const specifier of specifiers) {
         if (specifier.type === 'ImportSpecifier') {
-          checkName(specifier, specifier.imported.name ?? specifier.imported.value, path);
+          checkName(specifier, moduleExportName(specifier.imported), path);
         } else if (specifier.type === 'ExportSpecifier') {
-          checkName(specifier, specifier.local.name ?? specifier.local.value, path);
+          checkName(specifier, moduleExportName(specifier.local), path);
         }
       }
     }
 
+    /**
+     * @template {ImportNode | TSESTree.TSImportType} N
+     * @param {N} node
+     * @param {(node: N, path: string, sourceNode: TSESTree.Node) => void} onBarrel
+     */
     function checkSource(node, onBarrel) {
       for (const branch of sourceBranches(node.source)) {
         const path = fixedText(branch);
@@ -267,6 +367,7 @@ const noDeprecatedIcons = {
       }
     }
 
+    /** @param {ImportNode} node */
     const check = (node) => checkSource(node, checkBarrel);
 
     return {

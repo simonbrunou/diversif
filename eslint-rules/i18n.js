@@ -26,6 +26,12 @@
 // (`{a}{' : '}{b}`), a markup comment, a {#snippet} or a {@const} between the
 // text and a dynamic part (`{a}<!-- x --> : {b}`), string concatenation
 // (`a + ' : ' + b`) and .ts files.
+/**
+ * @import { TSESTree } from '@typescript-eslint/utils'
+ * @import { AST } from 'svelte-eslint-parser'
+ * @import { RuleModule } from './ast.js'
+ */
+import { childNodes } from './ast.js';
 
 const bareSeparator = /^[^\p{L}\p{N}]*\s:[^\p{L}\p{N}]*$/u;
 
@@ -33,28 +39,44 @@ const bareSeparator = /^[^\p{L}\p{N}]*\s:[^\p{L}\p{N}]*$/u;
 // block's children, an {#if}'s or {#each}'s {:else}, an {#await}'s three.
 const branches = ['children', 'else', 'pending', 'then', 'catch'];
 
-// A {#snippet} renders nothing where it stands. A component, or a special
-// element such as <svelte:boundary>, takes one in its children as a prop and
-// renders it.
+/**
+ * A {#snippet} renders nothing where it stands. A component, or a special
+ * element such as <svelte:boundary>, takes one in its children as a prop and
+ * renders it.
+ * @param {AST.SvelteNode | null | undefined} node
+ */
 const isComponent = (node) => node?.type === 'SvelteElement' && node.kind !== 'html';
 
-// A `{…}` tag that renders something, or an element or block that holds one.
+/**
+ * A `{…}` tag that renders something, or an element or block that holds one.
+ * @param {AST.SvelteNode | null | undefined} node
+ * @returns {boolean}
+ */
 function holdsTag(node) {
   if (!node) return false;
   if (node.type === 'SvelteSnippetBlock' && !isComponent(node.parent)) return false;
   if (node.type === 'SvelteMustacheTag' || node.type === 'SvelteRenderTag') return true;
-  return branches.some((key) => [node[key]].flat().some(holdsTag));
+  return branches.some((key) => childNodes(node, key).some(holdsTag));
 }
 
-// A snippet next to the text renders elsewhere, even inside a component.
+/**
+ * A snippet next to the text renders elsewhere, even inside a component.
+ * @param {AST.SvelteNode | undefined} node
+ */
 const isDynamic = (node) => node?.type !== 'SvelteSnippetBlock' && holdsTag(node);
 
-// Whether the parts on both sides of `node` in `parts` are dynamic.
+/**
+ * Whether the parts on both sides of `node` in `parts` are dynamic.
+ * @template {AST.SvelteNode} Part
+ * @param {Part[]} parts
+ * @param {Part} node
+ */
 function betweenDynamicParts(parts, node) {
   const index = parts.indexOf(node);
   return isDynamic(parts[index - 1]) && isDynamic(parts[index + 1]);
 }
 
+/** @type {RuleModule<AST.SvelteNode | TSESTree.Node>} */
 const noLiteralColonSeparator = {
   meta: {
     type: 'problem',
@@ -68,11 +90,14 @@ const noLiteralColonSeparator = {
     }
   },
   create(context) {
+    /** @param {AST.SvelteNode | TSESTree.Node} node */
     const report = (node) => context.report({ node, messageId: 'separator' });
     return {
       SvelteText(node) {
         if (!bareSeparator.test(node.value)) return;
-        if (betweenDynamicParts(node.parent.children ?? node.parent.body, node)) report(node);
+        // The program holds its top-level parts in `body`.
+        const parts = 'children' in node.parent ? node.parent.children : node.parent.body;
+        if (betweenDynamicParts(parts, node)) report(node);
       },
       // The text parts of an attribute or a style: directive value.
       SvelteLiteral(node) {

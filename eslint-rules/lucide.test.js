@@ -363,6 +363,7 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
 // An icon's component type in the shape @lucide/svelte 1.70.0 ships: every
 // icon marks its `__iconNode` export @deprecated, and `note` adds lines to
 // the component's own doc comment.
+/** @param {string} name */
 const iconType = (name, note = '') =>
   [
     "import type { LucideIconData, LucideIconNode } from '../types.js';",
@@ -409,6 +410,7 @@ const files = {
 };
 
 describe('readLucide', () => {
+  /** @type {string[]} */
   const dirs = [];
   function dist(overrides = {}) {
     const dir = mkdtempSync(join(tmpdir(), 'lucide-dist-'));
@@ -425,9 +427,9 @@ describe('readLucide', () => {
 
   it('maps every export style to its file and reads both kinds of deprecation', () => {
     const { exportsByName, deprecatedByFile } = readLucide(dist());
-    expect(exportsByName.get('LucideTrash2').file).toBe('trash-2');
-    expect(exportsByName.get('LucideTrash2').toSameStyle('Trash')).toBe('LucideTrash');
-    expect(exportsByName.get('TrashIcon').toSameStyle('Trash')).toBe('TrashIcon');
+    expect(exportsByName.get('LucideTrash2')?.file).toBe('trash-2');
+    expect(exportsByName.get('LucideTrash2')?.toSameStyle('Trash')).toBe('LucideTrash');
+    expect(exportsByName.get('TrashIcon')?.toSameStyle('Trash')).toBe('TrashIcon');
     expect(deprecatedByFile.get('trash-2')).toEqual({ replacement: 'Trash' });
     expect(deprecatedByFile.get('swiss-franc')).toEqual({
       reason: 'Removed because it became obsolete.'
