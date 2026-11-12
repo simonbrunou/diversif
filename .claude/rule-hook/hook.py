@@ -35,6 +35,9 @@ Rule files keep hookify's format, and the matching code (the frontmatter
 parser, the conditions, the fields each tool exposes, regex_match with
 re.IGNORECASE) is hookify's, unchanged. So are its quirks: a tool other than
 Bash, Edit, Write and MultiEdit loads every rule, so a Read of .env is denied.
+Every file rule but block-env-file names the edit tools in `tool_matcher`,
+which keeps it off a Read, an Artifact publish or an MCP call that has a
+file_path (#719).
 """
 
 import glob

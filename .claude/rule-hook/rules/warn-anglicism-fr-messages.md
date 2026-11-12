@@ -3,6 +3,7 @@ name: warn-anglicism-fr-messages
 enabled: true
 event: file
 action: warn
+tool_matcher: Edit|Write|MultiEdit
 conditions:
   - field: file_path
     operator: regex_match
