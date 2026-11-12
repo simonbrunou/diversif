@@ -15,6 +15,13 @@ if [ "${SKIP_PUSH_TESTS:-0}" = "1" ]; then
   exit 0
 fi
 
+# Outside the flake's dev shell (a T3 worktree, where direnv has not run),
+# bun is missing: run this hook again inside it. exec keeps git's pre-push
+# lines on stdin for the conflict check below.
+if ! command -v bun >/dev/null 2>&1 && [ -z "${IN_NIX_SHELL:-}" ]; then
+  exec nix develop . -c bash "$0" "$@"
+fi
+
 start=$(date +%s)
 log() { printf '\n\033[1;34m→ %s\033[0m\n' "$1"; }
 ok()  { printf '\033[1;32m✓ %s\033[0m\n' "$1"; }
