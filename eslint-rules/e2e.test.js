@@ -6,6 +6,7 @@ import e2e from './e2e.js';
 RuleTester.describe = describe;
 RuleTester.it = it;
 
+/** @param {number} column */
 const substring = (column) => [{ messageId: 'substring', column }];
 
 new RuleTester({ languageOptions: { parser: ts.parser } }).run(

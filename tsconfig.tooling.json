@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["$app/types", "bun"]
+  },
+  "include": ["eslint-rules", "*.preload.ts"]
+}

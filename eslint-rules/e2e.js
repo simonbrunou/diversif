@@ -20,20 +20,31 @@
 // copied off its locator (`const { getByText } = page`, which also loses the
 // `this` Playwright needs) or called through `.call()`, `.apply()` or
 // `.bind()`.
-import { fixedText, typeWrappers } from './ast.js';
+/**
+ * @import { TSESTree } from '@typescript-eslint/utils'
+ * @import { RuleModule } from './ast.js'
+ */
+import { fixedText, isTypeWrapper } from './ast.js';
 
-// The value under TypeScript wrappers and the parentheses that end an
-// optional chain, as in `(page?.getByText)('a')`.
+/**
+ * The value under TypeScript wrappers and the parentheses that end an
+ * optional chain, as in `(page?.getByText)('a')`.
+ * @param {TSESTree.Node | null | undefined} node
+ */
 function unwrap(node) {
-  while (typeWrappers.has(node?.type) || node?.type === 'ChainExpression') node = node.expression;
+  while (isTypeWrapper(node) || node?.type === 'ChainExpression') node = node.expression;
   return node;
 }
 
-// The values a call receives, in order, as far as the source shows them. A
-// spread of an array literal expands in place. Any other spread ends the
-// list, since the values from there on land where only run time knows;
-// `complete` is then false, so that a spread nested in an array literal
-// ends the outer list too.
+/**
+ * The values a call receives, in order, as far as the source shows them. A
+ * spread of an array literal expands in place. Any other spread ends the
+ * list, since the values from there on land where only run time knows;
+ * `complete` is then false, so that a spread nested in an array literal
+ * ends the outer list too.
+ * @param {(TSESTree.Expression | TSESTree.SpreadElement | null)[]} args
+ * @returns {{ values: (TSESTree.Node | null | undefined)[], complete: boolean }}
+ */
 function runtimeArguments(args) {
   const values = [];
   for (const arg of args) {
@@ -50,20 +61,30 @@ function runtimeArguments(args) {
   return { values, complete: true };
 }
 
+/**
+ * @param {TSESTree.Node | null | undefined} callee
+ * @returns {callee is TSESTree.MemberExpression}
+ */
 function isGetByText(callee) {
   if (callee?.type !== 'MemberExpression') return false;
   const { property, computed } = callee;
   return (computed ? fixedText(unwrap(property)) : property.name) === 'getByText';
 }
 
-// The key a property sets, or undefined when only run time knows it.
+/**
+ * The key a property sets, or undefined when only run time knows it.
+ * @param {TSESTree.Property} property
+ */
 function keyName({ key, computed }) {
   if (key.type === 'Literal') return String(key.value);
   return computed ? fixedText(unwrap(key)) : key.name;
 }
 
-// The last member that can set `exact` decides it: an `exact` key, a spread,
-// or a computed key whose name only run time knows.
+/**
+ * The last member that can set `exact` decides it: an `exact` key, a spread,
+ * or a computed key whose name only run time knows.
+ * @param {TSESTree.Node | null | undefined} options
+ */
 function setsExact(options) {
   if (options?.type !== 'ObjectExpression') return false;
   const last = options.properties.findLast(
@@ -71,9 +92,10 @@ function setsExact(options) {
   );
   if (last?.type !== 'Property' || keyName(last) !== 'exact') return false;
   const value = unwrap(last.value);
-  return value.type === 'Literal' && value.value === true;
+  return value?.type === 'Literal' && value.value === true;
 }
 
+/** @type {RuleModule<TSESTree.Node>} */
 const exactGetByText = {
   meta: {
     type: 'problem',
@@ -90,7 +112,7 @@ const exactGetByText = {
         const callee = unwrap(node.callee);
         if (!isGetByText(callee)) return;
         const [text, options] = runtimeArguments(node.arguments).values;
-        if (text?.type === 'Literal' && text.regex) return;
+        if (text?.type === 'Literal' && 'regex' in text && text.regex) return;
         if (setsExact(options)) return;
         context.report({ node: callee.property, messageId: 'substring' });
       }
