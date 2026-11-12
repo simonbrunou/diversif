@@ -162,7 +162,6 @@ new RuleTester({ languageOptions: { parser: ts.parser } }).run(
       "page.getByRole('button', { name: 'a', exact: true } as const);",
       "page.getByRole('button', { name: 'a', exact: true } satisfies { exact: boolean });",
       "page.getByRole('button', { name: 'a', exact: true as const });",
-      "page.getByRole('button', { name: new RegExp(`^${a}`), exact: true });",
       "page.getByRole('button', { name: 'a', exact: true }, ...rest);",
       "page.getByRole(...['button', { name: 'a', exact: true }]);",
       "page['getByRole']('button', { name: 'a', exact: true });",

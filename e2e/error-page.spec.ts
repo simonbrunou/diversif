@@ -30,8 +30,7 @@ for (const { path, lang, title, description, reference } of [
     await expect(page.locator('html')).toHaveAttribute('lang', lang);
     await expect(page.getByRole('heading', { level: 1, name: title, exact: true })).toBeVisible();
     await expect(page.getByText(description, { exact: true })).toBeVisible();
-    // eslint-disable-next-line e2e/exact-locator -- `reference` is an anchored RegExp, not a substring
-    await expect(page.getByText(reference)).toBeVisible();
+    await expect(page.getByText(reference, { exact: true })).toBeVisible();
     // The serialized error SvelteKit embeds for hydration too.
     expect(await page.content()).not.toContain('Internal Error');
   });
