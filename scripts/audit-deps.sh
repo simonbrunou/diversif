@@ -8,15 +8,19 @@
 #
 # production: installs package.json with its devDependencies stripped into a
 #   temporary directory, then audits that install: the production
-#   dependencies, the set the Dockerfile's prod-deps stage installs. That
-#   stage installs from bun.lock, while this scope resolves from the ranges,
-#   so it audits the newest versions they allow, which can change from one
-#   run to the next. Bun 1.4 also accepts `bun audit --production`, though
-#   `--help` doesn't list it; this scope doesn't rely on it.
+#   dependencies, the set both production images install (the Dockerfile's
+#   prod-deps stage, and the prune step of the Railpack image Coolify
+#   deploys, #529). The images install from bun.lock, while this scope
+#   resolves from the ranges, so it audits the newest versions they allow,
+#   which can change from one run to the next. From bun.lock the images also
+#   get eslint and typescript, optional peers of production packages, which
+#   this scope does not install. Bun 1.4 also accepts `bun audit
+#   --production`, though `--help` doesn't list it; this scope doesn't rely
+#   on it.
 # all: runs `bun install --frozen-lockfile` in the repo, dev and build tooling
 #   included, then audits it. The install also syncs the checkout's
-#   node_modules to bun.lock. The Railpack production deploy ships this whole
-#   set (#529).
+#   node_modules to bun.lock. It is the scope that covers the eslint and
+#   typescript the images ship, and the tooling that no image ships.
 # With no argument it runs both scopes and fails if either fails.
 # The dev shell's Bun can lag the version CI pins: scripts/check-bun-pins.sh
 # prints the pinned version and warns when the shell runs another (#528).

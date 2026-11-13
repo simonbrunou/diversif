@@ -411,9 +411,13 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.4.4
-      # Two scopes: production dependencies only (the set the Dockerfile's
-      # runtime image installs) and all dependencies (production + dev/build
-      # tooling, the set the Railpack production deploy ships, #529). Both
+      # Two scopes: production dependencies only, the set both production
+      # images install (the Dockerfile's runtime image, and the Railpack
+      # image Coolify deploys through its prune step, #529), and all
+      # dependencies (production + dev/build tooling). The images install
+      # from bun.lock, which also gives them eslint and typescript as
+      # optional peers of production packages; only the all scope installs
+      # and audits those two (scripts/audit-deps.sh header). Both
       # are set to `high` — the tightest level either scope actually needs
       # today, since the
       # `overrides` block in package.json forces a transitive package onto a
