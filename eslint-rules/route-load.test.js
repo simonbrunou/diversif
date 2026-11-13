@@ -167,6 +167,11 @@ describe('eslint.config.js', () => {
       'src/routes/probe/+page.server.ts'
     ],
     [
+      'a load function with a return type that is not exported',
+      'function load(): number {\n  return 1;\n}\nexport const n = load();',
+      'src/routes/probe/+page.server.ts'
+    ],
+    [
       'another function with a return type',
       'export function f(): number {\n  return 1;\n}',
       'src/routes/probe/+page.server.ts'
