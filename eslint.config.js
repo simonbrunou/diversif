@@ -146,5 +146,37 @@ export default ts.config(
         }))
       ]
     }
+  },
+  {
+    // `const load: PageServerLoad = ...` types the load's result as
+    // Record<string, any>, so every field a test reads through
+    // loadData(await load(event)) is any and the type checker sees no stale
+    // fixture (#554). A cast (`as` or `<T>`) does the same. `satisfies` keeps
+    // the precise result type and still types the event. The selectors read a
+    // load declared at the top of the module, exported there or later.
+    files: [
+      'src/routes/**/+page.server.ts',
+      'src/routes/**/+layout.server.ts',
+      'src/routes/**/+page.ts',
+      'src/routes/**/+layout.ts'
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...[
+          'Program > VariableDeclaration',
+          'Program > ExportNamedDeclaration > VariableDeclaration'
+        ]
+          .flatMap((declaration) => [
+            `${declaration} > VariableDeclarator[id.name="load"][id.typeAnnotation]`,
+            `${declaration} > VariableDeclarator[id.name="load"] > :matches(TSAsExpression, TSTypeAssertion)`
+          ])
+          .map((selector) => ({
+            selector,
+            message:
+              'Declare the load as `export const load = (async (event) => { ... }) satisfies PageServerLoad;`: an annotation or a cast types its result as Record<string, any>, so the fields a test reads are any (#554).'
+          }))
+      ]
+    }
   }
 );
