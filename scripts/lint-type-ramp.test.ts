@@ -70,6 +70,11 @@ describe('sizes off the ramp', () => {
     ],
     ['a class prop other than class', '<Sheet contentClass="text-lg">x</Sheet>', ['1:text-lg']],
     [
+      'a literal in a spread or an action',
+      "<p {...{ class: 'text-lg' }} use:tip={'text-base'}>x</p>",
+      ['1:text-lg', '1:text-base']
+    ],
+    [
       'a string in a block expression',
       "{#each ['text-lg'] as c}<p class={c}>x</p>{/each}",
       ['1:text-lg']

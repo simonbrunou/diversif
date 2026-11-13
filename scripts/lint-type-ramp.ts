@@ -172,6 +172,245 @@ export function describeRamp(): string {
   return `${steps}; with font-display: ${display?.classes.join(', ')}`;
 }
 
+/** What the check of one file reads, and what it found. */
+type FileContext = {
+  /** The parsed text: the source, wrapped for a .ts, .js or .css file. */
+  text: string;
+  rules: TypeRampRules;
+  /** The SCOPED_SIZES classes of this file. */
+  ownScoped: Set<string>;
+  lineOf: (offset: number) => number;
+  findings: TypeRampFinding[];
+  scopedUses: Map<string, number>;
+};
+
+function report(ctx: FileContext, offset: number, message: string): void {
+  ctx.findings.push({ line: ctx.lineOf(offset), message });
+}
+
+/** Why a readable size is off the ramp for its element, or null when it is on it. */
+function offRampMessage(cls: string, px: number, display: boolean): string | null {
+  if (display ? DISPLAY_PX.has(px) : RAMP_PX.has(px)) return null;
+  return display
+    ? `${cls} sets ${px}px on a font-display element, which is not a Display step.`
+    : `${cls} sets ${px}px, which is not a step of the type ramp.`;
+}
+
+function checkToken(ctx: FileContext, t: Token, display: boolean): void {
+  const size = classSize(t.cls, ctx.rules);
+  if (size === null) return;
+  if (ctx.ownScoped.has(t.cls)) {
+    ctx.scopedUses.set(t.cls, (ctx.scopedUses.get(t.cls) ?? 0) + 1);
+    return;
+  }
+  if ('unreadable' in size) {
+    report(ctx, t.offset, `${t.cls} sets ${size.unreadable}, which this lint cannot read.`);
+    return;
+  }
+  const message = offRampMessage(t.cls, size.px, display);
+  if (message) report(ctx, t.offset, message);
+}
+
+/** Checks the classes of one string, attribute or `@apply`. */
+function checkTokens(ctx: FileContext, tokens: Token[]): void {
+  const displayGroups = new Set(tokens.filter((t) => t.cls === 'font-display').map((t) => t.group));
+  const staticDisplay = displayGroups.has(STATIC);
+  for (const t of tokens) checkToken(ctx, t, staticDisplay || displayGroups.has(t.group));
+}
+
+/** Every string and template literal under `node`, each its own group. */
+function literalTokens(node: unknown, out: Token[]): void {
+  if (Array.isArray(node)) {
+    for (const child of node) literalTokens(child, out);
+    return;
+  }
+  if (!isNode(node)) return;
+  if (node.type === 'Literal' && typeof node.value === 'string') {
+    splitTokens(String(node.raw ?? '').slice(1, -1), node.start + 1, node.start, out);
+    return;
+  }
+  if (node.type === 'TemplateLiteral') {
+    for (const quasi of node.quasis as Node[]) {
+      splitTokens((quasi.value as { raw: string }).raw, quasi.start, node.start, out);
+    }
+    literalTokens(node.expressions, out);
+    return;
+  }
+  for (const [key, value] of Object.entries(node)) {
+    if (key !== 'metadata' && key !== 'loc') literalTokens(value, out);
+  }
+}
+
+/** The static text of an attribute's value and the literals in its expressions. */
+function attributeTokens(value: unknown, out: Token[]): void {
+  for (const part of Array.isArray(value) ? value : [value]) {
+    if (!isNode(part)) continue;
+    if (part.type === 'Text') splitTokens(String(part.raw), part.start, STATIC, out);
+    else literalTokens(part, out);
+  }
+}
+
+function scopeOf(scopes: Map<string, Token[]>, name: string): Token[] {
+  const tokens = scopes.get(name) ?? [];
+  scopes.set(name, tokens);
+  return tokens;
+}
+
+/** Adds an attribute's classes to its scope, or checks one that has no scope. */
+function readAttribute(ctx: FileContext, attr: Node, scopes: Map<string, Token[]>): void {
+  const name = String(attr.name);
+  if (attr.type === 'StyleDirective' && name === 'font-size') {
+    report(ctx, attr.start, 'style:font-size sets a size this lint cannot read; use a ramp class.');
+    return;
+  }
+  if (attr.type === 'ClassDirective') {
+    const offset = attr.start + 'class:'.length;
+    scopeOf(scopes, 'class').push({ cls: name, offset, group: offset });
+    return;
+  }
+  if (attr.type !== 'Attribute') {
+    // Spreads, bindings, actions, transitions: each literal on its own.
+    const tokens: Token[] = [];
+    literalTokens(attr, tokens);
+    for (const t of tokens) checkTokens(ctx, [t]);
+    return;
+  }
+  const tokens = scopeOf(scopes, name);
+  attributeTokens(attr.value, tokens);
+  if (name === 'style' && tokens.some((t) => t.cls.includes('font-size'))) {
+    report(
+      ctx,
+      attr.start,
+      'a style attribute sets font-size, which this lint cannot read; use a ramp class.'
+    );
+  }
+}
+
+/** One element's attributes: each attribute is one scope for `font-display`. */
+function checkAttributes(ctx: FileContext, attributes: Node[]): void {
+  const scopes = new Map<string, Token[]>();
+  for (const attr of attributes) readAttribute(ctx, attr, scopes);
+  for (const tokens of scopes.values()) checkTokens(ctx, tokens);
+}
+
+/** Where a CSS node sits: inside `@media print`, inside `@theme`. */
+type CssState = { printOnly: boolean; inTheme: boolean };
+
+function blockChildren(n: Node): unknown[] {
+  return (n.block as { children?: unknown[] } | null | undefined)?.children ?? [];
+}
+
+/** `@media print`, but not `@media print, screen`. */
+function isPrintOnly(prelude: string): boolean {
+  return /^print\b/.test(prelude.trim()) && !prelude.includes(',');
+}
+
+function checkAtrule(ctx: FileContext, n: Node, state: CssState): void {
+  const prelude = String(n.prelude);
+  if (n.name === 'apply') {
+    const tokens: Token[] = [];
+    splitTokens(prelude, ctx.text.indexOf(prelude, n.start), n.start, tokens);
+    checkTokens(ctx, tokens);
+  }
+  checkCss(ctx, blockChildren(n), {
+    printOnly: state.printOnly || (n.name === 'media' && isPrintOnly(prelude)),
+    inTheme: state.inTheme || n.name === 'theme'
+  });
+}
+
+function checkCss(ctx: FileContext, nodes: unknown[], state: CssState): void {
+  for (const n of nodes) {
+    if (!isNode(n)) continue;
+    if (n.type === 'Atrule') checkAtrule(ctx, n, state);
+    else if (n.type === 'Rule') checkCss(ctx, blockChildren(n), state);
+    else if (n.type === 'Declaration') checkDeclaration(ctx, n, state);
+  }
+}
+
+/** A `@theme` `--text-<name>` must set the px FONT_SIZE_PX gives `name`. */
+function checkThemeSize(ctx: FileContext, n: Node, name: string): void {
+  const value = String(n.value);
+  const px = cssPx(value);
+  if (px !== undefined && px === FONT_SIZE_PX[name]) return;
+  report(
+    ctx,
+    n.start,
+    `${String(n.property)}: ${value} does not match FONT_SIZE_PX['${name}'] (${FONT_SIZE_PX[name] ?? 'missing'}px) in scripts/type-ramp.ts.`
+  );
+}
+
+function checkFontSize(ctx: FileContext, n: Node): void {
+  const value = String(n.value);
+  const px = cssPx(value);
+  if (px === undefined) {
+    report(ctx, n.start, `font-size: ${value} is a form this lint cannot read; use px or rem.`);
+  } else if (!RAMP_PX.has(px)) {
+    report(ctx, n.start, `font-size: ${value} sets ${px}px, which is not a step of the type ramp.`);
+  }
+}
+
+function checkDeclaration(ctx: FileContext, n: Node, state: CssState): void {
+  const property = String(n.property);
+  const theme = /^--text-([\w-]+)$/.exec(property)?.[1];
+  if (state.inTheme && theme && !theme.includes('--')) {
+    checkThemeSize(ctx, n, theme);
+  } else if (state.printOnly) {
+    return;
+  } else if (property === 'font') {
+    report(
+      ctx,
+      n.start,
+      `font: ${String(n.value)} is a shorthand this lint cannot read; set font-size on its own.`
+    );
+  } else if (property === 'font-size') {
+    checkFontSize(ctx, n);
+  }
+}
+
+/** A string or template literal outside an attribute: each literal is its own group. */
+function checkLiterals(ctx: FileContext, node: Node): void {
+  const tokens: Token[] = [];
+  literalTokens(node, tokens);
+  for (const group of new Set(tokens.map((t) => t.group))) {
+    checkTokens(
+      ctx,
+      tokens.filter((t) => t.group === group)
+    );
+  }
+}
+
+function visit(ctx: FileContext, node: unknown, seen: Set<unknown>): void {
+  if (Array.isArray(node)) {
+    for (const child of node) visit(ctx, child, seen);
+    return;
+  }
+  if (!isNode(node) || seen.has(node)) return;
+  seen.add(node);
+  if (node.type === 'StyleSheet') {
+    checkCss(ctx, node.children as unknown[], { printOnly: false, inTheme: false });
+  } else if (node.type === 'Literal' || node.type === 'TemplateLiteral') {
+    checkLiterals(ctx, node);
+  } else {
+    for (const [key, value] of Object.entries(node)) visitField(ctx, key, value, seen);
+  }
+}
+
+function visitField(ctx: FileContext, key: string, value: unknown, seen: Set<unknown>): void {
+  if (key === 'attributes' && Array.isArray(value)) checkAttributes(ctx, value as Node[]);
+  else if (key !== 'metadata' && key !== 'loc') visit(ctx, value, seen);
+}
+
+/**
+ * The text the parser reads: a .ts/.js file as the body of a script tag, a
+ * .css file as the body of a style tag. Neither wrapper adds a newline, so
+ * line numbers stay true.
+ */
+function parsedText(file: string, source: string): string {
+  if (file.endsWith('.svelte')) return source;
+  if (file.endsWith('.css')) return `<style>${source}</style>`;
+  return `<script lang="ts">${source}</script>`;
+}
+
 /**
  * Checks one file's source. `file` is its repo-relative path, which picks
  * the parser (by extension) and its SCOPED_SIZES entries. Throws when the
@@ -183,192 +422,18 @@ export function checkSource(
   rules: TypeRampRules,
   scoped: readonly ScopedSize[] = SCOPED_SIZES
 ): FileReport {
-  const findings: TypeRampFinding[] = [];
-  const scopedUses = new Map<string, number>();
-  const ownScoped = new Set(scoped.filter((s) => s.file === file).map((s) => s.cls));
-
-  // A .ts/.js file parses as the body of a script tag and a .css file as the
-  // body of a style tag: the wrapper adds no newline, so lines stay true.
-  const prefix = file.endsWith('.svelte')
-    ? ''
-    : file.endsWith('.css')
-      ? '<style>'
-      : '<script lang="ts">';
-  const suffix = file.endsWith('.svelte') ? '' : file.endsWith('.css') ? '</style>' : '</script>';
-  const text = prefix + source + suffix;
-  const lineOf = lineIndex(text);
-  const ast = parse(text, { modern: true });
-
-  function report(offset: number, message: string): void {
-    findings.push({ line: lineOf(offset), message });
-  }
-
-  /** Checks the classes of one string, attribute or `@apply`. */
-  function checkTokens(tokens: Token[]): void {
-    const displayGroups = new Set(
-      tokens.filter((t) => t.cls === 'font-display').map((t) => t.group)
-    );
-    for (const t of tokens) {
-      const size = classSize(t.cls, rules);
-      if (size === null) continue;
-      if (ownScoped.has(t.cls)) {
-        scopedUses.set(t.cls, (scopedUses.get(t.cls) ?? 0) + 1);
-        continue;
-      }
-      if ('unreadable' in size) {
-        report(t.offset, `${t.cls} sets ${size.unreadable}, which this lint cannot read.`);
-        continue;
-      }
-      const display = displayGroups.has(t.group) || displayGroups.has(STATIC);
-      if (display ? DISPLAY_PX.has(size.px) : RAMP_PX.has(size.px)) continue;
-      report(
-        t.offset,
-        display
-          ? `${t.cls} sets ${size.px}px on a font-display element, which is not a Display step.`
-          : `${t.cls} sets ${size.px}px, which is not a step of the type ramp.`
-      );
-    }
-  }
-
-  /** Every string and template literal under `node`, each its own group. */
-  function literalTokens(node: unknown, out: Token[]): void {
-    if (Array.isArray(node)) {
-      for (const child of node) literalTokens(child, out);
-      return;
-    }
-    if (!isNode(node)) return;
-    if (node.type === 'Literal' && typeof node.value === 'string') {
-      splitTokens(String(node.raw ?? '').slice(1, -1), node.start + 1, node.start, out);
-      return;
-    }
-    if (node.type === 'TemplateLiteral') {
-      for (const quasi of node.quasis as Node[]) {
-        splitTokens((quasi.value as { raw: string }).raw, quasi.start, node.start, out);
-      }
-      literalTokens(node.expressions, out);
-      return;
-    }
-    for (const [key, value] of Object.entries(node)) {
-      if (key !== 'metadata' && key !== 'loc') literalTokens(value, out);
-    }
-  }
-
-  /** One element's attributes: each attribute is one scope for `font-display`. */
-  function checkAttributes(attributes: Node[]): void {
-    const scopes = new Map<string, Token[]>();
-    const scope = (name: string) => scopes.get(name) ?? scopes.set(name, []).get(name)!;
-    for (const attr of attributes) {
-      const name = String(attr.name);
-      if (attr.type === 'StyleDirective' && name === 'font-size') {
-        report(attr.start, 'style:font-size sets a size this lint cannot read; use a ramp class.');
-      } else if (attr.type === 'ClassDirective') {
-        const offset = attr.start + 'class:'.length;
-        scope('class').push({ cls: name, offset, group: offset });
-      } else if (attr.type === 'Attribute') {
-        const tokens = scope(name);
-        for (const part of Array.isArray(attr.value) ? attr.value : [attr.value]) {
-          if (!isNode(part)) continue;
-          if (part.type === 'Text') splitTokens(String(part.raw), part.start, STATIC, tokens);
-          else literalTokens(part, tokens);
-        }
-        if (name === 'style' && tokens.some((t) => /font-size/.test(t.cls))) {
-          report(
-            attr.start,
-            'a style attribute sets font-size, which this lint cannot read; use a ramp class.'
-          );
-        }
-      } else {
-        // Spreads, bindings, actions, transitions: only their literals.
-        const tokens: Token[] = [];
-        literalTokens(attr, tokens);
-        for (const t of tokens) checkTokens([t]);
-      }
-    }
-    for (const tokens of scopes.values()) checkTokens(tokens);
-  }
-
-  function checkCss(nodes: unknown[], printOnly: boolean, inTheme: boolean): void {
-    for (const n of nodes) {
-      if (!isNode(n)) continue;
-      const block = n.block as { children: unknown[] } | null | undefined;
-      if (n.type === 'Atrule') {
-        const prelude = String(n.prelude);
-        if (n.name === 'apply') {
-          const tokens: Token[] = [];
-          splitTokens(prelude, text.indexOf(prelude, n.start), n.start, tokens);
-          checkTokens(tokens);
-        }
-        const print =
-          n.name === 'media' && /^print\b/.test(prelude.trim()) && !prelude.includes(',');
-        if (block) checkCss(block.children, printOnly || print, inTheme || n.name === 'theme');
-      } else if (n.type === 'Rule' && block) {
-        checkCss(block.children, printOnly, inTheme);
-      } else if (n.type === 'Declaration') {
-        checkDeclaration(n, printOnly, inTheme);
-      }
-    }
-  }
-
-  function checkDeclaration(n: Node, printOnly: boolean, inTheme: boolean): void {
-    const property = String(n.property);
-    const value = String(n.value);
-    const theme = /^--text-([\w-]+)$/.exec(property)?.[1];
-    if (inTheme && theme && !theme.includes('--')) {
-      const px = cssPx(value);
-      if (px === undefined || px !== FONT_SIZE_PX[theme]) {
-        report(
-          n.start,
-          `${property}: ${value} does not match FONT_SIZE_PX['${theme}'] (${FONT_SIZE_PX[theme] ?? 'missing'}px) in scripts/type-ramp.ts.`
-        );
-      }
-      return;
-    }
-    if (printOnly) return;
-    if (property === 'font') {
-      report(
-        n.start,
-        `font: ${value} is a shorthand this lint cannot read; set font-size on its own.`
-      );
-    } else if (property === 'font-size') {
-      const px = cssPx(value);
-      if (px === undefined) {
-        report(n.start, `font-size: ${value} is a form this lint cannot read; use px or rem.`);
-      } else if (!RAMP_PX.has(px)) {
-        report(n.start, `font-size: ${value} sets ${px}px, which is not a step of the type ramp.`);
-      }
-    }
-  }
-
-  const seen = new Set<unknown>();
-  function visit(node: unknown): void {
-    if (Array.isArray(node)) {
-      for (const child of node) visit(child);
-      return;
-    }
-    if (!isNode(node) || seen.has(node)) return;
-    seen.add(node);
-    if (node.type === 'StyleSheet') {
-      checkCss(node.children as unknown[], false, false);
-      return;
-    }
-    if (node.type === 'Literal' || node.type === 'TemplateLiteral') {
-      const tokens: Token[] = [];
-      literalTokens(node, tokens);
-      for (const group of new Set(tokens.map((t) => t.group))) {
-        checkTokens(tokens.filter((t) => t.group === group));
-      }
-      return;
-    }
-    for (const [key, value] of Object.entries(node)) {
-      if (key === 'metadata' || key === 'loc') continue;
-      if (key === 'attributes' && Array.isArray(value)) checkAttributes(value as Node[]);
-      else visit(value);
-    }
-  }
-  visit(ast);
-
-  findings.sort((a, b) => a.line - b.line);
-  return { findings, scopedUses };
+  const text = parsedText(file, source);
+  const ctx: FileContext = {
+    text,
+    rules,
+    ownScoped: new Set(scoped.filter((s) => s.file === file).map((s) => s.cls)),
+    lineOf: lineIndex(text),
+    findings: [],
+    scopedUses: new Map()
+  };
+  visit(ctx, parse(text, { modern: true }), new Set());
+  ctx.findings.sort((a, b) => a.line - b.line);
+  return { findings: ctx.findings, scopedUses: ctx.scopedUses };
 }
 
 /** A SCOPED_SIZES entry whose file no longer writes its class `count` times. */
