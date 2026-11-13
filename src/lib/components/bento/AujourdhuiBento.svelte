@@ -124,13 +124,16 @@
   grows the empty track first, but that rests on finer rules of how a grid
   shares out extra space.
 
-  This assumes the stat tiles are at least as tall as the allergen strip. With
-  their "this week" line they measure 202px, margin left out, and nine flagged
-  allergens give the strip 192px. In a week with no new food and the streak at its record, the
-  stat tiles measure 178px, while seven allergens due again wrap the strip onto
-  three rows, 216px. The strip then sets row 2, and a 38px band shows between
-  the stat tiles and the destinations. The old layout left the same band under
-  the stat tiles (#730).
+  The allergen strip can be the taller module of row 2. In a week with no new
+  food and the streak at its record, the stat tiles drop both optional lines,
+  while seven allergens due again wrap the strip onto three rows. The strip
+  then sets row 2, and the stat tiles' content ended 38px above the
+  destinations (#730). So their cell stretches over rows 2 and 3 and is a grid
+  of one row, which the StatTiles grid fills, margin aside. That grid shares the
+  extra height between its two tiles' rows, and each tile's content stays at
+  its top. Their bottom then meets the strip's, and the destinations start one
+  margin below. When the stat tiles are the taller module, rows 2 and 3 take
+  their height, and the stretch adds nothing.
 
   The stat tiles render nothing until the first food is logged. The tray then
   drops their cell, and the destinations take it: column one, rows 2 and 3,
@@ -150,7 +153,7 @@
   </div>
 
   {#if showStatTiles}
-    <div class="min-w-0 lg:col-start-1 lg:row-span-2 lg:row-start-2">
+    <div class="min-w-0 lg:col-start-1 lg:row-span-2 lg:row-start-2 lg:grid lg:self-stretch">
       <StatTiles
         foodsIntroduced={stats.foodsIntroduced}
         weekCount={stats.weekCount}
