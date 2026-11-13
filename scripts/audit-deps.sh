@@ -15,7 +15,7 @@
 #   which can change from one run to the next. From bun.lock the images also
 #   get the packages that production dependencies reach only through an
 #   optional peer, such as eslint, typescript and esbuild, which this scope
-#   does not install: on 2026-11-13, 78 of the image's 237 top-level
+#   does not install: on 2026-11-13, 78 of the image's 235 top-level
 #   packages were missing from this scope's install for that reason, and 2
 #   more because it resolved a newer @sentry/bundler-plugins that drops
 #   supports-color. Bun 1.4 also accepts
