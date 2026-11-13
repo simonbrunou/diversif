@@ -29,8 +29,10 @@
  * `setProperty('font', …)`. CSS property names match in any case.
  *
  * It does not see a size a script builds at run time from other text, a
- * `font` key of an object a script copies onto a style (`Object.assign`), or
- * CSS text that writes the shorthand with a space before its colon
+ * `font` key of an object a script copies onto a style (`Object.assign`), a
+ * style's `font` reached through a variable or a TypeScript cast
+ * (`const s = el.style; s.font`, `el.style!.font`, `(el.style as any).font`),
+ * or CSS text that writes the shorthand with a space before its colon
  * (`font : …`), a form French copy needs (« ils font : »).
  *
  * There is no inline escape: a kept off-ramp size is a SCOPED_SIZES entry,
