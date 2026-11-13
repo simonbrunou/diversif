@@ -6,8 +6,7 @@ import { nodeAdapter } from './scripts/node-adapter.ts';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { sentrySvelteKit } from '@sentry/sveltekit/vite';
-import { createSentryBuildPluginManager } from '@sentry/bundler-plugins/core';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig } from 'vite';
 
 /**
  * Resolve the Sentry release name from the most reliable source available
@@ -90,45 +89,6 @@ const SENTRY_BUILD_OPTIONS = {
   }
 };
 
-/**
- * Creates the Sentry release, uploads the source maps of the final
- * adapter-node output (./build) and deletes every .map file, once SvelteKit
- * has run the adapter.
- *
- * @sentry/sveltekit 10 does this from the SSR build's closeBundle hook, which
- * never fires under SvelteKit 3: environments now build inside Vite's
- * buildApp, and the adapter runs in SvelteKit's own `post` buildApp hook. Left
- * alone, no release or deploy marker is created and the hidden source maps
- * stay in ./build/client and ship in the image. Remove
- * this plugin once @sentry/sveltekit uploads after SvelteKit 3's adapter, or
- * releases get two deploy markers per build.
- */
-function sentryUploadAfterAdapter(): Plugin {
-  return {
-    name: 'diversif:sentry-upload-after-adapter',
-    apply: 'build',
-    // enforce + order 'post' put this handler after SvelteKit's adapter one.
-    enforce: 'post',
-    buildApp: {
-      order: 'post',
-      async handler() {
-        if (!process.env.SENTRY_AUTH_TOKEN) return;
-        const sentry = createSentryBuildPluginManager(SENTRY_BUILD_OPTIONS, {
-          buildTool: 'vite',
-          loggerPrefix: '[sentry-upload-after-adapter]'
-        });
-        try {
-          await sentry.createRelease();
-          await sentry.uploadSourcemaps(['./build/**/*.js']);
-        } finally {
-          // Even when the upload fails: maps must never reach the image.
-          await sentry.deleteArtifacts();
-        }
-      }
-    }
-  };
-}
-
 export default defineConfig({
   define: {
     // Inlined at build time into every bundle. Replaces the runtime
@@ -158,10 +118,15 @@ export default defineConfig({
     // Must precede sveltekit(): it wraps universal `load` functions for
     // browser tracing, resolves the SDK's SvelteKit-version-specific browser
     // tracing module, and — when SENTRY_AUTH_TOKEN is set — stamps a debug ID
-    // into every chunk, which sentryUploadAfterAdapter() below matches the
-    // uploaded maps with. Server `load` functions are traced by SvelteKit
+    // into every chunk. Server `load` functions are traced by SvelteKit
     // itself (`tracing` in the sveltekit() options below), so the plugin
     // leaves them alone.
+    //
+    // With the token, its post `buildApp` hook runs after SvelteKit's adapter:
+    // it creates the release and its deploy marker, uploads the maps of the
+    // adapter output (./build) and deletes every file that
+    // filesToDeleteAfterUpload matches, also when the upload fails. The repo's
+    // own after-adapter upload step did the same until #476.
     sentrySvelteKit({
       autoUploadSourceMaps: Boolean(process.env.SENTRY_AUTH_TOKEN),
       ...SENTRY_BUILD_OPTIONS
@@ -238,8 +203,7 @@ export default defineConfig({
     }),
     // Options shared with scripts/compile-paraglide.ts — see
     // paraglide.config.ts for the strategy/urlPatterns rationale.
-    paraglideVitePlugin({ ...paraglideCompilerOptions }),
-    sentryUploadAfterAdapter()
+    paraglideVitePlugin({ ...paraglideCompilerOptions })
   ],
   esbuild: {
     // esbuild >= 0.27.7 regressed: it tries to *lower* array destructuring
