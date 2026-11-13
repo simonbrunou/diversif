@@ -21,11 +21,18 @@
  * `font-display` counts in the same string literal as the size, or in the
  * static text of the same attribute. These forms fail by name, as sizes the
  * lint cannot read: `text-[1rem]`, `text-(length:--x)`, `font-size: 1em`, the
- * `font` shorthand, a `style:font-size` or `style:font` directive, an
- * attribute or string whose text declares `font-size` or `font` (a style
- * attribute, `cssText`, a spread's `style`), the bare string `font-size`
- * (`setProperty`), and the name `fontSize`. CSS property names match in any
- * case. It does not see a size a script builds at run time from other text.
+ * `font` shorthand, a `style:font-size` or `style:font` directive, a
+ * `font-size`, `font` or `fontSize` attribute (SVG text, a component prop),
+ * an attribute or string whose text declares `font-size:` or `font:` (a style
+ * attribute, `cssText`, a spread's `style`), the string `font-size` or
+ * `fontSize` (`setProperty`, a key), the name `fontSize`, `x.style.font` and
+ * `setProperty('font', …)`. CSS property names match in any case.
+ *
+ * It does not see a size a script builds at run time from other text, a
+ * `font` key of an object a script copies onto a style (`Object.assign`), or
+ * CSS text that writes the shorthand with a space before its colon
+ * (`font : …`), a form French copy needs (« ils font : »).
+ *
  * There is no inline escape: a kept off-ramp size is a SCOPED_SIZES entry,
  * named in DESIGN.md.
  *
@@ -186,6 +193,8 @@ type FileContext = {
   lineOf: (offset: number) => number;
   findings: TypeRampFinding[];
   scopedUses: Map<string, number>;
+  /** Attributes and directives already reported, which checkNames skips. */
+  reported: Set<unknown>;
 };
 
 function report(ctx: FileContext, offset: number, message: string): void {
@@ -262,8 +271,12 @@ function scopeOf(scopes: Map<string, Token[]>, name: string): Token[] {
 
 /** The CSS properties that set a font size, in any case: `font-size` and the `font` shorthand. */
 const SIZE_PROPERTY = /^font(?:-size)?$/i;
-/** A `font-size` or `font` declaration in CSS text, after anything but a name character. */
-const CSS_TEXT_SIZE = /(?:^|[^\w-])font(?:-size)?\s*:/i;
+/**
+ * A `font-size` or `font` declaration in CSS text, after anything but a name
+ * character. The shorthand counts only as `font:`, colon attached, so French
+ * copy such as « ils font : » passes.
+ */
+const CSS_TEXT_SIZE = /(?:^|[^\w-])(?:font-size\s*:|font:)/i;
 
 const CSS_TEXT_MESSAGE =
   'a string sets font-size or font as CSS text, which this lint cannot read; use a ramp class.';
@@ -275,22 +288,40 @@ function tokenText(tokens: Token[]): string {
 /**
  * Checks each literal of `tokens` (one group each) for its classes and for
  * CSS text that sets a size: `cssText = 'font-size: …'`, a spread's
- * `style: 'font: …'`, or `setProperty('font-size', …)`'s bare name.
+ * `style: 'font: …'`.
  */
 function checkLiteralGroups(ctx: FileContext, tokens: Token[]): void {
   for (const group of new Set(tokens.map((t) => t.group))) {
     const own = tokens.filter((t) => t.group === group);
     checkTokens(ctx, own);
-    const text = tokenText(own);
-    if (CSS_TEXT_SIZE.test(text) || /^font-size$/i.test(text)) report(ctx, group, CSS_TEXT_MESSAGE);
+    if (CSS_TEXT_SIZE.test(tokenText(own))) report(ctx, group, CSS_TEXT_MESSAGE);
   }
+}
+
+/** Reports an attribute or directive, and keeps checkNames from reporting inside it again. */
+function reportAttribute(ctx: FileContext, attr: Node, message: string): void {
+  report(ctx, attr.start, message);
+  ctx.reported.add(attr);
 }
 
 /** Adds an attribute's classes to its scope, or checks one that has no scope. */
 function readAttribute(ctx: FileContext, attr: Node, scopes: Map<string, Token[]>): void {
   const name = String(attr.name);
   if (attr.type === 'StyleDirective' && SIZE_PROPERTY.test(name)) {
-    report(ctx, attr.start, `style:${name} sets a size this lint cannot read; use a ramp class.`);
+    reportAttribute(
+      ctx,
+      attr,
+      `style:${name} sets a size this lint cannot read; use a ramp class.`
+    );
+    return;
+  }
+  if (attr.type === 'Attribute' && (SIZE_PROPERTY.test(name) || name === 'fontSize')) {
+    // An SVG `font-size="9"`, or a component prop that passes a size on.
+    reportAttribute(
+      ctx,
+      attr,
+      `a ${name} attribute sets a size this lint cannot read; use a ramp class.`
+    );
     return;
   }
   if (attr.type === 'ClassDirective') {
@@ -309,9 +340,9 @@ function readAttribute(ctx: FileContext, attr: Node, scopes: Map<string, Token[]
   attributeTokens(attr.value, own);
   scopeOf(scopes, name).push(...own);
   if (CSS_TEXT_SIZE.test(tokenText(own))) {
-    report(
+    reportAttribute(
       ctx,
-      attr.start,
+      attr,
       `a ${name} attribute sets font-size or font, which this lint cannot read; use a ramp class.`
     );
   }
@@ -405,17 +436,60 @@ function checkLiterals(ctx: FileContext, node: Node): void {
   checkLiteralGroups(ctx, tokens);
 }
 
-/** `fontSize` anywhere, attributes included: `el.style.fontSize = …`, or a style object's key. */
+/** The property a member expression reads: `a.b` -> `b`, `a['b']` -> `b`. */
+function memberName(node: Node): string {
+  const property = node.property as Node;
+  return String(node.computed ? property.value : property.name);
+}
+
+/** `x.style.font` or `x.style['font']`. */
+function isStyleFont(node: Node): boolean {
+  const object = node.object as Node;
+  return (
+    object.type === 'MemberExpression' &&
+    memberName(object) === 'style' &&
+    memberName(node) === 'font'
+  );
+}
+
+/** `x.setProperty('font', …)`, in any case, as setProperty lowercases the name. */
+function isSetPropertyFont(node: Node): boolean {
+  const callee = node.callee as Node;
+  const first = (node.arguments as Node[])[0] as Node | undefined;
+  return (
+    callee.type === 'MemberExpression' &&
+    memberName(callee) === 'setProperty' &&
+    String(first?.value).toLowerCase() === 'font'
+  );
+}
+
+/** How a script node sets a font size the lint cannot read, or undefined. */
+function scriptSize(node: Node): string | undefined {
+  if (node.type === 'Identifier') return node.name === 'fontSize' ? 'fontSize' : undefined;
+  if (node.type === 'Literal') {
+    const value = String(node.value);
+    return /^(?:font-size|fontSize)$/i.test(value) ? `'${value}'` : undefined;
+  }
+  if (node.type === 'MemberExpression') return isStyleFont(node) ? 'style.font' : undefined;
+  if (node.type === 'CallExpression')
+    return isSetPropertyFont(node) ? "setProperty('font')" : undefined;
+  return undefined;
+}
+
+/**
+ * A size set through a name, attributes included: `el.style.fontSize = …`,
+ * `el.style.font = …`, `setProperty('font-size' | 'font', …)`, a
+ * `{ 'font-size': … }` key. Skips an attribute readAttribute already reported.
+ */
 function checkNames(ctx: FileContext, node: unknown, seen: Set<unknown>): void {
   if (Array.isArray(node)) {
     for (const child of node) checkNames(ctx, child, seen);
     return;
   }
-  if (!isNode(node) || seen.has(node)) return;
+  if (!isNode(node) || seen.has(node) || ctx.reported.has(node)) return;
   seen.add(node);
-  if (node.type === 'Identifier' && node.name === 'fontSize') {
-    report(ctx, node.start, 'fontSize sets a size this lint cannot read; use a ramp class.');
-  }
+  const how = scriptSize(node);
+  if (how) report(ctx, node.start, `${how} sets a size this lint cannot read; use a ramp class.`);
   for (const [key, value] of Object.entries(node)) {
     if (key !== 'metadata' && key !== 'loc') checkNames(ctx, value, seen);
   }
@@ -471,7 +545,8 @@ export function checkSource(
     ownScoped: new Set(scoped.filter((s) => s.file === file).map((s) => s.cls)),
     lineOf: lineIndex(text),
     findings: [],
-    scopedUses: new Map()
+    scopedUses: new Map(),
+    reported: new Set()
   };
   const ast = parse(text, { modern: true });
   visit(ctx, ast, new Set());

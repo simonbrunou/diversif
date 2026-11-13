@@ -325,8 +325,44 @@ describe('sizes the lint cannot read', () => {
     ],
     [
       'the bare font-size name, as setProperty takes it',
-      "<script>\n  let el;\n  el.style.setProperty('font-size', '12px');\n</script>",
-      'a string sets font-size or font as CSS text'
+      "<script>\n  let el;\n  el.style.setProperty('Font-Size', '12px');\n</script>",
+      "'Font-Size' sets a size"
+    ],
+    [
+      'the bare fontSize name, as a computed key',
+      "<script>\n  let el;\n  el.style['fontSize'] = '12px';\n</script>",
+      "'fontSize' sets a size"
+    ],
+    [
+      'setProperty with the font shorthand',
+      "<script>\n  let el;\n  el.style.setProperty('Font', '12px Inter');\n</script>",
+      "setProperty('font') sets a size"
+    ],
+    [
+      'the font property of a style',
+      "<script>\n  let el;\n  el.style.font = '12px Inter';\n</script>",
+      'style.font sets a size'
+    ],
+    [
+      'the font property of a style, as a computed key',
+      "<script>\n  let el;\n  el.style['font'] = '12px Inter';\n</script>",
+      'style.font sets a size'
+    ],
+    [
+      'an SVG font-size attribute',
+      '<svg><text font-size="9">x</text></svg>',
+      'a font-size attribute sets a size'
+    ],
+    ['a fontSize prop', '<Comp fontSize={12} />', 'a fontSize attribute sets a size'],
+    [
+      'a style attribute that reads fontSize, once',
+      '<p style="font-size: {fontSize}px">x</p>',
+      'a style attribute sets font-size or font'
+    ],
+    [
+      'a style directive that reads fontSize, once',
+      '<p style:font-size={fontSize}>x</p>',
+      'style:font-size sets a size'
     ],
     [
       'the fontSize name in a script',
@@ -379,8 +415,8 @@ describe('sizes the lint cannot read', () => {
   it('passes attributes, directives and strings that set no font size', () => {
     expect(
       flagged(
-        "<script>\n  const kinds = ['style', 'font'];\n  const css = 'font-family: Inter; font-size-adjust: none';\n</script>\n" +
-          '<p style="height: 2px; font-weight: 600; --body-font: 1; --body-font-size: 1; font-size-adjust: none" style:color="red" style:font-family="x" title="Taille de police : grande">x</p>'
+        "<script>\n  let el;\n  const kinds = ['style', 'font'];\n  const css = 'font-family: Inter; font-size-adjust: none';\n  const say = 'Les bébés font : manger';\n  const theme = { font: 'Inter' };\n  el.title = theme.font + el.theme.font;\n  kinds.includes('font');\n  el.style.setProperty('font-family', 'x');\n  el.style.fontFamily = 'x';\n</script>\n" +
+          '<p style="height: 2px; font-weight: 600; --body-font: 1; --body-font-size: 1; font-size-adjust: none" style:color="red" style:font-family="x" title="Ce que les bébés font : manger">x</p>'
       )
     ).toEqual([]);
   });
