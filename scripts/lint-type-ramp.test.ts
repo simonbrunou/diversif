@@ -301,7 +301,42 @@ describe('sizes the lint cannot read', () => {
     [
       'a style attribute named in capitals',
       '<p STYLE="font-size: 12px">x</p>',
+      'a STYLE attribute sets font-size or font'
+    ],
+    [
+      'font-size after a comment in a style attribute',
+      '<p style="color: red;/* c */font-size: 12px">x</p>',
       'a style attribute sets font-size or font'
+    ],
+    [
+      'CSS text in another attribute',
+      '<Comp labelStyle="font: 600 12px Inter" />',
+      'a labelStyle attribute sets font-size or font'
+    ],
+    [
+      'CSS text in a spread',
+      "<p {...{ style: 'font-size: 12px' }}>x</p>",
+      'a string sets font-size or font as CSS text'
+    ],
+    [
+      'CSS text in a script',
+      "<script>\n  let el;\n  el.style.cssText = 'font-size: 12px';\n</script>",
+      'a string sets font-size or font as CSS text'
+    ],
+    [
+      'the bare font-size name, as setProperty takes it',
+      "<script>\n  let el;\n  el.style.setProperty('font-size', '12px');\n</script>",
+      'a string sets font-size or font as CSS text'
+    ],
+    [
+      'the fontSize name in a script',
+      "<script>\n  let el;\n  el.style.fontSize = '12px';\n</script>",
+      'fontSize sets a size'
+    ],
+    [
+      'the fontSize name in an attribute expression',
+      '<p style:color={x.fontSize}>x</p>',
+      'fontSize sets a size'
     ],
     ['a style directive', '<p style:font-size="12px">x</p>', 'style:font-size sets a size'],
     ['a font style directive', '<p style:font="600 18px Inter">x</p>', 'style:font sets a size'],
@@ -341,10 +376,11 @@ describe('sizes the lint cannot read', () => {
     expect(found[0]).toContain(message);
   });
 
-  it('passes a style attribute and directives that set no font size', () => {
+  it('passes attributes, directives and strings that set no font size', () => {
     expect(
       flagged(
-        '<p style="height: 2px; font-weight: 600; --body-font: 1" style:color="red" style:font-family="x">x</p>'
+        "<script>\n  const kinds = ['style', 'font'];\n  const css = 'font-family: Inter; font-size-adjust: none';\n</script>\n" +
+          '<p style="height: 2px; font-weight: 600; --body-font: 1; --body-font-size: 1; font-size-adjust: none" style:color="red" style:font-family="x" title="Taille de police : grande">x</p>'
       )
     ).toEqual([]);
   });

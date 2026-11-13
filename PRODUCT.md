@@ -130,7 +130,7 @@ Each tile token has a paired `--tile-*-fg` sized for WCAG AA at 14px+.
 
 Fraunces Variable (italic) for the emotional / hero register. Inter Variable for everything else. Tabular nums (`'tnum'`) on stat displays so the numbers don't jitter on update.
 
-The type ramp, each step with its size, weight and classes, is in `DESIGN.md`, Typography > Hierarchy. `bun run lint:type-ramp` fails on any font size outside it.
+The type ramp, each step with its font and classes, is in `DESIGN.md`, Typography > Hierarchy. `bun run lint:type-ramp` fails on any font size outside it.
 
 ---
 
