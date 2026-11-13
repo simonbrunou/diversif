@@ -218,6 +218,7 @@ describe('CSS font-size', () => {
     ],
     ['rem off the ramp', '<style>\n.a {\n  font-size: 1rem;\n}\n</style>', ['3:font-size:']],
     ['px off the ramp, nested', '<style>.a { .b { font-size: 13px; } }</style>', ['1:font-size:']],
+    ['px off the ramp, in capitals', '<style>.a { FONT-SIZE: 13px; }</style>', ['1:font-size:']],
     [
       'inside @media print',
       '<style>@media print { :global(body) { font-size: 11pt; } .a { .b { font-size: 9px } } }</style>',
@@ -282,7 +283,33 @@ describe('sizes the lint cannot read', () => {
       '<p style={`font-size: ${n}px`}>x</p>',
       'a style attribute sets font-size'
     ],
+    [
+      'the font shorthand in a style attribute',
+      '<p style="font: 600 18px Inter">x</p>',
+      'a style attribute sets font-size or font'
+    ],
+    [
+      'font-size in capitals in a style attribute',
+      '<p style="FONT-SIZE: 12px">x</p>',
+      'a style attribute sets font-size or font'
+    ],
+    [
+      'font-size after another declaration, no space',
+      '<p style="color: red;font-size: 12px">x</p>',
+      'a style attribute sets font-size or font'
+    ],
+    [
+      'a style attribute named in capitals',
+      '<p STYLE="font-size: 12px">x</p>',
+      'a style attribute sets font-size or font'
+    ],
     ['a style directive', '<p style:font-size="12px">x</p>', 'style:font-size sets a size'],
+    ['a font style directive', '<p style:font="600 18px Inter">x</p>', 'style:font sets a size'],
+    [
+      'a style directive in capitals',
+      '<p style:FONT-SIZE="12px">x</p>',
+      'style:FONT-SIZE sets a size'
+    ],
     [
       'font-size in em',
       '<style>.a { font-size: 1em; }</style>',
@@ -302,6 +329,11 @@ describe('sizes the lint cannot read', () => {
       'the font shorthand',
       '<style>.a { font: 600 12px/1 Inter; }</style>',
       'font: 600 12px/1 Inter is a shorthand'
+    ],
+    [
+      'the font shorthand in capitals',
+      '<style>.a { Font: 600 12px/1 Inter; }</style>',
+      'font: 600 12px/1 Inter is a shorthand'
     ]
   ])('fails on %s, by name', (_name, source, message) => {
     const found = messages(source);
@@ -309,8 +341,12 @@ describe('sizes the lint cannot read', () => {
     expect(found[0]).toContain(message);
   });
 
-  it('passes a style attribute without font-size', () => {
-    expect(flagged('<p style="height: 2px" style:color="red">x</p>')).toEqual([]);
+  it('passes a style attribute and directives that set no font size', () => {
+    expect(
+      flagged(
+        '<p style="height: 2px; font-weight: 600; --body-font: 1" style:color="red" style:font-family="x">x</p>'
+      )
+    ).toEqual([]);
   });
 });
 

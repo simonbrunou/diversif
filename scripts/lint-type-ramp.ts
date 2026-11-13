@@ -20,9 +20,9 @@
  *
  * `font-display` counts in the same string literal as the size, or in the
  * static text of the same attribute. A size the lint cannot read (`text-[1rem]`,
- * `text-(length:--x)`, `font-size: 1em`, the `font` shorthand, a `font-size` in
- * a `style` attribute or directive) fails by name, so a new form cannot slip
- * past it. There is no inline escape: a kept off-ramp size is a SCOPED_SIZES
+ * `text-(length:--x)`, `font-size: 1em`, the `font` shorthand, a `font-size` or
+ * `font` in a `style` attribute or directive) fails by name, so a new form
+ * cannot slip past it. CSS property names match in any case. There is no inline escape: a kept off-ramp size is a SCOPED_SIZES
  * entry, named in DESIGN.md.
  *
  * Run via `bun run lint:type-ramp` (part of `bun run lint`).
@@ -256,11 +256,16 @@ function scopeOf(scopes: Map<string, Token[]>, name: string): Token[] {
   return tokens;
 }
 
+/** The CSS properties that set a font size, in any case: `font-size` and the `font` shorthand. */
+const SIZE_PROPERTY = /^font(?:-size)?$/i;
+/** A `font-size` or `font` declaration in a style attribute's text. */
+const STYLE_SIZE = /(?:^|[\s;])font(?:-size)?\s*:/i;
+
 /** Adds an attribute's classes to its scope, or checks one that has no scope. */
 function readAttribute(ctx: FileContext, attr: Node, scopes: Map<string, Token[]>): void {
   const name = String(attr.name);
-  if (attr.type === 'StyleDirective' && name === 'font-size') {
-    report(ctx, attr.start, 'style:font-size sets a size this lint cannot read; use a ramp class.');
+  if (attr.type === 'StyleDirective' && SIZE_PROPERTY.test(name)) {
+    report(ctx, attr.start, `style:${name} sets a size this lint cannot read; use a ramp class.`);
     return;
   }
   if (attr.type === 'ClassDirective') {
@@ -277,11 +282,11 @@ function readAttribute(ctx: FileContext, attr: Node, scopes: Map<string, Token[]
   }
   const tokens = scopeOf(scopes, name);
   attributeTokens(attr.value, tokens);
-  if (name === 'style' && tokens.some((t) => t.cls.includes('font-size'))) {
+  if (name.toLowerCase() === 'style' && STYLE_SIZE.test(tokens.map((t) => t.cls).join(' '))) {
     report(
       ctx,
       attr.start,
-      'a style attribute sets font-size, which this lint cannot read; use a ramp class.'
+      'a style attribute sets font-size or font, which this lint cannot read; use a ramp class.'
     );
   }
 }
@@ -354,15 +359,15 @@ function checkDeclaration(ctx: FileContext, n: Node, state: CssState): void {
   const theme = /^--text-([\w-]+)$/.exec(property)?.[1];
   if (state.inTheme && theme && !theme.includes('--')) {
     checkThemeSize(ctx, n, theme);
-  } else if (state.printOnly) {
+  } else if (state.printOnly || !SIZE_PROPERTY.test(property)) {
     return;
-  } else if (property === 'font') {
+  } else if (property.toLowerCase() === 'font') {
     report(
       ctx,
       n.start,
       `font: ${String(n.value)} is a shorthand this lint cannot read; set font-size on its own.`
     );
-  } else if (property === 'font-size') {
+  } else {
     checkFontSize(ctx, n);
   }
 }
