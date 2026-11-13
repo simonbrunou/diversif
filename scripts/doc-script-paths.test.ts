@@ -32,19 +32,23 @@ function docs(root = ROOT): string[] {
   return out;
 }
 
-// A path that starts at scripts/, whatever its file type, the rest of its
-// word before scripts/ (the prefix) and the character after the path. A
-// space, a backtick, a quote or an opening parenthesis ends the word. The
-// path ends at the first character that a file name here does not use, and
-// dots that end a sentence are cut.
-const SCRIPT_PATH = /([^\s`'"(]*)scripts\/[\w./-]*(?=(.?))/g;
+// A path that starts at scripts/, whatever its file type, and the rest of its
+// word before scripts/ (the prefix). A space, a backtick, a quote or an
+// opening parenthesis ends the word. The path ends at the first character
+// that a file name here does not use, and dots that end a sentence are cut.
+const SCRIPT_PATH = /([^\s`'"(]*)scripts\/[\w./-]*/g;
 
-// What may follow a whole path: the end of the line, a space, a backtick, a
-// quote, a closing parenthesis, a comma, a colon or a semicolon. Any other
+// The text after a glob's start: stars, then a character a path uses
+// (`"scripts/*.ts"` in the fallow skill's config examples). A glob names no
+// one file.
+const GLOB = /^\*+[\w./-]/;
+
+// What may follow a whole path: the end of the line, whitespace, a backtick,
+// a quote, a closing parenthesis, a comma, a colon, a semicolon, or a star
+// that closes emphasis or marks a footnote (`**scripts/x.sh**`). Any other
 // character cut the name short (`scripts/<name>.ts`, `scripts/$X.sh`, a
-// letter outside ASCII), except the `*` of a glob (`"scripts/*.ts"` in the
-// fallow skill's config examples), which names no one file.
-const PATH_END = /^[\s`'"),:;]?$/;
+// letter outside ASCII).
+const PATH_END = /^(?:[\s`'"),:;*]|$)/;
 
 // The prefixes of a path that is not this repo's: the build output
 // (`bun build/scripts/export-user.js`) and a skill in the home directory
@@ -68,10 +72,11 @@ function scriptPaths(text: string): { repo: Found[]; unknown: Found[] } {
   text.split('\n').forEach((line, i) => {
     for (const m of line.matchAll(SCRIPT_PATH)) {
       const found = { path: m[0].replace(/\.+$/, ''), line: i + 1 };
+      const after = line.slice(m.index + m[0].length);
       if (m[1] !== '') {
         if (!OTHER_PREFIX.test(m[1])) unknown.push(found);
-      } else if (m[2] === '*') continue;
-      else if (!PATH_END.test(m[2])) unknown.push({ path: m[0] + m[2], line: i + 1 });
+      } else if (GLOB.test(after)) continue;
+      else if (!PATH_END.test(after)) unknown.push({ path: m[0] + after[0], line: i + 1 });
       else if (!OTHER_REPO.test(line.slice(0, m.index))) repo.push(found);
     }
   });
@@ -90,6 +95,9 @@ describe('scriptPaths', () => {
     ['a file in a subfolder', 'run `scripts/sub/x.ts`', 'scripts/sub/x.ts'],
     ['a file with a dot in its name', 'run `scripts/x.test.ts`', 'scripts/x.test.ts'],
     ['a path after a space', 'run scripts/x.sh first', 'scripts/x.sh'],
+    ['a path before a tab', 'run scripts/x.sh\tfirst', 'scripts/x.sh'],
+    ['a path in bold', '**Run scripts/x.sh** first', 'scripts/x.sh'],
+    ['a path before a footnote star', 'run scripts/x.sh* (see below)', 'scripts/x.sh'],
     ['a path at the end of the line', 'run scripts/x.sh', 'scripts/x.sh'],
     ['a path before a comma', 'run scripts/x.sh, then', 'scripts/x.sh'],
     ['a path before a semicolon', 'run scripts/x.sh; then', 'scripts/x.sh'],
@@ -115,7 +123,11 @@ describe('scriptPaths', () => {
     ['a path inside build/', 'bun build/scripts/export-user.js'],
     ['a path in a home skill', 'python3 -I ~/.agents/skills/forgejo-issues/scripts/forgejo.py get'],
     ['a path in another repo', 'homelab-stacks `scripts/coolify-deploy-status.sh`'],
-    ['a glob', '"entry": ["src/index.ts", "scripts/*.ts"],']
+    ['a glob of a file type', '"entry": ["src/index.ts", "scripts/*.ts"],'],
+    ['a glob of every folder', 'every `scripts/**/x.ts`'],
+    ['a glob in a name', 'every `scripts/check-*.ts`'],
+    ['a glob before a letter', 'every `scripts/*x.ts`'],
+    ['a glob before a hyphen', 'every `scripts/*-x.ts`']
   ])('skips %s', (_name, text) => {
     expect(scriptPaths(text)).toEqual({ repo: [], unknown: [] });
   });
