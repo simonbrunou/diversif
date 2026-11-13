@@ -7,7 +7,7 @@
 // make the rule read a new option, see scripts/rule-hook.test.ts's header for
 // the ways to write one that each need a case.
 import { afterAll, describe, expect, it } from 'bun:test';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -96,9 +96,10 @@ const SLOTS: Record<string, string> = {
 // The blocking cases #710 and #715 added or moved, grouped by the shells
 // that run their start command (the merge, or a rerun through curl) behind a
 // slot script that exits 3. SHELL_GROUPS names the shells of each group, and
-// « the #710 and #715 cases in a shell » below checks them in bash and, where
-// it is installed, zsh. The comments inside a group say why; no test reads
-// them.
+// « the #710 and #715 cases in a shell » below checks them in bash and in zsh.
+// CI's unit job installs zsh, and shellHalf says what a run does where a
+// shell is missing (#732). The comments inside a group say why; no test
+// reads them.
 const START_IN_BOTH_SHELLS: Record<string, string> = {
   // The start command sits past the end of the slot call's && chain: a ;, a
   // lone &, a newline or a || (#715).
@@ -764,6 +765,84 @@ describe('block-e2e-start-without-slot', () => {
   );
 });
 
+// What « the #710 and #715 cases in a shell » does with one shell's half,
+// from the shell's path (Bun.which, null when it is not on PATH) and the
+// environment (#732). A shell on PATH runs its half. A missing one fails the
+// file when CI is set to a non-empty value, as playwright.config.ts reads
+// it: CI's unit job installs zsh and sets CI, so a later image or workflow
+// change cannot turn the zsh half back into skips. Elsewhere a missing shell
+// skips its half, so a contributor without zsh can still run the suite.
+function shellHalf(
+  shell: string,
+  bin: string | null,
+  env: Record<string, string | undefined>
+): { mode: 'run' | 'skip' } | { mode: 'fail'; message: string } {
+  if (bin !== null) return { mode: 'run' };
+  if (!env.CI) return { mode: 'skip' };
+  return {
+    mode: 'fail',
+    message:
+      `${shell} is not on PATH, and CI is set: CI runs both halves of ` +
+      `« the #710 and #715 cases in a shell », so install ${shell} in the job (#732).`
+  };
+}
+
+describe('shellHalf', () => {
+  it.each([
+    ['on PATH, CI unset', 'run', '/usr/bin/zsh', {}],
+    ['on PATH, CI set', 'run', '/usr/bin/zsh', { CI: 'true' }],
+    ['missing, CI unset', 'skip', null, {}],
+    ['missing, CI empty', 'skip', null, { CI: '' }],
+    ['missing, CI set', 'fail', null, { CI: 'true' }]
+  ] as const)('zsh %s: %s', (_, mode, bin, env) =>
+    expect(shellHalf('zsh', bin, env).mode).toBe(mode)
+  );
+
+  it.each(['bash', 'zsh'])('names the missing shell when it fails: %s', (shell) =>
+    expect(shellHalf(shell, null, { CI: 'true' })).toEqual({
+      mode: 'fail',
+      message: expect.stringContaining(`${shell} is not on PATH`)
+    })
+  );
+
+  // « the #710 and #715 cases in a shell » hands shellHalf's answer to
+  // describe and it. This runs the file again under CI, with only bun and
+  // the rule loader's python3 on PATH, and keeps only the zsh half's PATH
+  // test, which must fail with shellHalf's message.
+  it('fails a run of this file under CI with no zsh on PATH', () => {
+    const python = Bun.which('python3');
+    if (python === null) throw new Error('python3 is not on PATH');
+    const bin = mkdtempSync(path.join(tmpdir(), 'e2e-slot-rule-path-'));
+    try {
+      symlinkSync(process.execPath, path.join(bin, 'bun'));
+      symlinkSync(python, path.join(bin, 'python3'));
+      const run = Bun.spawnSync(
+        [
+          process.execPath,
+          '--conditions=browser',
+          'test',
+          import.meta.path,
+          '-t',
+          'finds zsh on PATH'
+        ],
+        {
+          cwd: path.dirname(import.meta.dir),
+          env: { HOME: process.env.HOME, PATH: bin, CI: 'true' },
+          stdin: 'ignore'
+        }
+      );
+      const output = run.stdout.toString() + run.stderr.toString();
+      expect(output).toContain(
+        '(fail) the #710 and #715 cases in a shell > zsh > finds zsh on PATH'
+      );
+      expect(output).toContain('error: zsh is not on PATH, and CI is set');
+      expect(run.exitCode).toBe(1);
+    } finally {
+      rmSync(bin, { recursive: true, force: true });
+    }
+  }, 30_000);
+});
+
 // The #710 and #715 cases, each MUST_PASS case with a slot call and each
 // slot form, run in a shell from a directory where scripts/wait-e2e-slot.sh
 // exits with $SLOT_EXIT, fj prints STARTED for a merge, curl prints STARTED
@@ -771,8 +850,8 @@ describe('block-e2e-start-without-slot', () => {
 // git and jq print nothing. A /tmp/ path in a command points into that
 // directory, and so do zsh's here-document files (TMPPREFIX) and a cd /w.
 // So a case runs as it would in the repo, with no forge call, no merge and
-// no file outside the directory. The CI image has no zsh, so CI checks the
-// bash half only.
+// no file outside the directory. shellHalf above says whether a shell's half
+// runs, skips or fails.
 describe('the #710 and #715 cases in a shell', () => {
   const sandbox = mkdtempSync(path.join(tmpdir(), 'e2e-slot-rule-'));
   const write = (file: string, body: string) => {
@@ -800,6 +879,12 @@ describe('the #710 and #715 cases in a shell', () => {
 
   describe.each(['bash', 'zsh'])('%s', (shell) => {
     const bin = Bun.which(shell);
+    const half = shellHalf(shell, bin, process.env);
+    if (half.mode === 'fail') {
+      it(`finds ${shell} on PATH`, () => {
+        throw new Error(half.message);
+      });
+    }
     // zsh -f reads only its build's global zshenv; bash -c reads no startup
     // file. A shell that hangs fails the test on its timeout.
     const runsStart = (command: string, slotExit: number) => {
@@ -825,7 +910,7 @@ describe('the #710 and #715 cases in a shell', () => {
       return run.stdout.toString().includes('STARTED');
     };
 
-    describe.skipIf(bin === null)('behind a slot script', () => {
+    describe.skipIf(half.mode !== 'run')('behind a slot script', () => {
       it('gates the merge with && and runs it after ;', () => {
         expect(runsStart('scripts/wait-e2e-slot.sh && ' + MERGE, 3)).toBe(false);
         expect(runsStart('scripts/wait-e2e-slot.sh; ' + MERGE, 3)).toBe(true);
