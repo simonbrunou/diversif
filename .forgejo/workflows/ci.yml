@@ -116,7 +116,21 @@ jobs:
         with:
           bun-version: 1.4.4
       - run: bun install --frozen-lockfile
+      # scripts/e2e-slot-rule.test.ts runs « the #710 and #715 cases in a
+      # shell » in bash and in zsh, and the job image has no zsh. The image
+      # ships empty apt lists, so the install needs the update first. The
+      # version line shows in the log that zsh is there (#732).
+      - name: Install zsh for the slot-rule shell tests
+        run: |
+          apt-get update
+          apt-get install -y zsh
+          zsh --version
+      # Under CI, the slot-rule shell tests fail the file when a shell is
+      # missing from PATH instead of skipping its half (#732). Setting CI
+      # here keeps that check from resting on whether the runner sets it.
       - run: bun run test:coverage
+        env:
+          CI: 'true'
       - name: Upload coverage report
         if: always()
         uses: https://data.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5
@@ -411,9 +425,15 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.4.4
-      # Two scopes: production dependencies only (the set the Dockerfile's
-      # runtime image installs) and all dependencies (production + dev/build
-      # tooling, the set the Railpack production deploy ships, #529). Both
+      # Two scopes: production dependencies only, the set both production
+      # images install (the Dockerfile's runtime image, and the Railpack
+      # image Coolify deploys through its prune step, #529), and all
+      # dependencies (production + dev/build tooling). The images install
+      # from bun.lock, which also gives them the packages that production
+      # dependencies reach only through an optional peer, such as eslint,
+      # typescript and esbuild. The production scope installs none of
+      # those; only the all scope audits them (scripts/audit-deps.sh
+      # header). Both
       # are set to `high` — the tightest level either scope actually needs
       # today, since the
       # `overrides` block in package.json forces a transitive package onto a
