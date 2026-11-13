@@ -589,6 +589,22 @@ describe('scripts/smoke-prod.sh', () => {
   // rewrite in their copies.
   const fetchLine = '  git -C "$REPO" fetch -q origin </dev/null >/dev/null 2>&1 &\n';
 
+  // A new directory for binFirst that holds a fake sleep: its first call, the
+  // timer's delay before the TERM, returns at once, and each later call runs
+  // the real `sleep 20`, so the timer's KILL comes 20 s after its TERM. A
+  // passing run does not wait for it: the main shell kills the timer once the
+  // fetch has ended. The first-call marker sits next to the sleep, so each
+  // test needs a directory of its own.
+  function heldKillBin(): string {
+    const bin = mkdtempSync(path.join(binDir, 'held-'));
+    writeFileSync(
+      path.join(bin, 'sleep'),
+      `#!/bin/sh\n[ ! -e "$0.first" ] || exec ${sleepBin} 20\n: >"$0.first"\n`
+    );
+    chmodSync(path.join(bin, 'sleep'), 0o755);
+    return bin;
+  }
+
   // On bash 5.2, the child bash forks for the fetch keeps the script's EXIT
   // trap until it execs git, and a TERM that reaches it before then runs the
   // trap there. Under the fake sleep the timer's TERM comes at once, and in
@@ -596,9 +612,14 @@ describe('scripts/smoke-prod.sh', () => {
   // shell's $TMP (#606). This copy holds the child before exec for up to 15 s,
   // in a command substitution whose sleep is in the fetch's process group:
   // the timer's TERM ends both, and lands in that window even when a loaded
-  // runner delays the timer by seconds. The KILL right after it could still
-  // beat the trap and pass the old trap too; it did not in 80 runs under bash
-  // 5.2. Bash 5.3 never runs the trap there, so only a 5.2 run (CI's) fails.
+  // runner delays the timer by seconds. The old trap fails this test only
+  // when its `rm` in the child has removed $TMP before the main shell next
+  // writes there, as soon as its wait for the fetch returns. A KILL right
+  // after the TERM can end the child before its trap starts, or while its
+  // `rm`, in a process group of its own, still runs, and the old trap then
+  // passes (#726). So the KILL comes 20 s after the TERM, and the wait
+  // returns only once the child has run its whole trap. Bash 5.3 never runs
+  // the trap there, so only a 5.2 run (CI's) fails.
   it("with a SHA, keeps $TMP when its fetch's child gets TERM before it execs", async () => {
     const copy = trackedCopy();
     const source = readFileSync(copy, 'utf8');
@@ -608,7 +629,13 @@ describe('scripts/smoke-prod.sh', () => {
       source.replace(fetchLine, fetchLine.replace('"$REPO"', `"$REPO$(${sleepBin} 15)"`))
     );
     const tmpDir = mkdtempSync(path.join(binDir, 'tmpdir-'));
-    const run = await smoke(base, { script: copy, args: [newSha], wait: '0', tmpDir });
+    const run = await smoke(base, {
+      script: copy,
+      args: [newSha],
+      wait: '0',
+      tmpDir,
+      binFirst: heldKillBin()
+    });
     expect(run.stderr).toBe('');
     expect(run.lines).toContain('FAIL /_app/version.json not run: the time budget ran out');
     expect(run.last).toBe(`smoke-prod: ${newSha} not live on ${base}, checks skipped`);
@@ -616,7 +643,7 @@ describe('scripts/smoke-prod.sh', () => {
     expect(hits.size).toBe(0);
     // The main shell's trap still removed $TMP.
     expect(readdirSync(tmpDir)).toEqual([]);
-  });
+  }, 30_000);
 
   // On bash 5.2, that child also keeps the main shell's state from the middle
   // of its fork. After a simple command in the trap, it waits for the main
@@ -645,15 +672,10 @@ describe('scripts/smoke-prod.sh', () => {
         `  printf -v hold '%*s' 800000 ''\n${fetchLine.replace('"$REPO"', '"$REPO${hold// /}"')}`
       )
     );
-    const bin = mkdtempSync(path.join(binDir, 'held-'));
+    const bin = heldKillBin();
     const gitLog = path.join(bin, 'calls');
     writeFileSync(path.join(bin, 'git'), `#!/bin/sh\necho "$*" >>${gitLog}\nexec ${gitBin} "$@"\n`);
-    writeFileSync(
-      path.join(bin, 'sleep'),
-      `#!/bin/sh\n[ ! -e "$0.first" ] || exec ${sleepBin} 20\n: >"$0.first"\n`
-    );
     chmodSync(path.join(bin, 'git'), 0o755);
-    chmodSync(path.join(bin, 'sleep'), 0o755);
     const tmpDir = mkdtempSync(path.join(binDir, 'tmpdir-'));
     const run = await smoke(base, {
       script: copy,
