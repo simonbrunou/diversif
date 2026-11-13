@@ -1,7 +1,8 @@
-// eslint.config.js bans a type annotation or a cast on a route's load: either
-// types its result as Record<string, any>, so the fields a test reads are any
-// (#554). `satisfies` keeps the result type. It also bans a load that takes
-// another binding's value or name, which could hide an annotated function.
+// eslint.config.js lets a route file export its load in two forms only:
+// `export const load = (<function>) satisfies <type>;` and a function
+// declaration. An annotation or a cast types the load's result as
+// Record<string, any>, so the fields a test reads are any (#554), and the
+// other forms of export can hide one.
 import { describe, expect, it } from 'bun:test';
 import { ESLint } from 'eslint';
 
@@ -31,7 +32,7 @@ const banned = (line, type = 'PageServerLoad') => ({
   line,
   severity: /** @type {const} */ (2),
   message: expect.stringMatching(
-    new RegExp(`^Declare the load in place as .* satisfies ${type};\`: .*\\(#554\\)\\.$`)
+    new RegExp(`^Export the load in place as .* satisfies ${type};\`.*\\(#554\\)\\.$`)
   )
 });
 
@@ -42,43 +43,56 @@ const FILES = [
   ['+layout.ts', 'LayoutLoad']
 ];
 
+// The root of src/routes, one folder down and two folders down.
+const DIRS = ['src/routes/', 'src/routes/probe/', 'src/routes/a/[id]/'];
+
 describe('eslint.config.js', () => {
-  // The root of src/routes, one folder down and two folders down.
-  it.each(
-    FILES.flatMap(([file, type]) =>
-      ['src/routes/', 'src/routes/probe/', 'src/routes/a/[id]/'].map((dir) => [
-        `${dir}${file}`,
-        type
-      ])
-    )
-  )('reports an annotated load in %s, naming %s', async (filePath, type) => {
-    const code = `export const load: ${type} = async () => ({ a: 1 });`;
-    expect(await lint(code, filePath)).toEqual([banned(1, type)]);
-  });
+  it.each(FILES.flatMap(([file, type]) => DIRS.map((dir) => [`${dir}${file}`, type])))(
+    'reports an annotated load in %s, naming %s',
+    async (filePath, type) => {
+      const code = `export const load: ${type} = async () => ({ a: 1 });`;
+      expect(await lint(code, filePath)).toEqual([banned(1, type)]);
+    }
+  );
 
   it.each([
-    ['exported with let', 'export let load: PageServerLoad = async () => ({ a: 1 });', 1],
     [
-      'declared, then exported',
-      'const load: PageServerLoad = async () => ({ a: 1 });\nexport { load };',
+      'annotated, with satisfies',
+      'export const load: PageServerLoad = (async () => ({ a: 1 })) satisfies PageServerLoad;',
       1
     ],
+    ['with neither annotation nor satisfies', 'export const load = async () => ({ a: 1 });', 1],
     ['cast with as', 'export const load = (async () => ({ a: 1 })) as PageServerLoad;', 1],
     ['cast with <T>', 'export const load = <PageServerLoad>(async () => ({ a: 1 }));', 1],
-    [
-      'cast with as, then exported',
-      'const load = (async () => ({ a: 1 })) as PageServerLoad;\nexport { load };',
-      1
-    ],
-    [
-      'cast with <T>, then exported',
-      'const load = <PageServerLoad>(async () => ({ a: 1 }));\nexport { load };',
-      1
-    ],
     ['set to another binding', 'const f = async () => ({ a: 1 });\nexport const load = f;', 2],
     [
-      'set to another binding, then exported',
-      'const f = async () => ({ a: 1 });\nconst load = f;\nexport { load };',
+      'set to another binding with satisfies',
+      'const f: PageServerLoad = async () => ({ a: 1 });\nexport const load = f satisfies PageServerLoad;',
+      2
+    ],
+    ['set to a member', 'export const load = m.load;', 1],
+    [
+      'set to a call with satisfies',
+      'export const load = wrap(async () => ({ a: 1 })) satisfies PageServerLoad;',
+      1
+    ],
+    ['declared with no value', 'export let load;', 1],
+    [
+      'declared with let',
+      'export let load = (async () => ({ a: 1 })) satisfies PageServerLoad;',
+      1
+    ],
+    [
+      'declared with var',
+      'export var load = (async () => ({ a: 1 })) satisfies PageServerLoad;',
+      1
+    ],
+    ['declared as a class', 'export class load {}', 1],
+    ['declared without a body', 'export declare function load(): Promise<{ a: number }>;', 1],
+    ['imported with import =', 'export import load = M.load;', 1],
+    [
+      'declared, then exported',
+      'const load = (async () => ({ a: 1 })) satisfies PageServerLoad;\nexport { load };',
       2
     ],
     [
@@ -91,7 +105,12 @@ describe('eslint.config.js', () => {
       "const f: PageServerLoad = async () => ({ a: 1 });\nexport { f as 'load' };",
       2
     ],
-    ['re-exported under another name', "export { f as load } from './f';", 1]
+    ['re-exported', "export { load } from './f';", 1],
+    ['imported, then exported', "import { load } from './f';\nexport { load };", 2],
+    ['destructured from an object', 'export const { load } = m;', 1],
+    ['destructured from an array', 'export const [load] = m;', 1],
+    ['exported with export *', "export * from './f';", 1],
+    ['exported with export * as', "export * as load from './f';", 1]
   ])('reports a load %s', async (_, code, line) => {
     expect(await lint(code)).toEqual([banned(line)]);
   });
@@ -108,20 +127,18 @@ describe('eslint.config.js', () => {
     ]);
   });
 
+  it.each(FILES.flatMap(([file, type]) => DIRS.map((dir) => [`${dir}${file}`, type])))(
+    'leaves a load that uses satisfies alone in %s',
+    async (filePath, type) => {
+      const code = `export const load = (async () => ({ a: 1 })) satisfies ${type};`;
+      expect(await lint(code, filePath)).toEqual([]);
+    }
+  );
+
   it.each([
     [
-      'a load that uses satisfies',
-      'export const load = (async () => ({ a: 1 })) satisfies PageServerLoad;',
-      'src/routes/probe/+page.server.ts'
-    ],
-    [
-      'a load that uses satisfies, then exported',
-      'const load = (async () => ({ a: 1 })) satisfies PageServerLoad;\nexport { load };',
-      'src/routes/probe/+page.server.ts'
-    ],
-    [
-      'a load with neither annotation nor cast',
-      'export const load = async () => ({ a: 1 });',
+      'a function expression that uses satisfies',
+      'export const load = async function () {\n  return { a: 1 };\n} satisfies PageServerLoad;',
       'src/routes/probe/+page.server.ts'
     ],
     [
@@ -130,12 +147,12 @@ describe('eslint.config.js', () => {
       'src/routes/probe/+page.server.ts'
     ],
     [
-      'a load inside a function',
-      'export function f() {\n  const load: () => number = () => 1;\n  return load();\n}',
+      'an annotated load that is not exported',
+      'const load: () => number = () => 1;\nexport const n = load();',
       'src/routes/probe/+page.server.ts'
     ],
     [
-      'another binding exported under its own name',
+      'another binding exported in a list',
       'const f: () => number = () => 1;\nexport { f };',
       'src/routes/probe/+page.server.ts'
     ],

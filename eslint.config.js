@@ -150,37 +150,44 @@ export default ts.config(
   // `const load: PageServerLoad = ...` types the load's result as
   // Record<string, any>, so every field a test reads through
   // loadData(await load(event)) is any and the type checker sees no stale
-  // fixture (#554). A cast (`as` or `<T>`) does the same. `satisfies` keeps
-  // the precise result type and still types the event. The selectors read a
-  // load declared at the top of the module, exported there or later, and
-  // refuse a load that takes another binding's value or name
-  // (`export const load = f`, `export { f as load }`), which the annotation
-  // and cast selectors cannot see through. One block per kind of route file,
-  // so the message names its type.
+  // fixture (#554). A cast (`as` or `<T>`) does the same, and so can a value
+  // taken from another binding. `satisfies` keeps the precise result type and
+  // still types the event. So a route file may export its load in two forms
+  // only: `export const load = (<function>) satisfies <type>;` and
+  // `export (async) function load`. The selectors refuse every other export
+  // of a load: another value, an annotation or `let` on the declaration, any
+  // other declaration named load (a class, `export import load = ...`), and
+  // the forms that export a binding from elsewhere: an export list
+  // (`export { load }`, `export { f as load }`, `export { load } from`), a
+  // destructured export and `export *`. One block per kind of route file, so
+  // the message names its type.
   ...[
     ['+page.server.ts', 'PageServerLoad'],
     ['+layout.server.ts', 'LayoutServerLoad'],
     ['+page.ts', 'PageLoad'],
     ['+layout.ts', 'LayoutLoad']
-  ].map(([file, type]) => ({
-    files: [`src/routes/**/${file}`],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        ...[
+  ].map(([file, type]) => {
+    const declarator = 'ExportNamedDeclaration > VariableDeclaration > VariableDeclarator';
+    const allowed =
+      ':not([id.typeAnnotation])[init.type="TSSatisfiesExpression"]:matches([init.expression.type="ArrowFunctionExpression"], [init.expression.type="FunctionExpression"])';
+    return {
+      files: [`src/routes/**/${file}`],
+      rules: {
+        'no-restricted-syntax': [
+          'error',
           ...[
-            'Program > VariableDeclaration',
-            'Program > ExportNamedDeclaration > VariableDeclaration'
-          ].flatMap((declaration) => [
-            `${declaration} > VariableDeclarator[id.name="load"][id.typeAnnotation]`,
-            `${declaration} > VariableDeclarator[id.name="load"]:matches([init.type="TSAsExpression"], [init.type="TSTypeAssertion"], [init.type="Identifier"])`
-          ]),
-          'ExportSpecifier:matches([exported.name="load"], [exported.value="load"])[local.name!="load"]'
-        ].map((selector) => ({
-          selector,
-          message: `Declare the load in place as \`export const load = (async (event) => { ... }) satisfies ${type};\`: an annotation or a cast types its result as Record<string, any>, so the fields a test reads are any, and a load that takes another binding's value or name hides one (#554).`
-        }))
-      ]
-    }
-  }))
+            `${declarator}[id.name="load"]:not(${allowed})`,
+            `ExportNamedDeclaration > VariableDeclaration[kind!="const"] > VariableDeclarator[id.name="load"]${allowed}`,
+            'ExportNamedDeclaration > :not(FunctionDeclaration)[id.name="load"]',
+            'ExportSpecifier:matches([exported.name="load"], [exported.value="load"])',
+            `${declarator}:matches([id.type="ObjectPattern"], [id.type="ArrayPattern"])`,
+            'ExportAllDeclaration'
+          ].map((selector) => ({
+            selector,
+            message: `Export the load in place as \`export const load = (async (event) => { ... }) satisfies ${type};\` or as a function declaration: an annotation or a cast types its result as Record<string, any>, so the fields a test reads are any, and the other forms of export can hide one (#554).`
+          }))
+        ]
+      }
+    };
+  })
 );
