@@ -116,7 +116,21 @@ jobs:
         with:
           bun-version: 1.4.4
       - run: bun install --frozen-lockfile
+      # scripts/e2e-slot-rule.test.ts runs « the #710 and #715 cases in a
+      # shell » in bash and in zsh, and the job image has no zsh. The image
+      # ships empty apt lists, so the install needs the update first. The
+      # version line shows in the log that zsh is there (#732).
+      - name: Install zsh for the slot-rule shell tests
+        run: |
+          apt-get update
+          apt-get install -y zsh
+          zsh --version
+      # Under CI, the slot-rule shell tests fail the file when a shell is
+      # missing from PATH instead of skipping its half (#732). Setting CI
+      # here keeps that check from resting on whether the runner sets it.
       - run: bun run test:coverage
+        env:
+          CI: 'true'
       - name: Upload coverage report
         if: always()
         uses: https://data.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5
