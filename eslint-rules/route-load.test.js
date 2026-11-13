@@ -76,6 +76,16 @@ describe('eslint.config.js', () => {
       'export const load = wrap(async () => ({ a: 1 })) satisfies PageServerLoad;',
       1
     ],
+    [
+      'with a return type on the function',
+      'export const load = (async (): Promise<Record<string, any>> => ({ a: 1 })) satisfies PageServerLoad;',
+      1
+    ],
+    [
+      'declared as a function with a return type',
+      'export async function load(): ReturnType<PageServerLoad> {\n  return { a: 1 };\n}',
+      1
+    ],
     ['declared with no value', 'export let load;', 1],
     [
       'declared with let',
@@ -144,6 +154,21 @@ describe('eslint.config.js', () => {
     [
       'a load declared as a function',
       'export async function load() {\n  return { a: 1 };\n}',
+      'src/routes/probe/+page.server.ts'
+    ],
+    [
+      'a let load that is not exported',
+      'let load = (async () => ({ a: 1 })) satisfies PageServerLoad;\nexport const n = load;',
+      'src/routes/probe/+page.server.ts'
+    ],
+    [
+      'a destructure that is not exported',
+      'const { a } = m;\nexport const n = a;',
+      'src/routes/probe/+page.server.ts'
+    ],
+    [
+      'another function with a return type',
+      'export function f(): number {\n  return 1;\n}',
       'src/routes/probe/+page.server.ts'
     ],
     [
