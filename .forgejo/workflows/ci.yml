@@ -415,10 +415,10 @@ jobs:
       # images install (the Dockerfile's runtime image, and the Railpack
       # image Coolify deploys through its prune step, #529), and all
       # dependencies (production + dev/build tooling). The images install
-      # from bun.lock, which also gives them optional peers that no other
-      # package in the set requires, such as eslint, typescript and
-      # esbuild, with their own dependencies. The production scope installs
-      # none of those; only the all scope audits them (scripts/audit-deps.sh
+      # from bun.lock, which also gives them the packages that production
+      # dependencies reach only through an optional peer, such as eslint,
+      # typescript and esbuild. The production scope installs none of
+      # those; only the all scope audits them (scripts/audit-deps.sh
       # header). Both
       # are set to `high` — the tightest level either scope actually needs
       # today, since the
