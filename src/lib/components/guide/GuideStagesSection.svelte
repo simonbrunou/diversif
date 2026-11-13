@@ -24,7 +24,7 @@
                 <Badge variant="default">Actuelle</Badge>
               {/if}
             </div>
-            <h3 class="mt-2 text-base font-semibold">{s.title}</h3>
+            <h3 class="mt-2 text-sm font-semibold">{s.title}</h3>
             <p class="mt-1 text-sm text-muted-foreground">{s.oneLiner}</p>
           </div>
         </summary>

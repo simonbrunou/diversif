@@ -18,17 +18,17 @@
   <h1 class="text-2xl font-semibold">{m.aideTitle()}</h1>
 
   <Card class="p-5">
-    <h2 class="text-lg font-semibold">{m.aideWhatTitle()}</h2>
+    <h2 class="text-xl font-semibold">{m.aideWhatTitle()}</h2>
     <p class="mt-2 text-sm text-muted-foreground">{m.aideWhatBody()}</p>
   </Card>
 
   <Card class="p-5">
-    <h2 class="text-lg font-semibold">{m.aideSharingTitle()}</h2>
+    <h2 class="text-xl font-semibold">{m.aideSharingTitle()}</h2>
     <p class="mt-2 text-sm text-muted-foreground">{m.aideSharingBody()}</p>
   </Card>
 
   <Card class="p-5">
-    <h2 class="text-lg font-semibold">{m.aideTrustTitle()}</h2>
+    <h2 class="text-xl font-semibold">{m.aideTrustTitle()}</h2>
     <p class="mt-2 text-sm text-muted-foreground">{m.aideTrustBody()}</p>
     <div class="mt-3">
       <Button href={localizedHref('/sources')} variant="outline" size="sm">

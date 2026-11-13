@@ -89,7 +89,7 @@
     </ul>
 
     <Card padding="lg" class="text-center mt-8">
-      <h2 class="text-base font-semibold">Prêt·e à diversifier sereinement ?</h2>
+      <h2 class="text-sm font-semibold">Prêt·e à diversifier sereinement ?</h2>
       <p class="mt-1 text-sm text-ink-soft">
         Diversif n'est pas un avis médical individuel. En cas de doute sur l'introduction d'un
         aliment, demandez conseil à votre pédiatre ou à un allergologue.

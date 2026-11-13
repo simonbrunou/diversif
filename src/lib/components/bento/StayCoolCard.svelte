@@ -6,7 +6,7 @@
 </script>
 
 <Card as="section" variant="tile-mint" class="mb-3 p-4">
-  <p class="text-base font-bold leading-tight">{m.reactionStayCoolTitle()}</p>
+  <p class="text-sm font-bold leading-tight">{m.reactionStayCoolTitle()}</p>
   <p class="mt-1 text-sm text-tile-mint-foreground">{m.reactionStayCoolBody()}</p>
   <a
     href={localizedHref('/guide#reactions')}

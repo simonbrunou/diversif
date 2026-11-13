@@ -31,6 +31,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { FONT_SIZE_PX } from './type-ramp';
 
 const ROOT = process.cwd();
 const SRC = path.join(ROOT, 'src');
@@ -183,17 +184,6 @@ function contrastRatio(a: Hsl, b: Hsl): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-const FONT_SIZE_PX: Record<string, number> = {
-  '3xs': 10,
-  '2xs': 11,
-  xs: 12,
-  sm: 14,
-  base: 16,
-  lg: 18,
-  xl: 20,
-  '2xl': 24,
-  '3xl': 30
-};
 const FONT_WEIGHT: Record<string, number> = {
   medium: 500,
   semibold: 600,

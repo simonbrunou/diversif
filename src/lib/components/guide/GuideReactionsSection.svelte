@@ -52,7 +52,7 @@
         <Phone size={18} aria-hidden="true" />
       </div>
       <div>
-        <h3 class="text-base font-semibold">
+        <h3 class="text-sm font-semibold">
           Urgence : appeler le {EMERGENCY_NUMBER}
         </h3>
         <p class="text-sm">

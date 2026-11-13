@@ -114,7 +114,7 @@
       </div>
       <!-- Each bar's accessible name already carries its day, so this visual
            axis would otherwise be announced a second time. -->
-      <div aria-hidden="true" class="mt-1 flex gap-1 text-3xs uppercase text-ink-soft">
+      <div aria-hidden="true" class="mt-1 flex gap-1 text-2xs uppercase text-ink-soft">
         {#each weeklyEntries as _, i (i)}
           <span data-day class="flex-1 text-center">{dayLabels[i]}</span>
         {/each}

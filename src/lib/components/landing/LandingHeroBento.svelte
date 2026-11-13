@@ -16,7 +16,7 @@
     <h1 class="font-display text-4xl italic leading-tight sm:text-5xl">
       {m.landingHeroTitle()}
     </h1>
-    <p class="mt-4 max-w-xl text-base">
+    <p class="mt-4 max-w-xl text-sm">
       {m.landingHeroBody()}
     </p>
     <div class="mt-6 flex flex-wrap items-center gap-3">

@@ -81,7 +81,7 @@
 
   {#if data.role === 'owner'}
     <Card class="p-4">
-      <h2 class="text-base font-semibold">{m.settingsInformationsHeading()}</h2>
+      <h2 class="text-sm font-semibold">{m.settingsInformationsHeading()}</h2>
       <FormSuccess messageKey={result.childSuccessKey} {form} class="mt-3" />
       <form
         method="POST"
@@ -106,7 +106,7 @@
   {/if}
 
   <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.settingsDietHeading()}</h2>
+    <h2 class="text-sm font-semibold">{m.settingsDietHeading()}</h2>
     <FormSuccess messageKey={result.dietSuccessKey} {form} class="mt-3" />
     <form
       method="POST"
@@ -137,7 +137,7 @@
   </Card>
 
   <Card class="p-4">
-    <h2 class="text-base font-semibold">{m.settingsMembersHeading()}</h2>
+    <h2 class="text-sm font-semibold">{m.settingsMembersHeading()}</h2>
     <FormSuccess messageKey={result.memberSuccessKey} {form} class="mt-3" />
     <ul class="mt-3 divide-y">
       {#each data.members as member (member.userId)}
@@ -170,7 +170,7 @@
 
   {#if data.role === 'owner'}
     <Card id="invite" class="scroll-mt-24 p-4">
-      <h2 class="text-base font-semibold">{m.settingsInviteHeading()}</h2>
+      <h2 class="text-sm font-semibold">{m.settingsInviteHeading()}</h2>
       <p class="mt-1 text-sm text-muted-foreground">
         {m.settingsInviteDescription()}
       </p>
@@ -208,7 +208,7 @@
   {/if}
 
   <Card class="border-destructive/30 p-4">
-    <h2 class="text-base font-semibold text-severe-text">{m.settingsDangerHeading()}</h2>
+    <h2 class="text-sm font-semibold text-severe-text">{m.settingsDangerHeading()}</h2>
     {#if data.role === 'owner'}
       <p class="mt-1 text-sm text-muted-foreground">
         {m.settingsDangerOwnerDescription()}

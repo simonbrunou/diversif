@@ -130,13 +130,7 @@ Each tile token has a paired `--tile-*-fg` sized for WCAG AA at 14px+.
 
 Fraunces Variable (italic) for the emotional / hero register. Inter Variable for everything else. Tabular nums (`'tnum'`) on stat displays so the numbers don't jitter on update.
 
-| Style   | Family          | Size / weight                                    |
-| ------- | --------------- | ------------------------------------------------ |
-| Display | Fraunces italic | 32 / 38, weight 500, letter-spacing -0.02em      |
-| Heading | Inter           | 22 / 28, weight 700, letter-spacing -0.015em     |
-| Body    | Inter           | 14 / 21, weight 400                              |
-| Numeric | Inter           | 26–28, weight 800, `'tnum'`                      |
-| Caption | Inter           | 11, weight 600, letter-spacing 0.08em, uppercase |
+The type ramp, each step with its font and classes, is in `DESIGN.md`, Typography > Hierarchy. `bun run lint:type-ramp` fails on any font size outside it.
 
 ---
 

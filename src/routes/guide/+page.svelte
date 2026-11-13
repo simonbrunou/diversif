@@ -104,7 +104,7 @@
   <GuideStaticSections currentStageId={null} />
 
   <Card padding="lg" class="text-center mt-8">
-    <h2 class="text-base font-semibold">Suivre tout ça en pratique ?</h2>
+    <h2 class="text-sm font-semibold">Suivre tout ça en pratique ?</h2>
     <p class="mt-1 text-sm text-ink-soft">
       Diversif vous aide à noter chaque aliment, suivre les 12 allergènes et partager le carnet
       avec l'autre parent.

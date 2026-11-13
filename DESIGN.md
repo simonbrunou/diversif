@@ -27,16 +27,20 @@ colors:
 typography:
   display:
     fontFamily: "'Fraunces Variable', Fraunces, Georgia, serif"
-    fontSize: '2rem'
+    fontSize: '1.875rem'
     fontWeight: 500
-    lineHeight: '2.375rem'
+    lineHeight: '2.25rem'
     letterSpacing: '-0.02em'
   headline:
     fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
-    fontSize: '1.375rem'
-    fontWeight: 700
+    fontSize: '1.5rem'
+    fontWeight: 600
+    lineHeight: '2rem'
+  section:
+    fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
+    fontSize: '1.25rem'
+    fontWeight: 600
     lineHeight: '1.75rem'
-    letterSpacing: '-0.015em'
   title:
     fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
     fontSize: '0.875rem'
@@ -53,6 +57,11 @@ typography:
     fontSize: '0.875rem'
     fontWeight: 400
     lineHeight: '1.3125rem'
+  caption:
+    fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
+    fontSize: '0.75rem'
+    fontWeight: 400
+    lineHeight: '1rem'
   label:
     fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
     fontSize: '0.6875rem'
@@ -199,13 +208,18 @@ The five tile tints are the system's structural vocabulary. Each is a compartmen
 
 ### Hierarchy
 
-- **Display** (Fraunces italic): Reassurance and brand moments, the landing hero, and the page title inside the signed-in app shell — `BackHeader`, `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout`. Those set it at `text-3xl`/`text-xl` (and `text-4xl`/`text-5xl` on the landing hero) rather than one size, so treat the serif as the voice and let the surface pick the step. Never a data label and never a counter.
-- **Headline** (Inter, 700, 22/28, -0.015em): Section headings, and the page title on the public utility routes — `/aide`, `/allergens`, `/guide`, `/sources`, `/offline`, `+error`, the child picker, `account/deleted`, `join/[code]`. Those are read to answer a question, not to be charmed. Two surfaces run the other way and set their _section_ headings in Fraunces: the pediatrician report, because the whole surface is composed as a printed document, and the landing page, because it is still a brand moment below the fold.
-- **Title** (Inter, 700, 14/1.25): Row and card titles — a food name, a reminder headline.
-- **Numeric** (Inter, 800, 28/1, tabular figures): Every live counter.
-- **Body** (Inter, 400, 14/21): Guidance copy and descriptions.
-- **Caption** (Inter, 400/600, 12/1.33): Row metadata and secondary facts — a texture, a relative timestamp, a count suffix. The most-used step in the product (61 files) and the one the first scan of this system missed; it sits between Body and Label deliberately, because a fact that supports a title should be smaller than the title without dropping to the 11px label size.
-- **Label** (Inter, 600, 11, 0.08em, uppercase): Compartment labels and eyebrows.
+Every font size in `src/` is one of these steps. `bun run lint:type-ramp` fails on any other, and `scripts/type-ramp.ts` lists them; a test fails when a bullet below and that list name different classes, or when one of the eight steps from Display to Label has no `typography` key in the frontmatter at one of its sizes, so change them together. Badge and Large button hold only in their named files, so the frontmatter, which has no file scope, gives them no key.
+
+- **Display** (Fraunces italic, `text-xl`, `text-2xl`, `text-3xl`, `text-4xl`, `text-5xl`): Reassurance and brand moments, the landing hero, and the page title inside the signed-in app shell — `BackHeader`, `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout`. The surface picks the step: `text-xl` in `BackHeader`, modal titles, `ReassuranceHero`, the report's section headings and the stage cards; `text-2xl` on the food and reaction detail titles (a food's print page included), the wordmark and the landing sections; `text-3xl` on `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout`, the legal pages and the report title, which steps up to `text-4xl` from the `md` breakpoint; `text-4xl` and `text-5xl` on the landing hero. These sizes hold only on an element whose class also holds `font-display`. Never a data label and never a counter.
+- **Headline** (Inter, 600, 24/32, `text-2xl`, `md:text-3xl`): The page title on the public utility routes — `/aide`, `+error`, the child picker, `account/deleted`. Those are read to answer a question, not to be charmed. The three long reference pages, `/guide`, `/sources` and `/allergens`, step it up to `md:text-3xl` from the `md` breakpoint, the only Inter use of that size. `/offline` and `join/[code]` set theirs at the Section title size.
+- **Section title** (Inter, 600, 20/28, `text-xl`): Section headings — the guide's sections, the `/aide` cards — and the page title of `/offline` and `join/[code]`. Two surfaces run the other way and set their _section_ headings in Fraunces: the pediatrician report, because the whole surface is composed as a printed document (its stage and texture sections still use this step), and the landing page, because it is still a brand moment below the fold.
+- **Title** (Inter, 700, 14/1.25, `text-sm`): Row and card titles — a food name, a reminder headline. The heading inside a card or a callout, such as a settings card's, takes this size at 600.
+- **Numeric** (Inter, 800, 28/1, tabular figures, `text-[28px]`): Every live counter.
+- **Body** (Inter, 400, 14/21, `text-sm`): Guidance copy and descriptions.
+- **Caption** (Inter, 400/600, 12/1.33, `text-xs`): Row metadata and secondary facts — a texture, a relative timestamp, a count suffix. The most-used step in the product (61 files) and the one the first scan of this system missed; it sits between Body and Label deliberately, because a fact that supports a title should be smaller than the title without dropping to the 11px label size.
+- **Label** (Inter, 600, 11, 0.08em, uppercase, `text-2xs`): Compartment labels and eyebrows.
+- **Badge** (Inter, 600, 10, `text-3xs`): The timing badge beside each allergen on `/allergens` and in the guide's allergen section, and nowhere else. Other badges keep the Caption size that `Badge` sets.
+- **Large button** (Inter, 16, `text-base`): The label of a `Button` at its 48px `lg` size, which the login, signup and log forms use, and nowhere else (see Buttons).
 
 ### Named Rules
 
@@ -274,7 +288,7 @@ Borders are rare. Where one exists it is a warm hairline doing a job a fill cann
 - **Hover / Focus:** Colour-only transition at 200ms on the soft easing curve; no lift, no scale. Focus is a 2px sage ring at a 2px offset.
 - **Tile variants:** Each of the five tints is available as a button fill with its paired foreground, for actions that live inside a compartment of that colour.
 - **Secondary / Outline / Ghost:** Warm sand fill, warm hairline on white, or transparent-until-hover respectively.
-- **Sizes:** 40px default, 36px small, 48px large, 44px pill, 40px icon (with a 44px minimum hit area).
+- **Sizes:** 40px default, 36px small, 48px large, 44px pill, 40px icon (with a 44px minimum hit area). The large size sets its label at 16px (the Large button step); the default, small and pill sizes at 14px.
 
 ### Chips
 
@@ -387,4 +401,7 @@ here so it does not get "fixed" later.
   pure `#000` on `#fff`, and a 12px print body size. Ink on paper is a
   different medium: the pastel compartments waste toner and read worse than
   black type, and physical point sizes are not the screen ramp. The detector
-  flags these as off-scale; they are print-only and deliberate.
+  flags these as off-scale; they are print-only and deliberate. The type-ramp
+  lint skips the `font-size` declarations of a print-only `@media` block
+  (`@media print`, `@media only print`) for the same reason. A `print:` class
+  is still held to the screen ramp.
