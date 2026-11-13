@@ -13,10 +13,10 @@
 #   deploys, #529). The images install from bun.lock, while this scope
 #   resolves from the ranges, so it audits the newest versions they allow,
 #   which can change from one run to the next. From bun.lock the images also
-#   get the optional peers it resolves, such as eslint, typescript and
-#   esbuild, with their own dependencies, which this scope does not install:
-#   on 2026-11-13, 80 of the image's 237 packages were missing from this
-#   scope's install. Bun 1.4 also accepts `bun audit
+#   get optional peers that no other package in the set requires, such as
+#   eslint, typescript and esbuild, with their own dependencies, which this
+#   scope does not install: on 2026-11-13, 80 of the image's 237 top-level
+#   packages were missing from this scope's install. Bun 1.4 also accepts `bun audit
 #   --production`, though `--help` doesn't list it; this scope doesn't rely
 #   on it.
 # all: runs `bun install --frozen-lockfile` in the repo, dev and build tooling
