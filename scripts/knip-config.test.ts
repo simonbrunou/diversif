@@ -30,13 +30,18 @@ const PROJECT = 'src/**/*.{ts,js,svelte,css}!';
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'knip-config-'));
 afterAll(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
+// FORCE_COLOR=1 in the caller's environment wraps knip's table header in
+// escape codes, which the header match below would miss.
+const env: Record<string, string | undefined> = { ...process.env, NO_COLOR: '1' };
+delete env.FORCE_COLOR;
+
 /** Runs knip from the repo root on `variant` of knip.json. */
 function knip(name: string, variant: KnipConfig): { exitCode: number; output: string } {
   const file = path.join(scratch, `${name}.json`);
   fs.writeFileSync(file, JSON.stringify(variant));
   const proc = Bun.spawnSync(
     [process.execPath, KNIP, '--config', file, '--max-issues', '1000', '--no-progress'],
-    { cwd: repo }
+    { cwd: repo, env }
   );
   return { exitCode: proc.exitCode, output: `${proc.stdout}${proc.stderr}` };
 }
@@ -49,10 +54,14 @@ describe('knip.json', () => {
     expect(config.project).toEqual([PROJECT]);
   });
 
+  // The control: with `--max-issues` set high, exit 0 means no hint. Other
+  // findings fail CI's Knip job, not this test.
   it(
     'gives no hint as it stands',
     () => {
-      expect(knip('as-is', config)).toEqual({ exitCode: 0, output: '' });
+      const { exitCode, output } = knip('as-is', config);
+      expect(output).not.toContain('Configuration hints');
+      expect(exitCode).toBe(0);
     },
     TIMEOUT
   );
