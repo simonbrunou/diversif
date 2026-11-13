@@ -122,7 +122,8 @@ describe('scriptPaths', () => {
   it.each([
     ['a path inside build/', 'bun build/scripts/export-user.js'],
     ['a path in a home skill', 'python3 -I ~/.agents/skills/forgejo-issues/scripts/forgejo.py get'],
-    ['a path in another repo', 'homelab-stacks `scripts/coolify-deploy-status.sh`']
+    ['a path in another repo', 'homelab-stacks `scripts/coolify-deploy-status.sh`'],
+    ['a glob in another repo', 'homelab-stacks `scripts/x/*.sh`']
   ])('skips %s', (_name, text) => {
     expect(scriptPaths(text)).toEqual({ repo: [], unknown: [] });
   });
