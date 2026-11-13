@@ -14,8 +14,8 @@
  *   template literal in markup and scripts, and `@apply`. A size name is one
  *   of Tailwind's (`xs`, `sm`, `base`, `lg`, `Nxl`, `Nxs`) or a `--text-*`
  *   that src/app.css declares in `@theme`.
- * - CSS `font-size` declarations in px or rem, outside `@media print` (the
- *   print stylesheet is a documented deviation in DESIGN.md).
+ * - CSS `font-size` declarations in px or rem, outside a print-only `@media`
+ *   block (the print stylesheet is a documented deviation in DESIGN.md).
  * - `@theme` `--text-*` declarations, which must match FONT_SIZE_PX.
  *
  * `font-display` counts in the same string literal as the size, or in the
@@ -300,9 +300,9 @@ function blockChildren(n: Node): unknown[] {
   return (n.block as { children?: unknown[] } | null | undefined)?.children ?? [];
 }
 
-/** `@media print`, but not `@media print, screen`. */
+/** `@media print` or `@media only print`, but not `@media print, screen`. */
 function isPrintOnly(prelude: string): boolean {
-  return /^print\b/.test(prelude.trim()) && !prelude.includes(',');
+  return /^(?:only\s+)?print\b/.test(prelude.trim()) && !prelude.includes(',');
 }
 
 function checkAtrule(ctx: FileContext, n: Node, state: CssState): void {

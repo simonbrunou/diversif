@@ -223,6 +223,12 @@ describe('CSS font-size', () => {
       '<style>@media print { :global(body) { font-size: 11pt; } .a { .b { font-size: 9px } } }</style>',
       []
     ],
+    ['inside @media only print', '<style>@media only print { .a { font-size: 9px; } }</style>', []],
+    [
+      'inside @media only screen',
+      '<style>@media only screen { .a { font-size: 9px; } }</style>',
+      ['1:font-size:']
+    ],
     [
       'inside a media query that also matches screen',
       '<style>\n  @media print, screen { .a { font-size: 13px; } }\n  @media screen, print { .a { font-size: 13px; } }\n</style>',
