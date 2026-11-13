@@ -5,7 +5,9 @@
  * scripts/lint-type-ramp.ts fails on any font size outside these steps, and
  * scripts/lint-contrast.ts reads FONT_SIZE_PX for its large-text threshold.
  * scripts/type-ramp.test.ts checks that each Hierarchy bullet in DESIGN.md
- * names the same classes as its step here, so change both together.
+ * names the same classes as its step here, and that DESIGN.md's frontmatter
+ * has a `typography` key for each RAMP step at one of its sizes, so change
+ * them together.
  */
 
 /**

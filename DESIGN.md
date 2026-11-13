@@ -27,15 +27,20 @@ colors:
 typography:
   display:
     fontFamily: "'Fraunces Variable', Fraunces, Georgia, serif"
-    fontSize: '2rem'
+    fontSize: '1.875rem'
     fontWeight: 500
-    lineHeight: '2.375rem'
+    lineHeight: '2.25rem'
     letterSpacing: '-0.02em'
   headline:
     fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
     fontSize: '1.5rem'
     fontWeight: 600
     lineHeight: '2rem'
+  section:
+    fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
+    fontSize: '1.25rem'
+    fontWeight: 600
+    lineHeight: '1.75rem'
   title:
     fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
     fontSize: '0.875rem'
@@ -52,6 +57,11 @@ typography:
     fontSize: '0.875rem'
     fontWeight: 400
     lineHeight: '1.3125rem'
+  caption:
+    fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
+    fontSize: '0.75rem'
+    fontWeight: 400
+    lineHeight: '1rem'
   label:
     fontFamily: "'Inter Variable', Inter, system-ui, sans-serif"
     fontSize: '0.6875rem'
@@ -198,7 +208,7 @@ The five tile tints are the system's structural vocabulary. Each is a compartmen
 
 ### Hierarchy
 
-Every font size in `src/` is one of these steps. `bun run lint:type-ramp` fails on any other, and `scripts/type-ramp.ts` lists them; a test fails when a bullet below and that list name different classes, so change both together.
+Every font size in `src/` is one of these steps. `bun run lint:type-ramp` fails on any other, and `scripts/type-ramp.ts` lists them; a test fails when a bullet below and that list name different classes, or when a step has no `typography` key in the frontmatter at one of its sizes, so change them together.
 
 - **Display** (Fraunces italic, `text-xl`, `text-2xl`, `text-3xl`, `text-4xl`, `text-5xl`): Reassurance and brand moments, the landing hero, and the page title inside the signed-in app shell — `BackHeader`, `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout`. The surface picks the step: `text-xl` in `BackHeader`, modal titles, `ReassuranceHero`, the report's section headings and the stage cards; `text-2xl` on the food and reaction detail titles (a food's print page included), the wordmark and the landing sections; `text-3xl` on `CarnetHeader`, `OnboardingForm`, `BentoAuthLayout`, the legal pages and the report title, which steps up to `text-4xl` from the `md` breakpoint; `text-4xl` and `text-5xl` on the landing hero. These sizes hold only on an element whose class also holds `font-display`. Never a data label and never a counter.
 - **Headline** (Inter, 600, 24/32, `text-2xl`, `md:text-3xl`): The page title on the public utility routes — `/aide`, `+error`, the child picker, `account/deleted`. Those are read to answer a question, not to be charmed. The three long reference pages, `/guide`, `/sources` and `/allergens`, step it up to `md:text-3xl` from the `md` breakpoint, the only Inter use of that size. `/offline` and `join/[code]` set theirs at the Section title size.

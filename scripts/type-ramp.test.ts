@@ -1,5 +1,6 @@
 // scripts/type-ramp.ts and DESIGN.md's Typography > Hierarchy section name
-// the same steps, with the same classes (#365).
+// the same steps, with the same classes, and DESIGN.md's frontmatter gives
+// each RAMP step a typography key at one of its sizes (#365).
 import { describe, expect, it } from 'bun:test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -29,9 +30,50 @@ function moduleSteps(): Record<string, string[]> {
   return Object.fromEntries([...steps].map(([name, classes]) => [name, [...classes].sort()]));
 }
 
+/** Each `typography` key of the frontmatter, with its `fontSize` in px (rem only). */
+function frontmatterSizes(markdown: string): Record<string, number> {
+  const yaml = /^---\n([\s\S]*?)\n---\n/.exec(markdown)?.[1];
+  if (yaml === undefined) throw new Error('DESIGN.md has no frontmatter');
+  const { typography } = Bun.YAML.parse(yaml) as {
+    typography: Record<string, { fontSize: string }>;
+  };
+  return Object.fromEntries(
+    Object.entries(typography).map(([key, t]) => {
+      const rem = /^(\d*\.?\d+)rem$/.exec(t.fontSize)?.[1];
+      if (rem === undefined) throw new Error(`typography.${key}.fontSize is not in rem`);
+      return [key, Number(rem) * 16];
+    })
+  );
+}
+
+/** Each RAMP step under its frontmatter key (the first word of its name, lowercased), with the px of its classes. */
+function rampSizes(): Record<string, number[]> {
+  return Object.fromEntries(
+    RAMP.map((s) => [s.name.split(' ')[0].toLowerCase(), s.classes.map((c) => classPx(c) ?? NaN)])
+  );
+}
+
 describe('the type ramp', () => {
   it('names the same steps and classes as DESIGN.md, Typography > Hierarchy', () => {
     expect(hierarchySteps(design)).toEqual(moduleSteps());
+  });
+
+  it('gives each RAMP step a DESIGN.md frontmatter typography key at one of its sizes', () => {
+    const front = frontmatterSizes(design);
+    const ramp = rampSizes();
+    expect(Object.keys(front).sort()).toEqual(Object.keys(ramp).sort());
+    for (const [key, px] of Object.entries(front)) {
+      expect({ key, px, onStep: ramp[key].includes(px) }).toEqual({ key, px, onStep: true });
+    }
+  });
+
+  it('reads the frontmatter typography sizes', () => {
+    const markdown =
+      "---\ntypography:\n  a:\n    fontSize: '.75rem'\n  b:\n    fontSize: '1.25rem'\n---\n";
+    expect(frontmatterSizes(markdown)).toEqual({ a: 12, b: 20 });
+    expect(() => frontmatterSizes("---\ntypography:\n  a:\n    fontSize: '12px'\n---\n")).toThrow(
+      'typography.a.fontSize is not in rem'
+    );
   });
 
   it('reads each bullet of the Hierarchy section', () => {

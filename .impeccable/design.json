@@ -194,6 +194,10 @@
         "displayName": "Headline",
         "purpose": "Page titles on the public utility routes. Section headings take the 20px Section title step."
       },
+      "section": {
+        "displayName": "Section title",
+        "purpose": "Section headings, such as the guide's sections and the /aide cards, and the page title of /offline and join/[code]."
+      },
       "title": {
         "displayName": "Title",
         "purpose": "Row and card titles: a food name, a reminder headline."
@@ -203,6 +207,10 @@
         "purpose": "Every live counter. Inter 800 with tabular figures so the value cannot jitter on update; any unit splits off at body scale."
       },
       "body": { "displayName": "Body", "purpose": "Guidance copy and descriptions." },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Row metadata and secondary facts: a texture, a relative timestamp, a count suffix."
+      },
       "label": {
         "displayName": "Label",
         "purpose": "Compartment labels. Legitimate as a compartment's only heading; never stacked above a title."
