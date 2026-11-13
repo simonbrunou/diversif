@@ -38,17 +38,14 @@ function docs(root = ROOT): string[] {
 // that a file name here does not use, and dots that end a sentence are cut.
 const SCRIPT_PATH = /([^\s`'"(]*)scripts\/[\w./-]*/g;
 
-// The text after a glob's start: stars, then a character a path uses
-// (`"scripts/*.ts"` in the fallow skill's config examples). A glob names no
-// one file.
-const GLOB = /^\*+[\w./-]/;
-
 // What may follow a whole path: the end of the line, whitespace, a backtick,
-// a quote, a closing parenthesis, a comma, a colon, a semicolon, or a star
-// that closes emphasis or marks a footnote (`**scripts/x.sh**`). Any other
-// character cut the name short (`scripts/<name>.ts`, `scripts/$X.sh`, a
-// letter outside ASCII).
-const PATH_END = /^(?:[\s`'"),:;*]|$)/;
+// a quote, a closing parenthesis, a comma, a colon or a semicolon. A star
+// right after a folder starts a glob (`"scripts/*.ts"` in the fallow skill's
+// config examples), which names no one file. Any other character cut the
+// name short or ends it in a form this test does not read: `scripts/<name>.ts`,
+// `scripts/$X.sh`, a letter outside ASCII, a glob inside a name
+// (`scripts/check-*.ts`), emphasis (`scripts/x.sh**`).
+const PATH_END = /^(?:[\s`'"),:;]|$)/;
 
 // The prefixes of a path that is not this repo's: the build output
 // (`bun build/scripts/export-user.js`) and a skill in the home directory
@@ -75,7 +72,7 @@ function scriptPaths(text: string): { repo: Found[]; unknown: Found[] } {
       const after = line.slice(m.index + m[0].length);
       if (m[1] !== '') {
         if (!OTHER_PREFIX.test(m[1])) unknown.push(found);
-      } else if (GLOB.test(after)) continue;
+      } else if (m[0].endsWith('/') && after.startsWith('*')) continue;
       else if (!PATH_END.test(after)) unknown.push({ path: m[0] + after[0], line: i + 1 });
       else if (!OTHER_REPO.test(line.slice(0, m.index))) repo.push(found);
     }
@@ -96,8 +93,7 @@ describe('scriptPaths', () => {
     ['a file with a dot in its name', 'run `scripts/x.test.ts`', 'scripts/x.test.ts'],
     ['a path after a space', 'run scripts/x.sh first', 'scripts/x.sh'],
     ['a path before a tab', 'run scripts/x.sh\tfirst', 'scripts/x.sh'],
-    ['a path in bold', '**Run scripts/x.sh** first', 'scripts/x.sh'],
-    ['a path before a footnote star', 'run scripts/x.sh* (see below)', 'scripts/x.sh'],
+    ['a path before a word in stars', 'run scripts/x.sh, then read *every* line', 'scripts/x.sh'],
     ['a path at the end of the line', 'run scripts/x.sh', 'scripts/x.sh'],
     ['a path before a comma', 'run scripts/x.sh, then', 'scripts/x.sh'],
     ['a path before a semicolon', 'run scripts/x.sh; then', 'scripts/x.sh'],
@@ -125,9 +121,7 @@ describe('scriptPaths', () => {
     ['a path in another repo', 'homelab-stacks `scripts/coolify-deploy-status.sh`'],
     ['a glob of a file type', '"entry": ["src/index.ts", "scripts/*.ts"],'],
     ['a glob of every folder', 'every `scripts/**/x.ts`'],
-    ['a glob in a name', 'every `scripts/check-*.ts`'],
-    ['a glob before a letter', 'every `scripts/*x.ts`'],
-    ['a glob before a hyphen', 'every `scripts/*-x.ts`']
+    ['a glob in a subfolder', 'every `scripts/sub/*.ts`']
   ])('skips %s', (_name, text) => {
     expect(scriptPaths(text)).toEqual({ repo: [], unknown: [] });
   });
@@ -146,7 +140,9 @@ describe('scriptPaths', () => {
     ['a placeholder', 'run `scripts/<name>.ts`', 'scripts/<'],
     ['a list in braces', 'run `scripts/{a,b}.ts`', 'scripts/{'],
     ['a variable', 'run `scripts/$X.sh`', 'scripts/$'],
-    ['a letter outside ASCII', 'run `scripts/régénérer.ts`', 'scripts/ré']
+    ['a letter outside ASCII', 'run `scripts/régénérer.ts`', 'scripts/ré'],
+    ['a glob inside a name', 'every `scripts/check-*.ts`', 'scripts/check-*'],
+    ['a star after a name', '**Run scripts/x.sh** first', 'scripts/x.sh*']
   ])('reports a name cut short by %s as unknown', (_name, text, found) => {
     expect(scriptPaths(text)).toEqual({ repo: [], unknown: [{ path: found, line: 1 }] });
   });
