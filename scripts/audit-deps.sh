@@ -13,14 +13,16 @@
 #   deploys, #529). The images install from bun.lock, while this scope
 #   resolves from the ranges, so it audits the newest versions they allow,
 #   which can change from one run to the next. From bun.lock the images also
-#   get eslint and typescript, optional peers of production packages, which
-#   this scope does not install. Bun 1.4 also accepts `bun audit
+#   get the optional peers it resolves, such as eslint, typescript and
+#   esbuild, with their own dependencies, which this scope does not install:
+#   on 2026-11-13, 80 of the image's 237 packages were missing from this
+#   scope's install. Bun 1.4 also accepts `bun audit
 #   --production`, though `--help` doesn't list it; this scope doesn't rely
 #   on it.
 # all: runs `bun install --frozen-lockfile` in the repo, dev and build tooling
 #   included, then audits it. The install also syncs the checkout's
-#   node_modules to bun.lock. It is the scope that covers the eslint and
-#   typescript the images ship, and the tooling that no image ships.
+#   node_modules to bun.lock. It is the scope that covers those optional
+#   peers the images ship, and the tooling that no image ships.
 # With no argument it runs both scopes and fails if either fails.
 # The dev shell's Bun can lag the version CI pins: scripts/check-bun-pins.sh
 # prints the pinned version and warns when the shell runs another (#528).

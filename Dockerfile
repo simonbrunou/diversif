@@ -27,9 +27,10 @@ RUN bun run build
 
 # Separate, --production-only install: the runtime image must not ship the
 # builder's devDependencies (svelte-check, playwright, ...) — they're
-# needed to build but not to run the built server. vite, eslint and
-# typescript still land here as peers of production packages; the Railpack
-# image's prune step installs the same set (docs/agents/deploy.md, "Build").
+# needed to build but not to run the built server. A few still land here
+# because production packages name them (vite, svelte, eslint, typescript,
+# ...): docs/agents/deploy.md ("Dev dependencies stay out of the image")
+# lists them. The Railpack image's prune step installs the same set.
 FROM oven/bun:1.4.4-debian@sha256:93d5032fe06d163427822dc1598f420363759bb18155c9cc90eb1be05a64a19e AS prod-deps
 WORKDIR /app
 COPY package.json bun.lock ./

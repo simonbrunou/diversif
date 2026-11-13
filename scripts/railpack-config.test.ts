@@ -5,7 +5,8 @@
 // whole /app as the last deploy layer, though, and the `install` step's /app
 // holds every devDependency, so that layer would land on top of the pruned
 // node_modules. `deployOutputs: []` keeps it out. JSON holds no comments, so
-// this test carries the reason: docs/agents/deploy.md ("Build") has the rest.
+// this test carries the reason: docs/agents/deploy.md ("Dev dependencies stay
+// out of the image") has the rest.
 import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
