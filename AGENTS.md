@@ -33,7 +33,7 @@ Agents may merge their own PR without asking once all three hold:
 
 - a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent, each reviewer briefed with « Rules for review sub-agents » from `docs/agents/testing.md`) and you fixed its real findings, nits aside (the global agent rules define a nit);
 - CI is green on the pushed SHA;
-- the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0.
+- the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0. `main` can move while `scripts/wait-e2e-slot.sh` waits, so chain both between the wait and the merge in one shell call: `scripts/wait-e2e-slot.sh && git fetch origin && git merge-tree --write-tree origin/main <pushed SHA> && <merge command>`.
 
 When the branch is behind `main` but has no conflict, merge it as it is. Merging `origin/main` into it first costs a full CI run, so skip that step. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows such a break, and « After every merge » below says when to wait for it.
 
