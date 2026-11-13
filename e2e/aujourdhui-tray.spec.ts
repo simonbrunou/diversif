@@ -95,6 +95,135 @@ test('the lg tray leaves no band under the allergen strip or the stat tiles', as
 });
 
 /**
+ * #730: in a week with no new food and the streak at its record, the stat
+ * tiles lose both optional lines, while seven allergens due again wrap the
+ * allergen strip onto three rows of pills. The strip is then the taller module
+ * of the row they share. From lg the stat tiles grow to the strip's height, so
+ * no band opens between them and the destinations (38px on main).
+ */
+test.describe('an allergen strip taller than the stat tiles', () => {
+  // The seed counts Paris calendar days, and the browser reads the typed
+  // repas time in its own zone, which is UTC on CI.
+  test.use({ timezoneId: 'Europe/Paris' });
+
+  test('the lg stat tiles grow to the allergen strip', async ({ page }) => {
+    // 4.1 s locally. It signs up and logs two repas, one of nine foods. The
+    // #363 test above, with five repas, took 17.4 s in a busy CI run.
+    test.slow();
+    const childId = await signUpAndCreateChild(page, 'Jules', birthDateMonthsAgo(9));
+    await dismissWelcomeIfPresent(page);
+    // Every allergen was last given 8 Paris days ago. The seven priority ones
+    // then read « à reproposer » (after 7 days), and Céleri-rave gives the
+    // « 1 autre introduit » line. 8 days also keeps every first time out of
+    // the 7 Paris days the weekly line counts. Today's repas holds a food
+    // already known, so the streak, 1 day, equals its record.
+    await logRepas(
+      page,
+      childId,
+      [
+        'Œuf entier',
+        'Beurre de cacahuète',
+        'Yaourt nature',
+        'Pâtes',
+        'Cabillaud',
+        "Purée d'amande",
+        'Tahin',
+        'Céleri-rave',
+        'Carotte'
+      ],
+      { givenAt: parisNoonDaysAgo(8) }
+    );
+    await logRepas(page, childId, ['Carotte']);
+    await page.goto(`/child/${childId}`);
+    await dismissWelcomeIfPresent(page);
+
+    const modules = trayModules(page);
+    // The seed state. Without either optional stat line, it gives the widest
+    // of the three bands #730's triage probe measured (38px on main). Without
+    // this guard, a seed that showed both lines would make the stat tiles
+    // taller than the strip, and the bottom check below would fail on a seed
+    // change, not on a layout bug.
+    await expect(modules.allergens.getByText('· à reproposer', { exact: true })).toHaveCount(7);
+    await expect(modules.allergens.getByText('1 autre introduit', { exact: true })).toBeVisible();
+    expect(await modules.stats.getByText(/cette semaine|^record ·/).count()).toBe(0);
+
+    const tiles = ['Aliments', 'Régularité'].map((name) =>
+      page.getByRole('article', { name, exact: true })
+    );
+    for (const width of [1024, 1280, 1440]) {
+      await test.step(`${width}px`, async () => {
+        await page.setViewportSize({ width, height: 900 });
+        const [stats, allergens, feed, nav] = await Promise.all(
+          [modules.stats, modules.allergens, modules.feed, modules.nav].map(measure)
+        );
+        expect(allergens.left, 'allergen strip beside the stat tiles').toBeGreaterThan(stats.right);
+        expect(
+          Math.abs(stats.bottom - allergens.bottom),
+          'stat tiles bottom against the allergen strip bottom'
+        ).toBeLessThanOrEqual(1);
+        expect(
+          Math.round(nav.top - stats.bottom),
+          'gap between the stat tiles and the destinations'
+        ).toBe(stats.marginBottom);
+        expect(
+          Math.round(feed.top - allergens.bottom),
+          'gap between the allergen strip and the feed'
+        ).toBe(allergens.marginBottom);
+
+        // The two tiles share the extra height, and their content stays at
+        // the top of each tile.
+        const [aliments, regularite] = await Promise.all(tiles.map(tileSpace));
+        expect(Math.abs(aliments.above), 'space above the Aliments content').toBeLessThanOrEqual(
+          0.5
+        );
+        expect(
+          Math.abs(regularite.above),
+          'space above the Régularité content'
+        ).toBeLessThanOrEqual(0.5);
+        expect(
+          Math.abs(aliments.below - regularite.below),
+          'extra height of each tile'
+        ).toBeLessThanOrEqual(1);
+      });
+    }
+  });
+});
+
+// The Paris calendar date `days` before today, at noon, as a datetime-local
+// value. Counted on the calendar rather than in 24-hour steps, which across a
+// clock change can land on the wrong date late in the evening.
+function parisNoonDaysAgo(days: number): string {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Paris',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric'
+  }).formatToParts(new Date());
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  const day = new Date(Date.UTC(get('year'), get('month') - 1, get('day') - days));
+  return `${day.toISOString().slice(0, 10)}T12:00`;
+}
+
+// Space inside a tile's padding: above its first line and below its last.
+function tileSpace(tile: Locator): Promise<{ above: number; below: number }> {
+  return tile.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
+    const first = el.firstElementChild?.getBoundingClientRect();
+    const last = el.lastElementChild?.getBoundingClientRect();
+    if (!first || !last) throw new Error('a stat tile with no content');
+    return {
+      above: first.top - box.top - parseFloat(style.borderTopWidth) - parseFloat(style.paddingTop),
+      below:
+        box.bottom -
+        parseFloat(style.borderBottomWidth) -
+        parseFloat(style.paddingBottom) -
+        last.bottom
+    };
+  });
+}
+
+/**
  * #737: the stat tiles render nothing until the first food is logged. From lg
  * the destinations then take the stat tiles' cell, column one rows 2 and 3,
  * beside the allergen strip, instead of starting under the strip's row with a
