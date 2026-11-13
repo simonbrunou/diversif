@@ -32,11 +32,19 @@ function docs(root = ROOT): string[] {
   return out;
 }
 
-// A path that starts at scripts/, whatever its file type, and the rest of its
-// word before scripts/ (the prefix). A space, a backtick, a quote or an
-// opening parenthesis ends the word. The path ends at the first character
-// that a file name here does not use, and dots that end a sentence are cut.
-const SCRIPT_PATH = /([^\s`'"(]*)scripts\/[\w./-]*/g;
+// A path that starts at scripts/, whatever its file type, the rest of its
+// word before scripts/ (the prefix) and the character after the path. A
+// space, a backtick, a quote or an opening parenthesis ends the word. The
+// path ends at the first character that a file name here does not use, and
+// dots that end a sentence are cut.
+const SCRIPT_PATH = /([^\s`'"(]*)scripts\/[\w./-]*(?=(.?))/g;
+
+// What may follow a whole path: the end of the line, a space, a backtick, a
+// quote, a closing parenthesis, a comma, a colon or a semicolon. Any other
+// character cut the name short (`scripts/<name>.ts`, `scripts/$X.sh`, a
+// letter outside ASCII), except the `*` of a glob (`"scripts/*.ts"` in the
+// fallow skill's config examples), which names no one file.
+const PATH_END = /^[\s`'"),:;]?$/;
 
 // The prefixes of a path that is not this repo's: the build output
 // (`bun build/scripts/export-user.js`) and a skill in the home directory
@@ -50,8 +58,9 @@ type Found = { path: string; line: number };
 
 /**
  * The scripts/ paths in a doc's text, with their line. `repo` holds the paths
- * that name this repo's files or folders, `unknown` those with a prefix this
- * test does not read, which may name this repo's files too (`./scripts/x.sh`).
+ * that name this repo's files or folders, `unknown` those in a form this test
+ * does not read, which may name this repo's files too: a prefix it does not
+ * know (`./scripts/x.sh`), or a name cut short (`scripts/<`).
  */
 function scriptPaths(text: string): { repo: Found[]; unknown: Found[] } {
   const repo: Found[] = [];
@@ -61,7 +70,9 @@ function scriptPaths(text: string): { repo: Found[]; unknown: Found[] } {
       const found = { path: m[0].replace(/\.+$/, ''), line: i + 1 };
       if (m[1] !== '') {
         if (!OTHER_PREFIX.test(m[1])) unknown.push(found);
-      } else if (!OTHER_REPO.test(line.slice(0, m.index))) repo.push(found);
+      } else if (m[2] === '*') continue;
+      else if (!PATH_END.test(m[2])) unknown.push({ path: m[0] + m[2], line: i + 1 });
+      else if (!OTHER_REPO.test(line.slice(0, m.index))) repo.push(found);
     }
   });
   return { repo, unknown };
@@ -79,6 +90,9 @@ describe('scriptPaths', () => {
     ['a file in a subfolder', 'run `scripts/sub/x.ts`', 'scripts/sub/x.ts'],
     ['a file with a dot in its name', 'run `scripts/x.test.ts`', 'scripts/x.test.ts'],
     ['a path after a space', 'run scripts/x.sh first', 'scripts/x.sh'],
+    ['a path at the end of the line', 'run scripts/x.sh', 'scripts/x.sh'],
+    ['a path before a comma', 'run scripts/x.sh, then', 'scripts/x.sh'],
+    ['a path before a semicolon', 'run scripts/x.sh; then', 'scripts/x.sh'],
     ['a path in double quotes', 'run "scripts/x.sh"', 'scripts/x.sh'],
     ['a path in single quotes', "run 'scripts/x.sh'", 'scripts/x.sh'],
     ['a path in parentheses', 'a script (scripts/x.sh)', 'scripts/x.sh'],
@@ -100,7 +114,8 @@ describe('scriptPaths', () => {
   it.each([
     ['a path inside build/', 'bun build/scripts/export-user.js'],
     ['a path in a home skill', 'python3 -I ~/.agents/skills/forgejo-issues/scripts/forgejo.py get'],
-    ['a path in another repo', 'homelab-stacks `scripts/coolify-deploy-status.sh`']
+    ['a path in another repo', 'homelab-stacks `scripts/coolify-deploy-status.sh`'],
+    ['a glob', '"entry": ["src/index.ts", "scripts/*.ts"],']
   ])('skips %s', (_name, text) => {
     expect(scriptPaths(text)).toEqual({ repo: [], unknown: [] });
   });
@@ -114,6 +129,15 @@ describe('scriptPaths', () => {
   ])('reports a path after %s as unknown', (_name, text, found) => {
     expect(scriptPaths(text)).toEqual({ repo: [], unknown: [{ path: found, line: 1 }] });
   });
+
+  it.each([
+    ['a placeholder', 'run `scripts/<name>.ts`', 'scripts/<'],
+    ['a list in braces', 'run `scripts/{a,b}.ts`', 'scripts/{'],
+    ['a variable', 'run `scripts/$X.sh`', 'scripts/$'],
+    ['a letter outside ASCII', 'run `scripts/régénérer.ts`', 'scripts/ré']
+  ])('reports a name cut short by %s as unknown', (_name, text, found) => {
+    expect(scriptPaths(text)).toEqual({ repo: [], unknown: [{ path: found, line: 1 }] });
+  });
 });
 
 /** Each scripts/ path in the agent docs under root that is missing or unread. */
@@ -125,7 +149,7 @@ function problems(root = ROOT): string[] {
         .filter((p) => !fs.existsSync(path.join(root, p.path)))
         .map((p) => `${doc}:${p.line} ${p.path} does not exist`),
       ...unknown.map(
-        (p) => `${doc}:${p.line} ${p.path}: a prefix scriptPaths does not read, teach it the form`
+        (p) => `${doc}:${p.line} ${p.path}: a form scriptPaths does not read, teach it the form`
       )
     ];
   });
@@ -201,7 +225,7 @@ describe('problems', () => {
       withFiles(files, (root) => {
         expect(problems(root)).toEqual([
           `${doc}:2 scripts/gone.mjs does not exist`,
-          `${doc}:3 ./scripts/a.ts: a prefix scriptPaths does not read, teach it the form`
+          `${doc}:3 ./scripts/a.ts: a form scriptPaths does not read, teach it the form`
         ]);
       });
     }
