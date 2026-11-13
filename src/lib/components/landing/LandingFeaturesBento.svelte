@@ -39,7 +39,7 @@
       {#each features as f, i (i)}
         <article class="rounded-tile {f.tile} p-5 shadow-soft">
           <f.icon size={20} aria-hidden="true" />
-          <h3 class="mt-3 text-base font-bold leading-tight">{f.title}</h3>
+          <h3 class="mt-3 text-sm font-bold leading-tight">{f.title}</h3>
           <p class="mt-1 text-sm">{f.body}</p>
         </article>
       {/each}

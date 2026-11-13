@@ -117,7 +117,7 @@
   </div>
 
   <Card padding="lg" class="text-center mt-8">
-    <h2 class="text-base font-semibold">Suivre l'introduction des allergènes</h2>
+    <h2 class="text-sm font-semibold">Suivre l'introduction des allergènes</h2>
     <p class="mt-1 text-sm text-ink-soft">
       Diversif suit 12 allergènes du carnet et vous aide à ne pas retarder les allergènes courants
       une fois la diversification commencée.

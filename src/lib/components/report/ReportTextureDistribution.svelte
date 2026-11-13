@@ -14,7 +14,7 @@
 </script>
 
 <section class="space-y-2 rounded-lg border bg-card p-4">
-  <h2 class="text-lg font-semibold">{m.reportTextureDistributionHeading()}</h2>
+  <h2 class="text-xl font-semibold">{m.reportTextureDistributionHeading()}</h2>
   {#if textureDistribution.totalWithTexture === 0}
     <p class="text-sm text-muted-foreground">{m.reportTextureDistributionEmpty()}</p>
   {:else}

@@ -15,11 +15,11 @@
   aria-label={m.profilChildrenChevronAria({ name: child.name })}
   class="mb-2 px-4"
 >
-  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-base font-bold">
+  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-sm font-bold">
     {child.name.charAt(0)}
   </span>
   <span class="flex-1">
-    <p class="text-base font-bold leading-tight">{child.name}</p>
+    <p class="text-sm font-bold leading-tight">{child.name}</p>
     <p class="text-xs text-ink-soft">
       {child.ageMonths === 1
         ? m.childAgeMonthsOne()

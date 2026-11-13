@@ -117,7 +117,7 @@
       >
         <UtensilsCrossed size={26} aria-hidden="true" />
       </span>
-      <h2 class="text-base font-semibold">{m.aujourdhuiRecentEmpty()}</h2>
+      <h2 class="text-sm font-semibold">{m.aujourdhuiRecentEmpty()}</h2>
       <p class="mt-1 max-w-sm text-sm text-ink-soft">{m.aujourdhuiRecentEmptyBody()}</p>
       <!--
         tile-mint rather than the default sage: ink on sage measures 4.73:1

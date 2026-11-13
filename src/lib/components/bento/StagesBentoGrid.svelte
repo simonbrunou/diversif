@@ -29,7 +29,7 @@
           active && 'ring-2 ring-primary'
         )}
       >
-        <p class="font-display text-lg italic leading-tight">{stage.title}</p>
+        <p class="font-display text-xl italic leading-tight">{stage.title}</p>
         <p class="mt-1 text-xs">{stage.oneLiner}</p>
       </button>
     {/each}

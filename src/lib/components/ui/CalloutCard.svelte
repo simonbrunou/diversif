@@ -33,7 +33,7 @@
       <Icon size={26} aria-hidden="true" />
     </div>
   {/if}
-  <h2 class="text-base font-semibold">{title}</h2>
+  <h2 class="text-sm font-semibold">{title}</h2>
   <p class="mt-1 max-w-sm text-sm text-ink-soft">
     {@render children()}
   </p>

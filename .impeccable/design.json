@@ -190,7 +190,10 @@
         "displayName": "Display",
         "purpose": "Fraunces italic. The emotional register only — reassurance copy and the wordmark. Never a data label or a counter."
       },
-      "headline": { "displayName": "Headline", "purpose": "Page and section headings." },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles on the public utility routes. Section headings take the 20px Section title step."
+      },
       "title": {
         "displayName": "Title",
         "purpose": "Row and card titles: a food name, a reminder headline."

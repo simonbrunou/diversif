@@ -16,7 +16,7 @@
 </script>
 
 <section class="space-y-2 rounded-lg border bg-card p-4">
-  <h2 class="text-lg font-semibold">{m.reportStageHeading()}</h2>
+  <h2 class="text-xl font-semibold">{m.reportStageHeading()}</h2>
   {#if ageMonths < 4}
     <p class="text-sm text-muted-foreground">{m.preDiversificationTitle()}</p>
     <p class="text-sm">{m.preDiversificationBody()}</p>
