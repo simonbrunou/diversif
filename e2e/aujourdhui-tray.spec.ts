@@ -138,10 +138,11 @@ test.describe('an allergen strip taller than the stat tiles', () => {
     await dismissWelcomeIfPresent(page);
 
     const modules = trayModules(page);
-    // The seed state, which gives the widest band on main (38px). Each
-    // optional line makes the stat tiles taller, and with both they outgrow
-    // the strip (226px against 216px in #730's triage probe), so the checks
-    // below would test nothing.
+    // The seed state. Without either optional stat line, it gives the widest
+    // of the three bands #730's triage probe measured (38px on main). Without
+    // this guard, a seed that showed both lines would make the stat tiles
+    // taller than the strip, and the bottom check below would fail on a seed
+    // change, not on a layout bug.
     await expect(modules.allergens.getByText('· à reproposer', { exact: true })).toHaveCount(7);
     await expect(modules.allergens.getByText('1 autre introduit', { exact: true })).toBeVisible();
     expect(await modules.stats.getByText(/cette semaine|^record ·/).count()).toBe(0);
