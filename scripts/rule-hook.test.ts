@@ -64,7 +64,12 @@ const BLOCKS: [string, string, Record<string, unknown>][] = [
 // A kill by name or by port reaches every worktree's process, another
 // worktree's E2E server included (#722). A kill of the PID you started, a
 // pgrep or fuser that kills nothing, and a command with the escape comment go
-// through.
+// through. A `kill` before a `pgrep` counts up to the next `;` or bare
+// newline, or up to the first `)` of a `$(` that opens before them, so a
+// pgrep check after a kill of a saved PID goes through without the escape
+// comment. A quoted `$(` counts as well, so a search for `kill $(` before a
+// pgrep needs the escape. A pgrep after a nested `$(…)` closes inside the
+// first one, and one inside backticks, are gaps the rule's header names.
 const KILLS_BY_NAME = [
   "pkill -f 'bun build/index.js'",
   'pkill -f "bun build/index.js"; sleep 1',
@@ -73,6 +78,14 @@ const KILLS_BY_NAME = [
   'killall bun',
   "kill $(pgrep -f 'bun build/index.js')",
   "pgrep -f 'bun build/index.js' | xargs -r kill",
+  "kill $(pgrep -f 'bun build/index.js' | head -n 1)",
+  'kill $(cat repro.pid || pgrep -f vite)',
+  'kill -TERM $(\\\n  pgrep -f vite)',
+  'kill $(cat x.pid; pgrep -f vite)',
+  'kill $(\n  pgrep -f vite)',
+  'kill $(cat a.pid) $(cat b.pid; pgrep -f vite)',
+  'kill $(cat a.pid; true) $(cat b.pid; pgrep -f vite)',
+  "rg -F 'kill $(' docs; pgrep -c vite",
   'fuser -k 4173/tcp',
   'fuser -v -k -n tcp 3123',
   'fuser --kill 4173/tcp',
@@ -87,7 +100,11 @@ const OTHER_KILLS = [
   "pgrep -af 'bun build/index.js'",
   'fuser -v -n tcp 4173',
   'fuser -SIGKILL -v -n tcp 4173',
-  "rg -n 'pkill' docs # no-kill-by-name"
+  "rg -n 'pkill' docs # no-kill-by-name",
+  "kill $(jobs -p); pgrep -fc 'while :; do :; done'",
+  'kill "$(cat repro.pid)"\npgrep -fc vite',
+  'kill $(cat $(ls *.pid); pgrep -f vite)',
+  'kill `cat x.pid; pgrep vite`'
 ];
 
 // hook.py loads every rule for a tool it maps to no event, and a file rule's
@@ -220,6 +237,17 @@ describe('.claude/rule-hook/hook.py', () => {
 
   it.each(OTHER_KILLS)('block-kill-by-name: lets %s through', (command) =>
     expect(runHook(preToolUse('Bash', { command })).output).toEqual({})
+  );
+
+  // The `$(` alternative skips each closed `$(…)` whole and stops at the
+  // first unclosed one. Scanning past unclosed ones backtracked in cubic time:
+  // over 100 s on these 16,100 characters, where the hook answers in under
+  // 1 s. runHook's 10 s limit is the hook's own timeout, the bound here.
+  it(
+    'block-kill-by-name: answers within the hook timeout on 2,300 unclosed kill $(',
+    () =>
+      expect(runHook(preToolUse('Bash', { command: 'kill $('.repeat(2_300) })).output).toEqual({}),
+    15_000
   );
 
   it('verify-i18n-on-message-edit: lets the call go on, its message as context', () => {

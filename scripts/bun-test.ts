@@ -107,6 +107,12 @@ if (files.length === 0) {
 
 if (!reportOnly) console.log(`Running ${files.length} test files (isolated processes)...\n`);
 
+// Under CI a skipped test fails its file: a test that skips where a tool is
+// missing, or a stray .skip, would leave the job green on code it never ran
+// (#732). CI counts when it is non-empty, as playwright.config.ts reads it. A
+// run without CI still skips.
+const ci = Boolean(process.env.CI);
+
 let totalPass = 0;
 let totalFail = 0;
 let totalSkip = 0;
@@ -155,24 +161,29 @@ for (let i = 0; !reportOnly && i < files.length; i++) {
   const exitCode = proc.exitCode ?? 0;
   const runnerCrashed = exitCode !== 0 && pass === 0 && fail === 0 && skip === 0;
   const runnerBroken = parsedNothing || runnerCrashed;
+  const skippedUnderCi = ci && skip > 0;
   totalPass += pass;
   totalFail += fail;
   totalSkip += skip;
   // Trust the fail counter over proc.exitCode — bun test sometimes exits
   // non-zero on warnings (e.g. svelte derived_inert) even when every test
   // passed. But if we couldn't parse anything, fall back to failing loud.
-  const status = fail > 0 || runnerBroken ? 'FAIL' : 'pass';
+  const failed = fail > 0 || runnerBroken || skippedUnderCi;
+  const status = failed ? 'FAIL' : 'pass';
   const counts = [pass && `${pass}p`, fail && `${fail}f`, skip && `${skip}s`]
     .filter(Boolean)
     .join(' ');
   console.log(`[${i + 1}/${files.length}] ${status.padEnd(4)} ${counts.padEnd(15)} ${f}`);
-  if (fail > 0 || runnerBroken) {
+  if (failed) {
     failedFiles.push(f);
     let reason: string | null = null;
     if (runnerBroken) {
       reason = parsedNothing
         ? "runner: couldn't parse bun test output"
         : `runner: bun exited ${exitCode} with no parsed counts`;
+    } else if (skippedUnderCi && fail === 0) {
+      // A file that also failed a test keeps its (fail) lines as the reason.
+      reason = `${skip} skipped test(s) under CI, where every test must run`;
     }
     dumpFailedFile(f, out, reason);
   }
