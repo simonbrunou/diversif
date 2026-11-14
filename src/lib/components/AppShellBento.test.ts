@@ -13,7 +13,6 @@ afterEach(() => cleanup());
 
 describe('AppShellBento', () => {
   const baseProps = {
-    user: { email: 'simon.brunou@proton.me' },
     kids: [{ id: 'a', name: 'Léo', birthMonth: '2025-11-01' }],
     currentChildId: 'a',
     currentPath: '/child/a',
