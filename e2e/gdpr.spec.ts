@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { awaitHydration, openWithoutJavaScript, signUp, SIGNUP_PASSWORD, unique } from './_helpers';
 
 test.describe('legal pages', () => {
@@ -36,9 +36,15 @@ const DELETE_SENTINEL = '/e2e-delete-sentinel';
 const deleteButton = (page: Page) =>
   page.getByRole('button', { name: /Supprimer définitivement/i });
 
+const deletionFields = (page: Page): { email: Locator; password: Locator } => ({
+  email: page.getByLabel(/Saisissez votre adresse e-mail/i),
+  password: page.getByLabel(/Confirmez avec votre mot de passe/i)
+});
+
 async function fillDeletionFields(page: Page, email: string, password = SIGNUP_PASSWORD) {
-  await page.getByLabel(/Saisissez votre adresse e-mail/i).fill(email);
-  await page.getByLabel(/Confirmez avec votre mot de passe/i).fill(password);
+  const fields = deletionFields(page);
+  await fields.email.fill(email);
+  await fields.password.fill(password);
 }
 
 // Opens the hydrated deletion form and fills it, ready to submit. Hydrated,
@@ -151,6 +157,8 @@ test.describe('account deletion without JavaScript', () => {
     const noJs = await openWithoutJavaScript(browser, page);
     try {
       await noJs.goto('/account/delete');
+      // Locators resolve again on each use, so this pair outlives the re-renders.
+      const { email: emailField, password: passwordField } = deletionFields(noJs);
       await fillDeletionFields(noJs, 'autre@example.com');
       await deleteButton(noJs).click();
       await expect(noJs.getByRole('alert')).toHaveText(
@@ -159,8 +167,6 @@ test.describe('account deletion without JavaScript', () => {
       // A server-rendered alert takes focus, so screen readers read it (#469).
       await expect(noJs.getByRole('alert')).toBeFocused();
       // The wrong address stays, so it can be corrected; the password never does (#471).
-      const emailField = noJs.getByLabel(/Saisissez votre adresse e-mail/i);
-      const passwordField = noJs.getByLabel(/Confirmez avec votre mot de passe/i);
       await expect(emailField).toHaveValue('autre@example.com');
       await expect(passwordField).toHaveValue('');
 
