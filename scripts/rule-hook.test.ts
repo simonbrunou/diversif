@@ -64,7 +64,9 @@ const BLOCKS: [string, string, Record<string, unknown>][] = [
 // A kill by name or by port reaches every worktree's process, another
 // worktree's E2E server included (#722). A kill of the PID you started, a
 // pgrep or fuser that kills nothing, and a command with the escape comment go
-// through.
+// through. A `kill` before a `pgrep` counts up to the next `;` or bare
+// newline, so a pgrep check after a kill of a saved PID goes through
+// without the escape comment.
 const KILLS_BY_NAME = [
   "pkill -f 'bun build/index.js'",
   'pkill -f "bun build/index.js"; sleep 1',
@@ -73,6 +75,9 @@ const KILLS_BY_NAME = [
   'killall bun',
   "kill $(pgrep -f 'bun build/index.js')",
   "pgrep -f 'bun build/index.js' | xargs -r kill",
+  "kill $(pgrep -f 'bun build/index.js' | head -n 1)",
+  'kill $(cat repro.pid || pgrep -f vite)',
+  'kill -TERM $(\\\n  pgrep -f vite)',
   'fuser -k 4173/tcp',
   'fuser -v -k -n tcp 3123',
   'fuser --kill 4173/tcp',
@@ -87,7 +92,9 @@ const OTHER_KILLS = [
   "pgrep -af 'bun build/index.js'",
   'fuser -v -n tcp 4173',
   'fuser -SIGKILL -v -n tcp 4173',
-  "rg -n 'pkill' docs # no-kill-by-name"
+  "rg -n 'pkill' docs # no-kill-by-name",
+  "kill $(jobs -p); pgrep -fc 'while :; do :; done'",
+  'kill "$(cat repro.pid)"\npgrep -fc vite'
 ];
 
 // hook.py loads every rule for a tool it maps to no event, and a file rule's
