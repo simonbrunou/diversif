@@ -29,6 +29,12 @@
       "allowedVersions": "<7"
     },
     {
+      "description": "Open no major update for package.json overrides (#474): an override forces its version onto every consumer in the tree, so a new major lands on packages that declare the old one. Renovate raised the nanoid override from ^3 to ^6 while postcss, its only consumer, declares nanoid ^3 (6bbd6cc), and later proposed @opentelemetry/core v3 the same way (#459). Move an override's major by hand, once bun.lock shows that every consumer accepts it.",
+      "matchDepTypes": ["overrides"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
       "description": "Open no PR for ghcr.io/renovatebot/renovate, the image of .forgejo/workflows/renovate-config.yml: that job must run the Renovate the bot runs. The bot's tag (image: in renovate/renovate-config's .forgejo/workflows/renovate.yml) moves only when someone merges that repo's image PR, which does not automerge. Move this repo's tag to the bot's new one at the same time.",
       "matchDepNames": ["ghcr.io/renovatebot/renovate"],
       "enabled": false
