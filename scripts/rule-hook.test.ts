@@ -65,8 +65,10 @@ const BLOCKS: [string, string, Record<string, unknown>][] = [
 // worktree's E2E server included (#722). A kill of the PID you started, a
 // pgrep or fuser that kills nothing, and a command with the escape comment go
 // through. A `kill` before a `pgrep` counts up to the next `;` or bare
-// newline, so a pgrep check after a kill of a saved PID goes through
-// without the escape comment.
+// newline, or up to the first `)` of a `$(` that opens before them, so a
+// pgrep check after a kill of a saved PID goes through without the escape
+// comment. A pgrep after a nested `$(…)` closes inside the first one is a gap
+// the rule's header names.
 const KILLS_BY_NAME = [
   "pkill -f 'bun build/index.js'",
   'pkill -f "bun build/index.js"; sleep 1',
@@ -78,6 +80,8 @@ const KILLS_BY_NAME = [
   "kill $(pgrep -f 'bun build/index.js' | head -n 1)",
   'kill $(cat repro.pid || pgrep -f vite)',
   'kill -TERM $(\\\n  pgrep -f vite)',
+  'kill $(cat x.pid; pgrep -f vite)',
+  'kill $(\n  pgrep -f vite)',
   'fuser -k 4173/tcp',
   'fuser -v -k -n tcp 3123',
   'fuser --kill 4173/tcp',
@@ -94,7 +98,8 @@ const OTHER_KILLS = [
   'fuser -SIGKILL -v -n tcp 4173',
   "rg -n 'pkill' docs # no-kill-by-name",
   "kill $(jobs -p); pgrep -fc 'while :; do :; done'",
-  'kill "$(cat repro.pid)"\npgrep -fc vite'
+  'kill "$(cat repro.pid)"\npgrep -fc vite',
+  'kill $(cat $(ls *.pid); pgrep -f vite)'
 ];
 
 // hook.py loads every rule for a tool it maps to no event, and a file rule's
