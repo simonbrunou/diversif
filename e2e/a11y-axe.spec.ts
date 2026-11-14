@@ -201,7 +201,10 @@ test.describe('a11y axe — auth routes @responsive', () => {
 
   test('walks a child with entries and its dialogs', async ({ page }) => {
     // Runs 255 and 256: 18.3 and 32.8 s on desktop, 14.9 and 35.4 s on
-    // mobile (6.3 to 16.8 s locally).
+    // mobile (6.3 to 7.6 s locally on an idle host). Local runs of 15.4 to
+    // 16.8 s came from CPU load by other processes on the same host, which
+    // slows every step of this test while it lasts, axe passes included:
+    // 80 busy loops on 16 cores made it take 17 to 18 s (#512).
     test.slow();
     const childId = await signUpForSweep(page);
 
