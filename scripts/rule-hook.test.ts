@@ -84,6 +84,7 @@ const KILLS_BY_NAME = [
   'kill $(cat x.pid; pgrep -f vite)',
   'kill $(\n  pgrep -f vite)',
   'kill $(cat a.pid) $(cat b.pid; pgrep -f vite)',
+  'kill $(cat a.pid; true) $(cat b.pid; pgrep -f vite)',
   "rg -F 'kill $(' docs; pgrep -c vite",
   'fuser -k 4173/tcp',
   'fuser -v -k -n tcp 3123',
@@ -236,6 +237,17 @@ describe('.claude/rule-hook/hook.py', () => {
 
   it.each(OTHER_KILLS)('block-kill-by-name: lets %s through', (command) =>
     expect(runHook(preToolUse('Bash', { command })).output).toEqual({})
+  );
+
+  // The `$(` alternative skips each closed `$(…)` whole and stops at the
+  // first unclosed one. Scanning past unclosed ones backtracked in cubic time:
+  // over 100 s on these 16,100 characters, where the hook answers in under
+  // 1 s. runHook's 10 s limit is the hook's own timeout, the bound here.
+  it(
+    'block-kill-by-name: answers within the hook timeout on 2,300 unclosed kill $(',
+    () =>
+      expect(runHook(preToolUse('Bash', { command: 'kill $('.repeat(2_300) })).output).toEqual({}),
+    15_000
   );
 
   it('verify-i18n-on-message-edit: lets the call go on, its message as context', () => {

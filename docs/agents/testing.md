@@ -84,11 +84,12 @@ How to run, write and triage this repo's tests. Commands live in `package.json`;
 
   Keep `\$PATH` escaped inside `bash -c`: the outer shell would expand it before the dev shell sets PATH, and bun would not be found (exit 127).
 
-  CI's image runs bash 5.2.21 (7793286d), the host and the dev shell bash 5.3. A child that bash 5.2 forks for a command runs the script's EXIT trap when a TERM reaches it before it execs, and bash 5.3 never does, so on the host the `keeps $TMP` and `prints no bash warning` tests pass even without the guard they protect (#606, #674). To run them as CI does, put bash 5.2 first on PATH: start a `nix develop -c bash -c "PATH=$B:\$PATH; …"` call with it, as the plain run below does, and run each command above inside such a call, the `BASH_ENV` run as `BASH_ENV=$D/startup.sh bun …` there. In the busy-loop run, replace the inner `nix develop -c bun run test …` with such a call, since a nested `nix develop` puts bash 5.3 first again:
+  CI's image runs bash 5.2.21 (7793286d), the host and the dev shell bash 5.3. A child that bash 5.2 forks for a command runs the script's EXIT trap when a TERM reaches it before it execs, and bash 5.3 never does, so on the host the `keeps $TMP` and `prints no bash warning` tests pass even without the guard they protect (#606, #674). To run them as CI does, put bash 5.2 first on PATH: start a `nix develop -c bash -c "PATH=$B:\$PATH; …"` call with it, as the plain run below does, and run each command above inside such a call, the `BASH_ENV` run as `BASH_ENV=$D/startup.sh bun …` there. In the busy-loop run, replace the inner `nix develop -c bun run test …` with such a call, since a nested `nix develop` puts bash 5.3 first again, and hand `B` to its `bash -c`, as the third line below does:
 
   ```sh
   B=$(nix build --no-link --print-out-paths 'github:NixOS/nixpkgs/nixos-24.11#bash^out')/bin
   nix develop -c bash -c "PATH=$B:\$PATH; bash --version | head -1; bun run test scripts/smoke-prod.test.ts"
+  B=$B bash -c 'for i in $(seq $(( $(nproc) * 2 ))); do (while :; do :; done) & done; nix develop -c bash -c "PATH=$B:\$PATH; bun run test scripts/smoke-prod.test.ts"; rc=$?; kill $(jobs -p); exit $rc'
   ```
 
 ## Writing E2E tests (Playwright)
