@@ -15,6 +15,12 @@
     "scripts/list-stale-users.ts"
   ],
 
+  // A vendored inlang plugin bundle (see project.inlang/modules/README.md).
+  // project.inlang/settings.json loads it by path when paraglide compiles, and
+  // no JS imports it, so fallow 3.41 reports it as an unused file. Leave the
+  // third-party code out of the analysis rather than mark it an entry.
+  "ignorePatterns": ["project.inlang/modules/**"],
+
   // Runtime-essential but never imported from JS, so static analysis can't see
   // the edge:
   //  - Prettier auto-loads both plugins from node_modules (verified: `prettier

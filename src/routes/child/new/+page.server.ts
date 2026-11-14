@@ -39,14 +39,8 @@ function fieldErrors(issues: z.ZodError['issues']): Record<string, string> {
   return errors;
 }
 
-export const load = (async ({ locals, parent }) => {
+export const load = (({ locals }) => {
   requireUser(locals);
-  // True only when the user owns no child yet : lets the page render a
-  // warmer "welcome aboard" header instead of the utilitarian "Ajouter
-  // un enfant". Co-parents who only have member memberships still get
-  // the warm greeting the first time they create their own child.
-  const { children: existing } = await parent();
-  return { isFirstChild: existing.every((c) => c.role !== 'owner') };
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {

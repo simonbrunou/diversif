@@ -273,7 +273,6 @@
 <div class="safe-top flex min-h-dvh flex-col">
   {#if isChildRoute || isAccountRoute}
     <AppShellBento
-      user={data.user ? { email: data.user.email } : undefined}
       kids={bentoKids}
       currentChildId={data.currentChildId ?? undefined}
       currentPath={unprefixedPath}

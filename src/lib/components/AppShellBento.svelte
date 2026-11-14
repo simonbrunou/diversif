@@ -15,13 +15,11 @@
   type Child = { id: string; name: string; birthMonth: string };
 
   let {
-    user: _user,
     kids,
     currentChildId,
     currentPath,
     children
   }: {
-    user?: { email: string };
     kids: Child[];
     currentChildId?: string;
     currentPath: string;
