@@ -181,7 +181,8 @@ for (let i = 0; !reportOnly && i < files.length; i++) {
       reason = parsedNothing
         ? "runner: couldn't parse bun test output"
         : `runner: bun exited ${exitCode} with no parsed counts`;
-    } else if (skippedUnderCi) {
+    } else if (skippedUnderCi && fail === 0) {
+      // A file that also failed a test keeps its (fail) lines as the reason.
       reason = `${skip} skipped test(s) under CI, where every test must run`;
     }
     dumpFailedFile(f, out, reason);

@@ -249,8 +249,8 @@ describe('a file with a skipped test', () => {
 it('runs', () => {});
 it.skip('skips', () => {});
 `;
-  const run = (ci: string | undefined) => {
-    const dir = fixture(skipping);
+  const run = (ci: string | undefined, source = skipping) => {
+    const dir = fixture(source);
     const proc = Bun.spawnSync({
       cmd: [process.execPath, runner, 'fixture'],
       cwd: dir,
@@ -275,6 +275,22 @@ it.skip('skips', () => {});
         stderr.startsWith(`!! ${FILE}: 1 skipped test(s) under CI, where every test must run\n`)
       ).toBe(true);
       expect(stderr).toContain('(skip) skips');
+    },
+    TIMEOUT
+  );
+
+  it(
+    'names no skip under CI when a test also failed',
+    () => {
+      const { exitCode, stdout, stderr } = run(
+        'true',
+        `${skipping}it('breaks', () => { throw new Error('boom'); });\n`
+      );
+      expect(exitCode).toBe(1);
+      expect(stdout).toMatch(new RegExp(`^\\[1/1\\] FAIL 1p 1f 1s +${FILE}$`, 'm'));
+      expect(stderr.startsWith(`== ${FILE}: `)).toBe(true);
+      expect(stderr).not.toContain('skipped test(s) under CI');
+      expect(stderr).toContain('(fail) breaks');
     },
     TIMEOUT
   );
