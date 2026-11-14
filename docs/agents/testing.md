@@ -68,6 +68,13 @@ How to run, write and triage this repo's tests. Commands live in `package.json`;
 
   Keep `\$PATH` escaped inside `bash -c`: the outer shell would expand it before the dev shell sets PATH, and bun would not be found (exit 127).
 
+  CI's image runs bash 5.2.21 (7793286d), the host and the dev shell bash 5.3. A child that bash 5.2 forks for a command runs the script's EXIT trap when a TERM reaches it before it execs, and bash 5.3 never does, so on the host the `keeps $TMP` and `prints no bash warning` tests pass even without the guard they protect (#606, #674). To run them as CI does, put bash 5.2 first on PATH, in the plain run and in each run above:
+
+  ```sh
+  B=$(nix build --no-link --print-out-paths 'github:NixOS/nixpkgs/nixos-24.11#bash^out')/bin
+  nix develop -c bash -c "PATH=$B:\$PATH; bash --version | head -1; bun run test scripts/smoke-prod.test.ts"
+  ```
+
 ## Writing E2E tests (Playwright)
 
 - **An absent toast or a single message: take one count.** `toHaveCount(0)` retries for 5 s and svelte-sonner toasts expire after 4 s, so it waits a wrong toast out and passes (#437). Wait for the triggering work to finish (e.g. `expect.poll` on the queue), then assert `expect(await locator.count()).toBe(0)`, or `.toBe(1)` for a message that must show once. Watch the check go red before trusting it: against the old code, or, when the old code never shows the message, against a temporary mutation that shows it twice (a `toast()` next to the inline message). Models: the queue-replay test in `e2e/offline.spec.ts`, the counts in `e2e/account.spec.ts`.
