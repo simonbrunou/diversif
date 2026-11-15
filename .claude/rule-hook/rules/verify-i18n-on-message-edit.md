@@ -20,7 +20,10 @@ locale but not the other, or when a `{placeholder}` differs between `en` and `fr
 `scripts/check-i18n-parity.ts`, fails on a key that one of `fr.json` and
 `en.json` lacks, a `{placeholder}` that one locale's value lacks, an empty or
 whitespace-only value, a value that is not a string, and a `{` or `}` outside a
-`{letters}` placeholder.
+`{letters}` placeholder. Its fourth, `scripts/check-i18n-quotes.ts`, fails when
+a message quotes a label (« Toutes », "All") that no longer reads that way, or
+quotes a text that `scripts/i18n-quote-links.ts` does not list: renaming a
+label means updating every message that quotes it.
 
 If you added a key to one locale, add it to the other in the same edit. The
 pre-commit hook does not run this check: `bun run lint` runs it in the pre-push
