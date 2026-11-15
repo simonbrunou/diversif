@@ -60,7 +60,7 @@ jobs:
         run: bun run depcruise
 
   knip:
-    name: Knip (unused files/exports/deps)
+    name: Knip + Fallow dead-code (unused files/exports/deps)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

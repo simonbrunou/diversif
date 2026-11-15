@@ -1,8 +1,10 @@
 // #525: the Fallow audit sees only a PR's changed files, so an unused file
 // elsewhere in the tree failed no CI job. ci.yml's `knip` job, which runs on
 // a push to main and on a PR, now runs `fallow dead-code` on the whole tree.
-// The first tests read that step from the workflow and fail on any key or
-// place other than the one it has today. The rest run the step's own `run:`
+// The first tests read that step from the workflow. They fail when the
+// workflow's triggers or the job's keys differ from today's, when the step
+// has a key besides its name and run or another command, or when it runs
+// before paraglide or svelte-kit sync. The rest run the step's own `run:`
 // text under bash in a throwaway project, with the repo's pinned fallow
 // binary, one test per outcome: a clean tree, an error-severity finding, a
 // finding whose rule is set to warn, and a file left out by ignorePatterns.
@@ -32,7 +34,8 @@ const step = steps[index];
 
 describe(`the ${STEP} step in ${CI}`, () => {
   it('sits in a job that runs on a push and on a PR', () => {
-    expect(Object.keys(workflow.on)).toEqual(expect.arrayContaining(['push', 'pull_request']));
+    // Any filter (another branch, paths, paths-ignore) fails here.
+    expect(workflow.on).toEqual({ push: { branches: ['main'] }, pull_request: null });
     expect(Object.keys(job).sort()).toEqual(['name', 'runs-on', 'steps']);
   });
 
