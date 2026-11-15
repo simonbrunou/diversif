@@ -73,6 +73,17 @@ jobs:
       - run: bun run paraglide
       - run: bun --bun node_modules/@sveltejs/kit/src/cli.js sync
       - run: bun run knip
+      # The Fallow audit sees only a PR's changed files, so an unused file
+      # elsewhere in the tree never fails it (#525). dead-code reads the whole
+      # tree, on a PR and on main, and fails only on error-severity findings:
+      # warn-level ones (the two `unlisted-binary` lines for package.json in
+      # 3.41.0) print without failing it. The echo leaves a line in a green
+      # log however few print. scripts/fallow-dead-code-step.test.ts runs this
+      # exact command.
+      - name: Fallow dead-code (whole repo)
+        run: >-
+          node_modules/.bin/fallow dead-code --format compact
+          && echo "fallow dead-code: no error-severity finding"
 
   fallow-audit:
     name: Fallow audit (changed-file health gate)
