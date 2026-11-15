@@ -14,7 +14,10 @@
   <Card class="overflow-hidden">
     <ul class="divide-y">
       {#each FORBIDDEN_FOODS as f (f.id)}
-        <li class="grid gap-1 p-4 md:grid-cols-[1fr_auto]">
+        <li
+          // fallow-ignore-next-line css-token-drift -- a content column beside an auto-sized one, a grid track no theme token names
+          class="grid gap-1 p-4 md:grid-cols-[1fr_auto]"
+        >
           <div>
             <h3 class="text-sm font-semibold">{f.name}</h3>
             <p class="mt-1 text-sm text-foreground/90">{f.reason}</p>

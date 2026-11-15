@@ -12,7 +12,10 @@
   <Card class="overflow-hidden">
     <ul class="divide-y">
       {#each TEXTURE_PROGRESSION as t, i (i)}
-        <li class="grid gap-2 p-4 md:grid-cols-[80px_1fr]">
+        <li
+          // fallow-ignore-next-line css-token-drift -- the age column of this one list, not a design value a token would name
+          class="grid gap-2 p-4 md:grid-cols-[80px_1fr]"
+        >
           <div class="text-sm font-semibold text-primary-strong">~ {t.ageMonths} mois</div>
           <div>
             <p class="text-sm font-medium">{t.texture}</p>

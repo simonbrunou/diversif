@@ -65,13 +65,16 @@
       class="min-w-0 p-4"
       aria-label={m.aujourdhuiBilanAliments()}
     >
-      <p class="text-2xs font-semibold uppercase tracking-[0.08em]">
+      <p
+        // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of the DESIGN.md Label step, which has no theme token
+        class="text-2xs font-semibold uppercase tracking-[0.08em]"
+      >
         {m.aujourdhuiBilanAliments()}
       </p>
       <!-- tabular-nums so the count does not reflow its own width when it
            ticks over; the brief specifies the numeric style as Inter 800 with
            'tnum', not the Fraunces display italic this used to borrow. -->
-      <p class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">{foodsIntroduced}</p>
+      <p class="mt-1 text-numeric font-extrabold leading-none tabular-nums">{foodsIntroduced}</p>
       {#if weekCount > 0}
         <p class="mt-2 text-xs">{weekLabel}</p>
       {/if}
@@ -82,14 +85,17 @@
       class="min-w-0 p-4"
       aria-label={m.aujourdhuiBilanStreak()}
     >
-      <p class="text-2xs font-semibold uppercase tracking-[0.08em]">
+      <p
+        // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of the DESIGN.md Label step, which has no theme token
+        class="text-2xs font-semibold uppercase tracking-[0.08em]"
+      >
         {m.aujourdhuiBilanStreak()}
       </p>
       <!-- Number and unit carry different type on purpose: it keeps this tile
            optically level with the plain count next to it, and it stops
            "6 jours" from overflowing a narrow tile as one 28px run. -->
       <p class="mt-1 flex items-baseline gap-1 leading-none">
-        <span class="text-[28px] font-extrabold tabular-nums">{streakCurrent}</span>
+        <span class="text-numeric font-extrabold tabular-nums">{streakCurrent}</span>
         <span class="text-sm font-semibold">{streakUnit}</span>
       </p>
       {#if showRecord}

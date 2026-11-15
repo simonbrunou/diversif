@@ -21,7 +21,7 @@
     description?: string;
     class?: string;
     /**
-     * When true, wraps `children` in a `max-h-[70vh] overflow-y-auto` container
+     * When true, wraps `children` in a scrolling container capped at 70vh
      * so long body content scrolls instead of clipping. Required for any
      * `side="auto"` / `side="bottom"` sheet whose body can grow taller than
      * the 92dvh sheet limit — without it, the lower portion (including the
@@ -83,10 +83,12 @@
   );
 
   const sideClasses: Record<ResolvedSide, string> = {
+    // fallow-ignore-next-line css-token-drift -- the 92dvh sheet limit named in the doc of the `scrollable` prop, not a design value a token would name
     top: 'inset-x-0 top-0 max-h-[92dvh] rounded-b-hero data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
     right:
       'inset-y-0 right-0 flex h-full w-3/4 max-w-xs flex-col data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
     bottom:
+      // fallow-ignore-next-line css-token-drift -- the 92dvh sheet limit, and bottom padding that clears the device safe-area inset, which no theme token can express
       'inset-x-0 bottom-0 max-h-[92dvh] rounded-t-hero pb-[max(2rem,env(safe-area-inset-bottom))] data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
     left: 'inset-y-0 left-0 flex h-full w-3/4 max-w-xs flex-col data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
     // Center sits at left/top 50% with `-translate-x/y-1/2` for true
@@ -97,6 +99,7 @@
     // utilities pin the enter `from` / exit `to` to the centering
     // transform so only the scale + opacity actually animate.
     center:
+      // fallow-ignore-next-line css-token-drift -- the viewport width less a 1rem margin each side, a calc() no theme token names
       'left-1/2 top-1/2 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-hero data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-1/2 data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-1/2'
   };
 
@@ -175,6 +178,7 @@
                scrollable regions, hence the ignore. -->
           <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
           <div
+            // fallow-ignore-next-line css-token-drift -- the 70vh scroll cap the `scrollable` prop documents, not a design value a token would name
             class="max-h-[70vh] overflow-y-auto"
             tabindex="0"
             role="region"

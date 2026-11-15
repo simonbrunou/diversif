@@ -8,6 +8,7 @@
 
 <textarea
   class={cn(
+    // fallow-ignore-next-line css-token-drift -- the resting height of the textarea, about three lines of text, not a design value a token would name
     'flex min-h-[88px] w-full rounded-lg border-2 border-border bg-canvas px-4 py-2 text-sm text-foreground transition-colors duration-base ease-soft placeholder:text-ink-soft focus-visible:outline-none focus-visible:border-primary focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
     className
   )}

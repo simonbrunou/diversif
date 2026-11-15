@@ -42,8 +42,8 @@
   {href}
   aria-label={ariaLabel}
   class={cn(
-    'flex items-center gap-3 rounded-tile px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none',
-    lift && 'hover:scale-[1.01]',
+    'flex items-center gap-3 rounded-tile px-3 py-3 shadow-soft transition-transform duration-base ease-soft active:scale-99 motion-reduce:transform-none motion-reduce:transition-none',
+    lift && 'hover:scale-101',
     VARIANTS[variant],
     className
   )}

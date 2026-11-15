@@ -214,7 +214,7 @@ Every font size in `src/` is one of these steps. `bun run lint:type-ramp` fails 
 - **Headline** (Inter, 600, 24/32, `text-2xl`, `md:text-3xl`): The page title on the public utility routes — `/aide`, `+error`, the child picker, `account/deleted`. Those are read to answer a question, not to be charmed. The three long reference pages, `/guide`, `/sources` and `/allergens`, step it up to `md:text-3xl` from the `md` breakpoint, the only Inter use of that size. `/offline` and `join/[code]` set theirs at the Section title size.
 - **Section title** (Inter, 600, 20/28, `text-xl`): Section headings — the guide's sections, the `/aide` cards — and the page title of `/offline` and `join/[code]`. Two surfaces run the other way and set their _section_ headings in Fraunces: the pediatrician report, because the whole surface is composed as a printed document (its stage and texture sections still use this step), and the landing page, because it is still a brand moment below the fold.
 - **Title** (Inter, 700, 14/1.25, `text-sm`): Row and card titles — a food name, a reminder headline. The heading inside a card or a callout, such as a settings card's, takes this size at 600.
-- **Numeric** (Inter, 800, 28/1, tabular figures, `text-[28px]`): Every live counter.
+- **Numeric** (Inter, 800, 28/1, tabular figures, `text-numeric`): Every live counter.
 - **Body** (Inter, 400, 14/21, `text-sm`): Guidance copy and descriptions.
 - **Caption** (Inter, 400/600, 12/1.33, `text-xs`): Row metadata and secondary facts — a texture, a relative timestamp, a count suffix. The most-used step in the product (61 files) and the one the first scan of this system missed; it sits between Body and Label deliberately, because a fact that supports a title should be smaller than the title without dropping to the 11px label size.
 - **Label** (Inter, 600, 11, 0.08em, uppercase, `text-2xs`): Compartment labels and eyebrows.
@@ -240,6 +240,10 @@ The mobile shell is a fixed-height column: a brand strip, a scrolling content ar
 At the `lg` breakpoint (1024px) the chrome changes shape: the bottom bar is replaced by a 220px left rail carrying both wayfinding and the primary action, and the content well widens to `max-w-3xl`. Compartments re-compose into a three-column grid with asymmetric spans — a narrow column for stacked stats, wide spans for strips and feeds, a last column for destinations. Column gaps come from the grid; vertical rhythm still comes from each compartment's own margin.
 
 **Breakpoints:** Tailwind defaults (`sm` 640, `md` 768, `lg` 1024, `xl` 1280), plus a hand-placed `min-[20rem]` (320px) guard where a two-up grid must collapse to one.
+
+**Page width:** the public header, footer and shared top bar cap at `max-w-7xl` (1280px).
+
+**Arbitrary values:** a size with a token or a stock Tailwind step uses it. One that has neither (a grid track of one component, a `calc()` over the safe-area inset) keeps its `[...]` value, and the line above it holds `// fallow-ignore-next-line css-token-drift -- <reason>`: inside the start tag in markup, above the string in a script, as `/* … */` above the rule in a `<style>` block. Keep `'` and `"` out of a start-tag comment: after an unpaired one, Fallow 3.41 misses every prop the template uses after it and reports those props as unused (`scripts/svelte-markup-comments.test.ts` fails on either). Fallow's audit flags an arbitrary value without a suppression in any file a PR touches.
 
 ### Named Rules
 

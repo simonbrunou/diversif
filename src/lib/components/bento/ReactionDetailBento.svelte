@@ -70,13 +70,13 @@
     href={printHref}
     target="_blank"
     rel="noopener"
-    class="mb-3 inline-block w-full rounded-full border border-primary px-4 py-3 text-center text-sm font-bold text-primary-strong shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+    class="mb-3 inline-block w-full rounded-full border border-primary px-4 py-3 text-center text-sm font-bold text-primary-strong shadow-soft transition-transform duration-base ease-soft active:scale-99"
   >
     {m.reactionExport()}
   </a>
   <a
     href={editHref}
-    class="mb-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border px-4 py-3 text-center text-sm font-semibold text-ink-soft shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+    class="mb-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border px-4 py-3 text-center text-sm font-semibold text-ink-soft shadow-soft transition-transform duration-base ease-soft active:scale-99"
   >
     <Pencil size={14} aria-hidden="true" />
     {m.reactionEditEntry()}

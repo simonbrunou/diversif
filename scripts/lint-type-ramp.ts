@@ -53,7 +53,7 @@ import {
 } from './type-ramp';
 
 export type TypeRampRules = {
-  /** Size names src/app.css adds in `@theme` (`2xs`, `3xs`), with their px. */
+  /** Size names src/app.css adds in `@theme` (`2xs`, `3xs`, `numeric`), with their px. */
   themeSizes: Map<string, number>;
 };
 
