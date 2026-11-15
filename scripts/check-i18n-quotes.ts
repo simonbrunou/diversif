@@ -150,7 +150,8 @@ function spanProblem(
   const values = links.map((link) => `${link} reads ${JSON.stringify(messages[link])}`);
   return (
     `${where}: quotes ${shown(quote)}, the text of none of its linked keys (${values.join(', ')}). ` +
-    `Requote the label's current text, or fix QUOTE_LINKS in ${DATA_FILE}.`
+    `Requote the label's current text, or fix QUOTE_LINKS in ${DATA_FILE}, or add the text ` +
+    'to ALLOWED_QUOTES there when it names no label.'
   );
 }
 

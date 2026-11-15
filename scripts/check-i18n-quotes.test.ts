@@ -115,7 +115,8 @@ describe('findQuoteProblems', () => {
     const messages = { ...fr('Choisissez « Toutes ».'), filterAll: 'Tous' };
     expect(findQuoteProblems({ fr: messages }, rules()).problems).toEqual([
       '[fr] empty: quotes « Toutes », the text of none of its linked keys (filterAll reads "Tous"). ' +
-        `Requote the label's current text, or fix QUOTE_LINKS in ${DATA}.`
+        `Requote the label's current text, or fix QUOTE_LINKS in ${DATA}, or add the text to ` +
+        'ALLOWED_QUOTES there when it names no label.'
     ]);
   });
 
