@@ -150,9 +150,20 @@ describe('findQuoteProblems', () => {
       findQuoteProblems({ fr: fr('Choisissez « Toutes ».', { other: 'Voir « Bilan ».' }) }, rules())
         .problems
     ).toEqual([
-      '[fr] other: quotes « Bilan », and no entry covers this message. In ' +
-        `${DATA}, add the key of the label it quotes to QUOTE_LINKS, or the text to ` +
-        'ALLOWED_QUOTES when it names no label.'
+      '[fr] other: quotes « Bilan », which neither QUOTE_LINKS nor ALLOWED_QUOTES lists for ' +
+        `this message. In ${DATA}, add the key of the label it quotes to QUOTE_LINKS, or the ` +
+        'text to ALLOWED_QUOTES when it names no label.'
+    ]);
+  });
+
+  it('fails a span that a message’s allowed texts do not hold', () => {
+    const messages = fr('Choisissez « Toutes ».', { consent: 'catégorie « santé » ou « Autre »' });
+    expect(
+      findQuoteProblems({ fr: messages }, rules({ allowed: { consent: ['santé'] } })).problems
+    ).toEqual([
+      startingWith(
+        '[fr] consent: quotes « Autre », which neither QUOTE_LINKS nor ALLOWED_QUOTES lists'
+      )
     ]);
   });
 
@@ -173,7 +184,11 @@ describe('findQuoteProblems', () => {
     });
     expect(
       findQuoteProblems({ fr: messages }, rules({ allowed: { consent: ['santé'] } })).problems
-    ).toEqual([startingWith('[fr] other: quotes « santé », and no entry covers')]);
+    ).toEqual([
+      startingWith(
+        '[fr] other: quotes « santé », which neither QUOTE_LINKS nor ALLOWED_QUOTES lists'
+      )
+    ]);
   });
 
   it('never fails a span that holds a placeholder', () => {
@@ -276,7 +291,9 @@ describe('the repo’s messages and links', () => {
     const locales = repo();
     locales.fr.authAccountHeading = 'Mon « compte »';
     expect(findQuoteProblems(locales).problems).toEqual([
-      startingWith('[fr] authAccountHeading: quotes « compte », and no entry covers')
+      startingWith(
+        '[fr] authAccountHeading: quotes « compte », which neither QUOTE_LINKS nor ALLOWED_QUOTES lists'
+      )
     ]);
   });
 });

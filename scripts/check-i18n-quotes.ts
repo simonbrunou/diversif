@@ -134,7 +134,8 @@ function spanProblem(
   const where = `[${locale}] ${key}`;
   if (!Object.hasOwn(rules.links, key)) {
     return (
-      `${where}: quotes ${shown(quote)}, and no entry covers this message. In ${DATA_FILE}, ` +
+      `${where}: quotes ${shown(quote)}, which neither QUOTE_LINKS nor ALLOWED_QUOTES lists ` +
+      `for this message. In ${DATA_FILE}, ` +
       'add the key of the label it quotes to QUOTE_LINKS, or the text to ALLOWED_QUOTES ' +
       'when it names no label.'
     );
