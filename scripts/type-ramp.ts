@@ -12,12 +12,13 @@
 
 /**
  * Pixel size of each Tailwind font-size name the app uses: Tailwind's own
- * scale, plus `2xs` and `3xs` from the `@theme` block of src/app.css (the
- * type-ramp lint checks those two against app.css).
+ * scale, plus `2xs`, `3xs` and `numeric` from the `@theme` block of
+ * src/app.css (the type-ramp lint checks those three against app.css).
  */
 export const FONT_SIZE_PX: Readonly<Record<string, number>> = {
   '3xs': 10,
   '2xs': 11,
+  numeric: 28,
   xs: 12,
   sm: 14,
   base: 16,
@@ -51,7 +52,7 @@ export const RAMP: readonly RampStep[] = [
   { name: 'Headline', classes: ['text-2xl'] },
   { name: 'Section title', classes: ['text-xl'] },
   { name: 'Title', classes: ['text-sm'] },
-  { name: 'Numeric', classes: ['text-[28px]'] },
+  { name: 'Numeric', classes: ['text-numeric'] },
   { name: 'Body', classes: ['text-sm'] },
   { name: 'Caption', classes: ['text-xs'] },
   { name: 'Label', classes: ['text-2xs'] }

@@ -36,7 +36,7 @@ describe('LinkRow', () => {
     const { container } = render(LinkRow, {
       props: { href: '/x', lift: true, children: textSnippet('X') }
     });
-    expect(container.querySelector('a')?.className).toContain('hover:scale-[1.01]');
+    expect(container.querySelector('a')?.className).toContain('hover:scale-101');
   });
 
   it('forwards aria-label', () => {

@@ -99,7 +99,7 @@
     type="submit"
     size="pill"
     disabled={submitting}
-    class="mt-6 w-full shadow-soft transition-transform duration-base ease-soft active:scale-[0.99]"
+    class="mt-6 w-full shadow-soft transition-transform duration-base ease-soft active:scale-99"
   >
     {m.onboardingSubmit()}
   </Button>

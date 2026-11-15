@@ -39,6 +39,11 @@
      they replace. */
   --text-2xs: 0.6875rem;
   --text-3xs: 0.625rem;
+
+  /* DESIGN.md's Numeric step, the size of every live counter: 28px, set
+     solid (line-height 1), as `text-numeric`. */
+  --text-numeric: 1.75rem;
+  --text-numeric--line-height: 1;
 }
 
 /* Semantic tokens mapped to the runtime CSS variables below. `inline` makes

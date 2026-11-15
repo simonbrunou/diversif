@@ -64,7 +64,10 @@
   }
 </script>
 
-<div class="grid min-h-screen lg:grid-cols-[220px_1fr]">
+<div
+  // fallow-ignore-next-line css-token-drift -- the 220px left rail DESIGN.md's Layout section names, a track of this one grid
+  class="grid min-h-screen lg:grid-cols-[220px_1fr]"
+>
   {#if showLogCta}
     <!-- Rendered first in DOM (fixed positioning keeps it visually anchored
          to the nav's centre slot) so keyboard/AT users reach the app's
@@ -73,6 +76,7 @@
          covers lg+. -->
     <div
       data-no-print
+      // fallow-ignore-next-line css-token-drift -- the device's safe-area inset plus 4px, which no theme token can express
       class="fixed bottom-[calc(env(safe-area-inset-bottom)+4px)] left-1/2 z-40 -translate-x-1/2 lg:hidden"
     >
       <FabLog onclick={openLog} />

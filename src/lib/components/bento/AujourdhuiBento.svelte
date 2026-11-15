@@ -193,7 +193,7 @@
         <li>
           <a
             href={handoff.href}
-            class="flex items-center justify-between gap-3 rounded-tile bg-surface-2 px-3 py-3 transition-transform duration-base ease-soft active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            class="flex items-center justify-between gap-3 rounded-tile bg-surface-2 px-3 py-3 transition-transform duration-base ease-soft active:scale-99 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <span class="flex min-w-0 items-center gap-3">
               <span

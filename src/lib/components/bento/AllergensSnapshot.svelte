@@ -78,6 +78,7 @@
          tile at a 195px viewport (200% zoom) instead of wrapping. -->
     <h2
       id="allergens-snapshot-title"
+      // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of DESIGN.md's Label step, which has no theme token
       class="min-w-0 text-2xs font-semibold uppercase tracking-[0.08em]"
     >
       {m.aujourdhuiAllergensTitle()}
@@ -115,7 +116,7 @@
               href={item.href}
               aria-label={m.aujourdhuiAllergensEntryAria({ allergen: item.label })}
               class={cn(
-                'inline-flex min-h-8 items-center gap-1 rounded-full px-3 text-xs font-medium transition-transform duration-base ease-soft active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                'inline-flex min-h-8 items-center gap-1 rounded-full px-3 text-xs font-medium transition-transform duration-base ease-soft active:scale-97 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 PILL_CLASSES[item.state]
               )}
             >

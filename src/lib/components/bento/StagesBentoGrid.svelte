@@ -25,7 +25,7 @@
           ? m.decouvrirStageActiveAria({ title: stage.title })
           : m.decouvrirStageOpenAria({ title: stage.title })}
         class={cn(
-          'rounded-tile bg-tile-lilac p-4 text-left text-tile-lilac-foreground shadow-soft transition-transform duration-base ease-soft hover:scale-[1.01] active:scale-[0.99]',
+          'rounded-tile bg-tile-lilac p-4 text-left text-tile-lilac-foreground shadow-soft transition-transform duration-base ease-soft hover:scale-101 active:scale-99',
           active && 'ring-2 ring-primary'
         )}
       >

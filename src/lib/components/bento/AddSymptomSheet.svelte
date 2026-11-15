@@ -122,7 +122,7 @@
       type="submit"
       size="pill"
       disabled={selected === null || submitting}
-      class="mt-5 w-full shadow-soft transition-transform duration-base ease-soft active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-primary/40 disabled:active:scale-100"
+      class="mt-5 w-full shadow-soft transition-transform duration-base ease-soft active:scale-99 disabled:cursor-not-allowed disabled:bg-primary/40 disabled:active:scale-100"
     >
       {m.addSymptomSubmit()}
     </Button>

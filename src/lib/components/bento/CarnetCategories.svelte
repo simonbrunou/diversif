@@ -49,7 +49,10 @@
         <div class="relative">
           <div class="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto">
             {#each grouped[cat] as f (f.id)}
-              <div class="min-w-[8rem] shrink-0 snap-start">
+              <div
+                // fallow-ignore-next-line css-token-drift -- the width of one food card in this scrolling row, not a design value a token would name
+                class="min-w-[8rem] shrink-0 snap-start"
+              >
                 <FoodCard name={f.name} category={f.category} tried={f.tried} status={f.status} />
               </div>
             {/each}

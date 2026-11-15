@@ -14,7 +14,7 @@
 
 <Seo title={m.onboardingTitle()} path="/child/new" noindex alternateLocales={['en']} />
 
-<div class="flex min-h-[100dvh] flex-col items-center bg-canvas px-4 py-10">
+<div class="flex min-h-dvh flex-col items-center bg-canvas px-4 py-10">
   <div class="w-full max-w-md">
     <OnboardingForm {errors} {values} />
   </div>

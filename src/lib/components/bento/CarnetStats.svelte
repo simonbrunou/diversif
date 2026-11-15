@@ -71,7 +71,7 @@
       <p class="text-xs font-medium uppercase tracking-wider text-tile-mint-foreground">
         {m.carnetBilanDiversity()}
       </p>
-      <p class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">{diversityScore}</p>
+      <p class="mt-1 text-numeric font-extrabold leading-none tabular-nums">{diversityScore}</p>
       <p class="mt-1 text-2xs leading-tight text-tile-mint-foreground">
         {m.carnetBilanDiversityCaption()}
       </p>
@@ -80,13 +80,13 @@
       <p class="text-xs font-medium uppercase tracking-wider text-tile-butter-foreground">
         {m.carnetBilanFoods()}
       </p>
-      <p class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">{distinctFoods}</p>
+      <p class="mt-1 text-numeric font-extrabold leading-none tabular-nums">{distinctFoods}</p>
     </Card>
     <Card as="article" variant="tile-sky" class="p-4" aria-label={m.carnetBilanTextures()}>
       <p class="text-xs font-medium uppercase tracking-wider text-tile-sky-foreground">
         {m.carnetBilanTextures()}
       </p>
-      <p class="mt-1 text-[28px] font-extrabold leading-none tabular-nums">
+      <p class="mt-1 text-numeric font-extrabold leading-none tabular-nums">
         {texturesTried}<span class="text-sm font-normal">/6</span>
       </p>
     </Card>

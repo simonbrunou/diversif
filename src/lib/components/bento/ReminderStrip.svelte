@@ -93,6 +93,7 @@
       -->
       <details class="mt-2 border-t border-tile-butter-foreground/20">
         <summary
+          // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of DESIGN.md's Label step, which has no theme token
           class="flex min-h-11 cursor-pointer items-center gap-1 text-2xs font-semibold uppercase tracking-[0.08em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {restLabel}

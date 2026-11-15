@@ -27,7 +27,7 @@
     cn(
       'flex flex-col gap-1 rounded-tile bg-canvas p-3 shadow-soft',
       isLinkable
-        ? 'border border-border/40 transition-transform duration-base ease-soft active:scale-[0.99]'
+        ? 'border border-border/40 transition-transform duration-base ease-soft active:scale-99'
         : isUntried
           ? 'border border-dashed border-border'
           : 'border border-border/40'

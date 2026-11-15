@@ -72,11 +72,13 @@
 {/if}
 
 <style>
+  /* fallow-ignore-next-line css-token-drift -- 0.6875rem is DESIGN.md's Label step (--text-2xs); lint:type-ramp reads a font-size only in px or rem, so var() is not an option */
   .locale-switcher {
     display: inline-flex;
     gap: 0.25rem;
     font-size: 0.6875rem;
   }
+  /* fallow-ignore-next-line css-token-drift -- 0.375rem is the theme's --radius-sm, written out because Tailwind emits that variable only while a utility or app.css uses it */
   .locale-switcher a {
     padding: 0.5rem 0.625rem;
     border-radius: 0.375rem;
