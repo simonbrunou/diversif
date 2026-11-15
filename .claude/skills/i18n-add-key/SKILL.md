@@ -26,7 +26,11 @@ catches the rest. Every UI string is a message key — never hardcode text in a 
    `lint:i18n` fails on a straight apostrophe inside a French word, a key that nothing in `src/`
    uses, and, through `scripts/check-i18n-parity.ts`, on a key one locale lacks, a `{placeholder}`
    one locale's value lacks, an empty or whitespace-only value, a value that is not a string, and a
-   `{` or `}` outside a `{letters}` placeholder.
+   `{` or `}` outside a `{letters}` placeholder. Through `scripts/check-i18n-quotes.ts`, it fails
+   on a quoted span (« … », “ … ”, "…", '…') without a `{placeholder}` that is not the current
+   text of a key the message links to in `scripts/i18n-quote-links.ts`. When a new message quotes
+   a label, add the message and the label's key to `QUOTE_LINKS` there; when it quotes a word that
+   names no label, add the text to `ALLOWED_QUOTES`.
 5. Use the generated message function in the component (import from `#lib/paraglide/messages.js`),
    never the raw string. Don't edit `src/lib/paraglide/` — it's generated.
 
