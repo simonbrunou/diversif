@@ -56,7 +56,7 @@
 <nav
   aria-label={m.chromeBottomNavLabel()}
   style="view-transition-name: bottom-nav"
-  // fallow-ignore-next-line css-token-drift -- the height and bottom padding add the device's safe-area inset, which no theme token can express
+  // fallow-ignore-next-line css-token-drift -- the height and bottom padding add the device safe-area inset, which no theme token can express
   class="flex w-full h-[calc(3.5rem+env(safe-area-inset-bottom))] items-center border-t border-border/40 bg-surface/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur"
 >
   {#each TABS as tab, i (tab.labelKey)}

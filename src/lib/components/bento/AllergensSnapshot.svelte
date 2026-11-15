@@ -78,7 +78,7 @@
          tile at a 195px viewport (200% zoom) instead of wrapping. -->
     <h2
       id="allergens-snapshot-title"
-      // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of DESIGN.md's Label step, which has no theme token
+      // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of the DESIGN.md Label step, which has no theme token
       class="min-w-0 text-2xs font-semibold uppercase tracking-[0.08em]"
     >
       {m.aujourdhuiAllergensTitle()}

@@ -29,7 +29,7 @@
 </svelte:head>
 
 <div
-  // fallow-ignore-next-line css-token-drift -- the 12px print body DESIGN.md's print stylesheet sets; text-xs would also change the line height
+  // fallow-ignore-next-line css-token-drift -- the 12px print body size that DESIGN.md sets for print; text-xs would also change the line height
   class="print-shell mx-auto w-full px-4 max-w-4xl space-y-6 py-6 print:max-w-none print:py-0 print:text-[12px] print:text-black"
 >
   <div class="flex items-center justify-between print:hidden">

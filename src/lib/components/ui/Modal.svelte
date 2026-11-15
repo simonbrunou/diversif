@@ -83,12 +83,12 @@
   );
 
   const sideClasses: Record<ResolvedSide, string> = {
-    // fallow-ignore-next-line css-token-drift -- the 92dvh sheet limit the `scrollable` prop's doc names, not a design value a token would name
+    // fallow-ignore-next-line css-token-drift -- the 92dvh sheet limit named in the doc of the `scrollable` prop, not a design value a token would name
     top: 'inset-x-0 top-0 max-h-[92dvh] rounded-b-hero data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
     right:
       'inset-y-0 right-0 flex h-full w-3/4 max-w-xs flex-col data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
     bottom:
-      // fallow-ignore-next-line css-token-drift -- the 92dvh sheet limit, and bottom padding that clears the device's safe-area inset, which no theme token can express
+      // fallow-ignore-next-line css-token-drift -- the 92dvh sheet limit, and bottom padding that clears the device safe-area inset, which no theme token can express
       'inset-x-0 bottom-0 max-h-[92dvh] rounded-t-hero pb-[max(2rem,env(safe-area-inset-bottom))] data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
     left: 'inset-y-0 left-0 flex h-full w-3/4 max-w-xs flex-col data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
     // Center sits at left/top 50% with `-translate-x/y-1/2` for true

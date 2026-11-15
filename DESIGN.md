@@ -243,7 +243,7 @@ At the `lg` breakpoint (1024px) the chrome changes shape: the bottom bar is repl
 
 **Page width:** the public header, footer and shared top bar cap at `max-w-7xl` (1280px).
 
-**Arbitrary values:** a size with a token or a stock Tailwind step uses it. One that has neither (a grid track of one component, a `calc()` over the safe-area inset) keeps its `[...]` value, and the line above it holds `// fallow-ignore-next-line css-token-drift -- <reason>`: inside the start tag in markup, above the string in a script, as `/* … */` above the rule in a `<style>` block. Fallow's audit flags an arbitrary value without one in any file a PR touches.
+**Arbitrary values:** a size with a token or a stock Tailwind step uses it. One that has neither (a grid track of one component, a `calc()` over the safe-area inset) keeps its `[...]` value, and the line above it holds `// fallow-ignore-next-line css-token-drift -- <reason>`: inside the start tag in markup, above the string in a script, as `/* … */` above the rule in a `<style>` block. Keep `'` and `"` out of a start-tag comment: after an unpaired one, Fallow 3.41 misses every prop the template uses after it and reports those props as unused (`scripts/svelte-markup-comments.test.ts` fails on either). Fallow's audit flags an arbitrary value without a suppression in any file a PR touches.
 
 ### Named Rules
 

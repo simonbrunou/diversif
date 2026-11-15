@@ -66,7 +66,7 @@
       aria-label={m.aujourdhuiBilanAliments()}
     >
       <p
-        // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of DESIGN.md's Label step, which has no theme token
+        // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of the DESIGN.md Label step, which has no theme token
         class="text-2xs font-semibold uppercase tracking-[0.08em]"
       >
         {m.aujourdhuiBilanAliments()}
@@ -86,7 +86,7 @@
       aria-label={m.aujourdhuiBilanStreak()}
     >
       <p
-        // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of DESIGN.md's Label step, which has no theme token
+        // fallow-ignore-next-line css-token-drift -- the 0.08em tracking of the DESIGN.md Label step, which has no theme token
         class="text-2xs font-semibold uppercase tracking-[0.08em]"
       >
         {m.aujourdhuiBilanStreak()}

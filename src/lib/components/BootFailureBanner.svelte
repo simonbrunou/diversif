@@ -11,7 +11,7 @@
 <div
   role="alert"
   data-boot-failure
-  // fallow-ignore-next-line css-token-drift -- keeps the banner below the device's safe-area inset, which no theme token can express
+  // fallow-ignore-next-line css-token-drift -- keeps the banner below the device safe-area inset, which no theme token can express
   class="fixed inset-x-3 top-[max(0.75rem,env(safe-area-inset-top))] z-50 mx-auto flex max-w-md flex-wrap items-center gap-3 rounded-tile bg-surface p-4 text-foreground shadow-lifted"
 >
   <!-- 10rem basis: below that the button wraps under the text instead of squeezing it. -->
