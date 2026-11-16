@@ -153,21 +153,23 @@ export const ALLOWED: Allowed[] = [
     ].join('\n'),
     kind: 'push-extra',
     why:
-      'decides whether E2E runs: on a PR, false when the branch changes only Markdown and docs/ ' +
-      'against its merge base with main (scripts/e2e-needed.sh); on a push, always true. With ' +
-      'equal trees, each file the PR did not change against its merge base keeps the version ' +
-      'of the main commit it merges onto: the merge takes that version, and the trees match. ' +
-      "So after a PR run that skipped E2E, main's E2E job tests that commit's app files again. " +
+      'decides whether E2E and the three build jobs run: on a PR, false when the branch changes ' +
+      'only Markdown and docs/ against its merge base with main (scripts/e2e-needed.sh); on a ' +
+      'push, always true. With equal trees, each file the PR did not change against its merge ' +
+      'base keeps the version of the main commit it merges onto: the merge takes that version, ' +
+      "and the trees match. So after a PR run that skipped them, main's E2E and build jobs test " +
+      "that commit's app files again. " +
       "That commit's own run tests them, or, when this merge cancelled it, its merger follows " +
       'main to this run (AGENTS.md). Pinned whole: it branches on the event'
   },
   {
     file: 'scripts/e2e-needed.sh',
-    blob: 'c0de095f82dafcc06ddecb7b31bff0a3e37613ef',
+    blob: 'dc19b7d7c695d0032ddc4dd5ce6df996ad819b95',
     kind: 'push-extra',
     why:
-      'the paths step above lets a PR skip E2E on its answer. A change to which paths it skips ' +
-      'changes what a PR run leaves to main: check that E2E still reads none of them, then ' +
+      'the paths step above lets a PR skip E2E and the three build jobs on its answer. A change ' +
+      'to which paths it skips changes what a PR run leaves to main: check that E2E, the app ' +
+      'build and the image still read none of them, then ' +
       'update this hash (`git rev-parse HEAD:scripts/e2e-needed.sh`)'
   },
   {

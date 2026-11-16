@@ -138,7 +138,7 @@ describe('e2e-needed.sh', () => {
       expect(e2eNeeded(base)).toEqual({
         code: 0,
         out: 'true\n',
-        err: `e2e-needed: git cannot diff ${base}...HEAD, so E2E runs\n`
+        err: `e2e-needed: git cannot diff ${base}...HEAD, so E2E and the build jobs run\n`
       });
     },
     TIMEOUT
