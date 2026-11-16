@@ -153,21 +153,23 @@ export const ALLOWED: Allowed[] = [
     ].join('\n'),
     kind: 'push-extra',
     why:
-      'decides whether E2E runs: on a PR, false when the branch changes only Markdown and docs/ ' +
-      'against its merge base with main (scripts/e2e-needed.sh); on a push, always true. With ' +
-      'equal trees, each file the PR did not change against its merge base keeps the version ' +
-      'of the main commit it merges onto: the merge takes that version, and the trees match. ' +
-      "So after a PR run that skipped E2E, main's E2E job tests that commit's app files again. " +
+      'decides whether E2E and the three build jobs run: on a PR, false when the branch changes ' +
+      'only Markdown and docs/ against its merge base with main (scripts/e2e-needed.sh); on a ' +
+      'push, always true. With equal trees, each file the PR did not change against its merge ' +
+      'base keeps the version of the main commit it merges onto: the merge takes that version, ' +
+      "and the trees match. So after a PR run that skipped them, main's E2E and build jobs test " +
+      "that commit's app files again. " +
       "That commit's own run tests them, or, when this merge cancelled it, its merger follows " +
       'main to this run (AGENTS.md). Pinned whole: it branches on the event'
   },
   {
     file: 'scripts/e2e-needed.sh',
-    blob: '1ad8fe744676928e2344212a97977c4739898926',
+    blob: 'b10edc1674fce1add07d63e1d93797d772bff2cd',
     kind: 'push-extra',
     why:
-      'the paths step above lets a PR skip E2E on its answer. A change to which paths it skips ' +
-      'changes what a PR run leaves to main: check that E2E still reads none of them, then ' +
+      'the paths step above lets a PR skip E2E and the three build jobs on its answer. A change ' +
+      'to which paths it skips changes what a PR run leaves to main: check that E2E, the app ' +
+      'build and the image still read none of them, then ' +
       'update this hash (`git rev-parse HEAD:scripts/e2e-needed.sh`)'
   },
   {
@@ -175,7 +177,7 @@ export const ALLOWED: Allowed[] = [
     path: '.jobs.changes.outputs.e2e',
     value: '${{ steps.paths.outputs.e2e }}',
     kind: 'push-extra',
-    why: "the paths step's answer, handed to the e2e job"
+    why: "the paths step's answer, handed to the e2e job and the three build jobs"
   },
   {
     file: CI,
@@ -184,6 +186,16 @@ export const ALLOWED: Allowed[] = [
     kind: 'push-extra',
     why: 'skips E2E on a PR that changes only Markdown and docs/; see the paths step'
   },
+  ...(['bundle-budget', 'db-backup-verify', 'docker-build'] as const).map((job): Allowed => ({
+    file: CI,
+    path: `.jobs.${job}.if`,
+    value: "needs.changes.outputs.e2e != 'false'",
+    kind: 'push-extra',
+    why:
+      'skips this build job on a PR that changes only Markdown and docs/: the app build and ' +
+      'the image read neither, and the production deploy skips the same paths. As for E2E, ' +
+      "main's push run builds that commit's app files again; see the paths step"
+  })),
   {
     file: RENOVATE,
     path: '.on.push',

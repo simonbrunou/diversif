@@ -150,12 +150,15 @@ jobs:
           path: coverage
           retention-days: 14
 
-  # Tells the e2e job whether a PR's change reaches the app. A PR that changes
-  # only Markdown files and docs/ skips E2E: nothing the app builds or the E2E
-  # tests run reads those paths. A push to main always runs it. See
-  # scripts/e2e-needed.sh for both.
+  # Tells the e2e job and the three build jobs (bundle-budget,
+  # db-backup-verify, docker-build) whether a PR's change reaches the app. A
+  # PR that changes only Markdown files and docs/ skips all four: nothing the
+  # app builds, the image holds or the E2E tests run reads those paths, and
+  # the production deploy skips the same paths. The unit job still runs, since
+  # some tests read Markdown and docs/. A push to main always runs all four.
+  # See scripts/e2e-needed.sh for the PR and the push case.
   changes:
-    name: Changed paths (E2E needed?)
+    name: Changed paths (app jobs needed?)
     runs-on: ubuntu-latest
     outputs:
       e2e: ${{ steps.paths.outputs.e2e }}
@@ -167,7 +170,7 @@ jobs:
           # Full history, for the merge base of a PR with its base branch.
           fetch-depth: 0
       - id: paths
-        name: Decide whether E2E runs
+        name: Decide whether E2E and the build jobs run
         env:
           EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
@@ -212,6 +215,10 @@ jobs:
 
   bundle-budget:
     name: Bundle size budget
+    # Skipped on a docs-only PR, and skipped too when the changes job fails:
+    # rerun the whole run. See the changes job.
+    needs: changes
+    if: needs.changes.outputs.e2e != 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -226,6 +233,10 @@ jobs:
 
   db-backup-verify:
     name: Backup restore verification (db:verify-backup)
+    # Skipped on a docs-only PR, and skipped too when the changes job fails:
+    # rerun the whole run. See the changes job.
+    needs: changes
+    if: needs.changes.outputs.e2e != 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -269,6 +280,10 @@ jobs:
 
   docker-build:
     name: Docker build (smoke test)
+    # Skipped on a docs-only PR, and skipped too when the changes job fails:
+    # rerun the whole run. See the changes job.
+    needs: changes
+    if: needs.changes.outputs.e2e != 'false'
     runs-on: ubuntu-latest
     env:
       # The job drives the runner CT's Docker daemon, shared by every job on the
