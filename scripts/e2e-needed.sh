@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Prints whether CI's E2E job has to run for a pull request: `false` when
-# every path the branch changes is a Markdown file or sits under docs/,
+# Prints whether CI's E2E job and its three build jobs (bundle-budget,
+# db-backup-verify, docker-build) have to run for a pull request: `false`
+# when every path the branch changes is a Markdown file or sits under docs/,
 # `true` otherwise. Nothing under src/, e2e/, static/ or the Vite and
 # Playwright configs reads a Markdown file or docs/, so such a change leaves
-# what the E2E tests drive as it was. The production deploy skips the same
+# what the E2E tests drive, the app build and the image as they were. The production deploy skips the same
 # paths (the Coolify watch paths in docs/agents/deploy.md). Each docs-only PR
 # still ran the full Playwright job on the one shared E2E slot: on 2026-11-07
 # the #685 thread waited for the slot behind PR #699's run 4039, whose E2E

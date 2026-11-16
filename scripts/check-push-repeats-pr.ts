@@ -163,7 +163,7 @@ export const ALLOWED: Allowed[] = [
   },
   {
     file: 'scripts/e2e-needed.sh',
-    blob: '1ad8fe744676928e2344212a97977c4739898926',
+    blob: 'c0de095f82dafcc06ddecb7b31bff0a3e37613ef',
     kind: 'push-extra',
     why:
       'the paths step above lets a PR skip E2E on its answer. A change to which paths it skips ' +
@@ -175,7 +175,7 @@ export const ALLOWED: Allowed[] = [
     path: '.jobs.changes.outputs.e2e',
     value: '${{ steps.paths.outputs.e2e }}',
     kind: 'push-extra',
-    why: "the paths step's answer, handed to the e2e job"
+    why: "the paths step's answer, handed to the e2e job and the three build jobs"
   },
   {
     file: CI,
@@ -184,6 +184,16 @@ export const ALLOWED: Allowed[] = [
     kind: 'push-extra',
     why: 'skips E2E on a PR that changes only Markdown and docs/; see the paths step'
   },
+  ...(['bundle-budget', 'db-backup-verify', 'docker-build'] as const).map((job): Allowed => ({
+    file: CI,
+    path: `.jobs.${job}.if`,
+    value: "needs.changes.outputs.e2e != 'false'",
+    kind: 'push-extra',
+    why:
+      'skips this build job on a PR that changes only Markdown and docs/: the app build and ' +
+      'the image read neither, and the production deploy skips the same paths. As for E2E, ' +
+      "main's push run builds that commit's app files again; see the paths step"
+  })),
   {
     file: RENOVATE,
     path: '.on.push',
