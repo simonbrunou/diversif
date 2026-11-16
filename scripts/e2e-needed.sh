@@ -6,12 +6,13 @@
 # Playwright configs reads a Markdown file or docs/, so such a change leaves
 # what the E2E tests drive, the app build and the image as they were. The
 # production deploy skips the same paths (the Coolify watch paths in
-# docs/agents/deploy.md). Each docs-only PR
-# still ran the full Playwright job on the one shared E2E slot: on 2026-11-07
-# the #685 thread waited for the slot behind PR #699's run 4039, whose E2E
-# job took 8.5 minutes and changed only docs/agents/testing.md.
+# docs/agents/deploy.md). Each docs-only PR still ran the full Playwright job
+# on the one shared E2E slot: on 2026-11-07 the #685 thread waited for the
+# slot behind PR #699's run 4039, whose E2E job took 8.5 minutes and changed
+# only docs/agents/testing.md.
 #
-# A push to main always runs E2E, and CI does not call this script for it.
+# A push to main always runs E2E and the build jobs, and CI does not call
+# this script for it.
 # A newer merge cancels main's running CI (cancel-in-progress), so a
 # docs-only merge would leave the code merge before it with no E2E run, and
 # « Merge authority » in AGENTS.md reads E2E on the newest main commit.

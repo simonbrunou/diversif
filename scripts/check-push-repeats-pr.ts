@@ -164,7 +164,7 @@ export const ALLOWED: Allowed[] = [
   },
   {
     file: 'scripts/e2e-needed.sh',
-    blob: 'dc19b7d7c695d0032ddc4dd5ce6df996ad819b95',
+    blob: 'b10edc1674fce1add07d63e1d93797d772bff2cd',
     kind: 'push-extra',
     why:
       'the paths step above lets a PR skip E2E and the three build jobs on its answer. A change ' +
