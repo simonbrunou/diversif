@@ -258,7 +258,7 @@ const ahead = (w: Waiter, joined?: number) =>
 // lower and upper case letters, digits, '.', '_', '/' and '-'.
 const BRANCH = 'docs/Retro-681_v2.x';
 const DOCS_ONLY_LINE =
-  /^wait-e2e-slot: clear at \d\d:\d\d:\d\d: the branch changes only Markdown files and docs\/ and has no PR yet, so its PR's E2E job will run no Playwright test$/m;
+  /^wait-e2e-slot: clear at \d\d:\d\d:\d\d: the branch changes only paths E2E skips \(scripts\/e2e-needed\.sh\) and has no PR yet, so its PR's E2E job will run no Playwright test$/m;
 
 function git(repo: string, ...args: string[]): string {
   const run = Bun.spawnSync({
@@ -551,16 +551,16 @@ describe('scripts/wait-e2e-slot.sh', () => {
   );
 });
 
-// A branch that changes only Markdown files and docs/, is pushed and never
-// had a PR into main clears at once (#681 retro): opening its PR starts a
-// run whose E2E job is skipped. Each other case waits as before, here behind
-// run 7.
+// A branch that changes only paths on the skip list of
+// scripts/e2e-needed.sh, is pushed and never had a PR into main clears at
+// once (#681 retro, #718): opening its PR starts a run whose E2E job is
+// skipped. Each other case waits as before, here behind run 7.
 describe('scripts/wait-e2e-slot.sh before the first PR of a docs-only branch', () => {
-  it(
-    'clears at once while another E2E job runs, claims nothing and leaves the queue',
-    async () => {
+  it.each(['docs/notes.md', '.claude/settings.json'])(
+    'clears at once for a change to %s while another E2E job runs, claims nothing and leaves the queue',
+    async (file) => {
       busy = true;
-      const w = docsWaiter();
+      const w = docsWaiter({ file });
       const t = now();
       writeFileSync(queueFile, `${t - 60} ${t} ${b.id}\n${t - 30} ${t} ${w.id}\n`);
       const run = await call(w);

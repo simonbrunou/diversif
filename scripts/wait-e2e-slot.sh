@@ -28,7 +28,8 @@
 # before every waiter. Each busy poll prints the waiters ahead of you.
 # Exit 0: no other E2E job waits or runs, no other worktree holds a claim
 # and no other waiter is ahead; or, with no argument, at once, claiming
-# nothing, for a pushed docs-only branch that never had a PR (below).
+# nothing, for a pushed branch whose PR skips E2E and that never had a PR
+# (below).
 # Exit 3: still busy or behind another waiter, run it again. Exit 2: no
 # token on this host, the forge refused it, or a wrong call (a bad SHA or
 # E2E_WAIT, a JOB that WORKFLOW no longer names, or a claim file it cannot
@@ -175,11 +176,12 @@ case "$code" in
   401 | 403 | 404) die "the forge answered $code: check fj's login and the repo path in API" ;;
 esac
 
-# A pull request run whose branch changes only Markdown files and docs/
-# skips the E2E job (scripts/e2e-needed.sh). While the checked-out branch
-# never had a PR into main, a push to it starts no run and opening its PR
-# starts such a run, so a docs-only branch needs no slot: exit 0 at once,
-# claiming nothing. Every call this check cannot settle waits as before: an
+# A pull request run whose branch changes only paths on the skip list of
+# scripts/e2e-needed.sh (Markdown, docs/ and agent tooling) skips the E2E
+# job. While the checked-out branch never had a PR into main, a push to it
+# starts no run and opening its PR starts such a run, so such a branch
+# needs no slot: exit 0 at once, claiming nothing. Every call this check
+# cannot settle waits as before: an
 # <own sha> argument, commits not pushed yet, a branch name outside
 # [A-Za-z0-9._/-], any PR from the branch into main, open or closed (merging
 # it pushes to main, which always runs E2E, and a session that just merged
@@ -193,8 +195,8 @@ if [ $# -eq 0 ] && [[ "$branch" =~ ^[A-Za-z0-9._/-]+$ ]] &&
   [ "$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' \
     -H "Authorization: token $FJ_TOKEN" "$API/pulls/main/$branch")" = 404 ]; then
   leave_queue
-  echo "wait-e2e-slot: clear at $(date +%T): the branch changes only Markdown files and docs/" \
-    "and has no PR yet, so its PR's E2E job will run no Playwright test"
+  echo "wait-e2e-slot: clear at $(date +%T): the branch changes only paths E2E skips" \
+    "(scripts/e2e-needed.sh) and has no PR yet, so its PR's E2E job will run no Playwright test"
   exit 0
 fi
 

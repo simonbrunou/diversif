@@ -86,6 +86,73 @@ describe('e2e-needed.sh', () => {
     TIMEOUT
   );
 
+  it.each([
+    ['a file under .claude/ that is not Markdown', { '.claude/rule-hook/hook.py': 'two\n' }],
+    ['the Claude Code settings', { '.claude/settings.json': '{}\n' }],
+    ['scripts/rule-hook.ts', { 'scripts/rule-hook.ts': 'two\n' }],
+    ['scripts/rule-hook.test.ts', { 'scripts/rule-hook.test.ts': 'two\n' }],
+    ['scripts/e2e-slot-rule.test.ts', { 'scripts/e2e-slot-rule.test.ts': 'two\n' }],
+    [
+      'the three rule-hook scripts with .claude/, Markdown and docs/',
+      {
+        'scripts/rule-hook.ts': 'two\n',
+        'scripts/rule-hook.test.ts': 'two\n',
+        'scripts/e2e-slot-rule.test.ts': 'two\n',
+        '.claude/settings.json': '{}\n',
+        'README.md': 'two\n',
+        'docs/guide.md': 'two\n'
+      }
+    ]
+  ])(
+    'skips E2E for a change to agent tooling: %s',
+    (_name, files) => {
+      commit(files);
+      expect(e2eNeeded('main')).toEqual({ code: 0, out: 'false\n', err: '' });
+    },
+    TIMEOUT
+  );
+
+  it.each([
+    ['a source file', { 'src/app.ts': 'two\n' }],
+    ['.gitignore', { '.gitignore': 'build\n' }],
+    ['another script', { 'scripts/cleanup.ts': 'new\n' }],
+    ['scripts/e2e-needed.sh', { 'scripts/e2e-needed.sh': 'new\n' }]
+  ])(
+    'runs E2E for agent tooling next to %s',
+    (_name, files) => {
+      commit({ '.claude/settings.json': '{}\n', 'scripts/rule-hook.ts': 'two\n', ...files });
+      expect(e2eNeeded('main')).toEqual({ code: 0, out: 'true\n', err: '' });
+    },
+    TIMEOUT
+  );
+
+  it.each([
+    'scripts/rule-hook.ts.bak',
+    'scripts/rule-hooks.ts',
+    'scripts/e2e-slot-rule.ts',
+    'src/.claude/x.ts',
+    '.claude-other/x',
+    'src/scripts/rule-hook.ts'
+  ])(
+    'runs E2E for %s, which only resembles a listed path',
+    (file) => {
+      commit({ [file]: 'new\n' });
+      expect(e2eNeeded('main')).toEqual({ code: 0, out: 'true\n', err: '' });
+    },
+    TIMEOUT
+  );
+
+  it(
+    'runs E2E for a source file moved under .claude/',
+    () => {
+      mkdirSync(path.join(repo, '.claude'));
+      git('mv', 'src/app.ts', '.claude/app.ts');
+      git('commit', '-q', '-m', 'move');
+      expect(e2eNeeded('main')).toEqual({ code: 0, out: 'true\n', err: '' });
+    },
+    TIMEOUT
+  );
+
   it(
     'runs E2E for a source file moved under docs/',
     () => {
