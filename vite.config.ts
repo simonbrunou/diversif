@@ -49,13 +49,15 @@ function resolveSentryRelease(): string | undefined {
 // release tag attached to runtime errors).
 const SENTRY_RELEASE_RESOLVED = resolveSentryRelease();
 
-// adapter-node 6 dropped its runtime ORIGIN variable. Without paths.origin it
+// adapter-node 6 reads a runtime ORIGIN only when paths.origin is unset (6.0.0
+// dropped it, 6.0.2 brought it back as that fallback). Without either, it
 // derives the origin per request from the Host header, or PROTOCOL_HEADER /
 // HOST_HEADER behind the production proxy (Dockerfile), and assumes https
-// when no protocol header arrives. So production leaves ORIGIN unset at build
-// time, and plain-http runs with no proxy in front (the e2e server,
-// docker-compose on localhost) pin it, or every form POST fails SvelteKit's
-// CSRF origin check.
+// when no protocol header arrives. So production leaves ORIGIN unset, and
+// plain-http runs with no proxy in front (the e2e server, docker-compose on
+// localhost) pin it here at build time; with no runtime ORIGIN either, every
+// form POST would fail SvelteKit's CSRF origin check. isE2E()
+// (src/lib/server/e2e.ts) reads this build-time value, never the runtime one.
 const BUILD_ORIGIN = process.env.ORIGIN || undefined;
 
 const SENTRY_BUILD_OPTIONS = {

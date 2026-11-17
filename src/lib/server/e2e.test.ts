@@ -51,10 +51,10 @@ describe('isE2E', () => {
     expect(isE2E()).toBe(false);
   });
 
-  it('ignores a leftover runtime ORIGIN, which adapter-node 6 no longer serves', () => {
-    // A proxied production build with E2E=1 and the old runtime variable
-    // still set must keep the strict limits: the server answers real https
-    // traffic whatever ORIGIN says.
+  it('ignores a runtime ORIGIN: only the build-time origin counts', () => {
+    // A production build (no build origin) with E2E=1 and a runtime ORIGIN
+    // set must keep the strict limits: isE2E() reads only the origin the
+    // build pinned.
     setEnv('1', '');
     process.env.ORIGIN = 'http://localhost:3000';
     expect(isE2E()).toBe(false);
