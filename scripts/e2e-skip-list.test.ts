@@ -16,7 +16,8 @@
 //   - a glob in a guarded file or a workflow that matches a listed path;
 //   - code outside src/'s unit tests that reads files or runs a command
 //     through node:fs, Bun.file, Bun.Glob, import.meta.glob, a readdir or
-//     glob call, Bun's $ shell, Bun.spawn or node:child_process (FS_READ);
+//     glob call, an import from 'bun', node:child_process or an exec or
+//     spawn call (FS_READ), but for the lines KNOWN_READS lists;
 //   - a Dockerfile COPY or ADD of a directory that holds a listed path, but
 //     for the builder stage's `COPY . .`.
 // A missing guarded file or directory, a workflow that is not .yml or
@@ -28,7 +29,9 @@
 //
 // It cannot see a name built at run time: string concatenation,
 // String.fromCharCode, a shell octal escape, a variable holding a path, a
-// path relative to a `cd`, as in a workflow's `run:` script. Nor can it see
+// path relative to a `cd`, as in a workflow's `run:` script. It does not
+// follow imports, so an E2E spec that imports a helper under src/test/,
+// which may read files, goes unseen; none does today. Nor can it see
 // a read of a whole directory named without a glob (`bun test scripts/`,
 // `cp -r scripts`): package.json's test:watch, a dev command, names
 // ./scripts that way. Nor can it see a scan: Tailwind's source detection
@@ -135,13 +138,18 @@ function globHits(file: string, texts: string[]): string[] {
 // under src/ and the helpers under src/test/ run in the unit job only, which
 // runs on every PR; a test under e2e/ runs in the E2E job, so it counts.
 const CODE = /\.([cm]?[jt]s|[jt]sx|svelte)$/;
-// Bun's shell comes as Bun.$ or as a $ imported from 'bun'.
+// Anything imported from 'bun' (its $ shell, spawn, file) counts, and so
+// does each call of an exec or spawn function, so that a new command next to
+// a known import still fails.
 const FS_READ =
-  /node:fs|['"]fs(\/promises)?['"]|Bun\.(Glob|file|spawn|\$)|import\s*\{[^}]*\$[^}]*\}\s*from\s*['"]bun['"]|readdir|\bglob(Sync)?\(|child_process/;
+  /node:fs|['"]fs(\/promises)?['"]|Bun\.(Glob|file|spawn|\$)|from\s*['"]bun['"]|require\(\s*['"]bun['"]|readdir|\bglob(Sync)?\(|child_process|(?<![.\w])(exec|execFile|spawn)(Sync)?\(/;
 // Lines that match FS_READ on purpose, by file, each with what it runs.
-const KNOWN_READS: Record<string, string> = {
+const KNOWN_READS: Record<string, string[]> = {
   // resolveSentryRelease runs `git rev-parse HEAD`, which reads no listed path.
-  'vite.config.ts': "import { execFileSync } from 'node:child_process';"
+  'vite.config.ts': [
+    "import { execFileSync } from 'node:child_process';",
+    "return execFileSync('git', ['rev-parse', 'HEAD'], {"
+  ]
 };
 function readHits(file: string, raw: string): string[] {
   const unitOnly =
@@ -149,7 +157,7 @@ function readHits(file: string, raw: string): string[] {
   if (!CODE.test(file) || unitOnly) return [];
   for (const line of raw.split('\n')) {
     const m = line.match(FS_READ);
-    if (m && line.trim() !== KNOWN_READS[file])
+    if (m && !KNOWN_READS[file]?.includes(line.trim()))
       return [`${file}: reads files through ${m[0]}, which may reach a listed path`];
   }
   return [];
@@ -395,7 +403,12 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
     'await Bun.$`ls`;',
     "import { $ } from 'bun'; await $`ls`;",
     "Bun.spawn(['ls']);",
-    "import { execSync } from 'node:child_process';"
+    "import { execSync } from 'node:child_process';",
+    "import { spawn } from 'bun';",
+    "import * as bun from 'bun';",
+    "const { file } = require('bun');",
+    "const out = execFileSync('ls', ['x']);",
+    "spawnSync('ls');"
   ])('fails when E2E code reads files through %s', (line) => {
     const hit = check({ 'e2e/x.spec.ts': `${line}\n` });
     expect(hit).toHaveLength(1);
@@ -420,11 +433,16 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
     }
   );
 
-  it('lets vite.config.ts import child_process for `git rev-parse HEAD`, and no other read', () => {
-    const known = "import { execFileSync } from 'node:child_process';\n";
+  it('lets vite.config.ts run `git rev-parse HEAD`, and no other read', () => {
+    const known =
+      "import { execFileSync } from 'node:child_process';\n" +
+      "    return execFileSync('git', ['rev-parse', 'HEAD'], {\n";
     expect(check({ 'vite.config.ts': known })).toEqual([]);
     expect(check({ 'vite.config.ts': `${known}const f = Bun.file(x);\n` })).toEqual([
       'vite.config.ts: reads files through Bun.file, which may reach a listed path'
+    ]);
+    expect(check({ 'vite.config.ts': `${known}execFileSync('git', ['grep', 'x']);\n` })).toEqual([
+      'vite.config.ts: reads files through execFileSync(, which may reach a listed path'
     ]);
     expect(check({ 'playwright.config.ts': known })).toEqual([
       'playwright.config.ts: reads files through child_process, which may reach a listed path'
