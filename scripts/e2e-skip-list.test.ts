@@ -12,16 +12,23 @@
 //     comment does not count (ci.yml's unit job names
 //     scripts/e2e-slot-rule.test.ts in one), while a key or value spelled
 //     with an escape, an alias or a block scalar does.
+// It also fails on three reads that need no name:
+//   - a glob in a guarded file or a workflow that matches a listed path;
+//   - code outside the unit tests that reads files through node:fs, Bun.file,
+//     Bun.Glob, import.meta.glob or a readdir or glob call (FS_READ);
+//   - a Dockerfile COPY or ADD of a directory that holds a listed path, but
+//     for the builder stage's `COPY . .`.
 // A missing guarded file or directory, a workflow that is not .yml or
-// .yaml, a workflow the parser rejects and a Bun with no YAML parser fail
-// the check rather than pass it.
+// .yaml, a workflow the parser rejects, a workflow holding a binary tag or a
+// %TAG directive (Bun's parser returns a binary value as base64 text), a
+// COPY in JSON or heredoc form and a Bun with no YAML parser fail the check
+// rather than pass it.
 //
-// It cannot see a read that names no listed path: a glob or a directory
-// read (`ls scripts/*hook*`, a whole-tree COPY in the Dockerfile), a name
-// built at run time (string concatenation, String.fromCharCode, a shell
-// octal escape), or a scan, as Tailwind's source detection reads every file
-// .gitignore keeps. Tailwind is the one such read today, and the header of
-// scripts/e2e-needed.sh says what it can change.
+// It cannot see a name built at run time: string concatenation,
+// String.fromCharCode, a shell octal escape, a variable holding a path, as
+// in a workflow's `run:` script. Nor can it see a scan: Tailwind's source
+// detection reads every file .gitignore keeps, the one such read today,
+// and the header of scripts/e2e-needed.sh says what it can change.
 import { describe, expect, it } from 'bun:test';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -65,6 +72,9 @@ const GUARDED_FILES = [
 // Directories whose every file the build, the image or the E2E job may read.
 const GUARDED_DIRS = ['src', 'e2e', 'static', 'messages', 'drizzle'];
 const WORKFLOWS = '.forgejo/workflows';
+// A tag naming binary (!!binary, !<tag:yaml.org,2002:binary>, !x!binary)
+// or a %TAG directive, which can give any handle that meaning.
+const BINARY_TAG = /![^\s]*binary|^%TAG/m;
 
 function decodeEscapes(text: string): string {
   return text
@@ -93,6 +103,68 @@ function hits(file: string, texts: string[]): string[] {
   return NEEDLES.filter((n) => texts.some((t) => t.includes(n))).map((n) => `${file}: names ${n}`);
 }
 
+// Paths the listed patterns cover, for the glob and directory checks.
+const SAMPLES = [
+  '.claude/settings.json',
+  '.claude/rule-hook/hook.py',
+  ...AGENT_TOOLING.filter((p) => !p.endsWith('/*'))
+];
+
+// A glob in a guarded config file or a workflow that matches a listed path
+// (`ls scripts/*hook*`). App and E2E code pass globs to calls, which
+// FS_READ below catches instead: their text holds `**` for bold Markdown and
+// `*/*` in comments, which would match too.
+const GLOB_TOKEN = /[\w.@/{},-]*[*?][\w.@/{},*?-]*/g;
+function globHits(file: string, texts: string[]): string[] {
+  const out = new Set<string>();
+  for (const t of texts)
+    for (const [token] of t.matchAll(GLOB_TOKEN)) {
+      const glob = new Bun.Glob(token.replace(/^\.\//, ''));
+      const sample = SAMPLES.find((s) => glob.match(s));
+      if (sample) out.add(`${file}: glob ${token} matches ${sample}`);
+    }
+  return [...out];
+}
+
+// The forms through which code reads a file it need not name. Tests and the
+// helpers under src/test/ run in the unit job only, which runs on every PR.
+const CODE = /\.(ts|js|mjs|cjs|svelte)$/;
+const FS_READ = /node:fs|['"]fs(\/promises)?['"]|Bun\.(Glob|file)\b|readdir|\bglob(Sync)?\(/;
+function readHits(file: string, raw: string): string[] {
+  if (!CODE.test(file) || file.endsWith('.test.ts') || file.startsWith('src/test/')) return [];
+  const m = raw.match(FS_READ);
+  return m ? [`${file}: reads files through ${m[0]}, which may reach a listed path`] : [];
+}
+
+// A COPY or ADD of a directory that holds a listed path. The builder
+// stage's `COPY . .` is the one today: its files reach the image only
+// through `bun run build`, which the header of scripts/e2e-needed.sh
+// covers. A COPY in JSON or heredoc form throws: read it by hand.
+function copyHits(raw: string): string[] {
+  const out: string[] = [];
+  let stage = '';
+  for (const line of raw.replace(/\\\n/g, ' ').split('\n')) {
+    const from = line.match(/^\s*FROM\s.*\sAS\s+(\S+)/i);
+    if (/^\s*FROM\s/i.test(line)) stage = from ? from[1] : '';
+    const m = line.match(/^\s*(COPY|ADD)\s+(.*)$/i);
+    if (!m) continue;
+    if (/^\[|<</.test(m[2])) throw new Error(`Dockerfile: ${m[1]} ${m[2]}: form not read`);
+    if (stage === 'builder' && /^\s*COPY \. \.\s*$/.test(line)) continue;
+    // A flag (--from=builder) names no directory, so it never matches.
+    const args = m[2].split(/\s+/).filter(Boolean);
+    for (const src of args.slice(0, -1)) {
+      const dir =
+        src
+          .replace(/^\/app\//, '')
+          .replace(/^\.\//, '')
+          .replace(/\/+$/, '') || '.';
+      if (dir === '.' || SAMPLES.some((s) => s.startsWith(`${dir}/`)))
+        out.push(`Dockerfile: ${m[1]} ${src} copies a listed path`);
+    }
+  }
+  return out;
+}
+
 // Each guarded file that names an agent-tooling path, as `<file>: names
 // <needle>`. Throws when it cannot read what it guards.
 function namedAgentTooling(
@@ -117,19 +189,27 @@ function namedAgentTooling(
   const found: string[] = [];
   for (const file of [...GUARDED_FILES, ...GUARDED_DIRS.flatMap(dirFiles)]) {
     const raw = text(file);
-    found.push(...hits(file, [raw, decodeEscapes(raw)]));
+    const texts = [raw, decodeEscapes(raw)];
+    found.push(...hits(file, texts), ...readHits(file, raw));
+    if (GUARDED_FILES.includes(file)) found.push(...globHits(file, texts));
+    if (file === 'Dockerfile') found.push(...copyHits(raw));
   }
   for (const file of dirFiles(WORKFLOWS)) {
     if (!/\.ya?ml$/.test(file)) throw new Error(`${file}: not .yml or .yaml, so not read`);
+    const raw = text(file);
+    // Bun's parser hands a binary value back as its base64 text.
+    if (BINARY_TAG.test(raw))
+      throw new Error(`${file}: a binary tag or a %TAG directive hides a value from the parser`);
     let parsed: unknown;
     try {
-      parsed = parseYaml(text(file));
+      parsed = parseYaml(raw);
     } catch (e) {
       throw new Error(`${file}: not readable as YAML (${String(e).split('\n')[0]})`, {
         cause: e
       });
     }
-    found.push(...hits(file, yamlStrings(parsed)));
+    const strings = yamlStrings(parsed);
+    found.push(...hits(file, strings), ...globHits(file, strings));
   }
   return found;
 }
@@ -250,6 +330,80 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
     ]);
   });
 
+  it.each([
+    ['Dockerfile', 'RUN ls scripts/*-hook.ts\n', 'scripts/*-hook.ts', 'scripts/rule-hook.ts'],
+    ['package.json', '{ "x": "cat .c*/**" }\n', '.c*/**', '.claude/settings.json'],
+    [
+      'vite.config.ts',
+      "exclude: ['./scripts/*.test.ts']\n",
+      './scripts/*.test.ts',
+      'scripts/rule-hook.test.ts'
+    ]
+  ])('fails when %s holds a glob that matches a listed path', (file, content, glob, sample) => {
+    expect(check({ [file]: content })).toEqual([`${file}: glob ${glob} matches ${sample}`]);
+  });
+
+  it('fails when a workflow holds a glob that matches a listed path', () => {
+    const ci = 'on: push\njobs:\n  a:\n    steps:\n      - run: bun test scripts/e2e-*\n';
+    expect(check({ [`${WORKFLOWS}/ci.yml`]: ci })).toEqual([
+      `${WORKFLOWS}/ci.yml: glob scripts/e2e-* matches scripts/e2e-slot-rule.test.ts`
+    ]);
+  });
+
+  it('passes a glob that matches no listed path', () => {
+    expect(check({ 'vite.config.ts': "['./build/**/*.map', 'src/**/*.ts']\n" })).toEqual([]);
+  });
+
+  it.each([
+    "import { readFileSync } from 'node:fs';",
+    "import fs from 'fs';",
+    "import { readFile } from 'fs/promises';",
+    "const pages = import.meta.glob('./*.svelte');",
+    'const g = new Bun.Glob(pattern);',
+    'const f = Bun.file(name);',
+    'const names = readdirSync(dir);',
+    'const names = globSync(pattern);'
+  ])('fails when E2E code reads files through %s', (line) => {
+    const hit = check({ 'e2e/x.spec.ts': `${line}\n` });
+    expect(hit).toHaveLength(1);
+    expect(hit[0]).toMatch(
+      /^e2e\/x\.spec\.ts: reads files through .+, which may reach a listed path$/
+    );
+  });
+
+  it.each(['src/lib/x.test.ts', 'src/test/helper.ts', 'static/icon.png'])(
+    'lets %s read files: the unit job runs it, or it is not code',
+    (file) => {
+      expect(check({ [file]: "import { readdirSync } from 'node:fs';\n" })).toEqual([]);
+    }
+  );
+
+  it.each([
+    ['a listed directory', 'FROM x AS builder\nCOPY scripts ./scripts\n', 'COPY scripts'],
+    ['a listed directory with a slash', 'FROM x\nCOPY scripts/ ./scripts/\n', 'COPY scripts/'],
+    ['a listed directory under ./', 'FROM x\nCOPY ./scripts ./s\n', 'COPY ./scripts'],
+    [
+      'the whole tree in the final stage',
+      'FROM x AS builder\nCOPY . .\nFROM y\nCOPY . .\n',
+      'COPY .'
+    ],
+    ['the builder tree', 'FROM y\nCOPY --from=builder \\\n  /app/ ./\n', 'COPY /app/'],
+    ['the whole tree with ADD', 'FROM x AS other\nADD ./ /app\n', 'ADD ./']
+  ])('fails when the Dockerfile copies %s', (_name, dockerfile, copy) => {
+    expect(check({ Dockerfile: dockerfile })).toEqual([`Dockerfile: ${copy} copies a listed path`]);
+  });
+
+  it("passes the builder stage's COPY . . and a copy of named files", () => {
+    const dockerfile =
+      'FROM x AS builder\nCOPY . .\nFROM y\nCOPY --from=builder /app/build ./build\n' +
+      'COPY --from=builder /app/scripts/cleanup.ts ./scripts/\n';
+    expect(check({ Dockerfile: dockerfile })).toEqual([]);
+  });
+
+  it.each(['COPY ["a", "b"]', 'COPY <<EOF /x'])('throws on a Dockerfile %s', (line) => {
+    expect(() => check({ Dockerfile: `FROM x\n${line}\n` })).toThrow('form not read');
+  });
+
   it('reads a .yaml workflow next to ci.yml', () => {
     expect(check({ [`${WORKFLOWS}/other.yaml`]: 'run: cat .claude/x\n' })).toEqual([
       `${WORKFLOWS}/other.yaml: names .claude`
@@ -274,6 +428,16 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
   it('throws on a workflow file that is not .yml or .yaml', () => {
     expect(() => check({ [`${WORKFLOWS}/notes.txt`]: 'plain\n' })).toThrow(
       `${WORKFLOWS}/notes.txt: not .yml or .yaml, so not read`
+    );
+  });
+
+  it.each([
+    ['!!binary', `run: !!binary ${btoa('bun scripts/rule-hook.ts')}\n`],
+    ['a verbatim binary tag', `run: !<tag:yaml.org,2002:binary> ${btoa('x')}\n`],
+    ['a %TAG directive', '%TAG !y! tag:yaml.org,2002:\n---\nrun: !y!str x\n']
+  ])('throws on a workflow holding %s', (_name, yaml) => {
+    expect(() => check({ [`${WORKFLOWS}/ci.yml`]: yaml })).toThrow(
+      `${WORKFLOWS}/ci.yml: a binary tag or a %TAG directive hides a value from the parser`
     );
   });
 
