@@ -393,7 +393,7 @@
   "reminderCtaSeeProfile": "Voir le profil",
   "profilChildrenTitle": "Vos enfants",
   "profilChildrenAdd": "Ajouter un enfant",
-  "profilChildrenOpenSettingsHint": ", ouvrir les réglages",
+  "profilChildrenAgeOpenSettings": "{age}, ouvrir les réglages",
   "profilCoparentsTitle": "Co-parents",
   "profilCoparentsInvite": "Inviter un co-parent",
   "profilCoparentsEmpty": "Aucun co-parent invité pour l’instant.",

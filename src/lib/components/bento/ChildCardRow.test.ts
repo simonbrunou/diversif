@@ -28,11 +28,9 @@ describe('ChildCardRow', () => {
   // The name starts with the text the row shows, so a speech-input user can
   // say « Léo 7 mois » (WCAG 2.5.3, #693). An aria-label would hide that text
   // from the name, and the initial would put a stray « L » in front of it.
-  // The space before the comma is Chromium's too: `sr-only` positions the
-  // hint absolutely, which makes it a block, and blocks are space-separated.
   it.each([
-    ['fr', 'Léo 7 mois , ouvrir les réglages'],
-    ['en', 'Léo 7 months , open settings']
+    ['fr', 'Léo 7 mois, ouvrir les réglages'],
+    ['en', 'Léo 7 months, open settings']
   ] as const)('names the link with the shown name and age in %s', (locale, name) => {
     overwriteGetLocale(() => locale);
     render(ChildCardRow, {
