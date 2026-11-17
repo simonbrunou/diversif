@@ -10,7 +10,6 @@
 // for a busy runner.
 import { afterAll, describe, expect, it } from 'bun:test';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 
 const repo = path.join(import.meta.dir, '..');
@@ -22,12 +21,21 @@ type KnipConfig = {
   entry: string[];
   project: string[];
   ignoreDependencies: string[];
+  ignoreIssues?: Record<string, string[]>;
 };
 
 const config = JSON.parse(fs.readFileSync(path.join(repo, 'knip.json'), 'utf8')) as KnipConfig;
 const PROJECT = 'src/**/*.{ts,js,svelte,css}!';
 
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'knip-config-'));
+// Knip prints hints in a table at most 120 columns wide when stdout is a
+// pipe. Since knip 6.45 a hint's description names the config file by its
+// path from the repo, and only the identifier column gets cut, from its
+// start. Under the dev shell's TMPDIR (/tmp/nix-shell.XXXXXX) that path cut
+// `svelte-check` to `…lte-check`, so the variants live at a short path
+// inside the repo instead of the system temp directory.
+const cacheDir = path.join(repo, 'node_modules/.cache');
+fs.mkdirSync(cacheDir, { recursive: true });
+const scratch = fs.mkdtempSync(path.join(cacheDir, 'knip-config-'));
 afterAll(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
 // FORCE_COLOR=1 in the caller's environment wraps knip's table header in
@@ -62,6 +70,26 @@ describe('knip.json', () => {
       const { exitCode, output } = knip('as-is', config);
       expect(output).not.toContain('Configuration hints');
       expect(exitCode).toBe(0);
+    },
+    TIMEOUT
+  );
+
+  // tsconfig.json extends "$app/tsconfig", which SvelteKit 3's sync writes
+  // into node_modules/$app with no package.json. Since knip 6.45 (6.44.2
+  // passed the same tree) that reads as the unlisted package "$app". An
+  // ignoreDependencies entry for "$app" does not clear it: knip 6.45.1 still
+  // reports it and adds an unused-ignore hint. So knip.json ignores unlisted
+  // issues in tsconfig.json, which names no other package. When a knip release stops
+  // reporting "$app", this case fails: drop the ignoreIssues entry then.
+  it(
+    'needs its tsconfig.json ignore for the "$app" that SvelteKit generates',
+    () => {
+      expect(config.ignoreIssues).toEqual({ 'tsconfig.json': ['unlisted'] });
+      const { output } = knip('no-ignore-issues', { ...config, ignoreIssues: {} });
+      const [, table = ''] = output.split(/^Unlisted dependencies \(\d+\)$/m);
+      expect(table.split('\n').map((row) => row.split(/\s+/).slice(0, 2).join(' '))).toContain(
+        '$app tsconfig.json'
+      );
     },
     TIMEOUT
   );

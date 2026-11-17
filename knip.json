@@ -14,8 +14,5 @@
   "project": ["src/**/*.{ts,js,svelte,css}!"],
   "ignoreDependencies": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss", "happy-dom"],
   "ignoreBinaries": ["Tools"],
-  // tsconfig.json extends "$app/tsconfig", which SvelteKit 3 writes into node_modules/$app on
-  // sync, with no package.json. Since knip 6.45 that reads as the unlisted package "$app", and
-  // an ignoreDependencies entry fails as an unused-ignore hint. This file lists no other package.
   "ignoreIssues": { "tsconfig.json": ["unlisted"] }
 }
