@@ -114,7 +114,10 @@
                  from the dashboard back to the reassurance copy. -->
             <a
               href={item.href}
-              aria-label={m.aujourdhuiAllergensEntryAria({ allergen: item.label })}
+              aria-label={m.aujourdhuiAllergensEntryAria({
+                allergen: item.label,
+                state: stateLabel(item.state)
+              })}
               class={cn(
                 'inline-flex min-h-8 items-center gap-1 rounded-full px-3 text-xs font-medium transition-transform duration-base ease-soft active:scale-97 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 PILL_CLASSES[item.state]
