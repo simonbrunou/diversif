@@ -152,11 +152,14 @@ jobs:
 
   # Tells the e2e job and the three build jobs (bundle-budget,
   # db-backup-verify, docker-build) whether a PR's change reaches the app. A
-  # PR that changes only Markdown files and docs/ skips all four: nothing the
-  # app builds, the image holds or the E2E tests run reads those paths, and
-  # the production deploy skips the same paths. The unit job still runs, since
-  # some tests read Markdown and docs/. A push to main always runs all four.
-  # See scripts/e2e-needed.sh for the PR and the push case.
+  # PR that changes only paths on the skip list of scripts/e2e-needed.sh
+  # (Markdown files, docs/ and agent tooling: .claude/ and the rule-hook
+  # scripts) skips all four. A file on the skip list reaches the build output
+  # only through Tailwind's source scan, which can add or drop CSS rules for
+  # class names written in that file. The production deploy skips only
+  # Markdown and docs/. The unit job still runs, since some tests read those
+  # paths. A push to main always runs all four. See scripts/e2e-needed.sh for
+  # the PR and the push case.
   changes:
     name: Changed paths (app jobs needed?)
     runs-on: ubuntu-latest
@@ -215,7 +218,7 @@ jobs:
 
   bundle-budget:
     name: Bundle size budget
-    # Skipped on a docs-only PR, and skipped too when the changes job fails:
+    # Skipped on a PR the changes job lets skip it, and skipped too when it fails:
     # rerun the whole run. See the changes job.
     needs: changes
     if: needs.changes.outputs.e2e != 'false'
@@ -233,7 +236,7 @@ jobs:
 
   db-backup-verify:
     name: Backup restore verification (db:verify-backup)
-    # Skipped on a docs-only PR, and skipped too when the changes job fails:
+    # Skipped on a PR the changes job lets skip it, and skipped too when it fails:
     # rerun the whole run. See the changes job.
     needs: changes
     if: needs.changes.outputs.e2e != 'false'
@@ -280,7 +283,7 @@ jobs:
 
   docker-build:
     name: Docker build (smoke test)
-    # Skipped on a docs-only PR, and skipped too when the changes job fails:
+    # Skipped on a PR the changes job lets skip it, and skipped too when it fails:
     # rerun the whole run. See the changes job.
     needs: changes
     if: needs.changes.outputs.e2e != 'false'

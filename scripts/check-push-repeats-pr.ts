@@ -154,7 +154,8 @@ export const ALLOWED: Allowed[] = [
     kind: 'push-extra',
     why:
       'decides whether E2E and the three build jobs run: on a PR, false when the branch changes ' +
-      'only Markdown and docs/ against its merge base with main (scripts/e2e-needed.sh); on a ' +
+      'only paths on the skip list of scripts/e2e-needed.sh (Markdown, docs/ and agent ' +
+      'tooling) against its merge base with main; on a ' +
       'push, always true. With equal trees, each file the PR did not change against its merge ' +
       'base keeps the version of the main commit it merges onto: the merge takes that version, ' +
       "and the trees match. So after a PR run that skipped them, main's E2E and build jobs test " +
@@ -164,12 +165,15 @@ export const ALLOWED: Allowed[] = [
   },
   {
     file: 'scripts/e2e-needed.sh',
-    blob: 'b10edc1674fce1add07d63e1d93797d772bff2cd',
+    blob: '54890a0d69ae5ea70b1ef691b3c69725939d4d0f',
     kind: 'push-extra',
     why:
-      'the paths step above lets a PR skip E2E and the three build jobs on its answer. A change ' +
-      'to which paths it skips changes what a PR run leaves to main: check that E2E, the app ' +
-      'build and the image still read none of them, then ' +
+      'the paths step above lets a PR skip E2E and the three build jobs on its answer. A file ' +
+      "on its skip list reaches the build output only through Tailwind's source scan, which " +
+      'can add or drop CSS rules for class names written in that file. A change to which ' +
+      'paths it skips changes what a PR run leaves to main: check that this still holds ' +
+      '(scripts/e2e-skip-list.test.ts checks that no file E2E or the build reads names an ' +
+      'agent-tooling path), then ' +
       'update this hash (`git rev-parse HEAD:scripts/e2e-needed.sh`)'
   },
   {
@@ -184,7 +188,7 @@ export const ALLOWED: Allowed[] = [
     path: '.jobs.e2e.if',
     value: "needs.changes.outputs.e2e != 'false'",
     kind: 'push-extra',
-    why: 'skips E2E on a PR that changes only Markdown and docs/; see the paths step'
+    why: 'skips E2E on a PR that changes only paths on the skip list; see the paths step'
   },
   ...(['bundle-budget', 'db-backup-verify', 'docker-build'] as const).map((job): Allowed => ({
     file: CI,
@@ -192,8 +196,9 @@ export const ALLOWED: Allowed[] = [
     value: "needs.changes.outputs.e2e != 'false'",
     kind: 'push-extra',
     why:
-      'skips this build job on a PR that changes only Markdown and docs/: the app build and ' +
-      'the image read neither, and the production deploy skips the same paths. As for E2E, ' +
+      'skips this build job on a PR that changes only paths on the skip list: the app build ' +
+      "and the image read them only through Tailwind's source scan (see the " +
+      'scripts/e2e-needed.sh entry). As for E2E, ' +
       "main's push run builds that commit's app files again; see the paths step"
   })),
   {
