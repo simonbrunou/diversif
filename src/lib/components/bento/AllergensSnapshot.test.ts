@@ -1,9 +1,13 @@
 import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import * as m from '#lib/paraglide/messages.js';
+import { baseLocale, overwriteGetLocale } from '#lib/paraglide/runtime.js';
 import AllergensSnapshot from './AllergensSnapshot.svelte';
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  overwriteGetLocale(() => baseLocale);
+});
 
 describe('AllergensSnapshot', () => {
   const items = [
@@ -43,14 +47,28 @@ describe('AllergensSnapshot', () => {
     expect(hrefs.sort()).toEqual(['/child/1/foods/42', '/child/1/foods/43']);
   });
 
-  it('names the allergen in a linked pill so the target is not just "Poisson"', () => {
-    render(AllergensSnapshot, { props: { items, foodsHref } });
-    expect(
-      screen.getByRole('link', {
-        name: m.aujourdhuiAllergensEntryAria({ allergen: 'Poisson' })
-      })
-    ).toBeTruthy();
-  });
+  // The name starts with the pill's own text, so a speech-input user can say
+  // « Poisson réaction » (WCAG 2.5.3, #693), and ends with where the link goes.
+  it.each([
+    [
+      'fr',
+      'Poisson, réaction : voir le repas concerné',
+      'Lait, inconfort : voir le repas concerné'
+    ],
+    ['en', 'Poisson, reaction: see the meal involved', 'Lait, discomfort: see the meal involved']
+  ] as const)(
+    'names a linked pill by its text, then its target, so the target is not just "Poisson" (%s)',
+    (locale, poisson, lait) => {
+      overwriteGetLocale(() => locale);
+      render(AllergensSnapshot, { props: { items, foodsHref } });
+      expect(screen.getByRole('link', { name: poisson }).getAttribute('href')).toBe(
+        '/child/1/foods/42'
+      );
+      expect(screen.getByRole('link', { name: lait }).getAttribute('href')).toBe(
+        '/child/1/foods/43'
+      );
+    }
+  );
 
   // Regression guard for the axe `scrollable-region-focusable` violation: the
   // pills must wrap, never live in a horizontal scroller that Safari and

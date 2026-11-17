@@ -91,9 +91,7 @@ describe('AujourdhuiBento', () => {
   // reach the entry page that carries the reassurance copy.
   it('points a réaction pill at its own entry', () => {
     render(AujourdhuiBento, { props: { ...baseProps, allergens: allergenStatuses } });
-    const pill = screen.getByRole('link', {
-      name: m.aujourdhuiAllergensEntryAria({ allergen: 'Poisson' })
-    });
+    const pill = screen.getByRole('link', { name: 'Poisson, réaction : voir le repas concerné' });
     expect(pill.getAttribute('href')).toBe('/child/abc/foods/42');
   });
 

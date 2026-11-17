@@ -37,22 +37,17 @@ describe('StagesBentoGrid', () => {
     expect(inactive?.getAttribute('aria-current')).toBeNull();
   });
 
-  // The stage titles are French-only content; the colon after them follows
-  // the locale (#624).
-  it.each([
-    ['fr', '6 à 9 mois : Étape actuelle', '9 à 12 mois : Voir le guide de cette étape'],
-    ['en', '6 à 9 mois: Current stage', "9 à 12 mois: Open this stage's guide"]
-  ] as const)(
-    'names each tile with its title and state in the %s aria-label',
-    (locale, activeLabel, inactiveLabel) => {
-      overwriteGetLocale(() => locale);
-      render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
-      const label = (title: string) =>
-        screen.getByText(title).closest('button')?.getAttribute('aria-label');
-      expect(label('6 à 9 mois')).toBe(activeLabel);
-      expect(label('9 à 12 mois')).toBe(inactiveLabel);
+  // A tile's name is the text it shows, title then one-liner, so a
+  // speech-input user can say what they see (WCAG 2.5.3, #693). The stage
+  // titles and one-liners are content, in the same words in both locales.
+  it.each(['fr', 'en'] as const)('names each tile with its title and one-liner in %s', (locale) => {
+    overwriteGetLocale(() => locale);
+    render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
+    for (const { title, oneLiner } of stages) {
+      const tile = screen.getByRole('button', { name: `${title} ${oneLiner}` });
+      expect(tile.getAttribute('aria-label')).toBeNull();
     }
-  );
+  });
 
   it("sets each stage tile's text in the tile's own foreground (#360)", () => {
     render(StagesBentoGrid, { props: { stages, activeStageId: '6-9m', onOpen: () => {} } });
