@@ -14,21 +14,26 @@
 //     with an escape, an alias or a block scalar does.
 // It also fails on three reads that need no name:
 //   - a glob in a guarded file or a workflow that matches a listed path;
-//   - code outside the unit tests that reads files through node:fs, Bun.file,
-//     Bun.Glob, import.meta.glob or a readdir or glob call (FS_READ);
+//   - code outside src/'s unit tests that reads files or runs a command
+//     through node:fs, Bun.file, Bun.Glob, import.meta.glob, a readdir or
+//     glob call, Bun's $ shell, Bun.spawn or node:child_process (FS_READ);
 //   - a Dockerfile COPY or ADD of a directory that holds a listed path, but
 //     for the builder stage's `COPY . .`.
 // A missing guarded file or directory, a workflow that is not .yml or
-// .yaml, a workflow the parser rejects, a workflow holding a binary tag or a
-// %TAG directive (Bun's parser returns a binary value as base64 text), a
-// COPY in JSON or heredoc form and a Bun with no YAML parser fail the check
-// rather than pass it.
+// .yaml, a workflow the parser rejects, a workflow holding a binary tag, a
+// %-escape inside a tag or a %TAG directive (Bun's parser returns a binary
+// value as base64 text, and the runner's Go parser decodes %-escaped tags),
+// a COPY in JSON or heredoc form and a Bun with no YAML parser fail the
+// check rather than pass it.
 //
 // It cannot see a name built at run time: string concatenation,
-// String.fromCharCode, a shell octal escape, a variable holding a path, as
-// in a workflow's `run:` script. Nor can it see a scan: Tailwind's source
-// detection reads every file .gitignore keeps, the one such read today,
-// and the header of scripts/e2e-needed.sh says what it can change.
+// String.fromCharCode, a shell octal escape, a variable holding a path, a
+// path relative to a `cd`, as in a workflow's `run:` script. Nor can it see
+// a read of a whole directory named without a glob (`bun test scripts/`,
+// `cp -r scripts`): package.json's test:watch, a dev command, names
+// ./scripts that way. Nor can it see a scan: Tailwind's source detection
+// reads every file .gitignore keeps, the one such read today, and the
+// header of scripts/e2e-needed.sh says what it can change.
 import { describe, expect, it } from 'bun:test';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -74,7 +79,7 @@ const GUARDED_DIRS = ['src', 'e2e', 'static', 'messages', 'drizzle'];
 const WORKFLOWS = '.forgejo/workflows';
 // A tag naming binary (!!binary, !<tag:yaml.org,2002:binary>, !x!binary)
 // or a %TAG directive, which can give any handle that meaning.
-const BINARY_TAG = /![^\s]*binary|^%TAG/m;
+const BINARY_TAG = /![^\s]*(binary|%)|^%TAG/m;
 
 function decodeEscapes(text: string): string {
   return text
@@ -119,21 +124,35 @@ function globHits(file: string, texts: string[]): string[] {
   const out = new Set<string>();
   for (const t of texts)
     for (const [token] of t.matchAll(GLOB_TOKEN)) {
-      const glob = new Bun.Glob(token.replace(/^\.\//, ''));
+      const glob = new Bun.Glob(token.replace(/^(\.|\/app)\//, ''));
       const sample = SAMPLES.find((s) => glob.match(s));
       if (sample) out.add(`${file}: glob ${token} matches ${sample}`);
     }
   return [...out];
 }
 
-// The forms through which code reads a file it need not name. Tests and the
-// helpers under src/test/ run in the unit job only, which runs on every PR.
-const CODE = /\.(ts|js|mjs|cjs|svelte)$/;
-const FS_READ = /node:fs|['"]fs(\/promises)?['"]|Bun\.(Glob|file)\b|readdir|\bglob(Sync)?\(/;
+// The forms through which code reads a file it need not name. The tests
+// under src/ and the helpers under src/test/ run in the unit job only, which
+// runs on every PR; a test under e2e/ runs in the E2E job, so it counts.
+const CODE = /\.([cm]?[jt]s|[jt]sx|svelte)$/;
+// Bun's shell comes as Bun.$ or as a $ imported from 'bun'.
+const FS_READ =
+  /node:fs|['"]fs(\/promises)?['"]|Bun\.(Glob|file|spawn|\$)|import\s*\{[^}]*\$[^}]*\}\s*from\s*['"]bun['"]|readdir|\bglob(Sync)?\(|child_process/;
+// Lines that match FS_READ on purpose, by file, each with what it runs.
+const KNOWN_READS: Record<string, string> = {
+  // resolveSentryRelease runs `git rev-parse HEAD`, which reads no listed path.
+  'vite.config.ts': "import { execFileSync } from 'node:child_process';"
+};
 function readHits(file: string, raw: string): string[] {
-  if (!CODE.test(file) || file.endsWith('.test.ts') || file.startsWith('src/test/')) return [];
-  const m = raw.match(FS_READ);
-  return m ? [`${file}: reads files through ${m[0]}, which may reach a listed path`] : [];
+  const unitOnly =
+    file.startsWith('src/') && (file.endsWith('.test.ts') || file.startsWith('src/test/'));
+  if (!CODE.test(file) || unitOnly) return [];
+  for (const line of raw.split('\n')) {
+    const m = line.match(FS_READ);
+    if (m && line.trim() !== KNOWN_READS[file])
+      return [`${file}: reads files through ${m[0]}, which may reach a listed path`];
+  }
+  return [];
 }
 
 // A COPY or ADD of a directory that holds a listed path. The builder
@@ -151,18 +170,22 @@ function copyHits(raw: string): string[] {
     if (/^\[|<</.test(m[2])) throw new Error(`Dockerfile: ${m[1]} ${m[2]}: form not read`);
     if (stage === 'builder' && /^\s*COPY \. \.\s*$/.test(line)) continue;
     // A flag (--from=builder) names no directory, so it never matches.
-    const args = m[2].split(/\s+/).filter(Boolean);
-    for (const src of args.slice(0, -1)) {
-      const dir =
-        src
-          .replace(/^\/app\//, '')
-          .replace(/^\.\//, '')
-          .replace(/\/+$/, '') || '.';
-      if (dir === '.' || SAMPLES.some((s) => s.startsWith(`${dir}/`)))
-        out.push(`Dockerfile: ${m[1]} ${src} copies a listed path`);
-    }
+    const sources = m[2].split(/\s+/).filter(Boolean).slice(0, -1);
+    for (const src of sources.filter(holdsListedPath))
+      out.push(`Dockerfile: ${m[1]} ${src} copies a listed path`);
   }
   return out;
+}
+
+// Whether a COPY source, in the build context or the builder's /app, is a
+// directory that holds a listed path.
+function holdsListedPath(src: string): boolean {
+  const dir =
+    src
+      .replace(/^\/app(\/|$)/, '')
+      .replace(/^\.\//, '')
+      .replace(/\/+$/, '') || '.';
+  return dir === '.' || SAMPLES.some((s) => s.startsWith(`${dir}/`));
 }
 
 // Each guarded file that names an agent-tooling path, as `<file>: names
@@ -332,6 +355,12 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
 
   it.each([
     ['Dockerfile', 'RUN ls scripts/*-hook.ts\n', 'scripts/*-hook.ts', 'scripts/rule-hook.ts'],
+    [
+      'Dockerfile',
+      'COPY --from=builder /app/scripts/*.ts ./scripts/\n',
+      '/app/scripts/*.ts',
+      'scripts/rule-hook.ts'
+    ],
     ['package.json', '{ "x": "cat .c*/**" }\n', '.c*/**', '.claude/settings.json'],
     [
       'vite.config.ts',
@@ -362,7 +391,11 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
     'const g = new Bun.Glob(pattern);',
     'const f = Bun.file(name);',
     'const names = readdirSync(dir);',
-    'const names = globSync(pattern);'
+    'const names = globSync(pattern);',
+    'await Bun.$`ls`;',
+    "import { $ } from 'bun'; await $`ls`;",
+    "Bun.spawn(['ls']);",
+    "import { execSync } from 'node:child_process';"
   ])('fails when E2E code reads files through %s', (line) => {
     const hit = check({ 'e2e/x.spec.ts': `${line}\n` });
     expect(hit).toHaveLength(1);
@@ -378,10 +411,35 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
     }
   );
 
+  it.each(['e2e/x.test.ts', 'e2e/helper.mts', 'src/lib/x.cts', 'src/lib/X.tsx'])(
+    'fails when %s reads files: the unit job does not run it alone',
+    (file) => {
+      expect(check({ [file]: "import { readdirSync } from 'node:fs';\n" })).toEqual([
+        `${file}: reads files through readdir, which may reach a listed path`
+      ]);
+    }
+  );
+
+  it('lets vite.config.ts import child_process for `git rev-parse HEAD`, and no other read', () => {
+    const known = "import { execFileSync } from 'node:child_process';\n";
+    expect(check({ 'vite.config.ts': known })).toEqual([]);
+    expect(check({ 'vite.config.ts': `${known}const f = Bun.file(x);\n` })).toEqual([
+      'vite.config.ts: reads files through Bun.file, which may reach a listed path'
+    ]);
+    expect(check({ 'playwright.config.ts': known })).toEqual([
+      'playwright.config.ts: reads files through child_process, which may reach a listed path'
+    ]);
+  });
+
+  it('passes a $ before a backquote outside an import from bun', () => {
+    expect(check({ 'e2e/x.spec.ts': 'new RegExp(`/child/${id}$`);\n' })).toEqual([]);
+  });
+
   it.each([
     ['a listed directory', 'FROM x AS builder\nCOPY scripts ./scripts\n', 'COPY scripts'],
     ['a listed directory with a slash', 'FROM x\nCOPY scripts/ ./scripts/\n', 'COPY scripts/'],
     ['a listed directory under ./', 'FROM x\nCOPY ./scripts ./s\n', 'COPY ./scripts'],
+    ['the builder tree, no slash', 'FROM y\nCOPY --from=builder /app ./\n', 'COPY /app'],
     [
       'the whole tree in the final stage',
       'FROM x AS builder\nCOPY . .\nFROM y\nCOPY . .\n',
@@ -434,7 +492,9 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
   it.each([
     ['!!binary', `run: !!binary ${btoa('bun scripts/rule-hook.ts')}\n`],
     ['a verbatim binary tag', `run: !<tag:yaml.org,2002:binary> ${btoa('x')}\n`],
-    ['a %TAG directive', '%TAG !y! tag:yaml.org,2002:\n---\nrun: !y!str x\n']
+    ['a %TAG directive', '%TAG !y! tag:yaml.org,2002:\n---\nrun: !y!str x\n'],
+    ['a %-escaped binary tag', `run: !!bin%61ry ${btoa('bun scripts/rule-hook.ts')}\n`],
+    ['a %-escaped verbatim tag', `run: !<tag:yaml.org,2002:%62inary> ${btoa('x')}\n`]
   ])('throws on a workflow holding %s', (_name, yaml) => {
     expect(() => check({ [`${WORKFLOWS}/ci.yml`]: yaml })).toThrow(
       `${WORKFLOWS}/ci.yml: a binary tag or a %TAG directive hides a value from the parser`
