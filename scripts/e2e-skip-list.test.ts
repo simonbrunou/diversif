@@ -142,7 +142,7 @@ const CODE = /\.([cm]?[jt]s|[jt]sx|svelte)$/;
 // does each call of an exec or spawn function, so that a new command next to
 // a known import still fails.
 const FS_READ =
-  /node:fs|['"]fs(\/promises)?['"]|Bun\.(Glob|file|spawn|\$)|from\s*['"]bun['"]|require\(\s*['"]bun['"]|readdir|\bglob(Sync)?\(|child_process|(?<![.\w])(exec|execFile|spawn)(Sync)?\(/;
+  /node:fs|['"]fs(\/promises)?['"]|Bun\.(Glob|file|spawn|\$)|from\s*['"]bun['"]|(require|import)\s*\(\s*['"`]bun['"`]|readdir|\bglob(Sync)?\(|child_process|(?<![.\w])(exec|execFile|spawn)(Sync)?\(/;
 // Lines that match FS_READ on purpose, by file, each with what it runs.
 const KNOWN_READS: Record<string, string[]> = {
   // resolveSentryRelease runs `git rev-parse HEAD`, which reads no listed path.
@@ -156,7 +156,10 @@ function readHits(file: string, raw: string): string[] {
     file.startsWith('src/') && (file.endsWith('.test.ts') || file.startsWith('src/test/'));
   if (!CODE.test(file) || unitOnly) return [];
   for (const line of raw.split('\n')) {
-    const m = line.match(FS_READ);
+    // A type-only import reads nothing; the rest of its line still counts.
+    const m = line
+      .replace(/^\s*import\s+type\s*\{[^}]*\}\s*from\s*['"][^'"]*['"];?/, '')
+      .match(FS_READ);
     if (m && !KNOWN_READS[file]?.includes(line.trim()))
       return [`${file}: reads files through ${m[0]}, which may reach a listed path`];
   }
@@ -408,7 +411,11 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
     "import * as bun from 'bun';",
     "const { file } = require('bun');",
     "const out = execFileSync('ls', ['x']);",
-    "spawnSync('ls');"
+    "spawnSync('ls');",
+    "const b = await import('bun');",
+    'const b = await import (`bun`);',
+    "import type { X } from 'bun'; Bun.spawn(['ls']);",
+    "import type from 'bun';"
   ])('fails when E2E code reads files through %s', (line) => {
     const hit = check({ 'e2e/x.spec.ts': `${line}\n` });
     expect(hit).toHaveLength(1);
@@ -447,6 +454,10 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
     expect(check({ 'playwright.config.ts': known })).toEqual([
       'playwright.config.ts: reads files through child_process, which may reach a listed path'
     ]);
+  });
+
+  it('passes a type-only import from bun', () => {
+    expect(check({ 'src/lib/server/x.ts': "import type { Server } from 'bun';\n" })).toEqual([]);
   });
 
   it('passes a $ before a backquote outside an import from bun', () => {
