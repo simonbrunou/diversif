@@ -12,8 +12,9 @@
  * loopback build pins SvelteKit's paths.origin, so it rejects every real
  * cross-host form POST: requiring BOTH E2E=1 AND a plain-http loopback build
  * origin makes the relaxations inert anywhere that serves real traffic. The
- * runtime ORIGIN variable is not read: adapter-node 6 ignores it, so it no
- * longer says anything about the traffic a server accepts.
+ * runtime ORIGIN variable is not read: adapter-node ignores it when the build
+ * pinned paths.origin, and since 6.0.2 uses it only when the build pinned
+ * none, so for isE2E() the build-time origin is the one that decides.
  */
 export function isE2E(): boolean {
   if (process.env.E2E !== '1') return false;
