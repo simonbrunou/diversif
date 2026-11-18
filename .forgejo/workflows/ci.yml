@@ -473,12 +473,13 @@ jobs:
       # both scopes even at `--audit-level=low` when this gate went in
       # (#349) — `high` leaves headroom for low/moderate advisories in
       # dev-only tooling that don't block a release, while still catching
-      # anything that actually matters. If a future advisory can't be
-      # cleared by an override (no fixed release yet, or an override that
-      # breaks the build), that's the trigger to raise a tier's threshold
-      # back up — name the specific package and reason in the commit that
-      # changes the override or the threshold, not by lowering this
-      # comment's confidence silently.
+      # anything that actually matters. An advisory with no fixed release
+      # gets an `--ignore=<GHSA id>` in both scopes of scripts/audit-deps.sh,
+      # with the newest version it covers and a check that fails the run
+      # once npm publishes a release past it (GHSA-fc5q-39xc-vjpf, picomatch,
+      # #780; the script's header). Raising a tier's threshold would hide
+      # every other advisory at that level too. Name the package and the
+      # reason in the commit that adds the ignore or changes an override.
       #
       # `brace-expansion` is deliberately not overridden: forcing one major
       # onto every consumer broke the ones that need another (it once
