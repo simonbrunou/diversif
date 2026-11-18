@@ -1,9 +1,12 @@
-// scripts/audit-deps.sh with a stub `bun` first on PATH, so no test installs
-// a package, audits one or calls the registry. The stub logs each call, and
-// hands `bun -e` (the production scope's package.json rewrite and the
-// version comparison) to the Bun that runs this test. Its `audit` acts like
-// the real one: it exits 1 unless each advisory in FAKE_ADVISORIES is named
-// by an `--ignore=`. Its `info` prints FAKE_LATEST and exits FAKE_INFO_EXIT.
+// scripts/audit-deps.sh, its ignore of GHSA-fc5q-39xc-vjpf and the expiry
+// check of that ignore (#780), with a stub `bun` first on PATH, so no test
+// installs a package, audits one or calls the registry. The stub logs each
+// call, and hands `bun -e` (the production scope's package.json rewrite and
+// the version comparison) to the Bun that runs this test. Its `audit` acts
+// like the real one: it exits 1 unless each advisory it finds is named by an
+// `--ignore=`. It finds those in FAKE_ADVISORIES, plus FAKE_PRODUCTION_EXTRA
+// in the production scope (which audits under TMPDIR) or FAKE_ALL_EXTRA in
+// the all scope. Its `info` prints FAKE_LATEST and exits FAKE_INFO_EXIT.
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -22,7 +25,11 @@ case "$1" in
   -e) exec "$REAL_BUN" "$@" ;;
   install) exit 0 ;;
   audit)
-    for advisory in $FAKE_ADVISORIES; do
+    case "$PWD" in
+      "$TMPDIR"/*) extra="$FAKE_PRODUCTION_EXTRA" ;;
+      *) extra="$FAKE_ALL_EXTRA" ;;
+    esac
+    for advisory in $FAKE_ADVISORIES $extra; do
       found=0
       for arg in "$@"; do
         if [ "$arg" = "--ignore=$advisory" ]; then found=1; fi
@@ -61,6 +68,8 @@ interface Fake {
   latest?: string;
   infoExit?: number;
   advisories?: string[];
+  productionExtra?: string;
+  allExtra?: string;
 }
 
 function auditDeps(args: string[], fake: Fake = {}) {
@@ -74,7 +83,9 @@ function auditDeps(args: string[], fake: Fake = {}) {
       REAL_BUN: process.execPath,
       FAKE_LATEST: fake.latest ?? '4.0.7',
       FAKE_INFO_EXIT: String(fake.infoExit ?? 0),
-      FAKE_ADVISORIES: (fake.advisories ?? [GHSA]).join(' ')
+      FAKE_ADVISORIES: (fake.advisories ?? [GHSA]).join(' '),
+      FAKE_PRODUCTION_EXTRA: fake.productionExtra ?? '',
+      FAKE_ALL_EXTRA: fake.allExtra ?? ''
     }
   });
   const calls = readFileSync(path.join(dir, 'calls'), 'utf8').split('\n').filter(Boolean);
@@ -123,6 +134,20 @@ describe('audit-deps.sh', () => {
       const r = auditDeps([scope], { advisories: [GHSA, OTHER_GHSA] });
       expect(r.code).toBe(1);
       expect(r.out).toContain(`${OTHER_GHSA}: 1 vulnerability (1 high)`);
+    },
+    TIMEOUT
+  );
+
+  it.each([
+    ['production', { productionExtra: OTHER_GHSA }],
+    ['all', { allExtra: OTHER_GHSA }]
+  ])(
+    'fails a run with no argument when only the %s scope finds another advisory, after auditing both',
+    (_scope, fake) => {
+      const r = auditDeps([], fake);
+      expect(r.code).toBe(1);
+      expect(r.out).toContain(`${OTHER_GHSA}: 1 vulnerability (1 high)`);
+      expect(r.calls('audit')).toHaveLength(2);
     },
     TIMEOUT
   );

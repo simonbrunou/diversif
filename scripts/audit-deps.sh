@@ -32,10 +32,11 @@
 # Both scopes pass `--ignore=GHSA-fc5q-39xc-vjpf` to `bun audit` (#780). That
 # advisory (picomatch ReDoS through single-branch repeated extglobs, high)
 # covers picomatch <= 4.0.7, and on 2026-11-18 npm had no release past 4.0.7,
-# so no bump or `overrides` entry could clear it. picomatch reaches the
-# production install only through vite, and only for globs the repo's own
-# config writes. The ignore expires by itself: before any audit, each run
-# asks the npm registry for picomatch's `latest` dist-tag
+# so no bump or `overrides` entry could clear it. Build tooling brings
+# picomatch into the production install, through vite and through unplugin
+# (a dependency of @inlang/paraglide-js), and #780 saw a production server
+# boot open no picomatch file. The ignore expires by itself: before any
+# audit, each run asks the npm registry for picomatch's `latest` dist-tag
 # (`bun info picomatch dist-tags.latest`), once, with no retry. When that
 # version is past 4.0.7, the run fails and says so: remove IGNORE_GHSA,
 # IGNORE_PACKAGE, IGNORE_UP_TO, check_ignore_expiry and its call, the
@@ -66,10 +67,10 @@ trap cleanup EXIT
 # Fails once npm's latest picomatch is past IGNORE_UP_TO, or when the lookup
 # fails or prints no version. One lookup, no retry.
 check_ignore_expiry() {
-  local lookup="bun info $IGNORE_PACKAGE dist-tags.latest"
+  local lookup=(bun info "$IGNORE_PACKAGE" dist-tags.latest)
   local latest verdict
-  if ! latest="$(cd "$REPO" && bun info "$IGNORE_PACKAGE" dist-tags.latest)"; then
-    echo "audit-deps: the registry lookup \`$lookup\` failed, so the run cannot tell whether the ignore of $IGNORE_GHSA has expired" >&2
+  if ! latest="$(cd "$REPO" && "${lookup[@]}")"; then
+    echo "audit-deps: the registry lookup \`${lookup[*]}\` failed, so the run cannot tell whether the ignore of $IGNORE_GHSA has expired" >&2
     return 1
   fi
   # Bun.semver.order throws on an empty or malformed version.
@@ -88,7 +89,7 @@ check_ignore_expiry() {
       return 1
       ;;
     *)
-      echo "audit-deps: the registry lookup \`$lookup\` printed '$latest', not a version, so the run cannot tell whether the ignore of $IGNORE_GHSA has expired" >&2
+      echo "audit-deps: the registry lookup \`${lookup[*]}\` printed '$latest', not a version, so the run cannot tell whether the ignore of $IGNORE_GHSA has expired" >&2
       return 1
       ;;
   esac
