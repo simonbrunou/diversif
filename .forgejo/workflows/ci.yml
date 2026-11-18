@@ -193,7 +193,12 @@ jobs:
     # Skipped when changes printed false. A failed changes job turns the run
     # red and skips E2E too: rerun the whole run.
     if: needs.changes.outputs.e2e != 'false'
-    runs-on: ubuntu-latest
+    # Its own runner on CT 125, ci-runner-playwright, scoped to this repo and
+    # running one job at a time (homelab-stacks#254). Two of these jobs side by
+    # side on the shared runner's slots timed tests out (#478), so a second job
+    # now waits for the first. The label maps to the same image as
+    # ubuntu-latest, but sets ImageOS=playwright and keeps its own cache.
+    runs-on: playwright
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
