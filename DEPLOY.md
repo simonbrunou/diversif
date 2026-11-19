@@ -154,8 +154,8 @@ infra/config, not code; C1 is a human test no agent can run.
          `docker compose --profile backup up -d litestream`.
       3. **Coolify**: the reference deploy is a single container built from
          the `Dockerfile`, not Compose, so the sidecar needs its own
-         resource. Either switch the Coolify service to a Docker Compose deployment (reusing
-         `docker-compose.yml` with the `backup` profile against the same
+         resource. Either switch the Coolify service to a Docker Compose
+         deployment (reusing `docker-compose.yml` with the `backup` profile against the same
          `/app/data` volume) or add a second Coolify service running
          `litestream/litestream:0.5.17 replicate -config /etc/litestream.yml`
          mounted read-write on the same volume as the app, with

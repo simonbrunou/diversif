@@ -18,8 +18,8 @@ function resolveDatabasePath(): string {
   // and seedFoods() are gated by `building`, but the Database constructor still
   // opens a handle, so use an in-memory DB during build. This keeps
   // DATABASE_PATH out of the build environment (the Dockerfile's builder
-  // stage, which mounts no volume, or a plain `bun run build`). It is never migrated or queried —
-  // `building` short-circuits everything downstream.
+  // stage, which mounts no volume, or a plain `bun run build`). It is never
+  // migrated or queried: `building` short-circuits everything downstream.
   if (building) return ':memory:';
   const dbPath = process.env.DATABASE_PATH;
   if (!dbPath) {
