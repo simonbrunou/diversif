@@ -38,7 +38,7 @@ bun run build
 
 ## Production deploy
 
-The reference deploy is **Coolify** with the **Railpack** builder. A persistent volume is mounted at `/app/data` and `DATABASE_PATH=/app/data/diversif.db` is set, so the SQLite database survives redeploys. Migrations and seeding run on every container start (idempotent). The volume MUST persist and be backed up — losing it loses all data.
+The reference deploy is **Coolify**, which builds the repo's `Dockerfile`. The image runs the server as the non-root user `diversif` (uid 1001), so that user must own the data volume. A persistent volume is mounted at `/app/data` and `DATABASE_PATH=/app/data/diversif.db` is set, so the SQLite database survives redeploys. Migrations and seeding run on every container start (idempotent). The volume MUST persist and be backed up — losing it loses all data.
 
 The repo's `docker-compose.yml` is a **local-dev / self-hosting example** — it builds the app and mounts a named volume at `/app/data` for the SQLite file.
 
@@ -118,7 +118,7 @@ DATABASE_PATH=/app/data/diversif.db bun scripts/cleanup.ts
 Pour répondre manuellement à une demande RGPD article 15 / 20 (par exemple si l'utilisateur ne peut pas se connecter, ou si `/account/export` a refusé un export trop volumineux) :
 
 ```bash
-# Dans le conteneur (image Railpack ou Dockerfile) :
+# Dans le conteneur (image du Dockerfile) :
 DATABASE_PATH=/app/data/diversif.db bun build/scripts/export-user.js user@example.com
 # Depuis un clone (après `bun run paraglide`) :
 DATABASE_PATH=/chemin/vers/diversif.db bun scripts/export-user.ts user@example.com

@@ -30,7 +30,7 @@ RUN bun run build
 # needed to build but not to run the built server. A few still land here
 # because production packages name them (vite, svelte, eslint, typescript,
 # ...): docs/agents/deploy.md ("Dev dependencies stay out of the image")
-# lists them. The Railpack image's prune step installs the same set.
+# lists them.
 FROM oven/bun:1.4.4-debian@sha256:93d5032fe06d163427822dc1598f420363759bb18155c9cc90eb1be05a64a19e AS prod-deps
 WORKDIR /app
 COPY package.json bun.lock ./
@@ -42,6 +42,20 @@ RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
 
 FROM oven/bun:1.4.4-debian@sha256:93d5032fe06d163427822dc1598f420363759bb18155c9cc90eb1be05a64a19e
 WORKDIR /app
+
+# Take the Debian security fixes published since the pinned base image was
+# built (#788: apt and libapt-pkg7.0 for CVE-2026-109518, zlib1g for
+# CVE-2026-85091). Debian ships them under the same base digest, and BuildKit
+# reuses this layer from its cache as long as the lines above it and this RUN
+# do not change, so a new fix lands only when the layer rebuilds. The RUN
+# echoes APT_REFRESH, so changing it rebuilds the layer: set it to today's
+# date when a scan of the image lists an OS package that a fresh
+# `apt-get upgrade` fixes. A new base digest from Renovate rebuilds it too.
+ARG APT_REFRESH=2026-11-19
+RUN echo "Debian packages refreshed ${APT_REFRESH}" \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
 
 # Run as a dedicated non-root user. Without this the server (and the
 # /app/data SQLite volume it creates) runs as root inside the container.

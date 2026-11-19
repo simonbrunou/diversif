@@ -25,10 +25,10 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.4.4
-      # CI's bun-version inputs, railpack.json (production) and the
-      # Dockerfile's oven/bun tags must read one Bun (#528). The script's
-      # header lists what it reads.
-      - name: One Bun version in CI, production and the Docker image
+      # CI's bun-version inputs and the oven/bun tags of the Dockerfile,
+      # which builds the production image, must read one Bun (#528). The
+      # script's header lists what it reads.
+      - name: One Bun version in CI and the production image
         run: scripts/check-bun-pins.sh
       - run: bun install --frozen-lockfile
       - run: bun run lint
@@ -459,11 +459,10 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.4.4
-      # Two scopes: production dependencies only, the set both production
-      # images install (the Dockerfile's runtime image, and the Railpack
-      # image Coolify deploys through its prune step, #529), and all
-      # dependencies (production + dev/build tooling). The images install
-      # from bun.lock, which also gives them the packages that production
+      # Two scopes: production dependencies only, the set the production
+      # image installs (the Dockerfile's prod-deps stage, #529), and all
+      # dependencies (production + dev/build tooling). The image installs
+      # from bun.lock, which also gives it the packages that production
       # dependencies reach only through an optional peer, such as eslint,
       # typescript and esbuild. The production scope installs none of
       # those; only the all scope audits them (scripts/audit-deps.sh

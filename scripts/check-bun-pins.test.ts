@@ -1,8 +1,8 @@
 // scripts/check-bun-pins.sh (#528) against small pin files written per test,
 // so every line number below is exact and no edit to the repo's own
-// ci.yml, railpack.json or Dockerfile moves it. The fixture holds the step
-// and stage shapes the script must read: three setup-bun steps, one
-// railpack.json pin and three oven/bun stages. A test edits one line into
+// ci.yml or Dockerfile moves it. The fixture holds the step and stage shapes
+// the script must read: three setup-bun steps and three oven/bun stages. A
+// test edits one line into
 // one failure class and asserts the exit code and the message that names
 // the pin. The cases at the end compare the check with a YAML parser
 // instead: they assert only that the check never passes a workflow the
@@ -65,7 +65,6 @@ const dockerLines = [
 ];
 const fixture: Record<string, string> = {
   [CI]: `${ciLines.join('\n')}\n`,
-  'railpack.json': `${JSON.stringify({ provider: 'node', packages: { bun: '1.2.3' } }, null, 2)}\n`,
   Dockerfile: `${dockerLines.join('\n')}\n`
 };
 
@@ -118,12 +117,12 @@ function failsWith(...messages: string[]): string {
   return err;
 }
 
-// Run on the test's copy and expect exit 0, reading the fixture's seven pins.
+// Run on the test's copy and expect exit 0, reading the fixture's six pins.
 function passes(): void {
   const { code, out, err } = run();
   expect(err).not.toContain(`${CI}:`);
   expect(code).toBe(0);
-  expect(out).toContain('7 pins read Bun 1.2.3');
+  expect(out).toContain('6 pins read Bun 1.2.3');
 }
 
 describe('check-bun-pins.sh passes', () => {
@@ -133,10 +132,10 @@ describe('check-bun-pins.sh passes', () => {
     expect(out).toContain('pins read Bun');
   });
 
-  it('on every step and stage shape of the fixture, reading all seven pins', () => {
+  it('on every step and stage shape of the fixture, reading all six pins', () => {
     const { code, out } = run();
     expect(code).toBe(0);
-    expect(out).toContain('7 pins read Bun 1.2.3');
+    expect(out).toContain('6 pins read Bun 1.2.3');
   });
 
   it('on CRLF line endings', () => {
@@ -145,7 +144,7 @@ describe('check-bun-pins.sh passes', () => {
     }
     const { code, out } = run();
     expect(code).toBe(0);
-    expect(out).toContain('7 pins read Bun 1.2.3');
+    expect(out).toContain('6 pins read Bun 1.2.3');
   });
 
   it.each([
@@ -170,7 +169,7 @@ describe('check-bun-pins.sh passes', () => {
     setLine('Dockerfile', at, text);
     const { code, out } = run();
     expect(code).toBe(0);
-    expect(out).toContain('7 pins read Bun 1.2.3');
+    expect(out).toContain('6 pins read Bun 1.2.3');
   });
 
   // The body of a block scalar is shell text: what it says about
@@ -245,7 +244,7 @@ describe('check-bun-pins.sh passes', () => {
 describe('check-bun-pins.sh fails when a pin differs, listing every pin', () => {
   it.each([8, 18, 28])('the ci.yml input on line %d', (at) => {
     setLine(CI, at, lineText(CI, at).replace('1.2.3', '9.9.9'));
-    failsWith('the Bun pins differ', `${CI}:${at}  9.9.9`, 'railpack.json packages.bun  1.2.3');
+    failsWith('the Bun pins differ', `${CI}:${at}  9.9.9`, 'Dockerfile:1  1.2.3');
   });
 
   it.each([
@@ -283,14 +282,9 @@ describe('check-bun-pins.sh fails when a pin differs, listing every pin', () => 
     failsWith('the Bun pins differ', `${CI}:33  9.9.9`);
   });
 
-  it('railpack.json packages.bun', () => {
-    writeFileSync(path.join(dir, 'railpack.json'), JSON.stringify({ packages: { bun: '9.9.9' } }));
-    failsWith('railpack.json packages.bun  9.9.9', `${CI}:8  1.2.3`);
-  });
-
   it.each([1, 3, 5])('the Dockerfile stage on line %d', (at) => {
     setLine('Dockerfile', at, lineText('Dockerfile', at).replace('1.2.3', '9.9.9'));
-    failsWith(`Dockerfile:${at}  9.9.9`);
+    failsWith('the Bun pins differ', `Dockerfile:${at}  9.9.9`, `${CI}:8  1.2.3`);
   });
 
   // Lines BuildKit's parser reads as a FROM oven/bun:9.9.9 stage: the line
@@ -581,22 +575,9 @@ describe('check-bun-pins.sh fails when it cannot read a pin', () => {
     failsWith(`${CI} has no oven-sh/setup-bun step`);
   });
 
-  it.each([CI, 'railpack.json', 'Dockerfile'])('a %s that is gone', (file) => {
+  it.each([CI, 'Dockerfile'])('a %s that is gone', (file) => {
     renameSync(path.join(dir, file), path.join(dir, `${file}.old`));
     failsWith(`${file} not found`);
-  });
-
-  it.each([
-    ['a renamed packages.bun key', JSON.stringify({ packages: { bunVersion: '1.2.3' } })],
-    ['a JSON null', 'null']
-  ])('railpack.json with %s', (_name, text) => {
-    writeFileSync(path.join(dir, 'railpack.json'), text);
-    expect(failsWith('railpack.json has no packages.bun')).not.toContain('TypeError');
-  });
-
-  it('a railpack.json that is not JSON, without a stack trace', () => {
-    writeFileSync(path.join(dir, 'railpack.json'), '{ "packages": { "bun": "1.2.3", } }');
-    expect(failsWith('railpack.json is not valid JSON')).not.toContain('SyntaxError');
   });
 
   it.each([
@@ -796,7 +777,7 @@ describe('check-bun-pins.sh exits 2', () => {
 // it reads a !!binary scalar as its base64 text and takes a duplicate key.
 // The check may refuse any case. It must never exit 0 on one in which the
 // parser finds a setup-bun step whose with: holds no bun-version of 1.2.3
-// (the fixture's railpack.json and Dockerfile pin, so an x.y.z other than
+// (the fixture's Dockerfile pins, so an x.y.z other than
 // that one is a pin the check misread), or a bun-version key anywhere else.
 
 // A mapping entry: a key and a scalar, or a key and the entries of a block
