@@ -45,15 +45,15 @@ WORKDIR /app
 
 # Take the Debian security fixes published since the pinned base image was
 # built (#788: apt and libapt-pkg7.0 for CVE-2026-109518, zlib1g for
-# CVE-2026-85091). Debian ships them under the same base digest, and BuildKit
-# reuses this layer from its cache as long as the lines above it and this RUN
-# do not change, so a new fix lands only when the layer rebuilds. The RUN
-# echoes APT_REFRESH, so changing it rebuilds the layer: set it to today's
-# date when a scan of the image lists an OS package that a fresh
-# `apt-get upgrade` fixes. A new base digest from Renovate rebuilds it too.
-# Coolify's production builds rerun it on every deploy: Coolify inserts an
-# `ARG SOURCE_COMMIT` after each FROM, and its value changes with each commit
-# (docs/agents/deploy.md, "Debian fixes").
+# CVE-2026-85091). Debian publishes them to its package repositories while
+# the pinned digest stays the same. BuildKit reuses this layer from its cache
+# as long as the lines above it and this RUN do not change, so a new fix
+# lands only when the layer rebuilds. A new base digest from Renovate rebuilds
+# it. The RUN echoes APT_REFRESH, so changing it rebuilds the layer too: set
+# it to today's date when a scan of the image lists an OS package that a
+# fresh `apt-get upgrade` fixes. Coolify's production builds rerun it on each
+# deploy of a new commit: Coolify inserts an `ARG SOURCE_COMMIT` after each
+# FROM (docs/agents/deploy.md, "Debian fixes").
 ARG APT_REFRESH=2026-11-19
 RUN echo "Debian packages refreshed ${APT_REFRESH}" \
     && apt-get update \
