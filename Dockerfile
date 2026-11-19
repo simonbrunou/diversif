@@ -51,6 +51,9 @@ WORKDIR /app
 # echoes APT_REFRESH, so changing it rebuilds the layer: set it to today's
 # date when a scan of the image lists an OS package that a fresh
 # `apt-get upgrade` fixes. A new base digest from Renovate rebuilds it too.
+# Coolify's production builds rerun it on every deploy: Coolify inserts an
+# `ARG SOURCE_COMMIT` after each FROM, and its value changes with each commit
+# (docs/agents/deploy.md, "Debian fixes").
 ARG APT_REFRESH=2026-11-19
 RUN echo "Debian packages refreshed ${APT_REFRESH}" \
     && apt-get update \

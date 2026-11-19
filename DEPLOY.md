@@ -82,7 +82,9 @@ If a migration corrupts data or boot fails:
 
 1. Stop the container.
 2. Restore the pre-deploy backup over `/app/data/diversif.db` (and remove stale
-   `-wal` / `-shm` sidecars).
+   `-wal` / `-shm` sidecars). Give the restored file to uid 1001
+   (`chown 1001:1001`): a file that root owns stops the boot with
+   `SQLITE_READONLY`.
 3. Redeploy the **previous** image tag (so its code matches the restored schema).
 4. Run `bun run db:verify-backup <restored-file>` to confirm the restore is sound.
 
