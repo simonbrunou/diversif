@@ -17,9 +17,9 @@ function resolveDatabasePath(): string {
   // Vite's SSR/prerender pass imports server modules at build time. migrate()
   // and seedFoods() are gated by `building`, but the Database constructor still
   // opens a handle, so use an in-memory DB during build. This keeps
-  // DATABASE_PATH out of the build environment (Railpack, Docker without a
-  // mounted volume, plain `bun run build`). It is never migrated or queried —
-  // `building` short-circuits everything downstream.
+  // DATABASE_PATH out of the build environment (the Dockerfile's builder
+  // stage, which mounts no volume, or a plain `bun run build`). It is never
+  // migrated or queried: `building` short-circuits everything downstream.
   if (building) return ':memory:';
   const dbPath = process.env.DATABASE_PATH;
   if (!dbPath) {

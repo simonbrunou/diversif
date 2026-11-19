@@ -1,12 +1,14 @@
 // scripts/pinned-bun.sh against a fake Bun release served from a directory
 // (PINNED_BUN_RELEASES=file://...), so no test touches the network. Each test
-// copies the script beside a railpack.json of its own, which pins 1.2.3, and
+// copies the script and scripts/check-bun-pins.sh, which it reads the version
+// from, beside a ci.yml and a Dockerfile of its own, which pin 1.2.3, and
 // unzips into a PINNED_BUN_DIR of its own. The fake bun prints a version.
 import type { Subprocess } from 'bun';
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test';
 import {
   chmodSync,
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -19,6 +21,7 @@ import path from 'node:path';
 const repo = path.resolve(import.meta.dir, '..');
 const VERSION = '1.2.3';
 const ASSET = 'bun-linux-x64';
+const CI = '.forgejo/workflows/ci.yml';
 
 const base = mkdtempSync(path.join(tmpdir(), 'pinned-bun-'));
 // The current test's copy of the repo: base/<test number>.
@@ -35,18 +38,31 @@ beforeEach(() => {
   testNumber += 1;
   dir = path.join(base, String(testNumber));
   mkdirSync(path.join(dir, 'scripts'), { recursive: true });
-  copyFileSync(
-    path.join(repo, 'scripts', 'pinned-bun.sh'),
-    path.join(dir, 'scripts', 'pinned-bun.sh')
-  );
-  writeRailpack({ packages: { bun: VERSION } });
+  for (const script of ['pinned-bun.sh', 'check-bun-pins.sh']) {
+    copyFileSync(path.join(repo, 'scripts', script), path.join(dir, 'scripts', script));
+  }
+  mkdirSync(path.join(dir, path.dirname(CI)), { recursive: true });
+  writePins(VERSION, `oven/bun:${VERSION}-debian@sha256:0123abcd`);
   releases = path.join(dir, 'releases');
   cache = path.join(dir, 'cache');
   writeRelease(zipOf(`${ASSET}/bun`, fakeBun(VERSION)));
 });
 
-function writeRailpack(json: unknown): void {
-  writeFileSync(path.join(dir, 'railpack.json'), `${JSON.stringify(json, null, 2)}\n`);
+/** CI's setup-bun input `ciVersion`, and a Dockerfile built FROM `image`. */
+function writePins(ciVersion: string, image: string): void {
+  writeFileSync(
+    path.join(dir, CI),
+    [
+      'jobs:',
+      '  a:',
+      '    steps:',
+      '      - uses: oven-sh/setup-bun@abc123',
+      '        with:',
+      `          bun-version: ${ciVersion}`,
+      ''
+    ].join('\n')
+  );
+  writeFileSync(path.join(dir, 'Dockerfile'), `FROM ${image}\nCMD ["bun", "build/index.js"]\n`);
 }
 
 /** A bun that answers `bun --version` with `version`. */
@@ -226,11 +242,34 @@ describe('pinned-bun.sh', () => {
   });
 
   it.each([
-    ['no packages.bun', { packages: {} }],
-    ['a version that is not x.y.z', { packages: { bun: 'latest' } }]
-  ])('refuses a railpack.json with %s', (_, json) => {
-    writeRailpack(json);
-    failsWith('railpack.json holds no x.y.z packages.bun');
+    [
+      'a Dockerfile pin that differs from CI',
+      VERSION,
+      'oven/bun:9.9.9-debian',
+      'Dockerfile:1  9.9.9'
+    ],
+    ['a CI pin that differs from the Dockerfile', '9.9.9', `oven/bun:${VERSION}`, `${CI}:6  9.9.9`],
+    [
+      'a Dockerfile tag that is not x.y.z',
+      VERSION,
+      'oven/bun:latest',
+      "oven/bun tag 'latest' does not start with an x.y.z version"
+    ],
+    ['no oven/bun stage', VERSION, 'debian:13', 'Dockerfile has no FROM oven/bun line']
+  ])('refuses %s, naming the pin', (_, ciVersion, image, message) => {
+    writePins(ciVersion, image);
+    const { code, err } = run(['true']);
+    expect(err).toContain('scripts/check-bun-pins.sh exited 1, so there is no one pinned Bun');
+    expect(err).toContain(message);
+    expect(code).toBe(2);
+    // Nothing downloaded or cached for a version it could not settle.
+    expect(existsSync(cache)).toBe(false);
+  });
+
+  it('refuses a check that passes without naming the version', () => {
+    writeFileSync(path.join(dir, 'scripts', 'check-bun-pins.sh'), '#!/bin/sh\necho ok\n');
+    chmodSync(path.join(dir, 'scripts', 'check-bun-pins.sh'), 0o755);
+    failsWith("scripts/check-bun-pins.sh printed no 'pins read Bun <x.y.z>' line");
   });
 
   it('refuses another system than x86_64 Linux', () => {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Check that CI, the production build and the Docker image pin one Bun
-# version (#528). CI's `Lint + typecheck` job calls this script, so a local
-# run runs the same check.
+# Check that CI and the Dockerfile, which builds the production image, pin
+# one Bun version (#528). CI's `Lint + typecheck` job calls this script, so
+# a local run runs the same check.
 #
 #   scripts/check-bun-pins.sh [<repo dir>]
 #
@@ -36,8 +36,6 @@
 #     explicit key (? ), a tag other than !!map (!!binary decodes to other
 #     text), and a quoted string or a flow collection left open at the line
 #     end.
-#   railpack.json  `packages.bun`, the Bun of the production build
-#     (docs/agents/deploy.md).
 #   Dockerfile  the x.y.z part of every `FROM [<registry>/]oven/bun:<tag>`
 #     (1.4.4 out of 1.4.4-debian@sha256:...). It reads lines, continuations
 #     and comments as BuildKit's parser does (see read_dockerfile). Where
@@ -49,13 +47,13 @@
 #     other than a backslash fails. Skipping heredoc bodies would take
 #     BuildKit's parser, and any way this script read one differently could
 #     let a real stage go unread.
-# The bun group in renovate.json moves the three together. The dev shell's
+# The bun group in renovate.json moves them together. The dev shell's
 # Bun follows nixpkgs and may lag them, so a `bun --version` that differs
 # prints a warning only (docs/agents/testing.md).
 # Exit 0: every pin reads the same version. Exit 1: the pins differ or one is
 # missing, and the output names each file, line and value. Exit 2: a wrong
 # call, a <repo dir> that does not exist, or no bun on PATH.
-# scripts/check-bun-pins.test.ts runs it on edited copies of the three files,
+# scripts/check-bun-pins.test.ts runs it on edited copies of the two files,
 # one failure class per test: add a test there when the parsing changes. Its
 # last cases compare the ci.yml reader with a YAML parser on generated
 # workflows (#652): add a form there when this reader learns a new one.
@@ -70,14 +68,14 @@ if [ ! -d "$ROOT" ]; then
   echo "check-bun-pins: no directory $ROOT" >&2
   exit 2
 fi
-# It parses railpack.json with bun, so in CI it runs after setup-bun.
+# It compares the pins with the shell's `bun --version`, so in CI it runs
+# after setup-bun.
 if ! command -v bun >/dev/null 2>&1; then
   echo "check-bun-pins: needs bun on PATH" >&2
   exit 2
 fi
 
 CI=.forgejo/workflows/ci.yml
-RAILPACK=railpack.json
 DOCKERFILE=Dockerfile
 
 # One entry per pin: where it is, and the version it reads.
@@ -375,32 +373,6 @@ read_ci() {
   fi
 }
 
-read_railpack() {
-  local file="$ROOT/$RAILPACK" value
-  if [ ! -f "$file" ]; then
-    fail "$RAILPACK not found"
-    return
-  fi
-  value=$(PIN_FILE="$file" bun -e '
-    let config;
-    try {
-      config = JSON.parse(require("fs").readFileSync(process.env.PIN_FILE, "utf8"));
-    } catch {
-      process.exit(1);
-    }
-    const v = config?.packages?.bun;
-    if (typeof v === "string") console.log(v);
-  ') || {
-    fail "$RAILPACK is not valid JSON"
-    return
-  }
-  if [ -z "$value" ]; then
-    fail "$RAILPACK has no packages.bun"
-    return
-  fi
-  pin "$RAILPACK packages.bun" "$value"
-}
-
 # Whether a FROM line named an oven/bun image.
 found_bun=0
 
@@ -527,7 +499,6 @@ read_dockerfile() {
 }
 
 read_ci
-read_railpack
 read_dockerfile
 
 expected="${version[0]:-}"
@@ -544,7 +515,7 @@ if [ "$differ" -eq 1 ] || [ "$status" -ne 0 ]; then
   exit 1
 fi
 
-echo "check-bun-pins: ${#version[@]} pins read Bun $expected ($CI, $RAILPACK, $DOCKERFILE)"
+echo "check-bun-pins: ${#version[@]} pins read Bun $expected ($CI, $DOCKERFILE)"
 running=$(bun --version)
 if [ "$running" != "$expected" ]; then
   echo "check-bun-pins: warning: this shell runs Bun $running, not $expected." \
