@@ -15,18 +15,6 @@
 - **Pre-commit**: husky runs `lint-staged` (prettier + eslint). Don't bypass with `--no-verify`.
 - **Before you start a CI E2E job** (open or reopen a PR, push to an open one, rerun the E2E job or a whole run, merge), run `scripts/wait-e2e-slot.sh && <that command>` in one foreground shell call with `timeout: 600000`, and run it again at once on exit 3, which keeps your place in its queue. When that command works on a branch other than the checked-out one, pass that branch's pushed SHA: `scripts/wait-e2e-slot.sh <sha> && <that command>`. Why, which SHA in each case, and the other exit codes: `docs/agents/testing.md`, "Start an E2E job only when no other one runs or waits". Run a branch's review and re-checks before you open its PR ("Review a branch before you open its PR", same file).
 
-## graphify
-
-This project has a graphify knowledge graph at graphify-out/.
-
-Rules:
-
-- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
-- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
-- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
-- Refresh the graph only in a dedicated chore PR cut from the main checkout (the #383 pattern); this overrides the "run `graphify update .` after code changes" line in GRAPH_REPORT.md. Keep `graphify update .` output out of feature and fix PRs and out of worktree commits: it rewrites graph.json wholesale and relabels communities, and from a worktree it stamps the worktree's directory name into the graph (#264; seen again while working on #415, never committed). Undo a stray run with `git restore graphify-out`, then delete the untracked `graphify-out/.graphify_labels.pending.json`
-- On a graph.json merge conflict, take one side and regenerate
-
 ## Merge authority
 
 Agents may merge their own PR without asking once all three hold:

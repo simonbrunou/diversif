@@ -12,8 +12,7 @@
 #     project in Claude Code and trust it.
 #
 # Prereqs to run this script: git, jq. (Runtime prereqs for the tooling itself:
-# bun, gh, python3 — used by the rule hook — and the external `graphify`
-# CLI. See docs/claude-setup.md.)
+# bun, gh, python3 — used by the rule hook. See docs/claude-setup.md.)
 #
 # Usage:
 #   scripts/claude-setup.sh            # install missing skills, seed local settings
@@ -151,7 +150,5 @@ echo "Next steps:"
 echo "  1. Open this project in Claude Code and trust it — plugins + MCP servers"
 echo "     auto-install from .claude/settings.json."
 echo "  2. Authenticate the GitHub CLI: gh auth login (GitHub access uses gh, no PAT needed)."
-echo "  3. Install the graphify CLI (provides the /graphify skill + 'graphify'"
-echo "     command). See docs/claude-setup.md."
-echo "  4. Ensure 'bun', 'gh', and 'jq' are on PATH."
+echo "  3. Ensure 'bun', 'gh', and 'jq' are on PATH."
 exit "$failed"
