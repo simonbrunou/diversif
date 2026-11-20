@@ -26,7 +26,7 @@
 //   `${{ github.run_attempt }}` and `${{ runner.temp }}`, a step that uses
 //   actions/github-script, whose code gets the event, and a value or key that
 //   names a runner variable (below);
-// - in any other file outside Markdown and graphify-out/, a line holding a
+// - in any other file outside Markdown, a line holding a
 //   name made of GITHUB, GITEA, FORGEJO or FORGE and an underscore, which a
 //   script could read the event through, or the names of the actions
 //   toolkit's github module and its event property. Neither this script nor
@@ -445,7 +445,7 @@ function parseHits(commit: string, file: string, parseYaml: Parse, workflow: boo
 }
 
 function grepHits(commit: string, scanned: string[], hits: Hit[]) {
-  const excluded = [':!*.md', ':!graphify-out', ...scanned.map((f) => `:(literal,exclude)${f}`)];
+  const excluded = [':!*.md', ...scanned.map((f) => `:(literal,exclude)${f}`)];
   const grep = git(['grep', '-nE', RUNNER_NAME.source, commit, '--', '.', ...excluded], [0, 1]);
   for (const out of grep.split('\n').filter(Boolean)) {
     const binary = /^Binary file (.+) matches$/.exec(out);

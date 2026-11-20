@@ -197,13 +197,6 @@ describe('check-push-repeats-pr passes', () => {
     TIMEOUT
   );
   it(
-    'a runner variable name in graphify-out',
-    () => {
-      expectPass({ 'graphify-out/graph.json': `{"label": "${GH}REF"}\n` });
-    },
-    TIMEOUT
-  );
-  it(
     'run from a subfolder of the repo',
     () => {
       expectPass({}, { subdir: 'scripts' });

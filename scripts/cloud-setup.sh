@@ -28,7 +28,4 @@ if ! command -v gh >/dev/null 2>&1; then
   fi
 fi
 
-# The external 'graphify' CLI has no public installer here; install it yourself
-# if you want /graphify queries in the cloud. The committed graphify-out/ is
-# readable without it.
-echo "[cloud-setup] done. (Install the graphify CLI separately if you want /graphify.)"
+echo "[cloud-setup] done."

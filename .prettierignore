@@ -9,7 +9,6 @@ package-lock.json
 .claude
 .devin
 .impeccable
-graphify-out
 
 project.inlang/modules
 project.inlang/.meta.json
