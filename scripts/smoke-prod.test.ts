@@ -10,7 +10,7 @@
 // real `sleep`, since the fake one would end the stall at once, and the timer
 // that cuts the fetch too. The one that reads the timer's delay from the fake
 // one calls the real one by its path.
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, setDefaultTimeout } from 'bun:test';
 import {
   chmodSync,
   copyFileSync,
@@ -23,6 +23,14 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+
+// Each test that sets no timeout of its own gets 30 s, not the runner's 5 s.
+// Such a test takes 0.1 to 0.25 s on an idle host, but on a loaded runner
+// `cuts the SHA budget at the run deadline` timed out at 5.02 s (run 712), and
+// with the process pinned to one CPU shared with 24 busy loops, seven tests
+// took 5.1 to 7.7 s (#790). This default applies to this file only, and it
+// wins over the runner's `--timeout`.
+setDefaultTimeout(30_000);
 
 const scriptPath = path.resolve(import.meta.dir, 'smoke-prod.sh');
 // The real sleep, for an upload-pack that must stall under the fake one.
