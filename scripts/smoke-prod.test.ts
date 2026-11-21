@@ -25,11 +25,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 // Each test that sets no timeout of its own gets 30 s, not the runner's 5 s.
-// Such a test takes 0.1 to 0.25 s on an idle host, but on a loaded runner
-// `cuts the SHA budget at the run deadline` timed out at 5.02 s (run 712), and
-// with the process pinned to one CPU shared with 24 busy loops, seven tests
-// took 5.1 to 7.7 s (#790). This default applies to this file only, and it
-// wins over the runner's `--timeout`.
+// On an idle host, such a test takes 0.1 to 0.25 s. On a loaded runner,
+// `cuts the SHA budget at the run deadline` timed out at 5.02 s (run 712).
+// With the process pinned to one CPU shared with 24 busy loops, seven tests
+// took 5.1 to 7.7 s (#790). This default applies to this file only. It wins
+// over the runner's `--timeout`.
 setDefaultTimeout(30_000);
 
 const scriptPath = path.resolve(import.meta.dir, 'smoke-prod.sh');
