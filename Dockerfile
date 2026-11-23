@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM oven/bun:1.4.4-debian@sha256:93d5032fe06d163427822dc1598f420363759bb18155c9cc90eb1be05a64a19e AS builder
+FROM oven/bun:1.4.5-debian@sha256:3dddea58e1f8f2240eca906b023fedb944f9a8352515a35309fd0c879fe00aaa AS builder
 WORKDIR /app
 # HUSKY=0 stops the `prepare` script from running `husky install` during
 # `bun install`. Husky's hook-install path is unnecessary inside the
@@ -31,7 +31,7 @@ RUN bun run build
 # because production packages name them (vite, svelte, eslint, typescript,
 # ...): docs/agents/deploy.md ("Dev dependencies stay out of the image")
 # lists them.
-FROM oven/bun:1.4.4-debian@sha256:93d5032fe06d163427822dc1598f420363759bb18155c9cc90eb1be05a64a19e AS prod-deps
+FROM oven/bun:1.4.5-debian@sha256:3dddea58e1f8f2240eca906b023fedb944f9a8352515a35309fd0c879fe00aaa AS prod-deps
 WORKDIR /app
 COPY package.json bun.lock ./
 # --ignore-scripts: this stage only needs node_modules for the runtime copy,
@@ -40,7 +40,7 @@ COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     bun install --frozen-lockfile --production --ignore-scripts
 
-FROM oven/bun:1.4.4-debian@sha256:93d5032fe06d163427822dc1598f420363759bb18155c9cc90eb1be05a64a19e
+FROM oven/bun:1.4.5-debian@sha256:3dddea58e1f8f2240eca906b023fedb944f9a8352515a35309fd0c879fe00aaa
 WORKDIR /app
 
 # Take the Debian security fixes published since the pinned base image was
