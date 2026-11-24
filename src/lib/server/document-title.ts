@@ -4,10 +4,9 @@ import { SITE } from '#lib/seo.js';
  * Give a served page the app-wide title when it renders none of its own, so
  * every page serves exactly one <title> (#483). PageTitle is the only
  * component that renders one: the app shell has none, and the root layout
- * renders none on the server. Svelte keeps a single <title> by its place in
- * the component tree, and a component `bind:` (AppShellBento's
- * `bind:open`) re-renders its subtree through a copy whose place reads -1,
- * so a layout title would beat the page's on every bento route.
+ * renders none on the server. Of several titles in one render, Svelte keeps
+ * the last in document order, so a title component that a layout renders
+ * after the page's content would beat the page's.
  *
  * Svelte appends the page's <title> to its head output, which SvelteKit puts
  * at `%sveltekit.head%` in app.html, so only a title element before `</head>`

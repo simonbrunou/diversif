@@ -21,7 +21,6 @@ type KnipConfig = {
   entry: string[];
   project: string[];
   ignoreDependencies: string[];
-  ignoreIssues?: Record<string, string[]>;
 };
 
 const config = JSON.parse(fs.readFileSync(path.join(repo, 'knip.json'), 'utf8')) as KnipConfig;
@@ -70,26 +69,6 @@ describe('knip.json', () => {
       const { exitCode, output } = knip('as-is', config);
       expect(output).not.toContain('Configuration hints');
       expect(exitCode).toBe(0);
-    },
-    TIMEOUT
-  );
-
-  // tsconfig.json extends "$app/tsconfig", which SvelteKit 3's sync writes
-  // into node_modules/$app with no package.json. Since knip 6.45 (6.44.2
-  // passed the same tree) that reads as the unlisted package "$app". An
-  // ignoreDependencies entry for "$app" does not clear it: knip 6.45.1 still
-  // reports it and adds an unused-ignore hint. So knip.json ignores unlisted
-  // issues in tsconfig.json, which names no other package. When a knip release stops
-  // reporting "$app", this case fails: drop the ignoreIssues entry then.
-  it(
-    'needs its tsconfig.json ignore for the "$app" that SvelteKit generates',
-    () => {
-      expect(config.ignoreIssues).toEqual({ 'tsconfig.json': ['unlisted'] });
-      const { output } = knip('no-ignore-issues', { ...config, ignoreIssues: {} });
-      const [, table = ''] = output.split(/^Unlisted dependencies \(\d+\)$/m);
-      expect(table.split('\n').map((row) => row.split(/\s+/).slice(0, 2).join(' '))).toContain(
-        '$app tsconfig.json'
-      );
     },
     TIMEOUT
   );
