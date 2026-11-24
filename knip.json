@@ -13,6 +13,5 @@
   ],
   "project": ["src/**/*.{ts,js,svelte,css}!"],
   "ignoreDependencies": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss", "happy-dom"],
-  "ignoreBinaries": ["Tools"],
-  "ignoreIssues": { "tsconfig.json": ["unlisted"] }
+  "ignoreBinaries": ["Tools"]
 }
