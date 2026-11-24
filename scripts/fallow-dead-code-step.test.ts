@@ -8,11 +8,22 @@
 // text under bash in a throwaway project, with the repo's pinned fallow
 // binary, one test per outcome: a clean tree, an error-severity finding, a
 // finding whose rule is set to warn, and a file left out by ignorePatterns.
-import { afterAll, describe, expect, it } from 'bun:test';
+import { afterAll, describe, expect, it, setDefaultTimeout } from 'bun:test';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parse } from 'yaml';
+
+// Each test that sets no timeout of its own gets 30 s, not the runner's 5 s.
+// Fallow's launcher checks its 54 MB binary before each spawn. Without a valid
+// sentinel, as after an install, it runs the full check (Ed25519 and SHA-256)
+// and saves a sentinel when it can. With a valid one, it only hashes the binary.
+// CI's unit job runs no fallow before this file, so the first spawn here runs
+// the full check. That test timed out at 5.01 s on a loaded runner (run 711).
+// In two runs with the process pinned to one CPU shared with 24 busy loops, the
+// first spawn took 6.7 and 7.8 s and the later three 1.9 to 4.4 s (#794). This
+// default applies to this file only. It wins over the runner's `--timeout`.
+setDefaultTimeout(30_000);
 
 const repo = path.resolve(import.meta.dir, '..');
 const CI = '.forgejo/workflows/ci.yml';

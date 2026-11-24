@@ -224,8 +224,7 @@ describe('docs/claude-setup.md', () => {
     it('refuses an entry in another form', () => {
       const doc = withDoc(
         sessionStart,
-        '  - `PreToolUse` (Bash) — graphify: nudges Claude to read `graphify-out/`.\n' +
-          sessionStart
+        '  - `PreToolUse` (Bash) — nudges Claude before a shell command.\n' + sessionStart
       );
       expect(() => problems(doc)).toThrow('Hooks entry not in the form');
     });

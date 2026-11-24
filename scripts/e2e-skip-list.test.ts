@@ -74,7 +74,6 @@ const GUARDED_FILES = [
   'tsconfig.json',
   'paraglide.config.ts',
   'project.inlang/settings.json',
-  'railpack.json',
   'Dockerfile'
 ];
 // Directories whose every file the build, the image or the E2E job may read.

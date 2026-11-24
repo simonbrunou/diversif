@@ -6,10 +6,12 @@
 #
 #   nix develop -c scripts/pinned-bun.sh bun run test:coverage
 #
-# It reads the version from railpack.json's `packages.bun`, which
-# scripts/check-bun-pins.sh keeps equal to CI's and the Dockerfile's. The
-# first run for a version downloads that release's bun-linux-x64.zip from
-# GitHub, checks it against the release's SHASUMS256.txt and unzips it into
+# It takes the version from scripts/check-bun-pins.sh, which reads CI's
+# `bun-version` inputs and the Dockerfile's oven/bun tags (the Dockerfile
+# builds the production image), and stops when that check fails, so it never
+# picks one of two pins that differ. The first run for a version downloads
+# that release's bun-linux-x64.zip from GitHub, checks it against the
+# release's SHASUMS256.txt and unzips it into
 # $PINNED_BUN_DIR/<version> (default ~/.cache/bun-pinned, in this user's
 # home rather than the shared /tmp); later runs reuse it. A run that starts while another one
 # installs the same version waits for it under a lock, then reuses its
@@ -17,9 +19,10 @@
 # (https://github.com/oven-sh/bun/releases/download) for the tests in
 # scripts/pinned-bun.test.ts. It runs on x86_64 Linux only, the one system
 # flake.nix gives a dev shell for.
-# Exit 2: no command, no x.y.z version in railpack.json, another system, a
-# failed download, a checksum that does not match, a zip that does not
-# unzip, a cache it cannot write, or a bun that reports another version.
+# Exit 2: no command, a scripts/check-bun-pins.sh run that fails or prints
+# no x.y.z version, another system, a failed download, a checksum that does
+# not match, a zip that does not unzip, a cache it cannot write, or a bun
+# that reports another version.
 # Otherwise the command's own exit code.
 set -uo pipefail
 
@@ -31,10 +34,15 @@ fail() {
 [ $# -gt 0 ] || fail "usage: scripts/pinned-bun.sh <command> [<arg>...]"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-version=$(RAILPACK="$ROOT/railpack.json" bun -e \
-  'console.log(require(process.env.RAILPACK).packages?.bun ?? "")' 2>/dev/null)
+# Its stderr joins its stdout: on a failure it names each pin, and on success
+# its last stdout line is `check-bun-pins: <n> pins read Bun <x.y.z> (...)`.
+pins=$("$ROOT/scripts/check-bun-pins.sh" "$ROOT" 2>&1)
+status=$?
+[ "$status" -eq 0 ] ||
+  fail "scripts/check-bun-pins.sh exited $status, so there is no one pinned Bun:"$'\n'"$pins"
+version=$(sed -nE 's/^check-bun-pins: [0-9]+ pins read Bun ([0-9]+\.[0-9]+\.[0-9]+) .*/\1/p' <<<"$pins")
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
-  fail "railpack.json holds no x.y.z packages.bun (read: '$version')"
+  fail "scripts/check-bun-pins.sh printed no 'pins read Bun <x.y.z>' line:"$'\n'"$pins"
 
 system="$(uname -s) $(uname -m)"
 [ "$system" = "Linux x86_64" ] ||

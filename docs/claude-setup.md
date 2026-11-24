@@ -13,9 +13,8 @@ scripts/claude-setup.sh         # installs standalone skills, seeds local settin
 ```
 
 Prereqs to run `claude-setup.sh`: `git`, `jq`. For the agent tooling itself once
-set up: `bun`, `gh`, `python3` (used by the rule hook), plus the external
-**graphify** CLI (see below). Tip: in a Claude Code session you can run a command
-yourself by typing `! <command>` at the prompt.
+set up: `bun`, `gh`, `python3` (used by the rule hook). Tip: in a Claude Code
+session you can run a command yourself by typing `! <command>` at the prompt.
 
 ## What reproduces automatically (no script)
 
@@ -96,13 +95,6 @@ machine-local `settings.local.json` if you ever need them.
 secrets there, never in a committed file. GitHub access uses the **`gh` CLI**
 (`gh auth login`), so no personal access token is needed.
 
-## External prerequisite: graphify
-
-The `/graphify` skill and the `graphify` CLI (codebase knowledge graph, output
-committed under `graphify-out/`) are an external tool, not a marketplace plugin.
-Install graphify separately; it provides both the CLI and its own skill. See the
-graphify section in the project `AGENTS.md`.
-
 ## Claude Code on the web (cloud)
 
 A cloud session starts from a **fresh clone** — committed config carries, your
@@ -128,10 +120,6 @@ scripts/cloud-setup.sh
 It runs once before launch (and is cached) to install the things that can't be
 committed: the standalone skills (`scripts/claude-setup.sh`) and the `gh` CLI
 (the cloud image lacks it).
-
-**Still manual:** the external **graphify** CLI has no public installer — install
-it yourself if you want `/graphify` queries. The committed `graphify-out/` is
-readable without it.
 
 **Secrets:** there's no `settings.local.json` in cloud (gitignored). Supply any
 secrets as **environment variables** in the cloud environment UI. GitHub git

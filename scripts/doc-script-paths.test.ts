@@ -11,9 +11,8 @@ const ROOT = path.join(import.meta.dir, '..');
 // The docs agents read: the files AGENTS.md points to for setup, then every
 // Markdown file under docs/agents/, .claude/ (rules, skills, agents) and
 // .agents/ (skills). docs/superpowers/ holds dated plans that name files as
-// they were then, and graphify-out/ is generated. .claude/worktrees/ is
-// git-ignored: Claude Code's worktree mode puts other checkouts there, on
-// other branches.
+// they were then. .claude/worktrees/ is git-ignored: Claude Code's worktree
+// mode puts other checkouts there, on other branches.
 const DOC_FILES = ['AGENTS.md', 'README.md', 'docs/claude-setup.md'];
 const DOC_FOLDERS = ['docs/agents', '.claude', '.agents'];
 const OTHER_CHECKOUTS = path.join('.claude', 'worktrees');

@@ -1,7 +1,7 @@
 // Registers the happy-dom globals in a preload of its own, listed before
 // bunfig.preload.ts in bunfig.toml. ESM imports are hoisted, so a register()
 // call inside bunfig.preload.ts runs after that file's imports — and
-// @testing-library/jest-dom 7 imports @testing-library/dom, whose `screen`
+// @testing-library/jest-dom imports @testing-library/dom, whose `screen`
 // binds to document.body at module load and throws on every query when no
 // document exists yet.
 import { GlobalRegistrator } from '@happy-dom/global-registrator';

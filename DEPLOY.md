@@ -4,8 +4,10 @@ Operational checklist for releasing Diversif. Background (stack, backups, legal
 env vars, reverse-proxy headers) lives in [`README.md`](./README.md); this file
 is the **"did I actually run it?"** procedure so nothing is left to memory.
 
-The reference deploy is **Coolify + Railpack**, a single `oven/bun` container
-with the SQLite file on a persistent volume at `/app/data`. Migrations and the
+The reference deploy is **Coolify**, which builds the repo's `Dockerfile` into a
+single `oven/bun` container with the SQLite file on a persistent volume at
+`/app/data`. The server runs as the image's non-root user `diversif` (uid 1001),
+so that user must own the volume. Migrations and the
 food-catalog seed run **automatically on every container start** and are
 idempotent (`src/lib/server/db/index.ts` → `migrate()` + `seedFoods()`).
 
@@ -80,7 +82,9 @@ If a migration corrupts data or boot fails:
 
 1. Stop the container.
 2. Restore the pre-deploy backup over `/app/data/diversif.db` (and remove stale
-   `-wal` / `-shm` sidecars).
+   `-wal` / `-shm` sidecars). Give the restored file to uid 1001
+   (`chown 1001:1001`): a file that root owns stops the boot with
+   `SQLITE_READONLY`.
 3. Redeploy the **previous** image tag (so its code matches the restored schema).
 4. Run `bun run db:verify-backup <restored-file>` to confirm the restore is sound.
 
@@ -148,10 +152,10 @@ infra/config, not code; C1 is a human test no agent can run.
          environment or an untracked `.env` next to the compose file — never
          commit them), then start the sidecar explicitly:
          `docker compose --profile backup up -d litestream`.
-      3. **Coolify**: the reference deploy is a single Railpack container, not
-         Compose, so the sidecar needs its own resource — either switch the
-         Coolify service to a Docker Compose deployment (reusing
-         `docker-compose.yml` with the `backup` profile against the same
+      3. **Coolify**: the reference deploy is a single container built from
+         the `Dockerfile`, not Compose, so the sidecar needs its own
+         resource. Either switch the Coolify service to a Docker Compose
+         deployment (reusing `docker-compose.yml` with the `backup` profile against the same
          `/app/data` volume) or add a second Coolify service running
          `litestream/litestream:0.5.17 replicate -config /etc/litestream.yml`
          mounted read-write on the same volume as the app, with

@@ -26,14 +26,6 @@ coverage
 .e2e-data
 playwright-report
 test-results
-graphify-out/cost.json
-graphify-out/.graphify_python
-graphify-out/.graphify_root
-# AST cache regenerates on every graphify run; not worth the churn.
-# GRAPH_REPORT.md, graph.json, graph.html, manifest.json stay tracked.
-graphify-out/cache/
-# Dated snapshot backups regenerate each run — churn, not history.
-graphify-out/????-??-??/
 # Paraglide-generated runtime — vite plugin regenerates on build/dev.
 src/lib/paraglide/
 # The inlang SDK manages project.inlang/ itself: it writes its own

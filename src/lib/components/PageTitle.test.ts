@@ -43,9 +43,9 @@ describe('PageTitle', () => {
   });
 
   it('is the only component that renders a <title>', () => {
-    // A second source would bring #483 back: the server keeps one <title> by
-    // tree position, which a component bind: breaks (#596), and a title that
-    // no PageTitle claims stays on the tab after a client navigation.
+    // A second source would bring #483 back: the server keeps the last <title>
+    // in document order, which need not be the page's, and a title that no
+    // PageTitle claims stays on the tab after a client navigation.
     // On a loaded runner, parsing and awaiting a read of every file once took
     // this test past the 5 s timeout (#687). rendersHeadTitle now skips the
     // parse for most files, and the reads are synchronous.
@@ -144,7 +144,8 @@ describe('every route names itself', () => {
 
   it('renders none of them in a layout', async () => {
     // A layout title next to the page's would be two sources, and Svelte's
-    // server render can pick the layout's under a component bind: (#596).
+    // server render keeps the last in document order: the layout's when its
+    // title component comes after the page's content.
     const layouts = await routeFiles('**/+layout.svelte');
     expect(layouts.map((l) => l.file)).toEqual(
       expect.arrayContaining(['+layout.svelte', 'child/[id]/+layout.svelte'])
