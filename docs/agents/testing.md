@@ -137,6 +137,7 @@ The browser Sentry SDK and the `/monitoring` tunnel start only when `PUBLIC_SENT
   - `offline.spec.ts`: `a queued first repas is celebrated when it replays on reconnect`, 30000ms
   - `offline.spec.ts`: `two open tabs replay a queued repas once and celebrate it once`, 30000ms
   - `page-title.spec.ts`: `a signed-in page serves only its own title…`, 90000ms
+  - `page-title.spec.ts`: `the child report print page serves only its own title`, 30000ms
   - `passkeys.spec.ts`: `rename and delete results show once…`, 90000ms
   - `responsive-allergen-sheet.spec.ts`: `drag-to-dismiss closes the bottom-sheet`, 30000ms
 
