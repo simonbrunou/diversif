@@ -13,7 +13,7 @@
 - **French UI, no anglicisms.** Use "Enregistrer" not "logger", "Régularité" not "Streak", "Adresse e-mail" not "Email", "Bilan" not "Stats". PR reviewers reject regressions.
 - **Use Bun, not npm/Node.** `bun install`, `bun run X`. `bun --bun <cmd>` forces tools with Node shebangs (vite, drizzle-kit, playwright, svelte-check) to run under Bun — without it, server code that imports `bun` / `bun:sqlite` fails to resolve.
 - **Pre-commit**: husky runs `lint-staged` (prettier + eslint). Don't bypass with `--no-verify`.
-- **Before you start a CI E2E job** (open or reopen a PR, push to an open one, rerun the E2E job or a whole run, merge), run `scripts/wait-e2e-slot.sh && <that command>` in one foreground shell call with `timeout: 600000`, and run it again at once on exit 3, which keeps your place in its queue. When that command works on a branch other than the checked-out one, pass that branch's pushed SHA: `scripts/wait-e2e-slot.sh <sha> && <that command>`. Why, which SHA in each case, and the other exit codes: `docs/agents/testing.md`, "Start an E2E job only when no other one runs or waits". Run a branch's review and re-checks before you open its PR ("Review a branch before you open its PR", same file).
+- **E2E jobs queue on their own runner.** The E2E job asks for `runs-on: playwright`, a runner that takes one job at a time, so open a PR, push, rerun or merge without waiting for other E2E jobs (`docs/agents/testing.md`, "E2E jobs run one at a time"). Run a branch's review and re-checks before you open its PR ("Review a branch before you open its PR", same file).
 
 ## Merge authority
 
@@ -21,7 +21,7 @@ Agents may merge their own PR without asking once all three hold:
 
 - a code review ran on the diff (the `code-review` skill or the `pr-review-toolkit:code-reviewer` agent, each reviewer briefed with « Rules for review sub-agents » from `docs/agents/testing.md`) and you fixed its real findings, nits aside (the global agent rules define a nit);
 - CI is green on the pushed SHA;
-- the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0. `main` can move while `scripts/wait-e2e-slot.sh` waits, so chain both between the wait and the merge in one shell call: `scripts/wait-e2e-slot.sh && git fetch origin && git merge-tree --write-tree origin/main <pushed SHA> && <merge command>`.
+- the pushed SHA has no conflict with `origin/main`. Run `git fetch origin` right before merging, then check that `git merge-tree --write-tree origin/main <pushed SHA>` exits 0. Chain both with the merge in one shell call, so the merge runs right after a passing check: `git fetch origin && git merge-tree --write-tree origin/main <pushed SHA> && <merge command>`.
 
 When the branch is behind `main` but has no conflict, merge it as it is. Merging `origin/main` into it first costs a full CI run, so skip that step. The accepted risk is that two PRs that pass on their own can break `main` together. The CI run on the newest `main` commit shows such a break, and « After every merge » below says when to wait for it.
 
@@ -29,7 +29,7 @@ The merge-tree check exits 1 on a conflict and prints `CONFLICT` lines. It also 
 
 1. Merge `origin/main` into the branch and resolve the conflict.
 2. Run `bun run test`.
-3. Push behind `scripts/wait-e2e-slot.sh &&`, and wait for CI on the new head.
+3. Push, and wait for CI on the new head.
 4. Check all three conditions again on the new pushed SHA.
 
 The user accepts the production deploy that the merge triggers. Ask first only when the PR drops or rewrites stored data (a destructive migration, a backfill that overwrites rows).

@@ -83,7 +83,7 @@ describe('scriptPaths', () => {
   it.each([
     ['a .ts file', 'run `scripts/lint-i18n.ts`', 'scripts/lint-i18n.ts'],
     ['a .mjs file', 'run `scripts/lint-i18n.mjs`', 'scripts/lint-i18n.mjs'],
-    ['a .sh file', '`scripts/wait-e2e-slot.sh && git push`', 'scripts/wait-e2e-slot.sh'],
+    ['a .sh file', '`scripts/check-bun-pins.sh && git push`', 'scripts/check-bun-pins.sh'],
     ['a .json file', 'in `scripts/bundle-budget.json`,', 'scripts/bundle-budget.json'],
     ['a file of another type', 'see `scripts/README.md`', 'scripts/README.md'],
     ['a file with no extension', 'run `scripts/gone`', 'scripts/gone'],

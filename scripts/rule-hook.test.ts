@@ -1,8 +1,7 @@
 // .claude/rule-hook/hook.py, the PreToolUse hook that checks each tool call
 // against .claude/rule-hook/rules/*.md (#663). A block rule's message must
 // reach the agent in permissionDecisionReason, a warn rule's in
-// additionalContext. scripts/e2e-slot-rule.test.ts covers the E2E rule's own
-// cases.
+// additionalContext.
 //
 // A rule that reads a command's options needs a test case for each way to
 // write the option. List them before review: the long and short forms in the
@@ -50,7 +49,6 @@ const BLOCKS: [string, string, Record<string, unknown>][] = [
     'Edit',
     { file_path: `${REPO}/drizzle/0001_probe.sql`, old_string: 'a', new_string: 'b' }
   ],
-  ['block-e2e-start-without-slot', 'Bash', { command: 'fj pr -R origin merge 640 -d' }],
   ['block-env-file', 'Write', { file_path: `${REPO}/.env`, content: 'A=1' }],
   [
     'block-generated-paraglide',
@@ -355,7 +353,7 @@ describe('.claude/rule-hook/hook.py', () => {
   // compile, with a line on stderr only.
   it('loads every rule file, and Python compiles each pattern', () => {
     const files = readdirSync(RULES_DIR).filter((file) => file.endsWith('.md'));
-    expect(files).toHaveLength(8);
+    expect(files).toHaveLength(7);
     const rules = loadRuleFiles(files.map((file) => path.join(RULES_DIR, file)));
     for (const [i, rule] of rules.entries()) {
       expect(rule).toMatchObject({ name: path.basename(files[i], '.md'), enabled: true });
