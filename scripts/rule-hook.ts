@@ -55,8 +55,9 @@ export const combined = (...names: string[]) =>
 // input on stdin. Its exit code, stderr and parsed stdout. The 10 s timeout
 // is the hook's own `timeout` in .claude/settings.json. A test of how long a
 // rule's pattern takes asserts that the hook answers within it, on an input
-// that takes a backtracking pattern well past 10 s, as e2e-slot-rule.test.ts
-// does: a timer around the search breaks testing.md « A wall-clock assertion ».
+// that takes a backtracking pattern well past 10 s, as the block-kill-by-name
+// timing test in rule-hook.test.ts does: a timer around the search breaks
+// testing.md « A wall-clock assertion ».
 export function runHook(
   input: unknown,
   { cwd = REPO, env }: { cwd?: string; env?: Record<string, string> } = {}

@@ -91,13 +91,11 @@ describe('e2e-needed.sh', () => {
     ['the Claude Code settings', { '.claude/settings.json': '{}\n' }],
     ['scripts/rule-hook.ts', { 'scripts/rule-hook.ts': 'two\n' }],
     ['scripts/rule-hook.test.ts', { 'scripts/rule-hook.test.ts': 'two\n' }],
-    ['scripts/e2e-slot-rule.test.ts', { 'scripts/e2e-slot-rule.test.ts': 'two\n' }],
     [
-      'the three rule-hook scripts with .claude/, Markdown and docs/',
+      'the two rule-hook scripts with .claude/, Markdown and docs/',
       {
         'scripts/rule-hook.ts': 'two\n',
         'scripts/rule-hook.test.ts': 'two\n',
-        'scripts/e2e-slot-rule.test.ts': 'two\n',
         '.claude/settings.json': '{}\n',
         'README.md': 'two\n',
         'docs/guide.md': 'two\n'
@@ -129,7 +127,7 @@ describe('e2e-needed.sh', () => {
   it.each([
     'scripts/rule-hook.ts.bak',
     'scripts/rule-hooks.ts',
-    'scripts/e2e-slot-rule.ts',
+    'scripts/rule-hook.test.tsx',
     'src/.claude/x.ts',
     '.claude-other/x',
     'src/scripts/rule-hook.ts'

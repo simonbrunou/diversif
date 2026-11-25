@@ -9,8 +9,8 @@
 //     \uHHHH and \u{H…} escape decoded, the escapes JavaScript, JSON, TOML
 //     and shell $'…' strings share;
 //   - every file under .forgejo/workflows/ through Bun's YAML parser, so a
-//     comment does not count (ci.yml's unit job names
-//     scripts/e2e-slot-rule.test.ts in one), while a key or value spelled
+//     comment does not count (ci.yml's comment on the changes job names the
+//     rule-hook scripts), while a key or value spelled
 //     with an escape, an alias or a block scalar does.
 // It also fails on three reads that need no name:
 //   - a glob in a guarded file or a workflow that matches a listed path;
@@ -49,12 +49,7 @@ const SCRIPT = path.join(ROOT, 'scripts', 'e2e-needed.sh');
 
 // The agent-tooling arm of the script's `case`, pattern by pattern. A test
 // below fails when the script's arm differs.
-const AGENT_TOOLING = [
-  '.claude/*',
-  'scripts/rule-hook.ts',
-  'scripts/rule-hook.test.ts',
-  'scripts/e2e-slot-rule.test.ts'
-];
+const AGENT_TOOLING = ['.claude/*', 'scripts/rule-hook.ts', 'scripts/rule-hook.test.ts'];
 
 // What counts as naming a listed path: the directory name for `.claude/*`,
 // and for a file its name up to the first dot, which an import without
@@ -279,7 +274,7 @@ describe('the skip list of scripts/e2e-needed.sh', () => {
   });
 
   it('reads one needle per listed name', () => {
-    expect(NEEDLES).toEqual(['.claude', 'rule-hook', 'e2e-slot-rule']);
+    expect(NEEDLES).toEqual(['.claude', 'rule-hook']);
   });
 });
 
@@ -311,7 +306,7 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
   });
 
   it('passes a workflow comment that names a listed script', () => {
-    const ci = '# runs scripts/e2e-slot-rule.test.ts\non: push\n';
+    const ci = '# runs scripts/rule-hook.test.ts\non: push\n';
     expect(check({ [`${WORKFLOWS}/ci.yml`]: ci })).toEqual([]);
   });
 
@@ -383,9 +378,9 @@ describe('no file the E2E job or the build reads names agent tooling', () => {
   });
 
   it('fails when a workflow holds a glob that matches a listed path', () => {
-    const ci = 'on: push\njobs:\n  a:\n    steps:\n      - run: bun test scripts/e2e-*\n';
+    const ci = 'on: push\njobs:\n  a:\n    steps:\n      - run: bun test scripts/rule-*.test.ts\n';
     expect(check({ [`${WORKFLOWS}/ci.yml`]: ci })).toEqual([
-      `${WORKFLOWS}/ci.yml: glob scripts/e2e-* matches scripts/e2e-slot-rule.test.ts`
+      `${WORKFLOWS}/ci.yml: glob scripts/rule-*.test.ts matches scripts/rule-hook.test.ts`
     ]);
   });
 

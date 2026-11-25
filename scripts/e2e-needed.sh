@@ -5,10 +5,9 @@
 # The skip list holds:
 #   - Markdown files and everything under docs/;
 #   - agent tooling (#718): everything under .claude/, and the rule-hook
-#     scripts with their tests, scripts/rule-hook.ts,
-#     scripts/rule-hook.test.ts and scripts/e2e-slot-rule.test.ts, named one
-#     by one, since package.json, playwright.config.ts and the Dockerfile run
-#     other scripts there.
+#     script with its test, scripts/rule-hook.ts and
+#     scripts/rule-hook.test.ts, named one by one, since package.json,
+#     playwright.config.ts and the Dockerfile run other scripts there.
 # A file on the skip list reaches the build output only through Tailwind's
 # source scan, which can add or drop CSS rules for class names written in
 # that file. No file the E2E job or the build reads names an agent-tooling
@@ -54,7 +53,7 @@ files="$(git diff --no-renames --name-only "${1:-}...HEAD" 2>/dev/null)" || {
 while IFS= read -r file; do
   case "$file" in
     docs/* | *.md) ;;
-    .claude/* | scripts/rule-hook.ts | scripts/rule-hook.test.ts | scripts/e2e-slot-rule.test.ts) ;;
+    .claude/* | scripts/rule-hook.ts | scripts/rule-hook.test.ts) ;;
     *) needed true ;;
   esac
 done <<<"$files"
